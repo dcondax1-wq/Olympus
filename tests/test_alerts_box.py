@@ -47,6 +47,7 @@ class TG:
 
     def __init__(self):
         self.calls, self.sent, self.mode, self.polls = [], [], {}, 0
+        self.code, self.stranger = None, False                  # day-security3: the page's one-time START code; a stranger's /start
 
     def __call__(self, method, url, body, headers, timeout):
         self.calls.append(url)
@@ -75,9 +76,11 @@ class TG:
                 return 401, '{"ok":false,"error_code":401,"description":"Unauthorized"}'
             self.polls += 1
             if m == "start" and self.polls >= 3:
-                return 200, json.dumps({"ok": True, "result": [
-                    {"update_id": 40, "message": {"chat": {"id": -1001, "type": "group"}, "text": "/start"}},
-                    {"update_id": 41, "message": {"chat": {"id": int(CHAT), "type": "private"}, "text": "/start"}}]})
+                first = ({"update_id": 40, "message": {"chat": {"id": 999000111, "type": "private"}, "text": "/start"}} if self.stranger
+                         else {"update_id": 40, "message": {"chat": {"id": -1001, "type": "group"}, "text": "/start"}})
+                return 200, json.dumps({"ok": True, "result": [first,
+                    {"update_id": 41, "message": {"chat": {"id": int(CHAT), "type": "private"},
+                                                  "text": "/start" + (" " + self.code if self.code else "")}}]})
             return 200, '{"ok":true,"result":[]}'
         if url.endswith("/sendMessage"):
             if self.mode.get("send") == 500:
@@ -154,6 +157,12 @@ def main() -> int:
         def post(path, body=None, h=None, cl=None, raw=None):
             r = (cl or c).post(path, headers=h or H, content=raw if raw is not None else json.dumps(body or {}).encode())
             texts.append(r.text + json.dumps(dict(r.headers)))
+            try:                                                 # the owner taps the page's Open link: "/start <this connect's code>"
+                lk = str(r.json().get("link") or "")
+                if "?start=" in lk:
+                    tg.code = lk.split("?start=", 1)[1]
+            except Exception:  # noqa: BLE001
+                pass
             return r
 
         def status(cl=None, h=None):
@@ -249,7 +258,7 @@ def main() -> int:
             r = post("/alerts/connect", {"token": TOKEN})
             d = r.json()
             check("d. Connect: getMe ok -> waiting for START, the bot's t.me link", d.get("ok") and d["state"] == "waiting_start"
-                  and d["bot"] == "@" + BOT and d["link"] == "https://t.me/" + BOT and d["wait_s"] == 5 and "_mask" not in d, d)
+                  and d["bot"] == "@" + BOT and d["link"].startswith("https://t.me/" + BOT + "?start=") and d["wait_s"] == 5 and "_mask" not in d, d)
             check("d. status while waiting: waiting, a state word only", status()["state"] in ("waiting_start", "done"))
             check("d. the /start arrives -> done", until(lambda: AL._W["state"] != "waiting_start") and AL._W["state"] == "done",
                   dict(AL._W))

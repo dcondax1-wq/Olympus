@@ -307,3 +307,7 @@ data/alert_bus_sent.json.*.tmp
 # the phone pages' press logs (engine/account_box.py, engine/alerts_box.py): masked, machine-local
 data/account_box.jsonl
 data/alerts_box.jsonl
+
+# engine/shadow_leads.py (observe-only paper-lead log, 2026-11-21): local output + off switch
+data/shadow_leads.jsonl
+data/shadow_leads.json

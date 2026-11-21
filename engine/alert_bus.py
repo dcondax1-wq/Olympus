@@ -302,7 +302,10 @@ def from_trade(p: dict, what: str) -> dict:
     p = _d(p)
     try:
         from . import notify as N
-        ev = {"kind": "entry" if what == "entry" else "exit", "key": str(p.get("key") or ""), "account": N.display_name(p),
+        name = N.display_name(p)
+        if str(p.get("title") or "").startswith("Keep-alive") and not name.startswith("Keep-alive"):
+            name = f"Keep-alive on {name}"             # drill 2026-11-21: the keep-alive's close says what it was
+        ev = {"kind": "entry" if what == "entry" else "exit", "key": str(p.get("key") or ""), "account": name,
               "side": str(p.get("side") or "").upper(), "t": _f(p.get("t")), "web": p}
         if what == "entry":
             m = N.entry_message(p)
@@ -525,6 +528,9 @@ def is_silent(ev: dict, now=None, s: dict | None = None) -> bool:
         s = s or N.settings()
         if not N.quiet(time.time() if now is None else now, s):
             return False
+        if ev.get("soft"):
+            return True                    # drill 2026-11-21: a soft notice (keep-alive line, a rule's own hold) is silent at night,
+                                           # as on the old path (notify.problem_message)
         nt = ev.get("notify_type") or NOTIFY_TYPE.get(k, "other")
         return not N.rings(nt, s)
     except Exception:

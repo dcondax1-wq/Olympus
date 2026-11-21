@@ -306,7 +306,7 @@ def part_orders(tmp):
     gate_first = body.index("check_order(o, dict(v") < body.index("self.send(o")
     check("o3. the code: ONE order call (send), send is called once, right after the order gate passed; send itself re-checks the arm file "
           "and the kill switch", len(calls) == 1 and len(send_calls) == 1 and gate_first and "if not ok:" in body
-          and 'get("armed") is not True' in src[src.index("    def send("):src.index("    def send(") + 400], (len(calls), len(send_calls), gate_first))
+          and 'get("armed") is not True' in src[src.index("    def send("):src.index("    def send(") + 1200], (len(calls), len(send_calls), gate_first))
     a = KL.Api(http=TL.FakeKalshi(TL.Clock(0), None), sleep=lambda s: None, gap=0)
     try:
         a.call("POST", "/portfolio/events/orders", body={"ticker": "KXGOLD15M-26NOV230530-30"})

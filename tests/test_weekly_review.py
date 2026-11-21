@@ -131,7 +131,8 @@ def part_a():
           [h["date"] for h in nx["holidays"]] == ["2026-11-26", "2026-11-27"] and all("Early close" in h["what"] for h in nx["holidays"])
           and isinstance(nx["news"], list), nx)
     check("a. decisions = accounts.json decisions first (goals.json added, no repeats), max 6",
-          nx["decisions"][:len(plan.get("decisions") or [])] == (plan.get("decisions") or [])[:6] and len(nx["decisions"]) <= 6
+          nx["decisions"][:len(plan.get("decisions") or [])] == [W._clean(x, 140) for x in (plan.get("decisions") or [])][:6]
+          and len(nx["decisions"]) <= 6
           and len(set(nx["decisions"])) == len(nx["decisions"]), nx["decisions"])
     ch = doc["changes"]
     check("a. what changed in the code: git one-liners, max 8, no merge commits",

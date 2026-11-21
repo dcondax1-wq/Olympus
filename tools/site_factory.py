@@ -32,7 +32,7 @@ IDS = os.path.join(ROOT, "tools", "site_factory_ids.json")
 # the agency band at the bottom of every concept page (lead 2026-11-20). Maryland bans cold AI calls: the assistant (day-caller) may
 # only call a business that ASKS, so the page carries a consent form whose markup / text / endpoint day-caller supplies. Until then
 # AGENCY["caller_html"] is empty and the page holds a clearly marked slot. No third-party form service, no secret in the page.
-AGENCY = {"phone": "", "phone_label": "", "caller_html": "", "pay_url": "", "public_base": "", "agency_name": ""}
+AGENCY = {"phone": "", "phone_label": "", "caller_html": "", "pay_url": "", "public_base": "", "agency_name": "", "agency_email": ""}
 # the offer on every concept page (research/writeups/client-plan-2026-11-20.md); pay_url = the owner's payment link (owner step)
 OFFER = "Starter $1,500 + $79/mo, or $149/mo with nothing upfront."
 CODES = os.path.join(ROOT, "tools", "site_factory_codes.json")   # lead id -> short code (FR-27): printed on the postcards too, never changes
@@ -172,7 +172,9 @@ CHAINS = ["bonefish", "glory days", "crunch fitness", "bruster", "exxon", "ymca"
           "anchor bar", "planet fitness", "anytime fitness", "orangetheory", "subway", "mcdonald",
           "burger king", "wendy", "taco bell", "domino", "papa john", "pizza hut", "starbucks", "dunkin", "chick-fil-a", "chipotle",
           "panera", "applebee", "olive garden", "red robin", "buffalo wild", "jiffy lube", "valvoline", "midas", "meineke", "firestone",
-          "great clips", "supercuts", "sport clips", "aspen dental"]
+          "great clips", "supercuts", "sport clips", "aspen dental", "children's national", "advanced radiology", "kaiser permanente",
+          "patient first", "minuteclinic", "cvs", "walgreens", "rite aid", "quest diagnostics", "labcorp", "concentra", "massage envy",
+          "european wax", "h&r block", "jackson hewitt", "state farm", "allstate", "geico", "7-eleven", "wawa", "sheetz", "royal farms"]
 
 
 def chain_of(name: str) -> bool:
@@ -417,9 +419,14 @@ def agency_band(name: str, lead_id: str = "", code: str = "") -> str:
             + '</section>')
 
 
-def page(lead: dict, ids: dict) -> str:
+def page(lead: dict, ids: dict, client: dict | None = None) -> str:
+    """the concept page; client = the production version for a paying client (tools/client_deliver.py): their own words / services /
+    logo / photos, indexable, canonical to their domain, no concept footer, no agency band"""
     niche = niche_of(lead)
     kind, secs = sections_of(lead, niche)
+    cl = client or {}
+    if cl.get("services"):
+        secs = [(str(a)[:60], str(b)[:240]) for a, b in cl["services"]][:9]
     bg, ink, soft, brand, brand2, on = pick_pal(niche, lead["id"])
     N = dict(NICHES[niche], icon=CAT_ICON.get(str(lead.get("category") or "").lower(), NICHES[niche]["icon"]))
     name, town, state = lead.get("name", "").strip(), (lead.get("town") or lead.get("city") or "").strip(), (lead.get("state") or "").strip()
@@ -433,6 +440,8 @@ def page(lead: dict, ids: dict) -> str:
     email = email if re.fullmatch(r"[\w.+-]+@[\w-]+\.[\w.-]+", email) else ""
     call = (f'<a class="call" href="tel:{t}">{icon("phone", 18)}{esc(N["cta"])}</a>' if t else "")
     hero_line = (f"{esc(kind)} in {esc(town)}." + (" Call us or stop by." if t and addr else " Call us." if t else " Find us on the map."))
+    if cl.get("tagline"):
+        hero_line = esc(cl["tagline"])
     # no phone / no street address on the listing: never point at something the page does not have
     fixed = []
     for h, p in secs:
@@ -469,8 +478,7 @@ def page(lead: dict, ids: dict) -> str:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="robots" content="noindex, nofollow, noarchive">
-<meta name="referrer" content="no-referrer">
+{('<meta name="robots" content="index, follow">' + chr(10) + '<link rel="canonical" href="' + esc(cl["canonical"]) + '">') if cl.get("canonical") else '<meta name="robots" content="noindex, nofollow, noarchive">' + chr(10) + '<meta name="referrer" content="no-referrer">'}
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="{bg}">
 <title>{esc(name)} · {esc(town)}</title>
@@ -481,7 +489,7 @@ def page(lead: dict, ids: dict) -> str:
 {CSS}</style>
 </head>
 <body data-niche="{niche}">
-<header class="bar"><div class="wrap"><span class="logo">{icon(N["icon"], 20)}</span><b>{esc(name)}</b>{call.replace('class="call"', 'class="call" style="min-height:38px;padding:0 13px;font-size:.9rem"', 1) if t else ""}</div></header>
+<header class="bar"><div class="wrap">{('<img class="logo" src="' + esc(cl["logo"]) + '" alt="" width="34" height="34" style="object-fit:cover;background:none">') if cl.get("logo") else '<span class="logo">' + icon(N["icon"], 20) + '</span>'}<b>{esc(name)}</b>{call.replace('class="call"', 'class="call" style="min-height:38px;padding:0 13px;font-size:.9rem"', 1) if t else ""}</div></header>
 <main>
 <div class="hero"><div class="wrap">
 <span class="kind rise">{icon(N["icon"], 16)}{esc(kind)} · {esc(town)}</span>
@@ -490,17 +498,16 @@ def page(lead: dict, ids: dict) -> str:
 <div class="ctas rise d2">{call}{btns[0] if btns else ""}</div>
 </div><span class="art">{icon(N["icon"], 150)}</span></div>
 <div class="wrap">
-<section aria-labelledby="h-what"><h2 id="h-what">What we do</h2><div class="grid">{tiles}</div></section>
+<section aria-labelledby="h-what"><h2 id="h-what">What we do</h2><div class="grid">{tiles}</div></section>{('<section aria-labelledby="h-about"><h2 id="h-about">About us</h2><p>' + esc(cl["about"]) + '</p></section>') if cl.get("about") else ""}{('<section aria-labelledby="h-photos"><h2 id="h-photos">Photos</h2><div class="grid">' + "".join('<img src="' + esc(ph) + '" alt="' + esc(name) + '" loading="lazy" style="width:100%;border-radius:16px;aspect-ratio:4/3;object-fit:cover">' for ph in cl.get("photos", [])) + '</div></section>') if cl.get("photos") else ""}
 <section aria-labelledby="h-hours"><h2 id="h-hours" class="row" style="align-items:center">{icon("clock", 22)}Hours</h2>{hours_html}</section>
 <section aria-labelledby="h-visit"><h2 id="h-visit">{"Visit or call" if t and addr else "Call" if t else "Visit"}</h2><div class="grid" style="grid-template-columns:1fr">{"".join(visit)}</div>
 <div class="ctas" style="margin-top:16px">{"".join(btns)}</div></section>
-{agency_band(name, lead["id"], lead.get("_code", ""))}
+{"" if client else agency_band(name, lead["id"], lead.get("_code", ""))}
 </div>
 </main>
 <footer class="foot"><div class="wrap">
 <p style="margin:0 0 6px"><b>{esc(name)}</b> · {esc(place)}</p>
-<p style="margin:0 0 6px">Concept made for {esc(name)} - not live, not affiliated. A sample of what a site could look like; nothing here is an offer from the business.</p>
-<p style="margin:0">Address, phone and hours: <a href="https://www.openstreetmap.org/copyright" rel="noopener noreferrer" target="_blank">© OpenStreetMap contributors</a>. <span id="y"></span></p>
+{('<p style="margin:0">© <span id="y"></span> ' + esc(name) + '</p>') if client else '<p style="margin:0 0 6px">Concept made for ' + esc(name) + ' - not live, not affiliated. A sample of what a site could look like; nothing here is an offer from the business.</p>' + chr(10) + '<p style="margin:0">Address, phone and hours: <a href="https://www.openstreetmap.org/copyright" rel="noopener noreferrer" target="_blank">© OpenStreetMap contributors</a>. <span id="y"></span></p>'}
 </div></footer>
 {f'<div class="dock">{call}</div>' if t else ""}
 {today_js}
@@ -611,6 +618,8 @@ def load_leads(only_ready: bool = False):
             continue
         if not L.get("id") or not str(L.get("name", "")).strip():
             continue
+        if chain_of(L.get("name")):              # chains have their own sites: no concept site (lead 2026-11-21)
+            continue
         out.append(L)
     added = os.environ.get("SITE_FACTORY_ADDED") or os.path.join(ROOT, "tools", "agency_added_leads.json")    # day-a11y caller portal: businesses a caller found by hand (public facts)
     if os.path.exists(added):
@@ -684,7 +693,7 @@ def build(web=WEB, ids_path=IDS, write_ids=True):
 # separate GitHub org). --export <dir> writes the f/ tree as a standalone static site: its own landing page, robots, 404 and headers;
 # nothing that points back at Olympus, the owner's handle or any PC address (checked before it writes, so a leak is never published).
 FORBIDDEN = [r"github\.io/jarvis", r"\bolympus\b", r"jarvis", r"dcondax", r"demetrades", r"\.ts\.net\b", r"\b100\.\d{1,3}\.\d{1,3}\.\d{1,3}\b",
-             r"tailscale", r"ntfy", r"/agency/", r"\.\./"]
+             r"tailscale", r"ntfy", r"/agency/", r"\.\./\.\./"]   # ../../ = reaching outside the exported site
 
 
 def landing(c: dict) -> str:
@@ -739,10 +748,16 @@ def export(out_dir: str, web: str = WEB) -> int:
         if re.fullmatch(r"[a-z2-9]{8}", d) and os.path.isfile(p):
             files[f"f/{d}/index.html"] = read_text(p)
     files["index.html"] = landing(c)
+    try:                                         # the agency's own launch site (tools/agency_site.py) replaces the minimal landing
+        sys.path.insert(0, ROOT)
+        from tools import agency_site as AS
+        files.update(AS.build_files(c, prefix="", base=base))
+    except (ImportError, OSError, ValueError, KeyError) as e:
+        print(f"note: agency site not added ({e}); the minimal landing is used", file=sys.stderr)
     files["404.html"] = '<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Not found</title><p style="font:17px system-ui;padding:40px 20px">Not found.</p>\n'
     files["f/index.html"] = files["404.html"]
     named = bool(c["agency_name"].strip())
-    files["robots.txt"] = ("User-agent: *\nDisallow: /f/\nDisallow: /portal/\n" if named else "User-agent: *\nDisallow: /\n")
+    files["robots.txt"] = ("User-agent: *\nDisallow: /f/\nDisallow: /portal/\nSitemap: " + base + "sitemap.xml\n" if named else "User-agent: *\nDisallow: /\n")
     # Cloudflare Pages reads _headers (GitHub Pages ignores it; the pages' own noindex meta covers that host)
     files["_headers"] = ("/f/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n  Referrer-Policy: no-referrer\n"
                          "/portal/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n  Referrer-Policy: no-referrer\n") + \

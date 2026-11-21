@@ -20,7 +20,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "tools", "web_public")
 APPS = ("hestia demeter apollo hera dionysus clio delphi pnyx planner mint mercury chrysos sibyl oikos arbiter stoa aegis lyceum nike kronos moirai epilogue "
         "kairos kratos argo pythia mintcity gallery").split()
-BG, THEME = "#1d1914", "#14110e"
+BG, THEME = "#1d1914", "#000000"
 HEAD = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#1d1914"/><circle cx="32" cy="32" r="26" fill="none" stroke="#9c6b3c" stroke-width="2"/>'
 G, I, B, O, T = "#c8a24a", "#f3ece0", "#9c6b3c", "#7f8a52", "#c96a4a"
 

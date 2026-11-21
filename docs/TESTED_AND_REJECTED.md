@@ -360,3 +360,14 @@
   the find weeks, 10 of 15 held out. Roll days: natural gas UP 17:00-17:15 won 15 of 15 but now costs 93c (+7% held out, loss-rate
   bound 39% vs 15% break-even, about $2 a month at $2.50); WTI DOWN 17 of 20, +43% / +50% but t 2.41 on 20 bets (about $6 a month).
   CME holiday / early-close skips are a safety rule, not testable (Labor Day was the only US holiday: the evening legs won that day).
+- **edge2 (2026-11-21, `edge2-2026-11-21.md`, `research/edge2/`):** 10 pre-registered. ATLAS deep limits 8 / 16 ticks better for 15 min: fill 38-45%,
+  miss $22-39k of winners, funded $ halves. ATLAS stop entry +12 ticks / 5 min (A3): H1 funded $511 -> $631, lost 16 -> 3%, 2021-24 PF
+  0.80 -> 0.99, but H2 $401 -> $398 / 20.7 -> 23.5% and 2025 6t -$74/mo: fails (PAPER LEAD - skipped signals lose every year, -0.22..-0.66R);
+  +20 ticks / 10 min worse in H2. New NQ setups at $250: IB failed-break fade, IB break-retest limit, prior-day level break-retest limit,
+  opening gap fade to the prior close, first-hour trend at 10:30 (+$45 / +$197 / +$121 a month, PF 1.08 H1, 0.5/wk H2), overnight-inside
+  breakout: none PF >= 1.2 in all 3 periods; all add -$500 days on a shared 25K. 0 pass.
+- **Holidays / roll / FOMC windows (2026-11-21, `holidays-2026-11-21.md`, `research/holidays/`):** Thanksgiving week, CME roll-date week,
+  Dec 15 - Jan 5, FOMC days x sit out / half, LIT and ATLAS (LIT roll = already rejected): 0 of 14. 2021-25 windows all weak (LIT PF
+  0.14-0.89, ATLAS 0.51-0.75 vs ~1.1) but 2026 windows profitable (FOMC LIT +$634/trade, ATLAS roll PF 8.9): sit-outs lose Jan-Jun $
+  (LIT FOMC -$2,535, ATLAS roll -$2,985). Thanksgiving / late Dec have no 2026 sample (untestable). Nearest: ATLAS FOMC out (funded lost
+  down in all 3, but Jan-Jun fixed -$1,223).

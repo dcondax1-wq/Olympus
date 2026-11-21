@@ -218,6 +218,11 @@ def pcside():
         com = {r["caller"]: r for r in PT.commissions(store, {"commission": {"sale": 300, "booked_show": 40}})}
         check("c. commissions per caller: $300 a sale; $40 a booked call only once it showed", com["Ann"]["owed"] == 300 and com["Ann"]["booked"] == 1
               and com["Bo"]["owed"] == 40 and "$300" in PT.table(list(com.values())), com)
+        both = {"log": [{"t": 1, "id": "z1", "k": "booked", "caller": "Cy"}, {"t": 2, "id": "z1", "k": "showed", "caller": "Cy"},
+                        {"t": 3, "id": "z1", "k": "won", "caller": "Cy"}, {"t": 4, "id": "z2", "k": "showed", "caller": "Cy"}]}
+        cy = PT.commissions(both, {"commission": {"sale": 300, "booked_show": 40}})[0]
+        check("c. a booked call that showed AND bought is paid $300 once, never $340; another that only showed adds $40",
+              cy["owed"] == 340 and cy["won"] == 1 and cy["showed"] == 2, cy)
         try:
             json.dump({"app": "other"}, open(lg + "3", "w"))
             PT.merge_logs([lg + "3"])

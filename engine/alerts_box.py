@@ -202,7 +202,7 @@ def get_me(token: str) -> tuple:
     return user, None
 
 
-def _wait_and_save(token: str, gen: int) -> dict:
+def _wait_and_save(token: str, gen: int, code: str | None = None) -> dict:
     """The background half of Connect: ALERTS_SETUP option 1 from the /start on. -> {"state", "reason", "test_delivered"}."""
     S = _setup()
     seen = {"wrong": False, "chat": False}
@@ -218,7 +218,7 @@ def _wait_and_save(token: str, gen: int) -> dict:
             seen["wrong"] = True
 
     def wait(tok, say=None):
-        chat = S.wait_chat_id(tok, say=say_wait, wait_s=_S["wait_s"], sleep=_S["sleep"], clock=clock)
+        chat = S.wait_chat_id(tok, say=say_wait, wait_s=_S["wait_s"], sleep=_S["sleep"], clock=clock, code=code)
         seen["chat"] = bool(chat)
         return chat if live() else None
 
@@ -247,10 +247,10 @@ def _wait_and_save(token: str, gen: int) -> dict:
     return {"state": "done", "reason": None if AB.active() else "bus_off", "test_delivered": True}
 
 
-def _start_wait(token: str, gen: int, bot_mask: str) -> None:
+def _start_wait(token: str, gen: int, bot_mask: str, code: str | None = None) -> None:
     def run(tok=token):
         try:
-            out = _wait_and_save(tok, gen)
+            out = _wait_and_save(tok, gen, code)
         except Exception:  # noqa: BLE001   (nothing it raised is printed: an exception text could carry the URL)
             out = {"state": "failed", "reason": "failed"}
         tok = None
@@ -274,8 +274,10 @@ def do_connect(body: dict) -> dict:
         return {"ok": False, "state": "failed", "reason": why}
     if not _set(gen, state="waiting_start", reason=None, test_delivered=None, t0=_now()):
         return {"ok": False, "state": "cancelled", "reason": "cancelled"}
-    _start_wait(token, gen, mask_bot(user))
-    return {"ok": True, "state": "waiting_start", "bot": "@" + user, "link": "https://t.me/" + user, "wait_s": int(_S["wait_s"]),
+    import secrets as _sec                           # day-security3: the one-time START code (only this page's link carries it)
+    code = _sec.token_urlsafe(9).replace("-", "x").replace("_", "y")
+    _start_wait(token, gen, mask_bot(user), code)
+    return {"ok": True, "state": "waiting_start", "bot": "@" + user, "link": f"https://t.me/{user}?start={code}", "wait_s": int(_S["wait_s"]),
             "_mask": mask_bot(user)}
 
 

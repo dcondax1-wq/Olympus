@@ -76,7 +76,7 @@ MAP = {
 
 CSS = ("position:sticky;top:0;z-index:2147483000;display:flex;align-items:center;gap:8px;margin:0;"
        "padding:env(safe-area-inset-top,0px) 12px 0;box-sizing:border-box;width:100%;min-height:44px;"
-       "background:var(--oly-th-n4,#1d1914);color:var(--oly-th-n30,#cfc4b2);border-bottom:1px solid rgba(243,236,224,.16);"
+       "background:var(--oly-th-n5,#16131e);color:var(--oly-th-n30,#cfc4b2);border-bottom:1px solid rgba(157,89,238,.32);"   # OLYMPUS NIGHT card, violet edge (QA 2026-11-21; was AGORA brown)
        "font:500 12.5px/1.25 -apple-system,system-ui,'Helvetica Neue',Arial,sans-serif;letter-spacing:0;text-align:left")
 LINK = ("margin-left:auto;flex:none;display:inline-flex;align-items:center;min-height:44px;min-width:44px;justify-content:flex-end;"
         "color:var(--oly-th-a11,#dac08b);font-weight:600;text-decoration:none;padding:0 2px;"

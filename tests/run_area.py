@@ -62,6 +62,7 @@ AREAS["olympus"].append("olympus_shell")  # night-revamp-main 2026-11-20: the ma
 AREAS["agency"].append("web_expert")       # team web-expert 2026-11-20: agency/expert/ (the playbook, the 5-tap diagnosis) + Jarvis 'web' answers
 AREAS["jarvis"].append("jarvis_shortcuts")  # team JARVIS 2026-11-20: the Siri / Shortcuts page + the "Add to Home Screen" hint
 AREAS["jarvis"].append("jarvis_fx")  # owner 2026-11-20 "3D, effects, no gold": jfx.css / jfx.js, the switcher without gold
+AREAS["jarvis"].append("jarvis_money_answers")  # lead QA 2026-11-21: the 60 money questions, live + PC-silent
 AREAS["olympus"].append("pulse")         # day-arenas 2026-11-20: the shared prop-trader cards in the main apps (olympus/pulse.js), CLS 0, light + dark
 AREAS["olympus"].append("archive_banners")  # day-archive 2026-11-20: the "Archived · data <date>, N days old -> live app" strip on every archived page (tools/archive_banners.py)
 AREAS["olympus"].insert(0, "site_sweep")  # night-siteqa 2026-11-20: every href / src of the main pages + doors.js points at a real file (no browser, 1 s); its own line
@@ -70,6 +71,7 @@ AREAS["pc"].append("account_box")     # 2026-11-20: the Add account box (engine/
 AREAS["pc"].append("phone_link")      # 2026-11-20: the bot server's own private Tailscale port :8444 (engine/phone_link.py)
 AREAS["pc"].append("self_heal_pc")    # night-selfheal 2026-11-20: the PC self-heal (engine/self_heal.py, docs/SELF_HEAL.md); its own line
 AREAS["pc"].append("remote_ctl")      # night-phonectl 2026-11-20: phone remote through the backup repo (olympus/control, engine/remote_ctl.py)
+AREAS["pc"] += ["nqops", "pc_always_on"]   # day-nqops 2026-11-21: Sunday/daily preflight, cloud pre-open push, the MFFU 7-day clock (engine/preflight.py, engine/clock7.py, nq/clock7.js); the PC always-on tool (tools/pc_always_on.py)
 AREAS["agency"].append("web_offers")
 AREAS["agency"].append("web_outreach")
 AREAS["agency"].append("agency_autopilot")
@@ -84,6 +86,7 @@ AREAS["pc"].append("learn_night")       # the same suite: the PC side (data pipe
 AREAS["kalshi"].append("kalshi_adapt")  # night-kadapt 2026-11-19: the K8 weekly re-test (engine/kalshi_adapt.py, tools/kalshi_adapt.py); its own line
 AREAS["money"].append("money_ideas")   # night-moneyideas 2026-11-20: money book + Kalshi bankroll ladder (tools/money/money_book.py, kalshi_bankroll.py); its own line
 AREAS["money"].append("fleet_months")  # day-fleet 2026-11-20: the whole fleet month by month to Jun 2027 (tools/money/fleet_months.py, business/fleet_plan.json); its own line
+AREAS["money"].append("fleet_90day")   # day-fleet 2026-11-21: the 90-day scale plan + its 3 purchase cards (tools/money/fleet_90day.py); its own line
 AREAS["pc"].append("kalshi_adapt")      # the same suite: the PC half (pc_weekly, clock_adapt.json, the ZEUS learned line)
 AREAS["kalshi"].append("kalshi_k8_monday")  # night-kalshi8 2026-11-20: the $55 rule, the edge tests, the Nov 16-19 dry run (research/kalshi_k8_monday/); its own line
 AREAS["kalshi"].append("kalshi_k8_dash")    # day-kalshi 2026-11-20: the K8 day dashboard (Kalshi page K8 card + Dionysus "K8 today"; node Playwright); its own line
@@ -310,7 +313,10 @@ AREAS["privacy"].append("cross_site")   # day-security 2026-11-20: the bot serve
 AREAS["pc"].append("cross_site")
 AREAS["pc"].append("redteam2_live")       # day-redteam2 2026-11-20: half-day halt alarm + TRADE HAS NO STOP alarm (engine/fast_alarm.py)
 AREAS["pc"].append("alert_bus")         # day-alerts 2026-11-21: engine/alert_bus.py (Telegram / Discord first, ntfy + Web Push fallbacks)
+AREAS["pc"].append("alert_drill")       # day-alerts 2026-11-21: end-to-end alert drill (telegram / ntfy / off set-ups)
 AREAS["pc"].append("alerts_box")        # alerts-phone 2026-11-21: /alerts/ = ALERTS_SETUP Telegram from the phone (engine/alerts_box.py); its own line
+AREAS["pc"].append("alerts_start_code")   # day-security3 2026-11-21: the /alerts/ page's one-time START code; its own line
+AREAS["privacy"] += ["alerts_start_code", "cross_site"]
 AREAS["nq"].append("redteam2_live")
 AREAS["pc"].append("redteam2_wires")      # day-redteam2 2026-11-20: L2 rapid._other_names covers the extra accounts
 AREAS["agency"].append("web_research")   # day-web-research 2026-11-20: the website-business research (RESEARCH.md, writeup, offers.json); its own line
@@ -328,6 +334,11 @@ AREAS["olympus"].append("dashfx")        # day-arenas 2026-11-20: the dashboard 
 AREAS["olympus"].append("brain3d")       # day-arenas 2026-11-21: the bot brain in 3D (olympus/brain3d.js + brain3d-scene.js, brain3d-lab.html); its own line
 
 AREAS["agency"].append("site_factory")   # day-cities3 2026-11-21: Website Factory (tools/site_factory.py -> agency/f/<id>/ + agency/factory/)
+AREAS["agency"].append("factory2")       # day-cities3 2026-11-21: agency launch site, client delivery, first 100 calls
+AREAS["agency"].append("dnc_scrub")      # day-caller2 2026-11-21: the free National DNC scrub before any dial (agency/dnc_scrub.py)
+AREAS["agency"].append("intake_page")      # day-caller2 2026-11-21: the client intake page (mailto only)
+AREAS["nq"].append("shadow_leads")      # day-edge2 2026-11-21: paper-lead shadow log, observe only
+AREAS["nq"].append("reconcile_live")      # day-atlasedge 2026-11-21: live vs model reconciliation
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])

@@ -79,7 +79,7 @@ const OWNER = {
 };
 let nq = 0; for (const [id, qs] of Object.entries(OWNER)) for (const q of qs) { nq++; ok(B.match(q) === id, `owner asks "${q}" -> ${id} (got ${B.match(q)})`); }
 ok(nq >= 60, `${nq} owner phrasings`);
-for (const q of ['is everything ok', 'and yesterday?', 'why?', 'what about atlas?', 'open it', 'explain the strategy', 'how far to target', 'how much room do I have', 'hide my balance']) ok(B.match(q) === null, `left to the brain: "${q}"`);
+for (const q of ['is everything ok', 'and yesterday?', 'why?', 'what about atlas?', 'open it', 'explain the strategy', 'how far to target', 'hide my balance']) ok(B.match(q) === null, `left to the brain: "${q}"`);
 
 const say = {};
 for (const q of Object.keys(Q).filter((q) => Q[q])) { const r = await B.ask(q, deps); say[q] = r; console.log('   > ' + r.text.replace(/\n/g, '\n     ')); }
@@ -146,7 +146,9 @@ ok(/best trades are the ones where the customer buys a place or an object: Lands
 // no K8 card anywhere: not this module's answer (the brain answers from kalshi.json, or says it is not connected)
 const nok = await B2.ask("How's Kalshi?", { ...deps, facts: () => ({ live: { ...live, raw: null, klive: null } }), storage: { getItem: () => null, setItem: () => {} } });
 ok(nok === null, 'kalshi without a K8 card: left to the brain');
-ok(B.match('how much room do I have') === null && B.match('how far to target') === null, 'generic room / target questions stay with the brain (BLITZ rules)');
+// QA 2026-11-21 (tests/test_jarvis_money_answers.py): "how much room do I have" is answered here, every account in MFFU terms with the report's age
+// (the brain's said ATLAS had "$1,401 of the $1,000 max loss" and left the 25K #2 out); BLITZ stays hidden here (accountsOf)
+ok(B.match('how much room do I have') === 'room' && B.match('how far to target') === null, 'generic room questions answered here (every account, MFFU terms); "how far to target" stays with the brain');
 // size of the saved copies stays small
 let bytes = 0; for (const [k, v] of store) if (k.startsWith('jarvis.biz.')) bytes += v.length;
 ok(bytes < 40000, `saved copies small (${bytes} bytes)`);

@@ -52,9 +52,11 @@ def save_raw(d: dict, env=None) -> str:
     return p
 
 
-def wait_chat_id(token: str, say=print, wait_s: int = WAIT_S, sleep=time.sleep, clock=time.time) -> str | None:
+def wait_chat_id(token: str, say=print, wait_s: int = WAIT_S, sleep=time.sleep, clock=time.time, code: str | None = None) -> str | None:
     """Poll getUpdates until someone sends /start to the bot; their chat id. Clears the read updates (offset) so nothing
-    stays queued. Only a private chat counts."""
+    stays queued. Only a private chat counts. code (day-security3 2026-11-21, the /alerts/ page): only "/start <code>" counts,
+    the message Telegram sends when the owner opens https://t.me/<bot>?start=<code> from the page; a stranger who finds the new
+    bot in those 3 minutes and taps START (a plain "/start") is ignored, so the alerts can never go to his chat."""
     end, offset = clock() + wait_s, None
     while clock() < end:
         url = f"{AB.TG_API}/bot{token}/getUpdates?timeout=20" + (f"&offset={offset}" if offset else "")
@@ -67,7 +69,9 @@ def wait_chat_id(token: str, say=print, wait_s: int = WAIT_S, sleep=time.sleep, 
             offset = int(u.get("update_id") or 0) + 1
             msg = AB._d(u.get("message"))
             chat = AB._d(msg.get("chat"))
-            if chat.get("type") == "private" and str(msg.get("text") or "").strip().lower().startswith("/start"):
+            said = str(msg.get("text") or "").strip()
+            ok_start = said == f"/start {code}" if code else said.lower().startswith("/start")
+            if chat.get("type") == "private" and ok_start:
                 AB._http("GET", f"{AB.TG_API}/bot{token}/getUpdates?offset={offset}&timeout=0", None, {}, 15)
                 return str(chat.get("id"))
         if st != 200:

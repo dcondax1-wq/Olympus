@@ -192,7 +192,7 @@ def part_d():
     css = open(os.path.join(PAGE, "hermes.css"), encoding="utf-8").read()
     js = "".join(open(f, encoding="utf-8").read() for f in glob.glob(os.path.join(PAGE, "*.js")))
     code = re.sub(r"^\s*//.*$", "", js, flags=re.M)                  # without the comments
-    check("d. viewport-fit=cover, theme-color, dark scheme, a module script", 'viewport-fit=cover' in html and 'name="theme-color" content="#14110e"' in html
+    check("d. viewport-fit=cover, theme-color, dark scheme, a module script", 'viewport-fit=cover' in html and 'name="theme-color" content="#000000"' in html
           and 'name="color-scheme" content="dark"' in html and '<script type="module" src="app.js">' in html)
     check("d. safe areas on all four sides", all(f"env(safe-area-inset-{s}" in css for s in ("top", "right", "bottom", "left")))
     check("d. the orb's corner: content ends 160 px above the bottom, the footer keeps 96 px from the right",
