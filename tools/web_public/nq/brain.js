@@ -1,7 +1,7 @@
-// NQ BRAIN page (ES module): the 2D brain from braincore.js at once, then DESIGN's 3D brain (olympus/brain3d.js via window.BRAIN3D) when it
+// NQ BRAIN page (ES module): the 2D brain from braincore.js at once; DESIGN's brain (olympus/brain3d.js, window.Brain3D, mounted in brain.html's body) gets the live states.
 // lands, only on this page, after the first paint and never on LITE. Text only through textContent; no storage; GET only; nothing armed.
 // ?bot=atlas opens ATLAS. window.NQBRAIN is the test hook.
-import * as BC from './braincore.js?v=1';
+import * as BC from './braincore.js?v=2';
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -36,8 +36,8 @@ function render() {
   $('bNow').textContent = !B.has ? 'The PC has not sent this bot\'s brain yet (its 15-minute report).' : B.current ? `Now: ${B.current.label}. ${B.cards[B.current.key].now}` : 'Waiting for the next step.';
   $('bStatus').textContent = S.src.lite ? `From your PC's report${B.what ? ' · ' + B.what : ''}.` : 'The site\'s copy: your PC\'s report has not arrived on this page yet.';
   drawSteps(B); drawThoughts(B); drawWatch(B); drawGrade(B); drawRisk(B); drawPlan(B); drawMemory(B); drawPay(B); drawAccts(B); drawReplay(B); drawHealth(B);
-  if (window.BRAIN3D && S.three === 'on') { try { window.BRAIN3D.update(B); } catch (_) { /* the 2D brain stays */ } }
-  if (!S.ready) { S.ready = true; try { if (O && O.ready) O.ready(); } catch (_) { /* nothing */ } later(load3d); }
+  feed3d(B);
+  if (!S.ready) { S.ready = true; try { if (O && O.ready) O.ready(); } catch (_) { /* nothing */ } }
 }
 
 function drawSteps(B) {
@@ -121,7 +121,7 @@ function drawHealth(B) {
 /** the replay lights one step (2D and 3D) */
 function light(stage) {
   for (const li of document.querySelectorAll('#bSteps .bstep')) li.classList.toggle('lit', li.dataset.key === stage || li.dataset.key.endsWith(':' + stage));
-  if (window.BRAIN3D && S.three === 'on') { try { window.BRAIN3D.focus && window.BRAIN3D.focus(stage); } catch (_) { /* 2D only */ } }
+  const T = window.NQBRAIN_3D; if (T && T.api && T.bot === 'lit') { try { T.api.update({ currentId: stage === 'entry' || stage === 'trade' || stage === 'done' ? stage : undefined }); } catch (_) { /* 2D only */ } }
 }
 
 // the glass card: what I'm doing now / why / what would change my mind
@@ -133,25 +133,43 @@ function openCard(key, from) {
 }
 function closeCard() { $('bCardSheet').hidden = true; $('bVeil').hidden = true; if (S.open) { try { S.open.focus(); } catch (_) { /* nothing */ } } S.open = null; }
 
-// DESIGN's 3D brain: a classic tag added after the first paint (no dynamic import), only on this page, never on LITE / without WebGL
-const later = (fn) => { if (typeof requestIdleCallback === 'function') requestIdleCallback(fn, { timeout: 1500 }); else setTimeout(fn, 400); };
-const HAS_3D = false;          // DESIGN's olympus/brain3d.js lands ~13:00 ET (research/handoff/2026-11-21/brain3d/API.md): on when it is in the site
-function load3d() {
-  if (!HAS_3D) return;
-  let lite = false; try { lite = !!(O && O.lite && O.lite()); } catch (_) { /* full */ }
-  if (lite || new URLSearchParams(location.search).get('flat') === '1' || S.three !== 'none') return;
-  S.three = 'loading';
-  const mount = () => {
-    const M = window.BRAIN3D, box = $('brain3d');
-    if (!M || !M.mount || !box) { S.three = 'none'; return; }
-    box.hidden = false;
-    let ok = false; try { ok = M.mount(box, S.model, { onTap: (key) => openCard(key, null) }); } catch (_) { ok = false; }
-    if (ok) { S.three = 'on'; $('bStage').classList.add('has3d'); } else { box.hidden = true; S.three = 'none'; }
-  };
-  if (window.BRAIN3D) { mount(); return; }
-  window.addEventListener('brain3d', mount, { once: true });
-  const t = document.createElement('script'); t.src = '../olympus/brain3d.js?v=1'; t.async = true; t.onerror = () => { S.three = 'none'; };
-  document.head.appendChild(t);
+// DESIGN's brain (olympus/brain3d.js, window.Brain3D, mounted in the body by brain.html before the first paint; its three.js scene comes after
+// load + on screen + idle, only on this page). Read only: it shows states, a tap opens the glass card. A bot switch = a new mount (another layout).
+const ST3 = { done: 'passed', now: 'current', wait: 'waiting', off: 'waiting', blocked: 'blocked' };
+const LOBE3 = { done: 'passed', armed: 'current', trade: 'current', signal: 'current', window: 'waiting', unknown: 'waiting' };
+const RISK3 = { dll: 'daily' };
+function feed3d(B) {
+  let T = window.NQBRAIN_3D;
+  if (!T || !window.Brain3D || !window.NQBRAIN_DEF) return;
+  if (T.bot !== B.bot) {                                      // the switch: the other bot's brain (path <-> lobes)
+    try { T.api.dispose(); } catch (_) { /* gone */ }
+    T = window.NQBRAIN_3D = { bot: B.bot, api: window.Brain3D.mount($('brain3d'), window.NQBRAIN_DEF(B.bot)) };
+    T.tapped = false;
+  }
+  if (!T.tapped) {
+    T.tapped = true;
+    T.api.on('tap', (id, kind) => {
+      const M = S.model; if (!M) return;
+      if (kind === 'ring') { const r = M.risk.find((x) => (RISK3[x.k] || x.k) === id); if (r) openInfo(r.label, r.value, r.why); return; }
+      const key = M.bot === 'lit' ? id : (M.steps.find((x) => x.lobe === id && x.state === 'now') || M.steps.filter((x) => x.lobe === id && x.state === 'done').pop() || M.steps.find((x) => x.lobe === id) || {}).key;
+      if (key) openCard(key, null);
+    });
+  }
+  const up = { stageStates: {}, reasons: {}, ringStates: {}, ringValues: {} };
+  if (B.bot === 'lit') {
+    for (const s of B.steps) up.stageStates[s.key] = ST3[s.state] || 'waiting';
+    if (B.current) { up.currentId = B.current.key; up.reasons[B.current.key] = B.cards[B.current.key].now; up.now = B.cards[B.current.key].why; up.pulse = Math.min(1, B.current.n / 10); }
+  } else {
+    for (const r of B.regions) { up.stageStates[r.id] = LOBE3[r.state] || 'waiting'; if (r.text) up.reasons[r.id] = r.text; }
+    const cur = B.regions.find((r) => LOBE3[r.state] === 'current'); if (cur) { up.currentId = cur.id; up.now = cur.text; }
+  }
+  if (!B.has) up.now = 'The PC has not sent this bot\'s brain yet.';
+  for (const r of B.risk) { const id = RISK3[r.k] || r.k; up.ringValues[id] = r.value; up.ringStates[id] = r.level === 'bad' ? 'bad' : r.level === 'warn' || r.level === 'unknown' ? 'warn' : 'ok'; }
+  try { T.api.update(up); } catch (_) { /* the 2D list stays */ }
+}
+function openInfo(title, now, why) {
+  $('bCardH').textContent = title; $('bCardNow').textContent = now; $('bCardWhy').textContent = why; $('bCardChange').textContent = 'A rule of MFFU\'s: the bot checks it before every order.';
+  $('bCardSheet').hidden = false; $('bVeil').hidden = false; S.open = null; try { $('bCardClose').focus(); } catch (_) { /* nothing */ }
 }
 
 function boot() {
@@ -162,5 +180,5 @@ function boot() {
   setInterval(() => { if (!document.hidden && S.ready) render(); }, 60000);
   load().catch(() => render());
 }
-window.NQBRAIN = { S, BC, render, ready: () => S.ready, openCard, closeCard };
+window.NQBRAIN = { S, BC, render, ready: () => S.ready, openCard, closeCard, three: () => window.NQBRAIN_3D || null };
 boot();

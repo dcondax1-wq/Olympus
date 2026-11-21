@@ -34,7 +34,9 @@
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#f1c14b'); r.setProperty('--oly-accent-rgb', '241, 193, 75'); })();</script>
 <link rel="stylesheet" href="nq.css?v=a8">
 <link rel="stylesheet" href="nqtheme.css?v=9">
-<link rel="stylesheet" href="brain.css?v=1">
+<link rel="stylesheet" href="../olympus/brain3d.css?v=b1">
+<link rel="stylesheet" href="brain.css?v=2">
+<script src="../olympus/brain3d.js?v=b1"></script><!-- DESIGN's brain (window.Brain3D): in <head>, NOT defer, so the body mounts it before the first paint (no shift); three.js comes later, only on this page -->
 </head>
 <body>
 <main id="app">
@@ -53,7 +55,21 @@
     <div class="row"><h2 id="brainH">Zlarior's brain</h2><span class="pill" id="bMode">-</span></div>
     <p class="bnow" id="bNow"></p>
     <div class="bstage" id="bStage">
-      <div class="b3d" id="brain3d" hidden></div>
+      <div class="bhost" id="brain3d"></div>
+      <script>/* mount DESIGN's brain now (before the first paint: no shift), with the bot's regions; brain.js feeds it the live states.
+         Never on LITE (the steps list below says everything). Ids = braincore.js (LIT_STAGES keys, ATLAS_LOBES ids, risk keys). */
+      (function () { try {
+        var O = window.OLYMPUS, lite = !!(O && O.lite && O.lite()), bot = new URLSearchParams(location.search).get('bot') === 'atlas' ? 'atlas' : 'lit';
+        if (lite || !window.Brain3D || new URLSearchParams(location.search).get('flat') === '1') return;
+        window.NQBRAIN_DEF = function (b) { return b === 'atlas'
+          ? { layout: 'lobes', title: 'ATLAS', list: false, stages: [{ id: 'ema', name: 'EMA' }, { id: 'macd', name: 'MACD' }, { id: 'sr', name: 'S/R' }],
+              ring: [{ id: 'dd', name: 'Drawdown left' }, { id: 'best', name: 'Best day' }, { id: 'idle', name: '7-day clock' }, { id: 'news', name: 'News' }] }
+          : { layout: 'path', title: 'Zlarior', list: false, stages: [{ id: 'levels', name: 'Levels' }, { id: 'sweep', name: 'Sweep' }, { id: 'inducement', name: 'Inducement' },
+              { id: 'displacement', name: 'Displacement' }, { id: 'cisd5', name: '5m CISD' }, { id: 'limit', name: 'Limit armed' }, { id: 'cisd1m', name: '1m CISD wait' },
+              { id: 'entry', name: 'Entry' }, { id: 'trade', name: 'In trade' }, { id: 'done', name: 'Done for today' }],
+              ring: [{ id: 'dd', name: 'Drawdown left' }, { id: 'daily', name: 'Daily loss' }, { id: 'best', name: 'Best day' }, { id: 'idle', name: '7-day clock' }, { id: 'news', name: 'News' }] }; };
+        window.NQBRAIN_3D = { bot: bot, api: window.Brain3D.mount(document.getElementById('brain3d'), window.NQBRAIN_DEF(bot)) };
+      } catch (e) { window.NQBRAIN_3D = null; } })();</script>
       <ol class="bsteps" id="bSteps" aria-label="The steps of a trade, in order"></ol>
     </div>
     <p class="note">Tap a step for what the bot is doing now, why, and what would change its mind. Mint = passed today, the pulsing one = now, lavender = waiting, red = blocked.</p>
@@ -79,6 +95,6 @@
   <p class="bk">Why</p><p id="bCardWhy"></p>
   <p class="bk">What would change my mind</p><p id="bCardChange"></p>
 </section>
-<script type="module" src="brain.js?v=1"></script>
+<script type="module" src="brain.js?v=2"></script>
 </body>
 </html>

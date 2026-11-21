@@ -7,9 +7,8 @@
 .bsw { min-height: 48px; font-weight: 800; letter-spacing: .02em; background: #000; border: 1px solid #4d2e76; color: var(--ag-text); border-radius: 14px; }
 .bsw[aria-pressed="true"] { border-color: #9d59ee; color: #f1c14b; box-shadow: 0 0 18px rgba(157, 89, 238, .45), inset 0 0 12px rgba(157, 89, 238, .18); }
 .bnow { margin: 0 0 8px; font-size: 15px; color: #dacbf0; }
-.bstage { position: relative; min-height: 360px; }
-.b3d { position: absolute; inset: 0; border-radius: 16px; overflow: hidden; background: #000; }
-.bstage.has3d { min-height: 420px; } .bstage.has3d .bsteps { visibility: hidden; }
+.bstage { position: relative; } .bhost { margin: 0 0 10px; }
+
 .bsteps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; counter-reset: s; }
 .blobe { margin: 8px 0 0; font-size: 13px; font-weight: 800; letter-spacing: .08em; color: #f1c14b; text-transform: uppercase; }
 .bstepb { width: 100%; min-height: 44px; display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 4px 10px; padding: 8px 12px; text-align: left;

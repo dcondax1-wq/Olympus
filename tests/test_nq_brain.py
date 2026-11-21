@@ -41,7 +41,13 @@ def test_static():
     check("a. text only through textContent: no innerHTML / eval / dynamic import / storage / POST / beacon in brain.js + braincore.js",
           not re.search(r"innerHTML|outerHTML|insertAdjacentHTML|document\.write|\beval\s*\(|\bimport\s*\(|localStorage|sessionStorage|indexedDB|sendBeacon|method:\s*['\"]POST", js))
     check("a. three.js never on the NQ desk page (the 3D brain is the Brain page's alone, after the first paint, never on LITE); the Desk links to the Brain",
-          "brain3d" not in desk and 'href="brain.html"' in desk and "brain3d.js" in js and "O.lite" in js)
+          "brain3d" not in desk and 'href="brain.html"' in desk and '<script src="../olympus/brain3d.js?v=' in html and "O.lite" in html
+          and html.index("brain3d.js?v=") < html.index("</head>") and "brain3d.js?v=b1\" defer" not in html)
+    ids = re.findall(r"\{ id: '([a-z0-9]+)', name: '[^']+' \}", html)
+    core = open(os.path.join(NQ, "braincore.js"), encoding="utf-8").read()
+    lit = re.findall(r"\['([a-z0-9]+)', '[^']+', '", core)[:10]
+    check("a. the brain's regions in brain.html = braincore's (LIT's 10 engine stages, ATLAS's 3 lobes); read only: no Arm / Start / Stop / Flatten control",
+          ids[7:17] == lit and ids[:3] == ["ema", "macd", "sr"] and not re.search(r">\s*(Arm|Start|Stop|Flatten)\b", html), (ids, lit))
 
 
 JS = r"""
@@ -160,8 +166,17 @@ def test_page():
             a = p.evaluate(SNAP)
             check("c. switch to ATLAS: its brain (three lobes, 15 steps, MACD armed now), the payout ring card shown",
                   a["h"] == "ATLAS's brain" and len(a["steps"]) == 15 and a["steps"].count("now") == 1 and a["pay"] and a["pressed"] == ["false", "true"], a)
-            check("c. no sideways scroll, taps >= 44 px, no console error, nothing off the origin but the PC feed, no three.js yet (DESIGN's renderer not in the site)",
-                  AK.no_sideways(p) and not AK.taps(p) and not errs and not off and not a["three"], (AK.taps(p)[:4], errs[:3], off[:3]))
+            try:
+                p.wait_for_function("window.NQBRAIN_3D && window.NQBRAIN_3D.api && window.NQBRAIN_3D.api.mode === '3d'", timeout=30000)
+            except Exception:
+                pass
+            t3 = p.evaluate("() => { const T = window.NQBRAIN_3D; return T ? { bot: T.bot, mode: T.api.mode, st: T.api.stats(), cur: T.api.state.currentId, s: T.api.state.stageStates, ring: T.api.state.ringValues } : null; }")
+            check("c. DESIGN's 3D brain (olympus/brain3d.js) on the Brain page: switched to ATLAS = the lobes layout (3 regions, 4 ring nodes), MACD current, EMA passed, the ring values from the risk ring",
+                  t3 and t3["bot"] == "atlas" and t3["cur"] == "macd" and t3["s"]["ema"] == "passed" and t3["s"]["macd"] == "current"
+                  and (t3["mode"] != "3d" or (t3["st"]["regions"] == 3 and t3["st"]["ring"] == 4)) and t3["ring"]["dd"].startswith("$1,401"), t3)
+            cls = p.evaluate("() => new Promise((ok) => { let v = 0; try { new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput) v += e.value; }).observe({ type: 'layout-shift', buffered: true }); } catch (e) {} setTimeout(() => ok(v), 300); })")
+            check(f"c. no sideways scroll, taps >= 44 px, no console error, nothing off the origin but the PC feed; layout shift {cls:.3f} < 0.05",
+                  AK.no_sideways(p) and not AK.taps(p) and not errs and not off and cls < 0.05, (AK.taps(p)[:4], errs[:3], off[:3], cls))
             AK.shot(p, "nq-brain-atlas")
             ctx.close()
             # reduced motion + no PC post: the site's copy said plainly, the steps still there
@@ -172,6 +187,13 @@ def test_page():
             anim = p.evaluate("getComputedStyle(document.querySelector('#bSteps .bstep .bstepb')).animationName")
             check("c. no PC post + reduced motion: 'the site's copy' said, NO REPORT, the 15 ATLAS steps still listed, no pulse, no error",
                   "has not arrived" in n["status"] and n["mode"] == "NO REPORT" and len(n["steps"]) == 15 and anim in ("none", "") and not errs, (n, anim, errs[:2]))
+            ctx.close()
+            # LITE: no 3D brain at all (the steps list says everything), and the Zlarior brain in 3D: the path layout, 5m CISD current
+            ctx, p, errs, seen, off = AK.page(br, origin, lite=True, mock={f"/{NC.TOPIC}/json": core})
+            open_brain(p)
+            p.wait_for_timeout(2500)
+            lt = p.evaluate("() => ({ t: window.NQBRAIN_3D || null, three: performance.getEntriesByType('resource').some((r) => /three\\.module|brain3d-scene/.test(r.name)), steps: document.querySelectorAll('#bSteps .bstep').length })")
+            check("c. LITE: no 3D brain mounted and no three.js fetched; the 10 steps still there", lt["t"] is None and not lt["three"] and lt["steps"] == 10 and not errs, (lt, errs[:2]))
             ctx.close()
     finally:
         srv.shutdown()
