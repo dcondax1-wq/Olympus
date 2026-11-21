@@ -314,6 +314,7 @@ that stays on the PC with the typed phrase. FLATTEN and KILL need a second tap. 
 in NinjaTrader or the MFFU app.</p>
 <div class="card"><b>What happened</b><ul id="trail"><li class="mute">-</li></ul></div>
 <p class="mute"><a href="/kalshi-live/">Kalshi K8 (key, bet size, start / STOP)</a></p>
+<p class="mute"><a href="/alerts/">Phone alerts (Telegram setup + test)</a></p>
 </main><script>
 var primed=null,timer=null,ON=false;
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}

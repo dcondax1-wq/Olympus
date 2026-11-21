@@ -304,3 +304,6 @@ data/agency_mail/
 data/alert_bus_sent.json
 data/alert_bus.jsonl
 data/alert_bus_sent.json.*.tmp
+# the phone pages' press logs (engine/account_box.py, engine/alerts_box.py): masked, machine-local
+data/account_box.jsonl
+data/alerts_box.jsonl
