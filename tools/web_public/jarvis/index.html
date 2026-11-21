@@ -27,7 +27,7 @@
   // opt-in now ('jarvis.look' = 'agora', ⋯ → Look → Jarvis look). Under the default OLYMPUS theme only.
   if (g('jarvis.look') !== 'agora' && (g('olympus.theme') || 'agora') === 'agora') {
     d.setAttribute('data-jlook', 'classic');
-    var cl = document.createElement('link'); cl.rel = 'stylesheet'; cl.id = 'jclassic'; cl.href = 'classic.css?v=c3'; document.head.appendChild(cl);
+    var cl = document.createElement('link'); cl.rel = 'stylesheet'; cl.id = 'jclassic'; cl.href = 'classic.css?v=c4'; document.head.appendChild(cl);
   }
   // the OLYMPUS look (../olympus/themes.js, key 'olympus.theme'; the engine loads after the start, async, never waited on, and repaints):
   // its colours and Jarvis's palette from the first frame, from the engine's copy of the look Jarvis gets (themes.js FIRST PAINT)
@@ -1661,7 +1661,7 @@ const olyOn = () => olyId() !== olyDefault();
 const jlook = () => (root.dataset.jlook === 'classic' ? 'classic' : 'agora');
 function classicSheet() {
   if (document.getElementById('jclassic')) return;
-  const l = document.createElement('link'); l.rel = 'stylesheet'; l.id = 'jclassic'; l.href = 'classic.css?v=c3';
+  const l = document.createElement('link'); l.rel = 'stylesheet'; l.id = 'jclassic'; l.href = 'classic.css?v=c4';
   l.addEventListener('load', () => { readColors(); if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme())); });
   document.head.appendChild(l);
 }
@@ -3746,6 +3746,6 @@ if ('serviceWorker' in navigator) {
 <script src="../olympus/doors.js?v=d12" defer></script>
 <script type="module" src="./home-cards.js?v=hc3"></script>
 <script type="module" src="./copilot-card.js?v=cp3"></script>
-<script src="./push-ui.js?v=pu2" defer></script>
+<script src="./push-ui.js?v=pu3" defer></script>
 </body>
 </html>
