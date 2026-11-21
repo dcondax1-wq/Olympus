@@ -12,6 +12,12 @@ The 3D bot brain as a kit module, for `nq/brain.html` (the NQ team wires the dat
 three.js is never in the page's first load: `brain3d.js` imports the scene only after `load`, once the box is on screen (50% margin) and the
 page is idle. The NQ page's perf budget does not change as long as `brain3d.js` is loaded only by `nq/brain.html`.
 
+## 0. Read-only
+
+The brain only shows what a bot is doing. No control on `nq/brain.html` may arm, start, stop or flatten anything; the lab's
+`Demo: ...` buttons change the picture only and stay in the lab (tests/test_brain3d.py fails on a button starting Arm / Start / Stop /
+Flatten on either page).
+
 ## 1. Load
 
 ```html

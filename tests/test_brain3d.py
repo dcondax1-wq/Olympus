@@ -48,6 +48,14 @@ def static():
           and not bad and "aspect-ratio: var(--b3-ratio" in css, bad)
     check("a. the lab page: Zlarior's 10 steps + ATLAS's 3 lobes over one ring, on brain3d.css + brain3d.js",
           'href="brain3d.css?v=' in lab and 'src="brain3d.js?v=' in lab and "layout: 'lobes'" in lab and "['done', 'Done / journal']" in lab)
+    # the brain is READ-ONLY (lead 2026-11-21): no control that reads like arming / starting / stopping a bot, on the lab or the real page
+    rx = re.compile(r"<button[^>]*>\s*(Arm|Start|Stop|Flatten)\b", re.I)
+    pages = {"olympus/brain3d-lab.html": lab}
+    if os.path.exists(os.path.join(WEB, "nq", "brain.html")):
+        pages["nq/brain.html"] = read("nq", "brain.html")
+    bad = [k for k, v in pages.items() if rx.search(v)]
+    check("a. read-only: no button starting Arm / Start / Stop / Flatten on " + " / ".join(pages) + "; the lab's controls are 'Demo: ...' and stay in the lab",
+          not bad and ">Demo: MACD armed</button>" in lab and ">Demo:" not in pages.get("nq/brain.html", ""), bad)
     api = os.path.join(ROOT, "research", "handoff", "2026-11-21", "brain3d", "API.md")
     check("a. the API note for the NQ team (research/handoff/2026-11-21/brain3d/API.md)", os.path.exists(api)
           and all(k in open(api, encoding="utf-8").read() for k in ("Brain3D.mount", ".update(", "'tap'", ".dispose()", "stageStates", "ringStates")))
