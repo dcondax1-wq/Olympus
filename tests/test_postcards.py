@@ -224,7 +224,7 @@ def main():
               [x[0]["name"] for x in got] == ["Ace Roofing", "Main St Dental", "Glow Salon", "Quick Lube Pro", "Rosa Pizza", "Corner Books"]
               and skip.get("a chain (has a website already)") == 1, ([x[0]["name"] for x in got], skip))
         u, own = P.demo_url(gl[0], gs, "https://example.org/site")
-        check("g. the factory's own site path f/<id>/ is the QR link", own and u == "https://example.org/site/agency/f/abcdefg2/", u)
+        check("g. the factory's own site path f/<id>/ is the QR link", own and u == "https://example.org/site/f/abcdefg2/", u)
         a1, b1 = P.render(gl[0], cfg, u)
         a2, b2 = P.render(dict(gl[0], _code=""), cfg, u)
         a3, b3 = P.render(gl[0], cfg, u, follow=True)

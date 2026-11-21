@@ -180,7 +180,7 @@ def main() -> int:
         core = fx.get("portal/portalcore.js", "")
         check("i. export carries the caller portal (6 files), public_base + agency number filled, site links at <base>/f/<id>/, no owner handle / notes",
               rc == 0 and all("portal/" + n in fx for n in F.PORTAL_FILES) and pj.get("public_base") == "https://neutral-sites.pages.dev"
-              and pj.get("agency_number") == "(301) 555-0123" and "b + '/' + p" in core and "export const BANNED = [];" in core
+              and pj.get("agency_number") == "(301) 555-0123" and "b + '/' + p" in core and "BANNED" not in core
               and not re.search(r"dcondax|olympus|/agency/", "".join(v for k, v in fx.items() if k.startswith("portal/")), re.I)
               and "Disallow: /" in fx["robots.txt"] and "/portal/*" in fx["_headers"], (rc, err[-200:], pj))
     with tempfile.TemporaryDirectory() as t:

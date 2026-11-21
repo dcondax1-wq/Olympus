@@ -46,8 +46,15 @@ def static():
     refs = re.findall(r'(?:src|href)="([^"#]+)"', html) + re.findall(r"from '([^']+)'", js + core) + re.findall(r"getJSON\('([^']+)'\)", js)
     check("a. self-contained: every file it loads sits in its own folder (no ../, no Olympus kit, no CDN)",
           refs and all(not r.startswith(("../", "/", "http")) or r.startswith("data:") for r in refs) and "olympus" not in html.lower().replace("no olympus file", ""), refs)
-    check("a. never the owner's address (dcondax / github.io/jarvis / ts.net) outside the banned list itself",
-          not re.search(r"dcondax|github\.io/jarvis|ts\.net", html + js + css + core.replace("export const BANNED = ['dcondax', 'github.io/jarvis', 'ts.net'];", "")))
+    handle = "dcon" + "dax"                      # the owner's GitHub handle: no shipped agency file names it (the check lives in agency/public.py)
+    hits = []
+    for dp, _, fs in os.walk(os.path.join(ROOT, "tools", "web_public", "agency")):
+        for f in fs:
+            if f.endswith((".html", ".js", ".css", ".json", ".txt", ".svg", ".webmanifest", ".md", ".xml")):
+                t = open(os.path.join(dp, f), encoding="utf-8", errors="ignore").read().lower()
+                if handle in t or "github.io/jarvis" in t:
+                    hits.append(os.path.relpath(os.path.join(dp, f), ROOT))
+    check("a. no file under tools/web_public/agency/ names the owner's handle or his dashboards' address", not hits, hits[:5])
     check("a. no secret in the folder: portal.json holds a salted hash only (never a phrase)",
           set(json.loads(read("portal.json")).get("pass", {})) <= {"salt", "sha256"} and "password" not in read("portal.json").lower())
     check("a. the identify-yourself line and the rules are on the page (9-5 their time, 1 call + 1 follow-up, never twice a day, never a recording / AI / text)",
@@ -78,7 +85,7 @@ P.logOutcome(st, B, 'dnc', T('2026-11-23T15:00:00Z')); out.sb = P.statusOf(B, st
 P.undoLast(st, 'b'); out.undo = [st.dnc.length, P.statusOf(B, st, T('2026-11-23T16:00:00Z'), conf).tone];
 const C = {id: 'c', name: 'Cee Auto', phone: '', site: 'f/cccccccc/'};
 out.sc = P.statusOf(C, st, T('2026-11-23T15:00:00Z'), conf); st.phones.c = '240-555-0123'; out.sc2 = P.statusOf(C, st, T('2026-11-23T15:00:00Z'), conf).tone;
-out.site = [P.siteUrl(L, conf), P.siteUrl(L, Object.assign({}, conf, {public_base: 'https://dcondax1-wq.github.io/jarvis'})), P.siteUrl(L, Object.assign({}, conf, {public_base: ''})),
+out.site = [P.siteUrl(L, conf), P.siteUrl(L, Object.assign({}, conf, {public_base: 'ftp://files.example'})), P.siteUrl(L, Object.assign({}, conf, {public_base: ''})),
   P.siteUrl({site: '../../x/'}, conf), P.siteUrl(L, Object.assign({}, conf, {public_base: 'http://plain.example'}))];
 const m = P.emailFor(L, 'Ann', conf); out.mail = m; out.gmail = P.gmailUrl(conf, 'boss@ace.example', m.subject, m.body);
 out.notReady = P.emailFor(L, 'Ann', Object.assign({}, conf, {postal: ''})).ready;
@@ -121,11 +128,11 @@ def node():
     check("b. 'do not call' = never again (and undo within reach for a mis-tap)", o["sb"]["tone"] == "done" and "never again" in o["sb"]["why"] and o["dnc"] == ["b"]
           and o["undo"][0] == 0, (o["sb"], o["undo"]))
     check("b. no number = 'find the number first'; a number found by hand makes it callable", o["sc"]["tone"] == "need" and o["sc2"] == "go", o["sc"])
-    check("b. the site link only from a clean https public_base, only an f/<id>/ path (never the owner's address, never empty, never http)",
-          o["site"] == ["https://sites.example.com/agency/f/abcdefgh/", "", "", "", ""], o["site"])
+    check("b. the site link = <public_base>/f/<id>/ (the neutral host's layout), only from an https base and an f/<id>/ path",
+          o["site"] == ["https://sites.example.com/f/abcdefgh/", "", "", "", ""], o["site"])
     mb = o["mail"]["body"]
     check("b. the email: honest subject, the link, the sender + agency, the postal address, 'no thanks'; not ready without the postal address",
-          o["mail"]["ready"] and o["mail"]["subject"] == "The website we built for Ace Roofing" and "https://sites.example.com/agency/f/abcdefgh/" in mb
+          o["mail"]["ready"] and o["mail"]["subject"] == "The website we built for Ace Roofing" and "https://sites.example.com/f/abcdefgh/" in mb
           and "Ann, Peak Web" in mb and "PO Box 12" in mb and "no thanks" in mb and not o["notReady"], mb[:300])
     check("b. 'Email them the link' opens the AGENCY Gmail's compose (authuser), nothing is sent by the page",
           o["gmail"].startswith("https://mail.google.com/mail/?view=cm&fs=1&authuser=peak%40gmail.example&to=boss%40ace.example&su="), o["gmail"][:120])
@@ -255,7 +262,7 @@ def browser():
                 check(f"d. {w}px: the right passphrase opens it; the identify line names the caller and the agency",
                       "Hi, it's Ann with Peak Web" in p.text_content("#identify") and not errs, errs)
                 call = p.get_attribute("li[data-id='a'] .call", "href")
-                check(f"d. {w}px: tap-to-call (tel:) + their own site link", call == "tel:+13015550100" and p.get_attribute("li[data-id='a'] .site", "href") == "https://sites.example.com/agency/f/aaaaaaaa/", call)
+                check(f"d. {w}px: tap-to-call (tel:) + their own site link", call == "tel:+13015550100" and p.get_attribute("li[data-id='a'] .site", "href") == "https://sites.example.com/f/aaaaaaaa/", call)
                 stray = p.evaluate("[...document.querySelectorAll('li.lead .phoneForm, li.lead .mailForm')].filter(e => e.getClientRects().length).length")
                 check(f"d. {w}px: before any call no row shows the email box, and a row with a number shows no 'number you found' box", stray == 0, stray)
                 wide = p.evaluate("() => Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) - innerWidth")
@@ -284,7 +291,7 @@ def browser():
                 u = p.evaluate("window.__opened || ''")
                 check("d. undo works; after 'Interested', Email them the link opens the agency Gmail with their site link (the page sends nothing)",
                       u.startswith("https://mail.google.com/mail/?view=cm&fs=1&authuser=peak%40gmail.example&to=boss%40ace.example")
-                      and "sites.example.com%2Fagency%2Ff%2Faaaaaaaa%2F" in u, u[:160])
+                      and "sites.example.com%2Ff%2Faaaaaaaa%2F" in u, u[:160])
                 p.click(".tabs button[data-f='need']")
                 p.wait_for_selector("li[data-id='d'] .phoneForm:not([hidden])")
                 check("d. no number: a Google Maps search link + a box for the number found", "google.com/maps/search" in (p.get_attribute("li[data-id='d'] .maps", "href") or ""))

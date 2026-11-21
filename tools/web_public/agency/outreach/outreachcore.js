@@ -34,10 +34,11 @@ export function money(n) { const v = Math.round(+n || 0); return (v < 0 ? '−$'
 
 export function demoFor(lead, sites, base) {
   // the PUBLIC base only (portal.json public_base, a neutral host): never this page's own address, which can be the owner's private dashboards
-  const b = /^https:\/\/[^\s"'<>]{4,}$/.test(String(base || '')) && !/dcondax|github\.io\/jarvis|ts\.net/i.test(String(base)) ? String(base).replace(/\/+$/, '') : '';
+  const b = /^https:\/\/[^\s"'<>]{4,}$/.test(String(base || '')) ? String(base).replace(/\/+$/, '') : '';   // checked on the PC (agency/public.py)
   const own = (isObj(sites) && sites[lead && lead.id]) || (lead && lead.demo_url);
-  if (!b && !(own && String(own).startsWith('https://') && !/dcondax|github\.io\/jarvis|ts\.net/i.test(own))) return { url: '[the site link: set public_base first]', own: !!own };
-  if (own && /^(https:\/\/|\.\.\/|\/|f\/[a-z2-9]{8}\/)/.test(own)) return { url: own.startsWith('https://') ? own : b + '/agency/' + own.replace(/^(\.\.\/)+/, '').replace(/^\/?agency\//, ''), own: true };
+  if (!b && !(own && String(own).startsWith('https://'))) return { url: '[the site link: set public_base first]', own: !!own };
+  if (own && /^f\/[a-z2-9]{8}\/$/.test(own)) return { url: b + '/' + own, own: true };   // the neutral host: <base>/f/<id>/
+  if (own && /^(https:\/\/|\.\.\/|\/)/.test(own)) return { url: own.startsWith('https://') ? own : b + '/agency/' + own.replace(/^(\.\.\/)+/, '').replace(/^\/?agency\//, ''), own: true };
   const d = NICHE_DEMO[(lead && lead.niche) || ''] || '';
   return { url: b + '/agency/demos/' + (d ? d + '/' : ''), own: false };
 }

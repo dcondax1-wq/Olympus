@@ -171,7 +171,7 @@ def main():
         CL = "Questions? Call (301) 555-0142: our AI assistant answers."
         m2 = core.message(words, leads[5], "first", dict(live, agency_number="(301) 555-0142"), offers, {"L05": "f/abcdefgh/"})
         check("c. the inbound-only line 'Call <agency number>: our AI assistant answers' (no 'or text', no 'any time', no call-me button); none until the number is set",
-              CL in m2["body"] and "https://example.org/site/agency/f/abcdefgh/" in m2["body"] and "Questions? Call" not in m["body"]
+              CL in m2["body"] and "https://example.org/site/f/abcdefgh/" in m2["body"] and "Questions? Call" not in m["body"]
               and not any(w in (m["body"] + m2["body"]).lower() for w in ("have our assistant call me", "or text", "any time")), m2["body"][:400])
         json.dump({"public_base": "https://example.org/site", "agency_number": "(301) 555-0142"}, open(PUB.CFG, "w"))
         check("c. the agency number can come from the public settings file too", CL in core.message(words, leads[5], "first", live, offers, {})["body"])

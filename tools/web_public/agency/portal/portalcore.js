@@ -12,12 +12,10 @@ export const OUTCOMES = [
   { k: 'booked', label: 'Booked a call' }, { k: 'no', label: 'No' }, { k: 'dnc', label: 'Do not call' }, { k: 'won', label: 'Won' }];
 export const FINAL = { no: 'Said no: never again', dnc: 'Do not call: never again', won: 'Won: Claude takes it from here' };
 export const NICHES = ['trades', 'health', 'beauty', 'auto', 'food', 'fitness', 'retail', 'pets', 'home', 'other'];
-export const BANNED = ['dcondax', 'github.io/jarvis', 'ts.net'];
 const DOW3 = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const str = (v) => (v == null ? '' : String(v)).trim();
 const pad2 = (n) => (n < 10 ? '0' : '') + n;
 
-export function banned(t) { const s = str(t).toLowerCase(); for (const b of BANNED) if (s.indexOf(b) >= 0) return b; return ''; }
 export function validEmail(e) { return /^[^\s@?&#<>"',;:()]+@[^\s@?&#<>"',;:()]+\.[A-Za-z]{2,}$/.test(str(e)); }
 
 // ---------------------------------------------------------------------------------------------------- phones
@@ -118,10 +116,11 @@ export function identify(caller, agency) { return 'Hi, it\'s ' + (str(caller) ||
 export function pitch(lead, caller, agency) {
   return identify(caller, agency) + ' I noticed ' + (str(lead.name) || 'your business') + ' doesn\'t have a website, so we built you one. It\'s free to look at. Can I email you the link?';
 }
-export function publicBase(conf) { const b = str(conf && conf.public_base).replace(/\/+$/, ''); return /^https:\/\/[^\s"'<>]{4,}$/.test(b) && !banned(b) ? b : ''; }
+// the banned-address check runs on the PC (agency/public.py) before public_base is written: no private name ships in this file
+export function publicBase(conf) { const b = str(conf && conf.public_base).replace(/\/+$/, ''); return /^https:\/\/[^\s"'<>]{4,}$/.test(b) ? b : ''; }
 export function siteUrl(lead, conf) {
   const b = publicBase(conf), p = str(lead.site);
-  return b && /^f\/[a-z2-9]{8}\/$/.test(p) ? b + '/agency/' + p : '';
+  return b && /^f\/[a-z2-9]{8}\/$/.test(p) ? b + '/' + p : '';   // the neutral host serves the sites at <base>/f/<id>/
 }
 export function mapsUrl(lead) { return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent([lead.name, lead.town, lead.state].map(str).filter(Boolean).join(' ')); }
 export function emailFor(lead, caller, conf) {

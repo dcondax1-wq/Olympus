@@ -160,7 +160,9 @@ def demo_url(L: dict, sites: dict, base: str) -> tuple:
     b = str(base or "").rstrip("/")
     if not b:
         raise ValueError("no public web address (public_base)")
-    if isinstance(own, str) and re.match(r"^(https://|sites/|/|\.\./|f/[a-z2-9]{8}/)", own):
+    if isinstance(own, str) and re.fullmatch(r"f/[a-z2-9]{8}/", own):
+        return b + "/" + own, True                      # the neutral host serves the concept sites at <public_base>/f/<id>/
+    if isinstance(own, str) and re.match(r"^(https://|sites/|/|\.\./)", own):
         return (own if own.startswith("https://") else b + "/agency/" + re.sub(r"^(\.\./)+|^/?agency/", "", own.lstrip("/"))), True
     d = {"food": "restaurant", "auto": "detailer", "trades": "roofer", "home": "roofer", "realestate": "estate", "outdoor": "shed"}.get(L.get("niche") or "", "")
     return b + "/agency/demos/" + (d + "/" if d else ""), False

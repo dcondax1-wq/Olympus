@@ -807,11 +807,8 @@ def portal_files(c: dict, base: str):
             if c.get("agency_name"):
                 j["agency"] = j.get("agency") or c["agency_name"]
             t = json.dumps(j, indent=1) + "\n"
-        elif fn == "portalcore.js":
-            t, n1 = re.subn(r"b \+ '/agency/' \+ p", "b + '/' + p", t)
-            t, n2 = re.subn(r"export const BANNED = \[[^\]]*\];", "export const BANNED = [];", t)
-            if not (n1 and n2):
-                return {}, "portalcore.js changed shape (siteUrl / BANNED): update site_factory.portal_files"
+        elif fn == "portalcore.js" and ("'/agency/' + p" in t or "BANNED" in t):
+            return {}, "portalcore.js has the old site links or a name list: day-a11y fixed both at the source (<base>/f/<id>/, no names)"
         out["portal/" + fn] = _strip_comments(fn, t)
     return out, ""
 
