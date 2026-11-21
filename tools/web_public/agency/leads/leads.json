@@ -2,7 +2,7 @@
  "v": 1,
  "kind": "web_leads",
  "demo": false,
- "fetched": "2026-11-21T18:01:31Z",
+ "fetched": "2026-11-21T18:16:34Z",
  "source": "OpenStreetMap via the public Overpass API (a few small queries per town)",
  "license": "Data (c) OpenStreetMap contributors, ODbL (openstreetmap.org/copyright)",
  "about": "Businesses on OpenStreetMap with no website tag. OSM can be out of date: check the business before you call.",
@@ -231,12 +231,28 @@
    ],
    "chains": 8,
    "with_site": 13
+  },
+  {
+   "town": "Damascus",
+   "state": "MD",
+   "businesses": 52,
+   "leads": 31,
+   "hot": 0,
+   "server": "maps.mail.ru",
+   "parts_ok": 7,
+   "parts": 9,
+   "missing": [
+    "trades",
+    "healthcare"
+   ],
+   "chains": 19,
+   "with_site": 1
   }
  ],
  "skipped": {
-  "has_site": 1139,
-  "chain": 1962,
-  "other": 404,
+  "has_site": 1140,
+  "chain": 1981,
+  "other": 405,
   "duplicate": 111,
   "closed": 1
  },
@@ -255,7 +271,8 @@
   "towns/middletown.json",
   "towns/thurmont.json",
   "towns/brunswick.json",
-  "towns/walkersville.json"
+  "towns/walkersville.json",
+  "towns/damascus.json"
  ],
- "count": 1392
+ "count": 1423
 }
