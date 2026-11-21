@@ -529,7 +529,8 @@ def results_text(res: dict) -> str:
 # ------------------------------------------------------------------------------------------------ commands
 def leads_and_sites() -> tuple:
     """the leads, annotated with day-cities3's factory data (_code FR-27, _niche, _chain), and {lead id: its concept site path}"""
-    leads = (rj(os.path.join(WEB, "agency", "leads", "leads.json"), {}) or {}).get("leads") or []
+    from agency import leadsfile
+    leads = leadsfile.load(os.path.join(WEB, "agency"))   # leads.json, or its per-town files
     idx = rj(os.path.join(WEB, "agency", "sites", "index.json"), {}) or {}
     s = idx.get("sites") if isinstance(idx, dict) else None
     if isinstance(s, list):

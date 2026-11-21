@@ -378,6 +378,9 @@ def main() -> int:
     from tools import lit_final as F
     REF = [t for t in F.run(P) if t["day"] >= "2026-01-01"]
     sess = [s["day"] for s in brain.sessions_2026()]
+    # the reference backtest covers its baseline's sessions only (lit_final.SESS, to 2026-10-16); the replay runs on every session the data
+    # has, so a day past the reference's last one would count its real trades as "extra" fills. Compare only the days both cover.
+    sess = [d for d in sess if d <= F.SESS[-1]]
     days = sess if not quick else sorted(set(sess[:20] + [sess[i] for i in np.linspace(20, len(sess) - 1, 10).astype(int)]))
     day_end(days, [t for t in REF if t["day"] in set(days)])
     intraday(["2026-10-13", "2026-10-09"] if quick else ["2026-10-13", "2026-10-09", "2026-10-16", "2026-10-12"], REF)

@@ -94,7 +94,8 @@ CODE_RE = re.compile(r"\b([A-Z]{2}-\d{1,4})\b")   # the postcard / concept-site 
 
 
 def site_data() -> tuple:
-    leads = (read_json(os.path.join(WEB, "agency", "leads", "leads.json"), {}) or {}).get("leads") or []
+    from agency import leadsfile
+    leads = leadsfile.load(os.path.join(WEB, "agency"))   # leads.json, or its per-town files
     extra = read_json(path("agency_leads_private.json"), {}) or {}     # the owner's own additions (emails he found), never in the repo
     if isinstance(extra.get("leads"), list):
         known = {L.get("id") for L in leads}

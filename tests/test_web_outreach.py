@@ -112,7 +112,11 @@ def core():
         with open(h, "w", encoding="utf-8") as fh:
             fh.write(HARNESS)
         A = os.path.join(ROOT, "tools", "web_public", "agency")
-        r = subprocess.run([exe, h, os.path.join(tmp, "c.mjs"), os.path.join(A, "leads", "leads.json"), os.path.join(A, "offers", "offers.json"), os.path.join(D, "scripts.json")],
+        from agency import leadsfile                    # leads.json or its per-town files (the leads team splits a big list)
+        lp = os.path.join(tmp, "leads.json")
+        with open(lp, "w", encoding="utf-8") as fh:
+            json.dump({"leads": leadsfile.load(A)}, fh)
+        r = subprocess.run([exe, h, os.path.join(tmp, "c.mjs"), lp, os.path.join(A, "offers", "offers.json"), os.path.join(D, "scripts.json")],
                            capture_output=True, text=True, timeout=60)
         if r.returncode:
             check("b. the core runs in node", False, r.stderr[-400:])

@@ -174,6 +174,16 @@ def pcside():
         a = d["leads"][0]
         check("c. build: each row has the code, the site path, a clean 10-digit number; the file says public data only",
               a["code"] == "FR-1" and a["site"] == "f/aaaaaaaa/" and a["phone"] == "3015550100" and "no private data" in d["note"] and "agency_never" not in json.dumps(d), a)
+        sweb = os.path.join(tmp, "split")                 # the leads team's split format: "leads": [] + "files": ["towns/<town>.json"]
+        os.makedirs(os.path.join(sweb, "leads", "towns"))
+        os.makedirs(os.path.join(sweb, "factory"))
+        json.dump({"leads": [], "files": ["towns/frederick.json", "towns/hagerstown.json", "../evil.json"]}, open(os.path.join(sweb, "leads", "leads.json"), "w"))
+        json.dump({"leads": leads[:3]}, open(os.path.join(sweb, "leads", "towns", "frederick.json"), "w"))
+        json.dump({"leads": leads[3:] + [dict(leads[0], name="Dup")]}, open(os.path.join(sweb, "leads", "towns", "hagerstown.json"), "w"))
+        json.dump({"sites": []}, open(os.path.join(sweb, "factory", "sites.json"), "w"))
+        ds = PT.build(sweb, os.path.join(tmp, "split.json"))
+        check("c. build reads the split list (leads.json 'files' -> towns/*.json), first row per id, nothing outside towns/",
+              sorted(r["id"] for r in ds["leads"]) == ["a", "d", "f"] and next(r for r in ds["leads"] if r["id"] == "a")["name"] == "Ace Roofing", ds["leads"])
         cp = os.path.join(tmp, "portal.json")
         c = PT.set_pass("blue river candle", cp)
         raw = open(cp).read()
