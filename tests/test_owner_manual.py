@@ -80,7 +80,7 @@ def part_a(page, doc, p):
     cards = p.cards
     check("a. 10 emergency cards sos-1..sos-10, each 1-3 steps", sorted(cards, key=lambda k: int(k[4:])) == [f"sos-{i}" for i in range(1, 11)]
           and all(1 <= n <= 3 for n in cards.values()), cards)
-    check("a. the page has 4 copy lines", len(p.codes) == 4, p.codes)
+    check("a. the page has 6 copy lines (4 + hand-trade window, keep-alive status: 2026-11-21)", len(p.codes) == 6, p.codes)
     missing = [c for c in p.codes if c not in doc]
     check("a. every copy line of the page is also in docs/OWNER_MANUAL.md", not missing, missing)
     bad = []
@@ -111,6 +111,29 @@ def part_a(page, doc, p):
              "$2.50", "-$13.75", "I ACCEPT LIVE RISK", "HOLD TO KILL", ":8444/safety/", ":8444/kalshi-live/", "/add-account/", "Limit 0"]
     miss = [f for f in facts if not (f in page and f in doc)]
     check("a. key facts in both the page and the doc (prices, payout, tax, hours, K8, phrases, pages)", not miss, miss)
+    # 2026-11-21 landing (lead): New this week = 7 cards, each What / When / 1-3 steps / You see, in the page AND the doc, and every
+    # quoted screen text is the code's own
+    new = re.findall(r'<details id="new-(\d)"', page)
+    check("a. New this week: 7 cards new-1..new-7 (one jump-bar tap: #new), each with What, When, 1-3 steps",
+          new == [str(i) for i in range(1, 8)] and '<a href="#new">New</a>' in page and all(f"### N{i}." in doc for i in range(1, 8))
+          and all(1 <= c.count("<li>") <= 3 and "<b>What:</b>" in c and "<b>When:</b>" in c for c in re.findall(r'<details id="new-\d".*?</details>', page, re.S)), new)
+    said = {   # text the owner reads in the manual -> the file that prints / shows it
+        "(LIT + ATLAS): ": "engine/go.py", "Arm and start trading": "web_next/js/next/start.js", "Entry blocked": "engine/guards.py",
+        "Left alone (your hand-trade window).": "engine/guards.py", "HEDGE BLOCKED: ATLAS close not confirmed": "engine/live.py",
+        "KEEP ALIVE ON": "KEEPALIVE_ON.bat", "[OK] Keep-alive is ON.": "KEEPALIVE_ON.bat", "[OK] Keep-alive is OFF on every account.": "KEEPALIVE_OFF.bat",
+        "did not go through": "engine/keepalive.py", "Connected: test delivered": "engine/alerts_box.py", "Olympus alerts are ON": "engine/alerts_box.py",
+        "TEST: Zlarior 50K LONG opened": "engine/alert_bus.py", "PAYOUT READY: request": "engine/funded_life.py",
+        "WAIT: this is payout": "engine/funded_life.py", "Ask Claude before you request it.": "engine/funded_life.py",
+        "Update rolled back": "engine/autoupdate.py", "Update crash loop: ROLLBACK FAILED": "engine/autoupdate.py", "Add to Home Screen": "tools/web_public/hub/setup.html"}
+    wrong = [f"{t} ({f})" for t, f in said.items() if t not in rd(os.path.join(ROOT, f)) or t not in page or t not in doc]
+    check(f"a. New this week: {len(said)} quoted screen texts are the code's own and in both the page and the doc", not wrong, wrong)
+    nfacts = ["$2,100", "$4,100", "$1,000", "$2,000", "-$2.40", "-$22.90", "15:33-15:48 ET", ":8444/alerts/", "5 of 5", "23:00-07:00 ET",
+              "START_BOT.bat", "ALERTS_SETUP.bat", "TEST_ALERT.bat", "ALERTS_OFF.bat"]
+    nmiss = [f for f in nfacts if not (f in page and f in doc)]
+    kp = rd(os.path.join(ROOT, "engine", "funded_life.py"))
+    check("a. New this week: payout line $1,000 at $2,100 (25K) / $2,000 at $4,100 (50K), keep-alive cost and window, alerts page, in both",
+          not nmiss and '"ask_above": 2000.0' in kp and 'PREFIX = "/alerts"' in rd(os.path.join(ROOT, "engine", "alerts_box.py"))
+          and '"scope": "../"' in rd(os.path.join(WEB, "gate", "manifest.webmanifest")), nmiss)
     zh = rd(os.path.join(HUB, "zeus.js"))
     check("a. bot hours = the ZEUS page's (engine/live_board.py)", "02:00-15:30 ET" in zh and "MACD 02:00-05:00 + 09:30-11:00" in zh
           and "EMA 03:00-09:30 (not Mon)" in zh and "S/R 09:30-12:00" in zh)
@@ -244,7 +267,7 @@ def part_c(shots: bool):
             try:
                 pg.reload()
                 pg.wait_for_function("window.OWNER_MANUAL && window.OWNER_MANUAL.ready", timeout=8000)
-                ok = (pg.text_content("h1") or "").strip() == "Owner manual" and pg.eval_on_selector_all(".mn-sos details", "e => e.length") == 10 \
+                ok = (pg.text_content("h1") or "").strip() == "Owner manual" and pg.eval_on_selector_all("#sos .mn-sos details", "e => e.length") == 10 and pg.eval_on_selector_all("#new details", "e => e.length") == 7 \
                     and (night_black(bg := pg.evaluate(PAGE_BG_JS)) or "20, 17, 14" in bg)   # the saved look: OLYMPUS NIGHT (the default) or AGORA
             except Exception as e:  # noqa: BLE001
                 ok = str(e)[:200]
