@@ -36,7 +36,9 @@ async function loadPush() {
     try { const r = await api('/api/push', body); toast(r.ok === false ? r.error : `Saved: ${r.devices} phone(s)`); } catch (e) { toast('Not saved: ' + (e.message || e)); }
     loadPush();
   };
-  $('#puTest').onclick = async () => { try { const r = await api('/api/push/test', {}); toast(r.ok ? `Test sent to ${r.sent} phone(s)` : 'Not sent: ' + (r.error || JSON.stringify(r.errors || r.gone))); } catch (e) { toast('Not sent: ' + (e.message || e)); } loadPush(); };
+  // /api/push/test (2026-11-20): a TEST entry + close on BOTH routes; r.say = what each answered ("Olympus: accepted for 1 phone(s),
+  // look at the iPhone · ntfy: TEST entry + close sent"), r.ntfy = the ntfy half alone (older PCs: only r.sent)
+  $('#puTest').onclick = async () => { try { const r = await api('/api/push/test', {}); const both = r.say || `Olympus: ${r.sent || 0} phone(s)` + (r.ntfy ? ` · ntfy: ${r.ntfy}` : ''); toast(r.ok ? 'Test: ' + both : 'Not sent: ' + (r.error || r.say || JSON.stringify(r.errors || r.gone))); } catch (e) { toast('Not sent: ' + (e.message || e)); } loadPush(); };
   $('#puClear').onclick = async () => { if (!confirm('Forget the notification keys and phones on this PC?')) return; await api('/api/push', { clear: true }); toast('Forgotten'); loadPush(); };
 }
 

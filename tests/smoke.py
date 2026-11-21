@@ -18,6 +18,9 @@ SUITES = [
     ["-X", "utf8", "-m", "tests.test_autoupdate_source"],
     ["-X", "utf8", "-m", "tests.test_apps_list"],
     ["-X", "utf8", "-m", "tests.test_zenith_mode"],
+    ["-X", "utf8", "tools/site_checks.py"],
+    ["-X", "utf8", "tools/win_paths.py"],   # 2026-11-20: a "?" in a file name blocked every PC update for 16 h (0.1 s)
+    ["-X", "utf8", "tools/perf_sweep.py", "--static", "--check"],   # perf guard: no app adds three.js / render-blocking KB eagerly (0.2 s)               # day-quality 2026-11-20: Kalshi cache = css/js ?v, worker tags, launcher copies (0.2 s)
 ]
 
 

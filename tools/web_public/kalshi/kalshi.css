@@ -785,7 +785,7 @@ body { background: var(--glow); background-color: var(--bg); }
 
 /* ---- notes (stale, sample, offline) */
 .note { border-radius: var(--rs); background: var(--bg2); border: 1px solid var(--dim2); }
-.note b { font: 700 14px/1.3 var(--fb); }
+.note b { font: 700 .9375rem/1.3 var(--fb); }
 .note.warn, .note.bad, .note.sample { background: var(--bg2); }
 .note.sample { top: 8px; box-shadow: var(--shadow); }
 html.framed .note.sample { top: 56px; }
@@ -925,36 +925,64 @@ html.framed .note.sample { top: 56px; }
 .krw p { margin: 0; }
 .krw-g { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 9px 0 6px; }
 .krw-g div { min-width: 0; }
-.krw-g dt { font-size: 12px; color: var(--txt); opacity: .78; }
-.krw-g dd { margin: 2px 0 0; font: 700 17px/1.2 var(--fh); overflow-wrap: anywhere; }
-.krw-f { font-size: 13px; opacity: .85; margin-top: 4px !important; }
+.krw-g dt { font-size: 0.75rem; color: var(--txt); opacity: .78; }
+.krw-g dd { margin: 2px 0 0; font: 700 1.062rem/1.2 var(--fh); overflow-wrap: anywhere; }
+.krw-f { font-size: 0.8125rem; opacity: .85; margin-top: 4px !important; }
 @media (max-width: 359px) { .krw-g { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .krw-age.old { color: var(--warn); }
 /* ---- K8 status card (night-kalshi8 2026-11-20, kalshi.js k8Show): mode, bankroll, today, next window, last 10, how far each stop is */
 .k8s { display: block; margin-top: 8px; }
-.k8s h2 { margin: 2px 0 4px; font: 700 15px/1.3 var(--fh); display: flex; align-items: center; gap: 8px; }
-.k8s-m { font: 800 12px/1 var(--fh); letter-spacing: .06em; padding: 4px 7px; border-radius: 6px; border: 1px solid rgba(var(--warn-rgb), .6); color: var(--warn); }
+.k8s h2 { margin: 2px 0 4px; font: 700 0.9375rem/1.3 var(--fh); display: flex; align-items: center; gap: 8px; }
+.k8s-m { font: 800 0.75rem/1 var(--fh); letter-spacing: .06em; padding: 4px 7px; border-radius: 6px; border: 1px solid rgba(var(--warn-rgb), .6); color: var(--warn); }
 .k8s-m.live { border-color: rgba(var(--up-rgb, 34, 197, 94), .7); color: var(--up, #16a34a); }
 .k8s-l { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 8px; }
-.k8s-l span { width: 24px; height: 24px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font: 800 12px/1 var(--fh); color: #fff; background: var(--down, #dc2626); }
+.k8s-l span { width: 24px; height: 24px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font: 800 0.75rem/1 var(--fh); color: #fff; background: var(--down, #dc2626); }
 .k8s-l span.w { background: var(--up, #16a34a); }
-.k8s-b { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 10px; font-size: 13.5px; align-items: center; }
+.k8s-b { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 10px; font-size: 0.8438rem; align-items: center; }
 .k8s-b i { grid-column: 1 / -1; display: block; height: 7px; border-radius: 4px; background: var(--dim2); overflow: hidden; margin: 3px 0 8px; }
 .k8s-b i b { display: block; height: 100%; background: var(--up, #16a34a); }
 .k8s-b i b.hot { background: var(--warn); }
 .k8s-b i b.red { background: var(--down, #dc2626); }
+/* the K8 day dashboard (day-kalshi 2026-11-20, kalshi.js k8Win / k8Extra): today's windows + countdowns, price vs fair, the bet log, edge health */
+.k8w-h { margin: 8px 0 3px !important; font: 700 0.8125rem/1.3 var(--fh); letter-spacing: .02em; opacity: .9; }
+.k8w, .k8p ul, .k8g ul { list-style: none; margin: 0; padding: 0; }
+.k8w li { display: grid; grid-template-columns: 46px minmax(0, 1fr) auto; gap: 8px; align-items: baseline; padding: 4px 0; border-top: 1px solid var(--dim2); font-size: 0.875rem; }
+.k8w li:first-child { border-top: 0; }
+.k8w li b { font: 700 0.875rem/1.2 var(--fh); font-variant-numeric: tabular-nums; }
+.k8w li span { min-width: 0; overflow-wrap: anywhere; }
+.k8w li em { font-style: normal; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+.k8w li em.now { color: var(--ok); }
+.k8w li em.done { opacity: .6; font-weight: 500; }
+.k8w li.pp { font-size: 0.7812rem; opacity: .6; padding: 2px 0; }
+.k8w li.pp b { font-size: 0.7812rem; }
+.k8w li i, .k8p li i { font-style: normal; font-size: 0.7188rem; opacity: .8; }
+.k8w li.sk em { color: var(--warn); opacity: 1; font-weight: 600; font-size: 0.7812rem; }
+.k8p li { display: flex; flex-direction: column; padding: 3px 0; border-top: 1px solid var(--dim2); font-size: 0.8438rem; min-width: 0; overflow-wrap: anywhere; }
+.k8p li:first-child { border-top: 0; }
+.k8p li > span:last-child { font-variant-numeric: tabular-nums; }
+.k8-g { color: var(--ok); } .k8-r { color: var(--bad); }
+.k8g li { font-size: 0.8438rem; padding: 3px 0 3px 12px; position: relative; overflow-wrap: anywhere; }
+.k8g li::before { content: ""; position: absolute; left: 1px; top: 10px; width: 6px; height: 6px; border-radius: 50%; background: var(--mut); }
+.k8g li.w b { color: var(--ok); } .k8g li.w::before { background: var(--ok); }
+.k8g li.l b { color: var(--bad); } .k8g li.l::before { background: var(--bad); }
+.k8e-g { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 2px 10px; font-size: 0.8438rem; align-items: baseline; }
+.k8e-g span:nth-child(3n) { font-size: 0.75rem; opacity: .75; text-align: right; }
+.k8e-g b { font-variant-numeric: tabular-nums; text-align: right; }
+.k8e-g b.ok, .k8e-v.ok b { color: var(--ok); } .k8e-g b.watch, .k8e-v.watch b { color: var(--warn); } .k8e-g b.off, .k8e-v.off b { color: var(--bad); }
+.k8e-v { margin: 5px 0 2px !important; font-size: 0.8438rem; }
+.k8e-v b { font: 800 0.875rem/1.2 var(--fh); margin-right: 4px; }
 /* the Kalshi home (2026-11-18): what we tested, the other Kalshi apps, the bar; phone first, rows at least 44 px */
 .khub { display: block; margin-top: 8px; }
-.khub h2 { margin: 4px 0 6px; font: 700 15px/1.3 var(--fh); }
+.khub h2 { margin: 4px 0 6px; font: 700 0.9375rem/1.3 var(--fh); }
 .khub h2 + ul { margin-bottom: 12px; }
 .khub ul { list-style: none; margin: 0; padding: 0; }
 .khub li { min-width: 0; overflow-wrap: anywhere; }
 .kh-l li, .kh-a li { display: flex; flex-direction: column; justify-content: center; min-height: 44px; padding: 5px 0; border-top: 1px solid var(--dim2); }
 .kh-l li:first-child, .kh-a li:first-child { border-top: 0; }
 .khub a { color: var(--txt); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(var(--warn-rgb), .55); }
-.khub li span { font-size: 13px; opacity: .85; }
+.khub li span { font-size: 0.8125rem; opacity: .85; }
 .khub li i { font-style: normal; font-weight: 700; color: var(--warn); }
-.kh-b li { font-size: 13.5px; padding: 3px 0 3px 14px; position: relative; }
+.kh-b li { font-size: 0.8438rem; padding: 3px 0 3px 14px; position: relative; }
 .kh-b li::before { content: ""; position: absolute; left: 2px; top: 11px; width: 5px; height: 5px; border-radius: 50%; background: var(--warn); }
 /* K1 card reuses .krw */
 /* . */
@@ -969,3 +997,119 @@ html[data-oly-style] .card { background: var(--oly-th-card-bg) !important; borde
   border-radius: var(--oly-th-radius) !important; -webkit-backdrop-filter: var(--oly-th-card-blur); backdrop-filter: var(--oly-th-card-blur); }
 html[data-oly-style] :is(.top h1, .card h2) { font-family: var(--oly-th-display, var(--fh)); font-weight: var(--oly-th-title-weight) !important; text-transform: var(--oly-th-title-case);
   letter-spacing: var(--oly-th-title-track) !important; font-style: var(--oly-th-title-style); }
+/* day-kalshi round 2: each live bet's last 20 windows and the pause rule */
+.k8l { list-style: none; margin: 4px 0 0; padding: 0; font-size: 0.8438rem; }
+.k8l li { white-space: normal; overflow-wrap: anywhere; padding: 3px 0; border-top: 1px solid var(--line, rgba(127,127,127,.2)); }
+.k8l li.off { color: var(--bad); font-weight: 600; }
+/* day-kalshi round 3: K8 live day */
+.k8d .k8d-cd { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; margin: 6px 0 8px; }
+.k8d .k8d-lab { font-size: 0.8438rem; opacity: .85; }
+.k8d .k8d-big { font: 800 2.75rem/1.05 var(--fh); font-variant-numeric: tabular-nums; letter-spacing: .5px; }
+.k8d .k8d-at { font-size: 0.7812rem; opacity: .75; }
+.k8d .k8d-w { margin: 6px 0; font-size: 0.875rem; padding: 8px 10px; border-radius: 10px; border: 1px solid rgba(127,127,127,.25); }
+.k8d .k8d-w.live { border-color: var(--ok); } .k8d .k8d-w.stop { border-color: var(--bad); } .k8d .k8d-w.paper { border-color: var(--warn); }
+.k8d .k8d-l { list-style: none; margin: 4px 0; padding: 0; font-size: 0.875rem; }
+.k8d .k8d-l li { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 3px 0; border-top: 1px solid rgba(127,127,127,.2); }
+.k8d .k8d-s dd i { font-style: normal; font-size: 0.75rem; opacity: .7; }
+.k8d .k8d-s dd.red { color: var(--bad); } .k8d .k8d-s dd.hot { color: var(--warn); }
+.k8d .k8d-help { margin-top: 10px; padding: 8px 10px; border-radius: 10px; border: 1px solid rgba(var(--warn-rgb), .5); }
+.k8d .k8d-help ol { margin: 4px 0 4px 18px; padding: 0; font-size: 0.8438rem; } .k8d .k8d-help li { margin: 3px 0; white-space: normal; }
+/* day-kalshi Olympus 2: K8 first; the go-live checklist; history below */
+#k8sub b { font-weight: 800; color: var(--warn); } #k8sub b.live { color: var(--ok); } #k8sub b.bad { color: var(--bad); }
+.kgo h2 { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.kgo .kgo-n { font: 800 0.875rem/1 var(--fh); color: var(--warn); } .kgo .kgo-n.ok { color: var(--ok); }
+.kgo-l { list-style: none; margin: 6px 0; padding: 0; }
+.kgo-l li { border-top: 1px solid rgba(127,127,127,.2); }
+.kgo-l label { display: flex; gap: 10px; align-items: flex-start; min-height: 44px; padding: 8px 0; font-size: 0.875rem; cursor: pointer; }
+.kgo-l input { width: 22px; height: 22px; flex: 0 0 22px; margin: 1px 0 0; accent-color: var(--ok); }
+.kgo-l li i { display: block; font-style: normal; font-size: 0.75rem; opacity: .75; }
+.kgo-l li.on span { opacity: .9; } .kgo-l li.no i { color: var(--bad); opacity: 1; }
+.kgo-r { min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid rgba(127,127,127,.35); background: transparent; color: var(--txt); font: inherit; }
+.khist { margin: 28px 0 8px; font: 700 0.9375rem/1.3 var(--fh); letter-spacing: .04em; text-transform: uppercase; opacity: .85; }
+.khist span { text-transform: none; letter-spacing: 0; font-weight: 400; opacity: .8; }
+.oldhead { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin: 18px 0 8px; padding-top: 12px; border-top: 1px solid var(--dim2, rgba(127,127,127,.25)); }
+.oldhead h2 { margin: 0; font: 700 1rem/1.3 var(--fh); } .oldhead h2 span { font-weight: 400; font-size: 0.8125rem; opacity: .8; }
+/* the whole 44 px row is the link's tap target (Olympus 2 a11y) */
+.kh-l li, .kh-a li { position: relative; } .kh-l li a::after, .kh-a li a::after { content: ""; position: absolute; inset: 0; }
+.kh-l li a:focus-visible, .kh-a li a:focus-visible { outline: 2px solid var(--c, currentColor); outline-offset: 2px; }
+/* CLS (Olympus 2 PERF): the live-day box keeps its height before its first fill (the script fills it ~4 s in on a slow phone) */
+#k8d-x:empty { min-height: 27rem; } .k8d .k8d-at:empty { display: block; min-height: 2.9em; }
+#k8s-w:empty { min-height: 10rem; } #k8s-y:empty { min-height: 23rem; }
+/* A11Y (Olympus 2, FOR_kalshi.md): body text 15 px in rem (Dynamic Type grows it), short labels >= 13 px, no stacked opacity on muted text,
+   44 px link rows. One block at the end so the history above stays readable. */
+.top h1 { font-size: 1.5625rem; } .sub { font-size: .9375rem; }
+.note { font-size: .9375rem; } .wait p { font-size: .96875rem; } .wait p.muted { font-size: .9375rem; } .foot { font-size: .9375rem; }
+button, input, select { font-size: .9375rem; }
+.krw-g dt { font-size: .8125rem; opacity: 1; color: var(--mut); } .krw-f { font-size: .9375rem; opacity: 1; color: var(--mut); }
+.k8s-b { font-size: .9375rem; }
+.k8w-h { font-size: .9375rem; opacity: 1; }
+.k8w li { font-size: .9375rem; } .k8w li b { font-size: .9375rem; }
+.k8w li em.done { opacity: 1; color: var(--mut); }
+.k8w li.pp { font-size: .8125rem; opacity: 1; color: var(--mut); } .k8w li.pp b { font-size: .8125rem; }
+.k8w li i, .k8p li i { font-size: .8125rem; opacity: 1; color: var(--mut); }
+.k8w li.sk em { font-size: .8125rem; }
+.k8p li, .k8g li, .k8e-g, .k8e-v, .k8l { font-size: .9375rem; } .k8e-v b { font-size: .9375rem; }
+.k8e-g span:nth-child(3n) { font-size: .8125rem; opacity: 1; color: var(--mut); }
+.khub li span { font-size: .9375rem; opacity: 1; color: var(--mut); } .kh-b li { font-size: .9375rem; }
+.kh-l li > a, .kh-a li > a { display: flex; align-items: center; min-height: 2.75rem; }
+.k8d .k8d-lab { font-size: .9375rem; opacity: 1; color: var(--mut); } .k8d .k8d-at { font-size: .875rem; opacity: 1; color: var(--mut); }
+.k8d .k8d-w, .k8d .k8d-l, .k8d .k8d-help ol { font-size: .9375rem; }
+.k8d .k8d-s dd i { font-size: .8125rem; opacity: 1; color: var(--mut); }
+.kgo-l label { font-size: .9375rem; } .kgo-l li i { font-size: .8125rem; opacity: 1; color: var(--mut); }
+.khist span { opacity: 1; color: var(--mut); } .oldhead h2 span { font-size: .875rem; opacity: 1; color: var(--mut); }
+.k8d .k8d-at { font-size: .9375rem; }
+.oldhead h2 span, .khist span { font-size: .9375rem; }
+#body .wait ul.feat li { font-size: .9375rem; } code#step { font-size: .9375rem; }
+/* CLS: gate-nav.js wraps the back link in a 44 px row with a 6 px gap ~0.4 s in; keep that space from the first paint */
+main > a.olyback { display: flex; align-items: center; min-height: 44px; margin-bottom: 6px; }
+/* K8 TODAY (Olympus 2): the one-glance card at the top; space kept from the first paint (CLS) */
+.k8top { display: block; min-height: 15.5rem; }
+.k8t-r { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.k8t-r h2 { margin: 0; font: 700 1.0625rem/1.3 var(--fh); }
+.k8t-m { font: 800 .875rem/1 var(--fh); padding: 4px 8px; border-radius: 8px; border: 1px solid var(--warn); color: var(--warn); }
+.k8t-m.live { color: var(--ok); border-color: var(--ok); } .k8t-m.bad { color: var(--bad); border-color: var(--bad); }
+.k8t-age { margin-left: auto; font-size: .8125rem; color: var(--mut); } .k8t-age.old { color: var(--warn); }
+.k8t-n { margin: 8px 0 4px; font: 700 1rem/1.35 var(--fh); font-variant-numeric: tabular-nums; }
+.k8t-l { list-style: none; margin: 0; padding: 0; font-size: .9375rem; min-height: 7.2rem; }
+.k8t-l li { display: grid; grid-template-columns: 3.1rem minmax(0, 1fr) auto; gap: 8px; align-items: baseline; padding: 4px 0; border-top: 1px solid var(--dim2); }
+.k8t-l li.hd { display: block; border-top: 0; font-size: .8125rem; color: var(--mut); padding: 0 0 2px; }
+.k8t-l li em { font-style: normal; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+.k8t-l li.w em { color: var(--ok); } .k8t-l li.l em { color: var(--bad); } .k8t-l li.sk em { color: var(--warn); }
+.k8t-p { margin: 6px 0 2px; font-size: .9375rem; font-variant-numeric: tabular-nums; }
+.k8t-c { display: flex; align-items: center; justify-content: space-between; min-height: 44px; font-size: .9375rem; color: var(--txt); text-decoration: none; border-top: 1px solid var(--dim2); }
+.k8t-c b { color: var(--warn); }
+/* ===== Olympus 2 FX, OLYMPUS NIGHT (owner 2026-11-20 16:00 ET, the Jarvis app-switcher colours; replaces the cyan terminal look):
+   black base, cards #16131e -> #020204, violet outlines + glows, lavender highlights, bright gold ONLY as small live / active accents,
+   mint for a win, red for a loss. The engine's chosen look (inline vars) still wins. */
+:root[data-theme="kalshi"] {
+  --bg: #000000; --bg2: #16131e; --pr: 22, 19, 30; --txt: #ebe9f1; --mut: #898497; --dim: #0b0910; --dim2: #3e255e; --dim3: #4d2e76;
+  --c: #9d59ee; --c2: #7c3aed; --c3: #dacbf0; --cr: 157, 89, 238; --cr2: 77, 46, 118; --tint: #dacbf0;
+  --ok: #77db89; --bad: #ef4444; --warn: #ebbf4f; --ok-rgb: 119, 219, 137; --bad-rgb: 239, 68, 68; --warn-rgb: 235, 191, 79;
+  --gold: #f1c14b; --gold-rgb: 241, 193, 75; --lav: #dacbf0; --lav-rgb: 218, 203, 240; --vio: #9d59ee; --vio-rgb: 157, 89, 238;
+}
+:root[data-theme="kalshi"] body { background: radial-gradient(120% 55% at 50% -10%, rgba(var(--vio-rgb), .16), transparent 60%), #000000; }
+:root[data-theme="kalshi"] .top h1::after { background: linear-gradient(90deg, var(--gold), var(--vio), transparent); }
+/* glowing K8 cards: a violet edge and a soft violet glow on the night gradient */
+.k8top, .k8d, .k8s, .kgo { position: relative; border: 1px solid #462a6a; background: linear-gradient(180deg, #16131e, #020204);
+  box-shadow: 0 0 0 1px rgba(var(--vio-rgb), .12) inset, 0 10px 32px rgba(var(--vio-rgb), .16), 0 0 22px rgba(var(--lav-rgb), .05); }
+.k8top::before { content: ""; position: absolute; inset: 0 0 auto; height: 2px; border-radius: inherit; background: linear-gradient(90deg, transparent, var(--gold), var(--vio), transparent); opacity: .95; }
+.k8t-m { color: var(--lav); border-color: #4d2e76; box-shadow: 0 0 12px rgba(var(--vio-rgb), .3); }
+.k8t-m.live, #k8sub b.live { color: var(--gold); border-color: var(--gold); box-shadow: 0 0 14px rgba(var(--gold-rgb), .4); }
+.k8t-n, .k8d .k8d-big { color: #f4f1fa; text-shadow: 0 0 18px rgba(var(--vio-rgb), .45); }
+.k8t-l li.o em { color: var(--lav); } .k8t-c b, .kgo .kgo-n { color: var(--gold); } .kgo .kgo-n.ok { color: var(--ok); }
+/* the orb hero: its height is kept from the first paint */
+.k8fx { position: relative; height: 140px; margin: -2px 0 0; border-radius: var(--rs, 12px); overflow: hidden;
+  background: radial-gradient(70% 90% at 50% 60%, rgba(var(--vio-rgb), .18), transparent 70%), linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(77, 46, 118, .16)); }
+.k8fx canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+@media (prefers-reduced-motion: no-preference) {
+  .k8top::before { background-size: 200% 100%; animation: k8sheen 6s linear infinite; }
+  @keyframes k8sheen { from { background-position: 0 0; } to { background-position: 200% 0; } }
+}
+/* CLS: the K8 today card and its bet list keep their filled height (a heading line + 3 rows) */
+.k8top { min-height: 17.4rem; } .k8t-l { min-height: 8.6rem; }
+.k8t-n { min-height: 2.7em; }
+/* NIGHT labels (lead QA 2026-11-21): the header state word, the checklist count and the paper box were gold-brown on every theme.
+   Now lavender / violet; bright gold stays only on LIVE (a small accent). Uses the page's own --lav / --vio, never a theme slot. */
+#k8sub b { color: var(--lav, #dacbf0); } #k8sub b.live { color: var(--gold, #f1c14b); } #k8sub b.bad { color: var(--bad); }
+.k8t-c b, .kgo .kgo-n { color: var(--lav, #dacbf0); } .kgo .kgo-n.ok { color: var(--ok); }
+.k8d .k8d-w.paper { border-color: rgba(var(--vio-rgb, 157, 89, 238), .55); }

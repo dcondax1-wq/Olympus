@@ -158,8 +158,12 @@ def main() -> int:
         MA.ADAPTER_FACTORY = None
         os.environ.pop("LE_LIT_LEARNING", None)
         shutil.rmtree(tmp, ignore_errors=True)
-    ok = all(RESULTS)
-    print(f"\n{sum(RESULTS)}/{len(RESULTS)} passed" + ("" if ok else "  FAILURES"))
+    # 6. hand trades (day-redteam2 2026-11-20): NinjaTrader's own position files, tests/test_hand_hedge.py
+    print("hand trades (engine/hand_hedge.py):", flush=True)
+    from tests import test_hand_hedge
+    hand_ok = test_hand_hedge.main() == 0
+    ok = all(RESULTS) and hand_ok
+    print(f"\n{sum(RESULTS)}/{len(RESULTS)} passed" + (" + hand trades" if hand_ok else " (hand trades FAILED)") + ("" if ok else "  FAILURES"))
     return 0 if ok else 1
 
 

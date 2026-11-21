@@ -11,7 +11,7 @@
  *            localStorage 'oly.launcher.status'): green = running well, amber = needs a look, red = a problem, grey = not updated
  *            for 30 minutes, no dot = the app has no status card. A failed fetch keeps the last dot.
  *   links    phone (the site's own origin): the app's folder, "<app>/", in this tab. PC dashboard (localhost:8766 / web_next, which has no apps):
- *            the public site, https://demetrades2000-coder.github.io/nq-dashboard/<app>/, in a new tab.
+ *            the public site, https://dcondax1-wq.github.io/<app>/, in a new tab.
  *   recent   localStorage 'oly.launcher.recent' = ["oracle", ...], newest first, 4 kept.
  *   quality  LITE / reduced motion (ZenithFX when the page has it, else prefers-reduced-motion): no entrance animation, no glow sweep, no tilt.
  * Read-only: it only reads jarvis.json files and links to pages; it never posts, writes to a bot or touches an account.
@@ -20,7 +20,7 @@
   'use strict';
   if (window.OLYMPUS_LAUNCHER) return;
   var d = document, root = d.documentElement;
-  var PUBLIC = (function () { var o = get('oly.public'); if (o && /^https:\/\/[^ ]+\/$/.test(o)) return o; return 'https://demetrades2000-coder.github.io/nq-dashboard/'; })();   // the PC dashboard has no apps of its own: a site address saved as localStorage 'oly.public' overrides the default
+  var PUBLIC = (function () { var o = get('oly.public'); if (o && /^https:\/\/[^ ]+\/$/.test(o)) return o; return 'https://dcondax1-wq.github.io/'; })();   // the PC dashboard has no apps of its own: a site address saved as localStorage 'oly.public' overrides the default
   var RECENT_KEY = 'oly.launcher.recent', STATUS_KEY = 'oly.launcher.status', RECENT_MAX = 4, FAV_KEY = 'oly.launcher.fav', FAV_MAX = 12, PRESS_MS = 520, STATUS_TTL = 5 * 60 * 1000, GONE_TTL = 24 * 3600 * 1000, STALE_S = 30 * 60, FETCH_MS = 5000, PARALLEL = 4;
   var GROUPS = [['trading', 'Trading'], ['life', 'Life'], ['money', 'Money']];   // the old groups: only when olympus/doors.js did not load
   function doors() { var D = window.OLYMPUS_DOORS; return D && D.DOORS && D.DOORS.length ? D : null; }
@@ -51,16 +51,17 @@
     listState = 'loading';
     var left = 0, fin = function () { if (--left > 0) return; listState = window.OLYMPUS_APPS_LIST ? 'done' : 'failed'; var w = waiters; waiters = []; w.forEach(function (f) { try { f(); } catch (e) { /* */ } }); };
     var add = function (src) { left++; var s = d.createElement('script'); s.async = true; s.src = src; s.onload = fin; s.onerror = fin; (d.head || root).appendChild(s); };
-    if (!window.OLYMPUS_APPS_LIST) add(isPC ? '/js/next/apps-list.js?v=l8' : 'olympus/apps-list.js?v=l8');
-    if (!doors()) add(isPC ? '/js/next/doors.js?v=d7' : 'olympus/doors.js?v=d7');      // the four doors (same file on both sites)
+    if (!window.OLYMPUS_APPS_LIST) add(isPC ? '/js/next/apps-list.js?v=l10' : 'olympus/apps-list.js?v=l10');
+    if (!doors()) add(isPC ? '/js/next/doors.js?v=d12' : 'olympus/doors.js?v=d12');      // the four doors (same file on both sites)
     if (!left) { left = 1; fin(); }
   }
   function apps() {
     var L = window.OLYMPUS_APPS_LIST;
     if (!L || !L.length) return [];
-    var out = [];
-    for (var i = 0; i < L.length; i++) if (L[i].id !== 'zenith' && L[i].path) out.push(L[i]);
-    return out;
+    var out = [], D = doors(), FIRST = ['cities', 'kalshi', 'nq', 'jarvis', 'agency', 'business', 'planner'];   // owner 2026-11-20 17:00 ET: the 6 arenas first, then Planner
+    for (var i = 0; i < L.length; i++) if (L[i].id !== 'zenith' && L[i].path && !(D && D.retired && D.retired(L[i].id))) out.push(L[i]);   // retired: shown nowhere
+    var rank = function (a) { var k = FIRST.indexOf(a.id); return k < 0 ? FIRST.length : k; };
+    return out.map(function (a, i) { return [rank(a), i, a]; }).sort(function (x, y) { return x[0] - y[0] || x[1] - y[1]; }).map(function (x) { return x[2]; });
   }
 
   // ---------------------------------------------------------------- recent
@@ -130,7 +131,7 @@
 
   // ---------------------------------------------------------------- the sheet
   var CSS = [
-    '.oly-lbtn{display:inline-grid;grid-auto-flow:column;align-items:center;justify-content:center;gap:7px;min-width:40px;height:40px;padding:0 11px;border-radius:12px;cursor:pointer;color:var(--ink-2,var(--oly-th-n30, #cfc4b2));',
+    '.oly-lbtn{display:inline-grid;grid-auto-flow:column;align-items:center;justify-content:center;gap:7px;min-width:44px;height:44px;padding:0 11px;border-radius:12px;cursor:pointer;color:var(--ink-2,var(--oly-th-n30, #cfc4b2));',
     'background:var(--oly-th-n4, #1d1914);border:1px solid var(--oly-th-n8, #3a3228);font:700 12px/1 var(--oly-th-display, "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif);letter-spacing:.04em;transition:color .2s,border-color .2s}',
     '.oly-lbtn:hover,.oly-lbtn:focus-visible{color:var(--oly-th-n37, #f3ece0);border-color:var(--oly-th-a8, #c8a24a)}',
     '.oly-lbtn svg{width:18px;height:18px;display:block}.oly-lbtn .t{display:none}@media(min-width:900px){.oly-lbtn .t{display:inline}}',
@@ -259,9 +260,15 @@
       var fd = el('div', 'oly-fav'); fd.appendChild(el('h3', '', '\u2605 Favourites'));
       var fg = el('div', 'oly-gr'); fv.forEach(function (a) { fg.appendChild(tile(a, n++, false)); }); fd.appendChild(fg); frag.push(fd);
     }
-    var D = doors();
+    var D = doors(), AR = D && D.ARENAS ? D.ARENAS : [], isAr = function (id) { return !!(D && D.arena && D.arena(id === 'home' ? 'jarvis' : id)); };
+    if (AR.length) {                                           // owner 2026-11-20 17:00 ET: the 6 arenas first, everything else under More
+      var asec = el('section'); asec.setAttribute('data-group', 'arenas'); asec.appendChild(el('h3', '', 'Arenas'));
+      var agr = el('div', 'oly-gr'); AR.forEach(function (r) { var a = byId[r.id] || (r.id === 'jarvis' ? (byId.home || { id: 'jarvis', name: 'Jarvis', glyph: '\u0399', colour: '#9d59ee', group: 'life', purpose: r.line, path: 'jarvis/' }) : null); /* Jarvis has no app-list row (the big button opens it): its tile comes from doors.js */ if (!a) return; var t = tile(a, n++, false); st.tiles[a.id] = t; agr.appendChild(t); });
+      asec.appendChild(agr); frag.push(asec);
+      var mh = el('h3', 'oly-morehead', 'More'); frag.push(mh);
+    }
     (D ? D.DOORS.map(function (x) { return [x.id, x.title, x]; }) : GROUPS).forEach(function (g) {
-      var list = st.apps.filter(function (a) { return D ? D.doorOf(a.id) === g[0] : a.group === g[0]; });
+      var list = st.apps.filter(function (a) { return (D ? D.doorOf(a.id) === g[0] : a.group === g[0]) && !isAr(a.id); });
       if (!list.length && !(g[2] && g[2].items.length)) return;
       var sec = el('section'); sec.setAttribute('data-group', g[0]);
       if (g[2]) {                                              // a door: its heading opens the Doors page there, then its shortcuts

@@ -4,7 +4,7 @@ The owner's Kalshi bot ("Kalshi Edge v2") trades **real money** 24/7 on an **Ora
 `/home/ubuntu/kalshi`). It does not run on the Windows PC. Its own Claude chat, **"kalshi-server"**, also runs on that VM.
 The phone side is built and live:
 - the Jarvis Kalshi card;
-- the Kalshi page `https://demetrades2000-coder.github.io/nq-dashboard/kalshi/`;
+- the Kalshi page `https://dcondax1-wq.github.io/kalshi/`;
 - answers to "how's kalshi".
 
 All of them read one file: `kalshi.json` on the branch `main` of its own **public** repo

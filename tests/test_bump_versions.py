@@ -7,6 +7,10 @@
   d. workers: Jarvis jarvis-vN+1 with the old name first in OLD, phone root once (also for an app file with no ?v=), PC, Kalshi = 'kalshi-<tag>'
   e. tests that pin exact strings are updated (tag, CACHE line, OLD list start, caches.open); an ambiguous pin is reported, not changed
   f. a second run bumps nothing (already bumped since the base); --check exits 1 before and 0 after; a pre-bumped file is left alone
+  k. Kalshi (day-quality 2026-11-20): CACHE == 'kalshi-' + the ?v= of kalshi.css AND kalshi.js, always moved together, never double
+  l. a module-chain cascade (datacity: page -> city.js -> scene.js -> caps.js): --apply then --check on the REAL git diff passes
+     (a page whose only change is a ?v= the tool moved asks for no root cache bump)
+  m. the Gate's script array (b + 'olympus/x.js?v=o1', paths from the site root) is bumped like any other tag
     python -X utf8 -m unittest tests.test_bump_versions
 """
 from __future__ import annotations
@@ -247,6 +251,86 @@ class BumpVersions(unittest.TestCase):
     def test_i_the_real_tree_is_not_what_the_tests_touch(self):
         self.assertNotEqual(os.path.abspath(self.root), ROOT)
         self.assertTrue(self.root.startswith(tempfile.gettempdir()))
+
+    # ---- k. Kalshi: the pair and the cache move as one
+    def _kalshi(self):
+        return (read(self.root, "tools/web_public/kalshi/index.html"), read(self.root, "tools/web_public/kalshi/sw.js"))
+
+    def test_k1_kalshi_css_change_moves_js_and_cache_too(self):
+        code, out = run(self.root, "--apply", changed=["tools/web_public/kalshi/kalshi.css"])
+        html, sw = self._kalshi()
+        for want in ("kalshi.css?v=k18", "kalshi.js?v=k18"):
+            self.assertIn(want, html)
+            self.assertIn(want, sw)
+        self.assertIn("const CACHE = 'kalshi-k18';", sw)
+
+    def test_k2_kalshi_page_change_bumps_cache_and_pair_once(self):
+        code, out = run(self.root, "--apply", changed=["tools/web_public/kalshi/index.html"])
+        html, sw = self._kalshi()
+        self.assertIn("const CACHE = 'kalshi-k18';", sw)                                     # not k19: one bump
+        self.assertIn("'./kalshi.css?v=k18', './kalshi.js?v=k18'", sw)
+        self.assertIn("kalshi.js?v=k18", html)
+        self.assertIn("kalshi.css?v=k18", html)
+
+    def test_k3_cache_that_ran_ahead_pulls_the_pair_up_and_check_catches_it(self):
+        write(self.root, "tools/web_public/kalshi/sw.js", FILES["tools/web_public/kalshi/sw.js"].replace("kalshi-k17", "kalshi-k19"))
+        git(self.root, "commit", "-qam", "mis-bump")                                            # the base itself is out of step
+        code, out = run(self.root, "--check")
+        self.assertEqual(code, 1, out)
+        run(self.root, "--apply")
+        html, sw = self._kalshi()
+        self.assertIn("const CACHE = 'kalshi-k19';", sw)
+        self.assertIn("'./kalshi.css?v=k19', './kalshi.js?v=k19'", sw)
+        self.assertIn("kalshi.js?v=k19", html)
+
+    def test_k4_real_git_apply_twice_is_stable(self):
+        write(self.root, "tools/web_public/kalshi/kalshi.js", "// kalshi 2\n")
+        run(self.root, "--apply")
+        code, out = run(self.root, "--apply")
+        self.assertIn("nothing needs a bump", out)
+        code, out = run(self.root, "--check")
+        self.assertEqual(code, 0, out)
+        html, sw = self._kalshi()
+        self.assertIn("const CACHE = 'kalshi-k18';", sw)
+        self.assertIn("'./kalshi.css?v=k18', './kalshi.js?v=k18'", sw)
+
+    # ---- l. the datacity-style module chain
+    def test_l_cascade_then_check_on_the_real_diff(self):
+        root = make_site({"tools/web_public/dc/index.html": '<script type="module" src="./city.js?v=dc3"></script>\n',
+                          "tools/web_public/dc/city.js": "import './scene.js?v=dc5';\n",
+                          "tools/web_public/dc/scene.js": "import './caps.js?v=dc2';\nimport './towns.js?v=dc2';\n",
+                          "tools/web_public/dc/towns.js": "import './caps.js?v=dc2';\n",
+                          "tools/web_public/dc/caps.js": "export const caps = 1;\n"})
+        try:
+            write(root, "tools/web_public/dc/caps.js", "export const caps = 2;\n")
+            code, out = run(root, "--apply")
+            self.assertIn("./caps.js?v=dc3", read(root, "tools/web_public/dc/scene.js"))
+            self.assertIn("./towns.js?v=dc3", read(root, "tools/web_public/dc/scene.js"))        # towns.js was edited (its caps tag): bumped too
+            self.assertIn("./scene.js?v=dc6", read(root, "tools/web_public/dc/city.js"))
+            self.assertIn("./city.js?v=dc4", read(root, "tools/web_public/dc/index.html"))
+            code, out = run(root, "--check")                                                       # the git diff now holds index.html, city.js, ...
+            self.assertEqual(code, 0, out)
+            self.assertNotIn("app files without ?v=", out)
+            write(root, "tools/web_public/dc/index.html", read(root, "tools/web_public/dc/index.html").replace("</script>", "</script><p>new</p>"))
+            code, out = run(root, "--check")                                                       # a real page edit still asks for the root cache
+            self.assertEqual(code, 1, out)
+            self.assertIn("app files without ?v=: tools/web_public/dc/index.html", out)
+        finally:
+            shutil.rmtree(root, ignore_errors=True)
+
+    # ---- m. the Gate's script array
+    def test_m_gate_script_array_tags(self):
+        root = make_site({"tools/web_public/gate/index.html": "<script>var b = '../';\n['olympus/themes.js?v=o10', 'gate/gate.js?v=g9'].forEach(function (src) {});\n"
+                                                              "k.href = b + 'gate/gate.css?v=g11';</script>\n",
+                          "tools/web_public/gate/gate.js": "//g\n", "tools/web_public/gate/gate.css": "a{}\n",
+                          "tools/web_public/olympus/themes.js": "//t\n"})
+        try:
+            code, out = run(root, "--apply", changed=["tools/web_public/gate/gate.js", "tools/web_public/olympus/themes.js", "tools/web_public/gate/gate.css"])
+            g = read(root, "tools/web_public/gate/index.html")
+            for want in ("'gate/gate.js?v=g10'", "'olympus/themes.js?v=o10'", "'gate/gate.css?v=g12'"):
+                self.assertIn(want, g, out)
+        finally:
+            shutil.rmtree(root, ignore_errors=True)
 
 
 if __name__ == "__main__":

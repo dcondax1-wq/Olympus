@@ -93,7 +93,7 @@ def part_a():
         return
     src = open(MOD, encoding="utf-8").read()
     size = len(src.encode("utf-8"))
-    check(f"a. own code stays lean: core-visual.js {size:,} bytes (< 60 KB; three itself is vendored apart)", size < 60 * 1024, size)
+    check(f"a. own code stays lean: core-visual.js {size:,} bytes (< 64 KB; three itself is vendored apart; 60 -> 64 KB 2026-11-20 for the scroll-pause)", size < 64 * 1024, size)
     check("a. an ES module that exports mountCore(el, opts)", re.search(r"export function mountCore\s*\(\s*el\s*,", src) is not None)
     imports = re.findall(r"import\s*\(\s*['\"]([^'\"]+)['\"]", src)
     check("a. no libraries from a CDN, no network: the only imports are the vendored three and the OLYMPUS render core, relative",

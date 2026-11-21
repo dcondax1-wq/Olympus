@@ -21,7 +21,9 @@
   "research/writeups/account-4-2026-11-14.md",
   "research/writeups/atlas-blitz-edge-2026-10-30.md",
   "research/writeups/atlas-edge-2026-10-30b.md",
+  "research/writeups/atlas-fills-2026-11-20.md",
   "research/writeups/atlas-funded.md",
+  "research/writeups/atlas-risk-real-fills-2026-11-20.md",
   "research/writeups/atlas-v2.md",
   "research/writeups/atlas.md",
   "research/writeups/bias-filters.md",
@@ -30,6 +32,7 @@
   "research/writeups/calendar-effects.md",
   "research/writeups/cross-market-context.md",
   "research/writeups/diversifier-search.md",
+  "research/writeups/edge-health-2026-11-17.md",
   "research/writeups/eval-cost.md",
   "research/writeups/eval-game.md",
   "research/writeups/funded-path.md",
@@ -55,14 +58,22 @@
   "research/writeups/loss-anatomy.md",
   "research/writeups/loss-cut-eval-pass.md",
   "research/writeups/management.md",
+  "research/writeups/mffu-rules-audit-2026-11-17.md",
   "research/writeups/millionaire-plan-2026-11-13.md",
   "research/writeups/mind.md",
   "research/writeups/mnq-vs-nq-feed.md",
+  "research/writeups/money-ideas-2026-11-20.md",
   "research/writeups/monte-carlo-evals.md",
   "research/writeups/moving-averages.md",
+  "research/writeups/nq-live-reliability-2026-11-20.md",
+  "research/writeups/nq-speed-fills-2026-11-20.md",
   "research/writeups/parameter-robustness.md",
   "research/writeups/payout-policy-funded25-2026-11-17.md",
   "research/writeups/payout-policy.md",
+  "research/writeups/rapid-launch-2026-11-20.md",
+  "research/writeups/rapid50-ready-2026-11-20.md",
+  "research/writeups/redteam-live-2026-11-20.md",
+  "research/writeups/redteam-live2-2026-11-20.md",
   "research/writeups/retail-standalone.md",
   "research/writeups/risk-sizing.md",
   "research/writeups/risk-summary.md",
@@ -83,6 +94,7 @@
   "research/writeups/uprisk.md",
   "research/writeups/vwap-volume-profile.md",
   "research/writeups/what-to-expect.md",
+  "research/writeups/win-loss-anatomy-2026-11-18.md",
   "research/writeups/win-rate-and-sessions.md",
   "tools/web_public/arena/",
   "tools/web_public/ares/",
@@ -739,7 +751,7 @@
    "tags": [
     "rejected"
    ],
-   "title": "The graveyard: 36 lists of dead ends",
+   "title": "The graveyard: 51 lists of dead ends",
    "short": "Many ideas were tested properly and dropped. Before you suggest a new strategy idea, search here first.",
    "body": [
     "Do not redo it unless you have a genuinely new idea.",
@@ -2179,7 +2191,7 @@
     "3. A white or black screen means the page did not load. Delete the icon and add it again from Safari.",
     "4. Voice tip: Settings, then Accessibility, then Spoken Content, then Voices, then Ava (Premium). Download it and Jarvis sounds better.",
     "5. Each Home Screen app keeps its own storage, so connect the Planner, your key and Obsidian inside Jarvis once.",
-    "Main page: https://demetrades2000-coder.github.io/nq-dashboard/ (Jarvis is at /jarvis/)."
+    "Main page: https://dcondax1-wq.github.io/ (Jarvis is at /jarvis/)."
    ],
    "src": [
     "docs/CLAUDE_REFERENCE.md",
@@ -2516,6 +2528,26 @@
    ]
   },
   {
+   "id": "l-atlas-fills-2026-11-20",
+   "kind": "learned",
+   "tags": [
+    "learned"
+   ],
+   "title": "ATLAS real fills - why its NinjaTrader entries fill ~11 ticks worse than the...",
+   "short": "ATLAS enters with a MARKET order at the 5m open right after its signal bar closes; the order leaves 3-5 s after the open.",
+   "body": [
+    "A finding, nothing changed, 2026-11-20.",
+    "Its 3 real fills were 10 / 12 / 16 ticks past that open (the backtest counts 1). Not a timestamp mismatch (the backtest re-run on the PC's own bars has the bot's exact entries), not book depth (2 micros; the NY pre-market fill was as bad as the London ones), not a stop order.",
+    "It is price moving in the first seconds after a 5m close, in the trade's direction, then coming back.",
+    "At 10 ticks a side the funded 25K still makes $512 / $404 a month (Jan-Jun / Jul-Oct like; $588 / $494 at 1 tick) but the chance of losing it in 6 months from today's account goes 7.7 -> 17.7% / 9.5 -> 23.0%; 2021-25 PF 1.06 -> 0.80. Rapid 25K: LIT + ATLAS $1,878 / $753 a month at 10 ticks vs Zlarior alone $224 / $194.",
+    "Limit entries, a 1-minute delay, fast-bar skips, member hours, a London pause: all fail.",
+    "Words used here: [[pf]], [[micro]]."
+   ],
+   "src": [
+    "research/writeups/atlas-fills-2026-11-20.md"
+   ]
+  },
+  {
    "id": "l-atlas-funded",
    "kind": "learned",
    "tags": [
@@ -2530,6 +2562,24 @@
    ],
    "src": [
     "research/writeups/atlas-funded.md"
+   ]
+  },
+  {
+   "id": "l-atlas-risk-real-fills-2026-11-20",
+   "kind": "learned",
+   "tags": [
+    "learned"
+   ],
+   "title": "ATLAS funded 25K at real fills",
+   "short": "At 10 ticks a side (ATLAS's real fills) the funded 25K from today's $887 room makes $503 / $402 / $19 a month (Jan-Jun / Jul-Oct / 2021-25-like) and is lost in 6 months 17.6 / 21.7 / 98.8% of the time.",
+   "body": [
+    "A finding, nothing changed, 2026-11-20.",
+    "Risking 40% of the room instead of 60% gives $527 / $393 / $16 and 11.0 / 14.0 / 98.2% lost, first payout 3-8 trading days later: it passes the bar. The owner's keep-trading YES is right (the old $100 stop loses 20.3 / 23.5%).",
+    "Asking at $1,000 passes narrowly on its own (16.0 / 20.7%) but adds under 1 point once room 40% is in and pays later. A 4-week pause costs $34-55 a month and is no safer; stopping is $0. Trading 1 micro for 5 weeks also passes (12.7 / 18.9%). Rapid 25K: ATLAS $250 still adds $609-1,662 a month at 10 ticks.",
+    "Words used here: [[micro]]."
+   ],
+   "src": [
+    "research/writeups/atlas-risk-real-fills-2026-11-20.md"
    ]
   },
   {
@@ -2675,6 +2725,23 @@
    ],
    "src": [
     "research/writeups/diversifier-search.md"
+   ]
+  },
+  {
+   "id": "l-edge-health-2026-11-17",
+   "kind": "learned",
+   "tags": [
+    "learned"
+   ],
+   "title": "Edge health, 2026-11-17",
+   "short": "tools/edgehealth.py -> research/lab/edgehealth.json: a GREEN / AMBER / RED light from LIT's last 40 sessions against the 2026 Jan-Jun and 2021-25 spreads.",
+   "body": [
+    "A finding, nothing changed, 2026-11-17.",
+    "GREEN on Nov 17 on data 11 days old (TradingView to Oct 16, NinjaTrader bars to Nov 6, 6 sessions missing); the 3 newest weeks made about -1R to -1.8R. No market-weather feature predicts the edge; on Jul-Oct the light was RED 8.6% of days and that RED was a false alarm.",
+    "Buy rule: GREEN buy, AMBER wait for the next payout, RED do not buy. The bots trade the same whatever the light says."
+   ],
+   "src": [
+    "research/writeups/edge-health-2026-11-17.md"
    ]
   },
   {
@@ -3150,6 +3217,24 @@
    ]
   },
   {
+   "id": "l-mffu-rules-audit-2026-11-17",
+   "kind": "learned",
+   "tags": [
+    "learned"
+   ],
+   "title": "MFFU rules audit (2026-11-17)",
+   "short": "78 MFFU help-center articles and the plan pages checked against what the bots do (values in research/lit/mffurules.json).",
+   "body": [
+    "A finding, nothing changed, 2026-11-17.",
+    "Hedging across accounts, max contracts, EOD trailing max loss, daily loss, flat time, holiday half-days, Rapid eval consistency, payouts and account limits are enforced.",
+    "Fixed: the Rapid funded tier-1 news window had no safety margin and no December / 2027 CPI and jobs dates, and inactivity could cost the ATLAS 25K funded account all its profits with no warning. Missing: no guard for the 2% CME price-limit rule (rare; stand aside on crash days).",
+    "Words used here: [[consistency]]."
+   ],
+   "src": [
+    "research/writeups/mffu-rules-audit-2026-11-17.md"
+   ]
+  },
+  {
    "id": "l-millionaire-plan-2026-11-13",
    "kind": "learned",
    "tags": [
@@ -3206,6 +3291,22 @@
    ]
   },
   {
+   "id": "l-money-ideas-2026-11-20",
+   "kind": "learned",
+   "tags": [
+    "learned"
+   ],
+   "title": "Money ideas (2026-11-20, night-moneyideas)",
+   "short": "Ranked by $ a month per hour of the owner's time, at his real MFFU prices: answer 4 open Decide cards (about +$1,650 a month in a Jul-Oct 2026-like market, about +$34 in a 2021-25-like one); the 5th funded slot must be the Rapid EOD 50K, never a 2nd...",
+   "body": [
+    "A finding, nothing changed, 2026-11-20.",
+    "Built: tools/money/moneybook.py, kalshibankroll.py."
+   ],
+   "src": [
+    "research/writeups/money-ideas-2026-11-20.md"
+   ]
+  },
+  {
    "id": "l-monte-carlo-evals",
    "kind": "learned",
    "tags": [
@@ -3236,6 +3337,41 @@
    ],
    "src": [
     "research/writeups/moving-averages.md"
+   ]
+  },
+  {
+   "id": "l-nq-live-reliability-2026-11-20",
+   "kind": "learned",
+   "tags": [
+    "learned"
+   ],
+   "title": "NQ live bot reliability",
+   "short": "Since the 50K eval started only 2 of 7 backtest trades reached the account.",
+   "body": [
+    "A finding, nothing changed, 2026-11-20.",
+    "Every cause was traced in the code. Fixed - the audit's \"no record = missed\" (now \"unknown\", Oct 28 WAS traded), a hot-added account booking a trade it never took (Zlarior 25K #2, -$129.40 + a CLOSEPOSITION on Nov 17), an update/restart while ATLAS holds a trade.",
+    "New alarms - bot on but not polling / feed 2 bars behind -> phone push within 2 minutes (was up to 15-30 min); MISSED TRADE with its reason at once (was after 16:05 or never). Every \"NOT routed\" line now reaches the nightly verdict, the ZEUS review and the PC's day files.",
+    "Timing - the order leaves 3-5 s after the fill bar opens (2 s is the poll offset); a built-OFF switch polls on NinjaTrader's first tick instead. Fills - Zlarior 3 ticks worse than its open (1 trade), ATLAS 9 / 11 / 15 ticks worse (3 trades) vs 1 tick in the backtests."
+   ],
+   "src": [
+    "research/writeups/nq-live-reliability-2026-11-20.md"
+   ]
+  },
+  {
+   "id": "l-nq-speed-fills-2026-11-20",
+   "kind": "learned",
+   "tags": [
+    "learned"
+   ],
+   "title": "NQ bot speed and fills",
+   "short": "An entry leaves ~2.65 s after the fill bar opens - 2.0 s is the poll offset by design, ~0.5 s the bot's poll (1m bars 240 ms, 5m bars 155 ms, LIT 62 ms), ~0.15 s NinjaTrader / broker; the ledger's 3-5 s stamp is taken after the fill + bracket.",
+   "body": [
+    "A finding, nothing changed, 2026-11-20.",
+    "Patch 1 (parse only the appended tail of the bar file) -68 ms, patch 2 (history cut to 150 days before the per-poll merges; LIT / ATLAS read <= ~70) -193 ms, together 493 -> 219 ms median, identical decisions.",
+    "Fast entry ON - same trades, order 2 s earlier; worth $0 to ~$160 a month depending on the unknown price path in the first seconds, so no card. Fills - ATLAS 10 / 12 / 16 ticks past the open, Zlarior 4: almost all of it timing, ~1 tick spread."
+   ],
+   "src": [
+    "research/writeups/nq-speed-fills-2026-11-20.md"
    ]
   },
   {
@@ -3290,6 +3426,77 @@
    ],
    "src": [
     "research/writeups/payout-policy.md"
+   ]
+  },
+  {
+   "id": "l-rapid-launch-2026-11-20",
+   "kind": "learned",
+   "tags": [
+    "learned"
+   ],
+   "title": "Rapid EOD 25K launch check",
+   "short": "MFFU's help center (read 2026-11-20) = the code for the Rapid EOD 25K with DLL - $1,500 target, $1,000 EOD trailing floor locking at +$100, DLL $500 = a soft pause (resets 6 PM ET; the bot's day also starts 18:00 ET), 2 minis / 20 micros, 30% best day...",
+   "body": [
+    "A finding, nothing changed, 2026-11-20.",
+    "At ATLAS's real fills (10 ticks a side), LIT + ATLAS makes $1,883 / $800 a month (Jan-Jun / Jul-Oct-like; -$50 2021-25-like) vs LIT alone $221 / $191 and ATLAS alone $707 / $141.",
+    "Eval passes in 80-86% of runs within 60 trading days, median 33 / 26 days; first payout median Feb 10 / Feb 18 2027 (middle half Jan 20-Mar 16 / Jan 22-Apr 13); 12% / 26% of runs lose the first Rapid before any payout; 6 months pays $11,428 / $4,945 before fees.",
+    "A full ATLAS stop at real fills overshoots its sized $ by up to ~36% (tight stops, many micros): days under -$500 1.1 per 100 traded days Jan-Jun-like -> MFFU's soft pause (never a fail). Sizing on a 10-tick stop makes that 0 and cuts the funded loss 27.2 -> 24.0% / 38.0 -> 34.5% for -$141 / -$31 a month.",
+    "Words used here: [[micro]]."
+   ],
+   "src": [
+    "research/writeups/rapid-launch-2026-11-20.md"
+   ]
+  },
+  {
+   "id": "l-rapid50-ready-2026-11-20",
+   "kind": "learned",
+   "tags": [
+    "learned"
+   ],
+   "title": "Rapid EOD 50K readiness",
+   "short": "At ATLAS's real fills (10 ticks a side, 1,000 paths) the Rapid EOD 50K with LIT + ATLAS $500 makes $5,093 / $2,295 a month (Jan-Jun / Jul-Oct-like; -$89 2021-25-like) vs a 2nd Rapid 25K $1,883 / $800; LIT alone on the 50K $803 / $791, ATLAS alone...",
+   "body": [
+    "A finding, nothing changed, 2026-11-20.",
+    "Sizing ATLAS on a 10-tick stop costs 3% / 1% ($4,944 / $2,274) and cuts the funded loss 22.7 -> 19.4% / 26.6 -> 22.7%, passing the pre-registered bar.",
+    "Eval passes in 92-94% of runs, median 22-23 trading days; first payout median 40 / 48 trading days after the buy (middle half 29-57 / 33-73); 9-16% of runs lose the first 50K before any payout; 6 months pays $29,870 / $13,858 before fees. moneybook.nextbuy's ranking re-set to the real-fill values (50K $2,295 vs 25K...",
+    "MFFU 50K rules (help center 2026-11-20) = engine presets: $3,000, $2,000 EOD locking at +$100, 3 / 30, 30% eval, 4 days, funded T1 ban, $2,100 buffer, $500 since the last, $500 min, 90%, DLL version $1,000 soft pause = the bot's own day stop. The plan page shows 4 / 40 funded in one row: the code keeps 30 (safe)."
+   ],
+   "src": [
+    "research/writeups/rapid50-ready-2026-11-20.md"
+   ]
+  },
+  {
+   "id": "l-redteam-live-2026-11-20",
+   "kind": "learned",
+   "tags": [
+    "learned"
+   ],
+   "title": "Red team of tonight's live code (2026-11-20)",
+   "short": "Independent second pair of eyes on git log 3848045b..cab5247c (combo50k hooks, fast alarm, fast entry, fill audit, multiaccount join-time fix, autoupdate flat check, notify / trade alerts, phonelink, remotectl controlsource, selfheal, accountbox).",
+   "body": [
+    "A finding, nothing changed, 2026-11-20.",
+    "Found and fixed - a phone 'Start trading' that re-armed after the owner's STOP, an old remote stop that could stop Friday's bot, a false 'not polling' push after every START / Re-arm, an alarm storm with no limit that could also eat ntfy's daily room the trade alerts need; the hourly self-heal resetting / moving...",
+    "Nothing found that stops the bot, blocks a poll or slows an order."
+   ],
+   "src": [
+    "research/writeups/redteam-live-2026-11-20.md"
+   ]
+  },
+  {
+   "id": "l-redteam-live2-2026-11-20",
+   "kind": "learned",
+   "tags": [
+    "learned"
+   ],
+   "title": "Red team 2 of the live bot (2026-11-20)",
+   "short": "MFFU does not auto-close at a CME half-day halt (Thanksgiving 11-26 13:00 ET, 11-27 and 12-24 13:15 ET) and the bot's own flat at halt - 5 min runs only while the bot runs; a STOP, crash or restart without resume left a trade open into the halt = the...",
+   "body": [
+    "A finding, nothing changed, 2026-11-20.",
+    "New engine/fastalarm haltopen rings the phone from 10 min before the halt (bot stopped) or 4 min (bot running, its close did not land). New nostop rings when the bot is stopped and a real account holds an entry whose bracket never went out (restart between fill and bracket).",
+    "Christmas / New Year closures, every MFFU rule (16:10, contracts, Rapid $500 DLL, news, best day, floor) and the day-kalshi diff checked fine."
+   ],
+   "src": [
+    "research/writeups/redteam-live2-2026-11-20.md"
    ]
   },
   {
@@ -3668,6 +3875,25 @@
    ],
    "src": [
     "research/writeups/what-to-expect.md"
+   ]
+  },
+  {
+   "id": "l-win-loss-anatomy-2026-11-18",
+   "kind": "learned",
+   "tags": [
+    "learned"
+   ],
+   "title": "Why we win, why we lose (2026-11-18)",
+   "short": "And why they win.",
+   "body": [
+    "A finding, nothing changed, 2026-11-18.",
+    "I expect all of our strategies to be better.\" Every trade of the repo's own backtests (costs in) was taken apart - Zlarior 631 (run litlive, 2026 on 1m), ATLAS 1,288 account trades, BLITZ 2,198 - with MAE / MFE in R and $ and the minutes to each, exit, session, weekday, VIX band, ranges, gaps, prior-day levels...",
+    "Losers mostly never worked (Zlarior 62% of 2026's lost $, ATLAS 58%, BLITZ 72%); real shake-outs are rare (a 50% wider stop would have won 0-9% of Zlarior / ATLAS stop-outs); nothing known at the entry separates losers from winners better than chance; a pre-declared careful-human checklist would have skipped as...",
+    "Four rules (Zlarior trend-pullback x1.25 and checklist skip, ATLAS London-open x1.25 and checklist skip) all fail the adopt bar. Nothing changes.",
+    "Words used here: [[vix-band]]."
+   ],
+   "src": [
+    "research/writeups/win-loss-anatomy-2026-11-18.md"
    ]
   },
   {

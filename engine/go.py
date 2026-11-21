@@ -581,18 +581,8 @@ def step_arm(cfg, phrase, dry=False, open_page=True) -> int:
     if bad:
         print(f" [FIX] {bad}. Nothing is armed.")
         return 1
-    added = False
-    if not env_has_live():
-        add_env_live()
-        added = True
-    stale = server_up() and server_stale()
-    if server_up() and (added or env_newer_than_server() or stale):
-        print("     restarting the bot server so it runs the new version" if stale and not added else
-              "     restarting the bot server so it reads the live switch")
-        stop_server()
-    if not server_up() and not start_server():
-        print(' [FIX] The server did not start in 2 minutes. Double-click HEALTH_CHECK.bat (the server runs hidden).')
-        return 1
+    # every account is armed BEFORE any server (re)start below (2026-11-21 Rapid arm bug): a fresh server resumes the bot
+    # from its autostart record at boot (server.py _autostart_resume) and the bot reads these files then
     rb = arm_b(cfg["atlas"])
     print(f"     25K (ATLAS): {'armed' if rb.get('ok') else 'NOT armed: ' + str(rb.get('error'))[:160]}")
     try:                                   # the Rapid EOD (engine/rapid.py): armed only here, after the typed phrase
@@ -609,9 +599,29 @@ def step_arm(cfg, phrase, dry=False, open_page=True) -> int:
             print(f"     {ln}")
     except Exception as e:
         print(f"     Added accounts: NOT armed ({e.__class__.__name__}: {e})")
+    added = False
+    if not env_has_live():
+        add_env_live()
+        added = True
+    stale = server_up() and server_stale()
+    if server_up() and (added or env_newer_than_server() or stale):
+        print("     restarting the bot server so it runs the new version" if stale and not added else
+              "     restarting the bot server so it reads the live switch")
+        stop_server()
+    if not server_up() and not start_server():
+        print(' [FIX] The server did not start in 2 minutes. Double-click HEALTH_CHECK.bat (the server runs hidden).')
+        return 1
     from . import ninjatrader
     wm = ["--write-mode", cfg["write_mode"]] if cfg.get("write_mode") else []
-    rc = ninjatrader.main(["--start", "--account", cfg["lit"], "--confirm", phrase, *wm])
+    start = ["--start", "--account", cfg["lit"], "--confirm", phrase, *wm]
+    if bot_running():                      # the (re)started server resumed the bot by itself, without the phrase: restarted
+        print("     the bot server resumed the bot by itself: restarting it so every account armed above joins")
+        ninjatrader.main(["--stop"])
+    rc = ninjatrader.main(start)
+    if rc and bot_running():               # its own resume won the race (it waits for NinjaTrader): once more, with the phrase
+        print("     the bot server resumed the bot by itself meanwhile: restarting it once with the phrase")
+        ninjatrader.main(["--stop"])
+        rc = ninjatrader.main(start)
     if rc:
         print(" [FIX] The bot did not start (see the lines above). Send Claude a photo of this window.")
         return 1
@@ -723,7 +733,7 @@ def run(dry=False, inp=input, py=sys.executable, pull=True) -> int:
         print(ln)
     print("     Check each name against NinjaTrader's Accounts tab (the phrase arms every account listed here).")
     print("     Typing the line also lets the bot come back by itself after a restart (PC on + NinjaTrader connected);")
-    print("     the kill switch or STOP BOT turns that off.")
+    print("     STOP BOT keeps it stopped until you start it again; the kill switch turns that off for good.")
     phrase = typed_phrase(ask(" Type  I ACCEPT LIVE RISK  then Enter (anything else stops here, nothing armed)", None, inp))
     return step_arm(cfg, phrase, dry)
 
@@ -919,6 +929,8 @@ def status(state=None, connected=None, feed=None) -> dict:
     probs = verify_routes(lit, atlas, state=st or {}, b=b) if running and not names_bad else []
     sims_ok = all(sp.values())
     arm_miss = ([] if live else ["live switch off"]) + ([] if armed_b else ["25K not armed"])
+    new = unarmed_added()                  # a Rapid / an engine.accounts row added DISARMED: red until the phrase arms it
+    arm_txt = "; ".join(arm_miss + [f"{x} not armed" for x in new])
     run_bad = running and (probs or names_bad)
     steps = [
         {"key": "nt", "label": "NinjaTrader connected", "done": nt is True, "action": "nt", "button": "Open NinjaTrader",
@@ -938,9 +950,10 @@ def status(state=None, connected=None, feed=None) -> dict:
          "needs": ["nt", "feed"], "detail": "both Sim101 roundtrips passed" if sims_ok else
          "a 1-micro test order on Sim101, about 1 minute, market open only"
          + ("" if market_open() else " (the market is closed now)")},
-        {"key": "armed", "label": "Armed", "done": not arm_miss, "action": "arm", "button": "Arm and start",
+        {"key": "armed", "label": "Armed", "done": not arm_txt, "action": "arm", "button": "Arm and start",
          "needs": ["nt", "feed", "accounts", "setup", "sims"],
-         "detail": "live switch on, 25K armed" if not arm_miss else "; ".join(arm_miss) + " (you type I ACCEPT LIVE RISK)"},
+         "detail": "live switch on, 25K armed" if not arm_txt else arm_txt + (
+             " (stop the bot, then Start trading and type I ACCEPT LIVE RISK)" if running else " (you type I ACCEPT LIVE RISK)")},
         {"key": "running", "label": "Running and routes verified", "done": bool(running and not probs and not names_bad),
          "action": "stop" if run_bad else "arm", "button": "Stop the bot" if run_bad else "Start",
          "needs": [] if run_bad else ["nt", "feed", "accounts", "setup", "sims"],
@@ -954,8 +967,9 @@ def status(state=None, connected=None, feed=None) -> dict:
     say = " · ".join([f"Zlarior → 50K {lit or '(not set)'}", f"ATLAS → 25K {atlas or '(not set)'}",
                       "both armed" if not arm_miss else "ATLAS armed, live switch off" if armed_b else
                       "live switch on, ATLAS not armed" if live else "not armed",
-                      ("running" if not run_bad else "running, wrong set-up") if running else "stopped"])
-    why = None if running else resume_problem(cfg, b=b, live=live)
+                      ("running" if not run_bad else "running, wrong set-up") if running else "stopped"]
+                     + ([f"{', '.join(new)} NOT armed"] if new else []))
+    why = None if running else resume_problem(cfg, b=b, live=live, new=new)
     try:
         blitz = blitz_status()                     # the BLITZ · 25K slot (account C, off by default)
     except Exception as e:
@@ -979,10 +993,10 @@ CLOCK_STEPS = ("On the PC: Windows Settings > Time & language > Date & time: tur
                "then press \"Sync now\".")
 
 
-def resume_problem(cfg=None, optin=None, b=None, live=None) -> str | None:
+def resume_problem(cfg=None, optin=None, b=None, live=None, new=None) -> str | None:
     """Why "Start trading" needs the typed phrase (None = it does not): the auto-resume opt-in (data/auto_resume.json, made
     when the owner typed I ACCEPT LIVE RISK at a start) valid for exactly the saved 50K, the live switch on, ATLAS's 25K
-    armed."""
+    armed, and no added account (a Rapid, an engine.accounts row) still waiting for the phrase (new = unarmed_added())."""
     from . import autoresume
     cfg = _read(CFG) if cfg is None else cfg
     lit, atlas = _names(cfg)
@@ -998,7 +1012,30 @@ def resume_problem(cfg=None, optin=None, b=None, live=None) -> str | None:
     b = _b() if b is None else b
     if str(b.get("account") or "").strip() != atlas or b.get("armed") is not True:
         return "ATLAS's 25K is not armed"
+    new = unarmed_added() if new is None else new
+    if new:
+        return f"{', '.join(new)} added but not armed yet"
     return None
+
+
+def unarmed_added() -> list:
+    """The accounts added with ADD_ACCOUNT / the account box / engine.accounts (a Rapid slot, an engine.accounts row) that are
+    real, on and NOT armed yet: only step_arm (the typed phrase) arms them, so "Start trading" asks for the phrase instead
+    of starting without them (2026-11-21: Start trading resumed the bot without the phrase and the new Rapid EOD 25K stayed
+    'refused: start config is not armed'). Labels with the Name masked to its last 4 ("Rapid EOD 25K ..6020"). Never raises."""
+    try:
+        from . import account_cli
+        out = []
+        for r in account_cli.inventory():
+            if r.get("role") not in ("rapid", "extra") or r.get("sim") or r.get("enabled", True) is False:
+                continue
+            if (r["role"] == "extra" and not r.get("cli")) or r.get("armed") is True:
+                continue                   # an old multi_account row the phrase never arms / already armed
+            lbl = account_cli.PLANS.get(r.get("plan"), {}).get("label") or "added account"
+            out.append(f"{lbl}{' funded' if r.get('stage') == 'funded' else ''} ..{str(r['name'])[-4:]}")
+        return out
+    except Exception:
+        return []
 
 
 def start_body(cfg) -> dict:
@@ -1204,14 +1241,16 @@ def step_auto(cfg, phrase="", py=sys.executable, after_update=False, sleep=time.
         _note("running", f"Running: Zlarior → 50K {lit} · ATLAS → 25K {atlas}.")
         return 0
     if phrase != LIVE_PHRASE:
-        _note("arm", f"Type I ACCEPT LIVE RISK once to arm both accounts ({why}).", need="phrase")
+        _note("arm", f"Type I ACCEPT LIVE RISK once to arm every account ({why}).", need="phrase")
         return 3
-    _note("arm", "Arming and starting: Zlarior → 50K, ATLAS → 25K")
+    _note("arm", "Arming and starting: Zlarior → 50K, ATLAS → 25K" + "".join(f", {x}" for x in unarmed_added()))
     rc = step_arm(cfg, phrase, open_page=False)
     if rc:
         _note("arm", "Arming did not finish (see the lines below). Press Start trading to try again.")
         return rc
-    _note("running", f"Running: Zlarior → 50K {lit} · ATLAS → 25K {atlas}.")
+    left = unarmed_added()                 # the phrase was typed but an added account could not be armed: said, never silent
+    _note("running", f"Running: Zlarior → 50K {lit} · ATLAS → 25K {atlas}."
+          + (f" NOT armed, so NOT trading: {', '.join(left)} (see the lines below)." if left else ""))
     return 0
 
 

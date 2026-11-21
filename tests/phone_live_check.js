@@ -31,16 +31,18 @@ const srv = http.createServer((q, s) => {
   try {
     const p = await b.newPage({ viewport: { width: 390, height: 900 }, isMobile: true, hasTouch: true });
     p.on('pageerror', (e) => errors.push(e.message.slice(0, 200)));
-    await p.route('https://api.github.com/**', (r) => { apiHits++; r.fulfill({ status: 200, contentType: 'application/json',
-      headers: { 'access-control-allow-origin': '*', 'access-control-expose-headers': 'x-ratelimit-remaining, x-ratelimit-reset', 'x-ratelimit-remaining': '55', 'x-ratelimit-reset': String(T + 3600) },
-      body: JSON.stringify(LIVE) }); });
-    await p.route('https://raw.githubusercontent.com/**', (r) => r.fulfill({ status: 500, body: 'raw should not be needed' }));
+    // the PC's status post through ntfy (pc_feed.js) is live.js's ONE source (dogfood 2026-11-20: the old GitHub live.json is no longer asked)
+    await p.route('**/status_feed.json', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ntfy: 'https://ntfy.sh', topic: 'le-phone-check-0000' }) }));
+    await p.route('https://ntfy.sh/le-phone-check-0000/**', (r) => { apiHits++; r.fulfill({ status: 200, contentType: 'application/x-ndjson',
+      headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ event: 'message', time: LIVE.t, message: JSON.stringify(LIVE) }) + '\n' }); });
+    await p.route('https://api.github.com/**', (r) => r.fulfill({ status: 500, body: 'the old GitHub feed must not be asked' }));
+    await p.route('https://raw.githubusercontent.com/**', (r) => r.fulfill({ status: 500, body: 'the old GitHub feed must not be asked' }));
     await p.goto(`http://127.0.0.1:${port}/#/today`);
     await p.waitForFunction(() => document.body.innerText.includes('LIVE VERSION A'), null, { timeout: 20000 }).then(() => step('Home shows live.json A (verdict)', true), () => step('Home shows live.json A (verdict)', false));
     const a = await p.evaluate(() => document.body.innerText);
     step('Home: $ to go from live.json A ($2,500), not data.json ($2,900)', a.includes('2,500') && !a.includes('2,900'), a.match(/To \+\$3,000[\s\S]{0,40}/)?.[0]);
     const chipT = await p.evaluate(() => document.getElementById('liveChip')?.textContent || '');
-    step('header chip "live · N s ago"', /live · \d+ s ago/.test(chipT), chipT);
+    step('header chip: when the PC last reported (ntfy: "PC reported just now")', /PC reported (just now|\d+ (s|min) ago)/.test(chipT), chipT);
     step('Surface line uses the live check-in (newer than the heartbeat in data.json)', /Surface last check-in/.test(a) && /live from the PC/.test(a), a.match(/Surface[^\n]*\n[^\n]*/)?.[0]);
     const every = await p.evaluate(() => window.LIVE.every);
     const t0 = Date.now();

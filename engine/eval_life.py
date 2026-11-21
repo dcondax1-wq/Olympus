@@ -42,7 +42,7 @@ START_BAL = 50000.0
 MAX_LOSS = 2000.0                 # the Builder 50K max loss, for the "drawdown left $X of $2,000" text only
 OWNER_PRICE = "$91.80"            # the owner's Builder 50K price with a discount code (2026-10-18; verify the code at checkout)
 FUNDED_ID = "mffu50k_funded"
-PAYOUT_ASK_ABOVE = 1500.0         # lit-money-batch2.md: ask only once $1,500+ is above the $2,100 buffer (balance $53,600)
+PAYOUT_ASK_ABOVE = 2000.0         # the owner's plan (weekend landing 2026-11-21, was $1,500): ask the max $2,000 once it sits above the $2,100 buffer ($54,100)
 STAGGER_SESSIONS = 5              # lit-risk-money.md: a 2nd eval 5 sessions after the first, never the same day
 WK_LOSS_SUGGEST = 1200.0          # lit-risk-money.md run lit_risk_m_wk1200
 EVAL_MODES = ("eval", "safe_eval", "fast_eval", "two_week")
@@ -262,7 +262,7 @@ def passed_steps() -> list:
             "Sign MFFU's funded agreement.",
             "Note the new funded account's Name in NinjaTrader (Accounts tab).",
             f"Add it with funded sizing (40% of the room, max $800, a winner <= $1,500): {funded_cmd()}, then restart the bot.",
-            f"Payouts: ask only once the balance is $53,600+ ($1,500 above the $2,100 buffer), up to $2,000 a request; record "
+            f"Payouts: ask the max $2,000 once the balance is $54,100+ ($4,100 MFFU profit: $2,000 above the $2,100 buffer); record "
             f"each one: python -X utf8 -m engine.eval_life --payout <day>=<$>.",
             "A real funded account trades only after you arm it yourself (--armed yes, your phrase at --start, NINJATRADER_LIVE=1)."]
 
@@ -287,8 +287,8 @@ def passed_payload(v: dict, account: str, now) -> dict:
     body = (f"{account}: balance ${v['balance']:,.0f} ({_money(v['profit'])}). The bot stopped trading it (one 1-micro "
             "minimum-days trade if MFFU needs a 2nd day). 1) Check MFFU shows PASSED. 2) Sign the funded agreement. "
             "3) Note the funded account Name in NinjaTrader. 4) Run: python -m engine.eval_life --to-funded --account "
-            "\"<Name>\" --start <first day>, restart the bot (funded sizing). 5) Payouts: ask at $53,600+ ($1,500 above "
-            "the $2,100 buffer), up to $2,000.")
+            "\"<Name>\" --start <first day>, restart the bot (funded sizing). 5) Payouts: ask the max $2,000 at $54,100+ "
+            "($4,100 MFFU profit: $2,000 above the $2,100 buffer).")
     return _payload("passed", "EVAL PASSED \U0001F389 next steps", body, f"eval:passed:{v.get('start') or 'nostart'}", now)
 
 
@@ -483,7 +483,7 @@ def set_anchor(balance, floor, as_of, account: str | None = None, path: str | No
     return 0
 
 
-SITE_HOME = "https://demetrades2000-coder.github.io/nq-dashboard/home.json"
+SITE_HOME = "https://dcondax1-wq.github.io/home.json"
 
 
 def anchors_from_board(home: dict) -> list:

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="agora">
+<html lang="en" data-theme="agora" data-oly-shell="app">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -19,12 +19,14 @@
      Layout: one top bar (scenario + sample), the HUD, one bottom bar, one bottom sheet. Jarvis's orb owns the bottom-right 80 x 160 px. -->
 <link rel="stylesheet" href="../olympus/olympus.css?v=o7">
 <script src="../olympus/quiet-net.js?v=q9"></script>
-<script src="../olympus/themes.js?v=o9"></script>
-<script src="../olympus/olympus.js?v=o15" data-app="fates"></script>
+<script src="../olympus/themes.js?v=o10"></script>
+<script src="../olympus/olympus.js?v=o22" data-app="fates"></script>
 <script src="../olympus/a11y.js" defer></script>
 <script src="../olympus/intro-app.js?v=i10" defer></script>
-<link rel="stylesheet" href="../olympus/agora.css?v=a7">
-<link rel="stylesheet" href="fates.css?v=f9">
+<link rel="stylesheet" href="../olympus/agora.css?v=a10">
+<link rel="stylesheet" href="../olympus/pulse.css?v=p8">
+<link rel="stylesheet" href="fates.css?v=f9defgh">
+<link rel="stylesheet" href="../olympus/shell.css?v=s6"><!-- day-arenas: the one design layer, loaded last -->
 </head>
 <body>
 <canvas id="scene" aria-hidden="true"></canvas>
@@ -85,11 +87,12 @@
     <header><b data-lab-title>Lab</b><span data-lab-sub></span><button type="button" class="x" id="labClose" aria-label="Close">×</button></header>
     <nav class="labtabs" data-lab-tabs role="tablist" aria-label="Lab views"></nav>
     <div class="labbody" data-lab-body></div>
+    <nav class="folded" aria-label="Simulators folded into Fates"><a href="../moirai/">Moirai: pass / bust simulator</a><a href="../labyrinth/">Labyrinth: eval sizing</a></nav><!-- day-arenas: the audit's MERGE verdicts -->
   </section>
   <p class="nogl" id="nogl" hidden>3D is off on this device: the numbers above are the full result.</p>
 </main>
-<script src="../pc_feed.js?v=n3" defer></script>
-<script type="module" src="fates.js?v=f10"></script>
+<script src="../pc_feed.js?v=n7" defer></script>
+<script type="module" src="fates.js?v=f13"></script>
 <script type="module" src="glossary.js"></script>
 </body>
 </html>

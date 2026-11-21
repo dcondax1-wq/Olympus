@@ -15,14 +15,14 @@ door: "More"
 | Athena (`athena`) | life | The library: strategy, rules, quiz | `jarvis.json`, `library.json`, `drills.json` | `tests.test_athena_page` |
 | Atlas (`atlas`) | life | A fast map of every Olympus dashboard | bundled fixture / its own files | `tests.test_atlas_armed` |
 | Bridge (`bridge`) | trading | Link ChatGPT: 3 steps, live job status | `status.json`, `jobs.json`, `deliveries.json` | `tests.test_bridge_page` |
-| Cities (`cities`) | trading | A world of city islands | `fixture.json` | `tests.test_cities_page` |
+| Cities (`cities`) | trading | The 3D city of everything: every app, every | `fixture.json` | `tests.test_cities_page` |
 | Clio (`clio`) | trading | The research library: every study in plain words | `fixture.json`, `../writeups/index.json`, `../data.json` | `tests.test_clio_page` |
 | Colosseum (`colosseum`) | trading | Where strategies fight: seven rounds on real stored | `extra.json`, `fixture.json`, `../archive/index.json`, `../home.json` | `tests.test_colosseum_page` |
 | Compass (`compass`) | trading | The next best action: at most five things | `fixture.json`, `../home.json`, `../money/index.json`, `../ledger/rules.json`, `../odeon/trades.json` | `tests.test_compass_page` |
 | Data City (`datacity`) | trading | Every combo tested, as a city | `fixture.json`, `city.json`, `jarvis.json`, `../data.json`, `../pantheon/pantheon.json` | `tests.test_datacity` |
 | Ergasterion (`ergasterion`) | trading | The workshop: every AI worker, what it does | `builders.json`, `fixture.json`, `queue.json`, `../home.json`, `../money/index.json`, ... | `tests.test_ergasterion_page` |
 | Agora Gallery (`gallery`) | life | Every 3D shape of the Agora on a | `fixture.json` | covered by `tests.test_olympus_kit` |
-| Helios (`helios`) | trading | The morning briefing: today, drawdown, deals, plan | `fixture.json`, `../pythia/events.json`, `../home.json`, `../money/index.json` | `tests.test_helios_page` |
+| Helios (`helios`) | trading | The morning briefing: today, drawdown, deals, plan | `../nq/brief.json`, `fixture.json`, `../pythia/events.json`, `../home.json`, `../money/index.json` | `tests.test_helios_page` |
 | Hephaestus (`hephaestus`) | trading | The forge: tune the dials | `data.json`, `fixture.json` | `tests.test_hephaestus_page` |
 | Herald (`herald`) | life | The daily paper: who built what, the day | `edition.json`, `editions/index.json`, `fixture.json`, `editions/${date}.json` | `tests.test_herald_page` |
 | Hestia (`hestia`) | trading | Today at home: what to do right now | `fixture.json`, `../home.json`, `../odeon/trades.json` | `tests.test_hestia_page` |

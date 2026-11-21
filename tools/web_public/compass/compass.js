@@ -3,6 +3,7 @@
 // ?demo=1&now=2026-11-10T14:00:00Z opens a given view.
 import * as C from './compasscore.js';
 import * as HF from '../olympus/hero-flat.js';
+import * as T from '../olympus/truth.js';
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -107,8 +108,8 @@ function waitRose() {
   return new Promise((resolve, reject) => {
     if (window.__compassRose) { resolve(window.__compassRose); return; }
     const done = (v, e) => { clearTimeout(tm); window.removeEventListener('compass-rose', on); if (e) reject(e); else resolve(v); };
-    const on = () => done(window.__compassRose);
-    const tm = setTimeout(() => done(null, new Error('the 3D compass did not load')), 6000);
+    const on = () => (window.__compassRose ? done(window.__compassRose) : done(null, new Error('the 3D compass is skipped on this phone')));
+    const tm = setTimeout(() => done(null, new Error('the 3D compass did not load')), 12000);   // lazy3d.js loads it after the first paint
     window.addEventListener('compass-rose', on);
   });
 }
@@ -130,11 +131,14 @@ async function boot() {
   const q = new URLSearchParams(location.search); S.forced = q.get('demo') === '1';
   const nowQ = Date.parse(q.get('now') || ''); S.now = Number.isFinite(nowQ) ? nowQ : Date.now();
   const [fx, home, money, rules, odeon] = await Promise.all([getJSON('./fixture.json'), S.forced ? null : getJSON('../home.json'), S.forced ? null : getJSON('../money/index.json'),
-    S.forced ? null : getJSON('../ledger/rules.json'), S.forced ? null : getJSON('../odeon/trades.json')]);
+    S.forced ? null : getJSON('../ledger/rules.json'), S.forced ? null : getJSON('../odeon/trades_lite.json').then((x) => x || getJSON('../odeon/trades.json'))]);   // the slim copy first (dogfood 2026-11-20: 7 KB, not 131 KB)
   S.found = [['home.json', home], ['money/index.json', money], ['ledger/rules.json', rules], ['odeon/trades.json', odeon]].filter((x) => x[1]).map((x) => x[0]);
   const real = !S.forced && (S.found.length > 0);
   S.demo = !real;
-  S.inp = real ? { home, money, rules, odeon, journal: readLS('journal.v1'), ledger: readLS('ledger.v1') } : C.demoInputs(fx, S.now);
+  // day-arenas 2026-11-20: home.json through the shared truth layer (the PC's own live status over the cloud copy), like Helios and Aegis:
+  // the raw cloud copy said 'Bot not connected' while the PC was live
+  const canon = real && home ? T.canonHome(await T.withPcFeed(home), S.now / 1000) : home;
+  S.inp = real ? { home: canon, money, rules, odeon, journal: readLS('journal.v1'), ledger: readLS('ledger.v1') } : C.demoInputs(fx, S.now);
   S.state = loadState();
   render();
   await startRose();

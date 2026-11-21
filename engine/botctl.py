@@ -56,7 +56,7 @@ _lock = threading.Lock()
 _cache: dict = {}
 
 # server.py fills these (the same code paths as POST /api/live/start, /api/live/stop, the heartbeat thread, a restart)
-HOOKS: dict = {"start": None, "stop": None, "heartbeat": None, "exit": None}
+HOOKS: dict = {"start": None, "stop": None, "heartbeat": None, "exit": None, "deliberate": None}
 SELFTEST: dict = {"t": None, "ok": None, "running": False, "summary": None, "secs": None}
 
 
@@ -660,7 +660,11 @@ def do_restart(bot) -> dict:
     why = _restart_block(bot)
     if why:
         return {"ok": False, "error": why}
-    from .autoupdate import RESTART_CODE
+    from .autoupdate import RESTART_CODE, mark_deliberate_restart
+    try:                                   # the owner's own restart is not a crash: engine/autoupdate.crash_check skips it
+        (HOOKS.get("deliberate") or mark_deliberate_restart)("Bot Control restart")
+    except Exception:  # noqa: BLE001
+        pass
     fn = HOOKS.get("exit") or (lambda code: os._exit(code))
     threading.Timer(1.0, lambda: fn(RESTART_CODE)).start()
     return {"ok": True, "note": "server restarting: back in ~10 s (a Sim bot resumes by itself; a real account only with auto-resume on)"}

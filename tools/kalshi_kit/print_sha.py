@@ -16,7 +16,7 @@ import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(HERE, "public", "kalshi_status_vm.py")
-SITE = "https://demetrades2000-coder.github.io/nq-dashboard/kalshi/"
+SITE = "https://dcondax1-wq.github.io/kalshi/"
 LINE = "Set up Jarvis for my Kalshi bot by following {site}SETUP.md (sha256 {sha})"
 
 

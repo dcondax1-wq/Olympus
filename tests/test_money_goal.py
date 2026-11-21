@@ -94,7 +94,7 @@ def default_checks():
     c = MG.build({}, None, NOW)
     g1, g2, g3 = c["goals"]
     check("b. card title + three goals in order", c["title"] == "Road to $10K / Stingray 3LT" and [g["k"] for g in c["goals"]] == ["month", "car", "z06"], c["title"])
-    check("b. goal titles", g1["title"] == "$10K month by February 2027" and g2["title"] == "2024 Stingray 3LT before I turn 19 (Feb 22, 2027)"
+    check("b. goal titles", g1["title"] == "$10K month by February 2027" and g2["title"] == "2024 Stingray 3LT by Feb 2027"
           and g3["title"] == "C8 Z06", [g["title"] for g in c["goals"]])
     check("b. no file: saved = the $20,000 start, 119 days left, $1,059 a week needed, pace unknown",
           g2["saved"] == 20000 and g2["days_left"] == 119 and abs(g2["need_week"] - 18000 / 17) < 0.01 and g2["status"] == "unknown", g2)
@@ -388,7 +388,7 @@ const U = window.MoneyUI;
 const c = U.card(M, { where: 'phone' }), g = U.goals(M, { compact: true }), f = U.form(M);
 const out = { title: c.includes('Road to $10K / Stingray 3LT'), next: c.includes('Next') && c.includes('Buy '), stack: c.includes('Your prop accounts') && c.includes('LucidPro 50K'),
   mygoals: c.lastIndexOf('My goals') > c.indexOf('Your prop accounts'), m: c.includes('$10K month by February 2027') && c.includes('mg-seg jobs') && c.includes('mg-seg kalshi'),
-  car: c.includes('2024 Stingray 3LT before I turn 19 (Feb 22, 2027)') && c.includes('stretch $46K') && c.includes('goal $38K') && c.includes('behind by'),
+  car: c.includes('2024 Stingray 3LT by Feb 2027') && c.includes('stretch $46K') && c.includes('goal $38K') && c.includes('behind by'),
   z06: c.includes('C8 Z06') && c.includes('no date'), compact: g.includes('compact') && !g.includes('Your prop accounts'),
   form: f.includes('data-mg-save="savings"') && f.includes('data-mg-save="month"') && f.includes('data-mg-save="settings"') && f.includes('mgCStretch'),
   pick: U.pick({ t: 1, goals: [] }, { t: 2, goals: [] }).t === 2 && U.pick({ t: 3, goals: [] }, { error: 'x' }).t === 3,

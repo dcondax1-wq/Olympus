@@ -89,7 +89,7 @@ def part_a():
     check("a. data: PC_FEED.fetchLatest + ../board/board.json + ../business/accounts.json, Board pick + MFFU cards (zeus_core.js), ../pythia/events.json",
           "F.fetchLatest(" in core and "url('../board/board.json')" in core and "url('../business/accounts.json')" in core and "BM.pick(" in core and "MM.cards(" in core
           and "ZC.summary(" in js and "ZC.fetchAll(" in js and "'../pythia/events.json'" in js and "BM.pick(" not in js and "MM.cards(" not in js)
-    order = [m for m in re.findall(r'<script src="([^"?]+)', html) if m != "../olympus/warp.js"]   # the world-to-world jump (tests.test_warp) is not data
+    order = [m for m in re.findall(r'<script src="([^"?]+)', html) if m not in ("../olympus/warp.js", "../olympus/themes.js", "../olympus/a11y.js", "navfx.js")]   # the world-to-world jump (tests.test_warp) and the OLYMPUS look (themes.js, day-manual NAV) are not data
     check("a. scripts: pc_feed, payoutcoach, mffumodel, boardmodel (after mffumodel), edge_chip, the Decide card, the shared zeus_core, the Accounts "
           "view's acct_live (2026-11-20), zeus.js last",
           order == ["../pc_feed.js", "../business/payoutcoach.js", "../business/mffumodel.js", "../board/boardmodel.js", "../edge_chip.js",
@@ -214,9 +214,9 @@ def part_c():
     check("c. ATLAS funded: chip Sim Funded, the payout coach's sentence, today -$40", a.get("cls") == "funded" and a.get("chip") == "Sim Funded"
           and re.search(r"PAYOUT READY|Not yet|MFFU would pay|Type the balance", str(a.get("goal"))) and a.get("todayText") == "Today: -$40", a)
     fr, old, nev = r2.get("fresh") or {}, r2.get("old") or {}, r2.get("never") or {}
-    check("c. PC line: 'PC reported 4 min ago' (fresh feed), red PC SILENT on a 10-day-old copy, 'never reported' with nothing",
+    check("c. PC line: 'PC reported 4 min ago' (fresh feed), red PC SILENT on a 10-day-old copy, 'no report ... in the last 12 hours' with nothing",
           fr.get("text") == "PC reported 4 min ago" and fr.get("silent") is False and old.get("silent") is True and "10 days ago" in str(old.get("text"))
-          and nev.get("silent") is True and "never" in str(nev.get("text")), (fr, old, nev))
+          and nev.get("silent") is True and "no report from your PC in the last 12 hours" in str(nev.get("text")), (fr, old, nev))
 
 
 class Quiet(http.server.SimpleHTTPRequestHandler):

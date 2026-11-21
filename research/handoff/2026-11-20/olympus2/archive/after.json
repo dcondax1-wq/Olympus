@@ -1,0 +1,1072 @@
+[
+ {
+  "id": "agency",
+  "kb": 620,
+  "errors": [],
+  "console": [
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "bad": [
+   "404:agency/my_leads.json"
+  ],
+  "sideways": 0,
+  "top": [
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "64K agency/leads.json",
+   "46K olympus/agora.css?v=a7"
+  ],
+  "title": "Agency",
+  "banner": false,
+  "demo": true,
+  "dates": [],
+  "text": "Home Agency Websites for local businesses SAMPLE CITY Go to 20 leads in Fort Collins, CO: 20 open, 0 won, 0 called this week. This month 0% of $5,000 $0 No client yet. Open deals worth $27,760 in their first year ($1,680 if they close at the usual rates). Open deals $27,760 first-year value Likely $1,680 at usual close rates Care plans $0 a month Calls 0 this week These are real Fort Collins, CO b"
+ },
+ {
+  "id": "apollo",
+  "kb": 993,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "477K odeon/trades.json",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "46K olympus/agora.css?v=a7"
+  ],
+  "title": "Apollo",
+  "banner": true,
+  "demo": false,
+  "dates": [
+   "Nov 1",
+   "Oct 12",
+   "Oct 19",
+   "Oct 26",
+   "Oct 27",
+   "Oct 28",
+   "Oct 5"
+  ],
+  "text": "Archived \u00b7 data Oct 28, 23 days old Journal \u2192 Home \u203a Bots & Evals Apollo Your week in $: what went right, what went wrong, and the one rule for next week. Go to Week of Oct 26: -$1,964 (-3.1R). One rule for next week: Same plan, same size. Add nothing after a loss. Pick a week Week of Oct 26 Week of Oct 19 Week of Oct 12 Week of Oct 5 The week in one line Oct 26 to Nov 1 -$1,964 (-3.1R) Trades 3 0"
+ },
+ {
+  "id": "arbiter",
+  "kb": 540,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "46K olympus/agora.css?v=a7",
+   "44K olympus/olympus.js?v=o15"
+  ],
+  "title": "Arbiter",
+  "banner": true,
+  "demo": true,
+  "dates": [],
+  "text": "Archived Business \u2192 Home \u203a My Money Arbiter Practice price-gap trades with fake money. Read the top idea, then try it with a paper $1,000. DEMO Go to Hold WIF, short its perpetual (Bybit): 39.1% a year after costs, Medium risk. Paper only. The best idea today Sample data Best paper idea (sample data): Hold PEPE, short its perpetual (SmallEx), about 45% a year after costs (estimate), about $37 a mo"
+ },
+ {
+  "id": "archive",
+  "kb": 2231,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "379K archive/index.json",
+   "151K archive/runs-0.json",
+   "143K archive/runs-1.json"
+  ],
+  "title": "Archive",
+  "banner": true,
+  "demo": false,
+  "dates": [
+   "2026-11-20",
+   "Nov 20"
+  ],
+  "text": "Archived \u00b7 data Nov 20, today Clio \u2192 Home \u203a Research Archive Every idea we tested and the $ it made or lost. Search here before testing anything again. Go to Library loaded: 2,345 runs. What we tested 2,345 runs, 224 write-ups, 121 rejected ideas and 15 datasets: everything we ever tested, in one library. Runs 2,345 98 adopted \u00b7 1,712 rejected Write-ups 224 plain-language stories Rejected ideas 12"
+ },
+ {
+  "id": "arena",
+  "kb": 1547,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "51K olympus/render.js"
+  ],
+  "title": "ARENA",
+  "banner": true,
+  "demo": true,
+  "dates": [],
+  "text": "Your campaign 3 / 3 quests complete 4 of 12 labours \u00b7 17 of 28 trophies earned Arena Olympian Ranks Demo Lite Rank \u00b7 tap for the ladder Demigod Level 18 \u00b7 4,475 XP 2,525 XP to Olympian \u00b7 25 to level 19 Uptime 12 weekdays Hands off 9 Goal 10 days Notes 2 days Quests 7 days Mon Tue Wed Thu Fri This week: 5 trades, above the 2 to 4 plan \u00b7 bot ran 5 of 5 days \u00b7 no rule broken Closest labour: The Belt "
+ },
+ {
+  "id": "ares",
+  "kb": 1509,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "150K home.json",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
+  ],
+  "title": "Ares",
+  "banner": true,
+  "demo": false,
+  "dates": [],
+  "text": "Ares Check a trade before you take it: type entry and stop, get GO, WAIT or HALT and the $ at risk. DRAWDOWN LEFT $2,000 left of $2,000 MNQ NQ Long Short Entry Stop (1 tick past the sweep high/low) Risk this much of the $ room left: 40% NO SIZE Enter your entry and your stop. A stop-out costs - One contract risks - Risk budget - Room to the floor $2,000 Room after a stop-out - Full stop-outs left "
+ },
+ {
+  "id": "argo",
+  "kb": 691,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "150K home.json",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "46K olympus/agora.css?v=a7"
+  ],
+  "title": "Argo",
+  "banner": true,
+  "demo": false,
+  "dates": [
+   "Nov 20"
+  ],
+  "text": "Archived \u00b7 data Nov 20, today Hera \u2192 Home \u203a My Money Argo Your money goals: how close you are, and the next step Go to 0 of 5 islands reached. Next: First payout. Island open: First payout. Next goal 0 of 5 First payout 0% 0 of 1. No payout has been published, so there is no rate and no date yet. The ship Sailing toward First payout: 0% of the way. The island grows as you get closer. All your goal"
+ },
+ {
+  "id": "argus",
+  "kb": 1553,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "150K home.json",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
+  ],
+  "title": "Argus",
+  "banner": true,
+  "demo": false,
+  "dates": [],
+  "text": "Argus Checking the bots, PC and data... ... Fix this first 0 All lights Since yesterday Money"
+ },
+ {
+  "id": "athena",
+  "kb": 1579,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "173K athena/library.json?v=a6",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
+  ],
+  "title": "Athena",
+  "banner": true,
+  "demo": false,
+  "dates": [],
+  "text": "Athena 204 short notes on your strategy and rules. Tap a shelf to read, or take the quiz. \u2605 Strategy 19 MFFU rules 22 Rejected 13 Words 38 When... 10 Numbers 14 OLYMPUS 27 Kalshi 8 What we learned 83 204 entries. The bot in one minute The bot waits for price to poke through an obvious high or low, trap the late traders, then turn. It buys (or sells) the turn with a stop right behind the poke. Step"
+ },
+ {
+  "id": "atlascity",
+  "kb": 181,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "150K home.json?atlas_city=5983985",
+   "14K atlascity/city.css?v=5",
+   "8K atlascity/city.js?v=5",
+   "7K atlascity/"
+  ],
+  "title": "ATLAS Strategy City \u00b7 OLYMPUS",
+  "banner": true,
+  "demo": false,
+  "dates": [],
+  "text": "Archived Atlas \u2192 Skip city \u2190 Olympus City view The NQ strategy districts \u00b7 read only ATLAS Strategy City The published ATLAS snapshot is old or unavailable. The three districts remain a read-only guide. Drawdown left \u2014 To target \u2014 Snapshot Old \u00b7 Source time unknown ATLAS HQ 01 London EMA 02 MACD sweep 03 NY reclaim \u21b6 Reset view \u21b7 Drag to orbit \u00b7 arrows to turn \u00b7 W/S to move \u00b7 tap a strategy tower "
+ },
+ {
+  "id": "bridge",
+  "kb": 380,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "163K bridge/jobs.json",
+   "103K olympus/sfx.js?v=s4",
+   "53K bridge/",
+   "38K olympus/intro-app.js?v=i10"
+  ],
+  "title": "Bridge \u00b7 OLYMPUS",
+  "banner": true,
+  "demo": false,
+  "dates": [],
+  "text": "Archived Jarvis \u2192 \u2190 Back to Olympus Olympus \u00b7 Claude and ChatGPT Bridge The courier Give ChatGPT a job; its work comes back checked. Connect once (3 steps below). Then pick a ready job. ChatGPT sends the result back through GitHub, and Claude checks it before using it. No passwords No live orders Files checked Plain word: liquidity 1 Connect 2 Test 3 Use Connect ChatGPT (once) Connected 0/3 1 Let "
+ },
+ {
+  "id": "chronos",
+  "kb": 1927,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "477K odeon/trades.json",
+   "103K olympus/sfx.js?v=s4",
+   "90K olympus/polis-life.js?v=pl4"
+  ],
+  "title": "Chronos",
+  "banner": true,
+  "demo": false,
+  "dates": [],
+  "text": "Chronos Replay any past day: pick a day, press play, see each bot step and the $. LITE -$437 -1.03R Best possible +$405: $842 was left on the table. 2026-10 so far: +$5,384 over 11 days, 5 won. \u2039 Wed 24 Jun (06-24) - 1 trade Thu 25 Jun (06-25) - 1 trade Thu 2 Jul (07-02) - 1 trade Fri 3 Jul (07-03) - 1 trade Mon 6 Jul (07-06) - 1 trade Tue 7 Jul (07-07) - 1 trade Tue 14 Jul (07-14) - 1 trade Thu 1"
+ },
+ {
+  "id": "colosseum",
+  "kb": 2816,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "379K archive/index.json",
+   "151K archive/runs-0.json",
+   "150K home.json"
+  ],
+  "title": "Colosseum",
+  "banner": true,
+  "demo": false,
+  "dates": [
+   "Nov 20"
+  ],
+  "text": "Archived \u00b7 data Nov 20, today Clio \u2192 Home \u203a Worlds Colosseum Two strategies on the same real trades: see which makes more $, round by round. Go to 2,345 stored runs can fight. lit_live against atlas_base: press \"Start the duel\". The duel 2026 backtest lit_live LIT research 0 - 0 rounds atlas_base ATLAS Seven rounds, money first Net dollars, dollars a month, profit factor, max drawdown, trades a we"
+ },
+ {
+  "id": "delphi",
+  "kb": 721,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "150K home.json",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "46K olympus/agora.css?v=a7"
+  ],
+  "title": "Delphi",
+  "banner": true,
+  "demo": false,
+  "dates": [
+   "2026-11-19",
+   "2026-11-20",
+   "Nov 20"
+  ],
+  "text": "Archived \u00b7 data Nov 20, today Morning brief \u2192 Home \u203a Today \u203a Go or no-go Delphi Before the session: trade today or not, and why. Read the big line, then the checklist. Go to Stand down. target band known is not in order. 2 of 5 lines in order. Briefing for 2026-11-19 Stand down target band known is not in order. Do this: Leave the bot alone today and do not add a trade by hand. 2 of 5 lines in ord"
+ },
+ {
+  "id": "epilogue",
+  "kb": 2500,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "477K odeon/trades.json",
+   "150K home.json",
+   "136K assets/tex/wood_c.webp"
+  ],
+  "title": "Epilogue",
+  "banner": true,
+  "demo": true,
+  "dates": [
+   "Nov 16",
+   "Nov 20",
+   "Nov 22"
+  ],
+  "text": "Archived \u00b7 data Nov 20, today Journal \u2192 Home \u203a Bots & Evals Epilogue Your week in 60 seconds: $ won or lost per account. Read it on Sunday. Go to Week of Nov 16 to Nov 22: $0 from the accounts' live week figures (the trade list behind this page ends earlier). The week Week of Nov 16 to Nov 22: $0 from the accounts' live week figures (the trade list behind this page ends earlier). The week so far ("
+ },
+ {
+  "id": "ergasterion",
+  "kb": 3206,
+  "errors": [],
+  "console": [
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "bad": [
+   "404:kalshi.json"
+  ],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "485K assets/people/cast.glb?v=3",
+   "169K prometheus/forge.json",
+   "150K home.json"
+  ],
+  "title": "Ergasterion",
+  "banner": true,
+  "demo": true,
+  "dates": [],
+  "text": "Archived Board \u2192 Home \u203a Jarvis Ergasterion Every AI helper: what it is doing now and what it made. Tap a worker to see its work. Go to 6 of 15 workers need a look. 2 working, 2 idle, 5 showing sample data, 6 stale. The helpers today Look once 6 of 15 workers need a look 2 working, 2 idle, 5 showing sample data, 6 stale. The floor Money hall Trading hall Research hall Library Front door Chrysanthe "
+ },
+ {
+  "id": "forum",
+  "kb": 1557,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "150K home.json",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
+  ],
+  "title": "Forum",
+  "banner": true,
+  "demo": false,
+  "dates": [],
+  "text": "Forum A 2-minute morning read before you trade. Press Start. LITE --:-- ET Forum streak 0 days Good morning, trader. Six short cards: today's risk, $ room left and the plan. Read them, tick today's promises, and you are ready. Start the briefing \u0393 OLYMPUS Forum"
+ },
+ {
+  "id": "gallery",
+  "kb": 1384,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "71K olympus/shapes3d.js"
+  ],
+  "title": "Agora Gallery",
+  "banner": true,
+  "demo": false,
+  "dates": [],
+  "text": "Archived Atlas \u2192 Home Agora Gallery The 3D shapes used across the apps, and what each means. Swipe to browse. Nothing to do. LITE Go to Doric column. Shape 1 of 41. Strength and discipline. The plain, sturdy column: one simple rule that holds the whole roof up. Shelf Build Collection \u2039 \u203a Drag to turn. Tap to look closer. Architecture Doric column Shape 1 of 41 What it stands for: Strength and disc"
+ },
+ {
+  "id": "harmonia",
+  "kb": 1580,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "150K home.json",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
+  ],
+  "title": "Harmonia",
+  "banner": true,
+  "demo": false,
+  "dates": [
+   "Nov 20"
+  ],
+  "text": "Archived \u00b7 data Nov 20, today Business \u2192 Home \u203a My Money Harmonia How much of your money depends on the NQ bots. Tap the button to see what is left if they stop. Go to Harmonia: 90% of the estimated $1,494 a month depends on the NQ bots; if they stop, about $155 a month is left. Every $ here is an ESTIMATE from past trades, not income. This page only shows; it moves nothing. The balance Leaning ha"
+ },
+ {
+  "id": "hephaestus",
+  "kb": 1267,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "51K olympus/render.js"
+  ],
+  "title": "Hephaestus",
+  "banner": true,
+  "demo": false,
+  "dates": [],
+  "text": "Hephaestus Try other settings on past trades. Tap a recipe. Changes nothing in the bot. LITE This setting, Jul-Oct check $2,670 a month This is what the bot does today. This Live $1,396 Worst dip (eval allows $2,000) 23.1% Evals passed in 2 weeks 0.0% Evals failed in 2 weeks This page changes nothing in the bot. It only reads test runs that were already stored. Recipes one tap, every one a stored "
+ },
+ {
+  "id": "herald",
+  "kb": 2162,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "171K assets/tex/roof_c.webp",
+   "165K assets/tex/paving_c.webp",
+   "128K assets/env/hdri/golden.hdr"
+  ],
+  "title": "Herald",
+  "banner": true,
+  "demo": false,
+  "dates": [
+   "2026-11-10",
+   "2026-11-11",
+   "2026-11-20",
+   "Nov 20"
+  ],
+  "text": "Archived \u00b7 data Nov 20, today Board \u2192 Home \u203a Today \u203a Daily paper Herald Today's news about your bots and apps, from real files. Read the top story. Go to The Olympus Herald, Wednesday, 11 November 2026: edition 1, 7 stories. The newsstand No. 1 Older 2026-11-11 \u00b7 the only edition kept so far Newer Read it to me: off Kosmas the herald \u00b7 Kalshi (paper) From the Kalshi paper book: Late favourite (BTC"
+ },
+ {
+  "id": "hermes",
+  "kb": 605,
+  "errors": [],
+  "console": [
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "bad": [
+   "404:kalshi.json?t=29919930"
+  ],
+  "sideways": 0,
+  "top": [
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "46K olympus/agora.css?v=a7",
+   "44K olympus/olympus.js?v=o15"
+  ],
+  "title": "HERMES \u00b7 OLYMPUS Wrapped",
+  "banner": true,
+  "demo": true,
+  "dates": [
+   "Nov 1",
+   "Oct 26"
+  ],
+  "text": "Hermes Demo Week Month All time This week \u00b7 Oct 26 \u2013 Nov 1 The bots made money +$2,072.50 5 trades \u00b7 3 won \u00b7 2 lost \u00b7 60% wins Won +$2,462.50 Lost \u2212$390.00 Per month +$8,705 at this pace \u00b7 avg +$4,991 T W T F Zlarior3 trades +$1,982.50 ATLAS2 trades +$90.00 Paper twin +$1,982.50: the same trades on paper, not counted twice. 1/20 The money Share \u039f"
+ },
+ {
+  "id": "hestia",
+  "kb": 1151,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "477K odeon/trades.json",
+   "150K home.json",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
+  ],
+  "title": "Hestia",
+  "banner": true,
+  "demo": false,
+  "dates": [
+   "2026-10-28",
+   "Nov 20"
+  ],
+  "text": "Archived \u00b7 data Nov 20, today Compass \u2192 Home \u203a Today Hestia What to do right now Go to Leave the bot alone. The bot is watching and every account is at a safe distance. Entries stop at 15:30 ET. Right now Leave the bot alone The bot is watching and every account is at a safe distance. Entries stop at 15:30 ET. Do this: Nothing. Touching it by hand has cost money before. All calm Zlarior 50K \u00b7 MFFU"
+ },
+ {
+  "id": "inbox",
+  "kb": 611,
+  "errors": [],
+  "console": [
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "bad": [
+   "404:kalshi.json"
+  ],
+  "sideways": 0,
+  "top": [
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "46K olympus/agora.css?v=a7",
+   "44K olympus/olympus.js?v=o15"
+  ],
+  "title": "(22) Inbox",
+  "banner": false,
+  "demo": false,
+  "dates": [],
+  "text": "Home Inbox What needs a look, newest first. Tap one to open it. Refresh Go to Waiting for you 22 new items Here is what happened since you last looked. Mark all read All Needs you 3 Money 18 Unread 22 Pinned Bots Argus Kalshi 19 Bridge Jarvis learned Arena System 3 \u2699 Argus has not refreshed for 17 d (it should every 14 d) System 3 d ago Open Mark read Pin Mute System \u2699 Kalshi City has not refreshe"
+ },
+ {
+  "id": "kairos",
+  "kb": 2901,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "477K odeon/trades.json",
+   "260K assets/tex/grass_c.webp",
+   "161K assets/tex/cobble_c.webp"
+  ],
+  "title": "Kairos",
+  "banner": true,
+  "demo": false,
+  "dates": [
+   "Oct 28"
+  ],
+  "text": "Archived \u00b7 data Oct 28, 23 days old NQ bots \u2192 Home \u203a Today \u203a The bots' day Kairos What time it is for trading in New York, and when the bots can trade. Go to Fri 12:30 New York time. New York afternoon. Entries are open. Next: No new trades in 3 h 0 min. Right now Entries open Fri 12:30 ET New York afternoon: entries are open New York afternoon. LIT can still enter until 15:30. BLITZ (paper) check"
+ },
+ {
+  "id": "kratos",
+  "kb": 1900,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "477K odeon/trades.json",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
+  ],
+  "title": "Kratos",
+  "banner": true,
+  "demo": false,
+  "dates": [
+   "Oct 19",
+   "Oct 27",
+   "Oct 28",
+   "Sep 29"
+  ],
+  "text": "Archived \u00b7 data Oct 28, 23 days old Journal \u2192 Home \u203a Bots & Evals Kratos Did you follow the plan? A 0-100 score for each day Go to Kratos: Oct 28: 83 of 100, disciplined. 2 trades, the day -$1,136 (-2.1R). A mirror, not a judge. 100 = plan, stop and size all followed. Parts the data cannot see count 70% and say ESTIMATE. Your day Disciplined 83 of 100 Oct 28: 83 of 100, disciplined. 2 trades, the "
+ },
+ {
+  "id": "labyrinth",
+  "kb": 1931,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "477K odeon/trades.json",
+   "150K home.json",
+   "103K olympus/sfx.js?v=s4"
+  ],
+  "title": "Labyrinth",
+  "banner": true,
+  "demo": false,
+  "dates": [],
+  "text": "Labyrinth Pick a trade size: see your odds to pass the eval and the $ you could lose. Tap Best size. LITE Reading the trades... Reach the target - Hit the floor - Trades to pass - Drawdown left - Worst trade - Fees to pass - Risk of ruin - - Best size - Sizes Danger The march Rules Walk it Size 1.00x 0.5x 1x 1.5x Sweet spot Risk cap per trade Off $150 $300 $500 $750 $1,000 Look ahead 8 trades 15 t"
+ },
+ {
+  "id": "lyceum",
+  "kb": 3190,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "477K odeon/trades.json",
+   "178K assets/tex/cloth_c.webp",
+   "175K assets/tex/mosaic_c.webp"
+  ],
+  "title": "Lyceum",
+  "banner": true,
+  "demo": false,
+  "dates": [],
+  "text": "Archived Clio \u2192 Home \u203a Plan & Day Lyceum Learn your own trading rules: 5 quick questions a day, and the habits costing you $. Go to Mathetes, 0 XP, 0 day streak. Today's quiz is waiting. Mathetes 0 day streak The pupil. 0 XP. 120 more for Hoplite, which adds a column to the hall. Today's 5 questions Question 1 of 5 The stop Price is close to your stop and you feel sure it will turn. Move the stop "
+ },
+ {
+  "id": "mind",
+  "kb": 1715,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "219K mind/starter/starter_pack.js",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
+  ],
+  "title": "OLYMPUS Mind",
+  "banner": true,
+  "demo": true,
+  "dates": [
+   "2026-11-20"
+  ],
+  "text": "Jarvis memory #playbook Kalshi Daily notes Inbox OLYMPUS MIND Demo HD Time-lapse Home Notes Days Learned Graph Review 9+ Teach Stats Look Demo \u00b7 Connect your vault in Jarvis \u22ef \u2192 Connect Obsidian Jarvis learned You move leg day to Thursdays now Today 1 Learned \u00b7 24 min ago You move leg day to Thursdays now Edited \u00b7 46 min ago LIT untested entry ideas Edited \u00b7 1 h ago Uprisk - where the funded money"
+ },
+ {
+  "id": "mint",
+  "kb": 1848,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "165K assets/tex/paving_c.webp",
+   "128K assets/env/hdri/golden.hdr",
+   "106K olympus/three-addons/GLTFLoader.js"
+  ],
+  "title": "Mint",
+  "banner": true,
+  "demo": true,
+  "dates": [],
+  "text": "Archived Business \u2192 Home \u203a My Money Mint All 5 ways you could earn, in $ a month (ESTIMATE). Do the \"What to do today\" list. Go to About $1,494 a month, but in the worst case you could lose about $42 a month. At best about $2,544 a month. These are example numbers, not real finds. Combined estimate Example estimate $1,494 About $1,494 a month, but in the worst case you could lose about $42 a month"
+ },
+ {
+  "id": "mintcity",
+  "kb": 2509,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "171K assets/tex/roof_c.webp",
+   "165K assets/tex/paving_c.webp",
+   "161K assets/tex/cobble_c.webp"
+  ],
+  "title": "Mint City",
+  "banner": true,
+  "demo": true,
+  "dates": [],
+  "text": "Archived Business \u2192 Home \u203a Worlds \u203a Mint City Mint City Your 5 ways to earn as a 3D city. Taller building = more $ a month (ESTIMATE). Tap one. Go to About $1,494 a month (an estimate). Worst case: you could lose about $42 a month; at best about $2,544. Example numbers, not real finds. The golden pillar Example estimate $1,494 About $1,494 a month (an estimate). Worst case: you could lose about $4"
+ },
+ {
+  "id": "moirai",
+  "kb": 1199,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "46K olympus/agora.css?v=a7"
+  ],
+  "title": "Moirai",
+  "banner": true,
+  "demo": false,
+  "dates": [
+   "2026-01-02",
+   "2026-10-14"
+  ],
+  "text": "Archived Fates \u2192 Home Moirai Pass, fail or still going: one eval played 1,000 times. Move the sliders. SIMULATION Go to 72% pass, 7% bust, 21% still open after 30 sessions. A simulation, not a forecast. Pass, fail, still going 1,000 paths Pass 72% 722 of 1000 paths Bust 7% 67 of 1000 paths Still open after 30 21% 211 of 1000 paths 37% pass within 15 sessions, 1% bust within 15. Median time to pass"
+ },
+ {
+  "id": "nemesis",
+  "kb": 2042,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "477K odeon/trades.json",
+   "150K home.json",
+   "103K olympus/sfx.js?v=s4"
+  ],
+  "title": "Nemesis",
+  "banner": true,
+  "demo": false,
+  "dates": [],
+  "text": "Nemesis Why each loss happened, and its $ LITE Reading the trades... Fallen - Lost - Leaks cost - Fallen Leaks Vow About \u2039 - \u203a All plan loss (normal) leak (small mistake) rule break \u039d OLYMPUS Nemesis"
+ },
+ {
+  "id": "nike",
+  "kb": 1422,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "477K odeon/trades.json",
+   "150K home.json",
+   "109K olympus/polis.js?v=p1",
+   "103K olympus/sfx.js?v=s4"
+  ],
+  "title": "Nike",
+  "banner": true,
+  "demo": false,
+  "dates": [
+   "Oct 28",
+   "Sep 28"
+  ],
+  "text": "Archived \u00b7 data Oct 28, 23 days old Journal \u2192 Home \u203a Plan & Day Nike Your wins so far, from real trades. Grey ones are still to win: tap to see how. Go to Best week: earned. +$5,761 (+14.9R) in the week of Sep 28, 2026, from the bot's published trades. Your wins 2 of 8 2 of 8 trophies earned. The rest say plainly what is still missing. The shelves First eval passed Not yet First payout Not yet $1,"
+ },
+ {
+  "id": "observatory",
+  "kb": 751,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "202K cities/cities.json?observed=5983986",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "46K olympus/agora.css?v=a7"
+  ],
+  "title": "Observatory \u00b7 OLYMPUS",
+  "banner": true,
+  "demo": true,
+  "dates": [
+   "Nov 10",
+   "Nov 20"
+  ],
+  "text": "Archived Clio \u2192 Home Observatory Is every data feed the apps read working? See what is broken, fix that first. Read only Go to Last scan Nov 20, 2026, 5:31 PM \u00b7 refreshes while open every five minutes Feeds answering 5 of 5 All answer; 3 to look at: Data City, Arena, Learning. Data City Look Cities Working Arena Look Oracle Working Learning Look Scan sources Export review Need a look 3 from this s"
+ },
+ {
+  "id": "odeon",
+  "kb": 1852,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "477K odeon/trades.json",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
+  ],
+  "title": "Odeon",
+  "banner": true,
+  "demo": false,
+  "dates": [
+   "Oct 28"
+  ],
+  "text": "Slow motion Odeon presents LIT \u00b7 SHORT Wed Oct 28 \u00b7 03:43 ET \u00b7 5 micros Odeon Watch every trade again LIT \u00b7 SHORT Wed Oct 28 \u00b7 03:43 ET Reels 01:44 ET waiting for the setup REAL \u2039 60/60 \u00b7 Wed Oct 28 \u00b7 SHORT \u00b7 \u22121.03R \u00b7 \u2212$437.00 \u00b7 running +$14,622.58 \u203a 10x \u039e OLYMPUS Odeon \u039f"
+ },
+ {
+  "id": "oracle",
+  "kb": 1595,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "150K home.json?t=1795195878831",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
+  ],
+  "title": "OLYMPUS Oracle",
+  "banner": true,
+  "demo": false,
+  "dates": [
+   "2026-11-19"
+  ],
+  "text": "26,300 26,400 26,600 26,700 26,800 equal highs 26,724.75 26,508.75 Oracle LAST SEEN Thu 16:55 Replay a day Prophecy HD NQ 26,508.75 P&L today $0 1/10 Levels Watching the price levels where stops are likely to sit Next A sweep of equal highs \u2191 216.00 pts ($432 per micro) New session: waiting for the first bars of 2026-11-19. Entries from 02:00 ET. No sweep yet today (no grab of an old high/low) Rep"
+ },
+ {
+  "id": "pantheon",
+  "kb": 1393,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "51K olympus/render.js"
+  ],
+  "title": "Pantheon",
+  "banner": true,
+  "demo": false,
+  "dates": [
+   "2026-11-20"
+  ],
+  "text": "Pantheon Free market data in plain words \u00b7 built 2026-11-20 10:52 ET All signals together RISK-OFF 39 / 100 \u00b7 6 voices My Desk A normal day moves NQ about 527 points: \u00b1$1,053 per micro. POSEIDON $5.82T ZEUS 5.07% ARES 28.44 ATHENA in 14 days DEMETER +25.2% of OI HELIOS 122.65 NYX 352 bp ARTEMIS $62,018 The council leans risk-off: ARES, HELIOS lean risk-off; POSEIDON, ZEUS, DEMETER, NYX are neutral"
+ },
+ {
+  "id": "pc",
+  "kb": 7,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "7K pc/"
+  ],
+  "title": "Start the bot on this PC",
+  "banner": false,
+  "demo": false,
+  "dates": [],
+  "text": "Start the bot on this PC Main PC (bot + NinjaTrader): STATUS, PC care, Clean storage, and Fresh start once. Surface (retired, cooling): Clean storage and PC care only, never Fresh start. Open this page ON YOUR MAIN PC. Three steps, nothing to type. Disk full? Clean storage is further down. PC running hot, sleepy or slow? PC care (both work on both PCs). Start the bot, three steps 1Make sure the Su"
+ },
+ {
+  "id": "pheme",
+  "kb": 1453,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "51K olympus/render.js"
+  ],
+  "title": "Pheme",
+  "banner": true,
+  "demo": false,
+  "dates": [
+   "2026-11-10",
+   "Dec 8",
+   "Dec 9",
+   "Nov 10",
+   "November 20",
+   "Oct 16"
+  ],
+  "text": "Archived \u00b7 data Nov 10, 10 days old Morning brief \u2192 Home \u203a Today \u203a News days Pheme News days ahead, and how far NQ moved on past ones. Check before you trade. Go to Pheme: No scheduled release today. Next: FOMC rate decision + projections, Wed Dec 9 2:00 PM ET. History only, never a forecast. Today Friday, November 20 (New York) No scheduled release today. Next: FOMC rate decision + projections, W"
+ },
+ {
+  "id": "pinakes",
+  "kb": 2247,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "175K assets/tex/mosaic_c.webp",
+   "149K pinakes/catalog.json",
+   "136K assets/tex/wood_c.webp"
+  ],
+  "title": "Pinakes",
+  "banner": true,
+  "demo": true,
+  "dates": [
+   "Market 19",
+   "Nov 20"
+  ],
+  "text": "Archived \u00b7 data Nov 20, today Clio \u2192 Home \u203a Research Pinakes Every data table OLYMPUS keeps. Search a word to find where a number lives. Go to 181 tables, 1,057,445 rows in the catalogue. Pick a drawer or search. All tables by area 181 tables 181 tables, 1,057,445 rows 149 tables with 52,193 rows open right here; 17 tables written by the site build (measured when opened); 15 research datasets with"
+ },
+ {
+  "id": "plutus",
+  "kb": 1429,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "51K olympus/render.js"
+  ],
+  "title": "Plutus",
+  "banner": true,
+  "demo": false,
+  "dates": [
+   "2026-11-05",
+   "2026-11-24",
+   "2026-12-03",
+   "2026-12-04",
+   "2026-12-16",
+   "2027-02-22"
+  ],
+  "text": "Plutus Your payout plan: $ to you each month after fees. ESTIMATE from past trades. Move the sliders. Money plan Run ATLAS first, then LIT, all three accounts now. First payout about 2026-12-16 (conservative) or 2026-12-03 (Jan-Jun). By month 12: $13,105 in the conservative version (worst $9,759, best $14,892), $14,345 in Jan-Jun. This month (month 1, 2026-11-05 to 2026-12-04): Run LIT, ATLAS and "
+ },
+ {
+  "id": "polis",
+  "kb": 2824,
+  "errors": [],
+  "console": [
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "bad": [
+   "404:kalshi.json"
+  ],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "485K assets/people/cast.glb?v=3",
+   "150K home.json",
+   "139K ergasterion/queue.json"
+  ],
+  "title": "Polis",
+  "banner": true,
+  "demo": false,
+  "dates": [],
+  "text": "Archived Atlas \u2192 Skip the map: the list of every app Home \u203a Worlds \u203a The city Go to Inbox Settings Planner Mind Arena Lyceum Nike Epilogue Agora Gallery Symposium Herald Polis Atlas Athena Zenith Oracle Pantheon Bridge Odeon Fates Data City Observatory Daphne Prometheus Ares Forum Labyrinth Argus Nemesis Chronos Hephaestus Cities Mnemosyne Hestia Demeter Apollo Delphi Stoa Aegis Moirai Kratos Pyth"
+ },
+ {
+  "id": "prometheus",
+  "kb": 1584,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "169K prometheus/forge.json",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
+  ],
+  "title": "The Forge",
+  "banner": true,
+  "demo": false,
+  "dates": [],
+  "text": "The Forge Breeds new LIT versions: 20 rounds, picked on Jan-Jun 2026 Best creature, Jan-Jun $/mo $6,250 live $5,562 Same, new data Jul-Oct $/mo $1,370 live $2,670 Pass / fail in 10 55.5/0.0 live 44.5/0.0 Trades a week 3.63 live 3.12 Round 2/20 fit 1.19 Live LIT still best New data (H2): best variant \u2212$1,704/mo vs live's $2,670 (\u2212$20,448/yr). Trained on (H1): +$2,278/mo. 0 of 5 runs hold up. live L"
+ },
+ {
+  "id": "pythia",
+  "kb": 1740,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "150K home.json",
+   "103K olympus/sfx.js?v=s4",
+   "90K olympus/polis-life.js?v=pl4"
+  ],
+  "title": "Pythia",
+  "banner": true,
+  "demo": false,
+  "dates": [
+   "Dec 3",
+   "Nov 20",
+   "Nov 25",
+   "Nov 26",
+   "Nov 27",
+   "November 20"
+  ],
+  "text": "Archived Morning brief \u2192 Home \u203a Today \u203a Risk calendar Pythia Big news days in the next 14 days. Red means be careful that day. Go to Pythia: Light day today in New York. Friday, November 20. Today Light day Friday, November 20 \u00b7 12:31 PM ET now 9:30 AM ET \u00b7 Monthly options expiration (third Friday) Low Options expire today, so volume is heavier and price can get pinned near big levels into the clo"
+ },
+ {
+  "id": "stoa",
+  "kb": 2396,
+  "errors": [],
+  "console": [
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "bad": [
+   "404:kalshi.json"
+  ],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "171K assets/tex/roof_c.webp",
+   "165K assets/tex/paving_c.webp",
+   "150K home.json"
+  ],
+  "title": "Stoa",
+  "banner": true,
+  "demo": false,
+  "dates": [
+   "Nov 20"
+  ],
+  "text": "Archived \u00b7 data Nov 20, today Compass \u2192 Home \u203a Today Stoa What needs you now. Do the top card first. Go to Nothing needs you now. Everything is calm. Quiet days are normal. Right now All calm Nothing needs you now Everything is calm. Quiet days are normal. At a glance No column is lit: nothing needs you now. Nothing to do Every column is dark. Quiet days are normal; the bot trades about 2 to 4 tim"
+ },
+ {
+  "id": "symposium",
+  "kb": 4081,
+  "errors": [],
+  "console": [
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "bad": [
+   "404:kalshi.json"
+  ],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "485K assets/people/cast.glb?v=3",
+   "477K odeon/trades.json",
+   "379K archive/index.json"
+  ],
+  "title": "Symposium",
+  "banner": true,
+  "demo": true,
+  "dates": [],
+  "text": "Archived Board \u2192 Home \u203a Jarvis Symposium Every helper app as a person. Tap one to hear what it does. Go to 38 people in the hall. 3 working, 9 blocked, 10 showing sample data (not real). The hall Voices: off Show the 3D hall Phoibos Telamon Asterope Eutychos Chrysanthe Hermolaos Manto Pheidon Dikaios Metis Pyrrhos Chalkeus Horaios Kalamos Epistates Ergane Kallias Pelagia Ariston Phaidon Philon Myr"
+ },
+ {
+  "id": "tree",
+  "kb": 2142,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "705K tree/tree.json",
+   "654K jarvis/three.module.min.js",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
+  ],
+  "title": "DAPHNE",
+  "banner": true,
+  "demo": false,
+  "dates": [
+   "2024-12-31"
+  ],
+  "text": "Daphne \u00b7 the search for better rules Chance level Holds up 38.8% of the time on new data (31/80 best rules) \u00b7 random rules 31.2% / 35% This root: holds \u00b7 unseen +$14.81 a trade on 45 trades One micro, per trade train +$43.70 \u00b7 unseen +$14.81 \u00b7 2026 +$27.37 Per month on unseen data +$30 \u00b7 at bot size +$25 Train New data Replay Top 10 Branches Auto The search \u00b7 4 steps Top rules Best pos_pd[high hal"
+ },
+ {
+  "id": "tyche",
+  "kb": 1486,
+  "errors": [],
+  "console": [
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "bad": [
+   "404:kalshi.json?t=29919932"
+  ],
+  "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "51K olympus/render.js"
+  ],
+  "title": "OLYMPUS Tyche",
+  "banner": false,
+  "demo": true,
+  "dates": [],
+  "text": "3m 26s 7m 08s 11m 36s 37m 56s 2h 04m 3h 14m 4h 39m 5h 19m 21h 59m 2d 0h 3d 1h Tyche Not linked yet: demo HD Balance $1,758.69 Today +$11.94 Week +$358.06 This week is +25.6% of the bankroll. At this pace about +$1,550.40 a month (a rate, not a promise). Open 13 Win rate 67.5% ROI +11.3% Details Kalshi \u203a Next settles 3m 26s Bitcoin up or down \u00b7 15 min Kelly \u00bc \u00bc \u00bd Full \u00bc Kelly: $250.00 on 13 bets (h"
+ },
+ {
+  "id": "why",
+  "kb": 250,
+  "errors": [],
+  "console": [],
+  "bad": [],
+  "sideways": 0,
+  "top": [
+   "74K olympus/themes.js?v=o9",
+   "46K olympus/agora.css?v=a7",
+   "37K olympus/warp.js?v=w3",
+   "19K olympus/a11y.js"
+  ],
+  "title": "Why",
+  "banner": true,
+  "demo": false,
+  "dates": [
+   "2026-10-16",
+   "Nov 19"
+  ],
+  "text": "Archived \u00b7 data Nov 19, 1 day old Trading \u2192 Why we win / why we lose Every trade taken apart, in $. Research only. Research Every Zlarior and ATLAS trade of 2021-2026 taken apart, costs in: how far it went for and against us and when, what the day and the trends did, news, the prior day's levels, and what came after the exit. Data to 2026-10-16. The short answer Our losers are mostly good trades t"
+ }
+]

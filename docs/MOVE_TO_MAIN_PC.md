@@ -22,7 +22,7 @@ Script: `scripts/move_bot.ps1` (`-Pack` / `-NewPC`, `-DryRun` shows the plan; re
 ## Surface is cooking: fresh start (no old PC state needed)
 1. Switch the Surface **off** and wait 3 minutes (two PCs on the same accounts would double every order; the script checks and refuses).
 2. On the main PC install **NinjaTrader 8**, log in, connect **MFFU**, tick **AT Interface**. Open PowerShell and paste:
-   `powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://demetrades2000-coder.github.io/nq-dashboard/pc/FRESH_START.ps1 | iex"`
+   `powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://dcondax1-wq.github.io/pc/FRESH_START.ps1 | iex"`
    (or double-click **FRESH_START.bat** from the OneDrive PC_KIT folder). It shows its plan and asks Y first.
 3. It installs Git and Python, gets the bot, shows your eval balance and floor from the published board (compare with MFFU, press Y), copies the NinjaTrader add-ons and starts ONE_TIME_SETUP (asks your eval account name; Enter = Sim101 practice).
 4. In NinjaTrader: Control Center > New > NinjaScript Editor > press **F5** (no chart needed). Then **LE START > Start trading**.

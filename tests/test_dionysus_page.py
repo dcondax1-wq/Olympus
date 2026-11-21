@@ -22,7 +22,8 @@ SITE_WHATIF = os.path.join(AK.WEB, "kalshicity", "whatif.json")
 
 
 def test_static():
-    AK.static_kit(APP, NAME, reads=("../kalshicity/edges.json", "../kalshicity/whatif.json"))
+    AK.static_kit(APP, NAME, reads=("../kalshicity/edges.json", "../kalshicity/whatif.json", "../kalshi/k8.json",   # + K8 today (day-kalshi 2026-11-20)
+                                    "../kalshicity/learned.json", "../kalshicity/suggestions.json", "../money/sibyl.json", "../money/sibyl_forward.json"))   # + the Kalshi City / Sibyl merge
     js = AK.read(os.path.join(AK.WEB, APP, "dionysus.js"))
     check("a. the bot's feed is the SAME file the Kalshi page reads, this site's ../kalshi.json (the kalshi-feed repo is retired, polish2 2026-11-19), a plain GET; no key, no header, no POST, no web address",
           "const SITE_FEED = '../kalshi.json';" in js and "kalshi-feed/main" not in js and "githubusercontent" not in js and "Authorization" not in js and "headers" not in js.replace("cache: 'no-cache'", ""))
@@ -30,6 +31,9 @@ def test_static():
     check("a. 'Suggestions only' is said on the page, and nothing on it can place or change a bet (no order / buy / sell words in the code)",
           "Suggestions only" in html and not re.search(r"\b(placeOrder|createOrder|/portfolio/orders|\.post\(|method:)", js))
     check("a. the page order: the balance, the guard, bets, the what-if, the scan", html.index('id="bal"') < html.index('id="guardCard"') < html.index('id="open"') < html.index('id="wiCard"') < html.index('id="scan"'))
+    check("a. bar (2026-11-20): K8 (today's bot) comes before the old bot's card; the old bot's cards say old / history / retired; 'Running' and 'Live feed' are never words of the old bot",
+          html.index('id="k8Card"') < html.index('id="heroCard"') and "The old bot's guard" in html and "The old bot's bets (history)" in html and "old bot had bet" in html and "'Running'" not in js and "'Live feed'" not in js and "'Retired'" in js)
+    check("a. bar: nothing readable = a plain sentence (renderEmpty), never 'Something went wrong' or a blank page; offline is said", "function renderEmpty()" in js and "Something went wrong" not in js and "You are offline" in js)
     fx = json.loads(AK.read(os.path.join(AK.WEB, APP, "fixture.json")))
     check("a. the fixture has a feed (balance, positions, trades, days), an edges mirror (regime, lists) and a what-if with a picked set", fx["feed"]["balance"] > 0 and fx["feed"]["positions"] and fx["feed"]["trades"] and len(fx["feed"]["days"]) >= 7 and fx["edges"]["lists"]["do_more"] and fx["whatif"]["what_if"]["pick"])
 
@@ -113,6 +117,17 @@ def feed_json(balance=321.5):
                        "days": [["2026-11-01", 3.0], ["2026-11-02", 4.5], ["2026-11-03", -1.0]], "stats": {"trades": 100, "staked": 1000.0}})
 
 
+# FX (day-kalshi 2026-11-20): the balance / K8 numbers roll up once after load + idle (olympus/nqfx.js); read the numbers once they have landed
+SETTLED = "() => !window.DIONYSUS.fx || (window.DIONYSUS.fx().started ? window.DIONYSUS.settled() : document.readyState === 'complete' && performance.now() > 4000)"
+
+
+def settle(p):
+    try:
+        p.wait_for_function(SETTLED, timeout=20000)
+    except Exception:  # noqa: BLE001 - the numbers are then read as they are (the check says what it saw)
+        pass
+
+
 def test_page():
     try:
         import playwright  # noqa: F401
@@ -124,6 +139,7 @@ def test_page():
         with AK.browser() as br:
             ctx, p, errs, seen, off = AK.page(br, origin)
             AK.open_app(p, origin, APP, "?demo=1&at=2026-11-05T12:00:00Z")
+            settle(p)
             d = p.evaluate("""() => ({ demo: !document.querySelector('#demo').hidden, name: document.querySelector('#botName').textContent, pill: document.querySelector('#botPill').textContent, bal: document.querySelector('#bal').textContent, tiles: document.querySelector('#heroTiles').innerText, src: document.querySelector('#srcNote').textContent,
               guard: document.querySelector('#guardTitle').textContent, gl: document.querySelector('#guardCard').dataset.level, open: document.querySelectorAll('#open li').length, recent: document.querySelectorAll('#recent li').length, r0: document.querySelector('#recent li b').textContent,
               chips: [...document.querySelectorAll('#sets button')].map((b) => b.textContent), on: document.querySelector('#sets [aria-pressed=true]').textContent, wiText: document.querySelector('#wiText').textContent, scan: document.querySelector('#scan').innerText,
@@ -132,8 +148,9 @@ def test_page():
                   d["demo"] and d["pill"] == "Example" and d["bal"] == "$170.26" and "+$3.40" in d["tiles"] and "-$18.60" in d["tiles"] and "-$89.74" in d["tiles"] and "R" in d["tiles"] and d["gl"] == "warn" and d["guard"] == "A losing week" and d["open"] == 2 and d["recent"] == 5 and "(0.0R)" in d["r0"]
                   and d["banner"] and d["reads"] == 0 and "Example numbers" in d["src"], d)
             check("c. the what-if is on the picked set A ('A · skip the 90–95¢ band'), 'As it is' and B are chips, the text says how much better; the scan shows 'Worth a paper test' with 95–97¢ bets",
-                  d["chips"] == ["As it is", "A", "B"] and d["on"] == "A" and "better than the bot as it is" in d["wiText"] and "Worth a paper test" in d["scan"] and "95–97¢ bets" in d["scan"] and "Worth avoiding" in d["scan"], d)
-            check("c. AGORA look: a serif title", any(f in d["font"] for f in ("Palatino", "Iowan", "Georgia")))
+                  d["chips"] == ["As it is", "A", "B"] and d["on"] == "A" and "better than the old bot as it was" in d["wiText"] and "Worth a paper test" in d["scan"] and "95–97¢ bets" in d["scan"] and "Worth avoiding" in d["scan"], d)
+            # the title font: AGORA's serif, or OLYMPUS NIGHT's sans (the owner's look since 2026-11-20, day-kalshi ef8a5a41): a real stack, not the browser default
+            check("c. the title has the look's own font (AGORA serif or OLYMPUS NIGHT sans)", bool(d["font"]) and d["font"].strip('"').lower() not in ("times new roman", "serif"), d["font"])
             AK.shot(p, "dionysus-demo")
             p.locator("#sets [data-id=B]").click()
             p.wait_for_timeout(150)
@@ -145,23 +162,40 @@ def test_page():
             # ---- no kalshi.json on the site (404 here): the site's kalshicity mirror takes over, labelled
             ctx, p, errs, seen, off = AK.page(br, origin)
             AK.open_app(p, origin, APP, "?at=2026-11-05T12:00:00Z")
+            settle(p)
             s = p.evaluate("""() => ({ demo: !document.querySelector('#demo').hidden, pill: document.querySelector('#botPill').textContent, bal: document.querySelector('#bal').textContent, src: document.querySelector('#srcNote').textContent, guard: document.querySelector('#guardTitle').textContent,
               gl: document.querySelector('#guardCard').dataset.level, open: document.querySelector('#open').textContent, wi: document.querySelector('#sets [aria-pressed=true]').textContent, scan: document.querySelector('#scan').innerText.includes('95–97¢ bets') })""")
-            check("c. the feed was asked on the site (../kalshi.json, absent here), so the kalshicity copy is shown: no DEMO chip, $55.81, 'Paused', 'the site's copy', the guard says the bot is resting, the real what-if (A) and scan",
-                  any(u.split("?")[0].endswith("/kalshi.json") for u in seen) and not off and not s["demo"] and s["bal"] == "$55.81" and s["pill"] == "Paused" and "site's copy" in s["src"] and s["guard"] == "The guard has the bot resting" and s["gl"] == "bad" and "live feed" in s["open"] and s["wi"] == "A" and s["scan"], (s, off[:2]))
+            check("c. the feed was asked on the site (../kalshi.json, absent here), so the kalshicity copy is shown: no DEMO chip, $55.81, 'Retired' (the old crypto bot, 2026-11-19: never 'Paused' / 'Running'), 'the site's copy', the guard says the bot is resting, the real what-if (A) and scan",
+                  any(u.split("?")[0].endswith("/kalshi.json") for u in seen) and not off and not s["demo"] and s["bal"] == "$55.81" and s["pill"] == "Retired" and "site's copy" in s["src"] and s["guard"] == "The guard has the bot resting" and s["gl"] == "bad" and "own feed" in s["open"] and "live" not in s["open"] and s["wi"] == "A" and s["scan"], (s, off[:2]))
             ctx.close()
             # ---- the live feed answers (mocked)
             ctx, p, errs, seen, off = AK.page(br, origin, mock={"/kalshi.json": feed_json()})
             AK.open_app(p, origin, APP, "?at=2026-11-05T12:00:00Z")
+            settle(p)
             l = p.evaluate("""() => ({ demo: !document.querySelector('#demo').hidden, pill: document.querySelector('#botPill').textContent, bal: document.querySelector('#bal').textContent, src: document.querySelector('#srcNote').textContent, tiles: document.querySelector('#heroTiles').innerText,
               open: document.querySelector('#open').innerText, recent: document.querySelector('#recent').innerText, guard: document.querySelector('#guardTitle').textContent })""")
-            check("c. the live feed (mocked): no DEMO chip, 'Running', $321.50, 'Live feed', today +$2.00 (+0.2R) with 1R = $10.00, the open bet risks $4.80, the settled bet with its R, the guard from the site's regime",
-                  not l["demo"] and l["pill"] == "Running" and l["bal"] == "$321.50" and l["src"].startswith("Live feed") and "+$2.00" in l["tiles"] and "+0.2R" in l["tiles"] and "risking $4.80" in l["open"] and "+$0.50 (+0.1R)" in l["recent"] and "Gold above target" in l["recent"], l)
+            check("c. the old bot's feed (mocked, even one saying 'running'): no DEMO chip, 'Retired', $321.50, 'The old bot's last feed', today +$2.00 (+0.2R) with 1R = $10.00, the open bet risks $4.80, the settled bet with its R, the guard from the site's regime",
+                  not l["demo"] and l["pill"] == "Retired" and l["bal"] == "$321.50" and l["src"].startswith("The old bot's last feed") and "+$2.00" in l["tiles"] and "+0.2R" in l["tiles"] and "risking $4.80" in l["open"] and "+$0.50 (+0.1R)" in l["recent"] and "Gold above target" in l["recent"], l)
             check("c. a mocked feed is the only thing that left the page's origin; no console error", len(p.mocked) == 1 and not errs, (p.mocked, errs[:3]))
+            st = p.evaluate("() => document.querySelector('#status').textContent")
+            check("c. bar: the status line leads with K8 today and calls the old crypto bot retired, history only", st.startswith("K8 today") and "retired 2026-11-19" in st and "history only" in st, st)
             ctx.close()
             ctx, p, errs, seen, off = AK.page(br, origin, w=375, h=667, reduced=True, lite=True)
             AK.open_app(p, origin, APP, "?demo=1&q=low")
             check("c. 375 x 667, LITE, reduced motion: no sideways scroll, every tap >= 44 px, no error", AK.no_sideways(p) and not AK.taps(p) and not errs, (AK.taps(p)[:3], errs[:2]))
+            ctx.close()
+    finally:
+        srv.shutdown()
+    # ---- bar: every data file missing (404) -> a plain sentence, no card of the old bot, no error, no blank page
+    names = ["/dionysus/fixture.json", "/kalshi.json", "/kalshicity/edges.json", "/kalshicity/whatif.json", "/kalshi/k8.json", "/kalshicity/learned.json", "/kalshicity/suggestions.json", "/money/sibyl.json", "/money/sibyl_forward.json"]
+    srv, origin = AK.serve({n: None for n in names})
+    try:
+        with AK.browser() as br:
+            ctx, p, errs, seen, off = AK.page(br, origin)
+            AK.open_app(p, origin, APP)
+            e = p.evaluate("() => ({ st: document.querySelector('#status').textContent, hero: document.querySelector('#heroCard').hidden, bets: document.querySelector('#betsCard').hidden, words: document.body.innerText.length })")
+            check("c. bar: no data at all (every file 404): the status says so in plain words, the old bot's cards hide, no JS error, the page is not blank",
+                  "No Kalshi numbers could be read" in e["st"] and e["hero"] and e["bets"] and e["words"] > 200 and not errs, (e, errs[:3]))
             ctx.close()
     finally:
         srv.shutdown()

@@ -27,7 +27,7 @@ stage: "eval"
 ## Plan
 
 - **bots**: Zlarior only (eval). Once funded: Zlarior + ATLAS + BLITZ (if you say yes)
-- **payout**: about early Jan (with ATLAS once funded)
+- **payout**: funded ~Dec 24, 1st payout ~Feb 10 (~$1,600 to you; 8 in 10 runs between Dec 30 and May 18) - payday plan 2026-11-20, middle case
 - **usd_month**: $1,200
 - **cost**: paid
 
@@ -55,6 +55,7 @@ _no events yet_
 | [[Month 2026-10\|2026-10]] | backtest | 8 | +$6,660 |
 | [[Month 2026-10\|2026-10]] | live | 1 | -$437 |
 | [[Month 2026-10\|2026-10]] | paper | 3 | -$1,538 |
+| [[Month 2026-11\|2026-11]] | live | 1 | -$129 |
 
 _backtest = the bot's rules replayed on futures data (costs in); paper / live = what the bot really did._
 

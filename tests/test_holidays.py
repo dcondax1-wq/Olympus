@@ -176,7 +176,8 @@ def t_strategies(tmp):
           "12-24, 15:55 on a normal day (was 15:55 always: B's ledger only learned of the adapter's flatten later)", ok)
     # extra accounts (multi_account): entry_block
     fake = types.SimpleNamespace(router=types.SimpleNamespace(killed=lambda: False), disabled_reason=lambda: None, lock=None,
-                                 in_news=lambda now: None, mode="sim", entries_today=lambda d: 0)
+                                 in_news=lambda now: None, mode="sim", entries_today=lambda d: 0,
+                                 price_limit_block=lambda now: None)   # day-multirapid: the MFFU 2% price-limit guard
     eb = lambda *a: multi_account.Account.entry_block(fake, ts(*a))   # noqa: E731
     ok = (eb(2026, 11, 26, 12, 44) is None and "early close" in (eb(2026, 11, 26, 12, 45) or "")
           and "holiday" in (eb(2026, 12, 25, 10, 0) or "") and eb(2026, 12, 31, 15, 0) is None and eb(2026, 11, 27, 12, 59) is None)

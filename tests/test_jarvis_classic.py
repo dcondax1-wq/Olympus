@@ -47,7 +47,7 @@ def part_static():
     head = page[:page.index("</head>")]
     check("b. the first paint: Classic by default (2026-11-18, owner: 'back to how it was'), AGORA only for 'jarvis.look' = 'agora'; under the default OLYMPUS theme; its own sheet, added then",
           "g('jarvis.look') !== 'agora' && (g('olympus.theme') || 'agora') === 'agora'" in head and "d.setAttribute('data-jlook', 'classic')" in head
-          and "cl.href = 'classic.css?v=c3'" in head and "d.setAttribute('data-theme', 'agora')" in head)
+          and "cl.href = 'classic.css?v=c5'" in head and "d.setAttribute('data-theme', 'agora')" in head)
     check("b. the Look sheet: Jarvis look AGORA / Classic Jarvis; palette entries; the voice phrases; the core key",
           'id="jlookSeg"' in page and 'data-jlook-k="classic"' in page and 'data-jlook-k="agora"' in page and "function setJLook(k)" in page
           and "Look: Classic Jarvis" in page and "bring back (the )?old (jarvis|look)" in page and "if (root.dataset.jlook === 'classic' && !olyOn()) return themeColors();" in page)

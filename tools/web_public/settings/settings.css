@@ -1,7 +1,7 @@
 /* SETTINGS v2 (designqa 2026-11-19, owner: "nothing 2000's looking"): on the AGORA page shell (olympus/agora.css section 14: back row, icon tile,
    serif title, compact bar, the sticky tab rail). Grouped cards like the phone's own Settings: a serif card title, rows with the label and a muted
    line, a switch on the right; segmented pickers on one rail with a raised thumb; theme swatches as tiles. The aurora and the glass are gone.
-   Every colour is a kit token (--oly-th-*), so a theme change still repaints the page live. Jarvis's orb owns the bottom-right 80 x 160 px:
+   Every colour is a kit token (a theme slot), so a theme change still repaints the page live. Jarvis's orb owns the bottom-right 80 x 160 px:
    the page ends 176 px above the bottom. Safe areas on every edge; no sideways scroll at 375 px. Every animation sits behind
    prefers-reduced-motion and the LITE / Still tiers. */
 :root {
@@ -176,3 +176,6 @@ html[data-oly-text="big"] .seg button { flex: 1 1 28%; letter-spacing: 0; }
 /* night-siteqa 2026-11-20: alone (not framed in Jarvis) the corner holds only the 44 px OLYMPUS seal: 96 px + the home bar clears it, the 176 px
    seat (Jarvis's orb) stays for the framed page; no empty band at the end (owner: the bottom looked "funky"; same rule as trading.css) */
 html:not(.framed) #app { padding-bottom: calc(96px + var(--sb)); }
+/* day-arenas DESIGN: the state pill's other two states (Phone notifications, How old the numbers are; settings/extras.js) */
+.st.warn { color: var(--ag-sun, #e0b060); border-color: rgba(var(--oly-th-warn-rgb, 224, 176, 96), .5); background: rgba(var(--oly-th-warn-rgb, 224, 176, 96), .08); }
+.st.off { color: var(--ag-terra-text, #e08a6b); border-color: rgba(var(--oly-th-r8-rgb, 201, 106, 74), .5); background: rgba(var(--oly-th-r8-rgb, 201, 106, 74), .08); }

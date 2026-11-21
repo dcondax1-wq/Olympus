@@ -12,8 +12,8 @@ MFFU Builder Sim Funded rules (help center 2026-10-24, research/lit/mffu_rules.j
   consistency        best day <= 50% of the cycle's profit (soft: not a breach, trade more days; resets after a payout)
   cycle              >= 2 traded days in the cycle; the first request 48 h after the first funded trade
   sim payouts        5, then MFFU moves the account to live (Blue Row Capital)
-The owner's habit (engine/eval_life.PAYOUT_ASK_ABOVE, lit-money-batch2.md): ask only once $1,500 (50K) / $750 (25K) sits
-above the buffer, then take the max the rules allow.
+The owner's plan (CLAUDE.md, the phone's payout goal; weekend landing 2026-11-21, was $1,500 / $750): ask only once the max
+request sits above the buffer, $2,000 on a 50K (at $4,100 MFFU profit) / $1,000 on a 25K (at $2,100), then take that max.
 
   python -X utf8 -m engine.funded_life                       every funded account's tracker (data/accounts.json + state)
   python -X utf8 -m engine.funded_life --demo                a worked example (no files read)
@@ -35,11 +35,11 @@ VERSION = 1
 PLANS = {
     "builder50k": {"label": "MFFU Builder 50K", "start": 50000.0, "mll": 2000.0, "lock": 100.0, "dll": 1000.0, "buffer": 2100.0,
                    "pay_min": 500.0, "pay_max": 2000.0, "split": 0.8, "cons": 0.5, "cycle_days": 2, "first_wait_h": 48,
-                   "max_payouts": 5, "max_micros": 40, "ask_above": 1500.0, "typical_day": 300.0, "price": 91.80,
+                   "max_payouts": 5, "max_micros": 40, "ask_above": 2000.0, "typical_day": 300.0, "price": 91.80,
                    "preset": "mffu_builder_50k"},
     "builder25k": {"label": "MFFU Builder 25K", "start": 25000.0, "mll": 1000.0, "lock": 100.0, "dll": 600.0, "buffer": 1100.0,
                    "pay_min": 250.0, "pay_max": 1000.0, "split": 0.8, "cons": 0.5, "cycle_days": 2, "first_wait_h": 48,
-                   "max_payouts": 5, "max_micros": 20, "ask_above": 750.0, "typical_day": 150.0, "price": 63.00,
+                   "max_payouts": 5, "max_micros": 20, "ask_above": 1000.0, "typical_day": 150.0, "price": 63.00,
                    "preset": "mffu_builder_25k"},
 }
 # MFFU per person (help center, conflicting wording, research/lit/mffu_rules.json "accounts"): 1 active sim-funded Builder
@@ -155,7 +155,7 @@ def track(day_pnl: dict, payouts: dict | None = None, plan: str | dict | None = 
     elif cprof <= 0 and cyc:
         why.append(f"cycle profit {_money(cprof)}: nothing to pay yet")
     eligible = not why
-    ready = eligible and above >= P["ask_above"]       # the owner's habit: ask once $1,500 / $750 sits above the buffer
+    ready = eligible and above >= P["ask_above"]       # the owner's plan: ask once $2,000 / $1,000 (the max) sits above the buffer
     # trade M more days (consistency + the 2-day minimum), at a typical day that does not beat the best day
     typ = [v for d, v in cyc.items() if v > 0 and d != best_day]
     per = min(best, sum(typ) / len(typ)) if typ else float(P["typical_day"])
@@ -170,6 +170,7 @@ def track(day_pnl: dict, payouts: dict | None = None, plan: str | dict | None = 
            "locked": floor >= P["lock"] - 1e-9, "mll_after_payout": round(P["start"] + P["lock"], 2),
            "buffer": P["buffer"], "buffer_balance": round(P["start"] + P["buffer"], 2), "above_buffer": above,
            "ask_at_balance": round(P["start"] + goal, 2), "to_ask": to_ask,
+           "ask_amount": min(P["pay_max"], P["ask_above"]), "ask_goal": round(goal, 2),   # MFFU's $0 view: $1,000 at $2,100 (25K)
            "buffer_frac": round(max(0.0, min(1.0, bal / goal)) if goal else 0.0, 4),
            "cycle_start": (_add_days(last, 1) if last else (start or first_trade)), "cycle_profit": cprof, "cycle_days": len(cyc),
            "cycle_days_need": int(P["cycle_days"]), "best_day": best, "best_day_on": best_day, "best_day_pct": best_pct,
@@ -196,12 +197,12 @@ def sentence(t: dict) -> str:
     if s == "ready":
         return f"PAYOUT READY on {t['name']}: request {_money(t['max_request'])} in the MFFU dashboard ({_money(t['to_you'])} to you)."
     if s == "eligible":
-        return (f"{t['name']}: MFFU would pay {_money(t['max_request'])} now; your rule waits for {_money(t['ask_at_balance'])} "
-                f"({_money(t['to_ask'])} to go).")
+        return (f"{t['name']}: MFFU would pay {_money(t['max_request'])} now; your plan waits for {_money(t['ask_amount'])} at "
+                f"{_money(t['ask_goal'])} ({_money(t['to_ask'])} to go).")
     if s == "consistency":
         return (f"{t['name']}: consistency: best day is {t['best_day_pct']:.0f}% of the cycle, trade {t['more_days']} more "
                 f"day(s) (about {_money(t['cons_need_profit'])} more profit on other days).")
-    bits = [f"{_money(t['to_ask'])} to the payout line {_money(t['ask_at_balance'])}"]
+    bits = [f"{_money(t['to_ask'])} to the payout line ({_money(t['ask_amount'])} at {_money(t['ask_goal'])} MFFU profit)"]
     if t.get("eligible_from") and t["today"] < t["eligible_from"]:
         bits.append(f"first request from {t['eligible_from']}")
     if t["cycle_days"] < t["cycle_days_need"]:
@@ -233,8 +234,11 @@ def notices(t: dict, now) -> list:
            f"{nm}: balance {_money(t['balance'])}, {_money(t['above_buffer'])} above the {_money(t['buffer'])} buffer, best day "
            f"{t['best_day_pct']:.0f}% of the cycle, {t['cycle_days']} traded days. Request {_money(t['max_request'])} in the MFFU "
            f"dashboard ({_money(t['to_you'])} to you at 80%). Then record it: {rec}"
-           f". Payout {t['payouts_n'] + 1} of {t['payouts_max']}. The bot never requests it for you.", base + ":ready")
-    elif s == "consistency":
+           f". Payout {t['payouts_n'] + 1} of {t['payouts_max']}. The bot never requests it for you."
+           + (f" WAIT: this is payout {t['payouts_max']} of {t['payouts_max']}: after it MFFU moves this account to LIVE and your other "
+              "MFFU sim accounts go dormant. Ask Claude before you request it." if t["payouts_n"] + 1 >= t["payouts_max"] else ""),
+           base + ":ready")
+    elif s == "consistency" and _num(t.get("above_buffer"), 0) > 0:     # below the buffer there is no payout to wait for yet
         pl("cons", f"consistency: best day is {t['best_day_pct']:.0f}% of the cycle, trade {t['more_days']} more days",
            f"{nm}: best day {_money(t['best_day'])} of a {_money(t['cycle_profit'])} cycle; MFFU pays only when no day is more than "
            f"50%. About {_money(t['cons_need_profit'])} more profit on other days ({t['more_days']} day(s)). Not a breach: just keep "

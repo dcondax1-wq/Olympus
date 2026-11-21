@@ -132,7 +132,7 @@ def test_page():
                   d["demo"] and d["bar"] and d["cards"] == ["The trading day", "Your day", "Pre-session checklist", "Tasks", "Habits", "Post-session review", "Note for Mon 9 Nov"], d["cards"])
             check("c. Monday 09:41 New York: the clock, 'Entries open', the seven bot windows, the market events, the bots card says it is an example, the day picker says Mon 9 Nov / Today",
                   d["clock"] == "09:41" and d["phase"] == "Entries open" and d["wins"] == 7 and d["mrows"] >= 1 and "example" in d["bots"] and "left" in d["bots"] and d["title"] == "Mon 9 Nov" and d["sub"] == "Today", d)
-            check("c. the AGORA look: a serif title, a warm dark body (not black), data-theme agora, one h1; the sundial in the header is drawn (not blank)", any(f in d["font"] for f in ("Palatino", "Iowan", "Georgia")) and d["bg"] != "rgb(0, 0, 0)" and d["theme"] == "agora" and d["h1"] == 1 and d["scene"] > 500, d)
+            check("c. the AGORA look in OLYMPUS NIGHT: a serif title, a black body (owner 2026-11-20: the Jarvis switcher's colours), data-theme agora, one h1; the sundial in the header is drawn (not blank)", any(f in d["font"] for f in ("Palatino", "Iowan", "Georgia")) and d["bg"] == "rgb(0, 0, 0)" and d["theme"] == "agora" and d["h1"] == 1 and d["scene"] > 500, d)
             AK.shot(p, "planner-today-demo")
             t = AK.taps(p)
             check("c. every tap target is at least 44 x 44 px", not t, t[:5])

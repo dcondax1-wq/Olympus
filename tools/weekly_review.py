@@ -89,7 +89,7 @@ def week_of(now) -> dict:
     if e.weekday() == 4 and e.hour * 60 + e.minute < 16 * 60:
         last = fri - dt.timedelta(days=1)        # Friday before 16:00 ET: today's session is not over yet (still counted when traded)
     days = [(mon + dt.timedelta(days=i)).isoformat() for i in range(5)]
-    done = [d for d in days if d <= e.date().isoformat()]
+    done = [d for d in days if d <= last.isoformat()]      # Friday before 16:00 ET: 4 sessions are done, not 5
     nmon = mon + dt.timedelta(days=7)
     return {"from": mon.isoformat(), "to": fri.isoformat(), "days": days, "sessions_done": max(1, len(done)),
             "complete": e.weekday() >= 5 or (e.weekday() == 4 and e.hour * 60 + e.minute >= 16 * 60),
@@ -247,11 +247,18 @@ def trades(rows: list, week: dict, plan_accounts: list) -> list:
         strat = "atlas" if bot.startswith("atlas") else "zlarior" if bot in ("zlarior", "") else bot
         if strat not in STRAT:
             continue
-        sig = (k, r.get("entry_t"), round(pnl, 2), day)
+        # one entry = one trade, whichever source told us (the PC's ledgers and its status post both carry it)
+        sig = (k, int(r["entry_t"]), day) if _f(r.get("entry_t")) is not None else (k, None, round(pnl, 2), day)
         if sig in seen:
             continue
         seen.add(sig)
-        out.append({"acct": k, "strat": strat, "day": day, "pnl": round(pnl, 2), "t": int(t)})
+        row = {"acct": k, "strat": strat, "day": day, "pnl": round(pnl, 2), "t": int(t)}
+        for f_ in ("entry_t", "exit_t", "dir", "entry", "stop", "target", "r"):      # day-brief round 2: twins + best / worst
+            if r.get(f_) is not None:
+                row[f_] = r[f_]
+        if r.get("reason"):
+            row["exit"] = str(r["reason"])
+        out.append(row)
     return sorted(out, key=lambda x: x["t"])
 
 
@@ -264,7 +271,9 @@ def stats(tr: list) -> dict:
         per[x["day"]] = round(per.get(x["day"], 0.0) + x["pnl"], 2)
     best = max(per.items(), key=lambda kv: kv[1]) if per else None
     gl = -sum(loss)
+    rs = [_f(x.get("r")) for x in tr if _f(x.get("r")) is not None]
     return {"n": n, "usd": round(sum(x["pnl"] for x in tr), 2), "win_pct": round(100.0 * len(wins) / n) if n else None,
+            "wins": len(wins), "losses": len(loss), "r": round(sum(rs), 2) if rs else None,
             "pf": (round(sum(wins) / gl, 2) if gl > 0 else (None if not wins else "no loss")), "days": per,
             "best_day": {"day": best[0], "usd": best[1]} if best else None}
 
@@ -309,6 +318,7 @@ RULE = {"eval": "Builder eval: no best-day rule", "funded": "funded: best day at
 
 
 def account_rows(board: dict, plan: dict, tr: list, have_trades: bool, week: dict, events: list) -> tuple:
+    from engine import board_events as B
     out, missing = [], []
     pa = {str(a.get("key")): a for a in plan.get("accounts") or [] if isinstance(a, dict)}
     for r in board.get("accounts") or []:
@@ -322,7 +332,8 @@ def account_rows(board: dict, plan: dict, tr: list, have_trades: bool, week: dic
         src = str(r.get("src") or "PLAN")
         age = r.get("age_s")
         row = {"key": k, "name": _clean(r.get("name"), 40), "plan": _clean(r.get("plan") or a.get("plan"), 40),
-               "stage": r.get("chip") or r.get("stage"), "end": end, "src": src + (f", {_ago(age)}" if age is not None else ""),
+               "stage": r.get("chip") or r.get("stage"), "end": end,
+               "src": src + (f", {B.et_text(r['src_t'])}" if r.get("src_t") else ""),
                "room": _f(r.get("room")), "to_pass": _f(r.get("to_pass")), "trades": st["n"] if have_trades else None,
                "win_pct": st["win_pct"] if have_trades else None, "usd_week": st["usd"] if have_trades else None,
                "best_day": st["best_day"], "strat": STRAT[STRAT_OF_ACCT.get(k, "zlarior")]}
@@ -334,6 +345,12 @@ def account_rows(board: dict, plan: dict, tr: list, have_trades: bool, week: dic
             if start is not None and end is not None and (r.get("src_t") or 0) >= week["start_t"]:
                 row["usd_week"] = round(end - start, 2)
         row["start"] = start
+        if have_trades:                                  # day-brief round 2: wins / losses / R, room and to-pass at the start
+            row.update(wins=st["wins"], losses=st["losses"], r_week=st["r"])
+            if row["room"] is not None and _f(row.get("usd_week")) is not None:
+                row["room_start"] = round(row["room"] - row["usd_week"], 2)          # if the floor did not move this week
+            if row["to_pass"] is not None and _f(row.get("usd_week")) is not None:
+                row["to_pass_start"] = round(row["to_pass"] + row["usd_week"], 2)
         if row["src"].startswith("PLAN"):
             missing.append(f"{row['name']}: no live PC balance this week (plan / owner-typed number shown)")
         # consistency rule
@@ -464,6 +481,7 @@ def code_changes(week: dict) -> dict:
     for s in subs:
         s = re.sub(r"^(night-[\w-]+|team \w+|[A-Z]\d)\s*[:\-]\s*", "", s)
         s = re.sub(r"\s*\((?:[^()]*?)\)\s*$", "", s) if len(s) > 90 else s
+        s = re.sub(r"\s*#[0-9a-fA-F]{6}\b", "", s)   # colour codes (#020204) read as account numbers to the privacy scan
         t = _clean(s, 100)
         if t.lower().startswith("merge") or "cache bump" in t.lower() or t.lower().startswith(("version bumps", "test_", "state:")):
             continue                     # merges and housekeeping are not "what changed" for the owner
@@ -524,19 +542,26 @@ def pace(strats: list, accts: list, have_trades: bool, week: dict, plan: dict) -
 
 
 # ------------------------------------------------------------------------------------------------ build
-def build(offline: bool = False, now=None, board=None, rows=None, root: str = ROOT, on_pc: bool = False) -> dict:
+def build(offline: bool = False, now=None, board=None, rows=None, root: str = ROOT, on_pc: bool = False, lite=None,
+          extras: bool = True) -> dict:
     now = int(now or time.time())
     week = week_of(now)
     missing = []
     from engine import board_events as B
     plan = B.plan()
+    if lite is None and board is None and not offline:
+        try:                                     # the PC's public status post: live numbers + this week's trades ("at")
+            from tools import board as BD
+            lite = BD.fetch_lite()
+        except Exception:  # noqa: BLE001
+            lite = None
     if board is None:
         try:
             from tools import board as BD
             if on_pc:
-                board = BD.gather(hb={"present": False, "reason": "not used on the PC"}, lite=BD.fetch_lite(), now=now)
+                board = BD.gather(hb={"present": False, "reason": "not used on the PC"}, lite=lite, now=now)
             else:
-                board = BD.gather(offline=offline, now=now)
+                board = BD.gather(offline=offline, now=now, **({"lite": lite} if lite else {}))
         except Exception as e:  # noqa: BLE001
             board = {"accounts": [], "events": [], "pc": {}}
             missing.append(f"live board not readable ({e.__class__.__name__})")
@@ -556,6 +581,11 @@ def build(offline: bool = False, now=None, board=None, rows=None, root: str = RO
             src_tr = ", ".join(x for x in (src_tr, lab) if x)
     else:
         src_tr = "given"
+    from tools import week_more as WM
+    fr = WM.feed_rows(lite, plan.get("accounts") or []) if lite else []
+    if fr:                                       # the PC's post: the cloud's only trade list (the PC's ledgers win a duplicate)
+        rows = list(rows) + fr
+        src_tr = ", ".join(x for x in (src_tr if src_tr != "given" else "", "PC status post") if x) or "PC status post"
     tr = trades(rows, week, plan.get("accounts") or [])
     have = bool(rows)
     if not have:
@@ -575,18 +605,32 @@ def build(offline: bool = False, now=None, board=None, rows=None, root: str = RO
     if nxt["news"] is None:
         missing.append("news calendar: data/news/events.csv not readable")
     ch = code_changes(week)
-    pc_line = (f"PC last reported {B.et_text(pc_t)} ({B.ago(now - pc_t)})" if pc_t else "PC: no report reached the cloud")
+    pc_line = (f"PC last reported {B.et_text(pc_t)}" if pc_t else "PC: no report reached the cloud")
+    more = {}
+    if extras:                                   # day-brief round 2: twins, best / worst + lesson, K8, calendar, weekend
+        try:
+            more["twins"] = WM.twins(week, tr, _d(_d(lite).get("life")) if lite else None)
+        except Exception as e:  # noqa: BLE001
+            more["twins"] = {"bots": [], "note": f"twin replay not available here ({e.__class__.__name__})"}
+        more.update(WM.best_worst(tr) if have else {"best": None, "worst": None})
+        more["kalshi"] = WM.kalshi(week, lite)
+        more["calendar"] = WM.calendar(week)
+        more["weekend"] = WM.weekend()
     doc = {"v": 1, "title": "ZEUS this week", "built": dt.datetime.fromtimestamp(now, ET).strftime("%Y-%m-%d %H:%M ET"),
-           "built_t": now, "built_by": "tools/weekly_review.py" + (" on the PC" if on_pc else ""),
+           "built_by": "tools/weekly_review.py" + (" on the PC" if on_pc else ""),
            "week": {k: week[k] for k in ("from", "to", "label", "complete", "sessions_done")},
            "pc": pc_line, "accounts": accts, "strategies": strats, "light": exp.get("light"), "changes": ch, "next": nxt,
-           "pace": pace(strats, accts, have, week, plan), "missing": missing,
-           "sources": {"trades": src_tr or "none", "plan_updated": plan.get("updated"), "board_pc_t": int(pc_t) if pc_t else None}}
+           "pace": pace(strats, accts, have, week, plan), **more, "missing": missing,
+           "sources": {"trades": src_tr or "none", "plan_updated": plan.get("updated"),
+                       "board_pc": B.et_text(pc_t) if pc_t else None}}
     return doc
 
 
 def write(doc: dict, path: str = OUT) -> str:
     os.makedirs(os.path.dirname(path), exist_ok=True)
+    old = _read_json(path)                       # no churn: nothing rewritten when only the built time would change
+    if isinstance(old, dict) and {**old, "built": None} == json.loads(json.dumps({**doc, "built": None}, ensure_ascii=False)):
+        return path
     with open(path + ".tmp", "w", encoding="utf-8") as fh:
         json.dump(doc, fh, ensure_ascii=False, indent=1)
         fh.write("\n")

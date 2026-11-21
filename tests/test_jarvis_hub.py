@@ -238,8 +238,11 @@ def part_a():
               "data.js", "jarvis.css", "OFL.txt") + FONTS:
         check(f"a. jarvis/{f} exists", os.path.exists(os.path.join(JV, f)))
     m = json.load(open(os.path.join(JV, "manifest.webmanifest"), encoding="utf-8"))
-    check("a. manifest: Jarvis, standalone, own scope, black like the old Jarvis, icons j5 (the gold temple, 2026-11-18)",
-          m["name"] == "Olympus" and m["short_name"] == "Olympus" and m["display"] == "standalone" and m["scope"] == "./"
+    # scope ../ = the whole site (owner phone 2026-11-21: ZEUS at ../hub/ opened in iOS's browser layer, an X + the web address on
+    # top and buttons at the bottom, because it was outside the app's ./ scope); start_url and id stay ./ (Jarvis opens first)
+    check("a. manifest: Olympus, standalone, the whole site in scope (../), black like the old Jarvis, icons j5 (the gold temple, 2026-11-18)",
+          m["name"] == "Olympus" and m["short_name"] == "Olympus" and m["display"] == "standalone" and m["scope"] == "../"
+          and m["start_url"] == "./" and m["id"] == "./"
           and m["theme_color"] == "#14110e" and all(i["src"].endswith("?v=j5") for i in m["icons"]), m)
     b = open(os.path.join(ROOT, "tools", "build_web_dashboard.py"), encoding="utf-8").read()
     tup = re.search(r'for app in \(([^)]*)\):', b)
@@ -265,7 +268,7 @@ def part_a():
           and "background:#000" in sw and "location.reload()" in sw)
     check("a. worker v14: data.js, jarvis.css, the fonts, every separate part, switcher.js, the new brain's obsidian.js / memory.js / "
           "assist-ui.js and voice-mode.js in SHELL, each saved on its own (a missing part is skipped)",
-          "const CACHE = 'jarvis-v76';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
+          "const CACHE = 'jarvis-v89';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
           and f"'./{JCSS}'" in sw and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
     shell = re.search(r"const SHELL = \[([^\]]*)\]", sw)
     shell_files = re.findall(r"'\./([^'?]+)", shell.group(1)) if shell else []
@@ -462,6 +465,10 @@ def run_a(br, url):
     hello = p.text_content("#hello")
     when = p.text_content("#when")
     check("b. Jarvis screen: greeting and the market line", hello in ("Late night", "Good morning", "Good afternoon", "Good evening") and "NQ market" in when, (hello, when))
+    try:                                               # the bots' numbers arrive with the live feed, a moment after the start (QA 2026-11-21:
+        p.wait_for_function("(document.getElementById('cards').textContent || '').includes('$1,106')", timeout=10000, polling=100)   # 0.7 s was a race)
+    except Exception:                                  # noqa: BLE001 - reported below
+        pass
     cards = p.text_content("#cards")
     check("b. Zenith card: the bots' status and numbers from the live feed",
           "RUNNING: bot trading" in cards and "$1,106" in cards and "+$213" in cards and "$750" in cards, cards[:400])
@@ -700,6 +707,10 @@ def run_b(br, url):
     check("h. apps.js: a card posted by an open app (listen) replaces it", "StubApp · Posted" in p.text_content("#cards"), p.text_content("#cards")[-200:])
     check("h. brain.js: its suggestions", "Stub suggestion" in p.inner_text("#sugs"), p.inner_text("#sugs"))
     check("h. CONNECT MY BRAIN shows while the brain can use a key and has none", p.locator("#brainF").is_visible())
+    try:                                               # the live feed (room 1105.6) first: asking before it lands answers "room none" (a race)
+        p.wait_for_function("(document.getElementById('cards').textContent || '').includes('$1,106')", timeout=10000, polling=100)
+    except Exception:                                  # noqa: BLE001 - reported below
+        pass
     ask = asker(p)
     a = ask("anything")
     check("h. brain.js answers with getFacts() (market, live, apps) and its cards show", a.startswith("STUB NQ market") and "room 1105.6" in a
@@ -844,7 +855,7 @@ def run_c(br, url):
         const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
-          const c = await caches.open('jarvis-v76');
+          const c = await caches.open('jarvis-v89');
           const got = await Promise.all(['./index.html', './data.js', './%s', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));
@@ -1185,7 +1196,12 @@ def _registry():
                           "import { createRequire } from 'module'; const d = createRequire(process.cwd() + '/')('../olympus/doors.js');"   # the orb's four doors (2026-11-18)
                           "import('./apps.js').then((m) => console.log(JSON.stringify({ groups: m.GROUPS.map((g) => ({ id: g.id, name: g.name })), apps: m.BUILT_INS.map((a) => ({ id: a.id, name: a.name, group: a.group, accent: a.accent || '', dist: d.DOORS.some((x) => x.ids.indexOf(a.id) >= 0) ? d.doorOf(a.id) : a.group === 'trading' ? 'zeus' : a.group === 'money' ? 'money' : 'more' })), dists: d.DOORS.map((x) => ({ id: x.id, title: x.title })) })))"],
                          cwd=JV, capture_output=True, text=True, timeout=60, check=True).stdout
-    return json.loads(out)
+    reg = json.loads(out)
+    sw = subprocess.run(["node", "--input-type=module", "-e", "import { createRequire } from 'module'; const d = createRequire(process.cwd() + '/')('../olympus/doors.js');"
+                         "import('./switcher.js').then((m) => console.log(JSON.stringify({ first: m.FIRST, more_first: m.MORE_FIRST || [], hide: [...m.HIDE], parts: [...m.CITY_PARTS], archive: d.ARCHIVE || [] })))"],
+                        cwd=JV, capture_output=True, text=True, timeout=60, check=True).stdout
+    reg["sw"] = json.loads(sw)
+    return reg
 
 
 _REG = _registry()
@@ -1215,6 +1231,27 @@ D_DATACITY = next(a["dist"] for a in _REG["apps"] if a["id"] == "datacity")
 D_NAMES_ORDER = [NX_LABEL.get(i, next((a["name"] for a in _REG["apps"] if a["id"] == i), i).upper()) for i in D_ORDER]
 D_ON = [i for i in D_ORDER if i in ON_SITE]
 D_MONEY_FIRST = next(a["id"] for a in D_SORTED if a["dist"] == "money")
+# the switcher since 2026-11-20 17:00 ET (owner: "6 arenas, that's it, then a separate area for the smaller stuff"): switcher.js FIRST (Cities,
+# Kalshi, NQ, Jarvis, Websites, Business) as the "daily" group (Arenas), then ONE "more" group: MORE_FIRST (Planner, Zenith), the rest in door
+# order, the archived apps (olympus/doors.js ARCHIVE) at its end; HIDE + CITY_PARTS left out (except the app on screen); no vertical group
+# headings. Read from switcher.js, never typed here.
+_SWH = set(_REG["sw"]["hide"]) | set(_REG["sw"]["parts"])
+def sw_view(active="home"):
+    vis = ["home"] + [a["id"] for a in D_SORTED if a["id"] == active or a["id"] not in _SWH]
+    first = [i for i in _REG["sw"]["first"] if i in vis]
+    mf = [i for i in _REG["sw"]["more_first"] if i in vis and i not in first]
+    arc = set(_REG["sw"]["archive"])
+    dist = {a["id"]: a["dist"] for a in _REG["apps"]}
+    doors = [d["id"] for d in _REG["dists"]]
+    rest = [i for d in doors for i in vis if i not in first and i not in mf and i not in arc and dist.get(i) == d]
+    vs = set(vis)
+    archived = [a["id"] for a in SORTED_APPS if a["id"] in vs and a["id"] not in first and a["id"] not in mf and a["id"] in arc]   # apps.js order
+    more = mf + rest + archived
+    return {"order": first + more, "chips": (["daily"] if first else []) + (["more"] if more else []), "first_more": more[0] if more else None}
+SW_HOME, SW_DC = sw_view("home"), sw_view("datacity")
+SW_NAMES_HOME = [NX_LABEL.get(i, next((a["name"] for a in _REG["apps"] if a["id"] == i), i).upper()) for i in SW_HOME["order"]]
+SW_ON = [i for i in SW_HOME["order"] if i in ON_SITE]
+SW_DC_LIT = "daily" if "datacity" in _REG["sw"]["first"] else "more"        # the open Data City's group chip
 MONEY_FIRST = next(a["id"] for a in SORTED_APPS if a["group"] == "money")       # the first MONEY app: the group chip glides its card to the middle
 # each tile's colour: its accent in apps.js as "r,g,b" (read, never typed: the AGORA accents of 2026-11, commit 45637b2, replaced the old neon)
 ACR = {a["id"]: ",".join(str(int(a["accent"][k:k + 2], 16)) for k in (1, 3, 5)) for a in _REG["apps"] if re.fullmatch(r"#[0-9a-fA-F]{6}", a["accent"] or "")}
@@ -1282,25 +1319,26 @@ def run_olympus(br, url):
           off: [...document.querySelectorAll('#nxTrack .nx-card.off')].map((c) => c.dataset.nx), now: (document.querySelector('#nxTrack .nx-card.now') || {}).dataset,
           q: [...row.querySelectorAll('.nx-qb')].map((b) => [b.dataset.nx, Math.round(b.getBoundingClientRect().height)]), seps: row.querySelectorAll('.nx-qs').length,
           scroll: [row.scrollWidth, row.clientWidth, getComputedStyle(row).overflowX], sw: document.documentElement.scrollWidth }; })()""")
-    check("p. the orb is organised by the four doors: headings and chips (ZEUS Trading, Money, Kalshi, More; Data City's door, More, lit), the not-yet apps dimmed, Data City NOW",
-          o["heads"] == D_HEADS and [c[0] for c in o["chips"]] == D_IDS and [c[0] for c in o["chips"] if c[1]] == [D_DATACITY] and all(c[2] >= 44 for c in o["chips"])
-          and sorted(o["off"]) == sorted(NOT_ON_SITE) and o["now"] and o["now"].get("nx") == "datacity", o)
+    check("p. the orb is two groups: the six arenas, then More (chips Arenas, More; Data City's, More, lit), the not-yet apps dimmed, Data City NOW",
+          o["heads"] == [] and [c[0] for c in o["chips"]] == SW_DC["chips"] and [c[0] for c in o["chips"] if c[1]] == [SW_DC_LIT] and all(c[2] >= 44 for c in o["chips"])
+          and sorted(o["off"]) == sorted(i for i in SW_DC["order"] if i not in ON_SITE) and o["now"] and o["now"].get("nx") == "datacity", o)
     check("p. the quick row: every app in group order with separators, 44 px+ buttons, one scrollable line (no page sideways scroll)",
-          [x[0] for x in o["q"]] == D_ORDER and o["seps"] == len(D_USED) and all(x[1] >= 44 for x in o["q"])
+          [x[0] for x in o["q"]] == SW_DC["order"] and o["seps"] == len(SW_DC["chips"]) - 1 and all(x[1] >= 44 for x in o["q"])
           and o["scroll"][2] == "auto" and o["sw"] <= 390, o)
-    p.click('#nxGroups [data-nx-jump="money"]')
+    p.click('#nxGroups [data-nx-jump="more"]')
     try:
         p.wait_for_function("""(id) => { const t = document.getElementById('nxTrack'), c = t.querySelector('.nx-card[data-nx="' + id + '"]');
-            return Math.abs(c.offsetLeft + c.offsetWidth / 2 - (t.scrollLeft + t.clientWidth / 2)) < 45; }""", arg=D_MONEY_FIRST, timeout=20000, polling=50)      # a long smooth scroll over many cards (the list grows)
+            return Math.abs(c.offsetLeft + c.offsetWidth / 2 - (t.scrollLeft + t.clientWidth / 2)) < 45; }""", arg=SW_DC["first_more"], timeout=20000, polling=50)      # a long smooth scroll over many cards (the list grows)
         jumped = True
     except Exception:                                   # noqa: BLE001 - reported below
         jumped = False
-    check("p. a district chip glides the cards to that district (Money: its first app in the middle), the switcher stays open",
+    check("p. a group chip glides the cards to that group (More: the Planner, its first app, in the middle), the switcher stays open",
           jumped and p.evaluate("document.getElementById('nxRoot').classList.contains('on')"))
     p.click('#nxRow .nx-qb[data-nx="home"]')
     p.wait_for_function("window.__jarvis.active() === 'home'", timeout=5000)
     use = p.evaluate("JSON.parse(localStorage.getItem('jarvis.orb.use'))")
-    check("p. every switch counts on this phone for the ring (Data City opened once more, Jarvis once)", use.get("datacity") == 3 and use.get("home") == 1 and use.get("kalshi") == 4, use)
+    # (Data City is no longer on the swipe path since 2026-11-20: it is one of the cities, inside Cities)
+    check("p. every switch counts on this phone for the ring (Jarvis once, Kalshi on each swipe past it; Data City off the swipe path)", use.get("home") == 1 and use.get("kalshi") == 4 and "datacity" not in use, use)
     # the ring with more than six apps: the six most opened, then "more" (the whole switcher)
     p.evaluate("""() => import('./apps.js').then((A) => { for (const n of ['Alpha', 'Beta', 'Gamma']) A.addApp({ name: n, url: 'https://' + n.toLowerCase() + '.example/' }); })""")
     p.evaluate("localStorage.setItem('jarvis.orb.use', JSON.stringify({ 'x-gamma': 9, kalshi: 7, 'x-alpha': 5, zenith: 1 }))")
@@ -1331,7 +1369,8 @@ def run_olympus(br, url):
     p.wait_for_timeout(300)
     check("p. Search on the ring opens the switcher with the search box ready", p.evaluate("document.activeElement && document.activeElement.id") == "nxFind")
     heads = p.evaluate("[...document.querySelectorAll('#nxTrack .nx-gl')].map((h) => h.textContent)")
-    check("p. the whole switcher: the added apps sit in More (the doors stay in order)", heads == D_WITH_EXTRAS, heads)
+    chips2 = p.evaluate("[...document.querySelectorAll('#nxGroups .nx-gb')].map((b) => b.dataset.nxJump)")
+    check("p. the whole switcher: the added apps sit in More (the doors stay in order), no vertical headings", heads == [] and chips2[0] == "daily" and chips2[-1] in ("more", "archive"), (heads, chips2))
     check("p. no page errors", not errs, errs)
     ctx.close()
 
@@ -1417,7 +1456,7 @@ def run_system(br, url):
                cards: [...document.querySelectorAll('#nxTrack .nx-card')].map((c) => (c.querySelector('.nx-nm b') || {}).textContent) }; }""")
     check("s. the switcher: the System strip on top (NEEDS YOU, what, 6 dots, 44 px+), the app cards unchanged",
           not st["hidden"] and st["text"].startswith("NEEDS YOU") and "PC: Memory (RAM) red" in st["text"] and "bad" in st["cls"] and st["dots"] == 6
-          and st["h"] >= 44 and st["w"] and st["cards"][:2] == ["JARVIS", "NQ BOT"] and {"CALENDAR", "KALSHI", "ADD"} <= set(st["cards"]), st)
+          and st["h"] >= 44 and st["w"] and st["cards"][:len(SW_NAMES_HOME)] == SW_NAMES_HOME and {"JARVIS", "NQ BOT", "CALENDAR", "KALSHI", "ADD"} <= set(st["cards"]), st)
     p.click("#nxSys")
     try:                                                # the switcher closes, then a smooth scroll: waited for, not timed
         p.wait_for_function("(() => { const a = document.getElementById('p-system').getBoundingClientRect(), h = document.getElementById('home').getBoundingClientRect();"
@@ -1457,8 +1496,8 @@ def run_switcher(br, url):
       name: (c.querySelector('.nx-nm b') || {}).textContent, val: (c.querySelector('.nx-val') || {}).textContent || '', now: c.classList.contains('now'),
       lines: [...c.querySelectorAll('.nx-ln')].map((l) => l.textContent) }))""")
     names = [c["name"] for c in cards]
-    check("n. tap: the switcher opens with JARVIS, then every app of apps.js in its door order (ZEUS Trading, Money, Kalshi, More; built from apps.js, so it grows by itself), and + ADD, Jarvis's card marked NOW",
-          names == D_NAMES_ORDER + ["ADD"] and cards[0]["now"] and not any(c["now"] for c in cards[1:]), (names, D_NAMES_ORDER, cards[:2]))
+    check("n. tap: the switcher opens with the six arenas first (switcher.js FIRST: Cities, Kalshi, NQ, Jarvis, Websites, Business), then More (Planner, Zenith, the rest in door order), and + ADD, Jarvis's card marked NOW",
+          names == SW_NAMES_HOME + ["ADD"] and [c["now"] for c in cards].count(True) == 1 and cards[names.index("JARVIS")]["now"], (names, SW_NAMES_HOME, cards[:2]))
     nq = next((c for c in cards if c["id"] == "zenith"), {})
     cal = next((c for c in cards if c["id"] == "planner"), {})
     check("n. the cards are live: NQ BOT shows today's $ across the accounts (+$308) and their status; CALENDAR the next thing or FREE",
@@ -1481,6 +1520,9 @@ def run_switcher(br, url):
 
     def swipe(dx):
         before = p.evaluate(CUR)
+        # the orb where it is NOW: on Jarvis's own screen it docks in the row above the Ask bar, elsewhere it floats (2026-11-20: the swipe from
+        # Jarvis used the floating spot and missed once the owner's order put Jarvis right before the Planner)
+        cx, cy = p.evaluate("(() => { const b = document.getElementById('nxOrb').getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2]; })()")
         p.mouse.move(cx, cy); p.mouse.down()
         for k in (2, 5):                                # two quick moves: the flick must end within 600 ms of the finger's own clock, even on a loaded machine
             p.mouse.move(cx + dx * k / 5, cy + 2)
@@ -1498,10 +1540,13 @@ def run_switcher(br, url):
                 break
             got = swipe(dx)
         return got
-    e1 = D_ON[(D_ON.index("planner") - 1) % len(D_ON)]            # swiping right goes back: the app before the Planner in district order that can open (Kalshi); left comes back
-    a1 = swipe_to(80, e1)
-    a2 = swipe_to(-80, "planner")
-    check("n. swipe the orb right: the previous app that can open in district order (the apps not on this site are skipped: Kalshi, before the Planner in Life); left: the next (the Planner)", a1 == e1 and a2 == "planner", (a1, a2, e1))
+    # left = the next app that can open (Business is not on this site: skipped), then right comes back to the Planner. (2026-11-20: the owner's
+    # order puts Jarvis right before the Planner, and on Jarvis's own screen this test machine draws the 3D core in software, which spaces the
+    # finger's events past the 320 ms flick limit; a phone draws it on its GPU. So the test swipes forward first.)
+    e1 = SW_ON[(SW_ON.index("planner") + 1) % len(SW_ON)]
+    a1 = swipe_to(-80, e1)
+    a2 = swipe_to(80, "planner")
+    check("n. swipe the orb left: the next app that can open (the apps not on this site are skipped); right: back to the previous (the Planner)", a1 == e1 and a2 == "planner", (a1, a2, e1))
     # hold: the ring; slide onto Jarvis and let go
     cur_before = p.evaluate(CUR)                        # the app on screen (left out of the ring)
     p.mouse.move(cx, cy); p.mouse.down(); p.wait_for_timeout(520)
@@ -1513,7 +1558,7 @@ def run_switcher(br, url):
     p.mouse.up(); p.wait_for_timeout(450)
     cur = p.evaluate("(document.querySelector('#modes [aria-current=\"page\"]') || {dataset: {}}).dataset.app")
     check("n. hold: the ring fans out Jarvis, the districts that have an app that can open, and Search (44 px+ each, on screen, none on another); slide onto Jarvis and let go: Jarvis",
-          sorted(b["id"] for b in ring) == sorted((["home"] if cur_before != "home" else []) + [d for d in D_ALL5 if any(a["dist"] == d and a["id"] in ON_SITE and a["id"] != cur_before for a in _REG["apps"])] + ["SEARCH"]) and all(b["w"] >= 44 and 0 <= b["x"] <= 390 and 0 <= b["y"] <= 844 for b in ring)
+          sorted(b["id"] for b in ring) == sorted((["home"] if cur_before != "home" else []) + [d for d in D_ALL5 if any(a["dist"] == d and a["id"] in ON_SITE and a["id"] != cur_before and a["id"] not in _SWH for a in _REG["apps"])] + ["SEARCH"]) and all(b["w"] >= 44 and 0 <= b["x"] <= 390 and 0 <= b["y"] <= 844 for b in ring)
           and all((a["x"] - b["x"]) ** 2 + (a["y"] - b["y"]) ** 2 >= 44 ** 2 for i, a in enumerate(ring) for b in ring[i + 1:])
           and cur == "home" and p.evaluate("!document.querySelector('.nx-fan.on')"), (ring, cur))
     # drag: move it (kept on this phone)
@@ -1575,7 +1620,8 @@ def run_switcher(br, url):
     rm = p.evaluate("""() => ({ t: getComputedStyle(document.getElementById('nxRoot')).transitionDuration, sw: document.documentElement.scrollWidth, W: innerWidth,
       open: document.getElementById('nxRoot').classList.contains('on'), tf: [...document.querySelectorAll('#nxTrack .nx-card')].map((c) => c.style.transform).filter(Boolean).length })""")
     check("n. reduced motion: no transitions and no card tilt; 375 x 667: no sideways scroll with the switcher open (Enter/Space opens it too)",
-          rm["open"] and all(float(x.rstrip("s") or 0) == 0 for x in rm["t"].split(",")) and rm["tf"] == 0 and rm["sw"] <= rm["W"], rm)
+          # (no transition = none longer than 10 ms: the kit's olympus/a11y.css sets 0.001s under reduced motion so transitionend still fires)
+          rm["open"] and all(float(x.strip().rstrip("s") or 0) <= 0.01 for x in rm["t"].split(",")) and rm["tf"] == 0 and rm["sw"] <= rm["W"], rm)
     ctx.close()
 
 
@@ -1910,11 +1956,16 @@ def run_intro(br, url):
     ctx.close()
 
     # 6. a phone that cannot keep up (every frame 80 ms) at the phone's own scale: a quick cut to the reveal, never a slideshow
-    ctx, p, errs = intro_page(br, url, "full", init=[SLOW_FRAMES], cut=True, scale="0.1")
+    ctx, p, errs = intro_page(br, url, "full", init=[SLOW_FRAMES, FADE_PROBE], cut=True, scale="0.1")
     wait(p, INTRO_GONE)
     s = intro_state(p)
+    blk = p.evaluate(BLOCKED)
+    s["blocked"] = blk
+    # its own time (the wall clock less the main thread's blocked time on a loaded test machine, as the fade check above) < 3 s, and the wall
+    # clock < 4.9 s (day-jarvis 2026-11-20: the wall clock alone failed now and then when other browser suites shared the CPU)
     check("o. a phone that cannot keep up: it cuts to the reveal early (before the 3.1 s reveal), never a slideshow",
-          s["st"].get("slow") is True and s["st"]["state"] == "done" and s["pr"]["end"] < BK.limit_ms(3000, "intro slow phone"), s)
+          s["st"].get("slow") is True and s["st"]["state"] == "done" and blk is not None
+          and s["pr"]["end"] - blk < BK.limit_ms(3000, "intro slow phone") and s["pr"]["end"] < BK.limit_ms(4000, "intro slow phone wall", cap=4900), s)
     ctx.close()
 
     # 7. the versions it picks by itself

@@ -102,7 +102,7 @@ def view_checks():
     b = n[0]["body"] if n else ""
     check("pass push: 'EVAL PASSED \U0001F389 next steps' + agreement, account name, funded command, payout habit",
           len(n) == 1 and n[0]["title"] == "EVAL PASSED \U0001F389 next steps" and "agreement" in b and "--to-funded" in b and len(b) <= 600 and "Name" in b
-          and "$53,600" in b and "$2,100 buffer" in b and "$2,000" in b and n[0]["key"] == "eval:passed:2026-10-19", n)
+          and "$54,100" in b and "$2,100 buffer" in b and "$2,000" in b and n[0]["key"] == "eval:passed:2026-10-19", n)
     v1 = EL.view({"2026-10-19": 3050.0}, "2026-10-19", "2026-10-20", L)
     check("view: passed on session 1 -> 1 minimum day left", v1["min_days_left"] == 1 and "minimum-days" in v1["trading"], v1)
     vf = EL.view({"0000-00-00": -100.0, "2026-10-19": -1950.0}, "2026-10-19", "2026-10-20", L)

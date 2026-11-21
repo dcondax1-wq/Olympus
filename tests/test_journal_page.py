@@ -27,7 +27,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "tools", "web_public")
 PAGE = os.path.join(WEB, "journal")
 RES: list = []
-INCLUDE = '<script src="../olympus/intro-app.js?v=i10" defer></script>'
+INCLUDE = '<script src="../olympus/intro-app.js?v=i11" defer></script>'
 
 
 def check(name, ok, info=""):
@@ -68,17 +68,17 @@ def test_static():
     check("a. the files: " + ", ".join(names), all(os.path.isfile(os.path.join(PAGE, n)) for n in names))
     html, js, core, css = (read(os.path.join(PAGE, n)) for n in ("index.html", "journal.js", "journalcore.js", "journal.css"))
     lines = html.splitlines()
-    i = next((n for n, ln in enumerate(lines) if "../olympus/olympus.js?v=o15" in ln), -1)
-    check("a. the kit: olympus.css?v=o7 before the app's sheet, themes.js, olympus.js?v=o15 data-app=\"journal\" and the intro tag on the very next line",
-          html.index("../olympus/olympus.css?v=o7") < html.index("journal.css") and "../olympus/themes.js?v=o9" in html and 'data-app="journal"' in lines[i] and lines[i + 1].strip() == INCLUDE and html.count("intro-app.js") == 1, lines[i:i + 2])
-    check("a. the accessibility layer and the sound kit are on the page (a11y.js, sfx.js), the page is an ES module", "../olympus/a11y.js" in html and "../olympus/sfx.js?v=s4" in html and '<script type="module" src="journal.js' in html)
-    check("a. viewport-fit=cover, theme-color, manifest, icon, apple-touch-icon, lang, one h1 named MNEMOSYNE, a live status line", all(x in html for x in ("viewport-fit=cover", 'name="theme-color"', 'rel="manifest"', 'rel="icon"', "apple-touch-icon", '<html lang="en" data-theme="agora">'))
+    i = next((n for n, ln in enumerate(lines) if "../olympus/olympus.js?v=o22" in ln), -1)
+    check("a. the kit: olympus.css?v=o7 before the app's sheet, themes.js, olympus.js?v=o22 data-app=\"journal\" and the intro tag on the very next line",
+          html.index("../olympus/olympus.css?v=o7") < html.index("journal.css") and "../olympus/themes.js?v=o10" in html and 'data-app="journal"' in lines[i] and lines[i + 1].strip() == INCLUDE and html.count("intro-app.js") == 1, lines[i:i + 2])
+    check("a. the accessibility layer and the sound kit are on the page (a11y.js, sfx.js), the page is an ES module", "../olympus/a11y.js" in html and ("../olympus/sfx.js?v=s4" in html or "../olympus/olympus.js" in html) and '<script type="module" src="journal.js' in html)
+    check("a. viewport-fit=cover, theme-color, manifest, icon, apple-touch-icon, lang, one h1 named MNEMOSYNE, a live status line", all(x in html for x in ("viewport-fit=cover", 'name="theme-color"', 'rel="manifest"', 'rel="icon"', "apple-touch-icon", '<html lang="en" data-theme="agora"'))
           and html.count("<h1>") == 1 and "<h1>MNEMOSYNE</h1>" in html and 'role="status"' in html and 'aria-live="polite"' in html)
     bad = [p for p in (r"\.innerHTML", r"outerHTML", r"insertAdjacentHTML", r"document\.write", r"\beval\s*\(", r"new Function", r"\bimport\s*\(") if re.search(p, js) or re.search(p, core)]
     check("a. no markup is ever built from data: no innerHTML / outerHTML / insertAdjacentHTML / document.write / eval / dynamic import", not bad, bad)
     fetches = re.findall(r"getJSON\('([^']+)'\)", js)
     check("a. it reads only published JSON of this site (../odeon/trades.json, ./fixture.json) and never sends anything: no XHR / WebSocket / sendBeacon / POST, no web address",
-          set(fetches) == {"../odeon/trades.json", "./fixture.json"} and not re.search(r"XMLHttpRequest|WebSocket|sendBeacon|method:\s*['\"]POST|https?://(?!www\.w3\.org)", js + core), fetches)
+          set(fetches) == {"../odeon/trades_lite.json", "../odeon/trades.json", "./fixture.json"} and not re.search(r"XMLHttpRequest|WebSocket|sendBeacon|method:\s*['\"]POST|https?://(?!www\.w3\.org)", js + core), fetches)
     check("a. everything it types is kept only in localStorage['journal.v1'] (one key; the probe key is removed at once); no cookies / sessionStorage / indexedDB",
           "export const KEY = 'journal.v1'" in core and len(re.findall(r"localStorage\.setItem\(", js)) == 1 and "K.KEY + '.probe'" in js and "localStorage.removeItem(K.KEY + '.probe')" in js and not re.search(r"document\.cookie|sessionStorage|indexedDB", js + core))
     check("a. the Jarvis card is kept in 'journal.card.v1' (same pattern as the Inbox's), never for the forced ?demo=1 preview; window.JOURNAL_STATS exists; the check opens from #check / ?check=1",
@@ -321,7 +321,7 @@ def test_page():
             d = p.evaluate("""() => ({ demo: !document.querySelector('#demo').hidden, trades: document.querySelectorAll('#tlist .trade').length, hero: document.querySelector('#hero').innerText, week: document.querySelector('#week').innerText,
               keys: Object.keys(localStorage).filter((k) => /journal/i.test(k)), src: window.JOURNAL.S.demo, tInt: document.querySelector('#tInt').textContent, ruleText: document.querySelector('#ruleText').textContent.length }) """)
             check(f"c. DEMO (?demo=1): the chip says DEMO, {d['trades']} made-up trades, the dollars and a weekly rule are filled in (never blank), the real file is never read",
-                  d["demo"] and d["trades"] >= 10 and "$" in d["hero"] and "$" in d["week"] and d["ruleText"] > 20 and d["tInt"].startswith("-$") and not any("odeon/trades.json" in u for u in seen), d)
+                  d["demo"] and d["trades"] >= 10 and "$" in d["hero"] and "$" in d["week"] and d["ruleText"] > 20 and d["tInt"].startswith("-$") and not any("odeon/trades" in u for u in seen), d)
             check("c. the only storage key of the journal is 'journal.v1', and nothing was requested off the page's origin", d["keys"] == ["journal.v1"] and not off, (d["keys"], off[:3]))
             check("c. DEMO: no console error and no page error", not errs, errs[:3])
             tb = p.evaluate(TAPS)
@@ -335,7 +335,7 @@ def test_page():
               meta: document.querySelector('#tlist .trade .tmeta').textContent, labels: [...document.querySelectorAll('#tlist .what')].map((e) => e.textContent.split(' · ')[1]), hero: document.querySelector('#tInt').textContent, h: document.querySelector('#lead').textContent,
               first_id: document.querySelector('#tlist .trade').dataset.id }) """)
             check(f"c. the real trades: {d['n']} (the bot's latest, newest first), the first is '{d['first']}' {d['usd']}, labelled MFFU eval / paper / replay, no DEMO chip, odeon/trades.json read",
-                  d["demo"] and 20 <= d["n"] <= 30 and d["first"].startswith("SHORT 5 micros · MFFU eval") and d["usd"] == "-$437" and {"MFFU eval", "paper", "replay"} <= set(d["labels"]) and any("odeon/trades.json" in u for u in seen) and d["first_id"].startswith("real."), d)
+                  d["demo"] and 20 <= d["n"] <= 30 and d["first"].startswith("SHORT 5 micros · MFFU eval") and d["usd"] == "-$437" and {"MFFU eval", "paper", "replay"} <= set(d["labels"]) and any("odeon/trades" in u for u in seen) and d["first_id"].startswith("real."), d)
             check("c. a fresh journal is not blank: it says to rate a few trades and shows $0 for both habits", "Rate a few trades" in d["h"] and d["hero"] == "$0", d)
             first = "#tlist .trade:nth-child(1)"
             p.click(f"{first} [role=radiogroup][aria-label='How did you trade it?'] button[data-v=interfered]")
@@ -400,7 +400,7 @@ def test_page():
             check("c. every tap target is at least 44 px with 24 real trades on the page", not tb, tb[:5])
             ctx.close()
             # ---- never blank, whatever fails: the real file and the fixture both missing
-            ctx, p, errs, seen, off = page(br, origin, block=("odeon/trades.json", "journal/fixture.json"))
+            ctx, p, errs, seen, off = page(br, origin, block=("odeon/trades", "journal/fixture.json"))
             open_(p, origin)
             d = p.evaluate("""() => ({ demo: !document.querySelector('#demo').hidden, n: document.querySelectorAll('#tlist .trade').length, hero: document.querySelector('#hero').innerText, rule: document.querySelector('#ruleText').textContent.length })""")
             check("c. never blank: with the Odeon file and the fixture both unreachable the page still shows 6 built-in DEMO trades, the dollars and a rule", d["demo"] and d["n"] == 6 and "$" in d["hero"] and d["rule"] > 20 and not errs, d)

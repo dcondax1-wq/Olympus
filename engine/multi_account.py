@@ -249,6 +249,8 @@ def normalize(spec: dict, primary: dict | None = None, seen_ids=(), seen_names=(
            "lit_sizing": dict(s.get("lit_sizing") or {}), "problem": None}
     if s.get("lane"):
         out["lane"] = str(s.get("lane"))     # "rapid": LIT's lane of the Rapid EOD (engine/rapid.py: ATLAS shares the account)
+    if s.get("slot") == "rapid2" and out.get("lane") == "rapid":
+        out["slot"] = "rapid2"               # the 2nd Rapid (engine/rapid.py, data/rapid2.json): its own ATLAS / lifecycle key
     if s.get("lit_bank") is True and out.get("lane") == "rapid":
         out["lit_bank"] = True               # the Rapid 25K's "bank at the room" option (engine/rapid.lit_bank; OFF by default)
     pre = PRESETS.get(out["preset"])
@@ -502,7 +504,9 @@ class Account:
 
     def route(self, action: dict) -> dict:
         try:
-            res = self.adapter.send(action) if self.adapter is not None else {"ok": False, "error": "no adapter"}
+            ka = self._keepalive_yield(action)             # an open keep-alive on this account / the other way closes first
+            res = {"ok": False, "error": "REFUSED: " + ka} if ka else \
+                self.adapter.send(action) if self.adapter is not None else {"ok": False, "error": "no adapter"}
         except Exception as e:
             res = {"ok": False, "error": f"{e.__class__.__name__}: {e}"}
         with self.mx:
@@ -512,6 +516,17 @@ class Account:
         self._life_routed(action, res)
         self.router.save()
         return res
+
+    def _keepalive_yield(self, action):
+        """engine/keepalive.before_entry (OFF by default = None at once): a keep-alive trade open on this NinjaTrader account
+        (any side) or the other way on any account is closed at market before this entry goes out. Never raises."""
+        if action.get("side") not in ("buy", "sell"):
+            return None
+        try:
+            from . import keepalive as _ka
+            return _ka.before_entry(getattr(self.router, "bot", None), 1 if action.get("side") == "buy" else -1, self)
+        except Exception:
+            return None
 
     # ---- MFFU lifecycle (engine/lifecycle.py): passed / failed / locked = stand down, the other accounts keep trading
     def life_key(self) -> str:
@@ -542,7 +557,8 @@ class Account:
             return ab if getattr(ab, "shared_lane", None) == "lit25" and getattr(ab, "name", None) == self.spec.get("nt_account") else None
         if self.spec.get("lane") != "rapid":
             return None
-        return getattr(getattr(self.router, "bot", None), "acct_r", None)
+        bot = getattr(self.router, "bot", None)          # the 2nd Rapid's lane ("slot": "rapid2") shares only its own ATLAS
+        return getattr(bot, "acct_r2" if self.spec.get("slot") == "rapid2" else "acct_r", None)
 
     def _shared_holds(self) -> str | None:
         """Why the other strategy on this SAME account holds it now (a position, or a NinjaTrader bracket still open / pending /
@@ -659,6 +675,16 @@ class Account:
         except Exception as e:
             self.log("error", f"real balance check failed: {e.__class__.__name__}: {e}")
 
+    def price_limit_block(self, now) -> str | None:
+        """MFFU's 2% price-limit rule (engine/price_limit.py): FUNDED accounts only (sim funded + live). None = may trade."""
+        if self.mode != "funded":
+            return None
+        try:
+            from . import price_limit as _pl
+            return _pl.blocked(now)
+        except Exception:
+            return None
+
     def news_on(self) -> bool:
         nb = self.rules.get("news_ban")
         return nb in (True, "always") or (nb == "funded" and self.mode == "funded")
@@ -691,6 +717,9 @@ class Account:
         r = self.in_news(now)
         if r is not None:
             return f"news ban: Tier-1 release at {_et(r):%H:%M} ET"
+        pl = self.price_limit_block(now)
+        if pl:
+            return pl
         try:                              # 2026-10-29: CME holidays (engine/cme_calendar.py), like LIT's / ATLAS's calendar guard
             from . import cme_calendar as _cc
             if _cc.full_closure(today):
@@ -890,7 +919,7 @@ class Account:
             act["pnl"] = pnl
         self.route(act)
         self.open_t = None
-        if pnl is not None and reason in ("NEWS FLAT", "TIME SAFETY") and ("entry", entry_t) in self.seen:
+        if pnl is not None and reason in ("NEWS FLAT", "TIME SAFETY", "PRICE LIMIT") and ("entry", entry_t) in self.seen:
             self._close(entry_t, self.router.clock(), pnl, self.router.clock(), reason)   # the model's later exit: a no-op
 
     def process(self, ctx: dict):
@@ -927,6 +956,9 @@ class Account:
             r = self.in_news(now)                   # -2 / +2 min: a trade still held after the release is closed too
             self.log("risk", f"NEWS FLAT: Tier-1 release at {_et(r):%H:%M} ET (funded news ban): flattening this account")
             self._flatten(sym, "NEWS FLAT", self.open_t, pnl=self._mark_pnl(pos, st))
+        if self.open_t is not None and self.open_t not in self.flattened and self.price_limit_block(now):
+            self.log("risk", f"{self.price_limit_block(now)}: flattening this funded account")
+            self._flatten(sym, "PRICE LIMIT", self.open_t, pnl=self._mark_pnl(pos, st))
         ent = pos or en
         if ent and ent["entry_t"] >= start - secs and ("entry", ent["entry_t"]) not in self.seen:
             self.seen.add(("entry", ent["entry_t"]))
@@ -1106,6 +1138,11 @@ class Account:
         if not b or b.get("nt_account") != self.spec.get("nt_account"):
             return
         self.closes = [list(c) for c in (b.get("closes") or []) if isinstance(c, (list, tuple)) and len(c) >= 3]
+        try:                         # engine/keepalive: the saved ledger's CONFIRMED fill days outlive an earlier day's ledger
+            from . import keepalive as _ka
+            self._ka_seed = _ka.seed_days(b.get("ledger") or [])
+        except Exception:
+            pass
         if b.get("day") != today:
             return
         self.ledger = list(b.get("ledger") or [])
@@ -1149,7 +1186,15 @@ class AccountRouter:
         """MFFU (and most firms) forbid long and short on the same underlying at the same time, also across your own
         accounts. Copy trading is always the same side; this refuses an order of direction d while any OTHER account
         (an extra one, or the bot's own: exclude=None means the caller is the bot's own account) holds the opposite side.
-        Returns why, or None."""
+        Returns why, or None. A keep-alive trade (engine/keepalive.py, OFF by default) the other way, or on the entering
+        account itself, is closed first."""
+        try:
+            from . import keepalive as _ka
+            h = _ka.before_entry(self.bot, d, self.bot if exclude is None else exclude)
+            if h:
+                return h
+        except Exception:
+            pass
         for a in self.accounts:
             if a is exclude or a.open_t is None:
                 continue
@@ -1163,6 +1208,19 @@ class AccountRouter:
                 e = next((r for r in reversed(getattr(b, "ledger", None) or []) if r.get("side") in ("buy", "sell") and r.get("entry_t") == ot), None)
                 if e and (1 if e["side"] == "buy" else -1) == -d:
                     return f"hedging guard: the bot's own account holds a {'LONG' if d == -1 else 'SHORT'} position"
+        # hand trades (engine/hand_hedge.py, day-redteam2 2026-11-20): NinjaTrader's own position files of every MFFU account; a
+        # position no bot lane explains on the other side refuses this entry (the ledger checks above only see the bot's trades)
+        try:
+            from . import hand_hedge
+            if exclude is None:
+                own = getattr(getattr(self.bot, "adapter", None), "account", None)
+            else:
+                own = ((getattr(exclude, "spec", None) or {}) if isinstance(getattr(exclude, "spec", None), dict) else {}).get("nt_account")
+            h = hand_hedge.opposite_hand(d, self.bot, self, own=own, now=self.clock(), notify=self.notify)
+            if h:
+                return h
+        except Exception:
+            pass
         return None
 
     def others_opposite(self, d: int, acc=None):
@@ -1172,7 +1230,8 @@ class AccountRouter:
         b = self.bot
         mine = str(((acc.spec if acc is not None else {}) or {}).get("nt_account") or "").strip()
         same = acc.shared() if acc is not None else None
-        for attr, who in (("acct_b", "ATLAS's 25K"), ("acct_r", "ATLAS on the Rapid EOD"), ("acct_c", "BLITZ (account C)")):
+        for attr, who in (("acct_b", "ATLAS's 25K"), ("acct_r", "ATLAS on the Rapid EOD"), ("acct_r2", "ATLAS on the Rapid EOD #2"),
+                          ("acct_c", "BLITZ (account C)")):
             o = getattr(b, attr, None)
             if o is None or o is same or getattr(o, "open_t", None) is None:
                 continue
@@ -1200,6 +1259,12 @@ class AccountRouter:
             if not any(("entry", ent["entry_t"]) not in a.seen and ent["entry_t"] >= ctx["start"] - ctx["secs"]
                        and not a.entry_block(ctx["now"]) and self.others_opposite(d, a) for a in live):
                 return
+            try:                       # a hand trade refuses this entry on every account (opposite_open): never close ATLAS /
+                from . import hand_hedge   # BLITZ at market for an entry nobody may take (fix-trade 2026-11-21)
+                if hand_hedge.opposite_hand(d, self.bot, self, now=ctx["now"], notify=self.notify):
+                    return
+            except Exception:
+                pass
             hc = getattr(self.bot, "_hedge_clear", None)
             if callable(hc):
                 hc(ent, ctx["sym"], ctx["now"])

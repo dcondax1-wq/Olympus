@@ -342,6 +342,89 @@ def accounts_part():
         check("D. the same pin on Wed 12-09 (before the roll) is still allowed", r_pre["ok"], r_pre)
 
 
+def pull_part(tmp):
+    """E. tools/data_pull: the roll recorded from the PC's own bars (day-brief 2026-11-20). The cloud's data/NQ files are on
+    the anchor (NQZ26); the PC's chart moved to NQ 03-27 and re-sent Wednesday (already on file) plus Thursday on March
+    prices (= truth + D). Steady offset -> NQ_rolls.json gets NQZ26 -> NQH27 (gap +D, method pc_merge_basis), the anchor
+    moves, every older bar is +D, and Thursday is imported on March: the file = truth + D bar for bar. No shared day, or a
+    noisy offset -> nothing written. --dry-run writes nothing."""
+    import json as _json
+    from tools import data_pull as DP
+    src5 = pd.read_csv(os.path.join(ROOT, "data", "NQ_5m.csv"))
+    src1 = pd.read_csv(os.path.join(ROOT, "data", "NQ_1m.csv"))
+    wed0, thu0, thu1 = at(2026, 11, 17, 18), at(2026, 11, 18, 18), at(2026, 11, 19, 17)
+    lo = at(2026, 11, 2)
+
+    def setup(name, send_days, noise=0.0):
+        dd, od = os.path.join(tmp, name, "data"), os.path.join(tmp, name, "pc_days")
+        os.makedirs(dd), os.makedirs(od)
+        for tf, sdf in (("5m", src5), ("1m", src1)):
+            sdf[(sdf["time"] >= lo) & (sdf["time"] < thu0)].to_csv(os.path.join(dd, f"NQ_{tf}.csv"), index=False)
+        with open(os.path.join(ROOT, "data", "NQ_rolls.json"), encoding="utf-8") as fh:
+            doc = _json.load(fh)
+        with open(os.path.join(dd, "NQ_rolls.json"), "w", encoding="utf-8") as fh:
+            _json.dump(doc, fh)
+        rng = __import__("numpy").random.default_rng(7)
+        for day, a, z in send_days:
+            os.makedirs(os.path.join(od, day, "bars"))
+            files = {}
+            for tf, sdf in (("5m", src5), ("1m", src1)):
+                b = sdf[(sdf["time"] >= a) & (sdf["time"] < z)].copy()
+                k = rng.normal(0, noise, len(b)) if noise else 0.0
+                for c in ("open", "high", "low", "close"):
+                    b[c] = b[c] + D + k
+                with open(os.path.join(od, day, "bars", f"NQ_{tf}.csv.gz"), "wb") as fh:
+                    fh.write(pcbars.encode(b))
+                files[f"bars/NQ_{tf}.csv.gz"] = {"rows": int(len(b))}
+            with open(os.path.join(od, day, "manifest.json"), "w", encoding="utf-8") as fh:
+                _json.dump({"partial": False, "files": files, "chart": {"NQ": "NQ 03-27"}}, fh)
+        return dd, od
+
+    both = [("2026-11-18", wed0, thu0), ("2026-11-19", thu0, thu1)]
+    dd, od = setup("steady", both)
+    lines = DP.import_bars(od, dd)
+    doc = _json.load(open(os.path.join(dd, "NQ_rolls.json"), encoding="utf-8"))
+    last = (doc.get("rolls") or [{}])[-1]
+    check("E. steady offset: NQZ26 -> NQH27 recorded from the PC's bars, gap +D, anchor moved",
+          doc.get("anchor") == "NQH27" and last.get("from") == "NQZ26" and last.get("to") == "NQH27"
+          and abs(float(last.get("gap", 0)) - D) <= 0.25 and last.get("method") == "pc_merge_basis"
+          and any("NEW roll NQZ26 -> NQH27" in x for x in lines), (doc.get("anchor"), last, lines))
+    f5 = pd.read_csv(os.path.join(dd, "NQ_5m.csv"))
+    tr5 = src5[(src5["time"] >= lo) & (src5["time"] < thu1)].set_index("time")["close"] + D
+    got = f5.set_index("time")["close"].reindex(tr5.index)
+    check("E. after the pull the 5m file = truth + D bar for bar (old history shifted, Thursday imported on March)",
+          got.notna().all() and float((got - tr5).abs().max()) <= 0.25 and int(f5["time"].max()) >= thu1 - 300,
+          (int(got.isna().sum()), float((got - tr5).abs().max()) if got.notna().any() else None))
+    f1 = pd.read_csv(os.path.join(dd, "NQ_1m.csv"))
+    tr1 = src1[(src1["time"] >= lo) & (src1["time"] < thu0)].set_index("time")["close"] + D
+    g1 = f1.set_index("time")["close"].reindex(tr1.index)
+    check("E. the 1m history is shifted by the same +D", g1.notna().all() and float((g1 - tr1).abs().max()) <= 0.25)
+    check("E. a backup of every changed file exists", os.path.isdir(os.path.join(dd, "_import_backup")))
+    again = DP.import_bars(od, dd)
+    doc2 = _json.load(open(os.path.join(dd, "NQ_rolls.json"), encoding="utf-8"))
+    check("E. a second pull records nothing new (one roll, history not shifted twice)",
+          len(doc2["rolls"]) == len(doc["rolls"]) and not any("NEW roll" in x for x in again), again)
+
+    dd, od = setup("noshare", [("2026-11-19", thu0, thu1)])
+    lines = DP.import_bars(od, dd)
+    doc = _json.load(open(os.path.join(dd, "NQ_rolls.json"), encoding="utf-8"))
+    n5 = pd.read_csv(os.path.join(dd, "NQ_5m.csv"))
+    check("E. no shared day: not recorded, nothing imported, the line says the PC must re-send a day",
+          doc["anchor"] == "NQZ26" and int(n5["time"].max()) < thu0 and any("NOT recorded" in x and "re-send" in x for x in lines), lines)
+
+    dd, od = setup("noisy", both, noise=25.0)
+    lines = DP.import_bars(od, dd)
+    doc = _json.load(open(os.path.join(dd, "NQ_rolls.json"), encoding="utf-8"))
+    check("E. noisy offset (not one contract shift): not recorded", doc["anchor"] == "NQZ26" and any("NOT recorded" in x for x in lines), lines)
+
+    dd, od = setup("dry", both)
+    b5 = open(os.path.join(dd, "NQ_5m.csv")).read()
+    lines = DP.import_bars(od, dd, dry=True)
+    doc = _json.load(open(os.path.join(dd, "NQ_rolls.json"), encoding="utf-8"))
+    check("E. --dry-run: says it would record, writes nothing", doc["anchor"] == "NQZ26" and open(os.path.join(dd, "NQ_5m.csv")).read() == b5
+          and any(x.startswith("would record") for x in lines), lines)
+
+
 def main():
     from engine import alerts, news
     alerts.send = lambda *a, **kw: None
@@ -355,6 +438,7 @@ def main():
         accounts_part()
         merge_part(tmp, "MNQ", None)
         merge_part(tmp, "NQ", "NQ")
+        pull_part(tmp)
         check("no Yahoo call anywhere", not undo.calls, undo.calls)
     finally:
         undo()

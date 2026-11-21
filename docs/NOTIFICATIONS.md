@@ -20,14 +20,34 @@ Within about 5 minutes your PC sends **"Olympus notifications are on"**. The car
 | that trade ends | **Zlarior 50K: LONG closed +$605** / Target hit · +2.0R · 10:58 AM ET. | NQ page |
 | the important alerts of the PC's 15-minute report (your `notify_settings.json` types that are on: trade results, PASSED / FAILED / LOCKED / payout ready, the 16:15 day summary, the 07:30 morning brief, bot down / NinjaTrader closed / FEED STALE, and "Back to normal", which replaces its problem) | the same words as before | NQ page or Board |
 
-Never for Paper, Sim or BLITZ. Quiet hours (23:00-07:00 ET) = the notification still comes, without sound. Tap one and Olympus
-opens at its page. Entries and exits arrive seconds after the bot routes / sees them; the report's alerts every 15 minutes.
+Never for Paper, Sim or BLITZ. Quiet hours (23:00-07:00 ET) = the notification still comes, without sound (trade entries and
+results too; ringing at night is the owner's yes / no on STATE.md, and Claude makes the change: a hand edit of the tracked
+`notify_settings.json` on the PC stops its auto-update). Tap one and Olympus opens at its page. Entries and exits arrive seconds after the bot routes / sees them; the report's
+alerts every 15 minutes.
 
-## One alert, one phone (the ntfy app is the backup)
+## Important alerts on both apps, the rest Olympus first (2026-11-20)
 
-The PC still has your private ntfy alert topic (the ntfy app, if you follow it). Each alert goes to **Olympus first**; it goes
-to ntfy **only when no phone took it** (Olympus not set up, the iPhone's push service did not answer). So the same alert never
-arrives twice on your phone. Nothing else changed in the ntfy alerts (below).
+The PC still has your private ntfy alert topic (the ntfy app, if you follow it: `python tools/pc_report.py --setup` on the PC prints
+the topic to follow).
+
+- **A trade's entry and result, PASSED / FAILED / LOCKED / payout ready, no trade for 5+ days (the 50K, ATLAS, the 25K #2, the Rapid EOD), the 15-minute report's
+  problems (bot down, NinjaTrader closed, FEED STALE) and room low (if you turn it on) go to Olympus AND to ntfy**
+  (`trade_routes: "both"` in `notify_settings.json`). Problems the PC's fast alarm already sent in the entry hours stay on ntfy
+  only; "Back to normal" stays Olympus first (so a flap at night is not 4 sounds); PC silent comes from the cloud, on ntfy. Until 2026-11-20 they went to
+  ntfy only when no phone "took" them, and "took" meant only that Apple's push service accepted them, not that the iPhone showed
+  them. That day ATLAS's 03:45 ET entry and 07:10 ET +$514 result reached no phone; most likely (unconfirmed: the PC's push logs
+  were not read) they were accepted for the one registered Olympus phone, and ntfy and the 15-minute report skipped their copies.
+  So an important alert can now show twice (once per app); that is on purpose. It reaches you on ntfy only if the ntfy app follows
+  your alert topic.
+- `trade_routes: "olympus"` = Olympus first, ntfy only when no phone took it; `"ntfy"` = ntfy first, Olympus only when ntfy did not
+  take it. Pick one once the test below shows which app works.
+- **Every other alert** goes to **Olympus first**, and to ntfy **only when no phone took it** (as before).
+- Once one route took an alert, the 15-minute report does not send it again. One exception: a 50K or ATLAS trade the Olympus app got
+  at once but ntfy refused is retried on ntfy every 15 minutes for 2 hours. For the 25K #2 and the Rapid EOD the bot itself tries the
+  ntfy alert once more a minute later, under the account's own name (the report's one LIT row could only call it "Zlarior 50K").
+- Check the routes: first tap **Send a test** on the Olympus card (tests Olympus alone, from the phone). Then on the PC:
+  `python -X utf8 -m engine.alert_check --test` (or PC dashboard Settings > Send test, once a minute at most): one TEST entry + close
+  on each route, and what each answered (docs/TRADE_ALERTS.md "Check it yourself").
 
 ## If something is off
 
@@ -59,18 +79,22 @@ If the PC's key ever changes (its file was lost), the phone notices on its next 
 - **Worker**: `tools/web_public/jarvis/push-sw.js` (imported by `jarvis/sw.js`) shows each push (one tag per trade and account:
   the exit closes the entry's notification), opens Olympus at the NQ page or the Board, and turns a critical alert's tap into
   the relay "Got it".
-- Tests: `python -X utf8 -m tests.test_webpush` (PC: key, intake, send to a mocked endpoint, one alert one phone, report, no
+- Tests: `python -X utf8 -m tests.test_webpush` (PC: key, intake, send to a mocked endpoint, trades on both routes, report, no
   `cryptography`), `flock -w 2400 /tmp/olympus_browser.lock python -X utf8 -m tests.test_jarvis_push` (the card, the button, the
   worker, a real push event), `python -X utf8 -m tests.test_push` (the payloads and the encryption).
 
 ## ntfy alerts, short and $ first (2026-11-17)
 
 One settings file: `notify_settings.json` (repo root): each type on / off, quiet hours (default 23:00-07:00 ET: no sound, except
-PC silent, room low and problems), milestones, summary time. Code: `engine/notify.py`; tests: `python -X utf8 -m tests.test_notify`.
+PC silent, account status, room low and problems), milestones, summary time. Code: `engine/notify.py`; tests: `python -X utf8 -m tests.test_notify`.
 
-**Default since 2026-11-18 (owner: "important only")**: ON = trade closed (the result), account_status (PASSED, FAILED,
-LOCKED, LOST, target reached, payout READY), the daily summary, PC silent. OFF = trade opened, 25/50/75 % milestones, room low,
-problems (bot down, FEED STALE, NinjaTrader closed), other. Turn one back on with `true` in `notify_settings.json`. The PC
+**Default since 2026-11-18 (owner: "important only", then "notifications when we get in a trade in any account" the same
+evening)**: ON = trade opened, trade closed (the result), account_status (PASSED, FAILED, LOCKED, LOST, target reached, payout
+READY, and since 2026-11-20 "no trade for N days" (5+ days, per account: the 50K, ATLAS, the 25K #2, the Rapid EOD; MFFU can close
+an account after 7 days without a trade, and a funded one then loses ALL its profits; the count knows only the bot's own trades;
+before it was "other", off), the daily summary, the 07:30 morning brief, PC silent, problems (bot down, FEED STALE, NinjaTrader closed). OFF = 25/50/75 %
+milestones, room low, other. Trade opened / closed ring in quiet hours only when they are in `ring_in_quiet_hours`. To turn one back
+on, tell Claude: Claude changes `notify_settings.json` in the repo (a hand edit on the PC stops the auto-update). The PC
 ops task's critical alerts that repeat until "Got it" (unprotected position, KILL fired, drawdown left, engine/alerts_plus.py)
 do not go through these settings and still ring.
 
@@ -103,13 +127,13 @@ the same problem (engine/notify.problem_dup): one alert, one phone.
 
 ## History: the old Home Screen app (gone since 2026-11-08)
 
-Until 2026-11-08 the notifications went to the old Liquidity Home Screen app on demetrades2000-coder.github.io, with keys handed
+Until 2026-11-08 the notifications went to the old Liquidity Home Screen app on dcondax1-wq.github.io, with keys handed
 out by a GitHub Actions cloud monitor. That GitHub account was suspended, so the site, the cloud monitor and the key hand-off are
 gone; the text below is kept only as a record (`engine/push.py` keeps that code for its tests, the PC no longer uses it).
 
 ### What the old app showed
 
-**What you get.** Your Home Screen app (Liquidity, https://demetrades2000-coder.github.io/nq-dashboard/) shows:
+**What you get.** Your Home Screen app (Liquidity, https://dcondax1-wq.github.io/) shows:
 
 | When | Title | Text |
 |---|---|---|

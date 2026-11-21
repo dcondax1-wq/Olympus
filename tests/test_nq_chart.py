@@ -91,11 +91,13 @@ def test_static():
     check("a. the card sits after the banner and before the columns, with its chips, chart box, as-of line, trades list and the attribution link (TradingView + tradingview.com)",
           html.index('id="banner"') < html.index('id="chartCard"') < html.index('id="sceneCard"') and all(f'id="{i}"' in html for i in ("chartChips", "chartBox", "chartAsOf", "chartTrades", "chartPill", "chartWhole"))
           and re.search(r'<a class="attrib"[^>]+href="https://www\.tradingview\.com/"[^>]*>Chart: TradingView Lightweight Charts', html))
-    check("a. its own module after nq.js (a chart failure never touches the rest of the page), the stylesheet bumped", html.index('src="nq.js') < html.index('src="nqchart.js?v=') and "nq.css?v=a4q" in html
+    check("a. its own module after nq.js (a chart failure never touches the rest of the page), the stylesheet bumped", html.index('src="nq.js') < html.index('src="nqchart.js?v=') and "nq.css?v=a8" in html
           and "nqchart" not in AK.read(os.path.join(D, "nq.js")))
     bad = [p for p in (r"\.innerHTML", r"outerHTML", r"insertAdjacentHTML", r"document\.write", r"\beval\s*\(", r"new Function", r"\bimport\s*\(") if re.search(p, js) or re.search(p, core)]
-    check("a. text only through textContent (no innerHTML / eval / dynamic import), no storage, sends nothing (GET only, no POST / beacon / socket)",
-          not bad and "textContent" in js and not re.search(r"localStorage|sessionStorage|indexedDB|document\.cookie|sendBeacon|WebSocket|XMLHttpRequest|method:\s*['\"]POST", js + core), bad)
+    check("a. text only through textContent (no innerHTML / eval / dynamic import), no storage but the one 2D / 3D choice (nq.chart.view), sends nothing (GET only, no POST / beacon / socket)",
+          not bad and "textContent" in js and not re.search(r"localStorage|sessionStorage|indexedDB|document\.cookie|sendBeacon|WebSocket|XMLHttpRequest|method:\s*['\"]POST",
+                                                            js.replace("window.localStorage.getItem(PREF)", "").replace("window.localStorage.setItem(PREF, v)", "") + core)
+          and js.count("localStorage") == 2 and "const PREF = 'nq.chart.view';" in js, bad)
     check("a. nqbars.js is pure (no document / window / fetch / storage), Safari 16 safe (no lookbehind, no .at())",
           not re.search(r"\bdocument\.|\bwindow\.|\bfetch\(|\blocalStorage\b|\(\?<[=!]|\.at\(", re.sub(r"//[^\n]*", "", core)))
     check("a. the feed is the chart topic of status_feed.json (<topic>-bars or bars_topic), polled like pc_feed.js (/json?poll=1), every 2 minutes",
@@ -316,6 +318,27 @@ def test_page(shots=False):
             p.wait_for_timeout(300)
             w = p.evaluate(SNAP)
             check("c. 'Whole day' shows every bar (15 hours), the button then says 'Last 6 hours'", w["lr"] and w["lr"][0] <= 0 and w["lr"][1] >= 179 and w["whole"] == "Last 6 hours", w["lr"])
+            # v5 (owner 2026-11-20 15:50 ET "it needs some 3D, it needs some effects"): the glow-up and the 3D toggle
+            g = p.evaluate("""() => { const S = window.NQCHART.S, d = document.querySelector('#chartPulse');
+              return { area: S.area ? S.area.data().length : 0, tag: S.tag ? S.tag.data().length : 0, tagCol: S.tag ? S.tag.options().color : '', pulse: d && !d.hidden,
+                three: !!window.NQCHART3D || [...document.scripts].some((x) => /nqchart3d/.test(x.src)), btn: document.querySelector('#chart3dBtn').textContent,
+                pressed: document.querySelector('#chart3dBtn').getAttribute('aria-pressed') }; }""")
+            check("c. the glow-up: a violet area under the day's closes, the last price as a GOLD tag + a pulsing dot on the newest close; 3D not fetched until asked; the toggle says 3D",
+                  g["area"] == 180 and g["tag"] == 1 and g["tagCol"].lower() == "#f1c14b" and g["pulse"] and not g["three"] and g["btn"] == "3D" and g["pressed"] == "false", g)
+            p.locator("#chart3dBtn").click()
+            try:
+                p.wait_for_function("window.NQCHART.S.mounted3d || (window.NQCHART3D && !window.NQCHART.S.view3d)", timeout=30000)
+            except Exception:
+                pass
+            t = p.evaluate("""() => ({ m: !!window.NQCHART.S.mounted3d, c: document.querySelectorAll('#chart3d canvas').length, pref: localStorage.getItem('nq.chart.view'),
+              btn: document.querySelector('#chart3dBtn').textContent, pressed: document.querySelector('#chart3dBtn').getAttribute('aria-pressed') })""")
+            check("c. tap 3D: the 3D candles load (nqchart3d.js, only now) into the chart box, the button says 2D (pressed), the choice is kept on this phone",
+                  t["m"] and t["c"] == 1 and t["pref"] == "3d" and t["btn"] == "2D" and t["pressed"] == "true", t)
+            shot(p, "nq-chart-3d", shots)
+            p.locator("#chart3dBtn").click()
+            p.wait_for_timeout(300)
+            t2 = p.evaluate("() => ({ m: !!window.NQCHART.S.mounted3d, c: document.querySelectorAll('#chart3d canvas').length, pref: localStorage.getItem('nq.chart.view') })")
+            check("c. tap 2D: the 3D view is freed (no canvas left), back to the flat chart, the choice kept", not t2["m"] and t2["c"] == 0 and t2["pref"] == "2d", t2)
             # a pinch / drag on the chart must not scroll the page sideways
             check("c. still no sideways scroll and no console error after the taps", AK.no_sideways(p) and not errs, errs[:3])
             ctx.close()
@@ -329,9 +352,10 @@ def test_page(shots=False):
             ctx, p, errs, seen, off = page(br, mock={bars_url: "{}", core_url: "{}"})
             open_chart(p, origin)
             n = p.evaluate(SNAP)
-            check("c. the PC has not sent bars: 'Waiting for the PC', the plain sentence, no candles drawn, the chips without counts, no list, a small box",
+            check("c. the PC has not sent bars: 'Waiting for the PC', the plain sentence, no candles drawn, the chips without counts, no list; the box keeps "
+                  "its height (300-441 px: perf 2026-11-20, a late shrink was a 0.38 layout shift)",
                   n["state"] == "none" and n["pill"] == "Waiting for the PC" and n["msg"].startswith("The PC has not sent chart bars yet") and n["data"] == 0 and n["marks"] == 0
-                  and all(c[3] == "" for c in n["chips"]) and not n["rows"] and n["empty"] and n["box"] < 260 and not n["asOf"] and not errs, (errs[:3], n))
+                  and all(c[3] == "" for c in n["chips"]) and not n["rows"] and n["empty"] and 300 <= n["box"] <= 441 and not n["asOf"] and not errs, (errs[:3], n))
             check("c. ... taps >= 44 px, no sideways scroll", not AK.taps(p) and AK.no_sideways(p), AK.taps(p)[:3])
             shot(p, "nq-chart-waiting", shots)
             ctx.close()
@@ -350,6 +374,18 @@ def test_page(shots=False):
             x = p.evaluate(SNAP)
             check("c. ntfy cannot be reached: 'Could not reach the PC's chart feed', no chart, no console error", x["state"] == "none" and x["msg"].startswith("Could not reach the PC's chart feed")
                   and x["data"] == 0 and not errs, x)
+            ctx.close()
+            # phone QA 2026-11-20 12:20: an exit on the newest bar ("+$514.18") was cut by the price axis; its whole tag stays inside the plot
+            lastp = PR.pack_bars(info["bars"], [], [{**info["closed"][2], "xt": info["bars"][179][0] + 120, "x": info["bars"][179][4], "usd": 514.18, "r": 2.0, "why": "TARGET"}],
+                                 {"atlas25f": ["ATLAS funded 25K", "ATLAS", "SIM"]}, now=now, data_t=now - 20, sym="MNQ 12-26", forming=True, day=PR._cme_day(now), trades_t=now - 60)
+            ctx, p, errs, seen, off = page(br, mock={bars_url: ndjson(lastp), core_url: "{}"})
+            open_chart(p, origin)
+            fit = p.evaluate("""() => { const S = window.NQCHART.S, ts = S.chart.timeScale(), cx = document.createElement('canvas').getContext('2d');
+              cx.font = '11px ' + getComputedStyle(document.body).fontFamily;
+              return S.marks.markers().filter((m) => m.text).map((m) => [m.text, Math.round(ts.timeToCoordinate(m.time) + cx.measureText(m.text).width / 2), Math.round(ts.width())]); }""")
+            check("c. an exit on the newest bar: its '+$514' tag ends inside the plot (left of the price axis), the newest bar still in view",
+                  fit and all(x[1] <= x[2] - 2 for x in fit) and any(x[0].startswith("+$514") for x in fit) and not errs, (fit, errs[:2]))
+            shot(p, "nq-chart-lastexit", shots)
             ctx.close()
             # 375 x 667, LITE, reduced motion: still the chart, no sideways scroll
             ctx, p, errs, seen, off = page(br, w=375, h=667, reduced=True, lite=True, mock={bars_url: ndjson(post), core_url: "{}"})

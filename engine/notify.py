@@ -49,14 +49,30 @@ TYPES = ("trade_opened", "trade_closed", "eval_milestones", "account_status", "r
          "problems", "other")
 # owner 2026-11-18: "important only" = trade results, PASSED / FAILED / LOCKED, payout ready, PC silent, the daily summary
 # (+ the 07:30 ET morning brief, tools/morning_brief.py, 2026-11-18).
-# Everything else is OFF by default (one line in notify_settings.json turns a type back on).
+# Everything else is OFF by default (Claude turns a type back on in notify_settings.json in the repo; a hand edit on the PC stops
+# its auto-update, engine/autoupdate).
 # owner 2026-11-18 evening: "I want notifications when we get in a trade in any account" -> trade_opened ON, sent the moment the
 # bot routes the entry (instant_entry below, from engine/push.pc_notify), not at the next 15-minute report.
 IMPORTANT = ("trade_opened", "trade_closed", "account_status", "daily_summary", "morning_brief", "pc_silent", "problems")   # problems = emergencies (bot down, NinjaTrader closed)
+# A trade's entry and result in quiet hours (23:00-07:00 ET) come WITHOUT sound but still show (as before 2026-11-20). Putting
+# TRADE_RING in ring_in_quiet_hours (notify_settings.json) makes them ring at night: the owner's yes / no, asked on STATE.md
+# 'Waiting on the owner' (lead 2026-11-20; ATLAS enters around 03:00-04:00 ET, LIT from 02:00 ET on several accounts).
+TRADE_RING = ("trade_opened", "trade_closed")
+# The kinds that go to BOTH phone routes, the Olympus app AND the private ntfy topic (2026-11-20, notify_settings.json trade_routes;
+# a push service's "accepted" only means Apple / Google took it, not that the iPhone showed it): a trade's entry and result, PASSED /
+# FAILED / LOCKED / payout ready / a quiet eval (account_status), room low (OFF by default), the 15-minute report's problems (bot
+# down, NinjaTrader closed, FEED STALE; the ones engine/fast_alarm already sent in the entry hours are dropped by problem_dup and
+# stay on ntfy only; "Back to normal" stays Olympus first, NOT_DUAL_KEYS), pc_silent (the report makes no such key: PC silent comes
+# from the cloud's tools/pc_silent_check.py, on ntfy). Every other kind: Olympus first, ntfy only when no phone took it.
+DUAL_KINDS = ("trade_opened", "trade_closed", "account_status", "room_low", "problems", "pc_silent")
+# trade_routes: "both" (default) = Olympus AND ntfy; "olympus" = Olympus first, ntfy only when no phone took it; "ntfy" = ntfy first,
+# Olympus only when ntfy did not take it. A single-route choice keeps the other as the fallback, so an alert never reaches nobody.
+ROUTES = ("both", "olympus", "ntfy")
 DEFAULTS = {
     "alerts": {k: k in IMPORTANT for k in TYPES},
     "quiet_hours": {"from": "23:00", "to": "07:00"},
     "ring_in_quiet_hours": ["pc_silent", "account_status", "room_low", "problems"],
+    "trade_routes": "both",
     "milestones_pct": [25, 50, 75, 100],
     "room_low_used_pct": [50, 75],
     "daily_summary_at": "16:15",
@@ -143,6 +159,8 @@ def merge(raw) -> dict:
         out["quiet_hours"]["off"] = True
     if isinstance(raw.get("ring_in_quiet_hours"), list):
         out["ring_in_quiet_hours"] = [str(x) for x in raw["ring_in_quiet_hours"] if str(x) in TYPES]
+    if str(raw.get("trade_routes") or "").strip().lower() in ROUTES:
+        out["trade_routes"] = str(raw["trade_routes"]).strip().lower()
     for k in ("milestones_pct", "room_low_used_pct"):
         if isinstance(raw.get(k), list):
             vals = sorted({int(x) for x in raw[k] if isinstance(x, (int, float)) and 0 < x <= 100})
@@ -177,6 +195,27 @@ def rings(kind: str, s: dict | None = None) -> bool:
     return kind in ((s or settings()).get("ring_in_quiet_hours") or ())
 
 
+def trade_routes(s: dict | None = None) -> str:
+    """notify_settings.json trade_routes: "both" (default) | "olympus" | "ntfy" (ROUTES). Never raises."""
+    try:
+        v = str((s or settings()).get("trade_routes") or "both").lower()
+        return v if v in ROUTES else "both"
+    except Exception:
+        return "both"
+
+
+# "Back to normal" (back:<code>) and "PC back" (pc_back:) are problems / pc_silent by kind but stay Olympus first, as before: the
+# problem itself already goes to both apps, and a second copy of the all-clear would add one more sound at night (skeptic
+# 2026-11-20: a FEED STALE flap at 00:15 ET would be 4 sounds; it is 3, it was 2 before both routes).
+NOT_DUAL_KEYS = ("back:", "pc_back:")
+
+
+def dual(kind: str, key=None) -> bool:
+    """An alert that goes to both phone routes when trade_routes is "both": its kind is in DUAL_KINDS and its key is not an all-clear
+    (NOT_DUAL_KEYS)."""
+    return kind in DUAL_KINDS and not str(key or "").startswith(NOT_DUAL_KEYS)
+
+
 def kind_of(key: str) -> str:
     """The settings type of a PC report push, from its key."""
     k = str(key or "")
@@ -196,11 +235,59 @@ def kind_of(key: str) -> str:
         return "morning_brief"
     if k.startswith("breaker:"):                    # engine/circuit_breaker: live vs twin SIZE DOWN / PAUSE advice for an account
         return "account_status"
+    if k.startswith("guard:quiet:"):                # tools/pc_guard: an account 5+ days without a trade (MFFU can close it after 7;
+        return "account_status"                     # high from day 6, never in quiet hours). Was "other" (OFF): it reached no phone
     if k.startswith(("cond:", "back:", "fill:", "watch:", "risk:")):    # risk:throttle: engine/msg_throttle runaway orders
         return "problems"
     if k.startswith(("pc_silent:", "pc_back:")):
         return "pc_silent"
     return "other"
+
+
+# the 15-minute report's account words ("open:<acct>:<t>", tools/pc_report._trade_events) -> the account part of the instant alerts'
+# keys ("fill:<t>" = LIT's primary 50K and the 50K combo on it, ":acctb" = ATLAS's account B, ":acctc" = BLITZ's account C,
+# ":<id>" = an extra account / the Rapid's LIT lane, ":acctr" = the Rapid's ATLAS lane)
+REPORT_ACCT = {"lit": "", "atlas": "acctb", "blitz": "acctc"}
+# The report's "lit" row stands for EVERY LIT account: engine/live_board.trade_log files all the PC's LIT trades (the 50K, the 25K #2,
+# the Rapid's LIT lane) under "lit", one row per bar, titled as the 50K with the 50K's day $ and room. So for that row any LIT-family
+# instant alert counts (every key whose account part is not one of these); ATLAS (acctb) and BLITZ (acctc) keep the exact match
+# (skeptic 2026-11-20: with an exact "" match, the 25K #2's own entry / result came back 15 minutes later as a false "Zlarior 50K
+# opened / closed" on both apps). report_copy decides what the row still owes: only the 50K's own app-only alert earns an ntfy copy.
+NOT_LIT = ("acctb", "acctc", "acctr")
+
+
+def acct_match(key, acct) -> bool:
+    """Whether an instant alert's key counts for a report push's account (report_acct): None = any account (the old rule), "" (the
+    report's "lit" row) = any LIT-family key (not NOT_LIT), else the exact account part ("acctb" = ATLAS only)."""
+    if acct is None:
+        return True
+    ka = key_acct(key)
+    if str(acct) == "":
+        return ka not in NOT_LIT
+    return ka == str(acct)
+
+
+def key_acct(key) -> str:
+    """The account part of an instant trade alert's key: "fill:1795164300:acctb" -> "acctb", "out:1795164300:b25k_2" -> "b25k_2",
+    "fill:1795164300" -> "" (LIT's primary account)."""
+    parts = str(key or "").split(":", 2)
+    return parts[2] if len(parts) == 3 and parts[0] in ("fill", "out") else ""
+
+
+def report_acct(m: dict):
+    """The instant key's account part a 15-minute report trade push stands for (REPORT_ACCT; an extra account's id stays itself).
+    None when the push names no account (then any account matches, the old rule)."""
+    m = _d(m)
+    a = m.get("acct")
+    if a is None:
+        k = str(m.get("key") or "")
+        parts = k.split(":")
+        if k.startswith(("open:", "close:")) and len(parts) >= 3:
+            a = parts[1]
+    if a is None or str(a) == "":
+        return None
+    a = str(a)
+    return REPORT_ACCT.get(a, a)
 
 
 def entry_t_of(m: dict):
@@ -225,10 +312,10 @@ def apply(msgs, now, s: dict | None = None) -> list:
         kind = m.get("kind") or kind_of(m.get("key"))
         if not on(kind, s):
             continue
-        if kind == "trade_opened" and instant_sent(entry_t_of(m)):
-            continue                                # the phone already got this entry the moment it was routed
-        if kind == "trade_closed" and instant_sent(entry_t_of(m), what="exits"):
-            continue                                # the phone app already got this exit the moment the bot saw it
+        # per account (2026-11-20): ATLAS's instant alert never stands for LIT's report copy on the same bar, nor LIT's for ATLAS's;
+        # the report's one "lit" row stands for every LIT account (acct_match, report_copy)
+        if kind in ("trade_opened", "trade_closed") and report_copy(m, kind=kind) == "none":
+            continue                                # ntfy already got it at once, or the row could only name the wrong account
         if kind == "problems" and problem_dup(m, now):
             continue                                # the PC's fast alarm already sent it (engine/fast_alarm.py, instant_problem)
         if quiet(now, s) and not rings(kind, s) and not m.get("night"):
@@ -427,7 +514,13 @@ def silent_step(prev: dict | None, seen_t, now, s: dict | None = None, fetched: 
 # Zlarior on each eval, ATLAS on the funded 25K, the extra accounts) already calls engine/push.pc_notify with a "fill"
 # payload; pc_notify hands real-account entries to instant_entry in a daemon thread: one ntfy push to the owner's PRIVATE
 # alert topic (the same OLYMPUS_HOME/ntfy.json the 15-minute report uses), at once. Never raises, never blocks routing.
+# 2026-11-20 (owner: "notifications for trade entries I never got one from today. And results"): ATLAS's 03:45 ET entry and its
+# 07:10 ET +$514 close reached no phone. Most likely (unconfirmed: the PC's push logs were not read) they went only to the one
+# Olympus phone the PC's public posts listed all night: its push service answering "accepted" made ntfy AND the 15-minute report
+# skip their copies. Since then a trade's entry and exit go to BOTH routes (engine/push._pc_send, notify_settings.json trade_routes);
+# logs/notify/trade_alerts.jsonl keeps what each route answered.
 INSTANT_PATH = os.path.join(ROOT, "logs", "notify", "instant_sent.json")
+TRADE_LOG_NAME = "trade_alerts.jsonl"           # next to INSTANT_PATH (engine/push._trade_log)
 INSTANT_KEEP_S = 3 * 86400
 INSTANT_MATCH_S = 90                # the report's entry time vs the routed one (fill time vs order time)
 PT_USD = {"MNQ": 2.0, "MES": 5.0, "NQ": 20.0, "ES": 50.0}
@@ -467,23 +560,62 @@ def _instant_state(path=None) -> dict:
         return {}
 
 
-def instant_sent(entry_t, path=None, now=None, what: str = "entries") -> bool:
-    """True when an instant push went out for a trade entered within INSTANT_MATCH_S of entry_t (the report skips its own copy).
-    what: "entries" (ntfy or the phone app) or "exits" (the phone app, engine/push.pc_notify)."""
+def instant_keys(entry_t, path=None, what: str = "entries", acct=None) -> list:
+    """The keys of the instant alerts ("fill:<t>[:<acct>]" / "out:<t>[:<acct>]") recorded under `what` for a trade entered within
+    INSTANT_MATCH_S of entry_t that count for acct (acct_match). what: "entries" / "exits" = the private ntfy topic took it;
+    "app_entries" / "app_exits" = only the phone app took it. [] when none."""
     t = _f(entry_t)
     if t is None:
-        return False
-    for v in _d(_instant_state(path).get(what)).values():
-        if _f(v) is not None and abs(_f(v) - t) <= INSTANT_MATCH_S:
-            return True
-    return False
+        return []
+    return [k for k, v in _d(_instant_state(path).get(what)).items()
+            if acct_match(k, acct) and _f(v) is not None and abs(_f(v) - t) <= INSTANT_MATCH_S]
+
+
+def instant_sent(entry_t, path=None, now=None, what: str = "entries", acct=None) -> bool:
+    """True when an instant push went out for a trade entered within INSTANT_MATCH_S of entry_t (instant_keys).
+    what: "entries" / "exits" = the private ntfy topic took it; "app_entries" / "app_exits" = only the phone app took it. acct:
+    report_acct of a report push (acct_match: "" = the report's "lit" row = any LIT account's alert, "acctb" = ATLAS's only, ...).
+    None = any account. What the report then still sends: report_copy."""
+    return bool(instant_keys(entry_t, path=path, what=what, acct=acct))
+
+
+def report_copy(m: dict, path=None, kind=None) -> str:
+    """What the 15-minute report still owes for one trade push (its entry or its result), from the instant alerts already out:
+      "none"  skip it: ntfy took it at once. On the report's one "lit" row also when only an EXTRA LIT account's alert matched (the
+              25K #2, the Rapid's LIT lane): that row is titled the 50K, with the 50K's day $ and room, so its copy would be a false
+              "Zlarior 50K" alert (skeptic 2026-11-20). The extra account's own alerts already went out (its ntfy one is retried once
+              by engine/push._pc_send).
+      "ntfy"  the phone app took it at once and ntfy did not: only the ntfy copy (never the app again). On the "lit" row only when
+              the 50K's own key ("fill:<t>" / "out:<t>") is the app-only one.
+      "both"  no instant alert had it: the report sends it like any alert.
+    Not a trade push: "both". Never raises."""
+    try:
+        m = _d(m)
+        kind = kind or m.get("kind") or kind_of(m.get("key"))
+        if kind not in ("trade_opened", "trade_closed"):
+            return "both"
+        nt, app = ("entries", "app_entries") if kind == "trade_opened" else ("exits", "app_exits")
+        et_, acct = entry_t_of(m), report_acct(m)
+        sent = instant_keys(et_, path=path, what=nt, acct=acct)
+        had = instant_keys(et_, path=path, what=app, acct=acct)
+        if acct == "":                              # the report's one "lit" row: only the 50K's own keys are its own
+            if any(key_acct(k) == "" for k in sent):
+                return "none"
+            if any(key_acct(k) == "" for k in had):
+                return "ntfy"
+            return "none" if (sent or had) else "both"
+        if sent:
+            return "none"
+        return "ntfy" if had else "both"
+    except Exception:
+        return "both"
 
 
 def _save_instant(st: dict, path, t_now: float) -> None:
     keys = _d(st.get("keys"))
     cut = t_now - INSTANT_KEEP_S
     out = {"keys": {k: v for k, v in keys.items() if (_f(v) or 0) >= cut}}
-    for what in ("entries", "exits", "problems"):
+    for what in ("entries", "exits", "app_entries", "app_exits", "problems"):
         out[what] = {k: v for k, v in _d(st.get(what)).items() if (_f(keys.get(k)) or t_now) >= cut}
     for k in ("ntfy_days", "closes"):                # the day's ntfy count (the budget) and the recent closes (exit_context)
         if st.get(k):
@@ -514,17 +646,33 @@ def _count_ntfy(st: dict, t_now: float) -> None:
     st["ntfy_days"] = nd
 
 
-def instant_record(p: dict, what: str = "entry", now=None, path=None) -> bool:
-    """The phone app got this entry / exit at once (engine/push.pc_notify): recorded like an instant ntfy entry, so instant_entry
-    and the 15-minute report never send the same alert to the phone again. Never raises."""
+def count_ntfy(now=None, path=None) -> None:
+    """One more ntfy post this UTC day from outside the trade path (engine/alert_check's test alert). Never raises."""
     try:
         with _INSTANT_LOCK:
-            return _instant_record(p, what, now, path)
+            path = path or INSTANT_PATH
+            st = _instant_state(path)
+            t_now = time.time() if now is None else float(now)
+            _count_ntfy(st, t_now)
+            _save_instant(st, path, t_now)
+    except Exception:
+        pass
+
+
+def instant_record(p: dict, what: str = "entry", now=None, path=None, app_only: bool = False) -> bool:
+    """The phone app got this entry / exit at once (engine/push.pc_notify): recorded so the 15-minute report does not send it to the
+    phone app again. app_only=True (engine/push._pc_send since 2026-11-20: ntfy did not take it, refused or no topic in the bot's
+    process): "app_entries" / "app_exits", the report still sends its ntfy copy when its own config has a topic (2026-11-20: a
+    push service's "accepted" is not proof the phone showed it). app_only=False: "entries" / "exits", the report skips it entirely.
+    Never raises."""
+    try:
+        with _INSTANT_LOCK:
+            return _instant_record(p, what, now, path, app_only)
     except Exception:
         return False
 
 
-def _instant_record(p: dict, what: str, now, path) -> bool:
+def _instant_record(p: dict, what: str, now, path, app_only: bool = False) -> bool:
     try:
         path = path or INSTANT_PATH
         st = _instant_state(path)
@@ -533,7 +681,8 @@ def _instant_record(p: dict, what: str, now, path) -> bool:
         key = str(_d(p).get("key") or f"t:{t_now}")
         st.setdefault("keys", {})[key] = t_now
         if et_ is not None:
-            st.setdefault("entries" if what == "entry" else "exits", {})[key] = et_
+            bucket = "entries" if what == "entry" else "exits"
+            st.setdefault(f"app_{bucket}" if app_only else bucket, {})[key] = et_
         if what != "entry":
             _note_close(st, p, t_now)
         _save_instant(st, path, t_now)
@@ -589,7 +738,9 @@ def display_name(p: dict, lane: bool = True) -> str:
 EXIT_WORDS = {"TARGET": "target", "STOP": "stop", "BE": "breakeven", "TIME": "time exit", "EOD": "day's end", "TIME SAFETY": "before the close",
               "KILL": "kill switch", "KILL SWITCH": "kill switch", "FLATTEN": "flattened", "LIT PRIORITY": "for a LIT entry",
               "HEDGE": "no-hedge rule", "NO TRADE": "not placed", "CUT": "cut early", "T15": "15-min rule", "TIME STOP": "time stop",
-              "BANK": "banked", "BANK (BEST-DAY ROOM)": "banked (best-day room)", "NEWS": "news"}
+              "BANK": "banked", "BANK (BEST-DAY ROOM)": "banked (best-day room)", "NEWS": "news",
+              "PRICE LIMIT": "MFFU price-limit rule",
+              "KEEP-ALIVE": "keep-alive"}     # engine/keepalive.py: MFFU's 7-day keep-alive trade
 LIVE_SNAP = os.path.join(ROOT, "data", "pc_report", "live.json")   # tools/pc_report: the PC's last full live view (every 15 min)
 
 
@@ -725,7 +876,7 @@ def exit_message(p: dict, now=None, s: dict | None = None, ctx: dict | None = No
     body = ", ".join(acct)
     body = " · ".join(x for x in [body, *tail] if x) + "."
     s = s or settings()
-    night = quiet(now if now is not None else time.time(), s)
+    night = quiet(now if now is not None else time.time(), s) and not rings("trade_closed", s)
     return {"title": mask_ids(title), "body": mask_ids(body), "priority": "low" if night else "default",
             "tags": "white_check_mark" if (usd or 0) > 0 else ("heavy_minus_sign" if usd is not None and abs(usd) < 0.5 else "x")}
 
@@ -752,7 +903,7 @@ def entry_message(p: dict, now=None, s: dict | None = None) -> dict:
     if when:
         body = " · ".join(x for x in (body, _et(when).strftime("%I:%M %p ET").lstrip("0")) if x)
     s = s or settings()
-    night = quiet(now if now is not None else time.time(), s)
+    night = quiet(now if now is not None else time.time(), s) and not rings("trade_opened", s)
     return {"title": mask_ids(title), "body": mask_ids((body or "Entered") + "."), "priority": "low" if night else "high",
             "tags": "chart_with_upwards_trend" if side == "LONG" else "chart_with_downwards_trend", "risk": risk, "gain": gain}
 
@@ -793,20 +944,41 @@ def instant_problem(p: dict, now=None, path=None, cfg=None, poster=None) -> str:
         s = settings()
         if not on("problems", s):
             return "problems is off"
-        cfg = cfg if cfg is not None else alert_cfg()
-        if not cfg.get("topic"):
-            return "no private alert topic on this PC"
         path = path or INSTANT_PATH
         st = _instant_state(path)
-        keys, probs = _d(st.get("keys")), _d(st.get("problems"))
         key = str(p.get("key") or "")
         if not key:
             return "no key"
-        if key in keys:
+        if key in _d(st.get("keys")):
             return "already sent"
+        if poster is None and cfg is None and _bus_on():   # engine/alert_bus: Telegram / Discord first, ntfy + the app as fallbacks
+            from . import alert_bus
+            r = alert_bus.send(alert_bus.from_problem(p, problem_message(p, now=now, s=s)),
+                               on_done=lambda res: res.get("ok") and _record_problem(p, key, path, now, count=False))
+            return "sent" if r in ("queued", "sent") else f"alert bus: {r}"
+        cfg = cfg if cfg is not None else alert_cfg()
+        if not cfg.get("topic"):
+            return "no private alert topic on this PC"
         ok = (poster or _post)(cfg["ntfy"], cfg["topic"], problem_message(p, now=now, s=s))
         if not ok:
             return "ntfy did not take it (the 15-minute report sends it instead)"
+        _record_problem(p, key, path, now)
+        return "sent"
+    except Exception as e:
+        return f"failed: {e.__class__.__name__}"
+
+
+def _bus_on() -> bool:
+    """engine/alert_bus is set up (Telegram / Discord) and not switched off. Never raises."""
+    try:
+        from . import alert_bus
+        return alert_bus.active()
+    except Exception:
+        return False
+
+
+def _record_problem(p: dict, key: str, path, now, count: bool = True) -> None:
+    try:
         t_now = time.time() if now is None else float(now)
         with _INSTANT_LOCK:
             st = _instant_state(path)                   # re-read: another thread may have written meanwhile
@@ -815,11 +987,11 @@ def instant_problem(p: dict, now=None, path=None, cfg=None, poster=None) -> str:
             probs[key] = {"t": t_now, "code": p.get("code"), "cond": p.get("cond"), "back": bool(p.get("back")),
                           "entry_t": _f(p.get("entry_t")), "bot": str(p.get("bot") or "lit")}
             st.update(keys=keys, problems=probs)
-            _count_ntfy(st, t_now)                      # redteam 2026-11-20: a problem push uses ntfy's daily room too
+            if count:
+                _count_ntfy(st, t_now)                  # redteam 2026-11-20: a problem push uses ntfy's daily room too
             _save_instant(st, path, t_now)
-        return "sent"
-    except Exception as e:
-        return f"failed: {e.__class__.__name__}"
+    except Exception:
+        pass
 
 
 def problem_dup(m: dict, now=None, path=None) -> bool:
@@ -849,6 +1021,18 @@ def _utc_day(t) -> str:
     return dt.datetime.fromtimestamp(int(t), dt.timezone.utc).strftime("%Y-%m-%d")
 
 
+def count_ntfy_post(now=None, path=None) -> None:
+    """One ntfy post by engine/alert_bus (its ntfy fallback) counts in this PC's day like an instant alert. Never raises."""
+    try:
+        t_now = time.time() if now is None else float(now)
+        with _INSTANT_LOCK:
+            st = _instant_state(path or INSTANT_PATH)
+            _count_ntfy(st, t_now)
+            _save_instant(st, path or INSTANT_PATH, t_now)
+    except Exception:
+        pass
+
+
 def ntfy_today(now=None, path=None) -> int:
     """How many instant trade alerts this PC posted to ntfy this UTC day (ntfy.sh's free cap is per IP and UTC day: the 15-minute
     report's chart and extra status posts count these and stop early, so the status posts never crowd a trade alert out)."""
@@ -860,7 +1044,8 @@ def ntfy_today(now=None, path=None) -> int:
 
 def _instant_send(p: dict, what: str, now=None, path=None, cfg=None, poster=None) -> str:
     """One trade alert (an entry or an exit) to the private ntfy topic, at once. One per key, ever (fill:<t>[:acct] / out:<t>[:acct]).
-    Never raises."""
+    p["retry"] (engine/push._pc_send's one retry of an extra account's alert): a key recorded only as app-only (the phone app had it,
+    ntfy did not) may go once more; a key ntfy already took never does. Never raises."""
     try:
         if not real_trade(p) or p.get("kind") != ("fill" if what == "entry" else "outcome"):
             return "not a real-account entry" if what == "entry" else "not a real-account exit"
@@ -875,7 +1060,8 @@ def _instant_send(p: dict, what: str, now=None, path=None, cfg=None, poster=None
         st = _instant_state(path)
         keys = _d(st.get("keys"))
         key = str(p.get("key") or "")
-        if key and key in keys:
+        bucket = "entries" if what == "entry" else "exits"
+        if key and key in keys and not (p.get("retry") and key not in _d(st.get(bucket))):
             return "already sent"
         msg = entry_message(p, now=now, s=s) if what == "entry" else exit_message(p, now=now, s=s)
         ok = (poster or _post)(cfg["ntfy"], cfg["topic"], msg)

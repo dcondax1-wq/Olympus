@@ -53,7 +53,7 @@ export const LIMITS = Object.freeze({ bytes: 8192, name: 40, label: 48, kpis: 3,
 export const ASCEND_ID = 'ascend';
 export const ASCEND_NAME = 'Ascend';
 // Ascend's link once the owner sends it (owner: "send it and it is built in"): then "Add Ascend" adds it with one tap.
-// Always another site, never under demetrades2000-coder.github.io (see SAME_SITE_WARN). Empty: "Add Ascend" asks for the link.
+// Always another site, never under dcondax1-wq.github.io (see SAME_SITE_WARN). Empty: "Add Ascend" asks for the link.
 export const ASCEND_URL = '';
 // ------------------------------------------------------------------ OLYMPUS: every built-in app, one row each (2026-11-03)
 // Adding an app to OLYMPUS is one row in BUILT_INS, nothing else: its folder on the dashboard site (../<id>/) holds its
@@ -135,7 +135,7 @@ export const BUILT_INS = Object.freeze([
   app('symposium', 'Symposium', 'life', '#d9b25a', 'Meet everyone who works for you, and talk to them', { glyph: '\u03a3' }),
   app('herald', 'Herald', 'life', '#c8a24a', 'The daily paper: who built what, the day, the verdicts, all sourced', { glyph: '\u0397' }),
   app('polis', 'Polis', 'life', '#e0b060', 'The city of OLYMPUS: every app a building under the real New York sky', { glyph: '\u03a0\u03bb' }),
-  app('agency', 'Agency', 'money', '#d08c4a', 'Website agency: leads, demo sites, calls and the $ pipeline', { glyph: '\u0395' }),
+  app('agency', 'Websites', 'money', '#d08c4a', 'Website business HQ: next step, leads, audits, 3D demos, offers, calls', { glyph: '\u0395' }),
   app('business', 'Business', 'money', '#c8a24a', 'Every money model: next step, what is missing, $ estimate', { glyph: 'B' }),
   app('trading', 'Trading', 'trading', '#c8a24a', 'Every trade: today, calendar, stats, payout rules', { glyph: 'T' }),
   app('board', 'Board', 'trading', '#c8a24a', 'What the bot, you and Claude know: accounts, events, notes', { glyph: '\u25a4' }),
@@ -160,7 +160,7 @@ export function byGroup(list) {
   return home.length ? [{ group: null, apps: home }].concat(out) : out;
 }
 
-// Every page on Jarvis's origin (demetrades2000-coder.github.io) can read what Jarvis and the Planner keep in localStorage
+// Every page on Jarvis's origin (dcondax1-wq.github.io) can read what Jarvis and the Planner keep in localStorage
 // (AI keys, the Planner's sync token). Ours there: the dashboard site's root page (Zenith), jarvis/ and every built-in's
 // folder; a link anywhere else on that origin is still added, with this warning in the result and on the app.
 export const SAME_SITE_WARN = "same-site apps can read Jarvis's saved keys";
@@ -689,13 +689,22 @@ function storedCard(a, url) {
   const r = validateStatus(m[a.id].card, { base: a.url, now: Date.now() + 864e5 * 365 });   // what was kept is checked again
   return r.ok ? r.card : null;
 }
+// the ids listApps() gives, memoised on the stored list's raw text (perf 2026-11-20: remember() ran listApps() once per status card,
+// O(n^2) on Jarvis's start); any change to the stored list (add / remove / rename) changes the text, so it is never stale
+let idsMemo = { raw: undefined, ids: null };
+function appIds() {
+  const raw = readRaw(KEY);
+  if (idsMemo.ids && idsMemo.raw === raw) return idsMemo.ids;
+  idsMemo = { raw, ids: new Set(listApps().map((x) => x.id)) };
+  return idsMemo.ids;
+}
 // keep the newest good card per app (a pushed card is not replaced by an older static file), only for apps still here
 function remember(a, url, card) {
   const m = cards();
   const old = own(m, a.id) && isObj(m[a.id]) && m[a.id].url === url && isObj(m[a.id].card) ? m[a.id].card : null;
   if (old && Number(old.t) > card.t) return false;
   if (old && JSON.stringify(old) === JSON.stringify(card)) return true;      // the same card again (an app posting often)
-  const ids = new Set(listApps().map((x) => x.id));
+  const ids = appIds();
   if (!ids.has(a.id)) return true;                    // not (or no longer) in the list, e.g. removed while it was fetched
   m[a.id] = { url, at: Date.now(), card };
   for (const k of Object.keys(m)) if (!ids.has(k)) delete m[k];

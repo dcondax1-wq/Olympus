@@ -46,6 +46,13 @@ from . import account_b as AB
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LOCAL_REL = os.path.join("data", "rapid.json")
 PATH = None                     # tests: another file
+# A 2nd Rapid at the same time (day-multirapid 2026-11-20: the 5th MFFU slot = a Rapid EOD 50K next to today's 25K).
+# Slot "rapid" = data/rapid.json, ids "rapid" / "acctr" exactly as before (today's Rapid: nothing moves, an older bot still
+# reads it); slot "rapid2" = data/rapid2.json, LIT lane id "rapid2", ATLAS order tag "acctr2_", state *_acctr2.json, alert key
+# ":r2:acctr". Missing data/rapid2.json = OFF = the bot is exactly today's.
+SLOTS = ("rapid", "rapid2")
+LOCAL_REL2 = os.path.join("data", "rapid2.json")
+PATH2 = None                    # tests: another file (default: PATH's folder + rapid2.json when PATH is set)
 PRESET = "mffu_rapid_eod_50k"
 PLAN = "rapideod50k"
 LANE_ID = "rapid"
@@ -62,7 +69,8 @@ PLANS = {
                            "atlas_usd": ATLAS_USD, "buffer": BUFFER, "cushion": CUSHION, "since": 500.0, "eval_min_room": 200.0},
     "mffu_rapid_eod_25k": {"plan": "rapideod25k", "label": "Rapid EOD 25K", "start": 25000.0, "target": 1500.0,
                            "atlas_usd": 250.0, "buffer": 1100.0, "cushion": 500.0, "since": 250.0, "eval_min_room": 100.0,
-                           "mffu_dll": 500.0},   # owner 2026-11-20: bought WITH MFFU's daily loss limit $500 (a soft pause, never a fail)
+                           "mffu_dll": 500.0,    # owner 2026-11-20: bought WITH MFFU's daily loss limit $500 (a soft pause, never a fail)
+                           "atlas_slip": 2.5},   # owner YES 2026-11-20 (card rapid-atlas-size-10t): ATLAS's Rapid lane sizes on stop + 10 ticks (its real fills)
 }
 
 
@@ -85,6 +93,56 @@ def _num(x, d=None):
 
 def path(p: str | None = None) -> str:
     return p or PATH or os.path.join(ROOT, LOCAL_REL)
+
+
+def slot_path(slot: str = "rapid") -> str:
+    """The file of a slot: "rapid" = path() (unchanged), "rapid2" = data/rapid2.json."""
+    if slot == "rapid":
+        return path()
+    if slot != "rapid2":
+        raise ValueError(f"unknown Rapid slot {slot!r}")
+    if PATH2:
+        return PATH2
+    if PATH:
+        return os.path.join(os.path.dirname(PATH), "rapid2.json")
+    return os.path.join(ROOT, LOCAL_REL2)
+
+
+def slot_of(x) -> str:
+    """The slot of a lane spec / an id ("rapid2" only when it says so: today's lane has no "slot" key)."""
+    if isinstance(x, dict):
+        return "rapid2" if (x.get("slot") == "rapid2" or x.get("id") == "rapid2") else "rapid"
+    return "rapid2" if str(x or "") == "rapid2" else "rapid"
+
+
+def read_all() -> list:
+    """[(slot, block)] of every Rapid that is ON, slot 1 first."""
+    out = []
+    for sl in SLOTS:
+        try:
+            b = read(slot_path(sl))
+        except Exception:
+            b = None
+        if b:
+            out.append((sl, b))
+    return out
+
+
+def free_slot(name: str) -> tuple:
+    """(slot, None) where a Rapid with this Name goes: the slot that already has the Name, else the first empty one;
+    (None, why) when both hold other accounts."""
+    nm = str(name or "").strip()
+    held = []
+    for sl in SLOTS:
+        b = read(slot_path(sl))
+        if b is not None and str(b.get("account") or "").strip() == nm:
+            return sl, None
+        if b is not None:
+            held.append(f"{b['account']} ({plan_info(b)['label']})")
+    for sl in SLOTS:
+        if read(slot_path(sl)) is None:
+            return sl, None
+    return None, "both Rapid slots are taken (" + ", ".join(held) + "): remove one first"
 
 
 def _today() -> str:
@@ -146,6 +204,13 @@ def _other_names() -> dict:
     try:
         out.setdefault("ATLAS (25K)", None)
         out["ATLAS (25K)"] = out["ATLAS (25K)"] or (AB.raw_cfg() or {}).get("account")
+    except Exception:
+        pass
+    try:                       # redteam2 2026-11-20: the extra accounts too (Zlarior 25K #2, account C), as account_cli does
+        from . import account_cli
+        for r in account_cli.inventory():
+            if r.get("role") not in ("main", "b", "rapid") and r.get("name"):
+                out.setdefault(f"the account {r.get('id')}", r["name"])
     except Exception:
         pass
     return out
@@ -322,15 +387,19 @@ def record_payout(spec_s: str, p: str | None = None) -> dict:
 
 
 # ---------------------------------------------------------------------------------------------------------------- the lanes
-def lane_spec(blk: dict, cfg: dict | None = None) -> dict:
-    """LIT's lane: one engine/multi_account extra account entry (data/accounts.json format)."""
+def lane_spec(blk: dict, cfg: dict | None = None, slot: str = "rapid", dup: bool = False) -> dict:
+    """LIT's lane: one engine/multi_account extra account entry (data/accounts.json format). slot "rapid2" = the 2nd Rapid:
+    id "rapid2" + "slot": "rapid2" (the 1st keeps today's exact entry); dup = both Rapids are the same size: " #2" in its name."""
     cfg = cfg or {}
     funded = blk.get("stage") == "funded"
     armed = blk.get("armed") is True
     P = plan_info(blk)
-    s = {"id": LANE_ID, "name": P["label"], "preset": P["preset"], "mode": "funded" if funded else "two_week",
+    two = slot == "rapid2"
+    s = {"id": "rapid2" if two else LANE_ID, "name": P["label"] + (" #2" if two and dup else ""), "preset": P["preset"], "mode": "funded" if funded else "two_week",
          "adapter": "ninjatrader" if cfg.get("adapter") == "ninjatrader" else "paper", "nt_account": blk["account"],
          "eval_start": blk.get("eval_start") or "", "enabled": True, "armed": armed, "lane": "rapid"}
+    if two:
+        s["slot"] = "rapid2"
     if armed and cfg.get("confirm"):
         s["confirm"] = cfg["confirm"]           # the phrase typed at this start, in memory only
     if funded:
@@ -350,9 +419,10 @@ def atlas_block(blk: dict) -> dict:
     return b
 
 
-def stack_qty(risk: float, room, cum: float, maxq: int, dll: float = 1000.0, cap: float = ATLAS_USD) -> tuple:
-    """research stack_q: $ = min($500 (the 25K: $250), 30% x room, the soft day left), micros = $ / one full stop-out of 1 micro."""
-    loss1 = (float(risk) + SLIP) * PV + COMM
+def stack_qty(risk: float, room, cum: float, maxq: int, dll: float = 1000.0, cap: float = ATLAS_USD, slip: float = SLIP) -> tuple:
+    """research stack_q: $ = min($500 (the 25K: $250), 30% x room, the soft day left), micros = $ / one full stop-out of 1 micro.
+    slip = the extra points a stop-out costs past the stop (default 1 tick; a plan's "atlas_slip" sizes on real fills, 2.5 = 10 ticks)."""
+    loss1 = (float(risk) + float(slip)) * PV + COMM
     usd = min(float(cap), ATLAS_F * max(0.0, float(room or 0.0)), float(dll) + min(0.0, float(cum or 0.0)))
     return max(0, min(int(maxq), int(usd // loss1))), usd, loss1
 
@@ -445,9 +515,15 @@ def _open_leg(ad, d=None):
 class RapidAtlas(AB.AccountB):
     """ATLAS on the Rapid EOD (LiveBot.acct_r): account B's code on the SAME NinjaTrader account as LIT's lane."""
     PUSH_SUFFIX = ":acctr"          # its own trade-notice keys (account B's are ":acctb"): both can enter on the same bar
+    # no start day in data/rapid.json (AccountB.no_start): the Rapid's own commands, never account B's (that would move ATLAS's 25K)
+    START_CMDS = {"eval": 'python -X utf8 -m engine.rapid --account "{name}" --start <first eval day yyyy-mm-dd>',
+                  "funded": 'python -X utf8 -m engine.rapid --to-funded --account "{name}" --start <first funded day yyyy-mm-dd>'}
 
-    def __init__(self, bot, spec, state_path=None, adapter_factory=None):
-        super().__init__(bot, spec, state_path=state_path or _state_path(getattr(bot, "state_path", None)),
+    def __init__(self, bot, spec, state_path=None, adapter_factory=None, slot: str = "rapid"):
+        self.slot = "rapid2" if slot == "rapid2" else "rapid"
+        if self.slot == "rapid2":
+            self.PUSH_SUFFIX = ":r2:acctr"  # its own alert key (two Rapids' ATLAS can enter on the same bar); still ends ":acctr"
+        super().__init__(bot, spec, state_path=state_path or _state_path(getattr(bot, "state_path", None), self.slot),
                          adapter_factory=adapter_factory)
         self.P = plan_info(self.spec)
         self.label = f"ATLAS Rapid {self.name}"
@@ -456,7 +532,8 @@ class RapidAtlas(AB.AccountB):
     # ---- the other lane
     def lane(self):
         ac = getattr(self.bot, "accts", None)
-        return next((a for a in (getattr(ac, "accounts", None) or []) if a.spec.get("lane") == "rapid"), None)
+        return next((a for a in (getattr(ac, "accounts", None) or []) if a.spec.get("lane") == "rapid"
+                     and slot_of(a.spec) == self.slot), None)
 
     def all_closes(self) -> list:
         ln = self.lane()
@@ -469,8 +546,9 @@ class RapidAtlas(AB.AccountB):
         c = super().adapter_cfg()
         d = os.path.dirname(self.state_path)
         log_dir = os.path.join(ROOT, "logs") if self.real_bot() else d
-        return {**c, "nt_file_tag": "acctr_", "nt_state_path": os.path.join(d, "ninjatrader_state_acctr.json"),
-                "nt_audit_log": os.path.join(log_dir, "ninjatrader_oif_acctr.log")}
+        t = "acctr2" if self.slot == "rapid2" else "acctr"
+        return {**c, "nt_file_tag": t + "_", "nt_state_path": os.path.join(d, f"ninjatrader_state_{t}.json"),
+                "nt_audit_log": os.path.join(log_dir, f"ninjatrader_oif_{t}.log")}
 
     # ---- one book for the account
     def _funded_state(self, today):
@@ -537,7 +615,8 @@ class RapidAtlas(AB.AccountB):
         if not self.funded() and float(state.get("profit") or 0.0) + float(state.get("cum") or 0.0) >= float(R["target"]):
             return {"qty": 0, "reasons": ["eval target reached: no new trade"], "lock": "passed"}
         cap = float(self.P["atlas_usd"])
-        q, usd, loss1 = stack_qty(risk, room, float(state.get("cum") or 0.0), int(R["max_micros"]), float(R["dll"]), cap)
+        q, usd, loss1 = stack_qty(risk, room, float(state.get("cum") or 0.0), int(R["max_micros"]), float(R["dll"]), cap,
+                                  float(self.P.get("atlas_slip", SLIP)))
         why = [f"${usd:,.0f} risk (min ${cap:,.0f}, 30% of the ${room:,.0f} room, the day left) / ${loss1:,.0f} a micro -> {q}"]
         if q > 0 and not self.funded():
             today = AB.trading_day(self.clock())
@@ -690,14 +769,14 @@ class RapidAtlas(AB.AccountB):
         return super()._push_text(title, body, f"rapid:{key}")
 
 
-def _state_path(bot_state_path: str | None) -> str:
+def _state_path(bot_state_path: str | None, slot: str = "rapid") -> str:
     p = bot_state_path or os.path.join(ROOT, "data", "live_state.json")
     base, ext = os.path.splitext(p)
-    return base + "_acctr" + (ext or ".json")
+    return base + ("_acctr2" if slot == "rapid2" else "_acctr") + (ext or ".json")
 
 
-def build_atlas(bot, blk: dict | None, **kw):
-    """LiveBot: ATLAS's lane of the Rapid (None when off)."""
+def build_atlas(bot, blk: dict | None, slot: str = "rapid", **kw):
+    """LiveBot: ATLAS's lane of a Rapid (None when off); slot "rapid2" = the 2nd Rapid's own state / tag / alert key."""
     if not blk:
         return None
     lit_acct = None
@@ -708,22 +787,25 @@ def build_atlas(bot, blk: dict | None, **kw):
     except Exception:
         lit_acct = None
     spec = AB.normalize(atlas_block(blk), lit_account=lit_acct)
-    return RapidAtlas(bot, spec, **kw).start() if spec else None
+    return RapidAtlas(bot, spec, slot=slot, **kw).start() if spec else None
 
 
 # ---------------------------------------------------------------------------------------------------------------- status
-def status(p: str | None = None, state_path: str | None = None) -> dict:
+def status(p: str | None = None, state_path: str | None = None, slot: str = "rapid") -> dict:
+    if p is None and slot == "rapid2":
+        p = slot_path("rapid2")
+    lane_id, atl = ("rapid2", "live_state_acctr2.json") if slot == "rapid2" else (LANE_ID, "live_state_acctr.json")
     blk = read(p)
     if blk is None:
         return {"on": False, "text": "Rapid EOD: OFF (no account set: python -X utf8 -m engine.rapid --account \"<Name>\")"}
     sp = state_path or os.path.join(ROOT, "data")
     closes = []
-    for fn, key in (("live_state_accounts.json", None), ("live_state_acctr.json", None)):
+    for fn, key in (("live_state_accounts.json", None), (atl, None)):
         try:
             with open(os.path.join(sp, fn), encoding="utf-8") as fh:
                 b = json.load(fh)
             if fn.endswith("_accounts.json"):
-                a = (b.get("accounts") or {}).get(LANE_ID) or {}
+                a = (b.get("accounts") or {}).get(lane_id) or {}
                 if a.get("nt_account") == blk["account"]:
                     closes += a.get("closes") or []
             elif b.get("account") == blk["account"]:
@@ -773,36 +855,42 @@ def main(argv=None) -> int:
     ap.add_argument("--off", action="store_true")
     ap.add_argument("--status", action="store_true")
     ap.add_argument("--lit-bank", choices=("on", "off"), help="the 25K only: LIT takes 1 micro banked at the day's 30%% room")
+    ap.add_argument("--slot", choices=("1", "2"), default="1", help="which Rapid: 1 = data/rapid.json (default), 2 = data/rapid2.json")
     a = ap.parse_args(argv)
+    sp = slot_path("rapid2") if a.slot == "2" else None      # None = path(): slot 1 exactly as before
     if a.lit_bank:
-        b = load()
+        b = load(sp)
         if not b.get("account") or plan_info(b)["preset"] != "mffu_rapid_eod_25k":
             print("NOT set: --lit-bank is for the Rapid EOD 25K only (no 25K in data/rapid.json)")
             return 1
         b["lit_bank"] = a.lit_bank == "on"
-        save(b)
+        save(b, sp)
         print(f"Rapid EOD 25K: LIT bank-at-the-room {a.lit_bank.upper()} (from the next bot start)")
         return 0
     if a.off:
-        r = off()
+        r = off(sp)
         print("Rapid EOD: OFF (no new trades on it after the next bot start)")
         return 0 if r["ok"] else 1
     if a.payout:
-        r = record_payout(a.payout)
+        r = record_payout(a.payout, sp)
         print("recorded" if r["ok"] else f"NOT recorded: {r['error']}")
         return 0 if r["ok"] else 1
     if a.to_funded:
-        r = to_funded(a.account, a.start)
+        r = to_funded(a.account, a.start, sp)
         print("Rapid EOD funded: set (disarmed: START BOT + the phrase arms it)" if r["ok"] else f"NOT set: {r['error']}")
         return 0 if r["ok"] else 1
     if a.account:
-        size, msg, ok = cli_size(a.account, a.size)
+        size, msg, ok = cli_size(a.account, a.size, sp)
         if not ok:
             print(f"NOT set: {msg}")
             return 1
         if msg:
             print(msg)
-        r = set_account(a.account, a.start, preset=f"mffu_rapid_eod_{size}" if size else None)
+        oth = _other_names()
+        o = read(slot_path("rapid") if a.slot == "2" else slot_path("rapid2"))
+        if o:
+            oth["the other Rapid"] = o["account"]           # two Rapids never share a Name
+        r = set_account(a.account, a.start, sp, others=oth, preset=f"mffu_rapid_eod_{size}" if size else None)
         if not r["ok"]:
             print(f"NOT set: {r['error']}")
             return 1
@@ -813,6 +901,9 @@ def main(argv=None) -> int:
         print(f"     {rules_more(b)}")
         return 0
     print(status()["text"])
+    s2 = status(slot="rapid2")
+    if s2.get("on"):
+        print("Rapid #2: " + s2["text"])
     return 0
 
 

@@ -3,7 +3,8 @@
      fetched (read only: no POST, no key), safe areas and the orb's corner, 16 px gutters, reduced motion, the manifest, the icon, jarvis.json, the fixture
   b. the pure modules in node: cityfeed.js (shape, the live merge, the cards, the clock) and citylayout.js (one district per market, every edge placed once, nothing
      overlaps, height follows EV, grey and low below 30 bets, going-up / crumbling flags, a deterministic skyline)
-  c. the page in Chromium at 390 x 844 on the LITE tier: no errors, the verdict, the districts, a tap on a building opens its card, the five sheets, the four
+  c. the page in Chromium at 390 x 844 on the LITE tier: it opens on the 2D atlas (no 3D module, no WebGL) and the 3D starts on 'Show the 3D city' (opt-in remembered,
+     reduced motion stays 2D); then no errors, the verdict, the districts, a tap on a building opens its card, the five sheets, the four
      cameras, the clock preview, the demo preview, the live feed over the engine's copy, offline (the feed unreachable), the fixture when the engine's files are missing,
      the high tier (3 passes, a thicker skyline), reduced motion (a still scene), nothing leaves the machine but the one public feed address (answered locally here)
     python -X utf8 -m tests.test_kalshicity_page            (KC_NO_BROWSER=1 skips c; KC_NO_HIGH=1 skips the high tier load)
@@ -57,7 +58,7 @@ def part_a():
     html, css = rd(PAGE, "index.html"), rd(PAGE, "kalshicity.css")
     js = {n: rd(PAGE, n) for n in files if n.endswith(".js")}
     check("a. the kit first (olympus.css, themes.js, olympus.js ?v=o2 with data-app), viewport-fit=cover, theme-color, dark, manifest, icon, apple-touch-icon",
-          '<link rel="stylesheet" href="../olympus/olympus.css?v=o7">' in html and 'src="../olympus/themes.js?v=o9"' in html and 'src="../olympus/olympus.js?v=o15" data-app="kalshicity"' in html
+          '<link rel="stylesheet" href="../olympus/olympus.css?v=o7">' in html and 'src="../olympus/themes.js?v=o10"' in html and 'src="../olympus/olympus.js?v=o22" data-app="kalshicity"' in html
           and "viewport-fit=cover" in html and 'name="theme-color"' in html and 'content="dark"' in html and 'rel="manifest" href="manifest.webmanifest"' in html
           and 'rel="icon" href="icon.svg"' in html and 'rel="apple-touch-icon"' in html)
     check("a. no CDN, no outside script / font / image: every src and href is local", not re.search(r'(src|href)="https?://', html) and not any(re.search(r"import[^;]*['\"]https?://", s) for s in js.values()))
@@ -86,6 +87,18 @@ def part_a():
           and re.fullmatch(r"#[0-9a-f]{6}", j["theme"]) and os.path.getsize(os.path.join(PAGE, "jarvis.json")) < 8192 and not re.search(r"[<>]", json.dumps(j)), j)
     fx = json.loads(rd(PAGE, "fixture.json"))
     check("a. the demo fixture is marked demo, holds a feed, the engine's edges (400+) and a log", fx["demo"] is True and fx["kalshi"]["kind"] == "kalshi" and len(fx["edges"]["edges"]) > 400 and len(fx["log"]) > 5 and len(fx["hyps"]["hyps"]) >= 6 and fx["hyps"]["pair"]["best"] and fx["hyps"]["pair"]["worst"])
+    ag = rd(PAGE, "agora-kalshicity.css")
+    check("a. bar 2026-11-20 (archive page): the archive line + banner at the top with 44 px links to today's bot (../kalshi/) and the Kalshi desk (../dionysus/); the old bot's line says retired",
+          "Archive: this page is history" in html and "retired 2026-11-19" in html and 'href="../kalshi/"' in html and 'href="../dionysus/"' in html and html.index("archive-banner") < html.index('id="verdict"')
+          and "min-height:44px" in ag.split(".arch-btn{", 1)[1].split("}", 1)[0] and "Old bot (retired 2026-11-19)" in js["kalshicity.js"])
+    check("a. bar: no backdrop blur on this page (the last stylesheet turns every one off over the 3D city), and no data = a plain sentence (noData), never a stuck 'Reading the city...'",
+          re.search(r"\*,\*::before,\*::after,\*::backdrop\{-webkit-backdrop-filter:none!important;backdrop-filter:none!important\}", ag) is not None and html.index("agora-kalshicity.css") > html.index("kalshicity.css?")
+          and "function noData(" in js["kalshicity.js"] and "main().catch(" in js["kalshicity.js"] and "You are offline" in js["kalshicity.js"])
+    kj = js["kalshicity.js"]
+    check("a. bar 2026-11-20 (3D on tap): a 44 px 'Show the 3D city' button and the 'Open in 3D next time' opt-in in the page; kalshicity.js never imports the 3D statically (cityscene.js only by import() inside startScene), the page opens on the 2D atlas, reduced motion never auto-starts 3D",
+          'id="show3d"' in html and ">Show the 3D city<" in html and 'id="remember3d"' in html and 'id="to2d"' in html and "min-height:44px" in ag.split(".show3d{", 1)[1].split("}", 1)[0]
+          and not re.search(r"^import[^;]*(cityscene|cityrig|cityfx|skylineports|three)", kj, re.M) and "await import(SCENE_URL)" in kj and "startAtlas(atlasOnly()" in kj
+          and "const auto3d = () => remembered3d() && !reduced() && !atlasOnly();" in kj and "three" not in rd(PAGE, "cityatlas.js"))
     check("a. the render core wiring a new app needs is not edited here (olympus.js APPS, apps.js, sw.js and the build are the lead's): this folder only adds files",
           all(os.path.isfile(os.path.join(PAGE, f)) for f in ("manifest.webmanifest", "icon.svg")))
 
@@ -261,6 +274,10 @@ GEOM = """() => { const W = innerWidth, H = innerHeight, bad = [];
   return bad; }"""
 
 
+GL_SPY = ("(() => { window.__gl = []; const g = HTMLCanvasElement.prototype.getContext; HTMLCanvasElement.prototype.getContext = function (k, ...a) { window.__gl.push(String(k)); return g.call(this, k, ...a); };"
+          " if (window.OffscreenCanvas) { const o = OffscreenCanvas.prototype.getContext; OffscreenCanvas.prototype.getContext = function (k, ...a) { window.__gl.push(String(k)); return o.call(this, k, ...a); }; } })()")
+
+
 def ins(p):
     """On a tall phone the pair and the ticker are folded away until 'Open insights' is tapped: open them if they are not showing."""
     if not p.is_visible("#ticker") and p.is_visible("#cityInsights"):
@@ -310,19 +327,86 @@ def run_browser():
                     outside.append(u)
                     return route.abort()
                 ctx.route("**/*", guard)
+                ctx.add_init_script(GL_SPY)
                 p = ctx.new_page()
                 p.set_default_timeout(180000)
                 p.errs = []
+                p.reqs = []
+                p.on("request", lambda r: p.reqs.append(r.url))
                 p.on("pageerror", lambda e: p.errs.append(str(e)))
                 p.on("console", lambda m: m.type == "error" and "Failed to load resource" not in m.text and "vibrate" not in m.text and p.errs.append(m.text))
                 return ctx, p
 
-            def ready(p, url=base):
+            def ready2d(p, url=base):
                 p.goto(url)
-                p.wait_for_function("document.body.dataset.ready === '1' && window.KC && KC.state().scene && KC.state().scene.drawn > 0", timeout=240000)
+                p.wait_for_function("document.body.dataset.ready === '1' && window.KC && KC.state().ready && KC.state().atlas", timeout=120000)
+
+            def ready(p, url=base):
+                """bar 2026-11-20: the page opens in 2D; the 3D city starts when 'Show the 3D city' is tapped (as a person does)."""
+                ready2d(p, url)
+                p.click("#show3d")
+                p.wait_for_function("KC.state().scene && KC.state().scene.drawn > 0", timeout=240000)
 
             st = lambda p: p.evaluate("KC.state()")  # noqa: E731
             make_site(tmp)
+
+            # ---- bar 2026-11-20 (3D on tap): first paint is the 2D atlas + panels; no 3D module is fetched and no WebGL context exists until the button is tapped
+            ctx, p = page()
+            ready2d(p)
+            p.wait_for_timeout(2500)                                  # past the 1.8 s greeting scan and the toast: still nothing 3D
+            s = st(p)
+            heavy = [u for u in p.reqs if re.search(r"/(cityscene|cityrig|cityfx|skylineports)\.js|three\.module|three-addons|/olympus/(render|materials|look)\.js", u)]
+            b3 = p.locator("#show3d").bounding_box()
+            check("c. 3D on tap: at load no 3D module is requested (cityscene / cityrig / cityfx / skylineports / three.js / the render core) and no WebGL context exists; the 2D atlas is drawn",
+                  not heavy and not p.evaluate("window.__gl.some((k) => /webgl/.test(k))") and s["atlas"] and s["scene"] is None and p.evaluate("document.documentElement.dataset.noscene") == "atlas"
+                  and p.locator(".kc-atlas-caption nav button").count() >= 3 and not p.errs, (heavy[:3], p.evaluate("window.__gl"), s["atlas"], p.errs))
+            check("c. ...the useful 2D content is there at once: the archive banner, the verdict in words with numbers, Best / Worst in dollars, the district list; 'Show the 3D city' is a 44 px+ button on the first screen",
+                  p.is_visible(".archive-banner") and p.inner_text("#vText") != "Reading the city..." and re.search(r"\d", p.inner_text("#oMore")) and p.inner_text("#pBestV").startswith("+$")
+                  and p.inner_text("#show3d") == "Show the 3D city" and b3 and b3["height"] >= 44 and b3["width"] >= 44 and b3["y"] + b3["height"] <= 844 and not p.is_visible("#to2d"), (p.inner_text("#vText")[:80], b3))
+            ov = p.evaluate(GEOM)
+            uncovered = p.evaluate("['show3d', 'districtSelect'].every((id) => { const b = document.getElementById(id).getBoundingClientRect(), e = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return e && (e.id === id || e.closest('#' + id)); })")
+            check("c. ...the 2D page sits inside the 16 px gutters, out of the orb's corner, no sideways scroll; nothing lies over the 3D button or the district switch", not ov and uncovered, (ov, uncovered))
+            if shots:
+                p.screenshot(path=os.path.join(shots, "kalshicity-2d.png"))
+            p.click("[data-view=board]")
+            p.wait_for_function("KC.state().view === 'board'")
+            check("c. ...the panels work in 2D before any 3D (the Board opens)", "biggest proven lead" in p.inner_text("#sheet").lower() and not p.errs, p.errs)
+            p.keyboard.press("Escape")
+            p.click("#show3d")
+            p.wait_for_function("KC.state().scene && KC.state().scene.drawn > 0", timeout=240000)
+            s = st(p)
+            check("c. ...tapping 'Show the 3D city' loads the 3D modules, makes the WebGL context and draws the city; the atlas and its caption are gone; the '2D' chip appears; no errors",
+                  any("cityscene.js" in u for u in p.reqs) and p.evaluate("window.__gl.some((k) => /webgl/.test(k))") and not s["atlas"] and s["scene"]["edges"] == s["n"] and not p.evaluate("document.documentElement.dataset.noscene")
+                  and not p.locator(".kc-atlas-caption").count() and p.is_visible("#to2d") and not p.is_visible("#city3d") and not s["error"] and not p.errs, (s["scene"], s["error"], p.errs))
+            check("c. ...nothing is remembered unless asked (the opt-in box was not ticked)", not (json.loads(p.evaluate("localStorage.getItem('kalshicity.v1') || '{}'")) or {}).get("city3d"))
+            ctx.close()
+
+            # ---- the opt-in: 'Open in 3D next time' is kept on this phone; the next visit starts the 3D without a tap; the '2D' chip forgets it and reloads in 2D
+            ctx, p = page()
+            ready2d(p)
+            p.check("#remember3d")
+            check("c. opt-in: ticking 'Open in 3D next time' stores it on this phone (localStorage), nothing 3D starts yet",
+                  json.loads(p.evaluate("localStorage.getItem('kalshicity.v1')")).get("city3d") is True and st(p)["scene"] is None)
+            p.goto(base)
+            p.wait_for_function("document.body.dataset.ready === '1' && KC.state().scene && KC.state().scene.drawn > 0", timeout=240000)
+            check("c. ...the next visit opens straight in 3D (no tap), no errors", not st(p)["atlas"] and not p.errs, p.errs)
+            p.reqs.clear()
+            p.click("#to2d")
+            p.wait_for_function("document.body.dataset.ready === '1' && window.KC && KC.state().ready && KC.state().atlas", timeout=120000)
+            p.wait_for_timeout(800)
+            check("c. ...the '2D' chip forgets the choice and reloads on the 2D atlas (no 3D module fetched, no WebGL)",
+                  json.loads(p.evaluate("localStorage.getItem('kalshicity.v1')")).get("city3d") is False and st(p)["scene"] is None and not p.evaluate("window.__gl.some((k) => /webgl/.test(k))")
+                  and not any("cityscene.js" in u for u in p.reqs) and not p.errs, p.errs)
+            ctx.close()
+
+            # ---- reduced motion keeps 2D, even when this phone opted in to 3D; the button still works
+            ctx, p = page(reduced=True)
+            p.add_init_script("try { localStorage.setItem('kalshicity.v1', JSON.stringify({ city3d: true })); } catch (e) {}")
+            ready2d(p)
+            p.wait_for_timeout(2000)
+            check("c. reduced motion: stays on the 2D atlas at load (even with the 3D opt-in), no 3D module, no WebGL, the button offered",
+                  st(p)["scene"] is None and st(p)["atlas"] and not any("cityscene.js" in u for u in p.reqs) and not p.evaluate("window.__gl.some((k) => /webgl/.test(k))") and p.is_visible("#show3d") and not p.errs, p.errs)
+            ctx.close()
 
             # ---- the real city, still scene (reduced motion keeps the camera where it is, so taps land on known buildings)
             ctx, p = page(reduced=True)
@@ -340,6 +424,8 @@ def run_browser():
                   and p.get_attribute("#wx", "data-wx") == edges["regime"]["state"] and p.inner_text("#wx").split(" ")[0] in ("Clear", "Overcast", "Rain", "Storm"), t)
             ov = p.evaluate(GEOM)
             check("c. home at 390 x 844: inside the 16 px gutters, nothing in the orb's 80 x 160 corner, no sideways scroll", not ov, ov)
+            nb = p.evaluate("() => [...document.querySelectorAll('*')].filter((e) => { const c = getComputedStyle(e), b = c.backdropFilter || c.webkitBackdropFilter; return b && b !== 'none'; }).length")
+            check("c. bar: no element draws a backdrop blur over the 3D city (was 10-12 before 2026-11-20)", nb == 0, nb)
             if shots:
                 os.makedirs(shots, exist_ok=True)
                 p.wait_for_timeout(1500)
@@ -351,7 +437,7 @@ def run_browser():
                 w = p.evaluate(f"KC.where({json.dumps(i)})")
                 hits += bool(w) and p.evaluate(f"KC.pick({w['x']}, {w['y']})") == i
             check("c. picking: the building under a fingertip is found (12 proven edges, projected to the screen and picked back)", hits >= 8, (hits, len(model)))
-            tgt = next(i for i in model if (p.evaluate(f"KC.where({json.dumps(i)})") or {}).get("y", 0) > 300 and p.evaluate(f"(() => {{ const w = KC.where({json.dumps(i)}); return w && w.y < 640 && KC.pick(w.x, w.y) === {json.dumps(i)}; }})()"))
+            tgt = next(i for i in model if (p.evaluate(f"KC.where({json.dumps(i)})") or {}).get("y", 0) > 300 and p.evaluate(f"(() => {{ const w = KC.where({json.dumps(i)}); return w && w.y < 640 && KC.pick(w.x, w.y) === {json.dumps(i)} && (document.elementFromPoint(w.x, w.y) || {{}}).id === 'city'; }})()"))   # a spot of the city a finger can reach (not under a panel)
             w = p.evaluate(f"KC.where({json.dumps(tgt)})")
             p.mouse.click(w["x"], w["y"])
             p.wait_for_function("KC.state().view === 'card'")
@@ -571,6 +657,14 @@ def run_browser():
             ready(p)
             s = st(p)
             check("c. no engine files and no feed: the fixture's recorded demo (DEMO badge, 400+ edges, the going-up and crumbling buildings), still no errors", s["demo"] and p.is_visible("#demo") and s["n"] > 400 and s["scene"]["constructing"] >= 1 and s["hypDemo"] and len(s["labs"]) == 8 and p.inner_text("#tkText").startswith("Demo: ") and not p.errs, (s["demo"], s["n"], p.errs))
+            ctx.close()
+            # ---- bar 2026-11-20: nothing at all (no engine files, no fixture, no feed): one plain sentence, never a stuck 'Reading the city...', no error
+            os.remove(os.path.join(tmp, "nq-dashboard", "kalshicity", "fixture.json"))
+            ctx, p = page()
+            p.goto(base)
+            p.wait_for_function("document.body.dataset.ready === '1' && window.KC && KC.state().ready", timeout=60000)
+            vt = p.inner_text("#vText")
+            check("c. bar: no data at all: the verdict card says so in plain words and points to K8; no JS error; no 3D is started", "has no data right now" in vt and "K8" in vt and not p.errs and st(p)["scene"] is None, (vt, p.errs))
             ctx.close()
             live["mode"] = "ok"
             make_site(tmp)

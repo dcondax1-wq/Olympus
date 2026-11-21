@@ -534,7 +534,9 @@ def main():
             run(H, b, fake, poll_times(H, d), [])
             B = b.acct_b
             ents = [r for r in B.ledger if r.get("side") in ("buy", "sell")]
-            blk = [x["text"] for x in b.log if "NOT routed on account B" in x["text"] and "eval passed" in x["text"]]
+            # the stand-down now comes from engine/lifecycle.block first ("ATLAS 25K PASSED: stood down ..."), before the eval view's own
+            # "eval passed (...)" line: either wording is the pass lock (day-quality 2026-11-20: the old test read only the second)
+            blk = [x["text"] for x in b.log if "NOT routed on account B" in x["text"] and ("eval passed" in x["text"] or " PASSED: stood down" in x["text"])]
             check(f"d. {d} 25K at +$1,450: after the first B trade passes the eval ({B.eval_view()['status']}, balance "
                   f"${B.eval_view()['balance']:,.0f}) the next B signal is NOT routed (pass lock)",
                   len(ents) == 1 and B.eval_view()["status"] == "passed" and bool(blk), (ents, blk[:2], B.eval_view()))

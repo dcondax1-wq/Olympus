@@ -31,6 +31,10 @@ _No period table published for this one yet; see the write-ups._
 > 2nd target / 1R / scalp / profit lock: no sooner payout. Lead only: BLITZ max 3/day on the Rapid (chance-level by count; 2021-25 2-week eval fails 2.9% -> 6.0%). Watch on paper.
 > Write-ups: [[rule-native-2026-11-17|Rule-native search]]
 
+> [!failure]- ICT ATM range + ES/NQ SMT as the trigger, MES, Judas swing
+> 5 pre-registered sets, $250, costs in: every SMT set loses all 3 periods (PF 0.57-0.99, gross 0.59-1.05), MES not cleaner (10-tick stress -$3.7k..-$10.1k), Judas control +$1,672 Jan-Jun then -$2,244 Jul-Oct / -$11,472 2021-25. Rapid 25K eval pass 0-5%. 0 pass.
+> Write-ups: [[newstrat-ict-smt-2026-11-20|New strategy for the extra accounts]]
+
 > [!failure]- Rapid EOD levers
 > on LIT + ATLAS $500 Rapid EOD 50K: eval give-up / re-buy (room < $500-1,000, session > 30/45, 30%-rule need > $3-4k: +$12-104/mo = noise, 2021-25 worse), eval day caps (none, stop at +$500/+$700, balance-aware guard: today's 30% size guard is best), Asia slot at LIT size (funded lost 9.4% / 2.0% / 27.3%), fixed $1,000 payout requests, different mixes per account for more $ (identical copies pay more in both halves; different mixes only cut the no-pay risk): rejected. Lead: keep a $1,000 funded cushion.
 > Write-ups: [[rapid-levers-2026-11-16|Rapid EOD 50K levers]]
@@ -40,6 +44,11 @@ _No period table published for this one yet; see the write-ups._
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-20 | [[skeptic-live-patches-2026-11-20\|Skeptic check of the two live sizing patches]] | research |
+| 2026-11-20 | [[skeptic-atlas-streak-2026-11-20\|Skeptic check of Decide card atlas-funded-streak-1micro]] | research |
+| 2026-11-20 | [[rapid50-ready-2026-11-20\|Rapid EOD 50K readiness]] | finding |
+| 2026-11-20 | [[rapid-launch-2026-11-20\|Rapid EOD 25K launch check]] | finding |
+| 2026-11-20 | [[newstrat-ict-smt-2026-11-20\|New strategy for the extra accounts]] | rejected |
 | 2026-11-20 | [[atlas-risk-real-fills-2026-11-20\|ATLAS funded 25K at real fills]] | finding |
 | 2026-11-19 | [[one-account-combo-2026-11-19\|ONE account, several bots]] | research |
 | 2026-11-18 | [[rapid25-lit-lane-2026-11-18\|Rapid EOD 25K]] | research |

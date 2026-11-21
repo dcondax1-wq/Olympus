@@ -1,0 +1,20 @@
+[
+ {
+  "app": "plan",
+  "scheme": "dark",
+  "cls": 0,
+  "long": [],
+  "height": 9002,
+  "errors": [],
+  "bad": []
+ },
+ {
+  "app": "plan",
+  "scheme": "light",
+  "cls": 0,
+  "long": [],
+  "height": 9002,
+  "errors": [],
+  "bad": []
+ }
+]
