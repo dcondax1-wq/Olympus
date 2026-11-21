@@ -219,7 +219,7 @@ def part_c():
 def part_d():
     html, js, css = rd(APP, "index.html"), rd(APP, "why.js"), rd(APP, "why.css")
     check("d. AGORA look: theme-color #14110e, data-theme agora, agora.css + agora-apps.css, a11y.css + a11y.js, why.js",
-          'name="theme-color" content="#14110e"' in html and 'data-theme="agora"' in html and "agora.css" in html and "agora-apps.css" in html
+          'name="theme-color" content="#000000"' in html and 'data-theme="agora"' in html and "agora.css" in html and "agora-apps.css" in html
           and "a11y.css" in html and "a11y.js" in html and 'src="why.js' in html)
     check("d. manifest + icon + jarvis.json tile", all(os.path.isfile(os.path.join(APP, f)) for f in ("manifest.webmanifest", "icon.svg", "jarvis.json"))
           and json.load(open(os.path.join(APP, "manifest.webmanifest"), encoding="utf-8"))["theme_color"] == "#14110e")

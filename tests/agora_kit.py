@@ -216,6 +216,10 @@ def is_status_feed(u):
 def page(br, origin, w=390, h=844, reduced=False, lite=False, storage=None, mock=None):
     ctx = br.new_context(viewport={"width": w, "height": h}, device_scale_factor=2, is_mobile=True, has_touch=True, reduced_motion="reduce" if reduced else "no-preference", accept_downloads=True)
     init = "try { localStorage.setItem('jfx', '%s'); } catch (e) {}" % ("low" if lite else "high")
+    # these suites check the AGORA look: pick it as a saved choice (OLYMPUS NIGHT is the default on every phone since QA 2026-11-21;
+    # before, Playwright's default light phone fell back to AGORA by accident)
+    if "olympus.theme" not in (storage or {}):
+        init += " try { localStorage.setItem('olympus.theme', 'agora'); localStorage.setItem('olympus.theme.night', '1'); } catch (e) {}"
     for k, v in (storage or {}).items():
         init += " try { localStorage.setItem(%s, %s); } catch (e) {}" % (json.dumps(k), json.dumps(v))
     ctx.add_init_script(init)

@@ -178,7 +178,7 @@ def part_c():
     need = {"index.html", "odeon.css", "app.js", "data.js", "timeline.js", "scene.js", "director.js", "captions.js", "ui.js", "flat.js", "fixture.js", "arena.js", "strip.js"}
     check("c. the modules (data, timeline, scene, director, captions, ui, app, flat fallback, fixture)", need <= set(files), sorted(need - set(files)))
     html, css = files["index.html"], files["odeon.css"]
-    check("c. phone viewport with safe areas, own theme-color, dark scheme", 'viewport-fit=cover' in html and 'name="theme-color" content="#14110e"' in html
+    check("c. phone viewport with safe areas, own theme-color, dark scheme", 'viewport-fit=cover' in html and 'name="theme-color" content="#000000"' in html
           and all(f"env(safe-area-inset-{s}" in css for s in ("top", "right", "bottom", "left")) and "color-scheme: dark" in css)
     code = "".join(v for k, v in files.items() if k != "fixture.js")
     check("c. three.js from ../jarvis/three.module.min.js, nothing from another site, no frame break-out",

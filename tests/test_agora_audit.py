@@ -31,7 +31,7 @@ check("hsl neon seen",bool(A.neon_rgba("color: hsl(280 90% 60%)")))
 res = A.static_scan()
 hard = {n: A.static_fail(r) for n, r in res.items() if A.static_fail(r)}
 check("no app has a hard FAIL", not hard, str(hard))
-check("theme-color is #14110e in every app page", all(not r["hard"]["theme"] for r in res.values()))
+check("theme-color is #000000 (OLYMPUS NIGHT) in every app page", all(not r["hard"]["theme"] for r in res.values()))
 
 # one accent per app (2026-11-11): jarvis/apps.js is the table; the kit's APPS and each page's pre-paint say the same; none is neon;
 # a tint is never shared, except the six AGORA palette colours themselves (new apps start on gold)

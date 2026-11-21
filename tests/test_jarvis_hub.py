@@ -243,7 +243,7 @@ def part_a():
     check("a. manifest: Olympus, standalone, the whole site in scope (../), black like the old Jarvis, icons j5 (the gold temple, 2026-11-18)",
           m["name"] == "Olympus" and m["short_name"] == "Olympus" and m["display"] == "standalone" and m["scope"] == "../"
           and m["start_url"] == "./" and m["id"] == "./"
-          and m["theme_color"] == "#14110e" and all(i["src"].endswith("?v=j5") for i in m["icons"]), m)
+          and m["theme_color"] == "#000000" and all(i["src"].endswith("?v=j5") for i in m["icons"]), m)
     b = open(os.path.join(ROOT, "tools", "build_web_dashboard.py"), encoding="utf-8").read()
     tup = re.search(r'for app in \(([^)]*)\):', b)
     published = set(re.findall(r'"([a-z0-9-]+)"', tup.group(1))) if tup else set()

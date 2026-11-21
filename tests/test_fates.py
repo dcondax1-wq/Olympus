@@ -369,7 +369,7 @@ def test_page():
             check("e. WebGL scene up with ~400 threads in one draw call", p.evaluate("__fates.webgl") and p.evaluate("__fates.threads.length") == len(fx["scenarios"]["eval:zlarior:2026"]["threads"]["b"]),
                   p.evaluate("__fates.probe()"))
             meta = p.evaluate("({tc: document.querySelector('meta[name=theme-color]').content, vp: document.querySelector('meta[name=viewport]').content})")
-            check("e. its own theme-color (= jarvis.json theme) and viewport-fit=cover", meta["tc"] == "#14110e" and "viewport-fit=cover" in meta["vp"], meta)
+            check("e. its own theme-color (= jarvis.json theme) and viewport-fit=cover", meta["tc"] == "#000000" and "viewport-fit=cover" in meta["vp"], meta)
             css = open(os.path.join(FATES, "fates.css"), encoding="utf-8").read()
             check("e. safe areas on all four sides and reduced motion in the CSS", all(f"safe-area-inset-{s}" in css for s in ("top", "right", "bottom", "left"))
                   and "prefers-reduced-motion" in css)

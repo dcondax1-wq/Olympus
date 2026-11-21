@@ -239,6 +239,7 @@ def run_browser():
                 if quality:
                     ctx.add_init_script(f"try {{ localStorage.setItem('jfx', '{quality}'); }} catch (e) {{}}")
                 ctx.add_init_script(CLIP_STUB)
+                ctx.add_init_script("try { localStorage.setItem('olympus.theme', 'agora'); localStorage.setItem('olympus.theme.night', '1'); } catch (e) {}")   # the AGORA look on purpose (night is the default since QA 2026-11-21)
                 for s in init or []:
                     ctx.add_init_script(s)
 
@@ -379,7 +380,7 @@ def run_browser():
             p.wait_for_function("NEM.state().view === 'autopsy'")
             body = p.inner_text("#sheetBody")
             check("c. ...and the autopsy shows your own tags and the entry-time note", "Your journal tags: Would skip, Late entry" in body and "late entry in the journal" in body, body[-700:])
-            check("c. the journal key is only read: le.jtags is unchanged and no other key is written", p.evaluate("Object.keys(localStorage).filter((k) => !['jfx', 'le.jtags'].includes(k)).length") <= 1, p.evaluate("Object.keys(localStorage)"))
+            check("c. the journal key is only read: le.jtags is unchanged and no other key is written", p.evaluate("Object.keys(localStorage).filter((k) => !['jfx', 'le.jtags', 'olympus.theme', 'olympus.theme.night'].includes(k)).length") <= 1, p.evaluate("Object.keys(localStorage)"))
             ctx.close()
 
             make_site(tmp, with_odeon=False, with_home=False)

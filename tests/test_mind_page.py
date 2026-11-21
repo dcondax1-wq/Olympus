@@ -86,7 +86,7 @@ def static_checks():
     check("a. no outside URL anywhere (three.js and the fonts come from ../jarvis/)", not outside, outside)
     check("a. the only door to the vault is ../jarvis/obsidian.js", "import('../jarvis/obsidian.js')" in src["data.js"]
           and src["main.js"].count("../jarvis/three.module.min.js") == 1)
-    check("a. viewport-fit=cover and its own theme-color", 'viewport-fit=cover' in html and '<meta name="theme-color" content="#14110e">' in html)
+    check("a. viewport-fit=cover and its own theme-color", 'viewport-fit=cover' in html and '<meta name="theme-color" content="#000000">' in html)
     check("a. safe areas on every edge, reduced motion, 16 px search input",
           all(f"safe-area-inset-{e}" in css for e in ("top", "right", "bottom", "left")) and "prefers-reduced-motion: reduce" in css
           and re.search(r"#q \{[^}]*font-size: 16px", css))
