@@ -1163,6 +1163,19 @@ class AccountRouter:
                 e = next((r for r in reversed(getattr(b, "ledger", None) or []) if r.get("side") in ("buy", "sell") and r.get("entry_t") == ot), None)
                 if e and (1 if e["side"] == "buy" else -1) == -d:
                     return f"hedging guard: the bot's own account holds a {'LONG' if d == -1 else 'SHORT'} position"
+        # hand trades (engine/hand_hedge.py, day-redteam2 2026-11-20): NinjaTrader's own position files of every MFFU account; a
+        # position no bot lane explains on the other side refuses this entry (the ledger checks above only see the bot's trades)
+        try:
+            from . import hand_hedge
+            if exclude is None:
+                own = getattr(getattr(self.bot, "adapter", None), "account", None)
+            else:
+                own = ((getattr(exclude, "spec", None) or {}) if isinstance(getattr(exclude, "spec", None), dict) else {}).get("nt_account")
+            h = hand_hedge.opposite_hand(d, self.bot, self, own=own, now=self.clock(), notify=self.notify)
+            if h:
+                return h
+        except Exception:
+            pass
         return None
 
     def others_opposite(self, d: int, acc=None):
