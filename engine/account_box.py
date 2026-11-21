@@ -320,6 +320,7 @@ border:0;border-radius:10px;background:var(--acc);color:#fff}button:disabled{opa
 #out div{margin:3px 0;white-space:pre-wrap}.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
 .row{display:flex;gap:8px}.sec{background:#2b3346;font-size:15px;padding:10px}
 ul{padding-left:18px;margin:6px 0}li{margin:2px 0}small{color:var(--mut)}
+a.tool{display:flex;align-items:center;justify-content:center;min-height:44px;border:1px solid var(--line);border-radius:10px;color:var(--fg);text-decoration:none;font-weight:600}
 </style></head><body><main>
 <h1>Add account</h1><p class="s">Type the Name and the phrase: one press adds it AND starts trading (it waits for flat by itself). PC or your Tailscale phone.</p>
 <div class="c"><label for="plan">Plan</label><select id="plan"></select>
@@ -332,6 +333,7 @@ ul{padding-left:18px;margin:6px 0}li{margin:2px 0}small{color:var(--mut)}
 <button id="cx" class="sec">Cancel waiting</button></div><div id="out"></div></div>
 <div class="c"><b>Bot</b><div id="bot"><small>…</small></div></div>
 <div class="c"><b>The bot knows</b><ul id="acc"><li><small>loading…</small></li></ul><small id="slots"></small></div>
+<p><a class="tool" href="/alerts/">Phone alerts: set up Telegram + test</a></p>
 </main><script>
 const $=id=>document.getElementById(id);
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}

@@ -1293,6 +1293,14 @@ try:
 except Exception as _ab_err:
     print(f"[account_box] /add-account disabled: {_ab_err.__class__.__name__}: {_ab_err}", flush=True)
 # ---- END ADD ACCOUNT BOX ----
+# ---- PHONE ALERTS BOX ---- (engine/alerts_box.py, docs/ALERTS.md): /alerts/ = ALERTS_SETUP option 1 (Telegram) from the phone: paste
+# the BotFather token, tap START in the bot, test delivered. PC itself or the private Tailscale link only, same-origin, never trading.
+try:
+    from engine import alerts_box as _alb
+    _alb.install(app)
+except Exception as _alb_err:
+    print(f"[alerts_box] /alerts disabled: {_alb_err.__class__.__name__}: {_alb_err}", flush=True)
+# ---- END PHONE ALERTS BOX ----
 _static = StaticFiles(directory=WEB)
 _static.all_directories = list(UI_DIRS)       # first directory that has the file wins
 app.mount("/", _static, name="web")

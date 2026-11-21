@@ -6,12 +6,20 @@ topic, so alerts no longer share its 250-a-day cap. Messages you send to the bot
 
 | What | Where |
 |---|---|
-| Setup (once) | `ALERTS_SETUP.bat` (1 Telegram, 2 Discord, 3 both) |
+| Setup (once) | phone: PC link + `:8444/alerts/` (Telegram), or `ALERTS_SETUP.bat` (1 Telegram, 2 Discord, 3 both) |
 | Check every channel | `TEST_ALERT.bat` (prints OK / FAIL + the receipt id per channel) |
 | Back to the old path exactly | `ALERTS_OFF.bat` (undo: `ALERTS_ON.bat`) |
 | Secrets | `%USERPROFILE%\.olympus\alerts.json` only (never the repo, never printed) |
 | Failure log | `data\alert_bus.jsonl` (redacted) |
 | Cloud "PC silent" | repo secrets `LE_TG_TOKEN` + `LE_TG_CHAT` and / or `LE_DISCORD_WEBHOOK` (optional) |
+
+## From your phone (no PC needed, 2 minutes)
+1. iPhone: open your PC link with `:8444/alerts/` at the end (`https://<pc>.<tailnet>.ts.net:8444/alerts/`; on the PC itself `http://localhost:8766/alerts/`).
+2. Tap **Open BotFather** -> **Start** -> send `/newbot` -> name `Olympus Alerts` -> a username ending in `bot`.
+3. BotFather answers with a long token: long-press it -> **Copy** -> back to the page -> **Paste** -> **Connect**.
+4. Tap the big **Open @your_bot and tap START** button -> **START** in Telegram (within 3 minutes).
+5. The page says **Connected: test delivered** (or one plain reason + the fix). Saved on the PC only, same file as ALERTS_SETUP.
+6. Tailscale devices only (`engine/alerts_box.py`); **Send a test alert** there = TEST_ALERT.bat. No sound: iPhone Settings -> Notifications -> Telegram.
 
 ## Telegram, 2 minutes (recommended)
 iPhone:
