@@ -1,4 +1,4 @@
-# Website leads: counts (OpenStreetMap, updated 2026-11-21 18:48 UTC)
+# Website leads: counts (OpenStreetMap, updated 2026-11-21 18:57 UTC)
 
 Mailable = house number + street + town + ZIP (postcard-ready). Leads after removing businesses in two town boxes.
 
@@ -11,7 +11,7 @@ Mailable = house number + street + town + ZIP (postcard-ready). Leads after remo
 | Ellicott City | 155 | 121 | 12 | 18 | 1 | 130 | 8 | 30 | 1 | 2 | 37 | 0 | 8 | 58 | 11 | healthcare, health + auto places |
 | Frederick | 185 | 257 | 7 | 22 | 2 | 83 | 15 | 17 | 1 | 7 | 57 | 11 | 4 | 68 | 5 | - |
 | Gaithersburg | 352 | 186 | 11 | 14 | 0 | 143 | 19 | 70 | 5 | 13 | 106 | 51 | 10 | 61 | 17 | - |
-| Germantown | 53 | 64 | 5 | 5 | 0 | 26 | 9 | 12 | 0 | 4 | 8 | 6 | 0 | 12 | 2 | food places |
+| Germantown | 78 | 136 | 5 | 6 | 0 | 36 | 9 | 12 | 0 | 4 | 33 | 6 | 0 | 12 | 2 | - |
 | Hagerstown | 123 | 87 | 3 | 6 | 1 | 50 | 6 | 13 | 0 | 2 | 55 | 2 | 1 | 38 | 6 | - |
 | Middletown | 4 | 4 | 0 | 2 | 0 | 3 | 0 | 0 | 0 | 0 | 4 | 0 | 0 | 0 | 0 | trades, healthcare, gyms, health + auto places, beauty + auto shops, other shops |
 | Mount Airy | 37 | 24 | 1 | 2 | 0 | 29 | 6 | 9 | 1 | 2 | 12 | 1 | 4 | 0 | 2 | health + auto places, other shops |
@@ -20,4 +20,4 @@ Mailable = house number + street + town + ZIP (postcard-ready). Leads after remo
 | Urbana | 22 | 5 | 1 | 1 | 0 | 9 | 1 | 8 | 0 | 7 | 1 | 5 | 0 | 0 | 0 | offices, food places, other shops |
 | Walkersville | 4 | 8 | 3 | 3 | 0 | 3 | 0 | 0 | 0 | 0 | 2 | 0 | 0 | 1 | 1 | offices, gyms, beauty + auto shops |
 | Westminster | 35 | 25 | 2 | 3 | 0 | 17 | 7 | 11 | 0 | 0 | 4 | 4 | 3 | 0 | 6 | healthcare, gyms, food places, other shops |
-| **All** | **1452** | **1415** | **73** | **125** | **5** | **763** | **79** | **208** | **26** | **64** | **511** | **111** | **32** | **353** | **68** | |
+| **All** | **1477** | **1487** | **73** | **126** | **5** | **773** | **79** | **208** | **26** | **64** | **536** | **111** | **32** | **353** | **68** | |

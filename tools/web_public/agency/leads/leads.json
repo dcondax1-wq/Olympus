@@ -2,7 +2,7 @@
  "v": 1,
  "kind": "web_leads",
  "demo": false,
- "fetched": "2026-11-21T18:47:54Z",
+ "fetched": "2026-11-21T18:57:22Z",
  "source": "OpenStreetMap via the public Overpass API (a few small queries per town)",
  "license": "Data (c) OpenStreetMap contributors, ODbL (openstreetmap.org/copyright)",
  "about": "Businesses on OpenStreetMap with no website tag. OSM can be out of date: check the business before you call.",
@@ -19,21 +19,6 @@
    "missing": [],
    "chains": 257,
    "with_site": 141
-  },
-  {
-   "town": "Germantown",
-   "state": "MD",
-   "businesses": 139,
-   "leads": 53,
-   "hot": 5,
-   "server": "maps.mail.ru",
-   "parts_ok": 8,
-   "parts": 9,
-   "missing": [
-    "food places"
-   ],
-   "chains": 64,
-   "with_site": 22
   },
   {
    "town": "Gaithersburg",
@@ -260,19 +245,31 @@
    "missing": [],
    "chains": 87,
    "with_site": 37
+  },
+  {
+   "town": "Germantown",
+   "state": "MD",
+   "businesses": 276,
+   "leads": 78,
+   "hot": 5,
+   "server": "maps.mail.ru",
+   "parts_ok": 9,
+   "parts": 9,
+   "missing": [],
+   "chains": 136,
+   "with_site": 42
   }
  ],
  "skipped": {
-  "has_site": 1176,
-  "chain": 2096,
-  "other": 408,
-  "duplicate": 111,
+  "has_site": 1218,
+  "chain": 2232,
+  "other": 421,
+  "duplicate": 118,
   "closed": 1
  },
  "leads": [],
  "files": [
   "towns/frederick.json",
-  "towns/germantown.json",
   "towns/gaithersburg.json",
   "towns/rockville.json",
   "towns/columbia.json",
@@ -286,7 +283,8 @@
   "towns/walkersville.json",
   "towns/damascus.json",
   "towns/clarksburg.json",
-  "towns/hagerstown.json"
+  "towns/hagerstown.json",
+  "towns/germantown.json"
  ],
- "count": 1452
+ "count": 1477
 }
