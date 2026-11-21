@@ -156,8 +156,8 @@ LIT stays alone on its 50K. Try it on a Sim account first.
   Only if a warning still comes the next day, at the PC: `python -X utf8 -m engine.keepalive --traded <account>` (lit, atlas,
   x:b25k_2, rapid; add the date `yyyy-mm-dd` if it was not today: never a future day, at most 7 days back, an unknown
   account name is refused; it prints the new deadline). Or let the bot do it: the keep-alive
-  trade (`engine/keepalive.py`, OFF until you say yes: `python -X utf8 -m engine.keepalive --on <account> --yes`; ask MFFU
-  support first, in writing, if a 1-micro in-and-out trade is OK for the 7-day rule).
+  trade (`engine/keepalive.py`, lands OFF; you said yes 2026-11-20: double-click `KEEPALIVE_ON.bat` and type KEEP ALIVE ON
+  to switch it on for every MFFU account, `KEEPALIVE_OFF.bat` to switch it off).
 - **On a keep-alive day (switch ON), do not trade that account by hand between 15:33 and 15:50 ET**: the bot's close is a
   CLOSEPOSITION of the whole account, so it would close your trade too.
 - **Eval passed**: the bot stops on that account. Tell Claude before trading the funded account (sizing changes).

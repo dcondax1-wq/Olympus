@@ -110,6 +110,7 @@ import datetime as _dt
 import glob
 import json
 import os
+import re
 import sys
 import threading
 import time
@@ -534,16 +535,29 @@ def hb_covers(block, lane: str, now=None) -> bool:
 
 
 # ------------------------------------------------------------------------------------------------ the accounts (targets)
+_SIM_ACCT = re.compile(r"^(sim\d*|playback\d*|backtest)$", re.I)
+
+
 def _ok_entry(r) -> bool:
-    return isinstance(r, dict) and r.get("side") in ("buy", "sell") and (r.get("result") or {}).get("ok") is True
+    """A REAL broker entry: ok True from a live adapter on a real account. Red-team 2026-11-21: a paper lane's or a Sim101 test's
+    'ok' rows in the same ledger counted as MFFU fills, so the keep-alive skipped its day and every 7-day warning went quiet."""
+    if not (isinstance(r, dict) and r.get("side") in ("buy", "sell")):
+        return False
+    res = r.get("result") if isinstance(r.get("result"), dict) else {}
+    if res.get("ok") is not True or str(res.get("adapter") or "").lower() in ("paper", "webhook", "lab"):
+        return False
+    return not _SIM_ACCT.match(str(res.get("account") or "").strip())
 
 
-def _fill_days(rows) -> set:
-    """ET calendar dates of the entries the broker took (ledger rows with result ok True)."""
+def _fill_days(rows, account=None) -> set:
+    """ET calendar dates of the entries the broker took (ledger rows with result ok True, a live adapter, a real account; with
+    account given, rows that name another NinjaTrader account are left out)."""
     out = set()
+    acct = str(account or "").strip().lower()
     for r in rows or []:
         try:
-            if _ok_entry(r) and r.get("t"):
+            ra = str(((r.get("result") or {}).get("account")) or "").strip().lower()
+            if _ok_entry(r) and r.get("t") and not (acct and ra and ra != acct):
                 out.add(_cal(int(r["t"])))
         except Exception:
             continue
@@ -559,7 +573,7 @@ def seed_days(rows) -> set:
         return set()
 
 
-def _lane_days(kind, obj, bot) -> set:
+def _lane_days(kind, obj, bot, account=None) -> set:
     """ET calendar days with a CONFIRMED fill on one lane: the entries the broker took (the ledger's buy / sell rows with
     result ok True; the NinjaTrader adapter answers ok only once the entry filled and its bracket is in), plus those of the
     ledger saved before a restart (obj._ka_seed). Never a booked $ day (LiveBot.eval_days), an exit row or a close: those
@@ -568,7 +582,7 @@ def _lane_days(kind, obj, bot) -> set:
     try:
         o = bot if kind == "lit" else obj
         seed = getattr(o, "_ka_seed", None)
-        return _fill_days(getattr(o, "ledger", None)) | {str(d)[:10] for d in (seed or ()) if d}
+        return _fill_days(getattr(o, "ledger", None), account) | {str(d)[:10] for d in (seed or ()) if d}
     except Exception:
         return set()
 
@@ -870,7 +884,7 @@ def _exact_days(bot, g, now=None) -> set:
     filled legs, NinjaTrader's Log for the account's Name (hand trades too). These are kept (acc.<key>.fills)."""
     days, seen = set(), set()
     for ln in g["lanes"]:
-        days |= _lane_days(ln["kind"], ln["obj"], bot)
+        days |= _lane_days(ln["kind"], ln["obj"], bot, ln["nt"] or getattr(ln["adapter"], "account", None))
         days |= _adapter_days(ln["adapter"])
         ad = ln["adapter"]
         k = (getattr(ad, "folder", None), ln["nt"] or getattr(ad, "account", None))
@@ -1878,7 +1892,8 @@ def main(argv=None) -> int:
         return 2
     if "all" in (a.on, a.off):        # KEEPALIVE_ON.bat / KEEPALIVE_OFF.bat: every known account in one go (owner 2026-11-20)
         C = load_config(None)
-        keys = sorted(known_keys())
+        # --off all also clears keys only the config still names (an account removed since), so OFF means every account
+        keys = sorted(set(known_keys()) | (set(C.get("accounts") or {}) if a.off else set()))
         if a.on and not a.yes:
             print(f"This lets the bot place a REAL 1-MNQ order on each MFFU account ({', '.join(keys)}) when it has not "
                   f"traded for days (about -{money(EXPECTED_COST)} each time, at most -{money(WORST_COST)}). The owner's "

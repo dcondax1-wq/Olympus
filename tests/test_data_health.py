@@ -90,32 +90,20 @@ def main():
     check("board.py read: the last line is the DATA line", r.returncode == 0 and r.stdout.strip().splitlines()[-1].startswith("DATA  "),
           r.stdout[-300:] + r.stderr[-300:])
 
-    # 3. the ES feed patch applies to a copy of engine/ and the NinjaTrader selftest stays green with its new line
-    tmp = tempfile.mkdtemp(prefix="le_espatch_")
-    try:
-        shutil.copytree(os.path.join(ROOT, "engine"), os.path.join(tmp, "engine"),
-                        ignore=shutil.ignore_patterns("__pycache__"))
-        for n in os.listdir(ROOT):
-            if n.endswith(".json") and os.path.isfile(os.path.join(ROOT, n)):
-                shutil.copy2(os.path.join(ROOT, n), tmp)
-        p = subprocess.run(["patch", "-p1", "--dry-run", "-i", PATCH], cwd=tmp, capture_output=True, text=True)
-        p2 = subprocess.run(["patch", "-p1", "-i", PATCH], cwd=tmp, capture_output=True, text=True) if p.returncode == 0 else p
-        check("the patch applies cleanly to today's engine/ninjatrader.py", p2.returncode == 0, p.stdout + p.stderr)
-        st = subprocess.run([sys.executable, "-X", "utf8", "-m", "engine.ninjatrader", "--selftest"], cwd=tmp, capture_output=True,
-                            text=True, timeout=600)
-        out = st.stdout
-        check("patched selftest: no FAIL, the ES line passes", st.returncode == 0 and "[FAIL]" not in out
-              and "[PASS] LE_Feed: the ES research contract rides along" in out, out[-600:] + st.stderr[-300:])
-        sys.path.insert(0, tmp)
-        code = ("import datetime as d, engine.ninjatrader as n; print(n.feed_instruments({'signal_root':'MNQ'}, d.date(2026,11,20)),"
-                " n.feed_instruments({'signal_root':'NQ'}, d.date(2026,12,10)))")
-        fi = subprocess.run([sys.executable, "-c", code], cwd=tmp, capture_output=True, text=True)
-        check("patched: MNQ bot asks the add-on for MES too; NQ signal for ES; both roll on Dec 10",
-              "['MNQ 12-26', 'MES 12-26'] ['MNQ 03-27', 'NQ 03-27', 'ES 03-27']" in fi.stdout, fi.stdout + fi.stderr)
-    finally:
-        shutil.rmtree(tmp, ignore_errors=True)
+    # 3. the ES feed patch is IN the live engine/ninjatrader.py (weekend landing 2026-11-21, red-team cleared): the selftest stays
+    #    green with its ES line, and the MNQ bot asks the add-on for MES too (NQ signal: ES), rolling on Dec 10
+    st = subprocess.run([sys.executable, "-X", "utf8", "-m", "engine.ninjatrader", "--selftest"], cwd=ROOT, capture_output=True,
+                        text=True, timeout=600)
+    out = st.stdout
+    check("selftest with the ES feed: no FAIL, the ES line passes", st.returncode == 0 and "[FAIL]" not in out
+          and "[PASS] LE_Feed: the ES research contract rides along" in out, out[-600:] + st.stderr[-300:])
+    code = ("import datetime as d, engine.ninjatrader as n; print(n.feed_instruments({'signal_root':'MNQ'}, d.date(2026,11,20)),"
+            " n.feed_instruments({'signal_root':'NQ'}, d.date(2026,12,10)))")
+    fi = subprocess.run([sys.executable, "-c", code], cwd=ROOT, capture_output=True, text=True)
+    check("MNQ bot asks the add-on for MES too; NQ signal for ES; both roll on Dec 10",
+          "['MNQ 12-26', 'MES 12-26'] ['MNQ 03-27', 'NQ 03-27', 'ES 03-27']" in fi.stdout, fi.stdout + fi.stderr)
     live = open(os.path.join(ROOT, "engine", "ninjatrader.py"), encoding="utf-8").read()
-    check("this branch does NOT edit the live engine/ninjatrader.py (the lead applies the patch)", "feed_es" not in live)
+    check("the live engine/ninjatrader.py carries the ES feed (feed_es)", "feed_es" in live)
 
     n = sum(RES)
     print(f"\ndata health: {n}/{len(RES)} {'PASS' if n == len(RES) else 'FAIL'}")

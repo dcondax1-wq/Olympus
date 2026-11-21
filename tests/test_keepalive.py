@@ -1312,7 +1312,8 @@ def t_cli_safety():
               "runs --on all --yes; anything else changes nothing",
               all(b"\r\n" in v and b"\n" not in v.replace(b"\r\n", b"") for v in bats.values())
               and on.index("engine.keepalive --on all\r") < on.index('"KEEP ALIVE ON"') < on.index("--on all --yes")
-              and on.count("--yes") == 1 and 'if /i not "%OK%"=="KEEP ALIVE ON" goto :no' in on, on[:300])
+              and on.count("--yes") == 1 and 'if /i not "!OK!"=="KEEP ALIVE ON" goto :no' in on
+              and "EnableDelayedExpansion" in on, on[:300])   # delayed expansion: a typed quote never breaks the if (red-team 2026-11-21)
         check("KEEPALIVE_OFF.bat: --off all, never --on", "engine.keepalive --off all" in bats["KEEPALIVE_OFF.bat"].decode()
               and "--on" not in bats["KEEPALIVE_OFF.bat"].decode())
     finally:
@@ -1397,6 +1398,41 @@ def t_words():
           and "on a half day LIT can" in doc)
 
 
+def t_redteam_1121():
+    """Red-team 2026-11-21: only REAL broker fills count (never a paper lane's or a Sim101 test's 'ok' row), and --off all also
+    clears a key only the config still names."""
+    t0 = int(dt.datetime(2026, 11, 19, 10, 0, tzinfo=ZoneInfo("America/New_York")).timestamp())
+    real = {"side": "buy", "t": t0 - 3 * 86400, "result": {"ok": True, "adapter": "ninjatrader", "account": "MFFUEVTEST001"}}
+    paper = {"side": "buy", "t": t0, "result": {"ok": True, "adapter": "paper"}}
+    sim = {"side": "sell", "t": t0, "result": {"ok": True, "adapter": "ninjatrader", "account": "Sim101"}}
+    other = {"side": "sell", "t": t0, "result": {"ok": True, "adapter": "ninjatrader", "account": "MFFUEVOTHER02"}}
+    days = K._fill_days([real, paper, sim])
+    check("red-team 11-21: a paper row and a Sim101 row are NOT MFFU fills (only the real Monday fill counts)",
+          days == {K._cal(real["t"])}, sorted(days))
+    check("red-team 11-21: with the target's account given, a fill on ANOTHER NinjaTrader account is left out",
+          K._fill_days([real, other], "MFFUEVTEST001") == {K._cal(real["t"])} and len(K._fill_days([real, other])) == 2)
+    check("red-team 11-21: the restart seed ignores paper / Sim101 rows too", K.seed_days([paper, sim]) == set())
+    tmp = tempfile.mkdtemp()
+    try:
+        cfg = os.path.join(tmp, "keepalive.json")
+        old = getattr(K, "CONFIG_PATH", None)
+        import json as _j
+        with open(cfg, "w", encoding="utf-8") as fh:
+            _j.dump({"accounts": {"lit": True, "x:gone_acct": True}}, fh)
+        if old is not None:
+            K.CONFIG_PATH = cfg
+            try:
+                with redirect_stdout(io.StringIO()):
+                    rc = K.main(["--off", "all"])
+                after = _j.load(open(cfg, encoding="utf-8"))["accounts"]
+                check("red-team 11-21: --off all (KEEPALIVE_OFF.bat) also turns OFF a key only the config still names",
+                      rc == 0 and after.get("x:gone_acct") is False and after.get("lit") is False, after)
+            finally:
+                K.CONFIG_PATH = old
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def main() -> int:
     t_plan()
     t_one()
@@ -1423,6 +1459,7 @@ def main() -> int:
     t_cli_safety()
     t_more_stops()
     t_words()
+    t_redteam_1121()
     bad = [n for n, ok in RESULTS if not ok]
     print(f"\n{len(RESULTS) - len(bad)}/{len(RESULTS)} passed" + (f"; FAILED: {bad}" if bad else ""))
     return 1 if bad else 0

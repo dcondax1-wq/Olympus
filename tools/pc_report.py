@@ -70,7 +70,8 @@ EXT_KIND = "le-live-ext"
 EXT_PARTS = 2                    # at most 2 ext posts a run (ntfy.sh free: a few hundred messages a day per IP)
 EXT_EVERY_S = 2640               # the ext goes every 3rd 15-minute run (44 min), or at once when its news changed (ext_hash). Was every 2nd (29 min) until
                                  # 2026-11-20: 96 core + 96 ext + 24 chart posts a day left no room under ntfy's 250 for the other programs and the alerts
-EXT_ORDER = ("brd", "life", "mf", "board_trades", "at", "fq", "zl", "learn", "lab", "glance", "glog", "kalshi_rewards", "kalshi_k1", "kalshi_live")   # "at": engine/feed_trades
+EXT_ORDER = ("brd", "life", "mf", "board_trades", "at", "fq", "zl", "learn", "lab", "glance", "kalshi_rewards", "kalshi_k1", "kalshi_live")   # "at": engine/feed_trades
+EXT_LAST = ("glog",)   # red-team 2026-11-21: the Brain's long thought stream takes only the room every other block left (cut 5/3, then out)
 # "zl": ZEUS learned, the nightly line (engine/zeus_learn.read_tiny, <= 220 bytes) -> the ZEUS page's "ZEUS learned" card
 CORE_KEYS = ("eh", "v", "kind", "lite", "src", "t", "every_s", "host", "model_state", "price", "day_pnl", "pc_verdict", "pc", "reporter",
              "board", "accounts", "trimmed", "wp")   # wp: the phone app's push set-up (engine/push.app_block: public keys, ~230 bytes)
@@ -780,7 +781,8 @@ def split(out: dict, max_bytes: int = MAX_STATUS_BYTES, parts: int | None = None
     core = _fit_core(core, max_bytes)
     base = {"v": 1, "kind": EXT_KIND, "src": "pc_report", "t": out.get("t"), "rt": _d(out.get("reporter")).get("t")}
     packs, cut = [{}], []
-    order = [k for k in EXT_ORDER if k in x] + sorted(k for k in x if k not in EXT_ORDER)
+    order = ([k for k in EXT_ORDER if k in x] + sorted(k for k in x if k not in EXT_ORDER + EXT_LAST)
+             + [k for k in EXT_LAST if k in x])
     for k in order:
         v, steps, placed = x[k], _cuts(k), False
         while not placed:

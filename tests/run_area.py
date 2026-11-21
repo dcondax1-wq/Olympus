@@ -123,6 +123,7 @@ AREAS["privacy"] += ["pc_report_sign", "push_pairing", "datafeed_sign", "nqbars_
 AREAS["nq"].append("nqbars_sign")
 AREAS["pc"].append("autoupdate_paths")   # updategate 2026-11-20: site-only updates never restart the bot, import check, crash-loop rollback; its own line
 AREAS["pc"].append("pc_watch")            # day-quality round 3: the cloud PC watch (.github/workflows/pc-watch.yml, docs/PC_WATCH.md)
+AREAS["nq"].append("data_health")      # day-brief 2026-11-20: data health + the ES feed (MES with MNQ) in the live engine
 AREAS["olympus"].append("perf_sweep")      # day-quality Olympus v2: tools/perf_sweep.py (phone sweep + offline pass, budgets tools/perf_budgets.json)
 AREAS["privacy"].append("scrub_cache")      # day-quality 2026-11-20: site_privacy.scrub's clean-file cache (warm build 67 s -> 29 s)
 AREAS["olympus"].append("offline_apps")    # day-quality Olympus v2: every visible app opens offline after one visit (browser)
