@@ -58,9 +58,11 @@ def static():
     check("a. delivery checklist: the client buys the domain, free hosting, Google Business Profile, who does each step", any(d["who"] == "client" and "domain" in d["step"] for d in W["delivery"])
           and any("free" in d["step"] and "hosting" in d["step"] for d in W["delivery"]) and any("Google Business Profile" in d["step"] for d in W["delivery"]) and {d["who"] for d in W["delivery"]} == {"owner", "client", "claude"})
     check("a. status marks go to the Leads page's key, the owner's details to its own key", "'agency.leads.status.v1'" in js and "'agency.outreach.v1'" in js)
-    check("a. reads only its own files (scripts, leads, offers, the factory's sites index); the autopilot counts come through pc_feed.js (the PC report)",
-          set(re.findall(r"getJSON\('([^']+)'\)", js)) == {"scripts.json", "../leads/leads.json", "../offers/offers.json", "../sites/index.json"}
+    check("a. reads only its own files (scripts, leads, offers, the factory's sites index, the portal's public facts); the autopilot counts come through pc_feed.js",
+          set(re.findall(r"getJSON\('([^']+)'\)", js)) == {"scripts.json", "../leads/leads.json", "../offers/offers.json", "../sites/index.json", "../portal/portal.json"}
           and js.count("fetch(") == 1 and "PC_FEED" in js and "../../pc_feed.js" in html)
+    check("a. privacy: email links use the public_base only, never this page's own address (it can be the owner's dashboards)",
+          "new URL('../../', location.href)" not in js and "S.base = (pub && pub.public_base) || ''" in js and "Have our assistant call me" not in js + read("outreachcore.js"))
     check("a. the autopilot card's numbers keep their place from the first paint (tiles with '-')", "autoTiles(null)" in js and 'id="autoNums" hidden' not in html)
     check("a. no innerHTML, no paid service", "innerHTML" not in js + core and not re.search(r"stripe|paypal|twilio|sendgrid|mailchimp", allt.lower()))
     off = json.loads(open(os.path.join(ROOT, "tools", "web_public", "agency", "offers", "offers.json"), encoding="utf-8").read())

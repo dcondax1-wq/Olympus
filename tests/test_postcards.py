@@ -52,6 +52,8 @@ def main():
         print("SKIP: needs Pillow + segno (pip install pillow segno)")
         return
     from tools import postcards as P
+    from agency import public as PUB
+    PUB.CFG = os.path.join(tmp, "site_factory_agency.json")      # no public settings file: the cfg's site_base is the only base
     cfg = P.norm_cfg({"api_key": KEY_T, "mode": "test", "from_name": "Sam Test", "business_name": "Peak Web Studio", "reply_email": "hello@peak.example",
                       "return": {"line1": "PO Box 12", "city": "Frederick", "state": "MD", "zip": "21701"}, "site_base": "https://example.org/site"})
     try:
@@ -68,8 +70,21 @@ def main():
         dark = sum(1 for v in q.getdata() if v < 80) / (q.size[0] * q.size[1])
         check("a. the QR code is on the front (made on this PC by segno)", 0.25 < dark < 0.75, round(dark, 2))
         src = open(os.path.join(ROOT, "tools", "postcards.py"), encoding="utf-8").read()
-        check("a. the honest words: the business by name, 'free to look', the call-me button, the sender, the return address, 'no more mail'",
-              all(x in src for x in ("your new website is already built", "free to look", "Have our assistant call me", "Don't want mail from us?", "STOP", "return")))
+        check("a. the honest words: the business by name, 'free to look', the inbound call line, the sender, the return address, 'no more mail'",
+              all(x in src for x in ("your new website is already built", "free to look", "PUB.call_line", "Don't want mail from us?", "STOP", "return"))
+              and "Have our assistant call me\\\"" not in src and "or text" not in src)
+        try:
+            P.render({"id": "z", "name": "Z"}, cfg, "https://dcondax1-wq.github.io/jarvis/agency/f/abcdefgh/")
+            r1 = False
+        except ValueError:
+            r1 = True
+        try:
+            P.render({"id": "z", "name": "Z"}, dict(cfg, business_name="x.github.io/jarvis"), "https://example.org/site/agency/f/abcdefgh/")
+            r2 = False
+        except ValueError:
+            r2 = True
+        check("a. privacy: a card or QR showing dcondax / github.io/jarvis / ts.net is refused; no public_base = not ready (no default)",
+              r1 and r2 and any("public web address" in x for x in P.cfg_problems(dict(cfg, site_base=""))) and "dcondax" not in src)
         check("a. a clean agency brand, not the OLYMPUS look (no gold, no AGORA, no Olympus name on the card)", "OLYMPUS" not in src.split("def render")[1].split("def png")[0]
               and "#c8a24a" not in src and "gold" not in src.split("BRAND =")[1].split("\n")[0])
 
@@ -164,6 +179,7 @@ def main():
             raise RuntimeError("401 bad key " + c["api_key"])
         r = PP.run_once(dict(cfg), {}, leads, sites, now=T(2026, 12, 1, 11), send=boom)
         check("e. an error that quotes the key never repeats it", r["errors"] and all(KEY_T not in e for e in r["errors"]), r["errors"])
+        json.dump({"public_base": "https://example.org/site"}, open(PUB.CFG, "w"))   # the public settings file (day-cities3's export)
         ans = iter(["Sam Test", "Peak Web Studio", "hello@peak.example", "PO Box 12", "Frederick", "MD", "21701", "send postcards please"])
         buf = io.StringIO()
         with redirect_stdout(buf):
