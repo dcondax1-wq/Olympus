@@ -99,8 +99,10 @@ def test_build():
           and next(p for p in ps if p["id"] == "app:agency")["district"] == "sites", wrong)
     cs = [p for p in ps if p["district"] == "sites" and p["kind"] == "sites"]
     nsites = len((json.load(open(os.path.join(WB.WEB, "agency", "factory", "sites.json"), encoding="utf-8")).get("sites") or []))
-    check("a. Websites: one block per trade, one building per concept site (%d of %d), no business name anywhere" % (sum(len(p["bs"]) for p in cs), nsites),
-          cs and sum(len(p["bs"]) for p in cs) == nsites and all(p["name"] in WB.NICHE.values() or p["name"].istitle() for p in cs))
+    kk = max(1, -(-nsites // 400))                      # ~4k sites: a building = a group of kk sites (the 300 KB budget, the phone)
+    check("a. Websites: one block per trade, a building per %d concept site(s) (%d buildings for %d sites), no business name anywhere" % (kk, sum(len(p["bs"]) for p in cs), nsites),
+          cs and sum(len(p["bs"]) for p in cs) == sum(-(-int(p["facts"][0][1]) // kk) for p in cs) and sum(int(p["facts"][0][1]) for p in cs) == nsites
+          and sum(len(p["bs"]) for p in cs) <= 420 and all(p["name"] in WB.NICHE.values() or p["name"].istitle() for p in cs))
     shortcut = [p["name"] for p in ps if p["kind"] == "app" and p["district"] == "zeus"][:8]
     check("a. ZEUS Trading's downtown starts with the owner's own shortcuts, plain names first (My accounts, Bots right now, ...)", shortcut[:2] == ["My accounts", "Bots right now"], shortcut)
     extra = {p["href"] for p in ps if p["kind"] == "app"}
