@@ -1,6 +1,6 @@
 """engine/shadow_leads.py (observe-only paper-lead log). Temp files only; nothing armed, nothing routed.
 
-    python -X utf8 -m tests.test_shadow_leads            # a-e (seconds) + f (one LiveBot paper replay, ~1-3 min)
+    python -X utf8 -m tests.test_shadow_leads            # a-e (seconds) + f (three LiveBot paper replays, ~11 min)
     python -X utf8 -m tests.test_shadow_leads --quick    # a-e only
 
  a. A3 on a synthetic day: a signal that runs 12+ ticks -> would fill at trigger + 2 ticks, R measured in the bot's own risk;

@@ -1,0 +1,1686 @@
+{
+ "windows": {
+  "thanksgiving": [
+   "2021-11-22",
+   "2021-11-23",
+   "2021-11-24",
+   "..."
+  ],
+  "roll_week": [
+   "2021-03-08",
+   "2021-03-09",
+   "2021-03-10",
+   "..."
+  ],
+  "holiday_stretch": [
+   "2021-12-15",
+   "2021-12-16",
+   "2021-12-17",
+   "..."
+  ],
+  "fomc_day": [
+   "2021-01-27",
+   "2021-03-17",
+   "2021-04-28",
+   "..."
+  ]
+ },
+ "bots": {
+  "LIT": {
+   "base": {
+    "fixed": {
+     "H1": {
+      "n": 80,
+      "tpw": 3.12,
+      "pf": 3.45,
+      "net": 20868,
+      "per_month": 3424,
+      "max_dd": -2264
+     },
+     "H2": {
+      "n": 40,
+      "tpw": 2.56,
+      "pf": 2.78,
+      "net": 9659,
+      "per_month": 2601,
+      "max_dd": -1492
+     },
+     "REF": {
+      "n": 511,
+      "tpw": 2.37,
+      "pf": 1.03,
+      "net": 2065,
+      "per_month": 40,
+      "max_dd": -13047
+     }
+    },
+    "acct": {
+     "H1": {
+      "n": 600,
+      "p10": 47.5,
+      "f10": 0.5,
+      "p15": 56.7,
+      "f15": 1.8,
+      "dec10": 48.0,
+      "p60": 84.8,
+      "f60": 11.3,
+      "pass_med": 9.0,
+      "slow_pass": 33.2,
+      "usd_per_pass": 108.3,
+      "max_risk": 794
+     },
+     "H2": {
+      "n": 600,
+      "p10": 45.7,
+      "f10": 0.2,
+      "p15": 56.5,
+      "f15": 1.3,
+      "dec10": 45.9,
+      "p60": 84.3,
+      "f60": 11.5,
+      "pass_med": 9.0,
+      "slow_pass": 33.0,
+      "usd_per_pass": 108.9,
+      "max_risk": 794
+     },
+     "REF": {
+      "n": 600,
+      "p10": 12.7,
+      "f10": 0.7,
+      "p15": 17.7,
+      "f15": 4.0,
+      "dec10": 13.4,
+      "p60": 32.3,
+      "f60": 53.8,
+      "pass_med": 13.0,
+      "slow_pass": 45.4,
+      "usd_per_pass": 284.2,
+      "max_risk": 799
+     }
+    }
+   },
+   "thanksgiving": {
+    "describe": {
+     "H1_window": {
+      "days": 0,
+      "trades": 0,
+      "pf": null,
+      "usd_per_trade": null,
+      "net": 0,
+      "worst_day": null,
+      "big_loss_days_pct": null
+     },
+     "H1_normal": {
+      "days": 128,
+      "trades": 80,
+      "pf": 3.45,
+      "usd_per_trade": 260.8,
+      "net": 20868,
+      "worst_day": -348.0,
+      "big_loss_days_pct": 0.0
+     },
+     "H2_window": {
+      "days": 0,
+      "trades": 0,
+      "pf": null,
+      "usd_per_trade": null,
+      "net": 0,
+      "worst_day": null,
+      "big_loss_days_pct": null
+     },
+     "H2_normal": {
+      "days": 78,
+      "trades": 40,
+      "pf": 2.78,
+      "usd_per_trade": 241.5,
+      "net": 9659,
+      "worst_day": -339.0,
+      "big_loss_days_pct": 0.0
+     },
+     "REF_window": {
+      "days": 25,
+      "trades": 10,
+      "pf": 0.14,
+      "usd_per_trade": -99.8,
+      "net": -998,
+      "worst_day": -314.0,
+      "big_loss_days_pct": 0.0
+     },
+     "REF_normal": {
+      "days": 1052,
+      "trades": 501,
+      "pf": 1.04,
+      "usd_per_trade": 6.1,
+      "net": 3062,
+      "worst_day": -350.0,
+      "big_loss_days_pct": 0.0
+     }
+    },
+    "out": {
+     "fixed": {
+      "H1": {
+       "n": 80,
+       "tpw": 3.12,
+       "pf": 3.45,
+       "net": 20868,
+       "per_month": 3424,
+       "max_dd": -2264
+      },
+      "H2": {
+       "n": 40,
+       "tpw": 2.56,
+       "pf": 2.78,
+       "net": 9659,
+       "per_month": 2601,
+       "max_dd": -1492
+      },
+      "REF": {
+       "n": 501,
+       "tpw": 2.33,
+       "pf": 1.04,
+       "net": 3062,
+       "per_month": 60,
+       "max_dd": -13048
+      }
+     },
+     "acct": {
+      "H1": {
+       "n": 600,
+       "p10": 47.5,
+       "f10": 0.5,
+       "p15": 56.7,
+       "f15": 1.8,
+       "dec10": 48.0,
+       "p60": 84.8,
+       "f60": 11.3,
+       "pass_med": 9.0,
+       "slow_pass": 33.2,
+       "usd_per_pass": 108.3,
+       "max_risk": 794
+      },
+      "H2": {
+       "n": 600,
+       "p10": 45.7,
+       "f10": 0.2,
+       "p15": 56.5,
+       "f15": 1.3,
+       "dec10": 45.9,
+       "p60": 84.3,
+       "f60": 11.5,
+       "pass_med": 9.0,
+       "slow_pass": 33.0,
+       "usd_per_pass": 108.9,
+       "max_risk": 794
+      },
+      "REF": {
+       "n": 600,
+       "p10": 12.8,
+       "f10": 0.7,
+       "p15": 18.0,
+       "f15": 3.8,
+       "dec10": 13.5,
+       "p60": 33.2,
+       "f60": 52.5,
+       "pass_med": 13.0,
+       "slow_pass": 45.7,
+       "usd_per_pass": 276.5,
+       "max_risk": 799
+      }
+     },
+     "pass": false,
+     "why": [
+      "no H1 trades in the window: untestable there",
+      "$ H1 20868 -> 20868",
+      "no H2 trades in the window: untestable there",
+      "$ H2 9659 -> 9659"
+     ]
+    },
+    "half": {
+     "fixed": {
+      "H1": {
+       "n": 80,
+       "tpw": 3.12,
+       "pf": 3.45,
+       "net": 20868,
+       "per_month": 3424,
+       "max_dd": -2264
+      },
+      "H2": {
+       "n": 40,
+       "tpw": 2.56,
+       "pf": 2.78,
+       "net": 9659,
+       "per_month": 2601,
+       "max_dd": -1492
+      },
+      "REF": {
+       "n": 511,
+       "tpw": 2.37,
+       "pf": 1.04,
+       "net": 2652,
+       "per_month": 52,
+       "max_dd": -13047
+      }
+     },
+     "acct": {
+      "H1": {
+       "n": 600,
+       "p10": 47.5,
+       "f10": 0.5,
+       "p15": 56.7,
+       "f15": 1.8,
+       "dec10": 48.0,
+       "p60": 84.8,
+       "f60": 11.3,
+       "pass_med": 9.0,
+       "slow_pass": 33.2,
+       "usd_per_pass": 108.3,
+       "max_risk": 794
+      },
+      "H2": {
+       "n": 600,
+       "p10": 45.7,
+       "f10": 0.2,
+       "p15": 56.5,
+       "f15": 1.3,
+       "dec10": 45.9,
+       "p60": 84.3,
+       "f60": 11.5,
+       "pass_med": 9.0,
+       "slow_pass": 33.0,
+       "usd_per_pass": 108.9,
+       "max_risk": 794
+      },
+      "REF": {
+       "n": 600,
+       "p10": 12.7,
+       "f10": 0.7,
+       "p15": 17.7,
+       "f15": 3.8,
+       "dec10": 13.4,
+       "p60": 32.8,
+       "f60": 53.3,
+       "pass_med": 14.0,
+       "slow_pass": 46.2,
+       "usd_per_pass": 279.9,
+       "max_risk": 799
+      }
+     },
+     "pass": false,
+     "why": [
+      "no H1 trades in the window: untestable there",
+      "$ H1 20868 -> 20868",
+      "no H2 trades in the window: untestable there",
+      "$ H2 9659 -> 9659"
+     ]
+    }
+   },
+   "roll_week": {
+    "describe": {
+     "H1_window": {
+      "days": 10,
+      "trades": 2,
+      "pf": 0.0,
+      "usd_per_trade": -133.3,
+      "net": -267,
+      "worst_day": -267.0,
+      "big_loss_days_pct": 0.0
+     },
+     "H1_normal": {
+      "days": 118,
+      "trades": 78,
+      "pf": 3.57,
+      "usd_per_trade": 271.0,
+      "net": 21134,
+      "worst_day": -348.0,
+      "big_loss_days_pct": 0.0
+     },
+     "H2_window": {
+      "days": 5,
+      "trades": 2,
+      "pf": null,
+      "usd_per_trade": 633.2,
+      "net": 1266,
+      "worst_day": 108.0,
+      "big_loss_days_pct": 0.0
+     },
+     "H2_normal": {
+      "days": 73,
+      "trades": 38,
+      "pf": 2.55,
+      "usd_per_trade": 220.9,
+      "net": 8393,
+      "worst_day": -339.0,
+      "big_loss_days_pct": 0.0
+     },
+     "REF_window": {
+      "days": 85,
+      "trades": 42,
+      "pf": 0.85,
+      "usd_per_trade": -19.5,
+      "net": -819,
+      "worst_day": -349.0,
+      "big_loss_days_pct": 0.0
+     },
+     "REF_normal": {
+      "days": 992,
+      "trades": 469,
+      "pf": 1.04,
+      "usd_per_trade": 6.1,
+      "net": 2884,
+      "worst_day": -350.0,
+      "big_loss_days_pct": 0.0
+     }
+    },
+    "note": "rule already rejected (S2 edge 2026-11-15): described only"
+   },
+   "holiday_stretch": {
+    "describe": {
+     "H1_window": {
+      "days": 2,
+      "trades": 2,
+      "pf": null,
+      "usd_per_trade": 310.6,
+      "net": 621,
+      "worst_day": 1.0,
+      "big_loss_days_pct": 0.0
+     },
+     "H1_normal": {
+      "days": 126,
+      "trades": 78,
+      "pf": 3.38,
+      "usd_per_trade": 259.6,
+      "net": 20247,
+      "worst_day": -348.0,
+      "big_loss_days_pct": 0.0
+     },
+     "H2_window": {
+      "days": 0,
+      "trades": 0,
+      "pf": null,
+      "usd_per_trade": null,
+      "net": 0,
+      "worst_day": null,
+      "big_loss_days_pct": null
+     },
+     "H2_normal": {
+      "days": 78,
+      "trades": 40,
+      "pf": 2.78,
+      "usd_per_trade": 241.5,
+      "net": 9659,
+      "worst_day": -339.0,
+      "big_loss_days_pct": 0.0
+     },
+     "REF_window": {
+      "days": 68,
+      "trades": 38,
+      "pf": 0.89,
+      "usd_per_trade": -15.9,
+      "net": -603,
+      "worst_day": -343.0,
+      "big_loss_days_pct": 0.0
+     },
+     "REF_normal": {
+      "days": 1009,
+      "trades": 473,
+      "pf": 1.04,
+      "usd_per_trade": 5.6,
+      "net": 2667,
+      "worst_day": -350.0,
+      "big_loss_days_pct": 0.0
+     }
+    },
+    "out": {
+     "fixed": {
+      "H1": {
+       "n": 78,
+       "tpw": 3.05,
+       "pf": 3.38,
+       "net": 20247,
+       "per_month": 3322,
+       "max_dd": -2264
+      },
+      "H2": {
+       "n": 40,
+       "tpw": 2.56,
+       "pf": 2.78,
+       "net": 9659,
+       "per_month": 2601,
+       "max_dd": -1492
+      },
+      "REF": {
+       "n": 473,
+       "tpw": 2.2,
+       "pf": 1.04,
+       "net": 2667,
+       "per_month": 52,
+       "max_dd": -10726
+      }
+     },
+     "acct": {
+      "H1": {
+       "n": 600,
+       "p10": 47.2,
+       "f10": 0.5,
+       "p15": 56.5,
+       "f15": 1.8,
+       "dec10": 47.7,
+       "p60": 84.2,
+       "f60": 11.5,
+       "pass_med": 9.0,
+       "slow_pass": 32.9,
+       "usd_per_pass": 109.0,
+       "max_risk": 794
+      },
+      "H2": {
+       "n": 600,
+       "p10": 45.7,
+       "f10": 0.2,
+       "p15": 56.5,
+       "f15": 1.3,
+       "dec10": 45.9,
+       "p60": 84.3,
+       "f60": 11.5,
+       "pass_med": 9.0,
+       "slow_pass": 33.0,
+       "usd_per_pass": 108.9,
+       "max_risk": 794
+      },
+      "REF": {
+       "n": 600,
+       "p10": 12.3,
+       "f10": 0.2,
+       "p15": 16.5,
+       "f15": 2.8,
+       "dec10": 12.5,
+       "p60": 29.8,
+       "f60": 51.5,
+       "pass_med": 13.0,
+       "slow_pass": 44.7,
+       "usd_per_pass": 308.1,
+       "max_risk": 799
+      }
+     },
+     "pass": false,
+     "why": [
+      "$ H1 20868 -> 20247",
+      "eval H1 pass/fail 84.8/11.3 -> 84.2/11.5",
+      "no H2 trades in the window: untestable there",
+      "$ H2 9659 -> 9659",
+      "eval REF pass/fail 32.3/53.8 -> 29.8/51.5"
+     ]
+    },
+    "half": {
+     "fixed": {
+      "H1": {
+       "n": 80,
+       "tpw": 3.12,
+       "pf": 3.4,
+       "net": 20454,
+       "per_month": 3356,
+       "max_dd": -2264
+      },
+      "H2": {
+       "n": 40,
+       "tpw": 2.56,
+       "pf": 2.78,
+       "net": 9659,
+       "per_month": 2601,
+       "max_dd": -1492
+      },
+      "REF": {
+       "n": 511,
+       "tpw": 2.37,
+       "pf": 1.03,
+       "net": 2319,
+       "per_month": 45,
+       "max_dd": -11716
+      }
+     },
+     "acct": {
+      "H1": {
+       "n": 600,
+       "p10": 47.2,
+       "f10": 0.5,
+       "p15": 56.5,
+       "f15": 1.8,
+       "dec10": 47.7,
+       "p60": 84.2,
+       "f60": 11.5,
+       "pass_med": 9.0,
+       "slow_pass": 32.9,
+       "usd_per_pass": 109.0,
+       "max_risk": 794
+      },
+      "H2": {
+       "n": 600,
+       "p10": 45.7,
+       "f10": 0.2,
+       "p15": 56.5,
+       "f15": 1.3,
+       "dec10": 45.9,
+       "p60": 84.3,
+       "f60": 11.5,
+       "pass_med": 9.0,
+       "slow_pass": 33.0,
+       "usd_per_pass": 108.9,
+       "max_risk": 794
+      },
+      "REF": {
+       "n": 600,
+       "p10": 12.5,
+       "f10": 0.3,
+       "p15": 17.0,
+       "f15": 3.3,
+       "dec10": 12.8,
+       "p60": 29.7,
+       "f60": 52.8,
+       "pass_med": 12.0,
+       "slow_pass": 42.7,
+       "usd_per_pass": 309.1,
+       "max_risk": 799
+      }
+     },
+     "pass": false,
+     "why": [
+      "$ H1 20868 -> 20454",
+      "eval H1 pass/fail 84.8/11.3 -> 84.2/11.5",
+      "no H2 trades in the window: untestable there",
+      "$ H2 9659 -> 9659",
+      "eval REF pass/fail 32.3/53.8 -> 29.7/52.8"
+     ]
+    }
+   },
+   "fomc_day": {
+    "describe": {
+     "H1_window": {
+      "days": 4,
+      "trades": 4,
+      "pf": null,
+      "usd_per_trade": 633.7,
+      "net": 2535,
+      "worst_day": 0.0,
+      "big_loss_days_pct": 0.0
+     },
+     "H1_normal": {
+      "days": 124,
+      "trades": 76,
+      "pf": 3.16,
+      "usd_per_trade": 241.2,
+      "net": 18333,
+      "worst_day": -348.0,
+      "big_loss_days_pct": 0.0
+     },
+     "H2_window": {
+      "days": 2,
+      "trades": 1,
+      "pf": 0.0,
+      "usd_per_trade": -319.2,
+      "net": -319,
+      "worst_day": -319.0,
+      "big_loss_days_pct": 0.0
+     },
+     "H2_normal": {
+      "days": 76,
+      "trades": 39,
+      "pf": 2.96,
+      "usd_per_trade": 255.9,
+      "net": 9978,
+      "worst_day": -339.0,
+      "big_loss_days_pct": 0.0
+     },
+     "REF_window": {
+      "days": 34,
+      "trades": 20,
+      "pf": 0.41,
+      "usd_per_trade": -75.7,
+      "net": -1514,
+      "worst_day": -344.0,
+      "big_loss_days_pct": 0.0
+     },
+     "REF_normal": {
+      "days": 1043,
+      "trades": 491,
+      "pf": 1.05,
+      "usd_per_trade": 7.3,
+      "net": 3579,
+      "worst_day": -350.0,
+      "big_loss_days_pct": 0.0
+     }
+    },
+    "out": {
+     "fixed": {
+      "H1": {
+       "n": 76,
+       "tpw": 2.97,
+       "pf": 3.16,
+       "net": 18333,
+       "per_month": 3008,
+       "max_dd": -2264
+      },
+      "H2": {
+       "n": 39,
+       "tpw": 2.5,
+       "pf": 2.96,
+       "net": 9978,
+       "per_month": 2687,
+       "max_dd": -1492
+      },
+      "REF": {
+       "n": 491,
+       "tpw": 2.28,
+       "pf": 1.05,
+       "net": 3579,
+       "per_month": 70,
+       "max_dd": -12799
+      }
+     },
+     "acct": {
+      "H1": {
+       "n": 600,
+       "p10": 43.8,
+       "f10": 0.5,
+       "p15": 53.3,
+       "f15": 2.0,
+       "dec10": 44.3,
+       "p60": 80.8,
+       "f60": 13.7,
+       "pass_med": 9.0,
+       "slow_pass": 34.0,
+       "usd_per_pass": 113.6,
+       "max_risk": 794
+      },
+      "H2": {
+       "n": 600,
+       "p10": 46.0,
+       "f10": 0.0,
+       "p15": 57.3,
+       "f15": 1.0,
+       "dec10": 46.0,
+       "p60": 87.0,
+       "f60": 9.3,
+       "pass_med": 10.0,
+       "slow_pass": 34.1,
+       "usd_per_pass": 105.5,
+       "max_risk": 794
+      },
+      "REF": {
+       "n": 600,
+       "p10": 12.5,
+       "f10": 0.3,
+       "p15": 17.3,
+       "f15": 3.5,
+       "dec10": 12.8,
+       "p60": 32.2,
+       "f60": 51.3,
+       "pass_med": 14.0,
+       "slow_pass": 46.1,
+       "usd_per_pass": 285.1,
+       "max_risk": 799
+      }
+     },
+     "pass": false,
+     "why": [
+      "$ H1 20868 -> 18333",
+      "eval H1 pass/fail 84.8/11.3 -> 80.8/13.7"
+     ]
+    },
+    "half": {
+     "fixed": {
+      "H1": {
+       "n": 80,
+       "tpw": 3.12,
+       "pf": 3.3,
+       "net": 19600,
+       "per_month": 3216,
+       "max_dd": -2264
+      },
+      "H2": {
+       "n": 40,
+       "tpw": 2.56,
+       "pf": 2.9,
+       "net": 9872,
+       "per_month": 2658,
+       "max_dd": -1492
+      },
+      "REF": {
+       "n": 511,
+       "tpw": 2.37,
+       "pf": 1.04,
+       "net": 2947,
+       "per_month": 57,
+       "max_dd": -12908
+      }
+     },
+     "acct": {
+      "H1": {
+       "n": 600,
+       "p10": 46.7,
+       "f10": 0.5,
+       "p15": 55.7,
+       "f15": 1.8,
+       "dec10": 47.2,
+       "p60": 84.0,
+       "f60": 12.0,
+       "pass_med": 9.0,
+       "slow_pass": 33.7,
+       "usd_per_pass": 109.3,
+       "max_risk": 794
+      },
+      "H2": {
+       "n": 600,
+       "p10": 46.0,
+       "f10": 0.0,
+       "p15": 57.3,
+       "f15": 1.0,
+       "dec10": 46.0,
+       "p60": 87.0,
+       "f60": 9.3,
+       "pass_med": 10.0,
+       "slow_pass": 34.1,
+       "usd_per_pass": 105.5,
+       "max_risk": 794
+      },
+      "REF": {
+       "n": 600,
+       "p10": 12.5,
+       "f10": 0.5,
+       "p15": 17.3,
+       "f15": 3.5,
+       "dec10": 13.0,
+       "p60": 32.3,
+       "f60": 52.0,
+       "pass_med": 14.0,
+       "slow_pass": 46.4,
+       "usd_per_pass": 284.2,
+       "max_risk": 799
+      }
+     },
+     "pass": false,
+     "why": [
+      "$ H1 20868 -> 19600",
+      "eval H1 pass/fail 84.8/11.3 -> 84.0/12.0"
+     ]
+    }
+   }
+  },
+  "ATLAS": {
+   "base": {
+    "fixed": {
+     "H1": {
+      "n": 104,
+      "tpw": 4.06,
+      "pf": 2.92,
+      "net": 18362,
+      "per_month": 3012,
+      "max_dd": -1062
+     },
+     "H2": {
+      "n": 46,
+      "tpw": 2.95,
+      "pf": 2.55,
+      "net": 5256,
+      "per_month": 1415,
+      "max_dd": -876
+     },
+     "REF": {
+      "n": 994,
+      "tpw": 4.61,
+      "pf": 1.08,
+      "net": 10393,
+      "per_month": 203,
+      "max_dd": -11403
+     }
+    },
+    "acct": {
+     "H1": {
+      "per_month": 584,
+      "first_med": 19.0,
+      "first_p75": 29.0,
+      "no_pay_6m": 7.3,
+      "lost_6m": 0.0,
+      "stuck_6m": 8.2,
+      "dead_6m": 8.2,
+      "min_room_p10": 138,
+      "payouts": 4.38,
+      "paths": 600
+     },
+     "H2": {
+      "per_month": 493,
+      "first_med": 28.0,
+      "first_p75": 41.0,
+      "no_pay_6m": 7.7,
+      "lost_6m": 0.0,
+      "stuck_6m": 8.3,
+      "dead_6m": 8.3,
+      "min_room_p10": 171,
+      "payouts": 3.69,
+      "paths": 600
+     },
+     "REF": {
+      "per_month": 44,
+      "first_med": 19.0,
+      "first_p75": 30.0,
+      "no_pay_6m": 81.2,
+      "lost_6m": 0.0,
+      "stuck_6m": 94.2,
+      "dead_6m": 94.2,
+      "min_room_p10": 41,
+      "payouts": 0.33,
+      "paths": 600
+     }
+    }
+   },
+   "thanksgiving": {
+    "describe": {
+     "H1_window": {
+      "days": 0,
+      "trades": 0,
+      "pf": null,
+      "usd_per_trade": null,
+      "net": 0,
+      "worst_day": null,
+      "big_loss_days_pct": null
+     },
+     "H1_normal": {
+      "days": 128,
+      "trades": 104,
+      "pf": 2.92,
+      "usd_per_trade": 176.6,
+      "net": 18362,
+      "worst_day": -448.0,
+      "big_loss_days_pct": 0.0
+     },
+     "H2_window": {
+      "days": 0,
+      "trades": 0,
+      "pf": null,
+      "usd_per_trade": null,
+      "net": 0,
+      "worst_day": null,
+      "big_loss_days_pct": null
+     },
+     "H2_normal": {
+      "days": 78,
+      "trades": 46,
+      "pf": 2.55,
+      "usd_per_trade": 114.3,
+      "net": 5256,
+      "worst_day": -321.0,
+      "big_loss_days_pct": 0.0
+     },
+     "REF_window": {
+      "days": 25,
+      "trades": 24,
+      "pf": 0.75,
+      "usd_per_trade": -38.4,
+      "net": -921,
+      "worst_day": -483.0,
+      "big_loss_days_pct": 0.0
+     },
+     "REF_normal": {
+      "days": 1052,
+      "trades": 970,
+      "pf": 1.09,
+      "usd_per_trade": 11.7,
+      "net": 11314,
+      "worst_day": -496.0,
+      "big_loss_days_pct": 0.0
+     }
+    },
+    "out": {
+     "fixed": {
+      "H1": {
+       "n": 104,
+       "tpw": 4.06,
+       "pf": 2.92,
+       "net": 18362,
+       "per_month": 3012,
+       "max_dd": -1062
+      },
+      "H2": {
+       "n": 46,
+       "tpw": 2.95,
+       "pf": 2.55,
+       "net": 5256,
+       "per_month": 1415,
+       "max_dd": -876
+      },
+      "REF": {
+       "n": 970,
+       "tpw": 4.5,
+       "pf": 1.09,
+       "net": 11314,
+       "per_month": 221,
+       "max_dd": -10805
+      }
+     },
+     "acct": {
+      "H1": {
+       "per_month": 584,
+       "first_med": 19.0,
+       "first_p75": 29.0,
+       "no_pay_6m": 7.3,
+       "lost_6m": 0.0,
+       "stuck_6m": 8.2,
+       "dead_6m": 8.2,
+       "min_room_p10": 138,
+       "payouts": 4.38,
+       "paths": 600
+      },
+      "H2": {
+       "per_month": 493,
+       "first_med": 28.0,
+       "first_p75": 41.0,
+       "no_pay_6m": 7.7,
+       "lost_6m": 0.0,
+       "stuck_6m": 8.3,
+       "dead_6m": 8.3,
+       "min_room_p10": 171,
+       "payouts": 3.69,
+       "paths": 600
+      },
+      "REF": {
+       "per_month": 46,
+       "first_med": 20.0,
+       "first_p75": 30.75,
+       "no_pay_6m": 81.0,
+       "lost_6m": 0.0,
+       "stuck_6m": 93.7,
+       "dead_6m": 93.7,
+       "min_room_p10": 40,
+       "payouts": 0.35,
+       "paths": 600
+      }
+     },
+     "pass": false,
+     "why": [
+      "no H1 trades in the window: untestable there",
+      "$ H1 18362 -> 18362",
+      "no H2 trades in the window: untestable there",
+      "$ H2 5256 -> 5256"
+     ]
+    },
+    "half": {
+     "fixed": {
+      "H1": {
+       "n": 104,
+       "tpw": 4.06,
+       "pf": 2.92,
+       "net": 18362,
+       "per_month": 3012,
+       "max_dd": -1062
+      },
+      "H2": {
+       "n": 46,
+       "tpw": 2.95,
+       "pf": 2.55,
+       "net": 5256,
+       "per_month": 1415,
+       "max_dd": -876
+      },
+      "REF": {
+       "n": 992,
+       "tpw": 4.61,
+       "pf": 1.09,
+       "net": 10740,
+       "per_month": 209,
+       "max_dd": -11087
+      }
+     },
+     "acct": {
+      "H1": {
+       "per_month": 584,
+       "first_med": 19.0,
+       "first_p75": 29.0,
+       "no_pay_6m": 7.3,
+       "lost_6m": 0.0,
+       "stuck_6m": 8.2,
+       "dead_6m": 8.2,
+       "min_room_p10": 138,
+       "payouts": 4.38,
+       "paths": 600
+      },
+      "H2": {
+       "per_month": 493,
+       "first_med": 28.0,
+       "first_p75": 41.0,
+       "no_pay_6m": 7.7,
+       "lost_6m": 0.0,
+       "stuck_6m": 8.3,
+       "dead_6m": 8.3,
+       "min_room_p10": 171,
+       "payouts": 3.69,
+       "paths": 600
+      },
+      "REF": {
+       "per_month": 46,
+       "first_med": 20.0,
+       "first_p75": 30.5,
+       "no_pay_6m": 80.8,
+       "lost_6m": 0.0,
+       "stuck_6m": 93.5,
+       "dead_6m": 93.5,
+       "min_room_p10": 41,
+       "payouts": 0.34,
+       "paths": 600
+      }
+     },
+     "pass": false,
+     "why": [
+      "no H1 trades in the window: untestable there",
+      "$ H1 18362 -> 18362",
+      "no H2 trades in the window: untestable there",
+      "$ H2 5256 -> 5256"
+     ]
+    }
+   },
+   "roll_week": {
+    "describe": {
+     "H1_window": {
+      "days": 10,
+      "trades": 6,
+      "pf": 8.88,
+      "usd_per_trade": 497.4,
+      "net": 2984,
+      "worst_day": -225.0,
+      "big_loss_days_pct": 0.0
+     },
+     "H1_normal": {
+      "days": 118,
+      "trades": 98,
+      "pf": 2.68,
+      "usd_per_trade": 156.9,
+      "net": 15377,
+      "worst_day": -448.0,
+      "big_loss_days_pct": 0.0
+     },
+     "H2_window": {
+      "days": 5,
+      "trades": 4,
+      "pf": 1.28,
+      "usd_per_trade": 22.5,
+      "net": 90,
+      "worst_day": -321.0,
+      "big_loss_days_pct": 0.0
+     },
+     "H2_normal": {
+      "days": 73,
+      "trades": 42,
+      "pf": 2.68,
+      "usd_per_trade": 123.0,
+      "net": 5166,
+      "worst_day": -275.0,
+      "big_loss_days_pct": 0.0
+     },
+     "REF_window": {
+      "days": 85,
+      "trades": 79,
+      "pf": 0.56,
+      "usd_per_trade": -57.5,
+      "net": -4546,
+      "worst_day": -496.0,
+      "big_loss_days_pct": 0.0
+     },
+     "REF_normal": {
+      "days": 992,
+      "trades": 915,
+      "pf": 1.13,
+      "usd_per_trade": 16.3,
+      "net": 14939,
+      "worst_day": -492.0,
+      "big_loss_days_pct": 0.0
+     }
+    },
+    "out": {
+     "fixed": {
+      "H1": {
+       "n": 98,
+       "tpw": 3.83,
+       "pf": 2.68,
+       "net": 15377,
+       "per_month": 2523,
+       "max_dd": -1062
+      },
+      "H2": {
+       "n": 42,
+       "tpw": 2.69,
+       "pf": 2.68,
+       "net": 5166,
+       "per_month": 1391,
+       "max_dd": -828
+      },
+      "REF": {
+       "n": 915,
+       "tpw": 4.25,
+       "pf": 1.13,
+       "net": 14939,
+       "per_month": 291,
+       "max_dd": -10572
+      }
+     },
+     "acct": {
+      "H1": {
+       "per_month": 540,
+       "first_med": 22.0,
+       "first_p75": 34.0,
+       "no_pay_6m": 8.3,
+       "lost_6m": 0.0,
+       "stuck_6m": 10.0,
+       "dead_6m": 10.0,
+       "min_room_p10": 101,
+       "payouts": 4.05,
+       "paths": 600
+      },
+      "H2": {
+       "per_month": 478,
+       "first_med": 28.0,
+       "first_p75": 42.0,
+       "no_pay_6m": 8.8,
+       "lost_6m": 0.0,
+       "stuck_6m": 9.8,
+       "dead_6m": 9.8,
+       "min_room_p10": 102,
+       "payouts": 3.58,
+       "paths": 600
+      },
+      "REF": {
+       "per_month": 48,
+       "first_med": 21.0,
+       "first_p75": 31.0,
+       "no_pay_6m": 79.2,
+       "lost_6m": 0.0,
+       "stuck_6m": 91.7,
+       "dead_6m": 91.7,
+       "min_room_p10": 40,
+       "payouts": 0.36,
+       "paths": 600
+      }
+     },
+     "pass": false,
+     "why": [
+      "$ H1 18362 -> 15377",
+      "funded H1 $584/8.2% -> $540/10.0%",
+      "$ H2 5256 -> 5166",
+      "funded H2 $493/8.3% -> $478/9.8%"
+     ]
+    },
+    "half": {
+     "fixed": {
+      "H1": {
+       "n": 103,
+       "tpw": 4.02,
+       "pf": 2.83,
+       "net": 16946,
+       "per_month": 2780,
+       "max_dd": -1062
+      },
+      "H2": {
+       "n": 44,
+       "tpw": 2.82,
+       "pf": 2.55,
+       "net": 5005,
+       "per_month": 1348,
+       "max_dd": -988
+      },
+      "REF": {
+       "n": 988,
+       "tpw": 4.59,
+       "pf": 1.1,
+       "net": 12303,
+       "per_month": 240,
+       "max_dd": -10250
+      }
+     },
+     "acct": {
+      "H1": {
+       "per_month": 574,
+       "first_med": 20.5,
+       "first_p75": 30.25,
+       "no_pay_6m": 7.3,
+       "lost_6m": 0.0,
+       "stuck_6m": 8.3,
+       "dead_6m": 8.3,
+       "min_room_p10": 125,
+       "payouts": 4.3,
+       "paths": 600
+      },
+      "H2": {
+       "per_month": 496,
+       "first_med": 28.0,
+       "first_p75": 41.0,
+       "no_pay_6m": 7.8,
+       "lost_6m": 0.0,
+       "stuck_6m": 8.7,
+       "dead_6m": 8.7,
+       "min_room_p10": 158,
+       "payouts": 3.72,
+       "paths": 600
+      },
+      "REF": {
+       "per_month": 46,
+       "first_med": 20.0,
+       "first_p75": 31.0,
+       "no_pay_6m": 80.0,
+       "lost_6m": 0.0,
+       "stuck_6m": 93.5,
+       "dead_6m": 93.5,
+       "min_room_p10": 40,
+       "payouts": 0.34,
+       "paths": 600
+      }
+     },
+     "pass": false,
+     "why": [
+      "$ H1 18362 -> 16946",
+      "funded H1 $584/8.2% -> $574/8.3%",
+      "$ H2 5256 -> 5005",
+      "funded H2 $493/8.3% -> $496/8.7%"
+     ]
+    }
+   },
+   "holiday_stretch": {
+    "describe": {
+     "H1_window": {
+      "days": 2,
+      "trades": 2,
+      "pf": 1.13,
+      "usd_per_trade": 16.5,
+      "net": 33,
+      "worst_day": 33.0,
+      "big_loss_days_pct": 0.0
+     },
+     "H1_normal": {
+      "days": 126,
+      "trades": 102,
+      "pf": 2.97,
+      "usd_per_trade": 179.7,
+      "net": 18329,
+      "worst_day": -448.0,
+      "big_loss_days_pct": 0.0
+     },
+     "H2_window": {
+      "days": 0,
+      "trades": 0,
+      "pf": null,
+      "usd_per_trade": null,
+      "net": 0,
+      "worst_day": null,
+      "big_loss_days_pct": null
+     },
+     "H2_normal": {
+      "days": 78,
+      "trades": 46,
+      "pf": 2.55,
+      "usd_per_trade": 114.3,
+      "net": 5256,
+      "worst_day": -321.0,
+      "big_loss_days_pct": 0.0
+     },
+     "REF_window": {
+      "days": 68,
+      "trades": 63,
+      "pf": 0.51,
+      "usd_per_trade": -60.7,
+      "net": -3822,
+      "worst_day": -479.0,
+      "big_loss_days_pct": 0.0
+     },
+     "REF_normal": {
+      "days": 1009,
+      "trades": 931,
+      "pf": 1.12,
+      "usd_per_trade": 15.3,
+      "net": 14215,
+      "worst_day": -496.0,
+      "big_loss_days_pct": 0.0
+     }
+    },
+    "out": {
+     "fixed": {
+      "H1": {
+       "n": 102,
+       "tpw": 3.98,
+       "pf": 2.97,
+       "net": 18329,
+       "per_month": 3007,
+       "max_dd": -1062
+      },
+      "H2": {
+       "n": 46,
+       "tpw": 2.95,
+       "pf": 2.55,
+       "net": 5256,
+       "per_month": 1415,
+       "max_dd": -876
+      },
+      "REF": {
+       "n": 931,
+       "tpw": 4.32,
+       "pf": 1.12,
+       "net": 14215,
+       "per_month": 277,
+       "max_dd": -9248
+      }
+     },
+     "acct": {
+      "H1": {
+       "per_month": 584,
+       "first_med": 19.5,
+       "first_p75": 29.25,
+       "no_pay_6m": 7.3,
+       "lost_6m": 0.0,
+       "stuck_6m": 8.2,
+       "dead_6m": 8.2,
+       "min_room_p10": 138,
+       "payouts": 4.38,
+       "paths": 600
+      },
+      "H2": {
+       "per_month": 493,
+       "first_med": 28.0,
+       "first_p75": 41.0,
+       "no_pay_6m": 7.7,
+       "lost_6m": 0.0,
+       "stuck_6m": 8.3,
+       "dead_6m": 8.3,
+       "min_room_p10": 171,
+       "payouts": 3.69,
+       "paths": 600
+      },
+      "REF": {
+       "per_month": 47,
+       "first_med": 20.0,
+       "first_p75": 31.0,
+       "no_pay_6m": 80.0,
+       "lost_6m": 0.0,
+       "stuck_6m": 92.8,
+       "dead_6m": 92.8,
+       "min_room_p10": 38,
+       "payouts": 0.35,
+       "paths": 600
+      }
+     },
+     "pass": false,
+     "why": [
+      "$ H1 18362 -> 18329",
+      "no H2 trades in the window: untestable there",
+      "$ H2 5256 -> 5256"
+     ]
+    },
+    "half": {
+     "fixed": {
+      "H1": {
+       "n": 103,
+       "tpw": 4.02,
+       "pf": 2.93,
+       "net": 18205,
+       "per_month": 2987,
+       "max_dd": -1062
+      },
+      "H2": {
+       "n": 46,
+       "tpw": 2.95,
+       "pf": 2.55,
+       "net": 5256,
+       "per_month": 1415,
+       "max_dd": -876
+      },
+      "REF": {
+       "n": 988,
+       "tpw": 4.59,
+       "pf": 1.1,
+       "net": 12043,
+       "per_month": 235,
+       "max_dd": -9957
+      }
+     },
+     "acct": {
+      "H1": {
+       "per_month": 584,
+       "first_med": 19.0,
+       "first_p75": 29.0,
+       "no_pay_6m": 7.3,
+       "lost_6m": 0.0,
+       "stuck_6m": 8.2,
+       "dead_6m": 8.2,
+       "min_room_p10": 138,
+       "payouts": 4.38,
+       "paths": 600
+      },
+      "H2": {
+       "per_month": 493,
+       "first_med": 28.0,
+       "first_p75": 41.0,
+       "no_pay_6m": 7.7,
+       "lost_6m": 0.0,
+       "stuck_6m": 8.3,
+       "dead_6m": 8.3,
+       "min_room_p10": 171,
+       "payouts": 3.69,
+       "paths": 600
+      },
+      "REF": {
+       "per_month": 45,
+       "first_med": 18.5,
+       "first_p75": 30.0,
+       "no_pay_6m": 80.7,
+       "lost_6m": 0.0,
+       "stuck_6m": 93.5,
+       "dead_6m": 93.5,
+       "min_room_p10": 41,
+       "payouts": 0.34,
+       "paths": 600
+      }
+     },
+     "pass": false,
+     "why": [
+      "$ H1 18362 -> 18205",
+      "no H2 trades in the window: untestable there",
+      "$ H2 5256 -> 5256"
+     ]
+    }
+   },
+   "fomc_day": {
+    "describe": {
+     "H1_window": {
+      "days": 4,
+      "trades": 4,
+      "pf": 6.92,
+      "usd_per_trade": 305.8,
+      "net": 1223,
+      "worst_day": -206.0,
+      "big_loss_days_pct": 0.0
+     },
+     "H1_normal": {
+      "days": 124,
+      "trades": 100,
+      "pf": 2.83,
+      "usd_per_trade": 171.4,
+      "net": 17139,
+      "worst_day": -448.0,
+      "big_loss_days_pct": 0.0
+     },
+     "H2_window": {
+      "days": 2,
+      "trades": 2,
+      "pf": 0.0,
+      "usd_per_trade": -71.3,
+      "net": -143,
+      "worst_day": -143.0,
+      "big_loss_days_pct": 0.0
+     },
+     "H2_normal": {
+      "days": 76,
+      "trades": 44,
+      "pf": 2.66,
+      "usd_per_trade": 122.7,
+      "net": 5398,
+      "worst_day": -321.0,
+      "big_loss_days_pct": 0.0
+     },
+     "REF_window": {
+      "days": 34,
+      "trades": 30,
+      "pf": 0.59,
+      "usd_per_trade": -61.3,
+      "net": -1840,
+      "worst_day": -426.0,
+      "big_loss_days_pct": 0.0
+     },
+     "REF_normal": {
+      "days": 1043,
+      "trades": 964,
+      "pf": 1.1,
+      "usd_per_trade": 12.7,
+      "net": 12233,
+      "worst_day": -496.0,
+      "big_loss_days_pct": 0.0
+     }
+    },
+    "out": {
+     "fixed": {
+      "H1": {
+       "n": 100,
+       "tpw": 3.91,
+       "pf": 2.83,
+       "net": 17139,
+       "per_month": 2812,
+       "max_dd": -1062
+      },
+      "H2": {
+       "n": 44,
+       "tpw": 2.82,
+       "pf": 2.66,
+       "net": 5398,
+       "per_month": 1453,
+       "max_dd": -876
+      },
+      "REF": {
+       "n": 964,
+       "tpw": 4.48,
+       "pf": 1.1,
+       "net": 12233,
+       "per_month": 239,
+       "max_dd": -10726
+      }
+     },
+     "acct": {
+      "H1": {
+       "per_month": 587,
+       "first_med": 21.0,
+       "first_p75": 30.0,
+       "no_pay_6m": 6.2,
+       "lost_6m": 0.0,
+       "stuck_6m": 6.8,
+       "dead_6m": 6.8,
+       "min_room_p10": 188,
+       "payouts": 4.4,
+       "paths": 600
+      },
+      "H2": {
+       "per_month": 508,
+       "first_med": 27.0,
+       "first_p75": 40.0,
+       "no_pay_6m": 6.5,
+       "lost_6m": 0.0,
+       "stuck_6m": 7.8,
+       "dead_6m": 7.8,
+       "min_room_p10": 202,
+       "payouts": 3.81,
+       "paths": 600
+      },
+      "REF": {
+       "per_month": 49,
+       "first_med": 19.5,
+       "first_p75": 30.0,
+       "no_pay_6m": 79.3,
+       "lost_6m": 0.0,
+       "stuck_6m": 93.7,
+       "dead_6m": 93.7,
+       "min_room_p10": 40,
+       "payouts": 0.37,
+       "paths": 600
+      }
+     },
+     "pass": false,
+     "why": [
+      "$ H1 18362 -> 17139"
+     ]
+    },
+    "half": {
+     "fixed": {
+      "H1": {
+       "n": 104,
+       "tpw": 4.06,
+       "pf": 2.89,
+       "net": 17785,
+       "per_month": 2918,
+       "max_dd": -1062
+      },
+      "H2": {
+       "n": 46,
+       "tpw": 2.95,
+       "pf": 2.6,
+       "net": 5327,
+       "per_month": 1434,
+       "max_dd": -876
+      },
+      "REF": {
+       "n": 994,
+       "tpw": 4.61,
+       "pf": 1.09,
+       "net": 11451,
+       "per_month": 223,
+       "max_dd": -10692
+      }
+     },
+     "acct": {
+      "H1": {
+       "per_month": 592,
+       "first_med": 19.0,
+       "first_p75": 29.0,
+       "no_pay_6m": 6.5,
+       "lost_6m": 0.0,
+       "stuck_6m": 7.3,
+       "dead_6m": 7.3,
+       "min_room_p10": 143,
+       "payouts": 4.44,
+       "paths": 600
+      },
+      "H2": {
+       "per_month": 501,
+       "first_med": 28.0,
+       "first_p75": 40.0,
+       "no_pay_6m": 7.5,
+       "lost_6m": 0.0,
+       "stuck_6m": 8.3,
+       "dead_6m": 8.3,
+       "min_room_p10": 181,
+       "payouts": 3.76,
+       "paths": 600
+      },
+      "REF": {
+       "per_month": 46,
+       "first_med": 19.0,
+       "first_p75": 30.0,
+       "no_pay_6m": 80.5,
+       "lost_6m": 0.0,
+       "stuck_6m": 93.8,
+       "dead_6m": 93.8,
+       "min_room_p10": 40,
+       "payouts": 0.34,
+       "paths": 600
+      }
+     },
+     "pass": false,
+     "why": [
+      "$ H1 18362 -> 17785"
+     ]
+    }
+   }
+  }
+ },
+ "passers": []
+}

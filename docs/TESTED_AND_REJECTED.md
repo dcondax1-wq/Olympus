@@ -366,3 +366,8 @@
   +20 ticks / 10 min worse in H2. New NQ setups at $250: IB failed-break fade, IB break-retest limit, prior-day level break-retest limit,
   opening gap fade to the prior close, first-hour trend at 10:30 (+$45 / +$197 / +$121 a month, PF 1.08 H1, 0.5/wk H2), overnight-inside
   breakout: none PF >= 1.2 in all 3 periods; all add -$500 days on a shared 25K. 0 pass.
+- **Holidays / roll / FOMC windows (2026-11-21, `holidays-2026-11-21.md`, `research/holidays/`):** Thanksgiving week, CME roll-date week,
+  Dec 15 - Jan 5, FOMC days x sit out / half, LIT and ATLAS (LIT roll = already rejected): 0 of 14. 2021-25 windows all weak (LIT PF
+  0.14-0.89, ATLAS 0.51-0.75 vs ~1.1) but 2026 windows profitable (FOMC LIT +$634/trade, ATLAS roll PF 8.9): sit-outs lose Jan-Jun $
+  (LIT FOMC -$2,535, ATLAS roll -$2,985). Thanksgiving / late Dec have no 2026 sample (untestable). Nearest: ATLAS FOMC out (funded lost
+  down in all 3, but Jan-Jun fixed -$1,223).
