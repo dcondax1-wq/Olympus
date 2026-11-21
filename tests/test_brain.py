@@ -330,6 +330,45 @@ def glance_checks(REF):
     check("glance: on the PC's 15-minute status (the ext post, merged back to pc.glance) and every post still fits 3,900 bytes",
           (lt.get("pc") or {}).get("glance", {}).get("bots") and all(R._size(x) <= R.MAX_STATUS_BYTES for x in [core, *exts]), R._size(lt))
     check("glance: never raises on junk", G.build(None) is None and isinstance(G.build({"brain": "x", "second": 3, "acct": []}), dict))
+    # v2 (day-nqdash3 2026-11-21, the NQ Brain page's PC fields): LIT checks / blocks / price, ATLAS lobes / dll / level distances, the longer log
+    px = (hb.get("brain") or {}).get("price")
+    chk = L.get("chk")
+    check("glance v2: Zlarior's latest setup checks [passed, total] and the last price", G.VERSION == 2 and isinstance(chk, list) and len(chk) == 2
+          and 0 <= chk[0] <= chk[1] and chk[1] > 0 and L.get("px") == px, (chk, L.get("px"), px))
+    hb4 = copy.deepcopy(before)
+    now4 = int(t_arm)
+    hb4["second"] = {"t": now4, "strategies": {
+        "ema_lon_vix": {"short": "EMA", "route": True, "state": {"stage": "done", "text": "Done for today (1 trade a day): long 04:10 ET -> TARGET"},
+                        "brain": {"levels": [{"name": "EMA50", "px": px + 12.5, "stage": "watch"}], "log": [{"t": now4 - 900, "text": "EMA long filled"}]}},
+        "macd_sweep": {"short": "MACD", "route": True, "state": {"stage": "armed", "text": "Signal (short): 5m CISD after a pullback"},
+                       "brain": {"levels": [{"name": "PDH", "px": px - 20.0, "stage": "watch"}, {"name": "old", "px": 1.0, "stage": "taken"}],
+                                 "log": [{"t": now4 - 60 * i, "text": f"MACD line {i}"} for i in range(1, 9)]}},
+        "sr_nyreclaim": {"short": "S/R", "route": True, "state": {"stage": "off", "text": "Outside its hours: entries 09:30-11:00"}},
+        "lit_asia": {"short": "Asia", "state": {"stage": "waiting", "text": "candidate, paper"}, "brain": {"log": [{"t": now4, "text": "not routed"}]}}}}
+    card = dict((lp.build(hb4, t_arm).get("board") or {}).get("atlas") or {}, today_pnl=-150.0, dll=600.0)
+    card.pop("dll_used", None)
+    g4 = G.build(hb4, {"lit": (lp.build(hb4, t_arm).get("board") or {}).get("lit"), "atlas": card})
+    A = next((b for b in g4.get("bots") or [] if b.get("id") == "atlas"), {})
+    lob = {x["id"]: x["st"] for x in A.get("lobes") or []}
+    check("glance v2: ATLAS's 3 lobes from its strategies' state (EMA done, MACD armed, S/R off; the paper candidate is not a lobe)",
+          lob == {"ema": "done", "macd": "armed", "sr": "off"}, A.get("lobes"))
+    check("glance v2: ATLAS's daily loss: $600 limit, $150 used (today -$150, no dll_used on the card)", A.get("dll") == 600 and A.get("dll_used") == 150, A)
+    lv4 = {r[0]: r[2] for r in A.get("lv") or []}
+    check("glance v2: ATLAS's levels carry points from the last price (EMA50 +12.5, PDH -20.0), a taken level left out",
+          lv4.get("EMA EMA50") == 12.5 and lv4.get("MACD PDH") == -20.0 and not any("old" in k for k in lv4), A.get("lv"))
+    check("glance v2: still under its byte budget with the new fields", G.size(g4) <= G.MAX_BYTES, G.size(g4))
+    gl = G.logs(hb4)
+    check("glance v2: the longer log (8 lines a bot, newest first; routed strategies only)", gl and len(gl.get("atlas") or []) == 8
+          and gl["atlas"][0][1].startswith("EMA") is False and "not routed" not in str(gl) and len(gl.get("lit") or []) <= 8, gl)
+    check("glance v2: logs() never raises on junk", G.logs(None) is None and G.logs({"brain": 3, "second": "x"}) is None)
+    snap4 = dict(snap, hb=hb4, live=lp.build(hb4, t_arm))
+    core4, exts4 = R.posts(snap4)
+    xs = [k for e in exts4 for k in (e.get("x") or {})]
+    check("glance v2: the PC's status carries 'glog' in an ext post, every post <= 3,900 bytes, at most 2 ext posts",
+          "glog" in xs and all(R._size(x) <= R.MAX_STATUS_BYTES for x in [core4, *exts4]) and len(exts4) <= R.EXT_PARTS, (xs, [R._size(x) for x in [core4, *exts4]]))
+    e1 = [{"x": {"glog": {"lit": [["09:00", "a"]]}, "glance": {"v": 2}}}]
+    e2 = [{"x": {"glog": {"lit": [["09:05", "b"]]}, "glance": {"v": 2, "x": 1}}}]
+    check("glance v2: a new log line alone does not spend an ntfy post (ext_hash leaves glog out, as it does glance)", R.ext_hash(e1) == R.ext_hash(e2))
 
 
 def main() -> int:
