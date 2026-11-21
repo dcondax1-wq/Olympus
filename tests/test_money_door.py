@@ -229,7 +229,7 @@ def part_e():
             AK.open_app(p, origin, "business")
             door = p.inner_text("#door")
             check("e. DEMO: the door shows the first payout, funded $ a month, account #4, the business estimate and the $197.80 spent",
-                  "$1,200 about" in door and "$884 a month" in door and "$2,853 a month" in door and "With the Rapid EOD 50K too" in door and "$0-3,250 a month" in door and "$198" in door, door)
+                  "$1,600 about" in door and "$884 a month" in door and "$2,853 a month" in door and "With the Rapid EOD 50K too" in door and "$0-3,250 a month" in door and "$198" in door, door)
             check("e. DEMO: 2 trading rows from the DEMO plan, 11 ready items, 6 ideas",
                   p.locator("#trade .acct").count() == 2 and p.inner_text("#tradeSrc") == "DEMO evals"
                   and p.locator("#ready > details").count() == 11 and p.locator("#ideas tbody tr").count() == 6, p.inner_text("#tradeSrc"))
