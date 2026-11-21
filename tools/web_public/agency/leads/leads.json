@@ -2,7 +2,7 @@
  "v": 1,
  "kind": "web_leads",
  "demo": false,
- "fetched": "2026-11-21T18:57:22Z",
+ "fetched": "2026-11-21T19:09:32Z",
  "source": "OpenStreetMap via the public Overpass API (a few small queries per town)",
  "license": "Data (c) OpenStreetMap contributors, ODbL (openstreetmap.org/copyright)",
  "about": "Businesses on OpenStreetMap with no website tag. OSM can be out of date: check the business before you call.",
@@ -32,23 +32,6 @@
    "missing": [],
    "chains": 186,
    "with_site": 80
-  },
-  {
-   "town": "Rockville",
-   "state": "MD",
-   "businesses": 583,
-   "leads": 220,
-   "hot": 9,
-   "server": "maps.mail.ru",
-   "parts_ok": 6,
-   "parts": 9,
-   "missing": [
-    "healthcare",
-    "health + auto places",
-    "beauty + auto shops"
-   ],
-   "chains": 219,
-   "with_site": 122
   },
   {
    "town": "Columbia",
@@ -258,20 +241,32 @@
    "missing": [],
    "chains": 136,
    "with_site": 42
+  },
+  {
+   "town": "Rockville",
+   "state": "MD",
+   "businesses": 589,
+   "leads": 279,
+   "hot": 18,
+   "server": "maps.mail.ru",
+   "parts_ok": 9,
+   "parts": 9,
+   "missing": [],
+   "chains": 219,
+   "with_site": 122
   }
  ],
  "skipped": {
-  "has_site": 1218,
-  "chain": 2232,
-  "other": 421,
-  "duplicate": 118,
+  "has_site": 1314,
+  "chain": 2405,
+  "other": 495,
+  "duplicate": 209,
   "closed": 1
  },
  "leads": [],
  "files": [
   "towns/frederick.json",
   "towns/gaithersburg.json",
-  "towns/rockville.json",
   "towns/columbia.json",
   "towns/ellicott-city.json",
   "towns/westminster.json",
@@ -284,7 +279,8 @@
   "towns/damascus.json",
   "towns/clarksburg.json",
   "towns/hagerstown.json",
-  "towns/germantown.json"
+  "towns/germantown.json",
+  "towns/rockville.json"
  ],
- "count": 1477
+ "count": 1536
 }

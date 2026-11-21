@@ -1,4 +1,4 @@
-# Website leads: counts (OpenStreetMap, updated 2026-11-21 18:57 UTC)
+# Website leads: counts (OpenStreetMap, updated 2026-11-21 19:10 UTC)
 
 Mailable = house number + street + town + ZIP (postcard-ready). Leads after removing businesses in two town boxes.
 
@@ -15,9 +15,9 @@ Mailable = house number + street + town + ZIP (postcard-ready). Leads after remo
 | Hagerstown | 123 | 87 | 3 | 6 | 1 | 50 | 6 | 13 | 0 | 2 | 55 | 2 | 1 | 38 | 6 | - |
 | Middletown | 4 | 4 | 0 | 2 | 0 | 3 | 0 | 0 | 0 | 0 | 4 | 0 | 0 | 0 | 0 | trades, healthcare, gyms, health + auto places, beauty + auto shops, other shops |
 | Mount Airy | 37 | 24 | 1 | 2 | 0 | 29 | 6 | 9 | 1 | 2 | 12 | 1 | 4 | 0 | 2 | health + auto places, other shops |
-| Rockville | 220 | 219 | 9 | 22 | 0 | 87 | 0 | 0 | 15 | 9 | 139 | 0 | 2 | 50 | 5 | healthcare, health + auto places, beauty + auto shops |
+| Rockville | 279 | 219 | 18 | 32 | 0 | 109 | 21 | 28 | 15 | 9 | 139 | 10 | 2 | 50 | 5 | - |
 | Thurmont | 24 | 17 | 0 | 1 | 0 | 11 | 1 | 0 | 1 | 1 | 7 | 3 | 0 | 9 | 2 | offices, beauty + auto shops |
 | Urbana | 22 | 5 | 1 | 1 | 0 | 9 | 1 | 8 | 0 | 7 | 1 | 5 | 0 | 0 | 0 | offices, food places, other shops |
 | Walkersville | 4 | 8 | 3 | 3 | 0 | 3 | 0 | 0 | 0 | 0 | 2 | 0 | 0 | 1 | 1 | offices, gyms, beauty + auto shops |
 | Westminster | 35 | 25 | 2 | 3 | 0 | 17 | 7 | 11 | 0 | 0 | 4 | 4 | 3 | 0 | 6 | healthcare, gyms, food places, other shops |
-| **All** | **1477** | **1487** | **73** | **126** | **5** | **773** | **79** | **208** | **26** | **64** | **536** | **111** | **32** | **353** | **68** | |
+| **All** | **1536** | **1487** | **82** | **136** | **5** | **795** | **100** | **236** | **26** | **64** | **536** | **121** | **32** | **353** | **68** | |
