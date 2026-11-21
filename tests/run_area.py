@@ -71,6 +71,7 @@ AREAS["pc"].append("account_box")     # 2026-11-20: the Add account box (engine/
 AREAS["pc"].append("phone_link")      # 2026-11-20: the bot server's own private Tailscale port :8444 (engine/phone_link.py)
 AREAS["pc"].append("self_heal_pc")    # night-selfheal 2026-11-20: the PC self-heal (engine/self_heal.py, docs/SELF_HEAL.md); its own line
 AREAS["pc"].append("remote_ctl")      # night-phonectl 2026-11-20: phone remote through the backup repo (olympus/control, engine/remote_ctl.py)
+AREAS["pc"] += ["nqops", "pc_always_on"]   # day-nqops 2026-11-21: Sunday/daily preflight, cloud pre-open push, the MFFU 7-day clock (engine/preflight.py, engine/clock7.py, nq/clock7.js); the PC always-on tool (tools/pc_always_on.py)
 AREAS["agency"].append("web_offers")
 AREAS["agency"].append("web_outreach")
 AREAS["agency"].append("agency_autopilot")
