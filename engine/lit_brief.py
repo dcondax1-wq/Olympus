@@ -348,8 +348,9 @@ def mffu_notes(now, day, ledger=None, clock=None, eval_start=None, flat_mod=955)
         if n >= 5:
             out.append({"kind": "inactivity", "level": "warn", "days": n,
                         "text": (f"No trade for {n} days - MFFU can close the account at {R['inactivity_days']}: place 1 MNQ by hand "
-                                 f"today (MFFU inactivity rule)." if n >= R["inactivity_days"] - 1 else
-                                 f"No trade for {n} days - place 1 MNQ by hand before day {R['inactivity_days']} (MFFU inactivity rule).")
+                                 f"today while every account is flat (MFFU inactivity rule)." if n >= R["inactivity_days"] - 1 else
+                                 f"No trade for {n} days - place 1 MNQ by hand while every account is flat, before day {R['inactivity_days']} "
+                                 f"(MFFU inactivity rule).")
                         if fills else f"No trade for {n} days since the eval started - place 1 MNQ by hand before day "
                                       f"{R['inactivity_days']} (MFFU inactivity rule)."})
     return out
