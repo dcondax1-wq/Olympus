@@ -182,7 +182,7 @@ def part_c():
           and all(f"env(safe-area-inset-{s}" in css for s in ("top", "right", "bottom", "left")) and "color-scheme: dark" in css)
     code = "".join(v for k, v in files.items() if k != "fixture.js")
     check("c. three.js from ../jarvis/three.module.min.js, nothing from another site, no frame break-out",
-          "from '../jarvis/three.module.min.js'" in files["scene.js"] and not re.search(r"https?://(?!demetrades2000-coder\.github\.io|www\.w3\.org)", code)
+          "from '../jarvis/three.module.min.js'" in files["scene.js"] and not re.search(r"https?://(?!dcondax1-wq\.github\.io|www\.w3\.org)", code)
           and "top.location" not in code, re.findall(r"https?://[^\s'\")]+", code)[:5])
     check("c. prefers-reduced-motion respected (CSS + the director + the effects)", "prefers-reduced-motion" in css and "prefers-reduced-motion" in files["app.js"]
           and "this.reduced" in files["director.js"] and "this.reduced" in files["scene.js"])
