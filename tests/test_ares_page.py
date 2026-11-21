@@ -45,7 +45,7 @@ def part_a():
     check("a. title Ares, a description, theme-color = the page colour, the Jarvis icon like the siblings",
           "<title>Ares</title>" in html and 'name="description"' in html and 'content="#14110e"' in html and "../jarvis/icon-192.png" in html
           and "#14110e" in rd("ares.css") + html)
-    srcs = re.findall(r'(?:src|href)="([^"]+)"', html)
+    srcs = re.findall(r'(?<![\w-])(?:src|href)="([^"]+)"', html)   # not data-src (the archive banner's feed)
     check("a. only local files (no external script, font or stylesheet)", all(not s.startswith(("http:", "https:", "//")) for s in srcs), srcs)
     check("a. every local file the page links exists",
           all(os.path.exists(os.path.normpath(os.path.join(PAGE, s.split("?")[0]))) for s in srcs if not s.startswith("#")), srcs)
