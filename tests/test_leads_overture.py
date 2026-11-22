@@ -91,6 +91,30 @@ def main() -> int:
               and c["new"] == 1 and c["leads"] == 6, c)
         c2 = W.run(places, towns_dir=towns, checker=lambda u: up.get(u, (False, 404)), today="2026-11-21")
         check("b. a second run adds nothing twice (ids kept, no duplicate new leads)", c2["new"] == 0 and c2["leads"] == 6, c2)
+    # d. the county search (tools/web_leads_counties.py) on the same fixture + one fixture county outline
+    import duckdb
+    from tools import web_leads_counties as C
+    from tools import lead_value as V
+    with tempfile.TemporaryDirectory() as t:
+        shapes = os.path.join(t, "counties.parquet")
+        c = duckdb.connect()
+        c.execute("INSTALL spatial; LOAD spatial;")
+        c.execute(f"""COPY (SELECT 'Howard County' AS county, ST_AsWKB(ST_GeomFromText('POLYGON((-77.45 39.40, -77.38 39.40, -77.38 39.45, -77.45 39.45, -77.45 39.40))')) AS wkb)
+                      TO '{shapes}' (FORMAT parquet)""")
+        up = {"https://www.pearldentalarts.com/": (True, 200), "http://gonzoplumbing.net": (False, "dns")}
+        r = C.run(FIX, shapes, os.path.join(t, "out"), checker=lambda u: up.get(u, (False, 404)), top=2, today="2026-11-22")
+        names = [L["name"] for L in r["leads_list"]]
+        check("d. county search: no-website places with a phone in the county, high-ticket sites that don't load = site_down; chain / church / closed / "
+              "a working site / outside the county dropped", set(names) == {"Gonzo Plumbing", "Zeno Barber Lounge", "Ridge Roofing Co", "Hub City Thrift"}
+              and next(L for L in r["leads_list"] if L["name"] == "Gonzo Plumbing")["web"]["verdict"] == "site_down", names)
+        check("d. ranked by $ (roofing / plumbing first), the top N marked build_site, county file written with the credit, no email",
+              names[:2] == ["Gonzo Plumbing", "Ridge Roofing Co"] and [L["build_site"] for L in r["leads_list"]] == [True, True, False, False]
+              and os.path.exists(os.path.join(t, "out", "howard-county.json")) and "Overture" in json.load(open(os.path.join(t, "out", "howard-county.json")))["license"]
+              and "ridge.example" not in open(os.path.join(t, "out", "howard-county.json")).read(), [(L["name"], L["usd_score"]) for L in r["leads_list"]])
+    check("d. the $ score: roofing > plumbing > dental > beauty > restaurant; site_down and a phone add",
+          V.trade({"category": "roofing"})[0] > V.trade({"category": "plumbing"})[0] > V.trade({"category": "dentist"})[0] > V.trade({"category": "barber"})[0]
+          > V.trade({"category": "thai restaurant"})[0] and V.score({"category": "barber", "phone": "3015550100", "web": {"verdict": "site_down"}})
+          > V.score({"category": "barber"}) and V.trade({"name": "Tasty Thai Kitchen", "category": "thai_restaurant"})[0] == 1)
     # c. the committed results
     import glob
     leads = [x for p in glob.glob(os.path.join(W.TOWNS_DIR, "*.json")) for x in json.load(open(p))["leads"]]

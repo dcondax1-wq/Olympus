@@ -2,7 +2,7 @@
 'use strict';
 const { chromium } = require('playwright'); const http = require('http'), fs = require('fs'), path = require('path');
 const [root, out, ...paths] = process.argv.slice(2);
-const T = { '.html': 'text/html', '.json': 'application/json' };
+const T = { '.html': 'text/html', '.json': 'application/json', '.css': 'text/css', '.js': 'text/javascript', '.png': 'image/png', '.jpg': 'image/jpeg' };
 const srv = http.createServer((q, r) => { let p = path.join(root, decodeURIComponent(q.url.split('?')[0])); if (fs.existsSync(p) && fs.statSync(p).isDirectory()) p += '/index.html';
   if (!p.startsWith(root) || !fs.existsSync(p)) { r.writeHead(404); return r.end(); } r.writeHead(200, { 'content-type': T[path.extname(p)] || 'text/plain' }); fs.createReadStream(p).pipe(r); });
 srv.listen(0, async () => {

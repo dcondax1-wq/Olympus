@@ -604,6 +604,13 @@ def load_leads(only_ready: bool = False):
         except (OSError, ValueError):
             continue
         rows += d.get("leads", []) if isinstance(d, dict) else []
+    # the county search (tools/web_leads_counties.py): only the leads marked build_site (the top N by $ score; repo size)
+    for p in sorted(__import__("glob").glob(os.path.join(ROOT, "research", "web_leads", "counties", "*.json"))):
+        try:
+            d = json.load(open(p, encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        rows += [L for L in (d.get("leads", []) if isinstance(d, dict) else []) if isinstance(L, dict) and L.get("build_site")]
     out, seen = [], set()
     for L in rows:
         if not isinstance(L, dict) or L.get("id") in seen:
@@ -633,6 +640,15 @@ def load_leads(only_ready: bool = False):
     return out
 
 
+def _usd(L):
+    try:
+        from tools import lead_value as V
+    except ImportError:
+        sys.path.insert(0, ROOT)
+        from tools import lead_value as V
+    return V.score(L)
+
+
 def build(web=WEB, ids_path=IDS, write_ids=True):
     leads = load_leads()
     ids = json.load(open(ids_path)) if os.path.exists(ids_path) else {}
@@ -655,7 +671,8 @@ def build(web=WEB, ids_path=IDS, write_ids=True):
         sites.append({"id": L["id"], "path": f"f/{h}/", "name": L["name"].strip(), "niche": n, "kind": sections_of(L, n)[0],
                       "town": (L.get("town") or L.get("city") or "").strip(), "phone": bool(tel(L.get("phone"))),
                       "hours": parse_hours(L.get("hours")) is not None, "bytes": len(txt.encode("utf-8")), "heat": L.get("heat", ""),
-                      "chain": chain_of(L["name"]), "code": codes[L["id"]], "ready": ready(L)})
+                      "chain": chain_of(L["name"]), "code": codes[L["id"]], "ready": ready(L),
+                      "usd": _usd(L), "county": str(L.get("county") or "")})
     for x in os.listdir(fdir):                   # a lead that left the list: its site goes too
         p = os.path.join(fdir, x)
         if x not in keep and os.path.isdir(p) and re.fullmatch(r"[a-z2-9]{8}", x):
@@ -664,7 +681,7 @@ def build(web=WEB, ids_path=IDS, write_ids=True):
         f.write(CSS + "\n")
     with open(os.path.join(fdir, "index.html"), "w", encoding="utf-8") as f:   # no folder listing at agency/f/
         f.write('<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex, nofollow"><title>Not found</title><p>Not found.</p>\n')
-    sites.sort(key=lambda s: (not s["ready"], s["chain"], s["town"], s["niche"], s["name"].lower()))   # sendable first
+    sites.sort(key=lambda s: (not s["ready"], s["chain"], -s["usd"], s["town"], s["name"].lower()))   # sendable, then the biggest $ first
     gdir = os.path.join(web, "factory")
     os.makedirs(gdir, exist_ok=True)
     # lead id -> its concept site, relative to agency/ (the outreach page + email autopilot link each lead to its own site)

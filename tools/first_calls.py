@@ -18,9 +18,11 @@ import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+from tools import lead_value as V  # noqa: E402
 from tools import site_factory as F  # noqa: E402
 
 OUT = os.path.join(F.WEB, "portal", "first100.json")
+OUT_NEXT = os.path.join(F.WEB, "portal", "next500.json")
 WEIGHT = {"trades": 3, "health": 3, "beauty": 2, "auto": 2, "gym": 2, "pro": 2, "services": 1, "food": 1, "retail": 0.5}
 PORTAL_NICHE = {"gym": "fitness", "trades": "trades", "services": "home", "pro": "other"}   # the portal's niche words
 
@@ -58,10 +60,9 @@ def weekday_open_days(hours: str) -> int:
 
 
 def score(L: dict, s: dict) -> tuple:
+    """the $ score (tools/lead_value.py: high-ticket trades first, a phone, site_down, a storefront) + open in calling hours"""
     od = weekday_open_days(L.get("hours"))
-    pts = (3 if L.get("heat") == "hot" else 1 if L.get("heat") == "warm" else 0) + (2 if od >= 4 else 1 if od else 0) \
-        + WEIGHT.get(s["niche"], 1) + (1 if F.ready(L) else 0)
-    return pts, od
+    return V.score(L) + (5 if od >= 4 else 2 if od else 0), od
 
 
 OPENER = {
@@ -91,7 +92,7 @@ def blocked() -> tuple:
     return ids, phones
 
 
-def build(n: int = 100) -> dict:
+def build(n: int = 100, skip: int = 0) -> dict:
     sites = {s["id"]: s for s in json.load(open(os.path.join(F.WEB, "factory", "sites.json"), encoding="utf-8"))["sites"]}
     rows, (never, dnc) = [], blocked()
     for L in F.load_leads():
@@ -101,19 +102,21 @@ def build(n: int = 100) -> dict:
             continue
         lane = "site_down" if (L.get("web") or {}).get("verdict") == "site_down" else "no_site"
         pts, od = score(L, s)
-        why = [w for w, ok in (("hot lead", L.get("heat") == "hot"), (f"open {od} weekdays in calling hours", od > 0),
-                               (F.NICHES[s["niche"]]["label"].lower() + " (buys sites)", WEIGHT.get(s["niche"], 1) >= 2),
+        tv, tl = V.trade(L)
+        why = [w for w, ok in (("high-ticket trade: " + tl, tv >= 7), ("website is down", lane == "site_down"), ("hot lead", L.get("heat") == "hot"),
+                               (f"open {od} weekdays in calling hours", od > 0),
                                ("storefront address", F.ready(L) and bool(L.get("address")))) if ok]
         rows.append({"id": L["id"], "name": s["name"][:80], "phone": ph[-10:], "town": s["town"][:40], "state": str(L.get("state") or "MD")[:2].upper(),
                      "niche": PORTAL_NICHE.get(s["niche"], s["niche"]), "kind": s["kind"][:40], "code": s.get("code", ""), "site": s["path"],
-                     "heat": str(L.get("heat") or ""), "score": round(pts, 1), "open_weekdays": od, "why": why,
+                     "heat": str(L.get("heat") or ""), "score": round(pts, 1), "open_weekdays": od, "why": why, "trade": tl,
+                     "county": str(L.get("county") or ""),
                      "lane": lane, "opener": OPENER[lane].format(name=s["name"][:80]), "src": "overture" if L.get("source") == "overture" or L.get("phone_src") == "overture" else "osm"})
     nophone = sum(1 for L in F.load_leads() if len(re.sub(r"\D", "", str(L.get("phone") or ""))) not in (10, 11))
     rows.sort(key=lambda r: (-r["score"], -r["open_weekdays"], r["town"], r["name"].lower()))
-    rows = rows[:n]
-    for i, r in enumerate(rows, 1):
+    rows = rows[skip:skip + n]
+    for i, r in enumerate(rows, skip + 1):
         r["rank"] = i
-    return {"v": 1, "kind": "caller-portal-list", "list": "first-100", "built": time.strftime("%Y-%m-%d"), "count": len(rows),
+    return {"v": 1, "kind": "caller-portal-list", "list": "first-100" if not skip else f"next-{n}", "built": time.strftime("%Y-%m-%d"), "count": len(rows),
             "note": "public map data only; ranked: hot, open in calling hours, trade, storefront. A person dials; never an auto-dialer. "
                     "Lanes: no_site (we built you one) / site_down (your website is down). Leads with a working site are not here (agency/leads/redesign.json).",
             "credit": "Data (c) OpenStreetMap contributors (ODbL) and Overture Maps Foundation (CDLA-Permissive-2.0 / ODbL), overturemaps.org",
@@ -126,6 +129,10 @@ def main(argv) -> int:
     doc = build(n)
     with open(OUT, "w", encoding="utf-8") as f:
         json.dump(doc, f, indent=1)
+        f.write("\n")
+    nxt = build(500, skip=n)                     # the 'next 500' (ranks n+1 .. n+500), same format
+    with open(OUT_NEXT, "w", encoding="utf-8") as f:
+        json.dump(nxt, f, separators=(",", ":"))
         f.write("\n")
     top = doc["leads"][:3]
     print(f"first calls: {doc['count']} in {os.path.relpath(OUT, ROOT)}; top: " + "; ".join(f"{r['name']} ({r['town']}, {r['score']})" for r in top))
