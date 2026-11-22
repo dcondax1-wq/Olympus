@@ -1,0 +1,263 @@
+{
+ "atlas_top5_h2_days": [
+  "2026-07-15",
+  "2026-07-24",
+  "2026-08-04",
+  "2026-08-07",
+  "2026-10-02"
+ ],
+ "rows": {
+  "mffu_rapid_eod_50k | B11 size split: LIT x0.5 in the eval": {
+   "H1": {
+    "net_6m": 29506,
+    "today_6m": 5883,
+    "diff_6m": 23623,
+    "se": 406,
+    "p_worse": 3.1
+   },
+   "H2": {
+    "net_6m": 13227,
+    "today_6m": 5141,
+    "diff_6m": 8086,
+    "se": 229,
+    "p_worse": 16.6
+   },
+   "REF": {
+    "net_6m": -529,
+    "today_6m": -374,
+    "diff_6m": -156,
+    "se": 32,
+    "p_worse": 79.7
+   },
+   "Y2022": {
+    "net_6m": -245,
+    "today_6m": 535,
+    "diff_6m": -781,
+    "se": 62,
+    "p_worse": 89.2
+   },
+   "H2_no_atlas_top5": {
+    "net_6m": 4476,
+    "today_6m": 4362,
+    "diff_6m": 114,
+    "se": 136
+   }
+  },
+  "mffu_rapid_eod_50k | B09 LIT eval, LIT + ATLAS once funded": {
+   "H1": {
+    "net_6m": 15745,
+    "today_6m": 5883,
+    "diff_6m": 9862,
+    "se": 414,
+    "p_worse": 31.6
+   },
+   "H2": {
+    "net_6m": 9075,
+    "today_6m": 5141,
+    "diff_6m": 3933,
+    "se": 205,
+    "p_worse": 35.6
+   },
+   "REF": {
+    "net_6m": -196,
+    "today_6m": -374,
+    "diff_6m": 178,
+    "se": 26,
+    "p_worse": 13.0
+   },
+   "Y2022": {
+    "net_6m": 178,
+    "today_6m": 535,
+    "diff_6m": -357,
+    "se": 58,
+    "p_worse": 38.5
+   },
+   "H2_no_atlas_top5": {
+    "net_6m": 3791,
+    "today_6m": 4362,
+    "diff_6m": -571,
+    "se": 117
+   }
+  },
+  "mffu_rapid_eod_50k | B03 LIT + ATLAS first-come": {
+   "H1": {
+    "net_6m": 30010,
+    "today_6m": 5883,
+    "diff_6m": 24127,
+    "se": 409,
+    "p_worse": 2.5
+   },
+   "H2": {
+    "net_6m": 13691,
+    "today_6m": 5141,
+    "diff_6m": 8549,
+    "se": 225,
+    "p_worse": 14.3
+   },
+   "REF": {
+    "net_6m": -560,
+    "today_6m": -374,
+    "diff_6m": -186,
+    "se": 36,
+    "p_worse": 86.8
+   },
+   "Y2022": {
+    "net_6m": -151,
+    "today_6m": 535,
+    "diff_6m": -687,
+    "se": 67,
+    "p_worse": 89.7
+   },
+   "H2_no_atlas_top5": {
+    "net_6m": 5098,
+    "today_6m": 4362,
+    "diff_6m": 736,
+    "se": 135
+   }
+  },
+  "mffu_builder_50k | B08 ATLAS x0.5 in the eval, full funded": {
+   "H1": {
+    "net_6m": 6962,
+    "today_6m": 5883,
+    "diff_6m": 1079,
+    "se": 92,
+    "p_worse": 38.6
+   },
+   "H2": {
+    "net_6m": 7007,
+    "today_6m": 5141,
+    "diff_6m": 1866,
+    "se": 61,
+    "p_worse": 13.8
+   },
+   "REF": {
+    "net_6m": -334,
+    "today_6m": -374,
+    "diff_6m": 40,
+    "se": 21,
+    "p_worse": 20.1
+   },
+   "Y2022": {
+    "net_6m": -53,
+    "today_6m": 535,
+    "diff_6m": -589,
+    "se": 41,
+    "p_worse": 49.9
+   },
+   "H2_no_atlas_top5": {
+    "net_6m": 4284,
+    "today_6m": 4362,
+    "diff_6m": -78,
+    "se": 62
+   }
+  },
+  "mffu_builder_50k | B05 time split: ATLAS NY only (from 09:30)": {
+   "H1": {
+    "net_6m": 6956,
+    "today_6m": 5883,
+    "diff_6m": 1072,
+    "se": 100,
+    "p_worse": 38.2
+   },
+   "H2": {
+    "net_6m": 5604,
+    "today_6m": 5141,
+    "diff_6m": 462,
+    "se": 55,
+    "p_worse": 34.7
+   },
+   "REF": {
+    "net_6m": -199,
+    "today_6m": -374,
+    "diff_6m": 175,
+    "se": 21,
+    "p_worse": 11.8
+   },
+   "Y2022": {
+    "net_6m": 250,
+    "today_6m": 535,
+    "diff_6m": -286,
+    "se": 40,
+    "p_worse": 39.4
+   },
+   "H2_no_atlas_top5": {
+    "net_6m": 5604,
+    "today_6m": 4362,
+    "diff_6m": 1242,
+    "se": 56
+   }
+  },
+  "mffu_builder_50k | B09 LIT eval, LIT + ATLAS once funded": {
+   "H1": {
+    "net_6m": 5357,
+    "today_6m": 5883,
+    "diff_6m": -526,
+    "se": 77,
+    "p_worse": 55.9
+   },
+   "H2": {
+    "net_6m": 6494,
+    "today_6m": 5141,
+    "diff_6m": 1353,
+    "se": 64,
+    "p_worse": 21.0
+   },
+   "REF": {
+    "net_6m": -204,
+    "today_6m": -374,
+    "diff_6m": 170,
+    "se": 20,
+    "p_worse": 11.2
+   },
+   "Y2022": {
+    "net_6m": 16,
+    "today_6m": 535,
+    "diff_6m": -520,
+    "se": 40,
+    "p_worse": 37.5
+   },
+   "H2_no_atlas_top5": {
+    "net_6m": 4273,
+    "today_6m": 4362,
+    "diff_6m": -88,
+    "se": 56
+   }
+  },
+  "mffu_builder_50k | B03 LIT + ATLAS first-come": {
+   "H1": {
+    "net_6m": 7253,
+    "today_6m": 5883,
+    "diff_6m": 1370,
+    "se": 93,
+    "p_worse": 35.4
+   },
+   "H2": {
+    "net_6m": 7371,
+    "today_6m": 5141,
+    "diff_6m": 2230,
+    "se": 65,
+    "p_worse": 11.5
+   },
+   "REF": {
+    "net_6m": -574,
+    "today_6m": -374,
+    "diff_6m": -201,
+    "se": 24,
+    "p_worse": 88.0
+   },
+   "Y2022": {
+    "net_6m": -251,
+    "today_6m": 535,
+    "diff_6m": -786,
+    "se": 43,
+    "p_worse": 89.1
+   },
+   "H2_no_atlas_top5": {
+    "net_6m": 4299,
+    "today_6m": 4362,
+    "diff_6m": -63,
+    "se": 66
+   }
+  }
+ }
+}
