@@ -366,8 +366,16 @@ def build_pc(rig, day: str, F: Findings, quiet=True) -> dict:
 # $ cap, the soft daily loss, max micros). Builder evals: LIT two_week = 40% of the room (owner: "yes 40%", 25K = the same
 # rule since 2026-11-17); funded 25K ATLAS: 60% of the room <= $750 (engine/account_b.funded_qty on the 25K funded preset);
 # Rapid 25K: LIT two_week on $1,500 / $1,000 / 20 micros + soft $500 day, ATLAS min($250, 30% of the room).
+def atlas_funded_share() -> float:
+    """The room share ATLAS's funded 25K really sizes with: the live switch (engine/account_b.FUNDED_ON "funded_room_pct",
+    owner YES 2026-11-20: 0.4) else the 25K funded preset's 0.6 (day-monday 2026-11-22: the check said 0.6 after the switch)."""
+    from engine import account_b as _AB
+    v = (_AB.FUNDED_ON or {}).get("funded_room_pct")
+    return float(v) if v is not None else 0.6
+
+
 PLAN_CAPS = {"Zlarior 50K (main)": (0.4, None, 1000.0, 40), "Zlarior 25K #2 (b25k_2)": (0.4, None, 600.0, 20),
-             "ATLAS funded 25K (B)": (0.6, 750.0, 600.0, 20), "Rapid 25K LIT lane": (0.4, None, 500.0, 20),
+             "ATLAS funded 25K (B)": (atlas_funded_share(), 750.0, 600.0, 20), "Rapid 25K LIT lane": (0.4, None, 500.0, 20),
              "Rapid 25K ATLAS lane": (0.3, 250.0, 500.0, 20),
              "Rapid 50K LIT lane": (0.4, None, 1000.0, 30), "Rapid 50K ATLAS lane": (0.3, 500.0, 1000.0, 30)}
 BOOK = {"Zlarior 50K (main)": "50k", "Zlarior 25K #2 (b25k_2)": "25k2", "ATLAS funded 25K (B)": "f25",
