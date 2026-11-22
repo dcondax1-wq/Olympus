@@ -140,7 +140,7 @@ function slim(j) {                          // what Jarvis needs, also kept for 
   const bz = HIDB() ? null : b.blitz && !b.blitz.error ? b.blitz : j && j.blitz && !j.blitz.error ? j.blitz : null;
   const num = (x) => (x == null || x === '' || !Number.isFinite(+x) ? null : +x);
   const trades = (Array.isArray(b.trades) ? b.trades : []).filter((x) => !(x && x.acct === 'blitz' && HIDB())).slice(-8).map((x) => x && ({ acct: x.acct, side: x.side, qty: x.qty, exit: x.exit, usd: num(x.usd), r: num(x.r),
-    entry_t: x.entry_t, exit_t: x.exit_t, open: !!x.open, day: x.day })).filter(Boolean);
+    entry_t: x.entry_t, exit_t: x.exit_t, open: !!x.open, day: x.day, src: x.src === 'paper' ? 'paper' : undefined, member: typeof x.member === 'string' ? x.member.slice(0, 12) : undefined })).filter(Boolean);
   const health = (b.health && Array.isArray(b.health.items) ? b.health.items : []).slice(0, 8).map((x) => x && ({ key: x.key, label: x.label, value: x.value, ok: x.ok, warn: !!x.warn, detail: x.detail })).filter(Boolean);
   const lines = (Array.isArray(b.lines) ? b.lines : []).slice(0, 4).map((x) => x && ({ level: x.level, text: x.text })).filter((x) => x && x.text);
   // the PC's own health (live.json "pc_health", engine/live_publish.pc_health_summary): CPU / RAM / disk / NinjaTrader lines
@@ -332,11 +332,15 @@ export function kalshiRetry() { K.n404 = 0; return kalshiFetch(true); }
 export function refreshKalshi() { return kalshiBackedOff() ? (K.at = Date.now(), Promise.resolve()) : kalshiFetch(); }
 // the PC feed carries Kalshi (its paper tests or the K8 live card): then the PC is Kalshi's source and nothing else is asked
 const pcHasKalshi = () => { const v = liveView(); return !!(v && !v.cached && (isObj(v.kpaper) || isObj(v.klive))); };
+// wait for the live read (the PC feed) before asking the site copy only when it may carry Kalshi: a fresh view is there (a refresh), or
+// the last view this phone saw had Kalshi from the PC. With no view yet (a first open) or a saved one without Kalshi, the site copy is
+// asked at once, next to the live read (night-jarvisfix 2026-11-20: waiting left the Kalshi card on "Loading Kalshi…" 2-5 s behind the bots)
+const pcMayCarryKalshi = () => { const v = liveView(); return !!(v && (!v.cached || isObj(v.kpaper) || isObj(v.klive))); };
 function kalshiFetch(force) {
   if (K.busy) return K.busy;
   K.busy = (async () => {
     try {
-      try { await (L.busy || Promise.resolve()); await pcFeedReady(); } catch (_) { /* the PC feed is optional */ }
+      if (pcMayCarryKalshi()) { try { await (L.busy || Promise.resolve()); await pcFeedReady(); } catch (_) { /* the PC feed is optional */ } }
       if (!force && pcHasKalshi()) { K.state = 'waiting'; K.n404++; K.at = Date.now(); K.busy = null; emit('kalshi'); return; }
       let lr = null, lj = null;             // this site's own copy (pc_publish puts the feed next to the pages); HTML or junk = not published
       try { lr = await get(URLS.kalshiLocal + '?t=' + Math.floor(Date.now() / 60000), { cache: 'no-cache' }); } catch (_) { lr = null; }

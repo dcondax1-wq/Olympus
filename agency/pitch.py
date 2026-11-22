@@ -62,10 +62,9 @@ def main_problem(lead: dict):
 
 
 def recommend(lead: dict, cfg: dict) -> dict:
-    """High-value trades (value >= 9: roofers, plumbers, HVAC, dentists, auto repair) get the Growth package; others Starter."""
-    cat = C.BY_KEY.get(lead.get("category"))
-    pid = "growth" if cat and cat.value >= 9 else "starter"
-    return CFG.package(cfg, pid)
+    """One price book (agency/pricebook.json, 2026-11-21): every concept-site pitch sells the Starter site ($1,500 + $79 a month, or $149
+    a month with nothing upfront). The Call engine and 3D Signature are offered by the owner on the call, never in a cold pitch."""
+    return CFG.package(cfg, "starter")
 
 
 def context(lead: dict, cfg: dict, demo_url: str) -> dict:

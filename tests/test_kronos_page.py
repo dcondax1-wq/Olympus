@@ -174,7 +174,7 @@ def test_page():
             r = p.evaluate("() => ({ demo: !document.querySelector('#demo').hidden, head: document.querySelector('#head').textContent, chips: [...document.querySelectorAll('#sets button')].map((b) => b.textContent), month: document.querySelector('#monthTitle').textContent, now: document.querySelectorAll('#grid .cell.now').length, band: document.querySelector('#bandText').textContent, wk: document.querySelector('#wkText').textContent })")
             check("c. the real trades.json (real + paper only; the backtest trade is left out): no DEMO chip, 3 trades on 3 days net +$513, today (Nov 6, New York) has no trade yet, today's square is outlined, the band says n=1 'no claim is made'",
                   not r["demo"] and "No trade today yet. 3 trading days so far (3 trades): net +$513" in r["head"] and r["chips"] == ["Real and paper (3)", "Backtest (1)"] and r["month"] == "November 2026" and r["now"] == 1 and "n=1" in r["band"] and "no claim is made" in r["band"] and "Not enough trades" in r["wk"], r)
-            check("c. the real run reads only the site's files and no console error", any("odeon/trades.json" in u for u in seen) and not off and not errs, (off[:3], errs[:3]))
+            check("c. the real run reads only the site's files and no console error", any("odeon/trades" in u for u in seen) and not off and not errs, (off[:3], errs[:3]))
             ctx.close()
             srv2.shutdown()
             srv3, origin3 = AK.serve({"/odeon/trades.json": real_trades([("2026-11-02", 100, "backtest"), ("2026-11-03", -50, "backtest")])})

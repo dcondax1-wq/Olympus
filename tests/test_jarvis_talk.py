@@ -213,6 +213,9 @@ def page(br, url, name, ios, voices=True, device=None):
     # the scheduled bot cards (01:45 plan, 09:15 pre-market, 15:55 end, 16:05 recap) are spoken by the same voice when the test happens to run in their hour:
     # they are switched off here so the checks do not depend on the time of day (their own tests: test_jarvis_bots.py)
     ctx.add_init_script("try { localStorage.setItem('jarvis.bots.set', JSON.stringify({ on: true, plan: false, recap: false, rituals: false })); } catch (e) {}")
+    # the morning briefing (once a day from 07:00 ET) and the spoken alerts talk on their own: off here, like the bots' rituals above, so what
+    # is said is only what the test asked (day-jarvis 2026-11-20: they made the 'said first' checks depend on the time of day)
+    ctx.add_init_script("try { localStorage.setItem('jarvis.alerts.v1', JSON.stringify({ speak: false, brief: false, quiet: false, from: '22:00', to: '07:00' })); } catch (e) {}")
     ctx.add_init_script(MOCK)
     p = ctx.new_page()
     errs = []
@@ -291,13 +294,15 @@ def run(br, url, name, ios, device=None):
         p.locator(".stagebox").screenshot(path=os.path.join(SHOTS, "talk_speaking_iphone13.png"))
         p.locator("#dock").screenshot(path=os.path.join(SHOTS, "talk_dock_iphone13.png"))
     c0 = p.evaluate("window.__cancels")
-    p.click("#stage", position={"x": 40, "y": 40})
+    # the middle of the core, where the owner taps: (40, 40) is on the satellites' orbit, so a passing system dot (its own button) took the
+    # tap now and then (day-jarvis 2026-11-20: the flaky red)
+    p.click("#stage")
     p.wait_for_timeout(250)
     st = p.evaluate("[window.__cancels, window.__jarvis.state(), window.__jarvis.voice().speaking, speechSynthesis.speaking]")
     check(f"{tag} a tap on the core stops her at once (cancelled, not speaking, not listening)", st[0] > c0 and st[1] in ("idle", "listening") and not st[2] and not st[3], st)
     p.evaluate("window.__ttsStep = 25")
     if st[1] == "listening":
-        p.click("#stage", position={"x": 40, "y": 40})
+        p.click("#stage")                           # the middle of the core (see above)
     idle(p)
     # 5. the dock's speaker: off is kept, nothing said; on says so
     p.click("#spk")
@@ -329,8 +334,9 @@ def run(br, url, name, ios, device=None):
     # 7. the mic and hands-free still work
     p.evaluate("window.__said = []; window.__utter = 'is the market open'")
     p.click("#bigmic")
-    p.wait_for_function("window.__said.length >= 1", timeout=10000)
-    check(f"{tag} the mic: tap, heard, answered out loud", "market" in said(p)[0].lower(), said(p))
+    # the answer itself, not whatever was said first: a bot alert (bots.js) may speak in between, which is right (day-jarvis 2026-11-20)
+    p.wait_for_function("window.__said.some((x) => /market/i.test(x.text))", timeout=10000)
+    check(f"{tag} the mic: tap, heard, answered out loud", any("market" in x.lower() for x in said(p)), said(p))
     idle(p)
     n0 = p.evaluate("window.__srStarts")
     p.click("#hf")

@@ -65,7 +65,7 @@ def part_a():
     check("a. every file of the page is there", all(os.path.isfile(os.path.join(PAGE, n)) for n in need), [n for n in need if not os.path.isfile(os.path.join(PAGE, n))])
     html = read(os.path.join(PAGE, "index.html"))
     check("a. the OLYMPUS kit ?v=o2 (css, themes, olympus.js with data-app=cities), module app, manifest, icon",
-          'olympus.css?v=o7' in html and 'themes.js?v=o8' in html and 'olympus.js?v=o13" data-app="cities"' in html and 'type="module"' in html
+          'olympus.css?v=o7' in html and 'themes.js?v=o11' in html and 'olympus.js?v=o24" data-app="cities"' in html and 'type="module"' in html
           and 'rel="manifest"' in html and 'icon.svg' in html)
     check("a. phone viewport with safe areas, theme-color, dark scheme, reduced motion", 'viewport-fit=cover' in html and 'name="theme-color"' in html
           and 'safe-area-inset-bottom' in html and 'prefers-reduced-motion' in html and 'color-scheme' in html)
@@ -1427,6 +1427,9 @@ def hrest(p):
     hframes(p, 3)
 
 
+NO_KIT = "**/olympus/people.js*"   # the shared People kit (cities/people-talk.js loadKit imports it when it is on the site)
+
+
 def sec_l(br, base, C, days, picks, ids):
     """Hellas in Chromium at 390 x 844: the honest counter, budgets at every level (measured), streaming, levels and crumbs, search, voyage, walking, the map, fallbacks."""
     errs = []
@@ -1435,6 +1438,11 @@ def sec_l(br, base, C, days, picks, ids):
     HN = "({ calls: window.__hellas.calls(), tris: window.__hellas.tris() })"
     for q in ("high", "low"):
         ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2 if q == "high" else 1, has_touch=True, is_mobile=True)
+        # night-polish 2026-11-20: these contexts test OUR chat (keeper, townspeople, Talk in walk mode), so the shared People kit is kept off,
+        # as their words say ("no kit loaded"). The page loads olympus/people.js whenever it is on the site, and since the kit answers ANY
+        # keeper:<polis-id> / villager:<app-id> it took every talk: our card stayed hidden and the keeper check crashed on a null <h3>.
+        # The kit path keeps its own checks below (a stubbed OLYMPUS_PEOPLE).
+        ctx.route(NO_KIT, lambda r: r.abort())
         p = ctx.new_page()
         p.on("pageerror", lambda e: errs.append(str(e)))
         p.on("console", lambda m: errs.append(m.text) if m.type == "error" and "Failed to load resource" not in m.text else None)
@@ -1555,6 +1563,7 @@ def sec_l(br, base, C, days, picks, ids):
         p.evaluate("(() => { const W = window.__hellas.world; window.__big = W.poleis.filter((c) => c.src === 'archive' && !c.ruin).sort((a, b) => b.rows.length - a.rows.length)[0]; window.__hellas.ui.enter(window.__big); })()")
         p.wait_for_function("window.__hellas.ui.at.polis", timeout=120000)
         hrest(p)
+        g1e = p.evaluate("window.__hellas.scene.renderer.info.memory.geometries")      # the first polis as it opens (compared with the second as it opens)
         o["polis"] = p.evaluate(HN)
         o["houses"] = p.evaluate("window.__hellas.scene.plan.houses.length")
         o["npcs"] = p.evaluate("(window.__hellas.scene.npcs || []).length")
@@ -1675,7 +1684,9 @@ def sec_l(br, base, C, days, picks, ids):
         check(f"l. walking inside a polis ({q}): eye height 1.7 m, the dock gives way to the walk bar, the walker moves and never ends inside a house, the line says where you are, the left-thumb stick walks, Stop returns to the city card",
               w0["on"] and w0["cls"] and abs(w0["eye"] - 1.7) < .2 and w0["dock"] == "none" and w0["bar"] == "flex" and w1["dist"] > 3 and not w1["hit"] and len(w1["where"]) > 5 and stick == 0 and not w2["on"] and not w2["cls"] and w2["card"],
               {"w0": w0, "w1": w1, "w2": w2, "stick": stick})
-        # streaming: a second polis replaces the first (no geometry pile-up), leaving frees it
+        # streaming: a second polis replaces the first (no geometry pile-up), leaving frees it. night-polish 2026-11-20: the second polis as it opens
+        # is compared with the first as it opened (g1e), and never above the first after all the talking and walking (g1): the talk and walk
+        # figures live while you are in a polis (g1 was 4 above a freshly opened polis: [17, 24, 20, 17]) and go when you leave (g3)
         g1 = p.evaluate("window.__hellas.scene.renderer.info.memory.geometries")
         p.evaluate("(() => { const W = window.__hellas.world, c = W.poleis.filter((x) => x.src === 'datacity').sort((a, b) => b.rows.length - a.rows.length)[0]; window.__hellas.ui.showPolis(c); window.__hellas.ui.enter(c); })()")
         p.wait_for_function("window.__hellas.ui.at.polis && window.__hellas.ui.at.polis.src === 'datacity'", timeout=120000)
@@ -1694,11 +1705,11 @@ def sec_l(br, base, C, days, picks, ids):
         hrest(p)
         g3 = p.evaluate("window.__hellas.scene.renderer.info.memory.geometries")
         o["back"] = p.evaluate(HN)
-        o["geo"] = [g0, g1, g2, g3]
+        o["geo"] = [g0, g1e, g1, g2, g3]
         o["streams"] = p.evaluate("window.__hellas.scene.streams")
         st = p.evaluate("({ level: window.__hellas.scene.level, pg: !!window.__hellas.scene.pg, plan: !!window.__hellas.scene.plan, crumbs: document.querySelectorAll('.hel-crumbs button').length })")
         check(f"l. streaming ({q}): one polis at a time: the second polis replaces the first (GPU geometries do not pile up) and leaving frees it; back on the world the crumbs say Hellas only",
-              o["streams"] == (3 if q == "high" else 2) and abs(g2 - g1) <= 2 and g3 <= g0 + 2 and st["level"] == "world" and not st["pg"] and not st["plan"] and st["crumbs"] == 1, {"geo": o["geo"], "st": st})
+              o["streams"] == (3 if q == "high" else 2) and abs(g2 - g1e) <= 2 and g2 <= g1 + 2 and g3 <= g0 + 2 and st["level"] == "world" and not st["pg"] and not st["plan"] and st["crumbs"] == 1, {"geo": o["geo"], "st": st})
         if q == "high":
             p.evaluate("window.__hellas.ui.toggleMap()")
             p.wait_for_timeout(250)
@@ -1711,13 +1722,18 @@ def sec_l(br, base, C, days, picks, ids):
             p.evaluate("window.__hellas.ui.startVoyage()")
             hrest(p)
             v1 = p.evaluate("({ on: !!window.__hellas.ui.voy, n: window.__hellas.ui.voy.stops.length, card: document.querySelector('.hel-card').textContent, sel: window.__hellas.ui.at.sel.id, timer: !!window.__hellas.ui.voy.timer, btn: document.querySelector('.hel-dock button:nth-child(2)').classList.contains('on') })")
+            # the stop-1 wait is proven armed (v1 timer); it is let go now, because under software GL the screenshot can outlast its 7 s and the
+            # voyage moved on by itself before Next was pressed (stop 3 was read, night-polish 2026-11-20)
+            p.evaluate("clearTimeout(window.__hellas.ui.voy.timer)")
             hshot(p, "hellas_390x844_voyage.png")
             p.evaluate("window.__hellas.ui.voyNext()")
-            hrest(p)
+            # read stop 2 as the camera arrives: the voyage moves on by itself 7 s after each arrival, and under software GL hrest's 3 extra
+            # frames could take longer than that (stop 3 was read, night-polish 2026-11-20)
+            p.wait_for_function("!window.__hellas.scene.fly", timeout=120000)
             v2 = p.evaluate("({ sel: window.__hellas.ui.at.sel.id, card: document.querySelector('.hel-card').textContent })")
             p.evaluate("window.__hellas.ui.stopVoyage()")
             check("l. the random voyage: six stops, 'Voyage stop 1 of 6' with Next / Enter / End, it moves on by itself and Next flies to another city",
-                  v1["on"] and v1["n"] == 6 and "Voyage stop 1 of 6" in v1["card"] and "Next stop" in v1["card"] and v1["timer"] and v1["btn"] and v2["sel"] != v1["sel"] and "Voyage stop 2 of 6" in v2["card"], {"v1": {k: v for k, v in v1.items() if k != "card"}, "v2": v2["sel"]})
+                  v1["on"] and v1["n"] == 6 and "Voyage stop 1 of 6" in v1["card"] and "Next stop" in v1["card"] and v1["timer"] and v1["btn"] and v2["sel"] != v1["sel"] and "Voyage stop 2 of 6" in v2["card"], {"v1": {k: v for k, v in v1.items() if k != "card"}, "v2": v2["sel"], "v2card": v2["card"][:120]})
             # ships sail the trade routes
             s0 = p.evaluate("(() => { const m = window.__hellas.scene.ships; return [m.count, m.instanceMatrix.array[12], m.instanceMatrix.array[14]]; })()")
             hframes(p, 6)
@@ -1818,6 +1834,7 @@ def sec_l(br, base, C, days, picks, ids):
     ctx.close()
     # Athens without the kit: figures, own chat on the villager card, people strip and Talk in walk mode
     ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, has_touch=True, is_mobile=True)
+    ctx.route(NO_KIT, lambda r: r.abort())       # without the kit, as it says (the real kit answers every villager:<app-id>)
     p = ctx.new_page()
     p.on("pageerror", lambda e: errs2.append(str(e)))
     p.goto(base + "?athens=1&first=0&q=high&light=day", wait_until="domcontentloaded")

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en" data-theme="agora" data-oly-page="steps">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Your steps</title>
+<meta name="description" content="Your steps: what you still have to do, in order, with where, why in dollars or safety, and the exact line to type or tap.">
+<meta name="theme-color" content="#000000">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Steps">
+<link rel="icon" href="icon.svg">
+<!-- YOUR STEPS (2026-11-20; owner: "I am tired of repeating myself"). Data: steps.json; steps.js draws it with textContent only; Done ticks live in this phone's localStorage. Public page: no ids, no addresses (<your PC link>). Read only. -->
+<script>/* the OLYMPUS look from the first frame (olympus/themes.js FIRST PAINT, the same copy as the hubs: the look this page gets, from the engine's copy).
+   day-manual NAV 2026-11-20: the same copy as the Doors, so this page follows the look too (it stayed dark under Ivory). */
+(function (P, W) { try {
+  var d = document.documentElement, ls = window.localStorage, g = ls.getItem('olympus.theme') || 'agora', m = JSON.parse(ls.getItem('olympus.themeMix') || 'null'), on = [], k;
+  if (g === 'olympus' && ls.getItem('olympus.theme.v') !== '2') g = 'agora';
+  if (m) { var dd = (m.of && m.of[P]) || (P === 'today' ? 'trading' : ''); g = (m.app && m.app[P]) || (dd && m.district && m.district[dd]) || g; }
+  var c = g === 'agora' ? null : JSON.parse(ls.getItem('olympus.theme.look.' + W + '.' + g) || 'null');
+  if (!c || !c.vars) return;
+  for (k in c.vars) { d.style.setProperty(k, c.vars[k]); on.push(k); }
+  d.setAttribute('data-oly-theme', g); d.setAttribute('data-oly-scheme', c.scheme === 'light' ? 'light' : 'dark'); if (c.style) d.setAttribute('data-oly-style', c.style);
+  window.__olyPaint = on;
+  var mt = document.querySelector('meta[name="theme-color"]'); if (mt && c.meta) { mt.setAttribute('data-oly-own', mt.getAttribute('content') || ''); mt.setAttribute('content', c.meta); }
+} catch (e) { return; } })(document.documentElement.getAttribute('data-oly-page') || 'hub', 'page');</script>
+<script>/* OLYMPUS NIGHT from the first frame while nothing is chosen (kit, day-arenas 2026-11-20) */(function(){try{var ls=window.localStorage,v=ls.getItem('olympus.theme'),d=document.documentElement,k,on=window.__olyPaint||[];if((v&&v!=='agora')||ls.getItem('olympus.theme.night')==='1'||ls.getItem('olympus.themeMix')||(window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches))return;var c=JSON.parse(ls.getItem('olympus.theme.look.page.night')||'null');if(!c||!c.vars)return;for(k in c.vars){d.style.setProperty(k,c.vars[k]);on.push(k);}d.setAttribute('data-oly-theme','night');d.setAttribute('data-oly-scheme','dark');if(c.style)d.setAttribute('data-oly-style',c.style);window.__olyPaint=on;}catch(e){}})();</script>
+<link rel="stylesheet" href="../olympus/agora.css?v=a11">
+<style>
+html, body { background: var(--ag-night, #14110e); color: var(--ag-text, #f3ece0); margin: 0; }
+body { font: 400 var(--ag-fs-body, .9375rem)/1.45 var(--ag-sans, -apple-system, system-ui, sans-serif); -webkit-text-size-adjust: 100%; }
+.st-main { max-width: 640px; margin: 0 auto; padding: calc(12px + env(safe-area-inset-top, 0px)) 16px calc(40px + env(safe-area-inset-bottom, 0px)); box-sizing: border-box; }
+.st-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.st-nav a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 12px; color: var(--ag-soft, #cfc4b2); text-decoration: none; border: 1px solid var(--ag-line, #3a3228); }
+.st-title { margin: 14px 0 2px; font: 700 var(--ag-fs-h1, 1.875rem)/1.1 var(--ag-serif, Georgia, serif); color: var(--ag-gold-hi, #dcbd6e); }
+.st-sub { margin: 0 0 6px; color: var(--ag-soft, #cfc4b2); }
+.st-count { margin: 0 2px 10px; color: var(--ag-gold-hi, #dcbd6e); font-weight: 700; }
+.st-list { display: grid; gap: 12px; }
+.st-card { border-radius: 14px; padding: 14px; background: var(--ag-s2, #221d17); border: 1px solid var(--ag-line, #3a3228); border-left: 3px solid var(--ag-gold, #c8a24a); }
+.st-card.is-done { opacity: .55; border-left-color: var(--ag-olive-text, #a0ac6e); }
+.st-head { display: flex; gap: 12px; align-items: flex-start; }
+.st-n { flex: none; width: 34px; height: 34px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--ag-gold, #c8a24a); color: var(--ag-on-gold, #1b1610); font-weight: 800; }
+.st-t { min-width: 0; flex: 1; }
+.st-t h2 { margin: 0; font: 700 var(--ag-fs-lead, 1.0625rem)/1.25 var(--ag-serif, Georgia, serif); overflow-wrap: anywhere; }
+.st-what { margin: 4px 0 0; color: var(--ag-soft, #cfc4b2); }
+.st-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; }
+.st-tag { padding: 4px 10px; border-radius: 999px; border: 1px solid var(--ag-line, #3a3228); color: var(--ag-soft, #cfc4b2); font-size: .8125rem; }
+.st-where { border-color: var(--ag-gold, #c8a24a); color: var(--ag-gold-hi, #dcbd6e); font-weight: 700; }
+.st-why { margin: 10px 0 0; padding: 8px 10px; border-radius: 10px; background: var(--ag-s1, #1b1713); color: var(--ag-soft, #cfc4b2); overflow-wrap: anywhere; }
+.st-why b { color: var(--ag-gold-hi, #dcbd6e); }
+.st-steps { margin: 10px 0 0; padding-left: 22px; }
+.st-steps li { margin: 6px 0; overflow-wrap: anywhere; }
+.st-copy { display: flex; align-items: stretch; gap: 8px; margin-top: 10px; }
+.st-copy code { flex: 1; min-width: 0; display: flex; align-items: center; padding: 8px 10px; border-radius: 10px; background: var(--ag-night, #14110e); border: 1px solid var(--ag-line, #3a3228);
+  font: 600 .8125rem/1.35 var(--ag-mono, ui-monospace, Menlo, monospace); color: var(--ag-gold-hi, #dcbd6e); overflow-wrap: anywhere; word-break: break-word; user-select: all; -webkit-user-select: all; }
+.st-copy button { flex: none; min-width: 64px; min-height: 44px; border-radius: 10px; border: 1px solid var(--ag-gold, #c8a24a); background: transparent; color: var(--ag-gold-hi, #dcbd6e); font: 700 .875rem var(--ag-sans, system-ui); cursor: pointer; }
+.st-copy button:active { background: var(--ag-s4, #332b22); }
+.st-cnote { margin: 4px 2px 0; color: var(--ag-muted, #a89c88); font-size: var(--ag-fs-foot, .8125rem); overflow-wrap: anywhere; }
+.st-done { display: flex; align-items: center; gap: 12px; min-height: 52px; margin-top: 10px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--ag-line, #3a3228); background: var(--ag-s1, #1b1713); font-weight: 700; cursor: pointer; }
+.st-done input { width: 28px; height: 28px; accent-color: var(--ag-gold, #c8a24a); margin: 0; }
+.st-foot { margin-top: 26px; color: var(--ag-muted, #a89c88); font-size: var(--ag-fs-foot, .8125rem); text-align: center; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+<script src="steps.js?v=1" defer></script>
+<script src="../olympus/warp.js?v=w3" defer></script><!-- the world-to-world jump (olympus/warp.js; the kit apps get it through themes.js) -->
+<script src="../olympus/themes.js?v=o11" defer></script><!-- the theme engine: the look picked on the Gate (Ivory, Stocks Light ...) paints this page too -->
+<script>window.addEventListener('DOMContentLoaded', function () { try { if (window.OLYMPUS_THEMES && window.OLYMPUS_THEMES.apply) window.OLYMPUS_THEMES.apply('page', { meta: true }); } catch (e) { /* the default look */ } });</script>
+<script src="../olympus/gate-nav.js?v=g11" defer></script><!-- ORGANIZE 2026-11-21: back + Home + arena breadcrumb on every page -->
+</head>
+<body>
+<main class="st-main" id="steps">
+  <nav class="st-nav" aria-label="Pages"><a href="../gate/index.html" aria-label="Back to Home">&#9664; Home</a><a href="zeus.html">ZEUS</a><a href="help.html">Help</a><a href="manual.html">Manual</a></nav>
+  <h1 class="st-title">Your steps</h1>
+  <p class="st-sub">What is still yours to do, in order. Tick Done when finished; the tick stays on this phone.</p>
+  <p class="st-count" id="count" role="status" aria-live="polite">Loading...</p>
+  <section class="st-list" id="list" aria-label="Your steps"></section>
+  <p class="st-foot">Read only: nothing here can trade or change a bot.</p>
+</main>
+</body>
+</html>

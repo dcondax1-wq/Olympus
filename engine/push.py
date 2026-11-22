@@ -47,8 +47,8 @@ if SEALED:
     CONFIG_PATH, SENT_PATH, PC_KEY_PATH = (os.path.join(_tempfile.gettempdir(), f"le_selftest_{os.path.basename(_p)}")
                                            for _p in (CONFIG_PATH, SENT_PATH, PC_KEY_PATH))
 RELAY_PATH = os.path.join(ROOT, "tools", "web_public", "push_relay.json")
-APP_URL = "https://demetrades2000-coder.github.io/nq-dashboard/"
-SUBJECT = os.environ.get("LE_PUSH_SUBJECT") or "https://demetrades2000-coder.github.io"   # VAPID "sub" claim: a contact URL, host only
+APP_URL = "https://dcondax1-wq.github.io/"
+SUBJECT = os.environ.get("LE_PUSH_SUBJECT") or "https://dcondax1-wq.github.io"   # VAPID "sub" claim: a contact URL, host only
 TTL_S = 6 * 3600
 MAX_SUBS = 10
 # push services a subscription may point at (the relay is public: nothing else is ever POSTed to)
@@ -921,7 +921,98 @@ def test_payload(now=None) -> dict:
     return p
 
 
-def intake(msgs, now=None, path: str | None = None, key_path: str | None = None, sender=None) -> dict:
+# PAIRING (day-security2 2026-11-20, LEAD_WIRES W4). The PC's box key and VAPID key are public (every status post's "wp"), so before
+# this anyone could seal a "sub" and get every real-account trade alert, and five of them pushed the owner's phone off the list.
+#   * the phones already on the list stay, with no code (the owner does nothing); a phone sending its own subscription again stays
+#   * a NEW phone needs the one-time 8-digit code: the PC sends it to the phones already on the list and the private alert topic
+#     the first time an unknown phone asks (then at most every PAIR_TELL_S), with "type it only on a phone you are holding"
+#   * the very first phone of a PC that never had one joins without a code (nothing to send the code to yet); after that, never
+#   * a list full of phones heard from in the last RECENT_S never pushes one out for a newcomer (the newcomer waits)
+# THE CODE IS OFF until the phone side ships (redteam 2026-11-21): tools/web_public/jarvis/push-ui.js has no way to type it yet
+# (LEAD_WIRES W4: the sealed body's "pair" field + the input on the 'waiting' card). Until then the owner's own phone with a new
+# endpoint (Home Screen app re-added, notification permission reset, a new VAPID key) would be a "new phone" that can never join,
+# and lose every app-only notice. Off = a new phone joins as before the code existed; the no-eviction guard below stays ON either
+# way (a list full of phones heard from in RECENT_S never pushes one out for a newcomer). Flip to True IN THE SAME PUBLISH as the
+# push-ui.js pair input (and its jarvis / sw cache bump).
+PAIR_CODE_ON = False
+PAIR_DIGITS = 8
+PAIR_TELL_S = 6 * 3600
+PAIR_BAD_MAX = 30                    # wrong codes in one UTC day; then no new phone joins until tomorrow
+RECENT_S = 14 * 86400
+
+
+def pair_code(f: dict, now: int, fresh: bool = False) -> str:
+    """The current one-time code in f["pair"] (made when missing or when fresh). Mutates f; the caller writes it."""
+    import secrets as _sec
+    p = f.get("pair") if isinstance(f.get("pair"), dict) else {}
+    if fresh or not re.fullmatch(r"\d{%d}" % PAIR_DIGITS, str(p.get("code") or "")):
+        p = {"code": str(_sec.randbelow(10 ** PAIR_DIGITS)).zfill(PAIR_DIGITS), "made": now, "told": 0, **{k: p.get(k) for k in ("bad", "bad_day") if p.get(k)}}
+    f["pair"] = p
+    return p["code"]
+
+
+def pair_payload(code: str, ua: str, now=None, full: bool = False) -> dict:
+    now = int(now or time.time())
+    if full:
+        body = ("A new phone asked for your trade alerts, but your list is full (%d phones heard from in the last 14 days). "
+                "Turn one off in its Olympus app first." % MAX_DEVICES)
+    else:
+        body = (f"A new phone ({ua or 'unknown'}) asked for your trade alerts. If it is yours, type {code} on it. "
+                "Type it only on a phone you are holding; if it is not yours, ignore this and nothing happens.")
+    p = text_payload("PC", "test", "New phone wants your alerts", body, key=f"pair:{now}", t=now, url="#board")
+    p["tag"] = "le-pair"
+    return p
+
+
+def joined_payload(rows: list, now=None) -> dict:
+    """'A new phone now gets your trade alerts' (PAIR_CODE_ON off): who (the browser words, 8-hex id) and how to remove it."""
+    now = int(now or time.time())
+    who = "; ".join(f"{str(r.get('ua') or 'a phone')[:30]} (id {str(r.get('id'))[:8]})" for r in rows[:3]) + (" ..." if len(rows) > 3 else "")
+    body = (f"New phone(s) now get your trade alerts: {who}. If one is not yours, on the PC run: "
+            f"python -m engine.push --forget {str(rows[0].get('id'))[:8] if rows else '<id>'}")
+    p = text_payload("PC", "test", "New phone added to your alerts", body, key=f"joined:{now}", t=now, url="#board")
+    p["tag"] = "le-joined"
+    return p
+
+
+def forget(id8: str, path: str | None = None) -> list:
+    """Remove the phone(s) whose id starts with id8 (at least 6 hex characters) from data/push.json. -> the ids removed."""
+    path = path or CONFIG_PATH
+    k = re.sub(r"[^0-9a-f]", "", str(id8 or "").lower())
+    if len(k) < 6:
+        return []
+    f = _read_json(path)
+    devs = [d for d in f.get("devices") or [] if isinstance(d, dict)]
+    gone = [d["id"] for d in devs if str(d.get("id", "")).startswith(k)]
+    if gone:
+        f["devices"] = [d for d in devs if d.get("id") not in gone]
+        _write_private(path, f)
+    return gone
+
+
+def _tell_owner(p: dict, c: dict, rows: list, sender=None, path=None, ntfy=None) -> int:
+    """The pairing notice to the phones already on the list and (on the real PC only) the private ntfy alert topic. Never raises."""
+    n = 0
+    try:
+        if rows:
+            n += int(app_send(p, cfg=dict(c, subs=[r["sub"] for r in rows]), sender=sender, path=path).get("sent") or 0)
+    except Exception:
+        pass
+    try:
+        if ntfy is None and sender is None:          # the real PC: also the private topic (only the owner knows its name)
+            from . import notify as _n
+            cfg = _n.alert_cfg()
+            if cfg:
+                n += int(bool(_n._post(cfg["ntfy"], cfg["topic"], {"title": p.get("title") or "New phone", "body": p.get("body") or "",
+                                                                   "priority": "high", "tags": "iphone"})))
+        elif callable(ntfy):
+            n += int(bool(ntfy(p)))
+    except Exception:
+        pass
+    return n
+
+
+def intake(msgs, now=None, path: str | None = None, key_path: str | None = None, sender=None, ntfy=None) -> dict:
     """The ops task's relay read (every 5 min): the phones' sealed {"le": "sub" | "unsub" | "test", "v": 2, "box"} requests.
     sub    a subscription made with the PC's own key joins data/push.json "devices" (the newest MAX_DEVICES phones heard from)
            and that phone alone gets ONE welcome push;
@@ -947,6 +1038,13 @@ def intake(msgs, now=None, path: str | None = None, key_path: str | None = None,
         before = {d["id"] for d in _devices(path)}
         devs = {d["id"]: dict(d) for d in _devices(path)}
         done = {k: v for k, v in (f.get("done") or {}).items() if isinstance(v, (int, float)) and now - v < DONE_KEEP_S}
+        pair_on = bool(f.get("pair_on")) or bool(devs)  # a PC that has (or had) a phone: new phones need the code
+        pf = {"pair": f.get("pair")}
+        code = pair_code(pf, now)
+        day = time.strftime("%Y-%m-%d", time.gmtime(now))
+        if (pf["pair"].get("bad_day") or "") != day:
+            pf["pair"].update(bad=0, bad_day=day)
+        asked = []                                       # unknown phones that asked without the right code: (ua, full?)
         for m in sorted(reqs, key=lambda x: x.get("_t", 0)):
             h = hashlib.sha256(m["box"].encode()).hexdigest()[:16]
             if h in done:
@@ -967,10 +1065,30 @@ def intake(msgs, now=None, path: str | None = None, key_path: str | None = None,
                     out["ignored"] += 1                  # junk, or made for an old key (the phone subscribes again by itself)
                     continue
                 sid = endpoint_id(subs[0]["endpoint"])
+                ua = re.sub(r"[^A-Za-z0-9 .()/-]", "", str(body.get("ua") or ""))[:40]
+                if sid not in devs and pair_on:          # a NEW phone: the one-time code (PAIR_CODE_ON), a free place
+                    given = re.sub(r"\D", "", str(body.get("pair") or ""))
+                    if PAIR_CODE_ON and (int(pf["pair"].get("bad") or 0) >= PAIR_BAD_MAX or not given
+                                         or not _hmac.compare_digest(given, code)):
+                        if given:
+                            pf["pair"]["bad"] = int(pf["pair"].get("bad") or 0) + 1
+                        out["ignored"] += 1
+                        out["unpaired"] = out.get("unpaired", 0) + 1
+                        asked.append((ua, False))
+                        continue
+                    recent = [d for d in devs.values() if now - int(d.get("seen") or 0) < RECENT_S]
+                    if len(recent) >= MAX_DEVICES:
+                        out["ignored"] += 1
+                        out["full"] = out.get("full", 0) + 1
+                        asked.append((ua, True))
+                        continue
+                    if PAIR_CODE_ON:
+                        code = pair_code(pf, now, fresh=True)  # one time: the next new phone needs a new code
                 row = devs.get(sid) or {"id": sid, "since": now}
                 if sid not in devs and sid not in out["added"]:
                     out["added"].append(sid)
-                row.update(sub=subs[0], key=c["public"], seen=now, ua=re.sub(r"[^A-Za-z0-9 .()/-]", "", str(body.get("ua") or ""))[:40])
+                    pair_on = True
+                row.update(sub=subs[0], key=c["public"], seen=now, ua=ua)
                 devs[sid] = row
                 continue
             sid, row = str(body.get("id") or ""), devs.get(str(body.get("id") or ""))
@@ -988,8 +1106,24 @@ def intake(msgs, now=None, path: str | None = None, key_path: str | None = None,
         now_ids = {d["id"] for d in _devices(path)}
         f["devices"] = [d for d in keep if d["id"] in now_ids or d["id"] not in before]
         f["done"] = done
+        had_phones = bool(before) or bool(f.get("pair_on"))
+        if pair_on:
+            f["pair_on"] = f.get("pair_on") or now
+        told = None
+        if asked and now - int(pf["pair"].get("told") or 0) >= PAIR_TELL_S:   # no phone left: the private topic still gets it
+            told = pair_payload(code, asked[-1][0], now, full=asked[-1][1])
+            pf["pair"]["told"] = now
+        elif not PAIR_CODE_ON and had_phones and out["added"]:
+            # day-security3 2026-11-21: while the code is OFF a stranger who taps Allow on the public site joins and gets every
+            # trade alert. The owner hears of EVERY new phone at once (his phones + the private topic), with the one command that
+            # removes it; a flood of joins is one notice per run.
+            new_rows = [d for d in f["devices"] if d["id"] in out["added"]]
+            told = joined_payload(new_rows, now)
+        f["pair"] = pf["pair"]
         _write_private(path, f)
         rows = {d["id"]: d for d in f["devices"]}
+        if told:
+            out["told"] = _tell_owner(told, c, [d for d in f["devices"] if d["id"] not in out["added"]], sender=sender, path=path, ntfy=ntfy)
         todo = [(i, welcome_payload(now)) for i in out["added"] if i in rows] + [(i, test_payload(now)) for i in out["tests"] if i in rows]
         for sid, p in todo:
             r = app_send(p, cfg=dict(c, subs=[rows[sid]["sub"]]), sender=sender, path=path)
@@ -1036,8 +1170,7 @@ def app_payload(p: dict, now=None) -> dict:
         k = q.get("kind")
         if k == "fill":
             m = notify.entry_message(q, now=now)
-            head, _, rest = m["title"].partition(" | ")
-            q.update(title=head, body=((rest.replace(" | ", " · ") + ". ") if rest else "") + m["body"], silent=m["priority"] == "low")
+            q.update(title=m["title"], body=m["body"], silent=m["priority"] == "low")
         elif k == "outcome":
             m = notify.exit_message(q, now=now)
             q.update(title=m["title"], body=m["body"], silent=m["priority"] == "low")
@@ -1101,41 +1234,197 @@ def pc_notifier() -> Notifier:
     return _PC["notifier"]
 
 
-def _pc_send(payload, sender=None, ntfy=None) -> dict:
-    """pc_notify's worker thread: the phone app first; for an entry the private ntfy alert topic (engine/notify.instant_entry)
-    only when no phone took it (one alert, one phone). A phone that took an entry / exit is recorded (engine/notify.instant_record)
-    so the 15-minute report does not send its own copy. -> what happened (tests). Never raises."""
+NO_TOPIC = "no private alert topic"         # engine/notify._instant_send's answer on a PC without OLYMPUS_HOME/ntfy.json
+# One more try of an instant ntfy trade alert the 15-minute report cannot send under the account's own name (skeptic 2026-11-20):
+# an extra LIT account (":<id>": the 25K #2, the Rapid's LIT lane; the report's one "lit" row is titled the 50K) or the Rapid's ATLAS
+# lane (":acctr": the report has no row for it). The 50K (no suffix) and ATLAS (":acctb") get the report's own ntfy copy instead.
+NTFY_RETRY_S = 60
+NTFY_RETRY_ACCTS = ("", "acctb", "acctc")   # key_acct values NOT retried here (the report covers them; BLITZ is never a real trade)
+
+
+def _retry_owed(payload: dict, said) -> bool:
+    """Whether an instant ntfy trade alert gets one more try (NTFY_RETRY_S later, _pc_send): ntfy refused it or the post failed
+    (never "no topic", "... is off" or "already sent") and its key belongs to an extra LIT account or the Rapid's ATLAS lane."""
+    try:
+        from . import notify
+        s = str(said or "")
+        if not s.startswith(("failed", "ntfy did not take it")):
+            return False
+        return notify.key_acct((payload or {}).get("key")) not in NTFY_RETRY_ACCTS
+    except Exception:
+        return False
+
+
+def _pc_send(payload, sender=None, ntfy=None, ntfy_exit=None, retry_s=None) -> dict:
+    """pc_notify's worker thread. A real trade's ENTRY and EXIT go to BOTH routes: the phone app (Web Push) AND the private ntfy alert
+    topic (engine/notify.instant_entry / instant_exit). Until 2026-11-20 ntfy got them only when no phone took them, and "took" only
+    meant Apple / Google accepted the push, not that the phone showed it; that "accepted" also made the 15-minute report skip its
+    copy. ATLAS's 03:45 ET entry and 07:10 ET +$514 close that day reached no phone, most likely that way (unconfirmed: the PC's push
+    logs were not read). A phone-only delivery is recorded (engine/notify.instant_record app_only) so the report sends just its ntfy
+    copy (or nothing, without a topic). notify_settings.json trade_routes (engine/notify.trade_routes): "both" (default), "olympus"
+    (the app first, ntfy only when no phone took it) or "ntfy" (ntfy first, the app only when ntfy did not take it).
+    retry_s (pc_notify: NTFY_RETRY_S; None = no retry, the tests' default): an extra account's instant ntfy alert that ntfy refused is
+    tried once more after retry_s seconds in this same worker thread (order routing never waits on it), _retry_owed.
+    Every other notice: the phone app only, as before. Each trade alert's answers -> logs/notify/trade_alerts.jsonl. -> what happened
+    (tests). Never raises."""
     res: dict = {}
+    n = None
+    k = payload.get("kind")
+    trade = k in ("fill", "outcome")
+    app_ok = True
+
+    tried = []
+
+    def _app() -> dict:
+        tried.append(1)
+        try:
+            return app_send(app_payload(payload), sender=sender) if pc_app_ok(payload) else {"sent": 0, "skipped": "not for the phone"}
+        except Exception as e:  # noqa: BLE001
+            return {"sent": 0, "errors": [e.__class__.__name__]}
+
     try:
         n = pc_notifier()
         if not n.claim(payload):                 # another path / thread already has this notice (same key)
             return {"dup": True}
-        res = app_send(app_payload(payload), sender=sender) if pc_app_ok(payload) else {"sent": 0, "skipped": "not for the phone"}
-        n.log.append({"t": int(time.time()), "key": payload.get("key"), **{x: res.get(x) for x in ("sent", "gone", "errors", "skipped")}})
-        del n.log[:-50]
+        # engine/alert_bus (day-alerts 2026-11-21): when the owner set it up (ALERTS_SETUP.bat), a real trade's entry / exit and a hedge
+        # notice go to Telegram / Discord first, with ntfy and this app as its fallbacks; off / not set up = the path below, exactly
+        bus = _bus_send(payload) if (ntfy is None and ntfy_exit is None and sender is None) else None
+        if bus and bus.get("bus") in ("queued", "sent", "dup"):   # the bus took it; "off" / "bad" = the old path below (redteam 2026-11-21)
+            return bus
     except Exception as e:
-        res = {"sent": 0, "errors": [e.__class__.__name__]}
+        res, app_ok = {"sent": 0, "errors": [e.__class__.__name__]}, False
+    if not trade:
+        if app_ok:
+            res = _app()
+        if k == "risk" and str(payload.get("key") or "").startswith("hedge"):
+            try:                                 # drill 2026-11-21: HEDGE BLOCKED reached no phone without LE_PUSH_EXTRA (the app took
+                from . import notify             # only trades); now the private ntfy topic too (problems: rings at night)
+                res["ntfy"] = notify.instant_problem({"key": str(payload["key"]), "code": "hedge", "title": payload.get("title"),
+                                                      "body": payload.get("body")})
+            except Exception:  # noqa: BLE001
+                pass
+    else:
+        try:
+            from . import notify
+            what = "entry" if k == "fill" else "exit"
+            mode = notify.trade_routes()
+
+            def _ntfy() -> str:                  # owner 2026-11-18 entries, 2026-11-20 exits ("and closed, results of it"): at once
+                return ((ntfy or notify.instant_entry) if k == "fill" else (ntfy_exit or notify.instant_exit))(dict(payload))
+
+            def _ntfy_retry() -> str:            # the same alert once more: an app-only record does not count as "already sent"
+                return ((ntfy or notify.instant_entry) if k == "fill" else (ntfy_exit or notify.instant_exit))(dict(payload, retry=True))
+            if mode == "ntfy":                   # ntfy first; the app only when ntfy did not take it
+                said = _ntfy()
+                if said == "sent":
+                    if app_ok:
+                        res = {"sent": 0, "skipped": "ntfy has it (trade_routes ntfy)"}
+                else:
+                    if app_ok:
+                        res = _app()
+                    if res.get("sent"):
+                        notify.instant_record(payload, what, app_only=True)
+                res["ntfy"] = said
+            else:
+                if app_ok:
+                    res = _app()
+                if mode == "olympus" and res.get("sent"):
+                    notify.instant_record(payload, what)      # one route asked for: the report skips it entirely (the old rule)
+                    res["ntfy"] = "skipped: the phone app has it (trade_routes olympus)"
+                else:
+                    res["ntfy"] = _ntfy()
+                    if res.get("sent") and res["ntfy"] != "sent":
+                        # the phone app has it, ntfy not (refused, or no topic in THIS process): the report sends only its ntfy copy, if
+                        # its own config has a topic (the 15-minute task may see one the server does not), never the app copy again
+                        notify.instant_record(payload, what, app_only=True)
+            if retry_s is not None and _retry_owed(payload, res.get("ntfy")):
+                # the report cannot send this ntfy copy under the account's own name: one more try in this worker thread (the
+                # instant record above already tells the report what the app got). Success records "entries" / "exits"
+                # (notify._instant_send's retry flag), so the report skips the row entirely.
+                time.sleep(max(0.0, float(retry_s)))
+                again = _ntfy_retry()
+                res["ntfy_first"], res["ntfy"] = res.get("ntfy"), again
+        except Exception:
+            if app_ok and not tried:             # never lose the phone app copy to a fault on the ntfy side
+                res = _app()
     try:
-        from . import notify
-        k = payload.get("kind")
-        if k in ("fill", "outcome") and res.get("sent"):
-            notify.instant_record(payload, "entry" if k == "fill" else "exit")
-            if k == "fill":
-                res["ntfy"] = "skipped: the phone app has it"
-        elif k == "fill":                        # owner 2026-11-18: every entry on any real account -> phone, at once
-            res["ntfy"] = (ntfy or notify.instant_entry)(dict(payload))
+        if n is not None:
+            from . import notify as _n
+            n.log.append({"t": int(time.time()), "key": _n.mask_ids(payload.get("key")),
+                          **{x: res.get(x) for x in ("sent", "gone", "errors", "skipped", "ntfy")},
+                          **({"ntfy_first": res["ntfy_first"]} if res.get("ntfy_first") else {})})
+            del n.log[:-50]
     except Exception:
         pass
+    if trade:
+        _trade_log(payload, res)
     return res
 
 
+TRADE_LOG_MAX_BYTES = 256 * 1024
+
+
+def _trade_log(payload: dict, res: dict) -> None:
+    """One line per trade alert in logs/notify/trade_alerts.jsonl (next to engine/notify.INSTANT_PATH, gitignored): the owner's
+    account name, the masked key and what each route answered (app: sent / devices / gone / errors / skipped; ntfy: sent or why
+    not). "warn" when it reached NO route. Until 2026-11-20 these answers lived only in the server's memory. No topic, no endpoint,
+    no account id. Kept under TRADE_LOG_MAX_BYTES. Never raises."""
+    try:
+        from . import notify
+        path = os.path.join(os.path.dirname(notify.INSTANT_PATH), notify.TRADE_LOG_NAME)
+        row = {"t": int(time.time()), "kind": payload.get("kind"), "key": notify.mask_ids(payload.get("key")),
+               "who": notify.display_name(payload) if notify.real_trade(payload) else "not a real account",
+               "app": {x: res.get(x) for x in ("sent", "devices", "gone", "errors", "skipped") if res.get(x) not in (None, [], "")},
+               "ntfy": res.get("ntfy"), **({"ntfy_first": res["ntfy_first"]} if res.get("ntfy_first") else {})}
+        if notify.real_trade(payload) and not res.get("sent") and res.get("ntfy") != "sent" and "off" not in str(res.get("ntfy")):
+            row["warn"] = "this trade alert reached NO phone (no Olympus phone took it and ntfy did not)"
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        try:
+            if os.path.getsize(path) > TRADE_LOG_MAX_BYTES:
+                with open(path, encoding="utf-8") as fh:
+                    keep = fh.readlines()[-300:]
+                with open(path, "w", encoding="utf-8") as fh:
+                    fh.writelines(keep)
+        except OSError:
+            pass
+        with open(path, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(row, default=str) + "\n")
+    except Exception:
+        pass
+
+
+def _bus_send(payload: dict) -> dict | None:
+    """engine/alert_bus (owner 2026-11-21: Telegram / Discord first; ntfy and this app are its fallbacks): a real-account entry /
+    exit, or a HEDGE BLOCKED risk notice, goes to the bus, which records the entry / exit once delivered (so the 15-minute report
+    skips its copy). None = the bus is off / not set up: the old path below, exactly. Never raises."""
+    try:
+        from . import alert_bus as AB
+        if not AB.active():
+            return None
+        from . import notify
+        k = payload.get("kind")
+        if k in ("fill", "outcome") and notify.real_trade(payload):
+            what = "entry" if k == "fill" else "exit"
+            p = dict(payload)
+            r = AB.send(AB.from_trade(p, what), on_done=lambda res: res.get("ok") and notify.instant_record(p, what))
+            return {"bus": r}
+        if k == "risk" and str(payload.get("key") or "").startswith("hedge"):
+            r = AB.send({"kind": "hedge_risk", "key": str(payload.get("key")), "title": payload.get("title"),
+                         "body": payload.get("body"), "report": True, "dual": True})
+            return {"bus": r}
+    except Exception:
+        return None
+    return None
+
+
 def pc_notify(payload: dict) -> dict | None:
-    """PC side, in a background thread (the push service never delays order routing): pc_app_ok notices to the phone app, every
-    real-account entry to the ntfy alert topic when the app did not take it. Never raises."""
+    """PC side, in a background thread (the push service never delays order routing): pc_app_ok notices to the phone app; every
+    real-account entry and exit also to the private ntfy alert topic (_pc_send, since 2026-11-20 whatever the app said; trade_routes
+    in notify_settings.json can pick one route first). Never raises."""
     try:
         if pc_notifier().seen(payload):
             return {"dup": True}
-        threading.Thread(target=_pc_send, args=(dict(payload),), name="push", daemon=True).start()
+        threading.Thread(target=_pc_send, args=(dict(payload),), kwargs={"retry_s": NTFY_RETRY_S}, name="push", daemon=True).start()
         return {"queued": True}
     except Exception:
         return None
@@ -1175,3 +1464,28 @@ def save_pc_config(patch: dict, path: str | None = None) -> dict:
     with open(path, "w", encoding="utf-8") as fh:
         json.dump(cur, fh, indent=1)
     return status(config(path=path))
+
+
+def main(argv=None) -> int:
+    """python -m engine.push --devices          the phones that get the app's alerts (8-hex id, browser, since, last seen)
+       python -m engine.push --forget <id>      remove one (the first 6+ characters of its id); it stops getting alerts at once"""
+    import sys as _sys
+    a = list(_sys.argv[1:] if argv is None else argv)
+    if a[:1] == ["--devices"]:
+        rows = _devices(CONFIG_PATH)
+        for d in rows:
+            print(f"{str(d.get('id'))[:8]}  {str(d.get('ua') or '?')[:30]:<30}  since {time.strftime('%Y-%m-%d', time.gmtime(int(d.get('since') or 0)))}"
+                  f"  seen {time.strftime('%Y-%m-%d %H:%M', time.gmtime(int(d.get('seen') or 0)))} UTC")
+        print(f"{len(rows)} phone(s)")
+        return 0
+    if a[:1] == ["--forget"] and len(a) == 2:
+        gone = forget(a[1])
+        print(f"[OK] removed {len(gone)} phone(s)" if gone else "[FIX] no phone with that id (python -m engine.push --devices)")
+        return 0 if gone else 1
+    print(main.__doc__)
+    return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+

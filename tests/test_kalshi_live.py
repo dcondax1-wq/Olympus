@@ -1083,8 +1083,10 @@ def part_wiring():
     check("j2. data/kalshi_live/ (arm record, state, commands, log, card) is gitignored; *.pem too", "data/kalshi_live/" in gi and "*.pem" in gi)
     html = open(os.path.join(ROOT, "tools", "web_public", "kalshi", "index.html"), encoding="utf-8").read()
     js = open(os.path.join(ROOT, "tools", "web_public", "kalshi", "kalshi.js"), encoding="utf-8").read()
-    check("j3. the Kalshi page says plainly 'PAUSED: ready to go live when you type the phrase', and reads the PC card (kalshi_live)",
-          "PAUSED: ready to go live when you type the phrase" in re.sub(r"<[^>]+>", "", html) and "kalshi_live_pub" in js, "")
+    check("j3. the Kalshi page says plainly 'PAPER: the PC records every window with no money. Live only when you type the phrase' "
+          "(night-kalshi8), shows the K8 status card, and reads the PC card (kalshi_live)",
+          "PAPER: the PC records every window with no money. Live only when you type the phrase" in re.sub(r"<[^>]+>", "", html)
+          and 'id="k8s"' in html and "kalshi_live_pub" in js and "function k8Show" in js, "")
     src = open(os.path.join(ROOT, "engine", "kalshi_live.py"), encoding="utf-8").read()
     check("j4. the executor never sends a market order or a v1 order call, and its only POST is /portfolio/events/orders",
           '"type": "market"' not in src and "'/portfolio/orders'" not in src and src.count('"POST"') == 2, "")

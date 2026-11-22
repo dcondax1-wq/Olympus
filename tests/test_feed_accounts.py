@@ -220,7 +220,7 @@ const { pathToFileURL } = require('url');
     // the page's own copies of pc_feed.js / payoutcoach.js (the shim imports them when missing: http:// cannot be imported in node,
     // which is the "file missing" case of a real page)
     const win = { location: { href: 'http://site/ares/', origin: 'http://site', search: '' }, ...(have ? { PC_FEED: F, PAYOUT_COACH: C } : {}) };
-    const doc = { currentScript: { src: 'http://site/home_feed.js?v=1' }, documentElement: {},
+    const doc = { currentScript: { src: 'http://site/home_feed.js?v=3' }, documentElement: {},
       createElement: () => { throw new Error('no script tags: a failed one would trip the OLYMPUS kit'); }, head: { appendChild() { throw new Error('no script tags'); } } };
     const calls = [];
     win.fetch = async (u) => {
@@ -483,7 +483,7 @@ def part_b(tmp, shots):
         c = ctx_for(False)
         pg = c.new_page()
         pg.on("pageerror", lambda e: errs2.append(str(e)))
-        ok = go("#/today", "() => document.querySelector('#mnCard')")
+        ok = go("#/today", "() => document.querySelector('#mnCard') && !document.querySelector('#page.zs-hold')")   # zenith_settle.js: read the text once Home shows (not under its still copy)
         t = text()
         check("b. no post: Home still draws (Money now from the cloud's copy, which says what it is), no page error", ok and "Money now" in t and not errs2, errs2[:3])
         pg.goto(base + "ares/")

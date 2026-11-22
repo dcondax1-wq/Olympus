@@ -4,24 +4,24 @@
 
 ```text
 Build "Ascend" as a phone-first web dashboard that also runs inside my hub app, Jarvis (Jarvis shows it full screen, its own look and header, no Jarvis bar).
-Host it free on its own site, never under demetrades2000-coder.github.io: Netlify, Vercel, Cloudflare Pages, or GitHub Pages of a separate account.
+Host it free on its own site, never under dcondax1-wq.github.io: Netlify, Vercel, Cloudflare Pages, or GitHub Pages of a separate account.
 Follow the rules on this page: nothing that blocks frames, a mobile viewport with safe areas, and the bottom-right corner (80 x 160 px) kept free for Jarvis's orb.
 Publish a status file jarvis.json next to its index.html in the format on this page, sent with Access-Control-Allow-Origin: *, with "theme" = its top colour.
 When it is live, send me the link. I add it to Jarvis once (+, Add Ascend, paste the link).
 ```
 
 Any dashboard plugs into Jarvis the same way: one link, plus an optional `jarvis.json` that shows a live card on the
-Jarvis screen. Jarvis is the owner's iPhone Home Screen app (`https://demetrades2000-coder.github.io/nq-dashboard/jarvis/`).
+Jarvis screen. Jarvis is the owner's iPhone Home Screen app (`https://dcondax1-wq.github.io/jarvis/`).
 It opens each dashboard as its own screen (since 2026-11-02): full screen, its own look and header, no Jarvis bar; the
 owner switches apps with Jarvis's floating orb (bottom right). The strip behind the iPhone's status bar takes the app's
 colour: `theme` in its jarvis.json (another site's page cannot be read), else black.
 
 ## 1. Look and work right inside Jarvis
-- **Its own site, never under `demetrades2000-coder.github.io`.** Why: every page there shares one origin with Jarvis and
+- **Its own site, never under `dcondax1-wq.github.io`.** Why: every page there shares one origin with Jarvis and
   the Planner, so it could read the keys they keep on the phone. Good homes: Netlify (`*.netlify.app`), Vercel
   (`*.vercel.app`), Cloudflare Pages (`*.pages.dev`), or GitHub Pages of another account or organization.
 - **Let it be framed.** Send no `X-Frame-Options` header and no CSP `frame-ancestors` that leaves Jarvis out (allow
-  `https://demetrades2000-coder.github.io`). Never break out of the frame (no `top.location = ...`).
+  `https://dcondax1-wq.github.io`). Never break out of the frame (no `top.location = ...`).
 - **Inside Jarvis it is another site's frame.** The iPhone blocks its cookies there and keeps its storage apart from when
   it is opened on its own, so don't depend on a cookie login; keep data that must show in both places on a server.
 - **Phone viewport:** `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">`. No sideways
@@ -85,7 +85,7 @@ Rules (Jarvis drops a card that breaks one, and keeps showing the last good one)
 change; Jarvis keeps the last one for the card (`status` is the jarvis.json object):
 
 ```js
-if (window.parent !== window) window.parent.postMessage({ jarvis: 1, href: location.href, card: status }, 'https://demetrades2000-coder.github.io');
+if (window.parent !== window) window.parent.postMessage({ jarvis: 1, href: location.href, card: status }, 'https://dcondax1-wq.github.io');
 ```
 
 ## 3. CORS (needed: Ascend is on another site)
@@ -109,7 +109,7 @@ if (window.parent !== window) window.parent.postMessage({ jarvis: 1, href: locat
 - `tools/web_public/jarvis/apps.js`: an ES module the Jarvis page imports. It holds the registry (`listApps`, `addApp`,
   `removeApp`), the cards (`appStatus`, `cachedStatus`, `renderCard`, posted cards through `listen(window, onCard)`) and
   the Ascend slot (`ascendSlot`, `enableAscend`, `findAscend`). The API notes are at the top of the file.
-- **Never host an outside-built app on `demetrades2000-coder.github.io`** (not in `nq-dashboard/`, not as a repo of that
+- **Never host an outside-built app on `dcondax1-wq.github.io`** (not in `nq-dashboard/`, not as a repo of that
   account): it shares Jarvis's origin and could read the keys Jarvis and the Planner keep in localStorage. `addApp` still
   adds such a link, with `warn: SAME_SITE_WARN` in the result and on the app.
 - When the owner sends Ascend's link (on its own site), put it in `ASCEND_URL` in `apps.js`: **Add Ascend** then adds it

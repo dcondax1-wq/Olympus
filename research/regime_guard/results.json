@@ -1,0 +1,2109 @@
+{
+ "built": "2026-11-20 11:18 UTC",
+ "n": 600,
+ "rows": {
+  "today": {
+   "sig": null,
+   "mult": 1.0,
+   "bad_share": {
+    "H1": 0.0,
+    "H2": 0.0,
+    "REF": 0.0
+   },
+   "fixed": {
+    "LIT": {
+     "H1": {
+      "n": 80,
+      "tpw": 3.12,
+      "pf": 3.45,
+      "net": 20868,
+      "per_month": 3424,
+      "max_dd": -2264
+     },
+     "H2": {
+      "n": 40,
+      "tpw": 2.56,
+      "pf": 2.78,
+      "net": 9659,
+      "per_month": 2601,
+      "max_dd": -1492
+     },
+     "REF": {
+      "n": 511,
+      "tpw": 2.37,
+      "pf": 1.03,
+      "net": 2065,
+      "per_month": 40,
+      "max_dd": -13047
+     }
+    },
+    "ATLAS": {
+     "H1": {
+      "n": 104,
+      "tpw": 4.06,
+      "pf": 2.92,
+      "net": 18362,
+      "per_month": 3012,
+      "max_dd": -1062
+     },
+     "H2": {
+      "n": 46,
+      "tpw": 2.95,
+      "pf": 2.55,
+      "net": 5256,
+      "per_month": 1415,
+      "max_dd": -876
+     },
+     "REF": {
+      "n": 994,
+      "tpw": 4.61,
+      "pf": 1.08,
+      "net": 10393,
+      "per_month": 203,
+      "max_dd": -11403
+     }
+    }
+   },
+   "edge": null,
+   "lit_eval": {
+    "H1": {
+     "n": 600,
+     "p10": 47.5,
+     "f10": 0.5,
+     "p15": 56.7,
+     "f15": 1.8,
+     "dec10": 48.0,
+     "p60": 84.8,
+     "f60": 11.3,
+     "pass_med": 9.0,
+     "slow_pass": 33.2,
+     "usd_per_pass": 108.3,
+     "max_risk": 794
+    },
+    "H2": {
+     "n": 600,
+     "p10": 45.7,
+     "f10": 0.2,
+     "p15": 56.5,
+     "f15": 1.3,
+     "dec10": 45.9,
+     "p60": 84.3,
+     "f60": 11.5,
+     "pass_med": 9.0,
+     "slow_pass": 33.0,
+     "usd_per_pass": 108.9,
+     "max_risk": 794
+    },
+    "REF": {
+     "n": 600,
+     "p10": 12.7,
+     "f10": 0.7,
+     "p15": 17.7,
+     "f15": 4.0,
+     "dec10": 13.4,
+     "p60": 32.3,
+     "f60": 53.8,
+     "pass_med": 13.0,
+     "slow_pass": 45.4,
+     "usd_per_pass": 284.2,
+     "max_risk": 799
+    }
+   },
+   "atlas_funded": {
+    "H1": {
+     "per_month": 581,
+     "first_med": 18.0,
+     "first_p75": 28.0,
+     "no_pay_6m": 7.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 8.5,
+     "dead_6m": 8.5,
+     "min_room_p10": 121,
+     "payouts": 4.4,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 491,
+     "first_med": 25.0,
+     "first_p75": 38.0,
+     "no_pay_6m": 7.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 9.2,
+     "dead_6m": 9.2,
+     "min_room_p10": 135,
+     "payouts": 3.72,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 45,
+     "first_med": 16.0,
+     "first_p75": 25.0,
+     "no_pay_6m": 79.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 94.5,
+     "dead_6m": 94.5,
+     "min_room_p10": 41,
+     "payouts": 0.34,
+     "paths": 600
+    }
+   },
+   "atlas_real": {
+    "H1": {
+     "per_month": 626,
+     "first_med": 19.0,
+     "first_p75": 23.75,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 322,
+     "payouts": 4.46,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 283,
+     "first_med": 20.0,
+     "first_p75": 25.0,
+     "no_pay_6m": 43.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 340,
+     "payouts": 0.88,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 53,
+     "first_med": 28.0,
+     "first_p75": 41.5,
+     "no_pay_6m": 70.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 92.6,
+     "dead_6m": 92.6,
+     "min_room_p10": 42,
+     "payouts": 0.41,
+     "paths": 216
+    }
+   },
+   "why": [],
+   "pass": false
+  },
+  "G1 VRP half": {
+   "sig": "G1 VRP",
+   "mult": 0.5,
+   "bad_share": {
+    "H1": 32.8,
+    "H2": 65.4,
+    "REF": 33.0
+   },
+   "fixed": {
+    "LIT": {
+     "H1": {
+      "n": 80,
+      "tpw": 3.12,
+      "pf": 3.67,
+      "net": 18897,
+      "per_month": 3100,
+      "max_dd": -1895
+     },
+     "H2": {
+      "n": 40,
+      "tpw": 2.56,
+      "pf": 2.92,
+      "net": 7231,
+      "per_month": 1947,
+      "max_dd": -1215
+     },
+     "REF": {
+      "n": 508,
+      "tpw": 2.36,
+      "pf": 0.97,
+      "net": -1801,
+      "per_month": -35,
+      "max_dd": -12902
+     }
+    },
+    "ATLAS": {
+     "H1": {
+      "n": 101,
+      "tpw": 3.95,
+      "pf": 2.62,
+      "net": 12988,
+      "per_month": 2131,
+      "max_dd": -895
+     },
+     "H2": {
+      "n": 35,
+      "tpw": 2.24,
+      "pf": 2.54,
+      "net": 2598,
+      "per_month": 700,
+      "max_dd": -519
+     },
+     "REF": {
+      "n": 967,
+      "tpw": 4.49,
+      "pf": 1.06,
+      "net": 6578,
+      "per_month": 128,
+      "max_dd": -8244
+     }
+    }
+   },
+   "edge": {
+    "LIT": {
+     "H1": {
+      "bad_n": 22,
+      "bad_r": 0.464,
+      "ok_n": 58,
+      "ok_r": 0.852
+     },
+     "H2": {
+      "bad_n": 22,
+      "bad_r": 0.514,
+      "ok_n": 18,
+      "ok_r": 0.905
+     },
+     "REF": {
+      "bad_n": 151,
+      "bad_r": 0.127,
+      "ok_n": 360,
+      "ok_r": -0.037
+     }
+    },
+    "ATLAS": {
+     "H1": {
+      "bad_n": 34,
+      "bad_r": 1.079,
+      "ok_n": 70,
+      "ok_r": 0.525
+     },
+     "H2": {
+      "bad_n": 30,
+      "bad_r": 0.489,
+      "ok_n": 16,
+      "ok_r": 0.397
+     },
+     "REF": {
+      "bad_n": 328,
+      "bad_r": 0.063,
+      "ok_n": 666,
+      "ok_r": 0.031
+     }
+    }
+   },
+   "lit_eval": {
+    "H1": {
+     "n": 600,
+     "p10": 41.7,
+     "f10": 0.5,
+     "p15": 52.7,
+     "f15": 1.5,
+     "dec10": 42.2,
+     "p60": 89.5,
+     "f60": 6.0,
+     "pass_med": 11.0,
+     "slow_pass": 41.2,
+     "usd_per_pass": 102.6,
+     "max_risk": 788
+    },
+    "H2": {
+     "n": 600,
+     "p10": 27.3,
+     "f10": 0.0,
+     "p15": 40.2,
+     "f15": 0.2,
+     "dec10": 27.3,
+     "p60": 78.7,
+     "f60": 8.2,
+     "pass_med": 15.0,
+     "slow_pass": 48.9,
+     "usd_per_pass": 116.6,
+     "max_risk": 792
+    },
+    "REF": {
+     "n": 600,
+     "p10": 8.2,
+     "f10": 0.2,
+     "p15": 12.0,
+     "f15": 2.3,
+     "dec10": 8.4,
+     "p60": 26.5,
+     "f60": 45.0,
+     "pass_med": 17.0,
+     "slow_pass": 54.7,
+     "usd_per_pass": 346.4,
+     "max_risk": 799
+    }
+   },
+   "atlas_funded": {
+    "H1": {
+     "per_month": 546,
+     "first_med": 21.0,
+     "first_p75": 30.0,
+     "no_pay_6m": 7.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 8.8,
+     "dead_6m": 8.8,
+     "min_room_p10": 141,
+     "payouts": 4.15,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 447,
+     "first_med": 40.0,
+     "first_p75": 55.0,
+     "no_pay_6m": 3.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 3.3,
+     "dead_6m": 3.3,
+     "min_room_p10": 309,
+     "payouts": 3.45,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 45,
+     "first_med": 20.0,
+     "first_p75": 34.0,
+     "no_pay_6m": 77.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 93.0,
+     "dead_6m": 93.0,
+     "min_room_p10": 40,
+     "payouts": 0.35,
+     "paths": 600
+    }
+   },
+   "atlas_real": {
+    "H1": {
+     "per_month": 585,
+     "first_med": 22.0,
+     "first_p75": 27.75,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 316,
+     "payouts": 4.19,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 117,
+     "first_med": 27.0,
+     "first_p75": 48.0,
+     "no_pay_6m": 68.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 427,
+     "payouts": 0.5,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 68,
+     "first_med": 44.0,
+     "first_p75": 56.5,
+     "no_pay_6m": 67.1,
+     "lost_6m": 0.0,
+     "stuck_6m": 88.4,
+     "dead_6m": 88.4,
+     "min_room_p10": 40,
+     "payouts": 0.53,
+     "paths": 216
+    }
+   },
+   "why": [
+    "separation: bad days REF 33.0% vs H1 32.8% / H2 65.4%",
+    "edge LIT REF: bad 0.127R vs ok -0.037R",
+    "$ LIT 2021-25 2065 -> -1801",
+    "$ LIT H2 9659 -> 7231",
+    "edge ATLAS H1: bad 1.079R vs ok 0.525R",
+    "edge ATLAS H2: bad 0.489R vs ok 0.397R",
+    "edge ATLAS REF: bad 0.063R vs ok 0.031R",
+    "$ ATLAS 2021-25 10393 -> 6578",
+    "$ ATLAS H1 18362 -> 12988",
+    "$ ATLAS H2 5256 -> 2598",
+    "ATLAS funded dead H1 8.5 -> 8.8%",
+    "ATLAS funded H1 $581 -> $546/mo",
+    "ATLAS funded H2 $491 -> $447/mo",
+    "LIT eval pass H2 84.3 -> 78.7%"
+   ],
+   "pass": false
+  },
+  "G1 VRP out": {
+   "sig": "G1 VRP",
+   "mult": 0.0,
+   "bad_share": {
+    "H1": 32.8,
+    "H2": 65.4,
+    "REF": 33.0
+   },
+   "fixed": {
+    "LIT": {
+     "H1": {
+      "n": 58,
+      "tpw": 2.27,
+      "pf": 3.85,
+      "net": 17299,
+      "per_month": 2838,
+      "max_dd": -1895
+     },
+     "H2": {
+      "n": 18,
+      "tpw": 1.15,
+      "pf": 3.26,
+      "net": 5701,
+      "per_month": 1535,
+      "max_dd": -1215
+     },
+     "REF": {
+      "n": 360,
+      "tpw": 1.67,
+      "pf": 0.91,
+      "net": -4667,
+      "per_month": -91,
+      "max_dd": -12678
+     }
+    },
+    "ATLAS": {
+     "H1": {
+      "n": 70,
+      "tpw": 2.73,
+      "pf": 2.34,
+      "net": 9193,
+      "per_month": 1508,
+      "max_dd": -1068
+     },
+     "H2": {
+      "n": 16,
+      "tpw": 1.03,
+      "pf": 2.92,
+      "net": 1589,
+      "per_month": 428,
+      "max_dd": -321
+     },
+     "REF": {
+      "n": 666,
+      "tpw": 3.09,
+      "pf": 1.06,
+      "net": 5227,
+      "per_month": 102,
+      "max_dd": -7745
+     }
+    }
+   },
+   "edge": {
+    "LIT": {
+     "H1": {
+      "bad_n": 22,
+      "bad_r": 0.464,
+      "ok_n": 58,
+      "ok_r": 0.852
+     },
+     "H2": {
+      "bad_n": 22,
+      "bad_r": 0.514,
+      "ok_n": 18,
+      "ok_r": 0.905
+     },
+     "REF": {
+      "bad_n": 151,
+      "bad_r": 0.127,
+      "ok_n": 360,
+      "ok_r": -0.037
+     }
+    },
+    "ATLAS": {
+     "H1": {
+      "bad_n": 34,
+      "bad_r": 1.079,
+      "ok_n": 70,
+      "ok_r": 0.525
+     },
+     "H2": {
+      "bad_n": 30,
+      "bad_r": 0.489,
+      "ok_n": 16,
+      "ok_r": 0.397
+     },
+     "REF": {
+      "bad_n": 328,
+      "bad_r": 0.063,
+      "ok_n": 666,
+      "ok_r": 0.031
+     }
+    }
+   },
+   "lit_eval": {
+    "H1": {
+     "n": 600,
+     "p10": 39.8,
+     "f10": 0.5,
+     "p15": 50.2,
+     "f15": 1.7,
+     "dec10": 40.3,
+     "p60": 87.0,
+     "f60": 7.5,
+     "pass_med": 12.0,
+     "slow_pass": 42.3,
+     "usd_per_pass": 105.5,
+     "max_risk": 775
+    },
+    "H2": {
+     "n": 600,
+     "p10": 26.5,
+     "f10": 0.0,
+     "p15": 35.8,
+     "f15": 0.2,
+     "dec10": 26.5,
+     "p60": 72.8,
+     "f60": 8.7,
+     "pass_med": 16.0,
+     "slow_pass": 50.8,
+     "usd_per_pass": 126.1,
+     "max_risk": 774
+    },
+    "REF": {
+     "n": 600,
+     "p10": 7.8,
+     "f10": 0.2,
+     "p15": 10.7,
+     "f15": 2.0,
+     "dec10": 8.0,
+     "p60": 24.5,
+     "f60": 44.2,
+     "pass_med": 18.0,
+     "slow_pass": 56.5,
+     "usd_per_pass": 374.7,
+     "max_risk": 799
+    }
+   },
+   "atlas_funded": {
+    "H1": {
+     "per_month": 314,
+     "first_med": 35.0,
+     "first_p75": 49.0,
+     "no_pay_6m": 14.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 18.2,
+     "dead_6m": 18.2,
+     "min_room_p10": 70,
+     "payouts": 2.39,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 131,
+     "first_med": 72.0,
+     "first_p75": 99.75,
+     "no_pay_6m": 33.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 594,
+     "payouts": 1.02,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 38,
+     "first_med": 23.0,
+     "first_p75": 42.0,
+     "no_pay_6m": 79.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 92.8,
+     "dead_6m": 92.8,
+     "min_room_p10": 41,
+     "payouts": 0.29,
+     "paths": 600
+    }
+   },
+   "atlas_real": {
+    "H1": {
+     "per_month": 185,
+     "first_med": 38.0,
+     "first_p75": 51.75,
+     "no_pay_6m": 15.4,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 287,
+     "payouts": 1.38,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 0,
+     "first_med": null,
+     "first_p75": null,
+     "no_pay_6m": 100.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 840,
+     "payouts": 0.0,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 36,
+     "first_med": 31.0,
+     "first_p75": 52.0,
+     "no_pay_6m": 81.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 94.4,
+     "dead_6m": 94.4,
+     "min_room_p10": 38,
+     "payouts": 0.28,
+     "paths": 216
+    }
+   },
+   "why": [
+    "separation: bad days REF 33.0% vs H1 32.8% / H2 65.4%",
+    "edge LIT REF: bad 0.127R vs ok -0.037R",
+    "$ LIT 2021-25 2065 -> -4667",
+    "$ LIT H1 20868 -> 17299",
+    "$ LIT H2 9659 -> 5701",
+    "trades LIT H2 1.15/wk",
+    "edge ATLAS H1: bad 1.079R vs ok 0.525R",
+    "edge ATLAS H2: bad 0.489R vs ok 0.397R",
+    "edge ATLAS REF: bad 0.063R vs ok 0.031R",
+    "$ ATLAS 2021-25 10393 -> 5227",
+    "$ ATLAS H1 18362 -> 9193",
+    "$ ATLAS H2 5256 -> 1589",
+    "trades ATLAS H2 1.03/wk",
+    "ATLAS funded dead H1 8.5 -> 18.2%",
+    "ATLAS funded H1 $581 -> $314/mo",
+    "ATLAS funded H2 $491 -> $131/mo",
+    "LIT eval pass H2 84.3 -> 72.8%"
+   ],
+   "pass": false
+  },
+  "G2 quiet half": {
+   "sig": "G2 quiet",
+   "mult": 0.5,
+   "bad_share": {
+    "H1": 13.3,
+    "H2": 43.6,
+    "REF": 40.4
+   },
+   "fixed": {
+    "LIT": {
+     "H1": {
+      "n": 80,
+      "tpw": 3.12,
+      "pf": 3.47,
+      "net": 18305,
+      "per_month": 3003,
+      "max_dd": -2264
+     },
+     "H2": {
+      "n": 40,
+      "tpw": 2.56,
+      "pf": 2.08,
+      "net": 4187,
+      "per_month": 1127,
+      "max_dd": -1492
+     },
+     "REF": {
+      "n": 509,
+      "tpw": 2.36,
+      "pf": 1.08,
+      "net": 3962,
+      "per_month": 77,
+      "max_dd": -9909
+     }
+    },
+    "ATLAS": {
+     "H1": {
+      "n": 100,
+      "tpw": 3.91,
+      "pf": 3.12,
+      "net": 18271,
+      "per_month": 2998,
+      "max_dd": -1062
+     },
+     "H2": {
+      "n": 40,
+      "tpw": 2.56,
+      "pf": 2.45,
+      "net": 3758,
+      "per_month": 1012,
+      "max_dd": -886
+     },
+     "REF": {
+      "n": 983,
+      "tpw": 4.56,
+      "pf": 1.11,
+      "net": 10539,
+      "per_month": 205,
+      "max_dd": -11058
+     }
+    }
+   },
+   "edge": {
+    "LIT": {
+     "H1": {
+      "bad_n": 14,
+      "bad_r": 0.953,
+      "ok_n": 66,
+      "ok_r": 0.701
+     },
+     "H2": {
+      "bad_n": 23,
+      "bad_r": 1.103,
+      "ok_n": 17,
+      "ok_r": 0.131
+     },
+     "REF": {
+      "bad_n": 219,
+      "bad_r": -0.053,
+      "ok_n": 292,
+      "ok_r": 0.06
+     }
+    },
+    "ATLAS": {
+     "H1": {
+      "bad_n": 14,
+      "bad_r": -0.062,
+      "ok_n": 90,
+      "ok_r": 0.826
+     },
+     "H2": {
+      "bad_n": 21,
+      "bad_r": 0.282,
+      "ok_n": 25,
+      "ok_r": 0.604
+     },
+     "REF": {
+      "bad_n": 416,
+      "bad_r": -0.012,
+      "ok_n": 578,
+      "ok_r": 0.081
+     }
+    }
+   },
+   "lit_eval": {
+    "H1": {
+     "n": 600,
+     "p10": 45.7,
+     "f10": 0.0,
+     "p15": 55.2,
+     "f15": 0.7,
+     "dec10": 45.7,
+     "p60": 86.7,
+     "f60": 7.8,
+     "pass_med": 10.0,
+     "slow_pass": 36.3,
+     "usd_per_pass": 105.9,
+     "max_risk": 795
+    },
+    "H2": {
+     "n": 600,
+     "p10": 14.0,
+     "f10": 0.0,
+     "p15": 18.8,
+     "f15": 0.3,
+     "dec10": 14.0,
+     "p60": 45.7,
+     "f60": 15.8,
+     "pass_med": 20.5,
+     "slow_pass": 58.8,
+     "usd_per_pass": 200.9,
+     "max_risk": 830
+    },
+    "REF": {
+     "n": 600,
+     "p10": 9.5,
+     "f10": 0.0,
+     "p15": 14.5,
+     "f15": 0.3,
+     "dec10": 9.5,
+     "p60": 30.0,
+     "f60": 31.8,
+     "pass_med": 17.0,
+     "slow_pass": 51.7,
+     "usd_per_pass": 306.0,
+     "max_risk": 799
+    }
+   },
+   "atlas_funded": {
+    "H1": {
+     "per_month": 585,
+     "first_med": 18.0,
+     "first_p75": 28.0,
+     "no_pay_6m": 6.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 8.0,
+     "dead_6m": 8.0,
+     "min_room_p10": 144,
+     "payouts": 4.43,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 517,
+     "first_med": 28.0,
+     "first_p75": 42.0,
+     "no_pay_6m": 2.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 4.0,
+     "dead_6m": 4.0,
+     "min_room_p10": 384,
+     "payouts": 3.92,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 47,
+     "first_med": 29.0,
+     "first_p75": 43.0,
+     "no_pay_6m": 77.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 91.0,
+     "dead_6m": 91.0,
+     "min_room_p10": 33,
+     "payouts": 0.36,
+     "paths": 600
+    }
+   },
+   "atlas_real": {
+    "H1": {
+     "per_month": 659,
+     "first_med": 19.0,
+     "first_p75": 24.75,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 322,
+     "payouts": 4.65,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 203,
+     "first_med": 16.0,
+     "first_p75": 23.75,
+     "no_pay_6m": 62.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 532,
+     "payouts": 0.81,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 53,
+     "first_med": 36.0,
+     "first_p75": 49.25,
+     "no_pay_6m": 72.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 86.1,
+     "dead_6m": 86.1,
+     "min_room_p10": 33,
+     "payouts": 0.41,
+     "paths": 216
+    }
+   },
+   "why": [
+    "separation: bad days REF 40.4% vs H1 13.3% / H2 43.6%",
+    "edge LIT H1: bad 0.953R vs ok 0.701R",
+    "edge LIT H2: bad 1.103R vs ok 0.131R",
+    "$ LIT H1 20868 -> 18305",
+    "$ LIT H2 9659 -> 4187",
+    "$ ATLAS H2 5256 -> 3758",
+    "LIT eval pass H2 84.3 -> 45.7%"
+   ],
+   "pass": false
+  },
+  "G2 quiet out": {
+   "sig": "G2 quiet",
+   "mult": 0.0,
+   "bad_share": {
+    "H1": 13.3,
+    "H2": 43.6,
+    "REF": 40.4
+   },
+   "fixed": {
+    "LIT": {
+     "H1": {
+      "n": 66,
+      "tpw": 2.58,
+      "pf": 3.45,
+      "net": 16198,
+      "per_month": 2658,
+      "max_dd": -2264
+     },
+     "H2": {
+      "n": 17,
+      "tpw": 1.09,
+      "pf": 1.3,
+      "net": 779,
+      "per_month": 210,
+      "max_dd": -1492
+     },
+     "REF": {
+      "n": 292,
+      "tpw": 1.36,
+      "pf": 1.17,
+      "net": 6117,
+      "per_month": 119,
+      "max_dd": -8134
+     }
+    },
+    "ATLAS": {
+     "H1": {
+      "n": 90,
+      "tpw": 3.52,
+      "pf": 3.35,
+      "net": 18579,
+      "per_month": 3048,
+      "max_dd": -1062
+     },
+     "H2": {
+      "n": 25,
+      "tpw": 1.6,
+      "pf": 3.02,
+      "net": 3777,
+      "per_month": 1017,
+      "max_dd": -511
+     },
+     "REF": {
+      "n": 578,
+      "tpw": 2.68,
+      "pf": 1.16,
+      "net": 11653,
+      "per_month": 227,
+      "max_dd": -11386
+     }
+    }
+   },
+   "edge": {
+    "LIT": {
+     "H1": {
+      "bad_n": 14,
+      "bad_r": 0.953,
+      "ok_n": 66,
+      "ok_r": 0.701
+     },
+     "H2": {
+      "bad_n": 23,
+      "bad_r": 1.103,
+      "ok_n": 17,
+      "ok_r": 0.131
+     },
+     "REF": {
+      "bad_n": 219,
+      "bad_r": -0.053,
+      "ok_n": 292,
+      "ok_r": 0.06
+     }
+    },
+    "ATLAS": {
+     "H1": {
+      "bad_n": 14,
+      "bad_r": -0.062,
+      "ok_n": 90,
+      "ok_r": 0.826
+     },
+     "H2": {
+      "bad_n": 21,
+      "bad_r": 0.282,
+      "ok_n": 25,
+      "ok_r": 0.604
+     },
+     "REF": {
+      "bad_n": 416,
+      "bad_r": -0.012,
+      "ok_n": 578,
+      "ok_r": 0.081
+     }
+    }
+   },
+   "lit_eval": {
+    "H1": {
+     "n": 600,
+     "p10": 43.2,
+     "f10": 0.0,
+     "p15": 51.0,
+     "f15": 0.5,
+     "dec10": 43.2,
+     "p60": 82.0,
+     "f60": 9.7,
+     "pass_med": 10.0,
+     "slow_pass": 37.8,
+     "usd_per_pass": 112.0,
+     "max_risk": 794
+    },
+    "H2": {
+     "n": 600,
+     "p10": 14.5,
+     "f10": 0.0,
+     "p15": 17.3,
+     "f15": 0.3,
+     "dec10": 14.5,
+     "p60": 37.2,
+     "f60": 15.2,
+     "pass_med": 17.0,
+     "slow_pass": 53.4,
+     "usd_per_pass": 246.8,
+     "max_risk": 794
+    },
+    "REF": {
+     "n": 600,
+     "p10": 10.2,
+     "f10": 0.0,
+     "p15": 14.8,
+     "f15": 0.3,
+     "dec10": 10.2,
+     "p60": 30.5,
+     "f60": 23.0,
+     "pass_med": 16.0,
+     "slow_pass": 51.4,
+     "usd_per_pass": 301.0,
+     "max_risk": 799
+    }
+   },
+   "atlas_funded": {
+    "H1": {
+     "per_month": 574,
+     "first_med": 19.0,
+     "first_p75": 29.0,
+     "no_pay_6m": 6.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 7.8,
+     "dead_6m": 7.8,
+     "min_room_p10": 140,
+     "payouts": 4.35,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 346,
+     "first_med": 36.0,
+     "first_p75": 56.0,
+     "no_pay_6m": 8.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 8.3,
+     "dead_6m": 8.3,
+     "min_room_p10": 211,
+     "payouts": 2.62,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 39,
+     "first_med": 35.0,
+     "first_p75": 54.0,
+     "no_pay_6m": 78.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 86.5,
+     "dead_6m": 86.5,
+     "min_room_p10": 28,
+     "payouts": 0.3,
+     "paths": 600
+    }
+   },
+   "atlas_real": {
+    "H1": {
+     "per_month": 590,
+     "first_med": 19.0,
+     "first_p75": 24.75,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 322,
+     "payouts": 4.23,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 121,
+     "first_med": 12.0,
+     "first_p75": 20.0,
+     "no_pay_6m": 68.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 640,
+     "payouts": 0.5,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 40,
+     "first_med": 36.0,
+     "first_p75": 46.5,
+     "no_pay_6m": 81.9,
+     "lost_6m": 0.0,
+     "stuck_6m": 80.6,
+     "dead_6m": 80.6,
+     "min_room_p10": 40,
+     "payouts": 0.31,
+     "paths": 216
+    }
+   },
+   "why": [
+    "separation: bad days REF 40.4% vs H1 13.3% / H2 43.6%",
+    "edge LIT H1: bad 0.953R vs ok 0.701R",
+    "edge LIT H2: bad 1.103R vs ok 0.131R",
+    "$ LIT H1 20868 -> 16198",
+    "$ LIT H2 9659 -> 779",
+    "trades LIT H2 1.09/wk",
+    "$ ATLAS H2 5256 -> 3777",
+    "trades ATLAS H2 1.6/wk",
+    "ATLAS funded H2 $491 -> $346/mo",
+    "LIT eval pass H1 84.8 -> 82.0%",
+    "LIT eval pass H2 84.3 -> 37.2%"
+   ],
+   "pass": false
+  },
+  "G3 chop half": {
+   "sig": "G3 chop",
+   "mult": 0.5,
+   "bad_share": {
+    "H1": 34.4,
+    "H2": 35.9,
+    "REF": 31.2
+   },
+   "fixed": {
+    "LIT": {
+     "H1": {
+      "n": 80,
+      "tpw": 3.12,
+      "pf": 3.22,
+      "net": 15939,
+      "per_month": 2615,
+      "max_dd": -1990
+     },
+     "H2": {
+      "n": 40,
+      "tpw": 2.56,
+      "pf": 3.58,
+      "net": 10090,
+      "per_month": 2716,
+      "max_dd": -1037
+     },
+     "REF": {
+      "n": 510,
+      "tpw": 2.37,
+      "pf": 0.96,
+      "net": -2068,
+      "per_month": -40,
+      "max_dd": -12487
+     }
+    },
+    "ATLAS": {
+     "H1": {
+      "n": 98,
+      "tpw": 3.83,
+      "pf": 3.24,
+      "net": 15758,
+      "per_month": 2585,
+      "max_dd": -1062
+     },
+     "H2": {
+      "n": 42,
+      "tpw": 2.69,
+      "pf": 2.64,
+      "net": 4418,
+      "per_month": 1190,
+      "max_dd": -564
+     },
+     "REF": {
+      "n": 967,
+      "tpw": 4.49,
+      "pf": 1.14,
+      "net": 14066,
+      "per_month": 274,
+      "max_dd": -7356
+     }
+    }
+   },
+   "edge": {
+    "LIT": {
+     "H1": {
+      "bad_n": 24,
+      "bad_r": 1.104,
+      "ok_n": 56,
+      "ok_r": 0.592
+     },
+     "H2": {
+      "bad_n": 14,
+      "bad_r": -0.146,
+      "ok_n": 26,
+      "ok_r": 1.14
+     },
+     "REF": {
+      "bad_n": 170,
+      "bad_r": 0.12,
+      "ok_n": 341,
+      "ok_r": -0.043
+     }
+    },
+    "ATLAS": {
+     "H1": {
+      "bad_n": 39,
+      "bad_r": 0.487,
+      "ok_n": 65,
+      "ok_r": 0.838
+     },
+     "H2": {
+      "bad_n": 13,
+      "bad_r": 0.323,
+      "ok_n": 33,
+      "ok_r": 0.51
+     },
+     "REF": {
+      "bad_n": 322,
+      "bad_r": -0.086,
+      "ok_n": 672,
+      "ok_r": 0.103
+     }
+    }
+   },
+   "lit_eval": {
+    "H1": {
+     "n": 600,
+     "p10": 40.5,
+     "f10": 0.0,
+     "p15": 51.0,
+     "f15": 0.5,
+     "dec10": 40.5,
+     "p60": 84.7,
+     "f60": 8.3,
+     "pass_med": 11.0,
+     "slow_pass": 39.8,
+     "usd_per_pass": 108.4,
+     "max_risk": 795
+    },
+    "H2": {
+     "n": 600,
+     "p10": 43.7,
+     "f10": 0.0,
+     "p15": 54.5,
+     "f15": 0.0,
+     "dec10": 43.7,
+     "p60": 90.3,
+     "f60": 3.8,
+     "pass_med": 12.0,
+     "slow_pass": 39.7,
+     "usd_per_pass": 101.7,
+     "max_risk": 794
+    },
+    "REF": {
+     "n": 600,
+     "p10": 8.0,
+     "f10": 0.5,
+     "p15": 12.3,
+     "f15": 2.2,
+     "dec10": 8.5,
+     "p60": 27.7,
+     "f60": 46.7,
+     "pass_med": 18.0,
+     "slow_pass": 55.4,
+     "usd_per_pass": 331.4,
+     "max_risk": 799
+    }
+   },
+   "atlas_funded": {
+    "H1": {
+     "per_month": 582,
+     "first_med": 20.0,
+     "first_p75": 30.0,
+     "no_pay_6m": 4.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 5.7,
+     "dead_6m": 5.7,
+     "min_room_p10": 222,
+     "payouts": 4.42,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 467,
+     "first_med": 29.0,
+     "first_p75": 42.0,
+     "no_pay_6m": 7.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 9.5,
+     "dead_6m": 9.5,
+     "min_room_p10": 135,
+     "payouts": 3.55,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 53,
+     "first_med": 22.0,
+     "first_p75": 39.0,
+     "no_pay_6m": 74.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 90.7,
+     "dead_6m": 90.7,
+     "min_room_p10": 41,
+     "payouts": 0.41,
+     "paths": 600
+    }
+   },
+   "atlas_real": {
+    "H1": {
+     "per_month": 602,
+     "first_med": 21.0,
+     "first_p75": 24.0,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 298,
+     "payouts": 4.31,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 261,
+     "first_med": 20.0,
+     "first_p75": 25.0,
+     "no_pay_6m": 50.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 340,
+     "payouts": 0.81,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 69,
+     "first_med": 34.5,
+     "first_p75": 51.75,
+     "no_pay_6m": 67.6,
+     "lost_6m": 0.0,
+     "stuck_6m": 86.6,
+     "dead_6m": 86.6,
+     "min_room_p10": 41,
+     "payouts": 0.53,
+     "paths": 216
+    }
+   },
+   "why": [
+    "separation: bad days REF 31.2% vs H1 34.4% / H2 35.9%",
+    "edge LIT H1: bad 1.104R vs ok 0.592R",
+    "edge LIT REF: bad 0.12R vs ok -0.043R",
+    "$ LIT 2021-25 2065 -> -2068",
+    "$ LIT H1 20868 -> 15939",
+    "$ ATLAS H1 18362 -> 15758",
+    "$ ATLAS H2 5256 -> 4418",
+    "ATLAS funded dead H2 9.2 -> 9.5%",
+    "ATLAS funded H2 $491 -> $467/mo"
+   ],
+   "pass": false
+  },
+  "G3 chop out": {
+   "sig": "G3 chop",
+   "mult": 0.0,
+   "bad_share": {
+    "H1": 34.4,
+    "H2": 35.9,
+    "REF": 31.2
+   },
+   "fixed": {
+    "LIT": {
+     "H1": {
+      "n": 56,
+      "tpw": 2.19,
+      "pf": 2.87,
+      "net": 11597,
+      "per_month": 1903,
+      "max_dd": -1717
+     },
+     "H2": {
+      "n": 26,
+      "tpw": 1.67,
+      "pf": 4.51,
+      "net": 10372,
+      "per_month": 2793,
+      "max_dd": -1156
+     },
+     "REF": {
+      "n": 341,
+      "tpw": 1.58,
+      "pf": 0.89,
+      "net": -5079,
+      "per_month": -99,
+      "max_dd": -14673
+     }
+    },
+    "ATLAS": {
+     "H1": {
+      "n": 65,
+      "tpw": 2.54,
+      "pf": 3.47,
+      "net": 13616,
+      "per_month": 2234,
+      "max_dd": -1062
+     },
+     "H2": {
+      "n": 33,
+      "tpw": 2.12,
+      "pf": 2.78,
+      "net": 4205,
+      "per_month": 1132,
+      "max_dd": -404
+     },
+     "REF": {
+      "n": 672,
+      "tpw": 3.12,
+      "pf": 1.21,
+      "net": 17318,
+      "per_month": 338,
+      "max_dd": -5611
+     }
+    }
+   },
+   "edge": {
+    "LIT": {
+     "H1": {
+      "bad_n": 24,
+      "bad_r": 1.104,
+      "ok_n": 56,
+      "ok_r": 0.592
+     },
+     "H2": {
+      "bad_n": 14,
+      "bad_r": -0.146,
+      "ok_n": 26,
+      "ok_r": 1.14
+     },
+     "REF": {
+      "bad_n": 170,
+      "bad_r": 0.12,
+      "ok_n": 341,
+      "ok_r": -0.043
+     }
+    },
+    "ATLAS": {
+     "H1": {
+      "bad_n": 39,
+      "bad_r": 0.487,
+      "ok_n": 65,
+      "ok_r": 0.838
+     },
+     "H2": {
+      "bad_n": 13,
+      "bad_r": 0.323,
+      "ok_n": 33,
+      "ok_r": 0.51
+     },
+     "REF": {
+      "bad_n": 322,
+      "bad_r": -0.086,
+      "ok_n": 672,
+      "ok_r": 0.103
+     }
+    }
+   },
+   "lit_eval": {
+    "H1": {
+     "n": 600,
+     "p10": 37.3,
+     "f10": 0.0,
+     "p15": 44.8,
+     "f15": 0.5,
+     "dec10": 37.3,
+     "p60": 75.5,
+     "f60": 13.2,
+     "pass_med": 11.0,
+     "slow_pass": 40.6,
+     "usd_per_pass": 121.6,
+     "max_risk": 794
+    },
+    "H2": {
+     "n": 600,
+     "p10": 47.7,
+     "f10": 0.0,
+     "p15": 58.3,
+     "f15": 0.0,
+     "dec10": 47.7,
+     "p60": 91.3,
+     "f60": 3.7,
+     "pass_med": 10.0,
+     "slow_pass": 36.1,
+     "usd_per_pass": 100.5,
+     "max_risk": 794
+    },
+    "REF": {
+     "n": 600,
+     "p10": 7.0,
+     "f10": 0.5,
+     "p15": 9.7,
+     "f15": 1.7,
+     "dec10": 7.5,
+     "p60": 24.8,
+     "f60": 44.5,
+     "pass_med": 22.0,
+     "slow_pass": 61.1,
+     "usd_per_pass": 370.2,
+     "max_risk": 799
+    }
+   },
+   "atlas_funded": {
+    "H1": {
+     "per_month": 511,
+     "first_med": 25.0,
+     "first_p75": 36.0,
+     "no_pay_6m": 4.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 6.2,
+     "dead_6m": 6.2,
+     "min_room_p10": 192,
+     "payouts": 3.87,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 386,
+     "first_med": 35.0,
+     "first_p75": 54.0,
+     "no_pay_6m": 6.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 7.3,
+     "dead_6m": 7.3,
+     "min_room_p10": 235,
+     "payouts": 2.95,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 59,
+     "first_med": 26.5,
+     "first_p75": 42.0,
+     "no_pay_6m": 72.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 85.7,
+     "dead_6m": 85.7,
+     "min_room_p10": 40,
+     "payouts": 0.45,
+     "paths": 600
+    }
+   },
+   "atlas_real": {
+    "H1": {
+     "per_month": 462,
+     "first_med": 23.5,
+     "first_p75": 32.0,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 248,
+     "payouts": 3.38,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 195,
+     "first_med": 25.0,
+     "first_p75": 31.25,
+     "no_pay_6m": 50.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 469,
+     "payouts": 0.5,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 59,
+     "first_med": 31.0,
+     "first_p75": 47.0,
+     "no_pay_6m": 68.1,
+     "lost_6m": 0.0,
+     "stuck_6m": 92.1,
+     "dead_6m": 92.1,
+     "min_room_p10": 41,
+     "payouts": 0.45,
+     "paths": 216
+    }
+   },
+   "why": [
+    "separation: bad days REF 31.2% vs H1 34.4% / H2 35.9%",
+    "edge LIT H1: bad 1.104R vs ok 0.592R",
+    "edge LIT REF: bad 0.12R vs ok -0.043R",
+    "$ LIT 2021-25 2065 -> -5079",
+    "$ LIT H1 20868 -> 11597",
+    "trades LIT H2 1.67/wk",
+    "$ ATLAS H1 18362 -> 13616",
+    "$ ATLAS H2 5256 -> 4205",
+    "ATLAS funded H1 $581 -> $511/mo",
+    "ATLAS funded H2 $491 -> $386/mo",
+    "LIT eval pass H1 84.8 -> 75.5%"
+   ],
+   "pass": false
+  },
+  "G4 vote half": {
+   "sig": "G4 vote",
+   "mult": 0.5,
+   "bad_share": {
+    "H1": 21.1,
+    "H2": 44.9,
+    "REF": 25.3
+   },
+   "fixed": {
+    "LIT": {
+     "H1": {
+      "n": 80,
+      "tpw": 3.12,
+      "pf": 3.5,
+      "net": 18662,
+      "per_month": 3062,
+      "max_dd": -2264
+     },
+     "H2": {
+      "n": 40,
+      "tpw": 2.56,
+      "pf": 3.11,
+      "net": 7915,
+      "per_month": 2131,
+      "max_dd": -1037
+     },
+     "REF": {
+      "n": 509,
+      "tpw": 2.36,
+      "pf": 0.95,
+      "net": -2876,
+      "per_month": -56,
+      "max_dd": -13453
+     }
+    },
+    "ATLAS": {
+     "H1": {
+      "n": 103,
+      "tpw": 4.02,
+      "pf": 3.15,
+      "net": 17433,
+      "per_month": 2860,
+      "max_dd": -1062
+     },
+     "H2": {
+      "n": 41,
+      "tpw": 2.63,
+      "pf": 2.89,
+      "net": 4353,
+      "per_month": 1172,
+      "max_dd": -616
+     },
+     "REF": {
+      "n": 976,
+      "tpw": 4.53,
+      "pf": 1.13,
+      "net": 13567,
+      "per_month": 265,
+      "max_dd": -8986
+     }
+    }
+   },
+   "edge": {
+    "LIT": {
+     "H1": {
+      "bad_n": 13,
+      "bad_r": 0.922,
+      "ok_n": 67,
+      "ok_r": 0.711
+     },
+     "H2": {
+      "bad_n": 19,
+      "bad_r": 0.371,
+      "ok_n": 21,
+      "ok_r": 0.979
+     },
+     "REF": {
+      "bad_n": 133,
+      "bad_r": 0.172,
+      "ok_n": 378,
+      "ok_r": -0.045
+     }
+    },
+    "ATLAS": {
+     "H1": {
+      "bad_n": 20,
+      "bad_r": 0.409,
+      "ok_n": 84,
+      "ok_r": 0.777
+     },
+     "H2": {
+      "bad_n": 18,
+      "bad_r": 0.209,
+      "ok_n": 28,
+      "ok_r": 0.616
+     },
+     "REF": {
+      "bad_n": 263,
+      "bad_r": -0.095,
+      "ok_n": 731,
+      "ok_r": 0.091
+     }
+    }
+   },
+   "lit_eval": {
+    "H1": {
+     "n": 600,
+     "p10": 46.2,
+     "f10": 0.0,
+     "p15": 56.3,
+     "f15": 0.5,
+     "dec10": 46.2,
+     "p60": 87.7,
+     "f60": 7.3,
+     "pass_med": 10.0,
+     "slow_pass": 35.7,
+     "usd_per_pass": 104.7,
+     "max_risk": 795
+    },
+    "H2": {
+     "n": 600,
+     "p10": 29.7,
+     "f10": 0.0,
+     "p15": 39.0,
+     "f15": 0.0,
+     "dec10": 29.7,
+     "p60": 77.8,
+     "f60": 7.7,
+     "pass_med": 15.0,
+     "slow_pass": 49.9,
+     "usd_per_pass": 118.0,
+     "max_risk": 794
+    },
+    "REF": {
+     "n": 600,
+     "p10": 8.8,
+     "f10": 0.5,
+     "p15": 13.2,
+     "f15": 2.7,
+     "dec10": 9.3,
+     "p60": 28.7,
+     "f60": 50.8,
+     "pass_med": 17.5,
+     "slow_pass": 54.1,
+     "usd_per_pass": 319.9,
+     "max_risk": 799
+    }
+   },
+   "atlas_funded": {
+    "H1": {
+     "per_month": 574,
+     "first_med": 20.0,
+     "first_p75": 29.25,
+     "no_pay_6m": 6.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 7.3,
+     "dead_6m": 7.3,
+     "min_room_p10": 159,
+     "payouts": 4.36,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 508,
+     "first_med": 30.0,
+     "first_p75": 44.0,
+     "no_pay_6m": 2.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 3.2,
+     "dead_6m": 3.2,
+     "min_room_p10": 374,
+     "payouts": 3.87,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 51,
+     "first_med": 20.0,
+     "first_p75": 36.0,
+     "no_pay_6m": 76.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 92.0,
+     "dead_6m": 92.0,
+     "min_room_p10": 39,
+     "payouts": 0.4,
+     "paths": 600
+    }
+   },
+   "atlas_real": {
+    "H1": {
+     "per_month": 603,
+     "first_med": 21.0,
+     "first_p75": 24.75,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 298,
+     "payouts": 4.31,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 168,
+     "first_med": 22.5,
+     "first_p75": 40.0,
+     "no_pay_6m": 62.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 532,
+     "payouts": 0.69,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 59,
+     "first_med": 32.5,
+     "first_p75": 50.0,
+     "no_pay_6m": 71.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 89.8,
+     "dead_6m": 89.8,
+     "min_room_p10": 41,
+     "payouts": 0.46,
+     "paths": 216
+    }
+   },
+   "why": [
+    "separation: bad days REF 25.3% vs H1 21.1% / H2 44.9%",
+    "edge LIT H1: bad 0.922R vs ok 0.711R",
+    "edge LIT REF: bad 0.172R vs ok -0.045R",
+    "$ LIT 2021-25 2065 -> -2876",
+    "$ LIT H1 20868 -> 18662",
+    "$ LIT H2 9659 -> 7915",
+    "$ ATLAS H2 5256 -> 4353",
+    "LIT eval pass H2 84.3 -> 77.8%"
+   ],
+   "pass": false
+  },
+  "G4 vote out": {
+   "sig": "G4 vote",
+   "mult": 0.0,
+   "bad_share": {
+    "H1": 21.1,
+    "H2": 44.9,
+    "REF": 25.3
+   },
+   "fixed": {
+    "LIT": {
+     "H1": {
+      "n": 67,
+      "tpw": 2.62,
+      "pf": 3.47,
+      "net": 16673,
+      "per_month": 2735,
+      "max_dd": -2264
+     },
+     "H2": {
+      "n": 21,
+      "tpw": 1.35,
+      "pf": 3.74,
+      "net": 7193,
+      "per_month": 1937,
+      "max_dd": -1156
+     },
+     "REF": {
+      "n": 378,
+      "tpw": 1.75,
+      "pf": 0.89,
+      "net": -5933,
+      "per_month": -116,
+      "max_dd": -15995
+     }
+    },
+    "ATLAS": {
+     "H1": {
+      "n": 84,
+      "tpw": 3.28,
+      "pf": 3.34,
+      "net": 16318,
+      "per_month": 2677,
+      "max_dd": -1062
+     },
+     "H2": {
+      "n": 28,
+      "tpw": 1.79,
+      "pf": 3.58,
+      "net": 4315,
+      "per_month": 1162,
+      "max_dd": -360
+     },
+     "REF": {
+      "n": 731,
+      "tpw": 3.39,
+      "pf": 1.18,
+      "net": 16615,
+      "per_month": 324,
+      "max_dd": -7432
+     }
+    }
+   },
+   "edge": {
+    "LIT": {
+     "H1": {
+      "bad_n": 13,
+      "bad_r": 0.922,
+      "ok_n": 67,
+      "ok_r": 0.711
+     },
+     "H2": {
+      "bad_n": 19,
+      "bad_r": 0.371,
+      "ok_n": 21,
+      "ok_r": 0.979
+     },
+     "REF": {
+      "bad_n": 133,
+      "bad_r": 0.172,
+      "ok_n": 378,
+      "ok_r": -0.045
+     }
+    },
+    "ATLAS": {
+     "H1": {
+      "bad_n": 20,
+      "bad_r": 0.409,
+      "ok_n": 84,
+      "ok_r": 0.777
+     },
+     "H2": {
+      "bad_n": 18,
+      "bad_r": 0.209,
+      "ok_n": 28,
+      "ok_r": 0.616
+     },
+     "REF": {
+      "bad_n": 263,
+      "bad_r": -0.095,
+      "ok_n": 731,
+      "ok_r": 0.091
+     }
+    }
+   },
+   "lit_eval": {
+    "H1": {
+     "n": 600,
+     "p10": 43.5,
+     "f10": 0.0,
+     "p15": 51.8,
+     "f15": 0.5,
+     "dec10": 43.5,
+     "p60": 82.2,
+     "f60": 10.2,
+     "pass_med": 10.0,
+     "slow_pass": 36.9,
+     "usd_per_pass": 111.7,
+     "max_risk": 794
+    },
+    "H2": {
+     "n": 600,
+     "p10": 30.8,
+     "f10": 0.0,
+     "p15": 39.8,
+     "f15": 0.0,
+     "dec10": 30.8,
+     "p60": 80.2,
+     "f60": 6.2,
+     "pass_med": 16.0,
+     "slow_pass": 50.3,
+     "usd_per_pass": 114.5,
+     "max_risk": 794
+    },
+    "REF": {
+     "n": 600,
+     "p10": 8.8,
+     "f10": 0.5,
+     "p15": 12.2,
+     "f15": 2.3,
+     "dec10": 9.3,
+     "p60": 25.3,
+     "f60": 48.3,
+     "pass_med": 17.0,
+     "slow_pass": 52.0,
+     "usd_per_pass": 362.8,
+     "max_risk": 799
+    }
+   },
+   "atlas_funded": {
+    "H1": {
+     "per_month": 540,
+     "first_med": 22.0,
+     "first_p75": 32.0,
+     "no_pay_6m": 6.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 7.8,
+     "dead_6m": 7.8,
+     "min_room_p10": 141,
+     "payouts": 4.1,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 398,
+     "first_med": 38.0,
+     "first_p75": 57.0,
+     "no_pay_6m": 2.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 1.0,
+     "dead_6m": 1.0,
+     "min_room_p10": 486,
+     "payouts": 3.05,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 54,
+     "first_med": 23.0,
+     "first_p75": 37.25,
+     "no_pay_6m": 74.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 90.3,
+     "dead_6m": 90.3,
+     "min_room_p10": 34,
+     "payouts": 0.41,
+     "paths": 600
+    }
+   },
+   "atlas_real": {
+    "H1": {
+     "per_month": 525,
+     "first_med": 23.5,
+     "first_p75": 30.0,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 326,
+     "payouts": 3.77,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 138,
+     "first_med": 30.0,
+     "first_p75": 35.0,
+     "no_pay_6m": 68.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 640,
+     "payouts": 0.56,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 53,
+     "first_med": 32.0,
+     "first_p75": 47.0,
+     "no_pay_6m": 72.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 89.4,
+     "dead_6m": 89.4,
+     "min_room_p10": 42,
+     "payouts": 0.41,
+     "paths": 216
+    }
+   },
+   "why": [
+    "separation: bad days REF 25.3% vs H1 21.1% / H2 44.9%",
+    "edge LIT H1: bad 0.922R vs ok 0.711R",
+    "edge LIT REF: bad 0.172R vs ok -0.045R",
+    "$ LIT 2021-25 2065 -> -5933",
+    "$ LIT H1 20868 -> 16673",
+    "$ LIT H2 9659 -> 7193",
+    "trades LIT H2 1.35/wk",
+    "$ ATLAS H1 18362 -> 16318",
+    "$ ATLAS H2 5256 -> 4315",
+    "trades ATLAS H2 1.79/wk",
+    "ATLAS funded H1 $581 -> $540/mo",
+    "ATLAS funded H2 $491 -> $398/mo",
+    "LIT eval pass H1 84.8 -> 82.2%",
+    "LIT eval pass H2 84.3 -> 80.2%"
+   ],
+   "pass": false
+  }
+ },
+ "passers": [],
+ "took_s": 85
+}

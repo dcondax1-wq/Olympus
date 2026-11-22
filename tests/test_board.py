@@ -217,6 +217,15 @@ def part_d():
     z = {r["key"]: r for r in b["accounts"]}["zlarior"]
     check("d. the ntfy feed alone: PC fresh via ntfy, Zlarior's live card, the pass event", b["pc"]["via"] == "ntfy" and not b["pc"]["stale"]
           and z["balance"] == 49900 and any(e["kind"] == "eval_passed" for e in b["events"]), (b["pc"], z))
+    # finder round 2026-11-20: a STOPPED bot (pc.running false, the paper adapter) posts its paper twin's numbers (room $1,771 vs the real $1,025):
+    # the read keeps the last LIVE numbers (the PC's board rows) and says so in its header
+    stp = {**lite, "pc": {"running": False, "adapter": "paper"}, "board": {"t": NOW - 90, "lit": {"balance": 49938, "room": 1771, "to_target": 3062}}}
+    bs = T.gather(offline=False, hb={"present": True, "t": NOW - 120, "board": {"accounts": [{"key": "zlarior", "src": "PC live", "balance": 49192.78, "room": 1024.58,
+                                                                                            "to_pass": 3807.22, "src_t": NOW - 4000}]}}, lite=stp, now=NOW)
+    zs = {r["key"]: r for r in bs["accounts"]}["zlarior"]
+    head = T.lines(bs, now=NOW)[0]
+    check("d. a stopped bot's paper numbers ($49,938, room $1,771) are not taken: the last LIVE ones ($49,192.78, room $1,024.58) stay, the header says 'BOT STOPPED: PAPER NUMBERS'",
+          zs["balance"] == 49192.78 and zs["room"] == 1024.58 and "BOT STOPPED: PAPER NUMBERS" in head and T.bot_stopped(lite) == "", (zs, head))
     part_d_funded(T)
     shared = os.environ["LE_BOARD_SHARED"]
     T.write_note("ATLAS 26,946.10 passed, ends 6017 MFFUEVBLDR000006017", kind="owner_note", acct="atlas", src="owner", via="chat", now=NOW - 50)
@@ -330,7 +339,7 @@ def part_e():
     check("e. source order: PC fresh > ntfy fresh (laid over the copy) > published copy > PLAN > demo; ?demo=1 forces the fixture",
           r.get("a") == "pcpc" and r.get("b") == "pc" and r.get("c") == "copy" and r.get("d") == "plan" and r.get("e") == "demo" and r.get("f") == "demo", r)
     check("e. the ntfy cut lays ATLAS PASSED + the event in, BLITZ never", r.get("bAt") == "PASSED" and r.get("bBl") is False and r.get("bEv") == 1, r)
-    check("e. silent: an old copy and never-reported are silent, a fresh PC is not", r.get("cSil") is True and r.get("aSil") is False and "never" in str(r.get("nS")), r)
+    check("e. silent: an old copy and never-reported are silent, a fresh PC is not", r.get("cSil") is True and r.get("aSil") is False and "no report from your PC in the last 12 hours" in str(r.get("nS")), r)
     check("e. PLAN rows: ATLAS over target = PASSED, owner date kept, a not-bought account planned", r.get("d0") == "PASSED" and r.get("dS") == "PLAN (owner, Nov 17)"
           and r.get("rp") == "planned", r)
 

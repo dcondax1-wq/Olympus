@@ -41,8 +41,9 @@ def check(name, cond, info=""):
 # ------------------------------------------------------------------------------------------------ the tracker
 def tracker_checks():
     t = FL.track({}, {}, "builder50k", today="2026-11-03", name="F")
-    check("fresh 50K: balance $50,000, floor $48,000, room $2,000, payout line $53,600, payouts 0/5, building",
-          t["balance"] == 50000 and t["floor"] == 48000 and t["room"] == 2000 and t["ask_at_balance"] == 53600
+    check("fresh 50K: balance $50,000, floor $48,000, room $2,000, payout line $54,100 ($2,000 at $4,100), payouts 0/5, building",
+          t["balance"] == 50000 and t["floor"] == 48000 and t["room"] == 2000 and t["ask_at_balance"] == 54100
+          and t["ask_amount"] == 2000 and t["ask_goal"] == 4100
           and t["payouts_n"] == 0 and t["payouts_max"] == 5 and t["status"] == "building" and not t["eligible"], t)
     d = {"2026-11-03": 900.0}
     t = FL.track(d, {}, "builder50k", today="2026-11-04")
@@ -60,11 +61,12 @@ def tracker_checks():
     check("consistency push: 'consistency: best day is 81% of the cycle, trade M more days', stable key",
           len(n) == 1 and n[0]["title"].startswith("consistency: best day is 81% of the cycle, trade ")
           and n[0]["title"].endswith("more days") and n[0]["key"] == FL.notices(t, 1_800_000_999)[0]["key"], n)
-    # eligible by MFFU but below the owner's $1,500-above-buffer habit
+    # eligible by MFFU but below the owner's plan (the max request, $2,000 above the buffer; weekend landing 2026-11-21)
     d = {"2026-11-03": 700.0, "2026-11-04": 600.0, "2026-11-05": 800.0, "2026-11-06": 700.0}
     t = FL.track(d, {}, "builder50k", today="2026-11-06")
-    check("$2,800: $700 above the buffer: MFFU would pay $700 (eligible), the owner's rule waits for $53,600 (not ready, no push)",
-          t["eligible"] and not t["ready"] and t["max_request"] == 700 and t["status"] == "eligible" and not FL.notices(t, 1), t)
+    check("$2,800: $700 above the buffer: MFFU would pay $700 (eligible), 'your plan waits for $2,000 at $4,100' (not ready, no push)",
+          t["eligible"] and not t["ready"] and t["max_request"] == 700 and t["status"] == "eligible" and not FL.notices(t, 1)
+          and "MFFU would pay $700 now; your plan waits for $2,000 at $4,100" in t["text"], t)
     d = {"2026-11-03": 900.0, "2026-11-04": -300.0, "2026-11-05": 1500.0, "2026-11-06": 700.0, "2026-11-09": 1600.0}
     t = FL.track(d, {}, "builder50k", today="2026-11-09", name="F50")
     n = FL.notices({**t, "id": "mffu50k_funded"}, 1_800_000_000)
@@ -80,13 +82,26 @@ def tracker_checks():
           and t2["payouts_n"] == 1 and t2["cycle_start"] == "2026-11-10" and t2["paid_to_you"] == 1600, t2)
     # 25K numbers
     t = FL.track({}, {}, "builder25k", today="2026-11-03")
-    check("fresh 25K: floor $24,000, buffer $26,100, payout line $26,850, request $250-$1,000",
-          t["floor"] == 24000 and t["buffer_balance"] == 26100 and t["ask_at_balance"] == 26850 and t["request_min"] == 250
+    check("fresh 25K: floor $24,000, buffer $26,100, payout line $27,100 ($1,000 at $2,100 MFFU profit), request $250-$1,000",
+          t["floor"] == 24000 and t["buffer_balance"] == 26100 and t["ask_at_balance"] == 27100 and t["ask_goal"] == 2100
+          and t["ask_amount"] == 1000 and t["request_min"] == 250
           and t["request_max"] == 1000, t)
     d = {"2026-11-03": 600.0, "2026-11-04": 500.0, "2026-11-05": 400.0, "2026-11-06": 500.0}
     t = FL.track(d, {}, "builder25k", today="2026-11-06")
-    check("25K +$2,000 over 4 days: ready, request $900 (balance - $1,100 buffer, < $1,000 max)",
-          t["status"] == "ready" and t["max_request"] == 900, t)
+    check("25K +$2,000 over 4 days: MFFU would pay $900, the plan waits for $1,000 at $2,100 ($100 to go; eligible, no push)",
+          t["status"] == "eligible" and t["max_request"] == 900 and t["to_ask"] == 100 and not FL.notices(t, 1), t)
+    t = FL.track({**d, "2026-11-09": 300.0}, {}, "builder25k", today="2026-11-09")
+    n = FL.notices(t, 1)
+    check("25K +$2,300: ready, request $1,000 ($800 to you), one 'PAYOUT READY: request $1,000' push",
+          t["status"] == "ready" and t["max_request"] == 1000 and t["to_you"] == 800 and len(n) == 1
+          and n[0]["title"] == "PAYOUT READY: request $1,000" and "WAIT" not in n[0]["body"], (t, n))
+    t = FL.track({**d, "2026-11-09": 300.0}, {f"2026-10-0{i}": 0.01 for i in range(1, 5)}, "builder25k", today="2026-11-09")
+    n = FL.notices(t, 1)
+    check("payout #5 warning: the ready push of the 5th sim payout says MFFU then moves the account to LIVE + the others go dormant",
+          t["payouts_n"] == 4 and n and "payout 5 of 5" in n[0]["body"] and "dormant" in n[0]["body"] and "Ask Claude" in n[0]["body"], n)
+    t = FL.track({"2026-11-03": 1500.0, "2026-11-04": 100.0, "2026-11-05": 100.0}, {}, "builder50k", today="2026-11-05")
+    check("consistency below the buffer ($1,700 of $2,100): no consistency push (nothing to wait for yet)",
+          t["status"] == "consistency" and t["above_buffer"] < 0 and not FL.notices(t, 1), t)
     # lost / graduated
     t = FL.track({"2026-11-03": -2000.0}, {}, "builder50k", today="2026-11-03")
     check("room 0: lost + 'FUNDED ACCOUNT LOST' push", t["status"] == "lost" and FL.notices(t, 1)[0]["title"] == "FUNDED ACCOUNT LOST", t)

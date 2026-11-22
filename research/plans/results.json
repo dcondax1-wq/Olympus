@@ -1,0 +1,688 @@
+{
+ "n": 1000,
+ "rows": {
+  "mffu_builder_25k": {
+   "label": "MFFU Builder 25K",
+   "price": 63.0,
+   "H1": {
+    "eval": {
+     "pass": 87.7,
+     "fail": 6.6,
+     "med_days": 7.0
+    },
+    "slot": {
+     "owner_6m": 3407,
+     "fees_6m": 119.5,
+     "net_6m": 3288,
+     "net_p10": 1474,
+     "net_p50": 3811,
+     "per_dollar": 28.51,
+     "no_pay": 3.3,
+     "evals": 1.9,
+     "lost": 0.24,
+     "p_lost": 21.6,
+     "pays": 4.26,
+     "first_pay_med": 36.0
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 83.2,
+     "fail": 9.7,
+     "med_days": 8.0
+    },
+    "slot": {
+     "owner_6m": 3025,
+     "fees_6m": 121.1,
+     "net_6m": 2904,
+     "net_p10": 611,
+     "net_p50": 3137,
+     "per_dollar": 24.97,
+     "no_pay": 9.2,
+     "evals": 1.92,
+     "lost": 0.27,
+     "p_lost": 22.8,
+     "pays": 3.78,
+     "first_pay_med": 37.0
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 19.5,
+     "fail": 80.0,
+     "med_days": 5.0
+    },
+    "slot": {
+     "owner_6m": 67,
+     "fees_6m": 391.0,
+     "net_6m": -324,
+     "net_p10": -504,
+     "net_p50": -378,
+     "per_dollar": 0.17,
+     "no_pay": 93.1,
+     "evals": 6.21,
+     "lost": 0.96,
+     "p_lost": 66.7,
+     "pays": 0.08,
+     "first_pay_med": 72.0
+    }
+   },
+   "buy_ok": false
+  },
+  "mffu_builder_50k": {
+   "label": "MFFU Builder 50K",
+   "price": 91.8,
+   "H1": {
+    "eval": {
+     "pass": 83.8,
+     "fail": 16.2,
+     "med_days": 7.0
+    },
+    "slot": {
+     "owner_6m": 7450,
+     "fees_6m": 196.5,
+     "net_6m": 7253,
+     "net_p10": 4616,
+     "net_p50": 7725,
+     "per_dollar": 37.92,
+     "no_pay": 0.4,
+     "evals": 2.14,
+     "lost": 0.23,
+     "p_lost": 19.9,
+     "pays": 4.66,
+     "first_pay_med": 33.0
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 84.6,
+     "fail": 14.6,
+     "med_days": 7.0
+    },
+    "slot": {
+     "owner_6m": 7566,
+     "fees_6m": 195.4,
+     "net_6m": 7371,
+     "net_p10": 3108,
+     "net_p50": 7816,
+     "per_dollar": 38.71,
+     "no_pay": 1.7,
+     "evals": 2.13,
+     "lost": 0.2,
+     "p_lost": 18.2,
+     "pays": 4.73,
+     "first_pay_med": 33.0
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 19.4,
+     "fail": 80.6,
+     "med_days": 5.0
+    },
+    "slot": {
+     "owner_6m": 194,
+     "fees_6m": 768.0,
+     "net_6m": -574,
+     "net_p10": -1010,
+     "net_p50": -734,
+     "per_dollar": 0.25,
+     "no_pay": 89.7,
+     "evals": 8.37,
+     "lost": 1.31,
+     "p_lost": 77.3,
+     "pays": 0.12,
+     "first_pay_med": 68.0
+    }
+   },
+   "buy_ok": false
+  },
+  "mffu_rapid_eod_25k": {
+   "label": "MFFU Rapid EOD 25K",
+   "price": 97.2,
+   "H1": {
+    "eval": {
+     "pass": 79.3,
+     "fail": 0.3,
+     "med_days": 33.0
+    },
+    "slot": {
+     "owner_6m": 11428,
+     "fees_6m": 126.9,
+     "net_6m": 11301,
+     "net_p10": 1358,
+     "net_p50": 11319,
+     "per_dollar": 90.02,
+     "no_pay": 7.4,
+     "evals": 1.31,
+     "lost": 0.28,
+     "p_lost": 27.2,
+     "pays": 10.54,
+     "first_pay_med": 53.0
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 85.5,
+     "fail": 2.4,
+     "med_days": 26.0
+    },
+    "slot": {
+     "owner_6m": 4945,
+     "fees_6m": 144.0,
+     "net_6m": 4801,
+     "net_p10": -194,
+     "net_p50": 4628,
+     "per_dollar": 34.35,
+     "no_pay": 15.1,
+     "evals": 1.48,
+     "lost": 0.43,
+     "p_lost": 38.0,
+     "pays": 6.88,
+     "first_pay_med": 56.0
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 7.0,
+     "fail": 76.8,
+     "med_days": 31.0
+    },
+    "slot": {
+     "owner_6m": 68,
+     "fees_6m": 367.6,
+     "net_6m": -300,
+     "net_p10": -486,
+     "net_p50": -389,
+     "per_dollar": 0.18,
+     "no_pay": 96.9,
+     "evals": 3.78,
+     "lost": 0.2,
+     "p_lost": 18.8,
+     "pays": 0.07,
+     "first_pay_med": 67.0
+    }
+   },
+   "buy_ok": false
+  },
+  "mffu_rapid_eod_50k": {
+   "label": "MFFU Rapid EOD 50K",
+   "price": 165.0,
+   "H1": {
+    "eval": {
+     "pass": 94.3,
+     "fail": 2.5,
+     "med_days": 24.0
+    },
+    "slot": {
+     "owner_6m": 30241,
+     "fees_6m": 231.2,
+     "net_6m": 30010,
+     "net_p10": 11181,
+     "net_p50": 29647,
+     "per_dollar": 130.82,
+     "no_pay": 1.6,
+     "evals": 1.4,
+     "lost": 0.35,
+     "p_lost": 32.5,
+     "pays": 15.96,
+     "first_pay_med": 39.0
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 92.1,
+     "fail": 4.6,
+     "med_days": 22.0
+    },
+    "slot": {
+     "owner_6m": 13930,
+     "fees_6m": 239.2,
+     "net_6m": 13691,
+     "net_p10": 1471,
+     "net_p50": 13497,
+     "per_dollar": 58.22,
+     "no_pay": 7.4,
+     "evals": 1.45,
+     "lost": 0.39,
+     "p_lost": 35.7,
+     "pays": 11.95,
+     "first_pay_med": 46.0
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 10.7,
+     "fail": 83.9,
+     "med_days": 24.0
+    },
+    "slot": {
+     "owner_6m": 234,
+     "fees_6m": 793.8,
+     "net_6m": -560,
+     "net_p10": -990,
+     "net_p50": -825,
+     "per_dollar": 0.29,
+     "no_pay": 93.9,
+     "evals": 4.81,
+     "lost": 0.35,
+     "p_lost": 31.8,
+     "pays": 0.14,
+     "first_pay_med": 67.0
+    }
+   },
+   "buy_ok": false
+  },
+  "lucid_pro_50k": {
+   "label": "LucidPro 50K (DLL on)",
+   "price": 126.0,
+   "H1": {
+    "eval": {
+     "pass": 83.8,
+     "fail": 16.2,
+     "med_days": 7.0
+    },
+    "slot": {
+     "owner_6m": 7839,
+     "fees_6m": 217.0,
+     "net_6m": 7622,
+     "net_p10": 3798,
+     "net_p50": 8424,
+     "per_dollar": 36.13,
+     "no_pay": 0.4,
+     "evals": 1.72,
+     "lost": 0.19,
+     "p_lost": 16.3,
+     "pays": 3.69,
+     "first_pay_med": 38.0
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 84.6,
+     "fail": 14.6,
+     "med_days": 7.0
+    },
+    "slot": {
+     "owner_6m": 8392,
+     "fees_6m": 229.2,
+     "net_6m": 8162,
+     "net_p10": 3798,
+     "net_p50": 8424,
+     "per_dollar": 36.61,
+     "no_pay": 2.2,
+     "evals": 1.82,
+     "lost": 0.16,
+     "p_lost": 14.3,
+     "pays": 3.94,
+     "first_pay_med": 36.0
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 19.4,
+     "fail": 80.6,
+     "med_days": 5.0
+    },
+    "slot": {
+     "owner_6m": 129,
+     "fees_6m": 1055.2,
+     "net_6m": -927,
+     "net_p10": -1386,
+     "net_p50": -1134,
+     "per_dollar": 0.12,
+     "no_pay": 93.6,
+     "evals": 8.38,
+     "lost": 1.3,
+     "p_lost": 77.4,
+     "pays": 0.07,
+     "first_pay_med": 72.0
+    }
+   },
+   "buy_ok": false
+  },
+  "lucid_flex_50k": {
+   "label": "LucidFlex 50K",
+   "price": 134.4,
+   "H1": {
+    "eval": {
+     "pass": 95.1,
+     "fail": 4.1,
+     "med_days": 17.0
+    },
+    "slot": {
+     "owner_6m": 8606,
+     "fees_6m": 275.7,
+     "net_6m": 8330,
+     "net_p10": 5131,
+     "net_p50": 8731,
+     "per_dollar": 31.22,
+     "no_pay": 1.2,
+     "evals": 2.05,
+     "lost": 0.22,
+     "p_lost": 19.5,
+     "pays": 4.78,
+     "first_pay_med": 37.0
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 88.9,
+     "fail": 9.9,
+     "med_days": 17.0
+    },
+    "slot": {
+     "owner_6m": 7740,
+     "fees_6m": 260.9,
+     "net_6m": 7479,
+     "net_p10": 3331,
+     "net_p50": 8731,
+     "per_dollar": 29.67,
+     "no_pay": 3.2,
+     "evals": 1.94,
+     "lost": 0.2,
+     "p_lost": 17.2,
+     "pays": 4.3,
+     "first_pay_med": 41.0
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 12.7,
+     "fail": 86.0,
+     "med_days": 20.0
+    },
+    "slot": {
+     "owner_6m": 153,
+     "fees_6m": 790.0,
+     "net_6m": -637,
+     "net_p10": -1075,
+     "net_p50": -806,
+     "per_dollar": 0.19,
+     "no_pay": 93.6,
+     "evals": 5.88,
+     "lost": 0.49,
+     "p_lost": 42.0,
+     "pays": 0.09,
+     "first_pay_med": 72.5
+    }
+   },
+   "buy_ok": false
+  },
+  "fn_rapid_daily_50k": {
+   "label": "FundedNext Rapid Daily 50K",
+   "price": 149.99,
+   "H1": {
+    "eval": {
+     "pass": 83.8,
+     "fail": 16.2,
+     "med_days": 7.0
+    },
+    "slot": {
+     "owner_6m": 12517,
+     "fees_6m": 630.0,
+     "net_6m": 11887,
+     "net_p10": 5880,
+     "net_p50": 11280,
+     "per_dollar": 19.87,
+     "no_pay": 0.1,
+     "evals": 4.2,
+     "lost": 0.52,
+     "p_lost": 42.6,
+     "pays": 11.59,
+     "first_pay_med": 23.0
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 84.6,
+     "fail": 14.6,
+     "med_days": 7.0
+    },
+    "slot": {
+     "owner_6m": 10464,
+     "fees_6m": 538.2,
+     "net_6m": 9926,
+     "net_p10": 4950,
+     "net_p50": 10200,
+     "per_dollar": 19.44,
+     "no_pay": 1.1,
+     "evals": 3.59,
+     "lost": 0.38,
+     "p_lost": 33.7,
+     "pays": 9.69,
+     "first_pay_med": 27.0
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 19.4,
+     "fail": 80.6,
+     "med_days": 5.0
+    },
+    "slot": {
+     "owner_6m": 645,
+     "fees_6m": 1294.4,
+     "net_6m": -650,
+     "net_p10": -1650,
+     "net_p50": -1200,
+     "per_dollar": 0.5,
+     "no_pay": 74.7,
+     "evals": 8.63,
+     "lost": 1.36,
+     "p_lost": 80.1,
+     "pays": 0.6,
+     "first_pay_med": 61.0
+    }
+   },
+   "buy_ok": false
+  }
+ },
+ "rank_h2": [
+  "mffu_rapid_eod_50k",
+  "fn_rapid_daily_50k",
+  "lucid_pro_50k",
+  "lucid_flex_50k",
+  "mffu_builder_50k",
+  "mffu_rapid_eod_25k",
+  "mffu_builder_25k"
+ ],
+ "buys": [],
+ "cap5_sensitivity": {
+  "mffu_rapid_eod_25k": {
+   "H1": {
+    "owner_6m": 5844,
+    "fees_6m": 211.1,
+    "net_6m": 5633,
+    "net_p10": 1358,
+    "net_p50": 5390,
+    "per_dollar": 27.68,
+    "no_pay": 7.4,
+    "evals": 2.17,
+    "lost": 0.22,
+    "p_lost": 21.6,
+    "pays": 5.41,
+    "first_pay_med": 53.0
+   },
+   "H2": {
+    "owner_6m": 3058,
+    "fees_6m": 207.7,
+    "net_6m": 2850,
+    "net_p10": -194,
+    "net_p50": 3068,
+    "per_dollar": 14.72,
+    "no_pay": 15.1,
+    "evals": 2.14,
+    "lost": 0.41,
+    "p_lost": 36.4,
+    "pays": 4.23,
+    "first_pay_med": 56.0
+   },
+   "REF": {
+    "owner_6m": 62,
+    "fees_6m": 367.9,
+    "net_6m": -306,
+    "net_p10": -486,
+    "net_p50": -389,
+    "per_dollar": 0.17,
+    "no_pay": 96.9,
+    "evals": 3.79,
+    "lost": 0.2,
+    "p_lost": 18.5,
+    "pays": 0.06,
+    "first_pay_med": 67.0
+   }
+  },
+  "mffu_rapid_eod_50k": {
+   "H1": {
+    "owner_6m": 15003,
+    "fees_6m": 459.0,
+    "net_6m": 14544,
+    "net_p10": 6792,
+    "net_p50": 14402,
+    "per_dollar": 32.68,
+    "no_pay": 1.6,
+    "evals": 2.78,
+    "lost": 0.28,
+    "p_lost": 25.6,
+    "pays": 8.0,
+    "first_pay_med": 39.0
+   },
+   "H2": {
+    "owner_6m": 7164,
+    "fees_6m": 414.1,
+    "net_6m": 6749,
+    "net_p10": 1471,
+    "net_p50": 6316,
+    "per_dollar": 17.3,
+    "no_pay": 7.4,
+    "evals": 2.51,
+    "lost": 0.35,
+    "p_lost": 32.0,
+    "pays": 6.22,
+    "first_pay_med": 46.0
+   },
+   "REF": {
+    "owner_6m": 225,
+    "fees_6m": 794.8,
+    "net_6m": -570,
+    "net_p10": -990,
+    "net_p50": -825,
+    "per_dollar": 0.28,
+    "no_pay": 93.9,
+    "evals": 4.82,
+    "lost": 0.34,
+    "p_lost": 31.3,
+    "pays": 0.14,
+    "first_pay_med": 67.0
+   }
+  }
+ },
+ "rebuy2": {
+  "mffu_rapid_eod_50k": {
+   "H1": {
+    "net_6m": 30006,
+    "net_p10": 11181,
+    "owner_6m": 30237,
+    "fees_6m": 230.7,
+    "worst": -495,
+    "p_neg": 1.6,
+    "evals": 1.4,
+    "first_pay_med": 39.0,
+    "no_pay": 1.6
+   },
+   "H2": {
+    "net_6m": 13691,
+    "net_p10": 1471,
+    "owner_6m": 13930,
+    "fees_6m": 239.1,
+    "worst": -495,
+    "p_neg": 7.4,
+    "evals": 1.45,
+    "first_pay_med": 46.0,
+    "no_pay": 7.4
+   },
+   "REF": {
+    "net_6m": -311,
+    "net_p10": -495,
+    "owner_6m": 179,
+    "fees_6m": 490.5,
+    "worst": -495,
+    "p_neg": 95.3,
+    "evals": 2.97,
+    "first_pay_med": 55.0,
+    "no_pay": 95.3
+   }
+  },
+  "fn_rapid_daily_50k": {
+   "H1": {
+    "net_6m": 10075,
+    "net_p10": 4950,
+    "owner_6m": 10520,
+    "fees_6m": 445.6,
+    "worst": -450,
+    "p_neg": 1.8,
+    "evals": 2.97,
+    "first_pay_med": 23.0,
+    "no_pay": 1.8
+   },
+   "H2": {
+    "net_6m": 9278,
+    "net_p10": 4950,
+    "owner_6m": 9715,
+    "fees_6m": 437.1,
+    "worst": -450,
+    "p_neg": 2.6,
+    "evals": 2.91,
+    "first_pay_med": 27.0,
+    "no_pay": 2.6
+   },
+   "REF": {
+    "net_6m": -169,
+    "net_p10": -450,
+    "owner_6m": 281,
+    "fees_6m": 450.0,
+    "worst": -450,
+    "p_neg": 89.1,
+    "evals": 3.0,
+    "first_pay_med": 30.0,
+    "no_pay": 89.1
+   }
+  },
+  "lucid_pro_50k": {
+   "H1": {
+    "net_6m": 7544,
+    "net_p10": 3798,
+    "owner_6m": 7757,
+    "fees_6m": 212.8,
+    "worst": -378,
+    "p_neg": 2.1,
+    "evals": 1.69,
+    "first_pay_med": 38.0,
+    "no_pay": 2.1
+   },
+   "H2": {
+    "net_6m": 8098,
+    "net_p10": 3798,
+    "owner_6m": 8324,
+    "fees_6m": 225.4,
+    "worst": -378,
+    "p_neg": 3.4,
+    "evals": 1.79,
+    "first_pay_med": 36.0,
+    "no_pay": 3.4
+   },
+   "REF": {
+    "net_6m": -305,
+    "net_p10": -378,
+    "owner_6m": 69,
+    "fees_6m": 374.5,
+    "worst": -378,
+    "p_neg": 96.9,
+    "evals": 2.97,
+    "first_pay_med": 46.0,
+    "no_pay": 96.9
+   }
+  }
+ }
+}

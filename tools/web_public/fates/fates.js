@@ -13,7 +13,6 @@ const O = window.OLYMPUS || null;   // the OLYMPUS kit (../olympus/olympus.js): 
 const $ = (id) => document.getElementById(id);
 const Q = new URLSearchParams(location.search);
 const RM = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : { matches: false, addEventListener() {} };
-const LIVE_URL = 'https://raw.githubusercontent.com/demetrades2000-coder/nq-dashboard/live/live.json';
 const LIVE_EVERY = 5 * 60e3;
 const S = {
   data: null, demo: false, route: C.parseRoute(location.hash),
@@ -36,6 +35,15 @@ async function loadData() {
   }
   return null;
 }
+// the open scenario's threads come with fates.json; every other scenario's threads are fetched when it is picked (day-a11y 2026-11-20,
+// PERF ask 6: 772 KB -> 84 KB on open; tools/fates/build.py split()). A full one-file fates.json (or the fixture) needs nothing.
+const pending = {};
+function ensureThreads(key) {
+  const s = S.data && S.data.scenarios[key];
+  if (!s || s.threads || !s.threads_url) return Promise.resolve(true);
+  if (!pending[key]) pending[key] = getJson(s.threads_url).then((t) => { if (t) s.threads = t; delete pending[key]; return !!t; });
+  return pending[key];
+}
 // live.json: the demo only reads it when a test points ?live= at a file; the real page polls the PC's feed: ../pc_feed.js (the ntfy report
 // the PC posts every 15 min, the same cards: board.lit / board.atlas). The old GitHub copy (LIVE_URL) is on the suspended account (a 404
 // on every poll, night-bugsweep 2026-11-19): asked only when this site has no PC feed at all.
@@ -48,7 +56,7 @@ async function pollLive() {
   const own = Q.get('live');
   if ((!own && S.demo) || (O ? O.hidden() : document.hidden)) return;
   let j = own ? await getJson(own) : await pcFeed();
-  if (j === undefined) j = await getJson(LIVE_URL);
+  if (j === undefined) j = null;                    // no pc_feed.js: no live numbers (the old GitHub copy on the suspended account is no longer asked)
   if (j && j.board) { S.live = j; S.liveAt = Date.now(); renderLive(); }
 }
 
@@ -175,11 +183,18 @@ function renderGauge(g, st) {
 }
 const esc = (x) => String(x == null ? '' : x).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-function go(patch, respin = true) {
+async function go(patch, respin = true) {
   S.route = { ...S.route, ...patch };
   if (!S.data.scenarios[C.scenKey(S.route)]) S.route.period = '2026';
   const h = C.routeHash(S.route);
   if (location.hash !== h) history.replaceState(null, '', h);
+  const key = C.scenKey(S.route);
+  if (respin && !(S.data.scenarios[key] || {}).threads) {
+    S.loading = key; $('sub').textContent = 'Drawing the futures of this scenario...';
+    await ensureThreads(key);
+    if (S.loading !== key) return;                    // a later tap won
+    S.loading = null;
+  }
   renderHud();
   resize();                                         // the HUD's height changes with the scenario: re-centre the scene
   if (respin) { closeSheet(); S.labThread = null; build(); spin(); }
@@ -394,7 +409,7 @@ function hookTheme() {
 function postCard() {
   try {
     const card = C.jarvisCard(S.data);
-    if (card && !S.demo && window.parent !== window) window.parent.postMessage({ jarvis: 1, href: location.href, card }, (/^https?:/.test(location.protocol) ? location.origin : 'https://demetrades2000-coder.github.io'));
+    if (card && !S.demo && window.parent !== window) window.parent.postMessage({ jarvis: 1, href: location.href, card }, (/^https?:/.test(location.protocol) ? location.origin : 'https://dcondax1-wq.github.io'));
   } catch (_) { /* outside Jarvis */ }
 }
 
@@ -408,6 +423,7 @@ window.addEventListener('error', (e) => S.errors.push(String(e.message || e)));
   $('demo').hidden = !S.demo;
   if (S.lite) $('lite').hidden = false;
   if (!S.data.scenarios[C.scenKey(S.route)]) S.route.period = '2026';
+  await ensureThreads(C.scenKey(S.route));         // a #route straight to another scenario: its threads first
   renderHud();
   sc = createScene($("scene"), { lite: S.lite });
   S.sc = sc;                                       // the scene, for the tests and the perf probe

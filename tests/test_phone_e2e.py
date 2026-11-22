@@ -1,6 +1,6 @@
 """The owner's phone, end to end (QA 2026-11-01, owner: "make sure there is nothing wrong").
 
-The phone runs a few Home Screen web apps from one GitHub Pages site (https://demetrades2000-coder.github.io/nq-dashboard/):
+The phone runs a few Home Screen web apps from one GitHub Pages site (https://dcondax1-wq.github.io/):
 Jarvis at /jarvis/ (the hub that switches between the apps), Zenith at / (the NQ bots' app), the Planner at /planner/ and
 Kalshi at /kalshi/. Each has its own service worker, and an iPhone Home Screen app is a WHITE screen while its page loads
 or after a failed load (docs/CLAUDE_REFERENCE.md, Infrastructure > Jarvis hub). This test builds a faithful local copy of

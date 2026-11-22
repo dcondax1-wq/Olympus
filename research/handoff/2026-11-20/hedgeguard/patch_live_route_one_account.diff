@@ -1,0 +1,18 @@
+diff --git a/engine/live.py b/engine/live.py
+index a1e93b97..04e861da 100644
+--- a/engine/live.py
++++ b/engine/live.py
+@@ -827,6 +827,13 @@ class LiveBot:
+             self.adapter = ADAPTERS["paper"](self.cfg)
+         hedge = self.accts.opposite_open(1 if action.get("side") == "buy" else -1) \
+             if self.accts is not None and action.get("side") in ("buy", "sell") else None
++        if not hedge and self.accts is None and action.get("side") in ("buy", "sell"):
++            try:                                          # one-account bot: hand trades on another account (engine/hand_hedge.py)
++                from . import hand_hedge
++                hedge = hand_hedge.opposite_hand(1 if action.get("side") == "buy" else -1, self, None,
++                                                 own=getattr(self.adapter, "account", None), now=self.clock())
++            except Exception:
++                hedge = None
+         if not hedge and getattr(self, "fleet", None) is not None and action.get("side") in ("buy", "sell"):
+             try:                                          # engine/fleet.py: no hedge vs a follower (an error fails closed)
+                 hedge = self.fleet.opposite_open(1 if action.get("side") == "buy" else -1)

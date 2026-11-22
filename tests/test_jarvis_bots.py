@@ -615,10 +615,13 @@ def part_browser():
             # a fill on the next poll: spoken (her voice) and toasted
             state["j"] = live_json(position=True)
             p.evaluate("import('./data.js').then((D) => D.refreshLive())")
-            p.wait_for_function("window.__said && window.__said.some((s) => /Zlarior is in/.test(s[0]))", timeout=90000, polling=200)
-            said = p.evaluate("window.__said.map((s) => s[0])")
+            # the speech layer says one sentence at a time (2026-11): wait for the risk sentence after "Zlarior is in." and read them as one line
+            p.wait_for_function("(() => { const a = (window.__said || []).map((s) => s[0]), i = a.findIndex((s) => /Zlarior is in/.test(s)); return i >= 0 && /dollars at risk/.test(a.slice(i).join(' ')); })()", timeout=90000, polling=200)
+            said0 = p.evaluate("window.__said.map((s) => s[0])")
+            i0 = next(i for i, s in enumerate(said0) if "Zlarior is in" in s)
+            said = said0[:i0] + [" ".join(said0[i0:])]
             toast = p.evaluate("(document.getElementById('toast') || {}).textContent || ''")
-            check("i. a fill on the next poll is said out loud ('Zlarior is in ... about 408 dollars at risk', the number in words since the natural-speech layer) and toasted", any("Zlarior is in" in s and ("408 dollars" in s or "four hundred eight dollars" in s) for s in said) and "Zlarior is in" in toast, (said, toast))
+            check("i. a fill on the next poll is said out loud ('Zlarior is in ... about 408 dollars at risk', the number in words since the natural-speech layer) and toasted", any("Zlarior is in" in s and any(x in s for x in ("408 dollars", "four hundred eight dollars", "four hundred and eight dollars")) for s in said) and "Zlarior is in" in toast, (said, toast))
             p.wait_for_timeout(500)
             lit = p.evaluate("document.querySelector('#botsPanel li[data-id=lit]').dataset.active + ':' + document.querySelector('#botsPanel li[data-id=lit] em').textContent")
             check("i. the Zlarior light pulses 'in a long' while the trade is open", lit.startswith("true:in a long"), lit)

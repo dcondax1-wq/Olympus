@@ -53,7 +53,7 @@ export const LIMITS = Object.freeze({ bytes: 8192, name: 40, label: 48, kpis: 3,
 export const ASCEND_ID = 'ascend';
 export const ASCEND_NAME = 'Ascend';
 // Ascend's link once the owner sends it (owner: "send it and it is built in"): then "Add Ascend" adds it with one tap.
-// Always another site, never under demetrades2000-coder.github.io (see SAME_SITE_WARN). Empty: "Add Ascend" asks for the link.
+// Always another site, never under dcondax1-wq.github.io (see SAME_SITE_WARN). Empty: "Add Ascend" asks for the link.
 export const ASCEND_URL = '';
 // ------------------------------------------------------------------ OLYMPUS: every built-in app, one row each (2026-11-03)
 // Adding an app to OLYMPUS is one row in BUILT_INS, nothing else: its folder on the dashboard site (../<id>/) holds its
@@ -62,11 +62,13 @@ export const ASCEND_URL = '';
 // A row whose folder is not on the site yet (its jarvis.json answers 404) never breaks anything: missing(app) is true, the
 // shell shows "not on the site yet" and does not open it.
 //   app(id, name, group, accent, sub, more?)   group: a GROUPS id; accent: its glow colour on the Jarvis screen;
-//   more: {url (default ../<id>/), icon, glyph, live (default true: its card from its jarvis.json; false: the shell draws it)}
+//   more: {url (default ../<id>/), icon, glyph, live (default true: its card from its jarvis.json; false: the shell draws it),
+//          statusUrl (default <url>jarvis.json: where its live card is read when the door opens a sub-page)}
 // The switcher shows JARVIS first, then the groups in GROUPS order, each in this list's order; apps added with + go in MORE.
 export const GROUPS = Object.freeze([
-  Object.freeze({ id: 'trading', name: 'TRADING' }), Object.freeze({ id: 'life', name: 'LIFE' }),
-  Object.freeze({ id: 'money', name: 'MONEY' }), Object.freeze({ id: 'more', name: 'MORE' }),
+  Object.freeze({ id: 'trading', name: 'NQ BOT' }), Object.freeze({ id: 'life', name: 'JARVIS' }), Object.freeze({ id: 'web', name: 'WEBSITES' }),
+  Object.freeze({ id: 'data', name: 'DATA CITY' }), Object.freeze({ id: 'money', name: 'MONEY' }), Object.freeze({ id: 'kalshi', name: 'KALSHI' }),
+  Object.freeze({ id: 'more', name: 'MORE' }),
 ]);
 const app = (id, name, group, accent, sub, more) => Object.freeze(Object.assign({ id, name, group, accent, sub, url: '../' + id + '/', live: true }, more));
 export const BUILT_INS = Object.freeze([
@@ -74,10 +76,10 @@ export const BUILT_INS = Object.freeze([
   app('oracle', 'Oracle', 'trading', '#7fb0a3', 'The market radar, live', { glyph: '\u0398' }),
   app('odeon', 'Odeon', 'trading', '#d77a7a', 'Every trade, replayed in 3D', { glyph: '\u039e' }),
   app('fates', 'Fates', 'trading', '#ffcf5a', 'Pass odds for each eval', { glyph: '\u03a6' }),
-  app('datacity', 'Data City', 'trading', '#5f8ea6', 'Every combo tested, as a city', { glyph: '\u0394' }),
+  app('datacity', 'Data City', 'data', '#5f8ea6', 'Every combo tested, as a city', { glyph: '\u0394' }),
   app('observatory', 'Observatory', 'trading', '#a9bfd0', 'Data health and research evidence', { glyph: '\u25c9' }),
-  app('tree', 'Daphne', 'trading', '#6b9068', 'The strategy tree search', { glyph: '\u03a8' }),
-  app('prometheus', 'Prometheus', 'trading', '#ff7a1a', 'The Forge: strategies tested', { glyph: '\u03a0' }),
+  app('tree', 'Daphne', 'data', '#6b9068', 'The strategy tree search', { glyph: '\u03a8' }),
+  app('prometheus', 'Prometheus', 'data', '#ff7a1a', 'The Forge: strategies tested', { glyph: '\u03a0' }),
   app('pantheon', 'Pantheon', 'trading', '#f2d68a', 'The data gods: rates, liquidity, fear', { glyph: '\u03a3' }),
   app('ares', 'Ares', 'trading', '#c8402e', 'The war room: GO, WAIT or HALT', { glyph: '\u039b' }),
   app('forum', 'Forum', 'trading', '#8f9f3c', 'Morning briefing at the real NY hour', { glyph: '\u0393' }),
@@ -86,8 +88,8 @@ export const BUILT_INS = Object.freeze([
   app('nemesis', 'Nemesis', 'trading', '#b55c66', 'The fallen trades: what went wrong', { glyph: '\u039d' }),
   app('chronos', 'Chronos', 'trading', '#d4a574', 'Time and the session clock', { glyph: '\u03a7' }),
   app('hephaestus', 'Hephaestus', 'trading', '#c7773f', 'The forge: tune the dials', { glyph: '\u2692' }),
-  app('cities', 'Cities', 'trading', '#b88a50', 'A world of city islands', { glyph: '\u25C8' }),
-  app('kalshicity', 'Kalshi City', 'money', '#b5a642', "The Kalshi bot's edges as a night city", { glyph: 'K' }),
+  app('cities', 'Data City', 'data', '#b88a50', 'The 3D city of everything: every app, every idea tested', { glyph: '\u25C8', url: '../cities/world/', statusUrl: '../cities/jarvis.json' }),
+  app('kalshicity', 'Kalshi City', 'kalshi', '#b5a642', "The Kalshi bot's edges as a night city", { glyph: 'K' }),
   app('journal', 'Mnemosyne', 'trading', '#e08a6b', 'A 10-second trade journal: what your habits cost, in dollars', { glyph: '\u039C' }),
   app('ledger', 'Ledger', 'money', '#c2b280', 'Your real money: fees, payouts, net profit', { glyph: 'L' }),
   app('inbox', 'Inbox', 'life', '#9aa3a8', 'Everything that needs a look, in one place', { glyph: '\u2709' }),
@@ -100,14 +102,14 @@ export const BUILT_INS = Object.freeze([
   app('demeter', 'Demeter', 'trading', '#9aa564', 'Account health: drawdown dials, payout rules', { glyph: '\u0394' }),
   app('apollo', 'Apollo', 'trading', '#e0b060', 'Your weekly review and the one rule for next week', { glyph: '\u0391' }),
   app('hera', 'Hera', 'money', '#c96a4a', 'The 12-month money plan, payouts, what to buy next', { glyph: '\u03a9' }),
-  app('dionysus', 'Dionysus', 'money', '#b77a8a', 'The Kalshi desk: guard, what-if, scan. Suggestions only', { glyph: '\u03a3' }),
+  app('dionysus', 'Dionysus', 'kalshi', '#b77a8a', 'The Kalshi desk: guard, what-if, scan. Suggestions only', { glyph: '\u03a3' }),
   app('delphi', 'Delphi', 'trading', '#e0b060', "The oracle's briefing: plan, target, go / no-go", { glyph: '\u03a6' }),
   app('pnyx', 'Pnyx', 'money', '#c8a24a', 'Prop-firm rules and risk calculator: stop to micros', { glyph: '\u03a0' }),
   app('mint', 'Mint', 'money', '#c8a24a', 'The money machine: five streams, one honest estimate', { glyph: 'M' }),
   app('mintcity', 'Mint City', 'money', '#c8a24a', 'The five money machines as a marble city', { glyph: 'MC' }),
   app('mercury', 'Mercury', 'money', '#c8a24a', 'Deal watcher: sales, codes, free resets, rule changes', { glyph: '\u263f' }),
   app('chrysos', 'Chrysos', 'money', '#c8a24a', 'Prop-firm fleet planner: fees against payouts, break-even (estimate)', { glyph: 'X' }),
-  app('sibyl', 'Sibyl', 'money', '#c8a24a', 'Prediction-market edges after fees: paper picks, ruin odds, what could go wrong', { glyph: '\u03a3' }),
+  app('sibyl', 'Sibyl', 'kalshi', '#c8a24a', 'Prediction-market edges after fees: paper picks, ruin odds, what could go wrong', { glyph: '\u03a3' }),
   app('oikos', 'Oikos', 'money', '#c8a24a', 'The household: where money leaks, tax set-aside, buckets, reinvest or withdraw', { glyph: 'O' }),
   app('arbiter', 'Arbiter', 'money', '#c8a24a', 'Paper-only spreads and funding: net yearly return after costs', { glyph: '\u039e' }),
   app('stoa', 'Stoa', 'trading', '#c8a24a', 'The colonnade: what needs you right now', { glyph: '\u03a3' }),
@@ -127,23 +129,24 @@ export const BUILT_INS = Object.freeze([
   app('harmonia', 'Harmonia', 'money', '#c8a24a', 'The balance: what leans on the NQ bots, and what is left', { glyph: 'H' }),
   app('helios', 'Helios', 'trading', '#c8a24a', 'The morning briefing: today, drawdown, deals, plan', { glyph: 'S' }),
   app('ergasterion', 'Ergasterion', 'trading', '#c8a24a', 'The workshop: every AI worker, what it does and learns', { glyph: 'E' }),
-  app('archive', 'Archive', 'trading', '#c8a24a', 'The library of everything we ever tested, searchable', { glyph: 'B' }),
-  app('pinakes', 'Pinakes', 'trading', '#c8a24a', 'The catalogue: browse and query every table OLYMPUS keeps', { glyph: '\u039a' }),
-  app('colosseum', 'Colosseum', 'trading', '#c8a24a', 'Where strategies fight: seven rounds on real stored numbers', { glyph: 'C' }),
+  app('archive', 'Archive', 'data', '#c8a24a', 'The library of everything we ever tested, searchable', { glyph: 'B' }),
+  app('pinakes', 'Pinakes', 'data', '#c8a24a', 'The catalogue: browse and query every table OLYMPUS keeps', { glyph: '\u039a' }),
+  app('colosseum', 'Colosseum', 'data', '#c8a24a', 'Where strategies fight: seven rounds on real stored numbers', { glyph: 'C' }),
   app('nq', 'NQ', 'trading', '#c8a24a', 'The NQ bots, right now: status, drawdown left, last trades', { glyph: '\u039d' }),
   app('symposium', 'Symposium', 'life', '#d9b25a', 'Meet everyone who works for you, and talk to them', { glyph: '\u03a3' }),
   app('herald', 'Herald', 'life', '#c8a24a', 'The daily paper: who built what, the day, the verdicts, all sourced', { glyph: '\u0397' }),
   app('polis', 'Polis', 'life', '#e0b060', 'The city of OLYMPUS: every app a building under the real New York sky', { glyph: '\u03a0\u03bb' }),
-  app('agency', 'Agency', 'money', '#d08c4a', 'Website agency: leads, demo sites, calls and the $ pipeline', { glyph: '\u0395' }),
-  app('business', 'Business', 'money', '#c8a24a', 'Every money model: next step, what is missing, $ estimate', { glyph: 'B' }),
+  app('agency', 'Websites', 'web', '#d08c4a', 'Website business HQ: next step, leads, audits, 3D demos, offers, calls', { glyph: '\u0395' }),
+  app('business', 'Money', 'money', '#f1c14b', 'Every money model: next step, what is missing, $ estimate', { glyph: '$' }),
   app('trading', 'Trading', 'trading', '#c8a24a', 'Every trade: today, calendar, stats, payout rules', { glyph: 'T' }),
   app('board', 'Board', 'trading', '#c8a24a', 'What the bot, you and Claude know: accounts, events, notes', { glyph: '\u25a4' }),
   app('why', 'Why', 'trading', '#c8a24a', 'Why our trades win and lose, per bot, in plain $', { glyph: '?' }),
-  app('clio', 'Clio', 'trading', '#d8c9a8', 'The research library: every study in plain words', { glyph: '\u039a' }),
+  app('widget', 'Widget', 'money', '#c8a24a', 'Your accounts as an iPhone widget + the big Glance page', { glyph: '\u25A3' }),
+  app('clio', 'Clio', 'data', '#d8c9a8', 'The research library: every study in plain words', { glyph: '\u039a' }),
   app('atlas', 'Atlas', 'life', '#efc979', 'A fast map of every Olympus dashboard', { glyph: '\u25c8' }),
-  app('athena', 'Athena', 'life', '#7f8a52', 'The library: strategy, rules, quiz', { glyph: '\ud83e\udd89' }),
-  app('kalshi', 'Kalshi', 'money', '#8fa07a', 'Kalshi bot \u00b7 from your PC', { glyph: 'K', live: false }),
-  app('tyche', 'Tyche', 'money', '#cf8f7a', 'The Kalshi bets as a 3D fortune wheel', { glyph: '\u03a4' }),
+  app('athena', 'Athena', 'data', '#7f8a52', 'The library: strategy, rules, quiz', { glyph: '\ud83e\udd89' }),
+  app('kalshi', 'Kalshi', 'kalshi', '#8fa07a', 'Kalshi bot \u00b7 from your PC', { glyph: 'K', live: false }),
+  app('tyche', 'Tyche', 'kalshi', '#cf8f7a', 'The Kalshi bets as a 3D fortune wheel', { glyph: '\u03a4' }),
   app('hermes', 'Hermes', 'money', '#f7c948', 'OLYMPUS Wrapped: your money', { glyph: '\u0397' }),
   app('plutus', 'Plutus', 'money', '#a9b84f', 'The money plan: accounts and payouts', { glyph: '\u03a1' }),
 ]);
@@ -158,7 +161,7 @@ export function byGroup(list) {
   return home.length ? [{ group: null, apps: home }].concat(out) : out;
 }
 
-// Every page on Jarvis's origin (demetrades2000-coder.github.io) can read what Jarvis and the Planner keep in localStorage
+// Every page on Jarvis's origin (dcondax1-wq.github.io) can read what Jarvis and the Planner keep in localStorage
 // (AI keys, the Planner's sync token). Ours there: the dashboard site's root page (Zenith), jarvis/ and every built-in's
 // folder; a link anywhere else on that origin is still added, with this warning in the result and on the app.
 export const SAME_SITE_WARN = "same-site apps can read Jarvis's saved keys";
@@ -377,7 +380,9 @@ function mirrorRemove(fp) {
 
 // a built-in with a live card gets its folder's jarvis.json (read against this page, like its link)
 function builtinView(b) {
-  return Object.assign({}, b, { glyph: b.glyph || firstChar(b.name), statusUrl: b.live ? defaultStatusUrl(cleanUrl(b.url)) : '', builtin: true, extra: false, removable: false });
+  // statusUrl (optional, 2026-11-20): a built-in whose door opens a sub-page reads its folder's card (Cities: cities/world/ -> cities/jarvis.json)
+  const su = b.live ? (b.statusUrl ? cleanUrl(b.statusUrl) : defaultStatusUrl(cleanUrl(b.url))) : '';
+  return Object.assign({}, b, { glyph: b.glyph || firstChar(b.name), statusUrl: su, builtin: true, extra: false, removable: false });
 }
 const warned = (v) => { if (sameSiteRisk(v.url)) v.warn = SAME_SITE_WARN; return v; };
 function slotView(s) {
@@ -685,13 +690,22 @@ function storedCard(a, url) {
   const r = validateStatus(m[a.id].card, { base: a.url, now: Date.now() + 864e5 * 365 });   // what was kept is checked again
   return r.ok ? r.card : null;
 }
+// the ids listApps() gives, memoised on the stored list's raw text (perf 2026-11-20: remember() ran listApps() once per status card,
+// O(n^2) on Jarvis's start); any change to the stored list (add / remove / rename) changes the text, so it is never stale
+let idsMemo = { raw: undefined, ids: null };
+function appIds() {
+  const raw = readRaw(KEY);
+  if (idsMemo.ids && idsMemo.raw === raw) return idsMemo.ids;
+  idsMemo = { raw, ids: new Set(listApps().map((x) => x.id)) };
+  return idsMemo.ids;
+}
 // keep the newest good card per app (a pushed card is not replaced by an older static file), only for apps still here
 function remember(a, url, card) {
   const m = cards();
   const old = own(m, a.id) && isObj(m[a.id]) && m[a.id].url === url && isObj(m[a.id].card) ? m[a.id].card : null;
   if (old && Number(old.t) > card.t) return false;
   if (old && JSON.stringify(old) === JSON.stringify(card)) return true;      // the same card again (an app posting often)
-  const ids = new Set(listApps().map((x) => x.id));
+  const ids = appIds();
   if (!ids.has(a.id)) return true;                    // not (or no longer) in the list, e.g. removed while it was fetched
   m[a.id] = { url, at: Date.now(), card };
   for (const k of Object.keys(m)) if (!ids.has(k)) delete m[k];

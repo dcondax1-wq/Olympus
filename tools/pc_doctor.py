@@ -16,10 +16,14 @@ The links, in the order the report travels (the first red one is "the most likel
    7 NTFY      ntfy.sh answers from this PC; the site's public status channel got something in the last 3 hours
    8 UPDATE    auto-update from the backup repo is connected (engine/autoupdate.py --source-status); this folder's git
                setting credential.interactive=never (BOTS_BACK.bat) used to block the one-time sign-in window
+   9 HEAL      (night-selfheal 2026-11-20) the self-heal's last run (engine/self_heal.py, hourly from the report task): what it
+               fixed by itself this week and what it could NOT fix. Only shown once it ran on this PC.
 
     python -X utf8 tools/pc_doctor.py             the card + the most likely cause + the exact next step
     python -X utf8 tools/pc_doctor.py --json      the same as JSON (the bot server's GET /api/pc/doctor)
     python -X utf8 tools/pc_doctor.py --offline   no network check (ntfy.sh)
+    python -X utf8 tools/pc_doctor.py --heal      the self-heal's dry run: what it would fix now (changes nothing)
+    python -X utf8 tools/pc_doctor.py --heal --apply   fix it now (the same run the report task makes every hour)
 Tests: tests/test_pc_doctor.py (temp folders, fake http / task / git, never the real network).
 """
 from __future__ import annotations
@@ -43,7 +47,7 @@ FEED_SINCE = "3h"
 SUSPENDED = "2026-11-08"
 LAST_GITHUB_BEAT = "2026-11-07"
 TASK = "OlympusPCReport"
-ORDER = ("server", "beat", "task", "report", "topic", "ntfy", "github", "update")
+ORDER = ("server", "beat", "task", "report", "topic", "ntfy", "github", "update", "heal")
 
 
 def _read(path):
@@ -281,6 +285,24 @@ def check_update(root, env, git=git_cfg):
               "python -X utf8 -m engine.autoupdate --connect")
 
 
+def check_heal(root, now):
+    """The self-heal's last run (engine/self_heal.py): None until it ran on this PC."""
+    try:
+        from engine import self_heal as SH
+        st = SH.status(root, now)
+    except Exception:
+        return None
+    if not st.get("ran"):
+        return None
+    t = st.get("tiny") or {}
+    age = _ago(now - st["ran"])
+    if st.get("need"):
+        last = [x for x in st.get("last") or [] if isinstance(x, dict) and x.get("status") == "need"]
+        return _c("heal", "HEAL", "FIX", f"self-heal ran {age} and could NOT fix: " + "; ".join(str(x.get("text"))[:100] for x in last[:2]),
+                  "See what it would do, then let it try again now.", "python -X utf8 tools/pc_doctor.py --heal --apply")
+    return _c("heal", "HEAL", "OK", f"self-heal ran {age}: nothing left to fix (fixed {t.get('fixed', 0)} this week by itself)")
+
+
 def run(root: str = ROOT, env=None, now=None, http=None, ping=None, task=None, offline=False, git=git_cfg) -> dict:
     """All checks -> {"t", "checks": [...], "cause", "step", "ok"}. Never raises."""
     env = os.environ if env is None else env
@@ -305,6 +327,9 @@ def run(root: str = ROOT, env=None, now=None, http=None, ping=None, task=None, o
     out.append(top)
     out.append(check_ntfy(cfg, http, offline))
     out.append(check_update(root, env, git=git))
+    heal = check_heal(root, now)
+    if heal:
+        out.append(heal)
     by = {c["key"]: c for c in out}
     first = next((by[k] for k in ORDER if k in by and by[k]["level"] == "FIX"), None) or \
         next((by[k] for k in ORDER if k in by and by[k]["level"] == "SKIP" and by[k].get("step")), None)
@@ -343,7 +368,12 @@ def main(argv=None) -> int:
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--offline", action="store_true")
     ap.add_argument("--github-free", action="store_true", help="turn GitHub-free mode on (applies at the next bot start)")
+    ap.add_argument("--heal", action="store_true", help="the self-heal now: a dry run, or with --apply the fix (engine/self_heal.py)")
+    ap.add_argument("--apply", action="store_true", help="with --heal: fix, not only show")
     a = ap.parse_args(argv)
+    if a.heal:
+        from engine import self_heal as SH
+        return SH.main(["--apply"] if a.apply else [])
     if a.github_free:
         github_free()
         print("  [OK] GitHub-free mode is ON for the next bot start (when flat: STOP_BOT.bat, then START_BOT.bat).")

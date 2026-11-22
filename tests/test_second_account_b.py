@@ -279,11 +279,14 @@ def units(tmp):
     st = lambda room, prof=0.0, cum=0.0, sess=1: {"profit": prof, "cum": cum, "room": room, "session": sess, "n_today": 0, "days_traded": 0}
     q25 = AB.qty(s25, {"risk_pts": 10.0, "tgt_pts": 15.0}, st(1000.0))
     q50 = AB.qty(s50, {"risk_pts": 10.0, "tgt_pts": 15.0}, st(2000.0))
-    check(f"sizing 25K need: one winner passes capped at 50% of the $1,000 room and 20 micros -> {q25['qty']}", q25["qty"] == 20, q25)
+    # 17 / 6 below (were 20 / 8 at the old 50% room share): live is "eval two_week room_f 0.4" (CLAUDE.md owner-approved sizing;
+    # engine/multi_account two_week room_f 0.4 on the 25K too). Same checks, the expected numbers only.
+    check(f"sizing 25K need: one winner passes capped at 40% of the $1,000 room (room_f 0.4) and 20 micros -> {q25['qty']}",
+          q25["qty"] == 17, q25)
     check(f"sizing 50K need: capped at 40% of the $2,000 room (owner 'yes 40%' 2026-11-14), the $1,000 soft loss, 40 micros -> {q50['qty']}", q50["qty"] == 35, q50)
     a, b_ = AB.qty(s25, {"risk_pts": 30.0, "tgt_pts": 60.0}, st(1000.0)), AB.qty(s50, {"risk_pts": 30.0, "tgt_pts": 60.0}, st(2000.0))
-    check(f"sizing 30-pt stop: 25K {a['qty']} (50% x $1,000 / $60 = 8) vs 50K {b_['qty']} (min(26 need, 40% room 12, 15 dll))",
-          a["qty"] == 8 and b_["qty"] == 12, (a, b_))
+    check(f"sizing 30-pt stop: 25K {a['qty']} (40% x $1,000 / $60 + costs = 6) vs 50K {b_['qty']} (min(26 need, 40% room 12, 15 dll))",
+          a["qty"] == 6 and b_["qty"] == 12, (a, b_))
     d25 = AB.qty(s25, {"risk_pts": 20.0, "tgt_pts": 40.0}, st(900.0, cum=-500.0))
     check(f"sizing 25K: the $600 soft daily loss (today -$500: $100 left) -> {d25['qty']}", d25["qty"] == 2, d25)
     # soft daily loss on EVERY trade (2026-10-22 fix, engine/account_b.dll_guard): after session 10 (safe_eval) and on the
@@ -531,7 +534,9 @@ def main():
             run(H, b, fake, poll_times(H, d), [])
             B = b.acct_b
             ents = [r for r in B.ledger if r.get("side") in ("buy", "sell")]
-            blk = [x["text"] for x in b.log if "NOT routed on account B" in x["text"] and "eval passed" in x["text"]]
+            # the stand-down now comes from engine/lifecycle.block first ("ATLAS 25K PASSED: stood down ..."), before the eval view's own
+            # "eval passed (...)" line: either wording is the pass lock (day-quality 2026-11-20: the old test read only the second)
+            blk = [x["text"] for x in b.log if "NOT routed on account B" in x["text"] and ("eval passed" in x["text"] or " PASSED: stood down" in x["text"])]
             check(f"d. {d} 25K at +$1,450: after the first B trade passes the eval ({B.eval_view()['status']}, balance "
                   f"${B.eval_view()['balance']:,.0f}) the next B signal is NOT routed (pass lock)",
                   len(ents) == 1 and B.eval_view()["status"] == "passed" and bool(blk), (ents, blk[:2], B.eval_view()))

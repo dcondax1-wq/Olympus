@@ -9,6 +9,45 @@
   after a STOP (any / same side / opposite / 30-min cool-off / same level re-swept same session), after BE / TARGET / cut, Monday rule
   off: 0 pass; stop-out extras 2026 H1 9 trades -$452 PF 0.28, 2021-25 60 trades -$440; same-level re-sweep 8 trades PF ~0; every
   signal the 1-a-day rule blocks 24 / 12 / 102 trades -$1.5k / +$3.6k / -$4.8k. Opposite-side re-entry +$2.3k in 2021-25 but 1 trade in 2026.
+- **2026-11-22 Regime guard round 3** (research/regime/guard3.py, regime-guard3-2026-11-22.md): shadow-setup hit rate R1, intraday variance ratio R2, trend-day share R3, thin volume R4, NQ-VIX co-movement R5, 2-of-5 vote R6; half / out; LIT and ATLAS. **0 of 22 pass, all fail the stage-0 kill-gate.** R1 sweeps pay worse in 2026 than in 2021-25 (flags 2026 87.5/80.8% vs OLD 70.4%). R5 flags LIT's best days. Best placebo 47.5% / 68.5% (95 needed). Closes the regime lever for market-weather and market-wide sweep signals, not every possible signal. ATLAS funded baseline moved 8.5/9.2/94.5 -> 8.2/8.3/94.2 because of a code change after 153552591; verdict unaffected.
+- **Zlarior edge, 5 pre-registered ideas (2026-11-20, `lit-edge-2026-11-20.md`, `tools/research/litedge.py`,
+  `research/lit/litedge.json`, design `research/lit/litedge_design_2026-11-20.md`):** LIT $/month H1 / H2 / 2021-25 vs
+  today $5,562 / $2,670 / $25: limit 2 ticks better than the model fill for 1 min, else market $5,184 / $2,585 / $26;
+  skip a setup when the 1m entry is > 60 min after the sweep bar $849 / $824 / $119 (1.2 / 0.8 trades a week); Tier-1
+  day target capped at 4R $4,997 / $2,616 / $89; MES instead of MNQ when ES's planned target R >= 1.25 x NQ's $5,069 /
+  $9,656 / $198 (fails Jan-Jun, eval -$10.6k / +$7.0k; paper lead, forward only); no +1R breakeven in the first 10 min
+  $5,068 / $2,670 / $25. 0 pass. Fill map: limits 10-50% of the risk better fill 0-60% and miss $17-34k of Jan-Jun
+  winners. +10 ticks a trade: $5,176 / $2,447 / -$353. Cold run (7 twin trades -4.2R) = 8.8% of 2026 7-trade windows.
+- **ATLAS edge at real fills (2026-11-20, `atlas-edge-2026-11-20.md`, `tools/atlas_edge.py`, `research/second/atlas_edge.json`,
+  design `research/second/atlas_edge_design.md`)**: 14 of 15 fail at 6 and 10 ticks on 60% and 40% sizing. Limit at the 5m open /
+  1-2 ticks better with a 1-2 min timeout (only ~52% fill, the runners are missed: funded $151-285 a month Jan-Jun-like vs $503),
+  limit 2 min then market, the next 5m open, per leg +0 / +5 min (picked +0), drop EMA (-$301 a month Jul-Oct-like), EMA half
+  size, the day stop after a loss (re-check at real fills), 3 losses -> 3 sessions off, a weekly cap at 35% of the room. Info
+  only (1m bars, 2021-25 untestable): EMA +60 s, per-leg minute (MACD +1: Jul-Oct $436 vs $402). ES versions of the 3 legs
+  (`tools/atlas_es.py`): PF 0.60-0.84 in 2026 at 3 ES ticks, all lose at 10. Passed: 2 losses in a row -> 1 micro (Decide card).
+- **ATLAS real-fill fixes (2026-11-20, `atlas-fills-2026-11-20.md`, `tools/atlas_fills.py`, `research/second/atlas_fills.json`,
+  design `research/second/atlas_fills_design.md`):** ATLAS's 3 real entries filled 10 / 12 / 16 ticks past the 5m open (market
+  order 3-5 s after a 5m close, price still running our way). Judged at 6 AND 10 ticks a side vs today at the same cost (funded
+  25K, fixed view, 2026 halves + 2021-25): 0 of 6 pass. Limit at the open 5 min (misses 17-18% of 2026's trades = the runners,
+  funded $550 -> $314 a month Jan-Jun at 6 ticks), limit 4 ticks worse (-$272), enter on the 1m close +60 s (Jul-Oct +$57,
+  Jan-Jun -$75, 2021-25 untestable: no 1m bars), skip a signal bar > 2x its 20-bar median (skips 30%, good trades), member
+  hours picked on Jan-Jun (Jul-Oct -$164: overfit), London pause before 08:00 ET (Jul-Oct $438 -> $74). Post-hoc, never
+  eligible: limit 60 s then market (-$105 Jan-Jun); "F3 if a 1-minute-later entry slips only 3 ticks" = a question for real
+  fills. Costs (no fix): at 10 ticks a side ATLAS still makes $512 / $404 a month funded (vs $588 / $494) but lost in 6 months
+  from today's room 7.7 -> 17.7% / 9.5 -> 23.0%, 2021-24 PF 1.06 -> 0.80. Re-test only with 10+ real fills (and poll-on-tick
+  engine/fast_entry priced on tick-time fills).
+- **Payday levers + cross-bot loss cuts (2026-11-20, `payday-plan-2026-11-20.md`, `tools/money/payday_plan.py`,
+  `tools/payday_losses.py`, `research/lab/payday_plan.json` / `payday_losses.json`, Lab rows `research/lab/payday_levers.json`,
+  design `research/lab/payday_design_2026-11-20.md`):** judged on the FIRST PAYOUT date AND the chance of losing the account
+  (today's balances, 1,000 same paths a market; Jul-Oct / Jan-Jun). 8 levers, 0 pass: ATLAS funded 40% of the room (first
+  payout +5 / +5 days, paid by Jan 15 66 -> 58 / 84 -> 81%, lost 10.2 -> 5.8%: safer, later), ask at $1,000 (+2 / +4 days),
+  ATLAS "need" funded size (-$91 / -$70 a month), 25K #2 40% + $300 cap (+5 / +2 days), Rapid ATLAS $150 (+6 / +3 days,
+  -$198 / -$522) or $350 (lost in 6 m 28.9 -> 36.8%), Rapid LIT bank lane (eval lost first 8.4 -> 11.6% Jan-Jun), ATLAS on
+  Zlarior's 50K NOW vs after the pass (nearest miss: sooner, eval deaths 26 -> 8% Jan-Jun, but 6-month lost 8.3 -> 9.7% and
+  2021-25-like 48 -> 63%). Loss cuts: ATLAS stands down after a closed Zlarior loss that day (cut trades +0.82 / +1.07R,
+  -$580 / -$226 a month, funded 25K first payout Jan 4 -> Jan 13) and Zlarior stands down after a closed ATLAS loss
+  (-$1,733 / -$297 / -$212 a month): both rejected. Anatomy: no bucket loses in both 2026 halves except ATLAS VIX < 15
+  (already rejected 2026-11-18).
 - **Zlarior more money, 2 pre-registered batches (2026-11-19, `lit-more-money-2026-11-19.md`, `tools/lit_more_money.py`,
   `research/lit/more_money.json`, designs `research/lit/more_money_design_batch1/2.md`, Lab rows `research/lab/lit_more_money.json`):**
   9 single versions, LIT $/month H1 / H2 / 2021-25 vs today $5,562 / $2,670 / $25: ES (MES) LIT filler on days NQ has not
@@ -105,6 +144,10 @@
   fade at the NY open. 0 hold H1/H2/2025/2021-24 vs 3.7 with coin-flip sides; no 2-4/wk cell with H1 PF >= 1.2. WITH-trend PM
   break: 71/72 cells positive 2021-24, 0/72 in 2026 H1. D80 / London fade PF 1.3-1.5 in 2021-25 but lose Jul-Oct, ~1/wk. Corr LIT ~0.
 - **Market-regime warning features (2026-11-17, `edge-health-2026-11-17.md`, `tools/edge_health.py`):** VIX, RTH range %, overnight share, trend efficiency, sweep reclaim (40-session means) as a 2026-vs-2021-25 light: only overnight share separates (BA 0.94) and it is a yearly drift that calls 2022 (LIT's good year) bad and precedes a worse LIT in 2021-25. Kept: the light from LIT's own last 40 sessions (warning only).
+- **Regime guard (2026-11-20, `regime-guard-2026-11-20.md`, `research/regime_guard/`):** VRP (RV20 > VIX), 1-year ATR20 / ER20
+  bottom-third, 2-of-3 vote, half / out for LIT + ATLAS: 0 of 8. None is more common in 2021-25 than 2026 (G1/G4 fire most in Jul-Oct);
+  LIT's 2021-25 $ is made on the flagged days (+$2,065 -> -$1.8k..-$5.9k). Post-hoc lead: ATLAS worse on chop days in all 3 periods; out
+  = ATLAS Jan-Jun -$4,746, funded 2021-25 lost 94.5 -> 85.7%. NQ/ES correlation not testable (ES daily from 2025-04).
 - **Famous published strategies (2026-11-17, `public-strategies-2026-11-17.md`, `tools/pub_strats.py`):** 22 cells as
   published + MFFU-legal day versions: Gao intraday momentum (wrong sign 2021-25, t -2.2), pre-FOMC drift (2021-25 only),
   turn of the month (2026 only; day-trade version = random days, placebo p 0.12-0.24), overnight drift, Connors RSI(2),
@@ -121,6 +164,9 @@
   Lead only: BLITZ max 3/day on the Rapid (chance-level by count; 2021-25 2-week eval fails 2.9% -> 6.0%). Watch on paper.
 - Published models as taught: ICT 2022, Silver Bullet, Mech/IFVG, continuation, ATM 5m/1m with a sharp V (0.2–1.5 trades/wk,
   PF ~1).
+- **ICT ATM range + ES/NQ SMT as the trigger, MES, Judas swing (2026-11-20, `newstrat-ict-smt-2026-11-20.md`):** 5 pre-registered
+  sets, $250, costs in: every SMT set loses all 3 periods (PF 0.57-0.99, gross 0.59-1.05), MES not cleaner (10-tick stress
+  -$3.7k..-$10.1k), Judas control +$1,672 Jan-Jun then -$2,244 Jul-Oct / -$11,472 2021-25. Rapid 25K eval pass 0-5%. 0 pass.
 - 92 confluences; 6 daily-bias methods; grade/confidence sizing; partials and trails.
 - Fixed 10–15 pt stops: wicked out, lose money. Structural stops are rarely ≤15 pts.
 - Target variants: no cap / draw mode / "last real pool" all worse (2026 PF 1.6–2.2 vs 3.48).
@@ -315,3 +361,28 @@
   a VIX jump; ATLAS x1.25 after Zlarior was stopped on the other side, x0.5 on a two-way day: all 8 rejected (best: old level +$138 /
   +$125 a month at the LIT size but eval path Jul-Oct -$34). The loop re-checks them on new bars.
 
+- **Kalshi K8 better edge (2026-11-20 night-kalshi8, `research/writeups/kalshi-k8-monday-2026-11-20.md`, `research/kalshi_k8_monday/edge.py`,
+  84 variants, one-sided Bonferroni t >= 3.24 found on Aug 3-Oct 21, checked on the held-out Oct 22-Nov 19, $2.50 bets, the +20 s tape
+  price, verify.py fees): NOTHING passed. Entry +10 s pays 0.15-0.5c MORE than +20 s (-2% to -3% per $1), +40 s pays 0.8c more and
+  misses 19% of fills: +20 s stays. Price caps 50-60c per leg (30): the skipped dearer bets still made +19% to +53% per $1 in the find
+  weeks (only gold 16:15 above 60c lost, 8 bets). Leg filters from the metals' own path on Kalshi's settles (48: previous quarter hour,
+  4-hour move, the session before, 8-hour volatility vs its 20-day median, skip either side): every skipped group made money (+6% to
+  +76% per $1), so every filter costs money. Pause a leg after 2 / 3 losses in a row: the next bet won 19 of 22 (+70%) / 3 of 3 in
+  the find weeks, 10 of 15 held out. Roll days: natural gas UP 17:00-17:15 won 15 of 15 but now costs 93c (+7% held out, loss-rate
+  bound 39% vs 15% break-even, about $2 a month at $2.50); WTI DOWN 17 of 20, +43% / +50% but t 2.41 on 20 bets (about $6 a month).
+  CME holiday / early-close skips are a safety rule, not testable (Labor Day was the only US holiday: the evening legs won that day).
+- **edge2 (2026-11-21, `edge2-2026-11-21.md`, `research/edge2/`):** 10 pre-registered. ATLAS deep limits 8 / 16 ticks better for 15 min: fill 38-45%,
+  miss $22-39k of winners, funded $ halves. ATLAS stop entry +12 ticks / 5 min (A3): H1 funded $511 -> $631, lost 16 -> 3%, 2021-24 PF
+  0.80 -> 0.99, but H2 $401 -> $398 / 20.7 -> 23.5% and 2025 6t -$74/mo: fails (PAPER LEAD - skipped signals lose every year, -0.22..-0.66R);
+  +20 ticks / 10 min worse in H2. New NQ setups at $250: IB failed-break fade, IB break-retest limit, prior-day level break-retest limit,
+  opening gap fade to the prior close, first-hour trend at 10:30 (+$45 / +$197 / +$121 a month, PF 1.08 H1, 0.5/wk H2), overnight-inside
+  breakout: none PF >= 1.2 in all 3 periods; all add -$500 days on a shared 25K. 0 pass.
+- **Holidays / roll / FOMC windows (2026-11-21, `holidays-2026-11-21.md`, `research/holidays/`):** Thanksgiving week, CME roll-date week,
+  Dec 15 - Jan 5, FOMC days x sit out / half, LIT and ATLAS (LIT roll = already rejected): 0 of 14. 2021-25 windows all weak (LIT PF
+  0.14-0.89, ATLAS 0.51-0.75 vs ~1.1) but 2026 windows profitable (FOMC LIT +$634/trade, ATLAS roll PF 8.9): sit-outs lose Jan-Jun $
+  (LIT FOMC -$2,535, ATLAS roll -$2,985). Thanksgiving / late Dec have no 2026 sample (untestable). Nearest: ATLAS FOMC out (funded lost
+  down in all 3, but Jan-Jun fixed -$1,223).
+- **Rapid 25K slot (2026-11-22, `rapid25-slot-2026-11-22.md`, `research/rapidfit/`):** one engine at real fills (rank.py): ATLAS only
+  $707 / $141 a month vs today's LIT + ATLAS $1,883 / $800 (rejected again); bank lane = card rapid25-lit-bank NO (eval fail 0.5 -> 3.1%);
+  a Rapid EOD 50K in the slot $5,001 / $2,281 a month but 2021-25 -$560 vs -$300 and eval fail 2.5 / 4.6% vs 0.3 / 2.4%: fails the
+  pre-set safety bar (already on cards buy-rapid50-now / plan-rapid50k-max2-rebuys). Today's lanes stay.

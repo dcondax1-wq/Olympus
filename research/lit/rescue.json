@@ -1,0 +1,1300 @@
+{
+ "date": "2026-11-20",
+ "n": 1000,
+ "z50_today": {
+  "room": 1024.58,
+  "to_go": 3807.22,
+  "session": 23
+ },
+ "light_now_r_week": 1.88,
+ "rows": {
+  "model": {
+   "H1": {
+    "today": {
+     "evals": {
+      "Z50": {
+       "p10": 28.0,
+       "p20": 48.1,
+       "p60": 72.0,
+       "f20": 11.2,
+       "f60": 24.8,
+       "open60": 3.2,
+       "pass_med": 14.0
+      },
+      "N25": {
+       "p10": 47.6,
+       "p20": 66.5,
+       "p60": 87.3,
+       "f20": 0.4,
+       "f60": 2.6,
+       "open60": 10.1,
+       "pass_med": 9.0
+      },
+      "both_dead60": 2.6,
+      "paused_sessions_avg": 0.0
+     },
+     "seats": {
+      "Z50": {
+       "pass60": 89.5,
+       "pass_med": 21.0,
+       "pass_p10": 24.6,
+       "first_pay_med": 53.0,
+       "first_pay_date": "2027-02-03",
+       "no_pay_6m": 9.7,
+       "net_m": 728,
+       "owner_m": 735,
+       "fees_6m": 41.9,
+       "evals": 1.46,
+       "pays": 2.78
+      },
+      "N25": {
+       "pass60": 86.9,
+       "pass_med": 12.0,
+       "pass_p10": 45.6,
+       "first_pay_med": 45.0,
+       "first_pay_date": "2027-01-22",
+       "no_pay_6m": 14.4,
+       "net_m": 357,
+       "owner_m": 359,
+       "fees_6m": 15.9,
+       "evals": 1.25,
+       "pays": 2.72
+      },
+      "both_net_m": 1084
+     }
+    },
+    "rf03": {
+     "evals": {
+      "Z50": {
+       "p10": 22.9,
+       "p20": 42.2,
+       "p60": 78.4,
+       "f20": 2.2,
+       "f60": 10.7,
+       "open60": 10.9,
+       "pass_med": 19.0
+      },
+      "N25": {
+       "p10": 39.0,
+       "p20": 61.1,
+       "p60": 87.6,
+       "f20": 0.0,
+       "f60": 0.0,
+       "open60": 12.4,
+       "pass_med": 12.0
+      },
+      "both_dead60": 0.0,
+      "paused_sessions_avg": 0.0
+     },
+     "seats": {
+      "Z50": {
+       "pass60": 83.2,
+       "pass_med": 25.0,
+       "pass_p10": 20.8,
+       "first_pay_med": 58.0,
+       "first_pay_date": "2027-02-10",
+       "no_pay_6m": 12.5,
+       "net_m": 679,
+       "owner_m": 684,
+       "fees_6m": 30.1,
+       "evals": 1.33,
+       "pays": 2.59
+      },
+      "N25": {
+       "pass60": 86.4,
+       "pass_med": 15.0,
+       "pass_p10": 37.6,
+       "first_pay_med": 49.0,
+       "first_pay_date": "2027-01-28",
+       "no_pay_6m": 14.7,
+       "net_m": 345,
+       "owner_m": 348,
+       "fees_6m": 13.3,
+       "evals": 1.21,
+       "pays": 2.63
+      },
+      "both_net_m": 1024
+     }
+    },
+    "rf02": {
+     "evals": {
+      "Z50": {
+       "p10": 8.0,
+       "p20": 27.2,
+       "p60": 76.0,
+       "f20": 0.0,
+       "f60": 2.7,
+       "open60": 21.3,
+       "pass_med": 27.0
+      },
+      "N25": {
+       "p10": 25.4,
+       "p20": 46.9,
+       "p60": 84.3,
+       "f20": 0.0,
+       "f60": 0.0,
+       "open60": 15.7,
+       "pass_med": 18.0
+      },
+      "both_dead60": 0.0,
+      "paused_sessions_avg": 0.0
+     },
+     "seats": {
+      "Z50": {
+       "pass60": 76.3,
+       "pass_med": 33.0,
+       "pass_p10": 8.0,
+       "first_pay_med": 65.0,
+       "first_pay_date": "2027-02-19",
+       "no_pay_6m": 15.9,
+       "net_m": 614,
+       "owner_m": 617,
+       "fees_6m": 21.1,
+       "evals": 1.23,
+       "pays": 2.34
+      },
+      "N25": {
+       "pass60": 82.5,
+       "pass_med": 22.0,
+       "pass_p10": 21.9,
+       "first_pay_med": 56.0,
+       "first_pay_date": "2027-02-08",
+       "no_pay_6m": 15.1,
+       "net_m": 324,
+       "owner_m": 325,
+       "fees_6m": 11.0,
+       "evals": 1.17,
+       "pays": 2.47
+      },
+      "both_net_m": 937
+     }
+    },
+    "pause": {
+     "evals": {
+      "Z50": {
+       "p10": 22.6,
+       "p20": 29.5,
+       "p60": 59.7,
+       "f20": 1.0,
+       "f60": 13.9,
+       "open60": 26.4,
+       "pass_med": 21.0
+      },
+      "N25": {
+       "p10": 37.7,
+       "p20": 44.0,
+       "p60": 74.1,
+       "f20": 0.0,
+       "f60": 1.0,
+       "open60": 24.9,
+       "pass_med": 9.0
+      },
+      "both_dead60": 1.0,
+      "paused_sessions_avg": 19.1
+     },
+     "seats": {
+      "Z50": {
+       "pass60": 65.5,
+       "pass_med": 41.0,
+       "pass_p10": 20.2,
+       "first_pay_med": 66.0,
+       "first_pay_date": "2027-02-22",
+       "no_pay_6m": 22.9,
+       "net_m": 557,
+       "owner_m": 563,
+       "fees_6m": 36.7,
+       "evals": 1.4,
+       "pays": 2.14
+      },
+      "N25": {
+       "pass60": 74.4,
+       "pass_med": 27.0,
+       "pass_p10": 35.9,
+       "first_pay_med": 56.0,
+       "first_pay_date": "2027-02-08",
+       "no_pay_6m": 24.7,
+       "net_m": 297,
+       "owner_m": 300,
+       "fees_6m": 13.4,
+       "evals": 1.21,
+       "pays": 2.27
+      },
+      "both_net_m": 855
+     }
+    }
+   },
+   "H2": {
+    "today": {
+     "evals": {
+      "Z50": {
+       "p10": 20.7,
+       "p20": 43.2,
+       "p60": 71.0,
+       "f20": 11.8,
+       "f60": 23.8,
+       "open60": 5.2,
+       "pass_med": 16.0
+      },
+      "N25": {
+       "p10": 47.2,
+       "p20": 62.5,
+       "p60": 82.8,
+       "f20": 0.3,
+       "f60": 1.7,
+       "open60": 15.5,
+       "pass_med": 8.0
+      },
+      "both_dead60": 1.4,
+      "paused_sessions_avg": 0.0
+     },
+     "seats": {
+      "Z50": {
+       "pass60": 88.1,
+       "pass_med": 22.0,
+       "pass_p10": 21.6,
+       "first_pay_med": 51.0,
+       "first_pay_date": "2027-02-01",
+       "no_pay_6m": 11.5,
+       "net_m": 699,
+       "owner_m": 707,
+       "fees_6m": 44.4,
+       "evals": 1.48,
+       "pays": 2.68
+      },
+      "N25": {
+       "pass60": 83.5,
+       "pass_med": 11.0,
+       "pass_p10": 46.7,
+       "first_pay_med": 44.0,
+       "first_pay_date": "2027-01-21",
+       "no_pay_6m": 23.3,
+       "net_m": 308,
+       "owner_m": 311,
+       "fees_6m": 16.4,
+       "evals": 1.26,
+       "pays": 2.38
+      },
+      "both_net_m": 1007
+     }
+    },
+    "rf03": {
+     "evals": {
+      "Z50": {
+       "p10": 13.2,
+       "p20": 34.4,
+       "p60": 74.1,
+       "f20": 0.9,
+       "f60": 10.1,
+       "open60": 15.8,
+       "pass_med": 23.0
+      },
+      "N25": {
+       "p10": 27.7,
+       "p20": 51.2,
+       "p60": 80.7,
+       "f20": 0.0,
+       "f60": 0.0,
+       "open60": 19.3,
+       "pass_med": 15.0
+      },
+      "both_dead60": 0.0,
+      "paused_sessions_avg": 0.0
+     },
+     "seats": {
+      "Z50": {
+       "pass60": 76.4,
+       "pass_med": 28.0,
+       "pass_p10": 14.2,
+       "first_pay_med": 58.0,
+       "first_pay_date": "2027-02-10",
+       "no_pay_6m": 16.4,
+       "net_m": 622,
+       "owner_m": 626,
+       "fees_6m": 28.7,
+       "evals": 1.31,
+       "pays": 2.38
+      },
+      "N25": {
+       "pass60": 79.7,
+       "pass_med": 19.0,
+       "pass_p10": 27.1,
+       "first_pay_med": 50.0,
+       "first_pay_date": "2027-01-29",
+       "no_pay_6m": 24.9,
+       "net_m": 289,
+       "owner_m": 291,
+       "fees_6m": 13.2,
+       "evals": 1.21,
+       "pays": 2.23
+      },
+      "both_net_m": 911
+     }
+    },
+    "rf02": {
+     "evals": {
+      "Z50": {
+       "p10": 2.7,
+       "p20": 17.8,
+       "p60": 63.7,
+       "f20": 0.0,
+       "f60": 3.4,
+       "open60": 32.9,
+       "pass_med": 31.0
+      },
+      "N25": {
+       "p10": 9.2,
+       "p20": 30.8,
+       "p60": 71.6,
+       "f20": 0.0,
+       "f60": 0.0,
+       "open60": 28.4,
+       "pass_med": 24.0
+      },
+      "both_dead60": 0.0,
+      "paused_sessions_avg": 0.0
+     },
+     "seats": {
+      "Z50": {
+       "pass60": 67.7,
+       "pass_med": 41.0,
+       "pass_p10": 1.8,
+       "first_pay_med": 69.0,
+       "first_pay_date": "2027-02-25",
+       "no_pay_6m": 21.5,
+       "net_m": 540,
+       "owner_m": 543,
+       "fees_6m": 19.1,
+       "evals": 1.21,
+       "pays": 2.07
+      },
+      "N25": {
+       "pass60": 70.9,
+       "pass_med": 31.0,
+       "pass_p10": 10.1,
+       "first_pay_med": 62.0,
+       "first_pay_date": "2027-02-16",
+       "no_pay_6m": 26.9,
+       "net_m": 253,
+       "owner_m": 255,
+       "fees_6m": 10.1,
+       "evals": 1.16,
+       "pays": 1.96
+      },
+      "both_net_m": 794
+     }
+    },
+    "pause": {
+     "evals": {
+      "Z50": {
+       "p10": 17.5,
+       "p20": 24.2,
+       "p60": 49.7,
+       "f20": 0.2,
+       "f60": 14.9,
+       "open60": 35.4,
+       "pass_med": 22.0
+      },
+      "N25": {
+       "p10": 39.4,
+       "p20": 42.7,
+       "p60": 65.9,
+       "f20": 0.0,
+       "f60": 0.5,
+       "open60": 33.6,
+       "pass_med": 5.0
+      },
+      "both_dead60": 0.5,
+      "paused_sessions_avg": 23.6
+     },
+     "seats": {
+      "Z50": {
+       "pass60": 56.7,
+       "pass_med": 46.0,
+       "pass_p10": 17.7,
+       "first_pay_med": 68.0,
+       "first_pay_date": "2027-02-24",
+       "no_pay_6m": 31.9,
+       "net_m": 477,
+       "owner_m": 482,
+       "fees_6m": 33.7,
+       "evals": 1.37,
+       "pays": 1.83
+      },
+      "N25": {
+       "pass60": 67.5,
+       "pass_med": 27.0,
+       "pass_p10": 37.2,
+       "first_pay_med": 54.0,
+       "first_pay_date": "2027-02-04",
+       "no_pay_6m": 32.6,
+       "net_m": 252,
+       "owner_m": 254,
+       "fees_6m": 12.2,
+       "evals": 1.19,
+       "pays": 1.94
+      },
+      "both_net_m": 728
+     }
+    }
+   },
+   "REF": {
+    "today": {
+     "evals": {
+      "Z50": {
+       "p10": 3.0,
+       "p20": 6.2,
+       "p60": 13.8,
+       "f20": 25.1,
+       "f60": 74.6,
+       "open60": 11.6,
+       "pass_med": 23.0
+      },
+      "N25": {
+       "p10": 10.6,
+       "p20": 18.5,
+       "p60": 27.8,
+       "f20": 2.4,
+       "f60": 31.5,
+       "open60": 40.7,
+       "pass_med": 14.0
+      },
+      "both_dead60": 31.3,
+      "paused_sessions_avg": 0.0
+     },
+     "seats": {
+      "Z50": {
+       "pass60": 30.2,
+       "pass_med": 58.0,
+       "pass_p10": 2.5,
+       "first_pay_med": 84.5,
+       "first_pay_date": "2027-03-18",
+       "no_pay_6m": 92.4,
+       "net_m": -5,
+       "owner_m": 22,
+       "fees_6m": 157.7,
+       "evals": 2.72,
+       "pays": 0.08
+      },
+      "N25": {
+       "pass60": 32.1,
+       "pass_med": 36.0,
+       "pass_p10": 11.5,
+       "first_pay_med": 69.0,
+       "first_pay_date": "2027-02-25",
+       "no_pay_6m": 94.1,
+       "net_m": -1,
+       "owner_m": 8,
+       "fees_6m": 57.6,
+       "evals": 1.91,
+       "pays": 0.07
+      },
+      "both_net_m": -6
+     }
+    },
+    "rf03": {
+     "evals": {
+      "Z50": {
+       "p10": 1.1,
+       "p20": 3.3,
+       "p60": 10.3,
+       "f20": 3.9,
+       "f60": 54.5,
+       "open60": 35.2,
+       "pass_med": 27.0
+      },
+      "N25": {
+       "p10": 5.2,
+       "p20": 11.4,
+       "p60": 22.5,
+       "f20": 0.0,
+       "f60": 4.3,
+       "open60": 73.2,
+       "pass_med": 20.0
+      },
+      "both_dead60": 4.3,
+      "paused_sessions_avg": 0.0
+     },
+     "seats": {
+      "Z50": {
+       "pass60": 15.4,
+       "pass_med": 71.0,
+       "pass_p10": 0.5,
+       "first_pay_med": 88.0,
+       "first_pay_date": "2027-03-24",
+       "no_pay_6m": 96.1,
+       "net_m": -7,
+       "owner_m": 12,
+       "fees_6m": 115.9,
+       "evals": 2.26,
+       "pays": 0.04
+      },
+      "N25": {
+       "pass60": 22.4,
+       "pass_med": 43.0,
+       "pass_p10": 5.6,
+       "first_pay_med": 76.0,
+       "first_pay_date": "2027-03-08",
+       "no_pay_6m": 95.5,
+       "net_m": -1,
+       "owner_m": 6,
+       "fees_6m": 44.4,
+       "evals": 1.7,
+       "pays": 0.05
+      },
+      "both_net_m": -9
+     }
+    },
+    "rf02": {
+     "evals": {
+      "Z50": {
+       "p10": 0.1,
+       "p20": 0.7,
+       "p60": 5.4,
+       "f20": 0.0,
+       "f60": 22.9,
+       "open60": 71.7,
+       "pass_med": 38.5
+      },
+      "N25": {
+       "p10": 1.2,
+       "p20": 3.9,
+       "p60": 12.2,
+       "f20": 0.0,
+       "f60": 0.0,
+       "open60": 87.8,
+       "pass_med": 30.0
+      },
+      "both_dead60": 0.0,
+      "paused_sessions_avg": 0.0
+     },
+     "seats": {
+      "Z50": {
+       "pass60": 4.8,
+       "pass_med": 83.0,
+       "pass_p10": 0.0,
+       "first_pay_med": 110.0,
+       "first_pay_date": "2027-04-23",
+       "no_pay_6m": 98.9,
+       "net_m": -10,
+       "owner_m": 3,
+       "fees_6m": 81.0,
+       "evals": 1.88,
+       "pays": 0.01
+      },
+      "N25": {
+       "pass60": 11.2,
+       "pass_med": 75.0,
+       "pass_p10": 0.7,
+       "first_pay_med": 96.5,
+       "first_pay_date": "2027-04-05",
+       "no_pay_6m": 97.2,
+       "net_m": -4,
+       "owner_m": 4,
+       "fees_6m": 44.6,
+       "evals": 1.71,
+       "pays": 0.03
+      },
+      "both_net_m": -14
+     }
+    },
+    "pause": {
+     "evals": {
+      "Z50": {
+       "p10": 2.5,
+       "p20": 2.7,
+       "p60": 3.8,
+       "f20": 0.3,
+       "f60": 4.1,
+       "open60": 92.1,
+       "pass_med": 6.0
+      },
+      "N25": {
+       "p10": 7.1,
+       "p20": 7.4,
+       "p60": 10.5,
+       "f20": 0.0,
+       "f60": 0.2,
+       "open60": 89.3,
+       "pass_med": 5.0
+      },
+      "both_dead60": 0.2,
+      "paused_sessions_avg": 49.8
+     },
+     "seats": {
+      "Z50": {
+       "pass60": 3.4,
+       "pass_med": 52.0,
+       "pass_p10": 1.6,
+       "first_pay_med": 73.0,
+       "first_pay_date": "2027-03-03",
+       "no_pay_6m": 99.5,
+       "net_m": -2,
+       "owner_m": 1,
+       "fees_6m": 21.8,
+       "evals": 1.24,
+       "pays": 0.01
+      },
+      "N25": {
+       "pass60": 10.8,
+       "pass_med": 6.0,
+       "pass_p10": 8.4,
+       "first_pay_med": 33.0,
+       "first_pay_date": "2027-01-06",
+       "no_pay_6m": 98.7,
+       "net_m": 1,
+       "owner_m": 2,
+       "fees_6m": 5.5,
+       "evals": 1.09,
+       "pays": 0.02
+      },
+      "both_net_m": -1
+     }
+    }
+   }
+  },
+  "stress10": {
+   "H1": {
+    "today": {
+     "evals": {
+      "Z50": {
+       "p10": 25.1,
+       "p20": 42.7,
+       "p60": 65.6,
+       "f20": 17.6,
+       "f60": 31.5,
+       "open60": 2.9,
+       "pass_med": 14.0
+      },
+      "N25": {
+       "p10": 44.8,
+       "p20": 63.1,
+       "p60": 82.6,
+       "f20": 0.4,
+       "f60": 4.6,
+       "open60": 12.8,
+       "pass_med": 9.0
+      },
+      "both_dead60": 4.5,
+      "paused_sessions_avg": 0.0
+     },
+     "seats": {
+      "Z50": {
+       "pass60": 89.9,
+       "pass_med": 22.0,
+       "pass_p10": 22.2,
+       "first_pay_med": 55.5,
+       "first_pay_date": "2027-02-08",
+       "no_pay_6m": 13.2,
+       "net_m": 623,
+       "owner_m": 631,
+       "fees_6m": 46.4,
+       "evals": 1.5,
+       "pays": 2.39
+      },
+      "N25": {
+       "pass60": 84.3,
+       "pass_med": 13.0,
+       "pass_p10": 42.4,
+       "first_pay_med": 46.0,
+       "first_pay_date": "2027-01-25",
+       "no_pay_6m": 21.1,
+       "net_m": 296,
+       "owner_m": 298,
+       "fees_6m": 13.7,
+       "evals": 1.22,
+       "pays": 2.26
+      },
+      "both_net_m": 919
+     }
+    },
+    "rf03": {
+     "evals": {
+      "Z50": {
+       "p10": 17.9,
+       "p20": 38.2,
+       "p60": 70.9,
+       "f20": 3.3,
+       "f60": 16.2,
+       "open60": 12.9,
+       "pass_med": 19.0
+      },
+      "N25": {
+       "p10": 34.5,
+       "p20": 56.0,
+       "p60": 82.8,
+       "f20": 0.0,
+       "f60": 0.0,
+       "open60": 17.2,
+       "pass_med": 13.0
+      },
+      "both_dead60": 0.0,
+      "paused_sessions_avg": 0.0
+     },
+     "seats": {
+      "Z50": {
+       "pass60": 78.6,
+       "pass_med": 27.0,
+       "pass_p10": 17.6,
+       "first_pay_med": 61.0,
+       "first_pay_date": "2027-02-15",
+       "no_pay_6m": 18.0,
+       "net_m": 563,
+       "owner_m": 568,
+       "fees_6m": 27.3,
+       "evals": 1.3,
+       "pays": 2.15
+      },
+      "N25": {
+       "pass60": 82.2,
+       "pass_med": 17.0,
+       "pass_p10": 31.8,
+       "first_pay_med": 50.0,
+       "first_pay_date": "2027-01-29",
+       "no_pay_6m": 21.2,
+       "net_m": 282,
+       "owner_m": 283,
+       "fees_6m": 10.2,
+       "evals": 1.16,
+       "pays": 2.15
+      },
+      "both_net_m": 845
+     }
+    },
+    "rf02": {
+     "evals": {
+      "Z50": {
+       "p10": 6.9,
+       "p20": 23.9,
+       "p60": 69.4,
+       "f20": 0.0,
+       "f60": 5.1,
+       "open60": 25.5,
+       "pass_med": 27.0
+      },
+      "N25": {
+       "p10": 21.8,
+       "p20": 42.0,
+       "p60": 79.1,
+       "f20": 0.0,
+       "f60": 0.0,
+       "open60": 20.9,
+       "pass_med": 19.0
+      },
+      "both_dead60": 0.0,
+      "paused_sessions_avg": 0.0
+     },
+     "seats": {
+      "Z50": {
+       "pass60": 69.1,
+       "pass_med": 37.0,
+       "pass_p10": 7.4,
+       "first_pay_med": 67.0,
+       "first_pay_date": "2027-02-23",
+       "no_pay_6m": 21.4,
+       "net_m": 512,
+       "owner_m": 515,
+       "fees_6m": 19.8,
+       "evals": 1.22,
+       "pays": 1.96
+      },
+      "N25": {
+       "pass60": 76.4,
+       "pass_med": 24.0,
+       "pass_p10": 18.8,
+       "first_pay_med": 59.0,
+       "first_pay_date": "2027-02-11",
+       "no_pay_6m": 21.9,
+       "net_m": 260,
+       "owner_m": 261,
+       "fees_6m": 8.1,
+       "evals": 1.13,
+       "pays": 1.99
+      },
+      "both_net_m": 772
+     }
+    },
+    "pause": {
+     "evals": {
+      "Z50": {
+       "p10": 20.6,
+       "p20": 26.4,
+       "p60": 54.3,
+       "f20": 3.9,
+       "f60": 19.9,
+       "open60": 25.8,
+       "pass_med": 22.0
+      },
+      "N25": {
+       "p10": 35.3,
+       "p20": 41.1,
+       "p60": 68.1,
+       "f20": 0.0,
+       "f60": 1.1,
+       "open60": 30.8,
+       "pass_med": 9.0
+      },
+      "both_dead60": 1.1,
+      "paused_sessions_avg": 20.7
+     },
+     "seats": {
+      "Z50": {
+       "pass60": 60.0,
+       "pass_med": 43.0,
+       "pass_p10": 17.6,
+       "first_pay_med": 70.0,
+       "first_pay_date": "2027-02-26",
+       "no_pay_6m": 29.0,
+       "net_m": 458,
+       "owner_m": 465,
+       "fees_6m": 40.4,
+       "evals": 1.44,
+       "pays": 1.77
+      },
+      "N25": {
+       "pass60": 68.4,
+       "pass_med": 30.0,
+       "pass_p10": 32.8,
+       "first_pay_med": 57.0,
+       "first_pay_date": "2027-02-09",
+       "no_pay_6m": 30.6,
+       "net_m": 242,
+       "owner_m": 244,
+       "fees_6m": 12.9,
+       "evals": 1.21,
+       "pays": 1.85
+      },
+      "both_net_m": 700
+     }
+    }
+   },
+   "H2": {
+    "today": {
+     "evals": {
+      "Z50": {
+       "p10": 19.0,
+       "p20": 39.0,
+       "p60": 65.4,
+       "f20": 14.8,
+       "f60": 29.2,
+       "open60": 5.4,
+       "pass_med": 17.0
+      },
+      "N25": {
+       "p10": 45.7,
+       "p20": 60.6,
+       "p60": 78.5,
+       "f20": 0.4,
+       "f60": 3.0,
+       "open60": 18.5,
+       "pass_med": 8.0
+      },
+      "both_dead60": 3.0,
+      "paused_sessions_avg": 0.0
+     },
+     "seats": {
+      "Z50": {
+       "pass60": 87.0,
+       "pass_med": 23.0,
+       "pass_p10": 20.5,
+       "first_pay_med": 53.0,
+       "first_pay_date": "2027-02-03",
+       "no_pay_6m": 14.5,
+       "net_m": 638,
+       "owner_m": 647,
+       "fees_6m": 53.1,
+       "evals": 1.58,
+       "pays": 2.47
+      },
+      "N25": {
+       "pass60": 79.4,
+       "pass_med": 11.0,
+       "pass_p10": 45.1,
+       "first_pay_med": 44.0,
+       "first_pay_date": "2027-01-21",
+       "no_pay_6m": 28.4,
+       "net_m": 275,
+       "owner_m": 278,
+       "fees_6m": 19.2,
+       "evals": 1.3,
+       "pays": 2.13
+      },
+      "both_net_m": 913
+     }
+    },
+    "rf03": {
+     "evals": {
+      "Z50": {
+       "p10": 12.4,
+       "p20": 31.1,
+       "p60": 66.7,
+       "f20": 1.0,
+       "f60": 14.8,
+       "open60": 18.5,
+       "pass_med": 23.0
+      },
+      "N25": {
+       "p10": 25.8,
+       "p20": 49.4,
+       "p60": 77.4,
+       "f20": 0.0,
+       "f60": 0.0,
+       "open60": 22.6,
+       "pass_med": 15.0
+      },
+      "both_dead60": 0.0,
+      "paused_sessions_avg": 0.0
+     },
+     "seats": {
+      "Z50": {
+       "pass60": 73.8,
+       "pass_med": 31.0,
+       "pass_p10": 13.5,
+       "first_pay_med": 59.0,
+       "first_pay_date": "2027-02-11",
+       "no_pay_6m": 22.1,
+       "net_m": 557,
+       "owner_m": 563,
+       "fees_6m": 34.1,
+       "evals": 1.37,
+       "pays": 2.14
+      },
+      "N25": {
+       "pass60": 75.0,
+       "pass_med": 20.0,
+       "pass_p10": 26.2,
+       "first_pay_med": 51.0,
+       "first_pay_date": "2027-02-01",
+       "no_pay_6m": 30.4,
+       "net_m": 253,
+       "owner_m": 256,
+       "fees_6m": 16.5,
+       "evals": 1.26,
+       "pays": 1.96
+      },
+      "both_net_m": 810
+     }
+    },
+    "rf02": {
+     "evals": {
+      "Z50": {
+       "p10": 2.5,
+       "p20": 16.0,
+       "p60": 58.0,
+       "f20": 0.0,
+       "f60": 4.7,
+       "open60": 37.3,
+       "pass_med": 32.0
+      },
+      "N25": {
+       "p10": 8.2,
+       "p20": 28.1,
+       "p60": 66.6,
+       "f20": 0.0,
+       "f60": 0.0,
+       "open60": 33.4,
+       "pass_med": 24.0
+      },
+      "both_dead60": 0.0,
+      "paused_sessions_avg": 0.0
+     },
+     "seats": {
+      "Z50": {
+       "pass60": 61.7,
+       "pass_med": 45.0,
+       "pass_p10": 1.6,
+       "first_pay_med": 72.0,
+       "first_pay_date": "2027-03-02",
+       "no_pay_6m": 27.4,
+       "net_m": 467,
+       "owner_m": 471,
+       "fees_6m": 22.6,
+       "evals": 1.25,
+       "pays": 1.8
+      },
+      "N25": {
+       "pass60": 65.9,
+       "pass_med": 33.0,
+       "pass_p10": 9.2,
+       "first_pay_med": 62.5,
+       "first_pay_date": "2027-02-16",
+       "no_pay_6m": 35.4,
+       "net_m": 213,
+       "owner_m": 215,
+       "fees_6m": 12.0,
+       "evals": 1.19,
+       "pays": 1.65
+      },
+      "both_net_m": 680
+     }
+    },
+    "pause": {
+     "evals": {
+      "Z50": {
+       "p10": 16.6,
+       "p20": 22.6,
+       "p60": 46.0,
+       "f20": 0.5,
+       "f60": 17.4,
+       "open60": 36.6,
+       "pass_med": 21.5
+      },
+      "N25": {
+       "p10": 38.5,
+       "p20": 41.9,
+       "p60": 60.3,
+       "f20": 0.0,
+       "f60": 0.7,
+       "open60": 39.0,
+       "pass_med": 5.0
+      },
+      "both_dead60": 0.6,
+      "paused_sessions_avg": 25.1
+     },
+     "seats": {
+      "Z50": {
+       "pass60": 52.8,
+       "pass_med": 48.0,
+       "pass_p10": 16.7,
+       "first_pay_med": 72.0,
+       "first_pay_date": "2027-03-02",
+       "no_pay_6m": 36.6,
+       "net_m": 412,
+       "owner_m": 419,
+       "fees_6m": 39.7,
+       "evals": 1.43,
+       "pays": 1.6
+      },
+      "N25": {
+       "pass60": 62.6,
+       "pass_med": 27.0,
+       "pass_p10": 36.3,
+       "first_pay_med": 55.0,
+       "first_pay_date": "2027-02-05",
+       "no_pay_6m": 38.9,
+       "net_m": 217,
+       "owner_m": 220,
+       "fees_6m": 15.7,
+       "evals": 1.25,
+       "pays": 1.68
+      },
+      "both_net_m": 629
+     }
+    }
+   },
+   "REF": {
+    "today": {
+     "evals": {
+      "Z50": {
+       "p10": 2.6,
+       "p20": 4.9,
+       "p60": 9.9,
+       "f20": 33.8,
+       "f60": 83.0,
+       "open60": 7.1,
+       "pass_med": 21.0
+      },
+      "N25": {
+       "p10": 8.8,
+       "p20": 15.5,
+       "p60": 22.3,
+       "f20": 5.7,
+       "f60": 45.9,
+       "open60": 31.8,
+       "pass_med": 13.0
+      },
+      "both_dead60": 45.8,
+      "paused_sessions_avg": 0.0
+     },
+     "seats": {
+      "Z50": {
+       "pass60": 28.0,
+       "pass_med": 59.0,
+       "pass_p10": 1.9,
+       "first_pay_med": 76.0,
+       "first_pay_date": "2027-03-08",
+       "no_pay_6m": 95.7,
+       "net_m": -23,
+       "owner_m": 12,
+       "fees_6m": 209.7,
+       "evals": 3.28,
+       "pays": 0.04
+      },
+      "N25": {
+       "pass60": 29.2,
+       "pass_med": 42.0,
+       "pass_p10": 9.9,
+       "first_pay_med": 68.0,
+       "first_pay_date": "2027-02-24",
+       "no_pay_6m": 95.6,
+       "net_m": -8,
+       "owner_m": 6,
+       "fees_6m": 81.0,
+       "evals": 2.29,
+       "pays": 0.05
+      },
+      "both_net_m": -31
+     }
+    },
+    "rf03": {
+     "evals": {
+      "Z50": {
+       "p10": 1.1,
+       "p20": 2.7,
+       "p60": 7.5,
+       "f20": 8.8,
+       "f60": 68.0,
+       "open60": 24.5,
+       "pass_med": 27.0
+      },
+      "N25": {
+       "p10": 5.1,
+       "p20": 9.5,
+       "p60": 17.9,
+       "f20": 0.0,
+       "f60": 10.1,
+       "open60": 72.0,
+       "pass_med": 19.0
+      },
+      "both_dead60": 10.0,
+      "paused_sessions_avg": 0.0
+     },
+     "seats": {
+      "Z50": {
+       "pass60": 11.1,
+       "pass_med": 70.0,
+       "pass_p10": 0.3,
+       "first_pay_med": 80.0,
+       "first_pay_date": "2027-03-12",
+       "no_pay_6m": 97.9,
+       "net_m": -19,
+       "owner_m": 5,
+       "fees_6m": 146.8,
+       "evals": 2.6,
+       "pays": 0.02
+      },
+      "N25": {
+       "pass60": 16.8,
+       "pass_med": 43.0,
+       "pass_p10": 5.4,
+       "first_pay_med": 68.0,
+       "first_pay_date": "2027-02-24",
+       "no_pay_6m": 98.0,
+       "net_m": -6,
+       "owner_m": 3,
+       "fees_6m": 54.4,
+       "evals": 1.86,
+       "pays": 0.02
+      },
+      "both_net_m": -25
+     }
+    },
+    "rf02": {
+     "evals": {
+      "Z50": {
+       "p10": 0.1,
+       "p20": 0.7,
+       "p60": 3.5,
+       "f20": 0.0,
+       "f60": 32.4,
+       "open60": 64.1,
+       "pass_med": 37.0
+      },
+      "N25": {
+       "p10": 0.9,
+       "p20": 3.0,
+       "p60": 9.0,
+       "f20": 0.0,
+       "f60": 0.0,
+       "open60": 91.0,
+       "pass_med": 30.0
+      },
+      "both_dead60": 0.0,
+      "paused_sessions_avg": 0.0
+     },
+     "seats": {
+      "Z50": {
+       "pass60": 3.3,
+       "pass_med": 82.0,
+       "pass_p10": 0.0,
+       "first_pay_med": 97.5,
+       "first_pay_date": "2027-04-07",
+       "no_pay_6m": 99.4,
+       "net_m": -13,
+       "owner_m": 2,
+       "fees_6m": 89.9,
+       "evals": 1.98,
+       "pays": 0.01
+      },
+      "N25": {
+       "pass60": 8.3,
+       "pass_med": 70.0,
+       "pass_p10": 0.4,
+       "first_pay_med": 102.0,
+       "first_pay_date": "2027-04-13",
+       "no_pay_6m": 98.7,
+       "net_m": -7,
+       "owner_m": 2,
+       "fees_6m": 51.9,
+       "evals": 1.82,
+       "pays": 0.01
+      },
+      "both_net_m": -20
+     }
+    },
+    "pause": {
+     "evals": {
+      "Z50": {
+       "p10": 2.2,
+       "p20": 2.5,
+       "p60": 2.9,
+       "f20": 1.4,
+       "f60": 5.2,
+       "open60": 91.9,
+       "pass_med": 6.0
+      },
+      "N25": {
+       "p10": 6.4,
+       "p20": 6.7,
+       "p60": 8.9,
+       "f20": 0.0,
+       "f60": 0.5,
+       "open60": 90.6,
+       "pass_med": 5.0
+      },
+      "both_dead60": 0.5,
+      "paused_sessions_avg": 50.8
+     },
+     "seats": {
+      "Z50": {
+       "pass60": 2.4,
+       "pass_med": 41.5,
+       "pass_p10": 1.1,
+       "first_pay_med": 74.5,
+       "first_pay_date": "2027-03-04",
+       "no_pay_6m": 99.8,
+       "net_m": -3,
+       "owner_m": 1,
+       "fees_6m": 20.8,
+       "evals": 1.23,
+       "pays": 0.0
+      },
+      "N25": {
+       "pass60": 8.8,
+       "pass_med": 5.0,
+       "pass_p10": 7.4,
+       "first_pay_med": 33.5,
+       "first_pay_date": "2027-01-07",
+       "no_pay_6m": 99.2,
+       "net_m": 0,
+       "owner_m": 1,
+       "fees_6m": 6.4,
+       "evals": 1.1,
+       "pays": 0.01
+      },
+      "both_net_m": -3
+     }
+    }
+   }
+  }
+ }
+}

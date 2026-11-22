@@ -51,9 +51,9 @@ def test_static():
     check("a. the PC twin: agency/calls/__init__.py, core.py, build.py, .gitignore", all(os.path.isfile(p) for p in pc))
     html, js, core, css = (AK.read(os.path.join(D, n)) for n in ("call.html", "call.js", "callcore.js", "call.css"))
     lines = html.splitlines()
-    i = next((n for n, ln in enumerate(lines) if "../olympus/olympus.js?v=o13" in ln), -1)
-    check('a. the kit: olympus.css?v=o7, agora.css after it, call.css last; themes.js; olympus.js?v=o13 data-app="agency" with the intro tag on the next line; a11y, agora-ui, gate-nav, sfx',
-          html.index("../olympus/olympus.css?v=o7") < html.index("../olympus/agora.css") < html.index("call.css") and "../olympus/themes.js?v=o8" in html
+    i = next((n for n, ln in enumerate(lines) if "../olympus/olympus.js?v=o24" in ln), -1)
+    check('a. the kit: olympus.css?v=o7, agora.css after it, call.css last; themes.js; olympus.js?v=o18 data-app="agency" with the intro tag on the next line; a11y, agora-ui, gate-nav, sfx',
+          html.index("../olympus/olympus.css?v=o7") < html.index("../olympus/agora.css") < html.index("call.css") and "../olympus/themes.js?v=o11" in html
           and i >= 0 and 'data-app="agency"' in lines[i] and lines[i + 1].strip() == AK.INCLUDE and html.count("intro-app.js") == 1
           and all(x in html for x in ("../olympus/a11y.js", "../olympus/agora-ui.js", "../olympus/gate-nav.js", "../olympus/sfx.js?v=s4")))
     check("a. AGORA: <html data-theme=agora>, viewport-fit=cover, theme-color, the manifest, the icon, ONE h1 'Call copilot', a polite status line, the page is an ES module",
@@ -594,7 +594,7 @@ def test_page():
             p.locator("#objChips [data-obj=expensive]").click()
             p.wait_for_timeout(100)
             ob = p.evaluate("() => [document.querySelectorAll('#objChips button').length, document.querySelector('#objAnswer').textContent]")
-            check("d. objections: 8 answers; 'Too expensive' shows your own price ($499) in big words", ob[0] == 8 and "Too expensive" in ob[1] and "$499" in ob[1], ob)
+            check("d. objections: 8 answers; 'Too expensive' quotes the price book's starting price for the trade ($1,500 restaurants) in big words", ob[0] == 8 and "Too expensive" in ob[1] and "$1,500" in ob[1], ob)
             p.locator("#objChips [data-obj=gatekeeper]").click()
             gk = p.evaluate("() => document.querySelector('#objAnswer').textContent")
             check("d. the gatekeeper lines ask who looks after the website and the best time to reach Maria", "Who looks after your website?" in gk and "Maria Lopez" in gk, gk)
@@ -636,7 +636,8 @@ def test_page():
             check("d. Do not call asks twice ('Tap again: never call ...'), then locks the business for good; the DEMO list is never saved",
                   armed.startswith("Tap again: never call Glow Nail Studio") and "+12135550181" in g["opt"] and g["locked"] == "Locked: do not call" and g["saved"] is None, (armed, g))
             p.locator("#cClose").click()
-            check("d. no sideways scroll; Jarvis's corner is free; no console error", AK.no_sideways(p) and not AK.corner(p) and not errs, errs[:3])
+            side, crn = AK.no_sideways(p), AK.corner(p)
+            check("d. no sideways scroll; Jarvis's corner is free; no console error", side and not crn and not errs, (side, crn, errs[:3]))
             t = AK.taps(p)
             check("d. the main page: every tap target is at least 44 x 44 px", not t, t[:5])
             agency = [u.split("?")[0] for u in seen if "/agency/" in u and u.split("?")[0].endswith(".json")]

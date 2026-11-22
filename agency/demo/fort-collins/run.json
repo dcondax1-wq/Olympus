@@ -26,8 +26,8 @@
    },
    "ok": true,
    "kb": 79.3,
-   "package": "growth",
-   "setup": 999.0,
+   "package": "starter",
+   "setup": 1500.0,
    "monthly": 79.0
   },
   {
@@ -44,8 +44,8 @@
    },
    "ok": true,
    "kb": 78.8,
-   "package": "growth",
-   "setup": 999.0,
+   "package": "starter",
+   "setup": 1500.0,
    "monthly": 79.0
   },
   {
@@ -62,8 +62,8 @@
    },
    "ok": true,
    "kb": 77.1,
-   "package": "growth",
-   "setup": 999.0,
+   "package": "starter",
+   "setup": 1500.0,
    "monthly": 79.0
   }
  ],

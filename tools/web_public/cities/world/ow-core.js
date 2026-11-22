@@ -9,9 +9,9 @@
 export const VERSION = 'w1';
 export const S = Object.freeze({ RUIN: 0, SCAFFOLD: 1, LIT: 2, BRIGHT: 3, CROWN: 4, VAULT: 5 });
 export const LOT = 1.75, FOOT = 1.45;
-export const STATE_WORD = Object.freeze({ live: 'Live', app: 'App', bright: 'Working', growing: 'Growing', testing: 'Being tested', planned: 'Planned',
+export const STATE_WORD = Object.freeze({ decide: 'Your call', live: 'Live', app: 'App', bright: 'Working', growing: 'Growing', testing: 'Being tested', planned: 'Planned',
   ruin: 'Rejected', data: 'Data', paused: 'Paused' });
-const HMAX = { app: 34, bot: 21, account: 19, lab: 10, research: 14, datacity: 13, market: 13, kalshi: 9, decision: 7 };
+const HMAX = { app: 34, bot: 21, account: 19, sites: 15, hub: 30, lab: 10, research: 14, datacity: 13, market: 13, kalshi: 9, decision: 7 };
 const LITF = [0, 0.1, 0.4, 0.62, 0.6, 0.2];
 
 // ------------------------------------------------------------------------------------------------ small helpers
@@ -87,16 +87,25 @@ export function planWorld(w, opts) {
   const o = opts || {}, low = o.tier === 'low' || o.tier === 'off';
   const C = +w.cell || 7, PL = +w.plaza || 26, R = +w.R || 120;
   const out = [];
-  const push = (pi, x, y, z, sx, sy, sz, seed, st, lit, rgb, born, part, tilt, filler) => out.push([pi, x, y, z, sx, sy, sz, seed, st, lit, rgb, born, part, tilt, filler]);
-  const stack = (pi, x, z, fw, fd, h, seed, st, lit, rgb, born, filler, r) => {
+  // revamp-cities (2026-11-20): every piece also has a SHAPE (chamfer 0..0.3 = a box .. an octagon, taper 0..1 = straight .. a point), one
+  // instanced geometry draws them all (ow-scene prism()): slab towers, octagonal towers, tapered crowns and pyramid caps in the same draw call
+  const push = (pi, x, y, z, sx, sy, sz, seed, st, lit, rgb, born, part, tilt, filler, ch, tp) => out.push([pi, x, y, z, sx, sy, sz, seed, st, lit, rgb, born, part, tilt, filler, ch || 0, tp || 0]);
+  const stack = (pi, x, z, fw, fd, h, seed, st, lit, rgb, born, filler, r, style) => {
+    // style: 0 a slab, 1 an octagonal tower, 2 a tapered tower (a crown); a tall one gets a setback and, at the top, a mast or a pyramid cap
+    const sty = style != null ? style : (r() < 0.34 ? 1 : r() < 0.12 ? 2 : 0);
+    const ch = sty === 1 ? 0.1 + r() * 0.14 : sty === 2 ? 0.06 + r() * 0.08 : 0;
     if (h > 8 && st !== S.RUIN) {
-      const hb = h * 0.66;
-      push(pi, x, 0, z, fw, hb, fd, seed, st, lit, rgb, born, 0, 0, filler);
-      const s2 = 0.62 + r() * 0.16;
-      push(pi, x, hb, z, fw * s2, h - hb, fd * s2, seed + 0.13, st, lit, rgb, born, 1, 0, filler);
-      if (h > 15 && !low) push(pi, x, h, z, 0.12, h * 0.2, 0.12, seed + 0.31, st, lit, rgb, born, 2, 0, filler);
+      const hb = h * (sty === 2 ? 0.74 : 0.6 + r() * 0.12);
+      push(pi, x, 0, z, fw, hb, fd, seed, st, lit, rgb, born, 0, 0, filler, ch, 0);
+      const s2 = sty === 2 ? 0.86 : 0.62 + r() * 0.16, tp = sty === 2 ? 0.42 : r() < 0.22 ? 0.16 : 0;
+      push(pi, x, hb, z, fw * s2, h - hb, fd * s2, seed + 0.13, st, lit, rgb, born, 1, 0, filler, ch, tp);
+      if (h > 15 && !low) {
+        const top = (1 - tp);
+        if (sty === 2 || r() < 0.08) push(pi, x, h, z, fw * s2 * top * 0.98, Math.min(6, h * 0.12), fd * s2 * top * 0.98, seed + 0.31, st, lit, rgb, born, 4, 0, filler, ch, 1);
+        else push(pi, x, h, z, 0.12, h * 0.2, 0.12, seed + 0.31, st, lit, rgb, born, 2, 0, filler);
+      }
     } else {
-      push(pi, x, 0, z, fw, h, fd, seed, st, lit, rgb, born, 0, st === S.RUIN ? 0.22 : 0, filler);
+      push(pi, x, 0, z, fw, h, fd, seed, st, lit, rgb, born, 0, st === S.RUIN ? 0.22 : 0, filler, st === S.RUIN ? 0 : ch * 0.6, 0);
     }
   };
   const warm = [[1, 0.72, 0.42], [0.78, 0.86, 1], [1, 0.9, 0.75]].map((c) => c.map((v) => Math.pow(v, 2.2)));
@@ -114,7 +123,7 @@ export function planWorld(w, opts) {
       const c = cells[0] || [Math.round(p.x / C), Math.round(p.z / C)];
       const cx = c[0] * C, cz = c[1] * C, code = b[0] || 120;
       const h = heightOf('app', code), fw = 2.7 + (code / 255) * 1.5;
-      stack(pi, cx, cz, fw, fw * (0.82 + r() * 0.18), h, r(), S.CROWN, 0.6, hue, 0, 0, r);
+      stack(pi, cx, cz, fw, fw * (0.82 + r() * 0.18), h, r(), S.CROWN, 0.6, hue, 0, 0, r, code % 3 === 0 ? 2 : 1);
       top = h;
       for (let k = 0; k < (low ? 2 : 4); k++) {
         const sx = k & 1 ? 1 : -1, sz = k & 2 ? 1 : -1, hh = 1.4 + r() * 3.2;
@@ -160,6 +169,10 @@ export function planWorld(w, opts) {
     if (p.kind === 'bot') {
       rings.push([p.x, kindTop + 4, p.z, Math.max(6, p.r * 0.4), 1, 0.35, 0.14, 0.12, hue, 0.9, pi]);
       beams.push([p.x, kindTop, p.z, 1.0, 140, 3.2, 0.21 + r() * 0.1, r() * 6.28, hue, pi]);
+    } else if (p.kind === 'hub' && p.state === 'decide') {
+      // a Research Hub card waiting for the owner's answer: a beacon (a ring and a searchlight) that pulses until it is answered
+      rings.push([p.x, kindTop + 2.5, p.z, 3.2, 1, 0.6, 0.18, 0, hex('#f1c14b'), 1.8, pi]);
+      beams.push([p.x, kindTop, p.z, 1.0, 120, 2.2, 0.0, r() * 6.28, hex('#f1c14b'), pi]);
     } else if (p.kind === 'account' && p.state !== 'planned') {
       rings.push([p.x, kindTop + 2.2, p.z, 3.4, p.progress != null ? clamp(p.progress, 0.02, 1) : 0.02, 0.0, 0.3, 0, hex('#ffd27a'), 1.6, pi]);
     } else if (p.kind === 'app' && p.href === 'hub/zeus.html') {
@@ -178,35 +191,133 @@ export function planWorld(w, opts) {
     const pf = (0.32 + lvl * 0.055) * (low ? 0.55 : 1);
     for (let a = -1; a <= 1; a++) for (let e = -1; e <= 1; e++) {
       if (r() > pf) continue;
-      const tall = r() < 0.05 * lvl / 9;
-      const h = (0.9 + Math.pow(r(), 1.7) * (0.6 + lvl * 1.15)) * (tall ? 2.1 : 1);
+      const core = Math.exp(-Math.pow(Math.hypot(cx, cz) / (R * 0.46), 2));         // revamp-cities: a real downtown, the skyline falls away outward
+      const tall = r() < 0.05 * lvl / 9 + 0.07 * core;
+      const h = Math.min(29, (0.9 + Math.pow(r(), 1.7) * (0.6 + lvl * 1.15)) * (tall ? 2.3 : 1) * (1 + 0.55 * core));
       const c = mixc(warm[(a + e + 3) % 3], dh, 0.28);
       const fw = FOOT * (0.62 + r() * 0.38), fd = FOOT * (0.62 + r() * 0.38);
       if (h > 8) stack(N, cx + a * LOT, cz + e * LOT, fw, fd, h, r(), S.LIT, 0.24 + r() * 0.2, c, 0, 1, r);
       else push(N, cx + a * LOT, 0, cz + e * LOT, fw, h, fd, r(), S.LIT, 0.2 + r() * 0.24, c, 0, 0, 0, 1);
     }
   }
+  // revamp-cities (2026-11-20): the wider world round the island: satellite towns across the water (owner: "dozens and hundreds of
+  // cities"), each a small downtown that falls away to low streets, in its district's light. Part of the plaza's growth (index N).
+  const towns = [];
+  const tr = rng(4242), lean = low || o.phone, nT = low ? 9 : o.phone ? 12 : 18;          // a phone: fewer, lighter towns (heap budget)
+  for (let t = 0; t < nT; t++) {
+    const ang = (t / nT) * Math.PI * 2 + (tr() - 0.5) * 0.25, rad = R + 150 + tr() * 520 + (t % 3) * 90;
+    const tx = Math.cos(ang) * rad, tz = Math.sin(ang) * rad, trad = 22 + tr() * 30 + rad * 0.03;
+    towns.push([tx, tz, trad]);
+    const d = districtAt(w, tx, tz), dh = hex(d && d.hue);
+    const step = 3.2, kk = Math.floor(trad / step);
+    for (let i = -kk; i <= kk; i++) for (let j = -kk; j <= kk; j++) {
+      const x = tx + i * step + (tr() - 0.5) * 0.6, z = tz + j * step + (tr() - 0.5) * 0.6;
+      const dd = Math.hypot(x - tx, z - tz) / trad;
+      if (dd > 1 || tr() > (lean ? 0.14 : 0.2) * (1.15 - dd * 0.5)) continue;
+      const core = Math.exp(-dd * dd * 5);
+      const h = (0.8 + Math.pow(tr(), 2) * 2.5) * (1 + core * (4 + tr() * 7));
+      const c = mixc(warm[(((i + j) % 3) + 3) % 3], dh, 0.2);
+      if (h > 8) stack(N, x, z, 2.1 + tr() * 0.6, 2.1 + tr() * 0.6, h, tr(), S.LIT, 0.3 + tr() * 0.25, c, 0, 1, tr);
+      else push(N, x, 0, z, 1.8 + tr() * 0.9, h, 1.8 + tr() * 0.9, tr(), S.LIT, 0.22 + tr() * 0.25, c, 0, 0, 0, 1, tr() < 0.2 ? 0.15 : 0, 0);
+    }
+  }
   // the Gate on the plaza: the tallest spire of the city, four searchlights and three crown rings (place index N = 'the plaza')
   const gold = hex('#ffd890');
   const gr = rng(7);
-  stack(N, 0, 0, 5.2, 5.2, 46, 0.5, S.CROWN, 0.7, gold, 0, 0, gr);
+  stack(N, 0, 0, 5.2, 5.2, 46, 0.5, S.CROWN, 0.7, gold, 0, 0, gr, 2);
   for (const [k, rad, y] of [[0, 8, 41], [1, 12.5, 33]]) rings.push([0, y, 0, rad, 1, (k % 2 ? -1 : 1) * (0.12 + k * 0.05), 0.08 + k * 0.03, 0.05 * k, gold, 1.0 - k * 0.25, N]);
   for (let k = 0; k < 4; k++) beams.push([0, 46, 0, 1.0, 230, 4.0, 0.13 + k * 0.025, k * 1.57, k % 2 ? hex('#9fc4ff') : gold, N]);
   // the four districts glow over their wedges (place indices N+1..N+4)
   halos.push([0, 30, 0, 30, gold[0], gold[1], gold[2], 0.45, N]);
   // flat arrays
   const n = out.length;
-  const pos = new Float32Array(n * 3), size = new Float32Array(n * 3), info = new Float32Array(n * 4), tint = new Float32Array(n * 3), misc = new Float32Array(n * 4);
+  const pos = new Float32Array(n * 3), size = new Float32Array(n * 3), info = new Float32Array(n * 4), tint = new Float32Array(n * 3), misc = new Float32Array(n * 4), shape = new Float32Array(n * 2);
   out.forEach((b, k) => {
     pos[k * 3] = b[1]; pos[k * 3 + 1] = b[2]; pos[k * 3 + 2] = b[3];
     size[k * 3] = b[4]; size[k * 3 + 1] = b[5]; size[k * 3 + 2] = b[6];
     info[k * 4] = b[0]; info[k * 4 + 1] = b[7] % 1; info[k * 4 + 2] = b[8]; info[k * 4 + 3] = b[9];
     tint[k * 3] = b[10][0]; tint[k * 3 + 1] = b[10][1]; tint[k * 3 + 2] = b[10][2];
     misc[k * 4] = b[11]; misc[k * 4 + 1] = b[12]; misc[k * 4 + 2] = b[13]; misc[k * 4 + 3] = b[14];
+    shape[k * 2] = b[15]; shape[k * 2 + 1] = b[16];
   });
   const data = out.filter((b) => !b[14] && b[0] < N).length;
-  return { places, n, pos, size, info, tint, misc, halos, rings, beams, R, C, PL, slots: N + 1 + (w.districts || []).length,
+  return { places, n, pos, size, info, tint, misc, shape, halos, rings, beams, towns, R, C, PL, slots: N + 1 + (w.districts || []).length,
     stats: { instances: n, data, filler: n - data, places: N } };
+}
+
+/** the sun's height over New York (degrees) at a moment: the NOAA short formula (about 0.5 degree), no table, no network */
+export function sunElevation(date) {
+  const rad = Math.PI / 180, ms = (date || new Date()).getTime();
+  const n = ms / 86400000 + 2440587.5 - 2451545.0;
+  const L = (280.460 + 0.9856474 * n) % 360, g = ((357.528 + 0.9856003 * n) % 360) * rad;
+  const lam = (L + 1.915 * Math.sin(g) + 0.020 * Math.sin(2 * g)) * rad, eps = (23.439 - 0.0000004 * n) * rad;
+  const dec = Math.asin(Math.sin(eps) * Math.sin(lam)), ra = Math.atan2(Math.cos(eps) * Math.sin(lam), Math.cos(lam));
+  const gmst = ((18.697374558 + 24.06570982441908 * n) % 24 + 24) % 24;
+  const lat = 40.71 * rad, lon = -74.01;
+  const ha = (gmst * 15 + lon) * rad - ra;
+  return Math.asin(Math.sin(lat) * Math.sin(dec) + Math.cos(lat) * Math.cos(dec) * Math.cos(ha)) / rad;
+}
+/** the light of the World (cities3 2026-11-20, owner: "sky from real ET time (day/dusk/night)"): the real sun over New York.
+ * 0 = night, 0.5 = blue hour, 1 = golden hour (sunrise / sunset), 2 = full day; smooth in between.
+ * sky: 'night' | 'blue' | 'dusk' | 'day' forces one (the ?sky= query, captures); anything else = the real clock. */
+export function skyFor(sky, date) {
+  if (sky === 'night') return 0;
+  if (sky === 'blue') return 0.5;
+  if (sky === 'dusk' || sky === 'golden') return 1;
+  if (sky === 'day') return 2;
+  try {
+    const e = sunElevation(date);
+    if (!Number.isFinite(e)) return 0;
+    if (e <= -10) return 0;
+    if (e < -4) return 0.5 * (e + 10) / 6;
+    if (e < 0) return 0.5 + 0.5 * (e + 4) / 4;
+    if (e < 6) return 1;
+    if (e < 16) return 1 + (e - 6) / 10;
+    return 2;
+  } catch (e) { return 0; }
+}
+/** cities3 2026-11-20 (owner: "districts for NQ / Kalshi / Money with LIVE numbers on billboards from the real JSON feeds"): the three
+ * district LED lines from the PC feed (lite = PC_FEED.fetchLatest: board.lit / board.atlas / accounts, price) and kalshi.json. Text only;
+ * a missing number is left out, never made up. -> { nq, kalshi, money } (upper case is the LED's job). */
+export function billboards(lite, kal, nowS) {
+  const L = lite && typeof lite === 'object' ? lite : {}, b = L.board && typeof L.board === 'object' ? L.board : {};
+  const n = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+  const acc = [];
+  for (const k of ['lit', 'atlas']) {
+    const c = b[k];
+    if (!c || typeof c !== 'object' || c.configured === false || n(c.balance) == null || c.balance < 1000) continue;
+    acc.push({ name: k === 'lit' ? 'Zlarior' : 'ATLAS', bal: c.balance, room: n(c.room), today: n(c.today_pnl), toPass: /funded/i.test(String(c.status || c.stage || '')) ? null : n(c.to_target) });
+  }
+  for (const a of Array.isArray(L.accounts) ? L.accounts : []) {
+    if (!a || typeof a !== 'object' || !['eval', 'funded'].includes(String(a.kind)) || /cloud|blitz|paper/i.test(`${a.id} ${a.name} ${a.badge || ''}`)) continue;
+    const e = a.eval || a.funded || {};
+    if (n(e.balance) == null || acc.some((x) => Math.abs(x.bal - e.balance) < 0.01)) continue;
+    const m = /(\d+)\s*k\b/i.exec(String(a.name || a.plan || ''));
+    acc.push({ name: (/rapid/i.test(String(a.name || a.plan || '')) ? 'Rapid ' : '') + (m ? m[1] + 'K' : 'acct') + (/#\s*\d/.test(String(a.name)) ? ' ' + /#\s*\d+/.exec(String(a.name))[0].replace(/\s/g, '') : ''),
+      bal: e.balance, room: n(e.room), today: n((a.pnl || {}).today), toPass: a.kind === 'funded' ? null : n(e.to_target) });
+  }
+  const out = { nq: '', kalshi: '', money: '' };
+  const price = n(L.price);
+  out.nq = ['NQ' + (price != null ? ' ' + price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''),
+    ...acc.map((a) => a.name + ' ' + usd(a.bal) + (a.today ? ' (' + usd(a.today, true) + ')' : ''))].join('  ·  ');
+  const K = kal && typeof kal === 'object' ? kal : null;
+  if (K) {
+    const bal = n(K.balance), td = n(K.today_pnl), tot = n(K.total_pnl);
+    const c2 = (v) => (v < 0 ? '-' : '') + '$' + Math.abs(v).toFixed(2);
+    out.kalshi = ['KALSHI' + (bal != null ? ' ' + (bal < 1000 ? c2(bal) : usd(bal)) : ''), td != null ? 'today ' + usd(td, true) : '', tot != null ? 'all time ' + usd(tot, true) : '',
+      K.running === false ? 'bot paused' : K.running ? 'bot on' : ''].filter(Boolean).join('  ·  ');
+  }
+  if (acc.length) {
+    const day = acc.reduce((s, a) => s + (a.today || 0), 0), pass = acc.filter((a) => a.toPass != null && a.toPass > 0);
+    out.money = ['MONEY  today ' + usd(day, true), 'room ' + acc.map((a) => usd(a.room)).join(' / '), pass.length ? 'to pass ' + pass.map((a) => usd(a.toPass)).join(' / ') : ''].filter(Boolean).join('  ·  ');
+  }
+  return out;
+}
+/** plain words for the sky (the chip under the title) */
+export function skyWords(v, date) {
+  let am = false;
+  try { am = +new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: 'numeric', hour12: false }).format(date || new Date()) % 24 < 12; } catch (e) { am = false; }
+  return v >= 1.6 ? 'Day' : v >= 0.85 ? (am ? 'Sunrise' : 'Sunset') : v >= 0.3 ? (am ? 'Dawn' : 'Dusk') : 'Night';
 }
 
 // ------------------------------------------------------------------------------------------------ the camera
@@ -231,14 +342,14 @@ export function clampPose(p, w) {
   for (const k of ['tx', 'ty', 'tz', 'dist', 'yaw', 'pitch']) if (!isFinite(q[k])) q[k] = k === 'dist' ? 150 : k === 'pitch' ? 0.6 : 0;
   return q;
 }
-export function homePose(w) { const R = (w && +w.R) || 130; return { tx: 0, ty: 0, tz: -R * 0.42, dist: R * 1.5, yaw: -0.38, pitch: 0.62 }; }
+export function homePose(w) { const R = (w && +w.R) || 130; return { tx: 0, ty: 12, tz: -R * 0.32, dist: R * 1.12, yaw: -0.38, pitch: 0.25 }; }   // revamp-cities: a skyline view with the horizon in it
 export function overviewPose(w) { const R = (w && +w.R) || 130; return { tx: 0, ty: 0, tz: -R * 0.08, dist: R * 3.1, yaw: -0.35, pitch: 1.12 }; }
 export function districtPose(w, d) {
   if (!d) return homePose(w);
   const len = Math.hypot(d.x, d.z) || 1;
   const span = Math.abs(((d.a1 - d.a0) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI)) || 1;
   const R = (w && +w.R) || 130;
-  return { tx: d.x, ty: 0, tz: d.z, dist: clamp(R * (0.45 + span * 0.22), 70, R * 1.25), yaw: Math.atan2(-d.x / len, -d.z / len), pitch: 0.82 };
+  return { tx: d.x, ty: 0, tz: d.z, dist: clamp(R * (0.45 + span * 0.22), 70, R * 1.25), yaw: Math.atan2(-d.x / len, -d.z / len), pitch: 0.6 };
 }
 /** a place: frame it from the plaza side (or keep the current yaw), close enough to read its buildings */
 export function placePose(pl, cur) {
@@ -295,7 +406,7 @@ export function pcLine(lite, nowS) {
   const t = isObj(lite) && +lite.t > 0 ? +lite.t : null;
   const age = t ? Math.max(0, nowS - t) : null;
   const silent = age == null || age > 1800;
-  return { silent, age_s: age, text: t == null ? 'PC: no live report here' : silent ? 'PC silent · ' + ago(age) : 'PC live · ' + ago(age) };
+  return { silent, age_s: age, text: t == null ? 'PC: no live report here' : silent ? 'PC silent · last data ' + ago(age) : 'PC live · ' + ago(age) };
 }
 /** the open trades of the bots from the PC feed: {lit: {side} | null, atlas: ...} (the core board card's position) */
 export function positions(lite) {
@@ -343,4 +454,53 @@ export function feedLines(w, extra) {
   const lines = [...(extra || [])];
   for (const f of (w && w.feed) || []) lines.push({ d: f.d, id: f.id || null, text: (f.d ? dateText(f.d) + ' · ' : '') + f.text });
   return lines;
+}
+
+// ------------------------------------------------------------------------------------------------ the Research Hub (research-hub-city 2026-11-21)
+// world.json keeps each hub entry as a compact row (the 300 KB budget): [id, street, state, x, z, r, cells flat, buildings flat, day];
+// the words (title, summary, $ a month, link) come from research/hub.json, merged by id after the 3D has started (hubText).
+const HUB_WORD = { live: 'Live', lead: 'Open lead', rejected: 'Rejected', decide: 'Decide' };
+const titleOf = (id) => String(id).replace(/^(live|lead|rejected|decide)-/, '').replace(/-\d{4}-\d{2}-\d{2}$/, '').replace(/[-_]+/g, ' ').replace(/^./, (c) => c.toUpperCase());
+export function hubPlaces(w) {
+  const qs = Array.isArray(w && w.hubq) ? w.hubq : [], ss = Array.isArray(w && w.hubs) ? w.hubs : ['live', 'testing', 'ruin', 'decide'];
+  const out = [];
+  for (const r of (w && Array.isArray(w.hub) ? w.hub : [])) {
+    if (!Array.isArray(r) || r.length < 9) continue;
+    const cells = []; for (let k = 0; k + 1 < (r[6] || []).length; k += 2) cells.push([r[6][k], r[6][k + 1]]);
+    out.push({ id: 'hub:' + r[0], name: titleOf(r[0]), kind: 'hub', district: 'lab', quarter: qs[r[1]] || 'rh-other', state: ss[r[2]] || 'testing',
+      line: '', facts: [], how: -1, x: +r[3] || 0, z: +r[4] || 0, r: +r[5] || 4, cells, b: Array.isArray(r[7]) ? r[7] : [], day: +r[8] || 0, hubId: String(r[0]) });
+  }
+  return out;
+}
+/** research/hub.json -> the hub places' words (text only; links to the site's own pages only). Returns how many were filled. */
+export function hubText(places, doc) {
+  const rows = doc && Array.isArray(doc.items) ? doc.items : Array.isArray(doc) ? doc : [];
+  const by = new Map(rows.filter((x) => x && x.id != null).map((x) => [String(x.id), x]));
+  let n = 0;
+  for (const p of places || []) {
+    const x = p && p.kind === 'hub' ? by.get(p.hubId) : null;
+    if (!x) continue;
+    const st = String(x.status || ''), m = +x.usd_month, money = isFinite(m) && x.usd_month !== null && x.usd_month !== '' ? usd(m) + ' a month' : null;
+    p.name = String(x.title || p.name).slice(0, 46);
+    p.line = String(x.summary || '').slice(0, 160);
+    p.facts = [[st === 'rejected' ? 'Test quoted' : '$ a month', money], ['Family', String(x.family || '').replace(/^./, (c) => c.toUpperCase())], ['Date', String(x.date || '').slice(0, 10)]].filter((f) => f[1]);
+    if (st === 'rejected') p.why = p.line + (money ? ' (the test quoted ' + money + ')' : '');   // a quoted figure, never a gain
+    const u = String(x.url || '').replace(/^(\.\.\/|\.\/|\/)+/, '');
+    if (u && !/^[a-z]+:/i.test(u)) p.href = u;
+    p.hubWord = HUB_WORD[st] || st;
+    n++;
+  }
+  return n;
+}
+/** a concept-site block's buildings from its letters (world.json "bs": h hot, w warm, c cold, s not ready): [height 0-255, state, day] triples,
+ *  the same heights tools/world_build.py concepts() gives (hot 200-249 bright, warm 140-179 lit, cold 70-109 lit, not ready 60 scaffold) */
+export function siteBuildings(p) {
+  if (!p || typeof p.bs !== 'string' || Array.isArray(p.b)) return p;
+  const b = [];
+  for (let k = 0; k < p.bs.length; k++) {
+    const c = p.bs[k], h = fnv(p.id + ':' + k);
+    if (c === 's') b.push(60, 1, 0); else if (c === 'h') b.push(200 + (h % 50), 3, 0); else if (c === 'w') b.push(140 + (h % 40), 2, 0); else b.push(70 + (h % 40), 2, 0);
+  }
+  p.b = b;
+  return p;
 }

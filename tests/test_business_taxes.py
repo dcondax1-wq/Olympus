@@ -58,8 +58,8 @@ def part_a():
     low = (html + js).lower()
     check("a. no private details (account ids, emails, the owner's name) on the page",
           not re.search(r"[\w.+-]+@[\w-]+\.[\w.]+", html + js) and "dcondax" not in low and "zlarior" not in low)
-    check("a. Kalshi's treatment is marked as unclear; the state note tells him to check his own state",
-          "Unclear" in html and "Check your state" in html)
+    check("a. Kalshi's treatment is marked as unclear; the state card is Maryland",
+          "Unclear" in html and "Your state: Maryland" in html)
     # the 30% default is the same everywhere a tax set-aside is suggested
     oc, lc, py = read(WEB, "oikos", "oikoscore.js"), read(WEB, "ledger", "ledgercore.js"), read(ROOT, "tools", "money", "oikos.py")
     check("a. Oikos, the Ledger and the Oikos scanner all default to the same 30% as this page",
@@ -104,6 +104,69 @@ def part_b():
           j[0]["pot"] == 0 and j[0]["yours"] == 0 and j[1]["pot"] == 0 and j[2]["pct"] == 60 and j[2]["pot"] == 60 and j[3]["pct"] == 0 and j[3]["yours"] == 100, j)
     check("b. money and dates read plainly: $300, $1,960, $308.63, 'Jan 15, 2027'; default 30",
           o["usd"] == ["$300", "$1,960", "$308.63"] and o["fmt"] == "Jan 15, 2027" and o["pct"] == 30, o)
+
+
+NODE_D = r"""
+const T = require(process.argv[1]);
+console.log(JSON.stringify({
+  w1: T.waterfall(800, 30, 0, 0), w5: T.waterfall(4000, 30, 0, 0), full: T.waterfall(800, 30, 5000, 320), near: T.waterfall(800, 30, 4900, 300),
+  junk: T.waterfall('x', 30, 'y', -5),
+  df: [T.dueFor('2026-12-28'), T.dueFor('2027-01-05'), T.dueFor('2027-05-01'), T.dueFor('2027-07-04'), T.dueFor('2027-10-01')].map((r) => T.iso(r.due) + '|' + r.taxYear),
+  p: [T.potPct(5000, false), T.potPct(15000, false), T.potPct(30000, true), T.potPct(60000, false), T.potPct(100000, true), T.potPct('x')],
+}));
+"""
+
+
+def part_d():
+    """2026-11-20 keep-the-most: the payout waterfall and the set-aside % table (tools/money/keep_most.py)."""
+    r = subprocess.run(["node", "-e", NODE_D, os.path.join(BIZ, "taxes.js")], capture_output=True, text=True, timeout=60)
+    if r.returncode != 0:
+        check("d. node runs the waterfall", False, r.stderr[-400:])
+        return
+    o = json.loads(r.stdout)
+    w1, w5, full, near = o["w1"], o["w5"], o["full"], o["near"]
+    check("d. $800 landed -> $240 tax / $80 reserve / $80 retirement / $160 live / $240 yours",
+          (w1["pot"], w1["reserve"], w1["retire"], w1["live"], w1["yours"]) == (240, 80, 80, 160, 240), w1)
+    check("d. $4,000 landed -> $1,200 / $320 (reserve capped) / $400 / $800 / $1,280",
+          (w5["pot"], w5["reserve"], w5["retire"], w5["live"], w5["yours"]) == (1200, 320, 400, 800, 1280), w5)
+    check("d. full buckets give their share back: $800 -> $480 yours; near-full buckets take only what is missing",
+          full["yours"] == 480 and full["live"] == 0 and full["reserve"] == 0 and near["live"] == 100 and near["reserve"] == 20, (full, near))
+    check("d. the due date follows the day money lands: Dec 28 -> Jan 15 2027 (2026 tax), Jan 5 2027 -> Apr 15 2027 (2027 tax), May -> Jun 15, Jul -> Sep 15, Oct -> Jan 18 2028",
+          o["df"] == ["2027-01-15|2026", "2027-04-15|2027", "2027-06-15|2027", "2027-09-15|2027", "2028-01-18|2027"], o["df"])
+    check("d. the page tells him to take a late-December payout in December, the Rise digital-asset answer and the HSA family limit",
+          all(x in read(BIZ, "taxes.html") for x in ("Take it in December", "digital assets", "family</b> limit")))
+    check("d. junk gives 0 everywhere", all(o["junk"][k] == 0 for k in ("pot", "reserve", "retire", "live", "yours")), o["junk"])
+    check("d. Maryland set-aside %: $5k only trading 15, $15k 20, $30k + day job 40, $60k 30, $100k + day job 45, unknown 25",
+          o["p"] == [15, 20, 40, 30, 45, 25], o["p"])
+    html = read(BIZ, "taxes.html")
+    check("d. the page has the waterfall, the %-table, the no-penalty card, the ladder, the live trigger and the Maryland card",
+          all(x in html for x in ('id="wfYours"', 'id="s-pct"', 'id="s-pen"', 'id="s-ladder"', 'id="s-live"', "Tell Claude your county", "$5,000 in the live fund")))
+
+
+def part_e():
+    """tools/money/keep_most.py: the tax math behind the page (2026 + 2027 IRS tables)."""
+    from tools.money import keep_most as K
+    t = K.tax(30000, 0, 0, 2026, qbi=False)
+    check("e. $30,000 profit, no job, 2026: SE tax $4,239 + income tax $1,178 = $5,417 (18.1%)",
+          abs(t["se"] - 4238.9) < 1 and abs(t["total"] - 5416.92) < 1, t)
+    check("e. SE tax stops at the Social Security base ($184,500 2026, $192,300 2027); 2027 std deduction $16,600",
+          K.YEARS[2026]["ss_base"] == 184500 and K.YEARS[2027]["ss_base"] == 192300 and K.YEARS[2027]["std"] == 16600)
+    f = K.s1256(30000, 0, 2026)
+    check("e. $30,000 of 60/40 futures gains with no other income: $0 federal (all in the 0% band)", f["total"] == 0, f)
+    check("e. the Maryland set-aside % the page uses = keep_most.pot_pct (highest county)",
+          [K.pot_pct(5000), K.pot_pct(15000), K.pot_pct(30000, True), K.pot_pct(60000), K.pot_pct(100000, True)] == [15, 20, 40, 30, 45])
+    m = K.md_tax(30000 - 2119.5, 0.032)
+    check("e. Maryland on $27,880 AGI, county 3.20%: state $961 + county $683 (std $3,350, exemption $3,200)", abs(m - 1643.3) < 1, m)
+    f2 = K.s1256(30000, 0, 2026, K.MD_HIGH)
+    check("e. Maryland taxes 60/40 futures gains as ordinary income: $30,000 -> ~$1,835 (state + county 3.30%), $0 federal", 1700 < f2["total"] < 1900, f2)
+    w = K.waterfall(800)
+    check("e. waterfall($800) = 240 / 80 / 80 / 160 / 240", (w["tax_pot"], w["eval_reserve"], w["retirement"], w["live_fund"], w["yours"]) == (240, 80, 80, 160, 240), w)
+    d30 = K.magi_dial(30000)
+    check("e. 2027 Saver's Match at $30,000 profit: Roth $2,000 gets ~$508; $7,500 traditional pulls MAGI to ~$20,400 -> the full $1,000 + ~$1,204 tax saved",
+          abs(d30["roth_2000"]["match"] - 508) < 2 and d30["full_match_at"]["put_in"] == 7500 and d30["full_match_at"]["match"] == 1000
+          and abs(d30["full_match_at"]["tax_saved"] - 1203.75) < 2, d30)
+    check("e. Saver's Match band: $1,000 at MAGI <= $20,500, $0 at >= $35,500", K.savers_match(20000, 2000) == 1000 and K.savers_match(35500, 2000) == 0)
+    check("e. S-corp break-even near $49,000 profit (Maryland)", 40000 <= K.scorp_break_even() <= 60000, K.scorp_break_even())
 
 
 class Quiet(http.server.SimpleHTTPRequestHandler):
@@ -156,6 +219,8 @@ def part_c():
 def main():
     part_a()
     part_b()
+    part_d()
+    part_e()
     if "--browser" in sys.argv:
         part_c()
     ok = all(RES)

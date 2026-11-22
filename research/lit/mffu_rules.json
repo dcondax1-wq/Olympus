@@ -297,15 +297,22 @@
      "days": 7,
      "rule": "no trade for 7 consecutive calendar days -> the account could be closed (one-time-payment accounts, incl. sim funded); live: none",
      "sim_funded_breach": "forfeits ALL profits on the account",
-     "vacation": "tell support before a break of more than 7 days"
+     "vacation": "tell support before a break of more than 7 days",
+     "terms": "Terms section 7 Dormant Accounts: 'If a User does not execute at least one (1) trade per seven (7) consecutive calendar day period, whether in an Evaluation Account or a Sim Trading Account, the Company may, in its sole discretion, deem the applicable account dormant, close it, and treat such closure as a breach of these Terms.' No warning step is promised.",
+     "counts": "an EXECUTED (filled) trade; no page says a login or an unfilled order counts; no minimum size or hold time",
+     "keep_alive": "a 1-micro trade only to stay active is not forbidden anywhere -> engine/keepalive.py (OFF by default): 1 MNQ, 15:33-15:48 ET, news-free, never opposite another account, hard 40-tick bracket, out in about 2 minutes (flat by 15:50)",
+     "terms_12_4": "CAVEAT (skeptic review 2026-11-20): Terms 12.4 asks for 'consistency in position sizing, trade frequency, and overall risk exposure' and 12.4.2 names 'substantially smaller or larger numbers of positions than typical'. A weekly 1-micro, 2-minute trade on accounts that usually hold several micros for minutes could be read as inconsistent. The help article does not say when the 7 days start or what counts as a trade, and the Simulated Trader Agreement was not checked.",
+     "ask_support": "NOT ASKED (owner 2026-11-20 16:30 ET: YES to the keep-alive on every MFFU account, no MFFU contact). It lands OFF; the owner switches it on himself (KEEPALIVE_ON.bat + the typed phrase KEEP ALIVE ON). Terms 12.4 (consistency in position size and trade frequency) is a business risk he accepted.",
+     "day_count": "unknown whether MFFU counts the trading date or the calendar date, or from the purchase evening: the bot counts the ET calendar date of each FILLED entry, a new account from the day before its start (the start = day 1), and acts / warns on the last full session on or before last + 6"
     },
     "status": "confirmed",
     "source": [
+     "https://myfundedfutures.com/terms",
      "https://help.myfundedfutures.com/en/articles/16596524-inactivity-rule-one-time-payment-model",
      "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"
     ],
-    "checked": "2026-11-17",
-    "note": "older article says a breach; the one-time model article says 'could be closed'. Contact support before a break >7 days"
+    "checked": "2026-11-20",
+    "note": "Terms section 7 (updated 2026-10-09, read 2026-11-20): may close + count it as a breach; the one-time model article says 'could be closed'. The older article 11972075 is gone (404). Contact support before a break >7 days"
    },
    "commission_rt": {
     "value": {
@@ -366,9 +373,9 @@
     "source": [
      "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"
     ],
-    "checked": "2026-11-17",
+    "checked": "2026-11-20",
     "unit": "USD",
-    "note": "sim funded starts at $0 (balance shown as profit)"
+    "note": "MFFU shows a sim-funded account from $0 (profit only): the 50K floor starts at -$2,000; NinjaTrader shows $50,000 + profit. Re-checked 2026-11-20."
    },
    "max_loss": {
     "value": {
@@ -426,7 +433,7 @@
      "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
      "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts"
     ],
-    "checked": "2026-11-17"
+    "checked": "2026-11-20"
    },
    "payout_min": {
     "value": 500.0,
@@ -517,13 +524,14 @@
     "checked": "2026-11-17"
    },
    "sim_live_together": {
-    "value": "no: once live, sim accounts go dormant (Builder live after the 5th payout, the $100k sim cap, or risk team)",
+    "value": "no: once live, active sim-funded accounts are placed DORMANT (not closed) and moved into the one live account; recently passed evals go dormant or the eval fee can be refunded; declining the live move is not possible; sim + live cannot be traded at the same time (Builder live trigger = 5th approved sim payout, the $100k sim cap, or risk team)",
     "status": "confirmed",
     "source": [
+     "https://help.myfundedfutures.com/en/articles/10101257",
      "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts",
      "https://help.myfundedfutures.com/en/articles/12109396-comprehensive-faq-live-accounts-at-myfunded-futures"
     ],
-    "checked": "2026-11-17"
+    "checked": "2026-11-20"
    }
   },
   "live": {
@@ -803,7 +811,7 @@
    "max_payouts": 5
   }
  },
- "rechecked": "2026-11-17",
+ "rechecked": "2026-11-20",
  "rapid_eod_50k": {
   "price": {
    "value": {
@@ -900,8 +908,30 @@
     "https://help.myfundedfutures.com/en/articles/13134718-understanding-rapid-live",
     "https://myfundedfutures.com/plans/rapid-eod"
    ],
-   "checked": "2026-11-17",
+   "checked": "2026-11-22",
    "note": "live max contracts differ between the help article and the plan page; irrelevant until live"
+  },
+  "live_rules_2026_11_22": {
+   "value": {
+    "max_sim_payouts": null,
+    "five_payout_rule": "Builder only ('Builder Plans: Transition to a Live Account after: 5 consecutive payouts'); Pro: 3 payouts or $20,000; Rapid: 'Consistent payout performance reviewed and approved by our Risk Management Team'",
+    "trigger": "automatic at $10,000 net profit in ONE session (profit above $10,000 that day forfeited) or the Risk Management Team's sole discretion (their example: approved at $7,000 total profit); declining is not possible",
+    "other_accounts_at_any_live_move": "the sim-funded account goes dormant; several Rapids are combined into one live account; 'All simulated trading accounts and additional purchases are suspended during Live account operation'; evaluations stay dormant; a recently passed eval may be refunded",
+    "reserve": "up to $5,000 of sim profits to a Reserve at the move (used if the live account is breached, or paid as a bonus)",
+    "payouts": "no cap per request; daily; $500 minimum; unlock after $250 (25K) / $500 (50K) net since the last payout; buffer $1,100 / $2,100; 90/10; no consistency",
+    "max_funded_accounts": "3 Rapid EOD funded (each size) inside MFFU's 5 sim-funded total"
+   },
+   "status": "confirmed",
+   "source": [
+    "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts",
+    "https://help.myfundedfutures.com/en/articles/13134718-understanding-rapid-live",
+    "https://help.myfundedfutures.com/en/articles/18337038-rapid-eod-with-dll-a-detailed-look",
+    "https://help.myfundedfutures.com/en/articles/10101257",
+    "https://help.myfundedfutures.com/en/articles/12109396-comprehensive-faq-live-accounts-at-myfunded-futures",
+    "https://myfundedfutures.com/plans/rapid-eod"
+   ],
+   "checked": "2026-11-22",
+   "note": "settles the 2026-11-21 plan-ranking question: the 5-sim-payout rule does NOT apply to Rapid EOD. BUT any live move (a Builder's 5th payout, a $10k Rapid day, or a risk-team invite) suspends EVERY sim account incl. the Rapids"
   }
  },
  "multi_account": {
@@ -974,5 +1004,204 @@
   "builder_25k.price: unconfirmed -> confirmed ($105 list, $63 with CLUB)",
   "new: on_pass (instant upgrade, 'SIM' in the funded name, $0 activation), rapid_eod_50k, multi_account, promo, tier1_news_2026",
   "rapid_eod_50k price: list $275 / $165 with CLUB (was ~$94 in STATE.md, from the August $157 list)"
- ]
+ ],
+ "owner_questions_2026_11_20": {
+  "note": "Owner 2026-11-20 14:30 ET: 'I'm not contacting MFFU, so you need to just figure it out based off your research.' Answered from MFFU's PUBLIC pages (help center, Terms, plan pages) + Rise help; research/writeups/keep-the-most-2-2026-11-20.md section 7.",
+  "live_move_other_accounts": {
+   "value": "other sim-funded accounts go dormant (not closed), merged into one live account; evals stay dormant; Rapid: all sim trading + new purchases suspended while live, up to $5,000 of sim profit to a Reserve, several Rapids combined into one live account; Builder: new evals/resets banned for 21 days after a live breach, otherwise purchases allowed 'unless communicated otherwise'; Builder balance handling and any way back to sim not stated (only a 'Path Back to Live' plan)",
+   "status": "confirmed (dormant, Rapid rules) / likely (Builder purchases) / unknown (Builder balances, way back to sim)",
+   "source": [
+    "https://help.myfundedfutures.com/en/articles/10101257",
+    "https://help.myfundedfutures.com/en/articles/12109396",
+    "https://help.myfundedfutures.com/en/articles/13134718",
+    "https://help.myfundedfutures.com/en/articles/14290805"
+   ],
+   "checked": "2026-11-20"
+  },
+  "automation_on_live": {
+   "value": "allowed (no HFT, nothing exploiting sim fills); live automated trading must follow CME rules; only the account owner may trade it, no shared devices; nothing public about unattended trading or a disclosure form",
+   "status": "confirmed (allowed) / unknown (unattended)",
+   "source": [
+    "https://help.myfundedfutures.com/en/articles/8444599",
+    "https://help.myfundedfutures.com/en/articles/8230018"
+   ],
+   "checked": "2026-11-20"
+  },
+  "tax_forms": {
+   "value": "Rise payouts: the 1099 comes from Rise's tax department (Rise names 1099-NEC / 1099-K, only for individual US accounts, only money paid through Rise); Plaid/ACH payouts: MFFU mails its own 1099; a mixed year = likely TWO forms, each for what you received (your 80% / 90%), not MFFU's share; form box not stated (1099-NEC box 1 likely)",
+   "status": "confirmed (who sends) / likely (two forms, net of the split) / unknown (box)",
+   "source": [
+    "https://help.myfundedfutures.com/en/articles/13337287-your-1099-tax-documents",
+    "https://help.riseworks.io/en/articles/14709982",
+    "https://help.riseworks.io/en/articles/14711615"
+   ],
+   "checked": "2026-11-20"
+  },
+  "payouts_to_business": {
+   "value": "likely NO: Terms say all accounts must belong to the same verified individual and KYC is once per person; MFFU has no business-account article; Rise supports business payees in general but MFFU never says it accepts them",
+   "status": "likely (no)",
+   "source": [
+    "https://myfundedfutures.com/terms",
+    "https://help.myfundedfutures.com/en/articles/9717961"
+   ],
+   "checked": "2026-11-20"
+  },
+  "parallel_evals": {
+   "value": "up to 10 active evaluations at once (a 2nd Builder 50K eval while one runs is allowed); sim-funded: Builder 50K max 1, Builder 25K max 2, max 5 in all (3 with any 100K/150K); one live account. CONFLICT: the Builder 50K guide says 'Only one Sim Funded account may be active per user at any time on the Builder Plan'",
+   "status": "confirmed (10 evals, limits article) / conflict (Builder 50K guide wording)",
+   "source": [
+    "https://help.myfundedfutures.com/en/articles/16498635",
+    "https://help.myfundedfutures.com/en/articles/14290805"
+   ],
+   "checked": "2026-11-20"
+  },
+  "independent_contractor": {
+   "value": "public Terms only say no partnership / agency / joint venture (s. 27.1); contractor wording is likely in the non-public Simulated Trader Agreement signed at the first payout via Rise -> treat payouts as self-employment income (Schedule C/SE)",
+   "status": "likely",
+   "source": [
+    "https://myfundedfutures.com/terms"
+   ],
+   "checked": "2026-11-20"
+  },
+  "builder_funded_count_conflict": {
+   "value": "Builder 50K guide (updated 2026-10-21): 'Only one Sim Funded account may be active per user at any time on the Builder Plan'; the limits article (2026-09-04) and the 25K guide: Builder 50K max 1 + Builder 25K max 2. Safest reading: 1 Builder 50K funded + 1 Builder 25K funded; a 3rd Builder funded may be refused.",
+   "status": "conflict",
+   "source": [
+    "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+    "https://help.myfundedfutures.com/en/articles/16498635",
+    "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look"
+   ],
+   "checked": "2026-11-20"
+  }
+ },
+ "rapid_eod_25k": {
+  "price": {
+   "value": {
+    "owner_paid": 97.2,
+    "shown_promo": 97.0,
+    "shown_list": 162.0,
+    "type": "one-time"
+   },
+   "status": "confirmed",
+   "source": [
+    "https://myfundedfutures.com/plans/rapid-eod"
+   ],
+   "checked": "2026-11-20",
+   "unit": "USD",
+   "note": "$162 x 0.6 = $97.20 = the owner's price (bought 2026-11-19/20)"
+  },
+  "eval": {
+   "value": {
+    "start": 25000.0,
+    "target": 1500.0,
+    "mll": 1000.0,
+    "mll_type": "EOD trailing (open losses count)",
+    "lock": 100.0,
+    "dll": null,
+    "max_contracts": {
+     "minis": 2,
+     "micros": 20
+    },
+    "consistency": 0.3,
+    "consistency_note": "best day <= 30% of the profit (eval only)",
+    "min_days": 4,
+    "news": "T1 allowed in the eval",
+    "inactivity_days": 7,
+    "flat_by": "16:10 ET",
+    "open": "18:00 ET",
+    "activation_fee": 0.0
+   },
+   "status": "confirmed",
+   "source": [
+    "https://help.myfundedfutures.com/en/articles/16727601-rapid-eod-25k-a-comprehensive-look",
+    "https://myfundedfutures.com/plans/rapid-eod",
+    "https://help.myfundedfutures.com/en/articles/9558251",
+    "https://help.myfundedfutures.com/en/articles/8348565",
+    "https://help.myfundedfutures.com/en/articles/16596524"
+   ],
+   "checked": "2026-11-20"
+  },
+  "dll_option": {
+   "value": {
+    "amount": 500.0,
+    "type": "soft pause until the 18:00 ET reset, never a fail"
+   },
+   "status": "confirmed",
+   "source": [
+    "https://help.myfundedfutures.com/en/articles/18337038-rapid-eod-with-dll-a-detailed-look",
+    "https://help.myfundedfutures.com/en/articles/16727601-rapid-eod-25k-a-comprehensive-look"
+   ],
+   "checked": "2026-11-20",
+   "note": "the owner bought the Rapid EOD 25K WITH this option (engine/rapid.py PLANS mffu_dll 500)"
+  },
+  "sim_funded": {
+   "value": {
+    "start_balance": 0.0,
+    "mll": 1000.0,
+    "mll_type": "EOD trailing",
+    "lock": "trails until the floor is +$100, then static: keep at least $100; under $100 = breached",
+    "dll": null,
+    "max_contracts": {
+     "minis": 2,
+     "micros": 20
+    },
+    "consistency": null,
+    "buffer": 1100.0,
+    "payout_min": 500.0,
+    "payout_max": null,
+    "next_payout_since": 250.0,
+    "frequency": "daily",
+    "split": 0.9,
+    "news": "T1 NOT allowed: flat, no orders, -2/+2 min (FOMC, minutes, NFP, CPI)",
+    "inactivity_days": 7,
+    "inactivity_note": "a breach by inactivity forfeits all sim profits (accounts bought on/after 2026-08-25)",
+    "first_payout_wait": "not stated by MFFU (a third-party page says 24 h after the first trade)",
+    "min_traded_days": "not stated",
+    "max_funded": 3
+   },
+   "status": "confirmed",
+   "source": [
+    "https://help.myfundedfutures.com/en/articles/16727601-rapid-eod-25k-a-comprehensive-look",
+    "https://myfundedfutures.com/plans/rapid-eod",
+    "https://help.myfundedfutures.com/en/articles/8230009",
+    "https://help.myfundedfutures.com/en/articles/16596524",
+    "https://help.myfundedfutures.com/en/articles/16498635-"
+   ],
+   "checked": "2026-11-20",
+   "note": "Rapid EOD 25K and 50K are capped separately (3 each) inside the 5 sim-funded total"
+  },
+  "live": {
+   "value": {
+    "path": "not published for Rapid EOD (plain Rapid: automatic at $10,000 net in one day or the risk team)",
+    "sim_during_live": "not allowed"
+   },
+   "status": "unknown",
+   "source": [
+    "https://help.myfundedfutures.com/en/articles/13134718-understanding-rapid-live"
+   ],
+   "checked": "2026-11-20"
+  },
+  "live_rules_2026_11_22": {
+   "value": {
+    "max_sim_payouts": null,
+    "five_payout_rule": "Builder only ('Builder Plans: Transition to a Live Account after: 5 consecutive payouts'); Pro: 3 payouts or $20,000; Rapid: 'Consistent payout performance reviewed and approved by our Risk Management Team'",
+    "trigger": "automatic at $10,000 net profit in ONE session (profit above $10,000 that day forfeited) or the Risk Management Team's sole discretion (their example: approved at $7,000 total profit); declining is not possible",
+    "other_accounts_at_any_live_move": "the sim-funded account goes dormant; several Rapids are combined into one live account; 'All simulated trading accounts and additional purchases are suspended during Live account operation'; evaluations stay dormant; a recently passed eval may be refunded",
+    "reserve": "up to $5,000 of sim profits to a Reserve at the move (used if the live account is breached, or paid as a bonus)",
+    "payouts": "no cap per request; daily; $500 minimum; unlock after $250 (25K) / $500 (50K) net since the last payout; buffer $1,100 / $2,100; 90/10; no consistency",
+    "max_funded_accounts": "3 Rapid EOD funded (each size) inside MFFU's 5 sim-funded total"
+   },
+   "status": "confirmed",
+   "source": [
+    "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts",
+    "https://help.myfundedfutures.com/en/articles/13134718-understanding-rapid-live",
+    "https://help.myfundedfutures.com/en/articles/18337038-rapid-eod-with-dll-a-detailed-look",
+    "https://help.myfundedfutures.com/en/articles/10101257",
+    "https://help.myfundedfutures.com/en/articles/12109396-comprehensive-faq-live-accounts-at-myfunded-futures",
+    "https://myfundedfutures.com/plans/rapid-eod"
+   ],
+   "checked": "2026-11-22",
+   "note": "settles the 2026-11-21 plan-ranking question: the 5-sim-payout rule does NOT apply to Rapid EOD. BUT any live move (a Builder's 5th payout, a $10k Rapid day, or a risk-team invite) suspends EVERY sim account incl. the Rapids (same rules page for the 25K; buffer $1,100, unlock $250)"
+  }
+ }
 }

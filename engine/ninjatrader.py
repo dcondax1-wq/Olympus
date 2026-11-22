@@ -58,6 +58,7 @@ import secrets
 import sys
 import threading
 import time
+import zlib
 from collections import deque
 from zoneinfo import ZoneInfo
 
@@ -646,7 +647,10 @@ ADDON_FRESH_S = 300                     # the add-on rewrites its status every m
 
 def feed_instruments(cfg: dict | None = None, today: dt.date | None = None) -> list:
     """The contracts the LE_Feed add-on should write bars for: the micro the bot orders (the roll's current contract, or the
-    nt_instrument pinned in the config), plus the NQ contract when signal_root is "NQ" (the bot then decides on NQ bars)."""
+    nt_instrument pinned in the config), plus the NQ contract when signal_root is "NQ" (the bot then decides on NQ bars), plus
+    the ES research contract (data health 2026-11-20: ES research bars stopped Oct 16): ES with signal_root "NQ", MES with
+    "MNQ" (engine/datapipe sends <ROOT>_1m/5m of every root, tools/data_pull imports ES else MES). Read only for trading: ES
+    bars feed only the learning loop's ES features (LiveBot._learn_es), never LIT's routing. cfg "feed_es": false = off."""
     cfg = cfg or {}
     today = today or dt.datetime.now(ET).date()
     sym = cfg.get("sym", "NQ")
@@ -655,6 +659,10 @@ def feed_instruments(cfg: dict | None = None, today: dt.date | None = None) -> l
         nq = nt_instrument("NQ", today)
         if nq not in out:
             out.append(nq)
+    if sym == "NQ" and cfg.get("feed_es", True) is not False:
+        es = nt_instrument("ES" if signal_root(cfg) == "NQ" else "MES", today)
+        if es not in out:
+            out.append(es)
     return out
 
 
@@ -945,6 +953,10 @@ class NinjaTraderAdapter:
         self.clock = clock or time.time
         self._sleep = time.sleep                       # the self-test swaps in a simulated NinjaTrader here
         self._alert_fn = None                          # None = the bot's phone alerts (guard kind); the self-test captures
+        # phone notices of a SUB-account's adapter (owner 2026-11-20: entry + exit alerts on every account, the moment NinjaTrader
+        # fills): {"account": its label, "suffix": ":acctb" / ":<id>", "nm": the owner's name} set by its route (engine/account_b,
+        # engine/rapid, engine/multi_account) for the real bot only; None = only the bot's own adapter (STATE_PATH) notifies
+        self.push_as = None
         self.lock = threading.RLock()
         self.trace = deque(maxlen=300)
         self.legs: list = []                           # open brackets we placed (one per instrument)
@@ -1102,7 +1114,9 @@ class NinjaTraderAdapter:
     # ------------------------------------------------------------------ phone notifications (engine/push.py)
     def _push_account(self):
         if self.sim:
-            return self.account                  # "Sim101"
+            return self.account                  # "Sim101" (a Sim account is never a phone alert: engine/notify.real_trade)
+        if self.push_as:
+            return str(self.push_as.get("account") or self.account)
         try:
             from . import push
             from .lab_adapter import live_model
@@ -1113,11 +1127,21 @@ class NinjaTraderAdapter:
     def _push(self, make):
         """Send one phone notification (background thread, once per key). Only the real bot: never the self-test or a
         harness with its own state file. Never raises."""
-        if self._alert_fn is not None or self.readonly or self.state_path != STATE_PATH:
+        pa = self.push_as if isinstance(self.push_as, dict) else None
+        if self._alert_fn is not None or self.readonly or (self.state_path != STATE_PATH and pa is None):
             return
         try:
             from . import push
-            push.pc_notify(make(push))
+            p = make(push)
+            if pa is not None and p.get("kind") in ("fill", "outcome"):    # a sub-account: its own key (one alert per account)
+                p["key"] = f"{p['key']}{pa.get('suffix') or ''}"
+                p["tag"] = f"{p.get('tag', '')}{(pa.get('suffix') or '').replace(':', '-')}"
+                for k in ("nm", "url"):
+                    if pa.get(k):
+                        p[k] = pa[k]
+            elif pa is not None:
+                return                               # its route sends its own other notices
+            push.pc_notify(p)
         except Exception:
             pass
 
@@ -2701,7 +2725,17 @@ class NinjaTraderBars:
                 return txt.strip().splitlines()[0].strip()
         return None
 
+    TAIL_FULL_EVERY_S = 900.0    # day-speed 2026-11-20: a full read at least every 15 min (backstop)
+    TAIL_MAX_GROWTH = 16384      # more than ~350 new lines at once (a catch-up / rewrite): full read
+
     def load(self, path):
+        """The bar file as a frame. LE_BarFeed / LE_Feed append one line per closed bar; a file that only GREW since the
+        last read (everything up to the old end byte-identical: CRC32 of that prefix, < 16 KB more, a full read in the last
+        15 min) is parsed from the last complete line on (~7 ms instead of ~70 ms for 21,000 1m lines); a trim, rewrite or
+        replace is a full read exactly as before. Same frame either way (tests/test_speed_tail_load.py). redteam 2026-11-21:
+        the whole prefix is checked (reading it is ~1 ms; only the parse is slow), so a same-size rewrite in place (LE_Feed's
+        File.Copy fallback) that corrects a middle bar is read at once, not up to 15 min later."""
+        import io
         import pandas as pd
         try:
             st = os.stat(path)
@@ -2712,26 +2746,37 @@ class NinjaTraderBars:
         if hit and hit[0] == key:
             return hit[1]
         cols = ["time", "open", "high", "low", "close", "volume"]
-        try:
-            df = pd.read_csv(path, header=None, names=cols, usecols=range(6), on_bad_lines="skip", dtype=str,
-                             engine="python")
-        except Exception:
-            return None
-        # (2026-11-03) every line LE_Feed / LE_BarFeed writes ends with "\n": a last line without it is still being
-        # appended, and a cut number ("21000.5" read as "2100") would parse as a valid but wrong close. Dropped; the
-        # next read (the file's size changes, so the cache misses) has it whole.
+        tails = self.__dict__.setdefault("_tail", {})
+        prev = tails.get(path)
         try:
             with open(path, "rb") as fh:
-                fh.seek(-1, os.SEEK_END)
-                torn = fh.read(1) not in (b"\n", b"\r")
+                data = fh.read()                       # the whole file (~1 MB, ~1 ms): only the parse below is slow
         except OSError:
-            torn = False
-        if torn and len(df):
-            df = df.iloc[:-1]
+            return None
+        o = int(prev["off"]) if prev else -1
+        if prev and o <= len(data) <= o + self.TAIL_MAX_GROWTH and time.time() - prev["full_t"] < self.TAIL_FULL_EVERY_S \
+                and zlib.crc32(memoryview(data)[:o]) == prev["crc"]:
+            new, base, off0 = data[o:], prev["raw"], o    # byte-identical up to the old end: only appended since the last read
+        else:
+            new, base, off0 = data, None, 0
+        # (2026-11-03) every line LE_Feed / LE_BarFeed writes ends with "\n": a last line without it is still being
+        # appended, and a cut number ("21000.5" read as "2100") would parse as a valid but wrong close. Not parsed; the
+        # next read (the file's size changes, so the cache misses) has it whole.
+        cut = new.rfind(b"\n") + 1
+        body = new[:cut]
+        try:
+            part = pd.read_csv(io.BytesIO(body), header=None, names=cols, usecols=range(6), on_bad_lines="skip", dtype=str,
+                               engine="python") if body.strip() else pd.DataFrame(columns=cols, dtype=str)
+        except Exception:
+            return None
         for c in cols:
-            df[c] = pd.to_numeric(df[c], errors="coerce")
-        df = df.dropna(subset=["time", "open", "high", "low", "close"])          # header row, half-written last line
-        df["volume"] = df["volume"].fillna(0.0)
+            part[c] = pd.to_numeric(part[c], errors="coerce")
+        part = part.dropna(subset=["time", "open", "high", "low", "close"])          # header row, junk line
+        part["volume"] = part["volume"].fillna(0.0)
+        raw = part if base is None else pd.concat([base, part], ignore_index=True)
+        tails[path] = {"off": off0 + cut, "crc": zlib.crc32(memoryview(data)[:off0 + cut]), "raw": raw,
+                       "full_t": prev["full_t"] if base is not None else time.time()}
+        df = raw.copy()
         df["time"] = df["time"].astype("int64")
         df = df.drop_duplicates("time", keep="last").sort_values("time").reset_index(drop=True)
         for c in ("open", "high", "low", "close", "volume"):
@@ -3734,21 +3779,31 @@ def selftest(verbose=True) -> bool:
         d_oct, d_roll = dt.date(2026, 11, 2), dt.date(2026, 12, 10)
         check("LE_Feed: feed_instruments = the MNQ contract the bot orders (follows the 8-day roll), + NQ with signal_root NQ, "
               "a pinned nt_instrument wins",
-              feed_instruments({"signal_root": "MNQ"}, d_oct) == ["MNQ 12-26"]
-              and feed_instruments({"signal_root": "MNQ"}, d_roll) == ["MNQ 03-27"]
-              and feed_instruments({"signal_root": "NQ"}, d_oct) == ["MNQ 12-26", "NQ 12-26"]
-              and feed_instruments({"signal_root": "MNQ", "nt_instrument": "MNQ 03-27"}, d_oct) == ["MNQ 03-27"],
+              feed_instruments({"signal_root": "MNQ", "feed_es": False}, d_oct) == ["MNQ 12-26"]
+              and feed_instruments({"signal_root": "MNQ", "feed_es": False}, d_roll) == ["MNQ 03-27"]
+              and feed_instruments({"signal_root": "NQ", "feed_es": False}, d_oct) == ["MNQ 12-26", "NQ 12-26"]
+              and feed_instruments({"signal_root": "MNQ", "nt_instrument": "MNQ 03-27", "feed_es": False}, d_oct) == ["MNQ 03-27"],
               str([feed_instruments({"signal_root": "MNQ"}, d_oct), feed_instruments({"signal_root": "NQ"}, d_oct)]))
+        check("LE_Feed: the ES research contract rides along (data health 2026-11-20): MES with signal_root MNQ, ES with NQ, "
+              "rolled on the same day as the orders; feed_es false = off; never for a non-NQ bot",
+              feed_instruments({"signal_root": "MNQ"}, d_oct) == ["MNQ 12-26", "MES 12-26"]
+              and feed_instruments({"signal_root": "MNQ"}, d_roll) == ["MNQ 03-27", "MES 03-27"]
+              and feed_instruments({"signal_root": "NQ"}, d_oct) == ["MNQ 12-26", "NQ 12-26", "ES 12-26"]
+              and feed_instruments({"signal_root": "NQ"}, d_roll) == ["MNQ 03-27", "NQ 03-27", "ES 03-27"]
+              and "MES 12-26" not in feed_instruments({"signal_root": "MNQ", "feed_es": False}, d_oct)
+              and feed_instruments({"sym": "ES", "signal_root": "MNQ"}, d_oct) == ["MES 12-26"],
+              str([feed_instruments({"signal_root": "MNQ"}, d_oct), feed_instruments({"signal_root": "NQ"}, d_roll)]))
         afold = os.path.join(tmp, "NT addon")
         os.makedirs(afold)
         ip = os.path.join(afold, FEED_DIR, FEED_INSTRUMENTS)
-        w1 = sync_feed_instruments(afold, {"signal_root": "MNQ"}, d_oct)
-        w2 = sync_feed_instruments(afold, {"signal_root": "MNQ"}, d_oct)
+        nes = {"signal_root": "MNQ", "feed_es": False}
+        w1 = sync_feed_instruments(afold, nes, d_oct)
+        w2 = sync_feed_instruments(afold, nes, d_oct)
         txt1 = _read_text(ip)
-        w3 = sync_feed_instruments(afold, {"signal_root": "MNQ"}, d_roll)
+        w3 = sync_feed_instruments(afold, nes, d_roll)
         txt3 = _read_text(ip)
         nofold = os.path.join(tmp, "no NinjaTrader here")
-        w4 = sync_feed_instruments(nofold, {"signal_root": "MNQ"}, d_oct)
+        w4 = sync_feed_instruments(nofold, nes, d_oct)
         check("LE_Feed: feed_instruments.txt is written once, rewritten only when the contract changes (the roll), never "
               "into a folder without NinjaTrader",
               w1 and not w2 and txt1 == "MNQ 12-26\n" and w3 and txt3 == "MNQ 03-27\n" and not w4 and not os.path.exists(nofold),

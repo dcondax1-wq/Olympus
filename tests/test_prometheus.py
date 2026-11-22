@@ -217,7 +217,7 @@ def part_d():
     js = open(os.path.join(PAGE, "forge.js"), encoding="utf-8").read()
     check("d. three.js from ../jarvis/ (no CDN), reduced motion, and the auto LITE steps of the OLYMPUS render core (onQuality) in the page",
           "from '../jarvis/three.module.min.js'" in js and "prefers-reduced-motion" in js and "../olympus/render.js" in js and "onQuality" in js and "http" not in
-          js.replace("https://demetrades2000-coder.github.io", ""))
+          js.replace("https://dcondax1-wq.github.io", ""))
 
 
 # ------------------------------------------------------------------------------------------------ e. the page in Chromium
@@ -229,7 +229,7 @@ class _Quiet(http.server.SimpleHTTPRequestHandler):
 def _site(with_data=True):
     base = tempfile.mkdtemp(prefix="prometheus_page_")
     os.makedirs(os.path.join(base, "jarvis"))
-    for f in ["three.module.min.js", "icon-192.png"] + [os.path.basename(x) for x in glob.glob(os.path.join(ROOT, "tools", "web_public", "jarvis", "*.woff2"))]:
+    for f in ["three.module.min.js", "icon-192.png", "ask.js"] + [os.path.basename(x) for x in glob.glob(os.path.join(ROOT, "tools", "web_public", "jarvis", "*.woff2"))]:
         shutil.copy(os.path.join(ROOT, "tools", "web_public", "jarvis", f), os.path.join(base, "jarvis", f))
     shutil.copytree(PAGE, os.path.join(base, "prometheus"))
     shutil.copytree(os.path.join(ROOT, "tools", "web_public", "olympus"), os.path.join(base, "olympus"))   # the OLYMPUS kit

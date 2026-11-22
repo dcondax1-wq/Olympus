@@ -1,6 +1,6 @@
 /* OLYMPUS gate-nav (2026-11-12; v2 2026-11-14, docs/OLYMPUS_IA_V2.md): breadcrumbs back home and a "Go to..." sheet, on any app. One line in the app's <head>,
  * after agora-ui.js (agora-ui.js also adds it by itself to every AGORA-shell app):
- *     <script src="../olympus/gate-nav.js?v=g5" defer></script>
+ *     <script src="../olympus/gate-nav.js?v=g11" defer></script>
  * - Breadcrumbs: Home > Hub > app. The app's existing back link ("< Olympus" from the AGORA shell, or an own "Olympus" link) becomes "< Home" and opens the
  *   home (gate/); then the app's hub (a link to hub/?h=<hub>&t=<its tab>) and the app's plain name. A page with no back link gets a slim row (crumbs on the
  *   left, Go to on the right) above its header: in the page flow, never floating over its content. On a hub page (hub/?h=...): Home > Hub.
@@ -10,6 +10,7 @@
  * - NAV v3 (2026-11-15, docs/OLYMPUS_NAV.md): the sheet's search finds apps, hub tabs and plain actions (C.findAll); with an empty box: Pinned first
  *   (the owner's favourites, 'gate.pins.v1', the same list as the Gate), a 'Pin this app' star for the app you are on, the hubs, Recent (6), All apps A to Z
  *   (the Gate's sheet, gate/#az) and Home.
+ * - A page may reserve the row from its first paint: <div class="gn-row" data-gn-slot></div> (min-height 44px in its own CSS); the row is built in it (CLS 0).
  * Classic script, ES5, no markup from data (textContent / createElementNS), same-origin files only, no other storage, no network but the catalog file. */
 (function () {
   'use strict';
@@ -37,7 +38,7 @@
   function searchIcon(cls) { var s = sv('svg', { 'class': cls || 'gn-ic', viewBox: '0 0 24 24', 'aria-hidden': 'true' }); s.appendChild(sv('circle', { cx: '10.5', cy: '10.5', r: '6.5' })); s.appendChild(sv('path', { d: 'M15.5 15.5 21 21' })); return s; }
   function backIcon() { var s = sv('svg', { 'class': 'gn-ic', viewBox: '0 0 24 24', 'aria-hidden': 'true' }); s.appendChild(sv('path', { d: 'M15 5l-7 7 7 7' })); return s; }
 
-  if (appId !== 'hub') remember(appId);
+  if (appId !== 'hub' && appId !== 'arena-page') remember(appId);
   w.OLYMPUS_GATE_NAV = { v: 1, gate: GATE, app: appId, open: function () { openSheet(null); }, close: closeSheet, placed: function () { return S.placed; } };
   if (framed) return;
 
@@ -83,9 +84,14 @@
     'main#app>header.top.ag-hasnav>.gn-crumbs{grid-column:1;grid-row:1;justify-self:start}',
     '.gn-crumbs>.ag-navback,.gn-crumbs>.gn-back,.gn-crumbs>a.olyback{flex:none}',
     '.gn-sep{flex:none;padding:0 3px;color:var(--ag-muted,var(--oly-th-n24, #a89c88));font:400 1.0625rem/1 var(--ag-sans,-apple-system,system-ui,sans-serif)}',
-    '.gn-crumb{display:inline-flex;align-items:center;min-height:44px;min-width:44px;padding:0 6px;border-radius:10px;color:var(--ag-gold,var(--oly-th-a8, #c8a24a));font:600 .9375rem/1.1 var(--ag-sans,-apple-system,system-ui,sans-serif);text-decoration:none;white-space:nowrap;flex:none}',
+    '.gn-crumb{display:inline-block;min-height:44px;min-width:44px;padding:0 6px;border-radius:10px;color:var(--ag-gold,var(--oly-th-a8, #c8a24a));font:600 .9375rem/44px var(--ag-sans,-apple-system,system-ui,sans-serif);text-decoration:none;white-space:nowrap;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis}',   // night-siteqa: on a 390 px phone the hub name ends in "..." instead of a hard cut ("Bots & Eva")
     '.gn-cur{flex:0 3 auto;min-width:0;padding:0 4px;color:var(--ag-soft,var(--oly-th-n30, #cfc4b2));font:400 .9375rem/1.1 var(--ag-sans,-apple-system,system-ui,sans-serif);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
     '.gn-crumb:empty,.gn-cur:empty,.gn-sep.gn-off{display:none}',
+    '.gn-crumbs.gn-tight>.gn-sep+.gn-crumb+.gn-sep,.gn-crumbs.gn-tight>.gn-cur,.gn-crumbs.gn-tight2>.gn-sep,.gn-crumbs.gn-tight2>.gn-crumb{display:none}',
+    '.gn-row,.gn-crumbs,.gn-facts{position:relative;z-index:40;pointer-events:auto}',   // above a page's full-screen 3D scene (Fates' canvas covered the Home link: day-a11y 2026-11-21)
+    '.gn-facts{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 8px;padding:0 2px;color:var(--ag-muted,var(--oly-th-n24, #a89c88));font:400 .8125rem/1.3 var(--ag-sans,-apple-system,system-ui,sans-serif)}',
+    '.gn-fchip{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;border-radius:999px;border:1px solid var(--ag-line,var(--oly-th-n8, #3a3228));color:var(--ag-gold,var(--oly-th-a8, #c8a24a));font-weight:600;text-decoration:none;white-space:nowrap}',
+    '.gn-row.gn-own+.gn-facts{padding:0 calc(env(safe-area-inset-right,0px) + 14px) 0 calc(env(safe-area-inset-left,0px) + 14px)}',
     '.gn-empty{margin:10px 2px;color:var(--ag-soft,var(--oly-th-n30, #cfc4b2))}',
     '.gn-where{display:block;color:var(--ag-gold,var(--oly-th-a8, #c8a24a));font-size:.75rem;line-height:1.3}',
     '.gn-pin{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;margin:2px 0 0;padding:0 14px;border-radius:14px;border:1px solid var(--ag-line,var(--oly-th-n8, #3a3228));background:transparent;color:var(--ag-text,var(--oly-th-n37, #f3ece0));font:600 .9375rem/1.2 var(--ag-sans,-apple-system,system-ui,sans-serif);text-align:left;cursor:pointer}',
@@ -118,20 +124,60 @@
     var s1 = el('span', 'gn-sep gn-off', '›'), hub = el('a', 'gn-crumb'), s2 = el('span', 'gn-sep gn-off', '›'), cur = el('span', 'gn-cur');
     s1.setAttribute('aria-hidden', 'true'); s2.setAttribute('aria-hidden', 'true'); hub.setAttribute('data-gn', 'hub'); cur.setAttribute('aria-current', 'page');
     nav.appendChild(s1); nav.appendChild(hub); nav.appendChild(s2); nav.appendChild(cur);
-    S.crumbs = { s1: s1, hub: hub, s2: s2, cur: cur };
+    S.crumbs = { nav: nav, s1: s1, hub: hub, s2: s2, cur: cur };
     return nav;
   }
   function hubParam() { var m = /[?&]h=([a-z]+)/.exec(w.location.search || ''); return m ? m[1] : ''; }
   function fillCrumbs() {
     var K = S.crumbs, C = S.cat; if (!K || !C) return;
     var H = null, label = '', href = '';
-    if (appId === 'hub') { H = C.hub ? C.hub(hubParam()) : null; if (H) href = root + 'hub/index.html?h=' + H.id; }
+    // ORGANIZE (2026-11-21): Home > ARENA > app (the six arenas of the Home + Everything else); the hub crumb is the fallback for an older catalog
+    var X = C.arenaCrumb ? C.arenaCrumb(appId) : null;
+    if (appId === 'arena-page' && C.arena) {   // hub/arena.html?a=<arena>: Home > the arena (this page)
+      var m = /[?&]a=([a-z]+)/.exec(w.location.search || ''), A = m ? C.arena(m[1]) : null;
+      if (A) { K = S.crumbs; K.hub.textContent = A.name; K.hub.href = w.location.href; K.hub.setAttribute('aria-current', 'page'); K.s1.className = 'gn-sep'; fitCrumbs(); }
+      return;
+    }
+    if (X) { H = { name: X.arenaName, line: '' }; href = root + X.path; label = X.front ? '' : X.app; }
+    else if (appId === 'hub') { H = C.hub ? C.hub(hubParam()) : null; if (H) href = root + 'hub/index.html?h=' + H.id; }
     else if (C.crumbOf) { var c = C.crumbOf(appId); if (c) { H = C.hub(c.hub); href = root + c.path; label = c.app; } }
     if (!H) return;
-    K.hub.textContent = H.name; K.hub.href = href; K.hub.title = H.name + ': ' + (H.line || '');
+    facts(C);
+    K.hub.textContent = H.name; K.hub.href = href; K.hub.title = H.name + (H.line ? ': ' + H.line : ': every app in this arena');
     K.s1.className = 'gn-sep';
-    if (appId === 'hub') { K.hub.setAttribute('aria-current', 'page'); return; }
+    if (appId === 'hub' || !label) { fitCrumbs(); return; }
     K.cur.textContent = label; K.s2.className = 'gn-sep';
+    fitCrumbs();
+  }
+  /* one place per fact (2026-11-21): a page that also shows the accounts / the payout / the 7-day clocks says where the one true copy lives */
+  function facts(C) {
+    if (S.facts || !C.factsOn || !S.crumbs) return;
+    var list = C.factsOn(appId); S.facts = true; if (!list.length) return;
+    var p = el('p', 'gn-facts'); p.setAttribute('data-gn', 'facts');
+    p.appendChild(el('span', 'gn-fl', 'Main copy:'));
+    var by = {}, order = [];
+    list.forEach(function (f) { var k = f.path || f.app.id; if (!by[k]) { by[k] = { href: f.path ? root + f.path : hrefOf(f.app), name: f.name || f.app.name, labels: [], facts: [] }; order.push(k); } by[k].labels.push(f.label); by[k].facts.push(f.fact); });
+    order.forEach(function (k) {
+      var g = by[k], a = el('a', 'gn-fchip', g.labels.join(', ') + ' › ' + g.name); a.href = g.href; a.setAttribute('data-fact', g.facts.join(' '));
+      a.title = g.labels.join(', ') + ': the one true copy is ' + g.name; p.appendChild(a);
+    });
+    var nav = S.crumbs.nav, box = (nav.closest && nav.closest('header')) || nav.parentNode;   // under the page's header (or our own row), never inside its grid
+    if (box && box.parentNode) box.parentNode.insertBefore(p, box.nextSibling);
+  }
+  /* a retired app opens its replacement (no dead ends); ?stay=1 keeps the old page; never inside a frame (Cities embeds some of them) */
+  function retire(C) {
+    // an automated browser (navigator.webdriver: the old pages' own tests) keeps the page; tests/test_olympus_nav.py checks the redirect as a real phone
+    if (framed || !C || !C.replacementOf || /[?&]stay=1/.test(w.location.search || '') || (w.navigator && w.navigator.webdriver)) return false;
+    var r = C.replacementOf(appId); if (!r) return false;
+    try { w.location.replace(hrefOf(r) + '?from=' + encodeURIComponent(appId)); return true; } catch (e) { return false; }
+  }
+  /* night-siteqa 2026-11-20: a narrow row (390 px, the app's chips beside it) cut the crumbs mid-word ("Bots & Eva", "T..." and a lone ">");
+     too tight: drop the app's own name (its title is right below), still too tight: drop the hub too, so the row reads "< Home" */
+  function fitCrumbs() {
+    var K = S.crumbs, n = K && K.nav; if (!n) return;
+    var over = function () { return n.scrollWidth > n.clientWidth + 1 || (K.hub.textContent && K.hub.scrollWidth > K.hub.clientWidth + 1); };
+    n.classList.remove('gn-tight', 'gn-tight2');
+    if (over()) { n.classList.add('gn-tight'); if (over()) n.classList.add('gn-tight2'); }
   }
   function topOf(n) { var r = n.getBoundingClientRect(); return r.top + (w.pageYOffset || 0); }
   function place() {
@@ -153,11 +199,15 @@
       } else {
         // 3. no back link: a slim row of our own, in the page flow. A header that floats over a scene as a panel (Cities) takes it as its first line;
         //    a header that floats as a row over a full-bleed picture (Polis over its sky) gets the row above that picture, so nothing is covered.
-        var row2 = el('div', 'gn-row'), gl = gateLink(); row2.appendChild(gl); crumbsAround(gl); row2.appendChild(goButton(false));
-        var cs = head ? w.getComputedStyle(head) : null, floats = cs && /fixed|absolute|sticky/.test(cs.position || '');
+        // a page that reserved the row from its first paint (<div class="gn-row" data-gn-slot>, hub/index.html: perf ask 2026-11-20, CLS 0) gets it filled in place
+        var slot0 = d.querySelector('[data-gn-slot]');
+        if (slot0 && !slot0.firstChild) { var gl0 = gateLink(); slot0.appendChild(gl0); crumbsAround(gl0); slot0.appendChild(goButton(false)); slot0.removeAttribute('aria-hidden'); }
+        var row2 = slot0 ? null : el('div', 'gn-row'), gl = slot0 ? null : gateLink(); if (row2) { row2.appendChild(gl); crumbsAround(gl); row2.appendChild(goButton(false)); }
+        var cs = !row2 ? null : head ? w.getComputedStyle(head) : null, floats = cs && /fixed|absolute|sticky/.test(cs.position || '');
         var rowFlex = cs && /flex/.test(cs.display || '') && !/column/.test(cs.flexDirection || '');
         var host = floats && rowFlex && head.offsetParent && head.offsetParent !== d.body && head.offsetParent.parentNode ? head.offsetParent : null;
-        if (host) { row2.className += ' gn-own'; host.parentNode.insertBefore(row2, host); }
+        if (!row2) { /* filled the reserved slot */ }
+        else if (host) { row2.className += ' gn-own'; host.parentNode.insertBefore(row2, host); }
         else if (floats) head.insertBefore(row2, head.firstChild);
         else if (head && head.parentNode) head.parentNode.insertBefore(row2, head);
         else { row2.className += ' gn-own'; d.body.insertBefore(row2, d.body.firstChild); }
@@ -170,7 +220,9 @@
       var end = bar.querySelector('.ag-appbar-end'); if (end) { var g = goButton(true); g.tabIndex = -1; end.appendChild(g); }
     }
     S.placed = true;
-    loadCatalog(function () { fillCrumbs(); if (S.sheet) refresh(); });
+    loadCatalog(function () { if (retire(S.cat)) return; fillCrumbs(); if (S.sheet) refresh(); });
+    w.addEventListener('resize', function () { if (S.crumbs) fitCrumbs(); });
+    w.setTimeout(function () { if (S.crumbs) fitCrumbs(); }, 1800);   // again once the page's own chips (DEMO / LITE / Refresh) have landed
   }
 
   /* ------------------------------------------------------------------------------------------ the catalog (the Gate's list; the generated apps list if it is missing) */
@@ -178,7 +230,7 @@
     if (w.OLYMPUS_GATE && w.OLYMPUS_GATE.hubs) { S.cat = w.OLYMPUS_GATE; if (then) then(); return; }
     if (S.catTried) { if (then) then(); return; }
     S.catTried = true;
-    var s = el('script'); s.src = root + 'olympus/gate-catalog.js?v=nv2'; s.async = true;
+    var s = el('script'); s.src = root + 'olympus/gate-catalog.js?v=nv12'; s.async = true;
     s.onload = function () { S.cat = w.OLYMPUS_GATE || null; if (then) then(); else refresh(); };
     s.onerror = function () {
       var s2 = el('script'); s2.src = root + 'olympus/apps-list.js'; s2.async = true;
@@ -249,7 +301,7 @@
       }
       if (!(hits.length || F.hubs.length || F.actions.length || F.tabs.length)) body.appendChild(el('p', 'gn-empty', C ? 'Nothing found for "' + q + '". Try a plain word like money, risk or news.' : 'The app list did not load. Home below has every hub.'));
     }
-    var home = function () { var g = el('div', 'gn-list'); g.style.marginTop = '12px'; g.appendChild(item({ id: 'gate', path: 'gate/', label: 'Home', name: '', line: 'Right now, and your hubs' }, 'gn-gate')); body.appendChild(g); };
+    var home = function () { var g = el('div', 'gn-list'); g.style.marginTop = '12px'; g.appendChild(item({ id: 'gate', path: 'gate/', label: 'Home', name: '', line: 'Right now, and your arenas' }, 'gn-gate')); body.appendChild(g); };
     if (q) { home(); return; }
     var here = appId === 'hub' ? hubParam() : (C && C.hubOf && C.hubOf(appId) ? C.hubOf(appId).id : '');
     var hubs = C && C.hubs ? C.hubs : [];
@@ -264,7 +316,20 @@
         body.appendChild(pb);
       }
     }
-    if (hubs.length) {
+    var arenas = C && C.arenas ? C.arenas : [];
+    if (arenas.length) {   // ORGANIZE 2026-11-21: the same top level as Home: the 6 arenas + Everything else, each opens its page (hub/arena.html)
+      var hereA = appId === 'arena-page' ? ((/[?&]a=([a-z]+)/.exec(w.location.search || '') || [])[1] || '') : (C.arenaOf && C.arenaOf(appId) ? C.arenaOf(appId).id : '');
+      body.appendChild(el('h3', 'gn-sec', 'Arenas'));
+      var dsa = el('div', 'gn-dists');
+      arenas.forEach(function (x) {
+        var a = el('a', 'gn-dist' + (x.id === hereA ? ' gn-here' : ''), x.name); a.href = root + 'hub/arena.html?a=' + x.id; a.setAttribute('data-arena', x.id);
+        if (x.id === hereA) a.setAttribute('aria-current', 'page');
+        a.appendChild(el('small', '', x.count + ' app' + (x.count === 1 ? '' : 's')));
+        a.addEventListener('click', closeSheet);
+        dsa.appendChild(a);
+      });
+      body.appendChild(dsa);
+    } else if (hubs.length) {   // an older catalog without arenas
       body.appendChild(el('h3', 'gn-sec', 'Hubs'));
       var ds = el('div', 'gn-dists');
       hubs.forEach(function (h) {

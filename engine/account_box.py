@@ -219,6 +219,18 @@ def do_start(body: dict, local: bool) -> dict:
     return {"ok": False, "lines": [f"NOT STARTED: {err or 'the START step did not begin'}"]}
 
 
+def _running() -> bool:
+    """The bot runs right now (engine/go.bot_running: the server's own /api/live/state; tests stub _S["running"]). An unknown
+    answer is False: the wait below then drops (it never starts a bot it cannot see)."""
+    try:
+        if _S["running"]:
+            return bool(_S["running"]())
+        from engine import go
+        return bool(go.bot_running())
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def _wait(phrase: str) -> None:
     _W.update(state="waiting", t0=_now(), said=None, gen=_W["gen"] + 1)
     gen = _W["gen"]
@@ -227,6 +239,14 @@ def _wait(phrase: str) -> None:
         while _W["gen"] == gen and _now() - _W["t0"] < WAIT_MAX_S:
             _S["sleep"](WAIT_POLL_S)
             if _W["gen"] != gen:
+                return
+            if not _running():
+                # redteam 2026-11-20: it waits for the RUNNING bot to be flat. A bot that is no longer running was stopped
+                # (STOP BOT, HOLD TO KILL, a remote stop / kill, a guard) or crashed: re-arming now would start trading again
+                # against the owner's own stop (onboard.rearm arms at once when no bot runs). Dropped; one tap starts it again.
+                _W.update(state="dropped", said="the bot was stopped while this waited (STOP, kill or a crash): it does not "
+                                                "start by itself. Tap Start trading again to start it.")
+                log({"t": int(_now()), "action": "start", "ok": False, "why": "dropped: the bot was stopped while it waited"})
                 return
             try:
                 r = _rearm(p)
@@ -300,6 +320,7 @@ border:0;border-radius:10px;background:var(--acc);color:#fff}button:disabled{opa
 #out div{margin:3px 0;white-space:pre-wrap}.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
 .row{display:flex;gap:8px}.sec{background:#2b3346;font-size:15px;padding:10px}
 ul{padding-left:18px;margin:6px 0}li{margin:2px 0}small{color:var(--mut)}
+a.tool{display:flex;align-items:center;justify-content:center;min-height:44px;border:1px solid var(--line);border-radius:10px;color:var(--fg);text-decoration:none;font-weight:600}
 </style></head><body><main>
 <h1>Add account</h1><p class="s">Type the Name and the phrase: one press adds it AND starts trading (it waits for flat by itself). PC or your Tailscale phone.</p>
 <div class="c"><label for="plan">Plan</label><select id="plan"></select>
@@ -312,6 +333,7 @@ ul{padding-left:18px;margin:6px 0}li{margin:2px 0}small{color:var(--mut)}
 <button id="cx" class="sec">Cancel waiting</button></div><div id="out"></div></div>
 <div class="c"><b>Bot</b><div id="bot"><small>…</small></div></div>
 <div class="c"><b>The bot knows</b><ul id="acc"><li><small>loading…</small></li></ul><small id="slots"></small></div>
+<p><a class="tool" href="/alerts/">Phone alerts: set up Telegram + test</a></p>
 </main><script>
 const $=id=>document.getElementById(id);
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}

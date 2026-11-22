@@ -75,11 +75,18 @@ def cli_checks(tmp):
         inv = [x for x in AC.inventory() if x["role"] == "rapid"]
         check("a. inventory: the Rapid row is a Rapid EOD 25K eval", [(x["plan"], x["stage"]) for x in inv] == [("rapideod25", "eval")], inv)
         check("a. slots line shows the Rapid EOD 25K", "Rapid EOD 25K 0/3" in AC.slots_text(), AC.slots_text())
-        for what, rr in (("a 2nd Rapid 25K", AC.add("rapideod25", "MFFUEVRPD250000002")),
-                         ("a Rapid 50K next to the 25K (one Rapid only)", AC.add("rapideod", "MFFUEVRPD500000009")),
+        r2 = AC.add("rapideod25", "MFFUEVRPD250000002")      # day-multirapid: a 2nd Rapid goes to slot 2 (data/rapid2.json)
+        b2 = rapid.read(rapid.slot_path("rapid2")) or {}
+        check("a. a 2nd Rapid 25K is added as Rapid #2 (data/rapid2.json), DISARMED; the 1st is untouched",
+              r2.get("ok") and r2.get("slot") == "rapid2" and b2.get("account") == "MFFUEVRPD250000002" and b2.get("armed") is False
+              and (rapid.read() or {}).get("account") == NR, (r2, b2))
+        for what, rr in (("a 3rd Rapid (both slots taken)", AC.add("rapideod", "MFFUEVRPD500000009")),
                          ("the same Name again", AC.add("rapideod25", NR)),
                          ("--bots lit on the Rapid 25K", AC.add("rapideod25", "MFFUEVRPD250000003", bots="lit"))):
             check(f"a. refused: {what}", rr.get("ok") is False and rr.get("error"), rr)
+        AC.remove("MFFUEVRPD250000002")                       # back to one Rapid for the checks below
+        check("a. removing Rapid #2 turns only slot 2 off", rapid.read(rapid.slot_path("rapid2")) is None
+              and (rapid.read() or {}).get("account") == NR)
         check("a. the Rapid 25K stays disarmed (only START BOT's rapid.arm with the phrase arms it)",
               rapid.read()["armed"] is False and rapid.arm("i accept")["ok"] is False and rapid.read()["armed"] is False)
         rows = AC.inventory()
@@ -128,8 +135,8 @@ def ready_checks(tmp):
               r["ok"] and any("CHECK THE NAME" in x and "does not show" in x for x in r.get("notes") or []), r.get("notes"))
         AC.remove(TC.N25 + "X")
         with open(os.path.join(os.environ["NINJATRADER_FOLDER"], "le_feed", "accounts.csv"), "a") as fh:
-            fh.write(f"MFFUEVRPD251190004,{int(__import__('time').time())},25000,0,0,25000\n")
-        r = AC.add("rapideod25", "MFFUEVRPD251190004")
+            fh.write(f"MFFUEVRPD250000004,{int(__import__('time').time())},25000,0,0,25000\n")
+        r = AC.add("rapideod25", "MFFUEVRPD250000004")
         notes = r.get("notes") or []
         check("i. the Name NinjaTrader shows at $25,000: no CHECK THE NAME warning", r["ok"] and not any("CHECK THE NAME" in x for x in notes), notes)
         check("i. the [OK] lines also print min days, the flat time, the funded news ban and the payout line",
@@ -139,15 +146,16 @@ def ready_checks(tmp):
               AC.slots_text())
         lines = G.phrase_also_arms()
         check("i. START BOT step 3 lists the Rapid EOD 25K (Zlarior + ATLAS, its Name) before the phrase",
-              any("Zlarior + ATLAS" in x and "Rapid EOD 25K" in x and "MFFUEVRPD251190004" in x for x in lines), lines)
+              any("Zlarior + ATLAS" in x and "Rapid EOD 25K" in x and "MFFUEVRPD250000004" in x for x in lines), lines)
         out = io.StringIO()
-        with contextlib.redirect_stdout(out):
+        from unittest import mock
+        with contextlib.redirect_stdout(out), mock.patch.object(G, "market_open", lambda *_a, **_k: True):   # a weekend run reaches 3/4 too
             rc = G.run(dry=True, inp=lambda *_a: "no", pull=False)
         txt = out.getvalue()
         check("i. START BOT dry run, phrase NOT typed: the Rapid is listed at 3/4 and stays DISARMED",
-              "Rapid EOD 25K  MFFUEVRPD251190004" in txt and txt.find("Rapid EOD 25K") > txt.find("3/4 Real money")
+              "Rapid EOD 25K  MFFUEVRPD250000004" in txt and txt.find("Rapid EOD 25K") > txt.find("3/4 Real money")
               and "Nothing is armed" in txt and rapid.read()["armed"] is False, (rc, txt[-900:]))
-        AC.remove("MFFUEVRPD251190004")
+        AC.remove("MFFUEVRPD250000004")
         check("i. no Rapid: step 3 lists nothing extra", not [x for x in G.phrase_also_arms() if "Rapid" in x], G.phrase_also_arms())
     finally:
         for k, v in keep.items():
@@ -383,7 +391,7 @@ def main() -> int:
         st = A._state_raw(T0)
         check("d. eval floor: $1,000 of room at the start (EOD trailing)", abs(float(st["room"]) - 1000.0) < 0.01, st)
         s1 = A.size({"risk_pts": 10.0, "tgt_pts": 20.0}, st)
-        check("b. ATLAS $250 risk on a 10-pt stop: 11 micros (250 / 22.4)", s1["qty"] == 11 and "min $250" in s1["reasons"][0], s1)
+        check("b. ATLAS $250 risk on a 10-pt stop: 9 micros (250 / 26.9: sized on stop + 10 ticks, owner YES 2026-11-20 rapid-atlas-size-10t; was 11 at 1 tick)", s1["qty"] == 9 and "min $250" in s1["reasons"][0], s1)
         s1b = A.size({"risk_pts": 2.0, "tgt_pts": 4.0}, st)
         check("b. ATLAS never above 20 micros (MFFU 2 minis / 20 micros)", s1b["qty"] == 20, s1b)
         ent = {**pos_at(T0, entry=25020.0, stop=24990.0, target=25050.0), "tgt_pts": 30.0}
@@ -489,7 +497,7 @@ def main() -> int:
         fv = FA.funded_view(T0)
         check("f. funded tracker on the shared 25K book: request $600 today", fv["ready"] and fv["request"] == 600.0, fv)
         s3 = FA.size({"risk_pts": 10.0, "tgt_pts": 20.0}, FA._state_raw(T0))
-        check("f. funded ATLAS: $250 risk, no best-day cap", s3["qty"] == 11, s3)
+        check("f. funded ATLAS: $250 risk, no best-day cap (9 micros: sized on stop + 10 ticks, owner YES rapid-atlas-size-10t)", s3["qty"] == 9, s3)
         FA.spec["funded"]["payouts"] = {"2026-10-05": 600.0}
         fs = FA._funded_state(DAY)
         check("d. funded after the first payout: floor locked at start + $100", fs.get("locked") is True

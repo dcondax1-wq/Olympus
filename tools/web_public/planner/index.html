@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en" data-theme="agora" data-oly-light>
+<html lang="en" data-theme="agora" data-oly-shell="app" data-oly-light>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Planner</title>
 <meta name="description" content="OLYMPUS PLANNER: calendar, projects and tasks, the trading day (windows, market events, pre-session checklist, post-session review), habits, goals, a focus timer and notes, all kept on this phone with Export, Import and a calendar file.">
-<meta name="theme-color" content="#14110e">
+<meta name="theme-color" content="#000000">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Planner">
@@ -20,15 +20,16 @@
      fixture.json is the DEMO plan shown while nothing is saved (never blank). Read only from other apps: ../pythia/events.json, ../home.json and Argo's goals. It sends nothing anywhere. Text only through textContent. -->
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o7">
-<link rel="stylesheet" href="../olympus/agora.css?v=a6">
-<script src="../olympus/themes.js?v=o8"></script>
-<script src="../olympus/olympus.js?v=o13" data-app="planner"></script>
-<script src="../olympus/intro-app.js?v=i8" defer></script>
+<link rel="stylesheet" href="../olympus/agora.css?v=a11">
+<link rel="stylesheet" href="../olympus/pulse.css?v=p8">
+<script src="../olympus/themes.js?v=o11"></script>
+<script src="../olympus/olympus.js?v=o24" data-app="planner"></script>
+<script src="../olympus/intro-app.js?v=i12" defer></script>
 <script src="../olympus/a11y.js" defer></script>
-<script src="../olympus/agora-ui.js?v=3" defer></script>
-<script src="../olympus/sfx.js?v=s4" defer></script>
+<script src="../olympus/agora-ui.js?v=9" defer></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#7fa7c2'); r.setProperty('--oly-accent-rgb', '127, 167, 194'); })();</script>
-<link rel="stylesheet" href="planner.css?v=b4">
+<link rel="stylesheet" href="planner.css?v=b4q13">
+<link rel="stylesheet" href="../olympus/shell.css?v=s6"><!-- day-arenas: the one design layer, loaded last -->
 </head>
 <body>
 <main id="app">
@@ -39,6 +40,7 @@
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
   <ul id="remindBar" class="remind" aria-label="Reminders" hidden></ul>
   <a class="ag-card card weeklink" href="../business/schedule.html"><b>My work week &rarr;</b><span class="note">When to check the PC, the Friday review, payouts, taxes.</span></a>
+  <section class="pulse" data-pulse="strip,bots" data-pulse-app="planner" aria-label="Today and the bots" aria-busy="true"><div class="pu-part pu-strip"></div><div class="pu-part pu-bots"></div><p class="pu-note pu-age"></p></section><!-- day-arenas: olympus/pulse.js -->
   <section class="ag-card card" id="demoBar" aria-labelledby="demoH" hidden>
     <h2 id="demoH">This is an example plan</h2>
     <p class="lead" id="demoNote">Example plan, not real.</p>
@@ -223,5 +225,7 @@
   </section>
 </div>
 <script type="module" src="planner.js?v=b4"></script>
+<script type="module" src="../olympus/pulse.js?v=p9"></script>
+<script src="../trading/panelfx.js?v=2" data-look="night" defer></script><!-- owner 2026-11-20: 3D + effects, after the content -->
 </body>
 </html>

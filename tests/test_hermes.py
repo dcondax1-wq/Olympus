@@ -192,14 +192,14 @@ def part_d():
     css = open(os.path.join(PAGE, "hermes.css"), encoding="utf-8").read()
     js = "".join(open(f, encoding="utf-8").read() for f in glob.glob(os.path.join(PAGE, "*.js")))
     code = re.sub(r"^\s*//.*$", "", js, flags=re.M)                  # without the comments
-    check("d. viewport-fit=cover, theme-color, dark scheme, a module script", 'viewport-fit=cover' in html and 'name="theme-color" content="#14110e"' in html
+    check("d. viewport-fit=cover, theme-color, dark scheme, a module script", 'viewport-fit=cover' in html and 'name="theme-color" content="#000000"' in html
           and 'name="color-scheme" content="dark"' in html and '<script type="module" src="app.js">' in html)
     check("d. safe areas on all four sides", all(f"env(safe-area-inset-{s}" in css for s in ("top", "right", "bottom", "left")))
     check("d. the orb's corner: content ends 160 px above the bottom, the footer keeps 96 px from the right",
           "--bot: calc(var(--sb) + 160px)" in css and re.search(r"\.foot \{[^}]*right: calc\(var\(--sr\) \+ 96px\)", css))
     check("d. prefers-reduced-motion in the CSS and the script", "@media (prefers-reduced-motion: reduce)" in css and "prefers-reduced-motion: reduce" in js)
     urls = set(re.findall(r"https?://[^\s'\"`)]+", html + css + js))
-    allowed = {"https://demetrades2000-coder.github.io"}
+    allowed = {"https://dcondax1-wq.github.io"}
     check("d. no CDN, no other site: only Jarvis's origin (the Kalshi feed is this site's own kalshi.json; the kalshi-feed repo is retired)",
           urls <= allowed and "const KALSHI = '../kalshi.json';" in open(os.path.join(PAGE, "data.js"), encoding="utf-8").read(), urls - allowed)
     check("d. Safari 16 safe: no lookbehind, no Array copy methods, no Object.groupBy, no AbortSignal.timeout",
@@ -224,6 +224,7 @@ def make_site(tmp, w, peers=False, title="Tuesdays pay the most"):
     os.makedirs(os.path.join(site, "jarvis"))
     for f in glob.glob(os.path.join(ROOT, "tools", "web_public", "jarvis", "*.woff2")):
         shutil.copy(f, os.path.join(site, "jarvis"))
+    shutil.copy(os.path.join(ROOT, "tools", "web_public", "jarvis", "ask.js"), os.path.join(site, "jarvis"))   # the kit's Ask Jarvis button (olympus.js)
     shutil.copytree(os.path.join(ROOT, "tools", "web_public", "olympus"), os.path.join(site, "olympus"))   # the OLYMPUS kit
     shutil.copytree(os.path.join(ROOT, "tools", "web_public", "assets", "audio"), os.path.join(site, "assets", "audio"))   # the kit's sound files (olympus/sfx.js reads ../assets/audio/)
     if w is not None:

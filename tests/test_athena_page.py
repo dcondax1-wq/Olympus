@@ -42,10 +42,10 @@ def rd(name):
 def part_a():
     html = rd("index.html")
     check("a. the OLYMPUS kit: olympus.css, themes.js, olympus.js (data-app) all at ?v=o2",
-          all(s in html for s in ('../olympus/olympus.css?v=o7', '../olympus/themes.js?v=o8', '../olympus/olympus.js?v=o13" data-app="athena"')))
+          all(s in html for s in ('../olympus/olympus.css?v=o7', '../olympus/themes.js?v=o11', '../olympus/olympus.js?v=o24" data-app="athena"')))
     check("a. title Athena, a description, theme-color = the page colour, the Jarvis icon like the siblings",
-          "<title>Athena</title>" in html and 'name="description"' in html and 'content="#14110e"' in html and "../jarvis/icon-192.png" in html)
-    srcs = re.findall(r'(?:src|href)="([^"]+)"', html)
+          "<title>Athena</title>" in html and 'name="description"' in html and 'content="#000000"' in html and "../jarvis/icon-192.png" in html)
+    srcs = re.findall(r'(?<![\w-])(?:src|href)="([^"]+)"', html)   # not data-src (the archive banner's feed)
     check("a. only local files (no external script, font or stylesheet)", all(not s.startswith(("http:", "https:", "//")) for s in srcs), srcs)
     check("a. every local file the page links exists",
           all(os.path.exists(os.path.normpath(os.path.join(PAGE, s.split("?")[0]))) for s in srcs if not s.startswith("#")), srcs)
@@ -58,7 +58,7 @@ def part_a():
           "no timers or animation loop (a screen is drawn once per tap: cheap on LITE)",
           not re.search(r"innerHTML|outerHTML|insertAdjacentHTML|document\.write|localStorage|sessionStorage|indexedDB|document\.cookie|sendBeacon|XMLHttpRequest|fetch\(|requestAnimationFrame|setInterval|setTimeout|eval\(|new Function", tr)
           and "from './athenastore.js'" in rd("athenatrain.js") and "load(KEY" in rd("athenatrain.js") and "const KEY = 'train.v1';" in rd("athenatrain.js"))
-    check("a. the Train tab is in the dock (data-tab=train, badge) with its pane, and the Jarvis files stay the same", 'data-tab="train"' in html and 'id="p-train"' in html and 'id="bd-train"' in html and 'athena.js?v=a7' in html and 'athena.css?v=a5c' in html)  # designqa 2026-11-19: athena.css bumped for the HUD v2 look
+    check("a. the Train tab is in the dock (data-tab=train, badge) with its pane, and the Jarvis files stay the same", 'data-tab="train"' in html and 'id="p-train"' in html and 'id="bd-train"' in html and 'athena.js?v=a10' in html and 'athena.css?v=a5c' in html)  # designqa 2026-11-19: athena.css bumped for the HUD v2 look
     check("a. the 3D library is built on the render core (createRenderer) and not a bare WebGLRenderer", "createRenderer(" in js and "new THREE.WebGLRenderer" not in js)
     store = rd("athenastore.js") + rd("athenaplus.js") + rd("athenabrain.js")
     check("a. the reader's memory lives in athenastore.js only, every key under 'athena.' (nothing else is written, no cookies, no network in the new modules)",
@@ -298,7 +298,7 @@ def part_b2(lib):
           and all(any(e["body"][0].startswith(w) for w in B.STATUS_WORDS.values()) for e in learned), len(learned))
     check("b. every write-up that is an adopt-candidate, adopted, promising or a finding is on the shelf (none left out)",
           {os.path.basename(f) for f in files} == {os.path.basename(f) for f in __import__("glob").glob(os.path.join(ROOT, "research", "writeups", "*.md"))
-                                                    if re.match(r"---\n.*?\nstatus: (adopt-candidate|adopted|promising|finding)", open(f, encoding="utf-8").read(), re.S)
+                                                    if re.match(r"---\n.*?\nstatus: (adopt-candidate|adopted|promising|finding)\b", open(f, encoding="utf-8").read(), re.S)
                                                     and re.search(r"^summary: ", open(f, encoding="utf-8").read(), re.M)})
     R = lib["rules"]
     check("b. 'My rules': 18 checklist lines in 5 groups, each pointing at a real entry, with the rule file's numbers ($48,000, $1,000, 40 micros, $3,000, 7 days)",

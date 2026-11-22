@@ -239,8 +239,17 @@ def test_json():
         return None
     size = os.path.getsize(p)
     d = json.load(open(p, encoding="utf-8"))
+    # day-a11y 2026-11-20 (PERF ask 6): the open scenario's threads in fates.json, the others in threads/<key>.json (tools/fates/build.py split)
+    lazy = {k: s["threads_url"] for k, s in d["scenarios"].items() if "threads_url" in s}
+    check(f"d. the first open is light: fates.json <= 150 KB ({size / 1e3:.0f} KB), Zlarior 2026 inline, the other big scenarios in threads/",
+          size <= 150_000 and "threads" in d["scenarios"]["eval:zlarior:2026"] and "eval:zlarior:2026" not in lazy
+          and all(os.path.exists(os.path.join(FATES, u)) and "threads" not in d["scenarios"][k] for k, u in lazy.items()), (size, lazy))
+    for k, u in lazy.items():                          # the whole doc again, as the page sees it once each scenario is picked
+        with open(os.path.join(FATES, u), encoding="utf-8") as fh:
+            d["scenarios"][k] = {kk: vv for kk, vv in d["scenarios"][k].items() if kk != "threads_url"} | {"threads": json.load(fh)}
     bad = EX.validate(d)
-    check(f"d. fates.json passes the schema and is <= 1 MB ({size / 1e3:.0f} KB)", not bad and size <= 1_000_000, bad)
+    full = size + sum(os.path.getsize(os.path.join(FATES, u)) for u in lazy.values())
+    check(f"d. fates.json + threads/ pass the schema and are <= 1 MB together ({full / 1e3:.0f} KB)", not bad and full <= 1_000_000, bad)
     keys = set(d["scenarios"])
     want = {f"eval:{b}:{p}" for b in ("zlarior", "atlas") for p in ("2026", "2021-25")} | {"money:2026", "money:2021-25"}
     check("d. both bots' evals and the money paths, on the 2026 and the 2021-25 samples", want <= keys, keys)
@@ -285,10 +294,17 @@ def site(with_data: str | None):
     os.makedirs(os.path.join(tmp, "fates"))
     os.makedirs(os.path.join(tmp, "jarvis"))
     for n in os.listdir(FATES):
-        if n not in ("fates.json",):
+        if os.path.isdir(os.path.join(FATES, n)):         # threads/: the other scenarios' threads (fetched when picked)
+            shutil.copytree(os.path.join(FATES, n), os.path.join(tmp, "fates", n))
+        elif n not in ("fates.json",):
             shutil.copy(os.path.join(FATES, n), os.path.join(tmp, "fates", n))
     if with_data:
         shutil.copy(with_data, os.path.join(tmp, "fates", "fates.json"))
+    for n in ("age.css",):                            # the kit's shared files at the site root (the data-age chip)
+        if os.path.exists(os.path.join(WEB, n)):
+            shutil.copy(os.path.join(WEB, n), os.path.join(tmp, n))
+    if os.path.exists(os.path.join(WEB, "jarvis", "ask.js")):   # the kit's Ask button (olympus.js loads it on every app)
+        shutil.copy(os.path.join(WEB, "jarvis", "ask.js"), os.path.join(tmp, "jarvis", "ask.js"))
     for n in ("three.module.min.js", "orbitron.woff2", "rajdhani-400.woff2", "rajdhani-500.woff2", "rajdhani-600.woff2", "rajdhani-700.woff2", "icon-192.png"):
         shutil.copy(os.path.join(WEB, "jarvis", n), os.path.join(tmp, "jarvis", n))
     shutil.copytree(os.path.join(WEB, "olympus"), os.path.join(tmp, "olympus"))    # the OLYMPUS kit (docs/OLYMPUS_DESIGN.md)
@@ -353,7 +369,7 @@ def test_page():
             check("e. WebGL scene up with ~400 threads in one draw call", p.evaluate("__fates.webgl") and p.evaluate("__fates.threads.length") == len(fx["scenarios"]["eval:zlarior:2026"]["threads"]["b"]),
                   p.evaluate("__fates.probe()"))
             meta = p.evaluate("({tc: document.querySelector('meta[name=theme-color]').content, vp: document.querySelector('meta[name=viewport]').content})")
-            check("e. its own theme-color (= jarvis.json theme) and viewport-fit=cover", meta["tc"] == "#14110e" and "viewport-fit=cover" in meta["vp"], meta)
+            check("e. its own theme-color (= jarvis.json theme) and viewport-fit=cover", meta["tc"] == "#000000" and "viewport-fit=cover" in meta["vp"], meta)
             css = open(os.path.join(FATES, "fates.css"), encoding="utf-8").read()
             check("e. safe areas on all four sides and reduced motion in the CSS", all(f"safe-area-inset-{s}" in css for s in ("top", "right", "bottom", "left"))
                   and "prefers-reduced-motion" in css)

@@ -1221,7 +1221,26 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     # 2026-11-03: the OLYMPUS apps Jarvis opens full screen: Data City, Mind (the Obsidian brain), the strategy tree ...;
     # olympus/ is their shared kit (tokens, fonts, the loading veil, the one 3D-quality setting: docs/OLYMPUS_DESIGN.md)
     # assets/ (Round 5, 2026-11-11): the CC0 art every scene shares (audio, the rigged cast, PBR surfaces, HDRIs, props; docs/ASSETS_LICENSES.md)
-    for app in ("jarvis", "gate", "hub", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "pantheon", "olympus", "assets", "arena", "bridge", "ares", "plutus", "athena", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "kalshicity", "settings", "inbox", "ledger", "journal", "observatory", "atlas", "atlascity", "pc", "delphi", "pnyx", "planner", "hestia", "demeter", "apollo", "hera", "dionysus", "clio", "mint", "mintcity", "mercury", "chrysos", "sibyl", "oikos", "arbiter", "stoa", "aegis", "lyceum", "nike", "kronos", "moirai", "epilogue", "argo", "kratos", "pythia", "gallery", "kairos", "compass", "pheme", "harmonia", "helios", "ergasterion", "archive", "pinakes", "colosseum", "nq", "symposium", "herald", "polis", "agency", "business", "trading", "board", "why"):
+    if os.environ.get("LE_DASH_BUILD") == "1":   # cloud builds only (tools/gh_publish.py sets it): on the PC this tracked file would be
+        # rewritten every build and block its auto-update (engine/generated_files.py lists it too). night-revamp-dash 2026-11-20
+        try:
+            from tools.money import dash_build as _dash_build
+            _dash_build.main([])
+            from tools import nqdash_export as _nqx            # night-nqdash2: business/payday.json + nq/news_week.json
+            _nqx.main([])
+        except Exception as _dash_err:  # noqa: BLE001
+            print(f"[dash_build] skipped: {_dash_err.__class__.__name__}: {_dash_err}")
+        try:                                                    # day-brief 2026-11-20: nq/brief.json (docs/BRIEF.md)
+            from tools import premarket_brief as _pmb
+            _pmb.main([])
+        except Exception as _brief_err:  # noqa: BLE001
+            print(f"[premarket_brief] skipped: {_brief_err.__class__.__name__}: {_brief_err}")
+        try:                                                    # day-brief round 2: business/week.json from the PC's status post
+            from tools import weekly_review as _wr
+            _wr.write(_wr.build())
+        except Exception as _wr_err:  # noqa: BLE001
+            print(f"[weekly_review] skipped: {_wr_err.__class__.__name__}: {_wr_err}")
+    for app in ("jarvis", "gate", "hub", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "pantheon", "olympus", "assets", "arena", "bridge", "ares", "plutus", "athena", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "kalshicity", "settings", "inbox", "ledger", "journal", "observatory", "atlas", "atlascity", "pc", "delphi", "pnyx", "planner", "hestia", "demeter", "apollo", "hera", "dionysus", "clio", "mint", "mintcity", "mercury", "chrysos", "sibyl", "oikos", "arbiter", "stoa", "aegis", "lyceum", "nike", "kronos", "moirai", "epilogue", "argo", "kratos", "pythia", "gallery", "kairos", "compass", "pheme", "harmonia", "helios", "ergasterion", "archive", "pinakes", "colosseum", "nq", "symposium", "herald", "polis", "agency", "business", "trading", "board", "why", "widget"):
         src_dir = os.path.join(WEB, app)
         if os.path.isdir(src_dir):
             os.makedirs(os.path.join(out, app), exist_ok=True)

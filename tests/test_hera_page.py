@@ -21,7 +21,7 @@ FIX = os.path.join(AK.WEB, APP, "fixture.json")
 
 
 def test_static():
-    AK.static_kit(APP, NAME, reads=("../plutus/roadmap.json",))
+    AK.static_kit(APP, NAME, reads=("../plutus/roadmap.json", "../home.json"))
     road, fx = json.load(open(ROAD, encoding="utf-8")), json.load(open(FIX, encoding="utf-8"))
     same = all(fx["versions"][k]["months"] == road["versions"][k]["months"] and fx["versions"][k]["mid"] == road["versions"][k]["mid"] for k in ("H1", "H2"))
     check("a. the saved copy (fixture.json) has the same 12 months, middle paths and accounts as the roadmap file the site publishes (rebuild it when the study is rerun)",
@@ -130,7 +130,7 @@ def test_page():
             h1 = p.evaluate("() => [document.querySelector('#big').textContent, document.querySelector('#vers [aria-pressed=true]').textContent, document.querySelector('#status').textContent.slice(0, 40)]")
             check("c. the better half: $14,345, its chip is pressed, the status line is spoken", h1[0] == "$14,345" and h1[1] == "Better half" and h1[2].startswith("Typical cash to you"), h1)
             check("c. every tap target is at least 44 x 44 px (the chips, the slider, the summary)", not AK.taps(p), AK.taps(p)[:4])
-            check("c. no sideways scroll; Jarvis's corner is free; no console error; nothing off the origin", AK.no_sideways(p) and not AK.corner(p) and not errs and not off, (errs[:3], off[:3]))
+            check("c. no sideways scroll; Jarvis's corner is free; no console error; nothing off the origin", AK.no_sideways(p) and not AK.corner(p) and not errs and not off, (AK.no_sideways(p), AK.corner(p), errs[:3], off[:3]))
             ctx.close()
             ctx, p, errs, seen, off = AK.page(br, origin)
             AK.open_app(p, origin, APP, "?demo=1&at=2026-11-09T15:00:00Z&v=H1&month=6")

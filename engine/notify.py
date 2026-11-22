@@ -8,8 +8,8 @@ One settings file: notify_settings.json (repo root; a missing or broken file = D
                        problems (bot down, FEED STALE, NinjaTrader closed, fill check, trade watch), other (roll, quiet bot, ...).
                        Default (owner 2026-11-18, "important only" + every entry): ON = trade_opened, trade_closed,
                        account_status, daily_summary, morning_brief, pc_silent, problems; the rest OFF. Entries go out the
-                       moment the bot routes them (instant_entry, via engine/push.pc_notify; the 15-minute report then skips
-                       the same entry), closes with the next report ($, day, room).
+                       moment NinjaTrader fills them (instant_entry, via engine/push.pc_notify; the 15-minute report then skips
+                       the same entry), closes the moment they close (instant_exit, 2026-11-20: $, today, balance, $ to pass).
   quiet_hours          ET; inside them trade pushes and ordinary ones arrive without sound (ntfy priority "low"), the guard's
                        summaries / milestones wait for the end; ring_in_quiet_hours kinds keep their sound
   milestones_pct       eval progress pushes (% of the profit target made), once per level per eval
@@ -20,15 +20,16 @@ One settings file: notify_settings.json (repo root; a missing or broken file = D
   pc_silent_after_min  the cloud says "Your PC stopped reporting" when neither its heartbeat nor its status feed is newer
   pc_silent_remind_after_min   one reminder after this; at most 2 pushes per outage per trading day, never every run
 
-Messages (examples):
-  Zlarior 50K SHORT opened | risk $368 | target +$1,432
-  Zlarior 50K closed +$605 | day +$605 | room $1,750
+Messages (examples; docs/TRADE_ALERTS.md):
+  Zlarior 50K: LONG 4 MNQ @ 21,034.25       stop 21,012.00 (-$178), target 21,090.50 (+$450) · 10:31 AM ET.   (instant, at the fill)
+  Zlarior 50K: closed LONG +$312 (target)   today +$312, balance $49,505, $3,495 to pass · +1.4R · 4 MNQ · 10:58 AM ET.
+  Zlarior 50K SHORT opened | risk $368 | target +$1,432   (the 15-minute report's own words, tools/pc_report, when no instant push went)
   Zlarior 50K: 50% of the target made ($1,500 of $3,000)
   ATLAS 25K: room getting low, $250 left of $1,000
   Day Mon Nov 16: +$310                     (each account: $ today, $ to pass, room; tomorrow's big US news)
   ZEUS - Wed Nov 18 - PC ok                 (07:30 ET: accounts, overnight, today's hours + news, edge, needs you)
   PC stopped reporting                      Your PC stopped reporting at 09:14 ET. Check it: STOP BOT, START BOT.
-Tests: python -X utf8 -m tests.test_notify
+Tests: python -X utf8 -m tests.test_notify, tests.test_trade_alerts (every account route: one entry + one exit, name, $)
 """
 from __future__ import annotations
 
@@ -37,6 +38,7 @@ import datetime as dt
 import json
 import os
 import re
+import threading
 import time
 from zoneinfo import ZoneInfo
 
@@ -47,14 +49,30 @@ TYPES = ("trade_opened", "trade_closed", "eval_milestones", "account_status", "r
          "problems", "other")
 # owner 2026-11-18: "important only" = trade results, PASSED / FAILED / LOCKED, payout ready, PC silent, the daily summary
 # (+ the 07:30 ET morning brief, tools/morning_brief.py, 2026-11-18).
-# Everything else is OFF by default (one line in notify_settings.json turns a type back on).
+# Everything else is OFF by default (Claude turns a type back on in notify_settings.json in the repo; a hand edit on the PC stops
+# its auto-update, engine/autoupdate).
 # owner 2026-11-18 evening: "I want notifications when we get in a trade in any account" -> trade_opened ON, sent the moment the
 # bot routes the entry (instant_entry below, from engine/push.pc_notify), not at the next 15-minute report.
 IMPORTANT = ("trade_opened", "trade_closed", "account_status", "daily_summary", "morning_brief", "pc_silent", "problems")   # problems = emergencies (bot down, NinjaTrader closed)
+# A trade's entry and result in quiet hours (23:00-07:00 ET) come WITHOUT sound but still show (as before 2026-11-20). Putting
+# TRADE_RING in ring_in_quiet_hours (notify_settings.json) makes them ring at night: the owner's yes / no, asked on STATE.md
+# 'Waiting on the owner' (lead 2026-11-20; ATLAS enters around 03:00-04:00 ET, LIT from 02:00 ET on several accounts).
+TRADE_RING = ("trade_opened", "trade_closed")
+# The kinds that go to BOTH phone routes, the Olympus app AND the private ntfy topic (2026-11-20, notify_settings.json trade_routes;
+# a push service's "accepted" only means Apple / Google took it, not that the iPhone showed it): a trade's entry and result, PASSED /
+# FAILED / LOCKED / payout ready / a quiet eval (account_status), room low (OFF by default), the 15-minute report's problems (bot
+# down, NinjaTrader closed, FEED STALE; the ones engine/fast_alarm already sent in the entry hours are dropped by problem_dup and
+# stay on ntfy only; "Back to normal" stays Olympus first, NOT_DUAL_KEYS), pc_silent (the report makes no such key: PC silent comes
+# from the cloud's tools/pc_silent_check.py, on ntfy). Every other kind: Olympus first, ntfy only when no phone took it.
+DUAL_KINDS = ("trade_opened", "trade_closed", "account_status", "room_low", "problems", "pc_silent")
+# trade_routes: "both" (default) = Olympus AND ntfy; "olympus" = Olympus first, ntfy only when no phone took it; "ntfy" = ntfy first,
+# Olympus only when ntfy did not take it. A single-route choice keeps the other as the fallback, so an alert never reaches nobody.
+ROUTES = ("both", "olympus", "ntfy")
 DEFAULTS = {
     "alerts": {k: k in IMPORTANT for k in TYPES},
     "quiet_hours": {"from": "23:00", "to": "07:00"},
     "ring_in_quiet_hours": ["pc_silent", "account_status", "room_low", "problems"],
+    "trade_routes": "both",
     "milestones_pct": [25, 50, 75, 100],
     "room_low_used_pct": [50, 75],
     "daily_summary_at": "16:15",
@@ -141,6 +159,8 @@ def merge(raw) -> dict:
         out["quiet_hours"]["off"] = True
     if isinstance(raw.get("ring_in_quiet_hours"), list):
         out["ring_in_quiet_hours"] = [str(x) for x in raw["ring_in_quiet_hours"] if str(x) in TYPES]
+    if str(raw.get("trade_routes") or "").strip().lower() in ROUTES:
+        out["trade_routes"] = str(raw["trade_routes"]).strip().lower()
     for k in ("milestones_pct", "room_low_used_pct"):
         if isinstance(raw.get(k), list):
             vals = sorted({int(x) for x in raw[k] if isinstance(x, (int, float)) and 0 < x <= 100})
@@ -175,6 +195,27 @@ def rings(kind: str, s: dict | None = None) -> bool:
     return kind in ((s or settings()).get("ring_in_quiet_hours") or ())
 
 
+def trade_routes(s: dict | None = None) -> str:
+    """notify_settings.json trade_routes: "both" (default) | "olympus" | "ntfy" (ROUTES). Never raises."""
+    try:
+        v = str((s or settings()).get("trade_routes") or "both").lower()
+        return v if v in ROUTES else "both"
+    except Exception:
+        return "both"
+
+
+# "Back to normal" (back:<code>) and "PC back" (pc_back:) are problems / pc_silent by kind but stay Olympus first, as before: the
+# problem itself already goes to both apps, and a second copy of the all-clear would add one more sound at night (skeptic
+# 2026-11-20: a FEED STALE flap at 00:15 ET would be 4 sounds; it is 3, it was 2 before both routes).
+NOT_DUAL_KEYS = ("back:", "pc_back:")
+
+
+def dual(kind: str, key=None) -> bool:
+    """An alert that goes to both phone routes when trade_routes is "both": its kind is in DUAL_KINDS and its key is not an all-clear
+    (NOT_DUAL_KEYS)."""
+    return kind in DUAL_KINDS and not str(key or "").startswith(NOT_DUAL_KEYS)
+
+
 def kind_of(key: str) -> str:
     """The settings type of a PC report push, from its key."""
     k = str(key or "")
@@ -194,11 +235,59 @@ def kind_of(key: str) -> str:
         return "morning_brief"
     if k.startswith("breaker:"):                    # engine/circuit_breaker: live vs twin SIZE DOWN / PAUSE advice for an account
         return "account_status"
+    if k.startswith("guard:quiet:"):                # tools/pc_guard: an account 5+ days without a trade (MFFU can close it after 7;
+        return "account_status"                     # high from day 6, never in quiet hours). Was "other" (OFF): it reached no phone
     if k.startswith(("cond:", "back:", "fill:", "watch:", "risk:")):    # risk:throttle: engine/msg_throttle runaway orders
         return "problems"
     if k.startswith(("pc_silent:", "pc_back:")):
         return "pc_silent"
     return "other"
+
+
+# the 15-minute report's account words ("open:<acct>:<t>", tools/pc_report._trade_events) -> the account part of the instant alerts'
+# keys ("fill:<t>" = LIT's primary 50K and the 50K combo on it, ":acctb" = ATLAS's account B, ":acctc" = BLITZ's account C,
+# ":<id>" = an extra account / the Rapid's LIT lane, ":acctr" = the Rapid's ATLAS lane)
+REPORT_ACCT = {"lit": "", "atlas": "acctb", "blitz": "acctc"}
+# The report's "lit" row stands for EVERY LIT account: engine/live_board.trade_log files all the PC's LIT trades (the 50K, the 25K #2,
+# the Rapid's LIT lane) under "lit", one row per bar, titled as the 50K with the 50K's day $ and room. So for that row any LIT-family
+# instant alert counts (every key whose account part is not one of these); ATLAS (acctb) and BLITZ (acctc) keep the exact match
+# (skeptic 2026-11-20: with an exact "" match, the 25K #2's own entry / result came back 15 minutes later as a false "Zlarior 50K
+# opened / closed" on both apps). report_copy decides what the row still owes: only the 50K's own app-only alert earns an ntfy copy.
+NOT_LIT = ("acctb", "acctc", "acctr")
+
+
+def acct_match(key, acct) -> bool:
+    """Whether an instant alert's key counts for a report push's account (report_acct): None = any account (the old rule), "" (the
+    report's "lit" row) = any LIT-family key (not NOT_LIT), else the exact account part ("acctb" = ATLAS only)."""
+    if acct is None:
+        return True
+    ka = key_acct(key)
+    if str(acct) == "":
+        return ka not in NOT_LIT
+    return ka == str(acct)
+
+
+def key_acct(key) -> str:
+    """The account part of an instant trade alert's key: "fill:1795164300:acctb" -> "acctb", "out:1795164300:b25k_2" -> "b25k_2",
+    "fill:1795164300" -> "" (LIT's primary account)."""
+    parts = str(key or "").split(":", 2)
+    return parts[2] if len(parts) == 3 and parts[0] in ("fill", "out") else ""
+
+
+def report_acct(m: dict):
+    """The instant key's account part a 15-minute report trade push stands for (REPORT_ACCT; an extra account's id stays itself).
+    None when the push names no account (then any account matches, the old rule)."""
+    m = _d(m)
+    a = m.get("acct")
+    if a is None:
+        k = str(m.get("key") or "")
+        parts = k.split(":")
+        if k.startswith(("open:", "close:")) and len(parts) >= 3:
+            a = parts[1]
+    if a is None or str(a) == "":
+        return None
+    a = str(a)
+    return REPORT_ACCT.get(a, a)
 
 
 def entry_t_of(m: dict):
@@ -223,10 +312,12 @@ def apply(msgs, now, s: dict | None = None) -> list:
         kind = m.get("kind") or kind_of(m.get("key"))
         if not on(kind, s):
             continue
-        if kind == "trade_opened" and instant_sent(entry_t_of(m)):
-            continue                                # the phone already got this entry the moment it was routed
-        if kind == "trade_closed" and instant_sent(entry_t_of(m), what="exits"):
-            continue                                # the phone app already got this exit the moment the bot saw it
+        # per account (2026-11-20): ATLAS's instant alert never stands for LIT's report copy on the same bar, nor LIT's for ATLAS's;
+        # the report's one "lit" row stands for every LIT account (acct_match, report_copy)
+        if kind in ("trade_opened", "trade_closed") and report_copy(m, kind=kind) == "none":
+            continue                                # ntfy already got it at once, or the row could only name the wrong account
+        if kind == "problems" and problem_dup(m, now):
+            continue                                # the PC's fast alarm already sent it (engine/fast_alarm.py, instant_problem)
         if quiet(now, s) and not rings(kind, s) and not m.get("night"):
             if kind in ("trade_opened", "trade_closed") or m.get("priority") in (None, "", "default"):
                 m = {**m, "priority": "low"}
@@ -423,7 +514,13 @@ def silent_step(prev: dict | None, seen_t, now, s: dict | None = None, fetched: 
 # Zlarior on each eval, ATLAS on the funded 25K, the extra accounts) already calls engine/push.pc_notify with a "fill"
 # payload; pc_notify hands real-account entries to instant_entry in a daemon thread: one ntfy push to the owner's PRIVATE
 # alert topic (the same OLYMPUS_HOME/ntfy.json the 15-minute report uses), at once. Never raises, never blocks routing.
+# 2026-11-20 (owner: "notifications for trade entries I never got one from today. And results"): ATLAS's 03:45 ET entry and its
+# 07:10 ET +$514 close reached no phone. Most likely (unconfirmed: the PC's push logs were not read) they went only to the one
+# Olympus phone the PC's public posts listed all night: its push service answering "accepted" made ntfy AND the 15-minute report
+# skip their copies. Since then a trade's entry and exit go to BOTH routes (engine/push._pc_send, notify_settings.json trade_routes);
+# logs/notify/trade_alerts.jsonl keeps what each route answered.
 INSTANT_PATH = os.path.join(ROOT, "logs", "notify", "instant_sent.json")
+TRADE_LOG_NAME = "trade_alerts.jsonl"           # next to INSTANT_PATH (engine/push._trade_log)
 INSTANT_KEEP_S = 3 * 86400
 INSTANT_MATCH_S = 90                # the report's entry time vs the routed one (fill time vs order time)
 PT_USD = {"MNQ": 2.0, "MES": 5.0, "NQ": 20.0, "ES": 50.0}
@@ -463,26 +560,69 @@ def _instant_state(path=None) -> dict:
         return {}
 
 
-def instant_sent(entry_t, path=None, now=None, what: str = "entries") -> bool:
-    """True when an instant push went out for a trade entered within INSTANT_MATCH_S of entry_t (the report skips its own copy).
-    what: "entries" (ntfy or the phone app) or "exits" (the phone app, engine/push.pc_notify)."""
+def instant_keys(entry_t, path=None, what: str = "entries", acct=None) -> list:
+    """The keys of the instant alerts ("fill:<t>[:<acct>]" / "out:<t>[:<acct>]") recorded under `what` for a trade entered within
+    INSTANT_MATCH_S of entry_t that count for acct (acct_match). what: "entries" / "exits" = the private ntfy topic took it;
+    "app_entries" / "app_exits" = only the phone app took it. [] when none."""
     t = _f(entry_t)
     if t is None:
-        return False
-    for v in _d(_instant_state(path).get(what)).values():
-        if _f(v) is not None and abs(_f(v) - t) <= INSTANT_MATCH_S:
-            return True
-    return False
+        return []
+    return [k for k, v in _d(_instant_state(path).get(what)).items()
+            if acct_match(k, acct) and _f(v) is not None and abs(_f(v) - t) <= INSTANT_MATCH_S]
+
+
+def instant_sent(entry_t, path=None, now=None, what: str = "entries", acct=None) -> bool:
+    """True when an instant push went out for a trade entered within INSTANT_MATCH_S of entry_t (instant_keys).
+    what: "entries" / "exits" = the private ntfy topic took it; "app_entries" / "app_exits" = only the phone app took it. acct:
+    report_acct of a report push (acct_match: "" = the report's "lit" row = any LIT account's alert, "acctb" = ATLAS's only, ...).
+    None = any account. What the report then still sends: report_copy."""
+    return bool(instant_keys(entry_t, path=path, what=what, acct=acct))
+
+
+def report_copy(m: dict, path=None, kind=None) -> str:
+    """What the 15-minute report still owes for one trade push (its entry or its result), from the instant alerts already out:
+      "none"  skip it: ntfy took it at once. On the report's one "lit" row also when only an EXTRA LIT account's alert matched (the
+              25K #2, the Rapid's LIT lane): that row is titled the 50K, with the 50K's day $ and room, so its copy would be a false
+              "Zlarior 50K" alert (skeptic 2026-11-20). The extra account's own alerts already went out (its ntfy one is retried once
+              by engine/push._pc_send).
+      "ntfy"  the phone app took it at once and ntfy did not: only the ntfy copy (never the app again). On the "lit" row only when
+              the 50K's own key ("fill:<t>" / "out:<t>") is the app-only one.
+      "both"  no instant alert had it: the report sends it like any alert.
+    Not a trade push: "both". Never raises."""
+    try:
+        m = _d(m)
+        kind = kind or m.get("kind") or kind_of(m.get("key"))
+        if kind not in ("trade_opened", "trade_closed"):
+            return "both"
+        nt, app = ("entries", "app_entries") if kind == "trade_opened" else ("exits", "app_exits")
+        et_, acct = entry_t_of(m), report_acct(m)
+        sent = instant_keys(et_, path=path, what=nt, acct=acct)
+        had = instant_keys(et_, path=path, what=app, acct=acct)
+        if acct == "":                              # the report's one "lit" row: only the 50K's own keys are its own
+            if any(key_acct(k) == "" for k in sent):
+                return "none"
+            if any(key_acct(k) == "" for k in had):
+                return "ntfy"
+            return "none" if (sent or had) else "both"
+        if sent:
+            return "none"
+        return "ntfy" if had else "both"
+    except Exception:
+        return "both"
 
 
 def _save_instant(st: dict, path, t_now: float) -> None:
     keys = _d(st.get("keys"))
     cut = t_now - INSTANT_KEEP_S
     out = {"keys": {k: v for k, v in keys.items() if (_f(v) or 0) >= cut}}
-    for what in ("entries", "exits"):
+    for what in ("entries", "exits", "app_entries", "app_exits", "problems"):
         out[what] = {k: v for k, v in _d(st.get(what)).items() if (_f(keys.get(k)) or t_now) >= cut}
+    for k in ("ntfy_days", "closes"):                # the day's ntfy count (the budget) and the recent closes (exit_context)
+        if st.get(k):
+            out[k] = st[k]
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    tmp = path + ".tmp"
+    import threading as _th
+    tmp = f"{path}.{os.getpid()}.{_th.get_ident()}.tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(out, fh)
     os.replace(tmp, path)
@@ -494,9 +634,45 @@ def _trade_entry_t(p: dict):
     return _f(m.group(1)) if m else (_f(_d(p).get("t")) if _d(p).get("kind") == "fill" else None)
 
 
-def instant_record(p: dict, what: str = "entry", now=None, path=None) -> bool:
-    """The phone app got this entry / exit at once (engine/push.pc_notify): recorded like an instant ntfy entry, so instant_entry
-    and the 15-minute report never send the same alert to the phone again. Never raises."""
+# redteam 2026-11-20: the push threads, the fill audit and the watchdog's fast alarm all read-modify-write instant_sent.json in
+# this process: one lock around each read-modify-write (never around a network post), so one thread never drops another's record
+_INSTANT_LOCK = threading.RLock()
+
+
+def _count_ntfy(st: dict, t_now: float) -> None:
+    """One more post to ntfy this UTC day (ntfy_days: the budget tools/pc_report keeps room for; 3 days kept)."""
+    nd = {k: v for k, v in _d(st.get("ntfy_days")).items() if k >= _utc_day(t_now - 3 * 86400)}
+    nd[_utc_day(t_now)] = int(nd.get(_utc_day(t_now)) or 0) + 1
+    st["ntfy_days"] = nd
+
+
+def count_ntfy(now=None, path=None) -> None:
+    """One more ntfy post this UTC day from outside the trade path (engine/alert_check's test alert). Never raises."""
+    try:
+        with _INSTANT_LOCK:
+            path = path or INSTANT_PATH
+            st = _instant_state(path)
+            t_now = time.time() if now is None else float(now)
+            _count_ntfy(st, t_now)
+            _save_instant(st, path, t_now)
+    except Exception:
+        pass
+
+
+def instant_record(p: dict, what: str = "entry", now=None, path=None, app_only: bool = False) -> bool:
+    """The phone app got this entry / exit at once (engine/push.pc_notify): recorded so the 15-minute report does not send it to the
+    phone app again. app_only=True (engine/push._pc_send since 2026-11-20: ntfy did not take it, refused or no topic in the bot's
+    process): "app_entries" / "app_exits", the report still sends its ntfy copy when its own config has a topic (2026-11-20: a
+    push service's "accepted" is not proof the phone showed it). app_only=False: "entries" / "exits", the report skips it entirely.
+    Never raises."""
+    try:
+        with _INSTANT_LOCK:
+            return _instant_record(p, what, now, path, app_only)
+    except Exception:
+        return False
+
+
+def _instant_record(p: dict, what: str, now, path, app_only: bool = False) -> bool:
     try:
         path = path or INSTANT_PATH
         st = _instant_state(path)
@@ -505,7 +681,10 @@ def instant_record(p: dict, what: str = "entry", now=None, path=None) -> bool:
         key = str(_d(p).get("key") or f"t:{t_now}")
         st.setdefault("keys", {})[key] = t_now
         if et_ is not None:
-            st.setdefault("entries" if what == "entry" else "exits", {})[key] = et_
+            bucket = "entries" if what == "entry" else "exits"
+            st.setdefault(f"app_{bucket}" if app_only else bucket, {})[key] = et_
+        if what != "entry":
+            _note_close(st, p, t_now)
         _save_instant(st, path, t_now)
         return True
     except Exception:
@@ -531,64 +710,202 @@ def _px(x) -> str:
     return "" if v is None else (f"{v:,.2f}".rstrip("0").rstrip(".") if v % 1 else f"{v:,.0f}")
 
 
-def display_name(p: dict) -> str:
-    """The owner's name of the account a trade notice is about ("Zlarior 50K", "ATLAS 25K funded"; ids masked)."""
+def display_name(p: dict, lane: bool = True) -> str:
+    """The owner's name of the account a trade notice is about ("Zlarior 50K", "ATLAS 25K funded", "Rapid EOD 25K"; ids masked).
+    Order: the combo's bot label ("ATLAS on Zlarior 50K", engine/combo50k), the PC's names.json (engine/mffu_view.push_name: the
+    owner's own names by the last 4 digits), the route's own name ("nm"), else bot + the masked account."""
     p = _d(p)
+    if p.get("who"):
+        return mask_ids(str(p["who"])[:40])
     acct = mask_ids(p.get("account") or "account")
     body0 = str(p.get("body") or "")
-    bot = "ATLAS" if ("ATLAS" in body0 or ":acctb" in str(p.get("key") or "") or "ATLAS" in acct.upper()) else "Zlarior"
+    key = str(p.get("key") or "")
+    bot = "ATLAS" if ("ATLAS" in body0 or key.endswith((":acctb", ":acctr")) or "ATLAS" in acct.upper()) else "Zlarior"
     name = acct if (bot.lower() in acct.lower()) else f"{bot} {acct}"
+    if p.get("nm"):
+        name = str(p["nm"])[:40]
     try:                                    # the owner's own names ("Zlarior 50K", "ATLAS 25K funded"), from the PC's names.json
         from . import mffu_view
         name = mffu_view.push_name(p.get("account")) or name
     except Exception:
         pass
+    if lane and key.endswith(":acctr") and "atlas" not in name.lower():
+        name = f"{name} (ATLAS)"            # ATLAS's lane on the Rapid EOD (engine/rapid.RapidAtlas): the same account as LIT's lane
     return mask_ids(name)
 
 
-EXIT_WORDS = {"TARGET": "Target hit", "STOP": "Stopped out", "BE": "Breakeven stop", "TIME": "Closed on time", "EOD": "Closed at the day's end",
-              "TIME SAFETY": "Closed before the close", "KILL": "Closed by the kill switch", "FLATTEN": "Flattened", "LIT PRIORITY": "Closed for a LIT entry"}
+# the exit's reason in a few words (owner 2026-11-20: "closed LONG +$312 (target)")
+EXIT_WORDS = {"TARGET": "target", "STOP": "stop", "BE": "breakeven", "TIME": "time exit", "EOD": "day's end", "TIME SAFETY": "before the close",
+              "KILL": "kill switch", "KILL SWITCH": "kill switch", "FLATTEN": "flattened", "LIT PRIORITY": "for a LIT entry",
+              "HEDGE": "no-hedge rule", "NO TRADE": "not placed", "CUT": "cut early", "T15": "15-min rule", "TIME STOP": "time stop",
+              "BANK": "banked", "BANK (BEST-DAY ROOM)": "banked (best-day room)", "NEWS": "news",
+              "PRICE LIMIT": "MFFU price-limit rule",
+              "KEEP-ALIVE": "keep-alive"}     # engine/keepalive.py: MFFU's 7-day keep-alive trade
+LIVE_SNAP = os.path.join(ROOT, "data", "pc_report", "live.json")   # tools/pc_report: the PC's last full live view (every 15 min)
 
 
-def exit_message(p: dict, now=None, s: dict | None = None) -> dict:
-    """{title, body, priority, tags} for one exit the bot saw: 'Zlarior 50K: LONG closed +$605' / 'Target hit · +2.0R · 6 MNQ ·
-    10:58 AM ET.' (the phone app's exit notice; it replaces the entry's)."""
+def _px2(x) -> str:
+    v = _f(x)
+    return "" if v is None else f"{v:,.2f}"
+
+
+def _contract(p: dict) -> str:
+    c = str(_d(p).get("contract") or "").upper()
+    if c in PT_USD:
+        return c
+    m = re.search(r"\b(MNQ|MES|NQ|ES)\b", str(_d(p).get("body") or ""))
+    return m.group(1) if m else "MNQ"
+
+
+def _norm(s) -> str:
+    return re.sub(r"[^a-z0-9#]+", " ", str(s or "").lower()).strip()
+
+
+def _snap_cards(L: dict) -> list:
+    """[(owner name, last4, card)] of the live view's real accounts: engine/accounts sections + the board's ATLAS card."""
+    out = []
+    try:
+        from . import mffu_view as MV
+    except Exception:
+        return out
+    for a in L.get("accounts") or []:
+        if not isinstance(a, dict) or a.get("error") or a.get("source") in ("cloud", "pc_blitz") or a.get("id") == "acct_c":
+            continue
+        ev = _d(a.get("eval"))
+        card = {"balance": _f(ev.get("balance")), "today": _f(ev.get("today")) if ev else _f(_d(a.get("pnl")).get("today")),
+                "to_pass": _f(ev.get("to_target")) if a.get("kind") != "funded" else None, "kind": a.get("kind")}
+        if card["today"] is None:
+            card["today"] = _f(_d(_d(a.get("pnl")).get("today")).get("usd")) if isinstance(_d(a.get("pnl")).get("today"), dict) else None
+        nm = MV.owner_name(a.get("id"), a.get("name"), a.get("plan"), a.get("kind"))
+        out.append((nm, MV.last4(a.get("broker_account")), card))
+    c = _d(_d(L.get("board")).get("atlas"))
+    if c and not c.get("error") and _f(c.get("balance")) is not None:
+        funded = str(c.get("status") or "").lower() == "funded" or str(c.get("stage") or "").lower() == "funded"
+        f = _d(c.get("funded"))
+        out.append((MV.owner_name("atlas", "ATLAS", c.get("plan") or "Builder 25K", "funded" if funded else "eval"), MV.last4(c.get("broker")),
+                    {"balance": _f(c.get("balance")), "today": next((_f(c.get(k)) for k in ("today_pnl", "today", "day_pnl") if _f(c.get(k)) is not None), None),
+                     "to_pass": None if funded else _f(c.get("to_target")), "kind": "funded" if funded else "eval",
+                     "payout": _f(f.get("max_request")) if f else None}))
+    return out
+
+
+def exit_context(p: dict, path: str | None = None, closes=None) -> dict:
+    """{"day", "balance", "to_pass" / "payout"} of the account after this exit, for 'today +$312, balance $49,505, $3,495 to pass'.
+    The route's own numbers win (payload "day_usd", "balance", "to_pass", "to_payout"); else the PC's last live view
+    (data/pc_report/live.json, every 15 min) + the closes the phone got since that view (this one included: the instant state's
+    "closes"). {} when nothing is known (the alert then says only the trade). Never raises."""
+    p = _d(p)
+    out = {}
+    try:
+        for a, b in (("day_usd", "day"), ("balance", "balance"), ("to_pass", "to_pass"), ("to_payout", "to_payout")):
+            if _f(p.get(a)) is not None:
+                out[b] = _f(p[a])
+        if "balance" in out and ("day" in out or "to_pass" in out):
+            return out
+        try:
+            with open(path or LIVE_SNAP, encoding="utf-8") as fh:
+                L = json.load(fh)
+        except Exception:
+            return out
+        L = _d(L)
+        name = _norm(display_name(dict(p, who=None), lane=False))
+        l4 = None
+        try:
+            from . import mffu_view as MV
+            l4 = MV.last4(p.get("account"))
+        except Exception:
+            pass
+        hit = None
+        for nm, cl4, card in _snap_cards(L):
+            if (l4 and cl4 and l4 == cl4) or (_norm(nm) and _norm(nm) == name):
+                hit = card
+                break
+        if hit is None:
+            return out
+        snap_t = _f(L.get("t")) or 0.0
+        exit_t = _f(p.get("t")) or time.time()
+        try:
+            from .live import trading_day
+        except Exception:
+            trading_day = lambda t: _et(t).date().isoformat()
+        same_day = trading_day(snap_t) == trading_day(exit_t) if snap_t else False
+        usd = _f(p.get("usd")) or 0.0
+        later = [c for c in (closes if closes is not None else _d(_instant_state()).get("closes") or [])
+                 if isinstance(c, dict) and _norm(c.get("nm")) == name and (_f(c.get("t")) or 0) > snap_t and c.get("key") != p.get("key")
+                 and trading_day(_f(c.get("t"))) == trading_day(exit_t)]
+        add = (usd if exit_t > snap_t else 0.0) + sum(_f(c.get("usd")) or 0.0 for c in later)
+        if hit.get("balance") is not None and "balance" not in out:
+            out["balance"] = hit["balance"] + add
+        if "day" not in out:
+            out["day"] = ((hit.get("today") or 0.0) if same_day else 0.0) + add
+        if hit.get("to_pass") is not None and "to_pass" not in out:
+            out["to_pass"] = max(0.0, hit["to_pass"] - add)
+        if hit.get("payout") and "to_payout" not in out:
+            out["payout_ready"] = hit["payout"]
+    except Exception:
+        pass
+    return out
+
+
+def exit_message(p: dict, now=None, s: dict | None = None, ctx: dict | None = None) -> dict:
+    """{title, body, priority, tags} for one exit (owner 2026-11-20): 'Zlarior 50K: closed LONG +$312 (target)' /
+    'today +$312, balance $49,505, $3,495 to pass · +1.6R · 10:58 AM ET.' (the phone app's notice replaces the entry's)."""
     p = _d(p)
     side = str(p.get("side") or "").upper()
     usd = _f(p.get("usd"))
-    title = f"{display_name(p)}: {(side + ' ') if side in ('LONG', 'SHORT') else ''}closed {signed(usd) if usd is not None else ''}".strip()
-    why = EXIT_WORDS.get(str(p.get("exit") or "").upper(), str(p.get("exit") or "").capitalize())
+    reason = str(p.get("exit") or "").upper()
+    why = EXIT_WORDS.get(reason, reason.lower())
+    title = (f"{display_name(p)}: closed {(side + ' ') if side in ('LONG', 'SHORT') else ''}{signed(usd) if usd is not None else ''}"
+             + (f" ({why})" if why else "")).replace("  ", " ")
+    c = exit_context(p) if ctx is None else ctx
+    acct = []
+    if _f(c.get("day")) is not None:
+        acct.append(f"today {signed(c['day'])}")
+    if _f(c.get("balance")) is not None:
+        acct.append(f"balance {money(c['balance'])}")
+    if _f(c.get("to_pass")) is not None:
+        acct.append("target reached" if c["to_pass"] <= 0.5 else f"{money(c['to_pass'])} to pass")
+    elif _f(c.get("to_payout")) is not None:
+        acct.append("payout ready" if c["to_payout"] <= 0.5 else f"{money(c['to_payout'])} to payout")
+    elif _f(c.get("payout_ready")):
+        acct.append(f"payout ready {money(c['payout_ready'])}")
     r = _f(p.get("R") if p.get("R") is not None else p.get("r"))
-    bits = [why, f"{r:+.1f}R" if r is not None else "", _et(p["t"]).strftime("%I:%M %p ET").lstrip("0") if _f(p.get("t")) else ""]
+    q = _f(p.get("qty"))
+    tail = [f"{r:+.1f}R" if r is not None else "", f"{int(q)} {_contract(p)}" if q else "",
+            _et(p["t"]).strftime("%I:%M %p ET").lstrip("0") if _f(p.get("t")) else ""]
+    body = ", ".join(acct)
+    body = " · ".join(x for x in [body, *tail] if x) + "."
     s = s or settings()
-    night = quiet(now if now is not None else time.time(), s)
-    return {"title": mask_ids(title), "body": mask_ids(" · ".join(b for b in bits if b) + "."), "priority": "low" if night else "default",
-            "tags": "checkered_flag"}
+    night = quiet(now if now is not None else time.time(), s) and not rings("trade_closed", s)
+    return {"title": mask_ids(title), "body": mask_ids(body), "priority": "low" if night else "default",
+            "tags": "white_check_mark" if (usd or 0) > 0 else ("heavy_minus_sign" if usd is not None and abs(usd) < 0.5 else "x")}
 
 
 def entry_message(p: dict, now=None, s: dict | None = None) -> dict:
-    """{title, body, priority, tags} for one routed entry: 'Zlarior 50K: LONG opened | risk $368 | target +$1,432'."""
+    """{title, body, priority, tags} for one routed / filled entry (owner 2026-11-20):
+    'Zlarior 50K: LONG 4 MNQ @ 21,034.25' / 'stop 21,012.00 (-$178), target 21,090.50 (+$450) · 10:31 AM ET.'"""
     p = _d(p)
     side = str(p.get("side") or "").upper() or ("LONG" if "LONG" in str(p.get("title") or "") else "SHORT")
-    body0 = str(p.get("body") or "")
     name = display_name(p)
-    m = re.search(r"\b(MNQ|MES|NQ|ES)\b", body0)
-    contract = m.group(1) if m else "MNQ"
+    contract = _contract(p)
     q, e, st, tg = _f(p.get("qty")), _f(p.get("entry")), _f(p.get("stop")), _f(p.get("target"))
     usd_pt = PT_USD.get(contract, 2.0)
     risk = abs(e - st) * q * usd_pt if None not in (q, e, st) else None
     gain = abs(tg - e) * q * usd_pt if None not in (q, e, tg) else None
-    title = f"{name}: {side} opened" + (f" | risk ${risk:,.0f}" if risk else "") + (f" | target +${gain:,.0f}" if gain else "")
-    parts = [f"{int(q) if q is not None else ''} {contract}".strip() + (f" at {_px(e)}" if e is not None else "") + "."]
-    if st is not None or tg is not None:
-        parts.append(" ".join(x for x in (f"Stop {_px(st)}," if st is not None else "", f"target {_px(tg)}." if tg is not None else "") if x).rstrip(","))
+    title = f"{name}: {side}" + (f" {int(q)}" if q is not None else "") + f" {contract}" + (f" @ {_px2(e)}" if e is not None else "")
+    parts = []
+    if st is not None:
+        parts.append(f"stop {_px2(st)}" + (f" (-${risk:,.0f})" if risk is not None else ""))
+    if tg is not None:
+        parts.append(f"target {_px2(tg)}" + (f" (+${gain:,.0f})" if gain is not None else ""))
+    body = ", ".join(parts)
     when = _f(p.get("t"))
     if when:
-        parts.append(_et(when).strftime("%I:%M %p ET").lstrip("0") + ".")
+        body = " · ".join(x for x in (body, _et(when).strftime("%I:%M %p ET").lstrip("0")) if x)
     s = s or settings()
-    night = quiet(now if now is not None else time.time(), s)
-    return {"title": mask_ids(title), "body": mask_ids(" ".join(x for x in parts if x)), "priority": "low" if night else "high",
-            "tags": "chart_with_upwards_trend" if side == "LONG" else "chart_with_downwards_trend"}
+    night = quiet(now if now is not None else time.time(), s) and not rings("trade_opened", s)
+    return {"title": mask_ids(title), "body": mask_ids((body or "Entered") + "."), "priority": "low" if night else "high",
+            "tags": "chart_with_upwards_trend" if side == "LONG" else "chart_with_downwards_trend", "risk": risk, "gain": gain}
 
 
 def _post(base, topic, msg, timeout=8) -> bool:
@@ -600,33 +917,196 @@ def _post(base, topic, msg, timeout=8) -> bool:
         return 200 <= r.status < 300
 
 
-def instant_entry(p: dict, now=None, path=None, cfg=None, poster=None) -> str:
-    """Send one entry push now (daemon thread from engine/push.pc_notify). Returns why (for tests / logs). Never raises."""
+# ------------------------------------------------------------------------------------------------ instant problems
+# (night-nqlive 2026-11-20) The bot's own fast alarm (engine/fast_alarm.py: armed but not polling / feed stale in the entry hours,
+# within 2 minutes) and a MISSED TRADE (engine/fill_audit: the bot's model took an entry the bot did not route, with its reason)
+# go to the private ntfy alert topic at once, type "problems" (IMPORTANT, rings in quiet hours). The 15-minute report then skips
+# its own copy of the same problem (apply -> problem_dup): one alert, one phone.
+PROBLEM_DUP_S = 20 * 60              # a report "cond:<code>" / "back:<code>" within this of the fast alarm's own = the same problem
+
+
+def problem_message(p: dict, now=None, s: dict | None = None) -> dict:
+    """A problem push's words. p["soft"] (engine/fill_audit.rule_hold: an entry the bot's own rule held back on purpose) = no
+    sound in quiet hours and normal priority by day; every other problem is high and rings in quiet hours ("problems" in
+    ring_in_quiet_hours, the default)."""
+    s = s or settings()
+    soft = bool(p.get("soft"))
+    night = quiet(now if now is not None else time.time(), s) and (soft or not rings("problems", s))
+    return {"title": mask_ids(str(p.get("title") or "Problem"))[:120], "body": mask_ids(str(p.get("body") or ""))[:600],
+            "priority": "low" if night else ("default" if soft else "high"), "tags": str(p.get("tags") or "rotating_light")}
+
+
+def instant_problem(p: dict, now=None, path=None, cfg=None, poster=None) -> str:
+    """Send one problem push now. p: {"key" (unique, sent once), "title", "body", "code" ("missed" | "slip" | "bot_down" |
+    "feed_stale"), "cond" (the report's condition code it stands for, optional), "back" (True for a "back to normal"),
+    "entry_t" (a trade's entry time, optional), "bot" ("lit" default | "atlas")}. Returns why (tests / logs). Never raises."""
     try:
-        if not _real_entry(p):
-            return "not a real-account entry"
         s = settings()
-        if not on("trade_opened", s):
-            return "trade_opened is off"
+        if not on("problems", s):
+            return "problems is off"
+        path = path or INSTANT_PATH
+        st = _instant_state(path)
+        key = str(p.get("key") or "")
+        if not key:
+            return "no key"
+        if key in _d(st.get("keys")):
+            return "already sent"
+        if poster is None and cfg is None and _bus_on():   # engine/alert_bus: Telegram / Discord first, ntfy + the app as fallbacks
+            from . import alert_bus
+            if p.get("dup_of"):                         # drill 2026-11-21: the same news as a trade alert the bus already carries
+                _record_problem(p, key, path, now, count=False)   # (the keep-alive's close): one alert on the phone, not two
+                return "sent"
+            r = alert_bus.send(alert_bus.from_problem(p, problem_message(p, now=now, s=s)),
+                               on_done=lambda res: res.get("ok") and _record_problem(p, key, path, now, count=False))
+            return "sent" if r in ("queued", "sent") else f"alert bus: {r}"
+        cfg = cfg if cfg is not None else alert_cfg()
+        if not cfg.get("topic"):
+            return "no private alert topic on this PC"
+        ok = (poster or _post)(cfg["ntfy"], cfg["topic"], problem_message(p, now=now, s=s))
+        if not ok:
+            return "ntfy did not take it (the 15-minute report sends it instead)"
+        _record_problem(p, key, path, now)
+        return "sent"
+    except Exception as e:
+        return f"failed: {e.__class__.__name__}"
+
+
+def _bus_on() -> bool:
+    """engine/alert_bus is set up (Telegram / Discord) and not switched off. Never raises."""
+    try:
+        from . import alert_bus
+        return alert_bus.active()
+    except Exception:
+        return False
+
+
+def _record_problem(p: dict, key: str, path, now, count: bool = True) -> None:
+    try:
+        t_now = time.time() if now is None else float(now)
+        with _INSTANT_LOCK:
+            st = _instant_state(path)                   # re-read: another thread may have written meanwhile
+            keys, probs = _d(st.get("keys")), _d(st.get("problems"))
+            keys[key] = t_now
+            probs[key] = {"t": t_now, "code": p.get("code"), "cond": p.get("cond"), "back": bool(p.get("back")),
+                          "entry_t": _f(p.get("entry_t")), "bot": str(p.get("bot") or "lit")}
+            st.update(keys=keys, problems=probs)
+            if count:
+                _count_ntfy(st, t_now)                  # redteam 2026-11-20: a problem push uses ntfy's daily room too
+            _save_instant(st, path, t_now)
+    except Exception:
+        pass
+
+
+def problem_dup(m: dict, now=None, path=None) -> bool:
+    """A 15-minute report push that repeats a problem the fast alarm already sent: "watch:<bot>:<entry_t>:missed|slip" (same
+    entry, same code), "cond:<code>:..." / "back:<code>:..." (same condition within PROBLEM_DUP_S)."""
+    try:
+        k = str(_d(m).get("key") or "")
+        P = _d(_instant_state(path).get("problems")).values()
+        t_now = time.time() if now is None else float(now)
+        parts = k.split(":")
+        if k.startswith("watch:") and len(parts) >= 4:
+            et_, code = _f(parts[2]), parts[3]
+            return et_ is not None and any(isinstance(v, dict) and v.get("code") == code and str(v.get("bot") or "lit") == parts[1]
+                                           and _f(v.get("entry_t")) is not None
+                                           and abs(_f(v.get("entry_t")) - et_) <= INSTANT_MATCH_S for v in P)
+        if k.startswith(("cond:", "back:")) and len(parts) >= 2:
+            back = k.startswith("back:")
+            return any(isinstance(v, dict) and v.get("cond") == parts[1] and bool(v.get("back")) == back
+                       and abs(t_now - (_f(v.get("t")) or 0)) <= PROBLEM_DUP_S for v in P)
+    except Exception:
+        return False
+    return False
+
+
+
+def _utc_day(t) -> str:
+    return dt.datetime.fromtimestamp(int(t), dt.timezone.utc).strftime("%Y-%m-%d")
+
+
+def count_ntfy_post(now=None, path=None) -> None:
+    """One ntfy post by engine/alert_bus (its ntfy fallback) counts in this PC's day like an instant alert. Never raises."""
+    try:
+        t_now = time.time() if now is None else float(now)
+        with _INSTANT_LOCK:
+            st = _instant_state(path or INSTANT_PATH)
+            _count_ntfy(st, t_now)
+            _save_instant(st, path or INSTANT_PATH, t_now)
+    except Exception:
+        pass
+
+
+def ntfy_today(now=None, path=None) -> int:
+    """How many instant trade alerts this PC posted to ntfy this UTC day (ntfy.sh's free cap is per IP and UTC day: the 15-minute
+    report's chart and extra status posts count these and stop early, so the status posts never crowd a trade alert out)."""
+    try:
+        return int(_d(_instant_state(path).get("ntfy_days")).get(_utc_day(time.time() if now is None else now)) or 0)
+    except Exception:
+        return 0
+
+
+def _instant_send(p: dict, what: str, now=None, path=None, cfg=None, poster=None) -> str:
+    """One trade alert (an entry or an exit) to the private ntfy topic, at once. One per key, ever (fill:<t>[:acct] / out:<t>[:acct]).
+    p["retry"] (engine/push._pc_send's one retry of an extra account's alert): a key recorded only as app-only (the phone app had it,
+    ntfy did not) may go once more; a key ntfy already took never does. Never raises."""
+    try:
+        if not real_trade(p) or p.get("kind") != ("fill" if what == "entry" else "outcome"):
+            return "not a real-account entry" if what == "entry" else "not a real-account exit"
+        s = settings()
+        kind = "trade_opened" if what == "entry" else "trade_closed"
+        if not on(kind, s):
+            return f"{kind} is off"
         cfg = cfg if cfg is not None else alert_cfg()
         if not cfg.get("topic"):
             return "no private alert topic on this PC"
         path = path or INSTANT_PATH
         st = _instant_state(path)
-        keys, ents = _d(st.get("keys")), _d(st.get("entries"))
+        keys = _d(st.get("keys"))
         key = str(p.get("key") or "")
-        if key and key in keys:
+        bucket = "entries" if what == "entry" else "exits"
+        if key and key in keys and not (p.get("retry") and key not in _d(st.get(bucket))):
             return "already sent"
-        msg = entry_message(p, now=now, s=s)
+        msg = entry_message(p, now=now, s=s) if what == "entry" else exit_message(p, now=now, s=s)
         ok = (poster or _post)(cfg["ntfy"], cfg["topic"], msg)
         if not ok:
             return "ntfy did not take it (the 15-minute report sends it instead)"
         t_now = time.time() if now is None else float(now)
-        keys[key or f"t:{t_now}"] = t_now
-        if _f(p.get("t")) is not None:
-            ents[key or f"t:{t_now}"] = _f(p.get("t"))
-        st.update(keys=keys, entries=ents)
-        _save_instant(st, path, t_now)
+        with _INSTANT_LOCK:
+            st = _instant_state(path)              # re-read: another thread may have written meanwhile
+            keys = _d(st.get("keys"))
+            keys[key or f"t:{t_now}"] = t_now
+            et_ = _trade_entry_t(p)
+            if et_ is not None:
+                st.setdefault("entries" if what == "entry" else "exits", {})[key or f"t:{t_now}"] = et_
+            st.update(keys=keys)
+            _count_ntfy(st, t_now)
+            if what == "exit":
+                _note_close(st, p, t_now)
+            _save_instant(st, path, t_now)
         return "sent"
     except Exception as e:
         return f"failed: {e.__class__.__name__}"
+
+
+def _note_close(st: dict, p: dict, t_now: float) -> None:
+    """Remember one close the phone got (name, exit time, $): the next exit's 'today' / balance add it until the next live view."""
+    try:
+        cl = [c for c in st.get("closes") or [] if isinstance(c, dict) and (_f(c.get("t")) or 0) >= t_now - 2 * 86400]
+        if not any(c.get("key") == p.get("key") for c in cl):
+            cl.append({"key": str(p.get("key") or ""), "nm": display_name(dict(p, who=None), lane=False), "t": _f(p.get("t")) or t_now,
+                       "usd": _f(p.get("usd")) or 0.0})
+        st["closes"] = cl[-40:]
+    except Exception:
+        pass
+
+
+def instant_entry(p: dict, now=None, path=None, cfg=None, poster=None) -> str:
+    """Send one entry push now (daemon thread from engine/push.pc_notify). Returns why (for tests / logs). Never raises."""
+    return _instant_send(p, "entry", now=now, path=path, cfg=cfg, poster=poster)
+
+
+def instant_exit(p: dict, now=None, path=None, cfg=None, poster=None) -> str:
+    """Send one exit push now (owner 2026-11-20: "exactly when a trade is taken and closed, results of it"): 'Zlarior 50K: closed
+    LONG +$312 (target)' / 'today +$312, balance $49,505, $3,495 to pass'. The 15-minute report then skips its own close of
+    that trade (apply: instant_sent(..., what="exits")). Never raises."""
+    return _instant_send(p, "exit", now=now, path=path, cfg=cfg, poster=poster)

@@ -1,0 +1,180 @@
+{
+ "_note": "tools/perf_sweep.py --check budgets on the phone profile (390 x 844, CPU x4, Fast 3G, cold). 'default' = the target on that line; an app's own numbers = today's value +15% where it is over the target (a regression guard, to be lowered as the ASKS land). offline: must open offline after one visit (red for every app but zenith / jarvis / kalshi until LEAD_WIRES 1 lands). Baseline 2026-11-20: research/handoff/2026-11-20/olympus2/perf/BASELINE.md",
+ "default": {
+  "fcp_ms": 2500,
+  "lcp_ms": 4000,
+  "kb": 500,
+  "js_kb": 1000,
+  "lt_max": 200,
+  "tbt": 300,
+  "cls": 0.1,
+  "heap_mb": 12,
+  "errors": 0,
+  "sideways": false,
+  "offline": true
+ },
+ "zenith": {
+  "kb": 940,
+  "js_kb": 2410,
+  "cls": 0.307
+ },
+ "fates": {
+  "fcp_ms": 3300,
+  "lcp_ms": 10060,
+  "kb": 510,
+  "js_kb": 1450,
+  "lt_max": 2110,
+  "tbt": 4850,
+  "heap_mb": 13.3
+ },
+ "cities": {
+  "js_kb": 1370,
+  "lt_max": 2530,
+  "tbt": 5480,
+  "heap_mb": 15.5
+ },
+ "journal": {
+  "lcp_ms": 4920
+ },
+ "ledger": {
+  "fcp_ms": 3120,
+  "lcp_ms": 6120
+ },
+ "inbox": {
+  "cls": 0.414
+ },
+ "settings": {
+  "fcp_ms": 3150
+ },
+ "planner": {
+  "lcp_ms": 6230
+ },
+ "demeter": {
+  "lcp_ms": 4820
+ },
+ "hera": {
+  "lcp_ms": 4670
+ },
+ "mercury": {
+  "lcp_ms": 4670,
+  "js_kb": 1290,
+  "lt_max": 320,
+  "tbt": 360
+ },
+ "chrysos": {
+  "lcp_ms": 4780
+ },
+ "oikos": {
+  "lcp_ms": 4770
+ },
+ "aegis": {
+  "lcp_ms": 5160
+ },
+ "kronos": {
+  "lcp_ms": 6730,
+  "kb": 640,
+  "js_kb": 1680,
+  "lt_max": 1490,
+  "tbt": 3880
+ },
+ "compass": {
+  "lcp_ms": 5430
+ },
+ "helios": {
+  "lcp_ms": 5590
+ },
+ "nq": {
+  "lcp_ms": 6150,
+  "js_kb": 1090,
+  "lt_max": 220,
+  "tbt": 600
+ },
+ "business": {
+  "fcp_ms": 3080
+ },
+ "trading": {
+  "fcp_ms": 2980,
+  "lcp_ms": 5240
+ },
+ "board": {
+  "cls": 0.184
+ },
+ "kalshi": {
+  "cls": 0.107
+ },
+ "tyche": {
+  "lcp_ms": 12930,
+  "js_kb": 1600,
+  "lt_max": 3850,
+  "tbt": 7920
+ },
+ "jarvis": {
+  "kb": 1480,
+  "js_kb": 3170,
+  "lt_max": 1100,
+  "tbt": 3200,
+  "heap_mb": 18.3
+ },
+ "static": {
+  "default": {
+   "block_kb": 250,
+   "eager_js_kb": 600,
+   "three": false
+  },
+  "zenith": {
+   "block_kb": 390,
+   "eager_js_kb": 1910
+  },
+  "fates": {
+   "eager_js_kb": 1230,
+   "three": true
+  },
+  "cities": {
+   "eager_js_kb": 1040,
+   "three": true
+  },
+  "ledger": {
+   "block_kb": 340
+  },
+  "inbox": {
+   "block_kb": 300
+  },
+  "settings": {
+   "block_kb": 330
+  },
+  "mercury": {
+   "eager_js_kb": 1120,
+   "three": true
+  },
+  "oikos": {
+   "eager_js_kb": 1160,
+   "three": true
+  },
+  "kronos": {
+   "eager_js_kb": 1500,
+   "three": true
+  },
+  "compass": {
+   "eager_js_kb": 1400,
+   "three": true
+  },
+  "nq": {
+   "block_kb": 300
+  },
+  "business": {
+   "block_kb": 310
+  },
+  "trading": {
+   "block_kb": 290
+  },
+  "tyche": {
+   "block_kb": 320,
+   "eager_js_kb": 1300,
+   "three": true
+  },
+  "jarvis": {
+   "block_kb": 470
+  }
+ },
+ "_note_static": "static: no browser, from the files (tools/perf_sweep.py --static --check). default = the target; an app's own line = today +10% (three: true = allowed for now, an ASK says to make it lazy)."
+}

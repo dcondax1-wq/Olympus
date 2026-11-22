@@ -43,7 +43,7 @@ function renderMonth() {
   const box = $('grid'); clear(box);
   for (const d of C.DOW) { const c = h('div', 'dh', d.slice(0, 3)); c.setAttribute('aria-hidden', 'true'); box.appendChild(c); }
   for (const c of g.cells) {
-    const e = h('div', 'cell' + (c.inMonth ? '' : ' out') + (c.usd == null ? '' : c.usd > 0 ? ' up' : c.usd < 0 ? ' dn' : ' fl') + (c.day === S.today ? ' now' : '')); e.setAttribute('role', 'gridcell');
+    const e = h('div', 'cell' + (c.inMonth ? '' : ' out') + (c.usd == null ? '' : c.usd > 0 ? ' up' : c.usd < 0 ? ' dn' : ' fl') + (c.day === S.today ? ' now' : '')); e.setAttribute('role', 'listitem');
     e.setAttribute('aria-label', c.inMonth ? (c.usd == null ? `${C.dayWord(c.day)}: no trade` : `${C.dayWord(c.day)}: ${c.word}, ${c.n} trade${c.n === 1 ? '' : 's'}`) : '');
     if (!c.inMonth) e.setAttribute('aria-hidden', 'true');
     e.appendChild(h('small', '', String(c.dom))); if (c.usd != null) e.appendChild(h('b', 'ag-num', C.usd0S(c.usd)));
@@ -101,7 +101,8 @@ async function startDial() {
   const flat = () => { S.flat = true; $('flat').removeAttribute('hidden'); canvas.hidden = true; renderFlat(); };
   if (q === 'off' || q === 'flat') { flat(); return; }
   try {
-    for (let k = 0; k < 25 && !window.KRONOS_DIAL && !window.KRONOS_DIAL_FAIL; k++) await new Promise((r) => setTimeout(r, 100));
+    // lazy3d.js imports the dial after the first paint (or not at all: LITE, a slow / save-data phone), then fires 'kronos-dial'; 12 s at most
+    if (!window.KRONOS_DIAL && !window.KRONOS_DIAL_FAIL) await new Promise((r) => { const t = setTimeout(r, 12000); window.addEventListener('kronos-dial', () => { clearTimeout(t); r(); }, { once: true }); });
     if (!window.KRONOS_DIAL) throw new Error('the 3D module did not load');
     S.dial = window.KRONOS_DIAL.createDial(canvas, { reduced: RM() }); if (O && O.mode) O.mode(S.dial.lite);
     $('flat').setAttribute('hidden', ''); pushDial();
@@ -120,11 +121,14 @@ function stepMonth(n) { const months = C.monthsWithData(S.v.dm, S.today ? C.mont
 
 async function boot() {
   const q = new URLSearchParams(location.search), forced = q.get('demo') === '1', at = q.get('at');
-  const [fx, real] = await Promise.all([getJSON('./fixture.json'), forced ? null : getJSON('../odeon/trades.json')]);
+  const [fx, real] = await Promise.all([getJSON('./fixture.json'), forced ? null : getJSON('../odeon/trades_lite.json').then((x) => x || getJSON('../odeon/trades.json'))]);   // the slim copy first (dogfood 2026-11-20)
   S.fixture = fx; const data = C.chooseData(real, fx); if (!data) throw new Error('no numbers');
   S.data = data;
   const now = at && Number.isFinite(Date.parse(at)) ? Date.parse(at) / 1000 : Date.now() / 1000;
   S.today = data.today || C.etDay(now); S.hour = data.demo ? 9 : (C.etHour(now) == null ? 12 : C.etHour(now));
+  // day-archive 2026-11-20: the site's trade list (odeon/trades.json) can stop days before today: say where it ends
+  const upto = real && typeof real.upto === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(real.upto) ? real.upto : null, oldDays = upto ? Math.floor((now - Date.parse(upto + 'T21:00:00Z') / 1000) / 86400) : null;
+  if (!data.demo && oldDays != null && oldDays > 2) { const w = new Date(upto + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }); $('asOf').textContent = `As of ${w}: the site's trade list ends there (${oldDays} days ago). Today's numbers are on Trading and NQ.`; $('asOf').hidden = false; }
   if (q.get('set') === 'back') S.set = 'back';
   else if (!C.normTrades(data.json, 'live').length && C.normTrades(data.json, 'back').length) { S.set = 'back'; S.fell = true; }
   update();

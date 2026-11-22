@@ -11,7 +11,7 @@ email, places a call or texts anyone: it prepares the words, you dial and press 
 | Demo sites built | 3: Roy's Quick Lube (garage look), Highroad Roofing (pro look), Rocky Mountain Dental Care (clinic look); self-check 100/100/100/100, about 37 KB a page |
 | Pitch kits | a one-page pitch, an email (CAN-SPAM lines in) and a 70-word, 28-second phone opener for each |
 | Agency page (OLYMPUS) | the 20 leads, Call today, the pipeline with dollars, the plan to $5,000 a month |
-| Prices | Starter $499 + $49 a month, Growth $999 + $79, Pro $1,999 + $129 |
+| Prices | Starter site $1,500 + $79 a month (or $149 a month for 12 months, nothing upfront), Call engine $500 + $299 a month (3-month minimum), 3D Signature from $2,500 + $79 a month (one price book: agency/pricebook.json) |
 | The math | 4 new clients a month passes $5,000 a month in month 8 (about 6 calls a working day) |
 
 Pictures (`docs/shots/agency/`): `templates-8-looks-390.png` (the 8 looks on real Fort Collins businesses), `site-<name>-390.png` /
@@ -42,9 +42,9 @@ The pitch, storefront, Agency page, money math and the billing kit's proposal / 
 
 | Package | To start | Each month | What they get |
 |---|---|---|---|
-| Starter | $499 | $49 | the site they saw, with their logo and photos, their own domain with the padlock, the contact form, tap-to-call, map and hours, a Google Business Profile tidy-up, hosting, backups and one small edit a month |
-| Growth (offered to roofers, plumbers, HVAC, electricians, dentists, auto repair) | $999 | $79 | Starter + up to 5 pages (one per service), a booking or quote form, local Google basics, two edits a month and a short report |
-| Pro | $1,999 | $129 | Growth + up to 10 pages with the words written for them, a gallery / menu / before-and-after section, a review page, priority edits |
+| Starter site | $1,500 | $79 | up to 5 pages, their logo, photos and words, their own domain, tap-to-call and a contact form, Google Business Profile linked, the care plan (12-month term, small edits up to 30 minutes a month) |
+| Call engine (config id `growth`) | $500 | $299 | a one-page call site or a tune-up, Google Business Profile kept fresh, review requests, every review answered, a monthly proof report (3-month minimum) |
+| 3D Signature (config id `pro`) | from $2,500 | $79 | Starter + a 3D tour or 3D product pages, AR on phones, a still fallback |
 
 Why these numbers: a freelancer charges $1,500-$5,000 for a small-business site and an agency $5,000-$15,000, while do-it-yourself
 builders cost $17-$39 a month. A ready-made one-page site sold the same day sits under the freelancer range on purpose (an easy yes),
@@ -82,7 +82,7 @@ client (bill it to them), Netlify Personal $9 a month once you pass about 20 dep
 | Netlify Free | 300 credits a month; a deploy costs 15 (about 20 a month); forms free and unlimited; at zero every site pauses | netlify.com/pricing, docs.netlify.com |
 | Cloudflare Pages Free | drag and drop a zip or folder; 500 builds a month | developers.cloudflare.com |
 Every line with its link is in `agency/pricing.json`.
-Re-checked 2026-11-17: Starter sits at the bottom of the one-page freelancer range ($500-$1,500), Growth under the 5-page range ($1,500-$5,000; try $1,299 after 3 clients), a Google profile fix sells for $50-$200 on Fiverr and $300-$800 locally ($149 in person). The first $1,000 plan: Business -> More Work, `research/writeups/more-work-2026-11-17.md`.
+Re-checked 2026-11-17: Starter sits at the bottom of the one-page freelancer range ($500-$1,500), the price book (2026-11-21) moved Starter to $1,500 + $79, inside the 5-page range ($1,500-$5,000), a Google profile fix sells for $50-$200 on Fiverr and $300-$800 locally ($149 in person). The first $1,000 plan: Business -> More Work, `research/writeups/more-work-2026-11-17.md`.
 
 ## Honest limits
 - **OpenStreetMap is volunteer-made and thin on trades.** Fort Collins: 51% of places have a phone, 63% a website, 49% hours, 76% a street

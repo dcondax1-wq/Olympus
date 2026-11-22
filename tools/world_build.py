@@ -34,11 +34,15 @@ CELL = 7.0          # one street cell (3 x 3 building lots) in world units (abou
 PLAZA = 26.0        # the central plaza's radius: no cells inside it
 LOTS = 9            # building lots in one cell
 
-# the four districts = the four doors, clockwise from north (the first view looks north at ZEUS Trading)
+# the six districts = the owner's six arenas (lead 2026-11-21: "one huge 3D city where each district is an arena"), clockwise from north
+# (the first view looks north at ZEUS Trading). The four doors still feed them: the More door splits into Lab & Research and Life, the
+# Money door gives its website apps to Websites, which also holds every concept site (one lit building each, no names).
 DISTRICTS = [
     ("zeus", "ZEUS Trading · NQ", "Zlarior and ATLAS: accounts, live bots, trades, the Lab and every NQ idea tested", "#ffc65a"),
     ("kalshi", "Kalshi", "The Kalshi bot, its edges and the series studied. Paused: paper only", "#6fa8ff"),
-    ("more", "More", "Research, Jarvis, your day, settings and the 3D worlds", "#c58cff"),
+    ("sites", "Websites", "The website business: every concept site built, lit by how warm its lead is", "#ff8f6b"),
+    ("lab", "Lab & Research", "Research, the Data City, the 3D worlds and every study", "#c58cff"),
+    ("life", "Life", "Jarvis, your day, the planner, the inbox and settings", "#7fd6c8"),
     ("money", "Money", "Business, payouts, taxes, the fleet plan and the household", "#5fe3a1"),
 ]
 DNAME = {d[0]: d[1] for d in DISTRICTS}
@@ -48,7 +52,9 @@ QUARTERS = {
     "zeus": [("apps", "Apps"), ("core", "Live bots & accounts"), ("lab", "ZEUS Lab"), ("lit", "LIT research"), ("risk", "Risk & sizing"),
              ("filters", "Filters & timing"), ("ideas", "New ideas"), ("markets", "Market data")],
     "kalshi": [("apps", "Apps"), ("kbets", "Kalshi bets"), ("k8", "Gold & silver (K8)"), ("kresearch", "Kalshi research")],
-    "more": [("apps", "Apps"), ("datacity", "Data City quarters"), ("mresearch", "Research notes")],
+    "sites": [("apps", "Apps"), ("concepts", "Concept sites")],
+    "lab": [("apps", "Apps"), ("datacity", "Data City quarters"), ("mresearch", "Research notes")],
+    "life": [("apps", "Apps")],
     "money": [("apps", "Apps"), ("decisions", "Open decisions"), ("money", "Money research")],
 }
 QNAME = {(d, q): n for d, qs in QUARTERS.items() for q, n in qs}
@@ -70,8 +76,19 @@ EXTRA_PAGES = {
              ("business/lab.html", "ZEUS Lab page", "Business · Lab", "What the Lab tested last night, in plain words", "#7fe0ff"),
              ("business/week.html", "This week", "Business · Week", "The Friday review: each account's week in $", "#ffe2a0"),
              ("atlascity/", "Atlas City", "Atlas City", "ATLAS's strategy as a city", "#59d6ff")],
-    "more": [("hub/doors.html", "The four doors", "Doors", "Every app, filed in its door", "#d79a5c")],
+    "life": [("hub/doors.html", "The four doors", "Doors", "Every app, filed in its door", "#d79a5c")],
 }
+# where a door's app lives in the six districts (the More door splits; the website apps leave Money)
+LIFE = {"planner", "jarvis", "compass", "helios", "herald", "stoa", "hestia", "inbox", "settings", "mind"}
+SITES = {"agency"}
+
+
+def district_of(door_id, app_id, href):
+    if app_id in SITES or str(href).startswith("agency/"):
+        return "sites"
+    if door_id == "more":
+        return "life" if (app_id in LIFE or str(href).startswith(("hub/", "planner/", "jarvis/"))) else "lab"
+    return door_id if door_id in DNAME else "lab"
 
 
 # ------------------------------------------------------------------------------------------------ small helpers
@@ -230,7 +247,7 @@ def apps(W):
     rows = {r["id"]: r for r in apps_list()}
     seen_href = set()
     for door in doors():
-        d = door["id"] if door["id"] in DNAME else "more"
+        dd = door["id"]
         rank = 0
         for it in door["items"]:
             href = it["href"]
@@ -238,6 +255,7 @@ def apps(W):
             if href in seen_href:
                 continue
             seen_href.add(href)
+            d = district_of(dd, it["app"], href)
             purpose = app["purpose"] if app and app.get("path") == href else it["greek"]
             hue = app["colour"] if app else dict((x[0], x[3]) for x in DISTRICTS)[d]
             W.add("app:" + (it["app"] if app and app.get("path") == href else slug(href)), it["label"], "app", d, "apps", "app",
@@ -245,6 +263,7 @@ def apps(W):
                   [["App", it["greek"]], ["Door", door["title"]]], [(200 - rank * 6, CROWN, None)], hue=hue, href=href, fill=0,
                   how="An app: tap Open to go there.", extra={"glyph": (app or {}).get("glyph"), "rank": rank, "shortcut": True})
             rank += 1
+        d = "life" if dd == "more" else dd if dd in DNAME else "lab"
         for x, (href, name, greek, line, hue) in enumerate(EXTRA_PAGES.get(d, [])):
             if href in seen_href or not os.path.exists(os.path.join(WEB, href.split("#")[0].split("?")[0].rstrip("/") or ".")):
                 continue
@@ -259,6 +278,7 @@ def apps(W):
             if href in seen_href:
                 continue
             seen_href.add(href)
+            d = district_of(dd, aid, href)
             W.add("app:" + aid, a["name"], "app", d, "apps", "app", a.get("purpose") or a["name"], [["App", a["name"]], ["Door", door["title"]]],
                   [(110 + fnv(aid) % 60, CROWN, None)], hue=a.get("colour"), href=href, fill=0, how="An app: tap Open to go there.",
                   extra={"glyph": a.get("glyph"), "rank": 50 + len(seen_href)})
@@ -328,8 +348,10 @@ def core(W, hide):
         k, nm = a["key"], str(a.get("name") or "")
         lv = live.get(k) or {}
         bal = lv.get("balance") if isinstance(lv.get("balance"), (int, float)) else None
-        stage = str(lv.get("stage") or a.get("stage") or "eval")
-        waiting = str(a.get("status")) == "waiting" or bool(lv.get("plan_only"))
+        # olympus2 2026-11-20: accounts.json (Claude keeps it, the newest word) beats the Board's copy for the stage once it says funded
+        # (the Board still said ATLAS "passed"); "planned" = the plan says waiting / buying, or the Board has it as plan-only with no balance
+        stage = "funded" if str(a.get("stage")) == "funded" else str(lv.get("stage") or a.get("stage") or "eval")
+        waiting = str(a.get("status")) in ("waiting", "buying") or (bool(lv.get("plan_only")) and bal is None and str(a.get("status")) != "live")
         size = 50000 if "50K" in (nm + " " + str(a.get("plan", ""))).upper() else 25000
         start, goal = size, size + (3000 if size == 50000 else 1500)
         if stage == "funded":
@@ -514,7 +536,7 @@ def datacity(W):
         if best and best.get("e") is not None:
             facts.append(["Best", f"{usd(best['e'], True)} a trade per micro"])
         n_gold, n_green = sum(1 for b in mine if b.get("cls") == "gold"), sum(1 for b in mine if b.get("cls") == "green")
-        W.add("dc:" + s["key"], str(s.get("name") or s["key"]).title(), "datacity", "more", "datacity", "bright" if n_gold else "growing" if n_green else "testing",
+        W.add("dc:" + s["key"], str(s.get("name") or s["key"]).title(), "datacity", "lab", "datacity", "bright" if n_gold else "growing" if n_green else "testing",
               short(s.get("blurb"), 120), facts, [(max(20, h255(abs(b.get("e") or 0), 0, emax)), code.get(b.get("cls"), LIT), None) for b in mine],
               hue=str(s.get("color") or "#4fe0d0"), fill=2,
               how="One building per tested combo: gold spire = passed every guard, bright = it made money, scaffold = maybe, dark = no edge.")
@@ -593,12 +615,128 @@ def kalshi(W):
             W.event(iso(e["d"]), None, "Kalshi: " + short(e.get("text"), 90))
 
 
+NICHE = {"food": "Restaurants & cafes", "retail": "Shops", "beauty": "Salons & beauty", "health": "Health & care", "auto": "Car repair",
+         "gym": "Gyms & fitness", "services": "Services", "trades": "Trades", "pro": "Professional offices"}
+
+
+def concepts(W):
+    """the Websites district: one block per trade, one building per concept site (counts and lead warmth only, never a business name):
+    hot = a bright tower, warm = lit, cold = low and dim, not ready yet = scaffolding"""
+    data = load("tools/web_public/agency/factory/sites.json", {}) or {}
+    sites = [x for x in (data.get("sites") or []) if isinstance(x, dict)]
+    by = {}
+    for x in sites:
+        by.setdefault(str(x.get("niche") or "services"), []).append(x)
+    for niche, xs in sorted(by.items(), key=lambda kv: -len(kv[1])):
+        hot = sum(1 for x in xs if x.get("heat") == "hot")
+        warm = sum(1 for x in xs if x.get("heat") == "warm")
+        ready = sum(1 for x in xs if x.get("ready"))
+        blds = []
+        # ~4k sites (Overture leads, 2026-11-21): one building per GROUP of k sites so the district stays ~400 buildings (the 300 KB budget,
+        # the phone); a group takes its warmest site's look, in the order hot, warm, cold, not ready
+        k = max(1, math.ceil(len(sites) / 400))
+        ordered = sorted(xs, key=lambda x: ({"hot": 0, "warm": 1}.get(x.get("heat"), 2) if x.get("ready", True) else 3, str(x.get("id"))))
+        xs_groups = [ordered[i:i + k] for i in range(0, len(ordered), k)]
+        for grp in xs_groups:
+            x = grp[0]
+            heat = x.get("heat")
+            if x.get("ready") is False:
+                blds.append((60, SCAFFOLD, None))
+            elif heat == "hot":
+                blds.append((200 + fnv(str(x.get("id"))) % 50, BRIGHT, None))
+            elif heat == "warm":
+                blds.append((140 + fnv(str(x.get("id"))) % 40, LIT, None))
+            else:
+                blds.append((70 + fnv(str(x.get("id"))) % 40, LIT, None))
+        name = NICHE.get(niche, niche.title())
+        W.add("sites:" + slug(niche), name, "sites", "sites", "concepts", "bright" if hot else "growing",
+              f"{len(xs)} concept sites for {name.lower()}: {hot} hot, {warm} warm leads, {ready} ready to show" + (f" (a building = {k} sites)" if k > 1 else ""),
+              [["Concept sites", str(len(xs))], ["Hot leads", str(hot)], ["Warm leads", str(warm)], ["Ready", str(ready)]], blds,
+              href="agency/", how="A block of the website business: one building per concept site. Taller and brighter = a warmer lead.")
+
+
+# ------------------------------------------------------------------------------------------------ the Research Hub (lead 2026-11-21)
+# research/hub.json (the Research Hub session): [{id, title, family, status live|lead|rejected|decide, usd_month, date, summary, url}].
+# The Lab & Research district becomes the 3D hub: each family a street (its own slice of the district), live strategies tall bright
+# towers (height = the real $ a month), open leads lit under scaffolding, rejected ideas a field of ruins (tap: the one-line why + $),
+# Decide cards beacons that pulse until answered. No hub.json = nothing here (never example data in the owner's city).
+HUB_STATE = {"live": ("live", CROWN), "lead": ("testing", SCAFFOLD), "rejected": ("ruin", RUIN), "decide": ("decide", BRIGHT)}
+HUB_WORD = {"live": "Live", "lead": "Open lead", "rejected": "Rejected", "decide": "Decide"}
+HUB_FAMILIES = 10
+HUB_STATES = ["live", "testing", "ruin", "decide"]
+LAB_QUARTERS = list(QUARTERS["lab"])
+
+
+def hub_items(path=None):
+    """the hub's rows (a list), from research/hub.json (a list, or {items: [...]}) or the given path; [] when there is none"""
+    data = load(path or "tools/web_public/research/hub.json", None)
+    rows = data.get("items") or data.get("hub") or [] if isinstance(data, dict) else data if isinstance(data, list) else []
+    return [r for r in rows if isinstance(r, dict) and r.get("id") and r.get("title")]
+
+
+def hub_usd(r):
+    for k in ("usd_month", "$/month", "usd", "per_month", "month_usd"):
+        v = r.get(k)
+        try:
+            if v is not None and v != "":
+                return float(str(v).replace("$", "").replace(",", ""))
+        except ValueError:
+            continue
+    return None
+
+
+def research_hub(W, path=None):
+    QUARTERS["lab"] = list(LAB_QUARTERS)                    # idempotent: the family streets are rebuilt every time
+    hide = [h.lower() for h in hidden_bots()]
+    # a hidden bot (dashboard_view.json) never appears: any row naming one in its id, title, family or summary is dropped whole
+    rows = [r for r in hub_items(path) if not any(re.search(r"\b" + re.escape(h) + r"\b", " ".join(str(r.get(k) or "") for k in ("id", "title", "family", "summary")).lower()) for h in hide)]
+    if not rows:
+        return 0
+    fams = {}
+    for r in rows:
+        fams[str(r.get("family") or "Other").strip() or "Other"] = fams.get(str(r.get("family") or "Other").strip() or "Other", 0) + 1
+    # a street per family with at least 4 entries (at most HUB_FAMILIES streets): smaller families share the Other street, so every
+    # street is wide enough to hold real blocks
+    top = [f for f, n in sorted(fams.items(), key=lambda kv: (-kv[1], kv[0])) if n >= 4][:HUB_FAMILIES]
+    for f in top + (["Other"] if len(fams) > len(top) and not {"Other", "other"} & set(top) else []):
+        q = "rh-" + slug(f)
+        name = f.title() if f.islower() else f
+        QNAME[("lab", q)] = name
+        QUARTERS["lab"].append((q, name))
+    top_usd = max([abs(hub_usd(r) or 0) for r in rows] + [1.0])
+    for r in rows:
+        fam = str(r.get("family") or "Other").strip() or "Other"
+        fam = fam if fam in top else ("other" if "other" in top else "Other")
+        st = str(r.get("status") or "lead").lower()
+        state, bstate = HUB_STATE.get(st, HUB_STATE["lead"])
+        pm = hub_usd(r)
+        h = h255(max(0.0, pm or 0), 0, top_usd, log=True) if st == "live" else 90 if st == "decide" else 70 if st == "lead" else 50
+        if st == "live":
+            h = max(120, h)
+        money = (usd(pm) + " a month") if pm is not None else None
+        # a rejected idea's figure is what its test quoted, never a gain (the hub helper's note): said so, never as profit
+        label = "Test quoted" if st == "rejected" else "$ a month"
+        summ = short(str(r.get("summary") or ""), 120)
+        url = re.sub(r"^(\.\./|\./|/)+", "", str(r.get("url") or "")) or None   # hub.json links from research/ ('../clio/?read=x'): from the site root
+        if url and re.match(r"^[a-z]+:", url):
+            url = None                                        # the site's own pages only
+        blds = [(h, bstate, r.get("date"))] + ([(max(20, h // 3), LIT, r.get("date"))] if st == "live" else [])   # one building each (a live tower: + a podium)
+        W.add("hub:" + str(r["id"]), str(r["title"]), "hub", "lab", "rh-" + slug(fam), state, summ or HUB_WORD.get(st, st),
+              [["Status", HUB_WORD.get(st, st)], [label, money], ["Family", fam.title() if fam.islower() else fam], ["Date", str(r.get("date") or "")[:10]]], blds,
+              born=(str(r.get("date"))[:10] if r.get("date") else None), href=url,
+              how="A Research Hub entry: tap Read for the write-up.",
+              extra={"why": (summ + (" (the test quoted " + money + ")" if money else "")) if st == "rejected" else None, "hub": st, "usd": pm})
+    return len(rows)
+
+
 def decisions(W):
     D = load("tools/web_public/business/decisions.json", {}) or {}
     for x in D.get("items") or []:
         if not isinstance(x, dict) or not x.get("id"):
             continue
         open_ = str(x.get("status") or "open") == "open"
+        if not open_:                                    # olympus2: an answered decision is no longer a place (the Board keeps its history)
+            continue
         W.add("dec:" + x["id"], short(x.get("question"), 46), "decision", "money", "decisions", "planned" if open_ else "bright",
               short(x.get("question"), 120), [["Why", short(x.get("why"), 40)], ["What it changes", short(x.get("impact"), 40)],
                                               ["Status", "Waiting for your yes / no" if open_ else str(x.get("status")).title()]],
@@ -643,6 +781,10 @@ def plan_city(W):
     tot = sum(dneed.values()) or 1
     # the wedges: proportional to need, at least 46 degrees each; ZEUS Trading centred on north (-90 degrees: the first view looks north)
     share = {d: max(math.radians(46), 2 * math.pi * dneed[d] / tot) for d, *_ in DISTRICTS}
+    # Lab & Research holds the Research Hub's family streets: room for each at 6 degrees + a margin, so the city does not have to grow
+    # outward to fit thin wedges (the phone's instance budget)
+    nlab = sum(1 for q, _ in QUARTERS["lab"] if q not in DOWNTOWN and ("lab", q) in need)
+    share["lab"] = share["lab"] + math.radians(3 * max(0, nlab - 2))
     k = 2 * math.pi / sum(share.values())
     # quantized to 3 degree steps (the remainder goes to ZEUS Trading): a few new places never move a district border
     share = {d: math.radians(3) * round(math.degrees(v * k) / 3) for d, v in share.items()}
@@ -657,6 +799,8 @@ def plan_city(W):
         if ok:
             break
         R += CELL
+    if not ok:
+        raise RuntimeError("the city plan did not fit")
     taken = plan
     # filler: every free cell inside R (the city fabric), and a ragged ring of outskirts beyond it
     filler = []
@@ -712,6 +856,13 @@ def try_plan(W, by_q, need, arcs, R):
         a = a0
         widths = [math.radians(1.5) * max(1, round(math.degrees(span * bk[q] / tot) / 1.5)) for q in learn]
         widths[-1] = span - sum(widths[:-1])                    # quantized slices too (3 degrees), the last takes the rest
+        if len(widths) > 1:                                     # every slice (the Research Hub's family streets, ZEUS's markets): never
+            lo = min(math.radians(6), span / len(widths))       # thinner than a block (6 degrees), the room taken from the widest one
+            for k in range(len(widths)):
+                if widths[k] < lo:
+                    big = max(range(len(widths)), key=lambda j: widths[j])
+                    widths[big] -= lo - widths[k]
+                    widths[k] = lo
         for q, w in zip(learn, widths):
             if w <= 0:
                 return False, None
@@ -720,6 +871,13 @@ def try_plan(W, by_q, need, arcs, R):
                 if grab(p, need_cells(p), slice_, taken) is None:
                     return False, None
             a += w
+    # never a place outside its district (lead 2026-11-21: Decide cards spilled over the Money border on a crowded plan): such a plan is
+    # refused, and the city grows a ring instead
+    arc_of = {d: arcs[d] for d, *_ in DISTRICTS}
+    for p in W.places:
+        a0, a1 = arc_of[p["district"]]
+        if any(not in_arc(angle_of(i * CELL, j * CELL), a0, a1) for i, j in p.get("cells", []) if (i, j) in taken and taken[(i, j)] == p["id"]):
+            return False, None
     return True, taken
 
 
@@ -769,6 +927,9 @@ def grab(p, k, pool, taken):
 
 
 # ------------------------------------------------------------------------------------------------ the whole world
+HUB_PATH = None                                         # tests / --hub: another hub.json
+
+
 def build(now=None):
     hide = hidden_bots()
     W = World(hide)
@@ -780,7 +941,16 @@ def build(now=None):
     datacity(W)
     kalshi(W)
     decisions(W)
-    R, arcs, filler = plan_city(W)
+    concepts(W)
+    research_hub(W, HUB_PATH)
+    try:
+        R, arcs, filler = plan_city(W)
+    except RuntimeError:
+        # a hub.json the district cannot hold must never break the nightly city: the city without the hub, said in the build line
+        W.places = [p for p in W.places if p["kind"] != "hub"]
+        QUARTERS["lab"] = list(LAB_QUARTERS)
+        print("world: the Research Hub did not fit the Lab & Research district; built without it", file=sys.stderr)
+        R, arcs, filler = plan_city(W)
     d0 = _dt.date.fromisoformat(W.start) if W.start else None
     nb, counts = 0, {"ruin": 0, "scaffold": 0, "lit": 0, "bright": 0}
     for p in W.places:
@@ -790,6 +960,10 @@ def build(now=None):
             nb += 1
             counts[{0: "ruin", 1: "scaffold", 2: "lit"}.get(s, "bright")] += 1
         p["b"] = flat
+        if p["kind"] == "sites":                            # the concept sites: one letter a building (h hot, w warm, c cold, s not ready);
+            p["bs"] = "".join("s" if flat[k + 1] == SCAFFOLD else "h" if flat[k + 1] == BRIGHT else "w" if flat[k] >= 140 else "c"
+                              for k in range(0, len(flat), 3))   # the page rebuilds the heights (ow-core siteBuildings): the 300 KB budget
+            del p["b"]
         p["day"] = 0 if not p["born"] or not d0 else max(0, (_dt.date.fromisoformat(p["born"]) - d0).days)
         p.pop("fill", None)
     now = now or _dt.datetime.now(_dt.timezone.utc)
@@ -826,7 +1000,7 @@ def build(now=None):
         "v": 2, "kind": "olympus-world", "built": now.strftime("%Y-%m-%dT%H:%MZ"), "start": W.start,
         "days": 0 if not d0 else max(0, (now.date() - d0).days), "hidden_bots": list(hide),
         "cell": CELL, "plaza": PLAZA, "R": R,
-        "about": "One city of everything: four districts, one per door. Every app is a downtown tower you can open; every learning place is real data "
+        "about": "One city of everything: six districts, one per arena (ZEUS Trading, Kalshi, Websites, Lab & Research, Life, Money). Every app is a downtown tower you can open; every learning place is real data "
                  "(a live bot, an account, a market, a Kalshi bet, a ZEUS Lab idea or a group of stored backtests): lit towers work, scaffolds are being "
                  "tested, ruins were tested and rejected. Money is after costs; backtests are history, not a forecast.",
         "legend": [["Gold crown", "an app or a live bot: tap to open"], ["Bright tower", "works: adopted, a winner, promising"],
@@ -834,7 +1008,12 @@ def build(now=None):
                    ["Vault", "an account: fills with light as it nears its goal"]],
         "counts": {"places": len(W.places), "apps": len(W.places) - len(learning), "learning": len(learning), "buildings": nb, **counts,
                    "live": sum(1 for p in W.places if p["state"] == "live"), "districts": len(districts), "filler": len(filler)},
-        "districts": districts, "places": W.places, "filler": filler, "feed": feed, "hows": hows,
+        "districts": districts, "places": [p for p in W.places if p["kind"] != "hub"], "filler": filler, "feed": feed, "hows": hows,
+        # the Research Hub as compact rows (the 300 KB budget): [id, street, state, x, z, r, cells (flat), buildings (flat), day]; its titles,
+        # summaries, $ and links come from research/hub.json in the page (ow-main hubPlaces), merged by id
+        "hubq": [q for q, _ in QUARTERS["lab"] if q.startswith("rh-")], "hubs": HUB_STATES,
+        "hub": [[p["id"][4:], [q for q, _ in QUARTERS["lab"] if q.startswith("rh-")].index(p["quarter"]), HUB_STATES.index(p["state"]), round(p["x"]), round(p["z"]), round(p["r"], 1),
+                 [v for c in p.get("cells", []) for v in c], p["b"], p["day"]] for p in W.places if p["kind"] == "hub"],
     }
 
 
@@ -859,7 +1038,10 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description="Olympus World: the repo's data as one giant city (world.json)")
     ap.add_argument("--check", action="store_true", help="build in memory, print the counts, write nothing")
     ap.add_argument("--out", default=OUT)
+    ap.add_argument("--hub", default=None, help="another research hub file (tests, previews); default tools/web_public/research/hub.json")
     a = ap.parse_args(argv)
+    global HUB_PATH
+    HUB_PATH = a.hub
     w = build()
     if a.check:
         print(summary(w))

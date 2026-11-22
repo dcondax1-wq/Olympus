@@ -74,6 +74,8 @@ def main(argv=None) -> int:
     if dirty:
         raise SystemExit("[STOP] uncommitted changes: commit first\n  " + "\n  ".join(dirty[:10]))
     sh(sys.executable, "tools/model_versions.py", "--check")
+    if subprocess.run([sys.executable, "tools/win_paths.py"], cwd=ROOT).returncode != 0:   # even with --no-tests: a bad name
+        raise SystemExit("[STOP] a file name Windows refuses: the PC update would roll back. Nothing pushed")  # blocks every PC update
     if not a.no_tests and subprocess.run([sys.executable, "tests/smoke.py"], cwd=ROOT).returncode != 0:
         raise SystemExit("[STOP] smoke check red: nothing pushed")
     rem = home_remote()

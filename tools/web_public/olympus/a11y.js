@@ -212,10 +212,13 @@
     for (i = 0; i < list.length; i++) {
       el = list[i];
       if (skipped(el)) continue;
+      // a live LIST or table keeps its own role (A11Y K1, 2026-11-20): role=status on a <ul> removed its list role, and aria-atomic made
+      // VoiceOver re-read the whole list on every change; it now reads only what changed
+      var listy = /^(UL|OL|DL|TABLE|TBODY)$/.test(el.tagName);
       bad = /(^|[\s_-])(err|error|bad|fail|alert|danger)/i.test(typeof el.className === 'string' ? el.className : '') || el.classList && el.classList.contains('oly-err');
-      if (!el.getAttribute('role')) el.setAttribute('role', bad ? 'alert' : 'status');
+      if (!listy && !el.getAttribute('role')) el.setAttribute('role', bad ? 'alert' : 'status');
       if (!el.getAttribute('aria-live')) el.setAttribute('aria-live', bad ? 'assertive' : 'polite');
-      if (!el.getAttribute('aria-atomic')) el.setAttribute('aria-atomic', 'true');
+      if (!listy && !el.getAttribute('aria-atomic')) el.setAttribute('aria-atomic', 'true');
     }
   }
 
@@ -272,11 +275,26 @@
   api.version = 1;
   window.OLYMPUS_A11Y = api;
 
+  /* ORGANIZE (2026-11-21): the same back + Home + arena breadcrumb on EVERY page. Pages that load this kit but not the AGORA shell had no way home
+     (Board, Ares, Fates, ...): load olympus/gate-nav.js once, next to this file. Not on Home itself, not in a frame, not on a page that opts out
+     (<html data-ag-nonav>), never on the public client pages (agency demos, audits, showcase, factory, caller portal, concept sites). */
+  var navSrc = (document.currentScript && document.currentScript.src) || '';
+  function nav() {
+    try {
+      if (!navSrc || window.OLYMPUS_GATE_NAV || root.hasAttribute('data-ag-nonav') || document.querySelector('script[src*="gate-nav.js"]')) return;
+      try { if (window.top !== window) return; } catch (e) { return; }
+      var path = location.pathname || '';
+      if (/\/gate\/(index\.html)?$/.test(path) || /\/agency\/(demos|audit|showcase|factory|portal|f)\//.test(path)) return;
+      var s = document.createElement('script'); s.src = new URL('gate-nav.js?v=g11', navSrc).href; s.async = true;
+      (document.head || root).appendChild(s);
+    } catch (e) { /* the page works without it */ }
+  }
   function start() {
     try {
       load(); dt = probeDynamicType(); apply(); css(); scan(document); wire(); watch();
       root.setAttribute('data-oly-a11y', 'on');
     } catch (e) { /* the page works without this layer */ }
+    nav();
   }
   // the saved choice is applied at once (no flash of small text), the rest when the body is there
   try { load(); root.setAttribute('data-oly-text', state.text); applyMode(); } catch (e) { /* later */ }

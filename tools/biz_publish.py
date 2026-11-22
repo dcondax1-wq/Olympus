@@ -32,7 +32,7 @@ MODELS = [
      "first_dollar": ["Your name, phone, email, postal address and city in agency/config.json", "Free Netlify account (to put demo sites online)",
                       "Free Stripe account + one payment link per plan", "About 60 calls by hand to find the first yes"],
      "usd_m1": [0, 550], "usd_m3": [0, 2000], "hours": [5, 7],
-     "why": "One Starter sale is $499 + $49 a month. Month 3 assumes 0-2 sales a month (the docs' plan of 4 a month needs 6 calls a working day)."},
+     "why": "One Starter sale is $1,500 + $79 a month (agency/pricebook.json). Month 3 assumes 0-2 sales a month (the docs' plan of 4 a month needs 6 calls a working day)."},
     {"id": "gigs", "name": "Freelance gigs", "rank": 2, "doc": "docs/GIG_PACK.md",
      "what": "8 ready gigs (websites, logos, Google profile, reviews, posts...) on Fiverr first; the tools make the work, you deliver.",
      "built": ["8 gig texts with prices, tags, FAQ", "Logo + brand kit maker", "Google profile checklist", "Order -> agency tools in one line"],
@@ -207,7 +207,7 @@ def ready() -> list:
                 "file": "money_machines/plans/", "steps": ["On the PC: python -m money_machines.content_plan --all --render (the images + posting sheet)",
                                                            "New Instagram, switch to Professional", "Meta Business Suite > Planner: schedule week 1 from the posting sheet",
                                                            "Shop link in the bio once the products are up"]})
-    out.append({"id": "demo-sites", "kind": "sites", "name": "Demo websites to sell", "usd": 499.0, "minutes": 30, "where": "Netlify Drop (free)",
+    out.append({"id": "demo-sites", "kind": "sites", "name": "Demo websites to sell", "usd": 1500.0, "minutes": 30, "where": "Netlify Drop (free)",
                 "file": "agency/out/", "steps": ["Double-click AGENCY_DAY.bat (fill agency/config.json the first time)",
                                                   "Drop each site folder on app.netlify.com/drop, press Publish", "Call the owners on Call today, by hand, business hours"]})
     return out
@@ -230,11 +230,11 @@ def moves(tr: dict, models: list, rd: list) -> list:
                     "minutes": 60, "usd": [0, 100], "where": "Business > Ready to upload"})
     out.append({"id": "m-ai-apply", "what": "Apply to 2 AI-training sites and take the assessment (your own words).", "minutes": 90, "usd": [0, 400], "where": "AI training tasks"})
     out.append({"id": "m-fiverr", "what": "Publish the logo and Google-profile gigs on Fiverr (texts are ready).", "minutes": 60, "usd": [0, 100], "where": "Business > Ready to upload"})
-    out.append({"id": "m-agency", "what": "AGENCY_DAY.bat, then 10 calls by hand (one Starter sale = $499 + $49 a month).", "minutes": 75, "usd": [0, 548], "where": "Website agency"})
+    out.append({"id": "m-agency", "what": "AGENCY_DAY.bat, then 10 calls by hand (one Starter sale = $1,500 + $79 a month).", "minutes": 75, "usd": [0, 1579], "where": "Website agency"})
     if len(prod) > 4:
         out.append({"id": "m-shop-rest", "what": f"Upload the other {len(prod) - 4} products (site templates, social kit, agency kit, planner).", "minutes": 60, "usd": [0, 50],
                     "where": "Business > Ready to upload"})
-    out.append({"id": "m-account4", "what": f"Account #4: not yet. Buy the LucidPro 50K about {a4.get('buy_on') or 'after the first payout'} (money in the bank first).",
+    out.append({"id": "m-account4", "what": f"Next buy after the Rapid EOD 25K: the Rapid EOD 50K about {a4.get('buy_on') or 'after the first payout'} (money in the bank first; MFFU only).",
                 "minutes": 0, "usd": [0, 0], "where": "Business > Trading money"})
     return out[:7]
 
@@ -259,13 +259,16 @@ def prop_plan(sample: bool = False, path: str | None = None) -> dict | None:
                      "y1_p10": p.get("y1_p10"), "ref_usd_month": (ref.get(n) or {}).get("usd_month_y1")})
     na = d.get("new_account") or {}
     out = {"label": "ESTIMATE", "span": "Jul-Oct 2026 replay (the check half)", "source": "tools/money/payout_plan.py -> research/lab/payout_plan.json",
-           "table": rows, "new_account": {"plan": na.get("plan"), "price": na.get("price")},
+           # MFFU only (owner 2026-11-20, Decide drop-lucid-account4): the next account is an MFFU Rapid EOD 50K at $165 (CLUB); the research
+           # table below was priced with a $134.40 copy account, so its fees are about $31 a buy low (said in the notes)
+           "table": rows, "new_account": {"plan": "MFFU Rapid EOD 50K", "price": 165.0, "research_price": na.get("price")},
            "rules": ["Buy the next account only from a payout that reached your bank: one new account per payout, and only when "
                      "the payout money holds two of its price (one to buy, one kept for a re-buy).",
-                     "MFFU funds only ONE Builder 50K a person: account #3 and up are LucidPro 50K copies of Zlarior (Lucid allows 5 funded).",
+                     "MFFU only (owner 2026-11-20): the next accounts are the Rapid EOD 25K now, then the Rapid EOD 50K and a fresh Builder 50K from payouts.",
                      "Stop rule: at most 2 re-buys from your own pocket ($183.60); past that stop and rethink.",
                      "Prop money: you can lose only the fees, never more; a bad week inside an account is the firm's money."],
-           "notes": ["Every account copies the SAME Zlarior signal (daily correlation about 0.94): a bad week hits all of them at once, "
+           "notes": ["The table was worked out at $134.40 an account (an older plan); the MFFU Rapid EOD 50K costs $165, about $31 more a buy.",
+                     "Every account copies the SAME Zlarior signal (daily correlation about 0.94): a bad week hits all of them at once, "
                      "so more accounts multiply the good months AND the empty ones.",
                      "Backtest of 2026 (where LIT works); on 2021-25 (no edge) the same plan makes about $0 a month. Nothing is promised.",
                      "ATLAS's $ is the stored research estimate (a different bot), added from month 3."]}

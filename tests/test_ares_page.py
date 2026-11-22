@@ -41,11 +41,11 @@ def rd(name):
 def part_a():
     html = rd("index.html")
     check("a. the OLYMPUS kit: olympus.css, themes.js, olympus.js (data-app) all at ?v=o2",
-          all(s in html for s in ('../olympus/olympus.css?v=o7', '../olympus/themes.js?v=o8', '../olympus/olympus.js?v=o13" data-app="ares"')))
+          all(s in html for s in ('../olympus/olympus.css?v=o7', '../olympus/themes.js?v=o11', '../olympus/olympus.js?v=o24" data-app="ares"')))
     check("a. title Ares, a description, theme-color = the page colour, the Jarvis icon like the siblings",
-          "<title>Ares</title>" in html and 'name="description"' in html and 'content="#14110e"' in html and "../jarvis/icon-192.png" in html
+          "<title>Ares</title>" in html and 'name="description"' in html and 'content="#000000"' in html and "../jarvis/icon-192.png" in html
           and "#14110e" in rd("ares.css") + html)
-    srcs = re.findall(r'(?:src|href)="([^"]+)"', html)
+    srcs = re.findall(r'(?<![\w-])(?:src|href)="([^"]+)"', html)   # not data-src (the archive banner's feed)
     check("a. only local files (no external script, font or stylesheet)", all(not s.startswith(("http:", "https:", "//")) for s in srcs), srcs)
     check("a. every local file the page links exists",
           all(os.path.exists(os.path.normpath(os.path.join(PAGE, s.split("?")[0]))) for s in srcs if not s.startswith("#")), srcs)
@@ -64,7 +64,7 @@ def part_a():
     css = rd("ares.css")
     desk, fxm = rd("aresdesk.js"), rd("aresfx.js")
     check("a. the OLYMPUS effects library (fx-core, ui, text, burst ?v=f1) is linked after olympus.js; aresdesk.js is the screen of the journal / ritual / scenarios / share card, aresfx.js dresses the room",
-          all(f"../olympus/fx-{n}.js?v=f1" in html for n in ("core", "ui", "text", "burst")) and html.find("fx-core.js") > html.find("olympus.js?v=o13")
+          all(f"../olympus/fx-{n}.js?v=f1" in html for n in ("core", "ui", "text", "burst")) and html.find("fx-core.js") > html.find("olympus.js?v=o24")
           and "from './aresdesk.js'" in rd("ares.js") and "from './aresfx.js'" in rd("ares.js") and "ares.journal.v1" in desk and "fetch('../home.json'" in desk
           and "RoomEnvironment" in fxm and "ACESFilmicToneMapping" in fxm and not re.search(r"ninjatrader|place_?order|websocket", desk + fxm, re.I))
     check("a. static containers for the scenarios, drawdown bar, ritual ring, journal and the rules-you-broke tracker; the journal never touches the other keys",
@@ -207,6 +207,7 @@ def tab(p, t):
 def part_d(tmp, rules):
     from playwright.sync_api import sync_playwright
     srv1, url = site(tmp, "ares", "s1", True)
+    shutil.copy(os.path.join(tmp, "s1", "data.json"), os.path.join(tmp, "s1", "home.json"))   # the real site has both (day-archive: home.json is read first)
     srv2, url_off = site(tmp, "ares", "s2", False, drop=("rules.json", "jarvis.json"))
     try:
         with sync_playwright() as pw:

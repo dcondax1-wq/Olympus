@@ -18,7 +18,7 @@ card. Offline: temp folders, fake pushes / steps, a fake clock; never the networ
      data_pull.import_metals appends to data/metals/<SYM>_1m.csv once (idempotent)
   g. the cloud: tools/learn_night.py plan (pull, edge, anatomy, lab, learned, decide), fake steps, the card learned.json from the
      PC's learn.json, the Decide card gets the proposal once (test_decide's schema), hidden bots never, dry run writes nothing
-  h. the ZEUS page: node learned() (feed vs cloud, newer wins, old flag), the card section, text only, zeus.js?v=4
+  h. the ZEUS page: node learned() (feed vs cloud, newer wins, old flag), the card section, text only, zeus.js?v>=4 (v=5 since 405abfad)
   i. faster thinking: the 15-minute report in a fresh process imports no numpy / pandas / openpyxl (the light calendar, atlas.json
      read directly, a lazy numpy in health_band, the business workbook cached on disk); pct_of = the numpy version; the data
      pipe's every-tick collect uses a key index (same rows); the ops tick's internet probes run side by side
@@ -384,10 +384,10 @@ def part_g(tmp, dd_c):
     from tools import learn_night as LN
     a = argparse.Namespace(no_pull=False, wait=0.0, skip="", full=False, fetch=False, dry_run=False)
     P = LN.plan(a)
-    check("g. plan: pull (data_pull --latest), edge_health, anatomy build/explain/page, zeus_lab run --publish, learned, decide",
-          [s for s, _ in P] == ["pull", "edge", "anatomy", "lab", "learned", "decide"]
-          and P[0][1] == [["tools/data_pull.py", "--latest", "--wait", "0.0"]] and P[3][1] == [["tools/zeus_lab.py", "run", "--publish"]]
-          and [c[1] for c in P[2][1]] == ["build", "explain", "page"], P)
+    check("g. plan: pull (data_pull --latest), edge_health, cost_alarm, anatomy build/explain/page, zeus_lab run --publish, learned, decide",
+          [s for s, _ in P] == ["pull", "edge", "costs", "anatomy", "lab", "learned", "decide", "hub"]
+          and P[0][1] == [["tools/data_pull.py", "--latest", "--wait", "0.0"]] and P[4][1] == [["tools/zeus_lab.py", "run", "--publish"]]
+          and P[2][1] == [["tools/cost_alarm.py"]] and [c[1] for c in P[3][1]] == ["build", "explain", "page"], P)
     root = os.path.join(tmp, "groot")
     for rel in ("tools/web_public/business/decisions.json", "live_model.json", "live_model_lit.json", "dashboard_view.json"):
         os.makedirs(os.path.dirname(os.path.join(root, rel)), exist_ok=True)
@@ -407,8 +407,9 @@ def part_g(tmp, dd_c):
     rep = os.path.join(tmp, "night_cloud.json")
     out = LN.run(a, runner=fake, say=lambda *_: None, root=root, days_dir=days, card_path=card, decisions=dec, report=rep)
     c = ZL._read_json(card, {})
-    check("g. fake steps run in order (pull, edge, 3 anatomy, lab); the card learned.json = the PC's line + date, no BLITZ",
-          [x[0] for x in calls] == ["tools/data_pull.py", "tools/edge_health.py"] + ["tools/win_loss_anatomy.py"] * 3 + ["tools/zeus_lab.py"]
+    check("g. fake steps run in order (pull, edge, costs, 3 anatomy, lab, hub); the card learned.json = the PC's line + date, no BLITZ",
+          [x[0] for x in calls] == ["tools/data_pull.py", "tools/edge_health.py", "tools/cost_alarm.py"] + ["tools/win_loss_anatomy.py"] * 3
+          + ["tools/zeus_lab.py", "tools/research_hub.py"]
           and c.get("day") == DAY and c.get("line", "").startswith("ZEUS learned Nov 19") and "blitz" not in json.dumps(c).lower()
           and len(json.dumps(c).encode()) <= LN.CARD_MAX_BYTES, (calls, c.get("line")))
     D = ZL._read_json(dec, {})
@@ -432,7 +433,7 @@ def part_g(tmp, dd_c):
                 card_path=card, decisions=dec, report=rep)
     check("g. dry run: the plan only, nothing run or written", o3.get("plan") and os.path.getmtime(dec) == mt)
     skip = LN.plan(argparse.Namespace(**{**vars(a), "no_pull": True, "skip": "lab,anatomy", "full": True}))
-    check("g. --no-pull --skip lab,anatomy: edge, learned, decide only", [s for s, _ in skip] == ["edge", "learned", "decide"], skip)
+    check("g. --no-pull --skip lab,anatomy: edge, costs, learned, decide, hub only", [s for s, _ in skip] == ["edge", "costs", "learned", "decide", "hub"], skip)
     it = LN.decide_item({"id": "Bad Id!", "question": "q", "why": "w"})
     check("g. a proposal with a bad id never reaches the card", it is None)
 
@@ -444,8 +445,8 @@ def part_h():
     # polish2 2026-11-19: the card stayed hidden when there was no nightly line yet; now a calm placeholder from the first paint
     sec = re.search(r'<section id="learned"[^>]*>', html)
     box = re.search(r'<div id="learnBox" class="zs-learn wait"[^>]*><p class="zs-goal">([^<]*)</p><p class="zs-src">([^<]*)</p></div>', html)
-    check("h. zeus.html: the 'ZEUS learned' section is shown from the first paint with its box holding the calm placeholder; zeus.js?v=4",
-          sec and "hidden" not in sec.group(0) and box and box.group(1) == "First nightly report after today's close" and "zeus.js?v=4" in html, (sec and sec.group(0), box and box.groups()))
+    check("h. zeus.html: the 'ZEUS learned' section is shown from the first paint with its box holding the calm placeholder; zeus.js?v>=4",
+          sec and "hidden" not in sec.group(0) and box and box.group(1) == "First nightly report after today's close" and int((re.search(r"zeus\.js\?v=(\d+)", html) or [0, 0])[1]) >= 4, (sec and sec.group(0), box and box.groups()))
     check("h. zeus.js: no nightly line = the same placeholder words (LEARN_WAIT), never a hidden card",
           "if (!L) { box.className = 'zs-learn wait';" in js and "sec.hidden = true" not in js and box and "'First nightly report after today\\'s close'" in js)
     check("h. zeus.js: text only (no innerHTML / eval), reads learned.json next to the page", not re.search(r"innerHTML|insertAdjacentHTML|\beval\(", js)

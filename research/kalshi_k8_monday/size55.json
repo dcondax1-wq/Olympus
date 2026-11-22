@@ -1,0 +1,282 @@
+{
+ "as_of": "2026-11-19",
+ "days": 79,
+ "bets": 233,
+ "win_rate": 0.7296,
+ "avg_price": 0.5165,
+ "fee_per_contract": 0.0176,
+ "breakeven_win_rate": 0.5341,
+ "kelly": {
+  "in_sample_q": 0.7296,
+  "full_kelly_in_sample": 0.4197,
+  "plan_q": 0.6296,
+  "full_kelly_plan": 0.2051,
+  "quarter_kelly_plan": 0.0513
+ },
+ "min_bet": {
+  "0.50": {
+   "contracts": 1,
+   "cost": 0.52,
+   "fee": 0.02,
+   "fee_per_contract_at_4": 0.0175
+  },
+  "0.54": {
+   "contracts": 1,
+   "cost": 0.56,
+   "fee": 0.02,
+   "fee_per_contract_at_4": 0.0175
+  },
+  "0.58": {
+   "contracts": 1,
+   "cost": 0.6,
+   "fee": 0.02,
+   "fee_per_contract_at_4": 0.0175
+  }
+ },
+ "rules": {
+  "$1 a bet": {
+   "rule": {
+    "bankroll_usd": 55.0,
+    "stake_usd": 1.0,
+    "max_bets_per_day": 3,
+    "daily_loss_stop_usd": 8,
+    "week_loss_stop_usd": 13.75,
+    "kill_drawdown_usd": 19.25,
+    "contracts_at_52c": 4
+   },
+   "worlds": {
+    "tested": {
+     "world": "tested",
+     "usd_week_mean": 4.23,
+     "usd_4w_mean": 16.94,
+     "usd_4w_median": 17.03,
+     "usd_4w_p5": 6.43,
+     "usd_4w_p95": 27.08,
+     "p_down_4w": 0.0046,
+     "p_kill": 0.0061,
+     "worst_week_usd": -9.77,
+     "p_week_worse_than_25pct": 0.0,
+     "p_any_week_below_15pct": 0.0001,
+     "dd_p95": 5.81,
+     "bets_4w_mean": 59.0,
+     "win_flip": 0.0
+    },
+    "half": {
+     "world": "half",
+     "usd_week_mean": 2.13,
+     "usd_4w_mean": 8.53,
+     "usd_4w_median": 8.56,
+     "usd_4w_p5": -2.07,
+     "usd_4w_p95": 19.04,
+     "p_down_4w": 0.0911,
+     "p_kill": 0.0767,
+     "worst_week_usd": -11.67,
+     "p_week_worse_than_25pct": 0.0,
+     "p_any_week_below_15pct": 0.0021,
+     "dd_p95": 8.3,
+     "bets_4w_mean": 59.0,
+     "win_flip": 0.1371
+    },
+    "gone": {
+     "world": "gone",
+     "usd_week_mean": 0.14,
+     "usd_4w_mean": 0.54,
+     "usd_4w_median": 0.55,
+     "usd_4w_p5": -9.75,
+     "usd_4w_p95": 10.89,
+     "p_down_4w": 0.4638,
+     "p_kill": 0.2554,
+     "worst_week_usd": -12.14,
+     "p_week_worse_than_25pct": 0.0,
+     "p_any_week_below_15pct": 0.0114,
+     "dd_p95": 12.63,
+     "bets_4w_mean": 59.0,
+     "win_flip": 0.268
+    }
+   }
+  },
+  "$2.50 a bet (the rule)": {
+   "rule": {
+    "bankroll_usd": 55.0,
+    "stake_usd": 2.5,
+    "max_bets_per_day": 3,
+    "daily_loss_stop_usd": 8,
+    "week_loss_stop_usd": 13.75,
+    "kill_drawdown_usd": 19.25,
+    "contracts_at_52c": 4
+   },
+   "worlds": {
+    "tested": {
+     "world": "tested",
+     "usd_week_mean": 12.86,
+     "usd_4w_mean": 51.45,
+     "usd_4w_median": 52.67,
+     "usd_4w_p5": 15.6,
+     "usd_4w_p95": 82.49,
+     "p_down_4w": 0.0215,
+     "p_kill": 0.0455,
+     "worst_week_usd": -13.75,
+     "p_week_worse_than_25pct": 0.0,
+     "p_any_week_below_15pct": 0.0956,
+     "dd_p95": 16.75,
+     "bets_4w_mean": 57.5,
+     "win_flip": 0.0
+    },
+    "half": {
+     "world": "half",
+     "usd_week_mean": 5.95,
+     "usd_4w_mean": 23.79,
+     "usd_4w_median": 25.19,
+     "usd_4w_p5": -13.8,
+     "usd_4w_p95": 56.97,
+     "p_down_4w": 0.1583,
+     "p_kill": 0.2062,
+     "worst_week_usd": -13.75,
+     "p_week_worse_than_25pct": 0.0,
+     "p_any_week_below_15pct": 0.2933,
+     "dd_p95": 18.58,
+     "bets_4w_mean": 53.1,
+     "win_flip": 0.1371
+    },
+    "gone": {
+     "world": "gone",
+     "usd_week_mean": 0.25,
+     "usd_4w_mean": 1.0,
+     "usd_4w_median": -2.52,
+     "usd_4w_p5": -17.93,
+     "usd_4w_p95": 31.41,
+     "p_down_4w": 0.5472,
+     "p_kill": 0.559,
+     "worst_week_usd": -13.75,
+     "p_week_worse_than_25pct": 0.0,
+     "p_any_week_below_15pct": 0.5774,
+     "dd_p95": 19.01,
+     "bets_4w_mean": 43.1,
+     "win_flip": 0.268
+    }
+   }
+  },
+  "$5 a bet": {
+   "rule": {
+    "bankroll_usd": 55.0,
+    "stake_usd": 5.0,
+    "max_bets_per_day": 3,
+    "daily_loss_stop_usd": 8,
+    "week_loss_stop_usd": 13.75,
+    "kill_drawdown_usd": 19.25,
+    "contracts_at_52c": 4
+   },
+   "worlds": {
+    "tested": {
+     "world": "tested",
+     "usd_week_mean": 13.35,
+     "usd_4w_mean": 53.42,
+     "usd_4w_median": 44.79,
+     "usd_4w_p5": -12.47,
+     "usd_4w_p95": 146.43,
+     "p_down_4w": 0.1794,
+     "p_kill": 0.6601,
+     "worst_week_usd": -13.75,
+     "p_week_worse_than_25pct": 0.0,
+     "p_any_week_below_15pct": 0.3837,
+     "dd_p95": 18.16,
+     "bets_4w_mean": 29.2,
+     "win_flip": 0.0
+    },
+    "half": {
+     "world": "half",
+     "usd_week_mean": 4.67,
+     "usd_4w_mean": 18.68,
+     "usd_4w_median": 9.18,
+     "usd_4w_p5": -15.43,
+     "usd_4w_p95": 86.94,
+     "p_down_4w": 0.3745,
+     "p_kill": 0.8305,
+     "worst_week_usd": -13.75,
+     "p_week_worse_than_25pct": 0.0,
+     "p_any_week_below_15pct": 0.5356,
+     "dd_p95": 18.79,
+     "bets_4w_mean": 20.7,
+     "win_flip": 0.1371
+    },
+    "gone": {
+     "world": "gone",
+     "usd_week_mean": 0.09,
+     "usd_4w_mean": 0.36,
+     "usd_4w_median": -5.86,
+     "usd_4w_p5": -16.67,
+     "usd_4w_p95": 37.92,
+     "p_down_4w": 0.622,
+     "p_kill": 0.9391,
+     "worst_week_usd": -13.75,
+     "p_week_worse_than_25pct": 0.0,
+     "p_any_week_below_15pct": 0.6636,
+     "dd_p95": 18.97,
+     "bets_4w_mean": 14.2,
+     "win_flip": 0.268
+    }
+   }
+  },
+  "$15 a bet (old)": {
+   "rule": {
+    "bankroll_usd": 55.0,
+    "stake_usd": 15.0,
+    "max_bets_per_day": 3,
+    "daily_loss_stop_usd": 8,
+    "week_loss_stop_usd": 13.75,
+    "kill_drawdown_usd": 19.25,
+    "contracts_at_52c": 4
+   },
+   "worlds": {
+    "tested": {
+     "world": "tested",
+     "usd_week_mean": 0.0,
+     "usd_4w_mean": 0.0,
+     "usd_4w_median": 0.0,
+     "usd_4w_p5": 0.0,
+     "usd_4w_p95": 0.0,
+     "p_down_4w": 0.0,
+     "p_kill": 0.0,
+     "worst_week_usd": 0.0,
+     "p_week_worse_than_25pct": 0.0,
+     "p_any_week_below_15pct": 0.0,
+     "dd_p95": 0.0,
+     "bets_4w_mean": 0,
+     "win_flip": 0.0
+    },
+    "half": {
+     "world": "half",
+     "usd_week_mean": 0.0,
+     "usd_4w_mean": 0.0,
+     "usd_4w_median": 0.0,
+     "usd_4w_p5": 0.0,
+     "usd_4w_p95": 0.0,
+     "p_down_4w": 0.0,
+     "p_kill": 0.0,
+     "worst_week_usd": 0.0,
+     "p_week_worse_than_25pct": 0.0,
+     "p_any_week_below_15pct": 0.0,
+     "dd_p95": 0.0,
+     "bets_4w_mean": 0,
+     "win_flip": 0.1371
+    },
+    "gone": {
+     "world": "gone",
+     "usd_week_mean": 0.0,
+     "usd_4w_mean": 0.0,
+     "usd_4w_median": 0.0,
+     "usd_4w_p5": 0.0,
+     "usd_4w_p95": 0.0,
+     "p_down_4w": 0.0,
+     "p_kill": 0.0,
+     "worst_week_usd": 0.0,
+     "p_week_worse_than_25pct": 0.0,
+     "p_any_week_below_15pct": 0.0,
+     "dd_p95": 0.0,
+     "bets_4w_mean": 0,
+     "win_flip": 0.268
+    }
+   }
+  }
+ }
+}

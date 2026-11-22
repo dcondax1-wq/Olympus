@@ -1,0 +1,67 @@
+{
+ "atlas_eval": {
+  "account": "Sim205",
+  "armed": true,
+  "eval_min_room": 100.0,
+  "eval_start": "2026-11-20",
+  "plan": "rapideod25k",
+  "sizing": "safe",
+  "strategies": [
+   "ema_lon_vix",
+   "macd_sweep",
+   "sr_nyreclaim"
+  ]
+ },
+ "atlas_funded": {
+  "account": "Sim205",
+  "armed": true,
+  "eval_min_room": 100.0,
+  "eval_start": "2026-11-20",
+  "funded_start": "2026-12-20",
+  "payouts": {
+   "2027-01-05": 600.0
+  },
+  "plan": "rapideod25k",
+  "sizing": "safe",
+  "stage": "funded",
+  "strategies": [
+   "ema_lon_vix",
+   "macd_sweep",
+   "sr_nyreclaim"
+  ]
+ },
+ "default_path": "data/rapid.json",
+ "lane_eval": {
+  "adapter": "ninjatrader",
+  "armed": true,
+  "confirm": "X",
+  "enabled": true,
+  "eval_start": "2026-11-20",
+  "id": "rapid",
+  "lane": "rapid",
+  "mode": "two_week",
+  "name": "Rapid EOD 25K",
+  "nt_account": "Sim205",
+  "preset": "mffu_rapid_eod_25k"
+ },
+ "lane_funded": {
+  "adapter": "paper",
+  "armed": true,
+  "enabled": true,
+  "eval_start": "2026-11-20",
+  "funded": {
+   "payouts": {
+    "2027-01-05": 600.0
+   },
+   "start": "2026-12-20"
+  },
+  "id": "rapid",
+  "lane": "rapid",
+  "mode": "funded",
+  "name": "Rapid EOD 25K",
+  "nt_account": "Sim205",
+  "preset": "mffu_rapid_eod_25k"
+ },
+ "push_suffix": ":acctr",
+ "state_path": "/x/data/live_state_acctr.json"
+}

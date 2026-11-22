@@ -27,7 +27,8 @@ export const LOOK = {
   life: { tint: '#9ba85f', land: ['#59603f', '#3e4430'], name: 'Life' },
   obsidian: { tint: '#9d8aae', land: ['#574e50', '#3d3638'], name: 'Obsidian' },
 };
-const MARBLE = ['#bfae92', '#b09f86', '#c8b99d', '#a69680', '#c2ad90', '#b6a58a'];
+// revamp-cities 2026-11-20 (owner: "not some 2000's looking play-doh"): night stone and dark glass, not pale clay; warm and cool lit windows
+const MARBLE = ['#4d5262', '#444a5a', '#575b6b', '#4a4e5c', '#545060', '#3f4656'];
 const shade = (hex, k) => {
   const n = parseInt(hex.slice(1), 16);
   const f = (v) => Math.round(clamp(v * k, 0, 255));
@@ -211,7 +212,9 @@ export class AgoraMap {
     this.dirty = true;
   }
   _fit() {
-    const top = this.hz + 22, bot = this.H - 138, ww = WORLD.x1 - WORLD.x0, wh = WORLD.y1 - WORLD.y0;
+    // olympus2: the page says how much of the bottom its own panels take (--map-bottom: the World card + the city chips), so the islands and their labels fit above them
+    let padB = 138; try { const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--map-bottom')); if (v > 0) padB = Math.min(this.H * 0.5, v); } catch (e) { /* the default band */ }
+    const top = this.hz + 22, bot = this.H - padB, ww = WORLD.x1 - WORLD.x0, wh = WORLD.y1 - WORLD.y0;
     this.areaMid = (top + bot) / 2;
     this.fit = Math.min((this.W - 18) / ww, (bot - top) / wh);
   }
@@ -251,6 +254,7 @@ export class AgoraMap {
     const cv = this.cv;
     cv.addEventListener('pointerdown', (e) => {
       cv.setPointerCapture && cv.setPointerCapture(e.pointerId);
+      this.touchAt = performance.now();
       this.ptr.set(e.pointerId, { x: e.clientX, y: e.clientY });
       this.fly = null;
       this.tap = this.ptr.size === 1 ? { x: e.clientX, y: e.clientY, t: performance.now(), moved: 0 } : null;
@@ -303,13 +307,19 @@ export class AgoraMap {
     for (const k of Object.keys(this.isl)) if (inBlob(this.isl[k], wx, wy, 1.05)) return { kind: 'district', key: k };
     return { kind: 'sea' };
   }
-  _tap(x, y) { this.touched = true; this.onTap(this.pick(x, y), x, y); }
+  _tap(x, y) { this.touched = true; this.touchAt = performance.now(); this.onTap(this.pick(x, y), x, y); }
 
   // ---------------------------------------------------------------- loop
   start() { if (this.running) return; this.running = true; this.last = 0; const tick = (now) => { if (!this.running) return; this.raf = requestAnimationFrame(tick); this._frame(now); }; this.raf = requestAnimationFrame(tick); }
   stop() { this.running = false; cancelAnimationFrame(this.raf); }
   _frame(now) {
     if (document.hidden) return;
+    // olympus2 perf: full speed while you touch or the camera flies; 3 s after the last touch the sea and the boats hold still (decoration) until the next touch
+    if (this.fly || this.dirty) this.busyAt = now;
+    const idle = now - (this.busyAt || 0) > 3000 && now - (this.touchAt || 0) > 3000;
+    if (this.ver !== this.verSeen) { this.verSeen = this.ver; this.verAt = now; }
+    const dataDue = this.stillVer !== this.ver && now - (this.verAt || 0) >= 300;   // new data has gone quiet: one repaint
+    if (idle && !this.dirty && !this.fly && !dataDue) { this.last = now; return; }   // at rest the picture holds (no redraw until a touch, a flight or new data)
     const gap = this.low ? 50 : 30;
     if (this.last && now - this.last < gap) return;
     const dt = this.last ? Math.min(0.1, (now - this.last) / 1000) : 0.03; this.last = now;
@@ -346,12 +356,33 @@ export class AgoraMap {
     const C = this.stillCv || (this.stillCv = document.createElement('canvas'));
     if (C.width !== this.cv.width || C.height !== this.cv.height) { C.width = this.cv.width; C.height = this.cv.height; this.stillKey = ''; }
     if (!C.width || !C.height) return;
-    if (key !== this.stillKey) {
+    // olympus2 perf (PERF ASKS: cities long task 4.1 s at 4x CPU, ~45 full repaints while it loads): (a) while the camera flies, the last layer is
+    // moved / zoomed to the new camera (one drawImage) and repainted only when its zoom drifts past 0.8-1.5x; (b) data-only changes (ver) on a
+    // resting view wait until the data is quiet for 0.3 s (2 s at most). The full layer is always painted once the view rests.
+    const moving = !!this.fly, now = performance.now(), cs = this.stillCam;
+    const view = [c.x, c.y, c.s, this.W, this.H, this.dpr, this.sel, this.low ? 1 : 0].join('|');
+    let reuse = false;
+    if (key !== this.stillKey && this.stillKey && cs) {
+      const k = c.s / cs.s;
+      if (moving && k > 0.8 && k < 1.5 && this.W === cs.W && this.H === cs.H) reuse = true;
+      else if (!moving && view === this.stillView) {      // data only: wait until it goes quiet for 0.3 s (at most 2 s behind)
+        if (now - (this.verAt || 0) < 300 && now - (this.stillAt || 0) < 2000) reuse = true;   // _frame wakes once it is quiet
+      }
+    }
+    if (key !== this.stillKey && !reuse) {
       const k = C.getContext('2d');
       k.setTransform(1, 0, 0, 1, 0, 0); k.clearRect(0, 0, C.width, C.height);
       k.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
       this._land(k); this._network(k); this._props(k, 'still'); this._cityLayer(k, 'still');
-      this.stillKey = key; this.stillPaints = (this.stillPaints || 0) + 1;
+      this.stillKey = key; this.stillView = view; this.stillAt = now; this.stillVer = this.ver; this.stillCam = { x: c.x, y: c.y, s: c.s, W: this.W, H: this.H };
+      this.stillPaints = (this.stillPaints || 0) + 1;
+    }
+    if (reuse && moving) {                                  // the cached picture under the new camera: screen1 = (screen0 - mid) * k + mid + (c0 - c1) * s1
+      const k = c.s / cs.s, mx = this.W / 2, my = this.areaMid, d = this.dpr;
+      const tx = mx + (cs.x - c.x) * c.s - mx * k, ty = my + (cs.y - c.y) * c.s - my * k;
+      g.save(); g.setTransform(d * k, 0, 0, d * k, d * tx, d * ty); g.globalAlpha = 1; g.drawImage(C, 0, 0, C.width / d, C.height / d); g.restore();
+      g.lineJoin = 'round'; g.lineCap = 'round';
+      return;
     }
     g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.drawImage(C, 0, 0); g.restore();
     g.lineJoin = 'round'; g.lineCap = 'round';               // the stroke state the land and the roads used to leave for the layers above
@@ -512,16 +543,19 @@ export class AgoraMap {
       return;
     }
     g.fillStyle = shade(col, 0.95); g.fillRect(fx, top, w, h);
-    g.fillStyle = shade(col, 0.6); g.beginPath(); g.moveTo(fx + w, top); g.lineTo(fx + w + d, top - d * 0.5); g.lineTo(fx + w + d, y - d * 0.5); g.lineTo(fx + w, y); g.fill();
-    g.fillStyle = shade(col, 1.18); g.beginPath(); g.moveTo(fx, top); g.lineTo(fx + d, top - d * 0.5); g.lineTo(fx + w + d, top - d * 0.5); g.lineTo(fx + w, top); g.fill();
+    g.fillStyle = shade(col, 0.72); g.fillRect(fx, y - h * 0.35, w, h * 0.35);                 // the lower floors in the street's shadow
+    g.fillStyle = shade(col, 0.55); g.beginPath(); g.moveTo(fx + w, top); g.lineTo(fx + w + d, top - d * 0.5); g.lineTo(fx + w + d, y - d * 0.5); g.lineTo(fx + w, y); g.fill();
+    g.fillStyle = shade(col, 1.25); g.beginPath(); g.moveTo(fx, top); g.lineTo(fx + d, top - d * 0.5); g.lineTo(fx + w + d, top - d * 0.5); g.lineTo(fx + w, top); g.fill();
+    g.fillStyle = 'rgba(255,226,170,.55)'; g.fillRect(fx, top, w, Math.max(0.6, sc * 0.35));    // the roof edge catches the light
     if (b.kind === 'dome') { g.fillStyle = '#b97b4d'; g.beginPath(); g.ellipse(x + d * 0.4, top - d * 0.35, w * 0.5, w * 0.42, 0, Math.PI, TAU); g.fill(); }
     if (b.kind === 'obelisk') { g.fillStyle = shade(col, 1.2); g.beginPath(); g.moveTo(fx, top); g.lineTo(x + d * 0.3, top - w * 1.2); g.lineTo(fx + w, top); g.fill(); }
     if (w * 1 > 3.2) {                                           // lantern windows (only when big enough to read)
-      const cols = Math.max(1, Math.floor(w / 2.8)), rows = Math.max(2, Math.floor(h / 3.6)), ww = Math.max(0.9, w / cols * 0.42), wh = Math.max(1, h / rows * 0.4);
+      const cols = Math.max(1, Math.floor(w / 2.2)), rows = Math.max(2, Math.floor(h / 2.6)), ww = Math.max(0.8, w / cols * 0.5), wh = Math.max(0.8, h / rows * 0.42);
+      const cool = (b.seed & 3) === 0;                                                       // offices: cool white, homes: warm
       let z = b.seed;
       for (let r2 = 0; r2 < rows; r2++) for (let c2 = 0; c2 < cols; c2++) {
         z = (Math.imul(z, 1103515245) + 12345) >>> 0;
-        if ((z >>> 16) / 65536 < lit) { g.fillStyle = (z & 8) ? 'rgba(255,214,140,.92)' : 'rgba(255,190,105,.85)'; g.fillRect(fx + (c2 + 0.3) * (w / cols), top + (r2 + 0.35) * (h / rows), ww, wh); }
+        if ((z >>> 16) / 65536 < lit * 0.85) { g.fillStyle = cool ? ((z & 8) ? 'rgba(214,232,255,.92)' : 'rgba(176,206,250,.8)') : ((z & 8) ? 'rgba(255,214,140,.95)' : 'rgba(255,186,98,.85)'); g.fillRect(fx + (c2 + 0.25) * (w / cols), top + (r2 + 0.3) * (h / rows), ww, wh); }
       }
     }
   }

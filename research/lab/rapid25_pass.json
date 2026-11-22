@@ -1,0 +1,1275 @@
+{
+ "date": "2026-11-21",
+ "design": "research/second/rapid25_pass_design.md",
+ "n_paths": 1000,
+ "cost": "ATLAS 10 ticks a side",
+ "rows": {
+  "A0_today": {
+   "eval": {
+    "H1": {
+     "p60": 80.5,
+     "f60": 0.5,
+     "pass_med": 33.0,
+     "pass_p25": 25.0,
+     "pass_p75": 44.0,
+     "inactive": 56.0,
+     "maxgap_med": 5.0
+    },
+    "H2": {
+     "p60": 85.5,
+     "f60": 2.0,
+     "pass_med": 26.0,
+     "pass_p25": 18.0,
+     "pass_p75": 36.0,
+     "inactive": 44.0,
+     "maxgap_med": 4.0
+    },
+    "REF": {
+     "p60": 7.5,
+     "f60": 77.0,
+     "pass_med": 29.0,
+     "pass_p25": 19.0,
+     "pass_p75": 40.0,
+     "inactive": 42.1,
+     "maxgap_med": 4.0
+    }
+   },
+   "life": {
+    "H1": {
+     "usd_m": 1883,
+     "owner_6m": 11428,
+     "first_date": "2027-02-10",
+     "first_p25": "2027-01-20",
+     "first_p75": "2027-03-16",
+     "no_pay_6m": 7.4,
+     "lost_6m": 27.2,
+     "fail_before_pay": 11.7,
+     "dll_per_100": 1.13
+    },
+    "H2": {
+     "usd_m": 800,
+     "owner_6m": 4945,
+     "first_date": "2027-02-18",
+     "first_p25": "2027-01-22",
+     "first_p75": "2027-04-13",
+     "no_pay_6m": 15.1,
+     "lost_6m": 38.0,
+     "fail_before_pay": 25.7,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -50,
+     "owner_6m": 68,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 96.9,
+     "lost_6m": 18.8,
+     "fail_before_pay": 97.8,
+     "dll_per_100": 0.07
+    }
+   }
+  },
+  "A1_lit_bank1": {
+   "eval": {
+    "H1": {
+     "p60": 79.3,
+     "f60": 3.1,
+     "pass_med": 29.5,
+     "pass_p25": 21.0,
+     "pass_p75": 40.0,
+     "inactive": 20.5,
+     "maxgap_med": 3.0
+    },
+    "H2": {
+     "p60": 92.0,
+     "f60": 2.7,
+     "pass_med": 21.0,
+     "pass_p25": 15.0,
+     "pass_p75": 30.0,
+     "inactive": 8.4,
+     "maxgap_med": 2.0
+    },
+    "REF": {
+     "p60": 10.8,
+     "f60": 76.5,
+     "pass_med": 29.0,
+     "pass_p25": 20.0,
+     "pass_p75": 41.0,
+     "inactive": 36.6,
+     "maxgap_med": 3.0
+    }
+   },
+   "life": {
+    "H1": {
+     "usd_m": 1907,
+     "owner_6m": 11575,
+     "first_date": "2027-02-04",
+     "first_p25": "2027-01-13",
+     "first_p75": "2027-03-18",
+     "no_pay_6m": 8.7,
+     "lost_6m": 28.7,
+     "fail_before_pay": 16.2,
+     "dll_per_100": 1.03
+    },
+    "H2": {
+     "usd_m": 901,
+     "owner_6m": 5553,
+     "first_date": "2027-02-09",
+     "first_p25": "2027-01-15",
+     "first_p75": "2027-03-23",
+     "no_pay_6m": 10.3,
+     "lost_6m": 39.1,
+     "fail_before_pay": 25.4,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -49,
+     "owner_6m": 86,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 96.3,
+     "lost_6m": 24.5,
+     "fail_before_pay": 98.1,
+     "dll_per_100": 0.06
+    }
+   }
+  },
+  "A2_lit_bankq": {
+   "eval": {
+    "H1": {
+     "p60": 80.5,
+     "f60": 5.8,
+     "pass_med": 21.0,
+     "pass_p25": 14.0,
+     "pass_p75": 33.0,
+     "inactive": 27.8,
+     "maxgap_med": 3.0
+    },
+    "H2": {
+     "p60": 82.2,
+     "f60": 6.8,
+     "pass_med": 19.0,
+     "pass_p25": 13.0,
+     "pass_p75": 29.0,
+     "inactive": 20.1,
+     "maxgap_med": 2.0
+    },
+    "REF": {
+     "p60": 13.9,
+     "f60": 81.7,
+     "pass_med": 20.0,
+     "pass_p25": 13.25,
+     "pass_p75": 30.0,
+     "inactive": 38.0,
+     "maxgap_med": 3.0
+    }
+   },
+   "life": {
+    "H1": {
+     "usd_m": 2083,
+     "owner_6m": 12640,
+     "first_date": "2027-01-26",
+     "first_p25": "2027-01-05",
+     "first_p75": "2027-03-10",
+     "no_pay_6m": 6.5,
+     "lost_6m": 31.6,
+     "fail_before_pay": 20.9,
+     "dll_per_100": 1.14
+    },
+    "H2": {
+     "usd_m": 847,
+     "owner_6m": 5235,
+     "first_date": "2027-02-12",
+     "first_p25": "2027-01-15",
+     "first_p75": "2027-04-12",
+     "no_pay_6m": 16.2,
+     "lost_6m": 37.1,
+     "fail_before_pay": 32.6,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -50,
+     "owner_6m": 153,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 92.5,
+     "lost_6m": 39.9,
+     "fail_before_pay": 97.3,
+     "dll_per_100": 0.49
+    }
+   }
+  },
+  "A3_lit_over1": {
+   "eval": {
+    "H1": {
+     "p60": 46.0,
+     "f60": 3.0,
+     "pass_med": 34.0,
+     "pass_p25": 23.0,
+     "pass_p75": 46.0,
+     "inactive": 45.0,
+     "maxgap_med": 4.0
+    },
+    "H2": {
+     "p60": 81.0,
+     "f60": 3.6,
+     "pass_med": 28.0,
+     "pass_p25": 19.75,
+     "pass_p75": 39.0,
+     "inactive": 34.5,
+     "maxgap_med": 3.0
+    },
+    "REF": {
+     "p60": 7.4,
+     "f60": 77.7,
+     "pass_med": 29.0,
+     "pass_p25": 20.0,
+     "pass_p75": 38.25,
+     "inactive": 37.3,
+     "maxgap_med": 3.0
+    }
+   },
+   "life": {
+    "H1": {
+     "usd_m": 1143,
+     "owner_6m": 6978,
+     "first_date": "2027-04-05",
+     "first_p25": "2027-02-04",
+     "first_p75": null,
+     "no_pay_6m": 33.7,
+     "lost_6m": 18.5,
+     "fail_before_pay": 11.7,
+     "dll_per_100": 0.71
+    },
+    "H2": {
+     "usd_m": 752,
+     "owner_6m": 4656,
+     "first_date": "2027-02-26",
+     "first_p25": "2027-01-28",
+     "first_p75": "2027-04-26",
+     "no_pay_6m": 18.9,
+     "lost_6m": 36.3,
+     "fail_before_pay": 26.9,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -51,
+     "owner_6m": 67,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 97.1,
+     "lost_6m": 18.8,
+     "fail_before_pay": 97.9,
+     "dll_per_100": 0.06
+    }
+   }
+  },
+  "A4_atlas_bank1": {
+   "eval": {
+    "H1": {
+     "p60": 89.2,
+     "f60": 0.6,
+     "pass_med": 30.0,
+     "pass_p25": 21.0,
+     "pass_p75": 41.0,
+     "inactive": 7.8,
+     "maxgap_med": 3.0
+    },
+    "H2": {
+     "p60": 77.9,
+     "f60": 1.9,
+     "pass_med": 26.0,
+     "pass_p25": 17.0,
+     "pass_p75": 38.0,
+     "inactive": 27.4,
+     "maxgap_med": 3.0
+    },
+    "REF": {
+     "p60": 8.8,
+     "f60": 78.0,
+     "pass_med": 27.5,
+     "pass_p25": 18.0,
+     "pass_p75": 41.25,
+     "inactive": 36.0,
+     "maxgap_med": 3.0
+    }
+   },
+   "life": {
+    "H1": {
+     "usd_m": 2043,
+     "owner_6m": 12388,
+     "first_date": "2027-02-03",
+     "first_p25": "2027-01-14",
+     "first_p75": "2027-03-03",
+     "no_pay_6m": 4.9,
+     "lost_6m": 30.3,
+     "fail_before_pay": 14.1,
+     "dll_per_100": 1.09
+    },
+    "H2": {
+     "usd_m": 740,
+     "owner_6m": 4582,
+     "first_date": "2027-03-01",
+     "first_p25": "2027-01-27",
+     "first_p75": "2027-04-23",
+     "no_pay_6m": 19.2,
+     "lost_6m": 36.5,
+     "fail_before_pay": 25.0,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -47,
+     "owner_6m": 95,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 95.5,
+     "lost_6m": 21.8,
+     "fail_before_pay": 97.2,
+     "dll_per_100": 0.06
+    }
+   }
+  },
+  "A5_both_bank1": {
+   "eval": {
+    "H1": {
+     "p60": 84.6,
+     "f60": 2.1,
+     "pass_med": 29.0,
+     "pass_p25": 20.0,
+     "pass_p75": 40.0,
+     "inactive": 11.4,
+     "maxgap_med": 2.0
+    },
+    "H2": {
+     "p60": 82.0,
+     "f60": 3.1,
+     "pass_med": 22.0,
+     "pass_p25": 15.0,
+     "pass_p75": 34.0,
+     "inactive": 19.9,
+     "maxgap_med": 2.0
+    },
+    "REF": {
+     "p60": 10.4,
+     "f60": 78.2,
+     "pass_med": 27.0,
+     "pass_p25": 18.0,
+     "pass_p75": 39.0,
+     "inactive": 32.8,
+     "maxgap_med": 3.0
+    }
+   },
+   "life": {
+    "H1": {
+     "usd_m": 2002,
+     "owner_6m": 12143,
+     "first_date": "2027-02-03",
+     "first_p25": "2027-01-12",
+     "first_p75": "2027-03-09",
+     "no_pay_6m": 6.5,
+     "lost_6m": 29.2,
+     "fail_before_pay": 15.2,
+     "dll_per_100": 1.08
+    },
+    "H2": {
+     "usd_m": 806,
+     "owner_6m": 4979,
+     "first_date": "2027-02-19",
+     "first_p25": "2027-01-21",
+     "first_p75": "2027-04-14",
+     "no_pay_6m": 14.5,
+     "lost_6m": 36.9,
+     "fail_before_pay": 25.9,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -48,
+     "owner_6m": 99,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 94.7,
+     "lost_6m": 26.8,
+     "fail_before_pay": 96.9,
+     "dll_per_100": 0.07
+    }
+   }
+  },
+  "A6_no_guard": {
+   "eval": {
+    "H1": {
+     "p60": 66.6,
+     "f60": 6.8,
+     "pass_med": 33.0,
+     "pass_p25": 23.0,
+     "pass_p75": 45.0,
+     "inactive": 22.8,
+     "maxgap_med": 3.0
+    },
+    "H2": {
+     "p60": 49.6,
+     "f60": 10.2,
+     "pass_med": 38.0,
+     "pass_p25": 26.0,
+     "pass_p75": 48.0,
+     "inactive": 59.2,
+     "maxgap_med": 5.0
+    },
+    "REF": {
+     "p60": 1.0,
+     "f60": 91.9,
+     "pass_med": 31.5,
+     "pass_p25": 15.0,
+     "pass_p75": 41.0,
+     "inactive": 38.5,
+     "maxgap_med": 3.0
+    }
+   },
+   "life": {
+    "H1": {
+     "usd_m": 1650,
+     "owner_6m": 10032,
+     "first_date": "2027-02-22",
+     "first_p25": "2027-01-25",
+     "first_p75": "2027-04-09",
+     "no_pay_6m": 13.4,
+     "lost_6m": 24.9,
+     "fail_before_pay": 20.6,
+     "dll_per_100": 1.7
+    },
+    "H2": {
+     "usd_m": 473,
+     "owner_6m": 2975,
+     "first_date": "2027-04-16",
+     "first_p25": "2027-02-25",
+     "first_p75": null,
+     "no_pay_6m": 38.4,
+     "lost_6m": 24.8,
+     "fail_before_pay": 30.4,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -84,
+     "owner_6m": 20,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 99.2,
+     "lost_6m": 6.8,
+     "fail_before_pay": 98.2,
+     "dll_per_100": 1.71
+    }
+   }
+  },
+  "A7_atlas_only": {
+   "eval": {
+    "H1": {
+     "p60": 48.5,
+     "f60": 0.8,
+     "pass_med": 42.0,
+     "pass_p25": 34.0,
+     "pass_p75": 51.0,
+     "inactive": 79.9,
+     "maxgap_med": 6.0
+    },
+    "H2": {
+     "p60": 64.2,
+     "f60": 0.7,
+     "pass_med": 34.0,
+     "pass_p25": 24.0,
+     "pass_p75": 45.0,
+     "inactive": 81.0,
+     "maxgap_med": 7.0
+    },
+    "REF": {
+     "p60": 6.3,
+     "f60": 66.6,
+     "pass_med": 35.0,
+     "pass_p25": 25.0,
+     "pass_p75": 44.0,
+     "inactive": 58.6,
+     "maxgap_med": 5.0
+    }
+   },
+   "life": {
+    "H1": {
+     "usd_m": 1215,
+     "owner_6m": 7410,
+     "first_date": "2027-03-19",
+     "first_p25": "2027-02-17",
+     "first_p75": null,
+     "no_pay_6m": 25.1,
+     "lost_6m": 19.3,
+     "fail_before_pay": 12.6,
+     "dll_per_100": 0.9
+    },
+    "H2": {
+     "usd_m": 576,
+     "owner_6m": 3588,
+     "first_date": "2027-03-24",
+     "first_p25": "2027-02-11",
+     "first_p75": null,
+     "no_pay_6m": 30.1,
+     "lost_6m": 30.7,
+     "fail_before_pay": 22.6,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -45,
+     "owner_6m": 35,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 98.4,
+     "lost_6m": 13.4,
+     "fail_before_pay": 97.0,
+     "dll_per_100": 0.06
+    }
+   }
+  },
+  "A8_balance_aware": {
+   "eval": {
+    "H1": {
+     "p60": 81.8,
+     "f60": 0.5,
+     "pass_med": 32.0,
+     "pass_p25": 24.0,
+     "pass_p75": 43.0,
+     "inactive": 52.5,
+     "maxgap_med": 5.0
+    },
+    "H2": {
+     "p60": 85.0,
+     "f60": 2.1,
+     "pass_med": 26.0,
+     "pass_p25": 18.0,
+     "pass_p75": 36.0,
+     "inactive": 43.4,
+     "maxgap_med": 4.0
+    },
+    "REF": {
+     "p60": 7.4,
+     "f60": 77.2,
+     "pass_med": 29.0,
+     "pass_p25": 19.0,
+     "pass_p75": 40.0,
+     "inactive": 42.2,
+     "maxgap_med": 4.0
+    }
+   },
+   "life": {
+    "H1": {
+     "usd_m": 1897,
+     "owner_6m": 11511,
+     "first_date": "2027-02-08",
+     "first_p25": "2027-01-19",
+     "first_p75": "2027-03-17",
+     "no_pay_6m": 8.4,
+     "lost_6m": 27.9,
+     "fail_before_pay": 12.9,
+     "dll_per_100": 1.12
+    },
+    "H2": {
+     "usd_m": 797,
+     "owner_6m": 4924,
+     "first_date": "2027-02-18",
+     "first_p25": "2027-01-25",
+     "first_p75": "2027-04-12",
+     "no_pay_6m": 15.6,
+     "lost_6m": 37.7,
+     "fail_before_pay": 25.5,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -51,
+     "owner_6m": 64,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 96.8,
+     "lost_6m": 18.2,
+     "fail_before_pay": 97.8,
+     "dll_per_100": 0.07
+    }
+   }
+  }
+ },
+ "judge": {
+  "rows": {
+   "A1_lit_bank1": {
+    "qualifies": false,
+    "why_not": [
+     "H1 eval fail 0.5 -> 3.1%"
+    ]
+   },
+   "A2_lit_bankq": {
+    "qualifies": false,
+    "why_not": [
+     "H1 eval fail 0.5 -> 5.8%",
+     "H2 eval fail 2.0 -> 6.8%"
+    ]
+   },
+   "A3_lit_over1": {
+    "qualifies": false,
+    "why_not": [
+     "H1 $1883 -> $1143/mo",
+     "H1 eval fail 0.5 -> 3.0%",
+     "H2 $800 -> $752/mo",
+     "H2 eval fail 2.0 -> 3.6%"
+    ]
+   },
+   "A4_atlas_bank1": {
+    "qualifies": false,
+    "why_not": [
+     "H2 $800 -> $740/mo"
+    ]
+   },
+   "A5_both_bank1": {
+    "qualifies": false,
+    "why_not": [
+     "H1 eval fail 0.5 -> 2.1%",
+     "H2 eval fail 2.0 -> 3.1%"
+    ]
+   },
+   "A6_no_guard": {
+    "qualifies": false,
+    "why_not": [
+     "H1 $1883 -> $1650/mo",
+     "H1 eval fail 0.5 -> 6.8%",
+     "H2 $800 -> $473/mo",
+     "H2 eval fail 2.0 -> 10.2%",
+     "REF $-50 -> $-84/mo",
+     "not 2+ sessions faster in both halves nor -5 pts inactivity"
+    ]
+   },
+   "A7_atlas_only": {
+    "qualifies": false,
+    "why_not": [
+     "H1 $1883 -> $1215/mo",
+     "H2 $800 -> $576/mo",
+     "not 2+ sessions faster in both halves nor -5 pts inactivity"
+    ]
+   },
+   "A8_balance_aware": {
+    "qualifies": false,
+    "why_not": [
+     "not 2+ sessions faster in both halves nor -5 pts inactivity"
+    ]
+   }
+  },
+  "winner": null
+ },
+ "took_s": 61,
+ "posthoc_idle": {
+  "A0_today": {
+   "eval": {
+    "H1": {
+     "p60": 41.0,
+     "f60": 56.1,
+     "pass_med": 27.0,
+     "pass_p25": 21.0,
+     "pass_p75": 36.0,
+     "inactive": 56.0,
+     "maxgap_med": 5.0
+    },
+    "H2": {
+     "p60": 53.5,
+     "f60": 44.2,
+     "pass_med": 22.0,
+     "pass_p25": 15.0,
+     "pass_p75": 31.0,
+     "inactive": 44.0,
+     "maxgap_med": 4.0
+    },
+    "REF": {
+     "p60": 7.0,
+     "f60": 85.7,
+     "pass_med": 28.0,
+     "pass_p25": 18.0,
+     "pass_p75": 39.0,
+     "inactive": 42.1,
+     "maxgap_med": 4.0
+    }
+   },
+   "life": {
+    "H1": {
+     "usd_m": 1543,
+     "owner_6m": 9518,
+     "first_date": "2027-02-26",
+     "first_p25": "2027-01-26",
+     "first_p75": "2027-04-21",
+     "no_pay_6m": 16.4,
+     "lost_6m": 24.3,
+     "fail_before_pay": 61.9,
+     "dll_per_100": 1.01
+    },
+    "H2": {
+     "usd_m": 755,
+     "owner_6m": 4757,
+     "first_date": "2027-02-24",
+     "first_p25": "2027-01-26",
+     "first_p75": "2027-04-20",
+     "no_pay_6m": 17.5,
+     "lost_6m": 36.8,
+     "fail_before_pay": 57.0,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -61,
+     "owner_6m": 71,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 97.2,
+     "lost_6m": 19.3,
+     "fail_before_pay": 98.5,
+     "dll_per_100": 0.05
+    }
+   }
+  },
+  "A1_lit_bank1": {
+   "eval": {
+    "H1": {
+     "p60": 70.7,
+     "f60": 21.6,
+     "pass_med": 28.0,
+     "pass_p25": 20.0,
+     "pass_p75": 38.0,
+     "inactive": 20.5,
+     "maxgap_med": 3.0
+    },
+    "H2": {
+     "p60": 89.5,
+     "f60": 8.8,
+     "pass_med": 21.0,
+     "pass_p25": 15.0,
+     "pass_p75": 29.0,
+     "inactive": 8.4,
+     "maxgap_med": 2.0
+    },
+    "REF": {
+     "p60": 10.4,
+     "f60": 82.3,
+     "pass_med": 29.0,
+     "pass_p25": 20.0,
+     "pass_p75": 40.0,
+     "inactive": 36.6,
+     "maxgap_med": 3.0
+    }
+   },
+   "life": {
+    "H1": {
+     "usd_m": 1906,
+     "owner_6m": 11593,
+     "first_date": "2027-02-05",
+     "first_p25": "2027-01-13",
+     "first_p75": "2027-03-16",
+     "no_pay_6m": 8.0,
+     "lost_6m": 28.9,
+     "fail_before_pay": 30.8,
+     "dll_per_100": 1.02
+    },
+    "H2": {
+     "usd_m": 919,
+     "owner_6m": 5671,
+     "first_date": "2027-02-09",
+     "first_p25": "2027-01-15",
+     "first_p75": "2027-03-18",
+     "no_pay_6m": 8.9,
+     "lost_6m": 39.8,
+     "fail_before_pay": 30.3,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -57,
+     "owner_6m": 82,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 96.2,
+     "lost_6m": 27.5,
+     "fail_before_pay": 98.6,
+     "dll_per_100": 0.06
+    }
+   }
+  },
+  "A2_lit_bankq": {
+   "eval": {
+    "H1": {
+     "p60": 69.3,
+     "f60": 28.9,
+     "pass_med": 19.0,
+     "pass_p25": 13.0,
+     "pass_p75": 29.0,
+     "inactive": 27.8,
+     "maxgap_med": 3.0
+    },
+    "H2": {
+     "p60": 77.2,
+     "f60": 21.4,
+     "pass_med": 18.0,
+     "pass_p25": 13.0,
+     "pass_p75": 27.0,
+     "inactive": 20.1,
+     "maxgap_med": 2.0
+    },
+    "REF": {
+     "p60": 13.2,
+     "f60": 84.8,
+     "pass_med": 19.0,
+     "pass_p25": 13.0,
+     "pass_p75": 29.0,
+     "inactive": 38.0,
+     "maxgap_med": 3.0
+    }
+   },
+   "life": {
+    "H1": {
+     "usd_m": 2191,
+     "owner_6m": 13321,
+     "first_date": "2027-01-25",
+     "first_p25": "2027-01-05",
+     "first_p75": "2027-02-25",
+     "no_pay_6m": 4.0,
+     "lost_6m": 32.6,
+     "fail_before_pay": 38.4,
+     "dll_per_100": 1.18
+    },
+    "H2": {
+     "usd_m": 890,
+     "owner_6m": 5519,
+     "first_date": "2027-02-10",
+     "first_p25": "2027-01-15",
+     "first_p75": "2027-03-25",
+     "no_pay_6m": 10.5,
+     "lost_6m": 39.6,
+     "fail_before_pay": 39.2,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -61,
+     "owner_6m": 157,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 91.8,
+     "lost_6m": 44.1,
+     "fail_before_pay": 97.7,
+     "dll_per_100": 0.45
+    }
+   }
+  },
+  "A3_lit_over1": {
+   "eval": {
+    "H1": {
+     "p60": 35.3,
+     "f60": 46.0,
+     "pass_med": 30.0,
+     "pass_p25": 21.0,
+     "pass_p75": 42.0,
+     "inactive": 45.0,
+     "maxgap_med": 4.0
+    },
+    "H2": {
+     "p60": 61.2,
+     "f60": 35.1,
+     "pass_med": 25.0,
+     "pass_p25": 17.0,
+     "pass_p75": 34.0,
+     "inactive": 34.5,
+     "maxgap_med": 3.0
+    },
+    "REF": {
+     "p60": 7.2,
+     "f60": 83.8,
+     "pass_med": 29.0,
+     "pass_p25": 20.0,
+     "pass_p75": 38.0,
+     "inactive": 37.3,
+     "maxgap_med": 3.0
+    }
+   },
+   "life": {
+    "H1": {
+     "usd_m": 1029,
+     "owner_6m": 6392,
+     "first_date": "2027-04-15",
+     "first_p25": "2027-02-10",
+     "first_p75": null,
+     "no_pay_6m": 38.8,
+     "lost_6m": 17.4,
+     "fail_before_pay": 62.7,
+     "dll_per_100": 0.64
+    },
+    "H2": {
+     "usd_m": 715,
+     "owner_6m": 4482,
+     "first_date": "2027-03-03",
+     "first_p25": "2027-01-29",
+     "first_p75": "2027-05-04",
+     "no_pay_6m": 21.2,
+     "lost_6m": 35.0,
+     "fail_before_pay": 50.3,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -60,
+     "owner_6m": 63,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 97.2,
+     "lost_6m": 20.6,
+     "fail_before_pay": 98.7,
+     "dll_per_100": 0.05
+    }
+   }
+  },
+  "A4_atlas_bank1": {
+   "eval": {
+    "H1": {
+     "p60": 84.7,
+     "f60": 8.1,
+     "pass_med": 30.0,
+     "pass_p25": 21.0,
+     "pass_p75": 40.0,
+     "inactive": 7.8,
+     "maxgap_med": 3.0
+    },
+    "H2": {
+     "p60": 65.1,
+     "f60": 27.6,
+     "pass_med": 24.0,
+     "pass_p25": 16.0,
+     "pass_p75": 35.0,
+     "inactive": 27.4,
+     "maxgap_med": 3.0
+    },
+    "REF": {
+     "p60": 8.7,
+     "f60": 82.1,
+     "pass_med": 27.0,
+     "pass_p25": 18.0,
+     "pass_p75": 41.0,
+     "inactive": 36.0,
+     "maxgap_med": 3.0
+    }
+   },
+   "life": {
+    "H1": {
+     "usd_m": 2034,
+     "owner_6m": 12345,
+     "first_date": "2027-02-03",
+     "first_p25": "2027-01-14",
+     "first_p75": "2027-03-04",
+     "no_pay_6m": 4.3,
+     "lost_6m": 30.5,
+     "fail_before_pay": 21.3,
+     "dll_per_100": 1.08
+    },
+    "H2": {
+     "usd_m": 719,
+     "owner_6m": 4504,
+     "first_date": "2027-03-03",
+     "first_p25": "2027-01-27",
+     "first_p75": "2027-04-29",
+     "no_pay_6m": 20.2,
+     "lost_6m": 35.5,
+     "fail_before_pay": 47.6,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -52,
+     "owner_6m": 107,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 94.9,
+     "lost_6m": 24.4,
+     "fail_before_pay": 97.4,
+     "dll_per_100": 0.06
+    }
+   }
+  },
+  "A5_both_bank1": {
+   "eval": {
+    "H1": {
+     "p60": 81.2,
+     "f60": 11.9,
+     "pass_med": 28.0,
+     "pass_p25": 19.0,
+     "pass_p75": 39.0,
+     "inactive": 11.4,
+     "maxgap_med": 2.0
+    },
+    "H2": {
+     "p60": 74.5,
+     "f60": 20.4,
+     "pass_med": 21.0,
+     "pass_p25": 14.0,
+     "pass_p75": 30.0,
+     "inactive": 19.9,
+     "maxgap_med": 2.0
+    },
+    "REF": {
+     "p60": 10.4,
+     "f60": 82.2,
+     "pass_med": 27.0,
+     "pass_p25": 18.0,
+     "pass_p75": 39.0,
+     "inactive": 32.8,
+     "maxgap_med": 3.0
+    }
+   },
+   "life": {
+    "H1": {
+     "usd_m": 2046,
+     "owner_6m": 12421,
+     "first_date": "2027-02-03",
+     "first_p25": "2027-01-12",
+     "first_p75": "2027-03-04",
+     "no_pay_6m": 4.9,
+     "lost_6m": 29.2,
+     "fail_before_pay": 22.7,
+     "dll_per_100": 1.08
+    },
+    "H2": {
+     "usd_m": 818,
+     "owner_6m": 5081,
+     "first_date": "2027-02-18",
+     "first_p25": "2027-01-21",
+     "first_p75": "2027-04-09",
+     "no_pay_6m": 13.5,
+     "lost_6m": 37.1,
+     "fail_before_pay": 39.7,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -52,
+     "owner_6m": 112,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 94.1,
+     "lost_6m": 30.0,
+     "fail_before_pay": 97.0,
+     "dll_per_100": 0.07
+    }
+   }
+  },
+  "A6_no_guard": {
+   "eval": {
+    "H1": {
+     "p60": 61.9,
+     "f60": 24.8,
+     "pass_med": 32.0,
+     "pass_p25": 22.0,
+     "pass_p75": 43.0,
+     "inactive": 22.8,
+     "maxgap_med": 3.0
+    },
+    "H2": {
+     "p60": 30.1,
+     "f60": 60.7,
+     "pass_med": 31.0,
+     "pass_p25": 22.0,
+     "pass_p75": 43.0,
+     "inactive": 59.2,
+     "maxgap_med": 5.0
+    },
+    "REF": {
+     "p60": 0.9,
+     "f60": 93.7,
+     "pass_med": 29.0,
+     "pass_p25": 15.0,
+     "pass_p75": 41.0,
+     "inactive": 38.5,
+     "maxgap_med": 3.0
+    }
+   },
+   "life": {
+    "H1": {
+     "usd_m": 1723,
+     "owner_6m": 10504,
+     "first_date": "2027-02-18",
+     "first_p25": "2027-01-25",
+     "first_p75": "2027-03-30",
+     "no_pay_6m": 10.2,
+     "lost_6m": 26.5,
+     "fail_before_pay": 34.9,
+     "dll_per_100": 1.7
+    },
+    "H2": {
+     "usd_m": 376,
+     "owner_6m": 2533,
+     "first_date": "2027-05-12",
+     "first_p25": "2027-03-04",
+     "first_p75": null,
+     "no_pay_6m": 47.7,
+     "lost_6m": 21.3,
+     "fail_before_pay": 72.3,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -96,
+     "owner_6m": 26,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 99.0,
+     "lost_6m": 7.5,
+     "fail_before_pay": 98.4,
+     "dll_per_100": 1.78
+    }
+   }
+  },
+  "A7_atlas_only": {
+   "eval": {
+    "H1": {
+     "p60": 15.4,
+     "f60": 80.0,
+     "pass_med": 35.5,
+     "pass_p25": 26.0,
+     "pass_p75": 42.0,
+     "inactive": 79.9,
+     "maxgap_med": 5.0
+    },
+    "H2": {
+     "p60": 18.8,
+     "f60": 81.0,
+     "pass_med": 22.0,
+     "pass_p25": 16.0,
+     "pass_p75": 30.0,
+     "inactive": 81.0,
+     "maxgap_med": 5.0
+    },
+    "REF": {
+     "p60": 5.0,
+     "f60": 85.8,
+     "pass_med": 31.0,
+     "pass_p25": 23.0,
+     "pass_p75": 39.0,
+     "inactive": 58.6,
+     "maxgap_med": 5.0
+    }
+   },
+   "life": {
+    "H1": {
+     "usd_m": 639,
+     "owner_6m": 4246,
+     "first_date": null,
+     "first_p25": "2027-03-12",
+     "first_p75": null,
+     "no_pay_6m": 55.8,
+     "lost_6m": 10.8,
+     "fail_before_pay": 84.9,
+     "dll_per_100": 0.56
+    },
+    "H2": {
+     "usd_m": 330,
+     "owner_6m": 2473,
+     "first_date": "2027-05-18",
+     "first_p25": "2027-03-02",
+     "first_p75": null,
+     "no_pay_6m": 49.1,
+     "lost_6m": 22.5,
+     "fail_before_pay": 85.4,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -63,
+     "owner_6m": 40,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 98.2,
+     "lost_6m": 14.3,
+     "fail_before_pay": 99.3,
+     "dll_per_100": 0.05
+    }
+   }
+  },
+  "A8_balance_aware": {
+   "eval": {
+    "H1": {
+     "p60": 44.9,
+     "f60": 52.5,
+     "pass_med": 27.0,
+     "pass_p25": 20.0,
+     "pass_p75": 36.0,
+     "inactive": 52.5,
+     "maxgap_med": 5.0
+    },
+    "H2": {
+     "p60": 54.1,
+     "f60": 43.6,
+     "pass_med": 22.0,
+     "pass_p25": 15.0,
+     "pass_p75": 31.0,
+     "inactive": 43.4,
+     "maxgap_med": 4.0
+    },
+    "REF": {
+     "p60": 7.0,
+     "f60": 86.0,
+     "pass_med": 28.0,
+     "pass_p25": 18.0,
+     "pass_p75": 39.0,
+     "inactive": 42.2,
+     "maxgap_med": 4.0
+    }
+   },
+   "life": {
+    "H1": {
+     "usd_m": 1658,
+     "owner_6m": 10194,
+     "first_date": "2027-02-19",
+     "first_p25": "2027-01-22",
+     "first_p75": "2027-04-07",
+     "no_pay_6m": 12.8,
+     "lost_6m": 25.8,
+     "fail_before_pay": 57.4,
+     "dll_per_100": 1.04
+    },
+    "H2": {
+     "usd_m": 758,
+     "owner_6m": 4770,
+     "first_date": "2027-02-24",
+     "first_p25": "2027-01-27",
+     "first_p75": "2027-04-19",
+     "no_pay_6m": 17.7,
+     "lost_6m": 37.3,
+     "fail_before_pay": 55.7,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -61,
+     "owner_6m": 69,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 97.1,
+     "lost_6m": 19.5,
+     "fail_before_pay": 98.6,
+     "dll_per_100": 0.06
+    }
+   }
+  }
+ },
+ "cards": {
+  "rapid25-lit-bank": {
+   "recommend": "yes",
+   "usd_month_by": {
+    "jan_jun": 363,
+    "jul_oct": 164,
+    "y2021_25": 4
+   },
+   "usd_month": 164
+  }
+ }
+}

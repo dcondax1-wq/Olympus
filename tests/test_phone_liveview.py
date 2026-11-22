@@ -109,7 +109,7 @@ def main():
     check("liveviewchart.js + liveview.css byte-identical to the PC's", rd("tools", "web_public", "liveviewchart.js") == rd("web_next", "js", "next", "liveviewchart.js")
           and rd("tools", "web_public", "liveview.css") == rd("web_next", "css", "liveview.css"))
     check("index.html loads liveview.js after real.js; live.js v2", 'src="liveview.js?v=' in pidx and pidx.index("real.js?v=") < pidx.index("liveview.js?v=")
-          and 'src="live.js?v=4"' in pidx)
+          and 'src="live.js?v=5"' in pidx)
     check("More > Today lists liveview; live.js waits on the Live View page", "['Today', ['liveview'," in cl and "PAGE === 'liveview'" in lj)
     check("phone cache bumped to le-public-v42+", int(re.search(r"le-public-v(\d+)", sw).group(1)) >= 42)
     check("liveview.js reads liveview.json from the live branch, GET only", "contents/liveview.json?ref=live" in lv and "/live/liveview.json" in lv

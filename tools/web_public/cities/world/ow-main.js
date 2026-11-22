@@ -4,7 +4,7 @@
 // the four doors; every app is a tower you tap to open; every learning place is real data. Live: the PC feed (../../pc_feed.js: a bot
 // in a trade pulses), the Board's events, the edge light and the Lab's newest verdicts. Read only: GET only, nothing armed, no orders,
 // text only through textContent, no browser storage. No WebGL (or 3D switched off): a plain list of the same city, never blank.
-import * as C from './ow-core.js?v=w1';
+import * as C from './ow-core.js?v=w8';
 
 const d = document, $ = (s) => d.querySelector(s);
 const O = () => window.OLYMPUS || null;
@@ -14,7 +14,8 @@ const ROOT = '../../';
 const S = { world: null, plan: null, scene: null, mode: 'loading', sel: -1, dist: null, feed: [], tick: -1, liveLines: [], live: {}, err: null, byId: new Map(),
   tour: false, history: false, t0: performance.now(), firstFrameMs: null, labelsAt: 0, labelKeys: [] };
 const el = (tag, cls, text) => { const e = d.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; };
-const DSHORT = { zeus: 'NQ', kalshi: 'Kalshi', money: 'Money', more: 'More' };
+const saveData = () => { try { return !!(navigator.connection && navigator.connection.saveData); } catch (e) { return false; } };
+const DSHORT = { zeus: 'NQ', kalshi: 'Kalshi', sites: 'Websites', lab: 'Lab', life: 'Life', money: 'Money', more: 'More' };
 
 // ------------------------------------------------------------------------------------------------ boot
 function fixSeal() {
@@ -29,6 +30,24 @@ async function getJSON(u, ms) {
 function webgl() {
   try { const c = d.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; }
 }
+/** after the first paint and an idle slice (or ms at most): the poster is on screen before any heavy work starts */
+function idle(ms) {
+  return new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(() => {
+    if (typeof requestIdleCallback === 'function') requestIdleCallback(() => ok(), { timeout: ms }); else setTimeout(ok, 60);
+  })));
+}
+/** when to build the 3D (lead 2026-11-21, jarvis/backdrop.js's rule): a phone waits for the first touch or 6.5 s after load with an idle slice,
+ *  the photo poster of the city on screen meanwhile; a desktop builds at the first idle slice. Never before the first paint. */
+function startWhen() {
+  const phone = (() => { try { return matchMedia('(pointer: coarse)').matches || innerWidth < 700; } catch (e) { return true; } })();
+  if (!phone) return idle(1500);
+  return new Promise((ok) => {
+    let done = false;
+    const go = () => { if (done) return; done = true; removeEventListener('pointerdown', go, true); removeEventListener('keydown', go, true); idle(800).then(ok); };
+    addEventListener('pointerdown', go, true); addEventListener('keydown', go, true);
+    setTimeout(go, Math.max(0, 6500 - performance.now()));                       // backdrop.js: never in the first 6 s on a phone
+  });
+}
 async function boot() {
   fixSeal();
   setTimeout(fixSeal, 600);
@@ -40,16 +59,24 @@ async function boot() {
     return;
   }
   S.world = w;
+  w.places.forEach(C.siteBuildings);                                         // the concept sites' letters -> buildings
+  w.places.push(...C.hubPlaces(w));                                          // the Research Hub's compact rows -> places (their words load later)
   w.places.forEach((p, i) => S.byId.set(p.id, i));
   header();
-  const flat = qs.get('flat') === '1' || !webgl() || (O() && O().fx && O().fx() === 'off' && !qs.get('q'));
+  setInterval(() => { if (!d.hidden && S.world) $('#sub').textContent = $('#sub').textContent.replace(/^[^·]*· \d{1,2}:\d{2} ET · /, '').replace(/^/, skyLine()); }, 60000);
+  // the phone's budget (lead 2026-11-21, like jarvis/backdrop.js): Save-Data or the Low setting = the list (a button builds the 3D anyway);
+  // otherwise the poster first and the 3D city only once the page is idle (no long task fighting the first taps)
+  const fxNow = O() && O().fx ? O().fx() : '';
+  S.lite3d = (saveData() || fxNow === 'low') && !qs.get('q') && qs.get('city') !== '3d';
+  const flat = qs.get('flat') === '1' || !webgl() || (fxNow === 'off' && !qs.get('q')) || S.lite3d;
+  if (!flat && qs.get('clock') !== 'manual') await startWhen();
   if (flat) { renderFlat(); }
   else {
     try {
-      S.plan = C.planWorld(w, { tier: O() && O().lite && O().lite() ? 'low' : 'high' });
-      const M = await import('./ow-scene.js?v=w1');
-      S.scene = M.createWorld({ canvas: $('#c'), world: w, plan: S.plan, reduced, manual: qs.get('clock') === 'manual', tier: O() && O().lite && O().lite() ? 'low' : 'high',
-        onTap, onFrame, onUser: () => { hideHint(); if (S.tour) setTour(false); }, onIntroDone: () => showHint() });
+      S.plan = C.planWorld(w, { tier: O() && O().lite && O().lite() ? 'low' : 'high', phone: (() => { try { return matchMedia('(pointer: coarse)').matches; } catch (e) { return false; } })() });
+      const M = await import('./ow-scene.js?v=w7');
+      S.scene = M.createWorld({ canvas: $('#c'), world: w, plan: S.plan, reduced, sky: qs.get('sky') || 'auto', manual: qs.get('clock') === 'manual', tier: O() && O().lite && O().lite() ? 'low' : 'high',
+        onTap, onFrame, onUser: () => { hideHint(); if (S.tour) setTour(false); }, onIntroDone: () => { showHint(); snd('chime'); cityBed(); } });
       S.mode = '3d';
       setTimeout(() => d.body.classList.add('live3d'), 6000);                 // the first frame normally lifts the poster (onFrame); never stuck on it
       if (reduced) showHint();
@@ -58,6 +85,9 @@ async function boot() {
       renderFlat();
     }
   }
+  // Research Hub Decide cards pulse until they are answered (the hub rebuilds them as live / lead / rejected)
+  if (S.scene) S.world.places.forEach((p, i) => { if (p.kind === 'hub' && p.state === 'decide') S.scene.setTrading(i, true); });
+  hubWords();
   startTicker();
   live();
   setInterval(() => { if (!d.hidden) live(); }, 60000);
@@ -67,7 +97,7 @@ async function boot() {
 // ------------------------------------------------------------------------------------------------ the top bar
 function header() {
   const w = S.world, c = w.counts || {};
-  $('#sub').textContent = `${(w.districts || []).length} districts · ${c.apps || 0} apps · ${c.learning || 0} places learning · ${Number(c.buildings || 0).toLocaleString('en-US')} tests`;
+  $('#sub').textContent = `${skyLine()}${(w.districts || []).length} districts · ${c.apps || 0} apps · ${c.learning || 0} places learning · ${Number(c.buildings || 0).toLocaleString('en-US')} tests`;
   const nav = $('#districts');
   nav.textContent = '';
   for (const dd of w.districts || []) {
@@ -79,10 +109,18 @@ function header() {
     nav.append(b);
   }
 }
+// cities3: the sky in words with the New York time ("Day · 10:12 ET"), refreshed with the header each minute
+function skyLine() {
+  try {
+    const now = new Date(), k = C.skyFor(qs.get('sky') || 'auto', now);
+    const hm = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit', hour12: false }).format(now);
+    return `${C.skyWords(k, now)} · ${hm} ET · `;
+  } catch (e) { return ''; }
+}
 function pressDistrict(id) { for (const b of d.querySelectorAll('.dch')) b.setAttribute('aria-pressed', String(b.dataset.d === id)); }
 
 // ------------------------------------------------------------------------------------------------ the card
-const STATE_C = { live: '#ffc65a', app: '#ffd98a', bright: '#7ee08a', growing: '#62e8ff', testing: '#ffb347', planned: '#ffb347', ruin: '#ff7a5e', data: '#8fb4ff', paused: '#9aa3c0' };
+const STATE_C = { decide: '#f1c14b', live: '#ffc65a', app: '#ffd98a', bright: '#7ee08a', growing: '#62e8ff', testing: '#ffb347', planned: '#ffb347', ruin: '#ff7a5e', data: '#8fb4ff', paused: '#9aa3c0' };
 function place(i) { return S.world.places[i]; }
 function districtOf(id) { return (S.world.districts || []).find((x) => x.id === id) || null; }
 function quarterName(p) { const dd = districtOf(p.district); const q = dd && (dd.quarters || []).find((x) => x.id === p.quarter); return q ? q.name : p.quarter; }
@@ -127,7 +165,7 @@ function openPlace(i, o) {
   if (how) body.append(el('p', 'how', how));
   const acts = el('div', 'acts');
   if (p.href) {
-    const a = el('button', 'btn go', p.kind === 'app' ? 'Open ' + p.name : p.kind === 'decision' ? 'Answer on the Board' : 'Open');
+    const a = el('button', 'btn go', p.kind === 'app' ? 'Open ' + p.name : p.kind === 'decision' ? 'Answer on the Board' : p.kind === 'hub' ? 'Read' : 'Open');
     a.type = 'button'; a.onclick = () => go(p.href, i);
     acts.append(a);
   }
@@ -138,7 +176,7 @@ function openPlace(i, o) {
   if (S.scene) { S.scene.select(i); if (!o || o.fly !== false) flyPlace(i, true); }
   pressDistrict(p.district);
   try { history.replaceState(null, '', '#p=' + encodeURIComponent(p.id)); } catch (e) { /* fine */ }
-  if (window.OLYMPUS_SFX && window.OLYMPUS_SFX.cue) try { window.OLYMPUS_SFX.cue('tap'); } catch (e) { /* no sound */ }
+  snd('open');
 }
 function flyPlace(i, already) {
   if (!S.scene) { if (!already) openPlace(i); return; }
@@ -202,18 +240,36 @@ function goDistrict(id) {
 function go(href, i) {
   const url = ROOT + href;
   const W = window.OLYMPUS_WARP;
-  if (W && typeof W.go === 'function') { try { W.go(url, { from: 'world', c: i >= 0 ? place(i).hue : null }); return; } catch (e) { /* our own */ } }
+  if (W && typeof W.go === 'function') { leaving(); try { W.go(url, { from: 'world', c: i >= 0 ? place(i).hue : null }); return; } catch (e) { /* our own */ } }
   if (!S.scene || reduced) { location.href = url; return; }
   const p = S.plan.places[i] || null;
   flash();
   if (p) S.scene.flyTo({ tx: p.x, ty: p.top * 0.6, tz: p.z, dist: 7, yaw: S.scene.pose().yaw, pitch: 0.18 }, { warp: true, ms: 650, lift: -0.2 });
   setTimeout(() => { location.href = url; }, 620);
 }
+// olympus2 2026-11-20 (lead: the World "fast to leave"): any way out (a link, Home, Go to, the warp, the back button) stops the 3D loop first
+function leaving() { if (S.scene && S.scene.halt && !S.left) { S.left = true; try { S.scene.halt(); } catch (e) { /* gone */ } } }
+d.addEventListener('click', (e) => {
+  const a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+  if (!a || e.defaultPrevented || a.target === '_blank' || e.metaKey || e.ctrlKey) return;
+  const h = a.getAttribute('href') || '';
+  if (h && h[0] !== '#' && !/^javascript:/i.test(h)) leaving();
+}, true);
+addEventListener('pagehide', leaving);
+addEventListener('pageshow', (e) => { if (e.persisted && S.left && S.scene && S.scene.resume) { S.left = false; S.scene.resume(); } });
 function flash() {
   if (reduced) return;
   const f = $('#flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go');
-  if (window.OLYMPUS_SFX && window.OLYMPUS_SFX.cue) try { window.OLYMPUS_SFX.cue('whoosh'); } catch (e) { /* no sound */ }
+  snd('swipe');
 }
+
+// cities3 2026-11-20 (owner: "sounds ... tasteful, optional"): every World sound asks the Settings Sound switch first (ON only when the owner turned
+// it on: the engine's own setting, read through its API, no storage here), never while Jarvis talks. A quiet city bed once the city is up.
+function soundOn() {
+  try { const X = window.OLYMPUS_SFX; if (!X || !X.ambientState || (window.OLYMPUS_QUIET && window.OLYMPUS_QUIET())) return false; const st = X.ambientState(); return st.sound === true && !(X.state && X.state().muted); } catch (e) { return false; }
+}
+function snd(name) { if (soundOn()) try { window.OLYMPUS_SFX.play(name); } catch (e) { /* no sound */ } }
+function cityBed() { if (soundOn() && !reduced) try { window.OLYMPUS_SFX.ambient('city'); } catch (e) { /* no sound */ } }
 
 // ------------------------------------------------------------------------------------------------ taps, labels
 function onTap(x, y) {
@@ -235,6 +291,50 @@ function onFrame() {
   const now = performance.now();
   if (now - S.labelsAt > 240) { S.labelsAt = now; chooseLabelSet(); }
   placeLabels();
+  placeBills();
+}
+// cities3 2026-11-20: the district billboards = real text pinned over the ZEUS (NQ), Kalshi bot and Business (Money) towers, live numbers from
+// the PC feed and kalshi.json (C.billboards). Three projections a frame; transform only (no layout); hidden off screen or under the top bar.
+const BILLS = [['nq', 'hub/zeus.html', '#ffc65a'], ['kalshi', 'kalshi/', '#7aa7ff'], ['money', 'business/', '#5fe0a0']];
+function billBox() {
+  let box = $('#bills');
+  if (box) return box;
+  box = el('div'); box.id = 'bills'; box.setAttribute('aria-live', 'off');
+  for (const [k, href, c] of BILLS) {
+    const i = S.plan ? S.plan.places.findIndex((p) => p.raw && p.raw.href === href) : -1;
+    const b = el('a', 'bill'); b.dataset.k = k; b.dataset.i = String(i); b.href = ROOT + href; b.style.setProperty('--c', c); b.hidden = true;
+    b.append(el('b', 'bt'), el('span', 'bl')); box.append(b);
+  }
+  $('#labels').after(box);
+  return box;
+}
+function fillBills(bb) {
+  const box = billBox();
+  for (const b of box.children) {
+    const parts = String(bb[b.dataset.k] || '').split(/\s+·\s+/).filter(Boolean);
+    b.dataset.has = parts.length > 1 ? '1' : '';
+    b.querySelector('.bt').textContent = parts[0] || '';
+    b.querySelector('.bl').textContent = parts.slice(1, 5).join('\n');
+  }
+}
+function placeBills() {
+  const box = $('#bills'); if (!box || !S.scene || !S.plan) return;
+  const top = S.topB || ($('#top') ? $('#top').getBoundingClientRect().bottom : 0), H = innerHeight, W = innerWidth, pose = S.scene.pose();
+  const show = !S.history && S.sel < 0 && !S.tour;
+  for (const b of box.children) {
+    const i = +b.dataset.i, p = S.plan.places[i];
+    let vis = show && b.dataset.has === '1' && !!p;
+    if (vis) {
+      const q = S.scene.project(p.x, p.top + 3, p.z);
+      vis = q.front && q.sx > 20 && q.sx < W - 20 && q.sy > top + 70 && q.sy < H - 120 && pose.dist > 28;
+      if (vis) {
+        const hw = (b.offsetWidth || 160) / 2, x = Math.max(hw + 8, Math.min(W - hw - 8, q.sx));
+        b.style.transform = `translate(${Math.round(x)}px, ${Math.round(q.sy)}px) translate(-50%, -100%)`;
+        b._r = [x - hw, q.sy - (b.offsetHeight || 70) - 8, x + hw, q.sy + 4];
+      }
+    }
+    if (b.hidden === vis) b.hidden = !vis;
+  }
 }
 function chooseLabelSet() {
   const sc = S.scene, w = S.world, pose = sc.pose(), R = w.R || 130;
@@ -257,6 +357,9 @@ function chooseLabelSet() {
     if (pose.dist > 55) for (const dd of w.districts || []) for (const q of dd.quarters || []) if (q.id !== 'apps') add('q' + dd.id + q.id, q.x, 6, q.z, q.name, 'q', dd.hue);
   }
   const hb = $('#top').getBoundingClientRect().bottom;                       // never under the glass top bar
+  S.topB = hb;
+  const bills = [...(($('#bills') || {}).children || [])].filter((b) => !b.hidden && b._r).map((b) => b._r);   // cities3: no label under a billboard
+  if (bills.length) for (let k = cands.length - 1; k >= 0; k--) { const c = cands[k]; if (c.cls !== 'sel' && bills.some((r) => c.sx + c.w / 2 > r[0] && c.sx - c.w / 2 < r[2] && c.sy > r[1] && c.sy - c.h < r[3])) cands.splice(k, 1); }
   const keep = C.chooseLabels(cands, 16, W, H, hb + 4);
   S.labelKeys = keep.map((k) => cands.find((c) => c.key === k));
 }
@@ -397,6 +500,7 @@ function startTicker() {
     const l = S.feed[S.tick];
     const t = $('#tickText');
     t.textContent = l.text; t.classList.remove('in'); void t.offsetWidth; t.classList.add('in');
+    if (S.scene && S.scene.setDisplay) S.scene.setDisplay(0, l.text);         // the Gate's LED band shows the same line (revamp-cities)
     const i = l.id != null ? S.byId.get(l.id) : null;
     if (S.scene && i != null && !S.history && S.sel < 0 && qs.get('clock') !== 'manual') S.scene.burst(i, { dur: 1.8 });
   };
@@ -411,16 +515,17 @@ function loadScript(src) {
 let feedP = null;
 async function live() {
   const now = Date.now() / 1000;
-  if (!window.PC_FEED && !feedP) feedP = loadScript(ROOT + 'pc_feed.js?v=n3');
+  if (!window.PC_FEED && !feedP) feedP = loadScript(ROOT + 'pc_feed.js?v=n7');
   const [lite, board, edge, lab] = await Promise.all([
     (feedP || Promise.resolve()).then(() => (window.PC_FEED ? Promise.race([window.PC_FEED.fetchLatest({ feedUrl: ROOT + 'status_feed.json' }), new Promise((r) => setTimeout(() => r(null), 9000))]) : null)).catch(() => null),
     getJSON(ROOT + 'board/board.json', 8000), getJSON(ROOT + 'edge.json', 8000), getJSON(ROOT + 'business/lab.json', 8000)]);
-  S.live = { ...S.live, lite, board, edge, lab, t: now };
+  const kal = await getJSON(ROOT + 'kalshi.json', 6000);   // cities3: the Kalshi district's live line
+  S.live = { ...S.live, lite, board, edge, lab, kal, t: now };
   // the PC
   const pcl = C.pcLine(lite || (board && board.pc && board.pc.t ? { t: board.pc.t } : null), now);
   const pc = $('#pc');
   pc.className = 'pc ' + (lite ? (pcl.silent ? 'bad' : 'ok') : '');
-  $('#pcText').textContent = lite ? pcl.text : board && board.pc && board.pc.t ? 'Board · ' + C.ago(now - board.pc.t) : 'PC: not live here';
+  $('#pcText').textContent = lite ? pcl.text : board && board.pc && board.pc.t ? 'PC silent · last data ' + C.ago(now - board.pc.t) : 'PC silent · no data here yet';
   // the bots in a trade
   const pos = C.positions(lite);
   const chip = $('#liveChip'), parts = [];
@@ -432,6 +537,19 @@ async function live() {
     if (on) parts.push(`${name} is in a trade · ${pos[k].side}`);
   }
   S.live.trading = { lit: !!pos.lit, atlas: !!pos.atlas };
+  // the LED bands round ZEUS, the Kalshi bot and Business: the live line, else what each district holds (text only, never markup)
+  if (S.scene && S.scene.setDisplay) {
+    const dist = (id) => (S.world.districts || []).find((x) => x.id === id) || {};
+    const learn = (id) => (S.world.places || []).filter((p) => p.district === id && p.kind !== 'app').length;
+    const bb = C.billboards(lite, kal, now);     // cities3: live numbers from the PC feed and kalshi.json; the old district counts when there are none
+    S.live.bill = bb;
+    fillBills(bb);
+    S.scene.setDisplay(1, parts.length ? parts.join(' · ') : (bb.nq && bb.nq !== 'NQ' ? bb.nq : 'ZEUS · NQ · ' + $('#pcText').textContent));
+    S.scene.setDisplay(2, bb.kalshi || 'KALSHI · ' + (dist('kalshi').apps || 0) + ' apps · ' + learn('kalshi') + ' places learning');
+    const pi = S.scene.payoutPlace ? S.scene.payoutPlace() : -1, pp = pi >= 0 ? S.world.places[pi] : null;   // the payout beacon's account
+    S.scene.setDisplay(3, bb.money || (pp ? 'PAYOUT GOAL · ' + pp.name + ' · ' + Math.round((+pp.progress || 0) * 100) + '% of the way'
+      : 'MONEY · ' + (dist('money').apps || 0) + ' apps · ' + learn('money') + ' places learning'));
+  }
   chip.textContent = parts.join(' · ');
   chip.classList.toggle('on', parts.length > 0);
   // the edge light dims a bot whose light is not green
@@ -471,6 +589,11 @@ function renderFlat() {
   const m = $('#flat');
   m.hidden = false; m.textContent = '';
   const w = S.world;
+  if (S.lite3d && webgl()) {                                                   // Save-Data / Low: the 3D is one tap away, never forced
+    const go = el('a', 'show3d', 'Show the 3D city');
+    go.href = '?city=3d';
+    m.append(el('p', 'lite-note', saveData() ? 'Data saver is on, so this is the light list.' : 'Quality is on Low, so this is the light list.'), go);
+  }
   for (const dd of w.districts || []) {
     const sec = el('section'); sec.dataset.d = dd.id; sec.style.setProperty('--c', dd.hue);
     sec.append(el('h2', '', dd.name), el('p', '', dd.line));
@@ -483,8 +606,22 @@ function renderFlat() {
       a.append(b); list.append(a);
     });
     sec.append(list);
+    // the Research Hub in the light list: every entry with its status, $ a month and a Read link (live, Decide, leads, then rejected)
+    const hub = w.places.filter((p) => p.district === dd.id && p.kind === 'hub');
+    if (hub.length) {
+      const order = { live: 0, decide: 1, testing: 2, ruin: 3 };
+      const hl = el('ul', 'hublist');
+      for (const p of hub.slice().sort((a, b) => (order[a.state] ?? 9) - (order[b.state] ?? 9))) {
+        const li = el('li'); li.style.setProperty('--c', STATE_C[p.state] || '#ffc65a');
+        const money = (p.facts || []).find((f) => f[0] === '$ a month');
+        li.append(el('b', '', p.name), el('small', '', `${C.STATE_WORD[p.state] || p.state}${money ? ' · ' + money[1] : ''} · ${p.why || p.line || ''}`));
+        if (p.href) { const a = el('a', '', 'Read'); a.href = ROOT + p.href; li.append(a); }
+        hl.append(li);
+      }
+      sec.append(el('h3', '', 'Research Hub'), hl);
+    }
     for (const q of dd.quarters || []) {
-      if (q.id === 'apps') continue;
+      if (q.id === 'apps' || q.id.startsWith('rh-')) continue;
       const ps = w.places.filter((p) => p.district === dd.id && p.quarter === q.id);
       const ruins = ps.filter((p) => p.state === 'ruin').length, ok = ps.filter((p) => ['bright', 'growing', 'live'].includes(p.state)).length;
       sec.append(el('p', '', `${q.name}: ${ps.length} places · ${ok} working · ${ruins} rejected`));
@@ -494,10 +631,25 @@ function renderFlat() {
   if (S.err) m.append(el('p', 'how', '3D could not start here (' + S.err.slice(0, 80) + '): this is the same city as a list.'));
 }
 
+/** the Research Hub's words (research/hub.json, ~60 KB) after the city has started: titles, summaries, $ a month, Read links */
+async function hubWords() {
+  if (!S.world.places.some((p) => p.kind === 'hub')) return;
+  await idle(3000);
+  const doc = await getJSON(ROOT + 'research/hub.json', 10000);
+  if (C.hubText(S.world.places, doc) && S.mode === '2d') renderFlat();
+}
 function deepLink() {
   const h = decodeURIComponent(location.hash || '');
   const mp = /#p=(.+)$/.exec(h), md = /#d=(\w+)/.exec(h);
   const later = (fn) => setTimeout(fn, S.scene && !reduced ? 400 : 0);
+  // ?fly=<id> (the Research Hub page's "See it in the city"): a hub entry by its id, any place by its id, else the best search hit
+  const fly = qs.get('fly');
+  if (fly) {
+    const ids = ['hub:' + fly, fly];
+    let i = ids.map((k) => S.byId.get(k)).find((x) => x != null);
+    if (i == null) { const hit = C.search(S.world.places.map((p, k) => ({ raw: p, i: k })), fly)[0]; i = hit ? hit.i : null; }
+    if (i != null) { later(() => { if (S.scene) S.scene.skipIntro(); openPlace(i); }); return; }
+  }
   if (mp && S.byId.has(mp[1])) later(() => { if (S.scene) S.scene.skipIntro(); openPlace(S.byId.get(mp[1])); });
   else if (md && districtOf(md[1])) later(() => { if (S.scene) S.scene.skipIntro(); goDistrict(md[1]); });
 }

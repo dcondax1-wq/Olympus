@@ -145,10 +145,51 @@ def _block_reason(bot, entry_t) -> str:
     hm = _hm(entry_t)
     for e in list(getattr(bot, "log", None) or []):
         txt = str(e.get("text") or "")
+        if txt.startswith("["):                      # another account's line ("[ATLAS ...] ..."): not this entry's
+            continue
         if f"Entry at {hm} ET NOT " in txt:
             why = txt.split("NOT routed:", 1)[-1] if "NOT routed:" in txt else txt.split("NOT traded:", 1)[-1]
             return "feed stale" if "feed stale" in why.lower() else why.strip()[:160]
+        if f"Entry at {hm} ET at 0 instead of " in txt:   # the sizer's 0 micros (engine/live._equity_qty): no "NOT" word
+            return ("size 0: " + txt.split(":", 1)[-1].strip())[:160] if ":" in txt else "size 0 (the sizer held it back)"
     return "held back by the bot (see the bot log)"
+
+
+# the bot's own "not routed" lines (engine/live.py _route_primary / _equity_qty / the exit of an entry it never routed,
+# engine/account_b.py "NOT routed on account B"), kept per day in notes.json "not_routed" for the nightly verdict and the PC's
+# day files (engine/datafeed.py gaps.json): the reason a backtest trade did not reach the account, readable from the cloud
+NOT_ROUTED_MARKS = ("NOT routed", "NOT traded", " at 0 instead of ", "never routed", "NinjaTrader never took")
+NOT_ROUTED_KEEP = 400
+
+
+def not_routed_lines(bot) -> list:
+    """[{"t", "text"}] of the bot log's lines that say an entry did not reach the account (newest last). Never raises."""
+    out = []
+    try:
+        for e in list(getattr(bot, "log", None) or [])[::-1]:
+            txt = str(e.get("text") or "")
+            if any(m in txt for m in NOT_ROUTED_MARKS):
+                out.append({"t": int(e.get("t") or 0), "text": txt[:300]})
+    except Exception:
+        pass
+    return out
+
+
+def _entry_line(lines: list, day: str, entry_t: int) -> str | None:
+    """The day's own log line about the entry at entry_t (LIT's, not another account's): "Entry at HH:MM ET NOT ..." or the
+    exit line of an entry the bot never routed ("model entered HH:MM ET during a gap")."""
+    hm = _hm(entry_t)
+    for x in lines or []:
+        txt = str(x.get("text") or "")
+        if txt.startswith("[") or trading_day(int(x.get("t") or 0)) != day:
+            continue
+        if f"Entry at {hm} ET NOT " in txt or f"Entry at {hm} ET at 0 instead of " in txt:
+            return txt
+        if f"model entered {hm} ET during a gap" in txt:
+            return "the model entered during a bot / feed gap: never routed"
+        if f"entry at {hm} ET that NinjaTrader never took" in txt:
+            return "NinjaTrader never took the order (refused / not picked up)"
+    return None
 
 
 def collect(bot=None, state_path=None, nt_state_path=None, store=None, now=None, nt_folder=None) -> dict:
@@ -220,6 +261,16 @@ def collect(bot=None, state_path=None, nt_state_path=None, store=None, now=None,
                 changed = True
                 out["notes"] += 1
         if bot is not None:
+            nr = N.setdefault("not_routed", [])
+            have_nr = {(int(x.get("t") or 0), str(x.get("text") or "")) for x in nr}
+            for x in not_routed_lines(bot):
+                if (x["t"], x["text"]) not in have_nr:
+                    have_nr.add((x["t"], x["text"]))
+                    nr.append(x)
+                    changed = True
+            if changed:
+                nr.sort(key=lambda x: int(x.get("t") or 0))
+                N["not_routed"] = [x for x in nr if int(x.get("t") or 0) >= now - (MAX_DAYS + 7) * 86400][-NOT_ROUTED_KEEP:]
             h = getattr(bot, "health", None) or {}
             smp = {"t": now, "running": bool(getattr(bot, "running", False)), "blocked": bool(h.get("entries_blocked")),
                    "feed_block": h.get("feed_block"), "kill": bool(getattr(bot, "kill", False)), "adapter": adapter}
@@ -475,6 +526,9 @@ def _miss_reason(bt, notes, live, pc_on) -> str:
         return f"refused: {live['error']}"
     if b:
         return b.get("reason") or "held back by the bot"
+    ln = _entry_line(notes.get("not_routed") or [], trading_day(et_), et_)
+    if ln:
+        return (ln.split("NOT routed:", 1)[-1].split("NOT traded:", 1)[-1].strip() if "NOT " in ln else ln)[:160]
     ups = [u for u in (notes.get("uptime") or []) if abs(int(u["t"]) - et_) <= 600]
     if any(u.get("kill") for u in ups):
         return "kill switch on"
@@ -493,16 +547,27 @@ def _ticks(a, b, d):
     return round((a - b) * d / TICK, 2) + 0.0          # + 0.0: no "-0.0"
 
 
-def compare(bt: dict | None, lv: dict | None, notes: dict | None = None, live_days=()) -> dict:
-    """One audit row: matched (both), missed (backtest only) or extra (live only)."""
+def compare(bt: dict | None, lv: dict | None, notes: dict | None = None, live_days=(), first_record_day: str | None = None) -> dict:
+    """One audit row: matched (both), missed (backtest only), unknown (backtest only, on a day before the PC's own records
+    start: nobody knows whether the bot traded it) or extra (live only).
+    first_record_day: the first trading day the PC left any record (ledger row, uptime sample, held-back entry); audit() passes
+    it. A day before it with no record is "unknown" (night-nqlive 2026-11-20, tools/live_gap_proposal.classify: the Oct 28 2026
+    short WAS traded live, 5 MNQ -$437, but the audit called it "missed: PC bot off (no record of the bot that day)"): it is
+    left out of the missed count and the missed $, and its reason says to check the broker statement."""
     notes = notes or {}
     if bt is not None and (lv is None or not lv["ok"]):
         day = trading_day(bt["entry_t"])
         pc_on = _pc_on(notes, day, int(bt["entry_t"]), live_days)
-        return {"status": "missed", "day": day, "entry_t": int(bt["entry_t"]), "side": "LONG" if bt["dir"] == 1 else "SHORT",
-                "bt_entry": bt["entry"], "bt_stop": bt["stop"], "bt_target": bt["target"], "bt_exit": bt["exit_price"],
-                "bt_exit_reason": bt["exit_reason"], "bt_qty": bt["qty"], "bt_pnl": _f(bt["pnl"]), "missed_usd": _f(bt["pnl"]),
-                "pc_on": pc_on, "reason": _miss_reason(bt, notes, lv, pc_on)}
+        row = {"status": "missed", "day": day, "entry_t": int(bt["entry_t"]), "side": "LONG" if bt["dir"] == 1 else "SHORT",
+               "bt_entry": bt["entry"], "bt_stop": bt["stop"], "bt_target": bt["target"], "bt_exit": bt["exit_price"],
+               "bt_exit_reason": bt["exit_reason"], "bt_qty": bt["qty"], "bt_pnl": _f(bt["pnl"]), "missed_usd": _f(bt["pnl"]),
+               "pc_on": pc_on, "reason": _miss_reason(bt, notes, lv, pc_on)}
+        if pc_on is None and lv is None and first_record_day and day < first_record_day \
+                and str(int(bt["entry_t"])) not in (notes.get("blocked") or {}):
+            row.update(status="unknown", unknown_usd=row.pop("missed_usd"),
+                       reason=f"unknown: before the PC's own records start ({first_record_day}): not known whether the bot "
+                              "traded it - check the broker statement")
+        return row
     if bt is None:
         d = lv["dir"]
         real = None
@@ -590,6 +655,14 @@ def _trading_days(a: str, b: str) -> list:
     return out
 
 
+def first_record_day(notes: dict | None, live_days=()) -> str | None:
+    """The first trading day the PC left any record: a live trade (ledger / journal), an uptime sample, a held-back entry."""
+    notes = notes or {}
+    first = sorted(set(live_days) | {trading_day(u["t"]) for u in notes.get("uptime") or []}
+                   | {trading_day(int(k)) for k in (notes.get("blocked") or {})})
+    return first[0] if first else None
+
+
 def audit(store=None, days=None, bars=None, params=None, journal_path=None, now=None, eval_start=None, write=True) -> dict:
     """Replay each day and compare. days: a list of yyyy-mm-dd (default: from the first day the bot left a record, or
     eval_start, to today; at most MAX_DAYS). bars = (d5, d1) frames (default load_bars())."""
@@ -599,10 +672,9 @@ def audit(store=None, days=None, bars=None, params=None, journal_path=None, now=
     notes = _read_json(_p(store, "notes.json"), {}) or {}
     live_days = {v["day"] for v in live.values()}
     if days is None:
-        first = sorted(live_days | {trading_day(u["t"]) for u in notes.get("uptime") or []}
-                       | {trading_day(int(k)) for k in (notes.get("blocked") or {})})
-        start = min([x for x in (first[:1] + ([eval_start] if eval_start else [])) if x], default=today)
+        start = min([x for x in ([first_record_day(notes, live_days)] + ([eval_start] if eval_start else [])) if x], default=today)
         days = _trading_days(start, today)[-MAX_DAYS:]
+    first_rec = first_record_day(notes, live_days)
     P = {**(params if params is not None else _params())}
     d5, d1 = bars if bars is not None else load_bars()
     cpath = _p(store, "replay_cache.json")
@@ -627,7 +699,7 @@ def audit(store=None, days=None, bars=None, params=None, journal_path=None, now=
                 r["reason"] = "no bars for this day in data/ (backtest not run)"
                 rows.append(r)
                 continue
-            rows.append(compare(b, l, notes, live_days))
+            rows.append(compare(b, l, notes, live_days, first_rec))
     if write:
         try:
             _write_json(cpath, {k: v for k, v in cache.items() if k >= (days[0] if days else today)} if days else cache)
@@ -653,6 +725,7 @@ def summarize(rows: list, now=None, days=None) -> dict:
     M = [r for r in rows if r["status"] == "matched"]
     X = [r for r in rows if r["status"] == "missed"]
     E = [r for r in rows if r["status"] == "extra"]
+    U = [r for r in rows if r["status"] == "unknown"]
     slip = [r["slip_usd"] for r in M if r.get("slip_usd") is not None]
     exe = [r["exec_usd"] for r in M if r.get("exec_usd") is not None]
     months = {}
@@ -666,13 +739,15 @@ def summarize(rows: list, now=None, days=None) -> dict:
         elif r["status"] == "missed":
             m["missed"] += 1
             m["missed_usd"] = round(m["missed_usd"] + (r.get("missed_usd") or 0), 2)
+        elif r["status"] == "unknown":
+            m["unknown"] = m.get("unknown", 0) + 1
         else:
             m["extra"] += 1
             m["extra_usd"] = round(m["extra_usd"] + (r.get("live_pnl") or 0), 2)
     worst = max(M, key=lambda r: r.get("max_slip_ticks") or -1e9, default=None)
     S = {"v": VERSION, "t": int(now or time.time()), "from": days[0] if days else None, "to": days[-1] if days else None,
          "trades": len(M), "missed": len(X), "missed_pc_on": sum(1 for r in X if r.get("pc_on")),
-         "missed_usd": round(sum(r.get("missed_usd") or 0 for r in X), 2), "extra": len(E),
+         "missed_usd": round(sum(r.get("missed_usd") or 0 for r in X), 2), "unknown": len(U), "extra": len(E),
          "extra_usd": round(sum(r.get("live_pnl") or 0 for r in E), 2),
          "slip_usd": round(sum(slip), 2), "slip_usd_per_trade": round(sum(slip) / len(slip), 2) if slip else None,
          "exec_usd": round(sum(exe), 2), "exec_usd_per_trade": round(sum(exe) / len(exe), 2) if exe else None,
@@ -692,7 +767,8 @@ def summarize(rows: list, now=None, days=None) -> dict:
 
 def compact(r: dict) -> dict:
     keys = ("status", "day", "entry_t", "side", "latency_s", "entry_slip_ticks", "exit_slip_ticks", "slip_usd", "exec_usd",
-            "bt_qty", "live_qty", "bt_pnl", "live_pnl", "missed_usd", "reason", "pc_on", "bt_exit_reason", "live_exit_kind")
+            "bt_qty", "live_qty", "bt_pnl", "live_pnl", "missed_usd", "unknown_usd", "reason", "pc_on", "bt_exit_reason",
+            "live_exit_kind")
     return {k: r[k] for k in keys if r.get(k) is not None}
 
 
@@ -702,7 +778,7 @@ def _usd(v):
 
 
 def headline(S) -> str:
-    if not (S["trades"] or S["missed"] or S["extra"]):
+    if not (S["trades"] or S["missed"] or S["extra"] or S.get("unknown")):
         return "No live trades to audit yet."
     parts = [f"{S['trades']} trade{'s' if S['trades'] != 1 else ''} audited: slippage {_usd(S['slip_usd'])}"
              + (f" ({_usd(S['slip_usd_per_trade'])} a trade)" if S["slip_usd_per_trade"] is not None else "")]
@@ -710,6 +786,8 @@ def headline(S) -> str:
         parts.append(f"{S['missed']} missed ({_usd(S['missed_usd'])} the backtest made)")
     if S["extra"]:
         parts.append(f"{S['extra']} extra ({_usd(S['extra_usd'])})")
+    if S.get("unknown"):
+        parts.append(f"{S['unknown']} unknown (before the PC's records: check the broker statement)")
     return "; ".join(parts)
 
 
@@ -753,11 +831,69 @@ def missed_payload(entry_t, side, reason, usd=None, t=None) -> dict:
                              key=f"exec:miss:{int(entry_t)}", t=t or entry_t, url="#/accounts")
 
 
+OWNER_HOLDS = ("paused by you", "owner flattened remotely")     # the owner's own pause / flatten: never a MISSED TRADE alarm
+# redteam 2026-11-20: an entry the bot's own RULES held back on purpose (a guard: soft daily loss / news / the combo's day stop;
+# the sizer's 0 micros: weekly stop, room, eval passed; the equity filter; the 50K's one-position rule; a hedge wait) is not a
+# malfunction: it still goes to the phone at once, but as a quiet "held back" notice (no sound in quiet hours: LIT's 02:00-07:00
+# entries never wake the owner for a rule that worked). A malfunction (feed stale, seen late, refused, never routed, a restart,
+# STARTUP DISARMED, an unknown reason) stays a loud MISSED TRADE.
+RULE_HOLDS = ("GUARD", "size 0", "at 0 instead of", "signals", "one position on the 50K", "HEDGE", "hedge")
+LOUD_HOLDS = ("STARTUP DISARMED", "feed stale", "late", "not chasing", "refused", "never routed", "never took", "restart",
+              "unreadable", "failed")
+
+
+def rule_hold(body: str) -> bool:
+    """True = the bot's own rule held this entry back on purpose (a quiet notice); False = a malfunction (a loud alarm)."""
+    b = str(body or "")
+    why = b.split(":", 1)[1] if b.startswith("The backtest took it") and ":" in b else b
+    if any(w in why for w in LOUD_HOLDS):
+        return False
+    return any(w in why for w in RULE_HOLDS)
+
+
+def _missed_problem(p: dict) -> dict | None:
+    """A "Missed trade" notice as an instant problem push (engine/notify.instant_problem, the private ntfy topic): since
+    2026-11-18 the phone app takes only trade pushes (engine/push.pc_app_ok), so kind "pc" never reached the phone at once.
+    None for the owner's own holds and for every other notice (slippage: the 15-minute report's trade watch has it)."""
+    k = str(p.get("key") or "")
+    if not k.startswith("exec:miss:"):
+        return None
+    body = str(p.get("body") or "")
+    if any(w in body for w in OWNER_HOLDS):
+        return None
+    et_ = int(k.rsplit(":", 1)[-1]) if k.rsplit(":", 1)[-1].isdigit() else None
+    soft = rule_hold(body)
+    title = str(p.get("title") or "Missed trade").replace("Missed trade", "Held back by a rule · Zlarior" if soft else "MISSED TRADE · Zlarior", 1)
+    return {"key": k, "code": "missed", "bot": "lit", "entry_t": et_, "title": title, "body": body,
+            **({"soft": True, "tags": "pause_button"} if soft else {})}
+
+
+def _default_notify(p: dict):
+    from engine import push
+    push.pc_notify(p)
+    mp = _missed_problem(p)
+    if mp is not None:
+        from engine import notify as _nt
+        _nt.instant_problem(mp)
+
+
+def _notify_for(bot):
+    """The sender for this bot's notices: a paper bot keeps the old path only (no MISSED TRADE on the ntfy topic for a test
+    / paper run); a broker bot gets the default (app notice + the instant problem push). None = the default."""
+    try:
+        if str(((getattr(bot, "cfg", None) or {}).get("adapter")) or "paper") == "paper":
+            from engine import push
+            return push.pc_notify
+    except Exception:
+        pass
+    return None
+
+
 def send_alerts(payloads: list, store=None, notify=None) -> list:
-    """Send each notice once (own sent list + engine/push's de-dup by key). notify(payload) for tests."""
+    """Send each notice once (own sent list + engine/push's de-dup by key). notify(payload) for tests. The default also sends a
+    missed trade to the private ntfy topic at once (_missed_problem; the 15-minute report skips its copy)."""
     if notify is None:
-        from engine import push
-        notify = push.pc_notify
+        notify = _default_notify
     done = _sent(store)
     sent = []
     for p in payloads:
@@ -771,6 +907,47 @@ def send_alerts(payloads: list, store=None, notify=None) -> list:
     if sent:
         _mark(store, sent)
     return sent
+
+
+def unrouted_entries(bot, now=None) -> list:
+    """[(entry_t, reason)] of today's LIT entries the bot's own model took that this process never routed and never held back
+    (so no "NOT routed" line exists): (1) the exit line of an entry "never routed (model entered HH:MM ET during a gap)" (the
+    model entered while the bot was down / its feed burst), (2) an open model position whose entry came before this bot start
+    (engine/live._route_primary skips an entry older than the start without a word: a restart after the entry). Never raises."""
+    out = []
+    try:
+        now = int(now or time.time())
+        today = trading_day(now)
+        seen = getattr(bot, "seen", None) or set()
+        held = set(getattr(bot, "_blocked_entries", None) or ())
+        for e in list(getattr(bot, "log", None) or []):
+            txt = str(e.get("text") or "")
+            t = int(e.get("t") or 0)
+            if txt.startswith("[") or not t or trading_day(t) != today or "never routed (model entered " not in txt:
+                continue
+            hm = txt.split("model entered ", 1)[1][:5]
+            try:
+                hh, mm = int(hm[:2]), int(hm[3:5])
+            except ValueError:
+                continue
+            et_ = int(dt.datetime.combine(_et(t).date(), dt.time(hh, mm), ET).timestamp())
+            if et_ > t:                                  # an entry "after" its own exit line: yesterday evening's clock
+                et_ -= 86400
+            if trading_day(et_) == today and et_ not in held and ("entry", et_) not in seen:
+                out.append((et_, "the model entered while the bot was down or its feed was behind: never routed"))
+        pos = (getattr(bot, "state", None) or {}).get("position") or {}
+        st = int(getattr(bot, "started_at", None) or 0)
+        et_ = int(pos.get("entry_t") or 0)
+        if et_ and st and et_ < st - 300 and trading_day(et_) == today and et_ not in held and ("entry", et_) not in seen \
+                and getattr(bot, "_open_routed", None) != et_:
+            out.append((et_, f"the entry came before this bot start at {_hm(st)} ET (a restart after the entry): not chased"))
+    except Exception:
+        pass
+    seen_t, uniq = set(), []
+    for et_, why in out:
+        if et_ not in seen_t:
+            seen_t.add(et_); uniq.append((et_, why))
+    return uniq
 
 
 def session_alerts(bot, store=None, now=None, notify=None) -> list:
@@ -789,11 +966,13 @@ def session_alerts(bot, store=None, now=None, notify=None) -> list:
                 and trading_day(r["t"]) == today:
             pays.append(missed_payload(r["entry_t"], "LONG" if r["side"] == "buy" else "SHORT",
                                        "refused: " + str((r.get("result") or {}).get("error") or "")[:120], None, now))
+    for et_, why in unrouted_entries(bot, now):
+        pays.append(missed_payload(et_, "", why, None, now))
     seen, uniq = set(), []
     for p in pays:
         if p["key"] not in seen:
             seen.add(p["key"]); uniq.append(p)
-    return send_alerts(uniq, store, notify)
+    return send_alerts(uniq, store, notify if notify is not None else _notify_for(bot))
 
 
 # ================================================================================================ nightly drift summary
@@ -825,7 +1004,9 @@ def drift_reasons(r: dict) -> tuple[list, list]:
     """(drift reasons, info notes) of one audit row."""
     why, info = [], []
     side = f"{r.get('side', '')} {_hm(r.get('entry_t'))} ET".strip()
-    if r["status"] == "missed":
+    if r["status"] == "unknown":
+        info.append(f"{side}: {r.get('reason')}")
+    elif r["status"] == "missed":
         if r.get("pc_on") is False:
             info.append(f"{side}: missed with the PC off ({r.get('reason')})")
         else:
@@ -860,8 +1041,9 @@ def nightly_summary(rows: list, day: str, day_info: dict | None = None, now=None
     di = (day_info or {}).get(day) or {}
     M = [r for r in R if r["status"] == "matched"]
     S = {"v": VERSION, "day": day, "t": int(now or time.time()), "bt_trades": di.get("bt_trades", sum(1 for r in R if r["status"] != "extra")),
-         "live_trades": di.get("live_trades", sum(1 for r in R if r["status"] != "missed")), "matched": len(M),
+         "live_trades": di.get("live_trades", sum(1 for r in R if r["status"] not in ("missed", "unknown"))), "matched": len(M),
          "missed": sum(1 for r in R if r["status"] == "missed"), "extra": sum(1 for r in R if r["status"] == "extra"),
+         "unknown": sum(1 for r in R if r["status"] == "unknown"),
          "bt_usd": round(sum(float(r.get("bt_pnl") or 0) for r in R if r["status"] != "extra"), 2),
          "live_usd": round(sum(float(r.get("live_pnl") or 0) for r in R if r.get("live_pnl") is not None), 2),
          "exec_usd": round(sum(float(r.get("exec_usd") or 0) for r in M), 2),
@@ -873,6 +1055,10 @@ def nightly_summary(rows: list, day: str, day_info: dict | None = None, now=None
     elif not R:
         S["verdict"] = "no trades"
         S["text"] = f"{day}: no trade in the backtest, none by the bot."
+    elif not why and not M and all(r["status"] == "unknown" for r in R):
+        S["verdict"] = "unknown"
+        S["text"] = (f"{day}: {len(R)} backtest trade{'s' if len(R) != 1 else ''} on a day before the PC's own records "
+                     f"({_usd(S['bt_usd'])} in the backtest): check the broker statement.")
     elif not why and not M and all(r["status"] == "missed" and r.get("pc_on") is False for r in R):
         S["verdict"] = "pc off"
         S["text"] = (f"{day}: the PC was off: {len(R)} backtest trade{'s' if len(R) != 1 else ''} not taken "
@@ -885,6 +1071,23 @@ def nightly_summary(rows: list, day: str, day_info: dict | None = None, now=None
         S["text"] = (f"{day}: live = backtest ({len(M)} trade{'s' if len(M) != 1 else ''}, execution {_usd(S['exec_usd'])})"
                      + (f"; note: {info[0]}" if info else ""))
     return S
+
+
+def day_not_routed(day: str, store=None, notes: dict | None = None) -> list:
+    """[{"t", "et", "text"}] the bot's own "NOT routed / NOT traded / size 0 / never routed" lines of one trading day (oldest
+    first, account ids cut to the last 4): why an entry of that day did not reach the account. From notes.json "not_routed"
+    (collect() copies them from the bot log every minute). Never raises."""
+    try:
+        from .notify import mask_ids
+        N = notes if notes is not None else (_read_json(_p(store, "notes.json"), {}) or {})
+        out = []
+        for x in N.get("not_routed") or []:
+            t = int(x.get("t") or 0)
+            if t and trading_day(t) == day:
+                out.append({"t": t, "et": _hm(t), "text": mask_ids(str(x.get("text") or ""))[:300]})
+        return sorted(out, key=lambda x: x["t"])
+    except Exception:
+        return []
 
 
 def nightly_payload(S: dict) -> dict:
@@ -902,6 +1105,7 @@ def nightly(day: str | None = None, store=None, now=None, rep: dict | None = Non
     if rep is None:
         rep = audit(store=store, days=[day], now=now, write=write, **audit_kw)
     S = nightly_summary(rep.get("rows") or [], day, rep.get("days"), now)
+    S["not_routed"] = day_not_routed(day, store)       # the bot's own "NOT routed: ..." lines of that day (Zlarior + ATLAS)
     if write:
         _write_json(_p(store, os.path.join("nightly", f"{day}.json")), {**S, "rows": [compact(r) for r in rep.get("rows") or [] if r.get("day") == day]})
         hist = [x for x in (_read_json(_p(store, "nightly.json"), []) or []) if x.get("day") != day]
@@ -931,7 +1135,7 @@ def heartbeat_block(store=None) -> dict | None:
     S = _read_json(_p(store, "summary.json"), None)
     if not S:
         return None
-    keep = ("v", "t", "from", "to", "trades", "missed", "missed_pc_on", "missed_usd", "extra", "extra_usd", "slip_usd",
+    keep = ("v", "t", "from", "to", "trades", "missed", "missed_pc_on", "missed_usd", "unknown", "extra", "extra_usd", "slip_usd",
             "slip_usd_per_trade", "exec_usd", "exec_usd_per_trade", "entry_slip_ticks_med", "exit_slip_ticks_med", "latency_s_med",
             "be_delay_s_med", "qty_mismatch", "slipped", "worst", "text")
     out = {k: S.get(k) for k in keep}
@@ -976,7 +1180,7 @@ class Watcher:
         if after or new_exit or not self.last:
             rep = audit(store=self.store, now=now, eval_start=self._eval_start())
             res["audit"] = rep["summary"]["text"]
-            res["alerts"] = send_alerts(alert_payloads(rep["rows"], now), self.store)
+            res["alerts"] = send_alerts(alert_payloads(rep["rows"], now), self.store, _notify_for(self.bot))
             try:                     # live learning (engine/live_learning.py): learned costs + the trade review journal
                 from engine import live_learning
                 live_learning.pc_update(fa_store=self.store, now=now)
@@ -1037,6 +1241,8 @@ def main(argv=None):
             print("  differs: " + w)
         for w in S["info"]:
             print("  info: " + w)
+        for x in S.get("not_routed") or []:
+            print(f"  NOT routed {x['et']} ET: {x['text']}")
         print("pushed:", ", ".join(S["pushed"]) or "nothing", "| ->", _p(None, os.path.join("nightly", S["day"] + ".json")))
         return
     collect(None)

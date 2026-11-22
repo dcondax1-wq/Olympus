@@ -20,6 +20,8 @@ Steps (each soft and its own process with a time limit: one failing never stops 
              on the pulled days -> tools/web_public/hub/learned.json (the ZEUS page card's cloud copy, with its date)
   6 decide   the PC's proposals -> tools/web_public/business/decisions.json (new ids only, status open, the existing schema:
              a "yes" = Claude TESTS it under CLAUDE.md "Strategy changes"; nothing live changes without proof + another yes)
+  + hub      tools/research_hub.py: the Research Hub (Clio's owner view) -> tools/web_public/clio/hub.json
+  + brain    tools/obsidian_brain.py: rebuild the ZEUS Brain vault (vault/: new days, trades, research, lessons, links); --skip brain
   7 report   before / after -> research/learn/night_cloud.json (gitignored) + the printed table
 Research only: never trades, never touches live_model*.json (hashed before / after, a change is reported loudly).
 Tests: python -X utf8 -m tests.test_learn_night (fake steps, no network).
@@ -48,8 +50,8 @@ WHY = os.path.join(ROOT, "tools", "web_public", "why", "why.json")
 LAB = os.path.join(ROOT, "tools", "web_public", "business", "lab.json")
 REPORT = os.path.join(ROOT, "research", "learn", "night_cloud.json")
 PROTECTED = ("live_model.json", "live_model_lit.json", "live_model_engine.json", "second_model.json", "data/account_b.json")
-STEPS = ("pull", "edge", "anatomy", "lab", "learned", "decide")
-LIMIT_S = {"pull": 1500, "edge": 1200, "anatomy": 2400, "lab": 2400}
+STEPS = ("pull", "edge", "costs", "anatomy", "lab", "learned", "decide", "hub")
+LIMIT_S = {"pull": 1500, "edge": 1200, "costs": 900, "anatomy": 2400, "lab": 2400}
 CARD_MAX_BYTES = 6000
 DECIDE_MAX_NEW = 3                       # proposals added per night at most (the owner's card stays short)
 _ID = re.compile(r"[a-z0-9][a-z0-9_-]{1,39}")
@@ -160,6 +162,8 @@ def plan(a) -> list:
         out.append(("pull", [["tools/data_pull.py", "--latest"] + (["--wait", str(a.wait)] if a.wait is not None else [])]))
     if "edge" not in skip:
         out.append(("edge", [["tools/edge_health.py"] + (["--fetch"] if a.fetch else [])]))
+    if "costs" not in skip:                # day-atlasedge (TOP25 #8 + #14): still profitable at the real measured fill costs? ALARM ONLY
+        out.append(("costs", [["tools/cost_alarm.py"]]))     # -> research/lab/costs.json; never changes a bot, a size or a setting
     if "anatomy" not in skip:
         out.append(("anatomy", [["tools/win_loss_anatomy.py", c] for c in (("build", "explain", "rules", "page") if a.full
                                                                              else ("build", "explain", "page"))]))
@@ -168,6 +172,8 @@ def plan(a) -> list:
     for s in ("learned", "decide"):
         if s not in skip:
             out.append((s, []))
+    if "hub" not in skip:                  # day-litedge 2026-11-21: the Research Hub (Clio) after the Decide cards: tools/research_hub.py
+        out.append(("hub", [["tools/research_hub.py"]]))   # -> tools/web_public/clio/hub.json (read only on every source)
     return out
 
 
@@ -191,9 +197,18 @@ def card_doc(S: dict, src: str) -> dict:
         if b.get("hidden"):
             continue
         td, r20 = b.get("today") or {}, ((b.get("roll") or {}).get("20") or {})
-        bots.append({"key": k, "name": b.get("name"), "today_n": td.get("n"), "today_usd": td.get("usd"), "paper": td.get("paper"),
-                     "edge": (b.get("edge") or {}).get("light"), "verdict": b.get("verdict"),
-                     "last20": {x: r20.get(x) for x in ("n", "win", "pf", "usd")}, "why": (b.get("anatomy") or {}).get("say") or None})
+        row = {"key": k, "name": b.get("name"), "today_n": td.get("n"), "today_usd": td.get("usd"), "paper": td.get("paper"),
+               "edge": (b.get("edge") or {}).get("light"), "verdict": b.get("verdict"),
+               "last20": {x: r20.get(x) for x in ("n", "win", "pf", "usd")}, "why": (b.get("anatomy") or {}).get("say") or None}
+        if k != "k8":       # night-atlasfills 2026-11-20: "real slippage so far" (engine/zeus_learn.fills, the PC's real fills)
+            try:
+                from tools import fill_cost
+                fc = fill_cost.block(b.get("fills"))
+                if fc:
+                    row["fills"] = fc
+            except Exception:  # noqa: BLE001
+                pass
+        bots.append(row)
     doc = {"v": 1, "kind": "zeus-learned-card", "day": S.get("day"), "t": int(S.get("t") or 0),
            "built": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC"), "src": src, "line": S.get("line"),
            "market": (S.get("regime") or {}).get("tag"), "bots": bots, "proposals": len(S.get("proposals") or []),
@@ -316,6 +331,14 @@ def run(a, runner=None, say=print, root: str = ROOT, days_dir: str = PC_DAYS, ca
                     break
             res[s] = {"ok": all(r.get("ok") or (s == "pull" and r.get("rc") == 3) for r in rs), "s": round(sum(r.get("s") or 0 for r in rs), 1),
                       "tail": (rs[-1].get("tail") or [])[-4:] if rs else []}
+    skip = {x.strip() for x in (a.skip or "").split(",") if x.strip()}
+    if "brain" not in skip and os.path.isdir(os.path.join(root, "research", "writeups")):
+        try:                                   # ZEUS Brain (tools/obsidian_brain.py): rebuild vault/ with tonight's days, research, lessons
+            from tools import obsidian_brain
+            br = obsidian_brain.build(os.path.join(root, "vault"), root=root)
+            res["brain"] = {"ok": True, "notes": br["notes"], "wrote": len(br["wrote"]), "removed": len(br["removed"])}
+        except Exception as e:  # noqa: BLE001
+            res["brain"] = {"ok": False, "why": f"{e.__class__.__name__}: {e}"[:200]}
     after = snapshot(root)
     h1 = hashes(root)
     rows = changes(before, after)
@@ -332,7 +355,7 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="ZEUS learn night (cloud): pull the PC's days, edge health, anatomy, ZEUS Lab, card, Decide")
     ap.add_argument("--no-pull", action="store_true")
     ap.add_argument("--wait", type=float, default=None, help="minutes to wait for the PC's answer (tools/data_pull.py --wait)")
-    ap.add_argument("--skip", default="", help="comma list of: " + ", ".join(STEPS))
+    ap.add_argument("--skip", default="", help="comma list of: " + ", ".join(STEPS + ("brain",)))
     ap.add_argument("--full", action="store_true", help="the anatomy's rules too (slow)")
     ap.add_argument("--fetch", action="store_true", help="edge health: refresh CBOE's VIX first")
     ap.add_argument("--dry-run", action="store_true")
@@ -350,6 +373,8 @@ def main(argv=None) -> int:
         elif s == "decide":
             txt = (f"+{len(r.get('added') or [])} on the Decide card: {', '.join(r.get('added') or [])}" if r.get("added")
                    else "nothing new for the Decide card") if r.get("ok") else str(r.get("why"))
+        elif s == "brain":
+            txt = (f"ZEUS Brain: {r.get('notes')} notes, {r.get('wrote')} updated, {r.get('removed')} removed (vault/)" if r.get("ok") else str(r.get("why")))
         elif not r.get("ok") and r.get("tail"):
             txt += ": " + " / ".join(r["tail"][-2:])[:160]
         print(f"| {s} | {txt} |")

@@ -1,0 +1,26 @@
+{
+  "v": 1,
+  "_about": "THE ONE PRICE BOOK (day-caller2 2026-11-21, lead's money sweep #4). Every price and term the agency shows comes from here or is tested against it (tests/test_pricebook.py): the offers page, the agency launch site, the services agreement, the payment links, the caller script + pack, the caller portal, the AI receptionist, client_deliver's CARE_PLAN, agency/config.example.json and the storefront example. Change a number HERE, then run python -m agency.pricebook --check and fix what it lists.",
+  "as_of": "2026-11-21",
+  "currency": "USD",
+  "packages": [
+    {"id": "starter", "config_id": "starter", "name": "Starter site", "setup": 1500, "monthly": 79, "pages": 5, "days": 7},
+    {"id": "callengine", "config_id": "growth", "name": "Call engine", "setup": 500, "monthly": 299, "min_months": 3},
+    {"id": "signature3d", "config_id": "pro", "name": "3D Signature", "setup": 2500, "monthly": 79}
+  ],
+  "no_upfront": {"monthly": 149, "months": 12, "then": "care_plan"},
+  "deposit_pct": 50,
+  "care_plan": {"monthly": 79, "term_months": 12, "notice_days": 30, "edit_minutes": 30},
+  "invoice": {"due_days": 14, "pause_after_days": 30},
+  "revision_rounds": 2,
+  "md_sales_tax_pct": 3,
+  "commission": {
+    "sale": 300,
+    "booked_show": 40,
+    "one_per_business": true,
+    "paid_when": "the client's deposit AND launch payment have cleared (nothing upfront: the 3rd $149 payment has cleared); never at 'yes'",
+    "clawback_days": 30,
+    "attribution_days": 30,
+    "pay_within_days": 3
+  }
+}

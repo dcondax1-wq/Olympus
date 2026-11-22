@@ -13,6 +13,8 @@ No network, no real key, no real order; Claude never arms (every arm here is the
   f. stops      kill rule (under 58% after 60), drawdown -$75 from the peak, 3 errors in a row, 401, a thin book (tried at +20/+30/+40
                 then skipped), cash below the bet, the phone STOP: each = no order / OFF + one push; paper keeps recording
   g. clock      the PC clock 12 s fast: Kalshi's Date header corrects it, the entry lands at +20 s Kalshi time
+  s. $55         the bankroll rule ($2.50 a bet, -$8 a day, -$13.75 a week, OFF at -$19.25): the order gate's week and drawdown
+                stops, then a whole week where every bet loses on the real settings: the week never passes -25%, the total never -30%
   w. phone page private Tailscale link only (WiFi refused), this page's header + JSON + same origin; the key pasted on the phone is
                 saved OUTSIDE the repo, checked with one balance read ("Key OK · balance $X"), never echoed or logged; wrong phrase
                 refused; the phrase + $8 arms at $8; STOP = OFF + kill switch; installed by engine/phone_safety.install
@@ -22,6 +24,7 @@ No network, no real key, no real order; Claude never arms (every arm here is the
 from __future__ import annotations
 
 import datetime as dt
+import json
 import os
 import re
 import shutil
@@ -36,7 +39,10 @@ from tests import test_kalshi_live as TL  # noqa: E402  (the fake Kalshi, the ke
 from engine import kalshi_clock as KC  # noqa: E402
 from engine import kalshi_live as KL  # noqa: E402
 
-KL.CLOCK_PATH = None                                    # this suite: the real clock settings (research/lab/kalshi_clock.json)
+REAL_CFG = KC.CFG_PATH                                   # research/lab/kalshi_clock.json: the $55 bankroll rule (part a3 + part s)
+FIX15 = os.path.join(ROOT, "tests", "fixtures", "kalshi_live", "clock_15.json")   # the mechanics parts b-g + w: the $15 settings of Nov 19
+KC.CFG_PATH = FIX15
+KL.CLOCK_PATH = FIX15
 RES: list = []
 DAY = dt.date(2026, 11, 19)                             # a Thursday
 OPEN_AM = KC.london_epoch(DAY, 10, 15)                  # 05:15 ET
@@ -49,15 +55,32 @@ def check(name, cond, info=""):
     return bool(cond)
 
 
+class Died(BaseException):
+    """the PC dying mid-send (not an Exception: nothing in the executor catches it)"""
+
+
 class Fake(TL.FakeKalshi):
     """+ fills filtered by order_id; a GTC limit that crosses the book fills at once (taker), the rest rests until it expires."""
+
+    lose = None           # red team 2026-11-21: "502" = Kalshi takes the order but the answer is lost; "die" = the PC dies mid-send
 
     def route(self, method, path, q, body):
         if method == "GET" and path == "/portfolio/fills" and q.get("order_id"):
             return 200, {"cursor": "", "fills": [f for f in self.fills if f["order_id"] == q["order_id"]]}
+        if method == "GET" and path == "/portfolio/fills" and q.get("ticker"):
+            return 200, {"cursor": "", "fills": [f for f in self.fills if f["ticker"] == q["ticker"] and f["ts"] >= float(q.get("min_ts") or 0)]}
         return super().route(method, path, q, body)
 
     def place(self, b):
+        if self.lose:
+            st, j = self._place(b)
+            if self.lose == "die":
+                self.lose = None
+                raise Died()
+            return 502, {"error": {"code": "bad_gateway", "message": "fake: the answer was lost"}}
+        return self._place(b)
+
+    def _place(self, b):
         if b.get("time_in_force") == "good_till_canceled" and not b.get("post_only"):
             t, side, n, p = b["ticker"], b["side"], float(b["count"]), float(b["price"])
             mk = self.markets.get(t)
@@ -154,6 +177,14 @@ class World:
 # ================================================================================================ a. calendar
 def part_calendar():
     cfg = KC.load_config()[0]
+    real = KC.load_config(REAL_CFG)[0]
+    rule = KC.bankroll_rule(55)
+    check("a0. the REAL settings (research/lab/kalshi_clock.json) = the $55 bankroll rule: $2.50 a bet, 3 bets a day, -$8 a day, "
+          "-$13.75 a week (25%), OFF at -$19.25 from the peak (35%); the same 3 live legs; no problems",
+          real["bankroll_usd"] == 55 and real["stake_usd"] == rule["stake_usd"] == 2.5 and real["max_bets_per_day"] == rule["max_bets_per_day"] == 3
+          and real["daily_loss_stop_usd"] == rule["daily_loss_stop_usd"] == 8 and real["week_loss_stop_usd"] == rule["week_loss_stop_usd"] == 13.75
+          and real["kill_drawdown_usd"] == rule["kill_drawdown_usd"] == 19.25 and real["live_legs"] == ["gold_0530_down", "gold_1700_up", "silver_1700_up"]
+          and not KC.load_config(REAL_CFG)[1], (real, rule))
     w = KC.windows(DAY, cfg)
     hm = [KL.et_dt(t).strftime("%H:%M") for t, _ in w]
     check("a1. a weekday: 05:15 ET (gold + silver DOWN), 16:00 ET (silver DOWN, paper only), 16:45 ET (gold + silver UP); "
@@ -166,7 +197,7 @@ def part_calendar():
           "winter time): the morning legs at 06:15 ET (London 10:15); weekends: nothing", tg == ["05:15"] and uk == ["16:00", "16:45"]
           and gap[0] == "06:15" and KC.ticker("KXGOLD15M", KC.windows(dt.date(2027, 3, 16), cfg)[0][0]) == "KXGOLD15M-27MAR160630-30"
           and not KC.windows(dt.date(2026, 11, 21), cfg), (tg, uk, gap))
-    check("a3. live by default (red team final): gold DOWN 05:15, gold + silver UP 16:45; silver 05:15 and silver 16:15 paper only; "
+    check("a3. the $15 test settings (tests/fixtures/kalshi_live/clock_15.json, the mechanics parts): gold DOWN 05:15, gold + silver UP 16:45; silver 05:15 and silver 16:15 paper only; "
           "$15 a bet, 70c cap, 6 bets a day, -$60 a day, OFF under 58% after 60, -$75 from the peak or over 58c paid on the last 30",
           cfg["live_legs"] == ["gold_0530_down", "gold_1700_up", "silver_1700_up"] and {"silver_1615_down", "silver_0530_down"} <= set(cfg["paper_legs"])
           and cfg["kill_avg_price"] == 0.58 and cfg["kill_avg_price_bets"] == 30
@@ -267,7 +298,7 @@ def part_live(tmp):
     g = lr["gold_0530_down"]
     check("e4. the result from Kalshi's own fills: gold WON +$13.44 - fee; one push for the window's result with today's $ and the record",
           g["result"] == "won" and abs(g["pnl"] - round(28 - 14.56 - KC.fee(0.52, 28), 2)) < 0.011 and len(res) == 1
-          and "Live so far: 1 bets, 1 won" in res[0]["body"], (lr, res))
+          and "Live so far: 1 bet, 1 won" in res[0]["body"], (lr, res))
     w.run_until(loop, OPEN_PM + 25)
     pm = [r for r in w.live() if r["leg"].endswith("1700_up")]
     check("e5. the evening: gold + silver UP bought (side bid at the YES ask 50c); the 16:00 silver leg stays paper only",
@@ -423,9 +454,11 @@ def part_web(tmp):
           and TL.KEY_ID not in logs, (bad.status_code, r.text[:200]))
     st = c.get("/kalshi-live/status", headers=link).json()
     check("w3. the status: key OK + balance, PAPER (not armed), the 3 live legs + the paper-only ones, the caps, the red team's line, the bankroll warning "
-          "at $15 with $180 ('needs about $250 ... use $5-8')", st["key"]["ok"] and st["key"]["balance"] == 180.0 and not st["live"]
-          and st["phrase"] == KL.PHRASE and len([x for x in st["legs"] if x["live"]]) == 3 and "needs about $250" in st["warn"]
-          and "$5-8" in st["warn"] and st["red_team"].startswith("Red team: paper first (about 4 weeks)") and 'id="redteam"' in page.text, st)
+          "at $15 with $180 (the bankroll rule: 'needs about $333 ... use $8.00 a bet'), the K8 status card's kill distances + next window",
+          st["key"]["ok"] and st["key"]["balance"] == 180.0 and not st["live"]
+          and st["phrase"] == KL.PHRASE and len([x for x in st["legs"] if x["live"]]) == 3 and "needs about $333" in st["warn"]
+          and "use $8.00 a bet" in st["warn"] and st["bankroll"]["rule"]["stake_usd"] == 8.0 and not st["bankroll"]["fits"]
+          and st["dist"]["week"]["stop"] == 150 and st["dist"]["ledger"] == "paper" and st["next_t"] and st["now_t"] and st["red_team"].startswith("Red team: paper first (about 4 weeks)") and 'id="redteam"' in page.text, st)
     wrong = c.post("/kalshi-live/arm", headers={**link, **TL_PAGE_H}, json={"phrase": "I ACCEPT LIVE RISK", "stake": 8}).json()
     arm = c.post("/kalshi-live/arm", headers={**link, **TL_PAGE_H}, json={"phrase": KL.PHRASE.lower(), "stake": 8}).json()
     arm2 = c.post("/kalshi-live/arm", headers={**link, **TL_PAGE_H}, json={"phrase": "  " + KL.PHRASE.replace(" ", "  ") + " ", "stake": 8}).json()
@@ -448,6 +481,186 @@ def part_web(tmp):
 TL_LINK_H = TL_PAGE_H = None
 
 
+# ================================================================================================ s. the $55 bankroll rule (night-kalshi8)
+def day_books(w, day, ask=0.52, depth=500):
+    """Markets + books for every window of `day` on the fake Kalshi (our side's ask = `ask`)."""
+    f = w.fake
+    for open_t, ids in KC.windows(day, KC.load_config(REAL_CFG)[0]):
+        for lid in ids:
+            leg = KC.LEG[lid]
+            tk = KC.ticker(leg["series"], open_t)
+            f.markets[tk] = {"ticker": tk, "event_ticker": tk.rsplit("-", 1)[0], "status": "active", "result": "",
+                             "close_time": TL.iso(open_t + 900), "yes_sub_title": "Target Price: $1", "price_ranges": []}
+            if leg["side"] == "no":
+                f.books[tk] = ([(round(1 - ask, 2), depth)], [(round(ask - 0.02, 2), depth)])
+            else:
+                f.books[tk] = ([(round(ask - 0.02, 2), depth)], [(round(1 - ask, 2), depth)])
+
+
+def lose_window(w, loop, open_t, ids):
+    """Run one window on the fake clock (jumping the idle hours), then settle every leg as a LOSS for us."""
+    w.clock.t = max(w.clock.t, open_t - 30)
+    w.run_until(loop, open_t + 50)
+    for lid in ids:
+        leg = KC.LEG[lid]
+        tk = KC.ticker(leg["series"], open_t)
+        if w.fake.markets.get(tk, {}).get("status") == "active":
+            w.fake.settle(tk, "yes" if leg["side"] == "no" else "no")
+    w.run_until(loop, open_t + 17 * 60)
+
+
+def part_sizing(tmp):
+    r55, r20, r100, r999 = KC.bankroll_rule(55), KC.bankroll_rule(20), KC.bankroll_rule(100), KC.bankroll_rule(9999)
+    check("s1. the bankroll rule: $55 -> $2.50 a bet (4 contracts at 52c), 3 a day, -$8 a day, -$13.75 a week (25%), OFF at -$19.25 (35%); "
+          "$20 -> the $1 minimum (1 contract); $100 -> $4.50; never above the $15 ceiling",
+          (r55["stake_usd"], r55["contracts_at_52c"], r55["max_bets_per_day"], r55["daily_loss_stop_usd"], r55["week_loss_stop_usd"],
+           r55["kill_drawdown_usd"]) == (2.5, 4, 3, 8, 13.75, 19.25) and r20["stake_usd"] == 1.0 and r100["stake_usd"] == 4.5
+          and r999["stake_usd"] == 15.0 and KC.fits(2.5, 55) and not KC.fits(5, 55) and KC.fits(5, None), (r55, r20, r100))
+    real = KC.load_config(REAL_CFG)[0]
+    sd15 = os.path.join(tmp, "pick15")
+    KL._jwrite(KC.stake_path(sd15), {"stake": 15})
+    c15, p15 = KC.load_config(REAL_CFG, sd15)
+    check("s1b. a $15 pick on the $55 settings is a settings problem (live refuses, with the size to use), never a silent no-bet",
+          c15["stake_usd"] == 15 and p15 and "use $2.50" in p15[0] and not KC.load_config(REAL_CFG)[1], p15)
+    o = order(count=4, cost=2.08, worst=0.52, stake=2.5)
+    v0 = view(cfg=real, balance=55.0)
+    ok0 = KC.check_order(o, v0)
+    wk = KC.check_order(o, dict(v0, week_worst=-11.70))
+    wk_ok = KC.check_order(o, dict(v0, week_worst=-11.50))
+    dd = KC.check_order(o, dict(v0, dd_now=15.0, open_all=2.2))
+    dd_ok = KC.check_order(o, dict(v0, dd_now=15.0, open_all=0.0))
+    big = KC.check_order(order(count=9, cost=4.68, worst=0.52, stake=5.0), v0)
+    check("s2. the order gate at $55: 4 contracts at 52c pass; the WEEK stop blocks a bet that could take the week past -$13.75 "
+          "(-$11.70 + $2.15 = -$13.85) but not at -$11.50; the drawdown stop blocks when the peak gap + open bets + this bet pass $19.25; "
+          "a $5 bet is over the $2.50 a bet", ok0[0] and wk[1] == "WEEK_STOP" and wk_ok[0] and dd[1] == "DD_STOP" and dd_ok[0] and big[1] == "STAKE",
+          (ok0, wk, wk_ok, dd, dd_ok, big))
+    # end to end: a whole week where EVERY bet loses, on the real $55 settings, armed (the test types the phrase; fake Kalshi)
+    KC.CFG_PATH, KL.CLOCK_PATH = REAL_CFG, REAL_CFG
+    try:
+        w = World(tmp, "w55", cash=55.0)
+        mon = dt.date(2026, 11, 16)
+        w.clock.t = KC.london_epoch(mon, 10, 14)
+        armed = w.arm()
+        loop = w.loop()
+        day_loss = {}
+        for k in range(5):
+            d = mon + dt.timedelta(days=k)
+            day_books(w, d)
+            for t, ids in KC.windows(d, real):
+                lose_window(w, loop, t, ids)
+            day_loss[str(d)] = round(sum(r.get("pnl") or 0 for r in w.live() if r.get("day") == str(d)), 2)
+        week = round(sum(r.get("pnl") or 0 for r in w.live()), 2)
+        n_week = len([r for r in w.live() if r.get("status") == "settled"])
+        logs = open(KL.paths(w.sd)["log"], encoding="utf-8").read()
+        sizes = {(r.get("n"), r.get("price")) for r in w.live()}
+        paper_n = len(w.paper())
+        check("s3. a week where every bet loses (real $55 settings, armed): every live bet is 4 contracts at 52c ($2.15 with the fee); "
+              "no day loses more than $8; the week stops at -$13.75 or less (WEEK_STOP logged); paper keeps recording every leg",
+              armed[0] and sizes == {(4, 0.52)} and min(day_loss.values()) >= -8.0 - 1e-9 and -13.75 - 1e-9 <= week < -10
+              and '"code":"WEEK_STOP"' in logs and paper_n == 5 * 5, (armed, sizes, day_loss, week, n_week, paper_n))
+        # the next week: the week stop resets; Monday's bets go in and lose; then the drawdown stop (-$19.25) turns live OFF
+        pushes0 = len(w.pushes)
+        for k in range(2):
+            nxt = mon + dt.timedelta(days=7 + k)
+            day_books(w, nxt)
+            for t, ids in KC.windows(nxt, real):
+                lose_window(w, loop, t, ids)
+        total = round(sum(r.get("pnl") or 0 for r in w.live()), 2)
+        stops = [p for p in w.pushes[pushes0:] if "STOPPED" in p["title"]]
+        live_now = KL.arm_state(P=KC.paths(w.sd), env=w.env)[0]
+        card = KL.read_card(now=w.clock(), state_dir=w.sd)
+        k8 = (card or {}).get("k8") or {}
+        check("s5. the PC's public card carries the K8 status block (live ledger, bankroll $55, $2.50 a bet, today, the last 10 as W/L, week + "
+              "drawdown used vs the stop, the next window) inside the card budget; no ticker, no order id",
+              k8.get("m") == "L" and k8.get("b") == 55 and k8.get("s") == 2.5 and set(k8.get("l") or "") == {"L"} and len(k8.get("l") or "") == min(10, len([r for r in w.live() if r.get("status") == "settled"]))
+              and k8["wk"][1] == 13.75 and k8["dd"][1] == 19.25 and k8.get("nx") and len(json.dumps(card, separators=(",", ":"))) <= KL.CARD_MAX
+              and "KXGOLD" not in json.dumps(card) and "ord" not in json.dumps(card), card)
+        check("s4. the next week: the week stop resets (Monday's bets go in), then the drawdown stop turns live OFF before the record can "
+              "pass -$19.25 from the peak (one STOPPED push); the total loss never passes 35% of $55",
+              total >= -19.25 - 1e-9 and total < week and stops and not live_now and "drawdown" in stops[0]["title"], (total, week, [p["title"] for p in w.pushes[pushes0:]], live_now))
+    finally:
+        KC.CFG_PATH, KL.CLOCK_PATH = FIX15, FIX15
+
+
+# ================================================================================================ r. red team 2026-11-21: never forget a bet
+def part_redteam(tmp):
+    w = World(tmp, "lost_answer")
+    w.arm()
+    w.fake.lose = "502"
+    loop = w.loop()
+    w.run_until(loop, OPEN_AM + 25)
+    lr = w.live()
+    v = loop.live_view(w.clock())
+    check("r1. Kalshi takes the order but the answer is lost (502): the bet is KEPT as 'check' (not forgotten), counted by the stops "
+          "(1 bet today, today's worst case = its cost + fee) and by one-bet-per-market",
+          len(w.posts()) == 1 and len(lr) == 1 and lr[0]["status"] == "check" and v["bets_today"] == 1 and lr[0]["ticker"] in v["tickers_today"]
+          and abs(v["day_worst"] + lr[0]["cost"] + lr[0]["fee"]) < 1e-6, (len(w.posts()), lr, v["bets_today"], v["day_worst"]))
+    c = KL.read_card(state_dir=w.sd, now=w.clock())
+    check("r1b. the phone card while it is 'check': LIVE, the bet log marks it 'c' (sent, answer lost, counted as placed), today's stop counts it",
+          c and c["st"] == "live" and c["k8"]["lg"][-1][5] == "c" and c["k8"]["dy"][0] > 0, c and (c["st"], c["k8"].get("lg"), c["k8"].get("dy")))
+    w.fake.lose = None
+    loop2 = w.loop()
+    w.run_until(loop2, OPEN_AM + 44)
+    check("r2. a restart inside the same window: NO second order on that market", len(w.posts()) == 1, len(w.posts()))
+    w.settle(OPEN_AM, {"KXGOLD15M": "no", "KXSILVER15M": "yes"})
+    w.run_until(loop2, OPEN_AM + 17 * 60)
+    g = w.live()[0]
+    check("r3. after the settle it is booked from Kalshi's own fills for the market: WON, the real contracts, cost and fee",
+          g["result"] == "won" and g["status"] == "settled" and g["n"] == int(lr[0]["n"]) and abs(g["pnl"] - round(g["n"] - g["cost"] - g["fee"], 2)) < 0.011, g)
+
+    w = World(tmp, "died")
+    w.arm()
+    w.fake.lose = "die"
+    loop = w.loop()
+    try:
+        w.run_until(loop, OPEN_AM + 25)
+    except Died:
+        pass
+    on_disk = w.live()
+    loop2 = w.loop()
+    w.run_until(loop2, OPEN_AM + 44)
+    check("r4. the PC dies in the middle of sending (Kalshi has the order): the row was saved BEFORE the send ('posting'); "
+          "after the restart no second order, and it is still counted",
+          len(on_disk) == 1 and on_disk[0]["status"] == "posting" and len(w.posts()) == 1 and loop2.live_view(w.clock())["bets_today"] == 1,
+          (on_disk, len(w.posts())))
+    w.settle(OPEN_AM, {"KXGOLD15M": "yes", "KXSILVER15M": "yes"})
+    w.run_until(loop2, OPEN_AM + 17 * 60)
+    g = w.live()[0]
+    check("r5. ... and it settles from the fills: LOST its real cost + fee", g["result"] == "lost" and abs(g["pnl"] + g["cost"] + g["fee"]) < 0.011, g)
+
+    loop2.st["paused_until"] = w.clock() + 3600
+    loop2.save()
+    cp = KL.read_card(state_dir=w.sd, now=w.clock())
+    loop2.st["paused_until"] = None
+    loop2.stop_live("the drawdown stop: test")
+    loop2.save()
+    cs = KL.read_card(state_dir=w.sd, now=w.clock())
+    w.clock.add(600)
+    ci = KL.read_card(state_dir=w.sd, now=w.clock())
+    check("r7. the phone card follows K8 itself: the phone PAUSE = PAUSED; a stop K8 made itself = STOPPED with the reason (was PAPER, no reason); "
+          "the K8 loop silent = never LIVE",
+          cp["st"] == "paused" and cs["st"] == "stopped" and "drawdown stop" in cs.get("why", "") and ci["st"] in ("stopped", "paper", "idle"),
+          (cp["st"], cs["st"], cs.get("why"), ci["st"]))
+
+    w = World(tmp, "silent")
+    w.arm()
+    loop = w.loop()
+    w.run_until(loop, OPEN_AM - 30)
+    c1 = KL.read_card(state_dir=w.sd, now=w.clock())
+    w.clock.add(900)
+    c2 = KL.read_card(state_dir=w.sd, now=w.clock())
+    check("r8. armed with the loop running = LIVE; the loop silent 15 min = 'ARMED, PC not running it' (idle), never LIVE", c1["st"] == "live" and c2["st"] == "idle",
+          (c1["st"], c2["st"]))
+
+    w = World(tmp, "refused")
+    w.arm()
+    w.fake.fail[("POST", "/portfolio/events/orders")] = (400, "invalid_parameters")
+    loop = w.loop()
+    w.run_until(loop, OPEN_AM + 25)
+    check("r6. a CLEAR refusal (HTTP 400): no live row left (nothing to count), one error", len(w.posts()) == 1 and not w.live()
+          and int(loop.st.get("err") or 0) == 1, (w.live(), loop.st.get("err")))
+
+
 def main():
     global TL_LINK_H, TL_PAGE_H
     from tests import test_phone_safety as TPS
@@ -462,6 +675,8 @@ def main():
         part_stops(tmp)
         part_clock(tmp)
         part_web(tmp)
+        part_sizing(tmp)
+        part_redteam(tmp)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     bad = RES.count(False)

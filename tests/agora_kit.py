@@ -25,7 +25,7 @@ import threading
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "tools", "web_public")
-INCLUDE = '<script src="../olympus/intro-app.js?v=i8" defer></script>'
+INCLUDE = '<script src="../olympus/intro-app.js?v=i12" defer></script>'
 RES: list = []
 
 
@@ -77,19 +77,23 @@ def static_kit(app, name, reads=(), storage=None, allow_urls=()):
     check(f"a. the files: {', '.join(names)}", all(os.path.isfile(os.path.join(d, n)) for n in names), [n for n in names if not os.path.isfile(os.path.join(d, n))])
     html, js, core, css = (read(os.path.join(d, n)) for n in ("index.html", f"{app}.js", f"{app}core.js", f"{app}.css"))
     lines = html.splitlines()
-    i = next((n for n, ln in enumerate(lines) if "../olympus/olympus.js?v=o13" in ln), -1)
-    check(f'a. the kit: olympus.css?v=o7, agora.css after it, themes.js, olympus.js?v=o13 data-app="{app}", the intro tag on the very next line',
-          html.index("../olympus/olympus.css?v=o7") < html.index("../olympus/agora.css") < html.index(f"{app}.css") and "../olympus/themes.js?v=o8" in html
+    i = next((n for n, ln in enumerate(lines) if "../olympus/olympus.js?v=o24" in ln), -1)
+    check(f'a. the kit: olympus.css?v=o7, agora.css after it, themes.js, olympus.js?v=o24 data-app="{app}", the intro tag on the very next line',
+          html.index("../olympus/olympus.css?v=o7") < html.index("../olympus/agora.css") < html.index(f"{app}.css") and "../olympus/themes.js?v=o11" in html
           and f'data-app="{app}"' in lines[i] and lines[i + 1].strip() == INCLUDE and html.count("intro-app.js") == 1, lines[i:i + 2])
     check("a. AGORA: <html data-theme=\"agora\">, the a11y layer and the sound kit, the page is an ES module",
-          re.search(r'<html lang="en" data-theme="agora"( data-oly-light)?>', html) and "../olympus/a11y.js" in html and "../olympus/sfx.js?v=s4" in html and f'<script type="module" src="{app}.js' in html)
+          re.search(r'<html lang="en" data-theme="agora"( data-oly-shell="app")?( data-oly-light)?>', html) and "../olympus/a11y.js" in html and ("../olympus/sfx.js?v=s4" in html or "../olympus/olympus.js" in html) and f'<script type="module" src="{app}.js' in html)
     check(f"a. viewport-fit=cover, theme-color, manifest, icon, apple-touch-icon, lang, ONE h1 named {name}, a polite live status line",
           all(x in html for x in ("viewport-fit=cover", 'name="theme-color"', 'rel="manifest"', 'rel="icon"', "apple-touch-icon", '<html lang="en"')) and html.count("<h1") == 1
           and f">{name}</h1>" in html and 'role="status"' in html and 'aria-live="polite"' in html)
-    bad = [p for p in (r"\.innerHTML", r"outerHTML", r"insertAdjacentHTML", r"document\.write", r"\beval\s*\(", r"new Function", r"\bimport\s*\(") if re.search(p, js) or re.search(p, core)]
+    # a literal import('./<own file>.js') of the app's own module is not built from data (day-a11y 2026-11-20, PERF ask 3: the 3D after load + idle)
+    js_ = re.sub(r"\bimport\(\s*'\./[\w-]+\.js'\s*\)", "", js)
+    bad = [p for p in (r"\.innerHTML", r"outerHTML", r"insertAdjacentHTML", r"document\.write", r"\beval\s*\(", r"new Function", r"\bimport\s*\(") if re.search(p, js_) or re.search(p, core)]
     check("a. no markup is ever built from data: no innerHTML / outerHTML / insertAdjacentHTML / document.write / eval / dynamic import", not bad, bad)
     fetches = set(re.findall(r"getJSON\('([^']+)'", js))
     want = {"./fixture.json", *reads, *allow_urls}
+    if "../odeon/trades.json" in want and "../odeon/trades_lite.json" in fetches:   # its slim twin, read first (tools/odeon_export.lite, 2026-11-20)
+        want.add("../odeon/trades_lite.json")
     web_js = js + core
     for u in allow_urls:
         web_js = web_js.replace(u, "")
@@ -165,7 +169,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 def serve(overrides=None):
     """The site folder on a local port. overrides = {"/home.json": bytes | str | None (404)} replace or add files."""
-    handler = type("H", (Handler,), {"overrides": dict(overrides or {})})
+    ov = dict(overrides or {})
+    if "/odeon/trades.json" in ov and "/odeon/trades_lite.json" not in ov:      # the apps read the slim copy first (dogfood 2026-11-20)
+        ov["/odeon/trades_lite.json"] = ov["/odeon/trades.json"]
+    handler = type("H", (Handler,), {"overrides": ov})
     srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(handler, directory=WEB))
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     return srv, f"http://127.0.0.1:{srv.server_address[1]}"
@@ -209,6 +216,10 @@ def is_status_feed(u):
 def page(br, origin, w=390, h=844, reduced=False, lite=False, storage=None, mock=None):
     ctx = br.new_context(viewport={"width": w, "height": h}, device_scale_factor=2, is_mobile=True, has_touch=True, reduced_motion="reduce" if reduced else "no-preference", accept_downloads=True)
     init = "try { localStorage.setItem('jfx', '%s'); } catch (e) {}" % ("low" if lite else "high")
+    # these suites check the AGORA look: pick it as a saved choice (OLYMPUS NIGHT is the default on every phone since QA 2026-11-21;
+    # before, Playwright's default light phone fell back to AGORA by accident)
+    if "olympus.theme" not in (storage or {}):
+        init += " try { localStorage.setItem('olympus.theme', 'agora'); localStorage.setItem('olympus.theme.night', '1'); } catch (e) {}"
     for k, v in (storage or {}).items():
         init += " try { localStorage.setItem(%s, %s); } catch (e) {}" % (json.dumps(k), json.dumps(v))
     ctx.add_init_script(init)
@@ -254,9 +265,16 @@ TAPS = """() => { const bad = [];
     if (r.width && r.height && (r.height < 43.5 || r.width < 43.5)) bad.push((e.id || e.className || e.tagName) + ' ' + Math.round(r.width) + 'x' + Math.round(r.height)); }
   return bad; }"""
 SIDEWAYS = "() => document.documentElement.scrollWidth <= innerWidth + 1"
-CORNER = """() => { const W = innerWidth, H = innerHeight, bad = []; window.scrollTo(0, document.documentElement.scrollHeight);
+# Jarvis's orb corner is measured as the page looks INSIDE Jarvis (html.framed: the 176 px seat). Alone, a page ends 96 px + the home bar
+# under its last line (night-siteqa 2026-11-20: no empty band at the end; only the 44 px OLYMPUS seal sits in the corner then)
+CORNER = """() => { const W = innerWidth, H = innerHeight, bad = [], de = document.documentElement, was = de.classList.contains('framed');
+  // in Jarvis's frame the kit never mounts the Ask Jarvis button (olympus.js), so its 72 px pad (body.oly-has-ask) is not there either
+  const ask = document.body.classList.contains('oly-has-ask'); document.body.classList.remove('oly-has-ask');
+  de.classList.add('framed'); void de.offsetHeight; window.scrollTo(0, document.documentElement.scrollHeight);
   for (const e of document.querySelectorAll('button, input, select, textarea, summary, a[href]')) { if (/oly-/.test(e.className + ' ' + e.id)) continue; const r = e.getBoundingClientRect(); if (!r.width) continue;
     if (r.right > W - 80 && r.bottom > H - 160 && r.left < W && r.top < H) bad.push(e.id || e.className || e.tagName); }
+  if (!was) de.classList.remove('framed');
+  if (ask) document.body.classList.add('oly-has-ask');
   return bad; }"""
 
 

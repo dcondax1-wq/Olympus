@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>NQ</title>
 <meta name="description" content="OLYMPUS NQ: the NQ bots, right now. Zlarior (LIT 50K), ATLAS 25K and BLITZ 25K: status with the exact age of the last report, drawdown left, today's P&L in $ with R, eval progress, the last 10 trades and the rule that closed each, and how to bring reporting back.">
-<meta name="theme-color" content="#14110e">
+<meta name="theme-color" content="#000000">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="NQ">
@@ -20,26 +20,41 @@
      Read only, paper only: it reads ../home.json, howto.json and fixture.json (DEMO, never blank) and sends nothing. Text only through textContent / createElementNS.
      nqcore.js = the pure rules (node-tested); nq.js = the page; nqscene.js = the optional 3D columns (a separate module, so a device without WebGL keeps the 2D columns). -->
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
+<!-- perf 2026-11-20 (largest paint 6.9 s = the chart's line, at the end of page -> nqchart.js -> status_feed.json -> the PC's chart post):
+     the page's data files and the chart post start here at once; nq.js / nqchart.js take them (window.NQ_EARLY, each used once) -->
+<script>(function () { var J = {}, X = {}; window.NQ_EARLY = { json: J, text: X }; if (typeof fetch !== 'function') return;
+  var get = function (u, as, cache) { return fetch(u, { cache: cache || 'no-cache' }).then(function (r) { return r.ok ? (as === 'text' ? r.text() : r.json()) : null; }).catch(function () { return null; }); };
+  ['./fixture.json', '../home.json', './howto.json', './news_week.json', '../hub/learned.json', '../business/accounts.json', '../trading/trades.json', '../edge.json', './brief.json', '../business/goals.json']
+    .forEach(function (u) { J[u] = get(u); });
+  X['../status_feed.json'] = get('../status_feed.json', 'text').then(function (t) {
+    try { var f = JSON.parse(t || 'null'), base = String((f && f.ntfy) || 'https://ntfy.sh').replace(/\/+$/, ''), topic = String((f && f.bars_topic) || '');
+      if (!/^[A-Za-z0-9_-]{1,64}$/.test(topic)) topic = /^[A-Za-z0-9_-]{1,59}$/.test(String((f && f.topic) || '')) ? f.topic + '-bars' : '';
+      if (topic && /^https:\/\/[A-Za-z0-9.-]+(:\d+)?$/.test(base)) { var u = base + '/' + encodeURIComponent(topic) + '/json?poll=1&since=latest'; X[u] = get(u, 'text', 'no-store'); } } catch (e) { /* the chart asks itself */ }
+    return t; }); })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o7">
-<link rel="stylesheet" href="../olympus/agora.css?v=a6">
-<script src="../olympus/themes.js?v=o8"></script>
-<script src="../pc_feed.js?v=n4"></script><script src="../business/payoutcoach.js?v=1"></script><!-- night-feedsB: the PC's status post reader and the payout coach, before the kit (a missing file never trips its "could not load") -->
-<script src="../olympus/olympus.js?v=o13" data-app="nq"></script>
-<script src="../olympus/intro-app.js?v=i8" defer></script>
+<link rel="stylesheet" href="../olympus/agora.css?v=a11">
+<script src="../olympus/themes.js?v=o11"></script>
+<script src="../pc_feed.js?v=n7"></script><script src="../business/payoutcoach.js?v=2"></script><!-- night-feedsB: the PC's status post reader and the payout coach, before the kit (a missing file never trips its "could not load") -->
+<script src="../olympus/olympus.js?v=o24" data-app="nq"></script>
+<script src="../olympus/intro-app.js?v=i12" defer></script>
 <script src="../olympus/a11y.js" defer></script>
-<script src="../olympus/agora-ui.js?v=3" defer></script>
-<script src="../olympus/gate-nav.js?v=g5" defer></script><!-- the way back to the Gate + Go to (olympus/gate-nav.js) -->
-<script src="../olympus/sfx.js?v=s4" defer></script>
-<script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#c8a24a'); r.setProperty('--oly-accent-rgb', '200, 162, 74'); })();</script>
-<link rel="stylesheet" href="nq.css?v=a4">
+<script src="../olympus/agora-ui.js?v=9" defer></script>
+<script src="../olympus/gate-nav.js?v=g11" defer></script><!-- the way back to the Gate + Go to (olympus/gate-nav.js) -->
+<script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#f1c14b'); r.setProperty('--oly-accent-rgb', '241, 193, 75'); })();</script>
+<link rel="stylesheet" href="nq.css?v=a8">
+<link rel="stylesheet" href="../nqdeep.css?v=2" media="print" onload="this.media='all'"><!-- perf: the deep views (.nqd-*) are far below the first screen: not render-blocking -->
+<link rel="stylesheet" href="nqdesk.css?v=11">
+<link rel="stylesheet" href="nqgoals.css?v=9">
+<link rel="stylesheet" href="nqtheme.css?v=9"><!-- owner 2026-11-20 15:15 ET: the NQ terminal look (navy, cyan / blue glows, violet), last so it wins -->
 <style>/* the status lines above the chart fill in a moment after the page shows (3 + 2 lines on a phone): held from the start so the chart card never jumps (phone QA 2026-11-19) */
 @media (max-width: 520px) { #status { min-height: 3lh; } #src:empty { min-height: 2lh; } }</style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="glGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" class="gl-g0"/><stop offset="1" class="gl-g1"/></linearGradient></defs></svg>
 <main id="app">
   <header class="top">
     <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">NQ</h1><p class="sub">Are the bots on, and how much $ each account can still lose before it fails.</p></div></div>
-    <div class="tags"><span id="demo" class="tag demo" hidden>DEMO</span><span id="lite" class="tag" hidden>LITE</span></div>
+    <div class="tags"><a class="btn brainlink" href="brain.html" aria-label="Open the bots' brains">Brain</a><span id="demo" class="tag demo" hidden>DEMO</span><span id="lite" class="tag" hidden>LITE</span></div>
   </header>
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
   <p id="src" class="note" data-truth="source"></p>
@@ -50,12 +65,21 @@
     <button type="button" class="btn primary" id="bannerBtn" data-howto aria-haspopup="dialog" aria-expanded="false">Bring the bots back (3 steps)</button>
   </section>
 
+  <!-- v4 (owner 2026-11-20 15:00 ET: "goals on the NQ dashboard"): each account's next money goal, a glowing ring and the $ left (nqgoals.js); tap one for its rules and date -->
+  <section class="ag-card card" id="goalCard" aria-labelledby="goalH">
+    <div class="row"><h2 id="goalH">Next money goals</h2><span class="pill" id="goalAge">Loading</span></div>
+    <div class="gl-strip" id="goals" role="group" aria-label="Each account's next money goal"></div>
+    <div class="gl-detail" id="goalDetail" aria-live="polite" hidden></div>
+  </section>
+
   <!-- the live chart (owner 2026-11-18, nqchart.js + nqbars.js): the PC's NinjaTrader 5-minute bars with every entry, stop and target; its own module -->
   <section class="ag-card card" id="chartCard" aria-labelledby="chartH">
-    <div class="row"><h2 id="chartH">Live chart</h2><span class="pill" id="chartPill">Loading</span></div>
+    <div class="row"><h2 id="chartH">Live chart</h2><span class="ctools"><button type="button" class="btn ctog" id="chart3dBtn" aria-pressed="false" hidden>3D</button><span class="pill" id="chartPill">Loading</span></span></div>
     <p class="note" id="chartAsOf" hidden></p>
     <div class="chartbox" id="chartBox" role="img" aria-label="The NQ chart with our trades">
       <div class="chart" id="chart"></div>
+      <span class="cpulse" id="chartPulse" aria-hidden="true" hidden></span>
+      <div class="c3d" id="chart3d" hidden></div>
       <p class="chartmsg" id="chartMsg">Loading the PC's chart...</p>
     </div>
     <div class="chips" id="chartChips" role="group" aria-label="Show the trades of"></div>
@@ -65,6 +89,57 @@
     <ol class="ctrades" id="chartTrades"></ol>
     <p class="note">The bars come from your PC's NinjaTrader about every hour while the bots trade (01:50-16:10 ET) and right after each entry or exit; it never shows made-up prices. Tap a trade to see it on the chart.</p>
     <a class="attrib" id="chartAttrib" href="https://www.tradingview.com/" target="_blank" rel="noopener">Chart: TradingView Lightweight Charts™, © TradingView, Inc.</a>
+  </section>
+
+  <!-- v4: ATLAS's first payout as a vault (DESIGN's NQFX.vault: a drawn vault at once, a 3D steel door + coins after load + idle) -->
+  <section class="ag-card card" id="vaultCard" aria-labelledby="vaultH">
+    <div class="row"><h2 id="vaultH">ATLAS first payout</h2><span class="pill" id="vaultPill"></span></div>
+    <div class="vault" id="vault"></div>
+    <p class="note" id="vaultNote">MFFU shows a funded account as its profit. The goal is a $1,000 ask at $2,100.</p>
+  </section>
+
+    <!-- nqdash3 2026-11-20 (nqdesk.js): every MFFU account at a glance, a live / stale dot from the PC's 15-minute report -->
+  <section class="ag-card card" id="acctCard" aria-labelledby="acctH">
+    <div class="row"><h2 id="acctH">Accounts</h2><span class="pill" id="acctPill">Loading</span></div>
+    <div class="dk-strip" id="acctStrip" role="group" aria-label="Each MFFU account"></div>
+    <p class="dk-legend" aria-hidden="true"><span><i class="dk-dot live"></i>live</span><span><i class="dk-dot stale"></i>over 20 min old</span><span><i class="dk-dot old"></i>over 1 h old</span><span><i class="dk-dot plan"></i>planned</span></p>
+  </section>
+
+  <!-- day-nqops 2026-11-21 (clock7.js): MFFU closes an account with no filled trade in 7 days: each account's clock -->
+  <section class="ag-card card" id="k7Card" aria-labelledby="k7H">
+    <div class="row"><h2 id="k7H">7-day clock</h2><span class="pill" id="k7Pill">Loading</span></div>
+    <ul class="k7" id="k7List" aria-label="Each account's MFFU 7-day clock"></ul>
+    <p class="note" id="k7Note">MFFU closes an eval or funded account with no filled trade in 7 calendar days, weekends included.</p>
+  </section>
+
+  <!-- v4: the numbers (today / this week per account, win rate and PF over the real fills, the last 10, the session clock, the VIX band) -->
+  <section class="ag-card card" id="numCard" aria-labelledby="numH">
+    <div class="row"><h2 id="numH">The numbers</h2><span class="pill" id="numPill"></span></div>
+    <div id="nums"></div>
+  </section>
+
+  <!-- v4: today's NQ as a 3D price landscape, our trades as beacons (nqland.js, lazy; a 2D picture without WebGL or on LITE) -->
+  <section class="ag-card card" id="landCard" aria-labelledby="landH">
+    <h2 id="landH">Today's market in 3D</h2>
+    <div class="land" id="land" role="img" aria-label="Today's NQ price as a landscape with our trades as beacons">
+      <div class="l3d" id="land3d" hidden></div>
+      <svg class="land-fb" id="landFb" viewBox="0 0 360 240" preserveAspectRatio="none" aria-hidden="true"></svg>
+    </div>
+    <p class="note" id="landNote">Today's 5-minute bars from your PC. A green beacon is a winning trade, red a loss, cyan an open one.</p>
+  </section>
+
+  <!-- round 3 (Ares merged here): can each account's bot trade right now? -->
+  <section class="ag-card card" id="gateCard" aria-labelledby="gateH">
+    <div class="row"><h2 id="gateH">GO / WAIT / HALT</h2><span class="pill" id="gatePill"></span></div>
+    <div class="dk-gates" id="gates"></div>
+    <a class="dk-more" href="../ares/">Check a trade by hand (the Ares calculator)</a>
+  </section>
+
+  <!-- round 3 (Kairos merged here): the trading day on one line -->
+  <section class="ag-card card" id="dayCard" aria-labelledby="dayH">
+    <h2 id="dayH">The bots' day</h2>
+    <div id="dayLine"></div>
+    <a class="dk-more" href="../kairos/">The full day ring (Kairos)</a>
   </section>
 
   <section class="ag-card card" id="sceneCard" aria-labelledby="sceneH">
@@ -84,12 +159,38 @@
     <p class="note" id="planNote" hidden></p>
   </section>
 
+  <!-- nqdash3: what each bot is thinking: before the trade (lean, news, levels, window, what it waits for), in it, after it -->
+  <section class="ag-card card" id="thinkCard" aria-labelledby="thinkH">
+    <div class="row"><h2 id="thinkH">What the bots are thinking</h2><span class="pill" id="thinkPill"></span></div>
+    <div class="dk-bots" id="think"></div>
+    <p class="note">From the PC's own report (its brain glance). The lean is the side of the setup it has armed; it never trades a lean alone.</p>
+  </section>
+
   <section id="bots" class="cards" aria-label="Each account"></section>
+
+  <section class="ag-card card" id="newsCard" aria-labelledby="newsH">
+    <div class="row"><h2 id="newsH">News this week</h2><span class="pill" id="newsSrc"></span></div>
+    <p class="note">High-impact US releases (jobs, inflation, the Fed) from the bot's own calendar. Big releases move NQ fast; a crossed-out one is over.</p>
+    <div id="newsWeek"></div>
+  </section>
 
   <section class="ag-card card" id="tradesCard" aria-labelledby="tradesH">
     <h2 id="tradesH">The last 10 trades</h2>
     <p class="note" id="tradesNote"></p>
     <ol class="trades" id="trades"></ol>
+  </section>
+
+  <section class="ag-card card" id="qualCard" aria-labelledby="qualH">
+    <div class="row"><h2 id="qualH">Quality checks</h2><span class="pill" id="qualPill"></span></div>
+    <div id="qual"></div>
+    <p class="note">Is everything on this page fresh and does the bot do what its backtest does? A red one is worth a look.</p>
+  </section>
+
+  <!-- round 3 (Chronos merged here): replay a past day; its trade file (~0.5 MB) loads only when this card comes into view -->
+  <section class="ag-card card dk-lazy" id="pastCard" aria-labelledby="pastH">
+    <h2 id="pastH">Replay a past day</h2>
+    <div id="pastDays"><p class="note">Loading when you get here...</p></div>
+    <a class="dk-more" href="../chronos/">All days (Chronos)</a>
   </section>
 
   <section class="ag-card card" id="factsCard" aria-labelledby="factsH">
@@ -114,9 +215,11 @@
   <div class="row sheethead"><h2 id="sheetH">How to bring reporting back</h2><button type="button" class="btn" id="sheetClose" aria-label="Close the steps">Close</button></div>
   <div class="sheetbody" id="sheetBody"></div>
 </section>
-<script type="module" src="nq.js?v=r11"></script>
-<script type="module" src="nqchart.js?v=c1"></script>
+<script src="../nqdeep.js?v=1" defer></script>
+<script type="module" src="nq.js?v=r31"></script>
+<script type="module" src="nqchart.js?v=c9"></script>
 <!-- QA round 6: the 3D loads after the first paint, and not at all on LITE (olympus/lazy3d.js) -->
-<script src="../olympus/lazy3d.js?v=l1" data-src="nqscene.js?v=q6c" data-skip="lite" data-event="nq3d" defer></script>
+<script src="../olympus/lazy3d.js?v=l2" data-src="nqscene.js?v=q6f" data-near="#sceneCard" data-skip="lite" data-event="nq3d" defer></script>
+<script src="../olympus/lazy3d.js?v=l2" data-src="nqland.js?v=3" data-near="#landCard" data-skip="lite" data-event="nqland" defer></script>
 </body>
 </html>

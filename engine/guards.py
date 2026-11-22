@@ -442,7 +442,7 @@ def startup_problems(bot, c: dict | None = None, now: int | None = None) -> list
         except Exception as e:                   # fails CLOSED: the startup reconcile never lets an entry through on a bug
             out.append(f"NinjaTrader startup check failed ({e.__class__.__name__}: {e})")
         try:
-            exp = _expected(bot)
+            exp = _expected(bot) + _keepalive_net(ad)      # + an open keep-alive leg (engine/keepalive.py)
             net, held = _broker_net(ad)
             if net != exp and not any(lg.get("status") != "protected" for lg in getattr(ad, "legs", []) or []):
                 out.append(f"NinjaTrader {getattr(ad, 'account', '')} shows {', '.join(held) or 'flat'}, the bot's ledger {_txt(exp)}")
@@ -549,6 +549,16 @@ def entry_block(bot, ent: dict, action: dict, plan_qty, now: int) -> str | None:
     except Exception as e:
         bot._note_error(f"guards: entry check failed ({e.__class__.__name__}: {e}); the adapter's own caps still apply")
         return None
+    try:            # hand trades (engine/hand_hedge.py) HERE, before LiveBot._hedge_clear / _second_preempt close ATLAS, BLITZ,
+        from . import hand_hedge    # a follower or a second-strategy trade at market for an entry this check refuses anyway
+        if action.get("side") in ("buy", "sell"):   # (fix-trade 2026-11-21); also the one-account bot (no extra accounts)
+            hh = hand_hedge.opposite_hand(1 if action["side"] == "buy" else -1, bot, getattr(bot, "accts", None),
+                                          own=getattr(getattr(bot, "adapter", None), "account", None), now=now,
+                                          notify=lambda t, b, k: _notify(bot, k, t, b))
+            if hh:
+                probs = list(probs or []) + [hh]
+    except Exception:
+        pass
     if not probs:
         return None
     why = "; ".join(probs)
@@ -629,6 +639,27 @@ def _expected(bot) -> int:
     return q if row["side"] == "buy" else -q
 
 
+def _keepalive_net(ad) -> int:
+    """Signed micros of an open keep-alive leg on this adapter (engine/keepalive.py, OFF by default): NinjaTrader holds it on
+    purpose for about 2 minutes, so the reconcile and the startup check count it as expected (never a "Position mismatch",
+    never a RECONCILE close through the strategy's own route). Its legs carry "keepalive" / who "Keep-alive on ...". 0 on
+    any doubt."""
+    try:
+        from .ninjatrader import OPEN_STATUSES
+        mini = (ad._instruments() or {}).get("mini") if callable(getattr(ad, "_instruments", None)) else None
+        n = 0
+        for lg in getattr(ad, "legs", None) or []:
+            if not isinstance(lg, dict) or lg.get("status") not in OPEN_STATUSES:
+                continue
+            if not (lg.get("keepalive") or str(lg.get("who") or "").startswith("Keep-alive")):
+                continue
+            q = int(lg.get("filled") or 0) * (10 if mini and lg.get("instrument") == mini else 1)
+            n += q if int(lg.get("dir") or (1 if lg.get("side") == "BUY" else -1)) == 1 else -q
+        return n
+    except Exception:
+        return 0
+
+
 def _broker_net(ad) -> tuple[int, list]:
     from .ninjatrader import same_instrument      # 'MNQ 12-26 Globex' / 'MNQ DEC26 Globex' = 'MNQ 12-26'
     insts = ad._instruments()
@@ -646,6 +677,15 @@ def _broker_net(ad) -> tuple[int, list]:
     return net, held
 
 
+def _dt_hm(t) -> str:
+    try:
+        import datetime as _d
+        from zoneinfo import ZoneInfo
+        return _d.datetime.fromtimestamp(int(t), ZoneInfo("America/New_York")).strftime("%H:%M ET")
+    except Exception:
+        return "its end"
+
+
 def _txt(n: int) -> str:
     return "flat" if n == 0 else f"{'LONG' if n > 0 else 'SHORT'} {abs(n)} micros"
 
@@ -660,7 +700,7 @@ def reconcile_tick(bot, c, now: int):
     busy = [lg for lg in getattr(ad, "legs", []) if lg.get("status") != "protected"] or \
         [w for w in getattr(ad, "watch", []) if (w.get("watch") or {}).get("leftover")]
     recent = any(now - int(r.get("t") or 0) < int(c["reconcile_grace_s"]) for r in bot.ledger[-10:])
-    exp = _expected(bot)
+    exp = _expected(bot) + _keepalive_net(ad)          # an open keep-alive leg is expected (engine/keepalive.py)
     net, held = _broker_net(ad)
     if busy or recent or net == exp:
         bot._recon = None
@@ -673,9 +713,15 @@ def reconcile_tick(bot, c, now: int):
     if now - rc["since"] < wait:
         return
     day = trading_day(now)
+    try:                                         # the owner's own hand-trade window (engine/hand_hedge.py): no close of his trade
+        from . import hand_hedge
+        hw = hand_hedge.window(now=now) if exp == 0 and net != 0 else None
+    except Exception:
+        hw = None
     if not rc["pushed"]:
         rc["pushed"] = True
-        act = " Closing it (CLOSEPOSITION)." if exp == 0 and c.get("reconcile_flatten") else " Check NinjaTrader by hand."
+        act = (" Left alone (your hand-trade window)." if hw else
+               " Closing it (CLOSEPOSITION)." if exp == 0 and c.get("reconcile_flatten") else " Check NinjaTrader by hand.")
         _notify(bot, f"recon:{day}:{exp}:{net}", "Position mismatch",
                 f"NinjaTrader {getattr(ad, 'account', '')} shows {', '.join(held) or 'flat'}; the bot's ledger says "
                 f"{_txt(exp)}.{act}")
@@ -685,6 +731,14 @@ def reconcile_tick(bot, c, now: int):
                             f"account {', '.join(held) or 'flat'}, bot ledger {_txt(exp)}", now=now, path=handsoff.path_for(bot))
         except Exception:
             pass
+    if hw:
+        if not rc.get("hand_said"):
+            rc["hand_said"] = True
+            _notify(bot, f"recon-window:{day}:{net}", "Hand trade left alone",
+                    f"NinjaTrader {getattr(ad, 'account', '')} shows {', '.join(held)}: your hand-trade window is open until "
+                    f"{_dt_hm(hw.get('until'))}, so the bot does not close it. It never takes the other side of it on any account "
+                    "NinjaTrader is connected to.")
+        return
     if exp == 0 and net != 0 and c.get("reconcile_flatten") and now - rc["flat_at"] >= 60:
         if rc["flat_tries"] >= 3:
             if rc["flat_tries"] == 3:

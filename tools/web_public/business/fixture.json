@@ -12,18 +12,18 @@
     "stage": "eval",
     "room": 2000.0,
     "price": 91.8,
-    "request": 1500.0,
-    "to_you": 1200.0,
+    "request": 2000.0,
+    "to_you": 1600.0,
     "funded_month": 546.0,
     "state": "eval",
     "pass_typical": "2026-12-01",
     "pass_slow": "2026-12-15",
     "sessions_to_pass": 10,
-    "payout_typical": "2026-12-18",
-    "payout_slow": "2027-01-22",
-    "bank_typical": "2026-12-24",
-    "sessions_to_payout": 12,
-    "text": "Zlarior (LIT): passes about 2026-12-01 (slow 2026-12-15), first payout about 2026-12-18 (slow 2027-01-22): ask $1,500, $1,200 to you, in the bank about 2026-12-24."
+    "payout_typical": "2026-12-22",
+    "payout_slow": "2027-01-28",
+    "bank_typical": "2026-12-28",
+    "sessions_to_payout": 14,
+    "text": "Zlarior (LIT): passes about 2026-12-01 (slow 2026-12-15), first payout about 2026-12-22 (slow 2027-01-28): ask $2,000, $1,600 to you, in the bank about 2026-12-28."
    },
    {
     "name": "ATLAS",
@@ -32,44 +32,44 @@
     "stage": "eval",
     "room": 1000.0,
     "price": 63.0,
-    "request": 750.0,
-    "to_you": 600.0,
+    "request": 1000.0,
+    "to_you": 800.0,
     "funded_month": 338.0,
     "state": "eval",
     "pass_typical": "2026-12-01",
     "pass_slow": "2026-12-15",
     "sessions_to_pass": 10,
-    "payout_typical": "2026-12-21",
-    "payout_slow": "2027-01-26",
-    "bank_typical": "2026-12-25",
-    "sessions_to_payout": 13,
-    "text": "ATLAS: passes about 2026-12-01 (slow 2026-12-15), first payout about 2026-12-21 (slow 2027-01-26): ask $750, $600 to you, in the bank about 2026-12-25."
+    "payout_typical": "2026-12-22",
+    "payout_slow": "2027-01-28",
+    "bank_typical": "2026-12-28",
+    "sessions_to_payout": 14,
+    "text": "ATLAS: passes about 2026-12-01 (slow 2026-12-15), first payout about 2026-12-22 (slow 2027-01-28): ask $1,000, $800 to you, in the bank about 2026-12-28."
    }
   ],
   "account4": {
-   "name": "LucidPro 50K (copies Zlarior)",
+   "name": "Rapid EOD 50K",
+   "now": "Rapid EOD 25K",
+   "then": "a fresh Builder 50K",
    "price": [
-    120,
-    135
+    165,
+    165
    ],
-   "adds_month": 810.0,
-   "sale": [
-    "2026-11-19",
-    "2026-12-01"
-   ],
-   "doc": "docs/ACCOUNT_4.md",
-   "buy_on": "2026-12-24",
+   "code": "CLUB",
+   "adds_month": 1969.0,
+   "sale": null,
+   "doc": "business/fleet_plan.json",
+   "buy_on": "2026-12-28",
    "in_sale": false,
    "after": "Zlarior (LIT)",
-   "text": "Account #4: buy the LucidPro 50K (copies Zlarior) about 2026-12-24, the day Zlarior (LIT)'s first payout is in your bank ($120-135 with a code; adds about $810 a month, estimate)."
+   "text": "Next buys (MFFU only): the Rapid EOD 25K now (added today), then the Rapid EOD 50K about 2026-12-28, the day Zlarior (LIT)'s first payout is in your bank ($165 with code CLUB; adds about $1,969 a month, estimate), then a fresh Builder 50K."
   },
-  "first_payout_to_you": 1800.0,
+  "first_payout_to_you": 2400.0,
   "funded_month": 884.0,
-  "funded_month_with_4": 1694.0,
+  "funded_month_with_4": 2853.0,
   "first": {
    "name": "Zlarior (LIT)",
-   "bank": "2026-12-24",
-   "to_you": 1200.0
+   "bank": "2026-12-28",
+   "to_you": 1600.0
   },
   "note": "Typical pace from the research (not a promise). Evals can fail; the slow date is about twice the sessions. Bank dates assume about 4 business days after the request: check MFFU's payout page.",
   "demo": true
@@ -97,12 +97,20 @@
   "monthly": 0,
   "next_buys": [
    {
-    "what": "LucidPro 50K (account #4, copies Zlarior)",
+    "what": "MFFU Rapid EOD 25K (added today)",
     "usd": [
-     120,
-     135
+     97.2,
+     97.2
     ],
-    "when": "the day the first MFFU payout is in your bank (docs/ACCOUNT_4.md)"
+    "when": "now (code CLUB, your price)"
+   },
+   {
+    "what": "MFFU Rapid EOD 50K, then a fresh Builder 50K",
+    "usd": [
+     165,
+     165
+    ],
+    "when": "from the first payout in your bank, about Jan 5 (business/fleet_plan.json; code CLUB)"
    },
    {
     "what": "A new MFFU eval after a failed one",
@@ -295,7 +303,7 @@
    "id": "demo-sites",
    "kind": "sites",
    "name": "Demo websites to sell",
-   "usd": 499.0,
+   "usd": 1500.0,
    "minutes": 30,
    "where": "Netlify Drop (free)",
    "file": "agency/out/",
@@ -476,11 +484,11 @@
  "moves": [
   {
    "id": "m-evals",
-   "what": "Let Zlarior and ATLAS trade every session; check the eval room each evening (first payout about 2026-12-24).",
+   "what": "Let Zlarior and ATLAS trade every session; check the eval room each evening (first payout about 2026-12-28).",
    "minutes": 5,
    "usd": [
     0,
-    1200.0
+    1600.0
    ],
    "where": "Business > Trading money"
   },
@@ -516,11 +524,11 @@
   },
   {
    "id": "m-agency",
-   "what": "AGENCY_DAY.bat, then 10 calls by hand (one Starter sale = $499 + $49 a month).",
+   "what": "AGENCY_DAY.bat, then 10 calls by hand (one Starter sale = $1,500 + $79 a month).",
    "minutes": 75,
    "usd": [
     0,
-    548
+    1579
    ],
    "where": "Website agency"
   },
@@ -536,7 +544,7 @@
   },
   {
    "id": "m-account4",
-   "what": "Account #4: not yet. Buy the LucidPro 50K about 2026-12-24 (money in the bank first).",
+   "what": "Next buy after the Rapid EOD 25K: the Rapid EOD 50K about 2026-12-28 (money in the bank first; MFFU only).",
    "minutes": 0,
    "usd": [
     0,
@@ -606,7 +614,7 @@
     5,
     7
    ],
-   "why": "One Starter sale is $499 + $49 a month. Month 3 assumes 0-2 sales a month (the docs' plan of 4 a month needs 6 calls a working day).",
+   "why": "One Starter sale is $1,500 + $79 a month (agency/pricebook.json). Month 3 assumes 0-2 sales a month (the docs' plan of 4 a month needs 6 calls a working day).",
    "doc": "docs/AGENCY.md",
    "paused": false,
    "next": "Double-click AGENCY_DAY.bat and fill in agency/config.json (name, phone, email, address, city).",
@@ -872,21 +880,21 @@
  "prices": [
   {
    "id": "starter",
-   "name": "Starter",
-   "setup": 499.0,
-   "monthly": 49.0
-  },
-  {
-   "id": "growth",
-   "name": "Growth",
-   "setup": 999.0,
+   "name": "Starter site",
+   "setup": 1500.0,
    "monthly": 79.0
   },
   {
+   "id": "growth",
+   "name": "Call engine",
+   "setup": 500.0,
+   "monthly": 299.0
+  },
+  {
    "id": "pro",
-   "name": "Pro",
-   "setup": 1999.0,
-   "monthly": 129.0
+   "name": "3D Signature",
+   "setup": 2500.0,
+   "monthly": 79.0
   }
  ],
  "week": [
@@ -1003,16 +1011,18 @@
    }
   ],
   "new_account": {
-   "plan": "LucidPro 50K copy of Zlarior",
-   "price": 134.4
+   "plan": "MFFU Rapid EOD 50K",
+   "price": 165.0,
+   "research_price": 134.4
   },
   "rules": [
    "Buy the next account only from a payout that reached your bank: one new account per payout, and only when the payout money holds two of its price (one to buy, one kept for a re-buy).",
-   "MFFU funds only ONE Builder 50K a person: account #3 and up are LucidPro 50K copies of Zlarior (Lucid allows 5 funded).",
+   "MFFU only (owner 2026-11-20): the next accounts are the Rapid EOD 25K now, then the Rapid EOD 50K and a fresh Builder 50K from payouts.",
    "Stop rule: at most 2 re-buys from your own pocket ($183.60); past that stop and rethink.",
    "Prop money: you can lose only the fees, never more; a bad week inside an account is the firm's money."
   ],
   "notes": [
+   "The table was worked out at $134.40 an account (an older plan); the MFFU Rapid EOD 50K costs $165, about $31 more a buy.",
    "Every account copies the SAME Zlarior signal (daily correlation about 0.94): a bad week hits all of them at once, so more accounts multiply the good months AND the empty ones.",
    "Backtest of 2026 (where LIT works); on 2021-25 (no edge) the same plan makes about $0 a month. Nothing is promised.",
    "ATLAS's $ is the stored research estimate (a different bot), added from month 3."
@@ -1020,28 +1030,28 @@
  },
  "edge": {
   "light": "GREEN",
-  "line": "Edge health: GREEN · last 40 sessions PF 3.84 vs 2026 H1 3.91 · data to Nov 6",
-  "data_to": "2026-11-06",
-  "sessions_missing": 7,
-  "pf40": 3.84,
-  "usd_month40": 3440,
-  "tpw40": 2.5,
+  "line": "Edge health: GREEN · last 40 sessions PF 4.62 vs 2026 H1 3.91 · data to Nov 19",
+  "data_to": "2026-11-19",
+  "sessions_missing": 0,
+  "pf40": 4.62,
+  "usd_month40": 3147,
+  "tpw40": 2.12,
   "pf40_2026_h1": 3.91,
   "pf40_2021_25": 1.1,
-  "false_alarm_h2_pct": 8.6,
-  "export": "TradingView CME_MINI:NQ1! 1-minute chart (all hours, B-ADJ off), Export chart data from Oct 16 to today, save in data/tv_exports/, then: python data/import_futures.py csv NQ data/tv_exports/<file>.csv (5m and ES1! 5m the same way). Or start the PC bot: its heartbeat pushes the NinjaTrader bars.",
+  "false_alarm_h2_pct": 7.8,
+  "export": "TradingView CME_MINI:NQ1! 1-minute chart (all hours, B-ADJ off), Export chart data from Nov 19 to today, save in data/tv_exports/, then: python data/import_futures.py csv NQ data/tv_exports/<file>.csv (5m and ES1! 5m the same way). Or start the PC bot: its heartbeat pushes the NinjaTrader bars.",
   "note": "A warning, not a switch: the bots trade the same either way. GREEN = LIT's last 40 sessions look like 2026, RED = like 2021-25 (about $0). Past weeks do not forecast the next ones; it says what the market has been.",
   "atlas": {
-   "light": "AMBER",
-   "data_to": "2026-10-16",
-   "pf_r40": 1.89,
-   "pf_r40_2026_h1": 2.83,
+   "light": "GREEN",
+   "data_to": "2026-11-19",
+   "pf_r40": 2.38,
+   "pf_r40_2026_h1": 2.82,
    "pf_r40_2021_25": 1.06,
-   "r_week40": 0.99,
-   "tpw40": 3.0,
-   "usd_pf40_eval_sized": 1.41
+   "r_week40": 2.39,
+   "tpw40": 3.38,
+   "usd_pf40_eval_sized": 2.27
   },
   "source": "tools/edge_health.py -> research/lab/edge_health.json",
-  "built": "2026-11-18T02:10:30+00:00"
+  "built": "2026-11-20T11:07:47+00:00"
  }
 }

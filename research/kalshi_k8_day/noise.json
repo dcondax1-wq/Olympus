@@ -1,0 +1,177 @@
+{
+ "prereg": "research/kalshi_k8_day/PREREG_noise.md",
+ "through": "2026-11-20",
+ "bets": 234,
+ "baseline": {
+  "from": "2026-08-03",
+  "to": "2026-11-13",
+  "n": 221,
+  "won": 166,
+  "rate": 0.7511,
+  "days": 75
+ },
+ "bad": {
+  "n": 12,
+  "won": 4,
+  "net": -9.12
+ },
+ "after": [
+  {
+   "day": "2026-11-20",
+   "leg": "gold_0530_down",
+   "won": false,
+   "pnl": -2.54,
+   "price": 0.49
+  }
+ ],
+ "t1a_runs": {
+  "runs": 72,
+  "as_bad": 0,
+  "p": 0.0,
+  "which": []
+ },
+ "p_bad4": 0.0101,
+ "t2_win_trend": {
+  "slope_per_week": 0.00619,
+  "p": 0.7396
+ },
+ "t3_price_trend": {
+  "slope_c_per_week": 0.01,
+  "p": 0.4646
+ },
+ "p_trend_win": 0.7396,
+ "p_trend_price": 0.4646,
+ "weeks": [
+  {
+   "wk": "2026-08-03",
+   "n": 14,
+   "won": 9,
+   "avg_c": 50.4,
+   "net": 7.1
+  },
+  {
+   "wk": "2026-08-10",
+   "n": 15,
+   "won": 9,
+   "avg_c": 50.9,
+   "net": 4.81
+  },
+  {
+   "wk": "2026-08-17",
+   "n": 14,
+   "won": 10,
+   "avg_c": 51.9,
+   "net": 12.67
+  },
+  {
+   "wk": "2026-08-24",
+   "n": 15,
+   "won": 8,
+   "avg_c": 52.0,
+   "net": -1.19
+  },
+  {
+   "wk": "2026-08-31",
+   "n": 14,
+   "won": 12,
+   "avg_c": 53.2,
+   "net": 18.75
+  },
+  {
+   "wk": "2026-09-07",
+   "n": 15,
+   "won": 11,
+   "avg_c": 54.0,
+   "net": 9.91
+  },
+  {
+   "wk": "2026-09-14",
+   "n": 15,
+   "won": 12,
+   "avg_c": 50.0,
+   "net": 19.5
+  },
+  {
+   "wk": "2026-09-21",
+   "n": 15,
+   "won": 13,
+   "avg_c": 50.5,
+   "net": 23.93
+  },
+  {
+   "wk": "2026-09-28",
+   "n": 14,
+   "won": 7,
+   "avg_c": 50.8,
+   "net": 1.11
+  },
+  {
+   "wk": "2026-10-05",
+   "n": 15,
+   "won": 11,
+   "avg_c": 51.1,
+   "net": 14.98
+  },
+  {
+   "wk": "2026-10-12",
+   "n": 15,
+   "won": 12,
+   "avg_c": 49.9,
+   "net": 17.14
+  },
+  {
+   "wk": "2026-10-19",
+   "n": 15,
+   "won": 14,
+   "avg_c": 51.4,
+   "net": 29.08
+  },
+  {
+   "wk": "2026-10-26",
+   "n": 15,
+   "won": 10,
+   "avg_c": 55.4,
+   "net": 4.86
+  },
+  {
+   "wk": "2026-11-02",
+   "n": 15,
+   "won": 14,
+   "avg_c": 48.8,
+   "net": 31.87
+  },
+  {
+   "wk": "2026-11-09",
+   "n": 15,
+   "won": 14,
+   "avg_c": 54.9,
+   "net": 22.93
+  },
+  {
+   "wk": "2026-11-16",
+   "n": 13,
+   "won": 4,
+   "avg_c": 49.2,
+   "net": -11.66
+  }
+ ],
+ "last60": {
+  "n": 60,
+  "won": 44,
+  "breakeven": 0.5357,
+  "p_true_below_breakeven": 0.001,
+  "p_true_below_58": 0.0081
+ },
+ "last4wk": {
+  "n": 58,
+  "won": 42,
+  "net": 48.0
+ },
+ "all": {
+  "n": 234,
+  "won": 170,
+  "net": 205.79
+ },
+ "verdict": "warning",
+ "plain": "WARNING: in the good months (Aug 3-Nov 13, 75% won) a 4-day stretch as bad as Nov 16-19 (4 of 12) came up 1.0% of the time (about 1 in 99); 0 of 72 real 4-day runs were that bad. Win rate trend p 0.74, price creep p 0.46."
+}

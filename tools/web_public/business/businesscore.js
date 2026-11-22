@@ -104,15 +104,17 @@ function cleanIdeas(v) {
 
 // ---- the payout planner: the same math as engine/payout_plan.py (tests.test_money_door runs both on the same accounts)
 export const PLANS = {
-  builder50k: { label: 'MFFU Builder 50K', mll: 2000, buffer: 2100, pay_min: 500, pay_max: 2000, split: 0.8, cycle_days: 2, first_wait_h: 48, ask_above: 1500, typical_day: 300,
+  builder50k: { label: 'MFFU Builder 50K', mll: 2000, buffer: 2100, pay_min: 500, pay_max: 2000, split: 0.8, cycle_days: 2, first_wait_h: 48, ask_above: 2000, typical_day: 300,
     target: 3000, eval_day: Math.round((3000 / 9) * 100) / 100, funded_month: 546, price: 91.8, bot: 'Zlarior (LIT)' },
-  builder25k: { label: 'MFFU Builder 25K', mll: 1000, buffer: 1100, pay_min: 250, pay_max: 1000, split: 0.8, cycle_days: 2, first_wait_h: 48, ask_above: 750, typical_day: 150,
+  builder25k: { label: 'MFFU Builder 25K', mll: 1000, buffer: 1100, pay_min: 250, pay_max: 1000, split: 0.8, cycle_days: 2, first_wait_h: 48, ask_above: 1000, typical_day: 150,
     target: 1500, eval_day: 150, funded_month: 338, price: 63, bot: 'ATLAS' },
 };
 const SLOW = 2;
 const BANK_DAYS = 4;
 const CLOSED = new Set(['2026-11-26', '2026-12-25', '2027-01-01', '2027-01-18', '2027-02-15', '2027-04-02', '2027-05-31', '2027-06-18', '2027-07-05', '2027-09-06', '2027-11-25', '2027-12-24']);
-export const ACCOUNT4 = { name: 'LucidPro 50K (copies Zlarior)', price: [120, 135], adds_month: 810, sale: ['2026-11-19', '2026-12-01'], doc: 'docs/ACCOUNT_4.md' };
+// the next buys (owner 2026-11-20, Decide card drop-lucid-account4: YES, "MFFU only"): the Rapid EOD 25K now, then the Rapid EOD 50K from the first
+// payout (business/fleet_plan.json next_buy: $165 with code CLUB, about $1,969 a month Jul-Oct-like), then a fresh Builder 50K. Was a LucidPro 50K.
+export const ACCOUNT4 = { name: 'Rapid EOD 50K', now: 'Rapid EOD 25K', then: 'a fresh Builder 50K', price: [165, 165], code: 'CLUB', adds_month: 1969, sale: null, doc: 'business/fleet_plan.json' };
 const isoDay = (d) => d.toISOString().slice(0, 10);
 const noon = (s) => new Date(s + 'T12:00:00Z');
 const up = (x) => Math.ceil(x - 1e-9);
@@ -185,13 +187,13 @@ export function planPayouts(accounts, today) {
   const alive = rows.filter((r) => r.state !== 'lost');
   const first = alive.length ? alive.reduce((m, r) => (r.bank_typical < m.bank_typical ? r : m)) : null;
   const buy = first ? first.bank_typical : null;
-  const inSale = !!(buy && ACCOUNT4.sale[0] <= buy && buy <= ACCOUNT4.sale[1]);
+  const inSale = !!(buy && ACCOUNT4.sale && ACCOUNT4.sale[0] <= buy && buy <= ACCOUNT4.sale[1]);
   const month = Math.round(alive.reduce((s, r) => s + r.funded_month, 0) * 100) / 100;
   return {
     today, accounts: rows, label: 'ESTIMATE',
     account4: { ...ACCOUNT4, buy_on: buy, in_sale: inSale, after: first ? first.name : null,
-      text: first ? `Account #4: buy the ${ACCOUNT4.name} about ${buy}, the day ${first.name}'s first payout is in your bank ($${ACCOUNT4.price[0]}-${ACCOUNT4.price[1]} with a code; adds about $${whole(ACCOUNT4.adds_month)} a month, estimate).`
-        + (inSale ? ' That is inside the Black Friday sale: buy in the sale.' : '') : 'Account #4: waits for a first payout; no live eval to plan from.' },
+      text: first ? `Next buys (MFFU only): the ${ACCOUNT4.now} now (added today), then the ${ACCOUNT4.name} about ${buy}, the day ${first.name}'s first payout is in your bank ($${ACCOUNT4.price[0]} with code ${ACCOUNT4.code}; adds about $${whole(ACCOUNT4.adds_month)} a month, estimate), then ${ACCOUNT4.then}.`
+        + (inSale ? ' That is inside the sale: buy in the sale.' : '') : `Next buys (MFFU only): the ${ACCOUNT4.now} now; the ${ACCOUNT4.name} waits for a first payout.` },
     first_payout_to_you: Math.round(alive.reduce((s, r) => s + r.to_you, 0) * 100) / 100, funded_month: month,
     funded_month_with_4: Math.round((month + (alive.length ? ACCOUNT4.adds_month : 0)) * 100) / 100,
     first: first ? { name: first.name, bank: first.bank_typical, to_you: first.to_you } : null,

@@ -57,6 +57,7 @@ def lane_cfgs(tmp, folder):
     def acct_b(cls, name):
         b = object.__new__(cls)
         b.bot, b.name, b.rules, b.spec = bot, name, {"max_micros": 40}, {"armed": True}
+        b.slot = "rapid"                 # RapidAtlas.__init__ sets it (day-multirapid: rapid / rapid2); object.__new__ skips it
         b.state_path = os.path.join(tmp, f"{cls.__name__}.json")
         return b.adapter_cfg()
     out["ATLAS account B"] = acct_b(AB.AccountB, "Sim102")

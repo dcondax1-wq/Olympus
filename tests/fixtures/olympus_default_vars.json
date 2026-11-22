@@ -101,7 +101,7 @@
   "--vio-rgb": "184, 160, 124",
   "@body-bg": "rgb(20, 17, 14)",
   "@body-color": "rgb(243, 236, 224)",
-  "@theme-color": "#14110e"
+  "@theme-color": "#000000"
  },
  "hermes": {
   "--bg": "#19140e",
@@ -221,7 +221,7 @@
   "--warn-rgb": "224,176,96",
   "@body-bg": "rgb(20, 17, 14)",
   "@body-color": "rgb(243, 236, 224)",
-  "@theme-color": "#14110e"
+  "@theme-color": "#000000"
  },
  "mind": {
   "--bg": "#13100d",
@@ -277,7 +277,7 @@
   "--warn": "#e0b060",
   "@body-bg": "rgb(20, 17, 14)",
   "@body-color": "rgb(243, 236, 224)",
-  "@theme-color": "#14110e"
+  "@theme-color": "#000000"
  },
  "odeon": {
   "--bg": "#14110e",
@@ -338,7 +338,7 @@
   "--violet": "#b8a07c",
   "@body-bg": "rgb(20, 17, 14)",
   "@body-color": "rgb(243, 236, 224)",
-  "@theme-color": "#14110e"
+  "@theme-color": "#000000"
  },
  "oracle": {
   "--bg": "#14110e",
@@ -390,7 +390,7 @@
   "--violet": "#b8a07c",
   "@body-bg": "rgb(20, 17, 14)",
   "@body-color": "rgb(243, 236, 224)",
-  "@theme-color": "#14110e"
+  "@theme-color": "#000000"
  },
  "prometheus": {
   "--bad": "#c96a4a",
@@ -442,7 +442,7 @@
   "--text": "#f3ece0",
   "@body-bg": "rgb(20, 17, 14)",
   "@body-color": "rgb(243, 236, 224)",
-  "@theme-color": "#14110e"
+  "@theme-color": "#000000"
  },
  "tree": {
   "--amber": "#e0b060",
@@ -495,7 +495,7 @@
   "--text": "#cfc4b2",
   "@body-bg": "rgb(20, 17, 14)",
   "@body-color": "rgb(243, 236, 224)",
-  "@theme-color": "#14110e"
+  "@theme-color": "#000000"
  },
  "tyche": {
   "--amber": "#e0a060",
@@ -547,7 +547,7 @@
   "--violet": "#6f9bb8",
   "@body-bg": "rgb(20, 17, 14)",
   "@body-color": "rgb(243, 236, 224)",
-  "@theme-color": "#14110e"
+  "@theme-color": "#000000"
  },
  "zenith": {
   "--accent": "#c8a24a",

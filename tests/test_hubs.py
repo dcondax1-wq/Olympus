@@ -7,7 +7,7 @@ tools/web_public/hub/ (hub/?h=<hub>&t=<tab>); breadcrumbs + Go to are olympus/ga
   b. node: every app in exactly one hub and tab, each tab has one best app, every fold points at the best of its own tab, the breadcrumb of every app,
      the hub lines (bots fresh / old / missing, Kalshi, money, my shift, research), demo cards never shown as live
   c. Chromium 390 x 844: every hub page (title, tabs, best card, folded duplicates, breadcrumb Home > Hub), every app reachable home -> hub -> app (2 taps),
-     ?t= deep links, "Show it here" embeds the app, the live strip of Bots & Evals / Kalshi / My Money / Plan & Day, Settings & Help lists every app (83),
+     ?t= deep links, "Show it here" embeds the app, the live strip of Bots & Evals / Kalshi / My Money / Plan & Day, Settings & Help lists every app (N_APPS),
      an unknown hub = the list of hubs, gate-nav on an AGORA app without its own tag, 375 x 667 reduced motion; taps >= 44 px, no sideways scroll
     python -X utf8 -m tests.test_hubs            (--static: parts a and b only; screenshots with AGORA_SHOTS=<dir>)
 """
@@ -32,7 +32,7 @@ NAV = os.path.join(AK.WEB, "olympus", "gate-nav.js")
 HUBS = ["bots", "money", "today", "me", "plan", "jarvis", "research", "kalshi", "worlds", "settings"]     # + Me (2026-11-14, a page hub: tests/test_me_hub.py)
 NAMES = ["Bots & Evals", "My Money", "Today", "Me", "Plan & Day", "Jarvis", "Research", "Kalshi", "Worlds", "Settings & Help"]
 NOW = "2026-11-12T15:00:00Z"            # Thursday 10:00 New York: the LIT window is open
-N_APPS = 86                              # 82 + Agency (2026-11-14) + Business (2026-11-15) + Board, Trading (2026-11-18, night-org)
+N_APPS = 88                              # 82 + Agency (2026-11-14) + Business (2026-11-15) + Board, Trading (2026-11-18, night-org) + Why (2026-11-20 revamp-main) + Widget (2026-11-20 revamp-dash, row by night-gatefix)
 NOW_S = int(datetime(2026, 11, 12, 15, 0, tzinfo=timezone.utc).timestamp())
 
 
@@ -54,8 +54,8 @@ def test_static():
     check("a. the files: hub/index.html, hub.js, hub.css, icon.svg, olympus/hub-status.js, docs/OLYMPUS_IA_V2.md",
           all(os.path.isfile(os.path.join(H, n)) for n in names) and os.path.isfile(HSJ) and os.path.isfile(os.path.join(AK.ROOT, "docs", "OLYMPUS_IA_V2.md")))
     html, js, css, hs, nav, cat = (AK.read(p) for p in (os.path.join(H, "index.html"), os.path.join(H, "hub.js"), os.path.join(H, "hub.css"), HSJ, NAV, CAT))
-    order = ["../olympus/agora.css?v=a6", "hub.css?v=h4", "me.css?v=m2", "../olympus/themes.js?v=o8", "../olympus/gate-catalog.js?v=nv3", "../olympus/hub-status.js?v=h2",
-             '../olympus/gate-nav.js?v=g5" data-app="hub" defer', "me.js?v=m2", "hub.js?v=h4"]
+    order = ["../olympus/agora.css?v=a11", "hub.css?v=h6", "me.css?v=m2", "../olympus/themes.js?v=o11", "../olympus/gate-catalog.js?v=nv12", "../olympus/hub-status.js?v=h4",
+             '../olympus/gate-nav.js?v=g11" data-app="hub" defer', "me.js?v=m2", "hub.js?v=h5"]
     pos = [html.find(x) for x in order]
     check("a. the page loads agora.css, hub.css, me.css, the theme engine, the catalog, hub-status, gate-nav (data-app=hub, deferred), me.js (the Me hub) and hub.js, in that order, all in <head>",
           all(p >= 0 for p in pos) and pos == sorted(pos) and max(pos) < html.index("</head>"), dict(zip(order, pos)))
@@ -83,8 +83,8 @@ def test_static():
           "--ag-serif" in css and "tabular-nums" in css and not AK.BANNED_LOOK.search(css + js + hs) and css.count("min-height: 44px") >= 3
           and "safe-area-inset" in css and "176px" in css and "prefers-reduced-motion: reduce" in css and 'data-oly-lite="1"' in css)
     ui = AK.read(os.path.join(AK.WEB, "olympus", "agora-ui.js"))
-    check("a. agora-ui.js adds gate-nav.js?v=g5 next to itself on every AGORA app (never framed, never twice, data-ag-nonav opts out); every page loads agora-ui.js?v=3",
-          "new URL('gate-nav.js?v=g5', meSrc)" in ui and "if (framed || window.OLYMPUS_GATE_NAV" in ui and "data-ag-nonav" in ui and "script[src*=\"gate-nav.js\"]" in ui
+    check("a. agora-ui.js adds gate-nav.js?v=g11 next to itself on every AGORA app (never framed, never twice, data-ag-nonav opts out); every page loads agora-ui.js?v=9",
+          "new URL('gate-nav.js?v=g11', meSrc)" in ui and "if (framed || window.OLYMPUS_GATE_NAV" in ui and "data-ag-nonav" in ui and "script[src*=\"gate-nav.js\"]" in ui
           and not re.search(r"agora-ui\.js\?v=1\"", "".join(AK.read(os.path.join(AK.WEB, a, "index.html")) for a in os.listdir(AK.WEB) if os.path.isfile(os.path.join(AK.WEB, a, "index.html")))))
     check("a. gate-nav: breadcrumb (nav aria-label=Breadcrumb, aria-current on the last crumb), 'Home' instead of 'Gate', the nine hubs first in Go to",
           "'Breadcrumb'" in nav and "'aria-current', 'page'" in nav and "label.textContent = 'Home'" in nav and "'Hubs'" in nav and "hub/index.html?h=" in nav and "'gate.recent.v1'" in nav)
@@ -323,8 +323,8 @@ def test_page():
             p.goto(f"{origin}/compass/")
             p.wait_for_function("window.OLYMPUS_GATE_NAV && window.OLYMPUS_GATE_NAV.placed() && document.querySelector('.gn-crumb') && document.querySelector('.gn-crumb').textContent", timeout=60000)
             r = p.evaluate("() => ({ own: !!document.querySelector('head script[src*=\"gate-nav.js\"][defer]'), crumbs: [...document.querySelectorAll('nav.gn-crumbs a, nav.gn-crumbs .gn-cur')].map((e) => e.textContent.trim()), hub: document.querySelector('.gn-crumb').href.replace(location.origin, '') })")
-            check("c. Compass (no gate-nav tag of its own): agora-ui.js loads it; the breadcrumb reads Home > Today > What to do next, Today -> its Do now tab",
-                  r["crumbs"] == ["Home", "Today", "What to do next"] and r["hub"] == "/hub/index.html?h=today&t=now" and AK.no_sideways(p) and not errs, (r, errs[:2]))
+            check("c. Compass (no gate-nav tag of its own): agora-ui.js loads it; the breadcrumb reads Home > Jarvis > What to do next (ORGANIZE 2026-11-21: the arena), Jarvis -> its arena page",
+                  r["crumbs"] == ["Home", "Jarvis", "What to do next"] and r["hub"] == "/hub/arena.html?a=jarvis" and AK.no_sideways(p) and not errs, (r, errs[:2]))
             if shots:
                 AK.shot(p, "app-compass")
             ctx.close()

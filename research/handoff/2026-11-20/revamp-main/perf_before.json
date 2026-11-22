@@ -1,0 +1,310 @@
+[
+ {
+  "page": "gate",
+  "w": 390,
+  "h": 844,
+  "scheme": "dark",
+  "load_ms": 243,
+  "long_tasks": 1,
+  "long_ms": 60,
+  "dropped": 0,
+  "frames": 60,
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "bad": [
+   "404 home.json?t=1795147320575",
+   "404 kalshi.json?t=1795147320571",
+   "404 me/me.json?t=1795147320572",
+   "404 money/scoreboard.json?t=1795147320573"
+  ],
+  "inset_emulated": true,
+  "sideways": 0,
+  "bars": [],
+  "hidden": []
+ },
+ {
+  "page": "gate",
+  "w": 430,
+  "h": 932,
+  "scheme": "dark",
+  "load_ms": 254,
+  "long_tasks": 2,
+  "long_ms": 123,
+  "dropped": 0,
+  "frames": 60,
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "bad": [
+   "404 home.json?t=1795147325010",
+   "404 kalshi.json?t=1795147325007",
+   "404 me/me.json?t=1795147325009",
+   "404 money/scoreboard.json?t=1795147325009"
+  ],
+  "inset_emulated": true,
+  "sideways": 0,
+  "bars": [],
+  "hidden": []
+ },
+ {
+  "page": "zenith",
+  "w": 390,
+  "h": 844,
+  "scheme": "dark",
+  "load_ms": 938,
+  "long_tasks": 2,
+  "long_ms": 183,
+  "dropped": 0,
+  "frames": 60,
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "bad": [
+   "404 data.json?t=1795147329539",
+   "404 home.json?t=1795147329506",
+   "404 icons/icon-192.png?v=p111031"
+  ],
+  "inset_emulated": true,
+  "sideways": 0,
+  "bars": [
+   {
+    "sel": "#tabs",
+    "top": 736,
+    "gap": 44,
+    "lowestTap": 794,
+    "clears": true
+   }
+  ],
+  "hidden": []
+ },
+ {
+  "page": "zenith",
+  "w": 430,
+  "h": 932,
+  "scheme": "dark",
+  "load_ms": 780,
+  "long_tasks": 1,
+  "long_ms": 153,
+  "dropped": 0,
+  "frames": 60,
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "bad": [
+   "404 data.json?t=1795147334721",
+   "404 home.json?t=1795147334679",
+   "404 icons/icon-192.png?v=p111031"
+  ],
+  "inset_emulated": true,
+  "sideways": 0,
+  "bars": [
+   {
+    "sel": "#tabs",
+    "top": 824,
+    "gap": 44,
+    "lowestTap": 882,
+    "clears": true
+   }
+  ],
+  "hidden": []
+ },
+ {
+  "page": "jarvis",
+  "w": 390,
+  "h": 844,
+  "scheme": "dark",
+  "load_ms": 2702,
+  "long_tasks": 79,
+  "long_ms": 15808,
+  "dropped": 59,
+  "frames": 60,
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "bad": [
+   "404 home.json",
+   "404 money/index.json"
+  ],
+  "inset_emulated": true,
+  "sideways": 0,
+  "bars": [
+   {
+    "sel": "#dock",
+    "top": 760,
+    "gap": 18,
+    "lowestTap": 817,
+    "clears": true
+   }
+  ],
+  "hidden": []
+ },
+ {
+  "page": "jarvis",
+  "w": 430,
+  "h": 932,
+  "scheme": "dark",
+  "load_ms": 3079,
+  "long_tasks": 78,
+  "long_ms": 18034,
+  "dropped": 59,
+  "frames": 60,
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "bad": [
+   "404 home.json",
+   "404 money/index.json"
+  ],
+  "inset_emulated": true,
+  "sideways": 0,
+  "bars": [
+   {
+    "sel": "#dock",
+    "top": 848,
+    "gap": 18,
+    "lowestTap": 905,
+    "clears": true
+   }
+  ],
+  "hidden": []
+ },
+ {
+  "page": "doors",
+  "w": 390,
+  "h": 844,
+  "scheme": "dark",
+  "load_ms": 139,
+  "long_tasks": 1,
+  "long_ms": 53,
+  "dropped": 0,
+  "frames": 60,
+  "errors": [],
+  "bad": [],
+  "inset_emulated": true,
+  "sideways": 0,
+  "bars": [],
+  "hidden": []
+ },
+ {
+  "page": "doors",
+  "w": 430,
+  "h": 932,
+  "scheme": "dark",
+  "load_ms": 140,
+  "long_tasks": 1,
+  "long_ms": 52,
+  "dropped": 0,
+  "frames": 60,
+  "errors": [],
+  "bad": [],
+  "inset_emulated": true,
+  "sideways": 0,
+  "bars": [],
+  "hidden": []
+ },
+ {
+  "page": "hub",
+  "w": 390,
+  "h": 844,
+  "scheme": "dark",
+  "load_ms": 306,
+  "long_tasks": 0,
+  "long_ms": 0,
+  "dropped": 0,
+  "frames": 60,
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "bad": [
+   "404 argus/icon.svg",
+   "404 home.json?t=1795147387108"
+  ],
+  "inset_emulated": true,
+  "sideways": 0,
+  "bars": [],
+  "hidden": []
+ },
+ {
+  "page": "hub",
+  "w": 430,
+  "h": 932,
+  "scheme": "dark",
+  "load_ms": 408,
+  "long_tasks": 1,
+  "long_ms": 52,
+  "dropped": 0,
+  "frames": 60,
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "bad": [
+   "404 argus/icon.svg",
+   "404 home.json?t=1795147391669"
+  ],
+  "inset_emulated": true,
+  "sideways": 0,
+  "bars": [],
+  "hidden": []
+ },
+ {
+  "page": "settings",
+  "w": 390,
+  "h": 844,
+  "scheme": "dark",
+  "load_ms": 513,
+  "long_tasks": 2,
+  "long_ms": 222,
+  "dropped": 0,
+  "frames": 60,
+  "errors": [],
+  "bad": [],
+  "inset_emulated": true,
+  "sideways": 0,
+  "bars": [],
+  "hidden": []
+ },
+ {
+  "page": "settings",
+  "w": 430,
+  "h": 932,
+  "scheme": "dark",
+  "load_ms": 518,
+  "long_tasks": 2,
+  "long_ms": 222,
+  "dropped": 0,
+  "frames": 60,
+  "errors": [],
+  "bad": [],
+  "inset_emulated": true,
+  "sideways": 0,
+  "bars": [],
+  "hidden": []
+ }
+]

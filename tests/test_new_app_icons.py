@@ -4,9 +4,9 @@
     - files: icon.svg, apple-touch-icon.png (180 x 180), icon-192.png, icon-512.png, icon-maskable-512.png (512 x 512), manifest.webmanifest, jarvis.json, index.html
     - the PNG sizes are real (read from the file header), opaque, full-bleed (a corner pixel is the marble colour), the maskable glyph sits inside the 80 % safe zone, no neon colours
     - every icon is different (hash of the SVG and of the 180 PNG): one simple Greek glyph each, not a letter on a square (the SVG has no <text>)
-    - index.html: viewport-fit=cover, theme-color #14110e, apple-mobile-web-app-capable / mobile-web-app-capable / status-bar-style / title (<= 12), the apple-touch-icon is the app's own 180 PNG,
+    - index.html: viewport-fit=cover, theme-color #000000, apple-mobile-web-app-capable / mobile-web-app-capable / status-bar-style / title (<= 12), the apple-touch-icon is the app's own 180 PNG,
       the manifest link, and the OLYMPUS kit lines (olympus.css, agora.css, themes.js, olympus.js data-app, intro-app.js, a11y.js, sfx.js)
-    - manifest: name, short_name (<= 12), id / start_url / scope './', standalone, portrait, colours #14110e, the svg + 192 any + 512 any + 512 maskable icons that exist with the sizes they claim
+    - manifest: name, short_name (<= 12), id / start_url / scope './', standalone, portrait, colours #000000, the svg + 192 any + 512 any + 512 maskable icons that exist with the sizes they claim
     - tools/make_app_icons.py --check is clean (nothing left to fill)
     python -X utf8 -m tests.test_new_app_icons
 """
@@ -83,8 +83,8 @@ def main():
         html = HS.rd(d, "index.html")
         p = HS.audit(d, a)
         bad_man += [f"{a}: {x}" for x in p]
-        if not re.search(r'<meta[^>]*name="theme-color"[^>]*content="#14110e"', html) or "viewport-fit=cover" not in html:
-            bad_head.append(f"{a}: theme-color #14110e / viewport-fit=cover")
+        if not re.search(r'<meta[^>]*name="theme-color"[^>]*content="#000000"', html) or "viewport-fit=cover" not in html:
+            bad_head.append(f"{a}: theme-color #000000 / viewport-fit=cover")
         href = HS.tag(html, r'<link[^>]*rel="apple-touch-icon"[^>]*href="([^"]+)"')
         if href != "apple-touch-icon.png":
             bad_head.append(f"{a}: apple-touch-icon is {href!r}, not its own apple-touch-icon.png")
@@ -93,7 +93,7 @@ def main():
         m = json.loads(HS.rd(d, "manifest.webmanifest"))
         got = {(i["src"], i.get("sizes"), i.get("purpose")) for i in m.get("icons", [])}
         want = {("icon.svg", "any", "any"), ("icon-192.png", "192x192", "any"), ("icon-512.png", "512x512", "any"), ("icon-maskable-512.png", "512x512", "maskable")}
-        if got != want or m.get("id") != "./" or m.get("orientation") != "portrait" or m.get("theme_color") != "#14110e" or m.get("background_color") != "#14110e" or m.get("scope") != "./" or m.get("start_url") != "./":
+        if got != want or m.get("id") != "./" or m.get("orientation") != "portrait" or m.get("theme_color") != "#000000" or m.get("background_color") != "#000000" or m.get("scope") != "./" or m.get("start_url") != "./":
             bad_man.append(f"{a}: manifest icons / id / start_url / scope / orientation / colours ({sorted(got ^ want)[:3]})")
     check(f"{len(here)} app folders checked: every one has icon.svg, the 180 / 192 / 512 / maskable PNGs, manifest.webmanifest, jarvis.json and index.html", not bad_files, bad_files)
     check("every PNG has the pixel size its name says (read from the file header)", not bad_png, bad_png)
@@ -101,7 +101,7 @@ def main():
     check("the SVGs are plain marks: no <text> (not a letter on a square), no neon colours, a viewBox", not bad_text, bad_text)
     dup = [v for v in svg_hash.values() if len(v) > 1] + [v for v in png_hash.values() if len(v) > 1]
     check("every app has its own distinct icon (no two SVGs or 180 PNGs are the same)", not dup, dup)
-    check("every page: viewport-fit=cover, theme-color #14110e, and the apple-touch-icon is the app's own 180 PNG", not bad_head, bad_head)
+    check("every page: viewport-fit=cover, theme-color #000000, and the apple-touch-icon is the app's own 180 PNG", not bad_head, bad_head)
     check("every page carries the OLYMPUS kit lines (olympus.css, agora.css, themes.js, olympus.js data-app, intro-app.js, a11y.js, sfx.js)", not bad_kit, bad_kit)
     check("the same audit as tests/test_homescreen.py passes for each (apple tags, title <= 12, manifest, icons exist with their real sizes) and the manifests are consistent", not bad_man, bad_man)
     r = subprocess.run([sys.executable, "-X", "utf8", os.path.join(ROOT, "tools", "make_app_icons.py"), "--check"], capture_output=True, text=True, timeout=120, cwd=ROOT)

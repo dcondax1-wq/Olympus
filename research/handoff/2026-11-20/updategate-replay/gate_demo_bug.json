@@ -1,0 +1,120 @@
+{
+ "base": "d162972a5f2b769fcb1786a5377d41b01a5a88ef",
+ "candidate": "d076e9d3e128eeae9adb551e76dd105bf367928b",
+ "days": [
+  "2026-11-06",
+  "2026-11-16",
+  "2026-11-17",
+  "2026-11-18"
+ ],
+ "files_changed": 1,
+ "model_files_changed": [],
+ "verdict": "HOLD",
+ "exit": 2,
+ "why": "4 trade line(s) differ with NO model / sizing file change: do not take this commit",
+ "trades": [
+  {
+   "book": "ATLAS",
+   "entry": "2026-11-06 04:00 ET",
+   "kind": "entry",
+   "what": "stop 27078.75 -> 27078.5",
+   "base": {
+    "side": "sell",
+    "qty": 1,
+    "stop": 27078.75,
+    "target": 26709.75,
+    "pnl": null,
+    "reason": null
+   },
+   "candidate": {
+    "side": "sell",
+    "qty": 1,
+    "stop": 27078.5,
+    "target": 26709.75,
+    "pnl": null,
+    "reason": null
+   }
+  },
+  {
+   "book": "LIT",
+   "entry": "2026-11-16 06:16 ET",
+   "kind": "entry",
+   "what": "stop 27735.25 -> 27735.5",
+   "base": {
+    "side": "buy",
+    "qty": 5,
+    "stop": 27735.25,
+    "target": 28174.0,
+    "pnl": null,
+    "reason": null
+   },
+   "candidate": {
+    "side": "buy",
+    "qty": 5,
+    "stop": 27735.5,
+    "target": 28174.0,
+    "pnl": null,
+    "reason": null
+   }
+  },
+  {
+   "book": "ATLAS",
+   "entry": "2026-11-17 08:20 ET",
+   "kind": "entry",
+   "what": "stop 27432.75 -> 27432.5",
+   "base": {
+    "side": "sell",
+    "qty": 1,
+    "stop": 27432.75,
+    "target": 26918.75,
+    "pnl": null,
+    "reason": null
+   },
+   "candidate": {
+    "side": "sell",
+    "qty": 1,
+    "stop": 27432.5,
+    "target": 26918.75,
+    "pnl": null,
+    "reason": null
+   }
+  },
+  {
+   "book": "ATLAS",
+   "entry": "2026-11-18 04:50 ET",
+   "kind": "entry",
+   "what": "stop 27422.5 -> 27422.25",
+   "base": {
+    "side": "sell",
+    "qty": 2,
+    "stop": 27422.5,
+    "target": 27180.5,
+    "pnl": null,
+    "reason": null
+   },
+   "candidate": {
+    "side": "sell",
+    "qty": 2,
+    "stop": 27422.25,
+    "target": 27180.5,
+    "pnl": null,
+    "reason": null
+   }
+  }
+ ],
+ "polls": 3072,
+ "state_diff_polls": 0,
+ "errors": {
+  "base": 0,
+  "candidate": 0
+ },
+ "base_trades": 8,
+ "seconds": {
+  "base": 856,
+  "candidate": 849
+ },
+ "poll_ms_median": {
+  "base": 167.2,
+  "candidate": 165.9
+ }
+}

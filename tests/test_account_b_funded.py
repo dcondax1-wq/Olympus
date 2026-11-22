@@ -40,6 +40,11 @@ if ROOT not in sys.path:
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 from engine import account_b as AB  # noqa: E402
+# 2026-11-20 lead: the owner said YES to room 40% + 1 micro after 2 losses (engine/account_b FUNDED_ON, ON in the repo). This suite
+# pins the BASE 25K funded rule (60%), so it runs with the switches OFF; the ON behaviour has its own suite
+# (tests/test_atlas_funded_switches.py) and the last check here (f. owner YES) proves the repo default end to end.
+FUNDED_ON_REPO = dict(AB.FUNDED_ON)
+AB.FUNDED_ON.update(funded_room_pct=None, streak_shrink=None)
 from engine import funded_life as FL  # noqa: E402
 from engine import live  # noqa: E402
 from engine import multi_account as MA  # noqa: E402
@@ -129,8 +134,11 @@ def eval_checks(tmp):
                     == AB.qty(e2, {"risk_pts": r, "tgt_pts": 2 * r}, st(room, cum=cum, sess=s_))["qty"]
                     for r in (6.0, 15.0, 40.0) for room in (150.0, 900.0, 1600.0) for cum in (-300.0, 0.0) for s_ in (1, 11))
     q = AB.qty(e, {"risk_pts": 10.0, "tgt_pts": 15.0}, st(1000.0))
-    check(f"a. eval sizing as before (25K need, 10-pt stop: 20 micros; funded keys without a stage change nothing) -> {q['qty']}",
-          q["qty"] == 20 and grid_same and not any("funded" in x for x in q["reasons"]), q)
+    # 17 (was 20): live is "eval two_week room_f 0.4" (CLAUDE.md owner-approved sizing; engine/multi_account two_week room_f
+    # 0.4, was 0.5): 40% of the $1,000 room / (10 pts x $2 + costs) = 17 micros. Same checks, the expected number only.
+    check(f"a. eval sizing as before (25K need, 10-pt stop: 17 micros at room_f 0.4; funded keys without a stage change nothing) "
+          f"-> {q['qty']}",
+          q["qty"] == 17 and grid_same and not any("funded" in x for x in q["reasons"]), q)
     now = ts("2026-10-28", 9)
     B, fb = acct(e, now, tmp, closes=[["2026-10-26", now - 2 * 86400, 900.0, now - 2 * 86400 - 600],
                                       ["2026-10-27", now - 86400, 650.0, now - 86400 - 600]], tag="ev")
@@ -173,6 +181,28 @@ def block_checks():
 
 
 # ------------------------------------------------------------------------------------------------ c. sizing
+def owner_yes_checks():
+    """f. the repo default after the owner's YES (2026-11-20): room 40% + 1 micro after 2 losses, on the Builder 25K funded account."""
+    print("f. owner YES (repo default ON)", flush=True)
+    keep = dict(AB.FUNDED_ON)
+    try:
+        AB.FUNDED_ON.update(FUNDED_ON_REPO)
+        check("f. the repo ships room 40% + 1 micro after 2 losses ON", FUNDED_ON_REPO == {"funded_room_pct": 0.4, "streak_shrink": 2}, FUNDED_ON_REPO)
+        s = AB.normalize(funded_block(), second.load_cfg())
+        f0 = {"room": 1000.0, "cum": 0.0, "locked": False, "loss_streak": 0}
+        q = AB.qty(s, {"risk_pts": 40.0, "tgt_pts": 60.0}, f0)
+        check(f"f. fresh room $1,000 x 40% = $400, 40-pt stop -> 2 micros (was 3 at 60%) ({q['qty']})", q["qty"] == 2 and q["lock"] is None
+              and any("40% of $1,000 room" in x for x in q["reasons"]), q)
+        q2 = AB.qty(s, {"risk_pts": 10.0, "tgt_pts": 30.0}, {**f0, "loss_streak": 2})
+        check(f"f. after 2 losses in a row: 1 micro until a winner ({q2['qty']})", q2["qty"] == 1 and any("loss streak" in x for x in q2["reasons"]), q2)
+        b = AB.normalize(funded_block(funded_room_pct=None, streak_shrink=None), second.load_cfg())
+        check("f. a null in the account block still turns both off for that account (3 micros at the 40-pt stop)",
+              AB.qty(b, {"risk_pts": 40.0, "tgt_pts": 60.0}, f0)["qty"] == 3)
+    finally:
+        AB.FUNDED_ON.clear()
+        AB.FUNDED_ON.update(keep)
+
+
 def sizing_checks():
     print("c. funded sizing", flush=True)
     s = AB.normalize(funded_block(), second.load_cfg())
@@ -615,6 +645,7 @@ def main():
         switch_checks(tmp)
         start_page_checks(tmp)
         view_checks(tmp)
+        owner_yes_checks()
         if not quick:
             bot_day()
     finally:

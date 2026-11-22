@@ -63,7 +63,7 @@ def part_a():
                                  "targetOrigin", "event.origin", "event.source")))
     check(f"a. sw.js: {ZCACHE} (v50+), OTHER_APPS (every OLYMPUS app folder) / live.json bypass / own-cache cleanup kept as they were",
           f"const CACHE = '{ZCACHE}';" in sw and int(ZCACHE.rsplit("v", 1)[1]) >= 50
-          and "const OTHER_APPS = ['gate/', 'hub/', 'jarvis/', 'planner/', 'kalshi/', 'datacity/', 'mind/', 'tree/', 'oracle/', 'odeon/', 'fates/', 'hermes/', 'prometheus/', 'tyche/', 'pantheon/', 'olympus/', 'arena/', 'bridge/', 'ares/', 'plutus/', 'athena/', 'forum/', 'labyrinth/', 'argus/', 'nemesis/', 'chronos/', 'hephaestus/', 'cities/', 'kalshicity/', 'settings/', 'inbox/', 'ledger/', 'journal/', 'observatory/', 'atlascity/', 'delphi/', 'pnyx/', 'pc/', 'atlas/', 'hestia/', 'demeter/', 'apollo/', 'hera/', 'dionysus/', 'clio/', 'mint/', 'mintcity/', 'mercury/', 'chrysos/', 'sibyl/', 'oikos/', 'arbiter/', 'stoa/', 'aegis/', 'lyceum/', 'nike/', 'kronos/', 'moirai/', 'epilogue/', 'argo/', 'kratos/', 'pythia/', 'gallery/', 'kairos/', 'compass/', 'pheme/', 'harmonia/', 'helios/', 'ergasterion/', 'archive/', 'pinakes/', 'colosseum/', 'nq/', 'symposium/', 'herald/', 'polis/', 'agency/', 'business/', 'trading/', 'assets/', 'board/', 'why/'];" in sw and "url.pathname.endsWith('live.json') || url.pathname.endsWith('status_feed.json')) return;" in sw
+          and "const OTHER_APPS = ['gate/', 'hub/', 'jarvis/', 'planner/', 'kalshi/', 'datacity/', 'mind/', 'tree/', 'oracle/', 'odeon/', 'fates/', 'hermes/', 'prometheus/', 'tyche/', 'pantheon/', 'olympus/', 'arena/', 'bridge/', 'ares/', 'plutus/', 'athena/', 'forum/', 'labyrinth/', 'argus/', 'nemesis/', 'chronos/', 'hephaestus/', 'cities/', 'kalshicity/', 'settings/', 'inbox/', 'ledger/', 'journal/', 'observatory/', 'atlascity/', 'delphi/', 'pnyx/', 'pc/', 'atlas/', 'hestia/', 'demeter/', 'apollo/', 'hera/', 'dionysus/', 'clio/', 'mint/', 'mintcity/', 'mercury/', 'chrysos/', 'sibyl/', 'oikos/', 'arbiter/', 'stoa/', 'aegis/', 'lyceum/', 'nike/', 'kronos/', 'moirai/', 'epilogue/', 'argo/', 'kratos/', 'pythia/', 'gallery/', 'kairos/', 'compass/', 'pheme/', 'harmonia/', 'helios/', 'ergasterion/', 'archive/', 'pinakes/', 'colosseum/', 'nq/', 'symposium/', 'herald/', 'polis/', 'agency/', 'business/', 'trading/', 'assets/', 'board/', 'why/', 'widget/'];" in sw and "url.pathname.endsWith('live.json') || url.pathname.endsWith('status_feed.json')) return;" in sw
           and "k.startsWith('le-public-') && k !== CACHE" in sw)
     head = idx[:idx.index("</head>")]
     check("a. index.html: the inside-Jarvis check in the head (frame + same site), embed.js loaded last, no intro inside Jarvis",
@@ -297,7 +297,7 @@ def zframe(pg, base):
 RECTS = """() => { const r = (s) => { const e = document.querySelector(s); if (!e) return null; const c = getComputedStyle(e);
   if (c.display === 'none' || c.visibility === 'hidden') return null; const b = e.getBoundingClientRect(); return b.width && b.height ? [b.left, b.top, b.right, b.bottom] : null; };
   return { top: r('.top'), sub: r('#sub'), tabs: r('#tabs'), padTop: parseFloat(getComputedStyle(document.querySelector('.top')).paddingTop),
-           tabsBottom: parseFloat(getComputedStyle(document.querySelector('#tabs')).bottom), W: innerWidth, H: innerHeight,
+           tabsBottom: parseFloat(getComputedStyle(document.querySelector('#tabs')).bottom), tabsPad: parseFloat(getComputedStyle(document.querySelector('#tabs')).paddingBottom), W: innerWidth, H: innerHeight,
            sa: ['top', 'right', 'bottom', 'left'].map((k) => getComputedStyle(document.documentElement).getPropertyValue('--jz-sa-' + k).trim()) }; }"""
 SA_LEFT = """() => { let n = 0; const walk = (rs) => { for (const r of rs) { if (r.cssRules && !r.style) walk(r.cssRules); else if ((r.cssText || '').indexOf('safe-area-inset') >= 0) n++; } };
   for (const s of document.styleSheets) { try { walk(s.cssRules); } catch (e) { /* another site's sheet */ } }
@@ -369,8 +369,8 @@ def run_browser(base, other_base):
         check("e. inside Jarvis Zenith knows it (data-jarvis, LE_JARVIS): no intro, no Add to Home Screen card, no notification prompt",
               inside["dj"] == "on" and inside["lej"] is True and not inside["splash"] and not inside["inst"] and not inside["prompt"], inside)
         R = z.evaluate(RECTS)
-        check("e. safe areas once: Jarvis's 47 / 34 px reach Zenith (header 10 + 47, tab bar 10 + 34 from the bottom), not doubled",
-              R["sa"][0] == "47px" and R["sa"][2] == "34px" and abs(R["padTop"] - 57) < 0.6 and abs(R["tabsBottom"] - 44) < 0.6, R)
+        check("e. safe areas once: Jarvis's 47 / 34 px reach Zenith (header 10 + 47; the tab bar flush on the bottom edge, its keys 34 up: olympus/shell.css, revamp 2026-11-20), not doubled",
+              R["sa"][0] == "47px" and R["sa"][2] == "34px" and abs(R["padTop"] - 57) < 0.6 and abs(R["tabsBottom"]) < 0.6 and abs(R["tabsPad"] - 34) < 0.6, R)
         s0 = pg.evaluate("() => window.STATES[window.STATES.length - 1]")
         check("d. Zenith -> Jarvis: hello / state with the route and the page title", s0 and s0["route"] == "#/today" and s0["title"] == "Home" and s0["active"], s0)
         # the alert badge: unseen activity (index.html actBadge) reaches Jarvis
@@ -716,7 +716,7 @@ def run_browser(base, other_base):
         z = zframe(pg, base)
         R = z.evaluate(RECTS)
         check("e. Zenith in a frame below a bar (the bar already pads the top, the frame stops above the home bar): no extra padding",
-              R["sa"] == ["0px", "0px", "0px", "0px"] and abs(R["padTop"] - 10) < 0.6 and abs(R["tabsBottom"] - 10) < 0.6, R)
+              R["sa"] == ["0px", "0px", "0px", "0px"] and abs(R["padTop"] - 10) < 0.6 and abs(R["tabsBottom"]) < 0.6 and abs(R["tabsPad"]) < 0.6, R)
         ctx.close()
         part_sw(br, base, errs)
         br.close()

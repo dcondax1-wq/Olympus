@@ -170,6 +170,25 @@ def main() -> int:
     check("b. the owner's git name(s) and email(s) are in no tracked file (git metadata only)", not names, names[:8])
     check("b. no personal folder (C:\\Users\\<name>\\, /Users/<name>/) outside tests/", not folders, folders[:8])
     check("b. no age phrase (with the goal's date it gives the birthday away) in the public sources", not ages, ages[:6])
+    old_site = [f for f in files if f.endswith((".bat", ".ps1")) or (f.startswith("engine/") and f.endswith(".py"))]
+    old_site = [f for f in old_site if "-coder.github.io" in (open(os.path.join(ROOT, f), encoding="utf-8", errors="ignore").read()
+                                                            if os.path.exists(os.path.join(ROOT, f)) else "")]
+    check("c. no .bat / .ps1 / engine file fetches from the OLD GitHub account's site (deleted: anyone could take the name; day-security W5)",
+          not old_site, old_site[:8])
+    # the phone site's scripts never poll the OLD account's repos on the real site either (dogfood 2026-11-20: live.js asked nq-dashboard's
+    # live.json on every page, two 404s each). Top-level page scripts + Fates. A script may keep that feed for the browser suites only behind
+    # a local-server gate (DEV_ONLY: 127.0.0.1 / localhost, then "if (!DEV_ONLY) throw" before any GitHub fetch).
+    OLD_LEFT = set()
+    page_js = [f for f in files if f.startswith("tools/web_public/") and f.endswith(".js") and (f.count("/") == 2 or f == "tools/web_public/fates/fates.js")]
+    old_polls = []
+    for f in page_js:
+        t = open(os.path.join(ROOT, f), encoding="utf-8", errors="ignore").read() if os.path.exists(os.path.join(ROOT, f)) else ""
+        if re.search(r"(api\.github\.com/repos/|raw\.githubusercontent\.com/)[^'\"`]*(demetrades2000-coder|\$\{OWNER\})", t) or (
+                "nq-dashboard" in t and re.search(r"api\.github\.com|raw\.githubusercontent\.com", t)):
+            if not (re.search(r"DEV_ONLY = /\^\(127", t) and re.search(r"if \(!DEV_ONLY\) (\{[^}]*)?throw", t)):
+                old_polls.append(f)
+    check("c. no phone-site page script (tools/web_public/*.js, Fates) polls the OLD GitHub account's repos on the real site (the PC's ntfy post; local test servers only)",
+          sorted(set(old_polls) - OLD_LEFT) == [] and "tools/web_public/live.js" not in old_polls, sorted(old_polls))
     check("b. no Tailscale address or tailnet name (they map the owner's devices) outside tests/", not nets, nets[:6])
     extra = sorted(f for f in ids_where if f not in ACCOUNT_FILES_OK)
     if can_ids:

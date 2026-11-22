@@ -1,0 +1,6171 @@
+{
+ "v": 1,
+ "kind": "redesign-scores",
+ "checked": "2026-11-22",
+ "count": 710,
+ "note": "technical facts of each home page only (https, viewport, newest (c) year, speed, size, old code); no personal data, no page text",
+ "scores": {
+  "osm-n10018626699": {
+   "score": 0,
+   "why": [
+    "down now (RemoteDisconnected)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n10181084436": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n10203892955": {
+   "score": 0,
+   "why": [],
+   "secs": 1.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n10225781710": {
+   "score": 7,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly",
+    "old code"
+   ],
+   "secs": 0.4,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n10233527459": {
+   "score": 3,
+   "why": [
+    "not mobile-friendly"
+   ],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n10233529313": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n10247315187": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n10267818645": {
+   "score": 5,
+   "why": [
+    "not mobile-friendly",
+    "old copyright (\u00a9 2022)"
+   ],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n10271900254": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n10276036271": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.2,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n10575607898": {
+   "score": 3,
+   "why": [
+    "old copyright (\u00a9 2023)",
+    "heavy page"
+   ],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n10606515648": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.5,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n10646905078": {
+   "score": 0,
+   "why": [
+    "down now (RemoteDisconnected)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n10646905079": {
+   "score": 2,
+   "why": [
+    "slow (2.5 s)"
+   ],
+   "secs": 2.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n10681502951": {
+   "score": 2,
+   "why": [
+    "slow (2.7 s)"
+   ],
+   "secs": 2.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n10681502952": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n10682159559": {
+   "score": 3,
+   "why": [
+    "old copyright (\u00a9 2019)",
+    "old code"
+   ],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n10682185509": {
+   "score": 3,
+   "why": [
+    "not mobile-friendly"
+   ],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n10717303526": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2020)"
+   ],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n10863550547": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n10865573260": {
+   "score": 4,
+   "why": [
+    "old copyright (\u00a9 2022)",
+    "slow (3.8 s)"
+   ],
+   "secs": 3.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n10881152618": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n10933999714": {
+   "score": 0,
+   "why": [
+    "down now (202)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n10935306127": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n10968383676": {
+   "score": 0,
+   "why": [],
+   "secs": 1.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n10968383678": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n10985323450": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n10997458970": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n10997458977": {
+   "score": 3,
+   "why": [
+    "old copyright (\u00a9 2022)",
+    "heavy page"
+   ],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n10997458978": {
+   "score": 2,
+   "why": [
+    "slow (6.4 s)"
+   ],
+   "secs": 6.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n10997458982": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2023)"
+   ],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n10997458983": {
+   "score": 2,
+   "why": [
+    "slow (3.8 s)"
+   ],
+   "secs": 3.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11005656674": {
+   "score": 0,
+   "why": [],
+   "secs": 1.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11005656677": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n11005656678": {
+   "score": 3,
+   "why": [
+    "not secure (http)"
+   ],
+   "secs": 1.3,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11005656680": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.5,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11011048864": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n11018673819": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n11072076231": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n11110233169": {
+   "score": 0,
+   "why": [
+    "down now (RemoteDisconnected)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n11110233170": {
+   "score": 1,
+   "why": [
+    "old code"
+   ],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11110233179": {
+   "score": 0,
+   "why": [
+    "down now (202)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n11110233186": {
+   "score": 0,
+   "why": [],
+   "secs": 1.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11110233187": {
+   "score": 3,
+   "why": [
+    "not mobile-friendly"
+   ],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11110233189": {
+   "score": 0,
+   "why": [],
+   "secs": 1.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11110233193": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11110233198": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "old copyright (\u00a9 2016)",
+    "old code"
+   ],
+   "secs": 0.5,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11113111186": {
+   "score": 0,
+   "why": [],
+   "secs": 1.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11113180851": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n1111987699": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n11137616706": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11137616805": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n11137616905": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11158188104": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11158203806": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11158203807": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n11158203809": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11164894381": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11164934581": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11166881902": {
+   "score": 3,
+   "why": [
+    "old copyright (\u00a9 2023)",
+    "heavy page"
+   ],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11166897650": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11168088295": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11250815692": {
+   "score": 0,
+   "why": [],
+   "secs": 2.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n1144433858": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n1144446638": {
+   "score": 0,
+   "why": [
+    "down now (RemoteDisconnected)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n1144470233": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.2,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n1144477741": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11482276182": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n11501558219": {
+   "score": 3,
+   "why": [
+    "not secure (http)"
+   ],
+   "secs": 0.6,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11501558225": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11501558226": {
+   "score": 0,
+   "why": [],
+   "secs": 1.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11506692344": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11506954607": {
+   "score": 0,
+   "why": [
+    "down now (202)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n11506954610": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11506954613": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11506954619": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11506954633": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11506954634": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11506966992": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11507656734": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11507956893": {
+   "score": 0,
+   "why": [],
+   "secs": 1.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11507956896": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11507956923": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n11507956924": {
+   "score": 0,
+   "why": [],
+   "secs": 1.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11507956925": {
+   "score": 0,
+   "why": [],
+   "secs": 2.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11507956929": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 1.1,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11507956958": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "old copyright (\u00a9 2022)",
+    "old code"
+   ],
+   "secs": 0.3,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11507956961": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11507956962": {
+   "score": 0,
+   "why": [],
+   "secs": 1.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11507956965": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11507956966": {
+   "score": 3,
+   "why": [
+    "old copyright (\u00a9 2016)",
+    "heavy page"
+   ],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11510003436": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11520429527": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 2.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11525576461": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n11529292342": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2022)"
+   ],
+   "secs": 1.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11529292343": {
+   "score": 0,
+   "why": [],
+   "secs": 2.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11529292346": {
+   "score": 7,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly",
+    "old code"
+   ],
+   "secs": 0.2,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11529310843": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11529310844": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11529310846": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.4,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11529310849": {
+   "score": 0,
+   "why": [],
+   "secs": 0.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11529310850": {
+   "score": 0,
+   "why": [],
+   "secs": 0.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11529310854": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n11529368811": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n11529368812": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 1999)"
+   ],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11538100190": {
+   "score": 0,
+   "why": [],
+   "secs": 1.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11559171823": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11563391039": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11563391040": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11563391043": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.3,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11563391044": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11563391045": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11563391046": {
+   "score": 0,
+   "why": [],
+   "secs": 1.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11563391047": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11583820517": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11583820518": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11583820521": {
+   "score": 0,
+   "why": [],
+   "secs": 1.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11583820522": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n11583820523": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11583820526": {
+   "score": 2,
+   "why": [
+    "slow (2.7 s)"
+   ],
+   "secs": 2.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11583820527": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.2,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11583820535": {
+   "score": 0,
+   "why": [
+    "no address"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n11583820536": {
+   "score": 0,
+   "why": [],
+   "secs": 1.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11583820538": {
+   "score": 0,
+   "why": [],
+   "secs": 1.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11586018308": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11586145110": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11586241676": {
+   "score": 0,
+   "why": [
+    "no address"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n11586241677": {
+   "score": 3,
+   "why": [
+    "not mobile-friendly"
+   ],
+   "secs": 0.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11586241678": {
+   "score": 0,
+   "why": [],
+   "secs": 1.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11590959172": {
+   "score": 0,
+   "why": [],
+   "secs": 1.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11595584315": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11595584317": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11596405573": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11596405577": {
+   "score": 1,
+   "why": [
+    "old code"
+   ],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11597357257": {
+   "score": 0,
+   "why": [
+    "no address"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n11599349929": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11599349954": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11600206649": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11601323516": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11601402381": {
+   "score": 0,
+   "why": [],
+   "secs": 1.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11601402383": {
+   "score": 0,
+   "why": [],
+   "secs": 1.1,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11601402388": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11601530107": {
+   "score": 1,
+   "why": [
+    "old code"
+   ],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11601587696": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2023)"
+   ],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11601587699": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11603202012": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11603202013": {
+   "score": 0,
+   "why": [],
+   "secs": 1.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11659878844": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n11659878845": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11660061155": {
+   "score": 3,
+   "why": [
+    "not mobile-friendly"
+   ],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11660065964": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 1.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11660066401": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11660153866": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11660153867": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11663108578": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11663108997": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11663126902": {
+   "score": 0,
+   "why": [],
+   "secs": 1.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11663134466": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2023)"
+   ],
+   "secs": 1.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11663134764": {
+   "score": 1,
+   "why": [
+    "old code"
+   ],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11663141527": {
+   "score": 0,
+   "why": [],
+   "secs": 1.1,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11663141528": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11663142162": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11696501422": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n11696501425": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11696501457": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11696501460": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11696501462": {
+   "score": 0,
+   "why": [],
+   "secs": 0.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11696501463": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11699087837": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.2,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11699087840": {
+   "score": 0,
+   "why": [],
+   "secs": 1.1,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11699087841": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2020)"
+   ],
+   "secs": 1.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11699256102": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11707615419": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11759452526": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11782018962": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11830892576": {
+   "score": 0,
+   "why": [],
+   "secs": 2.1,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11892544470": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n11985638048": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n11985638051": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n11985687278": {
+   "score": 0,
+   "why": [],
+   "secs": 1.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11985687279": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11985687280": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 1.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n11985687309": {
+   "score": 0,
+   "why": [],
+   "secs": 0.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12000690624": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12000865581": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12000880925": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2020)"
+   ],
+   "secs": 1.1,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12001166795": {
+   "score": 3,
+   "why": [
+    "slow (3.6 s)",
+    "heavy page"
+   ],
+   "secs": 3.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12035916212": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n12074378599": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12143282035": {
+   "score": 3,
+   "why": [
+    "old copyright (\u00a9 2016)",
+    "heavy page"
+   ],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12143282046": {
+   "score": 0,
+   "why": [],
+   "secs": 1.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12162628406": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n12162628413": {
+   "score": 4,
+   "why": [
+    "not secure (http)",
+    "old code"
+   ],
+   "secs": 0.6,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12162628414": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n12162628415": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "old copyright (\u00a9 2018)",
+    "old code"
+   ],
+   "secs": 0.3,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12164588075": {
+   "score": 2,
+   "why": [
+    "slow (2.8 s)"
+   ],
+   "secs": 2.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12164588079": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n12168418494": {
+   "score": 0,
+   "why": [
+    "no address"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n12169200108": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12169200109": {
+   "score": 0,
+   "why": [],
+   "secs": 0.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12169200110": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n12175824472": {
+   "score": 3,
+   "why": [
+    "not mobile-friendly"
+   ],
+   "secs": 0.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12175951705": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12189332603": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12189332619": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n12196309615": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12196454793": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n12216393326": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n12216643799": {
+   "score": 0,
+   "why": [],
+   "secs": 1.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12219913769": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n12230599605": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12230677288": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12236630818": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12236630822": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2018)"
+   ],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12240155106": {
+   "score": 1,
+   "why": [
+    "old code"
+   ],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12240155107": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12240155108": {
+   "score": 0,
+   "why": [],
+   "secs": 1.1,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12240155110": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12240670375": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12240716525": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12242060064": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n12242060065": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12242776747": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n12242776748": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12254399433": {
+   "score": 0,
+   "why": [],
+   "secs": 1.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12254399438": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12254399440": {
+   "score": 2,
+   "why": [
+    "slow (4.6 s)"
+   ],
+   "secs": 4.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12254399443": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.3,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12269407202": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12269407203": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12269607406": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12270023220": {
+   "score": 1,
+   "why": [
+    "old code"
+   ],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12280320280": {
+   "score": 2,
+   "why": [
+    "slow (5.4 s)"
+   ],
+   "secs": 5.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12305176551": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12312432801": {
+   "score": 0,
+   "why": [
+    "down now (RemoteDisconnected)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n12347387136": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12347420417": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n12347420419": {
+   "score": 0,
+   "why": [],
+   "secs": 1.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12347420437": {
+   "score": 0,
+   "why": [],
+   "secs": 1.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12347420439": {
+   "score": 0,
+   "why": [],
+   "secs": 1.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12347420491": {
+   "score": 0,
+   "why": [
+    "down now (InvalidURL)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n12347420501": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.2,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12347420508": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12347421172": {
+   "score": 8,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly",
+    "old copyright (\u00a9 2022)"
+   ],
+   "secs": 0.5,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12363567939": {
+   "score": 0,
+   "why": [],
+   "secs": 0.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12371296678": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12371318971": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12465605819": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12485214730": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12608708944": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12608708945": {
+   "score": 0,
+   "why": [
+    "down now (202)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n12610902334": {
+   "score": 0,
+   "why": [
+    "down now (URLError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n12656971529": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12656971530": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12656971531": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.4,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12663303700": {
+   "score": 0,
+   "why": [
+    "down now (TimeoutError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n12699385301": {
+   "score": 2,
+   "why": [
+    "slow (2.5 s)"
+   ],
+   "secs": 2.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12703647364": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12703660958": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2020)"
+   ],
+   "secs": 1.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12703687627": {
+   "score": 0,
+   "why": [],
+   "secs": 0.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12703692775": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12703697142": {
+   "score": 0,
+   "why": [
+    "down now (RemoteDisconnected)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n12703697143": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12703697144": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12753286387": {
+   "score": 0,
+   "why": [],
+   "secs": 1.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12805213521": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12810674407": {
+   "score": 0,
+   "why": [],
+   "secs": 1.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12878352918": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2014)"
+   ],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12879710940": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12879907382": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n12879908392": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n12879908393": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12945483605": {
+   "score": 0,
+   "why": [],
+   "secs": 1.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12945483606": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12972086909": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12972086914": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12981096743": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12981128234": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12983915256": {
+   "score": 1,
+   "why": [
+    "old code"
+   ],
+   "secs": 0.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12983915261": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12984275543": {
+   "score": 2,
+   "why": [
+    "slow (3.2 s)"
+   ],
+   "secs": 3.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12986858962": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n12986858965": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13009643256": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n13048849074": {
+   "score": 0,
+   "why": [
+    "down now (202)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n13089824598": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13108826940": {
+   "score": 0,
+   "why": [
+    "down now (202)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n13108937674": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13108937675": {
+   "score": 2,
+   "why": [
+    "slow (3.2 s)"
+   ],
+   "secs": 3.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13141074678": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13141091540": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13141103130": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13141130394": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13158989372": {
+   "score": 3,
+   "why": [
+    "not mobile-friendly"
+   ],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13172313415": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13172358231": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13172358233": {
+   "score": 0,
+   "why": [],
+   "secs": 2.1,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13172358238": {
+   "score": 3,
+   "why": [
+    "not secure (http)"
+   ],
+   "secs": 0.9,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13172411615": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13172413658": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13172413659": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13172420018": {
+   "score": 4,
+   "why": [
+    "not secure (http)",
+    "old code"
+   ],
+   "secs": 0.4,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13174843436": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13180550181": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13180558146": {
+   "score": 4,
+   "why": [
+    "old copyright (\u00a9 2018)",
+    "slow (4.5 s)"
+   ],
+   "secs": 4.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13180573536": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n13180636135": {
+   "score": 0,
+   "why": [],
+   "secs": 1.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13180643637": {
+   "score": 3,
+   "why": [
+    "not mobile-friendly"
+   ],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13182324321": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13200782015": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13200782017": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13200982487": {
+   "score": 0,
+   "why": [
+    "down now (202)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n13205566127": {
+   "score": 2,
+   "why": [
+    "slow (5.5 s)"
+   ],
+   "secs": 5.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13291144521": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n13291144526": {
+   "score": 3,
+   "why": [
+    "old copyright (\u00a9 2023)",
+    "heavy page"
+   ],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13294561117": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.5,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13325488701": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13414714063": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n1351962230": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n1351962244": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2019)"
+   ],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n1351962321": {
+   "score": 3,
+   "why": [
+    "old copyright (\u00a9 2018)",
+    "heavy page"
+   ],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n1351962364": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n13533555683": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13588197360": {
+   "score": 0,
+   "why": [],
+   "secs": 1.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13641969001": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13651118400": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13707841702": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13760633401": {
+   "score": 0,
+   "why": [
+    "down now (RemoteDisconnected)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n13890103690": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13930194214": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n13953072429": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n13960789077": {
+   "score": 0,
+   "why": [
+    "down now (202)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n14027572802": {
+   "score": 3,
+   "why": [
+    "not mobile-friendly"
+   ],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n14027576701": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n14027580601": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n14086707601": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n14097395489": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n14097418806": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n14132487603": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n14132487604": {
+   "score": 1,
+   "why": [
+    "old code"
+   ],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n14132487608": {
+   "score": 0,
+   "why": [],
+   "secs": 1.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n1417114900": {
+   "score": 0,
+   "why": [],
+   "secs": 1.1,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n14210570600": {
+   "score": 5,
+   "why": [
+    "not secure (http)",
+    "old copyright (\u00a9 2023)"
+   ],
+   "secs": 1.0,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n14210582104": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n14210593636": {
+   "score": 3,
+   "why": [
+    "not mobile-friendly"
+   ],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n14213152628": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n14235557133": {
+   "score": 0,
+   "why": [],
+   "secs": 2.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n14235557134": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n14252993826": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n14266099921": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n14293358555": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n14345659218": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n1509433823": {
+   "score": 0,
+   "why": [],
+   "secs": 1.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n1581724849": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n1595567812": {
+   "score": 0,
+   "why": [],
+   "secs": 2.1,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n1595567851": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.5,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n1595567867": {
+   "score": 0,
+   "why": [],
+   "secs": 1.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n1683739571": {
+   "score": 3,
+   "why": [
+    "not secure (http)"
+   ],
+   "secs": 0.3,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n1772792700": {
+   "score": 2,
+   "why": [
+    "slow (4.4 s)"
+   ],
+   "secs": 4.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n1801043644": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n1811244996": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n1821603090": {
+   "score": 0,
+   "why": [
+    "no address"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n1994751477": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n2110402666": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n2111747599": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n2133952551": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n2144925122": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n2148260155": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n2149635901": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n2249619593": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n2249619601": {
+   "score": 0,
+   "why": [
+    "down now (202)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n2256193797": {
+   "score": 0,
+   "why": [],
+   "secs": 1.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n2296563592": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n2302012371": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2021)"
+   ],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n2305872093": {
+   "score": 2,
+   "why": [
+    "slow (2.7 s)"
+   ],
+   "secs": 2.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n2340965981": {
+   "score": 2,
+   "why": [
+    "slow (3.9 s)"
+   ],
+   "secs": 3.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n2509506662": {
+   "score": 0,
+   "why": [],
+   "secs": 1.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n2576331174": {
+   "score": 3,
+   "why": [
+    "old copyright (\u00a9 2023)",
+    "heavy page"
+   ],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n2624971891": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n2624993187": {
+   "score": 0,
+   "why": [
+    "down now (RemoteDisconnected)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n2625001247": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n2625003515": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n2681394231": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n2695164115": {
+   "score": 3,
+   "why": [
+    "not mobile-friendly"
+   ],
+   "secs": 1.1,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n2695164118": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n2713016927": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.2,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n2713990796": {
+   "score": 0,
+   "why": [],
+   "secs": 1.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n2715409247": {
+   "score": 2,
+   "why": [
+    "slow (2.9 s)"
+   ],
+   "secs": 2.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n2719417022": {
+   "score": 3,
+   "why": [
+    "not mobile-friendly"
+   ],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n2724419559": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n2878834301": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 2.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n2912189204": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n3052597863": {
+   "score": 2,
+   "why": [
+    "slow (3.5 s)"
+   ],
+   "secs": 3.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n3052597864": {
+   "score": 0,
+   "why": [],
+   "secs": 2.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n3052597865": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n3113194529": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n3172964207": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n3243665472": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n3323708461": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n3481703930": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n3524691319": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n3524691320": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2020)"
+   ],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n3565807227": {
+   "score": 0,
+   "why": [],
+   "secs": 0.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n3565848764": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n3575553852": {
+   "score": 0,
+   "why": [],
+   "secs": 1.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n3592925593": {
+   "score": 2,
+   "why": [
+    "slow (3.0 s)"
+   ],
+   "secs": 3.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n3676522342": {
+   "score": 0,
+   "why": [
+    "no address"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n3712918480": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n3720819930": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n3753130025": {
+   "score": 2,
+   "why": [
+    "slow (4.0 s)"
+   ],
+   "secs": 4.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n3753130026": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n3825506357": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n3835841372": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n3836322157": {
+   "score": 2,
+   "why": [
+    "slow (3.9 s)"
+   ],
+   "secs": 3.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n3889516059": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n3952635874": {
+   "score": 3,
+   "why": [
+    "not mobile-friendly"
+   ],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n3960073957": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n4017072689": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n4134695389": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.3,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n4198045800": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n4198074143": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n4198077897": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n4248825006": {
+   "score": 0,
+   "why": [],
+   "secs": 1.1,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n4251820200": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n4341938429": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n4497803355": {
+   "score": 0,
+   "why": [],
+   "secs": 1.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n4515727156": {
+   "score": 4,
+   "why": [
+    "not mobile-friendly",
+    "old code"
+   ],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n4515727160": {
+   "score": 0,
+   "why": [
+    "down now (202)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n4538875562": {
+   "score": 0,
+   "why": [
+    "no address"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n4538876239": {
+   "score": 5,
+   "why": [
+    "not secure (http)",
+    "old copyright (\u00a9 2019)"
+   ],
+   "secs": 0.8,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n4538882903": {
+   "score": 3,
+   "why": [
+    "not secure (http)"
+   ],
+   "secs": 0.5,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n4807745412": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n4906433896": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n4906433897": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n4952360921": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.5,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n4952360923": {
+   "score": 0,
+   "why": [],
+   "secs": 1.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n4952360926": {
+   "score": 0,
+   "why": [
+    "down now (URLError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n4997400590": {
+   "score": 0,
+   "why": [],
+   "secs": 2.1,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n5001738410": {
+   "score": 2,
+   "why": [
+    "slow (3.4 s)"
+   ],
+   "secs": 3.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n5002338705": {
+   "score": 0,
+   "why": [
+    "down now (RemoteDisconnected)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n5002338706": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2023)"
+   ],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n5122350252": {
+   "score": 0,
+   "why": [],
+   "secs": 1.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n5158125564": {
+   "score": 1,
+   "why": [
+    "old code"
+   ],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n5178463132": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n5178463133": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n5178480130": {
+   "score": 0,
+   "why": [
+    "down now (URLError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n5178525326": {
+   "score": 4,
+   "why": [
+    "old copyright (\u00a9 2018)",
+    "slow (3.7 s)"
+   ],
+   "secs": 3.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n5200463198": {
+   "score": 4,
+   "why": [
+    "not mobile-friendly",
+    "old code"
+   ],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n5273559355": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n5287996320": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n5320512271": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.2,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n5322464141": {
+   "score": 1,
+   "why": [
+    "old code"
+   ],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n5469380156": {
+   "score": 3,
+   "why": [
+    "slow (3.0 s)",
+    "heavy page"
+   ],
+   "secs": 3.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n5506834256": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n5554662398": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.2,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n5656701313": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n5866581592": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n6020207248": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n6044809367": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2017)"
+   ],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n6101560609": {
+   "score": 0,
+   "why": [],
+   "secs": 1.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n6173171885": {
+   "score": 0,
+   "why": [
+    "down now (202)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n6255910817": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n6255913685": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n6258979370": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n6277549952": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2023)"
+   ],
+   "secs": 1.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n6308951626": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n6309001633": {
+   "score": 0,
+   "why": [],
+   "secs": 1.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n6329894449": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2016)"
+   ],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n633632451": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n633639770": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n6348525382": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n6441103610": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n6441801571": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n6446607149": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n6446607150": {
+   "score": 0,
+   "why": [],
+   "secs": 0.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n6451091568": {
+   "score": 0,
+   "why": [
+    "no address"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n6473985845": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n6473985846": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n6482457078": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n6563540310": {
+   "score": 0,
+   "why": [
+    "down now (URLError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n6648268924": {
+   "score": 0,
+   "why": [],
+   "secs": 1.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n6855260566": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n6855260568": {
+   "score": 0,
+   "why": [
+    "down now (RemoteDisconnected)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n6910356200": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2019)"
+   ],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n7026752753": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n7029397865": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n7125330212": {
+   "score": 3,
+   "why": [
+    "not mobile-friendly"
+   ],
+   "secs": 1.1,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n7125330215": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.2,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n7231708768": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.6,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n7319336424": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n7423806302": {
+   "score": 2,
+   "why": [
+    "slow (4.4 s)"
+   ],
+   "secs": 4.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n7487728006": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n7487728007": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n7487728009": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n7487728010": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n7487728011": {
+   "score": 3,
+   "why": [
+    "not secure (http)"
+   ],
+   "secs": 0.3,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n7681419629": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n7869976023": {
+   "score": 0,
+   "why": [],
+   "secs": 1.1,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n8073114566": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n8088588646": {
+   "score": 0,
+   "why": [],
+   "secs": 1.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n8089684151": {
+   "score": 2,
+   "why": [
+    "slow (2.9 s)"
+   ],
+   "secs": 2.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n8168999030": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n8208688477": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2019)"
+   ],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n8208688478": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n8356164526": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n842030292": {
+   "score": 0,
+   "why": [],
+   "secs": 1.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n842031506": {
+   "score": 3,
+   "why": [
+    "not mobile-friendly"
+   ],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n8580907161": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n8633251632": {
+   "score": 0,
+   "why": [],
+   "secs": 0.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n8633251635": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n8633251640": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2018)"
+   ],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n8730411807": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2019)"
+   ],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n8735325466": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n9044369662": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n9112017781": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n9187849180": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2022)"
+   ],
+   "secs": 1.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n9187849182": {
+   "score": 0,
+   "why": [
+    "down now (TimeoutError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n9215239583": {
+   "score": 0,
+   "why": [
+    "no address"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-n9215239586": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 1.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n9253740762": {
+   "score": 5,
+   "why": [
+    "not secure (http)",
+    "old copyright (\u00a9 2020)"
+   ],
+   "secs": 1.3,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n9253954561": {
+   "score": 0,
+   "why": [],
+   "secs": 1.1,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n9253954579": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n9253954580": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n9309869821": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n9309869822": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n9311286398": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n9349618267": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n9349618269": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n9525852834": {
+   "score": 0,
+   "why": [],
+   "secs": 1.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n9525852836": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n9527208886": {
+   "score": 0,
+   "why": [],
+   "secs": 1.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n9527208887": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2023)"
+   ],
+   "secs": 1.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n9527208888": {
+   "score": 3,
+   "why": [
+    "not mobile-friendly"
+   ],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n9542780195": {
+   "score": 1,
+   "why": [
+    "old code"
+   ],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n9553243061": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n9559408694": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-n9576741385": {
+   "score": 0,
+   "why": [
+    "down now (RemoteDisconnected)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w1002714875": {
+   "score": 0,
+   "why": [],
+   "secs": 1.1,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1017485915": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w104859644": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w1050690800": {
+   "score": 0,
+   "why": [],
+   "secs": 2.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1059976641": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1072829913": {
+   "score": 0,
+   "why": [],
+   "secs": 1.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w108139036": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1098031249": {
+   "score": 0,
+   "why": [],
+   "secs": 0.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1098031250": {
+   "score": 3,
+   "why": [
+    "not mobile-friendly"
+   ],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1110147752": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w113572320": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w113572322": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.2,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w113572377": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w113572415": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w113580181": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w116485196": {
+   "score": 0,
+   "why": [],
+   "secs": 1.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1194294975": {
+   "score": 0,
+   "why": [],
+   "secs": 0.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1205663876": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w120626584": {
+   "score": 0,
+   "why": [
+    "down now (RemoteDisconnected)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w1218920752": {
+   "score": 0,
+   "why": [],
+   "secs": 1.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1218920754": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1218920781": {
+   "score": 0,
+   "why": [],
+   "secs": 1.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1218920802": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1218920807": {
+   "score": 0,
+   "why": [],
+   "secs": 1.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1233227186": {
+   "score": 0,
+   "why": [],
+   "secs": 1.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1235996225": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1236007812": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1236007817": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1236007820": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1236007825": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1236007829": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1236007831": {
+   "score": 0,
+   "why": [],
+   "secs": 1.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1236007835": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1236007838": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1236019798": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1236019802": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1236019810": {
+   "score": 0,
+   "why": [],
+   "secs": 1.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1236019811": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1236146016": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1236156048": {
+   "score": 0,
+   "why": [],
+   "secs": 1.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1236542896": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1236542897": {
+   "score": 3,
+   "why": [
+    "not secure (http)"
+   ],
+   "secs": 0.2,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1236542919": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w1236554222": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1246024515": {
+   "score": 0,
+   "why": [],
+   "secs": 1.1,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1246024517": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1246024521": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1246024523": {
+   "score": 0,
+   "why": [],
+   "secs": 1.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1246717091": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1246717093": {
+   "score": 0,
+   "why": [],
+   "secs": 1.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1246717094": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2016)"
+   ],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1246717095": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1246717097": {
+   "score": 2,
+   "why": [
+    "slow (6.9 s)"
+   ],
+   "secs": 6.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1246717098": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1246717099": {
+   "score": 0,
+   "why": [],
+   "secs": 1.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1246717104": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w128366867": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w128366876": {
+   "score": 0,
+   "why": [
+    "no address"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w1319319857": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w1319319862": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1323773758": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1323773759": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1323773760": {
+   "score": 0,
+   "why": [],
+   "secs": 1.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1323773761": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1324262620": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1328947212": {
+   "score": 0,
+   "why": [],
+   "secs": 2.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1332524326": {
+   "score": 7,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly",
+    "old code"
+   ],
+   "secs": 0.5,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w136790822": {
+   "score": 0,
+   "why": [],
+   "secs": 1.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1387111691": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1388900819": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1388902812": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1415690653": {
+   "score": 2,
+   "why": [
+    "slow (3.6 s)"
+   ],
+   "secs": 3.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w142211897": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1423400047": {
+   "score": 0,
+   "why": [],
+   "secs": 2.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w146133444": {
+   "score": 0,
+   "why": [],
+   "secs": 2.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w146260832": {
+   "score": 0,
+   "why": [
+    "down now (URLError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w1465030784": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1465198986": {
+   "score": 0,
+   "why": [
+    "no address"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w1465199000": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1471481977": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.6,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1471482017": {
+   "score": 0,
+   "why": [],
+   "secs": 1.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1472494561": {
+   "score": 3,
+   "why": [
+    "old copyright (\u00a9 2017)",
+    "heavy page"
+   ],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1472494575": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w148065700": {
+   "score": 0,
+   "why": [],
+   "secs": 2.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1481034445": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w148378303": {
+   "score": 1,
+   "why": [
+    "old code"
+   ],
+   "secs": 0.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w149140885": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w1559196234": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1559361429": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.5,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w1573450492": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w160207452": {
+   "score": 0,
+   "why": [
+    "down now (RemoteDisconnected)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w161263842": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w161263847": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w163490521": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w164272032": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w164547387": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w167325137": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w168648229": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w168664599": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w168699336": {
+   "score": 2,
+   "why": [
+    "slow (3.1 s)"
+   ],
+   "secs": 3.1,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w168769492": {
+   "score": 0,
+   "why": [
+    "down now (RemoteDisconnected)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w169794012": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w169924633": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.5,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w169924636": {
+   "score": 3,
+   "why": [
+    "old copyright (\u00a9 2022)",
+    "heavy page"
+   ],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w169924641": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w169924674": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w170792267": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w177929215": {
+   "score": 2,
+   "why": [
+    "slow (3.0 s)"
+   ],
+   "secs": 3.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w177929217": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w183437924": {
+   "score": 3,
+   "why": [
+    "old copyright (\u00a9 2016)",
+    "heavy page"
+   ],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w184657275": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w185921392": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w186076879": {
+   "score": 2,
+   "why": [
+    "slow (10.4 s)"
+   ],
+   "secs": 10.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w186076882": {
+   "score": 5,
+   "why": [
+    "not mobile-friendly",
+    "old copyright (\u00a9 2012)"
+   ],
+   "secs": 1.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w186077768": {
+   "score": 3,
+   "why": [
+    "not secure (http)"
+   ],
+   "secs": 0.2,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w186412851": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w196741636": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w203311992": {
+   "score": 0,
+   "why": [],
+   "secs": 2.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w204980230": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w231519852": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w286131933": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w294583712": {
+   "score": 5,
+   "why": [
+    "not secure (http)",
+    "slow (2.6 s)"
+   ],
+   "secs": 2.6,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w294583767": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w310501996": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w311546094": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w313963437": {
+   "score": 2,
+   "why": [
+    "slow (3.4 s)"
+   ],
+   "secs": 3.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w314033456": {
+   "score": 5,
+   "why": [
+    "not mobile-friendly",
+    "old copyright (\u00a9 2012)"
+   ],
+   "secs": 1.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w352997391": {
+   "score": 0,
+   "why": [],
+   "secs": 1.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w419361406": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w432710958": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w435691940": {
+   "score": 0,
+   "why": [
+    "down now (202)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w436147562": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w436147642": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w444051417": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w450837698": {
+   "score": 6,
+   "why": [
+    "not secure (http)",
+    "not mobile-friendly"
+   ],
+   "secs": 0.2,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w454495718": {
+   "score": 0,
+   "why": [],
+   "secs": 1.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w46945125": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w46945372": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w46945419": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w46978511": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w47107879": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w47245217": {
+   "score": 0,
+   "why": [],
+   "secs": 0.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w508493787": {
+   "score": 0,
+   "why": [],
+   "secs": 1.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w52557381": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2023)"
+   ],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w552255526": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w571052456": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w63521680": {
+   "score": 1,
+   "why": [
+    "heavy page"
+   ],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w63521747": {
+   "score": 0,
+   "why": [],
+   "secs": 1.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w63929370": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w63939474": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w64142349": {
+   "score": 0,
+   "why": [],
+   "secs": 0.2,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w64142395": {
+   "score": 3,
+   "why": [
+    "slow (2.8 s)",
+    "heavy page"
+   ],
+   "secs": 2.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w64142935": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w64142939": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w641980946": {
+   "score": 0,
+   "why": [],
+   "secs": 1.3,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w642236271": {
+   "score": 0,
+   "why": [],
+   "secs": 0.6,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w642686922": {
+   "score": 3,
+   "why": [
+    "not secure (http)"
+   ],
+   "secs": 0.2,
+   "https": false,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w642888578": {
+   "score": 0,
+   "why": [
+    "down now (RemoteDisconnected)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w64376936": {
+   "score": 0,
+   "why": [],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w64505543": {
+   "score": 3,
+   "why": [
+    "old copyright (\u00a9 2014)",
+    "heavy page"
+   ],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w668787722": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2023)"
+   ],
+   "secs": 0.4,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w668787723": {
+   "score": 0,
+   "why": [],
+   "secs": 0.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w668787726": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w668787730": {
+   "score": 3,
+   "why": [
+    "old copyright (\u00a9 2023)",
+    "old code"
+   ],
+   "secs": 2.0,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w721201803": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w777561182": {
+   "score": 0,
+   "why": [],
+   "secs": 1.9,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w795708532": {
+   "score": 0,
+   "why": [],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w797525386": {
+   "score": 0,
+   "why": [
+    "down now (HTTPError)"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w797527931": {
+   "score": 0,
+   "why": [],
+   "secs": 1.7,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w875110921": {
+   "score": 0,
+   "why": [
+    "no address"
+   ],
+   "down": true,
+   "checked": "2026-11-22"
+  },
+  "osm-w875461638": {
+   "score": 0,
+   "why": [],
+   "secs": 1.1,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w875461646": {
+   "score": 0,
+   "why": [],
+   "secs": 0.8,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  },
+  "osm-w895131240": {
+   "score": 2,
+   "why": [
+    "old copyright (\u00a9 2021)"
+   ],
+   "secs": 0.5,
+   "https": true,
+   "status": 200,
+   "checked": "2026-11-22"
+  }
+ }
+}

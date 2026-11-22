@@ -46,12 +46,12 @@ html.framed #app { padding-top: 12px; }
 .filebtn { position: relative; overflow: hidden; cursor: pointer; }
 .filebtn input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; font-size: 16px; }
 .rule { padding: 12px; border-radius: 14px; background: rgba(var(--j-rgb), .1); border: 1px solid rgba(var(--j-rgb), .4); display: grid; gap: 4px; }
-.rule small { font: 700 12px/1 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--j-acc); }
+.rule small { font: 700 12px/1 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--ag-terra-text, var(--j-acc)); }
 .rule p { margin: 0; font-size: 16px; line-height: 1.35; }
 .rule .why { font-size: 13.5px; color: var(--oly-dim, #c4bbac); }
 #weekLines p { margin: 0 0 6px; font-size: 15px; }
 .tlist, .mlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; min-width: 0; }
-.trade { display: grid; gap: 8px; padding: 12px; border-radius: 14px; min-width: 0; background: rgba(255,255,255,.04); border: 1px solid var(--oly-line, rgba(255,255,255,.14)); border-left: 3px solid var(--c, var(--j-acc)); }
+.trade { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 12px; border-radius: 14px; min-width: 0; background: rgba(255,255,255,.04); border: 1px solid var(--oly-line, rgba(255,255,255,.14)); border-left: 3px solid var(--c, var(--j-acc)); }
 .trade.win { --c: var(--good); } .trade.loss { --c: var(--bad); }
 .thead { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .thead .what { font: 700 13px/1.3 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; min-width: 0; overflow-wrap: anywhere; }
@@ -105,8 +105,12 @@ html.sheeted, html.sheeted body { overflow: hidden; }
 @keyframes d2 { from { transform: translate(6%, 4%) scale(1.1); } to { transform: translate(-10%, 0) scale(.9); } }
 @keyframes rise { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
 
-.ifplan { margin: 0; padding: 10px 12px; border-radius: 12px; background: #2a2217; border: 1px solid #c8a24a; color: #c8a24a; font-weight: 600; }
+.ifplan { margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--ag-s3, #2a2217); border: 1px solid #c8a24a; color: #c8a24a; font-weight: 600; }
 
 /* the stoic line (olympus/polis-life.js, QA round 6): one of the journal's own cards, same radius */
 #app > .pl-placed { border-radius: var(--oly-r-card, 16px); }
 a.go { display: flex; align-items: center; justify-content: center; text-decoration: none; color: var(--oly-text, #f3e7d6); }   /* the link to the bot's edge page (edge.html) */
+
+/* night-siteqa 2026-11-20: alone (not framed in Jarvis) the corner holds only the 44 px OLYMPUS seal: 96 px + the home bar clears it, the 176 px
+   seat (Jarvis's orb) stays for the framed page; no empty band at the end (owner: the bottom looked "funky"; same rule as trading.css) */
+html:not(.framed) #app { padding-bottom: calc(96px + var(--sb)); }

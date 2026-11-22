@@ -2,7 +2,7 @@
 
     python tools/app_crawl.py                                   # every app, 390x844 + 375x667 + 430x932, a local static server
     python tools/app_crawl.py --apps mind,tyche --viewports 390x844
-    python tools/app_crawl.py --live                            # the real site (https://demetrades2000-coder.github.io/nq-dashboard/)
+    python tools/app_crawl.py --live                            # the real site (https://dcondax1-wq.github.io/)
     python tools/app_crawl.py --offline                         # block every non-local request: the fixture / demo fallback must kick in
     python tools/app_crawl.py --reduced --intro                 # reduced motion; --intro plays the app intro (?intro=1) and checks it lets go
     python tools/app_crawl.py --out research/crawl --shots /tmp/shots   # table.md + table.json (+ a screenshot per run)
@@ -32,7 +32,7 @@ import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "tools", "web_public")
-LIVE = "https://demetrades2000-coder.github.io/nq-dashboard/"
+LIVE = "https://dcondax1-wq.github.io/"
 SKIP_APPS = {"jarvis", "fx", "icon_options", "olympus"}          # jarvis has its own crawl; fx / icon_options / olympus are not apps
 VIEWPORTS = ["390x844", "375x667", "430x932"]
 JARGON = ["IFVG", "CISD", "FDR", "MAE", "MFE", "OOS", "p10", "f10", "dec10", "MLL", "inducement", "displacement", "sweep", "R-multiple", "PF", "EV", "slippage", "drawdown", "expectancy", "confluence", "liquidity"]

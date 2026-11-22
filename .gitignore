@@ -144,10 +144,18 @@ data/account_c.json
 data/account_c.json.tmp
 data/rapid.json
 data/rapid.json.tmp
+data/rapid2.json
+data/rapid2.json.tmp
+data/hand_trade.json
+data/hand_trade.json.tmp
 data/lit25.json
 data/lit25.json.tmp
 data/lifecycle.json
 data/lifecycle.json.tmp
+data/keepalive.json
+data/keepalive.json.tmp
+data/keepalive_state.json
+data/keepalive_state.json.tmp
 data/live_state_acctr*.json
 data/live_state_acctr*.json.tmp
 data/ninjatrader_state_acctr.json
@@ -289,3 +297,18 @@ research/lab/TRADER_LAYER_decisions_*.json
 # Home Screen icon options (tools/icon_options_build.py, icon_options_detail.py, icon_options_minimal.py rebuild them);
 # the live icon is web/icons/ (tools/icon_temple.py, 2026-11-18)
 tools/web_public/icon_options/
+
+# the email autopilot's tiny card for the PC report (agency/autopilot/card.py)
+data/agency_mail/
+data/agency_pipeline/
+# engine/alert_bus.py: keys sent + the failure log (redacted), machine-local
+data/alert_bus_sent.json
+data/alert_bus.jsonl
+data/alert_bus_sent.json.*.tmp
+# the phone pages' press logs (engine/account_box.py, engine/alerts_box.py): masked, machine-local
+data/account_box.jsonl
+data/alerts_box.jsonl
+
+# engine/shadow_leads.py (observe-only paper-lead log, 2026-11-21): local output + off switch
+data/shadow_leads.jsonl
+data/shadow_leads.json

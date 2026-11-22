@@ -63,6 +63,7 @@ N25 = "MFFUEVBLDR25K-RH02"           # Zlarior's new Builder 25K eval (b25k_2)
 NB_EVAL = "MFFUEVBLDR25K-RH03"       # ATLAS's passed 25K eval (MFFU locked it)
 NBF = "MFFUSFBLDR25K-RH03"           # ATLAS's FUNDED Builder 25K (account B)
 NR = "MFFUEVRPDEOD25K-RH04"          # the Rapid EOD 25K (--rapid)
+NR2 = "MFFUEVRPDEOD50K-RH05"         # the Rapid EOD 50K as Rapid #2 (--rapid2, data/rapid2.json: day-multirapid 2026-11-20)
 BAL50, FLOOR50 = 49192.78, 48168.20  # Zlarior 50K on 2026-11-17 (STATE.md)
 DAYS = [("2026-09-07", "early close (Labor Day: CME halts 13:00 ET, like Thanksgiving)"),
         ("2026-10-02", "news day (jobs report 08:30)"),
@@ -72,6 +73,7 @@ DAYS = [("2026-09-07", "early close (Labor Day: CME halts 13:00 ET, like Thanksg
 MAX_STATUS_BYTES = 3900
 FLAT_LAST = 16 * 60 + 10             # MFFU: flat by 16:10 ET
 RAPID_BEST_DAY = 0.3 * 1500.0        # MFFU Rapid EOD 25K eval: best day <= 30% of the profit (= $450 at the $1,500 target)
+RAPID2_BEST_DAY = 0.3 * 3000.0       # the Rapid EOD 50K: 30% of the $3,000 target
 
 
 def ts(day: str, hh: int, mm: int = 0, ss: int = 0) -> int:
@@ -100,6 +102,10 @@ SCENARIOS = {
     "kill": ("2026-10-07", "KILL at 11:00 with LIT long on both evals and ATLAS long on the funded 25K",
              {"kill_at": ts("2026-10-07", 11, 0, 3)}),
     "flatten": ("2026-10-13", "phone FLATTEN at 07:30 with LIT short on both evals", {"flatten_at": ts("2026-10-13", 7, 30, 3)}),
+    # MFFU's 2% price-limit rule (engine/price_limit.py) forced at 04:20 while ATLAS's FUNDED 25K is long (04:10): funded
+    # accounts flat + no entry after it (LIT's 04:32 short skips the funded 25K's LIT lane); the evals trade as usual
+    "pricelimit": ("2026-10-06", "MFFU 2% price-limit rule tripped at 04:20 (ATLAS funded long, LIT short 04:32)",
+                   {"pl_at": ts("2026-10-06", 4, 20, 3)}),
 }
 RESTART = {"2026-10-02": ts("2026-10-02", 5, 0, 3), "2026-10-13": ts("2026-10-13", 7, 0, 3)}   # STOP + START mid-trade
 
@@ -122,9 +128,9 @@ class Findings:
 class Rig:
     """One temp PC: its config files, one simulated NinjaTrader, a replay clock and the bar source."""
 
-    def __init__(self, tmp, frames, rapid=False):
+    def __init__(self, tmp, frames, rapid=False, rapid2=False):
         from engine.ninjatrader import _FakeNT
-        self.tmp, self.frames, self.rapid = tmp, frames, rapid
+        self.tmp, self.frames, self.rapid, self.rapid2 = tmp, frames, rapid or rapid2, rapid2
         self.data = os.path.join(tmp, "data")
         os.makedirs(self.data, exist_ok=True)
         self.folder = os.path.join(tmp, "NinjaTrader 8")
@@ -281,7 +287,7 @@ def pc_paths(rig):
     go.ACCOUNTS_PATH = os.path.join(rig.data, "accounts.json")
     go.ANCHOR_PATH = os.path.join(rig.data, "eval_anchor.json")
     go.bot_running = lambda: False
-    go.nt_balances = lambda: {N50: BAL50, N25: 25000.0, NB_EVAL: 26946.10, NBF: 25000.0, NR: 25000.0}
+    go.nt_balances = lambda: {N50: BAL50, N25: 25000.0, NB_EVAL: 26946.10, NBF: 25000.0, NR: 25000.0, NR2: 50000.0}
     lit25.PATH = os.path.join(rig.data, "lit25.json")
     rapid.PATH = os.path.join(rig.data, "rapid.json")
     second._selftest_ok = lambda *a, **k: (True, "rehearsal: engine.ninjatrader --selftest is run on its own")
@@ -314,6 +320,12 @@ def build_pc(rig, day: str, F: Findings, quiet=True) -> dict:
         a2 = lit25.to_funded(NBF, day)
         # 4. --rapid: ADD_ACCOUNT.bat item 5, the Rapid EOD 25K (LIT + ATLAS)
         a3 = account_cli.add("rapideod25", NR, start=day) if rig.rapid else None
+        if a3 and a3.get("ok") and os.environ.get("RH_LIT_BANK") == "1":     # the Rapid 25K's OFF "bank at the room" lane, on
+            rb_ = rapid.load()                                                  # (research: tools/money/rapid25_pass.py A1)
+            rb_["lit_bank"] = True
+            rapid.save(rb_)
+        # 4b. --rapid2: the add box again, Rapid EOD 50K -> Rapid #2 (data/rapid2.json)
+        a4 = account_cli.add("rapideod", NR2, start=day) if getattr(rig, "rapid2", False) else None
         # 5. START BOT + the typed phrase (engine/go.step_arm): ATLAS's 25K, the Rapid, the added accounts, then --start
         cfg = go._read(go.CFG)
         rb = go.arm_b(cfg["atlas"])
@@ -326,6 +338,7 @@ def build_pc(rig, day: str, F: Findings, quiet=True) -> dict:
         # what the real bot reads by itself from data/ (a test bot needs them in its start cfg)
         body["account_b"] = AB.raw_cfg(sm)
         body["rapid"] = rapid.read()
+        body["rapid2"] = rapid.read(rapid.slot_path("rapid2"))
         body["lit25"] = lit25.load()
         # live_model.json lit_sizing.eval_start is 2026-10-19 (session ~21 on 11-17): the same age on the replayed day
         body["eval_start"] = (dt.date.fromisoformat(day) - dt.timedelta(days=29)).isoformat()
@@ -338,7 +351,8 @@ def build_pc(rig, day: str, F: Findings, quiet=True) -> dict:
             files["rapid.json"] = json.load(open(rapid.path(), encoding="utf-8"))
         files["lit25.json"] = lit25.load() or "(missing = OFF)"
     say = out.getvalue()
-    steps = {"atlas_eval": r, "add_25k": a1, "funded": a2, "add_rapid": a3, "arm_b": rb, "arm_rapid": rr, "arm_added": ra}
+    steps = {"atlas_eval": r, "add_25k": a1, "funded": a2, "add_rapid": a3, "add_rapid2": a4, "arm_b": rb, "arm_rapid": rr,
+             "arm_added": ra}
     bad = {k: v for k, v in steps.items() if isinstance(v, dict) and v.get("ok") is False and not (k == "arm_rapid" and not rig.rapid)}
     F.check(f"{day} config: ADD_ACCOUNT steps (25K eval add, lit25 --funded, " + ("Rapid 25K add, " if rig.rapid else "")
             + "START BOT arming) all OK", not bad, bad)
@@ -352,12 +366,21 @@ def build_pc(rig, day: str, F: Findings, quiet=True) -> dict:
 # $ cap, the soft daily loss, max micros). Builder evals: LIT two_week = 40% of the room (owner: "yes 40%", 25K = the same
 # rule since 2026-11-17); funded 25K ATLAS: 60% of the room <= $750 (engine/account_b.funded_qty on the 25K funded preset);
 # Rapid 25K: LIT two_week on $1,500 / $1,000 / 20 micros + soft $500 day, ATLAS min($250, 30% of the room).
+def atlas_funded_share() -> float:
+    """The room share ATLAS's funded 25K really sizes with: the live switch (engine/account_b.FUNDED_ON "funded_room_pct",
+    owner YES 2026-11-20: 0.4) else the 25K funded preset's 0.6 (day-monday 2026-11-22: the check said 0.6 after the switch)."""
+    from engine import account_b as _AB
+    v = (_AB.FUNDED_ON or {}).get("funded_room_pct")
+    return float(v) if v is not None else 0.6
+
+
 PLAN_CAPS = {"Zlarior 50K (main)": (0.4, None, 1000.0, 40), "Zlarior 25K #2 (b25k_2)": (0.4, None, 600.0, 20),
-             "ATLAS funded 25K (B)": (0.6, 750.0, 600.0, 20), "Rapid 25K LIT lane": (0.4, None, 500.0, 20),
-             "Rapid 25K ATLAS lane": (0.3, 250.0, 500.0, 20)}
+             "ATLAS funded 25K (B)": (atlas_funded_share(), 750.0, 600.0, 20), "Rapid 25K LIT lane": (0.4, None, 500.0, 20),
+             "Rapid 25K ATLAS lane": (0.3, 250.0, 500.0, 20),
+             "Rapid 50K LIT lane": (0.4, None, 1000.0, 30), "Rapid 50K ATLAS lane": (0.3, 500.0, 1000.0, 30)}
 BOOK = {"Zlarior 50K (main)": "50k", "Zlarior 25K #2 (b25k_2)": "25k2", "ATLAS funded 25K (B)": "f25",
-        "Rapid 25K LIT lane": "rapid", "Rapid 25K ATLAS lane": "rapid"}
-ROOM0 = {"50k": round(BAL50 - FLOOR50, 2), "25k2": 1000.0, "f25": 1000.0, "rapid": 1000.0}
+        "Rapid 25K LIT lane": "rapid", "Rapid 25K ATLAS lane": "rapid", "Rapid 50K LIT lane": "rapid2", "Rapid 50K ATLAS lane": "rapid2"}
+ROOM0 = {"50k": round(BAL50 - FLOOR50, 2), "25k2": 1000.0, "f25": 1000.0, "rapid": 1000.0, "rapid2": 2000.0}
 
 
 def full_stop(qty, entry, stop) -> float:
@@ -434,21 +457,25 @@ def lanes(bot) -> dict:
     """{label: (object, adapter)} of every account the bot routes."""
     out = {"Zlarior 50K (main)": (bot, bot.adapter)}
     for a in (getattr(bot.accts, "accounts", None) or []):
-        lbl = {"b25k_2": "Zlarior 25K #2 (b25k_2)", "rapid": "Rapid 25K LIT lane", "lit25": "LIT on funded 25K"}.get(a.id, a.id)
+        lbl = {"b25k_2": "Zlarior 25K #2 (b25k_2)", "rapid": "Rapid 25K LIT lane", "rapid2": "Rapid 50K LIT lane",
+               "lit25": "LIT on funded 25K"}.get(a.id, a.id)
         out[lbl] = (a, a.adapter)
     if bot.acct_b is not None:
         out["ATLAS funded 25K (B)"] = (bot.acct_b, bot.acct_b.adapter)
     if getattr(bot, "acct_r", None) is not None:
         out["Rapid 25K ATLAS lane"] = (bot.acct_r, bot.acct_r.adapter)
+    if getattr(bot, "acct_r2", None) is not None:
+        out["Rapid 50K ATLAS lane"] = (bot.acct_r2, bot.acct_r2.adapter)
     return out
 
 
-def rapid_both_open(bot):
+def rapid_both_open(bot, slot="rapid"):
     """The Rapid's two lanes both holding / sending at this poll (a position, an entry or a close not confirmed yet at
-    NinjaTrader, or the model's open trade): {lane: what} when BOTH are, else None."""
-    from engine.rapid import _open_leg
-    lit_l = next((a for a in (getattr(bot.accts, "accounts", None) or []) if a.spec.get("lane") == "rapid"), None)
-    ar = getattr(bot, "acct_r", None)
+    NinjaTrader, or the model's open trade): {lane: what} when BOTH are, else None. slot "rapid2" = the 2nd Rapid."""
+    from engine.rapid import _open_leg, slot_of
+    lit_l = next((a for a in (getattr(bot.accts, "accounts", None) or []) if a.spec.get("lane") == "rapid"
+                  and slot_of(a.spec) == slot), None)
+    ar = getattr(bot, "acct_r2" if slot == "rapid2" else "acct_r", None)
     if lit_l is None or ar is None:
         return None
     busy = {}
@@ -491,11 +518,17 @@ def poll_times(day: str, quick: bool, want: list, full: bool = False) -> list:
 
 
 # ================================================================================================ one day
+FUNDED_LANES = ("ATLAS funded 25K (B)", "LIT on funded 25K")
+
+
 def run_day(rig, day, label, F: Findings, quick=False, restart_at=None, kill_at=None, want=(), hold=None, passed50=False,
-            flatten_at=None, full=False):
+            flatten_at=None, full=False, pl_at=None):
     from engine import cme_calendar as C
+    from engine import price_limit as PL
+    PL.reset()
     from engine.tradovate import LIVE_PHRASE
-    print(f"\n== {day}: {label}" + (" (+ Rapid EOD 25K)" if rig.rapid else ""), flush=True)
+    print(f"\n== {day}: {label}" + (" (+ Rapid EOD 25K)" if rig.rapid else "") + (" (+ Rapid EOD 50K #2)" if rig.rapid2 else ""),
+          flush=True)
     pc = build_pc(rig, day, F)
     body = pc["body"]
     state_path = os.path.join(rig.data, "live_state.json")
@@ -510,14 +543,15 @@ def run_day(rig, day, label, F: Findings, quick=False, restart_at=None, kill_at=
     F.check(f"{day} LiveBot started on the ninjatrader adapter", r.get("ok"), r)
     L = lanes(bot)
     want_lanes = {"Zlarior 50K (main)", "Zlarior 25K #2 (b25k_2)", "ATLAS funded 25K (B)"} | (
-        {"Rapid 25K LIT lane", "Rapid 25K ATLAS lane"} if rig.rapid else set())
+        {"Rapid 25K LIT lane", "Rapid 25K ATLAS lane"} if rig.rapid else set()) | (
+        {"Rapid 50K LIT lane", "Rapid 50K ATLAS lane"} if rig.rapid2 else set())
     names = {k: getattr(ad, "account", None) for k, (_o, ad) in L.items()}
     dis = {k: getattr(ad, "disabled", None) for k, (_o, ad) in L.items() if getattr(ad, "disabled", None)}
     probs = {k: getattr(o, "problem", None) for k, (o, _a) in L.items() if getattr(o, "problem", None)}
     F.check(f"{day} every account routed, enabled (armed + phrase + NINJATRADER_LIVE + allowlist), no problem",
             set(L) == want_lanes and not dis and not probs, {"lanes": sorted(L), "disabled": dis, "problems": probs})
     exp = {"Zlarior 50K (main)": N50, "Zlarior 25K #2 (b25k_2)": N25, "ATLAS funded 25K (B)": NBF,
-           "Rapid 25K LIT lane": NR, "Rapid 25K ATLAS lane": NR}
+           "Rapid 25K LIT lane": NR, "Rapid 25K ATLAS lane": NR, "Rapid 50K LIT lane": NR2, "Rapid 50K ATLAS lane": NR2}
     F.check(f"{day} each lane on its own NinjaTrader Name (the 25K #2 eval is never the funded 25K; nothing on ATLAS's locked eval)",
             all(names.get(k) == exp[k] for k in L) and NB_EVAL not in names.values(), names)
     tags = {k: (getattr(ad, "cfg", {}) or {}).get("nt_file_tag", "") for k, (_o, ad) in L.items()}
@@ -531,7 +565,8 @@ def run_day(rig, day, label, F: Findings, quick=False, restart_at=None, kill_at=
     halt = C.early_close(day)
     flat_mod = C.flat_cut(day, 955)
     t_open_lane, nt_sizes, flattened = {}, [], False
-    rapid_two = []
+    rapid_two, rapid2_two = [], []
+    pl_first = None                                  # the first poll MFFU's 2% price-limit rule blocked funded accounts
     for t in polls:
         rig.hold = {a: z for a, (f, z) in (hold or {}).items() if t >= f}
         rig.walk(t - 3 - 60)                         # the 1m bar that just closed trades through NinjaTrader
@@ -554,6 +589,9 @@ def run_day(rig, day, label, F: Findings, quick=False, restart_at=None, kill_at=
             two = rapid_both_open(bot)
             if two:
                 rapid_two.append((hm(t), two))
+            two2 = rapid_both_open(bot, "rapid2") if rig.rapid2 else None
+            if two2:
+                rapid2_two.append((hm(t), two2))
         mod = dt.datetime.fromtimestamp(t, ET).hour * 60 + dt.datetime.fromtimestamp(t, ET).minute
         if pos and (mod >= flat_mod and mod < 17 * 60):
             flat_by.setdefault("late", []).append((hm(t), dict(pos)))
@@ -568,6 +606,10 @@ def run_day(rig, day, label, F: Findings, quick=False, restart_at=None, kill_at=
         if restart_at and t >= restart_at and not getattr(bot, "_rh_restarted", False):
             bot = restart(rig, bot, body, state_path, day, F)
             bot._rh_restarted = True
+        if pl_at and t >= pl_at and not PL._STICKY:          # the forced crash reading (scenario "pricelimit")
+            PL._STICKY[PL.trading_day(t)] = {"pct": -0.0481, "ref": 25000.0, "t": int(t), "forced": True}
+        if PL._STICKY and pl_first is None:
+            pl_first = min(int(v["t"]) for v in PL._STICKY.values())
         if kill_at and t >= kill_at and not killed:
             killed = True
             kill_check(rig, bot, day, F)
@@ -587,6 +629,20 @@ def run_day(rig, day, label, F: Findings, quick=False, restart_at=None, kill_at=
     if flattened:
         after = [z for z in entries_of(bot) if z[1] > getattr(bot, "_rh_flat_t", 0)]
         F.check(f"{day} after the FLATTEN: no new entry on any account for the rest of the day", not after, after)
+    if pl_first is not None:                        # MFFU's 2% price-limit rule hit today (forced or real)
+        L2 = lanes(bot)
+        fund = [k for k in FUNDED_LANES if k in L2]
+        after = [z for z in entries_of(bot) if z[0] in fund and z[1] >= pl_first]
+        F.check(f"{day} price-limit rule from {hm(pl_first)}: no new entry on a FUNDED account ({', '.join(fund)})", not after, after)
+        late = [(k, o.open_t) for k in fund for o, _a in [L2[k]] if getattr(o, "open_t", None) is not None]
+        F.check(f"{day} price-limit rule: every FUNDED account flat by the end of the day's polls", not late, late)
+        ex = [r for k in fund for r in (getattr(L2[k][0], "ledger", None) or []) if r.get("side") == "exit" and r.get("reason") == "PRICE LIMIT"]
+        print(f"    price limit from {hm(pl_first)}: {len(ex)} funded position(s) closed with reason PRICE LIMIT")
+        if pl_at:
+            F.check(f"{day} price-limit rule: the funded position open at {hm(pl_at)} was closed for it (reason PRICE LIMIT)",
+                    len(ex) >= 1, ex[:2])
+            ev = [z for z in entries_of(bot) if z[0] not in fund and z[1] >= pl_first]
+            F.check(f"{day} price-limit rule: the EVAL accounts keep trading (MFFU names funded accounts only)", len(ev) >= 1, ev)
     sizes = size_checks(bot, day, F)
     rapid_day = None
     if rig.rapid:
@@ -595,6 +651,12 @@ def run_day(rig, day, label, F: Findings, quick=False, restart_at=None, kill_at=
         rapid_day = round(sum(p for bk, _t, p, _l in closes_of(bot) if bk == "rapid"), 2)
         F.check(f"{day} Rapid 25K: the day's $ (both lanes) ${rapid_day:,.2f} stays under MFFU's 30% best day "
                 f"(${RAPID_BEST_DAY:,.0f} = 30% x $1,500)", rapid_day <= RAPID_BEST_DAY + 1e-9, rapid_day)
+    if rig.rapid2:
+        F.check(f"{day} Rapid 50K #2: one position at a time on its account", not rapid2_two, rapid2_two[:5])
+        r2 = round(sum(p for bk, _t, p, _l in closes_of(bot) if bk == "rapid2"), 2)
+        F.check(f"{day} Rapid 50K #2: the day's $ ${r2:,.2f} stays under its 30% best day (${RAPID2_BEST_DAY:,.0f})",
+                r2 <= RAPID2_BEST_DAY + 1e-9, r2)
+        F.check(f"{day} Rapid 50K #2: the day stays above its -$1,000 soft day (-$1,000 incl. slippage)", r2 >= -1000.0 - 1e-9, r2)
     F.check(f"{day} the ntfy status payload stays under {MAX_STATUS_BYTES:,} bytes (largest {max(nt_sizes or [(0, 0)])[0]:,} of "
             f"{len(nt_sizes)} samples, mid-trade included)", nt_sizes and max(nt_sizes)[0] < MAX_STATUS_BYTES, nt_sizes[-5:])
     life = life_checks(rig, bot, day, F, skip=("lit",) if passed50 else ())
@@ -641,10 +703,13 @@ def life_checks(rig, bot, day, F, skip=()):
     want = {"lit": ("eval", "passed"), "x:b25k_2": ("eval", "passed"), "atlas": ("funded", "payout_ready")}
     if rig.rapid:
         want["rapid"] = ("eval", "passed")
+    if getattr(rig, "rapid2", False):
+        want["rapid2"] = ("eval", "passed")      # the 2nd Rapid's own lifecycle row (never the 1st's)
     bad = {k: rows.get(k) for k, ok in want.items() if k not in skip and (rows.get(k) or {}).get("stage") not in ok}
     # a pass is only right when that account's own book reached its target
     cl = closes_of(bot)
-    tgt = {"lit": ("50k", BAL50, 53000.0), "x:b25k_2": ("25k2", 25000.0, 26500.0), "rapid": ("rapid", 25000.0, 26500.0)}
+    tgt = {"lit": ("50k", BAL50, 53000.0), "x:b25k_2": ("25k2", 25000.0, 26500.0), "rapid": ("rapid", 25000.0, 26500.0),
+           "rapid2": ("rapid2", 50000.0, 53000.0)}
     for k, (b, bal0, tg) in tgt.items():
         if k not in skip and (rows.get(k) or {}).get("stage") == "passed" and bal0 + sum(p for bk_, _t, p, _l in cl if bk_ == b) < tg - 1e-6:
             bad[k] = {"passed but the book is under the target": rows[k]}
@@ -760,6 +825,7 @@ def load_frames(days):
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--rapid", action="store_true", help="add the Rapid EOD 25K (LIT + ATLAS lanes)")
+    ap.add_argument("--rapid2", action="store_true", help="+ a Rapid EOD 50K as Rapid #2 (implies --rapid; day-multirapid)")
     ap.add_argument("--days", default="", help="comma list of yyyy-mm-dd (default: the 5 rehearsal days; any other day "
                                                "with bars in data/ is replayed too, e.g. the newest week)")
     ap.add_argument("--quick", action="store_true", help="polls every minute only around trades / closes, else every 5 min")
@@ -781,7 +847,7 @@ def main(argv=None) -> int:
     try:
         for i, (d, label, kw) in enumerate(days):
             dtmp = os.path.join(tmp, f"{i:02d}_{d}")
-            rig = Rig(dtmp, frames, rapid=a.rapid)
+            rig = Rig(dtmp, frames, rapid=a.rapid, rapid2=a.rapid2)
             os.environ.update({"NINJATRADER_LIVE": "1", "NINJATRADER_FOLDER": rig.folder,
                                "LE_BOARD_DIR": os.path.join(dtmp, "board"), "LE_INBOX_DIR": os.path.join(dtmp, "inbox"),
                                "LE_LIT_LEARNING": os.path.join(dtmp, "no_learning.json")})

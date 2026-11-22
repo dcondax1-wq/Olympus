@@ -1,0 +1,62 @@
+{
+ "built": "2026-11-19T11:46:28+00:00",
+ "board": {
+  "v": 1,
+  "kind": "le-board",
+  "t": 1795088790,
+  "data_t": null,
+  "where": "cloud",
+  "today": "2026-11-19",
+  "lit": {
+   "id": "lit",
+   "name": "Zlarior",
+   "plan": "MFFU Builder 50K",
+   "badge": "PAPER",
+   "source": "cloud paper",
+   "balance": 49900.0,
+   "floor": 48000.0,
+   "room": 1900.0,
+   "mll": 2000.0,
+   "to_target": 3100.0,
+   "target_balance": 53000.0,
+   "profit": -100.0,
+   "today_pnl": 0.0,
+   "week_pnl": 0.0,
+   "status": "open",
+   "waiting": "New session: waiting for the first bars of 2026-10-16. Entries from 02:00 ET.",
+   "window": {
+    "open": true,
+    "open_t": 1795071600,
+    "close_t": 1795120200,
+    "text": "entry window open until 15:30 ET",
+    "hours": "02:00-15:30 ET"
+   }
+  },
+  "atlas": {
+   "id": "atlas",
+   "name": "ATLAS",
+   "plan": "MFFU Builder 25K",
+   "badge": null,
+   "configured": false,
+   "source": "none",
+   "balance": null,
+   "floor": null,
+   "room": null,
+   "mll": 1000.0,
+   "to_target": null,
+   "target_balance": 26500.0,
+   "profit": null,
+   "today_pnl": null,
+   "status": "not set up",
+   "waiting": "All 3 members are outside their hours. Next: EMA at Thu 03:00 ET.",
+   "window": {
+    "open": true,
+    "open_t": 1795075200,
+    "close_t": 1795098600,
+    "text": "entry window open until 09:30 ET",
+    "who": "EMA",
+    "hours": null
+   }
+  }
+ }
+}

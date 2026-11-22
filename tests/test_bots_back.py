@@ -226,12 +226,15 @@ def reporter():
         h2 = FakeHTTP()
         b.run(h2, now + 900)
         k2 = [json.loads(c["body"]).get("kind") for c in h2.posts(feed["topic"])]
+        h25 = FakeHTTP()
+        b.run(h25, now + 1800)
+        k25 = [json.loads(c["body"]).get("kind") for c in h25.posts(feed["topic"])]
         h3 = FakeHTTP()
-        b.run(h3, now + 1800)
+        b.run(h3, now + 2700)
         k3 = [json.loads(c["body"]).get("kind") for c in h3.posts(feed["topic"])]
-        check("status: the ext goes every 2nd run (29 min) when its news is the same; the core every run, carrying xt",
-              k2 == ["le-live"] and k3[-1] == "le-live" and "le-live-ext" in k3
-              and json.loads(h2.posts(feed["topic"])[-1]["body"]).get("xt") == now, (k2, k3))
+        check("status: the ext goes every 3rd run (44 min, EXT_EVERY_S; was every 2nd until the 2026-11-20 ntfy cap) when its news is the same; the core every run, carrying xt",
+              k2 == ["le-live"] and k25 == ["le-live"] and k3[-1] == "le-live" and "le-live-ext" in k3
+              and json.loads(h2.posts(feed["topic"])[-1]["body"]).get("xt") == now, (k2, k25, k3))
         shutil.rmtree(b.work)
         shutil.move(b.work + ".keep", b.work)
         check("first run with trades: what is there is only recorded (no trade push)", not [c for c in h.posts(cfg["topic"]) if "trade" in c["h"].get("Title", "")],
@@ -592,6 +595,14 @@ const fake = async (u) => { calls.push(u); if (u.endsWith('status_feed.json')) r
 out.fetched = (await F.fetchLatest({ fetch: fake })) ? (await F.fetchLatest({ fetch: fake })).t : null;
 out.fetchCalls = calls.slice(0, 3);
 out.fetchFail = await F.fetchLatest({ fetch: async () => { throw new Error('offline'); } });
+const calls2 = [];
+const fake2 = async (u) => { calls2.push(u); if (u.endsWith('status_feed.json')) return { ok: true, json: async () => ({ ntfy: 'https://ntfy.sh', topic: 'olympus-nq-status-0123456789abcdef' }) };
+  if (u.includes('since=70m')) return { ok: true, text: async () => '' }; if (u.includes('since=latest')) return { ok: true, text: async () => line(ext({ brd: {} }, 0, rt), 1) };
+  return { ok: true, text: async () => nd }; };
+const q = await F.fetchLatest({ fetch: fake2 });
+out.mv = [F.mffuView({ kind: 'funded', size: '25K', balance: 25401.38, start: 25000, room: 1401.38 }), F.mffuView({ kind: 'funded', plan: 'MFFU Builder 25K', balance: 401.38 }),
+  F.mffuView({ kind: 'eval', size: '50K', balance: 49192.78, start: 50000, room: 1024.58 }), F.mffuView({ kind: 'funded', size: '50K', balance: 52300, start: 50000 }), F.mffuView(null)];
+out.quiet = { t: q ? q.t : null, last: calls2[calls2.length - 1] };
 console.log(JSON.stringify(out));
 """
 
@@ -616,9 +627,11 @@ def node_runs(node):
         lite = json.load(open(lite_path, encoding="utf-8"))
         check("parseLatest: the newest PC status wins, junk / other kinds / t null are ignored", o["parsed"]["t"] == lite["t"] and o["parsed"]["board"]["lit"]["room"] == 2000
               and o["parsedEmpty"] is None, o["parsed"].get("t"))
-        check("feedUrls: a 70-minute window (core + ext) then since=latest (the core alone); http / odd topics refused",
+        check("feedUrls: a 70-minute window (core + ext), since=latest (the core alone), then the last 3 hours, then 12 hours (a quiet PC's last real post, day-archive); http / odd topics refused",
               o["urls"] == ["https://ntfy.sh/olympus-nq-status-0123456789abcdef/json?poll=1&since=70m",
-                            "https://ntfy.sh/olympus-nq-status-0123456789abcdef/json?poll=1&since=latest"] and o["badUrls"] == [[], [], []], o["urls"])
+                            "https://ntfy.sh/olympus-nq-status-0123456789abcdef/json?poll=1&since=latest",
+                            "https://ntfy.sh/olympus-nq-status-0123456789abcdef/json?poll=1&since=3h",
+                            "https://ntfy.sh/olympus-nq-status-0123456789abcdef/json?poll=1&since=12h"] and o["badUrls"] == [[], [], []], o["urls"])
         sp = o["split"]
         check("split merge: the newest ext per part laid into the core (brd, glance -> pc.glance, kalshi_rewards, learn); per part the "
               "newest ext wins whole (an older part 0 is not mixed in, so its mf is not used); an ext over 2 h older is ignored; "
@@ -633,6 +646,16 @@ def node_runs(node):
               o["canon"]["room"] == 2000 and o["canon"]["t"] == lite["t"] and o["canon"]["age"] == 120 and "2 minutes" in o["canon"]["line"], o["canon"])
         check("an older PC status never replaces newer site numbers", o["notOlder"] is True and o["mergeSiteNewer"] == 7)
         check("toLive keeps the site's board sections for board.js", o["toLive"] == {"levels": [1, 2]})
+        mv = o["mv"]
+        check("mffuView: a FUNDED sim the way MFFU shows it (starts at $0): ATLAS 25,401 -> balance $401, floor -$1,000, earliest $250 at $1,350 ($949), "
+              "goal $1,000 at $2,100 ($800 to you, $1,699 to go); the same from a balance already in MFFU terms; an EVAL keeps $49,193 and no payout; "
+              "a 50K funded at +$2,300 is past its $2,600 earliest? no ($300 to go), goal $2,000 at $4,100",
+              mv[0]["balance"] == 401.38 and mv[0]["floor"] == -1000 and mv[0]["earliest"] == {"ask": 250, "at": 1350, "toYou": 200, "need": 949, "ready": False}
+              and mv[0]["goal"] == {"ask": 1000, "at": 2100, "toYou": 800, "need": 1699, "ready": False} and mv[1] == mv[0]
+              and mv[2]["funded"] is False and mv[2]["balance"] == 49192.78 and mv[2]["goal"] is None
+              and mv[3]["balance"] == 2300 and mv[3]["earliest"]["need"] == 300 and mv[3]["goal"]["at"] == 4100 and mv[4] is None, mv)
+        check("fetchLatest, PC quiet for over 70 minutes (no post in the window, 'latest' is only an ext part): the last 12 hours give its last real post (day-archive)",
+              o["quiet"]["t"] is not None and "since=3h" in o["quiet"]["last"], o["quiet"])
         check("fetchLatest: status_feed.json, then ntfy (the 70-minute window refused -> since=latest); offline -> null",
               o["fetched"] == lite["t"] and o["fetchCalls"][0] == "status_feed.json" and "since=70m" in o["fetchCalls"][1] and "since=latest" in o["fetchCalls"][2]
               and o["fetchFail"] is None, o)

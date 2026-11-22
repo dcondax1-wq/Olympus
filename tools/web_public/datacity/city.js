@@ -26,12 +26,12 @@ import { $, el, clsRank, settings, money, num, pct } from './util.js';
 import { decode, loadPlugins, labelOf } from './data.js';
 import { walker } from './walk.js';
 import { layout } from './layout.js?v=dcgfx3';
-import { CityScene } from './scene.js?v=dcgfx7';
+import { CityScene } from './scene.js?v=dcgfx10';
 import { Orbit } from './controls.js';
 import { Tour, shots } from './tour.js';
 import { MODES, flight } from './fly.js';
 import { Minimap } from './minimap.js?v=dcgfx3';
-import { etClock, sunOf, weatherOf } from './sky.js';
+import { etClock, sunOf, weatherOf } from './sky.js?v=dcgfx15';
 import { applyTheme, watchTheme } from './theme.js';
 import * as UI from './ui.js';
 import * as PN from './panels.js';
@@ -646,6 +646,11 @@ class App {
     requestAnimationFrame(frame);
     this.route();
     if (!location.hash && !P.has('nonow')) this.showView('now');           // first open: the money question first (?nonow=1 skips it)
+    // olympus2: the first automatic open is a small peek; a tap or a scroll opens it
+    if (!location.hash && !P.has('nonow') && innerWidth < 700) {
+      const sh = document.getElementById('sheet');
+      if (sh) { sh.classList.add('peek'); const full = () => sh.classList.remove('peek'); sh.addEventListener('pointerdown', full, { once: true }); sh.addEventListener('wheel', full, { once: true, passive: true }); }
+    }
     this.checkGold();
   }
 }
@@ -713,6 +718,8 @@ function watchContextLoss(canvas, app, fallback) {
     event.preventDefault();
     failCity(app, fallback, new Error('WebGL context lost'));
   });
+  // olympus2: iOS gives a lost GPU context back: build the city again
+  canvas.addEventListener('webglcontextrestored', () => { try { location.reload(); } catch (e) { /* the readable view stays */ } });
 }
 
 /** A usable, read-only data view when WebGL or the render core cannot start. */

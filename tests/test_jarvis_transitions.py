@@ -80,7 +80,7 @@ def test_static():
     check("a. one canvas, reused, released after (1 x 1) and a scratch canvas that never joins the page",
           "canvas.width = canvas.height = 1" in js and "scratch.width = scratch.height = 1" in js and js.count("createElement('canvas')") == 2)
     check("a. index.html loads transitions.js after portal.js and tells it the app we leave; show() still plays the portal sound",
-          html.index("./portal.js?v=p2") < html.index("./transitions.js?v=t6") and "{ from: fr ? { id: fr.id, color: fr.accent } : null }" in html and "olySfx('portal'); window.jarvisPortal.jump" in html)
+          html.index("./portal.js?v=p2") < html.index("./transitions.js?v=t7") and "{ from: fr ? { id: fr.id, color: fr.accent } : null }" in html and "olySfx('portal'); window.jarvisPortal.jump" in html)
     check("a. portal.js hands the jump to transitions.js (the old warp stays as the fallback) and keeps no GL context when it is here",
           "window.jarvisTransitions" in portal and "T.play(a," in portal and "!window.jarvisTransitions) setup()" in portal)
 
@@ -281,10 +281,11 @@ def test_flow(br, origin):
     check("f. ... it ends by itself and the portal state agrees (ms set, not active)", p.evaluate("() => !window.__jarvisPortal.active && window.__jarvisPortal.ms > 400 && !document.querySelector('.jportal')"))
     p.evaluate("() => document.getElementById('nxOrb').click()")
     p.wait_for_timeout(600)
-    p.evaluate("() => document.querySelector('.nx-qb[data-nx=\"mind\"], .nx-card[data-nx=\"mind\"]').click()")
+    # Pantheon (columns): Mind left the switcher on 2026-11-20 (olympus/doors.js RETIRED, the owner's "funky" clean-up); Journal is 'off' on this test site
+    p.evaluate("() => document.querySelector('.nx-qb[data-nx=\"pantheon\"], .nx-card[data-nx=\"pantheon\"]').click()")
     s = p.evaluate("() => ({ t: Object.assign({}, window.__jarvisTransitions), over: !!document.querySelector('.jportal.jtrans') })")
-    check("f. switching from inside Oracle (the switcher over the app): Mind's constellation plays and knows it came from Oracle",
-          s["t"]["id"] == "mind" and s["t"]["kind"] == "constellation" and s["t"]["from"] == "oracle" and s["over"] and s["t"]["runs"] >= 2, s)
+    check("f. switching from inside Oracle (the switcher over the app): Pantheon's columns play and know they came from Oracle",
+          s["t"]["id"] == "pantheon" and s["t"]["kind"] == "columns" and s["t"]["from"] == "oracle" and s["over"] and s["t"]["runs"] >= 2, s)
     p.wait_for_function("() => !window.__jarvisTransitions.active", polling=100, timeout=6000)
     for nxt in ("tyche", "prometheus"):
         p.evaluate("() => document.getElementById('nxOrb').click()")

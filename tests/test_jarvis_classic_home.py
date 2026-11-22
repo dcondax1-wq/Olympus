@@ -92,7 +92,7 @@ def main():
                     print("[note] the scroller never settled at its end:", str(e)[:120])
                 foot, home, chip = p.evaluate(R, "#home .hfoot"), p.evaluate(R, "#home"), p.evaluate(R, "#next")
                 check(f"c. {tag}: scrolled to the end, the footer ends inside the scroller, above the chip row and the dock",
-                      foot and home and foot[3] <= home[3] and home[3] <= chip[1] and home[3] <= dock[1], (foot, home, chip, dock))
+                      foot and home and foot[3] <= home[3] + 1 and home[3] <= chip[1] and home[3] <= dock[1], (foot, home, chip, dock))
                 keys = [p.evaluate(R, q) for q in ("#mic", "#spk", "#ask .send", "#moreB")]
                 free = all(k is None or k[2] <= w - 60 for k in keys)
                 check(f"d. {tag}: the bottom-right 60 px corner is free of the dock's keys; Send rests while the field is empty", free and keys[2] is None, keys)

@@ -34,7 +34,7 @@ function fixture(body = fallbackSource, kitPresent = true) {
     D: {},
   };
   const sandbox = { document, O, state, el: node, $: () => node('loading'),
-    labelOf: (b) => b.lab, money: (n) => '$' + n, Number, String, Object };
+    labelOf: (b) => b.lab, money: (n) => '$' + n, Number, String, Object, NEON: true };   // NEON: city.js's look (look-mode.js), neon night by default
   const run = vm.runInNewContext('(' + body + ')', sandbox);
   run(model, false, new Error('WebGL unavailable'));
   return { document, events, state, veil, model };

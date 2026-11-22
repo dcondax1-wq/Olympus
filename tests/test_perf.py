@@ -37,6 +37,14 @@ def ts(y, mo, d, h, mi=0):
     return int(dt.datetime(y, mo, d, h, mi, tzinfo=ET).timestamp())
 
 
+def _recent_weekday():
+    """(y, m, d) of the last weekday before today (ET): inside engine/uptime's 30-day view whatever day the suite runs."""
+    d = dt.datetime.now(ET).date() - dt.timedelta(days=1)
+    while d.weekday() >= 5:
+        d -= dt.timedelta(days=1)
+    return d.year, d.month, d.day
+
+
 # ------------------------------------------------------------------------------------------------ 6. expected range
 def band_checks():
     q = list(range(1, 100))
@@ -255,7 +263,9 @@ def view_checks():
           and v["exec"] is None and v["status"]["text"] == "No status samples yet" and v["robust"]["card"]["headline"], {k: type(x).__name__ for k, x in v.items()})
     st = {"ledger": {str(ts(2026, 10, 20, 3, 5)): {"day": "2026-10-20", "R": 2.1, "usd": 1200.0, "exit": "TARGET"}},
           "pc": {"exec": {"curve": {"days": [["2026-10-20", 1000.0, 980.0, 1000.0, 980.0, -20.0, 0.0, 0.0, 0.0]], "matched": 1, "missed": 0, "extra": 0}}},
-          "uptime": UP.record(None, {"cloud": True, "surface": True}, ts(2026, 10, 20, 9, 0), 1800)}
+          # the uptime sample sits on a recent weekday: engine/uptime.view shows the last KEEP_DAYS (30) days from now, so a fixed
+          # date ages out of the window (2026-10-20 did on 2026-11-20)
+          "uptime": UP.record(None, {"cloud": True, "surface": True}, ts(*_recent_weekday(), 9, 0), 1800)}
     from tools import build_web_dashboard as BW
     tmp = tempfile.mkdtemp(prefix="le_perf_bw_")
     try:

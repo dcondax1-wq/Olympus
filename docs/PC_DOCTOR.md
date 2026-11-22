@@ -14,6 +14,7 @@ The same card on the PC's own bot page: `http://127.0.0.1:8766/api/pc/doctor?tex
 | TOPIC | your private alert topic exists and had its test push | `python -X utf8 tools/pc_report.py --setup` then `--test` |
 | NTFY | ntfy.sh answers; the site's status channel got a report in 3 hours | open https://ntfy.sh on the PC |
 | UPDATE | auto-update from the backup repo is connected | `python -X utf8 -m engine.autoupdate --connect` (bot server stopped) |
+| HEAL | (2026-11-20) the self-heal's last run: what it fixed by itself, what it could not (docs/SELF_HEAL.md); shown once it ran | `python -X utf8 tools/pc_doctor.py --heal --apply` |
 
 Most likely cause today (from the code, 2026-11-17): the report task OlympusPCReport is not installed (SETUP_EVERYTHING
 skips the step that installs it when both evals are already armed), and the PC never connected to the backup repo

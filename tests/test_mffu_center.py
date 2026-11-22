@@ -101,9 +101,9 @@ def ndjson(core, exts) -> str:
 def part_a():
     h, js, cj = (AK.read(os.path.join(BIZ, f)) for f in ("mffu.html", "mffu.js", "mffucenter.js"))
     order = re.findall(r'<script src="([^"?]+)', h)
-    want = ["../olympus/themes.js", "../olympus/a11y.js", "../pc_feed.js", "payoutcoach.js", "mffumodel.js", "mffucenter.js", "../edge_chip.js", "mffu.js"]
+    want = ["../olympus/themes.js", "../olympus/a11y.js", "../pc_feed.js", "payoutcoach.js", "mffumodel.js", "mffucenter.js", "../edge_chip.js", "../nqdeep.js", "mffu.js"]   # nqdeep: the first-payout range (night-nqdash2)
     check("a. mffu.html: AGORA look, one h1, a polite status line, back to Business, the scripts in order (feed, coach, model, center, edge chip, page)",
-          'data-theme="agora"' in h and "viewport-fit=cover" in h and h.count("<h1") == 1 and 'aria-live="polite"' in h and 'href="./"' in h and order == want, order)
+          'data-theme="agora"' in h and "viewport-fit=cover" in h and h.count("<h1") == 1 and 'aria-live="polite"' in h and 'href="./"' in h and order[:len(want)] == want and set(order[len(want):]) <= {"../olympus/nqfx.js", "../trading/panelfx.js"}, order)   # + the effects after the page (owner 2026-11-20)
     bad = r"\.innerHTML|outerHTML|insertAdjacentHTML|document\.write|\beval\s*\(|new Function|https?://|method:|XMLHttpRequest|WebSocket|sendBeacon|document\.cookie|localStorage|sessionStorage"
     check("a. mffu.js / mffucenter.js: textContent only, no markup from data, no outside address, GET only, no storage; the center has no fetch at all",
           not re.search(bad, js + cj) and "textContent" in js and "fetch(" not in cj, re.findall(bad, js + cj)[:4])

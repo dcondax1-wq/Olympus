@@ -11,11 +11,14 @@ button { cursor: pointer; }
 [hidden] { display: none !important; }
 #app { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding: calc(var(--st) + 14px) calc(var(--sr) + 16px) calc(176px + var(--sb)) calc(var(--sl) + 16px); }
 html.framed #app { padding-top: 12px; }
+/* alone (not framed in Jarvis) the corner holds only the 44 px OLYMPUS seal (18 px in): 96 px + the home bar clears it; the 176 px seat (Jarvis's
+   80 x 160 orb) stays for the framed page. Owner 2026-11-20: the empty band at the end looked "funky". */
+html:not(.framed) #app { padding-bottom: calc(132px + var(--sb)); }   /* clears the Ask button (its top is 162 px above the bottom with the home bar): QUALITY 2026-11-20, phone_fit 
 .top { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 52px; }
 .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .brand img { width: 44px; height: 44px; border-radius: 12px; flex: none; box-shadow: var(--ag-shadow); }
 .brand h1 { margin: 0; }
-.brand .sub { margin: 6px 0 0; font-size: 13px; color: var(--ag-soft); }
+.brand .sub { margin: 6px 0 0; font-size: 0.9375rem; color: var(--ag-soft); }
 .tags { display: flex; gap: 6px; align-items: center; flex: none; }
 .tag { padding: 5px 10px; border-radius: 999px; font: 700 12px/1 var(--ag-sans); letter-spacing: .02em; border: 1px solid var(--ag-line); color: var(--ag-soft); }
 .tag.demo { color: var(--oly-th-n3, #1b1610); background: var(--ag-sun); border-color: transparent; }
@@ -23,7 +26,7 @@ html.framed #app { padding-top: 12px; }
 .card > h2, .row h2 { margin: 0; }
 .row { display: flex; justify-content: space-between; align-items: center; gap: 8px 10px; flex-wrap: wrap; }
 .lead { margin: 0; font-size: 15px; color: var(--ag-soft); } .lead.small { font-size: 14px; }
-.note { margin: 0; font-size: 13px; color: var(--ag-muted); overflow-wrap: anywhere; }
+.note { margin: 0; font-size: 0.9375rem; color: var(--ag-muted); overflow-wrap: anywhere; }
 .pos { color: var(--ag-olive-text, var(--oly-th-g8, #a0ac6e)); } .neg { color: var(--ag-terra-text, var(--oly-th-r10, #e08a6b)); }
 .kv { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, max-content); gap: 6px 12px; margin: 0; font-size: 14px; }
 .kv dt { color: var(--ag-soft); } .kv dd { margin: 0; text-align: right; font-family: var(--ag-num); font-variant-numeric: tabular-nums; font-weight: 600; }
@@ -39,13 +42,22 @@ html.framed #app { padding-top: 12px; }
 .plain { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-size: 14px; color: var(--ag-soft); } .plain b { color: var(--ag-text); }
 .sub3 { margin: 4px 0 0; font: 600 15px var(--ag-serif); color: var(--ag-text); }
 
+/* no layout jump (night-polish 2026-11-20; CLS was 0.08-0.23, "1. Today" moved down 130-300 px when the banner and the ZEUS edge chip filled in):
+   until the first draw (html.tr-drawn, trading.js) the status line and the banner hold their usual height and the cards under them wait unseen (the
+   kit's veil covers the page until then anyway), so they appear where they stay; the ZEUS edge chip keeps its place until it has drawn or given
+   up (html.tr-edge), even while edge_chip.js holds it [hidden] waiting for its data. No browser storage: the same heights on every visit. */
+html:not(.tr-drawn) #status { min-height: 57px; }
+html:not(.tr-drawn) #banner { min-height: 196px; box-sizing: border-box; }
+html:not(.tr-drawn) #zeusEdge, html:not(.tr-drawn) #todayCard, html:not(.tr-drawn) #todayCard ~ * { visibility: hidden; }
+html:not(.tr-edge) #zeusEdge, html:not(.tr-edge) #zeusEdge[hidden] { display: block !important; min-height: 93px; margin: 8px 0 12px; }
+@media (max-width: 359px) { html:not(.tr-edge) #zeusEdge, html:not(.tr-edge) #zeusEdge[hidden] { min-height: 112px; } }   /* three lines at 320 px */
 /* the banner: last live data */
 .banner { display: grid; gap: 6px; padding: 14px 16px; border-radius: var(--ag-radius, 16px); border: 1px solid var(--oly-th-a3, #6e5424); border-left: 5px solid var(--ag-sun); background: linear-gradient(180deg, var(--oly-th-n5, #2b2416), var(--oly-th-n4, #211c13)); box-shadow: var(--ag-shadow); }
 .banner[data-level="bad"] { border-color: var(--oly-th-r3, #6e3424); border-left-color: var(--ag-terra); }
 .banner[data-level="ok"] { border-color: var(--oly-th-n10, #4c5530); border-left-color: var(--ag-olive); }
 .banner p { margin: 0; }
 .btitle { font: 700 clamp(18px, 5.4vw, 22px)/1.25 var(--ag-serif); color: var(--ag-text); }
-.btext { font-size: 14px; color: var(--ag-soft); }
+.btext { font-size: 0.9375rem; color: var(--ag-soft); }
 
 /* 1. today */
 .clock { margin: 0; font: 600 16px/1.35 var(--ag-serif); color: var(--ag-text); }
@@ -66,6 +78,7 @@ html.framed #app { padding-top: 12px; }
 
 /* 2. the calendar (Mon-Fri: 5 columns stay 44 px wide at 320 px) */
 .calnav { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: 8px; }
+.calnav .btn.icon { min-height: 44px; height: 44px; }   /* 2026-11-20 landing: a kit FX rule squeezed the month arrows to 28 px tall */
 .calmonth { margin: 0; text-align: center; font: 600 18px var(--ag-serif); }
 .calhead, .calrow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
 .calhead span { text-align: center; font: 600 12px var(--ag-sans); color: var(--ag-muted); }
@@ -95,7 +108,7 @@ a.tlink { cursor: pointer; }
 .st thead th { border-top: 0; color: var(--ag-muted); font-weight: 600; }
 
 /* 5. rules */
-.verdict { margin: 0; font-size: 14px; color: var(--ag-soft); padding-left: 10px; border-left: 3px solid var(--ag-line); }
+.verdict { margin: 0; font-size: 0.9375rem; color: var(--ag-soft); padding-left: 10px; border-left: 3px solid var(--ag-line); }
 .verdict[data-ok="true"] { border-left-color: var(--up); } .verdict[data-ok="false"] { border-left-color: var(--dn); }
 
 /* 6. bars */
@@ -140,6 +153,9 @@ html[data-oly-lite="1"] .sheet { animation: none; }
 /* LIVE per account (2026-11-18): the account filter wraps 2 a row; the LIVE table; "replay after tonight's upload" */
 #fAcct { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .st.live th:first-child { width: 32%; }
-.st.live td, .st.live th { font-size: 12px; }
+.st.live td, .st.live th { font-size: 13px; }
 .livestats { margin-bottom: 10px; }
 .later { color: var(--ag-muted); font-style: italic; }
+
+/* a11y 2026-11-20: card notes are sentences the owner reads: 15 px (the kit's .ag-card .note is 13 px) */
+main#app .ag-card .note { font-size: 0.9375rem; }

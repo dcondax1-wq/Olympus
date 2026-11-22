@@ -340,7 +340,7 @@ def _site(tmp, name, with_data):
     shutil.copytree(PAGE, os.path.join(base, "pantheon"))
     os.makedirs(os.path.join(base, "jarvis"))
     for f in ("three.module.min.js", "orbitron.woff2", "rajdhani-400.woff2", "rajdhani-500.woff2", "rajdhani-600.woff2",
-              "rajdhani-700.woff2", "icon-192.png"):
+              "rajdhani-700.woff2", "icon-192.png", "ask.js"):          # ask.js: the kit's Ask Jarvis button (olympus.js)
         if os.path.exists(os.path.join(ROOT, "tools", "web_public", "jarvis", f)):
             shutil.copy(os.path.join(ROOT, "tools", "web_public", "jarvis", f), os.path.join(base, "jarvis", f))
     shutil.copytree(os.path.join(ROOT, "tools", "web_public", "olympus"), os.path.join(base, "olympus"))
@@ -544,8 +544,9 @@ def part_i(tmp):
     nt = o["note"]
     check("i. the daily Council note for Jarvis: a title with the date, 3-4 lines, each at most 120 characters, the text is the lines", nt["title"].startswith("Council note") and 3 <= nt["lines"] <= 4 and nt["max"] <= 120 and nt["first"].startswith("Council 2026-") and nt["text"], nt)
     rm = o["remember"]
+    REAL_LABEL = json.loads(open(os.path.join(ROOT, "tools", "web_public", "pantheon", "pantheon.json"), encoding="utf-8").read())["council"]["label"]   # the published verdict (was pinned to MIXED, the Nov 3 build's)
     check("i. this phone remembers the last verdict ('pantheon.last') and the flips ('pantheon.flips', newest first, kept to 12), nothing else; a damaged key is just forgotten",
-          rm[0] is False and rm[1] is True and rm[2] == "MIXED" and rm[3] == "RISK-ON" and rm[4] == 1 and rm[5] is False and rm[6] == 1 and rm[7] == ["pantheon.flips", "pantheon.last"] and o["junk"] is False, rm)
+          rm[0] is False and rm[1] is True and rm[2] == REAL_LABEL and rm[3] == "RISK-ON" and rm[4] == 1 and rm[5] is False and rm[6] == 1 and rm[7] == ["pantheon.flips", "pantheon.last"] and o["junk"] is False, rm)
 
 
 def part_j(tmp):

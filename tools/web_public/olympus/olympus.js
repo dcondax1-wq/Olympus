@@ -1,7 +1,7 @@
 /* OLYMPUS kit (tools/web_public/olympus/, 2026-11-03; docs/OLYMPUS_DESIGN.md): the small shared layer that makes the nine 3D
  * apps one product. A classic script, loaded in <head> BEFORE the app's modules:
- *   <script src="../olympus/themes.js?v=o8"></script>  (the OLYMPUS themes: optional, just before)
- *   <script src="../olympus/olympus.js?v=o13" data-app="mind"></script>
+ *   <script src="../olympus/themes.js?v=o11"></script>  (the OLYMPUS themes: optional, just before)
+ *   <script src="../olympus/olympus.js?v=o24" data-app="mind"></script>
  * It never throws and every app still works when it is missing (each call site reads window.OLYMPUS defensively).
  *
  *   quality  ONE setting for every app and Jarvis: localStorage 'jfx' = ultra | high | low | off (Jarvis's own 3D-effects key,
@@ -36,11 +36,12 @@
   var KEY = 'jfx', LEVELS = ['ultra', 'high', 'low', 'off'];
   // the nine apps: name, glyph and colour exactly as Jarvis's switcher shows them (jarvis/apps.js BUILT_INS)
   var APPS = {
+    widget: ['Widget', '▣', '#c8a24a'],
     why: ['Why', '?', '#c8a24a'],
     board: ['Board', '▤', '#c8a24a'],
-    business: ['Business', 'B', '#c8a24a'],
+    business: ['Money', '$', '#f1c14b'],
     trading: ['Trading', 'T', '#c8a24a'],
-    agency: ['Agency', 'Ε', '#d08c4a'],
+    agency: ['Websites', 'Ε', '#d08c4a'],
     polis: ['Polis', 'Πλ', '#e0b060'],
     herald: ['Herald', 'Η', '#c8a24a'],
     symposium: ['Symposium', 'Σ', '#d9b25a'],
@@ -60,7 +61,7 @@
     hermes: ['Hermes', 'Η', '#f7c948'], prometheus: ['Prometheus', 'Π', '#ff7a1a'], tyche: ['Tyche', 'Τ', '#cf8f7a'],
     pantheon: ['Pantheon', 'Σ', '#f2d68a'], arena: ['Arena', 'Α', '#ffb547'],
     ares: ['Ares', 'Λ', '#c8402e'], plutus: ['Plutus', 'Ρ', '#a9b84f'], athena: ['Athena', '🦉', '#7f8a52'],
-    cities: ['Cities', '◈', '#b88a50'], settings: ['Settings', '⚙', '#a39883'], inbox: ['Inbox', '✉', '#9aa3a8'], ledger: ['Ledger', 'L', '#c2b280'], planner: ['Planner', 'Π', '#7fa7c2'], delphi: ['Delphi', 'Φ', '#e0b060'], pnyx: ['Pnyx', 'Π', '#c8a24a'], hestia: ['Hestia', 'Η', '#c8a24a'], demeter: ['Demeter', 'Δ', '#9aa564'], apollo: ['Apollo', 'Α', '#e0b060'], hera: ['Hera', 'Ω', '#c96a4a'], dionysus: ['Dionysus', 'Σ', '#b77a8a'], clio: ['Clio', 'Κ', '#d8c9a8'], journal: ['Mnemosyne', 'Μ', '#e08a6b'], kalshicity: ['Kalshi City', 'K', '#b5a642'], forum: ['Forum', 'Γ', '#8f9f3c'], labyrinth: ['Labyrinth', 'Ξ', '#a8765a'], argus: ['Argus', 'Α', '#3f8a8a'], nemesis: ['Nemesis', 'Ν', '#b55c66'], chronos: ['Chronos', 'Χ', '#d4a574'], hephaestus: ['Hephaestus', '⚒', '#c7773f'],
+    cities: ['Data City', '◈', '#b88a50'], settings: ['Settings', '⚙', '#a39883'], inbox: ['Inbox', '✉', '#9aa3a8'], ledger: ['Ledger', 'L', '#c2b280'], planner: ['Planner', 'Π', '#7fa7c2'], delphi: ['Delphi', 'Φ', '#e0b060'], pnyx: ['Pnyx', 'Π', '#c8a24a'], hestia: ['Hestia', 'Η', '#c8a24a'], demeter: ['Demeter', 'Δ', '#9aa564'], apollo: ['Apollo', 'Α', '#e0b060'], hera: ['Hera', 'Ω', '#c96a4a'], dionysus: ['Dionysus', 'Σ', '#b77a8a'], clio: ['Clio', 'Κ', '#d8c9a8'], journal: ['Mnemosyne', 'Μ', '#e08a6b'], kalshicity: ['Kalshi City', 'K', '#b5a642'], forum: ['Forum', 'Γ', '#8f9f3c'], labyrinth: ['Labyrinth', 'Ξ', '#a8765a'], argus: ['Argus', 'Α', '#3f8a8a'], nemesis: ['Nemesis', 'Ν', '#b55c66'], chronos: ['Chronos', 'Χ', '#d4a574'], hephaestus: ['Hephaestus', '⚒', '#c7773f'],
     bridge: ['Bridge', 'Β', '#8c7a5a'], observatory: ['Observatory', '◉', '#a9bfd0'], atlas: ['Atlas', '◈', '#efc979'],
   };
   // each app's own CSS tokens -> the theme token they take under any theme but the default (bg = the app's own page colour
@@ -190,7 +191,7 @@
   })();
 
   // ---------------------------------------------------------------- ambience: each app's own quiet bed (olympus/sfx.js, synthesised)
-  var AMBIENT = { why: 'scroll', board: 'scroll', business: 'coins', trading: 'chimes', agency: 'agora', polis: 'agora', herald: 'scroll', symposium: 'chimes', nq: 'chimes', colosseum: 'chimes', pinakes: 'scroll', archive: 'chimes', ergasterion: 'chimes', helios: 'chimes', harmonia: 'coins', pheme: 'chimes', compass: 'chimes', kairos: 'chimes', mint: 'coins', mintcity: 'coins', mercury: 'coins', chrysos: 'coins', sibyl: 'chimes', oikos: 'coins', arbiter: 'coins', stoa: 'chimes', aegis: 'chimes', lyceum: 'chimes', nike: 'chimes', kronos: 'chimes', moirai: 'chimes', epilogue: 'chimes', argo: 'sea', kratos: 'chimes', pythia: 'chimes', gallery: 'chimes', delphi: 'chimes', pnyx: 'coins', observatory: 'space', atlas: 'chimes', hestia: 'smithy', demeter: 'breeze', apollo: 'chimes', hera: 'coins', dionysus: 'sea', clio: 'scroll', journal: 'scroll', datacity: 'city', cities: 'city', kalshicity: 'city', kalshi: 'city', oracle: 'space', mind: 'space', argus: 'space', chronos: 'chimes',
+  var AMBIENT = { widget: 'scroll', why: 'scroll', board: 'scroll', business: 'coins', trading: 'chimes', agency: 'agora', polis: 'agora', herald: 'scroll', symposium: 'chimes', nq: 'chimes', colosseum: 'chimes', pinakes: 'scroll', archive: 'chimes', ergasterion: 'chimes', helios: 'chimes', harmonia: 'coins', pheme: 'chimes', compass: 'chimes', kairos: 'chimes', mint: 'coins', mintcity: 'coins', mercury: 'coins', chrysos: 'coins', sibyl: 'chimes', oikos: 'coins', arbiter: 'coins', stoa: 'chimes', aegis: 'chimes', lyceum: 'chimes', nike: 'chimes', kronos: 'chimes', moirai: 'chimes', epilogue: 'chimes', argo: 'sea', kratos: 'chimes', pythia: 'chimes', gallery: 'chimes', delphi: 'chimes', pnyx: 'coins', observatory: 'space', atlas: 'chimes', hestia: 'smithy', demeter: 'breeze', apollo: 'chimes', hera: 'coins', dionysus: 'sea', clio: 'scroll', journal: 'scroll', datacity: 'city', cities: 'city', kalshicity: 'city', kalshi: 'city', oracle: 'space', mind: 'space', argus: 'space', chronos: 'chimes',
     odeon: 'crowd', arena: 'crowd', forum: 'agora', ares: 'crowd', fates: 'lab', plutus: 'coins', ledger: 'coins', labyrinth: 'lab', pantheon: 'wind', athena: 'scroll',
     hermes: 'breeze', nemesis: 'wind', bridge: 'wind', prometheus: 'smithy', hephaestus: 'smithy', tyche: 'sea', tree: 'forest', zenith: 'space', inbox: 'scroll',
     settings: 'lab', planner: 'chimes' };       // 2026-11-04: every app has a bed of its own (forge hammer-and-hiss, scroll rustle, coin chime, forum murmur, lab hum)
@@ -199,7 +200,8 @@
   function ambKit(cb) {
     var k = window.OLYMPUS_SFX;
     if (k) { cb(k); return; }
-    if (ambLoading || !me || !me.src) return;
+    if (!me || !me.src) return;
+    if (ambLoading) { var t2 = 0, w2 = function () { if (window.OLYMPUS_SFX) cb(window.OLYMPUS_SFX); else if (++t2 < 12) setTimeout(w2, 500); }; w2(); return; }
     ambLoading = true;
     var tries = 0, wait = function () { if (window.OLYMPUS_SFX) { cb(window.OLYMPUS_SFX); } else if (++tries < 12) setTimeout(wait, 500); };
     if (!d.getElementById('olySfxJs')) {
@@ -221,7 +223,13 @@
       });
     } catch (e) { /* the bed is never needed */ }
   }
-  fxOnLoad(function () { setTimeout(ambApply, 400); });
+  // dogfood 2026-11-20: the pages no longer carry their own <script src="../olympus/sfx.js" defer> (31 KB gz fetched during the first paint
+  // on a phone line, for a sound engine that stays silent until the first tap anyway): the kit loads it here, after load, when the phone
+  // is idle (2 s cap), so OLYMPUS.cue(...) and the beds work as before; the first tap still unlocks the audio (sfx.js is there by then).
+  fxOnLoad(function () {
+    var go = function () { try { if (!window.OLYMPUS_SFX && level !== 'off') ambKit(function () {}); } catch (e) { /* no sound */ } setTimeout(ambApply, 50); };
+    if (window.requestIdleCallback) window.requestIdleCallback(go, { timeout: 2000 }); else setTimeout(go, 400);
+  });
   function fxOnLoad(fn) { if (d.readyState === 'complete') fn(); else window.addEventListener('load', fn); }
 
   // ---------------------------------------------------------------- WebGL guard (QA round 6, 2026-11-11: the real-phone pass)
@@ -480,9 +488,15 @@
       box.appendChild(el('i', 'oly-veil-bar'));
       veil.appendChild(box);
       d.body.appendChild(veil);
+      // day-arenas DESIGN 2026-11-20 (PERF: layout shift 0.3-0.85 on a phone line while the cards fill under the veil): the page's content
+      // is laid out but NOT drawn (visibility, not display) until the veil lifts, so a card that grows as its data arrives cannot count as a
+      // shift; the header stays. Nothing changes for the owner: the veil covers the page in that time anyway. lift() (ready, or the 12 s
+      // fallback) shows it.
+      root.setAttribute('data-oly-veil', '1');
+      if (!d.getElementById('olyVeilHide')) { var vs = el('style'); vs.id = 'olyVeilHide'; vs.textContent = 'html[data-oly-veil] main#app > :not(header.top){visibility:hidden}'; (d.head || d.body).appendChild(vs); }
     }
     if (!framed && id && !d.querySelector('.oly-home')) {
-      var a = el('a', 'oly-home'); a.href = '../jarvis/'; a.setAttribute('aria-label', 'Back to Jarvis'); a.title = 'Back to Jarvis';
+      var a = el('a', 'oly-home'); a.href = me && me.src ? new URL('../jarvis/', me.src).href : '../jarvis/';   // from the kit's own URL: right at any folder depth (agency/offers/) a.setAttribute('aria-label', 'Back to Jarvis'); a.title = 'Back to Jarvis';
       a.appendChild(el('span', 'oly-home-o', 'Ο'));
       d.body.appendChild(a);
       seatWatch(a);
@@ -556,6 +570,7 @@
   }
   O.seatClear = function () { var a = d.querySelector('.oly-home'); return a ? !covers(a) : true; };
   function lift() {
+    root.removeAttribute('data-oly-veil');
     if (!veil) return;
     var v = veil; veil = null;
     v.classList.add('out');
@@ -576,7 +591,7 @@
     root.setAttribute('data-oly-state', 'failed');
     O.reason = String(msg || 'it did not load');
     if (veil && veil.parentNode) veil.parentNode.removeChild(veil);
-    veil = null;
+    veil = null; root.removeAttribute('data-oly-veil');
     showErr();
   }
   function showErr() {
@@ -622,6 +637,24 @@
     if (def && appSubs.length) try { window.dispatchEvent(new CustomEvent('olympus:theme-default')); } catch (e) { /* old browsers */ }
   });
   timer = setTimeout(function () { if (state === 'loading') lift(); }, 12000);   // never a wall: it lifts by itself
+  // day-arenas DESIGN 2026-11-20, once after load (never before the first paint):
+  //  1. PERF LEAD_WIRES 2: an app opened from a direct link or its own Home Screen icon registers the ROOT worker (sw.js next to olympus/)
+  //     when the page has none yet, so it opens offline next time; a no-op when Zenith already registered it, and never off https
+  //  2. JARVIS: the Ask Jarvis button (jarvis/ask.js, team JARVIS) on every kit app, with the app id; never on Jarvis itself or in its frame
+  function afterLoad() {
+    var base = me && me.src ? me.src.replace(/olympus\/olympus\.js.*$/, '') : '';
+    try {
+      if (base && 'serviceWorker' in navigator && location.protocol === 'https:' && !navigator.serviceWorker.controller)
+        navigator.serviceWorker.getRegistration(base).then(function (r) { return r || navigator.serviceWorker.register(base + 'sw.js'); }).catch(function () { return null; });
+    } catch (e) { /* no worker on this browser */ }
+    try {
+      if (base && !framed && id !== 'jarvis' && !d.querySelector('script[src*="jarvis/ask.js"]') && d.body) {
+        var s = d.createElement('script'); s.src = base + 'jarvis/ask.js?v=7'; s.defer = true; if (id) s.setAttribute('data-app', id);
+        d.body.appendChild(s); d.body.classList.add('oly-has-ask');   // agora.css: the last lines scroll clear of the fixed button
+      }
+    } catch (e) { /* the page works without the button */ }
+  }
+  if (d.readyState === 'complete') setTimeout(afterLoad, 0); else window.addEventListener('load', function () { setTimeout(afterLoad, 0); }, { once: true });
   // mounted as soon as the body is parsed (readyState 'interactive' comes before the app's deferred modules run)
   if (d.body) mount(); else { d.addEventListener('readystatechange', mount); d.addEventListener('DOMContentLoaded', mount); }
 })();

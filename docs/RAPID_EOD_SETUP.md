@@ -46,7 +46,7 @@ Good: `Rapid EOD 25K eval <Name>: balance $25,000 (target $26,500), 0 of 4 days,
 | Daily loss | none | stops for the day at -$500 |
 | Flat | by 4:10 PM ET | flat 3:55 PM ET; 5 min before a holiday halt |
 | News | allowed in the eval; funded: none 2 min before / after CPI, jobs, Fed | funded: flat 3 min before, back 2.5 min after |
-| Inactivity | 7 days without a trade closes it | warns you from day 5 |
+| Inactivity | 7 days without a filled trade: MFFU can close it (a breach; funded: profits lost) | warns you on the phone the session before the last safe day and on it; the keep-alive trade (engine/keepalive.py, OFF until you say yes) can place 1 MNQ itself |
 | Other accounts | no long + short at the same time | never opposite your 50K / 25K accounts |
 | Payout (funded) | after $1,100 profit, $500 min, $250 profit between payouts, 90% | tells you when: what is above $26,600, from $500 |
 

@@ -1,0 +1,127 @@
+"""CROSS-SITE GUARD for the bot server (day-security 2026-11-20, landed by the lead the same day).
+
+The hole: every POST /api/* route of server.py (live/start, live/stop, live/kill, live/arm, live/golive, push, alerts ...) reads
+`await req.json()`, which parses a text/plain body too. A text/plain POST is a "simple" request: a browser sends it to
+http://localhost:8766 WITHOUT asking first (no CORS preflight). So any web page open in a browser on the PC (an ad, a link in a
+chat) could start the bot on a real account with its own "params", kill it mid-trade or arm Tradovate (the phrase is in the
+public repo). A page on a DNS-rebinding domain reaches it with Host = that domain. Chrome / Edge now show a "local network
+access" prompt for public -> localhost requests; Firefox and older browsers do not.
+
+The rule (pure, no I/O): a state-changing request (not GET / HEAD / OPTIONS) is refused when
+  1. Sec-Fetch-Site is "cross-site" or "same-site" (a browser says the request came from another site), or
+  2. Origin is present and is not this server (Origin "null" = a sandboxed / file page: refused), or
+  3. the Host header is a NAME that is not localhost, the owner's Tailscale name (*.ts.net) or one in LE_ALLOWED_HOSTS
+     (DNS rebinding always uses a name; a bare IP such as 192.168.1.20:8766 or 100.x.y.z is fine).
+Allowed as before: the PC's own pages (same origin), the phone on the Tailscale link (Host *.ts.net, same origin), scripts and
+curl on the PC (no Origin, no Sec-Fetch-Site), the TradingView webhooks (EXEMPT: they carry their own key). Cloud mode
+(LE_CLOUD=1) is skipped: it has its own password gate (engine/cloud_guard.py).
+"""
+from __future__ import annotations
+
+import ipaddress
+import os
+import urllib.parse
+
+SAFE_METHODS = ("GET", "HEAD", "OPTIONS")
+LOCAL_NAMES = ("localhost", "127.0.0.1", "::1")
+EXEMPT = ("/api/tv/hook", "/api/tv/webhook")
+
+
+def _hostname(v) -> str:
+    v = str(v or "").strip().lower()
+    if v.startswith("["):
+        return v[1:].split("]", 1)[0]
+    return v.rsplit(":", 1)[0] if v.count(":") == 1 else v
+
+
+def _is_ip(h: str) -> bool:
+    try:
+        ipaddress.ip_address(h.strip("[]"))
+        return True
+    except ValueError:
+        return False
+
+
+def host_ok(host: str, env=None) -> bool:
+    env = os.environ if env is None else env
+    h = _hostname(host)
+    if not h:
+        return False
+    extra = {x.strip().lower() for x in str(env.get("LE_ALLOWED_HOSTS") or "").split(",") if x.strip()}
+    return h in LOCAL_NAMES or _is_ip(h) or h.endswith(".ts.net") or h in extra
+
+
+def why(method: str, path: str, headers, env=None) -> str | None:
+    """None = let it through; else the plain reason it was refused."""
+    env = os.environ if env is None else env
+    if str(method or "").upper() in SAFE_METHODS or env.get("LE_CLOUD") == "1" or env.get("LE_CROSS_SITE_GUARD") == "0":
+        return None
+    if str(path or "").startswith(EXEMPT):
+        return None
+    h = {str(k).lower(): str(v) for k, v in (headers.items() if hasattr(headers, "items") else headers or [])}
+    # the phone reaches the bot through `tailscale serve` (engine/phone_link.py :8444 -> 127.0.0.1:8766): a proxy may rewrite Host and
+    # keep the original in X-Forwarded-Host, the same way engine/account_box.link_why reads it (lead 2026-11-20). A page cannot set
+    # that header cross-site without a CORS preflight (which this server never answers), and Sec-Fetch-Site is checked first.
+    host = h.get("x-forwarded-host") or h.get("host", "")
+    sfs = h.get("sec-fetch-site", "").strip().lower()
+    if sfs in ("cross-site", "same-site"):
+        return "refused: sent by another web site"
+    o = h.get("origin", "").strip()
+    if o:
+        if o.lower() == "null":
+            return "refused: sent by a page with no origin"
+        if urllib.parse.urlsplit(o).netloc.lower() != host.strip().lower():
+            return "refused: sent by another web site"
+    if not host_ok(host, env):
+        return "refused: unknown host name (open the bot at http://localhost:8766 or your Tailscale link)"
+    return None
+
+
+# 4. (day-security3 2026-11-21) WHO is asking, by network. The server listens on 0.0.0.0 (scripts/run_bot.ps1; HOST=127.0.0.1 waits for
+#    the owner's yes), so any device on the home WiFi - a guest, a roommate, a hacked smart TV - could read GET /api/live/state (the
+#    full NinjaTrader account names), POST /api/live/stop / kill, and POST /api/live/start armed with the public phrase and that name.
+#    W1 does not stop it: a script sends no Origin and the Host is a bare IP. Now /api/* (read or write) and every state-changing
+#    request answer only the PC itself (loopback, which includes the tailscale serve proxy) or a Tailscale address (100.64.0.0/10,
+#    fd7a:115c:a1e0::/48). The peer is the socket's own address: uvicorn rewrites it from X-Forwarded-For only for a proxy on
+#    127.0.0.1 (forwarded_allow_ips), so a WiFi device cannot fake it with a header. Pages and pictures still open on the WiFi.
+#    LE_ALLOW_LAN=1 turns this part off (the old behaviour).
+_PRIVATE_NETS = [ipaddress.ip_network(n) for n in ("127.0.0.0/8", "::1/128", "100.64.0.0/10", "fd7a:115c:a1e0::/48")]
+
+
+def peer_ok(peer: str) -> bool:
+    try:
+        ip = ipaddress.ip_address(str(peer or "").strip().strip("[]"))
+    except ValueError:
+        return False
+    if getattr(ip, "ipv4_mapped", None):
+        ip = ip.ipv4_mapped
+    return any(ip in n for n in _PRIVATE_NETS)
+
+
+def peer_why(method: str, path: str, peer: str, env=None) -> str | None:
+    """None = this device may ask; else why not (a device on the home WiFi / the internet asking for the bot's API or a change)."""
+    env = os.environ if env is None else env
+    if env.get("LE_CLOUD") == "1" or env.get("LE_ALLOW_LAN") == "1" or env.get("LE_CROSS_SITE_GUARD") == "0":
+        return None
+    p = str(path or "")
+    if p.startswith(EXEMPT):
+        return None
+    if str(method or "").upper() in SAFE_METHODS and not p.startswith("/api/"):
+        return None
+    if peer_ok(peer):
+        return None
+    return "refused: only this PC or your own Tailscale devices (not another device on the WiFi)"
+
+
+def install(app):
+    """server.py: from engine import cross_site as _xs; _xs.install(app)   (right after the CLOUD GUARD block)."""
+    from starlette.responses import JSONResponse
+
+    @app.middleware("http")
+    async def cross_site_guard(request, call_next):
+        peer = getattr(getattr(request, "client", None), "host", None) or ""
+        w = peer_why(request.method, request.url.path, peer) or why(request.method, request.url.path, request.headers)
+        if w:
+            return JSONResponse({"ok": False, "error": w}, status_code=403)
+        return await call_next(request)
+    return app

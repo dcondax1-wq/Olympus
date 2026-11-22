@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en" data-theme="agora">
+<html lang="en" data-theme="agora" data-oly-shell="app" data-oly-light>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>MNEMOSYNE</title>
 <meta name="description" content="OLYMPUS MNEMOSYNE: a 10-second trade journal. Rate each of the bot's trades (followed plan, hesitated, interfered), tag your mood, and see in dollars what your habits cost. Kept only on this phone.">
-<meta name="theme-color" content="#14110e">
+<meta name="theme-color" content="#000000">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mnemosyne">
@@ -19,15 +19,16 @@
      page reads one published file (../odeon/trades.json, read-only) and falls back to fixture.json (DEMO, synthetic trades) when it is missing. Text only through textContent. -->
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o7">
-<link rel="stylesheet" href="../olympus/agora.css?v=a6"><link rel="stylesheet" href="../olympus/agora-apps.css?v=g2">
-<script src="../olympus/themes.js?v=o8"></script>
-<script src="../olympus/olympus.js?v=o13" data-app="journal"></script>
-<script src="../olympus/intro-app.js?v=i8" defer></script>
-<script src="../olympus/polis-life.js?v=pl4" defer></script>
+<link rel="stylesheet" href="../olympus/agora.css?v=a11"><link rel="stylesheet" href="../olympus/agora-apps.css?v=g2">
+<link rel="stylesheet" href="../olympus/pulse.css?v=p8">
+<script src="../olympus/themes.js?v=o11"></script>
+<script src="../olympus/olympus.js?v=o24" data-app="journal"></script>
+<script src="../olympus/intro-app.js?v=i12" defer></script>
+<script src="../olympus/polis-life.js?v=pl5" defer></script>
 <script src="../olympus/a11y.js" defer></script>
-<script src="../olympus/sfx.js?v=s4" defer></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#e08a6b'); r.setProperty('--oly-accent-rgb', '224, 138, 107'); })();</script>
-<link rel="stylesheet" href="journal.css?v=j1g3">
+<link rel="stylesheet" href="journal.css?v=j1g3qde">
+<link rel="stylesheet" href="../olympus/shell.css?v=s6"><!-- day-arenas: the one design layer, loaded last -->
 </head>
 <body>
 <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
@@ -56,6 +57,7 @@
   </section>
   <section class="pl-place" data-polis-life="stoic" aria-label="A line from the Stoics for today" hidden></section>
 
+  <section class="pulse" data-pulse="hero:last,stats" data-pulse-app="journal" aria-label="Last trade, streak, win rate by setup and weekday" aria-busy="true"><div class="pu-part pu-hero"></div><div class="pu-part pu-stats"></div></section><!-- day-arenas: olympus/pulse.js -->
   <section class="card" id="week" aria-labelledby="weekH">
     <h2 id="weekH">Your week, in plain words</h2>
     <div id="weekLines"></div>
@@ -94,6 +96,7 @@
     <p class="status" id="status" role="status" aria-live="polite"></p>
   </section>
   <p class="foot" id="foot">Paper research only. The journal never changes the bot and never leaves this phone.</p>
+  <nav class="folded" aria-label="Reviews folded into the journal"><a href="../apollo/">Apollo: weekly review</a><a href="../epilogue/">Epilogue: Sunday</a><a href="../kratos/">Kratos: discipline</a><a href="../nemesis/">Nemesis: losses</a></nav><!-- day-arenas: the audit's MERGE verdicts -->
 </main>
 <div class="sheet" id="sheet" hidden>
   <div class="scrim" id="scrim"></div>
@@ -105,6 +108,7 @@
     <button type="button" class="mini" id="shReset" data-oly-cue="tap">Start again</button>
   </div>
 </div>
-<script type="module" src="journal.js?v=j1g"></script>
+<script type="module" src="journal.js?v=j1ge"></script>
+<script type="module" src="../olympus/pulse.js?v=p9"></script>
 </body>
 </html>

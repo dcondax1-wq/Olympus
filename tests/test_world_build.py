@@ -45,10 +45,45 @@ def strip(w):
 
 def test_build():
     w = WB.build()
+    # the Research Hub (lead 2026-11-21): research/hub.json -> the Lab & Research district; a fixture in its schema (never shipped)
+    WB.HUB_PATH = os.path.join(WB.ROOT, "tests", "fixtures", "research_hub.json")
+    try:
+        wh = WB.build()
+    finally:
+        WB.HUB_PATH = None
+    rows = wh.get("hub") or []
+    fx = json.load(open(os.path.join(WB.ROOT, "tests", "fixtures", "research_hub.json"), encoding="utf-8"))["items"]
+    st = {r[0]: wh["hubs"][r[2]] for r in rows}
+    q = {r[0]: wh["hubq"][r[1]] for r in rows}
+    live = sorted((r for r in rows if wh["hubs"][r[2]] == "live"), key=lambda r: -next(x["usd_month"] for x in fx if x["id"] == r[0]))
+    check("a. Research Hub: every hub.json row is a compact row of Lab & Research (%d; ids, streets, buildings only: the words come from research/hub.json in the page)" % len(rows),
+          len(rows) == len(fx) and not [p for p in wh["places"] if p["kind"] == "hub"] and all(v.startswith("rh-") for v in q.values())
+          and {x["id"] for x in next(d for d in wh["districts"] if d["id"] == "lab")["quarters"]} >= {"rh-filters", "rh-other"})   # a street per family of 4+ entries
+    check("a. Research Hub: live = tall crowned towers ordered by the real $ a month; leads under scaffolding; rejected = ruins; Decide = 'decide'",
+          [r[7][0] for r in live] == sorted([r[7][0] for r in live], reverse=True) and all(r[7][1] == WB.CROWN for r in live)
+          and st["holiday"] == "testing" and st["rej3"] == "ruin" and st["scale-in"] == "decide", [(r[0], st[r[0]], r[7][:2]) for r in rows[:6]])
+    js = ("import * as C from './ow-core.js'; import fs from 'fs'; const w = JSON.parse(fs.readFileSync(process.argv[1])); const fx = JSON.parse(fs.readFileSync(process.argv[2]));"
+          "const ps = C.hubPlaces(w); const n = C.hubText(ps, fx); const r = ps.find((p) => p.id === 'hub:rej3'), l = ps.find((p) => p.id === 'hub:lit');"
+          "console.log(JSON.stringify({ n, ps: ps.length, why: r.why, href: l.href, name: l.name, cells: l.cells.length, facts: r.facts.map((f) => f[0]) }))")
+    tmp = os.path.join(tempfile.mkdtemp(), "w.json")
+    json.dump(wh, open(tmp, "w", encoding="utf-8"))
+    try:
+        out = json.loads(subprocess.run(["node", "--input-type=module", "-e", js, tmp, os.path.join(WB.ROOT, "tests", "fixtures", "research_hub.json")],
+                                        cwd=os.path.join(WB.WEB, "cities", "world"), capture_output=True, text=True, timeout=60).stdout or "{}")
+    except (OSError, ValueError, subprocess.SubprocessError) as e:
+        out = {"err": str(e)}
+    check("a. the page merges the words by id: titles, Read links from the site root, a rejected figure says 'Test quoted' / 'the test quoted -$330' (never profit)",
+          out.get("n") == len(fx) and out.get("ps") == len(fx) and "the test quoted -$330" in (out.get("why") or "") and out.get("href") == "research/lit.html"
+          and out.get("name") == "LIT: sweep then target" and out.get("cells", 0) >= 1 and "Test quoted" in (out.get("facts") or []), out)
+    w2 = WB.build()                                     # again without the fixture: no hub, the streets gone
+    check("a. no hub.json = no hub places (never example data in the owner's city); the family streets reset between builds",
+          os.path.exists(os.path.join(WB.WEB, "research", "hub.json"))
+          or (not [p for p in w2["places"] if p["kind"] == "hub"] and [q for q, _ in WB.QUARTERS["lab"]] == [q for q, _ in WB.LAB_QUARTERS]))
     ps = w["places"]
     ids = [p["id"] for p in ps]
-    check("a. a world: v2 'olympus-world', four districts in door order (ZEUS Trading, Kalshi, More, Money), every district has apps",
-          w["v"] == 2 and w["kind"] == "olympus-world" and [d["id"] for d in w["districts"]] == ["zeus", "kalshi", "more", "money"] and all(d["apps"] > 0 for d in w["districts"]),
+    # lead 2026-11-21 ("one huge 3D city where each district is an arena"): six districts, the More door split, Websites its own arena
+    check("a. a world: v2 'olympus-world', six arena districts in order (ZEUS Trading, Kalshi, Websites, Lab & Research, Life, Money), every district has apps",
+          w["v"] == 2 and w["kind"] == "olympus-world" and [d["id"] for d in w["districts"]] == ["zeus", "kalshi", "sites", "lab", "life", "money"] and all(d["apps"] > 0 for d in w["districts"]),
           [(d["id"], d["apps"]) for d in w["districts"]])
     check("a. hundreds of places (> 300), unique ids, 4,000+ real tests as buildings", len(ps) > 300 and len(set(ids)) == len(ids) and w["counts"]["buildings"] >= 4000, (len(ps), w["counts"]))
     rows = WB.apps_list()
@@ -57,10 +92,17 @@ def test_build():
     check("a. every app of apps-list.js is a building that opens its own page (%d apps)" % len(rows), rows and not missing, missing)
     doors = {dd["id"]: dd for dd in WB.doors()}
     wrong = [p["id"] for p in ps if p["kind"] == "app" and p["id"].startswith("app:") and p["id"][4:] in {i for dd in doors.values() for i in dd["ids"]}
-             and p["district"] != next(k for k, dd in doors.items() if p["id"][4:] in dd["ids"])]
-    check("a. each app sits in the district of its door (doors.js is the one filing): Kalshi apps in Kalshi, Mint in Money, Data City in More",
+             and p["district"] != WB.district_of(next(k for k, dd in doors.items() if p["id"][4:] in dd["ids"]), p["id"][4:], p.get("href") or "")]
+    check("a. each app sits in its door's district (doors.js files it; More splits into Lab and Life, websites go to Websites): Kalshi apps in Kalshi, Mint in Money, Data City in Lab",
           not wrong and next(p for p in ps if p["id"] == "app:kalshicity")["district"] == "kalshi" and next(p for p in ps if p["id"] == "app:mintcity")["district"] == "money"
-          and next(p for p in ps if p["id"] == "app:datacity")["district"] == "more", wrong)
+          and next(p for p in ps if p["id"] == "app:datacity")["district"] == "lab" and next(p for p in ps if p["id"] == "app:jarvis")["district"] == "life"
+          and next(p for p in ps if p["id"] == "app:agency")["district"] == "sites", wrong)
+    cs = [p for p in ps if p["district"] == "sites" and p["kind"] == "sites"]
+    nsites = len((json.load(open(os.path.join(WB.WEB, "agency", "factory", "sites.json"), encoding="utf-8")).get("sites") or []))
+    kk = max(1, -(-nsites // 400))                      # ~4k sites: a building = a group of kk sites (the 300 KB budget, the phone)
+    check("a. Websites: one block per trade, a building per %d concept site(s) (%d buildings for %d sites), no business name anywhere" % (kk, sum(len(p["bs"]) for p in cs), nsites),
+          cs and sum(len(p["bs"]) for p in cs) == sum(-(-int(p["facts"][0][1]) // kk) for p in cs) and sum(int(p["facts"][0][1]) for p in cs) == nsites
+          and sum(len(p["bs"]) for p in cs) <= 420 and all(p["name"] in WB.NICHE.values() or p["name"].istitle() for p in cs))
     shortcut = [p["name"] for p in ps if p["kind"] == "app" and p["district"] == "zeus"][:8]
     check("a. ZEUS Trading's downtown starts with the owner's own shortcuts, plain names first (My accounts, Bots right now, ...)", shortcut[:2] == ["My accounts", "Bots right now"], shortcut)
     extra = {p["href"] for p in ps if p["kind"] == "app"}
@@ -84,15 +126,17 @@ def test_build():
     check("a. the Archive's stored backtests are buildings of research places (2,000+), adopted runs bright (3), rejected ones ruins (0)",
           runs >= 2000 and any(3 in p["b"][1::3] for p in res) and sum(p["b"][1::3].count(0) for p in res) > 1000, runs)
     k = [p for p in ps if p["district"] == "kalshi"]
-    check("a. the Kalshi district: its 5 apps, the bets studied (strategies, markets, bands, hypotheses), the K8 gold & silver legs and the Kalshi write-ups",
-          sum(1 for p in k if p["kind"] == "app") == 5 and any(p["quarter"] == "kbets" for p in k) and any(p["id"].startswith("k8:") for p in k)
+    check("a. the Kalshi district: its door's apps (one tower each), the bets studied (strategies, markets, bands, hypotheses), the K8 gold & silver legs and the Kalshi write-ups",
+          sum(1 for p in k if p["kind"] == "app") >= len({it["href"] for dd in WB.doors() if dd["id"] == "kalshi" for it in dd["items"]}) and any(p["quarter"] == "kbets" for p in k) and any(p["id"].startswith("k8:") for p in k)
           and any(p["quarter"] == "kresearch" for p in k), sorted({p["quarter"] for p in k}))
     k8 = next((p for p in k if p["id"] == "k8:a-gold"), None)
     check("a. a K8 leg's card: bets and $ on the months it was learned on and checked on", k8 is not None and any("bets" in v and "$" in v for _, v in k8["facts"]), k8 and k8["facts"])
     dc = [p for p in ps if p["quarter"] == "datacity"]
     check("a. Data City's nine quarters live in More next to the Data City app, one building per tested combo (1,000+)", len(dc) == 9 and sum(len(p["b"]) // 3 for p in dc) >= 1000, len(dc))
     dec = [p for p in ps if p["quarter"] == "decisions"]
-    check("a. Money: the open decisions waiting for a yes are scaffolding with a link to the Board", dec and all(p["state"] == "planned" and p.get("href") == "board/" for p in dec), len(dec))
+    n_open = sum(1 for x in (WB.load("tools/web_public/business/decisions.json", {}) or {}).get("items") or [] if isinstance(x, dict) and x.get("id") and str(x.get("status") or "open") == "open")
+    check("a. Money: the open decisions waiting for a yes (only those: an answered one is no longer a place) are scaffolding with a link to the Board (%d open)" % n_open,
+          len(dec) == n_open and all(p["state"] == "planned" and p.get("href") == "board/" for p in dec), len(dec))
     check("a. every card is plain words: a name, a one-line 'what it is', facts, a 'how to read it' line; no markup", all(p["name"] and p["line"] and isinstance(p["facts"], list) and isinstance(p["how"], int) for p in ps)
           and not re.search(r"<[a-z/]", json.dumps(w)), "")
     feed = w["feed"]
@@ -178,7 +222,8 @@ def test_file(w):
     check("e. deterministic: two builds are the same (but the build time)", json.dumps(strip(w)) == json.dumps(strip(w2)))
     raw = json.dumps(w, separators=(",", ":"), ensure_ascii=False).encode()
     check("e. compact: under 300 KB (%d KB); buildings are [height 0-255, state 0-5, day] triples" % (len(raw) // 1024),
-          len(raw) < 300_000 and all(len(p["b"]) % 3 == 0 and all(0 <= v <= 255 for v in p["b"][0::3]) and set(p["b"][1::3]) <= set(range(6)) for p in w["places"]))
+          len(raw) < 300_000 and all(len(p["b"]) % 3 == 0 and all(0 <= v <= 255 for v in p["b"][0::3]) and set(p["b"][1::3]) <= set(range(6)) for p in w["places"] if "b" in p)
+          and all(set(p["bs"]) <= set("hwcs") for p in w["places"] if p["kind"] == "sites"))   # the concept sites: a letter a building (ow-core siteBuildings)
     shipped = WB.load(os.path.join(WORLD_DIR, "world.json"), {})
     check("e. the shipped cities/world/world.json is this tool's output (same places, districts and counts)", shipped.get("kind") == "olympus-world"
           and [p["id"] for p in shipped.get("places", [])] == [p["id"] for p in w["places"]] and shipped.get("counts") == w["counts"],
@@ -257,7 +302,7 @@ def test_core(w):
     check("f. planWorld: thousands of instances (%d high, %d low), every number finite, sizes positive, the same city every time, all six building states used" % (p["n"], p["low"]),
           p["n"] > 6000 and p["low"] < p["n"] and p["nan"] == 0 and p["neg"] == 0 and p["same"] and p["states"] == [0, 1, 2, 3, 4, 5] and p["places"] == len(w["places"]), p)
     check("f. the Gate spire (46) is the tallest thing; halos only where the light is (live, bright, shortcuts) + the plaza; rings and searchlights on the live parts",
-          44 <= p["maxH"] <= 60 and len(w["places"]) // 8 <= p["halos"] <= len(w["places"]) // 2 + 1 and p["rings"] >= 5 and p["beams"] >= 6 and p["slots"] == len(w["places"]) + 5, p)
+          44 <= p["maxH"] <= 60 and len(w["places"]) // 8 <= p["halos"] <= len(w["places"]) // 2 + 1 and p["rings"] >= 5 and p["beams"] >= 6 and p["slots"] == len(w["places"]) + 1 + len(w["districts"]), p)
     c = o["cam"]
     check("f. the first view looks north from the south at the NQ district; the overview is high above; every pose finite", c["home"][2] > 0 and c["look"][2] < 0 and c["over"] and c["finite"], c)
     check("f. poses blend the short way round and in log distance; a wild pose is clamped (inside the city, pitch 0.1-1.45, NaN healed)",

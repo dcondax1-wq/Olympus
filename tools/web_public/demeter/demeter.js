@@ -3,6 +3,8 @@
 // window.DEMETER is the test hook. ?acct=atlas&size=1.5 opens a given account and size.
 import * as C from './demetercore.js';
 import * as T from '../olympus/truth.js';
+import '../pc_feed.js?v=n7';      // PC_FEED.mffuView (MFFU's own view of an account)
+const nameOf = (a) => (String(a.name || '').includes(String(a.size || '~')) || !a.size ? String(a.name || '') : `${a.name} ${a.size}`);   // day-arenas: never 'Zlarior 25K #2 25K'
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -35,14 +37,14 @@ function renderPicker() {
   const box = $('pick'); clear(box);
   for (const a of S.accounts) {
     const b = h('button', 'pickbtn'); b.type = 'button'; b.dataset.key = a.key; b.setAttribute('aria-pressed', a.key === S.sel ? 'true' : 'false');
-    b.setAttribute('aria-label', `${a.name} ${a.size}: ${a.room != null ? C.drawdownLine(a.room, a.mll) : 'no numbers yet'}`);
+    b.setAttribute('aria-label', `${nameOf(a)}: ${a.room != null ? C.drawdownLine(a.room, a.mll) : 'no numbers yet'}`);
     b.appendChild(dialSvg(a, true)); b.appendChild(h('b', '', a.name)); b.appendChild(h('span', 'note', a.size));
     b.addEventListener('click', () => { S.sel = a.key; render(); }); box.appendChild(b);
   }
 }
 
 function renderDial(a) {
-  $('dialH').textContent = `${a.name} ${a.size}`;
+  $('dialH').textContent = nameOf(a);
   const hl = C.health(a), p = $('dialPill'); p.textContent = hl.text; p.className = 'pill ' + (hl.level === 'off' ? '' : hl.level);
   const box = $('dialBox'); clear(box); box.appendChild(dialSvg(a, false));
   $('dd').textContent = a.room != null ? C.drawdownLine(a.room, a.mll) : a.has ? 'Drawdown is not reported yet.' : 'No numbers yet. The dial fills the moment the bot reports this account.';
@@ -92,6 +94,9 @@ async function boot() {
   try { canon = !S.forced && home ? T.canonHome(await T.withPcFeed(home)) : null; } catch (_) { canon = null; }
   S.fixture = fx; S.home = canon || home; S.rules = rules; S.ages = canon && canon.truth ? canon.truth.ages : null;
   const built = C.buildAccounts(S.forced ? null : (canon || home), rules, fx); S.accounts = built.accounts; S.demo = built.demo;
+  // day-archive 2026-11-20: a funded account in MFFU's own terms (pc_feed.js mffuView): balance = profit, the floor in the same terms
+  const F = globalThis.PC_FEED;
+  if (F && F.mffuView) for (const a of S.accounts) if (a && a.stage === 'funded' && a.balance != null) { const v = F.mffuView({ ...a, kind: 'funded', size: a.size || (a.L && a.L.mll === 2000 ? '50K' : '25K') }); if (v) { a.balance = v.balance; a.floor = v.floor; } }
   S.roadmap = road && Array.isArray(road.accounts) ? road : fx && fx.roadmap ? fx.roadmap : null;
   const at = q.get('at'), d = at ? new Date(at) : new Date(); S.today = (Number.isFinite(d.getTime()) ? d : new Date()).toISOString().slice(0, 10);
   const k = q.get('acct'); if (k && S.accounts.some((a) => a.key === k)) S.sel = k; else { const first = S.accounts.find((a) => a.has); if (first) S.sel = first.key; }

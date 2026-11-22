@@ -1,0 +1,28 @@
+{
+ "base": "e3bf212d777341fdab1f31da53722fa2b8743c74",
+ "candidate": "77cead016aa9693b6e07ba3ad793d97aa423d064",
+ "days": [
+  "2026-11-20"
+ ],
+ "files_changed": 14,
+ "model_files_changed": [],
+ "verdict": "SAME",
+ "exit": 0,
+ "why": "no trade differs on 768 polls",
+ "trades": [],
+ "polls": 768,
+ "state_diff_polls": 0,
+ "errors": {
+  "base": 0,
+  "candidate": 0
+ },
+ "base_trades": 2,
+ "seconds": {
+  "base": 385,
+  "candidate": 215
+ },
+ "poll_ms_median": {
+  "base": 412.9,
+  "candidate": 236.9
+ }
+}

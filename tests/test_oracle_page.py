@@ -346,7 +346,7 @@ def static_checks():
           and all(html.index('id="dock"') < html.index(f'id="{i}"') for i in ("events", "scrub", "pos-film", "lv-list")))
     check("g. themes: applyTheme(tokens) per app, hooked to the OLYMPUS kit's theme() / onTheme when it has them",
           "function applyTheme(tokens)" in src["main.js"] and "onTheme" in src["main.js"] and "applyTheme" in src["scene.js"])
-    check("a. viewport-fit=cover and its own theme-color", 'viewport-fit=cover' in html and '<meta name="theme-color" content="#14110e">' in html
+    check("a. viewport-fit=cover and its own theme-color", 'viewport-fit=cover' in html and '<meta name="theme-color" content="#000000">' in html
           and "const THEME = '#14110e';" in src["main.js"])
     check("a. safe areas on every edge, the orb corner reserved, reduced motion in CSS and in the loop",
           all(f"safe-area-inset-{e}" in css for e in ("top", "right", "bottom", "left")) and "--orb-w: 96px" in css

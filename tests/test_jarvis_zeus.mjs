@@ -48,7 +48,7 @@ for (const q of ['how are my accounts', 'did zeus trade today', 'how much to pas
   const a = A['how are my accounts'].text;
   check('accounts: the source and its age first', /^Your accounts \(PC, 3 min ago\):/.test(a), a);
   check('accounts: Zlarior 50K eval with balance, today, $ to pass, room', a.includes('Zlarior 50K eval: $49,193, today $0, $3,807 to pass, $1,025 room.'), a);
-  check('accounts: ATLAS is FUNDED (no "to target"): $ to the first $1,000 payout', a.includes('ATLAS 25K funded: $25,000, today $0, $2,100 to the first $1,000 payout, $1,000 room.') && !/ATLAS[^\n]*to pass/.test(a), a);
+  check('accounts: ATLAS is FUNDED (no "to target"), in MFFU terms ($0 = the start): $ to the first $1,000 payout', a.includes('ATLAS 25K funded: $0, today $0, $2,100 to the first $1,000 payout, $1,000 room.') && !/ATLAS[^\n]*to pass/.test(a), a);
   check('accounts: the new 25K eval from the PC feed, named as in the plan', a.includes('Zlarior 25K #2 eval: $25,000, today $0, $1,500 to pass, $1,000 room.'), a);
   check('accounts: what ZEUS waits for', /ZEUS: Zlarior waiting for London sweep/.test(a), a);
   check('accounts: spoken in dollars, "number 2"', /3,807 dollars to pass/.test(A['how are my accounts'].speak) && /number 2/.test(A['how are my accounts'].speak), A['how are my accounts'].speak);
@@ -57,8 +57,15 @@ for (const q of ['how are my accounts', 'did zeus trade today', 'how much to pas
   const p = A['how much to pass'].text;
   check('pass: each eval, target and room; ATLAS already passed', p.includes('Zlarior 50K: $3,807 to pass (target $53,000), $1,025 of room left.') && p.includes('Zlarior 25K #2: $1,500 to pass (target $26,500)') && p.includes('ATLAS 25K: already passed, funded now.'), p);
   const y = A['when is my payout'].text;
-  check('payout: ATLAS first, the $27,100 line, the full $1,000 ($800 to you, $560 after tax)', /^ATLAS 25K \(funded\): first payout when the balance reaches \$27,100 \(\$2,100 to go\), then ask the full \$1,000 \(\$800 to you, \$560 after the 30% tax pot\)/.test(y), y);
-  check('payout: the evals pass first, with the plan\'s estimate', y.includes('Zlarior 50K (eval): pass first ($3,807 to go); about early Jan') && y.includes('Zlarior 25K #2 (eval): pass first ($1,500 to go)'), y);
+  // MFFU terms (owner 2026-11-20, QA 2026-11-21): a funded balance counts from $0; the $1,000 ask at +$2,100, the earliest $250 at +$1,350; never the NinjaTrader $27,100
+  check('payout: ATLAS first, in MFFU terms: at $0, the $1,000 ask at +$2,100 ($2,100 to go), $800 to you, $560 after tax; the earliest $250 at +$1,350', /^ATLAS 25K \(funded\): at \$0 \(MFFU counts from \$0\); the \$1,000 ask comes at \+\$2,100 \(\$2,100 to go\), \$800 to you, \$560 after the 30% tax pot\. Earliest: \$250 at \+\$1,350 \(\$1,350 to go\)/.test(y) && !/27,100/.test(y), y);
+  { // the lead's example (QA 2026-11-21): ATLAS's NinjaTrader balance 25,401 reads "+$401", the $1,000 ask at +$2,100, $1,699 to go
+    const L2 = JSON.parse(JSON.stringify(LITE)); L2.board.atlas.balance = 25401;
+    const y2 = (await z.answer('when is my payout', 'when is my payout', liveOf(L2), T0)).text;
+    check('payout in MFFU terms: ATLAS at +$401, the $1,000 ask at +$2,100 ($1,699 to go), the earliest at +$1,350 ($949 to go)',
+      /^ATLAS 25K \(funded\): at \+\$401 \(MFFU counts from \$0\); the \$1,000 ask comes at \+\$2,100 \(\$1,699 to go\)/.test(y2) && /Earliest: \$250 at \+\$1,350 \(\$949 to go\)/.test(y2) && !/25,401|27,100/.test(y2), y2);
+  }
+  check('payout: the evals pass first, with the plan\'s estimate', /Zlarior 50K \(eval\): pass first \(\$3,807 to go\); \S/.test(y) && y.includes('Zlarior 25K #2 (eval): pass first ($1,500 to go)'), y);
   const c = A['is the pc on'].text;
   check('pc: yes, its check-in age, running LIVE, NinjaTrader, no open trade', c === 'Yes: the PC checked in 3 min ago. ZEUS is running (LIVE), NinjaTrader connected, no open trade.', c);
   const u = A['pause zeus'];
@@ -117,7 +124,12 @@ for (const q of ['how are my accounts', 'did zeus trade today', 'how much to pas
 
 // ---------------------------------------------------------------------------------------------- 3b. night-zask: what's trading, trades per week, health
 {
-  const EDGE = JSON.parse(fs.readFileSync(path.join(WP, 'edge.json'), 'utf8'));
+  // a frozen copy of edge.json as of 2026-11-19 06:44 (data to Nov 6): the published file is refreshed by the PC / the nightly run
+  // (02d1a12c moved it to Nov 19), and these checks pin numbers; the live file only has to keep the shape
+  const EDGE = JSON.parse(fs.readFileSync(path.join(ROOT, 'tests', 'fixtures', 'jarvis_zeus_edge.json'), 'utf8'));
+  const REAL = JSON.parse(fs.readFileSync(path.join(WP, 'edge.json'), 'utf8'));
+  check('the published edge.json keeps the shape zeus.js reads (bots.lit / bots.atlas: tpw, win, pf, usd_month, to, light)',
+    ['lit', 'atlas'].every((k) => REAL.bots && REAL.bots[k] && ['tpw', 'win', 'pf', 'usd_month', 'to', 'light'].every((f) => REAL.bots[k][f] != null)), Object.keys(REAL.bots || {}));
   const K = [["what's trading", 'trading'], ["what's on what account", 'trading'], ['which bot is on which account', 'trading'], ['what is each account trading', 'trading'], ['what bots are on my accounts', 'trading'],
     ['trades per week', 'perf'], ['average trades a week', 'perf'], ['how many trades a week', 'perf'], ['trades week', 'perf'], ['how is it doing', 'perf'], ['how is atlas doing', 'perf'], ['zlarior stats', 'perf'], ['win rate of zlarior', 'perf'],
     ['health', 'health'], ['zeus health', 'health'], ['edge health', 'health'], ['is the edge ok', 'health'], ["how's the edge", 'health']];
@@ -128,7 +140,7 @@ for (const q of ['how are my accounts', 'did zeus trade today', 'how much to pas
   const ze = Z.createZeus({ getPlan: async () => PLAN, getBoard: async () => null, getEdge: async () => EDGE, hidden: () => true });
   const t = await ze.answer("what's trading", "what's trading", liveOf(LITE), T0);
   check('trading: each account -> its bot, stage, balance, $ to pass / payout line, room', t.intent === 'zeus_trading' && /^What each account trades \(PC, 3 min ago\):/.test(t.text)
-    && t.text.includes('Zlarior 50K eval → Zlarior (LIT), LIVE: $49,193, $3,807 to pass, $1,025 room.') && t.text.includes('ATLAS 25K funded → ATLAS, LIVE: $25,000, $2,100 to the first $1,000 payout, $1,000 room.')
+    && t.text.includes('Zlarior 50K eval → Zlarior (LIT), LIVE: $49,193, $3,807 to pass, $1,025 room.') && t.text.includes('ATLAS 25K funded → ATLAS, LIVE: $0, $2,100 to the first $1,000 payout, $1,000 room.')
     && t.text.includes('Zlarior 25K #2 eval → Zlarior (LIT)') && /\$1,500 to pass/.test(t.text), t.text);
   check('trading: spoken short', /Zlarior 50K eval runs Zlarior, at 49,193 dollars/.test(t.speak) && /ATLAS 25K funded runs ATLAS/.test(t.speak), t.speak);
   const p = await ze.answer('trades per week', 'trades per week', liveOf(LITE), T0);

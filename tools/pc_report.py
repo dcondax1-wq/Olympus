@@ -63,12 +63,15 @@ STATUS_FEED = os.path.join(ROOT, "tools", "web_public", "status_feed.json")
 NTFY_DEFAULT = "https://ntfy.sh"
 PORT_DEFAULT = int(os.environ.get("PORT") or 8766)
 KALSHI_RW_LITE = ("kind", "paper_only", "updated", "days", "reward", "fill_pnl", "net", "fills", "markets", "per100_day")   # the card's keys
-MAX_STATUS_BYTES = 3900          # ntfy turns a message over 4,096 bytes into a file attachment: stay under it
+MAX_STATUS_BYTES = 3800          # ntfy turns a message over 4,096 bytes into a file attachment: stay under it, with room for the
+                                 # signature + public key (_signed: ~190 bytes, day-security2 2026-11-20; was 3900)
 # the split (owner 2026-11-18): the core "le-live" post every run, the extras in "le-live-ext" posts (tools/pc_feed.py merges them)
 EXT_KIND = "le-live-ext"
 EXT_PARTS = 2                    # at most 2 ext posts a run (ntfy.sh free: a few hundred messages a day per IP)
-EXT_EVERY_S = 1740               # the ext goes every 2nd 15-minute run (29 min), or at once when its news changed (ext_hash)
-EXT_ORDER = ("brd", "life", "mf", "board_trades", "at", "fq", "zl", "learn", "lab", "glance", "kalshi_rewards", "kalshi_k1", "kalshi_live")   # "at": engine/feed_trades
+EXT_EVERY_S = 2640               # the ext goes every 3rd 15-minute run (44 min), or at once when its news changed (ext_hash). Was every 2nd (29 min) until
+                                 # 2026-11-20: 96 core + 96 ext + 24 chart posts a day left no room under ntfy's 250 for the other programs and the alerts
+EXT_ORDER = ("brd", "life", "mf", "k7", "board_trades", "at", "fq", "zl", "learn", "lab", "glance", "kalshi_rewards", "kalshi_k1", "kalshi_live", "ap")   # "at": engine/feed_trades
+EXT_LAST = ("glog",)   # red-team 2026-11-21: the Brain's long thought stream takes only the room every other block left (cut 5/3, then out)
 # "zl": ZEUS learned, the nightly line (engine/zeus_learn.read_tiny, <= 220 bytes) -> the ZEUS page's "ZEUS learned" card
 CORE_KEYS = ("eh", "v", "kind", "lite", "src", "t", "every_s", "host", "model_state", "price", "day_pnl", "pc_verdict", "pc", "reporter",
              "board", "accounts", "trimmed", "wp")   # wp: the phone app's push set-up (engine/push.app_block: public keys, ~230 bytes)
@@ -273,6 +276,52 @@ def default_http(method, url, body=None, headers=None, timeout=HTTP_TIMEOUT_S):
         return 0, e.__class__.__name__
 
 
+# ---- STATUS SIGN ---- (tools/status_sign.py, day-security2 2026-11-20): every PUBLIC post (status core, ext, chart bars) carries the
+# PC's ECDSA signature, so the site and Claude's board can tell the PC's posts from a stranger's. Trade alerts (private topic, phone
+# app) are never touched. Anything wrong (no `cryptography`, no key, a write error, too big) = the body goes out exactly as before.
+SIGN_MAX_BYTES = 4000            # a signed post stays a message (ntfy: 4,096); over it the post goes unsigned, as before
+SIGN_STATE = {"why": None}       # the last reason a public post went unsigned (shown in the run record), None = signed
+
+
+def _signed(body, core: bool = False, real: bool = True) -> str:
+    """The exact text + ,"sg":"..."}; the core also carries "svk" (the public key, so it can be pinned once from the PC's own
+    posts). real=False (a test's fake http): only with LE_STATUS_SIGN_KEY set, never the PC's own key. Never raises."""
+    b = str(body)
+    try:
+        if os.environ.get("LE_STATUS_SIGN", "1") == "0":
+            SIGN_STATE["why"] = "off (LE_STATUS_SIGN=0)"
+            return b
+        if not real and not os.environ.get("LE_STATUS_SIGN_KEY"):
+            return b
+        from tools import status_sign as _ss
+        k = _ss.load_key()
+        if not k and real and not os.environ.get("LE_STATUS_SIGN_KEY"):
+            _ss.ensure_key()                         # once: <home>/.olympus/status_sign.json (0600); prints only the public key
+            k = _ss.load_key()
+        if not k or not (b.startswith("{") and b.endswith("}")):
+            SIGN_STATE["why"] = "no key" if not k else "not a JSON object"
+            return b
+        t = b
+        if core:
+            t = b[:-1] + ',"svk":"' + _ss.vk_of(k) + '"}'
+        out = _ss.sign_text(t, k)
+        if len(out.encode("utf-8")) > SIGN_MAX_BYTES:
+            out = _ss.sign_text(b, k)                # without svk (the ext / an earlier core carried it)
+        if len(out.encode("utf-8")) > SIGN_MAX_BYTES:
+            SIGN_STATE["why"] = "too big to sign"
+            return b
+        SIGN_STATE["why"] = None
+        pin = _ss.feed_vk() if real else None
+        if pin and _ss.vk_of(k) != pin:
+            # redteam 2026-11-21: a new key (new PC / Windows profile) under a pinned vk: every post is signed but the phone and
+            # board.py drop them all. Still posted; the run record says why (rec["unsigned"]).
+            SIGN_STATE["why"] = "this PC's key is not the pinned vk: the phone drops these posts (re-pin: python tools/status_sign.py check)"
+        return out
+    except Exception as e:  # noqa: BLE001
+        SIGN_STATE["why"] = e.__class__.__name__
+        return b
+
+
 def ntfy_post(base, topic, body, title=None, priority=None, tags=None, http=None) -> tuple:
     """POST a message to an ntfy topic. -> (ok, why)."""
     if not topic:
@@ -290,6 +339,29 @@ def ntfy_post(base, topic, body, title=None, priority=None, tags=None, http=None
     if st == 429:
         return False, "ntfy.sh rate limit (too many messages today): next run tries again"
     return False, f"ntfy answered {st or 'nothing'} {str(txt)[:60]}".strip()
+
+
+def ntfy_quota(base, http=None) -> dict | None:
+    """ntfy.sh's OWN count for this PC's internet address today (GET <base>/v1/account, anonymous: limits.messages, stats.messages /
+    messages_remaining). Every program on the PC that posts to ntfy (the report, trade alerts, Kalshi, the data feed, learning, self-heal ...)
+    is in it, which this file's own counter cannot see. A GET is not a message. None when ntfy does not say. Never raises."""
+    try:
+        st, txt = (http or default_http)("GET", f"{str(base or NTFY_DEFAULT).rstrip('/')}/v1/account", None, {"Accept": "application/json"}, 8)
+        if int(st or 0) != 200:
+            return None
+        j = json.loads(txt)
+        stats, lim = _d(j.get("stats")), _d(j.get("limits"))
+        used, left = num(stats.get("messages")), num(stats.get("messages_remaining"))
+        if used is None or left is None:
+            return None
+        return {"used": int(used), "remaining": int(left), "limit": int(num(lim.get("messages")) or used + left), "reset_at": num(stats.get("reset_at"))}
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def quota_holds(q: dict | None, n_posts: int) -> bool:
+    """True when n_posts more (+ this run's core status post) would eat into the reserve kept for trade alerts, by ntfy's own count."""
+    return bool(q) and int(q.get("remaining") or 0) - int(n_posts) - 1 < TRADE_ALERT_RESERVE
 
 
 def server_up(port=PORT_DEFAULT, http=None) -> bool:
@@ -349,11 +421,18 @@ def market_open(now=None, env=None) -> bool:
 
 
 def entry_hours(now=None) -> bool:
-    """Weekday 01:50-15:30 ET: the bots' entry hours (a stopped bot then matters)."""
+    """Weekday 01:50-15:30 ET: the bots' entry hours (a stopped bot then matters). Never on a CME holiday closure or after an
+    early halt (redteam 2026-11-20: a bot stopped on Christmas or Thanksgiving afternoon was a "Bot stopped" alarm)."""
     try:
         from zoneinfo import ZoneInfo
         t = dt.datetime.fromtimestamp(now or time.time(), ZoneInfo("America/New_York"))
-        return t.weekday() < 5 and 110 <= t.hour * 60 + t.minute <= 930
+        if not (t.weekday() < 5 and 110 <= t.hour * 60 + t.minute <= 930):
+            return False
+        try:
+            from engine.cme_calendar import halted
+            return not halted(t.timestamp())
+        except Exception:
+            return True
     except Exception:
         return False
 
@@ -403,6 +482,12 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
         except Exception as e:
             snap["live_error"] = f"{e.__class__.__name__}: {str(e)[:120]}"
     snap["alerts_pc"] = _telegram_on(root)
+    snap["alert_bus"] = _bus_active()       # Telegram / Discord through engine/alert_bus (ALERTS_SETUP.bat): a route of its own
+    try:                                    # self-heal (engine/self_heal.py, night-selfheal): fixed / needs you + what grows on disk, <= 300 bytes
+        from engine import self_heal as _sh
+        snap["sh"] = _sh.read_tiny(root, now)
+    except Exception:
+        snap["sh"] = None
     try:                                    # real fills vs the live loop's plan (tools/fill_check.py, read-only: the bots' own files)
         from tools import fill_check
         snap["fills"] = fill_check.reviews(root, now)
@@ -446,7 +531,24 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
         snap["zl"] = _zl.read_tiny(os.path.join(root, "logs", "learn", "tiny.json"), now=now)
     except Exception:
         snap["zl"] = None
+    try:                                    # the website money pipeline (agency/pipeline.py: counts + $ only, no names/phones/ids), refreshed each report
+        from agency import pipeline as _ap
+        try:
+            _ap.write_card(_ap.build_card())
+        except Exception:
+            pass
+        snap["ap"] = _ap.read_card()
+    except Exception:
+        snap["ap"] = None
     return snap
+
+
+def _bus_active() -> bool:
+    try:
+        from engine import alert_bus as _ab
+        return bool(_ab.active())
+    except Exception:  # noqa: BLE001
+        return False
 
 
 def _telegram_on(root) -> bool:
@@ -550,14 +652,30 @@ def full(snap: dict) -> dict:
         out["brd"] = board_events.status_block(max_bytes=BRD_BYTES)
     except Exception:  # noqa: BLE001
         pass
+    try:                                           # the Brain page's longer thought stream (engine/brain_glance.logs: 8 lines a bot)
+        from engine import brain_glance
+        gl = brain_glance.logs(hb)
+        if gl:
+            out["glog"] = gl
+    except Exception:  # noqa: BLE001
+        pass
     life = _life(hb.get("life"))
     if life:
         out["life"] = life
+    if isinstance(snap.get("sh"), dict):     # self-heal's one line (engine/self_heal.read_tiny): rides an ext post, after EXT_ORDER
+        out["sh"] = snap["sh"]
     try:                                           # the MFFU-style account page (engine/mffu_view.py: start, days, trades, best day, equity)
         from engine import mffu_view
         mf = mffu_view.compact(L)
         if mf:
             out["mf"] = mf
+    except Exception:  # noqa: BLE001
+        pass
+    try:                                           # the MFFU 7-day clock per account (engine/clock7: last fill, MFFU's last day,
+        from engine import clock7                  # keep-alive on / off) for the NQ page's clock card and Jarvis; no "t" (the
+        k7 = clock7.build(out.get("mf"), hb.get("keepalive"), snap.get("t"))   # post's own t dates it; ext_hash stays still)
+        if k7:
+            out["k7"] = {"a": [{k: v for k, v in r.items() if v is not None} for r in k7["a"]]}
     except Exception:  # noqa: BLE001
         pass
     try:                                           # every real account's last trades (engine/feed_trades: the Trading page's LIVE rows)
@@ -585,6 +703,8 @@ def full(snap: dict) -> dict:
         out["eh"] = snap["eh"]
     if isinstance(snap.get("zl"), dict):     # ZEUS learned (engine/zeus_learn.read_tiny, <= 220 bytes): rides an ext post (EXT_ORDER)
         out["zl"] = snap["zl"]
+    if isinstance(snap.get("ap"), dict):     # the Money pipeline card (agency/pipeline.read_card): rides an ext post (EXT_ORDER)
+        out["ap"] = snap["ap"]
     try:                                     # Olympus phone notifications (2026-11-19): the PC's PUBLIC push key + box key + its phones'
         from engine import push as _push     # short ids (engine/push.app_block); the phone subscribes with them. Core, never cut.
         if _push.app_block_ok(snap.get("wp")):
@@ -644,6 +764,16 @@ def _cuts(key: str) -> list:
             from engine import brain_glance
             brain_glance.fit(v, n)
         return f
+    def k7cut(v):                          # the 7-day clock: the plan's act day and the cautious deadline go first
+        for r in (v.get("a") or []) if isinstance(v, dict) else []:
+            if isinstance(r, dict):
+                r.pop("act", None)
+                r.pop("dl", None)
+    def glog(n):
+        def f(v):
+            from engine import brain_glance
+            brain_glance.cut_logs(v, n)
+        return f
     def eq(n):
         def f(v):
             from engine import mffu_view
@@ -663,7 +793,13 @@ def _cuts(key: str) -> list:
             from engine import feed_fills
             feed_fills.cut(v, n)
         return f
-    return {"glance": [glance(1000), glance(600)], "mf": [eq(4), eq(0)], "brd": [ev(3), ev(1), ev(0)], "life": [ev(0)],
+    def k8(*keys):                     # day-kalshi 2026-11-20: the K8 card's extras go before the whole Kalshi block would be cut
+        def f(v):
+            if isinstance(v, dict) and isinstance(v.get("k8"), dict):
+                for key in keys:
+                    v["k8"].pop(key, None)
+        return f
+    return {"kalshi_live": [k8("lg", "ls"), k8("e", "dy", "kk", "al", "pn")], "glance": [glance(1000), glance(600)], "glog": [glog(5), glog(3)], "k7": [k7cut], "mf": [eq(4), eq(0)], "brd": [ev(3), ev(1), ev(0)], "life": [ev(0)],
             "board_trades": [first(1)], "at": [at(2), at(1)], "fq": [fq(2), fq(0)]}.get(key, [])
 
 
@@ -682,7 +818,8 @@ def split(out: dict, max_bytes: int = MAX_STATUS_BYTES, parts: int | None = None
     core = _fit_core(core, max_bytes)
     base = {"v": 1, "kind": EXT_KIND, "src": "pc_report", "t": out.get("t"), "rt": _d(out.get("reporter")).get("t")}
     packs, cut = [{}], []
-    order = [k for k in EXT_ORDER if k in x] + sorted(k for k in x if k not in EXT_ORDER)
+    order = ([k for k in EXT_ORDER if k in x] + sorted(k for k in x if k not in EXT_ORDER + EXT_LAST)
+             + [k for k in EXT_LAST if k in x])
     for k in order:
         v, steps, placed = x[k], _cuts(k), False
         while not placed:
@@ -734,11 +871,42 @@ def merged(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
     return pc_feed.merge(core, exts)
 
 
+LIVE_KEYS = ("usd", "r", "R", "pnl", "unrealized_usd", "usd_now", "now_usd", "mfe", "mae", "last", "px")
+
+
+def _news_of(k, v):
+    """One ext block as news: an OPEN trade's live $ / R (they move every run while it is open) left out, so only an entry, an exit, a moved
+    stop / target or a new day moves the hash (engine/mffu_view.py: "only what changes when a trade closes or a day ends"). The live $ still
+    rides in the posted block and in the core (nqdash3 2026-11-20: an open ATLAS short made every 15-minute run an ext run)."""
+    if k == "at" and isinstance(v, dict):                     # engine/feed_trades: tr = [entry_t, exit_t, dir, qty, entry, stop, target, kind, usd, r]
+        a = []
+        for row in v.get("a") or []:
+            if isinstance(row, dict):
+                row = {**row, "tr": [(x[:8] if isinstance(x, list) and len(x) >= 2 and x[1] is None else x) for x in row.get("tr") or []]}
+            a.append(row)
+        return {**{x: y for x, y in v.items() if x != "t"}, "a": a}
+    if k == "board_trades" and isinstance(v, list):
+        return [({x: y for x, y in t.items() if x not in LIVE_KEYS} if isinstance(t, dict) and (t.get("open") is True or str(t.get("exit") or "").upper() == "OPEN") else t)
+                for t in v]
+    if isinstance(v, dict):
+        drop = CLOCK_KEYS | (ACCRUAL_KEYS.get(k) or set())
+        return {a: b for a, b in v.items() if a not in drop}
+    return v
+
+
+# 2026-11-20 09:45 ET (the PC went silent: ntfy's per-IP day cap spent): the Kalshi blocks carry a clock ("updated" / "u") and paper sums that
+# grow every 15 minutes, so every run was an ext run (2 posts) all night and morning. A clock is never news; a paper accrual is not either
+# (a new fill is: "fills" / "fill_pnl" stay in). The ext still refreshes every 2nd run (EXT_EVERY_S) with the newest numbers.
+CLOCK_KEYS = {"t", "updated", "u", "built", "rt"}
+ACCRUAL_KEYS = {"kalshi_rewards": {"days", "net", "reward", "per100_day", "fill_pnl"}, "kalshi_k1": {"days"}, "kalshi_live": {"days"},
+                "sh": {"free", "line"}}       # paper marks, free disk space: never news on their own
+
+
 def ext_hash(exts) -> str:
-    """The ext's news (block times and the brain glance left out): a new hash = post the ext now, not at the next EXT_EVERY_S."""
+    """The ext's news (block times, the brain glance and an open trade's live $ / R left out: _news_of): a new hash = post the ext now, not at
+    the next EXT_EVERY_S."""
     import hashlib
-    keep = [{k: ({a: b for a, b in v.items() if a != "t"} if isinstance(v, dict) else v) for k, v in _d(e.get("x")).items()
-             if k not in ("glance",)} for e in exts or []]
+    keep = [{k: _news_of(k, v) for k, v in _d(e.get("x")).items() if k not in ("glance", "glog")} for e in exts or []]
     return hashlib.sha1(json.dumps(keep, sort_keys=True, default=str).encode("utf-8")).hexdigest()[:16]
 
 
@@ -783,11 +951,38 @@ BARS_MIN = 12                    # fewer bars than this: no post
 BARS_TAIL_BYTES = 96 * 1024      # only the end of a bar file is read (~2,000 lines)
 BARS_TICK = 0.25                 # NQ / MNQ
 BARS_GAP_CANDLES_S = 3540        # candles: about hourly (the 4th 15-minute run), in the bots' hours only
+BARS_BUSY_GRACE_S = 900          # nqdash3 2026-11-20: an open trade changes the ext's news every run (its live $ in "at"), so every run was a
+                                 # busy run and the candles never went (04:15 -> none at 05:15 / 05:30 / 05:45 with ATLAS short open). Once the
+                                 # candles are 74 min old they go on a busy run too (one extra post that run; the daily caps still hold)
 BARS_GAP_TRADE_S = 300           # a trade opened / closed / moved: at once, but never twice in 5 minutes
 NTFY_DAY_CAP = 250               # ntfy.sh free: messages a UTC day per IP (measured 2026-11-18; the status posts use ~210)
 BARS_DAY_MAX = 24                # chart posts a UTC day, all kinds (lead 2026-11-18: "at most ~24 a day")
 BARS_TRADE_RESERVE = 6           # of those, always left for the trade levels: candles stop at 18 a day
 BARS_DAY_ALL_MAX = NTFY_DAY_CAP - BARS_DAY_MAX   # 226: no chart post once this PC counted this many posts today (the status first)
+# Trade alerts first (owner 2026-11-20: entry + exit pushes "exactly when a trade is taken and closed"): the instant entry / exit
+# alerts (engine/notify.instant_entry / instant_exit, from the bot's own process) count in this PC's day too (engine/notify.ntfy_today),
+# and the extra status posts + the chart stop TRADE_ALERT_RESERVE posts before ntfy's cap, so those posts never use up the last room
+# a trade alert needs (the core status post still goes every run: it is the PC's sign of life).
+TRADE_ALERT_RESERVE = 12
+
+
+def instant_today(now) -> int:
+    """This UTC day's instant trade alerts on ntfy (engine/notify.ntfy_today). 0 when unknown. Never raises."""
+    try:
+        from engine import notify as _n
+        return int(_n.ntfy_today(now))
+    except Exception:  # noqa: BLE001
+        return 0
+
+
+def day_used(work: str, now) -> int:
+    """This PC's ntfy posts this UTC day: the report's own (bars.json "all") + the instant trade alerts. Never raises."""
+    try:
+        st = read_json(os.path.join(work, BARS_STATE), {}) or {}
+        cnt = _d(_d(st.get("days") if isinstance(st, dict) else {}).get(_utc_day(now)))
+        return int(num(cnt.get("all")) or 0) + instant_today(now)
+    except Exception:  # noqa: BLE001
+        return 0
 BARS_STALE_S = 900               # the newest price older than this while the market is open: no post (the core says FEED STALE)
 BARS_TRADES = 12                 # closed trades in one post at most (the newest)
 
@@ -961,7 +1156,13 @@ def _chart_accounts(L: dict) -> list:
         if any(r[0] == k for r in out):
             continue
         bot = bot or ("ATLAS" if "atlas" in str(a.get("strategy") or "").lower() else "LIT")
+        if k in ("rapid25", "rapid2"):              # a Rapid is named by its size (the 1st / 2nd Rapid may be a 25K or a 50K)
+            m = re.search(r"(25|50)K", f"{a.get('plan') or ''} {a.get('name') or ''}")
+            if m:
+                label = f"Rapid {m.group(1)}K"
         out.append((k, label, bot, _badge(a.get("badge")), a))
+    r1 = next((r for r in out if r[0] == "rapid25"), None)
+    out = [(r[0], r[1] + " #2", *r[2:]) if r[0] == "rapid2" and r1 is not None and r1[1] == r[1] else r for r in out]
     if not any(r[0] == "atlas25f" for r in out):
         bd = _d(_d(L).get("board"))
         card = _d(bd.get("atlas"))
@@ -1163,7 +1364,7 @@ def _bars_hashes(post) -> tuple:
     return h([p.get(k) for k in ("t0", "p0", "n", "b", "g", "f", "sym")]), h([p.get(k) for k in ("ac", "open", "closed")])
 
 
-def bars_due(state: dict | None, post: dict | None, now: int, market_open_now: bool, busy_run: bool = False) -> tuple:
+def bars_due(state: dict | None, post: dict | None, now: int, market_open_now: bool, busy_run: bool = False, remaining=None) -> tuple:
     """(due, why): whether the chart post goes now (the budget in the block comment above; why "a trade changed" = a trade-level
     post, "hourly candles" = a candle post). busy_run: this run already sent an ext post (candles wait; trade levels never do)."""
     st = _d(state)
@@ -1175,8 +1376,10 @@ def bars_due(state: dict | None, post: dict | None, now: int, market_open_now: b
         return False, "ntfy.sh limit reached today (429): back tomorrow"
     if int(num(cnt.get("bars")) or 0) >= BARS_DAY_MAX:
         return False, f"{BARS_DAY_MAX} chart posts today (the daily share)"
-    if int(num(cnt.get("all")) or 0) >= BARS_DAY_ALL_MAX:
-        return False, f"{BARS_DAY_ALL_MAX} posts today: the status and the pushes first"
+    if int(num(cnt.get("all")) or 0) + int(num(cnt.get("inst")) or 0) >= min(BARS_DAY_ALL_MAX, NTFY_DAY_CAP - TRADE_ALERT_RESERVE):
+        return False, f"{min(BARS_DAY_ALL_MAX, NTFY_DAY_CAP - TRADE_ALERT_RESERVE)} posts today: the status and the pushes first"
+    if remaining is not None and int(remaining) - 1 < TRADE_ALERT_RESERVE:
+        return False, f"ntfy says {int(remaining)} posts left today: the rest is kept for trade alerts"
     if not post:
         return False, "no NinjaTrader bars on this PC"
     age = int(now) - int(num(post.get("t")) or 0)
@@ -1194,7 +1397,7 @@ def bars_due(state: dict | None, post: dict | None, now: int, market_open_now: b
         return False, f"{BARS_DAY_MAX - BARS_TRADE_RESERVE} candle posts today (the rest is kept for trade levels)"
     if gap < BARS_GAP_CANDLES_S:
         return False, f"candles next in {span(BARS_GAP_CANDLES_S - gap)}"
-    if busy_run:
+    if busy_run and gap < BARS_GAP_CANDLES_S + BARS_BUSY_GRACE_S:
         return False, "this run sent the ext post: the candles go on the next run"
     return True, "hourly candles"
 
@@ -1213,7 +1416,7 @@ def _nt_folder(root: str, env=None):
 
 def bars_step(work: str, cfg: dict, L: dict | None, now: int, market_open_now: bool, dry: bool = False, http=None, say=print,
               root: str = ROOT, nt_folder: str | None = None, other_posts: int = 0, limited: bool = False,
-              feed_path: str | None = None, busy_run: bool = False) -> dict:
+              feed_path: str | None = None, busy_run: bool = False, remaining=None) -> dict:
     """One chart turn of a report run: count this run's other posts, build the post, post it to the chart topic when due (bars_due;
     busy_run = this run sent an ext post), keep the state (data/pc_report/bars.json: the last post, per UTC day the counts "all" (every
     post of this PC), "bars" (chart posts), "candles" (the candle-only ones)). -> {"posted", "why", "bytes", "n"}. Never raises; never
@@ -1227,6 +1430,9 @@ def bars_step(work: str, cfg: dict, L: dict | None, now: int, market_open_now: b
         days = {k: dict(v) for k, v in _d(st.get("days")).items() if isinstance(v, dict) and str(k) >= keep}
         cnt = days.setdefault(day, {})
         cnt["all"] = int(num(cnt.get("all")) or 0) + max(0, int(other_posts or 0))
+        inst = instant_today(now)                    # the bot's instant trade alerts today (they keep their room)
+        if inst:
+            cnt["inst"] = inst
         st["days"] = days
         if limited:                                    # the core or a push met ntfy's daily cap this run: no chart today
             st["blocked"] = day
@@ -1235,7 +1441,7 @@ def bars_step(work: str, cfg: dict, L: dict | None, now: int, market_open_now: b
             res["why"] = "no status topic"
         else:
             post = bars_post(L, int(now), root, nt_folder) if market_open_now else None
-            due, why = bars_due(st, post, int(now), market_open_now, busy_run=bool(busy_run))
+            due, why = bars_due(st, post, int(now), market_open_now, busy_run=bool(busy_run), remaining=remaining)
             res["why"] = why
             if due:
                 body = json.dumps(post, separators=(",", ":"), ensure_ascii=False)
@@ -1244,7 +1450,7 @@ def bars_step(work: str, cfg: dict, L: dict | None, now: int, market_open_now: b
                     say(f"[dry] chart bars ({post.get('n')} bars, {len(post.get('open') or [])} open, {len(post.get('closed') or [])} closed, "
                         f"{res['bytes']} bytes) -> {cfg.get('ntfy')}/{topic}")
                 else:
-                    ok, w = ntfy_post(cfg.get("ntfy") or NTFY_DEFAULT, topic, body, priority="min", http=http)
+                    ok, w = ntfy_post(cfg.get("ntfy") or NTFY_DEFAULT, topic, _signed(body, real=http is None), priority="min", http=http)
                     if ok:
                         hb, ht = _bars_hashes(post)
                         st.update(t=int(now), hb=hb, ht=ht, n=post.get("n"), bytes=res["bytes"])
@@ -1451,7 +1657,7 @@ def events(state: dict, snap: dict) -> tuple:
             msgs.append({"key": key, "keys": [key] + ([ev["pair"]] if both else []), "title": ev["title"],
                          "body": ((ev["both"] if both else ev["body"]) + (" " + note if note else "")).strip(),
                          "priority": "high" if key.startswith("open") else "default",
-                         "tags": "chart_with_upwards_trend" if key.startswith("open") else "checkered_flag"})
+                         "tags": "chart_with_upwards_trend" if key.startswith("open") else "checkered_flag", "ev_t": t})
     # real fill vs plan (tools/fill_check.py): every flag of a NinjaTrader trade, once, high priority at any hour (a real account)
     for r in revs:
         try:                            # one odd review never stops the run (the status and the other alerts still go out)
@@ -1625,6 +1831,11 @@ def card(snap: dict, cfg: dict | None = None, last: dict | None = None) -> list:
         rp.append("GitHub off" if gh else "GitHub pushes still on (double-click BOTS_BACK.bat)")
     if snap.get("alerts_pc"):
         rp.append("Telegram on")
+    if snap.get("alert_bus"):
+        rp.append("alerts via Telegram / Discord first (alert bus)")
+    if "wp" in snap and not cfg.get("topic") and not _d(snap.get("wp")).get("d") and not snap.get("alert_bus"):     # a real run knows the phones (engine/push.app_block)
+        rp.insert(0, "NO PHONE ALERT ROUTE: no Olympus phone and no ntfy alert topic, so trade alerts reach nobody "
+                     "(check: python -X utf8 -m engine.alert_check)")
     rep_ok = bool(cfg.get("topic")) and last.get("ok") is not False
     rows.append(("OK" if rep_ok else "SKIP", "REPORT", "; ".join(rp)))
     # 6 NEXT window
@@ -1708,6 +1919,45 @@ def run_unlock(p):
             pass
 
 
+_NO_BUS = object()
+
+
+def _forget(new_state: dict, m: dict) -> None:
+    """An alert that did not go: forget it so the next run tries again (conditions keep their state; a trade key is retried)."""
+    if m["key"].startswith(("open:", "close:", "fill:", "watch:")):
+        for k in m.get("keys") or [m["key"]]:
+            new_state["seen"].pop(k, None)
+    elif m["key"].startswith("guard:"):
+        _d(_d(new_state.get("guard")).get("sent")).pop(m["key"], None)
+
+
+def _bus_alerts(msgs, rec: dict, snap: dict, new_state: dict):
+    """engine/alert_bus (owner 2026-11-21): the report's alerts go Telegram / Discord first (ntfy's private topic and the phone
+    app are its fallbacks), so they never use the ntfy room the status posts need. None = the bus is off / not set up: the
+    old loop runs, exactly. Waits up to 90 s for the deliveries (this is a 15-minute script, not the trading loop)."""
+    try:
+        from engine import alert_bus as AB
+        if not AB.active():
+            return None
+    except Exception:  # noqa: BLE001
+        return None
+    done: dict = {}
+    for m in msgs:
+        r = AB.send(AB.from_report(m), on_done=lambda res, k=m["key"]: done.__setitem__(k, res))
+        if r in ("dup", "sent"):
+            done.setdefault(m["key"], {"ok": True, "receipts": {"bus": r}})
+    AB.drain(90)
+    for m in msgs:
+        res = done.get(m["key"]) or {}
+        if res.get("ok"):
+            rec["sent_n"] = int(rec.get("sent_n") or 0) + 1
+            rec["alerts_last"] = {"t": snap["t"], "title": m["title"], "via": ",".join(_d(res.get("receipts")))}
+        else:
+            rec["errors"].append("alert: the alert bus could not deliver it (data/alert_bus.jsonl)")
+            _forget(new_state, m)
+    return True
+
+
 def _app_push(m: dict) -> bool:
     """One report alert to the phone app (Olympus, engine/push.app_send with the PC's own key): True = a phone took it."""
     try:
@@ -1715,6 +1965,80 @@ def _app_push(m: dict) -> bool:
         return bool(_push.app_send(_push.report_payload(m)).get("sent"))
     except Exception:  # noqa: BLE001
         return False
+
+
+def _kind(m: dict) -> str:
+    try:
+        from engine import notify as _n
+        return m.get("kind") or _n.kind_of(m.get("key"))
+    except Exception:  # noqa: BLE001
+        k = str(m.get("key") or "")
+        return "trade_opened" if k.startswith("open:") else "trade_closed" if k.startswith("close:") else "other"
+
+
+def _trade_alert(m: dict) -> bool:
+    """A report alert about a trade's entry or result ("open:<acct>:<t>" / "close:<acct>:<t>"): it goes to ntfy too (2026-11-20)."""
+    return _kind(m) in ("trade_opened", "trade_closed")
+
+
+def _dual_alert(m: dict) -> bool:
+    """An alert for BOTH phone routes (engine/notify.dual, 2026-11-20): a trade's entry / result, PASSED / FAILED / LOCKED / payout
+    ready / a quiet eval (account_status), room low (when turned on), problems (bot down, NinjaTrader closed, FEED STALE, a fill
+    check, a missed entry). Every other alert, "Back to normal" included: the phone app first, ntfy only when no phone took it."""
+    try:
+        from engine import notify as _n
+        return _n.dual(_kind(m), m.get("key"))
+    except Exception:  # noqa: BLE001
+        return _trade_alert(m)
+
+
+def _routes_mode() -> str:
+    """notify_settings.json trade_routes: "both" (default) | "olympus" | "ntfy" (engine/notify.trade_routes). Never raises."""
+    try:
+        from engine import notify as _n
+        return _n.trade_routes()
+    except Exception:  # noqa: BLE001
+        return "both"
+
+
+def _app_had(m: dict) -> bool:
+    """The bot's instant path already put this trade alert on the phone app and ntfy did not take it (engine/notify.instant_record
+    app_only): the report sends only its ntfy copy (engine/notify.report_copy == "ntfy"). Per account: ATLAS's alert never counts for
+    LIT's row on the same bar. The report's one "lit" row is titled the 50K, so only the 50K's own app-only alert earns that copy; an
+    extra LIT account's (the 25K #2, the Rapid's LIT lane) makes notify.apply drop the row instead (skeptic 2026-11-20: it came back
+    on ntfy as a false "Zlarior 50K opened / closed" with the 50K's day $ and room)."""
+    try:
+        from engine import notify as _n
+        return _n.report_copy(m, kind=_kind(m)) == "ntfy"
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def _alert_app(m: dict, app_push, rec: dict, t) -> bool:
+    """One report alert to the phone app (run_once): True = a phone took it. Never raises."""
+    try:
+        ok = bool(app_push(m))
+    except Exception:  # noqa: BLE001
+        ok = False
+    if ok:
+        rec["app_sent"] = int(rec.get("app_sent") or 0) + 1
+        rec["alerts_last"] = {"t": t, "title": m["title"], "via": "app"}
+    return ok
+
+
+def _alert_ntfy(m: dict, cfg: dict, rec: dict, t, http=None) -> bool:
+    """One report alert to the private ntfy topic (run_once): True = ntfy took it; a refusal goes to rec["errors"]."""
+    ok, why = ntfy_post(cfg["ntfy"], cfg["topic"], m["body"], title=m["title"], priority=m.get("priority"), tags=m.get("tags"), http=http)
+    if ok:
+        rec["alerts_last"] = {"t": t, "title": m["title"]}
+    else:
+        rec["errors"].append("alert: " + why)
+    return ok
+
+
+# An app-had trade copy (the phone app got it at once, ntfy refused) is retried on ntfy every 15 minutes only while the trade event
+# is this recent: after ntfy's day cap a late copy would land hours later, after the reset (skeptic 2026-11-20).
+APP_HAD_RETRY_S = 2 * 3600
 
 
 def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, now=None, root: str = ROOT, port=PORT_DEFAULT,
@@ -1737,6 +2061,8 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
            "status_t": last.get("status_t"), "alerts_last": last.get("alerts_last"), "errors": [],
            # the Launch card (tools/launch_card.report_state) reads only this file: whether alerts go out, never the topic itself
            "alerts_on": bool(cfg["topic"]) and bool(cfg["on"])}
+    if "wp" in snap:                                # the routes a trade alert has (2026-11-20): Olympus phones + the private ntfy topic
+        rec["alert_routes"] = {"phones": len(_d(snap.get("wp")).get("d") or []), "ntfy": rec["alerts_on"]}
     status, exts = posts(snap)
     try:                                    # the trade alerts' account names (engine/mffu_view.push_name, engine/notify.entry_message)
         from engine import mffu_view
@@ -1752,12 +2078,17 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
     if cfg["status_topic"] and status.get("t"):
         h = ext_hash(exts)
         due = bool(exts) and (h != last.get("ext_h") or not num(last.get("ext_t")) or snap["t"] - float(last["ext_t"]) >= EXT_EVERY_S)
+        quota = None if dry else ntfy_quota(cfg["ntfy"], http=http)
+        rec["ntfy_quota"] = quota
+        if due and not dry and (day_used(work, snap["t"]) + len(exts) > NTFY_DAY_CAP - TRADE_ALERT_RESERVE or quota_holds(quota, len(exts))):
+            due = False                               # the last room of ntfy's day stays for the trade alerts (this file's count OR ntfy's own)
+            rec["ext_held"] = "ntfy budget: the last posts of the day are kept for trade alerts"
         for e in exts if due else []:
             body = json.dumps(e, separators=(",", ":"), default=str, ensure_ascii=False)
             if dry:
                 say(f"[dry] status ext {e.get('part')} ({len(body.encode('utf-8'))} bytes: {', '.join(_d(e.get('x')))}) -> {cfg['ntfy']}/{cfg['status_topic']}")
                 continue
-            ok, why = ntfy_post(cfg["ntfy"], cfg["status_topic"], body, priority="min", http=http)
+            ok, why = ntfy_post(cfg["ntfy"], cfg["status_topic"], _signed(body, real=http is None), priority="min", http=http)
             if not ok:
                 rec["errors"].append("status ext: " + why)
                 due = False
@@ -1772,7 +2103,9 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
         if dry:
             say(f"[dry] status ({len(body.encode('utf-8'))} bytes) -> {cfg['ntfy']}/{cfg['status_topic']}")
         else:
-            ok, why = ntfy_post(cfg["ntfy"], cfg["status_topic"], body, priority="min", http=http)
+            ok, why = ntfy_post(cfg["ntfy"], cfg["status_topic"], _signed(body, core=True, real=http is None), priority="min", http=http)
+            if SIGN_STATE.get("why") and SIGN_STATE["why"] != "off (LE_STATUS_SIGN=0)":
+                rec["unsigned"] = SIGN_STATE["why"]  # posted all the same; the run record says why it went unsigned
             if ok:
                 rec["status_t"] = snap["t"]
                 posted += 1
@@ -1785,33 +2118,49 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
     # alerts -> your private topic
     state = read_json(os.path.join(work, "state.json"), {}) or {}
     new_state, msgs = events(state, snap)
-    sent = 0
-    for m in msgs:
+    sent = nposted = 0                              # every delivery / the alert posts that used ntfy's day (the chart's share)
+    mode = _routes_mode()
+    ntfy_on = bool(cfg["topic"]) and bool(cfg["on"])
+    # engine/alert_bus (day-alerts 2026-11-21): set up = Telegram / Discord first (ntfy + the app its fallbacks); off = this loop, exactly
+    bus_ok = _bus_alerts(msgs, rec, snap, new_state) if (not dry and http is None and app_push is not _NO_BUS) else None
+    for m in (msgs if bus_ok is None else []):
+        # 2026-11-20: a trade's entry / result and the important alerts (_dual_alert: PASSED / FAILED / LOCKED / payout ready, room
+        # low, problems, PC silent) go to the phone app AND to ntfy (a push service's "accepted" is not proof the phone showed it);
+        # every other alert: the phone app first, the ntfy copy only when no phone took it (as before). notify_settings.json
+        # trade_routes "olympus" / "ntfy" puts one route first for those too (the other stays the fallback).
+        dual = _dual_alert(m)
+        both = dual and mode == "both"
+        ntfy_first = dual and mode == "ntfy"
+        trade = _trade_alert(m)
+        had = trade and _app_had(m)                 # the instant path already put this trade on the phone app
         if dry:
             if app_push is not None:
-                say(f"[dry] push -> the phone app (Olympus), else {cfg['topic'] or 'nothing'}: {m['title']}: {m['body']}")
-            elif cfg["topic"] and cfg["on"]:
+                order = ("ntfy first, else the phone app (Olympus)" if ntfy_first else
+                         f"the phone app (Olympus) {'and' if both else 'else'} ntfy")
+                say(f"[dry] push -> {order} ({cfg['topic'] or 'no topic'}): {m['title']}: {m['body']}")
+            elif ntfy_on:
                 say(f"[dry] push -> {cfg['topic']}: {m['title']}: {m['body']}")
             continue
-        if app_push is not None:                    # the phone app first; the ntfy copy only when no phone took it (never twice)
-            try:
-                took = bool(app_push(m))
-            except Exception:  # noqa: BLE001
-                took = False
-            if took:
-                sent += 1
-                rec["app_sent"] = int(rec.get("app_sent") or 0) + 1
-                rec["alerts_last"] = {"t": snap["t"], "title": m["title"], "via": "app"}
-                continue
-        if not cfg["topic"] or not cfg["on"]:
-            continue
-        ok, why = ntfy_post(cfg["ntfy"], cfg["topic"], m["body"], title=m["title"], priority=m.get("priority"), tags=m.get("tags"), http=http)
-        if ok:
-            sent += 1
-            rec["alerts_last"] = {"t": snap["t"], "title": m["title"]}
+        took = had                                  # the phone app has it (at once, or in this run)
+        nt = None                                   # ntfy: True / False, None = not tried
+        if ntfy_first:
+            nt = _alert_ntfy(m, cfg, rec, snap["t"], http) if ntfy_on else None
+            if not nt and not had and app_push is not None:
+                took = _alert_app(m, app_push, rec, snap["t"])
+                sent += int(took)
         else:
-            rec["errors"].append("alert: " + why)
-            # not sent: forget it so the next run tries again (conditions keep their state; a trade key is retried)
+            if not had and app_push is not None:
+                took = _alert_app(m, app_push, rec, snap["t"])
+                sent += int(took)
+            if ntfy_on and (both or not took):
+                nt = _alert_ntfy(m, cfg, rec, snap["t"], http)
+        if nt:
+            sent += 1
+            nposted += 1
+        if nt is False and (not took or (had and (both or ntfy_first) and snap["t"] - int(num(m.get("ev_t")) or snap["t"]) <= APP_HAD_RETRY_S)):
+            # not on ntfy: forget it so the next run tries again (conditions keep their state; a trade key is retried). Once one
+            # route took it in this run there is no retry (it would reach the phone app twice); an app-had trade copy is retried for
+            # its ntfy copy only, for APP_HAD_RETRY_S
             if m["key"].startswith(("open:", "close:", "fill:", "watch:")):
                 for k in m.get("keys") or [m["key"]]:
                     new_state["seen"].pop(k, None)
@@ -1824,11 +2173,11 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
     try:
         rec["bars"] = bars_step(work, cfg, snap.get("live") if isinstance(snap.get("live"), dict) else {}, snap["t"],
                                 bool(snap.get("market_open")), dry=dry, http=http, say=say, root=root, nt_folder=_nt_folder(root, env),
-                                other_posts=0 if dry else posted + sent, limited=any("rate limit" in str(e) for e in rec["errors"]),
-                                feed_path=feed_path, busy_run=ext_n > 0)
+                                other_posts=0 if dry else posted + nposted, limited=any("rate limit" in str(e) for e in rec["errors"]),
+                                feed_path=feed_path, busy_run=ext_n > 0, remaining=(rec.get("ntfy_quota") or {}).get("remaining"))
     except Exception as e:  # noqa: BLE001
         rec["bars"] = {"posted": False, "why": f"chart failed softly: {e.__class__.__name__}"}
-    rec.update(sent=sent, queued=len(msgs), ok=not rec["errors"])
+    rec.update(sent=sent + int(rec.pop("sent_n", 0) or 0), queued=len(msgs), ok=not rec["errors"])
     if not dry:
         write_json(os.path.join(work, "last.json"), rec)
         log_line(work, {k: rec.get(k) for k in ("t", "ok", "hb_t", "server", "problems", "sent", "errors")})
@@ -1964,6 +2313,14 @@ def main(argv=None) -> int:
         try:
             from engine import kalshi_live as _klv
             _klv.maybe_run(say=(lambda *_: None) if a.quiet else print)
+        except Exception:
+            pass
+        # self-heal (engine/self_heal.py, docs/SELF_HEAL.md), LAST: it may run pip for a few minutes. At most once an hour the known PC
+        # faults get their logged remedy (stale git lock, a file in the update's way, stuck order files, stale pid, missing packages,
+        # clock) + the weekly disk clean; one alert only when it could NOT fix something. Never starts, stops, arms or routes the bot; LE_SELF_HEAL=0 = off; soft
+        try:
+            from engine import self_heal as _sh
+            _sh.maybe_run(say=(lambda *_: None) if a.quiet else print)
         except Exception:
             pass
     return 0

@@ -418,7 +418,7 @@ def test_pitch():
     e = k["email"]
     check("c. the email with placeholders is marked NOT READY TO SEND (CAN-SPAM needs a real sender and postal address)", e.startswith("NOT READY TO SEND") and not k["ready"])
     check("c. the email: honest subject, the demo link, the price from the settings file, an ad line, the postal address, an opt-out",
-          "Subject: A free website preview for Joe's" in e and "https://joes-barber-co-demo.netlify.app" in e and "$499 to set it up" in e and "$49 a month" in e
+          "Subject: A free website preview for Joe's" in e and "https://joes-barber-co-demo.netlify.app" in e and "$1,500 to set it up" in e and "$79 a month" in e
           and "This is a one-time offer of web design services" in e and "YOUR STREET ADDRESS" in e and 'Reply "no thanks"' in e)
     filled = json.load(open(CFG.EXAMPLE, encoding="utf-8"))
     filled["agency"].update(name="Pine Street Web", your_name="Sam Rivera", phone="(970) 555-0177", email="sam@pinestreetweb.example", postal_address="12 Pine St, Fort Collins, CO 80521")
@@ -448,13 +448,14 @@ def test_pitch():
     roof = dict(lead_fixture(name="Highroad Roofing", category="roofer", slug="highroad-roofing", website="https://highroadroofing.example/"))
     roof.update(L.score(roof, {"issues": [A.issue("site_down", 55, "Their website does not open (error 500)")]}))
     kr = P.kit(roof, cfg2, "https://highroad-roofing-demo.netlify.app")
-    check("c. a roofer with a broken site: the Growth package ($999 + $79), the email names the problem (did not open), the one-pager lists it",
-          kr["package"] == "growth" and kr["setup"] == 999 and kr["monthly"] == 79 and "did not open" in kr["email"] and "The site did not open" in kr["html"], (kr["package"], kr["problem"]))
+    check("c. a roofer with a broken site: the one price book's Starter site ($599 here, the owner's own number + $79), the email names the problem (did not open), the one-pager lists it",
+          kr["package"] == "starter" and kr["setup"] == 599 and kr["monthly"] == 79 and "did not open" in kr["email"] and "The site did not open" in kr["html"], (kr["package"], kr["problem"]))
     plan = M.plan(CFG.load(CFG.EXAMPLE), M.load_pricing())
     four = next(r for r in plan["rows"] if r["new_per_month"] == 4)
-    check("c. the money math: average sale $799 + $66 a month; 4 new clients a month passes $5,000 a month in month 8 (128 calls a month, about 6 a day)",
-          (plan["avg_setup"], plan["avg_monthly"]) == (799.0, 66.0) and four["months_to_goal"] == 8 and plan["pace"]["new_per_month"] == 4 and plan["pace"]["dials"] == 128
-          and plan["care_clients_for_goal_alone"] == 76, (plan["avg_setup"], plan["avg_monthly"], four, plan["pace"]))
+    check("c. the money math (price book 2026-11-21, mix 90% Starter / 10% Call engine): average sale $1,400 + $101 a month; 4 new clients "
+          "a month pass $5,000 in month 1; the pace is 3 a month (96 calls a month, about 5 a day)",
+          (plan["avg_setup"], plan["avg_monthly"]) == (1400.0, 101.0) and four["months_to_goal"] == 1 and plan["pace"]["new_per_month"] == 3 and plan["pace"]["dials"] == 96
+          and plan["care_clients_for_goal_alone"] == 50, (plan["avg_setup"], plan["avg_monthly"], four, plan["pace"]))
     pr = M.load_pricing()
     check("c. the pricing research lists its sources with links and the date it was read", pr["checked"] == "2026-11-17" and len(pr["market"]) >= 8
           and all(x["url"].startswith("https://") and x["source"] for x in pr["market"] + pr["hosting"] + pr["rules"]))
@@ -488,7 +489,7 @@ import(process.argv[2]).then((C) => {
   o.defaults = [C.stageOf(data.leads.find((l) => !l.demo_built), s), built ? C.stageOf(built, s) : 'none', v0.filter((v) => v.stage === 'demo').length];
   s = C.update(s, id0, { called: true }, T);
   s = C.update(s, id0, { stage: 'callback', callback: '2026-11-13' }, T);
-  s = C.update(s, id1, { stage: 'won', price: 1200, monthly: 99 }, T);
+  s = C.update(s, id1, { stage: 'won', price: 1800, monthly: 99 }, T);
   s = C.update(s, id1, { notes: 'Owner is Sam. Wants a gallery.' }, T);
   const e0 = C.entry(s, id0), e1 = C.entry(s, id1);
   o.update = [e0.stage, e0.calls, e0.last_call, e0.callback, e1.stage, e1.won, e1.price, e1.monthly, e1.notes, s.log.length];
@@ -506,7 +507,7 @@ import(process.argv[2]).then((C) => {
     C.toCSV([{ ...vs[0], notes: 'a, ' + Q + 'b' + Q }]).includes(Q + 'a, ' + Q + Q + 'b' + Q + Q + Q)];
   const s2 = C.update(s, id1, { stage: 'lost' }, T);
   o.lost = [C.entry(s2, id1).won, C.update(s2, id0, { stage: 'dnc' }, T).leads[id0].callback, C.money(1234.5), C.money(-3), C.weekStart('2026-11-14'), C.addDays('2026-12-31', 1)];
-  o.words = [C.heroLine(C.pipeline(C.views(data, C.emptyState()), T, 5000)).startsWith('No client yet'), C.heroLine(p).startsWith('1 client: $1,200 in setup fees this month + $99 a month'), C.planRows(data.plan).length];
+  o.words = [C.heroLine(C.pipeline(C.views(data, C.emptyState()), T, 5000)).startsWith('No client yet'), C.heroLine(p).startsWith('1 client: $1,800 in setup fees this month + $99 a month'), C.planRows(data.plan).length];
   console.log(JSON.stringify(o));
 });
 """
@@ -535,7 +536,7 @@ def test_crm_static():
     fx = json.load(open(os.path.join(d, "fixture.json"), encoding="utf-8"))
     check("d. the published data: the 20 Fort Collins leads (marked sample city), 3 demo sites built, the attribution, no owner data (placeholders only), every opener under 80 words",
           len(data["leads"]) == 20 and data["sample"] is True and sum(l["demo_built"] for l in data["leads"]) == 3 and "OpenStreetMap" in data["attribution"]
-          and data["agency"] == {"name": "YOUR AGENCY", "ready": False} and all(len(l["opener"].split()) <= 80 for l in data["leads"]) and data["plan"]["pace"]["new_per_month"] == 4)
+          and data["agency"] == {"name": "YOUR AGENCY", "ready": False} and all(len(l["opener"].split()) <= 80 for l in data["leads"]) and data["plan"]["pace"]["new_per_month"] == 3)
     check("d. the DEMO fixture: invented businesses in an invented town with 555-01xx numbers, labelled 'EXAMPLE ... not real'",
           fx["demo"] is True and "not real" in fx["note"] and all(l["phone"].startswith("(555) 555-01") for l in fx["leads"]) and all("Maple Falls" in l["address_line"] for l in fx["leads"]))
     out = AK.node(APP, CORE_HARNESS, os.path.join(d, "leads.json"), os.path.join(d, "fixture.json"))
@@ -552,14 +553,14 @@ def test_crm_static():
           o["junk"] == [1, 100, "", "", "", None, None], o["junk"])
     check("d. core: only safe links: tel:+1..., https:// only, mailto with the subject and body encoded", o["links"] == ["tel:+19705550142", "", "https://a.example/x", "", "", True, ""], o["links"])
     check("d. core: a lead starts as New lead, a built demo as Demo built (3 of them)", o["defaults"] == ["new", "demo", 3], o["defaults"])
-    check("d. core: Call marks it contacted (1 call, today); a call-back day keeps the date; Won keeps the day, the price $1,200 + $99, the note; every stage change is logged",
-          o["update"] == ["callback", 2, "2026-11-14", "2026-11-13", "won", "2026-11-14", 1200, 99, "Owner is Sam. Wants a gallery.", 3], o["update"])
-    check("d. core: the money: 1 won = $1,200 setup this month + $99 care = $1,299 (26% of $5,000), 1 called this week, the open deals and a smaller weighted figure",
-          o["pipe"][:9] == [1, 1200, 99, 1299, 260, 1, 1, 1, True] and o["pipe"][9] is True and o["pipe"][10] == 19, o["pipe"])
+    check("d. core: Call marks it contacted (1 call, today); a call-back day keeps the date; Won keeps the day, the price $1,800 + $99 (above the $1,500 Starter, so it sorts first by value), the note; every stage change is logged",
+          o["update"] == ["callback", 2, "2026-11-14", "2026-11-13", "won", "2026-11-14", 1800, 99, "Owner is Sam. Wants a gallery.", 3], o["update"])
+    check("d. core: the money: 1 won = $1,800 setup this month + $99 care = $1,899 (38% of $5,000), 1 called this week, the open deals and a smaller weighted figure",
+          o["pipe"][:9] == [1, 1800, 99, 1899, 380, 1, 1, 1, True] and o["pipe"][9] is True and o["pipe"][10] == 19, o["pipe"])
     check("d. core: Call today = the due call-back first, then new leads with a phone, never a won one", o["today"] == [5, True, True, 0], o["today"])
     check("d. core: filters by stage, search in the notes, sort by name / value, trade filter", all(x is True or x == 1 for x in o["filter"]), o["filter"])
     check("d. core: export -> import gives the same notes back; broken JSON, another kind, an empty object and empty text are refused in plain words",
-          o["io"] == ["agency-crm", True, 2, 1200, False, True, False, False, False], o["io"])
+          o["io"] == ["agency-crm", True, 2, 1800, False, True, False, False, False], o["io"])
     check("d. core: CSV with a header and one row per lead, stage names, formula injection blocked ('=SUM -> '\\'=SUM), quotes escaped", o["csv"] == [True, 20, True, True, True], o["csv"])
     check("d. core: Lost clears the won day, Do not contact clears the call-back; money and day maths", o["lost"] == [None, None, "$1,235", "-$3", "2026-11-09", "2027-01-01"], o["lost"])
     check("d. core: plain words for the hero and the plan rows from the published plan", o["words"] == [True, True, 6], o["words"])

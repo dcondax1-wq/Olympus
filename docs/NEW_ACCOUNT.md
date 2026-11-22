@@ -56,7 +56,9 @@ One line per account: plan, who trades it, armed or not, balance. Then your MFFU
 - Passed: MFFU gives a funded Name. Remove the eval, then add the funded one:
   `python -X utf8 -m engine.accounts remove --name "EVAL-NAME"`, then
   `python -X utf8 -m engine.accounts add --plan builder25k --funded --start YYYY-MM-DD --name "FUNDED-NAME"`.
-  The Rapid keeps its own line: `python -X utf8 -m engine.rapid --to-funded --account "FUNDED-NAME" --start YYYY-MM-DD`.
+  The Rapid keeps its own line: `python -X utf8 -m engine.rapid --to-funded --account "FUNDED-NAME" --start YYYY-MM-DD`
+  (the 2nd Rapid: add `--slot 2`). Or `engine.accounts add --plan rapideod --funded --start YYYY-MM-DD --name "FUNDED-NAME"
+  --from "EVAL-NAME"`: `--from` (the eval that passed) is needed when two Rapid evals of that size run.
 - Rapid EOD 25K: eval $1,500 target, $1,000 trailing floor, the bot keeps each day under $427 (MFFU's 30% = $450), 4 days.
   Funded: flat around big news, payouts above $26,100; the bot tells you to ask only above $26,600 ($500 kept in).
 - ATLAS on a funded 2nd 25K: say yes to Claude. Claude wires it (it is not on yet).

@@ -40,6 +40,14 @@ STATE_NAME = "pc_silent.json"
 UA = "olympus-pc-silent/1"
 TOPIC_RX = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 MARK = ("PC stopped reporting", "PC still silent")
+PRE_MARK = "PC is off"
+# SUNDAY (day-nqops 2026-11-21, lead): the PC-silent window (engine/notify.silent_window) is weekdays 01:30-16:00 ET and never runs on
+# Sunday. scripts/schedule_pc.ps1 hibernates the PC Fri 16:35 ET and wakes it Mon 01:30 ET, and that is by design: no LIVE lane enters
+# before 02:00 ET (LIT 02:00-15:30; ATLAS EMA 03:00, MACD 02:00, S/R 09:30; the Rapid = the same lanes; LIT+Asia is cloud-only paper;
+# tests/test_nqops guards it). So a silent PC on Sunday evening is normal: ONE quiet note "asleep until the Mon 01:30 ET wake", unless a
+# 7-day clock is red, then ONE loud push with exactly what to do. A missed Monday wake is the PC-silent check's (01:30 + 20 min).
+SUNDAY_EVENING_LANES = ()            # live lanes that enter between Sun 18:00 and Mon 01:30 ET: none (see above)
+PRE_WINDOWS = ((6, 17 * 60, 18 * 60, 18 * 60, "market opens"),)        # Sunday 17:00-18:00 ET
 
 
 def http_get(url, timeout=20, limit=3_000_000) -> tuple:
@@ -139,12 +147,107 @@ def sent_today(msgs, now) -> list:
             and notify._et(m["time"]).date() == day]
 
 
+def pre_window(now):
+    """(minutes to the open, words) inside a pre-open window, else None (a CME full closure: None)."""
+    e = notify._et(now)
+    mod = e.hour * 60 + e.minute
+    for wd, a, b, at, words in PRE_WINDOWS:
+        if e.weekday() == wd and a <= mod < b:
+            try:
+                from engine.cme_calendar import full_closure
+                import datetime as _dt
+                day = e.date() + _dt.timedelta(days=1 if wd == 6 else 0)
+                if full_closure(day):
+                    return None
+            except Exception:
+                pass
+            return at - mod, words
+    return None
+
+
+def feed_clock(msgs, now) -> list:
+    """The MFFU 7-day clock rows (engine/clock7) from the newest PC ext post on the status topic that carries mf / k7."""
+    best, bt = None, -1
+    for m in msgs:
+        try:
+            j = json.loads(m.get("message") or "")
+        except Exception:
+            continue
+        x = _d(_d(j).get("x"))
+        if _d(j).get("kind") == "le-live-ext" and (x.get("k7") or x.get("mf")):
+            t = int(notify._f(m.get("time")) or 0)
+            if t > bt:
+                best, bt = x, t
+    if not best:
+        return []
+    try:
+        from engine import clock7
+        k = clock7.build(best.get("mf"), None, now) if best.get("mf") else {"a": _d(best.get("k7")).get("a") or []}
+        return list(_d(k).get("a") or [])
+    except Exception:
+        return []
+
+
+def preopen_step(prev: dict | None, seen_t, now, s: dict | None = None, fetched: bool = True, sent=(), clock=()) -> tuple:
+    """-> (state, [push]): ONE "PC is off" push per pre-open window and day while the PC's last post is stale. Never raises."""
+    try:
+        s = s or notify.settings()
+        now = int(now)
+        st = dict(_d(prev))
+        w = pre_window(now)
+        if not w or not fetched or not notify.on("pc_silent", s):
+            return st, []
+        stale = not seen_t or now - int(seen_t) > int(s.get("pc_silent_after_min", 20)) * 60
+        day = notify._et(now).date().isoformat()
+        if not stale or st.get("day") == day or any(notify._et(t).date().isoformat() == day for t in sent or ()):
+            return st, []
+        mins, words = w
+        last = notify.since_text(seen_t, now) if seen_t else "never seen"
+        red = [r for r in clock or () if isinstance(r, dict) and r.get("lvl") == "bad"]
+        st.update(day=day, t=now)
+        if red or SUNDAY_EVENING_LANES:
+            from engine import clock7
+            r = red[0] if red else None
+            body = (clock7.line(r) + ". " if r else "")
+            body += ("The PC wakes Mon 01:30 ET (as scheduled) and the bot trades from 02:00 ET: at 02:00 check the phone shows the PC "
+                     "reporting. If it is not, turn the PC on, open NinjaTrader, connect, START BOT. If there is no fill by 15:30 ET "
+                     "Monday, place 1 MNQ by hand while every account is flat (or switch on the keep-alive: KEEPALIVE_ON.bat).")
+            if SUNDAY_EVENING_LANES and not r:
+                body = f"PC asleep (last report {last}) but {', '.join(SUNDAY_EVENING_LANES)} trades Sunday evening: turn the PC on now."
+            title = (f"{r['nm']}: must trade by {r['hard']}" if r else f"{PRE_MARK}: {words} in {mins} min")
+            return st, [{"key": f"pc_preopen:{day}", "title": f"{PRE_MARK} - {title}" if r else title, "body": body[:600],
+                         "priority": "high", "tags": "warning,computer"}]
+        body = (f"Last report {last}. As scheduled it wakes Mon 01:30 ET; nothing trades before 02:00 ET. No 7-day clock is red. "
+                "Nothing to do.")
+        return st, [{"key": f"pc_preopen:{day}", "title": f"{PRE_MARK}: asleep until the Mon 01:30 ET wake (as scheduled)", "body": body[:600],
+                     "priority": "low", "tags": "zzz"}]
+    except Exception:  # noqa: BLE001
+        return dict(_d(prev)), []
+
+
 def read_hb(now):
     try:
         from engine import heartbeat
         return heartbeat.read(cwd=ROOT, now=now)
     except Exception as e:
         return {"present": False, "reason": e.__class__.__name__}
+
+
+def _bus(env=None):
+    """engine/alert_bus when the cloud has a Telegram / Discord secret (never the PC's own file here), else None (ntfy only)."""
+    try:
+        from engine import alert_bus
+        e = os.environ if env is None else env
+        c = alert_bus.config({k: v for k, v in e.items() if k.startswith(("LE_TG_", "LE_DISCORD_", "LE_ALERT_BUS"))} | {"OLYMPUS_HOME": "/nonexistent"})
+        return alert_bus if (c.get("telegram") or c.get("discord")) and not alert_bus.switched_off(e) else None
+    except Exception:
+        return None
+
+
+def _bus_cfg(bus, env=None) -> dict:
+    e = os.environ if env is None else env
+    c = bus.config({k: v for k, v in e.items() if k.startswith(("LE_TG_", "LE_DISCORD_"))} | {"OLYMPUS_HOME": "/nonexistent"})
+    return {**c, "ntfy": False, "webpush": False}          # the cloud: Telegram / Discord only; ntfy stays the old post below
 
 
 def run(out: str, now=None, env=None, get=None, post=None, hb=None, dry=False, say=print, feed: dict | None = None,
@@ -170,8 +273,23 @@ def run(out: str, now=None, env=None, get=None, post=None, hb=None, dry=False, s
     else:
         _ok, back = poll(d["base"], d["topic"], get=get)
     st, msgs = notify.silent_step(prev, seen, now, s, fetched=bool(f_ok or hb.get("present")), sent_today=sent_today(back, now))
+    pre_sent = [int(m["time"]) for m in back if str(m.get("title") or "").startswith(PRE_MARK) and notify._f(m.get("time"))]
+    st["pre"], pre = preopen_step(_d(prev.get("pre")), seen, now, s, fetched=bool(f_ok or hb.get("present")), sent=pre_sent,
+                                  clock=feed_clock(f_msgs, now))
+    msgs = list(msgs) + pre
     sent = []
+    bus = _bus(env) if not dry and post is http_post else None
+    # the bus's own state / failure log: the runner's temp folder, never `out` (cloud-monitor commits dash/ to the PUBLIC dashboard
+    # branch with git add -A; redteam 2026-11-21)
+    bus_dir = (os.environ if env is None else env).get("RUNNER_TEMP") or out
     for m in msgs:
+        if bus is not None:                       # engine/alert_bus (repo secrets LE_TG_TOKEN + LE_TG_CHAT / LE_DISCORD_WEBHOOK)
+            r = bus.deliver({"kind": "report", "key": "", "title": m["title"], "body": m["body"], "notify_type": "pc_silent",
+                             "report": True, "dual": True}, cfg=_bus_cfg(bus, env), path=os.path.join(bus_dir, "alert_bus_sent.json"),
+                            log_path=os.path.join(bus_dir, "alert_bus.jsonl"))
+            if r.get("ok"):
+                sent.append({"key": m["key"], "ok": True, "via": ",".join(r["receipts"])})
+                continue
         if not d["topic"]:
             say("pc silent: no ntfy topic to send to")
             break

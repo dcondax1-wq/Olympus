@@ -41,7 +41,10 @@ PRIVATE_NAMES = {"household.json", "agency.json", "day.json", "inbox.json", "cal
                  "invoices.json", "clients.json", "crm.json", "leads.json", "tv.json", "tv_device.json", "autostart.json", "live_state.json",
                  "push.json", "push_pc_key.json", "push_sent.json", "memory.db", "goals_money.json", "money_rules.json", "fleet.json",
                  "health.json", "cards.json", "card_tracker.json", "heartbeat_last.json", "heartbeat.json", ".env",
-                 "me.json"}                                    # the Me hub (tools/me_hub.py -> data/me/, 2026-11-15: its name was missing)
+                 "me.json",                                    # the Me hub (tools/me_hub.py -> data/me/, 2026-11-15: its name was missing)
+                 "status_sign.json",                           # the PC's status-topic signing key (tools/status_sign.py, day-security 2026-11-20)
+                 "alerts.json",                                # the alert bus keys: Telegram token + chat id, Discord webhook (day-security3)
+                 "caller.json", "linetype.json", "dnc.txt"}    # the AI caller's keys / looked-up numbers / do-not-call list (caller review 2026-11-20)
 DATA_EXT = (".json", ".jsonl", ".csv", ".txt", ".md")
 PRIVATE_PREFIXES = ("household", "health_", "cards_", "card_tracker", "bank_", "statement_")      # data files only
 PRIVATE_SUFFIXES = (".ics", ".ofx", ".qfx", ".qbo", ".pem", ".key", ".p12", ".pfx", ".env", ".jsonl", ".db", ".sqlite", ".kdbx")
@@ -49,7 +52,8 @@ PRIVATE_SUFFIXES = (".ics", ".ofx", ".qfx", ".qbo", ".pem", ".key", ".p12", ".pf
 PRIVATE_KINDS = {"olympus-household", "olympus-money-ledger", "olympus-day", "olympus-inbox", "olympus-health", "olympus-cards",
                  "olympus-card-tracker", "olympus-agency", "olympus-agency-summary", "agency-summary", "olympus-calendars",
                  # the Me hub's own files (tools/me_hub.py, me_cards.py, me_home.py, me_health.py; 2026-11-15: these kinds were missing)
-                 "olympus-me", "olympus-me-cards", "olympus-home", "olympus-health-history"}
+                 "olympus-me", "olympus-me-cards", "olympus-home", "olympus-health-history",
+                 "le-status-sign"}                                # tools/status_sign.py key file (day-security 2026-11-20)
 SECRET_KEYS = {"telegram_token", "telegram_chat", "discord_webhook", "vapid_private", "private_key", "netlify_token", "api_key", "apikey",
                "api_secret", "client_secret", "password", "passwd", "kalshi_key", "kalshi_key_id", "kalshi_private_key", "tradovate_password",
                "access_token", "refresh_token", "auth_token", "webhook_key", "push_subs"}
@@ -272,6 +276,9 @@ def _private_json(doc) -> str | None:
         bad = sorted(x for x in doc if str(x).lower() in SECRET_KEYS and doc.get(x))
         if bad:
             return "holds " + ", ".join(bad)
+        tg, dc = doc.get("telegram"), doc.get("discord")      # engine/alert_bus's alerts.json shape (day-security3 2026-11-21)
+        if (isinstance(tg, dict) and (tg.get("token") or tg.get("chat_id"))) or (isinstance(dc, dict) and dc.get("webhook")):
+            return "holds alert keys (telegram / discord)"
     return None
 
 
@@ -289,7 +296,7 @@ def private_file(rel: str, raw: bytes | None = None) -> str | None:
     return None
 
 
-JSON_HINTS = (b'"kind"', b'"private"') + tuple(b'"%s"' % k.encode() for k in sorted(SECRET_KEYS))
+JSON_HINTS = (b'"kind"', b'"private"', b'"telegram"', b'"discord"') + tuple(b'"%s"' % k.encode() for k in sorted(SECRET_KEYS))
 
 
 def _strings(raw: bytes, n: int = 8) -> str:
@@ -568,18 +575,61 @@ def public_status(obj, extra=None):
     return clean_obj(drop(obj), extra)
 
 
+_SCRUB_CACHE_MAX = 20000
+
+
+def _scrub_cache_path():
+    """LE_SCRUB_CACHE = a file path, or 0 (off). Default: logs/site_privacy_cache.json (gitignored, this checkout only)."""
+    v = os.environ.get("LE_SCRUB_CACHE")
+    if v == "0":
+        return None
+    return v or os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "logs", "site_privacy_cache.json")
+
+
+def _scrub_key(vals) -> str:
+    """what a 'clean' verdict depends on besides the file's own bytes: this module's code and the canary values"""
+    import hashlib
+    h = hashlib.sha256()
+    try:
+        with open(os.path.abspath(__file__), "rb") as fh:
+            h.update(fh.read())
+    except OSError:
+        h.update(b"?")
+    for v in vals:
+        h.update(b"\0" + str(v).encode("utf-8", "replace"))
+    return h.hexdigest()
+
+
 def scrub(site: str, extra=(), log=None, only=None) -> dict:
     """Mask / drop the private bits in a built site, in place. extra: more values to replace (canaries()); only: these site paths
-    instead of every file. Never raises. -> {"files": rewritten, "removed": [...], "masked": n, "errors": [...]}"""
-    rep = {"files": 0, "removed": [], "masked": 0, "errors": []}
+    instead of every file. Never raises. -> {"files": rewritten, "removed": [...], "masked": n, "errors": [...], "cached": n}
+    Speed (day-quality 2026-11-20: the scrub was 45 of the build's 77 s, every 15 min on the PC): a file found CLEAN (not private,
+    no hit) is remembered by sha256(path + bytes) under a key of this module's own code + the canary values; the next build skips
+    exactly those bytes. Any change to the file, the canaries or this code = scanned again. Only 'clean' is cached, never a change."""
+    import hashlib
+    rep = {"files": 0, "removed": [], "masked": 0, "errors": [], "cached": 0}
     vals = tuple(v for _label, v in extra) if extra and isinstance(next(iter(extra)), (tuple, list)) else tuple(extra or ())
     vals = tuple(v for v in vals if v and len(str(v)) >= 4)
     files = list(iter_files(site)) if only is None else [(os.path.join(site, *r.split("/")), r) for r in only
                                                           if os.path.isfile(os.path.join(site, *r.split("/")))]
+    cpath, key, seen, clean_now = _scrub_cache_path(), _scrub_key(vals), set(), []
+    if cpath:
+        try:
+            with open(cpath, encoding="utf-8") as fh:
+                c = json.load(fh)
+            if c.get("key") == key:
+                seen = set(c.get("clean") or [])
+        except (OSError, ValueError, AttributeError):
+            seen = set()
     for p, rel in files:
         try:
             with open(p, "rb") as fh:
                 raw = fh.read()
+            fp = hashlib.sha256(rel.encode("utf-8") + b"\0" + raw).hexdigest()[:32] if cpath else ""
+            if fp and fp in seen:
+                rep["cached"] += 1
+                clean_now.append(fp)
+                continue
             why = private_file(rel, raw)
             if why:
                 os.remove(p)
@@ -587,11 +637,15 @@ def scrub(site: str, extra=(), log=None, only=None) -> dict:
                 continue
             ext = os.path.splitext(rel)[1].lower()
             if ext not in TEXT_SCRUB_EXT or LICENSE_RX.search(rel):
+                if fp:
+                    clean_now.append(fp)
                 continue
             text = raw.decode("utf-8")
             low = text.lower()
             n = _hits(text) + sum(low.count(str(v).lower()) for v in vals)
             if not n:
+                if fp:
+                    clean_now.append(fp)
                 continue
             if ext == ".json":
                 try:
@@ -616,10 +670,20 @@ def scrub(site: str, extra=(), log=None, only=None) -> dict:
             rep.setdefault("changed", []).append(rel)
         except Exception as e:  # noqa: BLE001  (a file it cannot read stays as it is: the test's scan still sees it)
             rep["errors"].append(f"{rel}: {e.__class__.__name__}")
+    if cpath:
+        keep = list(dict.fromkeys(clean_now + ([x for x in seen if x not in set(clean_now)] if only is not None else [])))[:_SCRUB_CACHE_MAX]
+        try:
+            os.makedirs(os.path.dirname(cpath), exist_ok=True)
+            tmp = f"{cpath}.{os.getpid()}.tmp"
+            with open(tmp, "w", encoding="utf-8") as fh:
+                json.dump({"key": key, "clean": keep}, fh)
+            os.replace(tmp, cpath)
+        except OSError:
+            pass
     if log:
         log(f"  privacy: {rep['files']} files masked ({rep['masked']} values" + (": " + ", ".join(rep.get("changed", [])[:6]) if rep["files"] else "")
             + (" ..." if rep["files"] > 6 else "") + f"), {len(rep['removed'])} private files removed" + (": " + ", ".join(rep["removed"][:4]) if rep["removed"] else "")
-            + (f", {len(rep['errors'])} unreadable" if rep["errors"] else ""))
+            + (f", {len(rep['errors'])} unreadable" if rep["errors"] else "") + (f", {rep['cached']} unchanged clean files skipped" if rep["cached"] else ""))
     return rep
 
 

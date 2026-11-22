@@ -4,7 +4,8 @@ Decide card's items in business/decisions.json; page business/plan.html + plan.j
      Rapid EOD 50K next buy) for 3 markets, each with $ a month, the first payout (date + $), the chance to pass + likely
      pass date for the evals, the fleet with and without the next buy, the owner's real prices, nothing private
   b. decisions.json: every open item the tool values has usd_month (= impact_usd), the 3 markets, risk words, a yes / no /
-     later recommendation with its reason, the same numbers as research/lab/money_plan.json; the Decide card still passes
+     later recommendation with its reason, the same numbers as research/lab/money_plan.json (an item valued at ATLAS's real
+     fills by tools/atlas_risk.py: the same numbers as research/second/atlas_risk.json "cards"); the Decide card still passes
      its own schema (tests.test_decide part a rules)
   c. write_decisions only touches the value fields of the items it values: another helper's new proposal stays as it is
   d. the Rapid EOD 25K the plan simulates = the engine's preset (engine/multi_account mffu_rapid_eod_25k + engine/rapid.PLANS)
@@ -109,6 +110,14 @@ def part_b():
                 and it.get("recommend") in ("yes", "no", "later") and it.get("recommend_why") and it.get("risk") and "$" in it.get("impact", "")):
             bad.append((did, "fields"))
         v = lab.get(did) or {}
+        if "tools/atlas_risk.py" in str(it.get("valued") or ""):     # valued at ATLAS's real fills (2026-11-20, night-atlasrisk)
+            v = (json.loads(rd(ROOT, "research", "second", "atlas_risk.json")).get("cards") or {}).get(did) or {}
+        elif "tools/money/rapid_funded_refit.py" in str(it.get("valued") or ""):   # the Rapid funded refit (2026-11-21, day-rapid)
+            v = (json.loads(rd(ROOT, "research", "lab", "rapid_funded_refit.json")).get("cards") or {}).get(did) or {}
+        elif "tools/money/rapid25_pass.py" in str(it.get("valued") or ""):     # the Rapid 25K fastest-pass study (2026-11-21, day-rapid)
+            v = (json.loads(rd(ROOT, "research", "lab", "rapid25_pass.json")).get("cards") or {}).get(did) or {}
+        elif "tools/money/rapid25_launch.py" in str(it.get("valued") or ""):   # the Rapid 25K launch check (2026-11-20, day-rapid)
+            v = (json.loads(rd(ROOT, "research", "lab", "rapid25_launch.json")).get("cards") or {}).get(did) or {}
         if v.get("usd_month") != it.get("usd_month") or v.get("recommend") != it.get("recommend"):
             bad.append((did, "not the lab numbers", v.get("usd_month"), it.get("usd_month")))
     check("b. every valued item: $ a month (= impact_usd, Jul-Oct-like), the 3 markets, risk words, Claude's yes / no / later + why, "
@@ -148,6 +157,11 @@ def part_c():
 
 
 def part_d():
+    try:                    # the plan's Rapid spec walks the BLITZ stream (tools/blitz25k_lib, numba); numba is not in requirements*.txt,
+        import numba        # noqa: F401  so a cloud box without it skips d instead of crashing the suite
+    except ImportError as e:
+        print(f"[SKIP] d. the Rapid EOD 25K spec = the engine preset (numba missing: {e}; pip install numba to run it)")
+        return
     sys.path.insert(0, os.path.join(ROOT, "tools", "money"))
     import money_plan as MP
     from engine import multi_account as MA, rapid as RP

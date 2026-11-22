@@ -2,8 +2,9 @@
  "version": 1,
  "strategy": "clock",
  "about": "K8 clock bets, the LIVE settings the owner arms (engine/kalshi_clock.py). Any change here = live OFF until the owner types the phrase again. Bigger bets or new legs need the owner's yes; the weekly re-test may only SHRINK, through data/kalshi_live/clock_adapt.json on the PC (per leg: enabled false / size_factor < 1 / max_price lower).",
- "source": "research/lab/kalshi_candidates/K8.json, research/writeups/kalshi-metals-2026-11-19.md, red team 2026-11-19; red team final 2026-11-19 (silver 05:15 paper only, the 58c average-price kill rule)",
- "stake_usd": 15,
+ "source": "research/lab/kalshi_candidates/K8.json, research/writeups/kalshi-metals-2026-11-19.md, red team 2026-11-19; red team final 2026-11-19 (silver 05:15 paper only, the 58c average-price kill rule); $55 bankroll rule night-kalshi8 2026-11-20 (research/kalshi_k8_monday/size55.py)",
+ "bankroll_usd": 55,
+ "stake_usd": 2.5,
  "price_cap": 0.7,
  "leg_price_cap": {
   "gold_0530_down": 0.7,
@@ -15,11 +16,14 @@
  "entry_delay_s": 20,
  "expire_after_s": 40,
  "min_fill_share": 0.5,
- "max_bets_per_day": 6,
- "daily_loss_stop_usd": 60,
+ "max_bets_per_day": 3,
+ "daily_loss_stop_usd": 8,
+ "week_loss_stop_usd": 13.75,
  "kill_after_bets": 60,
  "kill_min_win_rate": 0.58,
- "kill_drawdown_usd": 75,
+ "kill_drawdown_usd": 19.25,
+ "kill_avg_price_bets": 30,
+ "kill_avg_price": 0.58,
  "live_legs": [
   "gold_0530_down",
   "gold_1700_up",
@@ -31,7 +35,5 @@
   "silver_1615_down",
   "gold_1700_up",
   "silver_1700_up"
- ],
- "kill_avg_price_bets": 30,
- "kill_avg_price": 0.58
+ ]
 }

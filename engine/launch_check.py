@@ -160,6 +160,9 @@ def facts(bot, health: dict | None = None, now=None, sim_path: str | None = None
     r = rapid_fact(bot)
     if r is not None:
         out["rapid"] = r
+    r2 = rapid_fact(bot, slot="rapid2")                 # the 2nd Rapid (data/rapid2.json), only when it is set
+    if r2 is not None:
+        out["rapid2"] = r2
     # 3. allowlist: is each real account listed (a Sim account never needs it)
     try:
         from . import ninjatrader
@@ -194,18 +197,19 @@ def facts(bot, health: dict | None = None, now=None, sim_path: str | None = None
     return out
 
 
-def rapid_fact(bot, path: str | None = None) -> dict | None:
+def rapid_fact(bot, path: str | None = None, slot: str = "rapid") -> dict | None:
     """The Rapid EOD 25K / 50K in the RUNNING bot (night-rapidready 2026-11-20: START BOT confirmed the 50K and the 25K only):
     {"label", "account", "stage", "armed", "lit", "atlas", "problem"}; None when no Rapid is set. Never raises."""
     try:
         from . import rapid
-        blk = rapid.read(path)
+        blk = rapid.read(path if path is not None or slot == "rapid" else rapid.slot_path("rapid2"))
         if not blk:
             return None
         P = rapid.plan_info(blk)
         accts = list(getattr(getattr(bot, "accts", None), "accounts", None) or [])
-        lane = next((a for a in accts if (getattr(a, "spec", None) or {}).get("lane") == "rapid"), None)
-        ar = getattr(bot, "acct_r", None)
+        lane = next((a for a in accts if (getattr(a, "spec", None) or {}).get("lane") == "rapid"
+                     and rapid.slot_of(getattr(a, "spec", None) or {}) == slot), None)
+        ar = getattr(bot, "acct_r2" if slot == "rapid2" else "acct_r", None)
         probs = []
         if lane is not None:
             probs.append(getattr(lane, "problem", None) or (lane.disabled_reason() if callable(getattr(lane, "disabled_reason", None)) else None))
@@ -324,24 +328,26 @@ def checklist(f: dict | None, health: dict | None, running: bool, now=None) -> d
         else:
             items.append(_item("blitz", "BLITZ (account C) ready", "bad",
                                f"{who}: {c.get('n_red')} red: {fx.get('label')}: {fx.get('detail')}", fx.get("fix") or cmd))
-    # 3c. the Rapid EOD, only when it is set: LIT's lane + ATLAS's lane running on its account, armed by the typed phrase
-    rp = f.get("rapid") or {}
-    if rp:
+    # 3c. the Rapid EOD (and the 2nd Rapid), only when set: LIT's lane + ATLAS's lane running on its account, armed by the phrase
+    for rk in ("rapid", "rapid2"):
+        rp = f.get(rk) or {}
+        if not rp:
+            continue
         who = f"{rp.get('label') or 'Rapid EOD'} {rp.get('account') or ''}".strip()
-        lab = f"{rp.get('label') or 'Rapid EOD'} (LIT + ATLAS)"
+        lab = f"{rp.get('label') or 'Rapid EOD'}{' #2' if rk == 'rapid2' else ''} (LIT + ATLAS)"
         if rp.get("error"):
-            items.append(_item("rapid", lab, "bad", f"check failed ({rp['error']})", STATUS_CMD))
+            items.append(_item(rk, lab, "bad", f"check failed ({rp['error']})", STATUS_CMD))
         elif not running:
-            items.append(_item("rapid", lab, "bad", f"{who}: the bot is not running", START_CMD))
+            items.append(_item(rk, lab, "bad", f"{who}: the bot is not running", START_CMD))
         elif not (rp.get("lit") and rp.get("atlas")):
             miss = " and ".join(x for x, ok in (("LIT's lane", rp.get("lit")), ("ATLAS's lane", rp.get("atlas"))) if not ok)
-            items.append(_item("rapid", lab, "bad", f"{who}: {miss} did not start (restart: STOP BOT, START BOT)", START_CMD))
+            items.append(_item(rk, lab, "bad", f"{who}: {miss} did not start (restart: STOP BOT, START BOT)", START_CMD))
         elif not rp.get("armed"):
-            items.append(_item("rapid", lab, "bad", f"{who}: running but NOT armed (START BOT + you type the phrase)", START_CMD))
+            items.append(_item(rk, lab, "bad", f"{who}: running but NOT armed (START BOT + you type the phrase)", START_CMD))
         elif rp.get("problem"):
-            items.append(_item("rapid", lab, "bad", f"{who}: {rp['problem']}", STATUS_CMD))
+            items.append(_item(rk, lab, "bad", f"{who}: {rp['problem']}", STATUS_CMD))
         else:
-            items.append(_item("rapid", lab, "good", f"{who}: both lanes running, armed ({rp.get('stage') or 'eval'})"))
+            items.append(_item(rk, lab, "good", f"{who}: both lanes running, armed ({rp.get('stage') or 'eval'})"))
     # 4. startup reconciled
     st = f.get("startup") or {}
     if not running:
