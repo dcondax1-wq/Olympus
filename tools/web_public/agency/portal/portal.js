@@ -87,6 +87,7 @@ function row(L, s, best) {
   lb.textContent = P.LANES[lane] + (lane === 'redesign' && L.score ? ' · ' + L.score + '/11' : ''); lb.classList.add(lane);
   li.querySelector('.opener').textContent = P.opener(L);
   if (lane === 'redesign' && Array.isArray(L.why) && L.why.length) { const c = li.querySelector('.checks'); c.textContent = 'Their site: ' + L.why.join(', '); c.hidden = false; }
+  if (lane === 'site_down' && L.proof) { const c = li.querySelector('.checks'); c.textContent = String(L.proof).slice(0, 200); c.hidden = false; }   // what failed + when (tools/site_down_proof.py)
   const site = li.querySelector('.site'), url = lane === 'redesign' ? P.theirSite(L) : P.siteUrl(L, conf);
   if (url) { site.href = url; if (lane === 'redesign') site.textContent = 'Their current site'; } else site.remove();
   const maps = li.querySelector('.maps');

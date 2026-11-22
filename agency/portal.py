@@ -132,6 +132,8 @@ def build(web: str = WEB, out: str = LIST) -> dict:
                      "kind": str(f.get("kind") or L.get("kind") or L.get("niche_name") or "")[:40], "code": str(f.get("code") or codes.get(lid) or ""),
                      "site": str(f.get("path") or ""), "heat": str(L.get("heat") or ""),
                      "lane": lane, "opener": OPENERS[lane].format(name=str(L["name"]).strip()[:80])})   # Overture check (tools/web_leads_overture.py)
+        if lane == "site_down" and (L.get("web") or {}).get("proof"):   # tools/site_down_proof.py: what failed + when (the caller says it out loud)
+            rows[-1]["proof"] = str(L["web"]["proof"])[:200]
         ph = rows[-1]["phone"]
         if ph and ph in listed:
             rows[-1]["dnc"] = "listed"
@@ -156,7 +158,8 @@ def build(web: str = WEB, out: str = LIST) -> dict:
             lane = r.get("lane") if r.get("lane") in ("no_site", "site_down") else "no_site"
             rows.append({"id": r["id"], "name": str(r.get("name") or "")[:80], "phone": digits(r.get("phone")), "town": str(r.get("town") or "")[:40],
                          "state": "MD", "niche": str(r.get("niche") or "other")[:20], "kind": str(r.get("kind") or "")[:40], "code": str(r.get("code") or ""),
-                         "site": str(r.get("site") or ""), "heat": str(r.get("heat") or ""), "lane": lane, "opener": OPENERS[lane].format(name=str(r.get("name") or "")[:80]),
+                         "site": str(r.get("site") or ""), "heat": str(r.get("heat") or ""), "lane": lane, "opener": str(r.get("opener") or OPENERS[lane].format(name=str(r.get("name") or "")[:80]))[:300],
+                         "proof": str(r.get("proof") or "")[:200],
                          "trade": str(r.get("trade") or "")[:30], "county": str(r.get("county") or "")[:30], "usd": int(r.get("score") or 0)})
             ph = rows[-1]["phone"]
             if ph and ph in listed:
