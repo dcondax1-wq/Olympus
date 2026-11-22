@@ -301,7 +301,10 @@ def status_view() -> dict:
         except (TypeError, ValueError):
             bal = None
         seen.append({"name": n, "balance": bal})
-    plans = [{"id": k, "label": ac.PLANS[k]["label"], "price": ac.PLANS[k]["price"], "bots": ac.PLANS[k]["bots"]} for k in PLAN_ORDER]
+    from engine import trade_home as th                  # the owner's real prices (CLAUDE.md), one list for the page and TRADE_HOME
+    short = {p["key"]: p for p in th.PLAN_MENU}
+    plans = [{"id": k, "label": ac.PLANS[k]["label"], "price": ac.PLANS[k]["price"], "bots": ac.PLANS[k]["bots"],
+              "short": (short.get(k) or {}).get("price") or "", "off": bool((short.get(k) or {}).get("off"))} for k in PLAN_ORDER]
     accts = [{"name": mask(r["name"]), "plan": ac.PLANS.get(r["plan"], {}).get("label", str(r["plan"])), "stage": r["stage"],
               "role": r["role"], "armed": r.get("armed"), "sim": r.get("sim")} for r in rows]
     return {"ok": True, "plans": plans, "accounts": accts, "slots": ac.slots_text(rows), "nt_new": seen, **bot_line()}
@@ -339,7 +342,7 @@ const $=id=>document.getElementById(id);
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 async function load(){try{const r=await fetch('status',{cache:'no-store'});const d=await r.json();
 if(!d.ok){$('acc').innerHTML='<li class="bad">'+esc(d.error||'not available')+'</li>';return}
-const keep=$('plan').value;$('plan').innerHTML=d.plans.map(p=>'<option value="'+p.id+'">'+esc(p.label)+' ('+esc(p.bots.toUpperCase())+')</option>').join('');
+const keep=$('plan').value;$('plan').innerHTML=d.plans.map(p=>'<option value="'+p.id+'">'+esc(p.label)+(p.short?' - '+esc(p.short):'')+(p.off?' (OFF until a written yes)':'')+'</option>').join('');
 if(keep)$('plan').value=keep;
 $('acc').innerHTML=d.accounts.length?d.accounts.map(a=>'<li>'+esc(a.plan)+' '+esc(a.stage)+' '+esc(a.name)+(a.armed?' · armed':' · not armed')+'</li>').join(''):'<li><small>none yet</small></li>';
 $('slots').textContent=d.slots||'';
@@ -357,6 +360,8 @@ async function press(btn,fn){btn.disabled=true;$('out').innerHTML='<div><small>w
 try{const d=await fn();show(d.lines);if(d.ok)$('ph').value='';load()}catch(e){show(['[NOT DONE] PC not reachable: nothing changed.'])}btn.disabled=false}
 $('go').onclick=()=>{const name=$('name').value.trim(),plan=$('plan').value,confirm=$('ph').value;
 if(!name){show(['[NOT ADDED] Type the Name first.']);return}
+const po=$('plan').options[$('plan').selectedIndex].text;
+if(!confirm('Add '+po+' as '+name+'? It is added HELD: not armed, nothing trades until you type the phrase.'))return;
 press($('go'),async()=>{const d=await post('add',{plan,name,confirm});if(d.ok)$('name').value='';return d})};
 $('st').onclick=()=>press($('st'),()=>post('start',{confirm:$('ph').value}));
 $('cx').onclick=()=>press($('cx'),()=>post('cancel',{}));
