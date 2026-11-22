@@ -145,6 +145,12 @@ def main() -> int:
           and [r["rank"] for r in rows] == list(range(1, len(rows) + 1)))
     check("c. the calling-hours reader: open 5 weekdays for 'Mo-Fr 09:00-17:00', 0 for 'Mo-Fr 18:00-23:00', 0 unknown",
           FC.weekday_open_days("Mo-Fr 09:00-17:00") == 5 and FC.weekday_open_days("Mo-Fr 18:00-23:00") == 0 and FC.weekday_open_days("") == 0)
+    nx = json.load(open(FC.OUT_NEXT))
+    check("c. next500.json: the next ranks (101..), same format, no overlap with the first 100, scores never above the first list's last",
+          nx["leads"] and nx["leads"][0]["rank"] == len(rows) + 1 and not ({r["id"] for r in nx["leads"]} & {r["id"] for r in rows})
+          and nx["leads"][0]["score"] <= rows[-1]["score"], nx.get("count"))
+    check("c. each call has a trade, a lane (no_site / site_down) and an opener", all(r.get("trade") and r["lane"] in ("no_site", "site_down") and r["opener"]
+                                                                                       for r in rows + nx["leads"]))
     fresh = FC.build(len(rows))
     check("c. the committed list = a fresh build (run python tools/first_calls.py after the leads change)",
           [r["id"] for r in fresh["leads"]] == [r["id"] for r in rows])
