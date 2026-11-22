@@ -908,8 +908,30 @@
     "https://help.myfundedfutures.com/en/articles/13134718-understanding-rapid-live",
     "https://myfundedfutures.com/plans/rapid-eod"
    ],
-   "checked": "2026-11-17",
+   "checked": "2026-11-22",
    "note": "live max contracts differ between the help article and the plan page; irrelevant until live"
+  },
+  "live_rules_2026_11_22": {
+   "value": {
+    "max_sim_payouts": null,
+    "five_payout_rule": "Builder only ('Builder Plans: Transition to a Live Account after: 5 consecutive payouts'); Pro: 3 payouts or $20,000; Rapid: 'Consistent payout performance reviewed and approved by our Risk Management Team'",
+    "trigger": "automatic at $10,000 net profit in ONE session (profit above $10,000 that day forfeited) or the Risk Management Team's sole discretion (their example: approved at $7,000 total profit); declining is not possible",
+    "other_accounts_at_any_live_move": "the sim-funded account goes dormant; several Rapids are combined into one live account; 'All simulated trading accounts and additional purchases are suspended during Live account operation'; evaluations stay dormant; a recently passed eval may be refunded",
+    "reserve": "up to $5,000 of sim profits to a Reserve at the move (used if the live account is breached, or paid as a bonus)",
+    "payouts": "no cap per request; daily; $500 minimum; unlock after $250 (25K) / $500 (50K) net since the last payout; buffer $1,100 / $2,100; 90/10; no consistency",
+    "max_funded_accounts": "3 Rapid EOD funded (each size) inside MFFU's 5 sim-funded total"
+   },
+   "status": "confirmed",
+   "source": [
+    "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts",
+    "https://help.myfundedfutures.com/en/articles/13134718-understanding-rapid-live",
+    "https://help.myfundedfutures.com/en/articles/18337038-rapid-eod-with-dll-a-detailed-look",
+    "https://help.myfundedfutures.com/en/articles/10101257",
+    "https://help.myfundedfutures.com/en/articles/12109396-comprehensive-faq-live-accounts-at-myfunded-futures",
+    "https://myfundedfutures.com/plans/rapid-eod"
+   ],
+   "checked": "2026-11-22",
+   "note": "settles the 2026-11-21 plan-ranking question: the 5-sim-payout rule does NOT apply to Rapid EOD. BUT any live move (a Builder's 5th payout, a $10k Rapid day, or a risk-team invite) suspends EVERY sim account incl. the Rapids"
   }
  },
  "multi_account": {
@@ -1158,6 +1180,28 @@
     "https://help.myfundedfutures.com/en/articles/13134718-understanding-rapid-live"
    ],
    "checked": "2026-11-20"
+  },
+  "live_rules_2026_11_22": {
+   "value": {
+    "max_sim_payouts": null,
+    "five_payout_rule": "Builder only ('Builder Plans: Transition to a Live Account after: 5 consecutive payouts'); Pro: 3 payouts or $20,000; Rapid: 'Consistent payout performance reviewed and approved by our Risk Management Team'",
+    "trigger": "automatic at $10,000 net profit in ONE session (profit above $10,000 that day forfeited) or the Risk Management Team's sole discretion (their example: approved at $7,000 total profit); declining is not possible",
+    "other_accounts_at_any_live_move": "the sim-funded account goes dormant; several Rapids are combined into one live account; 'All simulated trading accounts and additional purchases are suspended during Live account operation'; evaluations stay dormant; a recently passed eval may be refunded",
+    "reserve": "up to $5,000 of sim profits to a Reserve at the move (used if the live account is breached, or paid as a bonus)",
+    "payouts": "no cap per request; daily; $500 minimum; unlock after $250 (25K) / $500 (50K) net since the last payout; buffer $1,100 / $2,100; 90/10; no consistency",
+    "max_funded_accounts": "3 Rapid EOD funded (each size) inside MFFU's 5 sim-funded total"
+   },
+   "status": "confirmed",
+   "source": [
+    "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts",
+    "https://help.myfundedfutures.com/en/articles/13134718-understanding-rapid-live",
+    "https://help.myfundedfutures.com/en/articles/18337038-rapid-eod-with-dll-a-detailed-look",
+    "https://help.myfundedfutures.com/en/articles/10101257",
+    "https://help.myfundedfutures.com/en/articles/12109396-comprehensive-faq-live-accounts-at-myfunded-futures",
+    "https://myfundedfutures.com/plans/rapid-eod"
+   ],
+   "checked": "2026-11-22",
+   "note": "settles the 2026-11-21 plan-ranking question: the 5-sim-payout rule does NOT apply to Rapid EOD. BUT any live move (a Builder's 5th payout, a $10k Rapid day, or a risk-team invite) suspends EVERY sim account incl. the Rapids (same rules page for the 25K; buffer $1,100, unlock $250)"
   }
  }
 }

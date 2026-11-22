@@ -577,5 +577,112 @@
     "first_pay_med": 67.0
    }
   }
+ },
+ "rebuy2": {
+  "mffu_rapid_eod_50k": {
+   "H1": {
+    "net_6m": 30006,
+    "net_p10": 11181,
+    "owner_6m": 30237,
+    "fees_6m": 230.7,
+    "worst": -495,
+    "p_neg": 1.6,
+    "evals": 1.4,
+    "first_pay_med": 39.0,
+    "no_pay": 1.6
+   },
+   "H2": {
+    "net_6m": 13691,
+    "net_p10": 1471,
+    "owner_6m": 13930,
+    "fees_6m": 239.1,
+    "worst": -495,
+    "p_neg": 7.4,
+    "evals": 1.45,
+    "first_pay_med": 46.0,
+    "no_pay": 7.4
+   },
+   "REF": {
+    "net_6m": -311,
+    "net_p10": -495,
+    "owner_6m": 179,
+    "fees_6m": 490.5,
+    "worst": -495,
+    "p_neg": 95.3,
+    "evals": 2.97,
+    "first_pay_med": 55.0,
+    "no_pay": 95.3
+   }
+  },
+  "fn_rapid_daily_50k": {
+   "H1": {
+    "net_6m": 10075,
+    "net_p10": 4950,
+    "owner_6m": 10520,
+    "fees_6m": 445.6,
+    "worst": -450,
+    "p_neg": 1.8,
+    "evals": 2.97,
+    "first_pay_med": 23.0,
+    "no_pay": 1.8
+   },
+   "H2": {
+    "net_6m": 9278,
+    "net_p10": 4950,
+    "owner_6m": 9715,
+    "fees_6m": 437.1,
+    "worst": -450,
+    "p_neg": 2.6,
+    "evals": 2.91,
+    "first_pay_med": 27.0,
+    "no_pay": 2.6
+   },
+   "REF": {
+    "net_6m": -169,
+    "net_p10": -450,
+    "owner_6m": 281,
+    "fees_6m": 450.0,
+    "worst": -450,
+    "p_neg": 89.1,
+    "evals": 3.0,
+    "first_pay_med": 30.0,
+    "no_pay": 89.1
+   }
+  },
+  "lucid_pro_50k": {
+   "H1": {
+    "net_6m": 7544,
+    "net_p10": 3798,
+    "owner_6m": 7757,
+    "fees_6m": 212.8,
+    "worst": -378,
+    "p_neg": 2.1,
+    "evals": 1.69,
+    "first_pay_med": 38.0,
+    "no_pay": 2.1
+   },
+   "H2": {
+    "net_6m": 8098,
+    "net_p10": 3798,
+    "owner_6m": 8324,
+    "fees_6m": 225.4,
+    "worst": -378,
+    "p_neg": 3.4,
+    "evals": 1.79,
+    "first_pay_med": 36.0,
+    "no_pay": 3.4
+   },
+   "REF": {
+    "net_6m": -305,
+    "net_p10": -378,
+    "owner_6m": 69,
+    "fees_6m": 374.5,
+    "worst": -378,
+    "p_neg": 96.9,
+    "evals": 2.97,
+    "first_pay_med": 46.0,
+    "no_pay": 96.9
+   }
+  }
  }
 }

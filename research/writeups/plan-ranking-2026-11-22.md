@@ -1,13 +1,30 @@
 ---
-title: Plan ranking - every allowed eval plan for Zlarior (LIT) + ATLAS by real money (MFFU Builder / Rapid EOD 25K-50K, LucidPro / LucidFlex 50K, FundedNext Rapid Daily 50K); Rapid EOD 50K first IF MFFU keeps paying past 5 payouts, FundedNext / LucidPro first if not; no plan passes the pre-set 2021-25 loss bound, so no Decide card
+title: Plan ranking - every allowed eval plan for Zlarior (LIT) + ATLAS by real money; MFFU Rapid EOD 50K first (MFFU confirms the 5-payout rule is Builder only), FundedNext Rapid Daily 50K second; Decide cards for both with at most 2 re-buys
 family: money
 date: 2026-11-22
-status: info (ranking). No Decide card: the pre-registered buy rule (net > 0 in both 2026 halves AND a 2021-25-like loss <= 2 x the price) is met by no plan - in a 2021-25-like market every plan loses its re-buys. Nothing bought, nothing live changed.
+status: ranking + 2 Decide cards (plan-rapid50k-max2-rebuys, plan-fundednext50k-max2-rebuys, recommend yes). Unlimited re-buys meet the pre-set 2021-25 loss bound for no plan; with the lead's re-buy limit (max 2) Rapid EOD 50K (-$311 vs $330) and FundedNext (-$169 vs $300) meet it, LucidPro does not (-$305 vs $252). Nothing bought, nothing live changed.
 summary: Pre-registered (research/plans/DESIGN.md, 2 mechanics addenda before the scored run). LIT + ATLAS on ONE account per plan, ATLAS at its measured real fills (10 ticks a side), LIT as stored; eval = the live two_week LIT sizing on each plan's numbers + ATLAS's $250 / $500 lane + the best-day guard where the plan has one; funded = each plan's own payout rules from research/props/firm_rules.json (buffer, min, caps, consistency, win days, max payouts, split) with a stuck line; a failed eval / dead account is re-bought; 1,000 paths a market, every plan on the same paths. Validation: MFFU Rapid EOD 25K reproduces tools/money/rapid25_launch.py exactly (eval 85.5%, funded lost 27.2 / 38.0%, $800 a month Jul-Oct-like). 6-month net $ per account slot, Jul-Oct-like / Jan-Jun-like / 2021-25-like: Rapid EOD 50K $13,691 / $30,010 / -$560 (but $6,749 / $14,544 if MFFU stops at 5 sim payouts), FundedNext Rapid Daily 50K $9,926 / $11,887 / -$650, LucidPro 50K $8,162 / $7,622 / -$927, LucidFlex 50K $7,479 / $8,330 / -$637, Builder 50K $7,371 / $7,253 / -$574, Rapid EOD 25K $4,801 / $11,301 / -$300 ($2,850 capped), Builder 25K $2,904 / $3,288 / -$324. Apex, Take Profit Trader, Alpha, Tradeify, Topstep, Bulenox not ranked (their rules ban the bots or the cross-firm copy, or need a paid API).
 runs: research/plans/rank.py -> research/plans/results.json; research/plans/cap5.py (labelled sensitivity)
 ---
 
 ## For the owner
+
+**Settled 2026-11-22 from MFFU's own pages:** the "5 sim payouts, then live" rule is **Builder only** ("Builder Plans: Transition
+to a Live Account after: 5 consecutive payouts", help article 13745661). A Rapid / Rapid EOD account has **no payout cap** and moves
+live only at **$10,000 net in one session** (automatic) or when MFFU's Risk Management Team picks it (article 13134718). At ANY live
+move "all simulated trading accounts and additional purchases are suspended" (the Rapid, the Builders, the evals go dormant), up
+to $5,000 of sim profit goes to a Reserve, and several Rapids are combined into one live account. So the uncapped row below is
+the right one for the Rapid - but a Builder's 5th payout would pause it too. (research/lit/mffu_rules.json rapid_eod_*.live_rules_2026_11_22.)
+
+**The 2 buys (Decide cards), each with at most 2 re-buys:**
+
+| Card | Price | Jul-Oct-like a month | Jan-Jun-like a month | 2021-25-like, 6 months | Worst case | First payout (median) |
+|---|---|---|---|---|---|---|
+| plan-rapid50k-max2-rebuys: MFFU Rapid EOD 50K | $165 | **+$2,282** | +$5,001 | -$311 (95% of runs lose) | -$495 (3 evals) | ~9 weeks after the buy |
+| plan-fundednext50k-max2-rebuys: FundedNext Rapid Daily 50K | ~$150 | **+$1,546** | +$1,679 | -$169 (89% lose) | -$450 | ~5 weeks |
+| (not carded) LucidPro 50K | ~$126 | +$1,350 | +$1,257 | -$305 (over its $252 bound) | -$378 | ~7 weeks |
+
+The full ranking (unlimited re-buys):
 
 Money to you in 6 months from ONE account slot (after the firm's split, minus every eval fee and re-buy; before tax):
 
