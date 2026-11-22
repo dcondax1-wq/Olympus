@@ -161,6 +161,8 @@ def lit(hb: dict, card: dict | None) -> dict:
            "pos": _pos(c.get("position") or br.get("trade")), "day": _usd(_f(c.get("today_pnl"), _f(br.get("day_pnl")))),
            "room": _usd(c.get("room")), "mll": _usd(c.get("mll")), "log": _log(br.get("log")), "at": br.get("at"),
            "px": _f(br.get("price")), "chk": _lit_checks(br), "blk": [_t(x, 60) for x in _l(_d(br.get("guards")).get("blocking"))[:2]]}
+    if not out["armed"] and _nar("Zlarior"):
+        out["nar"] = _nar("Zlarior")             # the phone says why, not just a flag (small additive field)
     return out
 
 
@@ -239,7 +241,19 @@ def atlas(hb: dict, card: dict | None) -> dict:
            "lv": _sec_levels(S, keys, _price(hb)), "arm": arm[:2], "pos": _pos(c.get("position")), "day": _usd(c.get("today_pnl")),
            "room": _usd(c.get("room")), "mll": _usd(c.get("mll")), "log": [x[1] for x in logs[:4]],
            "px": _price(hb), "lobes": _lobes(S, keys), "dll": _usd(c.get("dll")), "dll_used": _dll_used(c)}
+    if not out["armed"] and _nar("ATLAS"):
+        out["nar"] = _nar("ATLAS")
     return out
+
+
+def _nar(who) -> str | None:
+    """Why the last START did not arm this bot, in plain words ("ATLAS is NOT armed: <reason>"); None when armed / unknown.
+    Small additive field "nar" (engine/arm_report.glance_reason reads data/arm_status.json); never raises."""
+    try:
+        from . import arm_report
+        return arm_report.glance_reason(who)
+    except Exception:  # noqa: BLE001
+        return None
 
 
 def _dll_used(c) -> int | None:

@@ -204,7 +204,7 @@ export function brain(bot, src, nowS) {
       why: s.state === 'now' ? str((g && g.why) || s.help, 300) : s.help, change: nextHelp ? `What moves it on: ${nextHelp}` : 'Tomorrow starts a new map at 18:00 ET.' };
   }
   return {
-    bot, name: g ? str(g.name, 30) : bot === 'lit' ? 'Zlarior' : 'ATLAS', what: g ? str(g.what, 80) : '', mode: g ? str(g.mode, 40) : '', on: !!(g && g.on), armed: !!(g && g.armed),
+    bot, name: g ? str(g.name, 30) : bot === 'lit' ? 'Zlarior' : 'ATLAS', what: g ? str(g.what, 80) : '', mode: g ? str(g.mode, 40) : '', on: !!(g && g.on), armed: !!(g && g.armed), nar: g && g.nar ? str(g.nar, 110) : '',
     has: !!g, stopped: pcStopped, steps: st, current: cur,
     regions: bot === 'lit' ? st.map((s) => ({ id: s.key, label: s.label, state: s.state })) : ATLAS_LOBES.map((L) => ({ id: L.id, label: L.name, state: lobeState(g, L).state, text: lobeState(g, L).text })),
     thoughts: thoughts(g, lite, bot),
@@ -216,7 +216,7 @@ export function brain(bot, src, nowS) {
       { k: 'pc', label: 'PC report', level: fa.report === null ? 'bad' : ageLevel(fa.report, 'pc'), value: fa.report === null ? 'no report' : updated(fa.report) },
       { k: 'brain', label: 'Brain glance', level: gAge === null ? 'warn' : ageLevel(gAge, 'pc'), value: gAge === null ? 'not sent' : updated(gAge) },
       { k: 'nt', label: 'NinjaTrader', level: pc.adapter === 'ninjatrader' ? 'ok' : pc.adapter ? 'warn' : 'unknown', value: pc.adapter ? str(pc.adapter, 20) : 'unknown' },
-      { k: 'run', label: 'Bot', level: pcStopped ? 'bad' : g && g.armed ? 'ok' : g && g.on ? 'warn' : 'unknown', value: pcStopped ? 'STOPPED (paper numbers)' : g ? (g.armed ? 'armed, live' : g.on ? 'on, not armed' : 'off') : 'no glance' },
+      { k: 'run', label: 'Bot', level: pcStopped ? 'bad' : g && g.armed ? 'ok' : g && g.on ? 'warn' : 'unknown', value: pcStopped ? 'STOPPED (paper numbers)' : g ? (g.armed ? 'armed, live' : g.on ? (g.nar ? str(g.nar, 110) : 'on, not armed') : 'off') : 'no glance' },
     ],
     replay: replay(bot, lite, st, nowS),
     cards,
