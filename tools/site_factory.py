@@ -238,6 +238,7 @@ def sections_of(lead: dict, niche: str):
     c = CATS.get(cat)
     raw = re.sub(r"[_]+", " ", str(lead.get("category") or "")).strip()
     kind = (c[1] if c else (raw[:1].upper() + raw[1:] if raw else NICHES[niche]["label"]))
+    kind = re.sub(r"\b(hvac|Hvac)\b", "HVAC", kind)
     return kind, (c[2] if c and c[2] else GENERIC[niche])
 
 
@@ -513,7 +514,7 @@ def trades_offer() -> str:
         pk = {x["id"]: x for x in pb["packages"]}
         st, ce = pk["starter"], pk["callengine"]
         return (f"Trades package: {st['name']} + {ce['name']} = ${st['setup'] + ce['setup']:,} setup + ${st['monthly'] + ce['monthly']}/month: "
-                "the site, your Google profile kept fresh, review requests to your real customers after each job, a monthly calls report")
+                "the site, your Google profile kept fresh, a feedback request on Google to your real customers after each job, a monthly calls report")
     except (OSError, ValueError, KeyError):
         return ""
 
@@ -535,7 +536,7 @@ def premium_parts(lead: dict, kind: str, name: str) -> tuple:
     if to:
         package += (f'<div class="pkg" data-pkg="trades"><p class="pkg-h">For a busy trade: more calls, not just a site</p><p class="pkg-p">{esc(to)}</p>'
                     '<ul><li>Most of your work comes from people searching on a phone: this keeps you at the top of the map</li>'
-                    '<li>You approve every review-request message</li></ul></div>')
+                    '<li>You approve every message that goes to your customers</li></ul></div>')
     return photo, reviews, package
 
 
