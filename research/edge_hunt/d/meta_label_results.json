@@ -882,34 +882,34 @@
   },
   "fund": {
    "H1": {
-    "per_month": 940,
-    "paid_6m": 5640,
-    "loss_6m": 2.2,
-    "first_med": 26.0,
-    "any_pay": 93.9,
-    "payouts": 3.55,
+    "per_month": 937,
+    "paid_6m": 5621,
+    "loss_6m": 2.0,
+    "first_med": 27.0,
+    "any_pay": 93.7,
+    "payouts": 3.51,
     "max_risk": 872,
-    "trades_6m": 68.7
+    "trades_6m": 69.2
    },
    "H2": {
-    "per_month": 910,
-    "paid_6m": 5463,
-    "loss_6m": 3.5,
-    "first_med": 23.0,
-    "any_pay": 91.7,
-    "payouts": 3.45,
+    "per_month": 903,
+    "paid_6m": 5416,
+    "loss_6m": 3.2,
+    "first_med": 25.0,
+    "any_pay": 91.0,
+    "payouts": 3.38,
     "max_risk": 845,
-    "trades_6m": 56.5
+    "trades_6m": 57.1
    },
    "REF": {
-    "per_month": 55,
-    "paid_6m": 329,
-    "loss_6m": 54.8,
-    "first_med": 37.0,
-    "any_pay": 17.1,
-    "payouts": 0.21,
+    "per_month": 52,
+    "paid_6m": 312,
+    "loss_6m": 54.0,
+    "first_med": 43.0,
+    "any_pay": 15.9,
+    "payouts": 0.2,
     "max_risk": 981,
-    "trades_6m": 31.0
+    "trades_6m": 31.2
    }
   }
  },
@@ -1361,33 +1361,33 @@
   "fund": {
    "H1": {
     "per_month": 947,
-    "paid_6m": 5683,
-    "loss_6m": 2.1,
-    "first_med": 26.0,
+    "paid_6m": 5680,
+    "loss_6m": 1.9,
+    "first_med": 27.0,
     "any_pay": 93.8,
-    "payouts": 3.58,
+    "payouts": 3.55,
     "max_risk": 872,
-    "trades_6m": 68.7
+    "trades_6m": 69.1
    },
    "H2": {
-    "per_month": 923,
-    "paid_6m": 5536,
-    "loss_6m": 3.7,
-    "first_med": 22.0,
-    "any_pay": 91.2,
-    "payouts": 3.49,
+    "per_month": 917,
+    "paid_6m": 5501,
+    "loss_6m": 3.4,
+    "first_med": 24.0,
+    "any_pay": 91.0,
+    "payouts": 3.44,
     "max_risk": 845,
-    "trades_6m": 55.9
+    "trades_6m": 56.3
    },
    "REF": {
-    "per_month": 55,
-    "paid_6m": 331,
-    "loss_6m": 54.3,
-    "first_med": 40.0,
-    "any_pay": 17.5,
-    "payouts": 0.21,
+    "per_month": 51,
+    "paid_6m": 307,
+    "loss_6m": 53.9,
+    "first_med": 43.0,
+    "any_pay": 15.9,
+    "payouts": 0.19,
     "max_risk": 981,
-    "trades_6m": 31.8
+    "trades_6m": 32.0
    }
   }
  },
@@ -1838,34 +1838,34 @@
   },
   "fund": {
    "H1": {
-    "per_month": 946,
-    "paid_6m": 5674,
-    "loss_6m": 2.1,
-    "first_med": 26.0,
-    "any_pay": 94.2,
-    "payouts": 3.57,
+    "per_month": 941,
+    "paid_6m": 5648,
+    "loss_6m": 1.9,
+    "first_med": 27.0,
+    "any_pay": 94.1,
+    "payouts": 3.53,
     "max_risk": 872,
-    "trades_6m": 68.8
+    "trades_6m": 69.4
    },
    "H2": {
-    "per_month": 928,
-    "paid_6m": 5569,
-    "loss_6m": 4.1,
-    "first_med": 22.0,
-    "any_pay": 90.1,
-    "payouts": 3.51,
+    "per_month": 925,
+    "paid_6m": 5550,
+    "loss_6m": 3.8,
+    "first_med": 24.0,
+    "any_pay": 89.9,
+    "payouts": 3.47,
     "max_risk": 845,
-    "trades_6m": 54.9
+    "trades_6m": 55.5
    },
    "REF": {
-    "per_month": 55,
-    "paid_6m": 330,
-    "loss_6m": 54.8,
-    "first_med": 38.0,
-    "any_pay": 17.4,
-    "payouts": 0.21,
+    "per_month": 52,
+    "paid_6m": 312,
+    "loss_6m": 54.2,
+    "first_med": 43.0,
+    "any_pay": 16.0,
+    "payouts": 0.2,
     "max_risk": 981,
-    "trades_6m": 31.1
+    "trades_6m": 31.3
    }
   }
  },
@@ -1948,34 +1948,34 @@
   },
   "fund": {
    "H1": {
-    "per_month": 929,
-    "paid_6m": 5573,
+    "per_month": 926,
+    "paid_6m": 5558,
     "loss_6m": 1.7,
-    "first_med": 26.0,
-    "any_pay": 94.5,
-    "payouts": 3.51,
+    "first_med": 28.0,
+    "any_pay": 94.3,
+    "payouts": 3.47,
     "max_risk": 581,
-    "trades_6m": 69.9
+    "trades_6m": 70.4
    },
    "H2": {
-    "per_month": 915,
-    "paid_6m": 5488,
+    "per_month": 907,
+    "paid_6m": 5445,
     "loss_6m": 3.0,
-    "first_med": 23.5,
-    "any_pay": 92.8,
-    "payouts": 3.47,
+    "first_med": 26.0,
+    "any_pay": 92.5,
+    "payouts": 3.4,
     "max_risk": 845,
-    "trades_6m": 57.7
+    "trades_6m": 58.2
    },
    "REF": {
-    "per_month": 58,
-    "paid_6m": 347,
-    "loss_6m": 52.0,
-    "first_med": 42.5,
-    "any_pay": 18.4,
-    "payouts": 0.22,
+    "per_month": 54,
+    "paid_6m": 322,
+    "loss_6m": 51.1,
+    "first_med": 45.0,
+    "any_pay": 16.7,
+    "payouts": 0.2,
     "max_risk": 981,
-    "trades_6m": 33.2
+    "trades_6m": 33.5
    }
   },
   "floored": 0

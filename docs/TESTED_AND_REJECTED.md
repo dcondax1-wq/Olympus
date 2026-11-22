@@ -4,8 +4,8 @@
   0.75 / 1.25, down-only 0.5, up-only 1.5; monthly refit, purged + embargoed, MFFU caps on the eval path): all 12 that cut size lose
   2026 H1 (-$1.6k..-$15.7k) and pass fewer 2-week evals (6.7-37% vs 44.5%); the 4 up-only ones are leverage (a flat x1.25 with no
   model makes more in H1); the only one through the money gate (tree 13 facts, up-only 1.5: +$5.7k / +$3.2k / +$0.5k, eval +$3.1k /
-  +$0.2k) is chance (shuffled multipliers beat it 29% / 45%, shuffled labels 23% / 15%, in-sample H1 +$12.4k vs +$5.7k), funded +$13-17 a month with
-  more account loss (1.7 -> 2.1%, 3.0 -> 4.1%). Overlaps `meta-labeling.md` (2026-10-23, 102 facts, 10 models, rejected). Re-entry:
+  +$0.2k) is chance (shuffled multipliers beat it 29% / 45%, shuffled labels 23% / 15%, in-sample H1 +$12.4k vs +$5.7k), funded +$15-18 a month with
+  more account loss (1.7 -> 1.9%, 3.0 -> 3.8%). Overlaps `meta-labeling.md` (2026-10-23, 102 facts, 10 models, rejected). Re-entry:
   after a STOP (any / same side / opposite / 30-min cool-off / same level re-swept same session), after BE / TARGET / cut, Monday rule
   off: 0 pass; stop-out extras 2026 H1 9 trades -$452 PF 0.28, 2021-25 60 trades -$440; same-level re-sweep 8 trades PF ~0; every
   signal the 1-a-day rule blocks 24 / 12 / 102 trades -$1.5k / +$3.6k / -$4.8k. Opposite-side re-entry +$2.3k in 2021-25 but 1 trade in 2026.

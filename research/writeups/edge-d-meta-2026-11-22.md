@@ -15,7 +15,7 @@ summary: 31 pre-registered versions (16 small-model size rules, 2 leverage contr
 - (1) 15 of 16 size rules fail the gate; all 12 that cut size lose in 2026 H1 (-$1.6k to -$15.7k) and the 4 up-only ones are the only ones that gain, because they are leverage. The one that clears the money gate (depth-2 tree, 12 facts, up-only
   1.5x on the top third) is **chance-level**: random multipliers of the same shape beat it in 29% (H1) / 45% (H2) of draws, a
   shuffled-label walk-forward beats it in 23% / 15%, half of its H1 gain is in-sample optimism (+$12.4k in-sample vs +$5.7k
-  walk-forward), it was the best of 16, and on the funded 50K it adds $13-17 a month while the chance of losing the account in 6 months goes up (1.7 -> 2.1%, 3.0 -> 4.1%).
+  walk-forward), it was the best of 16, and on the funded 50K it adds $15-18 a month while the chance of losing the account in 6 months goes up (1.7 -> 1.9%, 3.0 -> 3.8%).
 - (2) Re-entry after a stop-out: 14 extra 2026 trades in total, they lose in H1 (-$452, PF 0.28) and make +$3.7k in H2 on 5 trades
   (PF 6.8); 2021-25 -$440 (60 trades, PF 0.96). The pre-asked "second sweep of the SAME level, same session": 8 trades in
   the whole 631-trade history, PF 0.00-0.01 in every span. The signals the 1-a-day rule blocks, taken together, lose: H1 -$1.5k (PF 0.54), H2 +$3.6k (12
@@ -92,8 +92,8 @@ Reading it:
 - **Eval path (MFFU caps):** every version that cuts size passes **fewer** 2-week evals in H1 (6.7-37% vs 44.5%) and takes longer
   (median pass session 13-29 vs 11): the two_week size is already at the caps, a cut only slows it. Up-only does not speed the eval
   either: 2-week pass 44.5 / 39.1 = today's, the caps absorb the size-ups. 2-week fails stay at 0.0% in H1 / H2 for every version.
-- **Funded 50K Monte Carlo for the 3 best:** tree 13 up-only $946 / $928 / $55 a month vs today $929 / $915 / $58 (H1 / H2 / 2021-25 like),
-  but 6-month account loss 2.1 / 4.1 / 54.8% vs 1.7 / 3.0 / 52.0% and any-payout 94.2 / 90.1 vs 94.5 / 92.8%. More $ by $13-17 a month
+- **Funded 50K Monte Carlo for the 3 best:** tree 13 up-only $941 / $925 / $52 a month vs today $926 / $907 / $54 (H1 / H2 / 2021-25 like; re-run on the merged `pc` tree with the $2,000 payout-ask rule),
+  but 6-month account loss 1.9 / 3.8 / 54.2% vs 1.7 / 3.0 / 51.1% and any-payout 94.1 / 89.9 vs 94.3 / 92.5%. More $ by $15-18 a month
   for more ruin and fewer payouts: not worth it. Max drawdown at LIT size gets worse (-$2,379 vs -$2,196 H1, -$21.4k vs -$19.4k 2021-25).
 - Overlap with the Oct 23 study: it already found that what a model learns is mostly "far target = fewer wins" (R:R alone gets
   AUC 0.58 vs 0.60), which pays back in the bigger wins, so there is nothing to size on. Lane D does not contradict that.
@@ -153,5 +153,5 @@ BE / TARGET / EOD / cut (x1, x0.5, 2), Monday rule off (1). 0 winners.
 ## Files
 
 `research/edge_hunt/d/` : `common.py`, `meta_label.py`, `reentry.py`, `control_leverage.py`, `*_results.json`, `variant_log.jsonl`,
-`reentry_stdout.txt`. Reproduce: `python -X utf8 research/edge_hunt/d/meta_label.py` (2.5 min), `reentry.py` (<1 min), `control_leverage.py`.
+`reentry_stdout.txt`. Re-run on the merged origin/pc tree (current LIT code + rules, 2026-11-22): every LIT-size and eval-path number identical; only the funded Monte Carlo moved (payout-ask rule). Reproduce: `python -X utf8 research/edge_hunt/d/meta_label.py` (2.5 min), `reentry.py` (<1 min), `control_leverage.py`.
 Recommendation: keep today's LIT unchanged. Re-run the meta part when LIT has ~150 more 1m-bar trades.
