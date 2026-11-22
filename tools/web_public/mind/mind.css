@@ -68,8 +68,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--cyan); outl
   position: fixed; left: 0; right: 0; top: 0; z-index: 5; pointer-events: none;
   padding: calc(var(--st) + 8px) calc(var(--sr) + var(--gut)) 0 calc(var(--sl) + var(--gut));
   display: grid; gap: 8px; justify-items: start;
+  grid-template-columns: minmax(0, 1fr);   /* one column the width of the screen: the 9-tab dock or the Home crumbs row must scroll / wrap inside it, never widen the bar (HD sat off-screen at 390, day-a11y 2026-11-22) */
 }
-#top > * { pointer-events: auto; }
+#top > * { pointer-events: auto; max-width: 100%; }
 .topbar { position: relative; width: 100%; padding: 4px 4px 4px 10px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; min-width: 0; }
 .bar { display: flex; align-items: center; gap: 8px; min-height: 44px; }
 .logo { width: 28px; height: 28px; color: var(--cyan); filter: none; flex: none; }

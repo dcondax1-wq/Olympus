@@ -743,3 +743,15 @@ APPS / AMBIENT: `why: ['Why', '?', '#c8a24a']`, `why: 'scroll',` · FLAVOUR: `wh
   app('board', 'Board', 'trading', '#c8a24a', 'What the bot, you and Claude know: accounts, events, notes', { glyph: '▤' }),
 ```
 APPS / AMBIENT: `board: ['Board', '▤', '#c8a24a']`, `board: 'scroll',` · FLAVOUR: `board: ['columns', 'Read the board', 'tick']` · REGISTRY: `board: { kind: 'tiles', ms: 800 }`
+
+---
+# Wiring WIDGET, the iPhone widget + Glance page (2026-11-20, wired in 90cd8c33; section written 2026-11-22)
+
+App `widget` in `tools/web_public/widget/` (the Scriptable widget + the big Glance page; reads the published `dash.json`). Test `tests/test_widget*`, `tests.test_money_dash`.
+1. `jarvis/apps.js` BUILT_INS: `app('widget', 'Widget', 'money', '#c8a24a', 'Your accounts as an iPhone widget + the big Glance page', { glyph: '▣' }),` (the file spells the glyph `▣`)
+2. `olympus/olympus.js` APPS: `widget: ['Widget', '▣', '#c8a24a'],` AMBIENT: `widget: 'scroll',`
+3. `olympus/doors.js`: the Money door's `Widget + Glance` link (`widget/`).
+4. `sw.js`: `OTHER_APPS` has `'widget/'`.
+5. `python tools/apps_list_build.py` then `--check`.
+6. `olympus/intro-app.js` FLAVOUR: `widget: ['columns', 'Your accounts at a glance', 'tick'],`
+   `jarvis/transitions.js` REGISTRY: `widget: { kind: 'tiles', ms: 800 },`
