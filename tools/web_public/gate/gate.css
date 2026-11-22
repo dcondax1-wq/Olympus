@@ -457,3 +457,16 @@ html.hfx #doors4 .g-dr .hfx-glyph, html.hfx #doors4 .g-dr .hfx-lit, html.hfx #do
 .g-alinks > span { margin-right: 2px; }
 .g-alink { display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--ag-line); color: var(--ag-text); text-decoration: none; font-weight: 600; font-size: .875rem; }
 .g-alink:focus-visible { outline: 2px solid var(--ag-gold); outline-offset: 2px; }
+
+/* THE 6 MAIN DASHBOARDS (2026-11-22, owner: "I want 6 main dashboards", never More on opening): each tile = the dashboard (big link) + at most
+   2 short links under it; then ONE "More" button. Until it is tapped, Home shows only the 6 (the sections below are hidden; nothing remembers
+   that More was open, so the app always opens on the 6). OLYMPUS NIGHT tokens, 44 px taps, 2 tiles a row at 390 px. */
+.g-arena { display: flex; flex-direction: column; }
+.g-arena .g-amain { flex: 1 1 auto; min-height: 104px; height: auto; padding: 12px 12px 6px; gap: 4px; }
+.g-arena .g-aic { width: 40px; height: 40px; border-radius: 12px; font-size: 1.15rem; }
+.g-subs { display: flex; flex-wrap: nowrap; gap: 5px; padding: 0 8px 8px; }
+.g-sl { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; padding: 0 9px; border-radius: 999px;
+  border: 1px solid var(--o-line, var(--ag-line)); background: var(--ag-s0, var(--o-surface)); color: var(--ag-text); text-decoration: none; font: 600 .78rem/1 var(--ag-sans); white-space: nowrap; }
+.g-sl:focus-visible, .g-morebtn:focus-visible { outline: 2px solid var(--ag-gold); outline-offset: 2px; }
+.g-morebtn { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 52px; margin: 12px 0 0; border-radius: 16px; font-size: 1rem; }
+html:not(.g-more-open) #elseSec, html:not(.g-more-open) #now, html:not(.g-more-open) #pinSec, html:not(.g-more-open) #recentSec, html:not(.g-more-open) #lookSec { display: none !important; }

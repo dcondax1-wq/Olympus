@@ -3,6 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>/* HOME FIRST (2026-11-22, owner: "when I open Olympus it goes to More... I want 6 main dashboards"): the Olympus icon on the phone keeps the
+   address it was saved with (this page), so a fresh launch of the installed app goes to Home (gate/: the 6 dashboards) once per launch.
+   Not in a browser tab, not when Home already opened this session (its Jarvis tile), not with a #app link or ?stay=1, never in a frame. */
+(function () { try {
+  var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  if (!sa || window.top !== window || location.hash || /[?&]stay=1/.test(location.search)) return;
+  if (sessionStorage.getItem('olympus.home.v1')) return;
+  sessionStorage.setItem('olympus.home.v1', '1'); location.replace('../gate/');
+} catch (e) { /* stay on Jarvis */ } })();</script>
 <title>Jarvis</title>
 <meta name="description" content="J.A.R.V.I.S.: your assistant and the home screen for all your projects. Switch between Jarvis and Zenith in one tap, plus the Planner, Kalshi and the rest.">
 <meta name="theme-color" content="#000000">
