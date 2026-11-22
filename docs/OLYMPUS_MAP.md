@@ -139,24 +139,24 @@ Retired apps are not on Home, in search or in A to Z. Their old links open the r
 | Inbox (`inbox`) | Jarvis | life | Everything that needs a look, in one place | bundled fixture / its own files | `tests.test_inbox_page` |
 | Stoa (`stoa`) (retired) | Jarvis | trading | The colonnade: what needs you right now | `fixture.json`, `../home.json`, `../money/index.json`, `../alerts.json` | `tests.test_stoa_page` |
 | Symposium (`symposium`) (retired) | Jarvis | life | Meet everyone who works for you, and talk | `fixture.json` | `tests.test_symposium_page` |
-| Websites (`agency`) | Websites | money | Website business HQ: next step, leads, audits, 3D | `fixture.json`, `my_leads.json`, `leads.json`, `callrules.json`, `callscript.json`, ... | `tests.test_agency` |
-| Archive (`archive`) | Data City | trading | The library of everything we ever tested, searchable | `fixture.json`, `index.json` | `tests.test_archive_page` |
-| Athena (`athena`) | Data City | life | The library: strategy, rules, quiz | `jarvis.json`, `library.json`, `drills.json` | `tests.test_athena_page` |
-| Cities (`cities`) | Data City | trading | The 3D city of everything: every app, every | `fixture.json` | `tests.test_cities_page` |
-| Clio (`clio`) | Data City | trading | The research library: every study in plain words | `fixture.json`, `../writeups/index.json`, `hub.json`, `../data.json` | `tests.test_clio_page` |
-| Colosseum (`colosseum`) | Data City | trading | Where strategies fight: seven rounds on real stored | `extra.json`, `fixture.json`, `../archive/index.json`, `../home.json` | `tests.test_colosseum_page` |
-| Data City (`datacity`) (retired) | Data City | trading | Every combo tested, as a city | `fixture.json`, `city.json`, `jarvis.json`, `../data.json`, `../pantheon/pantheon.json` | `tests.test_datacity` |
+| Websites (`agency`) | Websites | web | Website business HQ: next step, leads, audits, 3D | `fixture.json`, `my_leads.json`, `leads.json`, `callrules.json`, `callscript.json`, ... | `tests.test_agency` |
+| Archive (`archive`) | Data City | data | The library of everything we ever tested, searchable | `fixture.json`, `index.json` | `tests.test_archive_page` |
+| Athena (`athena`) | Data City | data | The library: strategy, rules, quiz | `jarvis.json`, `library.json`, `drills.json` | `tests.test_athena_page` |
+| Data City (`cities`) | Data City | data | The 3D city of everything: every app, every | `fixture.json` | `tests.test_cities_page` |
+| Clio (`clio`) | Data City | data | The research library: every study in plain words | `fixture.json`, `../writeups/index.json`, `hub.json`, `../data.json` | `tests.test_clio_page` |
+| Colosseum (`colosseum`) | Data City | data | Where strategies fight: seven rounds on real stored | `extra.json`, `fixture.json`, `../archive/index.json`, `../home.json` | `tests.test_colosseum_page` |
+| Data City (`datacity`) (retired) | Data City | data | Every combo tested, as a city | `fixture.json`, `city.json`, `jarvis.json`, `../data.json`, `../pantheon/pantheon.json` | `tests.test_datacity` |
 | Hephaestus (`hephaestus`) (retired) | Data City | trading | The forge: tune the dials | `data.json`, `fixture.json` | `tests.test_hephaestus_page` |
 | Mint City (`mintcity`) (retired) | Data City | money | The five money machines as a marble city | `fixture.json`, `../money/index.json` | `tests.test_mintcity_page` |
 | Observatory (`observatory`) (retired) | Data City | trading | Data health and research evidence | bundled fixture / its own files | covered by `tests.test_olympus_kit` |
-| Pinakes (`pinakes`) | Data City | trading | The catalogue: browse and query every table OLYMPUS | `catalog.json`, `fixture.json`, `pinakes-views.json` | `tests.test_pinakes_page` |
+| Pinakes (`pinakes`) | Data City | data | The catalogue: browse and query every table OLYMPUS | `catalog.json`, `fixture.json`, `pinakes-views.json` | `tests.test_pinakes_page` |
 | Polis (`polis`) (retired) | Data City | life | The city of OLYMPUS: every app a building | `../olympus/polis.json`, `../olympus/polis-demo.json`, `fixture.json`, `../home.json`, `../kalshi.json`, ... | `tests.test_polis_page` |
-| Prometheus (`prometheus`) | Data City | trading | The Forge: strategies tested | `jarvis.json`, `forge.json` | `tests.test_prometheus` |
-| Daphne (`tree`) | Data City | trading | The strategy tree search | `jarvis.json`, `tree.json` | `tests.test_strategytree` |
+| Prometheus (`prometheus`) | Data City | data | The Forge: strategies tested | `jarvis.json`, `forge.json` | `tests.test_prometheus` |
+| Daphne (`tree`) | Data City | data | The strategy tree search | `jarvis.json`, `tree.json` | `tests.test_strategytree` |
 | Arbiter (`arbiter`) (retired) | Money | money | Paper-only spreads and funding: net yearly return after | `fixture.json`, `../money/arbiter.json` | `tests.test_arbiter_page` |
 | Arena (`arena`) (retired) | Money | life | Olympian ranks: XP for discipline | `rules.json`, `events.json` | `tests.test_arena` |
 | Argo (`argo`) (retired) | Money | money | The voyage: your money goals as islands, honest | `fixture.json`, `../home.json`, `../ledger/rules.json` | `tests.test_argo_page` |
-| Business (`business`) | Money | money | Every money model: next step, what is missing | `accounts.json`, `../home.json`, `business.json`, `fixture.json`, `dash.json`, ... | `tests.test_business` |
+| Money (`business`) | Money | money | Every money model: next step, what is missing | `accounts.json`, `../home.json`, `business.json`, `fixture.json`, `dash.json`, ... | `tests.test_business` |
 | Chrysos (`chrysos`) | Money | money | Prop-firm fleet planner: fees against payouts, break-even (estimate) | `fixture.json`, `../money/chrysos.json` | `tests.test_chrysos_page` |
 | Harmonia (`harmonia`) (retired) | Money | money | The balance: what leans on the NQ bots | `fixture.json`, `../home.json`, `../money/index.json` | `tests.test_harmonia_page` |
 | Hera (`hera`) | Money | money | The 12-month money plan, payouts, what to buy | `../business/fleet_plan.json`, `fixture.json`, `../plutus/roadmap.json`, `../home.json` | `tests.test_hera_page` |
@@ -171,11 +171,11 @@ Retired apps are not on Home, in search or in A to Z. Their old links open the r
 | Planner (`planner`) | Money | life | Day and week plan: session windows, tasks, habits | `../pythia/events.json`, `../home.json`, `../day/day.json`, `../day/inbox.json`, `fixture.json` | `tests.test_planner_page` |
 | Plutus (`plutus`) (retired) | Money | money | The money plan: accounts and payouts | `../data.json`, `jarvis.json`, `plans.json` | `tests.test_plutus_page` |
 | Widget (`widget`) | Money | money | Your accounts as an iPhone widget + the | bundled fixture / its own files | `tests.test_widget` |
-| Dionysus (`dionysus`) | Kalshi | money | The Kalshi desk: guard, what-if, scan. Suggestions only | `fixture.json`, `../kalshicity/edges.json`, `../kalshicity/whatif.json`, `../kalshi/k8.json`, `../kalshicity/learned.json`, ... | `tests.test_dionysus_page` |
-| Kalshi (`kalshi`) | Kalshi | money | Kalshi bot · from your PC | bundled fixture / its own files | `tests.test_kalshi_page` |
-| Kalshi City (`kalshicity`) (retired) | Kalshi | money | The Kalshi bot's edges as a night city | `fixture.json`, `edges.json`, `learning_log.json`, `hypotheses.json`, `learned.json` | `tests.test_kalshicity_page` |
-| Sibyl (`sibyl`) | Kalshi | money | Prediction-market edges after fees: paper picks, ruin odds | `fixture.json`, `../money/sibyl.json`, `../money/sibyl_forward.json`, `../kalshicity/suggestions.json`, `suggestions_fixture.json` | `tests.test_sibyl_page` |
-| Tyche (`tyche`) | Kalshi | money | The Kalshi bets as a 3D fortune wheel | bundled fixture / its own files | `tests.test_tyche_page` |
+| Dionysus (`dionysus`) | Kalshi | kalshi | The Kalshi desk: guard, what-if, scan. Suggestions only | `fixture.json`, `../kalshicity/edges.json`, `../kalshicity/whatif.json`, `../kalshi/k8.json`, `../kalshicity/learned.json`, ... | `tests.test_dionysus_page` |
+| Kalshi (`kalshi`) | Kalshi | kalshi | Kalshi bot · from your PC | bundled fixture / its own files | `tests.test_kalshi_page` |
+| Kalshi City (`kalshicity`) (retired) | Kalshi | kalshi | The Kalshi bot's edges as a night city | `fixture.json`, `edges.json`, `learning_log.json`, `hypotheses.json`, `learned.json` | `tests.test_kalshicity_page` |
+| Sibyl (`sibyl`) | Kalshi | kalshi | Prediction-market edges after fees: paper picks, ruin odds | `fixture.json`, `../money/sibyl.json`, `../money/sibyl_forward.json`, `../kalshicity/suggestions.json`, `suggestions_fixture.json` | `tests.test_sibyl_page` |
+| Tyche (`tyche`) | Kalshi | kalshi | The Kalshi bets as a 3D fortune wheel | bundled fixture / its own files | `tests.test_tyche_page` |
 | Atlas (`atlas`) | Everything else | life | A fast map of every Olympus dashboard | bundled fixture / its own files | `tests.test_atlas_armed` |
 | Agora Gallery (`gallery`) (retired) | Everything else | life | Every 3D shape of the Agora on a | `fixture.json` | covered by `tests.test_olympus_kit` |
 | Settings (`settings`) | Everything else | life | Look, voice, storage and the tour | bundled fixture / its own files | `tests.test_settings_page` |

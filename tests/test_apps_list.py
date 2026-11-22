@@ -67,8 +67,8 @@ def test_static():
     r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "apps_list_build.py"), "--check"], capture_output=True, text=True)
     check("a. tools/apps_list_build.py --check agrees", r.returncode == 0, r.stdout + r.stderr)
     ids = [x["id"] for x in rows]
-    check("a. 27 rows (26 launcher tiles, Zenith is the dashboard itself), unique ids, groups only trading / life / money, hex colours, a glyph and a one-line purpose each",
-          len(ids) == len(set(ids)) >= 27 and all(x["group"] in ("trading", "life", "money") and re.fullmatch(r"#[0-9a-fA-F]{6}", x["colour"]) and x["glyph"] and 4 < len(x["purpose"]) < 80 and x["name"] for x in rows), ids)
+    check("a. 27 rows (26 launcher tiles, Zenith is the dashboard itself), unique ids, groups only the 6 Home groups (trading / life / web / data / money / kalshi), hex colours, a glyph and a one-line purpose each",
+          len(ids) == len(set(ids)) >= 27 and all(x["group"] in ("trading", "life", "web", "data", "money", "kalshi") and re.fullmatch(r"#[0-9a-fA-F]{6}", x["colour"]) and x["glyph"] and 4 < len(x["purpose"]) < 80 and x["name"] for x in rows), ids)
     kit = A.kit_table()
     drift = [(k, kit[k], next(r for r in rows if r["id"] == k)["name"], next(r for r in rows if r["id"] == k)["colour"]) for k in kit
              if k in ids and (kit[k]["name"] != next(r for r in rows if r["id"] == k)["name"] or kit[k]["colour"].lower() != next(r for r in rows if r["id"] == k)["colour"].lower())]
@@ -85,11 +85,11 @@ def test_static():
     doors_static(ids)
     ph, pc = read(WEB, "index.html"), read(NEXT, "index.html")
     check("b. the phone dashboard has ONE tag, launcher.js (deferred); the list is loaded by the launcher, async, so a slow site never holds Zenith back",
-          '<script src="launcher.js?v=l23" defer></script>' in ph and "apps-list" not in ph and "olympus/apps-list.js?v=l10" in read(WEB, "launcher.js"))
-    check("b. the PC dashboard has ONE tag, js/next/launcher.js (the list comes from js/next/apps-list.js, in the worker's ASSETS)", '<script src="/js/next/launcher.js?v=l23" defer></script>' in pc and "apps-list" not in pc and "/js/next/apps-list.js?v=l10" in read(NEXT, "js", "next", "launcher.js"))
+          '<script src="launcher.js?v=l24" defer></script>' in ph and "apps-list" not in ph and "olympus/apps-list.js?v=l11" in read(WEB, "launcher.js"))
+    check("b. the PC dashboard has ONE tag, js/next/launcher.js (the list comes from js/next/apps-list.js, in the worker's ASSETS)", '<script src="/js/next/launcher.js?v=l24" defer></script>' in pc and "apps-list" not in pc and "/js/next/apps-list.js?v=l11" in read(NEXT, "js", "next", "launcher.js"))
     sw = read(NEXT, "sw.js")
     v = re.search(r"const SHELL = 'le-shell-next-v(\d+)'", sw)
-    check("b. the PC worker caches both files and its version is bumped (v34 or later)", "'/js/next/apps-list.js?v=l10'" in sw and "'/js/next/launcher.js?v=l23'" in sw and v and int(v.group(1)) >= 34)
+    check("b. the PC worker caches both files and its version is bumped (v34 or later)", "'/js/next/apps-list.js?v=l11'" in sw and "'/js/next/launcher.js?v=l24'" in sw and v and int(v.group(1)) >= 34)
     check("b. the root worker is untouched by the launcher (it fetches versioned files at run time; olympus/ is skipped on purpose)", "launcher" not in read(WEB, "sw.js") and "apps-list" not in read(WEB, "sw.js"))
     js = read(WEB, "launcher.js")
     check("b. launcher.js: read-only (no POST, no orders), every storage call in try, Safari 16 safe (no lookbehind, ?., ??, .at())",

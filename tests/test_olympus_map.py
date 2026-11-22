@@ -32,7 +32,7 @@ def main():
     check(f"b. every app in jarvis/apps.js ({len(ids)}) has exactly one row, none extra", sorted(ids) == sorted(got) and len(set(got)) == len(got), sorted(set(ids) ^ set(got)))
     cells = [[c.strip() for c in l.strip("|").split("|")] for l in rows]
     DOORS = ("NQ Bot", "Jarvis", "Websites", "Data City", "Money", "Kalshi", "Everything else")       # the 6 dashboards + Everything else (2026-11-22)
-    check("b. every row has six cells, one of the arenas, a group of trading / money / life, a description of at most 8 words", all(len(c) == 6 and c[1] in DOORS and c[2] in ("trading", "money", "life") and 0 < len(c[3].split()) <= 8 for c in cells), [c for c in cells if not (len(c) == 6 and c[1] in DOORS)][:2])
+    check("b. every row has six cells, one of the arenas, a group of the 6 Home groups, a description of at most 8 words", all(len(c) == 6 and c[1] in DOORS and c[2] in ("trading", "life", "web", "data", "money", "kalshi") and 0 < len(c[3].split()) <= 8 for c in cells), [c for c in cells if not (len(c) == 6 and c[1] in DOORS)][:2])
     mods = []
     for c in cells:
         m = re.search(r"`tests\.(test_\w+)`", c[5])

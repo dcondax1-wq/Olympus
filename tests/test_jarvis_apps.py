@@ -663,16 +663,16 @@ def part_i(p, harness, oa, tmp):
     rows = {r["id"]: r for r in t["rows"]}
     check("i. one table: Data City, Mind and Daphne built in (names, group, colour, ../<id>/, live card) next to Zenith, Kalshi and the Planner (live card since af40226)",
           all(rows.get(i, {}).get("name") == n and rows[i]["group"] == g and rows[i]["url"] == f"../{i}/" and rows[i]["live"] is True
-              and re.fullmatch(r"#[0-9a-f]{6}", rows[i]["accent"] or "") for i, n, g in (("datacity", "Data City", "trading"), ("mind", "Mind", "life"), ("tree", "Daphne", "trading")))
+              and re.fullmatch(r"#[0-9a-f]{6}", rows[i]["accent"] or "") for i, n, g in (("datacity", "Data City", "data"), ("mind", "Mind", "life"), ("tree", "Daphne", "data")))
           and rows["zenith"]["live"] is False and rows["planner"]["live"] is True and rows["kalshi"]["live"] is False
-          and t["groups"] == ["trading", "life", "money", "more"] and all(r["group"] in t["groups"] for r in t["rows"]), t["rows"])
+          and t["groups"] == ["trading", "life", "web", "data", "money", "kalshi", "more"] and all(r["group"] in t["groups"] for r in t["rows"]), t["rows"])
     ranks = [t["groups"].index(x.split(":")[1]) for x in t["order"]]
     check("i. listApps by group (TRADING, LIFE, MONEY), each group in the table's order", ranks == sorted(ranks)
           and [x.split(":")[0] for x in t["order"]] == [r["id"] for g in t["groups"] for r in t["rows"] if r["group"] == g], t["order"])
     sec = p.evaluate("""() => { A.addApp({name: 'Clipper', url: 'https://clip.example/'});
         return A.byGroup([{id: 'home'}].concat(A.listApps()).concat([{id: 'odd', group: 'nope'}])).map((s) => [s.group ? s.group.id : null, s.apps.map((a) => a.id)]); }""")
     check("i. byGroup: Jarvis first on its own, then the groups in order, an unknown group in MORE with the added apps, no empty group",
-          sec[0] == [None, ["home"]] and [s[0] for s in sec[1:]] == ["trading", "life", "money", "more"] and sec[-1][1] == ["x-clipper", "odd"], sec)
+          sec[0] == [None, ["home"]] and [s[0] for s in sec[1:]] == ["trading", "life", "web", "data", "money", "kalshi", "more"] and sec[-1][1] == ["x-clipper", "odd"], sec)
     su = p.evaluate("() => A.BUILT_INS.map((b) => [b.id, A.statusUrlOf(b.id), A.statusUrlOf({id: b.id, url: b.url})])")
     check("i. a live built-in's card is <its folder>/jarvis.json (the page's own site); Zenith, the Planner, Kalshi: none (their own cards)",
           all((u1.endswith(f"/nq-dashboard/{i}/jarvis.json") and u1 == u2) if rows[i]["live"] else (u1 == "" and u2 == "") for i, u1, u2 in su), su)
