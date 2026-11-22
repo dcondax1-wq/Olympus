@@ -594,7 +594,7 @@ def test_page():
             p.locator("#objChips [data-obj=expensive]").click()
             p.wait_for_timeout(100)
             ob = p.evaluate("() => [document.querySelectorAll('#objChips button').length, document.querySelector('#objAnswer').textContent]")
-            check("d. objections: 8 answers; 'Too expensive' shows your own price ($499) in big words", ob[0] == 8 and "Too expensive" in ob[1] and "$499" in ob[1], ob)
+            check("d. objections: 8 answers; 'Too expensive' quotes the price book's starting price for the trade ($1,500 restaurants) in big words", ob[0] == 8 and "Too expensive" in ob[1] and "$1,500" in ob[1], ob)
             p.locator("#objChips [data-obj=gatekeeper]").click()
             gk = p.evaluate("() => document.querySelector('#objAnswer').textContent")
             check("d. the gatekeeper lines ask who looks after the website and the best time to reach Maria", "Who looks after your website?" in gk and "Maria Lopez" in gk, gk)
