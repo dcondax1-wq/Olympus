@@ -25,7 +25,7 @@ Money to you in 6 months from ONE account slot (after the firm's split, minus ev
 
 What it means:
 - **The 50K plans win; the 25Ks are the weakest buys.** A 50K slot makes $7,000-$14,000 in 6 months in a Jul-Oct-like market
-  vs $2,900-$4,800 for a 25K, for $30-$70 more.
+  vs $2,900-$4,800 for a 25K, for $30-$100 more in price.
 - **Which 50K is first depends on one MFFU fact.** If MFFU keeps paying Rapid accounts past 5 payouts, the Rapid EOD 50K is
   clearly best (daily payouts, 90%). If its 5-sim-payout rule ends the run (your brief: "only 5 sim payouts"), FundedNext
   Rapid Daily 50K and LucidPro 50K come out ahead of it.
