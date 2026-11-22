@@ -659,13 +659,13 @@ def run_day(rig, day, label, F: Findings, quick=False, restart_at=None, kill_at=
         F.check(f"{day} Rapid 50K #2: the day's $ ${r2:,.2f} stays under its 30% best day (${RAPID2_BEST_DAY:,.0f})",
                 r2 <= RAPID2_BEST_DAY + 1e-9, r2)
         F.check(f"{day} Rapid 50K #2: the day stays above its -$1,000 soft day (-$1,000 incl. slippage)", r2 >= -1000.0 - 1e-9, r2)
-    F.check(f"{day} the ntfy status payload stays under {MAX_STATUS_BYTES:,} bytes (largest {max(nt_sizes or [(0, 0)])[0]:,} of "
-            f"{len(nt_sizes)} samples, mid-trade included)", nt_sizes and max(nt_sizes)[0] < MAX_STATUS_BYTES, nt_sizes[-5:])
+    F.check(f"{day} the ntfy status payload stays under {MAX_STATUS_BYTES:,} bytes (largest {max(nt_sizes or [(0, 0)], key=lambda z: z[0])[0]:,} of "
+            f"{len(nt_sizes)} samples, mid-trade included)", nt_sizes and max(nt_sizes, key=lambda z: z[0])[0] < MAX_STATUS_BYTES, nt_sizes[-5:])
     life = life_checks(rig, bot, day, F, skip=("lit",) if passed50 else ())
     coach = coach_checks(bot, day, F)
     board = board_checks(rig, bot, day, F)
     return {"day": day, "label": label, "rapid": rig.rapid, "polls": len(polls), "errors": [e[:2] for e in errors],
-            "hedges": hedges, "fill_hedges": rig.fill_hedges, "sizes": sizes, "ntfy_bytes": max(nt_sizes or [(0, 0)])[0],
+            "hedges": hedges, "fill_hedges": rig.fill_hedges, "sizes": sizes, "ntfy_bytes": max(nt_sizes or [(0, 0)], key=lambda z: z[0])[0],
             "life": life, "coach": coach, "board": board, "trades": trade_rows(bot), "rapid_day": rapid_day}
 
 
