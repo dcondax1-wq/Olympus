@@ -19,6 +19,15 @@ until you do the steps below. Claude never arms it and never places a real order
 Not checked (Lucid's main site blocks our reader): the **price**, whether LucidPro runs on NinjaTrader through Tradovate, and the
 "Trade with Integrity" page. That is why step 1 asks Lucid in writing.
 
+**MFFU's side (read 2026-11-22 on MFFU's own pages; day-lucidrt red team):** MFFU allows copy trading "across all account types" and
+says "External copy trading solutions can also be used with your accounts"
+(https://help.myfundedfutures.com/en/articles/10771500-copy-trading-at-myfundedfutures). No MFFU page names other firms. Two broad
+lines leave MFFU room to decide: Terms 23.1.3 (no using accounts to "hedge, mirror, copy, or coordinate trades in a manner that
+provides an unfair advantage") and 23.3 (MFFU decides at its own discretion what is prohibited); https://myfundedfutures.com/terms.
+Hedging "of any kind" is banned (https://help.myfundedfutures.com/en/articles/12011241-hedging-what-you-should-know): the bot never
+holds opposite sides anywhere. So: most likely allowed, not confirmed in writing by MFFU. You decided not to contact MFFU (2026-11-20):
+that is a risk you accept with step 6, or ask MFFU's chat the same question as step 1.
+
 ## Why Lucid, and the next-best fits (from research/writeups/corvette-plan-2026-11-21.md; nobody has paid a real price yet)
 
 | Firm | Bots + copier allowed in writing | NinjaTrader | Account cap | Payouts | Price (not a real price paid) | Verdict |

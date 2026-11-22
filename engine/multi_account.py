@@ -1563,10 +1563,29 @@ def merge_into_start(body: dict, confirm: str = "", path: str = ACCOUNTS_PATH) -
     out = []
     for r in rows:
         r = dict(r)
-        if r.get("armed") is True and confirm:
+        if lucid_held(r):
+            # the second firm (day-lucidrt 2026-11-22 red team): an "armed" Lucid row WITHOUT the owner's recorded written OK
+            # (engine/account_cli lucid-ok) never gets the phrase, whatever set "armed" (account_cli.arm holds it; this also
+            # covers `python -m engine.multi_account --set --armed yes`, a hand-edited data/accounts.json or a restored file)
+            r["armed"] = False
+            r.pop("confirm", None)
+            r["held"] = "Lucid: no written OK recorded (python -X utf8 -m engine.accounts lucid-ok --name \"<Name>\")"
+        elif r.get("armed") is True and confirm:
             r["confirm"] = confirm
         out.append(r)
     return {**body, "accounts": out}
+
+
+def lucid_held(row: dict) -> bool:
+    """True = a Lucid account (preset lucid_*, or added as plan lucidpro50k) on which the owner has not recorded Lucid's written OK.
+    Sim accounts are never held (paper)."""
+    cli = row.get("cli") if isinstance(row.get("cli"), dict) else {}
+    lucid = str(row.get("preset") or "").startswith("lucid") or str(cli.get("plan") or "").startswith("lucid")
+    if not lucid:
+        return False
+    if str(row.get("nt_account") or "").strip().lower().startswith("sim"):
+        return False
+    return not cli.get("lucid_ok")
 
 
 def main(argv=None) -> int:
