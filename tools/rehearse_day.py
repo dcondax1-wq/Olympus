@@ -59,7 +59,8 @@ ET = ZoneInfo("America/New_York")
 OUT = os.path.join(ROOT, "research", "lab", "rehearse_day.json")
 # made-up MFFU-style Names (never the owner's): EV = eval, SF = sim funded (engine/onboard.py)
 N50 = "MFFUEVBLDR50K-RH01"           # Zlarior's Builder 50K eval (the bot's own account)
-N25 = "MFFUEVBLDR25K-RH02"           # Zlarior's new Builder 25K eval (b25k_2)
+N25 = "MFFUEVBLDR25K-RH02"
+NLU = "LTP50K-RH01"                  # --lucid: a LucidPro 50K eval (day-nqdash3 2026-11-22, the second firm; LIT copy, armed only in the fake)           # Zlarior's new Builder 25K eval (b25k_2)
 NB_EVAL = "MFFUEVBLDR25K-RH03"       # ATLAS's passed 25K eval (MFFU locked it)
 NBF = "MFFUSFBLDR25K-RH03"           # ATLAS's FUNDED Builder 25K (account B)
 NR = "MFFUEVRPDEOD25K-RH04"          # the Rapid EOD 25K (--rapid)
@@ -128,9 +129,9 @@ class Findings:
 class Rig:
     """One temp PC: its config files, one simulated NinjaTrader, a replay clock and the bar source."""
 
-    def __init__(self, tmp, frames, rapid=False, rapid2=False):
+    def __init__(self, tmp, frames, rapid=False, rapid2=False, lucid=False):
         from engine.ninjatrader import _FakeNT
-        self.tmp, self.frames, self.rapid, self.rapid2 = tmp, frames, rapid or rapid2, rapid2
+        self.tmp, self.frames, self.rapid, self.rapid2, self.lucid = tmp, frames, rapid or rapid2, rapid2, lucid
         self.data = os.path.join(tmp, "data")
         os.makedirs(self.data, exist_ok=True)
         self.folder = os.path.join(tmp, "NinjaTrader 8")
@@ -326,6 +327,11 @@ def build_pc(rig, day: str, F: Findings, quiet=True) -> dict:
             rapid.save(rb_)
         # 4b. --rapid2: the add box again, Rapid EOD 50K -> Rapid #2 (data/rapid2.json)
         a4 = account_cli.add("rapideod", NR2, start=day) if getattr(rig, "rapid2", False) else None
+        # 4c. --lucid: the second firm (engine.accounts add --plan lucidpro50k), Lucid's written OK recorded (lucid-ok) so the
+        # fake's START BOT arms it like the others (on the owner's PC it stays held until he records it)
+        a5 = account_cli.add("lucidpro50k", NLU, start=day) if getattr(rig, "lucid", False) else None
+        if a5 and a5.get("ok"):
+            account_cli.lucid_ok(NLU, day)
         # 5. START BOT + the typed phrase (engine/go.step_arm): ATLAS's 25K, the Rapid, the added accounts, then --start
         cfg = go._read(go.CFG)
         rb = go.arm_b(cfg["atlas"])
@@ -369,10 +375,12 @@ def build_pc(rig, day: str, F: Findings, quiet=True) -> dict:
 PLAN_CAPS = {"Zlarior 50K (main)": (0.4, None, 1000.0, 40), "Zlarior 25K #2 (b25k_2)": (0.4, None, 600.0, 20),
              "ATLAS funded 25K (B)": (0.6, 750.0, 600.0, 20), "Rapid 25K LIT lane": (0.4, None, 500.0, 20),
              "Rapid 25K ATLAS lane": (0.3, 250.0, 500.0, 20),
-             "Rapid 50K LIT lane": (0.4, None, 1000.0, 30), "Rapid 50K ATLAS lane": (0.3, 500.0, 1000.0, 30)}
+             "Rapid 50K LIT lane": (0.4, None, 1000.0, 30), "Rapid 50K ATLAS lane": (0.3, 500.0, 1000.0, 30),
+             "LucidPro 50K (lucid)": (0.4, 1000.0, 1200.0, 40)}   # lucid_pro_50k two_week: 40% of the room, <= $1,000, Lucid's $1,200 DLL
 BOOK = {"Zlarior 50K (main)": "50k", "Zlarior 25K #2 (b25k_2)": "25k2", "ATLAS funded 25K (B)": "f25",
-        "Rapid 25K LIT lane": "rapid", "Rapid 25K ATLAS lane": "rapid", "Rapid 50K LIT lane": "rapid2", "Rapid 50K ATLAS lane": "rapid2"}
-ROOM0 = {"50k": round(BAL50 - FLOOR50, 2), "25k2": 1000.0, "f25": 1000.0, "rapid": 1000.0, "rapid2": 2000.0}
+        "Rapid 25K LIT lane": "rapid", "Rapid 25K ATLAS lane": "rapid", "Rapid 50K LIT lane": "rapid2", "Rapid 50K ATLAS lane": "rapid2",
+        "LucidPro 50K (lucid)": "lucid"}
+ROOM0 = {"50k": round(BAL50 - FLOOR50, 2), "25k2": 1000.0, "f25": 1000.0, "rapid": 1000.0, "rapid2": 2000.0, "lucid": 2000.0}
 
 
 def full_stop(qty, entry, stop) -> float:
@@ -450,7 +458,7 @@ def lanes(bot) -> dict:
     out = {"Zlarior 50K (main)": (bot, bot.adapter)}
     for a in (getattr(bot.accts, "accounts", None) or []):
         lbl = {"b25k_2": "Zlarior 25K #2 (b25k_2)", "rapid": "Rapid 25K LIT lane", "rapid2": "Rapid 50K LIT lane",
-               "lit25": "LIT on funded 25K"}.get(a.id, a.id)
+               "lit25": "LIT on funded 25K"}.get(a.id, "LucidPro 50K (lucid)" if a.spec.get("preset") == "lucid_pro_50k" else a.id)
         out[lbl] = (a, a.adapter)
     if bot.acct_b is not None:
         out["ATLAS funded 25K (B)"] = (bot.acct_b, bot.acct_b.adapter)
@@ -536,14 +544,16 @@ def run_day(rig, day, label, F: Findings, quick=False, restart_at=None, kill_at=
     L = lanes(bot)
     want_lanes = {"Zlarior 50K (main)", "Zlarior 25K #2 (b25k_2)", "ATLAS funded 25K (B)"} | (
         {"Rapid 25K LIT lane", "Rapid 25K ATLAS lane"} if rig.rapid else set()) | (
-        {"Rapid 50K LIT lane", "Rapid 50K ATLAS lane"} if rig.rapid2 else set())
+        {"Rapid 50K LIT lane", "Rapid 50K ATLAS lane"} if rig.rapid2 else set()) | (
+        {"LucidPro 50K (lucid)"} if getattr(rig, "lucid", False) else set())
     names = {k: getattr(ad, "account", None) for k, (_o, ad) in L.items()}
     dis = {k: getattr(ad, "disabled", None) for k, (_o, ad) in L.items() if getattr(ad, "disabled", None)}
     probs = {k: getattr(o, "problem", None) for k, (o, _a) in L.items() if getattr(o, "problem", None)}
     F.check(f"{day} every account routed, enabled (armed + phrase + NINJATRADER_LIVE + allowlist), no problem",
             set(L) == want_lanes and not dis and not probs, {"lanes": sorted(L), "disabled": dis, "problems": probs})
     exp = {"Zlarior 50K (main)": N50, "Zlarior 25K #2 (b25k_2)": N25, "ATLAS funded 25K (B)": NBF,
-           "Rapid 25K LIT lane": NR, "Rapid 25K ATLAS lane": NR, "Rapid 50K LIT lane": NR2, "Rapid 50K ATLAS lane": NR2}
+           "Rapid 25K LIT lane": NR, "Rapid 25K ATLAS lane": NR, "Rapid 50K LIT lane": NR2, "Rapid 50K ATLAS lane": NR2,
+           "LucidPro 50K (lucid)": NLU}
     F.check(f"{day} each lane on its own NinjaTrader Name (the 25K #2 eval is never the funded 25K; nothing on ATLAS's locked eval)",
             all(names.get(k) == exp[k] for k in L) and NB_EVAL not in names.values(), names)
     tags = {k: (getattr(ad, "cfg", {}) or {}).get("nt_file_tag", "") for k, (_o, ad) in L.items()}
@@ -818,6 +828,7 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--rapid", action="store_true", help="add the Rapid EOD 25K (LIT + ATLAS lanes)")
     ap.add_argument("--rapid2", action="store_true", help="+ a Rapid EOD 50K as Rapid #2 (implies --rapid; day-multirapid)")
+    ap.add_argument("--lucid", action="store_true", help="+ a LucidPro 50K eval (the second firm, LIT copy; day-nqdash3)")
     ap.add_argument("--days", default="", help="comma list of yyyy-mm-dd (default: the 5 rehearsal days; any other day "
                                                "with bars in data/ is replayed too, e.g. the newest week)")
     ap.add_argument("--quick", action="store_true", help="polls every minute only around trades / closes, else every 5 min")
@@ -839,7 +850,7 @@ def main(argv=None) -> int:
     try:
         for i, (d, label, kw) in enumerate(days):
             dtmp = os.path.join(tmp, f"{i:02d}_{d}")
-            rig = Rig(dtmp, frames, rapid=a.rapid, rapid2=a.rapid2)
+            rig = Rig(dtmp, frames, rapid=a.rapid, rapid2=a.rapid2, lucid=a.lucid)
             os.environ.update({"NINJATRADER_LIVE": "1", "NINJATRADER_FOLDER": rig.folder,
                                "LE_BOARD_DIR": os.path.join(dtmp, "board"), "LE_INBOX_DIR": os.path.join(dtmp, "inbox"),
                                "LE_LIT_LEARNING": os.path.join(dtmp, "no_learning.json")})
@@ -865,7 +876,7 @@ def main(argv=None) -> int:
     try:
         os.makedirs(os.path.dirname(OUT), exist_ok=True)
         old = json.load(open(OUT, encoding="utf-8")) if os.path.exists(OUT) else {}
-        key = "with_rapid" if a.rapid else "three_accounts"
+        key = ("with_rapid" if a.rapid else "three_accounts") + ("_lucid" if a.lucid else "")
         old[key] = {"run": dt.datetime.now(ET).strftime("%Y-%m-%d %H:%M ET"), "quick": a.quick, "passed": n_ok, "checks": len(F.checks),
                     "failed": [c for c in F.checks if not c["ok"]], "days": [{k: v for k, v in r.items() if k != "board"} for r in results]}
         with open(OUT, "w", encoding="utf-8") as fh:

@@ -73,6 +73,7 @@ AREAS["pc"].append("phone_link")      # 2026-11-20: the bot server's own private
 AREAS["pc"].append("self_heal_pc")    # night-selfheal 2026-11-20: the PC self-heal (engine/self_heal.py, docs/SELF_HEAL.md); its own line
 AREAS["pc"].append("remote_ctl")      # night-phonectl 2026-11-20: phone remote through the backup repo (olympus/control, engine/remote_ctl.py)
 AREAS["pc"] += ["nqops", "pc_always_on"]   # day-nqops 2026-11-21: Sunday/daily preflight, cloud pre-open push, the MFFU 7-day clock (engine/preflight.py, engine/clock7.py, nq/clock7.js); the PC always-on tool (tools/pc_always_on.py)
+AREAS["pc"].append("lucid")         # day-nqdash3 2026-11-22: the second firm, LucidPro 50K OFF by default (engine/account_cli lucidpro50k, docs/LUCID_SETUP.md)
 AREAS["agency"].append("web_offers")
 AREAS["agency"].append("web_outreach")
 AREAS["agency"].append("agency_autopilot")

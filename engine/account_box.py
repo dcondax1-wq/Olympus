@@ -16,7 +16,7 @@ Claude never arms: only the owner's own typed phrase does.
 
   GET  /add-account/         the page
   GET  /add-account/status   the accounts the bot knows (Names masked to the last 4), the MFFU slots, the NinjaTrader Names not added yet
-  POST /add-account/add      {"plan": rapideod25 | rapideod | builder25k | builder50k, "name": "<NinjaTrader Name>", "confirm"?: phrase}
+  POST /add-account/add      {"plan": rapideod25 | rapideod | builder25k | builder50k | lucidpro50k, "name": "<NinjaTrader Name>", "confirm"?: phrase}
   POST /add-account/start    {"confirm": phrase} start trading every added account now (same Re-arm, waits for flat)
   POST /add-account/cancel   {} drop a waiting start
 
@@ -47,7 +47,7 @@ WAIT_MAX_S, WAIT_POLL_S = 8 * 3600, 30.0
 HEADER = "x-add-account"
 MAX_BODY = 2048
 RATE_N, RATE_S = 8, 600
-PLAN_ORDER = ("rapideod25", "rapideod", "builder25k", "builder50k")
+PLAN_ORDER = ("rapideod25", "rapideod", "builder25k", "builder50k", "lucidpro50k")   # lucidpro50k: the second firm (day-nqdash3 2026-11-22), held at START until Lucid's written OK
 _S: dict = {"installed": False, "log": None, "rearm": None, "flat": None, "running": None, "sleep": time.sleep}
 _W: dict = {"state": None, "t0": None, "said": None, "gen": 0}
 _LOCK = threading.Lock()

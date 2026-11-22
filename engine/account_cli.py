@@ -14,6 +14,11 @@ What each plan becomes (research/writeups/builder-levers-2026-11-16.md, stack-on
   rapideod    LIT + ATLAS on one account: engine/rapid.py (data/rapid.json), ONE Rapid only (owner: "I'll stick with 1 rapid").
   rapideod25  the Rapid EOD 25K (owner 2026-11-18): the same lanes and rules at the 25K's numbers (engine/rapid.PLANS,
               research/writeups/rapid-25k-vs-50k-2026-11-17.md); still ONE Rapid at a time (a 50K or a 25K).
+  lucidpro50k the SECOND FIRM (day-nqdash3 2026-11-22, research/writeups/corvette-plan-2026-11-21.md): a LucidPro 50K (DLL ON)
+              with LIT copied onto it (engine/multi_account preset lucid_pro_50k, rules cited in research/lit/lucid_rules.json).
+              Lucid's own caps (10 evals, 5 funded per household), never counted as MFFU slots. OFF until the owner has
+              Lucid's WRITTEN OK to run the same bot at MFFU too: START BOT skips it until `lucid-ok --name "<Name>"` records
+              that (docs/LUCID_SETUP.md). ATLAS on Lucid is not wired (open work).
 
 Rules on every account:
   * MFFU limits checked at add time (research/lit/mffu_rules.json multi_account): at most 10 evals; at most 5 funded, of
@@ -45,12 +50,20 @@ PLANS = {
                  "cap": 3, "bots": "lit+atlas", "ok": ("lit+atlas",), "id": "rapid", "price": "$165 with CLUB ($275 list)"},
     "rapideod25": {"preset": "mffu_rapid_eod_25k", "label": "Rapid EOD 25K", "size": "25K", "cap_key": "rapid_eod_25k_sim_funded",
                    "cap": 3, "bots": "lit+atlas", "ok": ("lit+atlas",), "id": "rapid", "price": "$97.20 with CLUB ($162 list)"},
+    "lucidpro50k": {"preset": "lucid_pro_50k", "label": "LucidPro 50K", "size": "50K", "cap_key": None, "firm": "Lucid",
+                    "cap": 5, "bots": "lit", "ok": ("lit",), "id": "lucid", "price": "unknown until you buy (lucidtrading.com is not readable to us)"},
 }
 RAPID_PLANS = ("rapideod", "rapideod25")
+LUCID_PLANS = ("lucidpro50k",)
+LUCID_RULES = os.path.join(ROOT, "research", "lit", "lucid_rules.json")
+LUCID_MAX_EVALS, LUCID_MAX_FUNDED = 10, 5
 MAX_EVALS, MAX_FUNDED = 10, 5
 RULE_LINES = ("No hedging: every account takes the same side (an order opposite to any open position is refused).",
               "LIT first: on a shared account ATLAS is closed before LIT enters, and never trades against LIT.",
               "Disarmed until START BOT + you type I ACCEPT LIVE RISK.")
+LUCID_LINES = ("Lucid bans hedging across accounts AND across firms: the same no-opposite rule covers it (every account, every firm).",
+               "Lucid needs a trade netting at least $1 every 30 days (else the account is deleted); LIT trades 2-4 times a week.",
+               "START BOT skips this account until you record Lucid's written OK: python -X utf8 -m engine.accounts lucid-ok --name \"<Name>\"")
 
 
 # ---------------------------------------------------------------------------------------------------------------- helpers
@@ -64,6 +77,18 @@ def limits() -> dict:
         out["funded"] = int(v.get("max_sim_funded") or out["funded"])
         for k, p in PLANS.items():
             out[k] = int(v.get(p["cap_key"]) or out[k])
+    except Exception:
+        pass
+    return out
+
+
+def lucid_limits() -> dict:
+    """Lucid's account caps per household (research/lit/lucid_rules.json max_accounts; the constants when unreadable)."""
+    out = {"evals": LUCID_MAX_EVALS, "funded": LUCID_MAX_FUNDED}
+    try:
+        with open(LUCID_RULES, encoding="utf-8") as fh:
+            m = json.load(fh).get("max_accounts") or {}
+        out = {"evals": int(m.get("evals") or out["evals"]), "funded": int(m.get("funded") or out["funded"])}
     except Exception:
         pass
     return out
@@ -180,6 +205,9 @@ def slots(rows=None) -> dict:
     out = {"evals": sum(1 for r in real if r["stage"] == "eval"), "funded": sum(1 for r in real if r["stage"] == "funded")}
     for k in PLANS:
         out[k] = sum(1 for r in real if r["stage"] == "funded" and r["plan"] == k)
+    luc = [r for r in rows if not r["sim"] and r.get("plan") in LUCID_PLANS]      # Lucid's own slots (never MFFU's)
+    out["lucid_evals"] = sum(1 for r in luc if r["stage"] == "eval")
+    out["lucid_funded"] = sum(1 for r in luc if r["stage"] == "funded")
     return out
 
 
@@ -187,12 +215,21 @@ def slots_text(rows=None) -> str:
     s, L = slots(rows), limits()
     return (f"MFFU slots: evals {s['evals']} of {L['evals']} · funded {s['funded']} of {L['funded']} (Builder 50K "
             f"{s['builder50k']}/{L['builder50k']}, Builder 25K {s['builder25k']}/{L['builder25k']}, Rapid EOD 50K "
-            f"{s['rapideod']}/{L['rapideod']}, Rapid EOD 25K {s['rapideod25']}/{L['rapideod25']})")
+            f"{s['rapideod']}/{L['rapideod']}, Rapid EOD 25K {s['rapideod25']}/{L['rapideod25']})"
+            + (f" · Lucid: evals {s['lucid_evals']} of {LL['evals']}, funded {s['lucid_funded']} of {LL['funded']}"
+               if (s.get("lucid_evals") or s.get("lucid_funded")) and (LL := lucid_limits()) else ""))
 
 
 def limit_problem(plan: str, stage: str, name: str, rows=None) -> str | None:
     """Why MFFU would not allow one more account of this plan and stage (None = fine). Sim accounts are not MFFU slots."""
     if _is_sim(name):
+        return None
+    if plan in LUCID_PLANS:
+        s, L = slots(rows), lucid_limits()
+        if stage == "eval" and s["lucid_evals"] >= L["evals"]:
+            return f"Lucid allows {L['evals']} evals per household and you have {s['lucid_evals']}: remove one first"
+        if stage == "funded" and s["lucid_funded"] >= L["funded"]:
+            return f"Lucid allows {L['funded']} funded accounts per household and you have {s['lucid_funded']}: remove one first"
         return None
     s, L = slots(rows), limits()
     if stage == "eval" and s["evals"] >= L["evals"]:
@@ -244,7 +281,7 @@ def add(plan: str, name: str, bots: str | None = None, start: str | None = None,
     if plan == "rapideod25k":
         plan = "rapideod25"
     if plan not in PLANS:
-        return {"ok": False, "error": "pick --plan builder25k, builder50k, rapideod or rapideod25"}
+        return {"ok": False, "error": "pick --plan builder25k, builder50k, rapideod, rapideod25 or lucidpro50k"}
     P = PLANS[plan]
     bots = str(bots or P["bots"]).lower().replace(" ", "")
     if bots == "atlas+lit":
@@ -266,7 +303,9 @@ def add(plan: str, name: str, bots: str | None = None, start: str | None = None,
         return {"ok": False, "error": why}
     notes = []
     s, L = slots(rows), limits()
-    if stage == "eval" and not _is_sim(name) and s[plan] >= L[plan]:
+    if plan in LUCID_PLANS:
+        notes += list(LUCID_LINES)
+    elif stage == "eval" and not _is_sim(name) and s[plan] >= L[plan]:
         notes.append(f"MFFU already has your {L[plan]} funded {P['label']}: a pass of this eval cannot be activated until one goes")
     if plan in RAPID_PLANS:
         r = _add_rapid(name, start, funded, rows, plan, from_eval=from_eval)
@@ -451,13 +490,20 @@ def arm(phrase: str) -> list:
     path = go._accounts_path()
     rows = ma.load_file(path)
     done = []
+    held = []
     for r in rows:
         if isinstance(r.get("cli"), dict) and r.get("enabled", True) is not False and r.get("armed") is not True:
+            if r["cli"].get("plan") in LUCID_PLANS and not r["cli"].get("lucid_ok"):
+                held.append(str(r.get("name") or r.get("id")))       # the second firm: only after Lucid's written OK is recorded
+                continue
             r["armed"] = True
             done.append(str(r.get("name") or r.get("id")))
     if done:
         ma.save_file(rows, path)
     out = [f"Added accounts armed: {', '.join(done)}"] if done else []
+    if held:
+        out.append(f"NOT armed (no written OK from Lucid recorded yet): {', '.join(held)}. When Lucid says yes in writing: "
+                   "python -X utf8 -m engine.accounts lucid-ok --name \"<Name>\"")
     try:                                     # the 2nd Rapid (data/rapid2.json; the 1st is armed by go.step_arm itself)
         rp = _rapid()
         rr = rp.arm(phrase, rp.slot_path("rapid2"))
@@ -468,6 +514,28 @@ def arm(phrase: str) -> list:
     except Exception as e:
         out.append(f"Rapid #2: NOT armed ({e.__class__.__name__}: {e})")
     return out
+
+
+def lucid_ok(name: str, day: str | None = None) -> dict:
+    """The owner's record that Lucid said YES in writing (the same bot at MFFU and Lucid, no hedging): START BOT may then arm this
+    Lucid account. Records only; never arms. Returns {"ok", "say" | "error"}."""
+    name = str(name or "").strip()
+    go, ma = _go(), _ma()
+    path = go._accounts_path()
+    rows = ma.load_file(path)
+    hit = [r for r in rows if isinstance(r.get("cli"), dict) and r["cli"].get("plan") in LUCID_PLANS
+           and str(r.get("nt_account") or "").strip() == name]
+    if not hit:
+        return {"ok": False, "error": f"no LucidPro account named {name} (python -X utf8 -m engine.accounts list)"}
+    try:
+        day = _dt.date.fromisoformat(str(day)).isoformat() if day else _today()
+    except ValueError:
+        return {"ok": False, "error": f"--day {day!r} is not yyyy-mm-dd"}
+    for r in hit:
+        r["cli"]["lucid_ok"] = day
+    ma.save_file(rows, path)
+    return {"ok": True, "say": f"[OK] Lucid's written OK recorded for {name} ({day}). It is still NOT armed: it joins at the next "
+                               "START BOT (you type I ACCEPT LIVE RISK)."}
 
 
 def resume_optin(phrase: str) -> list:
@@ -543,9 +611,16 @@ def main(argv=None) -> int:
                        help="a funded Rapid: the Name of the eval that passed (needed when two Rapid evals of that size run)")
     a_rm = sub.add_parser("remove", help="take one account off")
     a_rm.add_argument("--name", required=True)
+    a_ok = sub.add_parser("lucid-ok", help="record Lucid's WRITTEN yes for a LucidPro account (records only; never arms)")
+    a_ok.add_argument("--name", required=True)
+    a_ok.add_argument("--day", default=None, help="the day Lucid wrote yes (default: today)")
     sub.add_parser("list")
     sub.add_parser("status")
     a = ap.parse_args(argv)
+    if a.cmd == "lucid-ok":
+        r = lucid_ok(a.name, a.day)
+        print(r.get("say") if r.get("ok") else f"[NOT RECORDED] {r.get('error')}")
+        return 0 if r.get("ok") else 1
     if a.cmd == "add":
         if a.funded and not a.start:
             print("--funded needs --start yyyy-mm-dd (the first funded day)")
