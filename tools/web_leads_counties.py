@@ -168,14 +168,37 @@ def counts_md(res: dict, path=COUNTS_MD):
     lines += ["", "## Top 25 by $ score", "", "| # | Business | Trade | County | Lane | Score |", "|---|---|---|---|---|---|"]
     for i, L in enumerate(leads[:25], 1):
         lines.append(f"| {i} | {L['name']} | {L['trade']} | {L['county']} | {L['web']['verdict'].replace('none', 'no site')} | {L['usd_score']} |")
-    lines += ["", f"Dropped: {json.dumps(res['dropped'])}. Data (c) Overture Maps Foundation (CDLA-Permissive-2.0 / ODbL).", ""]
+    lines += ["", (f"Dropped: {json.dumps(res['dropped'])}. " if res.get("dropped") else "")
+              + "Data (c) Overture Maps Foundation (CDLA-Permissive-2.0 / ODbL). site_down = the business's own domain did not load "
+                "(DNS gone, error page, or no answer in 20 s on a second try).", ""]
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
 
 
+def rerank(top=1000, out_dir=OUT_DIR, write=True) -> dict:
+    """after a recheck edits the county files: the top N by $ score across ALL counties get build_site; COUNTS.md again"""
+    files = sorted(glob.glob(os.path.join(out_dir, "*.json")))
+    docs = {p: json.load(open(p, encoding="utf-8")) for p in files}
+    leads = sorted((L for d in docs.values() for L in d["leads"]), key=lambda L: (-L["usd_score"], L["county"], L["name"].lower()))
+    for i, L in enumerate(leads):
+        L["build_site"] = i < top
+    if write:
+        for p, d in docs.items():
+            d["leads"].sort(key=lambda L: (-L["usd_score"], L["name"].lower()))
+            with open(p, "w", encoding="utf-8") as f:
+                json.dump(d, f, separators=(",", ":"))
+                f.write("\n")
+    return {"leads": len(leads), "top": top, "leads_list": leads, "dropped": {}}
+
+
 def main(argv) -> int:
     top = int(argv[argv.index("--top") + 1]) if "--top" in argv else 1000
+    if "--rerank" in argv:
+        res = rerank(top)
+        counts_md(res)
+        print(f"reranked {res['leads']} county leads, top {top} build a site")
+        return 0
     fetch()
     res = run(checker=None if "--no-http" in argv else W.http_ok, top=top)
     counts_md(res)
