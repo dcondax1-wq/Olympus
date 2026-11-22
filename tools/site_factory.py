@@ -352,7 +352,7 @@ def icon(name: str, size=24, extra="") -> str:
             f'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"{extra}>{ICONS[name]}</svg>')
 
 
-CSS_V = "s2"     # the concept sites share one stylesheet (agency/f/site.css): 4,500 sites x 7 KB of the same CSS was 30 MB
+CSS_V = "s3"     # the concept sites share one stylesheet (agency/f/site.css): 4,500 sites x 7 KB of the same CSS was 30 MB
 CSS = """*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0;background:var(--bg);color:var(--ink);
 font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
 a{color:var(--brand)}.wrap{max-width:640px;margin:0 auto;padding:0 18px}
@@ -393,6 +393,8 @@ background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10p
 .pkg{margin:0 0 14px;padding:14px 16px;border-radius:16px;border:1px solid var(--line);background:var(--card)}
 .pkg-h{margin:0 0 4px;font-weight:800;font-size:1.05rem}.pkg-p{margin:0 0 8px;font-weight:700;color:var(--brand)}
 .pkg ul{margin:0;padding-left:18px;color:var(--soft)}.pkg li{margin:2px 0}
+.sos{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;justify-content:center;min-height:48px;padding:8px 16px;background:var(--brand);
+color:var(--on);text-decoration:none;font-size:1rem;text-align:center}.sos span{text-decoration:underline;font-weight:700}
 @media(min-width:900px){.hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:0 32px;align-items:center}.hero .photo{grid-column:2;grid-row:1/5;margin:0}}
 .call:focus-visible,a:focus-visible{outline:3px solid var(--brand2);outline-offset:2px}
 @media (min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}.dock{display:none}.foot{padding-bottom:30px}}
@@ -500,8 +502,25 @@ def pricebook_offer() -> str:
         return OFFER
 
 
+TRADES_RX = r"roof|hvac|heating|cooling|air condition|furnace|plumb|drain|electric|solar|remodel|contractor|construct|gutter|siding|paving"
+HVAC_RX = r"hvac|heating|cooling|air condition|furnace|heat pump"
+
+
+def trades_offer() -> str:
+    """the trades package from the price book: Starter + Call engine (setup and monthly added up: $2,000 + $378/mo today)"""
+    try:
+        pb = json.load(open(os.path.join(ROOT, "agency", "pricebook.json"), encoding="utf-8"))
+        pk = {x["id"]: x for x in pb["packages"]}
+        st, ce = pk["starter"], pk["callengine"]
+        return (f"Trades package: {st['name']} + {ce['name']} = ${st['setup'] + ce['setup']:,} setup + ${st['monthly'] + ce['monthly']}/month: "
+                "the site, your Google profile kept fresh, review requests to your real customers after each job, a monthly calls report")
+    except (OSError, ValueError, KeyError):
+        return ""
+
+
 def premium_parts(lead: dict, kind: str, name: str) -> tuple:
-    """(hero photo html, reviews html, package html) for a premium concept page"""
+    """(hero photo html, reviews html, package html) for a premium concept page; trades (roofing, HVAC, plumbing ...) also get the
+    trades package (Starter + Call engine from the price book)"""
     k = photo_key(lead, kind)
     photo = (f'<figure class="photo rise d2"><img src="../img/{k}.webp" alt="{esc(kind)}: a sample photo" width="960" height="540" fetchpriority="high" decoding="async">'
              f'<figcaption>Sample photo: your own photos go here.</figcaption></figure>') if k else ""
@@ -511,7 +530,21 @@ def premium_parts(lead: dict, kind: str, name: str) -> tuple:
                + '</div><p class="muted" style="margin:10px 0 0;font-size:.85rem">We never write reviews: these spaces stay empty until real ones are added.</p></section>')
     package = (f'<div class="pkg"><p class="pkg-h">This site, yours this week</p><p class="pkg-p">{esc(pricebook_offer())}</p>'
                '<ul><li>Your photos, your words, your own domain</li><li>Works on every phone; Google-ready</li><li>Edits and hosting in the monthly plan</li></ul></div>')
+    text = " ".join(str(x or "") for x in (lead.get("category"), kind, lead.get("name"))).lower()
+    to = trades_offer() if re.search(TRADES_RX, text) else ""
+    if to:
+        package += (f'<div class="pkg" data-pkg="trades"><p class="pkg-h">For a busy trade: more calls, not just a site</p><p class="pkg-p">{esc(to)}</p>'
+                    '<ul><li>Most of your work comes from people searching on a phone: this keeps you at the top of the map</li>'
+                    '<li>You approve every review-request message</li></ul></div>')
     return photo, reviews, package
+
+
+def emergency_strip(lead: dict, kind: str, t: str, phone: str) -> str:
+    """HVAC: a strip at the top for the no-heat / no-AC call (only a call button: no hours or 24/7 promise we can't know)"""
+    text = " ".join(str(x or "") for x in (lead.get("category"), kind, lead.get("name"))).lower()
+    if not t or not re.search(HVAC_RX, text):
+        return ""
+    return (f'<a class="sos" href="tel:{t}" data-sos="1"><b>No heat? No AC?</b> <span>Call {esc(phone)}</span></a>')
 
 
 def page(lead: dict, ids: dict, client: dict | None = None) -> str:
@@ -568,6 +601,7 @@ def page(lead: dict, ids: dict, client: dict | None = None) -> str:
     desc = f"{kind} in {place}." + (f" Call {phone}." if phone else "")
     prem = bool(lead.get("_premium")) and not client
     p_photo, p_rev, p_pkg = premium_parts(lead, kind, name) if prem else ("", "", "")
+    p_sos = emergency_strip(lead, kind, t, phone) if prem else ""
     today_js = ('<script>(function(){var d=(new Date().getDay()+6)%7,r=document.querySelector(\'.hours tr[data-d="\'+d+\'"]\');'
                 'if(r)r.className="today";var y=document.getElementById("y");if(y)y.textContent=new Date().getFullYear();})();</script>')
     return f"""<!doctype html>
@@ -586,7 +620,7 @@ def page(lead: dict, ids: dict, client: dict | None = None) -> str:
 </head>
 <body data-niche="{niche}">
 <header class="bar"><div class="wrap">{('<img class="logo" src="' + esc(cl["logo"]) + '" alt="" width="34" height="34" style="object-fit:cover;background:none">') if cl.get("logo") else '<span class="logo">' + icon(N["icon"], 20) + '</span>'}<b>{esc(name)}</b>{call.replace('class="call"', 'class="call" style="min-height:44px;padding:0 14px;font-size:.9rem"', 1) if t else ""}</div></header>
-<main>
+<main>{p_sos}
 <div class="hero"><div class="wrap">
 <span class="kind rise">{icon(N["icon"], 16)}{esc(kind)} · {esc(town)}</span>
 <h1 class="rise d1">{esc(name)}</h1>
