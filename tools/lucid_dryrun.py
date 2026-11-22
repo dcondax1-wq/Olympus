@@ -50,7 +50,8 @@ def compare(base, luc) -> dict:
     diffs = {k: {"base": B[k][:6], "with_lucid": (L.get(k) or [])[:6]} for k, v in same.items() if not v}
     lit = [(d, t, s) for (d, t, s, *_r) in L.get("Zlarior 50K (main)", []) if s in ("buy", "sell")]
     lu = [(d, t, s) for (d, t, s, *_r) in L.get(LUCID, []) if s in ("buy", "sell")]
-    return {"existing_lanes": sorted(B), "unchanged": all(same.values()) and set(B) <= set(L), "diffs": diffs,
+    # a base run without results proves nothing (2026-11-22: an empty base read "unchanged"): never vacuously true
+    return {"existing_lanes": sorted(B), "unchanged": bool(B) and all(same.values()) and set(B) <= set(L), "diffs": diffs,
             "lucid_rows": L.get(LUCID, []), "lucid_entries": len(lu),
             "lucid_same_side_as_lit": all(any(x[0] == y[0] and x[2] == y[2] for y in lit) for x in lu),
             "checks": {"base": [bsum.get("passed"), bsum.get("checks")], "with_lucid": [lsum.get("passed"), lsum.get("checks")]},
