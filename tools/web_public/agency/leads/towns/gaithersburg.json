@@ -745,7 +745,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "https://bryantgroupinc.net",
-    "status": "TimeoutError"
+    "status": "TimeoutError",
+    "reason": "server_error",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "bryantgroupinc.net",
+    "proof": "Your site bryantgroupinc.net didn't load: it shows a server error. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -3141,7 +3145,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://beautifulnailsspa.com/",
-    "status": "OSError"
+    "status": "OSError",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "beautifulnailsspa.com",
+    "proof": "Your site beautifulnailsspa.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -3263,7 +3271,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://cdhairbraiding.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "cdhairbraiding.com",
+    "proof": "Your site cdhairbraiding.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -4372,47 +4384,6 @@
    }
   },
   {
-   "id": "osm-n12216643800",
-   "name": "Kacey Hair Salon",
-   "niche": "beauty",
-   "niche_name": "Salon / beauty",
-   "kind": "shop=hairdresser",
-   "town": "Gaithersburg",
-   "city": "Gaithersburg",
-   "state": "MD",
-   "phone": "(301) 869-5303",
-   "email": "",
-   "street": "20 Montgomery Village Avenue",
-   "zip": "",
-   "address": "20 Montgomery Village Avenue, Gaithersburg",
-   "addr_src": "map",
-   "lat": 39.155496,
-   "lon": -77.208757,
-   "mailable": false,
-   "hours": "",
-   "facebook": false,
-   "trade": "salon",
-   "category": "hairdresser",
-   "score": 6,
-   "heat": "warm",
-   "why": [
-    "no website on the map",
-    "a street address (real storefront)",
-    "salon / beauty: customers search for this online"
-   ],
-   "offer": "starter site $1,500 with online booking + phone-scan 3D tour of the salon $300-$800",
-   "offer_usd": 1500,
-   "osm": "https://www.openstreetmap.org/node/12216643800",
-   "phone_src": "overture",
-   "web": {
-    "verdict": "site_down",
-    "src": "overture",
-    "checked": "2026-11-21",
-    "url": "http://www.Kaceyhairsalon.com/",
-    "status": "TimeoutError"
-   }
-  },
-  {
    "id": "osm-n12254399433",
    "name": "Kentlands Dental and Orthodontic Group",
    "niche": "health",
@@ -4572,7 +4543,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "https://www.handpullnoodle.com",
-    "status": 404
+    "status": 404,
+    "reason": "not_found",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "handpullnoodle.com",
+    "proof": "Your site handpullnoodle.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -4892,7 +4867,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "https://www.itsmassageseason.com",
-    "status": 404
+    "status": 404,
+    "reason": "not_found",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "itsmassageseason.com",
+    "proof": "Your site itsmassageseason.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -4933,7 +4912,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.merrynailsspa.com/",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "merrynailsspa.com",
+    "proof": "Your site merrynailsspa.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -5014,7 +4997,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.mudousa.com/",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "mudousa.com",
+    "proof": "Your site mudousa.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -5219,7 +5206,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "https://oasisandspa.com/",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "oasisandspa.com",
+    "proof": "Your site oasisandspa.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -7206,7 +7197,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.chinajaderockville.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "chinajaderockville.com",
+    "proof": "Your site chinajaderockville.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -7602,7 +7597,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "https://www.donutchew.com/",
-    "status": "gaierror"
+    "status": "gaierror",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "donutchew.com",
+    "proof": "Your site donutchew.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -7797,46 +7796,6 @@
     "verdict": "none",
     "src": "overture",
     "checked": "2026-11-21"
-   }
-  },
-  {
-   "id": "osm-n12216474383",
-   "name": "Firehouse Deli",
-   "niche": "food",
-   "niche_name": "Restaurant / food",
-   "kind": "amenity=restaurant",
-   "town": "Gaithersburg",
-   "city": "Gaithersburg",
-   "state": "MD",
-   "phone": "(301) 869-4434",
-   "email": "",
-   "street": "6 Montgomery Village Avenue",
-   "zip": "20879",
-   "address": "6 Montgomery Village Avenue, Gaithersburg MD 20879",
-   "addr_src": "map",
-   "lat": 39.154536,
-   "lon": -77.210313,
-   "mailable": true,
-   "hours": "",
-   "facebook": false,
-   "trade": "restaurant",
-   "category": "restaurant",
-   "score": 5,
-   "heat": "cold",
-   "why": [
-    "no website on the map",
-    "a street address (real storefront)"
-   ],
-   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
-   "offer_usd": 1500,
-   "osm": "https://www.openstreetmap.org/node/12216474383",
-   "phone_src": "overture",
-   "web": {
-    "verdict": "site_down",
-    "src": "overture",
-    "checked": "2026-11-21",
-    "url": "http://www.firehousedeli.com",
-    "status": "TimeoutError"
    }
   },
   {
@@ -8869,7 +8828,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.m.kentlandstkd.com/index.php",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "m.kentlandstkd.com",
+    "proof": "Your site m.kentlandstkd.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -9145,46 +9108,6 @@
    }
   },
   {
-   "id": "osm-w1236007813",
-   "name": "Locally Crafted",
-   "niche": "retail",
-   "niche_name": "Shop",
-   "kind": "shop=yes",
-   "town": "Gaithersburg",
-   "city": "Gaithersburg",
-   "state": "MD",
-   "phone": "(240) 428-8797",
-   "email": "",
-   "street": "9 Grand Corner Avenue",
-   "zip": "20878",
-   "address": "9 Grand Corner Avenue, Gaithersburg MD 20878",
-   "addr_src": "map",
-   "lat": 39.118469,
-   "lon": -77.201035,
-   "mailable": true,
-   "hours": "",
-   "facebook": false,
-   "trade": "retail",
-   "category": "yes",
-   "score": 5,
-   "heat": "cold",
-   "why": [
-    "no website on the map",
-    "a street address (real storefront)"
-   ],
-   "offer": "starter site $1,500 (hours, map, what's in stock) + Google profile $199-$399/mo",
-   "offer_usd": 1500,
-   "osm": "https://www.openstreetmap.org/way/1236007813",
-   "phone_src": "overture",
-   "web": {
-    "verdict": "site_down",
-    "src": "overture",
-    "checked": "2026-11-21",
-    "url": "http://locallycraftedshop.com/",
-    "status": "TimeoutError"
-   }
-  },
-  {
    "id": "osm-n11529310851",
    "name": "Los Amigos Authentic Mexican Restaurant",
    "niche": "food",
@@ -9220,7 +9143,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://losamigosgaithersburg.com/",
-    "status": "OSError"
+    "status": "OSError",
+    "reason": "other",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "losamigosgaithersburg.com",
+    "proof": "Your site losamigosgaithersburg.com didn't load: it didn't load. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -9541,7 +9468,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "https://www.missbridetobebridal.com/",
-    "status": 404
+    "status": 404,
+    "reason": "not_found",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "missbridetobebridal.com",
+    "proof": "Your site missbridetobebridal.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -11902,13 +11833,16 @@
    "osm": "https://www.openstreetmap.org/node/11563391043",
    "phone_src": "overture",
    "web": {
-    "verdict": "has_site",
+    "verdict": "site_down",
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.yikusushi.com",
-    "status": 200
-   },
-   "website": "http://www.yikusushi.com"
+    "status": 200,
+    "reason": "parked",
+    "domain": "yikusushi.com",
+    "checked3": "2026-11-22T06:59Z",
+    "proof": "Your site yikusushi.com didn't load: the address now shows a parked page from the domain company. Checked Sun 11-22 1:59am ET."
+   }
   },
   {
    "id": "osm-w1238506194",
@@ -13019,7 +12953,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.jjmuldoons.com/",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "jjmuldoons.com",
+    "proof": "Your site jjmuldoons.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -13454,7 +13392,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://mainstreetbeerandwine.com/",
-    "status": 404
+    "status": 404,
+    "reason": "not_found",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "mainstreetbeerandwine.com",
+    "proof": "Your site mainstreetbeerandwine.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:53am ET."
    }
   },
   {

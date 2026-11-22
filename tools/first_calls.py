@@ -67,8 +67,21 @@ def score(L: dict, s: dict) -> tuple:
 
 OPENER = {
     "no_site": "I noticed {name} doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
-    "site_down": "I tried to open {name}'s website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+    "site_down": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
 }
+
+
+PARKED_OPENER = {
+    "for_sale": "Your old web address {domain} now shows a 'for sale' page, so people who look you up online find nothing. We built you a fresh site. It's free to look at. Can I email you the link?",
+    "parked": "Your old web address {domain} now shows a parked page from the domain company, so people who look you up online find nothing. We built you a fresh site. It's free to look at. Can I email you the link?",
+}
+
+
+def opener_for(L: dict, lane: str, name: str) -> str:
+    w = L.get("web") or {}
+    if lane == "site_down" and w.get("reason") in PARKED_OPENER and w.get("domain"):
+        return PARKED_OPENER[w["reason"]].format(domain=w["domain"])
+    return OPENER[lane].format(name=name)
 
 
 def blocked() -> tuple:
@@ -110,7 +123,9 @@ def build(n: int = 100, skip: int = 0) -> dict:
                      "niche": PORTAL_NICHE.get(s["niche"], s["niche"]), "kind": s["kind"][:40], "code": s.get("code", ""), "site": s["path"],
                      "heat": str(L.get("heat") or ""), "score": round(pts, 1), "open_weekdays": od, "why": why, "trade": tl,
                      "county": str(L.get("county") or ""),
-                     "lane": lane, "opener": OPENER[lane].format(name=s["name"][:80]), "src": "overture" if L.get("source") == "overture" or L.get("phone_src") == "overture" else "osm"})
+                     "lane": lane, "opener": opener_for(L, lane, s["name"][:80]),
+                     "proof": str((L.get("web") or {}).get("proof") or "")[:200] if lane == "site_down" else "",
+                     "reason": str((L.get("web") or {}).get("reason") or "") if lane == "site_down" else "", "src": "overture" if L.get("source") == "overture" or L.get("phone_src") == "overture" else "osm"})
     nophone = sum(1 for L in F.load_leads() if len(re.sub(r"\D", "", str(L.get("phone") or ""))) not in (10, 11))
     rows.sort(key=lambda r: (-r["score"], -r["open_weekdays"], r["town"], r["name"].lower()))
     rows = rows[skip:skip + n]

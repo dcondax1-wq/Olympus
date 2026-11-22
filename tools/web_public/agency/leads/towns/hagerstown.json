@@ -44,7 +44,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.ntapsinc.com/",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "ntapsinc.com",
+    "proof": "Your site ntapsinc.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -918,7 +922,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.centralcitymd.com/",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "centralcitymd.com",
+    "proof": "Your site centralcitymd.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -958,7 +966,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "https://chicsseafoodmd.com",
-    "status": "TimeoutError"
+    "status": "TimeoutError",
+    "reason": "not_found",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "chicsseafoodmd.com",
+    "proof": "Your site chicsseafoodmd.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -1736,46 +1748,6 @@
     "verdict": "none",
     "src": "overture",
     "checked": "2026-11-21"
-   }
-  },
-  {
-   "id": "osm-n9379771431",
-   "name": "Pho Viet Restaurant",
-   "niche": "food",
-   "niche_name": "Restaurant / food",
-   "kind": "amenity=restaurant",
-   "town": "Hagerstown",
-   "city": "Hagerstown",
-   "state": "MD",
-   "phone": "(301) 745-5030",
-   "email": "",
-   "street": "1441 Wesel Boulevard",
-   "zip": "",
-   "address": "1441 Wesel Boulevard, Hagerstown",
-   "addr_src": "map",
-   "lat": 39.633483,
-   "lon": -77.756853,
-   "mailable": false,
-   "hours": "",
-   "facebook": false,
-   "trade": "restaurant",
-   "category": "restaurant",
-   "score": 5,
-   "heat": "cold",
-   "why": [
-    "no website on the map",
-    "a street address (real storefront)"
-   ],
-   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
-   "offer_usd": 1500,
-   "osm": "https://www.openstreetmap.org/node/9379771431",
-   "phone_src": "overture",
-   "web": {
-    "verdict": "site_down",
-    "src": "overture",
-    "checked": "2026-11-21",
-    "url": "http://www.phoviethagerstown.com/",
-    "status": "TimeoutError"
    }
   },
   {
@@ -4090,7 +4062,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "https://www.ordersibaramd.com/?utm_source=bing&utm_medium=websiteurl&utm_campaign=search",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "ordersibaramd.com",
+    "proof": "Your site ordersibaramd.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -4275,13 +4251,16 @@
    "osm": "https://www.openstreetmap.org/node/1821603090",
    "phone_src": "overture",
    "web": {
-    "verdict": "has_site",
+    "verdict": "site_down",
     "src": "overture",
     "checked": "2026-11-21",
     "url": "supremeburger.com",
-    "status": 200
-   },
-   "website": "supremeburger.com"
+    "status": 200,
+    "reason": "parked",
+    "domain": "supremeburger.com",
+    "checked3": "2026-11-22T06:59Z",
+    "proof": "Your site supremeburger.com didn't load: the address now shows a parked page from the domain company. Checked Sun 11-22 1:59am ET."
+   }
   },
   {
    "id": "osm-n9527208886",
@@ -4691,7 +4670,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "https://washingtonpawn.net",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "washingtonpawn.net",
+    "proof": "Your site washingtonpawn.net didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -4730,7 +4713,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "https://www.westendsunoco.com",
-    "status": 404
+    "status": 404,
+    "reason": "not_found",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "westendsunoco.com",
+    "proof": "Your site westendsunoco.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:53am ET."
    }
   },
   {

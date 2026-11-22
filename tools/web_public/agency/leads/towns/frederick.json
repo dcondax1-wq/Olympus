@@ -338,7 +338,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.advancedurgentcare.com",
-    "status": "TimeoutError"
+    "status": "TimeoutError",
+    "reason": "timeout",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "advancedurgentcare.com",
+    "proof": "Your site advancedurgentcare.com didn't load: it never answered. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -533,7 +537,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.frederickchicken.com/",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "frederickchicken.com",
+    "proof": "Your site frederickchicken.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -771,7 +779,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.riverside-liquors.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "riverside-liquors.com",
+    "proof": "Your site riverside-liquors.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -812,7 +824,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.saborcaserobakery.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "saborcaserobakery.com",
+    "proof": "Your site saborcaserobakery.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -1414,7 +1430,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.classicglassandupholstery.com/index.html",
-    "status": "TimeoutError"
+    "status": "TimeoutError",
+    "reason": "timeout",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "classicglassandupholstery.com",
+    "proof": "Your site classicglassandupholstery.com didn't load: it never answered. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -1850,7 +1870,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://luckyhouse.com/",
-    "status": "SSLCertVerificationError"
+    "status": "SSLCertVerificationError",
+    "reason": "ssl",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "luckyhouse.com",
+    "proof": "Your site luckyhouse.com didn't load: browsers show a security warning (its certificate is broken). Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -2377,7 +2401,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://wormansmillnails.com/",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "wormansmillnails.com",
+    "proof": "Your site wormansmillnails.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -2764,7 +2792,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.colespawnbrokersoutlet.com/",
-    "status": 404
+    "status": 404,
+    "reason": "not_found",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "colespawnbrokersoutlet.com",
+    "proof": "Your site colespawnbrokersoutlet.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -3195,7 +3227,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.frederickfurn.com/",
-    "status": "SSLError"
+    "status": "SSLError",
+    "reason": "ssl",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "frederickfurn.com",
+    "proof": "Your site frederickfurn.com didn't load: browsers show a security warning (its certificate is broken). Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -3275,7 +3311,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.frederickymca.org/",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "frederickymca.org",
+    "proof": "Your site frederickymca.org didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -3905,7 +3945,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.softtouchnailsspa.com/",
-    "status": "SSLCertVerificationError"
+    "status": "SSLCertVerificationError",
+    "reason": "ssl",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "softtouchnailsspa.com",
+    "proof": "Your site softtouchnailsspa.com didn't load: browsers show a security warning (its certificate is broken). Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -4700,7 +4744,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.venusvintage.net/",
-    "status": "TimeoutError"
+    "status": "TimeoutError",
+    "reason": "server_error",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "venusvintage.net",
+    "proof": "Your site venusvintage.net didn't load: it shows a server error. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -5045,7 +5093,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.cannonhillantiques.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "cannonhillantiques.com",
+    "proof": "Your site cannonhillantiques.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -5241,7 +5293,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.chopsticksexpressfrederick.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "chopsticksexpressfrederick.com",
+    "proof": "Your site chopsticksexpressfrederick.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -5553,7 +5609,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.greatstuffbypaul.com/",
-    "status": 404
+    "status": 404,
+    "reason": "not_found",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "greatstuffbypaul.com",
+    "proof": "Your site greatstuffbypaul.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -5705,7 +5765,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.jrspizzafrederick.com/",
-    "status": "gaierror"
+    "status": "gaierror",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "jrspizzafrederick.com",
+    "proof": "Your site jrspizzafrederick.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -7000,7 +7064,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.shopthemuse.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "shopthemuse.com",
+    "proof": "Your site shopthemuse.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {

@@ -276,7 +276,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.damascusopticians.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "damascusopticians.com",
+    "proof": "Your site damascusopticians.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -435,7 +439,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://fitness4youdamascus.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "fitness4youdamascus.com",
+    "proof": "Your site fitness4youdamascus.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -633,7 +641,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://damascushairstylists.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "damascushairstylists.com",
+    "proof": "Your site damascushairstylists.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -829,7 +841,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.littlefareastii.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "littlefareastii.com",
+    "proof": "Your site littlefareastii.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -909,7 +925,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.PapisChickenandGrill.com/",
-    "status": "gaierror"
+    "status": "gaierror",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "papischickenandgrill.com",
+    "proof": "Your site papischickenandgrill.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {

@@ -588,7 +588,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.brownsjewelrythurmont.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "brownsjewelrythurmont.com",
+    "proof": "Your site brownsjewelrythurmont.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -857,7 +861,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.timelesstrendsboutique.com/",
-    "status": 404
+    "status": 404,
+    "reason": "not_found",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "timelesstrendsboutique.com",
+    "proof": "Your site timelesstrendsboutique.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:53am ET."
    }
   },
   {

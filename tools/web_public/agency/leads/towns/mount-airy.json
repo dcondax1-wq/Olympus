@@ -1029,7 +1029,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.mammaangelamtairy.com/",
-    "status": 404
+    "status": 404,
+    "reason": "not_found",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "mammaangelamtairy.com",
+    "proof": "Your site mammaangelamtairy.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:53am ET."
    }
   },
   {

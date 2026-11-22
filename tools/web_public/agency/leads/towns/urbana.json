@@ -246,7 +246,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://urbanadentalspa.com/",
-    "status": 509
+    "status": 509,
+    "reason": "server_error",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "urbanadentalspa.com",
+    "proof": "Your site urbanadentalspa.com didn't load: it shows a server error. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -824,7 +828,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.urbana-highlands.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "urbana-highlands.com",
+    "proof": "Your site urbana-highlands.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {

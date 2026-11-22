@@ -115,6 +115,31 @@ def main() -> int:
           V.trade({"category": "roofing"})[0] > V.trade({"category": "plumbing"})[0] > V.trade({"category": "dentist"})[0] > V.trade({"category": "barber"})[0]
           > V.trade({"category": "thai restaurant"})[0] and V.score({"category": "barber", "phone": "3015550100", "web": {"verdict": "site_down"}})
           > V.score({"category": "barber"}) and V.trade({"name": "Tasty Thai Kitchen", "category": "thai_restaurant"})[0] == 1)
+    # e. site-down proof (tools/site_down_proof.py): what failed + when; parked / for-sale pages get their own honest opener
+    from tools import site_down_proof as SD
+    from tools import first_calls as FC
+    cls = [SD.classify("dns", ""), SD.classify("TimeoutError", ""), SD.classify("ssl", ""), SD.classify(404, "<h1>Not Found</h1>"),
+           SD.classify(503, ""), SD.classify(200, "<p>This domain is for sale! Make an offer</p>"), SD.classify(200, "<p>This web page is parked FREE, courtesy of GoDaddy</p>"),
+           SD.classify(200, "<h1>Joe's Roofing</h1>"), SD.classify(403, "")]
+    check("e. reasons: dns_gone, timeout, ssl, not_found, server_error, for_sale, parked; a real page / 403 = up",
+          cls == ["dns_gone", "timeout", "ssl", "not_found", "server_error", "for_sale", "parked", "up", "up"], cls)
+    pl = SD.proof_line("joesroofing.com", "dns_gone", "2026-11-22T05:57Z", "2026-11-22T07:00Z")
+    check("e. the proof line the caller reads out: domain, plain reason, two check times in ET",
+          pl == "Your site joesroofing.com didn't load: the address no longer points anywhere. Checked Sun 11-22 12:57am and 2am ET.", pl)
+    with tempfile.TemporaryDirectory() as t:
+        p = os.path.join(t, "counties", "x.json")
+        os.makedirs(os.path.dirname(p))
+        json.dump({"leads": [{"id": "a", "name": "A Roofing", "web": {"verdict": "site_down", "url": "http://aroof.com", "checked2": "2026-11-22T05:57Z"}},
+                             {"id": "b", "name": "B HVAC", "web": {"verdict": "site_down", "url": "http://bhvac.com"}},
+                             {"id": "c", "name": "C Plumbing", "web": {"verdict": "site_down", "url": "http://cplumb.com"}}]}, open(p, "w"))
+        fake = {"http://aroof.com": ("dns", ""), "http://bhvac.com": (200, "<h1>B HVAC</h1>"), "http://cplumb.com": (200, "Buy this domain")}
+        r = SD.run([p], fetcher=lambda u: fake[u], now="2026-11-22T07:00Z")
+        d = {L["id"]: L for L in json.load(open(p))["leads"]}
+    check("e. a re-check: a site that answers again is dropped; the rest store reason + proof", r["came_back_up"] == 1 and "b" not in d
+          and d["a"]["web"]["reason"] == "dns_gone" and "12:57am and 2am" in d["a"]["web"]["proof"] and d["c"]["web"]["reason"] == "for_sale", (r, d))
+    op = FC.opener_for({"web": {"reason": "for_sale", "domain": "cplumb.com"}}, "site_down", "C Plumbing")
+    check("e. a for-sale / parked domain gets its own opener naming the old address", "cplumb.com" in op and "for sale" in op
+          and FC.opener_for({"web": {"reason": "dns_gone"}}, "site_down", "A").startswith("I tried your website"), op)
     # c. the committed results
     import glob
     leads = [x for p in glob.glob(os.path.join(W.TOWNS_DIR, "*.json")) for x in json.load(open(p))["leads"]]
