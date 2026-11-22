@@ -1,4 +1,14 @@
 ## Tested and rejected (don't redo without a new idea)
+- **Edge hunt lane D: small meta-labeled SIZE + re-entry on LIT (2026-11-22, `edge-d-meta-2026-11-22.md`, code `research/edge_hunt/d/`):**
+  31 pre-registered versions. 16 walk-forward size rules (logistic / depth-2 tree x 7 or 13 facts known at the fill x 0.5 / 1.5,
+  0.75 / 1.25, down-only 0.5, up-only 1.5; monthly refit, purged + embargoed, MFFU caps on the eval path): all 12 that cut size lose
+  2026 H1 (-$1.6k..-$15.7k) and pass fewer 2-week evals (6.7-37% vs 44.5%); the 4 up-only ones are leverage (a flat x1.25 with no
+  model makes more in H1); the only one through the money gate (tree 13 facts, up-only 1.5: +$5.7k / +$3.2k / +$0.5k, eval +$3.1k /
+  +$0.2k) is chance (shuffled multipliers beat it 29% / 45%, shuffled labels 23% / 15%, in-sample H1 +$12.4k vs +$5.7k), funded +$13-17 a month with
+  more account loss (1.7 -> 2.1%, 3.0 -> 4.1%). Overlaps `meta-labeling.md` (2026-10-23, 102 facts, 10 models, rejected). Re-entry:
+  after a STOP (any / same side / opposite / 30-min cool-off / same level re-swept same session), after BE / TARGET / cut, Monday rule
+  off: 0 pass; stop-out extras 2026 H1 9 trades -$452 PF 0.28, 2021-25 60 trades -$440; same-level re-sweep 8 trades PF ~0; every
+  signal the 1-a-day rule blocks 24 / 12 / 102 trades -$1.5k / +$3.6k / -$4.8k. Opposite-side re-entry +$2.3k in 2021-25 but 1 trade in 2026.
 - **Zlarior more money, 2 pre-registered batches (2026-11-19, `lit-more-money-2026-11-19.md`, `tools/lit_more_money.py`,
   `research/lit/more_money.json`, designs `research/lit/more_money_design_batch1/2.md`, Lab rows `research/lab/lit_more_money.json`):**
   9 single versions, LIT $/month H1 / H2 / 2021-25 vs today $5,562 / $2,670 / $25: ES (MES) LIT filler on days NQ has not
