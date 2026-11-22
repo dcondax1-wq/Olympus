@@ -2,7 +2,7 @@
  "v": 1,
  "kind": "caller-portal-list",
  "list": "first-100",
- "built": "2026-11-21",
+ "built": "2026-11-22",
  "count": 100,
  "note": "public map data only; ranked: hot, open in calling hours, trade, storefront. A person dials; never an auto-dialer. Lanes: no_site (we built you one) / site_down (your website is down). Leads with a working site are not here (agency/leads/redesign.json).",
  "credit": "Data (c) OpenStreetMap contributors (ODbL) and Overture Maps Foundation (CDLA-Permissive-2.0 / ODbL), overturemaps.org",
@@ -851,29 +851,6 @@
    "rank": 36
   },
   {
-   "id": "ovt-36b117b8-df8b-4de2-9603-",
-   "name": "The First Horizon Daycare",
-   "phone": "2407840071",
-   "town": "Clarksburg",
-   "state": "MD",
-   "niche": "trades",
-   "kind": "Home service",
-   "code": "CL-31",
-   "site": "f/qmgfxzdt/",
-   "heat": "hot",
-   "score": 7,
-   "open_weekdays": 0,
-   "why": [
-    "hot lead",
-    "trades / contractor (buys sites)",
-    "storefront address"
-   ],
-   "lane": "no_site",
-   "opener": "I noticed The First Horizon Daycare doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
-   "src": "overture",
-   "rank": 37
-  },
-  {
    "id": "ovt-2451a1eb-0685-4692-8664-",
    "name": "Wright-away Refuse",
    "phone": "3019632434",
@@ -894,7 +871,7 @@
    "lane": "no_site",
    "opener": "I noticed Wright-away Refuse doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 38
+   "rank": 37
   },
   {
    "id": "ovt-11581288-9a91-448a-967f-",
@@ -917,7 +894,7 @@
    "lane": "no_site",
    "opener": "I noticed 1st Choice Chiropractic Center doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 39
+   "rank": 38
   },
   {
    "id": "ovt-10d977ce-f68c-4cf8-95c3-",
@@ -940,7 +917,7 @@
    "lane": "no_site",
    "opener": "I noticed A Carl Segal, Md Pa doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 40
+   "rank": 39
   },
   {
    "id": "ovt-a2ffa0ee-4a7b-4309-8973-",
@@ -963,7 +940,7 @@
    "lane": "no_site",
    "opener": "I noticed AcuWorks doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 41
+   "rank": 40
   },
   {
    "id": "ovt-9371304c-1cef-44b5-8d7f-",
@@ -986,7 +963,7 @@
    "lane": "no_site",
    "opener": "I noticed Advanced Psychological Services doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 42
+   "rank": 41
   },
   {
    "id": "ovt-e348d1da-fba2-45e9-911a-",
@@ -1009,7 +986,7 @@
    "lane": "no_site",
    "opener": "I noticed Aesthetics & Body Lab doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 43
+   "rank": 42
   },
   {
    "id": "ovt-53b10978-d887-4418-9f16-",
@@ -1032,30 +1009,7 @@
    "lane": "no_site",
    "opener": "I noticed Alex Williams Home Improvements doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 44
-  },
-  {
-   "id": "ovt-5ad4001d-7aa7-4aef-8e3a-",
-   "name": "All Aboard Early Learning Center",
-   "phone": "4439359500",
-   "town": "Columbia",
-   "state": "MD",
-   "niche": "trades",
-   "kind": "Home service",
-   "code": "CO-303",
-   "site": "f/bhpt4q39/",
-   "heat": "hot",
-   "score": 7,
-   "open_weekdays": 0,
-   "why": [
-    "hot lead",
-    "trades / contractor (buys sites)",
-    "storefront address"
-   ],
-   "lane": "no_site",
-   "opener": "I noticed All Aboard Early Learning Center doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
-   "src": "overture",
-   "rank": 45
+   "rank": 43
   },
   {
    "id": "ovt-d1ea174d-e24b-42b2-aee9-",
@@ -1078,7 +1032,7 @@
    "lane": "no_site",
    "opener": "I noticed Allergy & Asthma doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 46
+   "rank": 44
   },
   {
    "id": "ovt-69c61c16-d78b-46d0-ad4c-",
@@ -1101,7 +1055,7 @@
    "lane": "no_site",
    "opener": "I noticed Allergy & Asthma Center Of Central Maryland doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 47
+   "rank": 45
   },
   {
    "id": "ovt-c96725be-f95f-47af-bcb2-",
@@ -1124,7 +1078,7 @@
    "lane": "no_site",
    "opener": "I noticed Ally Homes Llc doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 48
+   "rank": 46
   },
   {
    "id": "ovt-3b584cf9-be15-4f11-8e9c-",
@@ -1147,7 +1101,7 @@
    "lane": "no_site",
    "opener": "I noticed Altieri Enterprises, Inc. doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 49
+   "rank": 47
   },
   {
    "id": "ovt-d164afe6-528d-4a0d-9e3d-",
@@ -1170,7 +1124,7 @@
    "lane": "no_site",
    "opener": "I noticed Arundel Green Healthcare doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 50
+   "rank": 48
   },
   {
    "id": "ovt-4afd6721-76dd-40a0-bac1-",
@@ -1193,7 +1147,7 @@
    "lane": "no_site",
    "opener": "I noticed Atec Industries, Ltd. doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 51
+   "rank": 49
   },
   {
    "id": "ovt-4a828dd9-e5cc-489c-9e0b-",
@@ -1216,7 +1170,7 @@
    "lane": "no_site",
    "opener": "I noticed Bailey K E doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 52
+   "rank": 50
   },
   {
    "id": "ovt-c4b2b0d6-f26a-403f-9086-",
@@ -1239,7 +1193,7 @@
    "lane": "no_site",
    "opener": "I noticed Barbara Zabriskie, PT doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 53
+   "rank": 51
   },
   {
    "id": "ovt-66129f23-f25c-4086-aa81-",
@@ -1262,7 +1216,7 @@
    "lane": "no_site",
    "opener": "I noticed Bawse Bawdyworks, Llc doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 54
+   "rank": 52
   },
   {
    "id": "ovt-19fb5f83-2fde-4eb0-820b-",
@@ -1285,7 +1239,7 @@
    "lane": "no_site",
    "opener": "I noticed Bd Tees Asbestos Wrks L 24 Pen Fd doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 55
+   "rank": 53
   },
   {
    "id": "ovt-55b7b8fc-0f68-4148-b329-",
@@ -1308,7 +1262,7 @@
    "lane": "no_site",
    "opener": "I noticed Beltway Roofing doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 56
+   "rank": 54
   },
   {
    "id": "ovt-98cdb3e4-acde-49dc-92d9-",
@@ -1331,7 +1285,7 @@
    "lane": "no_site",
    "opener": "I noticed Best Homes Services Inc doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 57
+   "rank": 55
   },
   {
    "id": "ovt-7a2e3dff-da6d-4c4b-b7b1-",
@@ -1354,7 +1308,7 @@
    "lane": "no_site",
    "opener": "I noticed Between the Lines Medispa doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 58
+   "rank": 56
   },
   {
    "id": "ovt-c552484b-f0c9-4d33-97de-",
@@ -1377,7 +1331,7 @@
    "lane": "no_site",
    "opener": "I noticed Bigjar Systems, Llc doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 59
+   "rank": 57
   },
   {
    "id": "ovt-202325af-7787-40b1-a543-",
@@ -1400,7 +1354,7 @@
    "lane": "no_site",
    "opener": "I noticed Bjective Date Storage, Llc. doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 60
+   "rank": 58
   },
   {
    "id": "ovt-fd78aa24-0220-49c7-ac49-",
@@ -1423,7 +1377,7 @@
    "lane": "no_site",
    "opener": "I noticed Bluegrass Mental Health, Llc doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 61
+   "rank": 59
   },
   {
    "id": "ovt-28070da2-26a2-49c7-9f83-",
@@ -1446,7 +1400,7 @@
    "lane": "no_site",
    "opener": "I noticed Board Of Trustees, Washington D.c. Cement Masons' Welfare Fund doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 62
+   "rank": 60
   },
   {
    "id": "ovt-008bb451-0131-4afa-8188-",
@@ -1469,7 +1423,7 @@
    "lane": "no_site",
    "opener": "I noticed Branch Out Tree Service doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 63
+   "rank": 61
   },
   {
    "id": "ovt-23688218-8481-442c-9933-",
@@ -1492,7 +1446,7 @@
    "lane": "no_site",
    "opener": "I noticed Center For Autism And Related Disorders doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 64
+   "rank": 62
   },
   {
    "id": "ovt-e421f293-f9d7-440e-a572-",
@@ -1515,7 +1469,7 @@
    "lane": "no_site",
    "opener": "I noticed Chags Health Information Technology, Llc. doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 65
+   "rank": 63
   },
   {
    "id": "ovt-ae03be99-6b9a-4e53-a6fd-",
@@ -1538,7 +1492,7 @@
    "lane": "no_site",
    "opener": "I noticed Charles J. Lancelotta, Jr., Md doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 66
+   "rank": 64
   },
   {
    "id": "ovt-1269eed0-6100-4535-9971-",
@@ -1561,7 +1515,7 @@
    "lane": "no_site",
    "opener": "I noticed Charles M Boyd, Dpm doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 67
+   "rank": 65
   },
   {
    "id": "ovt-2ca1d693-8fc2-4eb2-bdaf-",
@@ -1584,7 +1538,7 @@
    "lane": "no_site",
    "opener": "I noticed Charlie's Columbia Lock & Window doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 68
+   "rank": 66
   },
   {
    "id": "ovt-a1c448a7-7f9d-41ef-930e-",
@@ -1607,7 +1561,7 @@
    "lane": "no_site",
    "opener": "I noticed Chateau Builders Of Maryland, Inc. doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 69
+   "rank": 67
   },
   {
    "id": "ovt-44f79652-5a50-45bf-9fc2-",
@@ -1630,7 +1584,7 @@
    "lane": "no_site",
    "opener": "I noticed Christian Counseling Group Llc doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 70
+   "rank": 68
   },
   {
    "id": "ovt-48ad977d-14e2-48a5-a4f0-",
@@ -1653,7 +1607,7 @@
    "lane": "no_site",
    "opener": "I noticed Clayman Speech & Language Services LLC doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 71
+   "rank": 69
   },
   {
    "id": "ovt-f52e7e6d-c6d1-4ed8-aed6-",
@@ -1676,7 +1630,7 @@
    "lane": "no_site",
    "opener": "I noticed Cmplsr Llc. doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 72
+   "rank": 70
   },
   {
    "id": "ovt-2f9b81f3-5fee-47a4-869b-",
@@ -1699,7 +1653,7 @@
    "lane": "no_site",
    "opener": "I noticed Columbia Endodontics Llc doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 73
+   "rank": 71
   },
   {
    "id": "ovt-918295f1-671d-4172-a8fb-",
@@ -1722,7 +1676,7 @@
    "lane": "no_site",
    "opener": "I noticed Columbia Family Acupuncture doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 74
+   "rank": 72
   },
   {
    "id": "ovt-7d0ac1b2-ee4f-4f64-9d47-",
@@ -1745,7 +1699,7 @@
    "lane": "no_site",
    "opener": "I noticed Columbia Kitchens Of Md doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 75
+   "rank": 73
   },
   {
    "id": "ovt-23791709-adeb-4b55-b8ad-",
@@ -1768,7 +1722,7 @@
    "lane": "no_site",
    "opener": "I noticed Columbia Mental Health Services doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 76
+   "rank": 74
   },
   {
    "id": "ovt-a80c3fe8-6c46-452e-a586-",
@@ -1791,7 +1745,7 @@
    "lane": "no_site",
    "opener": "I noticed Contract Kitchen Distributors, Inc. doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 77
+   "rank": 75
   },
   {
    "id": "ovt-8f93d1d5-2745-4925-aa9a-",
@@ -1814,7 +1768,7 @@
    "lane": "no_site",
    "opener": "I noticed Critical Mission Engineering, Llc. doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 78
+   "rank": 76
   },
   {
    "id": "ovt-c87d65da-328b-4ca5-ae40-",
@@ -1837,7 +1791,7 @@
    "lane": "no_site",
    "opener": "I noticed Crossroads Psychological Associates doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 79
+   "rank": 77
   },
   {
    "id": "ovt-e9205ad4-2685-4607-8690-",
@@ -1860,7 +1814,7 @@
    "lane": "no_site",
    "opener": "I noticed Crown Oasis Mental Wellness doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 80
+   "rank": 78
   },
   {
    "id": "ovt-2ab49154-b26a-4869-9a14-",
@@ -1883,7 +1837,7 @@
    "lane": "no_site",
    "opener": "I noticed Ctl-systemware doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 81
+   "rank": 79
   },
   {
    "id": "ovt-53a1ea07-8b81-41de-95fe-",
@@ -1906,7 +1860,7 @@
    "lane": "no_site",
    "opener": "I noticed Danny's Cleaning Service doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 82
+   "rank": 80
   },
   {
    "id": "ovt-92021a83-53a6-4712-b25e-",
@@ -1929,7 +1883,7 @@
    "lane": "no_site",
    "opener": "I noticed Delgado And Stanek, Pa doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 83
+   "rank": 81
   },
   {
    "id": "ovt-e6f3759a-1042-492a-a744-",
@@ -1952,7 +1906,7 @@
    "lane": "no_site",
    "opener": "I noticed Delias doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 84
+   "rank": 82
   },
   {
    "id": "ovt-0a381ca5-1b23-4cbc-8918-",
@@ -1975,7 +1929,7 @@
    "lane": "no_site",
    "opener": "I noticed Dr Jani Associates Llc doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 85
+   "rank": 83
   },
   {
    "id": "ovt-64a1e499-df27-4afd-be15-",
@@ -1998,7 +1952,7 @@
    "lane": "no_site",
    "opener": "I noticed Dr. Keith E. Karas doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 86
+   "rank": 84
   },
   {
    "id": "ovt-d71d0560-5183-4f6d-9e74-",
@@ -2021,7 +1975,7 @@
    "lane": "no_site",
    "opener": "I noticed Dr. Vikaskumar Patel doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 87
+   "rank": 85
   },
   {
    "id": "ovt-106101e7-a366-4e01-ae89-",
@@ -2044,7 +1998,7 @@
    "lane": "no_site",
    "opener": "I noticed Dundics Enterprises Inc. doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 88
+   "rank": 86
   },
   {
    "id": "ovt-bb231489-cf6b-46a4-8249-",
@@ -2067,7 +2021,7 @@
    "lane": "no_site",
    "opener": "I noticed Edo Evi doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 89
+   "rank": 87
   },
   {
    "id": "ovt-d645874c-8273-4643-9d77-",
@@ -2090,7 +2044,7 @@
    "lane": "no_site",
    "opener": "I noticed Endeavor doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 90
+   "rank": 88
   },
   {
    "id": "ovt-b1508438-f386-428a-b820-",
@@ -2113,7 +2067,7 @@
    "lane": "no_site",
    "opener": "I noticed Environmental Systems Associates doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 91
+   "rank": 89
   },
   {
    "id": "ovt-fbffcffd-16b0-4e0b-9168-",
@@ -2136,7 +2090,7 @@
    "lane": "no_site",
    "opener": "I noticed Family Mental Clinic doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 92
+   "rank": 90
   },
   {
    "id": "ovt-ac74f818-0bf2-48bd-ad93-",
@@ -2159,7 +2113,7 @@
    "lane": "no_site",
    "opener": "I noticed Fortis Cleaning And Restoration Services doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 93
+   "rank": 91
   },
   {
    "id": "ovt-80faaa17-55c0-4003-8075-",
@@ -2182,7 +2136,7 @@
    "lane": "no_site",
    "opener": "I noticed Gantech Inc. doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 94
+   "rank": 92
   },
   {
    "id": "ovt-337977d8-245f-4c63-bdf6-",
@@ -2205,7 +2159,7 @@
    "lane": "no_site",
    "opener": "I noticed Gcom Software Llc. doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 95
+   "rank": 93
   },
   {
    "id": "ovt-d69ebdea-01d6-4462-94f8-",
@@ -2228,7 +2182,7 @@
    "lane": "no_site",
    "opener": "I noticed George Garbis, D.d.s., L.l.c. doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 96
+   "rank": 94
   },
   {
    "id": "ovt-e80cb354-9001-4ff4-8ea5-",
@@ -2251,7 +2205,7 @@
    "lane": "no_site",
    "opener": "I noticed GranitePro LLC doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 97
+   "rank": 95
   },
   {
    "id": "ovt-cad80e71-588d-41d1-b2e5-",
@@ -2274,7 +2228,7 @@
    "lane": "no_site",
    "opener": "I noticed Guide Health Services doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 98
+   "rank": 96
   },
   {
    "id": "ovt-710dcf83-e8b2-428e-90e5-",
@@ -2297,7 +2251,7 @@
    "lane": "no_site",
    "opener": "I noticed Harry's Primary Care Llc doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
-   "rank": 99
+   "rank": 97
   },
   {
    "id": "ovt-85f55fbd-7edc-4cb3-8326-",
@@ -2319,6 +2273,52 @@
    ],
    "lane": "no_site",
    "opener": "I noticed Healthcare Strategies, Inc. doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
+   "src": "overture",
+   "rank": 98
+  },
+  {
+   "id": "ovt-4ce1a8e5-f8dc-4e64-9778-",
+   "name": "Her Health Physical Therapy, Llc",
+   "phone": "4432832018",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "health",
+   "kind": "Physical therapy",
+   "code": "CO-283",
+   "site": "f/wgt5tdgz/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "health (buys sites)",
+    "storefront address"
+   ],
+   "lane": "no_site",
+   "opener": "I noticed Her Health Physical Therapy, Llc doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
+   "src": "overture",
+   "rank": 99
+  },
+  {
+   "id": "ovt-1f3f8a94-9257-4b2e-8e2f-",
+   "name": "HerHealthPT",
+   "phone": "4432832018",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "health",
+   "kind": "Physical therapy",
+   "code": "CO-218",
+   "site": "f/z34qcvgj/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "health (buys sites)",
+    "storefront address"
+   ],
+   "lane": "no_site",
+   "opener": "I noticed HerHealthPT doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
    "src": "overture",
    "rank": 100
   }

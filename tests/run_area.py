@@ -79,6 +79,7 @@ AREAS["agency"].append("web_outreach")
 AREAS["agency"].append("agency_autopilot")
 AREAS["agency"].append("postcards")       # day-a11y 2026-11-20: personalised postcards (tools/postcards.py, POSTCARD_SETUP.bat), a fake Lob   # day-a11y 2026-11-20: the PC email autopilot (agency/autopilot/, EMAIL_SETUP.bat), fake Gmail, never the network   # day-a11y 2026-11-20: the Website Factory outreach + close kit (agency/outreach/)
 AREAS["agency"].append("web_portal")      # day-a11y 2026-11-21: the CALLER PORTAL (agency/portal/ + agency/portal.py): the human cold caller's list, rules, log
+AREAS["agency"].append("site_quality")    # day-a11y 2026-11-22: the 150 concept sites on the call sheet (names, trade, call link, 44 px, photos), the premium top 20
 AREAS["trading"].append("panelfx")      # day-a11y 2026-11-20: the effects layer on Trading / Business / Planner (trading/panelfx.js)   # day-web-offers 2026-11-20: Agency Offers (agency/offers/): packages, proposal, terms, invoices + retainers, goal
 AREAS["pc"].append("obsidian_brain")    # night-obsidian 2026-11-20: ZEUS Brain, the generated Obsidian vault (tools/obsidian_brain.py, vault/); its own line
 AREAS["nq"].append("why_page")          # night-anatomy 2026-11-18: why we win / lose (tools/win_loss_anatomy.py, tools/web_public/why/); its own line

@@ -48,7 +48,7 @@ def main() -> int:
     check("a. folder ids are 8 random characters, all different", all(re.fullmatch(r"[a-z2-9]{8}", v) for v in ids.values()) and len(set(ids.values())) == len(ids))
 
     S = json.load(open(os.path.join(AG, "factory", "sites.json")))["sites"]
-    check("b. gallery list = the sites on disk", sorted(s["path"] for s in S) == sorted("f/%s/" % d for d in os.listdir(os.path.join(AG, "f")) if os.path.isdir(os.path.join(AG, "f", d))))
+    check("b. gallery list = the sites on disk", sorted(s["path"] for s in S) == sorted("f/%s/" % d for d in os.listdir(os.path.join(AG, "f")) if os.path.isdir(os.path.join(AG, "f", d)) and re.fullmatch(r"[a-z2-9]{8}", d)))   # f/img = the premium photos
     bad = {"noindex": [], "words": [], "size": [], "viewport": [], "footer": [], "ext": [], "tel": [], "facts": []}
     byid = {L["id"]: L for L in leads}
     for s in S:
@@ -57,6 +57,8 @@ def main() -> int:
         if '<meta name="robots" content="noindex' not in h or 'name="referrer" content="no-referrer"' not in h:
             bad["noindex"].append(s["name"])
         vis = re.sub(r"<style>.*?</style>|<script>.*?</script>", " ", h, flags=re.S).replace(F.esc(L["name"]), " ")
+        # a premium page's "your reviews here" block is an honest, empty placeholder (day-a11y 2026-11-22): skipped only when it says so
+        vis = re.sub(r'<section aria-labelledby="h-rev" class="reviews">(?:(?!</section>).)*We never write reviews(?:(?!</section>).)*</section>', " ", vis, flags=re.S)
         for w in F.BANNED:
             if re.search(r"(?<![a-z])" + re.escape(w) + r"(?![0-9])", vis, re.I):
                 bad["words"].append((s["name"], w))
@@ -121,7 +123,7 @@ def main() -> int:
         c = codes.get(s["id"], "")
         if not re.fullmatch(r"[A-Z]{2}-\d+", c) or f"Your code: {c}" not in h or s.get("code") != c:
             cb.append((s["name"], "code"))
-        if F.OFFER not in h or not (('data-claim="1"' in h) if F.agency_cfg()["pay_url"] else "Claim this site: call us" in h):
+        if (F.OFFER not in h and F.esc(F.pricebook_offer()) not in h) or not (('data-claim="1"' in h) if F.agency_cfg()["pay_url"] else "Claim this site: call us" in h):
             cb.append((s["name"], "claim"))
     check("d2. every site: the offer + 'Claim this site' (payment link once set, else call us / assistant) + 'Your code: FR-n'", not cb, cb)
     check("d2. codes are unique and stable (a rebuild keeps them)", len(set(codes.values())) == len(codes) and all(L["id"] in codes for L in leads))
@@ -155,7 +157,7 @@ def main() -> int:
             files = {}
             for b, _d, fs in os.walk(out):
                 for fn in fs:
-                    files[os.path.relpath(os.path.join(b, fn), out).replace(os.sep, "/")] = read(os.path.join(b, fn))
+                    files[os.path.relpath(os.path.join(b, fn), out).replace(os.sep, "/")] = (open(os.path.join(b, fn), "rb").read() if fn.endswith(".webp") else read(os.path.join(b, fn)))
             return r.returncode, files, r.stderr
     rc0, f0, e0 = exp(None)
     rc1, f1, _ = exp({"public_base": "https://dcondax1-wq.github.io/sites/"})
@@ -164,7 +166,7 @@ def main() -> int:
           rc0 == 2 and not f0 and "public_base" in e0 and rc1 == 2 and not f1 and rc2 == 2 and not f2, (rc0, rc1, rc2, e0[:200]))
     rc, fx, err = exp({"public_base": "https://neutral-sites.pages.dev/"})
     sites_x = [k for k in fx if re.fullmatch(r"f/[a-z2-9]{8}/index\.html", k)]
-    leak = [(k, m.group(0)) for k, v in fx.items() for m in [re.search("|".join(F.FORBIDDEN), v, re.I)] if m]
+    leak = [(k, m.group(0)) for k, v in fx.items() if isinstance(v, str) for m in [re.search("|".join(F.FORBIDDEN), v, re.I)] if m]
     check("h. export: every site + landing, 404, robots (Disallow: / until the agency is named), _headers noindex, nothing pointing at Olympus",
           rc == 0 and len(sites_x) == len(S) and {"index.html", "404.html", "robots.txt", "_headers", "f/index.html"} <= set(fx)
           and fx["robots.txt"].strip().endswith("Disallow: /") and "noindex" in fx["index.html"] and "X-Robots-Tag: noindex" in fx["_headers"]
