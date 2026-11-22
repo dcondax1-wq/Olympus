@@ -55,9 +55,9 @@ def static():
     subs = {}
     for m in re.finditer(r'data-arena="([a-z]+)".*?<span class="g-subs">(.*?)</span>', h):
         subs[m.group(1)] = re.findall(r'data-to="([^"#]+)(?:#[^"]*)?"', m.group(2))
-    check("a. at most 2 short links per tile, each to a real page (trades + brain, brief + inbox, factory + portal, research + tests, Decide + taxes, the desk)",
+    check("a. at most 2 short links per tile, each to a real page (trades + brain, brief + inbox, factory + portal, research + tests, Decide + pipeline, the desk)",
           len(subs) == 6 and all(0 < len(v) <= 2 for v in subs.values()) and all(os.path.isfile(os.path.join(W, u)) for v in subs.values() for u in v)
-          and "agency/portal/index.html" in subs["agency"] and "business/taxes.html" in subs["money"] and "clio/index.html" in subs["data"] and "nq/brain.html" in subs["nq"], subs)
+          and "agency/portal/index.html" in subs["agency"] and "business/pipeline.html" in subs["money"] and "clio/index.html" in subs["data"] and "nq/brain.html" in subs["nq"], subs)
     css, js = text("gate/gate.css"), text("gate/arenas.js")
     check("a. More: one button under the tiles; Right now / Everything else / pins / recent / look hidden until it is tapped; nothing stored about it; an old #more dropped",
           'id="moreBtn"' in h and "html:not(.g-more-open) #elseSec" in css and "html:not(.g-more-open) #now" in css and "g-more-open" in js

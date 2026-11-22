@@ -411,3 +411,4 @@ if __name__ == "__main__":
     sys.exit(main())
 AREAS["agency"].append("pricebook")      # day-caller2 2026-11-21: one price book, checked everywhere (agency/pricebook.py --check)
 AREAS["agency"].append("trade_scripts")   # day-caller2 2026-11-22: per-trade call scripts
+AREAS["money"].append("money_pipeline")     # day-a11y 2026-11-22: the MONEY PIPELINE (business/pipeline.html + agency/pipeline.py) + the Corvette fund
