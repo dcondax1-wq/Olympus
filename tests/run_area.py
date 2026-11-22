@@ -409,3 +409,4 @@ def main(argv=None) -> int:
 if __name__ == "__main__":
     sys.exit(main())
 AREAS["agency"].append("pricebook")      # day-caller2 2026-11-21: one price book, checked everywhere (agency/pricebook.py --check)
+AREAS["agency"].append("trade_scripts")   # day-caller2 2026-11-22: per-trade call scripts
