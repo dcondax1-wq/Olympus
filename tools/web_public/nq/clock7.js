@@ -9,6 +9,8 @@ const day = (x) => { const s = String(x || '').slice(0, 10); return DAY_RX.test(
 const addDays = (s, n) => { const d = new Date(s + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
 const diff = (a, b) => Math.round((Date.parse(a + 'T12:00:00Z') - Date.parse(b + 'T12:00:00Z')) / 86400000);
 export const LIMIT = 7, WARN_LEFT = 3, BAD_LEFT = 1;
+export const FIRM_LIMIT = { lucid: 30 };      // Lucid: a trade netting >= $1 every 30 calendar days (research/lit/lucid_rules.json)
+export const limitFor = (id) => { const a = String(id || '').toLowerCase(); for (const k in FIRM_LIMIT) if (a.startsWith(k)) return FIRM_LIMIT[k]; return LIMIT; };
 const LANE_ID = { lit: 'mffu50k_eval', atlas: 'atlas', rapid: 'rapid' };
 export const kaId = (k) => LANE_ID[k] || (String(k).startsWith('x:') ? String(k).slice(2) : String(k));
 
@@ -29,8 +31,8 @@ export function row(id, nm, lastFill, start, today, on) {
   const lf = day(lastFill), sd = day(start);
   const base = lf || (sd ? addDays(sd, -1) : null);
   if (!base) return null;
-  const hard = addDays(base, LIMIT), left = diff(hard, today), ses = sessionsLeft(today, hard);
-  return { id: String(id), nm: String(nm || id).slice(0, 40), lf, base: lf ? 'fill' : 'start', dl: addDays(base, LIMIT - 1), hard, left, ses, on,
+  const lim = limitFor(id), hard = addDays(base, lim), left = diff(hard, today), ses = sessionsLeft(today, hard);
+  return { id: String(id), nm: String(nm || id).slice(0, 40), lf, base: lf ? 'fill' : 'start', dl: addDays(base, lim - 1), hard, left, ses, on, lim,
     lvl: left <= BAD_LEFT || ses <= 1 ? 'bad' : left <= WARN_LEFT || ses <= 2 ? 'warn' : 'ok' };
 }
 
@@ -40,7 +42,7 @@ export function rows(lite, nowS) {
   if (isObj(L.k7) && arr(L.k7.a).length) {
     // the PC's own block: "left" is re-counted for today (the post may be from yesterday)
     return arr(L.k7.a).filter((r) => isObj(r) && day(r.hard)).map((r) => {
-      const x = row(r.id, r.nm, addDays(r.hard, -LIMIT), null, today, r.on === undefined ? null : r.on);
+      const x = row(r.id, r.nm, addDays(r.hard, -limitFor(r.id)), null, today, r.on === undefined ? null : r.on);
       return { ...x, lf: day(r.lf), base: r.base === 'start' ? 'start' : 'fill' };
     }).sort((a, b) => a.left - b.left || a.id.localeCompare(b.id));
   }
@@ -61,7 +63,7 @@ const wd = (s) => { const d = new Date(s + 'T12:00:00Z'); return `${['Sun', 'Mon
 /** plain words for one row */
 export function words(r) {
   const when = r.left === 0 ? 'today' : r.left < 0 ? `${-r.left} day${r.left === -1 ? '' : 's'} late` : `in ${r.left} day${r.left === 1 ? '' : 's'}`;
-  return { last: r.lf ? `Last fill ${wd(r.lf)}` : 'No fill yet', hard: `MFFU last day ${wd(r.hard)} (${when}${r.ses != null && r.left >= 0 ? `, ${r.ses} session${r.ses === 1 ? '' : 's'} left` : ''})`,
+  return { last: r.lf ? `Last fill ${wd(r.lf)}` : 'No fill yet', hard: `${r.lim === FIRM_LIMIT.lucid ? 'Lucid' : 'MFFU'} last day ${wd(r.hard)} (${when}${r.ses != null && r.left >= 0 ? `, ${r.ses} session${r.ses === 1 ? '' : 's'} left` : ''})`,
     ka: r.on === true ? 'Keep-alive ON' : r.on === false ? 'Keep-alive OFF' : 'Keep-alive: not reported',
     act: r.lvl === 'bad' ? 'Needs one filled trade by then: let the bot trade, or 1 MNQ by hand while every account is flat.' : r.lvl === 'warn' ? 'Getting close: a trade this week resets it.' : 'Fine.' };
 }

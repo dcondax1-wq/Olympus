@@ -28,6 +28,7 @@ def main(argv=None) -> int:
     ap.add_argument("--root", required=True)
     ap.add_argument("--days", required=True)
     ap.add_argument("--rapid", action="store_true")
+    ap.add_argument("--lucid", action="store_true", help="+ a LucidPro 50K lane (the second firm; tools/rehearse_day --lucid)")
     ap.add_argument("--quick", action="store_true")
     ap.add_argument("--full", action="store_true")
     ap.add_argument("--no-ntfiles", action="store_true", help="the rehearsal as it was (no le_feed files)")
@@ -96,7 +97,7 @@ def main(argv=None) -> int:
         RD.trades_print = trades_print
     buf = io.StringIO()
     rc = 0
-    argv2 = ["--days", a.days, "--scenarios", "none"] + (["--rapid"] if a.rapid else []) + (["--quick"] if a.quick else []) + \
+    argv2 = ["--days", a.days, "--scenarios", "none"] + (["--rapid"] if a.rapid else []) + (["--lucid"] if a.lucid else []) + (["--quick"] if a.quick else []) + \
         (["--full"] if a.full else [])
     out_json = RD.OUT
     RD.OUT = os.path.abspath(a.out) + ".rehearse.json"

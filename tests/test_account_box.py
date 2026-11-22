@@ -71,8 +71,8 @@ def main() -> int:
         check("a. refused in cloud mode", pc.get("/add-account/status").status_code == 403)
         os.environ.pop("LE_CLOUD", None)
         st = c.get("/add-account/status", headers=link).json()
-        check("a. status: 4 plans, Rapid EOD 25K first", st.get("ok") and [x["id"] for x in st["plans"]][0] == "rapideod25"
-              and len(st["plans"]) == 4, st)
+        check("a. status: 5 plans, Rapid EOD 25K first, the LucidPro 50K (second firm) last", st.get("ok") and [x["id"] for x in st["plans"]][0] == "rapideod25"
+              and len(st["plans"]) == 5 and st["plans"][-1]["id"] == "lucidpro50k", st)
         check("d. status masks Names to the last 4", all(a["name"].startswith("…") for a in st["accounts"])
               and not any(TC.L50 in str(a) for a in st["accounts"]), st["accounts"])
         check("d. status lists the NinjaTrader Name not added yet (and not the added ones)",

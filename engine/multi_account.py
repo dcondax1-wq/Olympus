@@ -91,7 +91,13 @@ PRESETS = {
                 "<= 50% of the room to the $1,000 trailing floor, <= the $600 soft daily loss, max 20) for 10 sessions, then "
                 "safe_eval at 30% of the room (lit-builder-25k.md); stops when the room is under $100 (stuck); funded (owner 2026-10-25, uprisk.md): 60% of the room, <= $750, a winner <= $1,000"},
     "lucid_pro_50k": {
-        "firm": "Lucid Trading", "plan": "LucidPro 50K (daily loss option on)",
+        # re-read 2026-11-22 on Lucid's help center, every value cited in research/lit/lucid_rules.json (day-nqdash3, the second
+        # firm; OFF: only engine/account_cli --plan lucidpro50k adds one, DISARMED, and START BOT arms it only after the owner
+        # recorded Lucid's written OK: account_cli lucid_ok). $3,000 target, $2,000 EOD trailing locking at +$100, $1,200 DLL
+        # (DLL ON: a soft pause for the day, never a fail), 40 micros, no eval consistency, news allowed, flat by 16:45 ET (LIT
+        # is flat by 15:55), hedging banned across accounts AND firms (the router's opposite_open + engine/hand_hedge), 30-day
+        # inactivity ($1 net). Funded: 40% best day of the payout cycle, $500 a cycle, buffer $52,100, $2,000 then $2,500.
+        "firm": "Lucid Trading", "plan": "LucidPro 50K (daily loss option on)", "rules_src": "research/lit/lucid_rules.json",
         "rules": {"start": 50000.0, "target": 3000.0, "mll": 2000.0, "lock": 100.0, "dll": 1200.0, "max_micros": 40,
                   "trail": "eod", "best_day": None, "news_ban": False},
         "sizing": {"two_week": {"room_f": 0.4, "max_usd": 1000.0}, "after_mode": "safe_eval", "safe_cap": 0.4,
@@ -1557,10 +1563,29 @@ def merge_into_start(body: dict, confirm: str = "", path: str = ACCOUNTS_PATH) -
     out = []
     for r in rows:
         r = dict(r)
-        if r.get("armed") is True and confirm:
+        if lucid_held(r):
+            # the second firm (day-lucidrt 2026-11-22 red team): an "armed" Lucid row WITHOUT the owner's recorded written OK
+            # (engine/account_cli lucid-ok) never gets the phrase, whatever set "armed" (account_cli.arm holds it; this also
+            # covers `python -m engine.multi_account --set --armed yes`, a hand-edited data/accounts.json or a restored file)
+            r["armed"] = False
+            r.pop("confirm", None)
+            r["held"] = "Lucid: no written OK recorded (python -X utf8 -m engine.accounts lucid-ok --name \"<Name>\")"
+        elif r.get("armed") is True and confirm:
             r["confirm"] = confirm
         out.append(r)
     return {**body, "accounts": out}
+
+
+def lucid_held(row: dict) -> bool:
+    """True = a Lucid account (preset lucid_*, or added as plan lucidpro50k) on which the owner has not recorded Lucid's written OK.
+    Sim accounts are never held (paper)."""
+    cli = row.get("cli") if isinstance(row.get("cli"), dict) else {}
+    lucid = str(row.get("preset") or "").startswith("lucid") or str(cli.get("plan") or "").startswith("lucid")
+    if not lucid:
+        return False
+    if str(row.get("nt_account") or "").strip().lower().startswith("sim"):
+        return False
+    return not cli.get("lucid_ok")
 
 
 def main(argv=None) -> int:

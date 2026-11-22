@@ -25,6 +25,15 @@ import time
 LIMIT_DAYS = 7
 WARN_LEFT = 3                 # <= 3 calendar days to MFFU's last day: amber
 BAD_LEFT = 1                  # <= 1 day (or past): red
+FIRM_LIMIT = {"lucid": 30}   # Lucid (research/lit/lucid_rules.json inactivity): a trade netting >= $1 every 30 calendar days
+
+
+def limit_for(aid) -> int:
+    """MFFU: 7 days; an account of another firm by its id prefix (account_cli ids "lucid_2" ...): that firm's limit."""
+    a = str(aid or "").lower()
+    return next((v for k, v in FIRM_LIMIT.items() if a.startswith(k)), LIMIT_DAYS)
+
+
 LANE_ID = {"lit": "mffu50k_eval", "atlas": "atlas", "rapid": "rapid"}   # keep-alive key -> the PC account id (mf / accounts)
 
 
@@ -79,17 +88,18 @@ def row(aid: str, name: str, last_fill, start, now, on=None) -> dict | None:
     else:
         return None
     today = _dt.date.fromisoformat(trading_day(now))
-    hard = base + _dt.timedelta(days=LIMIT_DAYS)
-    dl = base + _dt.timedelta(days=LIMIT_DAYS - 1)
+    lim = limit_for(aid)
+    hard = base + _dt.timedelta(days=lim)
+    dl = base + _dt.timedelta(days=lim - 1)
     left = (hard - today).days
     ses = sessions_left(today, hard)
     act = None
     try:
         from .keepalive import plan
-        act = plan(base.isoformat(), now).get("act_day")
+        act = plan(base.isoformat(), now).get("act_day") if lim == LIMIT_DAYS else None   # the keep-alive is MFFU-only
     except Exception:
         act = None
-    return {"id": str(aid), "nm": str(name or aid)[:40], "lf": lf, "base": kind, "dl": dl.isoformat(), "hard": hard.isoformat(),
+    return {"id": str(aid), "nm": str(name or aid)[:40], "lf": lf, "base": kind, **({"lim": lim} if lim != LIMIT_DAYS else {}), "dl": dl.isoformat(), "hard": hard.isoformat(),
             "left": left, "ses": ses, "act": act, "on": on,
             "lvl": "bad" if left <= BAD_LEFT or ses <= 1 else "warn" if left <= WARN_LEFT or ses <= 2 else "ok"}
 
@@ -145,4 +155,7 @@ def line(r: dict, today: str | None = None) -> str:
     left = r.get("left")
     when = "TODAY" if left == 0 else ("PASSED" if left is not None and left < 0 else f"{left} day{'s' if left != 1 else ''}")
     ka = {True: "keep-alive ON", False: "keep-alive OFF"}.get(r.get("on"), "keep-alive unknown")
-    return f"{r.get('nm')}: {last}, MFFU last day {wd(r['hard'])} ({when}), {ka}"
+    firm = "Lucid" if r.get("lim") == FIRM_LIMIT["lucid"] else "MFFU"
+    if firm != "MFFU":
+        ka = "no keep-alive (MFFU only)"
+    return f"{r.get('nm')}: {last}, {firm} last day {wd(r['hard'])} ({when}), {ka}"

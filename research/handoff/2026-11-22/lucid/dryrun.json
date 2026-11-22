@@ -1,0 +1,101 @@
+{
+ "days": "2026-09-07,2026-10-02,2026-10-06,2026-10-07,2026-10-13,2026-11-17",
+ "quick": true,
+ "existing_lanes": [
+  "ATLAS funded 25K (B)",
+  "Rapid 25K ATLAS lane",
+  "Rapid 25K LIT lane",
+  "Zlarior 25K #2 (b25k_2)",
+  "Zlarior 50K (main)"
+ ],
+ "unchanged": true,
+ "diffs": {},
+ "lucid_rows": [
+  [
+   "2026-09-07",
+   "10:00:03",
+   "sell",
+   7,
+   null,
+   null,
+   true
+  ],
+  [
+   "2026-09-07",
+   "13:05:03",
+   "exit",
+   7,
+   "TIME",
+   151.2,
+   true
+  ],
+  [
+   "2026-10-02",
+   "03:35:03",
+   "buy",
+   6,
+   null,
+   null,
+   true
+  ],
+  [
+   "2026-10-02",
+   "08:35:03",
+   "exit",
+   6,
+   "TARGET",
+   2310.0,
+   true
+  ],
+  [
+   "2026-10-07",
+   "10:10:03",
+   "buy",
+   4,
+   null,
+   null,
+   true
+  ],
+  [
+   "2026-10-07",
+   "15:56:03",
+   "exit",
+   4,
+   "TIME",
+   1432.4,
+   true
+  ],
+  [
+   "2026-10-13",
+   "06:05:03",
+   "sell",
+   11,
+   null,
+   null,
+   true
+  ],
+  [
+   "2026-10-13",
+   "09:33:03",
+   "exit",
+   11,
+   "TARGET",
+   3163.6,
+   true
+  ]
+ ],
+ "lucid_entries": 4,
+ "lucid_same_side_as_lit": true,
+ "checks": {
+  "base": [
+   107,
+   107
+  ],
+  "with_lucid": [
+   107,
+   107
+  ]
+ },
+ "failed_with_lucid": [],
+ "failed_base": []
+}

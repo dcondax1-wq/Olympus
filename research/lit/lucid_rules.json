@@ -1,0 +1,43 @@
+{
+  "firm": "Lucid Trading",
+  "plan": "LucidPro 50K",
+  "read": "2026-11-22",
+  "how": "Each page fetched directly from Lucid's help center (support.lucidtrading.com, HTTP 200). lucidtrading.com itself returns 403 to our reader, so the price is UNVERIFIED. Quotes are short excerpts.",
+  "eval": {
+    "start": {"value": 50000, "url": "https://support.lucidtrading.com/en/articles/12890029-lucidpro-evaluation-account", "page_date": "2026-08-26", "quote": "$50,000 | $3,000 | $2,000 | $1,200 | 4 mini or 40 micros"},
+    "target": {"value": 3000, "url": "https://support.lucidtrading.com/en/articles/12890029-lucidpro-evaluation-account", "page_date": "2026-08-26", "quote": "$50,000 | $3,000 | $2,000 | $1,200 | 4 mini or 40 micros"},
+    "mll": {"value": 2000, "type": "eod_trailing", "url": "https://support.lucidtrading.com/en/articles/12890136-lucidpro-drawdown", "page_date": "2026-08-26", "quote": "End of Day Drawdown... calculates the account's highest closing balance"},
+    "lock": {"value": 100, "note": "the MLL locks at start + $100 ($50,100) once the balance passes $52,100", "url": "https://support.lucidtrading.com/en/articles/12890136-lucidpro-drawdown", "page_date": "2026-08-26", "quote": "the MLL locks at the initial balance plus $100"},
+    "dll": {"value": 1200, "option": "DLL ON (picked at checkout, never changeable)", "breach": "soft: no more trades until the next session; the account is not failed", "url": "https://support.lucidtrading.com/en/articles/12890122-lucidpro-daily-loss-limit", "page_date": "2026-07-26", "quote": "If you reach the DLL... restricted from placing additional trades until the next trading session"},
+    "dll_off": {"value": "none", "url": "https://support.lucidtrading.com/en/articles/16226068-lucidpro-customization", "quote": "No Daily Loss Limit is applied during either the evaluation or funded phase"},
+    "max_micros": {"value": 40, "url": "https://support.lucidtrading.com/en/articles/12890029-lucidpro-evaluation-account", "page_date": "2026-08-26", "quote": "4 mini or 40 micros"},
+    "consistency": {"value": null, "note": "NOT FOUND for the evaluation (the 40% rule is a funded payout rule)"},
+    "min_days": {"value": null, "note": "NOT FOUND"},
+    "time_limit": {"value": "none", "url": "https://support.lucidtrading.com/en/articles/12890029-lucidpro-evaluation-account", "quote": "take as long as you need to pass"}
+  },
+  "funded": {
+    "mll": {"value": 2000, "type": "eod_trailing", "lock": 100, "url": "https://support.lucidtrading.com/en/articles/12890069-lucidpro-funded-account", "page_date": "2026-08-26", "quote": "Once your account exceeds the Initial Trail Balance, the MLL locks and no longer moves"},
+    "dll": {"value": 1200, "scaling": "above $52,100 the LucidScale DLL = 60% of the highest end-of-day profit (the funded table says '60% of Peak EOD Balance': the two pages word it differently)", "url": "https://support.lucidtrading.com/en/articles/12890122-lucidpro-daily-loss-limit", "page_date": "2026-07-26", "quote": "Highest end-of-day account profit × 60% = LucidScale DLL"},
+    "consistency": {"value": 0.4, "applies": "payouts; resets after each payout; accounts bought or reset on or after 2025-11-28 15:00 EST (older: 35%)", "url": "https://support.lucidtrading.com/en/articles/12890109-lucidpro-consistency-percentage", "page_date": "2026-08-26", "quote": "must meet a Consistency Percentage of 40%"},
+    "max_micros": {"value": 40, "scaling": "none", "url": "https://support.lucidtrading.com/en/articles/12890069-lucidpro-funded-account", "quote": "No scaling plan, access to max contract size immediately"}
+  },
+  "payout": {
+    "split": {"value": 0.9, "url": "https://support.lucidtrading.com/en/articles/12890092-lucidpro-payouts", "page_date": "2026-10-21", "quote": "All funded account payouts are split 90% to the trader and 10% to Lucid Trading."},
+    "cycle_min_profit": {"value": 500, "url": "https://support.lucidtrading.com/en/articles/12890092-lucidpro-payouts", "quote": "You must earn at least the minimum goal between payout cycles"},
+    "buffer_balance": {"value": 52100, "url": "https://support.lucidtrading.com/en/articles/12890092-lucidpro-payouts", "quote": "The buffer is equal to: Initial Max Loss Limit + $100"},
+    "min_request": {"value": 500, "url": "https://support.lucidtrading.com/en/articles/12890092-lucidpro-payouts", "quote": "Minimum payout request: $500"},
+    "max_first": {"value": 2000, "min_balance": 54100, "url": "https://support.lucidtrading.com/en/articles/12890092-lucidpro-payouts"},
+    "max_after": {"value": 2500, "min_balance": 54600, "url": "https://support.lucidtrading.com/en/articles/12890092-lucidpro-payouts"},
+    "window": {"value": "any day once eligible", "url": "https://support.lucidtrading.com/en/articles/12890092-lucidpro-payouts", "quote": "There is no fixed payout window"},
+    "on_demand": {"value": "DLL ON only; trading on the account pauses for the rest of that day", "url": "https://support.lucidtrading.com/en/articles/16226068-lucidpro-customization"}
+  },
+  "news": {"value": "allowed on Pro", "url": "https://support.lucidtrading.com/en/articles/11404728-other-trading-activities", "quote": "Allowed on Flex, Pro and Direct"},
+  "flat_by": {"value": "16:45 ET Mon-Fri (Lucid auto-closes; not a fail)", "url": "https://support.lucidtrading.com/en/articles/11404729-allowed-trading-times", "page_date": "2026-08-26", "quote": "All positions must be closed by 4:45 PM EST, Monday through Friday"},
+  "inactivity": {"days": 30, "what": "a trade netting at least $1 profit or loss within 30 calendar days, else the account is permanently deleted", "url": "https://support.lucidtrading.com/en/articles/11404632-inactivity-policy", "page_date": "2026-08-26", "quote": "not been traded resulting in at least a net profit or loss of 1$ within 30 calendar days"},
+  "bots": {"value": "allowed", "url": "https://support.lucidtrading.com/en/articles/11404728-other-trading-activities", "quote": "Automated trading systems and trade copiers are permitted"},
+  "hedging": {"value": "banned, also across accounts, across firms and across correlated assets (ES vs NQ)", "url": "https://support.lucidtrading.com/en/articles/11404734-prohibited-hedging", "quote": "Hedging between different firms or funded platforms"},
+  "max_accounts": {"evals": 10, "funded": 5, "per": "household", "url": "https://support.lucidtrading.com/en/articles/11404617-maximum-number-of-accounts", "page_date": "2026-08-26", "quote": "Up to 5 active funded accounts per household or family."},
+  "platform": {"value": "UNVERIFIED for LucidPro: NinjaTrader via Tradovate is the plan's assumption (research/writeups/corvette-plan-2026-11-21.md); the pages read only name Tradovate / Rithmic for LucidLive", "url": "https://support.lucidtrading.com/en/articles/11404729-allowed-trading-times"},
+  "same_strategy_other_firms": {"value": "UNREAD ('Trade with Integrity' not read): get Lucid's written OK first", "url": "https://support.lucidtrading.com/en/articles/11404732-trade-with-integrity"},
+  "price": {"value": null, "note": "UNVERIFIED: lucidtrading.com returns 403. DLL ON is the cheaper option. Use the owner's real price once he buys (CLAUDE.md)."}
+}
