@@ -45,7 +45,7 @@ KINDS = {   # kind: (label for the app, what it covers, critical = repeats until
     "unprotected": ("Position mismatch", "NinjaTrader position vs the bot's ledger, reconcile flatten", True),
     "kill": ("Kill switch fired", "the bot flattened and stopped", True),
     "eval_floor": ("Drawdown getting low", "drawdown left below $400", True),
-    "clock": ("Clock drift", "PC clock off: entries blocked", True),
+    "clock": ("Clock drift", "PC clock off: entries blocked (double-click FIX_CLOCK.bat once, right-click > Run as administrator)", True),
     "hedge": ("HEDGE BLOCKED", "account B's opposite close not confirmed: LIT's entry held back / skipped", True),
     "update": ("Update failed", "bot auto-update failed or rolled back", True),
     "cloud_stale": ("Cloud monitor stale", "the cloud monitor has not published for 45+ min in market hours", False),

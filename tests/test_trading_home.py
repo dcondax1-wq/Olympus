@@ -80,7 +80,7 @@ def logic():
     T.menu(ask=f2.ask, out=f2.say, run=f2.run, fx=fx_down)
     check("b3. Start bot with the bot still down -> a [FIX] telling him to type the phrase himself",
           any("[FIX]" in l and "type it yourself" in l for l in f2.out), f2.out)
-    f3 = Fake(["9", "0"])
+    f3 = Fake(["x", "0"])
     T.menu(ask=f3.ask, out=f3.say, run=f3.run, fx=fx_run)
     check("b4. a wrong number -> [FIX] and the menu again", any("[FIX] Type a number" in l for l in f3.out) and not f3.ran, f3.out)
 

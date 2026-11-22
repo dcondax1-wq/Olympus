@@ -134,7 +134,8 @@ def _clock(fresh=False) -> dict:
     side = "behind" if d > 0 else "ahead of"
     return {"known": True, "ok": ok, "drift_s": d, "t": v["t"],
             "say": "PC clock matches internet time" if abs(d) < 0.5 else
-            f"PC clock {abs(d):.1f} s {side} internet time" + ("" if ok else f": new entries are blocked above {go.CLOCK_MAX_S:.0f} s")}
+            f"PC clock {abs(d):.1f} s {side} internet time" + ("" if ok else f": new entries are blocked above {go.CLOCK_MAX_S:.0f} s; {go.CLOCK_FIX_SAY}"),
+            "fix": None if ok else go.CLOCK_FIX_SAY}
 
 
 def _poll():

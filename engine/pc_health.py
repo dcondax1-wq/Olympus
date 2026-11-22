@@ -281,7 +281,7 @@ def lines(f: dict) -> list:
         dr, mx = float(ck["drift"]), float(ck.get("max") or 5.0)
         lv = RED if abs(dr) > mx else AMBER if abs(dr) > T["clock_amber_s"] else GREEN
         out.append(_line("clock", lv, f"{abs(dr):.1f} s {'behind' if dr > 0 else 'ahead of'} internet time"
-                         + (": entries are blocked, Start page > Sync the clock" if lv == RED else ""), round(dr, 2)))
+                         + (": entries are blocked; double-click FIX_CLOCK.bat once, right-click > Run as administrator" if lv == RED else ""), round(dr, 2)))
     p = f.get("poll")
     if isinstance(p, dict) and p.get("med15") is not None:
         m, prev = float(p["med15"]), p.get("med_prev")

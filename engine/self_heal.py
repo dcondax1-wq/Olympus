@@ -28,7 +28,7 @@ the bot server, never on a trade: it never starts, stops, arms or routes the bot
                                                                             the 15-minute report already pushes "bot down"
   pip          a package of requirements.txt is not installed             pip install of the missing ones only, outside 01:50-16:00 ET
                                                                             on a weekday and with no trade open
-  clock        the bot's clock probe (logs/pc_health.json) 2+ s off       w32tm /resync (engine/go.sync_clock); refused: alert
+  clock        the bot's clock probe (logs/pc_health.json) 2+ s off       w32tm /resync, else schtasks /run OlympusClock (engine/go.sync_clock); no task: say FIX_CLOCK.bat
   site         tools/site_checks.py: a Kalshi cache != its css/js ?v, a      nothing (REPORT ONLY, info, never an alert: the fix is
                worker precaching an old ?v, launcher copies drifting,       Claude's): named in the HEAL line and the log
                a bot-like tracked file off engine/generated_files' list
@@ -75,6 +75,7 @@ LOCK_AGE_S = 10 * 60                        # a git lock older than this with no
 OIF_AGE_S = 120                             # a bot order file NinjaTrader left this long: withdrawn (the adapter's ack wait is <= 30 s)
 DISK_LOW_GB = 10.0                          # as engine/ops_checks (amber < 10 GB)
 DISK_RED_GB = 2.0                           # after the clean still below: alert
+CLOCK_FIX_SAY = "double-click FIX_CLOCK.bat once, right-click > Run as administrator"   # = engine/go.CLOCK_FIX_SAY (a test keeps them equal)
 CLOCK_MAX_S = 2.0                           # engine/pc_health clock_amber_s
 HEALTH_FRESH_S = 2 * 3600
 ALERT_EVERY_S = 24 * 3600                   # one alert per fault per day
@@ -832,8 +833,8 @@ def fix_clock(ctx) -> list:
             raise RuntimeError(str((r or {}).get("error") or "refused")[:120])
     if _act(ctx, f"sync the clock (w32tm /resync): {words}", sync):
         return [item("clock", "clock", "fixed" if ctx.apply else "would", f"{'synced' if ctx.apply else 'would sync'} the clock ({words})")]
-    return [item("clock", "clock", "need", words + f"; Windows did not sync it ({str(res.get('error') or '')[:90]})",
-                 "Windows Settings > Time & language > Date & time > Sync now")]
+    return [item("clock", "clock", "need", words + f"; Windows did not sync it and the OlympusClock task is not set up: {CLOCK_FIX_SAY}",
+                 CLOCK_FIX_SAY[0].upper() + CLOCK_FIX_SAY[1:])]
 
 
 # ------------------------------------------------------------------------------------------------ 8. the weekly clean + sizes
@@ -1116,7 +1117,7 @@ def tiny(state: dict, now) -> dict:
                  key=lambda x: -x[1])[:3]
     free = state.get("free")
     words = {"update_blocked": "the update is blocked", "server": "the bot server is down", "disk": "the disk is nearly full",
-             "pip": "a package will not install", "clock": "the clock will not sync", "git_lock": "a git lock is stuck",
+             "pip": "a package will not install", "clock": "the PC clock is off: " + CLOCK_FIX_SAY, "git_lock": "a git lock is stuck",
              "oif_stuck": "an old order file is stuck", "pid": "a pid file is stuck"}
     line = ("Self-heal: " + ("needs you: " + ", ".join(words.get(k, k) for k in need) if need else "all fine") + f" · fixed {fixed} this week"
             + (f" · {free:.0f} GB free" if isinstance(free, (int, float)) else "")
