@@ -1,4 +1,14 @@
 ## Tested and rejected (don't redo without a new idea)
+- **Edge hunt lane D: small meta-labeled SIZE + re-entry on LIT (2026-11-22, `edge-d-meta-2026-11-22.md`, code `research/edge_hunt/d/`):**
+  31 pre-registered versions. 16 walk-forward size rules (logistic / depth-2 tree x 7 or 13 facts known at the fill x 0.5 / 1.5,
+  0.75 / 1.25, down-only 0.5, up-only 1.5; monthly refit, purged + embargoed, MFFU caps on the eval path): all 12 that cut size lose
+  2026 H1 (-$1.6k..-$15.7k) and pass fewer 2-week evals (6.7-37% vs 44.5%); the 4 up-only ones are leverage (a flat x1.25 with no
+  model makes more in H1); the only one through the money gate (tree 13 facts, up-only 1.5: +$5.7k / +$3.2k / +$0.5k, eval +$3.1k /
+  +$0.2k) is chance (shuffled multipliers beat it 29% / 45%, shuffled labels 23% / 15%, in-sample H1 +$12.4k vs +$5.7k), funded +$15-18 a month with
+  more account loss (1.7 -> 1.9%, 3.0 -> 3.8%). Overlaps `meta-labeling.md` (2026-10-23, 102 facts, 10 models, rejected). Re-entry:
+  after a STOP (any / same side / opposite / 30-min cool-off / same level re-swept same session), after BE / TARGET / cut, Monday rule
+  off: 0 pass; stop-out extras 2026 H1 9 trades -$452 PF 0.28, 2021-25 60 trades -$440; same-level re-sweep 8 trades PF ~0; every
+  signal the 1-a-day rule blocks 24 / 12 / 102 trades -$1.5k / +$3.6k / -$4.8k. Opposite-side re-entry +$2.3k in 2021-25 but 1 trade in 2026.
 - **Edge hunt C, calendar / money-flow timing (2026-11-22, `edge-c-calendar-2026-11-22.md`, `research/edge_hunt/c/edge_c.py`):** 174 variants on NQ 5m, structural 1-tick stop, LIT size, costs in, permutation p per cell: turn of month (last 2 / first 3 / all 5), OpEx week / Friday / Monday after, quarter end / start, month-end pension fade (2 / 3 / 5%), day of week (long + short), last-hour long / momentum / fade, Globex overnight, intraday drift, each x 3 targets, plus x1.5 / x0.5 LIT dials on 13 windows. 0 pass: every long cell wins 2026 and loses 2021-25; the only cell positive in all 3 spans (Monday long, no target) is a lottery (top 3 trades > 100% of net, p .44 / .14 / .075, random long-only day sets pass 6.6%); dials are chance (best H1 p .10). Last-hour momentum beats random days (p .05 / .04) but loses -$48.7k in 2021-25. Nothing adopted.
 - **Edge hunt lane A, NQ RTH session structure (2026-11-22, `edge-a-session-2026-11-22.md`, `research/edge_hunt/a/session_edges.py`):** 14 variants
   (ORB 5/15/30, IB extension narrow/all, failed-IB-break fade x2, overnight-high/low sweep fade, gap-and-go x2 (+2 void, ON-range definition error),
