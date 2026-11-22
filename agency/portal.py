@@ -14,6 +14,7 @@ that must also work on the neutral public host (day-cities3's public_base export
                                            every channel, new businesses go to tools/agency_added_leads.json (the factory builds their
                                            sites), and the commission table per caller is printed ($300 a sale, $40 a booked call that shows)
   python -m agency.portal commissions      the table again from %USERPROFILE%\\.olympus\\portal_log.json
+  python -m agency.portal scorecard [--days N]   per caller: dials, talks, links, booked vs the daily targets, sold, $ owed
   python -m agency.portal paid ID KIND [DATE]   the owner records client money that CLEARED (deposit / launch / monthly / refund):
                                            a commission is owed only after that (agency/pricebook.json "commission")
 """
@@ -283,7 +284,7 @@ def commissions(store: dict, c: dict | None = None, paid: list | None = None) ->
     for e in sorted(store.get("log") or [], key=lambda e: (e.get("t") or 0)):
         caller = e.get("caller") or "?"
         r = rows.setdefault(caller, {"caller": caller, "calls": 0, "interested": 0, "booked": 0, "showed": 0, "won": 0, "no": 0,
-                                     "owed": 0, "pending": 0, "clawback": 0})
+                                     "owed": 0, "pending": 0, "clawback": 0, "sold": 0})
         k, lid = e.get("k"), e.get("id")
         if k in ("called", "voicemail", "interested", "booked", "no", "dnc", "won"):
             r["calls"] += 1
@@ -307,11 +308,67 @@ def commissions(store: dict, c: dict | None = None, paid: list | None = None) ->
                 r["clawback"] += sale
             else:
                 r["owed"] += sale
+                r["sold"] += 1
         elif lid in claimed:
             r["pending"] += sale
         elif lid in showed:
             r["owed"] += show
     return sorted(rows.values(), key=lambda r: (-r["owed"], -r["pending"]))
+
+
+TALKS = ("called", "interested", "booked", "no", "dnc", "won")
+DIAL_KINDS = ("called", "voicemail", "interested", "booked", "no", "dnc", "won")
+
+
+def targets() -> dict:
+    """Daily targets per caller (agency/trade_scripts.json "targets"): dials, talks, links (interested), booked."""
+    d = rj(os.path.join(ROOT, "agency", "trade_scripts.json"), {}) or {}
+    return d.get("targets") or {"dials": 50, "talks": 10, "links": 2, "booked": 1}
+
+
+def scorecard(store: dict, days: int = 1, now_ms: float | None = None, c: dict | None = None, paid: list | None = None) -> list:
+    """Per caller over the last `days` calling days: dials, talks, links emailed (interested), booked, showed, against the daily targets
+    x days; plus sold / owed / pending / clawback from commissions() (all time: money is counted when it clears, not when it was dialed)."""
+    now_ms = now_ms if now_ms is not None else time.time() * 1000
+    since = now_ms - days * 86400000 * (7 / 5 if days >= 5 else 1)        # 5 calling days ~ a week
+    tg = targets()
+    money = {r["caller"]: r for r in commissions(store, c, paid)}
+    rows: dict = {}
+    for e in store.get("log") or []:
+        if (e.get("t") or 0) < since:
+            continue
+        caller = e.get("caller") or "?"
+        r = rows.setdefault(caller, {"caller": caller, "dials": 0, "talks": 0, "links": 0, "booked": 0, "showed": 0})
+        k = e.get("k")
+        r["dials"] += k in DIAL_KINDS
+        r["talks"] += k in TALKS
+        r["links"] += k == "interested"
+        r["booked"] += k == "booked"
+        r["showed"] += k == "showed"
+    for caller, m in money.items():
+        rows.setdefault(caller, {"caller": caller, "dials": 0, "talks": 0, "links": 0, "booked": 0, "showed": 0})
+    out = []
+    for caller, r in rows.items():
+        m = money.get(caller) or {}
+        r.update({k: m.get(k, 0) for k in ("sold", "owed", "pending", "clawback")})
+        r["target"] = {k: int(tg.get(k, 0)) * days for k in ("dials", "talks", "links", "booked")}
+        r["hit"] = {k: r[k] >= r["target"][k] for k in r["target"]}
+        r["talk_rate"] = round(100 * r["talks"] / r["dials"]) if r["dials"] else 0
+        out.append(r)
+    return sorted(out, key=lambda r: (-r["owed"], -r["booked"], -r["dials"]))
+
+
+def scorecard_table(rows: list, days: int) -> str:
+    head = f"  SCORECARD, last {days} calling day{'s' if days != 1 else ''} (done/target; + = target hit)"
+    out = [head, "  caller               dials        talks       links      booked   sold   owed  pending  clawback"]
+    for r in rows:
+        t, h = r["target"], r["hit"]
+        cell = lambda k, w: (f"{r[k]}/{t[k]}" + ("+" if h[k] else " ")).rjust(w)
+        out.append(f"  {r['caller'][:20]:<20} {cell('dials', 9)}  {cell('talks', 9)}  {cell('links', 9)}  {cell('booked', 9)}  {r['sold']:>5}  "
+                   f"${r['owed']:,}  ${r['pending']:,}  ${r['clawback']:,}   ({r['talk_rate']}% of dials became a talk)")
+    if not rows:
+        out.append("  (no calls logged in this window)")
+    return "\n".join(out)
 
 
 def table(rows: list) -> str:
@@ -325,7 +382,8 @@ def table(rows: list) -> str:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="The caller portal's PC side (build the list, the passphrase, import a caller's log)")
-    ap.add_argument("cmd", choices=["build", "pass", "setup", "import", "commissions", "paid"])
+    ap.add_argument("cmd", choices=["build", "pass", "setup", "import", "commissions", "paid", "scorecard"])
+    ap.add_argument("--days", type=int, default=1, help="scorecard window in calling days (1 = today, 5 = a week, 10 = two weeks)")
     ap.add_argument("files", nargs="*")
     a = ap.parse_args(argv)
     if a.cmd == "paid":
@@ -340,6 +398,9 @@ def main(argv=None) -> int:
             return 1
         print(f"  [OK] {e['kind']} for {e['id']} on {e['t']}")
         print(table(commissions(rj(os.path.join(home(), "portal_log.json"), {}) or {})))
+        return 0
+    if a.cmd == "scorecard":
+        print(scorecard_table(scorecard(rj(os.path.join(home(), "portal_log.json"), {}) or {}, max(1, a.days)), max(1, a.days)))
         return 0
     if a.cmd == "build":
         d = build()

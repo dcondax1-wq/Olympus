@@ -70,6 +70,8 @@ TEXT_FILES = [   # (file, must contain each of these strings built from the book
     "agency/billing/PAYMENTS.md",
     "docs/AGENCY.md",
     "docs/BUSINESS.md",
+    "research/handoff/2026-11-22/caller/TRADE_SCRIPTS.md",
+    "research/handoff/2026-11-22/caller/FIRST_DAY.md",
 ]
 PUBLISHED = [   # generated / data files the phone pages show: no old package price may survive in them
     "tools/web_public/agency/leads.json", "tools/web_public/agency/fixture.json", "tools/web_public/agency/call_fixture.json",
@@ -134,6 +136,8 @@ def check(book: dict | None = None) -> list:
         "agency/billing/PAYMENTS.md": [usd(s["setup"]), usd(cp["monthly"]), usd(nu["monthly"])],
         "docs/AGENCY.md": [usd(s["setup"]), usd(cp["monthly"])],
         "docs/BUSINESS.md": [usd(s["setup"]), usd(cp["monthly"])],
+        "research/handoff/2026-11-22/caller/TRADE_SCRIPTS.md": [w["deposit"], usd(s["setup"]), usd(cp["monthly"]), usd(nu["monthly"])],
+        "research/handoff/2026-11-22/caller/FIRST_DAY.md": [usd(cm["sale"]), usd(cm["booked_show"]), "clears", f"{cm['clawback_days']} days"],
     }
     for rel in TEXT_FILES:
         try:
