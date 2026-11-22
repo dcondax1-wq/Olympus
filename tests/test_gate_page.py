@@ -70,7 +70,7 @@ def test_static():
           '<html lang="en" data-theme="agora" data-oly-page="gate">' in html and "viewport-fit=cover" in html and 'name="theme-color"' in html and 'name="color-scheme" content="dark"' in html
           and html.count("<h1") == 1 and 'role="status"' in html and 'aria-live="polite"' in html and 'role="dialog"' not in html)
     check("a. one base-path line: gate/ -> '../', the site root (olympus-live.html) -> ''; agora.css + gate.css, then themes, the catalog, hub-status and gate.js load from GATE_BASE, in order (async = false)",
-          r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g24'" in html and "b + 'olympus/agora.css" in html
+          r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g25'" in html and "b + 'olympus/agora.css" in html
           and "['olympus/themes.js?v=o11', 'pc_feed.js?v=n7', 'olympus/gate-catalog.js?v=nv12', 'olympus/hub-status.js?v=h4', 'age.js?v=1', 'business/payoutcoach.js?v=2', 'gate/gate.js?v=g20', 'olympus/home-fx.js?v=x2', 'olympus/a11y.js']" in html and "s.async = false" in html)
     tiles = re.findall(r'class="g-hub[^"]*" data-hub="(\w+)" data-to="hub/index.html\?h=(\w+)"', html)
     check("a. the hub tiles are plain links in the page (they work even if gate.js fails), in the owner's order (night A 2026-11-16): Bots & Evals (wide) and My Money (wide) first, Kalshi and Worlds near the end, Settings & Help last",
