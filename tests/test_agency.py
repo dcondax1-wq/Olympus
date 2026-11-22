@@ -587,12 +587,20 @@ def test_crm_page():
             ctx, p, errs, seen, off = AK.page(br, origin)
             p.context.grant_permissions(["clipboard-read", "clipboard-write"], origin=origin)
             AK.open_app(p, origin, APP, "", hook="AGENCY")
+            # the pace line follows the published plan (agency/plan.py from the price book: since 99426f75 the Starter is $1,500 + $79/$149, so 3 a month
+            # reaches the $5,000 goal in about 3 months); the pace must be the first row that reaches the goal by month 12 (never the old pinned number)
+            PLAN = json.load(open(os.path.join(AK.WEB, "agency", "leads.json"), encoding="utf-8"))["plan"]
+            PACE = PLAN["pace"]
+            row = next(x for x in PLAN["rows"] if x["new_per_month"] == PACE["new_per_month"])
+            first = next(x for x in PLAN["rows"] if x["month_12"] >= PLAN["goal"])
+            check("d. the published plan's pace = the fewest new clients a month whose month 12 reaches the goal, with its months to goal",
+                  row is first and row["months_to_goal"] == PACE["months_to_goal"], (PACE, first))
             r = p.evaluate("""() => ({ demo: !document.querySelector('#demo').hidden, sample: !document.querySelector('#sample').hidden, note: document.querySelector('#sampleNote').textContent,
               rows: document.querySelectorAll('#list .lrow').length, first: document.querySelector('#today .lrow b').textContent, tel: document.querySelector('#today .lrow a.call').getAttribute('href'),
               plan: document.querySelectorAll('#planTable tbody tr').length, pace: document.querySelectorAll('#planTable tr.pace').length, lead: document.querySelector('#planLead').textContent })""")
             check("d. the real published data: no DEMO chip, SAMPLE CITY chip and note, 20 leads, a tel: Call button on the call list, the plan table with the pace row",
                   not r["demo"] and r["sample"] and "Fort Collins" in r["note"] and r["rows"] == 20 and r["tel"].startswith("tel:+1970") and r["plan"] == 6 and r["pace"] == 1
-                  and "4 new clients a month" in r["lead"], r)
+                  and r["lead"].startswith(f"{PACE['new_per_month']} new clients a month reaches ${PLAN['goal']:,.0f} a month in about {PACE['months_to_goal']} months"), r)
             AK.shot(p, "agency-crm")
             p.locator("#list .leadbtn").first.click()
             p.wait_for_timeout(250)
