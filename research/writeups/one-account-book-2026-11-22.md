@@ -188,13 +188,13 @@ knobs (B08-B11) use the same signals as B03, so only the books that change which
 | B13 LIT + ATLAS, ATLAS lane x2 ($250 a trade) | 7.19 / 5.51 / 6.99 | 2.63 / 2.45 / 0.85 | $50,737 / $18,127 / $-57,807 | $-2,805 / $-2,000 / $-82,497 |
 
 
-## 5. Lanes A-D (fetched 2026-11-22, ~02:00 ET; re-checked before the summary)
+## 5. Lanes A-D (fetched 2026-11-22 ~02:00 ET, re-checked 06:30 ET)
 
 - A edge-a-session (NQ RTH session structure, 14 variants): 0 passed. Its closest cell (ORB-30) is rejected.
 - B edge-b-cross (gamma switch, vol term structure, ES/NQ strength): no winner.
 - C edge-c-calendar (calendar / money-flow timing, 174 variants): 0 passed. Its closest cell (Monday long) is rejected.
-- D edge-d-meta: not pushed at the first check.
-No candidate passed both 2026 halves, so no lane book was added (0 extra books).
+- D edge-d-meta (meta-labelled size + re-entry on LIT; re-checked 06:30 ET, d6dabedb8): all rejected.
+No candidate passed both 2026 halves in any lane, so no lane book was added (0 extra books). The headline stands.
 
 ## 6. Limits (honest)
 
