@@ -1,0 +1,1139 @@
+{
+ "L2 FundedNext 50K, then Rapid EOD 50K | $150/mo | S0 | P4 | Risk team moves at $7,000 paid": {
+  "H1": {
+   "net6": 26468,
+   "per_month": 4411,
+   "p10_6": 13884,
+   "owner6": 27223,
+   "fees6": 755.1,
+   "pays6": 25.3,
+   "live6": 69.6,
+   "net12": 32489,
+   "p10_12": 25912,
+   "live12": 94.1,
+   "net24": 33167,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.0,
+   "buy_week1": [
+    "FN"
+   ],
+   "buys6_avg": {
+    "FN": 4.84,
+    "R50": 0.18
+   }
+  },
+  "REF": {
+   "net6": -222,
+   "per_month": -37,
+   "p10_6": -900,
+   "owner6": 677,
+   "fees6": 899.1,
+   "pays6": 0.6,
+   "live6": 0.0,
+   "net12": -572,
+   "p10_12": -1800,
+   "live12": 0.0,
+   "net24": -1189,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.0,
+   "buy_week1": [
+    "FN"
+   ],
+   "buys6_avg": {
+    "FN": 5.99,
+    "R50": 0.01
+   }
+  },
+  "H2": {
+   "net6": 25175,
+   "per_month": 4196,
+   "p10_6": 11056,
+   "owner6": 25941,
+   "fees6": 766.4,
+   "pays6": 25.5,
+   "live6": 36.6,
+   "net12": 34376,
+   "p10_12": 26049,
+   "live12": 83.9,
+   "net24": 36266,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.0,
+   "buy_week1": [
+    "FN"
+   ],
+   "buys6_avg": {
+    "FN": 4.59,
+    "R50": 0.47
+   }
+  }
+ },
+ "L2 FundedNext 50K, then Rapid EOD 50K | $150/mo | S0 | P4 | no move": {
+  "REF": {
+   "net6": -222,
+   "per_month": -37,
+   "p10_6": -900,
+   "owner6": 677,
+   "fees6": 899.1,
+   "pays6": 0.6,
+   "live6": 0.0,
+   "net12": -572,
+   "p10_12": -1800,
+   "live12": 0.0,
+   "net24": -1189,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.0,
+   "buy_week1": [
+    "FN"
+   ],
+   "buys6_avg": {
+    "FN": 5.99,
+    "R50": 0.01
+   }
+  },
+  "H2": {
+   "net6": 26747,
+   "per_month": 4458,
+   "p10_6": 11056,
+   "owner6": 27544,
+   "fees6": 796.3,
+   "pays6": 27.4,
+   "live6": 0.0,
+   "net12": 67598,
+   "p10_12": 30321,
+   "live12": 0.0,
+   "net24": 192489,
+   "corvette_med_months": 12.8,
+   "corvette_6m": 0.0,
+   "corvette_12m": 41.4,
+   "corvette_24m": 98.3,
+   "buy_week1": [
+    "FN"
+   ],
+   "buys6_avg": {
+    "FN": 4.58,
+    "R50": 0.66
+   }
+  },
+  "H1": {
+   "net6": 34221,
+   "per_month": 5703,
+   "p10_6": 14293,
+   "owner6": 35027,
+   "fees6": 806.5,
+   "pays6": 32.4,
+   "live6": 0.0,
+   "net12": 109671,
+   "p10_12": 41392,
+   "live12": 0.0,
+   "net24": 362757,
+   "corvette_med_months": 10.2,
+   "corvette_6m": 0.0,
+   "corvette_12m": 73.0,
+   "corvette_24m": 99.9,
+   "buy_week1": [
+    "FN"
+   ],
+   "buys6_avg": {
+    "FN": 4.83,
+    "R50": 0.49
+   }
+  }
+ },
+ "L2 FundedNext 50K, then Rapid EOD 50K | $150/mo | S0 | P4 | close each Rapid at $6,500 paid": {
+  "REF": {
+   "net6": -222,
+   "per_month": -37,
+   "p10_6": -900,
+   "owner6": 677,
+   "fees6": 899.1,
+   "pays6": 0.6,
+   "live6": 0.0,
+   "net12": -572,
+   "p10_12": -1800,
+   "live12": 0.0,
+   "net24": -1189,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.0,
+   "buy_week1": [
+    "FN"
+   ],
+   "buys6_avg": {
+    "FN": 5.99,
+    "R50": 0.01
+   }
+  },
+  "H2": {
+   "net6": 25592,
+   "per_month": 4265,
+   "p10_6": 11056,
+   "owner6": 26388,
+   "fees6": 796.5,
+   "pays6": 25.9,
+   "live6": 0.0,
+   "net12": 47486,
+   "p10_12": 28452,
+   "live12": 0.0,
+   "net24": 95675,
+   "corvette_med_months": 17.4,
+   "corvette_6m": 0.0,
+   "corvette_12m": 5.3,
+   "corvette_24m": 88.9,
+   "buy_week1": [
+    "FN"
+   ],
+   "buys6_avg": {
+    "FN": 4.58,
+    "R50": 0.66
+   }
+  },
+  "H1": {
+   "net6": 28301,
+   "per_month": 4717,
+   "p10_6": 13988,
+   "owner6": 29108,
+   "fees6": 806.6,
+   "pays6": 27.0,
+   "live6": 0.0,
+   "net12": 54841,
+   "p10_12": 33114,
+   "live12": 0.0,
+   "net24": 118817,
+   "corvette_med_months": 14.4,
+   "corvette_6m": 0.0,
+   "corvette_12m": 16.7,
+   "corvette_24m": 98.7,
+   "buy_week1": [
+    "FN"
+   ],
+   "buys6_avg": {
+    "FN": 4.83,
+    "R50": 0.5
+   }
+  }
+ },
+ "L3 Rapid EOD 50K + FundedNext 50K alternating | $300/mo | S0 | P4 | Risk team moves at $7,000 paid": {
+  "H1": {
+   "net6": 28484,
+   "per_month": 4747,
+   "p10_6": 17933,
+   "owner6": 29573,
+   "fees6": 1088.2,
+   "pays6": 24.7,
+   "live6": 93.9,
+   "net12": 33439,
+   "p10_12": 28442,
+   "live12": 99.9,
+   "net24": 33536,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.1,
+   "buy_week1": [
+    "R50"
+   ],
+   "buys6_avg": {
+    "R50": 1.86,
+    "FN": 5.21
+   }
+  },
+  "H2": {
+   "net6": 27500,
+   "per_month": 4583,
+   "p10_6": 13146,
+   "owner6": 28609,
+   "fees6": 1109.7,
+   "pays6": 26.7,
+   "live6": 77.8,
+   "net12": 35522,
+   "p10_12": 29331,
+   "live12": 97.5,
+   "net24": 36103,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.1,
+   "buy_week1": [
+    "R50"
+   ],
+   "buys6_avg": {
+    "R50": 2.35,
+    "FN": 4.81
+   }
+  },
+  "REF": {
+   "net6": -839,
+   "per_month": -140,
+   "p10_6": -1740,
+   "owner6": 891,
+   "fees6": 1729.5,
+   "pays6": 0.8,
+   "live6": 1.1,
+   "net12": -1727,
+   "p10_12": -3600,
+   "live12": 2.0,
+   "net24": -3397,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.0,
+   "buy_week1": [
+    "R50"
+   ],
+   "buys6_avg": {
+    "R50": 5.45,
+    "FN": 5.53
+   }
+  }
+ },
+ "L3 Rapid EOD 50K + FundedNext 50K alternating | $300/mo | S0 | P4 | no move": {
+  "H1": {
+   "net6": 73788,
+   "per_month": 12298,
+   "p10_6": 27165,
+   "owner6": 75103,
+   "fees6": 1315.4,
+   "pays6": 53.5,
+   "live6": 0.0,
+   "net12": 201992,
+   "p10_12": 118482,
+   "live12": 0.0,
+   "net24": 458350,
+   "corvette_med_months": 5.8,
+   "corvette_6m": 55.6,
+   "corvette_12m": 98.7,
+   "corvette_24m": 100.0,
+   "buy_week1": [
+    "R50"
+   ],
+   "buys6_avg": {
+    "R50": 3.31,
+    "FN": 5.13
+   }
+  },
+  "H2": {
+   "net6": 44726,
+   "per_month": 7454,
+   "p10_6": 13954,
+   "owner6": 45985,
+   "fees6": 1258.9,
+   "pays6": 43.1,
+   "live6": 0.0,
+   "net12": 111275,
+   "p10_12": 60364,
+   "live12": 0.0,
+   "net24": 239205,
+   "corvette_med_months": 8.4,
+   "corvette_6m": 11.8,
+   "corvette_12m": 83.9,
+   "corvette_24m": 99.8,
+   "buy_week1": [
+    "R50"
+   ],
+   "buys6_avg": {
+    "R50": 3.29,
+    "FN": 4.78
+   }
+  },
+  "REF": {
+   "net6": -784,
+   "per_month": -131,
+   "p10_6": -1740,
+   "owner6": 946,
+   "fees6": 1729.7,
+   "pays6": 0.8,
+   "live6": 0.0,
+   "net12": -1595,
+   "p10_12": -3600,
+   "live12": 0.0,
+   "net24": -3218,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.0,
+   "buy_week1": [
+    "R50"
+   ],
+   "buys6_avg": {
+    "R50": 5.47,
+    "FN": 5.52
+   }
+  }
+ },
+ "L3 Rapid EOD 50K + FundedNext 50K alternating | $300/mo | S0 | P4 | close each Rapid at $6,500 paid": {
+  "REF": {
+   "net6": -825,
+   "per_month": -137,
+   "p10_6": -1740,
+   "owner6": 905,
+   "fees6": 1729.8,
+   "pays6": 0.8,
+   "live6": 0.0,
+   "net12": -1695,
+   "p10_12": -3600,
+   "live12": 0.0,
+   "net24": -3370,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.0,
+   "buy_week1": [
+    "R50"
+   ],
+   "buys6_avg": {
+    "R50": 5.47,
+    "FN": 5.51
+   }
+  },
+  "H2": {
+   "net6": 35320,
+   "per_month": 5887,
+   "p10_6": 13670,
+   "owner6": 36785,
+   "fees6": 1464.8,
+   "pays6": 34.8,
+   "live6": 0.0,
+   "net12": 67910,
+   "p10_12": 46579,
+   "live12": 0.0,
+   "net24": 120274,
+   "corvette_med_months": 12.3,
+   "corvette_6m": 0.1,
+   "corvette_12m": 47.1,
+   "corvette_24m": 98.7,
+   "buy_week1": [
+    "R50"
+   ],
+   "buys6_avg": {
+    "R50": 4.58,
+    "FN": 4.73
+   }
+  },
+  "H1": {
+   "net6": 44768,
+   "per_month": 7461,
+   "p10_6": 23320,
+   "owner6": 46384,
+   "fees6": 1615.6,
+   "pays6": 36.2,
+   "live6": 0.0,
+   "net12": 89696,
+   "p10_12": 66231,
+   "live12": 0.0,
+   "net24": 171621,
+   "corvette_med_months": 9.1,
+   "corvette_6m": 2.6,
+   "corvette_12m": 85.9,
+   "corvette_24m": 100.0,
+   "buy_week1": [
+    "R50"
+   ],
+   "buys6_avg": {
+    "R50": 5.29,
+    "FN": 4.95
+   }
+  }
+ },
+ "L3 Rapid EOD 50K + FundedNext 50K alternating | $500/mo | S0 | P4 | Risk team moves at $7,000 paid": {
+  "H1": {
+   "net6": 31387,
+   "per_month": 5231,
+   "p10_6": 22733,
+   "owner6": 32531,
+   "fees6": 1143.3,
+   "pays6": 27.3,
+   "live6": 94.1,
+   "net12": 34018,
+   "p10_12": 29031,
+   "live12": 99.9,
+   "net24": 34078,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.1,
+   "buy_week1": [
+    "R50",
+    "FN",
+    "FN"
+   ],
+   "buys6_avg": {
+    "R50": 1.93,
+    "FN": 5.5
+   }
+  },
+  "H2": {
+   "net6": 30705,
+   "per_month": 5118,
+   "p10_6": 18181,
+   "owner6": 31881,
+   "fees6": 1175.7,
+   "pays6": 29.7,
+   "live6": 78.6,
+   "net12": 36315,
+   "p10_12": 30765,
+   "live12": 97.8,
+   "net24": 36766,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.2,
+   "buy_week1": [
+    "R50",
+    "FN",
+    "FN"
+   ],
+   "buys6_avg": {
+    "R50": 2.43,
+    "FN": 5.17
+   }
+  },
+  "REF": {
+   "net6": -1568,
+   "per_month": -261,
+   "p10_6": -2985,
+   "owner6": 1326,
+   "fees6": 2894.2,
+   "pays6": 1.1,
+   "live6": 1.2,
+   "net12": -3166,
+   "p10_12": -5955,
+   "live12": 2.3,
+   "net24": -6028,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.0,
+   "buy_week1": [
+    "R50",
+    "FN",
+    "FN"
+   ],
+   "buys6_avg": {
+    "R50": 7.72,
+    "FN": 10.8
+   }
+  }
+ },
+ "L3 Rapid EOD 50K + FundedNext 50K alternating | $500/mo | S0 | P4 | no move": {
+  "H2": {
+   "net6": 48589,
+   "per_month": 8098,
+   "p10_6": 18594,
+   "owner6": 49924,
+   "fees6": 1334.8,
+   "pays6": 46.7,
+   "live6": 0.0,
+   "net12": 112968,
+   "p10_12": 60939,
+   "live12": 0.0,
+   "net24": 240779,
+   "corvette_med_months": 8.2,
+   "corvette_6m": 14.1,
+   "corvette_12m": 85.3,
+   "corvette_24m": 99.8,
+   "buy_week1": [
+    "R50",
+    "FN",
+    "FN"
+   ],
+   "buys6_avg": {
+    "R50": 3.39,
+    "FN": 5.17
+   }
+  },
+  "H1": {
+   "net6": 78621,
+   "per_month": 13104,
+   "p10_6": 35446,
+   "owner6": 80006,
+   "fees6": 1385.2,
+   "pays6": 57.3,
+   "live6": 0.0,
+   "net12": 205180,
+   "p10_12": 122944,
+   "live12": 0.0,
+   "net24": 461454,
+   "corvette_med_months": 5.5,
+   "corvette_6m": 60.4,
+   "corvette_12m": 98.9,
+   "corvette_24m": 100.0,
+   "buy_week1": [
+    "R50",
+    "FN",
+    "FN"
+   ],
+   "buys6_avg": {
+    "R50": 3.4,
+    "FN": 5.5
+   }
+  },
+  "REF": {
+   "net6": -1483,
+   "per_month": -247,
+   "p10_6": -2985,
+   "owner6": 1416,
+   "fees6": 2898.9,
+   "pays6": 1.2,
+   "live6": 0.0,
+   "net12": -2964,
+   "p10_12": -5955,
+   "live12": 0.0,
+   "net24": -5643,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.0,
+   "buy_week1": [
+    "R50",
+    "FN",
+    "FN"
+   ],
+   "buys6_avg": {
+    "R50": 7.76,
+    "FN": 10.79
+   }
+  }
+ },
+ "L3 Rapid EOD 50K + FundedNext 50K alternating | $500/mo | S0 | P4 | close each Rapid at $6,500 paid": {
+  "H2": {
+   "net6": 39073,
+   "per_month": 6512,
+   "p10_6": 18520,
+   "owner6": 40657,
+   "fees6": 1584.3,
+   "pays6": 38.3,
+   "live6": 0.0,
+   "net12": 69236,
+   "p10_12": 48314,
+   "live12": 0.0,
+   "net24": 121454,
+   "corvette_med_months": 12.0,
+   "corvette_6m": 0.6,
+   "corvette_12m": 49.5,
+   "corvette_24m": 98.9,
+   "buy_week1": [
+    "R50",
+    "FN",
+    "FN"
+   ],
+   "buys6_avg": {
+    "R50": 4.9,
+    "FN": 5.17
+   }
+  },
+  "H1": {
+   "net6": 50119,
+   "per_month": 8353,
+   "p10_6": 30150,
+   "owner6": 51927,
+   "fees6": 1808.1,
+   "pays6": 40.6,
+   "live6": 0.0,
+   "net12": 93397,
+   "p10_12": 69613,
+   "live12": 0.0,
+   "net24": 175450,
+   "corvette_med_months": 8.5,
+   "corvette_6m": 6.8,
+   "corvette_12m": 89.9,
+   "corvette_24m": 100.0,
+   "buy_week1": [
+    "R50",
+    "FN",
+    "FN"
+   ],
+   "buys6_avg": {
+    "R50": 5.96,
+    "FN": 5.49
+   }
+  },
+  "REF": {
+   "net6": -1531,
+   "per_month": -255,
+   "p10_6": -2985,
+   "owner6": 1369,
+   "fees6": 2899.8,
+   "pays6": 1.2,
+   "live6": 0.0,
+   "net12": -3099,
+   "p10_12": -5955,
+   "live12": 0.0,
+   "net24": -5915,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.0,
+   "buy_week1": [
+    "R50",
+    "FN",
+    "FN"
+   ],
+   "buys6_avg": {
+    "R50": 7.77,
+    "FN": 10.78
+   }
+  }
+ },
+ "L1 Rapid EOD 50K, then Rapid 25K | $300/mo | S0 | P4 | Risk team moves at $7,000 paid": {
+  "H1": {
+   "net6": 12628,
+   "per_month": 2105,
+   "p10_6": 8009,
+   "owner6": 12948,
+   "fees6": 320.5,
+   "pays6": 9.2,
+   "live6": 93.7,
+   "net12": 13392,
+   "p10_12": 8436,
+   "live12": 99.9,
+   "net24": 13419,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.0,
+   "buy_week1": [
+    "R50"
+   ],
+   "buys6_avg": {
+    "R50": 1.81,
+    "R25": 0.23
+   }
+  },
+  "H2": {
+   "net6": 13044,
+   "per_month": 2174,
+   "p10_6": 6322,
+   "owner6": 13460,
+   "fees6": 416.2,
+   "pays6": 12.7,
+   "live6": 78.5,
+   "net12": 15746,
+   "p10_12": 10189,
+   "live12": 97.9,
+   "net24": 16106,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.0,
+   "buy_week1": [
+    "R50"
+   ],
+   "buys6_avg": {
+    "R50": 2.32,
+    "R25": 0.34
+   }
+  },
+  "REF": {
+   "net6": -1119,
+   "per_month": -186,
+   "p10_6": -1777,
+   "owner6": 537,
+   "fees6": 1655.7,
+   "pays6": 0.4,
+   "live6": 1.2,
+   "net12": -2369,
+   "p10_12": -3583,
+   "live12": 2.2,
+   "net24": -4623,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.0,
+   "buy_week1": [
+    "R50"
+   ],
+   "buys6_avg": {
+    "R50": 8.16,
+    "R25": 3.18
+   }
+  }
+ },
+ "L1 Rapid EOD 50K, then Rapid 25K | $300/mo | S0 | P4 | no move": {
+  "H2": {
+   "net6": 30632,
+   "per_month": 5105,
+   "p10_6": 6524,
+   "owner6": 31231,
+   "fees6": 598.9,
+   "pays6": 29.8,
+   "live6": 0.0,
+   "net12": 96395,
+   "p10_12": 42191,
+   "live12": 0.0,
+   "net24": 250821,
+   "corvette_med_months": 10.0,
+   "corvette_6m": 2.1,
+   "corvette_12m": 71.9,
+   "corvette_24m": 99.7,
+   "buy_week1": [
+    "R50"
+   ],
+   "buys6_avg": {
+    "R50": 3.3,
+    "R25": 0.56
+   }
+  },
+  "REF": {
+   "net6": -1036,
+   "per_month": -173,
+   "p10_6": -1777,
+   "owner6": 627,
+   "fees6": 1663.2,
+   "pays6": 0.5,
+   "live6": 0.0,
+   "net12": -2140,
+   "p10_12": -3583,
+   "live12": 0.0,
+   "net24": -4199,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.0,
+   "buy_week1": [
+    "R50"
+   ],
+   "buys6_avg": {
+    "R50": 8.2,
+    "R25": 3.2
+   }
+  },
+  "H1": {
+   "net6": 58976,
+   "per_month": 9829,
+   "p10_6": 21426,
+   "owner6": 59578,
+   "fees6": 601.1,
+   "pays6": 39.3,
+   "live6": 0.0,
+   "net12": 193568,
+   "p10_12": 105831,
+   "live12": 0.0,
+   "net24": 501766,
+   "corvette_med_months": 6.8,
+   "corvette_6m": 32.6,
+   "corvette_12m": 97.9,
+   "corvette_24m": 100.0,
+   "buy_week1": [
+    "R50"
+   ],
+   "buys6_avg": {
+    "R50": 3.29,
+    "R25": 0.59
+   }
+  }
+ },
+ "L1 Rapid EOD 50K, then Rapid 25K | $300/mo | S0 | P4 | close each Rapid at $6,500 paid": {
+  "REF": {
+   "net6": -1086,
+   "per_month": -181,
+   "p10_6": -1777,
+   "owner6": 578,
+   "fees6": 1664.8,
+   "pays6": 0.4,
+   "live6": 0.0,
+   "net12": -2282,
+   "p10_12": -3583,
+   "live12": 0.0,
+   "net24": -4493,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.0,
+   "buy_week1": [
+    "R50"
+   ],
+   "buys6_avg": {
+    "R50": 8.21,
+    "R25": 3.19
+   }
+  },
+  "H2": {
+   "net6": 21490,
+   "per_month": 3582,
+   "p10_6": 6524,
+   "owner6": 22360,
+   "fees6": 870.3,
+   "pays6": 21.7,
+   "live6": 0.0,
+   "net12": 54400,
+   "p10_12": 29686,
+   "live12": 0.0,
+   "net24": 125792,
+   "corvette_med_months": 14.9,
+   "corvette_6m": 0.0,
+   "corvette_12m": 22.2,
+   "corvette_24m": 97.2,
+   "buy_week1": [
+    "R50"
+   ],
+   "buys6_avg": {
+    "R50": 4.78,
+    "R25": 0.85
+   }
+  },
+  "H1": {
+   "net6": 31581,
+   "per_month": 5263,
+   "p10_6": 15256,
+   "owner6": 32651,
+   "fees6": 1070.0,
+   "pays6": 23.0,
+   "live6": 0.0,
+   "net12": 82890,
+   "p10_12": 54374,
+   "live12": 0.0,
+   "net24": 192634,
+   "corvette_med_months": 10.6,
+   "corvette_6m": 0.0,
+   "corvette_12m": 70.0,
+   "corvette_24m": 100.0,
+   "buy_week1": [
+    "R50"
+   ],
+   "buys6_avg": {
+    "R50": 5.83,
+    "R25": 1.12
+   }
+  }
+ },
+ "L2 FundedNext 50K, then Rapid EOD 50K | $300/mo | S0 | P4 | Risk team moves at $7,000 paid": {
+  "H1": {
+   "net6": 31397,
+   "per_month": 5233,
+   "p10_6": 19616,
+   "owner6": 32508,
+   "fees6": 1110.9,
+   "pays6": 28.3,
+   "live6": 87.0,
+   "net12": 35418,
+   "p10_12": 29344,
+   "live12": 99.9,
+   "net24": 35485,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.1,
+   "buy_week1": [
+    "FN",
+    "FN"
+   ],
+   "buys6_avg": {
+    "FN": 5.39,
+    "R50": 1.83
+   }
+  },
+  "H2": {
+   "net6": 30721,
+   "per_month": 5120,
+   "p10_6": 14973,
+   "owner6": 31901,
+   "fees6": 1179.9,
+   "pays6": 30.3,
+   "live6": 67.4,
+   "net12": 38003,
+   "p10_12": 30869,
+   "live12": 96.9,
+   "net24": 38570,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.1,
+   "buy_week1": [
+    "FN",
+    "FN"
+   ],
+   "buys6_avg": {
+    "FN": 5.08,
+    "R50": 2.53
+   }
+  },
+  "REF": {
+   "net6": -672,
+   "per_month": -112,
+   "p10_6": -1800,
+   "owner6": 1037,
+   "fees6": 1709.7,
+   "pays6": 1.0,
+   "live6": 0.2,
+   "net12": -1398,
+   "p10_12": -3525,
+   "live12": 0.9,
+   "net24": -2914,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.0,
+   "buy_week1": [
+    "FN",
+    "FN"
+   ],
+   "buys6_avg": {
+    "FN": 9.96,
+    "R50": 1.31
+   }
+  }
+ },
+ "L2 FundedNext 50K, then Rapid EOD 50K | $300/mo | S0 | P4 | no move": {
+  "H1": {
+   "net6": 63385,
+   "per_month": 10564,
+   "p10_6": 25051,
+   "owner6": 64696,
+   "fees6": 1310.4,
+   "pays6": 48.9,
+   "live6": 0.0,
+   "net12": 188303,
+   "p10_12": 105493,
+   "live12": 0.0,
+   "net24": 445074,
+   "corvette_med_months": 6.4,
+   "corvette_6m": 37.7,
+   "corvette_12m": 97.8,
+   "corvette_24m": 100.0,
+   "buy_week1": [
+    "FN",
+    "FN"
+   ],
+   "buys6_avg": {
+    "FN": 5.38,
+    "R50": 3.05
+   }
+  },
+  "REF": {
+   "net6": -669,
+   "per_month": -111,
+   "p10_6": -1800,
+   "owner6": 1041,
+   "fees6": 1710.0,
+   "pays6": 1.0,
+   "live6": 0.0,
+   "net12": -1352,
+   "p10_12": -3525,
+   "live12": 0.0,
+   "net24": -2819,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.0,
+   "buy_week1": [
+    "FN",
+    "FN"
+   ],
+   "buys6_avg": {
+    "FN": 9.96,
+    "R50": 1.31
+   }
+  },
+  "H2": {
+   "net6": 41677,
+   "per_month": 6946,
+   "p10_6": 14973,
+   "owner6": 42955,
+   "fees6": 1277.7,
+   "pays6": 40.8,
+   "live6": 0.0,
+   "net12": 105520,
+   "p10_12": 56355,
+   "live12": 0.0,
+   "net24": 233350,
+   "corvette_med_months": 9.0,
+   "corvette_6m": 7.6,
+   "corvette_12m": 80.2,
+   "corvette_24m": 99.8,
+   "buy_week1": [
+    "FN",
+    "FN"
+   ],
+   "buys6_avg": {
+    "FN": 5.07,
+    "R50": 3.13
+   }
+  }
+ },
+ "L2 FundedNext 50K, then Rapid EOD 50K | $300/mo | S0 | P4 | close each Rapid at $6,500 paid": {
+  "REF": {
+   "net6": -671,
+   "per_month": -112,
+   "p10_6": -1800,
+   "owner6": 1039,
+   "fees6": 1710.1,
+   "pays6": 1.0,
+   "live6": 0.0,
+   "net12": -1375,
+   "p10_12": -3525,
+   "live12": 0.0,
+   "net24": -2888,
+   "corvette_med_months": null,
+   "corvette_6m": 0.0,
+   "corvette_12m": 0.0,
+   "corvette_24m": 0.0,
+   "buy_week1": [
+    "FN",
+    "FN"
+   ],
+   "buys6_avg": {
+    "FN": 9.96,
+    "R50": 1.31
+   }
+  },
+  "H2": {
+   "net6": 35311,
+   "per_month": 5885,
+   "p10_6": 14973,
+   "owner6": 36750,
+   "fees6": 1438.6,
+   "pays6": 34.9,
+   "live6": 0.0,
+   "net12": 65745,
+   "p10_12": 45576,
+   "live12": 0.0,
+   "net24": 117942,
+   "corvette_med_months": 13.0,
+   "corvette_6m": 0.1,
+   "corvette_12m": 39.8,
+   "corvette_24m": 98.9,
+   "buy_week1": [
+    "FN",
+    "FN"
+   ],
+   "buys6_avg": {
+    "FN": 5.06,
+    "R50": 4.12
+   }
+  },
+  "H1": {
+   "net6": 42954,
+   "per_month": 7159,
+   "p10_6": 23757,
+   "owner6": 44502,
+   "fees6": 1547.4,
+   "pays6": 36.1,
+   "live6": 0.0,
+   "net12": 85720,
+   "p10_12": 62305,
+   "live12": 0.0,
+   "net24": 167698,
+   "corvette_med_months": 9.7,
+   "corvette_6m": 1.6,
+   "corvette_12m": 80.4,
+   "corvette_24m": 100.0,
+   "buy_week1": [
+    "FN",
+    "FN"
+   ],
+   "buys6_avg": {
+    "FN": 5.35,
+    "R50": 4.52
+   }
+  }
+ }
+}
