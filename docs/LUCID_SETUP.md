@@ -19,6 +19,17 @@ until you do the steps below. Claude never arms it and never places a real order
 Not checked (Lucid's main site blocks our reader): the **price**, whether LucidPro runs on NinjaTrader through Tradovate, and the
 "Trade with Integrity" page. That is why step 1 asks Lucid in writing.
 
+## Why Lucid, and the next-best fits (from research/writeups/corvette-plan-2026-11-21.md; nobody has paid a real price yet)
+
+| Firm | Bots + copier allowed in writing | NinjaTrader | Account cap | Payouts | Price (not a real price paid) | Verdict |
+|---|---|---|---|---|---|---|
+| **Lucid (LucidPro 50K)** | yes: "Automated trading systems and trade copiers are permitted"; the same bot at another firm is NOT confirmed (ask, step 1) | via Tradovate (to confirm) | 10 evals, 5 funded | any day once eligible, paid within 2 business days; $2,000 then $2,500 | ~$126 with a code (list $180, third-party) | **best by $**: about +$790 a month per account in the model |
+| FundedNext (Rapid Daily 50K) | yes, and copying to other firms in your name is explicitly allowed | yes | the 15th payout triggers a live review | $1,000 each | $149.99-$179.99 with code RAPID | **backup**: the clearest rules, but it caps out (~+$9,480 total for 5 accounts). It bans EAs that use Telegram, and our alert bus sends Telegram |
+| Tradeify | the agreement says using it across multiple firms is against policy (s6.6) | - | - | - | - | **no**: we run the same bot at MFFU |
+| Apex | bots banned in the user agreement | - | - | - | - | **no** |
+
+No firm clearly beats Lucid for our bots. FundedNext is the fallback if Lucid says no in writing.
+
 ## Your steps (hands only)
 
 1. **Email Lucid first** (support@lucidtrading.com or the chat on their site), in your own words:
