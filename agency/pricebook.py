@@ -57,6 +57,7 @@ def _t(rel):
 
 
 TEXT_FILES = [   # (file, must contain each of these strings built from the book)
+    "docs/agency/AGREEMENT.md",
     "research/handoff/2026-11-21/close/SERVICES_AGREEMENT.md",
     "research/handoff/2026-11-21/close/PAYMENTS_INVOICES.md",
     "research/handoff/2026-11-21/close/YES_PLAYBOOK.md",
@@ -115,6 +116,11 @@ def check(book: dict | None = None) -> list:
     want("portal.json", portal.get("prices", {}).get("starter") == words(b)["starter"], f"prices.starter {portal.get('prices', {}).get('starter')!r}")
     want("portal.json", portal.get("prices", {}).get("monthly") == words(b)["no_upfront"], f"prices.monthly {portal.get('prices', {}).get('monthly')!r}")
     want("portal.json", portal.get("commission", {}).get("sale") == cm["sale"] and portal.get("commission", {}).get("booked_show") == cm["booked_show"], "commission")
+    try:                                                   # the caller portal's proposal prices (agency/proposal.py), drawn from this book
+        from agency import proposal as PR
+        want("portal/price.json", _j("tools/web_public/agency/portal/price.json") == PR.price_doc(b), "not what the book says: run python -m agency.proposal")
+    except (ImportError, OSError, ValueError, KeyError, StopIteration) as e:
+        want("portal/price.json", False, f"cannot check: {e}")
     ps = _t("agency/portal.py")
     want("agency/portal.py", f'"starter": "{words(b)["starter"]}"' in ps and f'"sale": {cm["sale"]}, "booked_show": {cm["booked_show"]}' in ps, "DEFAULT_CONF prices / commission")
     want("agency/portal.py", "clawback_days" in ps and "def paid_ledger" in ps, "commissions must wait for cleared payments and claw back refunds")
@@ -124,6 +130,9 @@ def check(book: dict | None = None) -> list:
         "research/handoff/2026-11-21/close/SERVICES_AGREEMENT.md": [usd(s["setup"]), w["deposit"], usd(nu["monthly"]), f"{nu['months']} months",
                                                                     usd(cp["monthly"]), f"{cp['term_months']}-month", f"{cp['notice_days']} days",
                                                                     f"{b['invoice']['due_days']} days", "Two rounds", f"{cp['edit_minutes']} minutes"],
+        "docs/agency/AGREEMENT.md": [usd(s["setup"]), w["deposit"], usd(nu["monthly"]), f"{nu['months']} months", usd(cp["monthly"]),
+                                     f"{cp['term_months']}-month", f"{cp['notice_days']} days", f"{b['invoice']['due_days']} days", "Two rounds",
+                                     f"{cp['edit_minutes']} minutes", f"{b['md_sales_tax_pct']}%"],
         "research/handoff/2026-11-21/close/PAYMENTS_INVOICES.md": [w["deposit"], usd(cp["monthly"]), usd(nu["monthly"]), f"{b['md_sales_tax_pct']}%"],
         "research/handoff/2026-11-21/close/YES_PLAYBOOK.md": [w["deposit"], usd(s["setup"]), usd(nu["monthly"]), usd(cp["monthly"])],
         "research/handoff/2026-11-21/caller/CALLER_PACK.md": [w["price_line"], usd(cm["sale"]), usd(cm["booked_show"]), f"{cm['clawback_days']} days", "cleared"],

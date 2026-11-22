@@ -383,6 +383,77 @@ def node3():
           and t["text"] == "Today: 5 dials, 4 connects, 1 booked, 2 in the pipeline ($3,000 + $158/mo at Starter site prices).", t)
 
 
+NODE4 = r"""
+import * as P from '%s';
+import { readFileSync } from 'fs';
+const price = JSON.parse(readFileSync('%s', 'utf8')), o = {}, T = (x) => Date.parse(x);
+const c = {tz: 'America/New_York', hours: [540, 1020], agency: 'Peak Web', agency_email: 'peak@gmail.example', postal: 'PO Box 12, Frederick MD 21701', agency_number: '(301) 555-0142', public_base: 'https://sites.example.com'};
+const L = {id: 'a', name: 'Ace Roofing', phone: '3015550100', site: 'f/abcdefgh/', lane: 'no_site'};
+const st = P.emptyState(); st.caller = 'Ann';
+P.logOutcome(st, L, 'interested', T('2026-11-23T15:00:00Z')); P.logOutcome(st, L, 'proposal', T('2026-11-23T15:05:00Z'));
+const at = (d) => P.statusOf(L, st, T(d + 'T15:00:00Z'), c);
+o.s = [at('2026-11-24'), at('2026-11-25')];
+P.logOutcome(st, L, 'voicemail', T('2026-11-25T15:00:00Z')); o.s.push(at('2026-11-26'), at('2026-12-02'));
+o.today = P.todayList([L], st, T('2026-12-02T15:00:00Z'), c, 60).length;
+P.logOutcome(st, L, 'fu_email', T('2026-12-02T16:00:00Z')); o.s.push(at('2026-12-03'));
+const s2 = P.emptyState(); P.logOutcome(s2, L, 'proposal', T('2026-11-23T15:05:00Z')); P.logOutcome(s2, L, 'booked', T('2026-11-24T15:00:00Z'));
+o.answered = P.statusOf(L, s2, T('2026-11-25T15:00:00Z'), c);
+o.prop = P.proposalFor(L, 'Ann', c, price, T('2026-11-23T15:00:00Z'));
+o.red = P.proposalFor({id: 'r', name: 'Old Site Dental', lane: 'redesign', url: 'http://old.example'}, 'Ann', c, price, T('2026-11-23T15:00:00Z')).email;
+o.fu = P.proposalFollowUp(L, 'Ann', c);
+o.load = P.loadState(JSON.stringify({log: [{t: 1, id: 'a', k: 'proposal'}, {t: 2, id: 'a', k: 'fu_email'}, {t: 3, id: 'a', k: 'hack'}]})).log.length;
+console.log(JSON.stringify(o));
+"""
+
+
+def node4():
+    if not shutil.which("node"):
+        return
+    tmp = tempfile.mkdtemp(prefix="portal-node4-")
+    try:
+        f = os.path.join(tmp, "t.mjs")
+        open(f, "w").write(NODE4 % (os.path.join(D, "portalcore.js").replace("\\", "/"), os.path.join(D, "price.json").replace("\\", "/")))
+        r = subprocess.run(["node", f], capture_output=True, text=True, timeout=60)
+        if r.returncode:
+            check("b. node4 runs", False, r.stderr[-300:])
+            return
+        o = json.loads(r.stdout.strip().splitlines()[-1])
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    w = [x["why"] for x in o["s"]]
+    check("b. proposal follow-ups: a call on workday 2, an email on workday 5 (Thanksgiving + the day after skipped), then stop; a due email is on Today",
+          w[0] == "Proposal sent: follow-up call tomorrow" and o["s"][1]["ok"] and w[1] == "Proposal: follow-up call due" and "email on Wed Dec 2" in w[2]
+          and o["s"][3]["mail"] and "send the follow-up email" in w[3] and o["today"] == 1 and o["s"][4]["tone"] == "done" and "stop here" in w[4], w)
+    check("b. a business that answers (booked / interested after the proposal) leaves the sequence", "they answered" in o["answered"]["why"] and not o["answered"]["ok"], o["answered"])
+    e = o["prop"]["email"]
+    pb = json.load(open(os.path.join(ROOT, "agency", "pricebook.json"), encoding="utf-8"))
+    st = next(x for x in pb["packages"] if x["id"] == "starter")
+    check("b. the proposal: their concept link, the price book's package + monthly + no-upfront option + 3% Maryland tax line, the 7-day timeline, "
+          "what we need, the $750 deposit step, valid 14 days; sender, postal address, 'no thanks'; no sms",
+          "https://sites.example.com/f/abcdefgh/" in e and f"${st['setup']:,} once + ${st['monthly']}/month" in e and "$149/month for 12 months" in e
+          and "Maryland sales tax (3%)" in e and "LIVE IN 7 DAYS" in e and "WHAT WE NEED FROM YOU" in e and "A $750 deposit (50%)" in e
+          and "Prices hold until 2026-12-07" in e and "Ann, Peak Web" in e and "PO Box 12" in e and "no thanks" in e and "sms" not in e.lower(), e[:300])
+    check("b. a redesign proposal rebuilds their current site (never 'the draft we built')", "We rebuild your current site (http://old.example)" in o["red"] and "draft we already built" not in o["red"])
+    check("b. the follow-up email: short, the last note, 'no thanks'", o["fu"]["subject"].startswith("Re: Your website proposal") and "this is my last note" in o["fu"]["email"] and "no thanks" in o["fu"]["email"])
+    check("b. 'proposal' and 'fu_email' are saved log lines (junk still dropped)", o["load"] == 2, o["load"])
+
+
+def closekit_static():
+    from agency import proposal as PR, pricebook as PB
+    check("a. close kit: price.json = the price book (python -m agency.proposal), and the price book's own check passes (agreement included)",
+          not PR.problems() and not PB.check(), (PR.problems(), PB.check()[:3]))
+    ag = open(os.path.join(ROOT, "docs", "agency", "AGREEMENT.md"), encoding="utf-8").read()
+    check("a. docs/agency/AGREEMENT.md: plain English, 'have a lawyer and an accountant glance at it', scope, price, deposit, the care plan term + 30 days' notice, "
+          "your domain + content, 3% Maryland sales tax line, no promised results",
+          "Have a lawyer and an accountant glance at it" in ag and "$750 deposit" in ag and "3%" in ag and "in your name" in ag and "We do not promise" in ag
+          and "cancel any time with 30 days' notice" in ag and "NOT LEGAL ADVICE" in ag)
+    h, j = (open(os.path.join(D, f), encoding="utf-8").read() for f in ("proposal.html", "proposal.js"))
+    check("a. the printable proposal page: noindex, no referrer, own folder only, no sms: link, text only through textContent",
+          'content="noindex, nofollow"' in h and "no-referrer" in h and "sms:" not in h + j and "innerHTML" not in j and "http" not in re.sub(r"<!--.*?-->", "", h, flags=re.S))
+    from tools import site_factory as F
+    check("a. the neutral-host export carries the proposal files", {"price.json", "proposal.html", "proposal.js", "proposal.css"} <= set(F.PORTAL_FILES))
+
+
 NODE2 = r"""
 import * as P from '%s';
 const o = {}, c = {agency: 'Peak Web', agency_email: 'peak@gmail.example', postal: 'PO Box 12, Frederick MD 21701', public_base: 'https://sites.example.com', prices: {starter: '$1,500'}};
@@ -477,6 +548,25 @@ def twenty():
             gone = p.evaluate("(n) => ![...document.querySelectorAll('#list li.lead .name')].some((e) => e.textContent === n)", name)
             check("d. a row's scripts drawer shows the voicemail with the caller's name; 'On the list' in the Do Not Call field takes the business off Today at once",
                   vm.startswith("Ann with Peak Web here, for ") and gone, (vm, gone))
+            # close the sale: Interested -> the proposal panel -> the printable one-page proposal
+            li = p.locator("#list li.lead.go").first
+            pname = li.locator(".name").text_content()
+            li.locator(".call").click()
+            li.locator(".outcomes button", has_text="Interested").click()
+            p.click(".tabs button[data-f='wait']")
+            row = p.locator("#list li.lead", has=p.locator(".name", has_text=pname)).first
+            row.locator(".proposal:not([hidden]) .openProp").wait_for(timeout=8000)
+            row.locator(".openProp").click()
+            pp = ctx.new_page()
+            pp.goto(f"{origin}/agency/portal/proposal.html", wait_until="load")
+            pp.wait_for_selector("#secs section")
+            doc = pp.evaluate("() => ({ h1: document.getElementById('biz').textContent, secs: [...document.querySelectorAll('#secs h2')].map((h) => h.textContent),"
+                              " txt: document.getElementById('secs').innerText, wide: document.documentElement.scrollWidth - innerWidth })")
+            logged = p.evaluate("(n) => JSON.parse(localStorage.getItem('agency.portal.v1')).log.filter((e) => e.k === 'proposal' && e.name === n).length", pname)
+            check("d. Interested -> 'Open the proposal': the one-page proposal for that business (5 parts: what, price, 7 days, what we need, to start), "
+                  "the $750 deposit, no sideways scroll; the proposal is logged once",
+                  doc["h1"] == pname and doc["secs"][0] == "What you get" and len(doc["secs"]) == 5 and "$750 deposit" in doc["txt"] and doc["wide"] <= 1 and logged == 1, (doc, logged))
+            pp.close()
             p.click(".tabs button[data-f='redesign']")
             p.wait_for_selector("#list li.lead")
             rd = p.evaluate("() => [...document.querySelectorAll('#list li.lead')].map((li) => [li.querySelector('.name').textContent, li.querySelector('.lane').textContent,"
@@ -604,6 +694,8 @@ if __name__ == "__main__":
     lanes()
     node2()
     node3()
+    node4()
+    closekit_static()
     if "--static" not in sys.argv:
         browser()
         twenty()

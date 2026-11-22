@@ -920,7 +920,7 @@ def export(out_dir: str, web: str = WEB) -> int:
 
 
 PORTAL = os.path.join(WEB, "portal")
-PORTAL_FILES = ["index.html", "portal.css", "portal.js", "portalcore.js", "portal.json", "calllist.json"]
+PORTAL_FILES = ["index.html", "portal.css", "portal.js", "portalcore.js", "portal.json", "calllist.json", "price.json", "proposal.html", "proposal.js", "proposal.css"]
 
 
 def _strip_comments(name: str, t: str) -> str:
