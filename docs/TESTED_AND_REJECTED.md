@@ -1,4 +1,8 @@
 ## Tested and rejected (don't redo without a new idea)
+- **Edge hunt lane A, NQ RTH session structure (2026-11-22, `edge-a-session-2026-11-22.md`, `research/edge_hunt/a/session_edges.py`):** 14 variants
+  (ORB 5/15/30, IB extension narrow/all, failed-IB-break fade x2, overnight-high/low sweep fade, gap-and-go x2 (+2 void, ON-range definition error),
+  first-hour drive x2), 5m engine, $500 risk, stops 1 tick beyond structure, 2R. H1 2026 pick A30 (PF 1.40) goes PF 0.81 in Jul-Oct. All
+  trend-following variants +H1 / -H2, the IB-fail fades the reverse, none holds H1 + H2 + 2021-25; LIT corr ~0 but no money. Nothing adopted.
 - **Zlarior more money, 2 pre-registered batches (2026-11-19, `lit-more-money-2026-11-19.md`, `tools/lit_more_money.py`,
   `research/lit/more_money.json`, designs `research/lit/more_money_design_batch1/2.md`, Lab rows `research/lab/lit_more_money.json`):**
   9 single versions, LIT $/month H1 / H2 / 2021-25 vs today $5,562 / $2,670 / $25: ES (MES) LIT filler on days NQ has not
