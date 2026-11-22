@@ -4,7 +4,7 @@
 // 1 call + 1 follow-up per business, never twice in a day, 'no' / 'do not call' = never again (every channel, once the log reaches the PC).
 // Self-contained on purpose: the page must work on the neutral public host with no Olympus file next to it.
 
-export const VERSION = 'p1';
+export const VERSION = 'p2';
 export const KEY = 'agency.portal.v1';
 export const DIALS = ['called', 'voicemail', 'interested', 'booked', 'no', 'dnc', 'won'];
 export const OUTCOMES = [
@@ -113,9 +113,18 @@ export function undoLast(st, id) { for (let i = st.log.length - 1; i >= 0; i--) 
 
 // ---------------------------------------------------------------------------------------------------- the words + the links
 export function identify(caller, agency) { return 'Hi, it\'s ' + (str(caller) || '<your name>') + ' with ' + (str(agency) || '<agency>') + '. We build websites for local businesses.'; }
-export function pitch(lead, caller, agency) {
-  return identify(caller, agency) + ' I noticed ' + (str(lead.name) || 'your business') + ' doesn\'t have a website, so we built you one. It\'s free to look at. Can I email you the link?';
-}
+// the lane from the Overture check (python -m agency.portal build): no_site = we built a concept site; site_down = theirs did not load on the check
+// date; redesign = they have a working site (offer a free check, never "we built you a site")
+export const LANES = { no_site: 'No website', site_down: 'Site down', redesign: 'Has a site' };
+export function laneOf(lead) { const l = str(lead && lead.lane); return LANES[l] ? l : 'no_site'; }
+const OPEN = { no_site: 'I noticed {n} doesn\'t have a website, so we built you one. It\'s free to look at. Can I email you the link?',
+  site_down: 'I tried your website and it didn\'t load for me, so we built you a fresh one. It\'s free to look at. Can I email you the link?',
+  redesign: 'I looked at your website. We help local businesses get a faster, mobile-friendly site that brings more calls. Can I email you a free 2-minute check of yours?' };
+export function opener(lead) { return str(lead && lead.opener) || OPEN[laneOf(lead)].replace('{n}', str(lead && lead.name) || 'your business'); }
+export function pitch(lead, caller, agency) { return identify(caller, agency) + ' ' + opener(lead); }
+export function theirSite(lead) { const u = str(lead && lead.url); return laneOf(lead) === 'redesign' && /^https?:\/\/[^\s"'<>]{3,}$/.test(u) && u.length <= 200 ? u : ''; }
+// which tab a row is under: the redesign lane has its own tab (sorted by how dated the site is); the rest by status
+export function tabOf(lead, s) { return laneOf(lead) === 'redesign' && s.tone !== 'done' ? 'redesign' : s.tone; }
 // the banned-address check runs on the PC (agency/public.py) before public_base is written: no private name ships in this file
 export function publicBase(conf) { const b = str(conf && conf.public_base).replace(/\/+$/, ''); return /^https:\/\/[^\s"'<>]{4,}$/.test(b) ? b : ''; }
 export function siteUrl(lead, conf) {
@@ -124,15 +133,25 @@ export function siteUrl(lead, conf) {
 }
 export function mapsUrl(lead) { return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent([lead.name, lead.town, lead.state].map(str).filter(Boolean).join(' ')); }
 export function emailFor(lead, caller, conf) {
-  const url = siteUrl(lead, conf), pr = (conf && conf.prices) || {};
+  const pr = (conf && conf.prices) || {};
+  const sign = [str(caller) + ', ' + str(conf && conf.agency), str(conf && conf.postal), '', 'Not interested? Reply "no thanks" and we won\'t contact you again.'];
+  const base = validEmail(conf && conf.agency_email) && str(conf && conf.postal).length >= 8 && str(conf && conf.agency) && str(caller);
+  if (laneOf(lead) === 'redesign') {    // they have a site: a free check of it, no "we built you one"
+    const why = Array.isArray(lead.why) ? lead.why.filter((x) => typeof x === 'string').slice(0, 3) : [];
+    const body = ['Hi ' + str(lead.name) + ' team,', '', 'Thanks for talking with me today. As promised, a free quick check of your website (' + theirSite(lead) + '):',
+      why.length ? why.map((x) => '- ' + x).join('\n') : '- I\'ll send the details: speed on a phone, how it looks on mobile, and how Google shows it.', '',
+      'If you\'d like it faster and easier to use on a phone, we can redo it this week: ' + (pr.starter || '') + (pr.monthly ? ', or ' + pr.monthly : '') + '.',
+      'Just reply to this email with any question.', ''].concat(sign).join('\n');
+    return { subject: 'A free check of the ' + str(lead.name) + ' website', body, ready: !!(base && theirSite(lead)) };
+  }
+  const url = siteUrl(lead, conf);
   const subject = 'The website we built for ' + str(lead.name);
   const body = ['Hi ' + str(lead.name) + ' team,', '',
     'Thanks for talking with me today. Here is the website we built for you, free to look at:', url || '[the link]', '',
     'If you like it, it can be yours this week with your photos and your own domain: ' + (pr.starter || '') + (pr.monthly ? ', or ' + pr.monthly : '') + '.',
     'Just reply to this email with any question.', '',
-    str(caller) + ', ' + str(conf && conf.agency), str(conf && conf.postal), '',
-    'Not interested? Reply "no thanks" and we won\'t contact you again.'].join('\n');
-  return { subject, body, ready: !!(url && validEmail(conf && conf.agency_email) && str(conf && conf.postal).length >= 8 && str(conf && conf.agency) && str(caller)) };
+  ].concat(sign).join('\n');
+  return { subject, body, ready: !!(url && base) };
 }
 export function gmailUrl(conf, to, subject, body) {
   return 'https://mail.google.com/mail/?view=cm&fs=1&authuser=' + encodeURIComponent(str(conf.agency_email)) + '&to=' + encodeURIComponent(str(to)) +

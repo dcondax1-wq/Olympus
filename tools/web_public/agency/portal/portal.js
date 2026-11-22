@@ -1,9 +1,9 @@
 // CALLER PORTAL page (day-a11y 2026-11-21). The rules live in portalcore.js; this file only draws and saves (this phone only).
-import * as P from './portalcore.js?v=1';
+import * as P from './portalcore.js?v=2';
 
 const $ = (id) => document.getElementById(id);
 const UNLOCK = 'agency.portal.unlock';
-let conf = null, list = [], st = P.emptyState(), filter = 'go';
+let conf = null, list = [], st = P.emptyState(), filter = 'go', page = 25;   // page: rows drawn (25 more per tap: 4,500 rows never at once)
 
 function store(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* private mode: works for this visit */ } }
 function read(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -53,13 +53,15 @@ function render() {
   const d0 = Date.now() - (P.partsIn(now, conf.tz).min * 60000);
   const t = P.tally(st, conf, d0), all = P.tally(st, conf, 0);
   $('sCalls').textContent = t.calls; $('sInt').textContent = all.interested; $('sBooked').textContent = all.booked; $('sWon').textContent = all.won; $('sMoney').textContent = money(all.maybe);
-  const rows = P.sortForNow(P.allLeads(list, st), st, now, conf), n = { go: 0, need: 0, wait: 0, done: 0 };
-  for (const r of rows) n[r.s.tone]++;
+  const rows = P.sortForNow(P.allLeads(list, st), st, now, conf), n = { go: 0, need: 0, redesign: 0, wait: 0, done: 0 };
+  for (const r of rows) { r.tab = P.tabOf(r.L, r.s); n[r.tab]++; }
   for (const k of Object.keys(n)) $('n' + k[0].toUpperCase() + k.slice(1)).textContent = '(' + n[k] + ')';
   const ol = $('list'); ol.textContent = '';
-  const shown = rows.filter((r) => r.s.tone === filter);
-  $('status').textContent = shown.length ? shown.length + ' businesses' : ({ go: w.open ? 'Nobody to call right now. Check "Need a number": find a few on Google Maps.' : 'Calls are closed now: ' + w.why.toLowerCase() + '.', need: 'Every business has a number.', wait: 'Nobody waiting.', done: 'Nothing done yet.' })[filter];
-  for (const r of shown) ol.appendChild(row(r.L, r.s));
+  let shown = rows.filter((r) => r.tab === filter);
+  if (filter === 'redesign') shown = shown.sort((a, b) => (b.s.ok - a.s.ok) || ((b.L.score || 0) - (a.L.score || 0)));   // callable first, the most dated site first
+  $('status').textContent = shown.length ? shown.length + ' businesses' : ({ go: w.open ? 'Nobody to call right now. Check "Need a number": find a few on Google Maps.' : 'Calls are closed now: ' + w.why.toLowerCase() + '.', need: 'Every business has a number.', redesign: 'No business with a site on the list.', wait: 'Nobody waiting.', done: 'Nothing done yet.' })[filter];
+  for (const r of shown.slice(0, page)) ol.appendChild(row(r.L, r.s));
+  const more = $('moreRows'); more.hidden = shown.length <= page; more.textContent = 'Show ' + Math.min(25, shown.length - page) + ' more (' + (shown.length - page) + ' left)';
   mailLink();
 }
 
@@ -76,8 +78,12 @@ function row(L, s) {
     if (s.ok) call.href = P.telHref(ph); else { call.removeAttribute('href'); call.setAttribute('aria-disabled', 'true'); call.setAttribute('role', 'link'); }
     call.addEventListener('click', () => { if (s.ok) showOutcomes(li, L); });
   } else call.remove();
-  const site = li.querySelector('.site'), url = P.siteUrl(L, conf);
-  if (url) site.href = url; else site.remove();
+  const lane = P.laneOf(L), lb = li.querySelector('.lane');
+  lb.textContent = P.LANES[lane] + (lane === 'redesign' && L.score ? ' · ' + L.score + '/11' : ''); lb.classList.add(lane);
+  li.querySelector('.opener').textContent = P.opener(L);
+  if (lane === 'redesign' && Array.isArray(L.why) && L.why.length) { const c = li.querySelector('.checks'); c.textContent = 'Their site: ' + L.why.join(', '); c.hidden = false; }
+  const site = li.querySelector('.site'), url = lane === 'redesign' ? P.theirSite(L) : P.siteUrl(L, conf);
+  if (url) { site.href = url; if (lane === 'redesign') site.textContent = 'Their current site'; } else site.remove();
   const maps = li.querySelector('.maps');
   if (s.tone === 'need') { maps.href = P.mapsUrl(L); phoneForm(li, L); } else maps.remove();
   if (s.ok) showOutcomes(li, L, true);
@@ -142,11 +148,12 @@ function announce(t) { $('status').textContent = t; }
 function wire() {
   for (const b of document.querySelectorAll('.tabs button')) {
     b.addEventListener('click', () => {
-      filter = b.dataset.f;
+      filter = b.dataset.f; page = 25;
       for (const x of document.querySelectorAll('.tabs button')) x.setAttribute('aria-pressed', String(x === b));
       render();
     });
   }
+  $('moreRows').addEventListener('click', () => { page += 25; render(); });
   $('signout').addEventListener('click', () => { store(UNLOCK, null); location.reload(); });
   $('addForm').addEventListener('submit', (ev) => {
     ev.preventDefault();
