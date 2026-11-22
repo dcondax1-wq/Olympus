@@ -186,7 +186,43 @@ def esc(s) -> str:
     return html.escape(str(s or ""), quote=True)
 
 
+# the business's NAME wins when it clearly names another trade than the map's category (day-a11y 2026-11-22: "Abc home DAYCARE" was filed
+# as optometry, so its concept page said "Optometry"). Only strong, unambiguous words; only when the niche differs from the category's.
+NAME_KINDS = [
+    (r"^(?!.*\b(adult|senior|elder)).*\b(day ?care|child ?care|pre-?school|montessori|nursery school|learning cent(er|re))\b", "services", "Child care",
+     [("Care for your child", "Call to ask about ages, hours and openings."), ("Visit", "Call to set up a time to see the center."),
+      ("Find us", "The address and a map link are below.")]),
+    (r"\b(dental|dentist|dentistry|orthodont\w*|endodont\w*)\b", "health", "Dental office", None),
+    (r"\b(locksmith\w*)\b", "trades", "Locksmith", None),
+    (r"\b(roofing|roofers?)\b", "trades", "Roofing", None),
+    (r"\b(plumb\w*)\b", "trades", "Plumbing", None),
+    (r"\b(hvac|heating|air conditioning)\b", "trades", "Heating and cooling", None),
+    (r"\b(electric(al|ian)?)\b", "trades", "Electrician", None),
+    (r"\b(landscap\w*|lawn care)\b", "trades", "Landscaping", None),
+    (r"\b(barber\w*|hair salon|nail salon)\b", "beauty", "Salon", None),
+    (r"\b(auto repair|collision|tire|transmission)\b", "auto", "Auto repair", None),
+    (r"\b(cafe|café|coffee)\b", "food", "Café", None),
+    (r"\b(restaurant|pizzeria|pizza|grill|diner|bakery)\b", "food", "Restaurant", None),
+]
+
+
+def name_kind(lead: dict):
+    """(niche, kind, sections or None) when the name names another trade than the category, else None"""
+    name = str(lead.get("name") or "").lower()
+    cat = str(lead.get("category") or "").lower()
+    cat_niche = CATS[cat][0] if cat in CATS else next((n for rx, n, _, _ in NAME_KINDS if re.search(rx, cat)), None)
+    for rx, niche, kind, secs in NAME_KINDS:
+        if re.search(rx, name):
+            if cat_niche == niche or (cat and re.search(rx, cat)):
+                return None
+            return niche, kind, secs
+    return None
+
+
 def niche_of(lead: dict) -> str:
+    nk = name_kind(lead)
+    if nk:
+        return nk[0]
     cat = str(lead.get("category") or "").lower()
     if cat in CATS:
         return CATS[cat][0]
@@ -195,6 +231,9 @@ def niche_of(lead: dict) -> str:
 
 
 def sections_of(lead: dict, niche: str):
+    nk = name_kind(lead)
+    if nk:
+        return nk[1], (nk[2] or GENERIC[niche])
     cat = str(lead.get("category") or "").lower()
     c = CATS.get(cat)
     raw = re.sub(r"[_]+", " ", str(lead.get("category") or "")).strip()
@@ -313,7 +352,7 @@ def icon(name: str, size=24, extra="") -> str:
             f'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"{extra}>{ICONS[name]}</svg>')
 
 
-CSS_V = "s1"     # the concept sites share one stylesheet (agency/f/site.css): 4,500 sites x 7 KB of the same CSS was 30 MB
+CSS_V = "s2"     # the concept sites share one stylesheet (agency/f/site.css): 4,500 sites x 7 KB of the same CSS was 30 MB
 CSS = """*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0;background:var(--bg);color:var(--ink);
 font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
 a{color:var(--brand)}.wrap{max-width:640px;margin:0 auto;padding:0 18px}
@@ -346,6 +385,15 @@ section{padding:26px 0;border-top:1px solid var(--line)}h2{font-size:1.3rem;marg
 .dock{position:fixed;left:0;right:0;bottom:0;z-index:6;padding:10px 14px calc(10px + env(safe-area-inset-bottom));
 background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line)}
 .dock .call{width:100%;min-height:50px;font-size:1.05rem}
+.tap{display:inline-flex;align-items:center;min-height:44px;min-width:44px}
+.photo{margin:22px 0 0;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:var(--card)}
+.photo img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}
+.photo figcaption{padding:8px 12px;font-size:.8rem;color:var(--soft)}
+.rev .stars{margin:0 0 6px;color:var(--brand2);letter-spacing:2px;opacity:.55}
+.pkg{margin:0 0 14px;padding:14px 16px;border-radius:16px;border:1px solid var(--line);background:var(--card)}
+.pkg-h{margin:0 0 4px;font-weight:800;font-size:1.05rem}.pkg-p{margin:0 0 8px;font-weight:700;color:var(--brand)}
+.pkg ul{margin:0;padding-left:18px;color:var(--soft)}.pkg li{margin:2px 0}
+@media(min-width:900px){.hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:0 32px;align-items:center}.hero .photo{grid-column:2;grid-row:1/5;margin:0}}
 .call:focus-visible,a:focus-visible{outline:3px solid var(--brand2);outline-offset:2px}
 @media (min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}.dock{display:none}.foot{padding-bottom:30px}}
 @media (prefers-reduced-motion:reduce){*,:before,:after{animation:none!important}}"""
@@ -395,7 +443,7 @@ def ensure_codes(leads, codes: dict) -> dict:
     return codes
 
 
-def agency_band(name: str, lead_id: str = "", code: str = "") -> str:
+def agency_band(name: str, lead_id: str = "", code: str = "", package: str = "") -> str:
     """'Like this site?' band: 'Call us' (the agency number, a placeholder until set) + 'Have our assistant call me' (day-caller's
     consent form, a marked slot until it arrives). Kept apart from the business's own buttons."""
     c = agency_cfg()
@@ -415,9 +463,55 @@ def agency_band(name: str, lead_id: str = "", code: str = "") -> str:
     return (f'<section class="agency" aria-labelledby="h-ag" data-agency="1"><h2 id="h-ag">Like this site for {esc(name)}?</h2>'
             f'<p class="muted" style="margin:0 0 10px">This is a free concept made by an independent web studio, not by the business. '
             f'If you own {esc(name)}, it can be yours.</p>'
-            f'<p class="offer" style="margin:0 0 12px"><b>{esc(OFFER)}</b></p>{claim}{line}<div class="ctas">{call}{form}</div>'
+            + (package or f'<p class="offer" style="margin:0 0 12px"><b>{esc(OFFER)}</b></p>') + f'{claim}{line}<div class="ctas">{call}{form}</div>'
             + (f'<p class="muted" data-code="{esc(code)}" style="margin:14px 0 0;font-size:.8rem">Your code: {esc(code)}</p>' if code else "")
             + '</section>')
+
+
+# ---------------------------------------------------------------- PREMIUM (the top of the call sheet, day-a11y 2026-11-22)
+# tools/site_factory_premium.json {"ids": [...]} (python tools/site_factory.py --premium agency/calls/<day>.csv 20): those concept pages get a
+# hero photo that matches the trade (CC0, served from agency/f/img/, never hotlinked), an honest "your reviews here" block (we never write
+# reviews) and the price book's Starter package. Everyone else keeps the light page.
+PREMIUM = os.path.join(ROOT, "tools", "site_factory_premium.json")
+PHOTOS = [(r"dent|orthodont|endodont", "dentist"), (r"optomet|optician|eye\b|vision", "optometry"), (r"physical therap|physio|chiropract|rehab", "physio"),
+          (r"acupunct|massage|\bspa\b|wellness", "acupuncture"), (r"clinic|doctor|medical|health|urgent care|pediatric", "clinic"),
+          (r"locksmith", "locksmith"), (r"carpet|upholster", "carpet"), (r"\bmov(er|ers|ing)\b", "movers"), (r"roof", "roofing"),
+          (r"hvac|heating|cooling|air duct|air condition", "hvac"), (r"clean|maid|janitor", "cleaning"), (r"handyman|repair service", "handyman"),
+          (r"contractor|construct|drywall|remodel|renovat|paint|floor", "drywall")]
+
+
+def photo_key(lead: dict, kind: str) -> str:
+    text = " ".join(str(x or "") for x in (lead.get("category"), kind, lead.get("name"))).lower()
+    if re.search(r"child care|day ?care", text):
+        return ""                                  # no stock photo of children: the page keeps its drawn art
+    k = next((k for rx, k in PHOTOS if re.search(rx, text)), "")
+    return k if k and os.path.isfile(os.path.join(WEB, "f", "img", k + ".webp")) else ""
+
+
+def pricebook_offer() -> str:
+    """the Starter package line from agency/pricebook.json (the one price book), with OFFER as the fallback"""
+    try:
+        pb = json.load(open(os.path.join(ROOT, "agency", "pricebook.json"), encoding="utf-8"))
+        st = next(x for x in pb["packages"] if x["id"] == "starter")
+        nu = pb.get("no_upfront") or {}
+        return (f"{st['name']}: ${st['setup']:,} setup + ${st['monthly']}/month · {st.get('pages', 5)} pages, live in {st.get('days', 7)} days"
+                + (f" · or ${nu['monthly']}/month for {nu['months']} months, nothing upfront" if nu.get("monthly") else ""))
+    except (OSError, ValueError, KeyError, StopIteration):
+        return OFFER
+
+
+def premium_parts(lead: dict, kind: str, name: str) -> tuple:
+    """(hero photo html, reviews html, package html) for a premium concept page"""
+    k = photo_key(lead, kind)
+    photo = (f'<figure class="photo rise d2"><img src="../img/{k}.webp" alt="{esc(kind)}: a sample photo" width="960" height="540" fetchpriority="high" decoding="async">'
+             f'<figcaption>Sample photo: your own photos go here.</figcaption></figure>') if k else ""
+    reviews = ('<section aria-labelledby="h-rev" class="reviews"><h2 id="h-rev">What customers say</h2>'
+               '<div class="grid">' + "".join('<div class="tile rev"><p class="stars" aria-hidden="true">★★★★★</p><p><b>Your reviews here.</b></p>'
+                                              '<p class="muted">Real reviews from your Google profile show here once the site is yours.</p></div>' for _ in range(3))
+               + '</div><p class="muted" style="margin:10px 0 0;font-size:.85rem">We never write reviews: these spaces stay empty until real ones are added.</p></section>')
+    package = (f'<div class="pkg"><p class="pkg-h">This site, yours this week</p><p class="pkg-p">{esc(pricebook_offer())}</p>'
+               '<ul><li>Your photos, your words, your own domain</li><li>Works on every phone; Google-ready</li><li>Edits and hosting in the monthly plan</li></ul></div>')
+    return photo, reviews, package
 
 
 def page(lead: dict, ids: dict, client: dict | None = None) -> str:
@@ -464,7 +558,7 @@ def page(lead: dict, ids: dict, client: dict | None = None) -> str:
     if addr:
         visit.append(f'<div class="row">{icon("pin", 20)}<div><b>{esc(addr)}</b>' + (f'<br><span class="muted">{esc(place)}</span>' if town and town not in addr else "") + "</div></div>")
     if phone:
-        visit.append(f'<div class="row">{icon("phone", 20)}<div><a href="tel:{t}"><b>{esc(phone)}</b></a></div></div>' if t else
+        visit.append(f'<div class="row">{icon("phone", 20)}<div><a class="tap" href="tel:{t}"><b>{esc(phone)}</b></a></div></div>' if t else
                      f'<div class="row">{icon("phone", 20)}<div><b>{esc(phone)}</b></div></div>')
     btns = []
     if addr or maps:
@@ -472,6 +566,8 @@ def page(lead: dict, ids: dict, client: dict | None = None) -> str:
     if email:
         btns.append(f'<a class="call ghost" href="mailto:{esc(email)}?subject={quote("Question for " + name)}">Send an email</a>')
     desc = f"{kind} in {place}." + (f" Call {phone}." if phone else "")
+    prem = bool(lead.get("_premium")) and not client
+    p_photo, p_rev, p_pkg = premium_parts(lead, kind, name) if prem else ("", "", "")
     today_js = ('<script>(function(){var d=(new Date().getDay()+6)%7,r=document.querySelector(\'.hours tr[data-d="\'+d+\'"]\');'
                 'if(r)r.className="today";var y=document.getElementById("y");if(y)y.textContent=new Date().getFullYear();})();</script>')
     return f"""<!doctype html>
@@ -489,20 +585,20 @@ def page(lead: dict, ids: dict, client: dict | None = None) -> str:
 <style>:root{{--bg:{bg};--ink:{ink};--soft:{soft};--brand:{brand};--brand2:{brand2};--on:{on};--card:#ffffff;--line:color-mix(in srgb,{ink} 11%,transparent)}}{(chr(10) + CSS) if client else ""}</style>{"" if client else '<link rel="stylesheet" href="../site.css?v=' + CSS_V + '">'}
 </head>
 <body data-niche="{niche}">
-<header class="bar"><div class="wrap">{('<img class="logo" src="' + esc(cl["logo"]) + '" alt="" width="34" height="34" style="object-fit:cover;background:none">') if cl.get("logo") else '<span class="logo">' + icon(N["icon"], 20) + '</span>'}<b>{esc(name)}</b>{call.replace('class="call"', 'class="call" style="min-height:38px;padding:0 13px;font-size:.9rem"', 1) if t else ""}</div></header>
+<header class="bar"><div class="wrap">{('<img class="logo" src="' + esc(cl["logo"]) + '" alt="" width="34" height="34" style="object-fit:cover;background:none">') if cl.get("logo") else '<span class="logo">' + icon(N["icon"], 20) + '</span>'}<b>{esc(name)}</b>{call.replace('class="call"', 'class="call" style="min-height:44px;padding:0 14px;font-size:.9rem"', 1) if t else ""}</div></header>
 <main>
 <div class="hero"><div class="wrap">
 <span class="kind rise">{icon(N["icon"], 16)}{esc(kind)} · {esc(town)}</span>
 <h1 class="rise d1">{esc(name)}</h1>
 <p class="lead rise d1">{hero_line}</p>
-<div class="ctas rise d2">{call}{btns[0] if btns else ""}</div>
+<div class="ctas rise d2">{call}{btns[0] if btns else ""}</div>{p_photo}
 </div><span class="art">{icon(N["icon"], 150)}</span></div>
 <div class="wrap">
 <section aria-labelledby="h-what"><h2 id="h-what">What we do</h2><div class="grid">{tiles}</div></section>{('<section aria-labelledby="h-about"><h2 id="h-about">About us</h2><p>' + esc(cl["about"]) + '</p></section>') if cl.get("about") else ""}{('<section aria-labelledby="h-photos"><h2 id="h-photos">Photos</h2><div class="grid">' + "".join('<img src="' + esc(ph) + '" alt="' + esc(name) + '" loading="lazy" style="width:100%;border-radius:16px;aspect-ratio:4/3;object-fit:cover">' for ph in cl.get("photos", [])) + '</div></section>') if cl.get("photos") else ""}
-<section aria-labelledby="h-hours"><h2 id="h-hours" class="row" style="align-items:center">{icon("clock", 22)}Hours</h2>{hours_html}</section>
+{p_rev}<section aria-labelledby="h-hours"><h2 id="h-hours" class="row" style="align-items:center">{icon("clock", 22)}Hours</h2>{hours_html}</section>
 <section aria-labelledby="h-visit"><h2 id="h-visit">{"Visit or call" if t and addr else "Call" if t else "Visit"}</h2><div class="grid" style="grid-template-columns:1fr">{"".join(visit)}</div>
 <div class="ctas" style="margin-top:16px">{"".join(btns)}</div></section>
-{"" if client else agency_band(name, lead["id"], lead.get("_code", ""))}
+{"" if client else agency_band(name, lead["id"], lead.get("_code", ""), p_pkg)}
 </div>
 </main>
 <footer class="foot"><div class="wrap">
@@ -651,6 +747,10 @@ def _usd(L):
 
 def build(web=WEB, ids_path=IDS, write_ids=True):
     leads = load_leads()
+    try:
+        premium = set(json.load(open(PREMIUM, encoding="utf-8")).get("ids") or [])
+    except (OSError, ValueError, AttributeError):
+        premium = set()
     ids = json.load(open(ids_path)) if os.path.exists(ids_path) else {}
     ids = ensure_ids(leads, ids)
     codes_path = os.path.join(os.path.dirname(ids_path), "site_factory_codes.json")
@@ -664,7 +764,7 @@ def build(web=WEB, ids_path=IDS, write_ids=True):
         keep.add(h)
         d = os.path.join(fdir, h)
         os.makedirs(d, exist_ok=True)
-        txt = page(dict(L, _code=codes[L["id"]]), ids)
+        txt = page(dict(L, _code=codes[L["id"]], _premium=L["id"] in premium), ids)
         with open(os.path.join(d, "index.html"), "w", encoding="utf-8", newline="\n") as f:
             f.write(txt)
         n = niche_of(L)
@@ -776,6 +876,13 @@ def export(out_dir: str, web: str = WEB) -> int:
     files["404.html"] = '<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Not found</title><p style="font:17px system-ui;padding:40px 20px">Not found.</p>\n'
     files["f/index.html"] = files["404.html"]
     files["f/site.css"] = read_text(os.path.join(src, "site.css"))
+    img = os.path.join(src, "img")                  # the premium pages' CC0 hero photos (binary) + their credits
+    for x in sorted(os.listdir(img)) if os.path.isdir(img) else []:
+        if re.fullmatch(r"[a-z]+\.webp", x):
+            with open(os.path.join(img, x), "rb") as fh:
+                files["f/img/" + x] = fh.read()
+        elif x == "CREDITS.json":
+            files["f/img/" + x] = read_text(os.path.join(img, x))
     named = bool(c["agency_name"].strip())
     files["robots.txt"] = ("User-agent: *\nDisallow: /f/\nDisallow: /portal/\nSitemap: " + base + "sitemap.xml\n" if named else "User-agent: *\nDisallow: /\n")
     # Cloudflare Pages reads _headers (GitHub Pages ignores it; the pages' own noindex meta covers that host)
@@ -788,7 +895,7 @@ def export(out_dir: str, web: str = WEB) -> int:
         print("refused: " + perr, file=sys.stderr)
         return 3
     files.update(pf)
-    leaks = [(k, m.group(0)) for k, v in files.items() for m in [re.search("|".join(FORBIDDEN), v, re.I)] if m]
+    leaks = [(k, m.group(0)) for k, v in files.items() if isinstance(v, str) for m in [re.search("|".join(FORBIDDEN), v, re.I)] if m]
     if leaks:
         print("refused: these files point back at Olympus / the owner / a PC: " + ", ".join(f"{k} ({w})" for k, w in leaks[:8]), file=sys.stderr)
         return 3
@@ -801,6 +908,10 @@ def export(out_dir: str, web: str = WEB) -> int:
     for k, v in files.items():
         p = os.path.join(out_dir, *k.split("/"))
         os.makedirs(os.path.dirname(p), exist_ok=True)
+        if isinstance(v, bytes):
+            with open(p, "wb") as f:
+                f.write(v)
+            continue
         with open(p, "w", encoding="utf-8", newline="\n") as f:
             f.write(v)
     n = sum(1 for k in files if k.startswith("f/") and k != "f/index.html")
@@ -860,6 +971,22 @@ def main(argv) -> int:
             print("usage: python tools/site_factory.py --export <dir>", file=sys.stderr)
             return 2
         return export(argv[i + 1])
+    if "--premium" in argv:                      # --premium <call sheet csv> [n]: the top n by rank get the premium page
+        i = argv.index("--premium")
+        if i + 1 >= len(argv):
+            print("usage: python tools/site_factory.py --premium agency/calls/<day>.csv [20]", file=sys.stderr)
+            return 2
+        n = int(argv[i + 2]) if len(argv) > i + 2 and argv[i + 2].isdigit() else 20
+        import csv as _csv
+        with open(argv[i + 1], encoding="utf-8") as f:
+            rows = [r for r in _csv.DictReader(l for l in f if not l.startswith("#"))]
+        rows.sort(key=lambda r: int(r.get("rank") or 10**9))
+        ids = [r["id"] for r in rows if r.get("id")][:n]
+        with open(PREMIUM, "w", encoding="utf-8", newline="\n") as f:
+            json.dump({"v": 1, "from": os.path.relpath(argv[i + 1], ROOT).replace(os.sep, "/"), "top": n, "ids": ids}, f, indent=1)
+            f.write("\n")
+        print(f"{len(ids)} premium pages from {argv[i + 1]}; run python tools/site_factory.py to rebuild")
+        return 0
     if "--check" in argv:
         with tempfile.TemporaryDirectory() as t:
             ip = os.path.join(t, "ids.json")
