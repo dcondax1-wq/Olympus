@@ -1,18 +1,18 @@
 # Big leads beyond Frederick: counts by county and trade (Overture Maps, 2026-11-18.0 release)
 
-17,230 new leads with a phone in 8 counties (2,292 of them in the 'your website is down' lane). Top 1,000 by $ score got a concept site. Sorted high-ticket trades first. Overture has no ratings / review counts, so they are not in the score.
+17,218 new leads with a phone in 8 counties (2,280 of them in the 'your website is down' lane). Top 1,000 by $ score got a concept site. Sorted high-ticket trades first. Overture has no ratings / review counts, so they are not in the score.
 
 | County | Leads | site down | concept sites | beauty | retail | auto | remodeling / trades | health | professional | restaurant / food | contractor | pro | health (medical-adjacent) | dental | services | home services | fitness | landscaping | HVAC | electrical | roofing | plumbing | solar |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Prince George's County | 3,980 | 419 | 54 | 801 | 444 | 575 | 329 | 306 | 265 | 248 | 207 | 184 | 107 | 102 | 108 | 97 | 68 | 55 | 22 | 20 | 17 | 20 | 5 |
-| Baltimore County | 3,622 | 391 | 269 | 564 | 446 | 406 | 274 | 366 | 407 | 237 | 179 | 156 | 99 | 100 | 95 | 81 | 54 | 57 | 34 | 28 | 23 | 15 | 1 |
-| Baltimore City | 2,989 | 251 | 175 | 465 | 494 | 337 | 148 | 222 | 234 | 445 | 132 | 151 | 52 | 39 | 73 | 45 | 45 | 45 | 14 | 20 | 20 | 8 | 0 |
-| Montgomery County | 2,559 | 487 | 64 | 287 | 235 | 166 | 310 | 278 | 290 | 136 | 200 | 172 | 87 | 118 | 54 | 49 | 51 | 47 | 21 | 20 | 22 | 14 | 2 |
-| Anne Arundel County | 2,205 | 316 | 236 | 276 | 291 | 273 | 232 | 179 | 170 | 157 | 131 | 88 | 68 | 54 | 57 | 43 | 50 | 54 | 15 | 22 | 24 | 18 | 3 |
-| Harford County | 849 | 144 | 88 | 135 | 122 | 105 | 102 | 74 | 50 | 40 | 33 | 19 | 36 | 14 | 24 | 11 | 29 | 18 | 17 | 12 | 1 | 7 | 0 |
+| Baltimore County | 3,618 | 387 | 266 | 564 | 446 | 405 | 273 | 366 | 407 | 237 | 177 | 156 | 99 | 100 | 95 | 81 | 54 | 57 | 34 | 28 | 23 | 15 | 1 |
+| Baltimore City | 2,987 | 249 | 174 | 465 | 494 | 336 | 147 | 222 | 234 | 445 | 132 | 151 | 52 | 39 | 73 | 45 | 45 | 45 | 14 | 20 | 20 | 8 | 0 |
+| Montgomery County | 2,557 | 485 | 64 | 287 | 235 | 166 | 310 | 278 | 290 | 136 | 198 | 172 | 87 | 118 | 54 | 49 | 51 | 47 | 21 | 20 | 22 | 14 | 2 |
+| Anne Arundel County | 2,202 | 313 | 234 | 276 | 291 | 272 | 231 | 179 | 170 | 157 | 131 | 88 | 68 | 54 | 57 | 43 | 50 | 53 | 15 | 22 | 24 | 18 | 3 |
+| Harford County | 848 | 143 | 94 | 135 | 122 | 105 | 101 | 74 | 50 | 40 | 33 | 19 | 36 | 14 | 24 | 11 | 29 | 18 | 17 | 12 | 1 | 7 | 0 |
 | Howard County | 571 | 148 | 20 | 45 | 72 | 67 | 88 | 23 | 27 | 39 | 53 | 25 | 15 | 26 | 12 | 17 | 15 | 22 | 7 | 5 | 7 | 4 | 2 |
 | Carroll County | 455 | 136 | 94 | 31 | 69 | 85 | 62 | 16 | 12 | 16 | 30 | 16 | 9 | 9 | 19 | 4 | 19 | 22 | 14 | 6 | 10 | 6 | 0 |
-| **All** | **17,230** | **2292** | **1000** | **2604** | **2173** | **2014** | **1545** | **1464** | **1455** | **1318** | **965** | **811** | **473** | **462** | **442** | **347** | **331** | **320** | **144** | **133** | **124** | **92** | **13** |
+| **All** | **17,218** | **2280** | **1000** | **2604** | **2173** | **2011** | **1541** | **1464** | **1455** | **1318** | **961** | **811** | **473** | **462** | **442** | **347** | **331** | **319** | **144** | **133** | **124** | **92** | **13** |
 
 ## Top 25 by $ score
 
