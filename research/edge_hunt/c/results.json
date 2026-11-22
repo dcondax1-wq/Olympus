@@ -1,0 +1,6364 @@
+{
+ "standalone": [
+  {
+   "name": "tom_last2[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": null,
+   "spans": {
+    "2021-25": {
+     "trades": 89,
+     "per_week": 0.43,
+     "win_pct": 12.4,
+     "pf": 0.29,
+     "net": -33208,
+     "per_month": -676,
+     "max_dd": -34213,
+     "pts_t": -1.24,
+     "sessions": 1031,
+     "events": 100,
+     "perm_p": 0.961,
+     "boot95_usd_per_trade": [
+      -518,
+      -199
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 1.0,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 2.2,
+      "fail_pct": 0.8,
+      "median_sessions": 12
+     },
+     "corr_lit": -0.03,
+     "on_lit_off_days_per_mo": -756
+    },
+    "2026H1": {
+     "trades": 11,
+     "per_week": 0.45,
+     "win_pct": 18.2,
+     "pf": 2.82,
+     "net": 10205,
+     "per_month": 1742,
+     "max_dd": -3042,
+     "pts_t": 0.99,
+     "sessions": 123,
+     "events": 12,
+     "perm_p": 0.138,
+     "boot95_usd_per_trade": [
+      -676,
+      3572
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 8.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 17.9,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     },
+     "corr_lit": -0.02,
+     "on_lit_off_days_per_mo": 3068
+    },
+    "2026H2": {
+     "trades": 5,
+     "per_week": 0.29,
+     "win_pct": 0.0,
+     "pf": 0.0,
+     "net": -1862,
+     "per_month": -455,
+     "max_dd": -1862,
+     "pts_t": -4.67,
+     "sessions": 86,
+     "events": 8,
+     "perm_p": 0.362,
+     "boot95_usd_per_trade": [
+      -634,
+      -212
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "corr_lit": 0.03,
+     "on_lit_off_days_per_mo": -151
+    }
+   },
+   "all_targets_H1": {
+    "None": 10205,
+    "1.5": -2110,
+    "3.0": -141
+   }
+  },
+  {
+   "name": "tom_last2-short[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": 3.0,
+   "spans": {
+    "2021-25": {
+     "trades": 90,
+     "per_week": 0.44,
+     "win_pct": 28.9,
+     "pf": 0.87,
+     "net": -4836,
+     "per_month": -99,
+     "max_dd": -15139,
+     "pts_t": 1.08,
+     "sessions": 1031,
+     "events": 100,
+     "perm_p": 0.36,
+     "boot95_usd_per_trade": [
+      -254,
+      153
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 0.1,
+      "fail_pct": 0.7,
+      "median_sessions": 21
+     },
+     "corr_lit": 0.05,
+     "on_lit_off_days_per_mo": -251
+    },
+    "2026H1": {
+     "trades": 11,
+     "per_week": 0.45,
+     "win_pct": 27.3,
+     "pf": 0.41,
+     "net": -2205,
+     "per_month": -376,
+     "max_dd": -2718,
+     "pts_t": 0.79,
+     "sessions": 123,
+     "events": 12,
+     "perm_p": 0.474,
+     "boot95_usd_per_trade": [
+      -467,
+      102
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "corr_lit": 0.02,
+     "on_lit_off_days_per_mo": -241
+    },
+    "2026H2": {
+     "trades": 7,
+     "per_week": 0.41,
+     "win_pct": 14.3,
+     "pf": 0.59,
+     "net": -1403,
+     "per_month": -343,
+     "max_dd": -3407,
+     "pts_t": -0.88,
+     "sessions": 86,
+     "events": 8,
+     "perm_p": 0.62,
+     "boot95_usd_per_trade": [
+      -679,
+      588
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "corr_lit": 0.05,
+     "on_lit_off_days_per_mo": -1114
+    }
+   }
+  },
+  {
+   "name": "tom_first3[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": null,
+   "spans": {
+    "2021-25": {
+     "trades": 128,
+     "per_week": 0.62,
+     "win_pct": 20.3,
+     "pf": 1.29,
+     "net": 19715,
+     "per_month": 402,
+     "max_dd": -14090,
+     "pts_t": 1.63,
+     "sessions": 1031,
+     "events": 147,
+     "perm_p": 0.123,
+     "boot95_usd_per_trade": [
+      -279,
+      710
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 5.9,
+      "fail_pct": 5.4,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 12.2,
+      "fail_pct": 15.6,
+      "median_sessions": 11
+     },
+     "corr_lit": -0.01,
+     "on_lit_off_days_per_mo": 813
+    },
+    "2026H1": {
+     "trades": 17,
+     "per_week": 0.69,
+     "win_pct": 41.2,
+     "pf": 2.59,
+     "net": 6512,
+     "per_month": 1112,
+     "max_dd": -1478,
+     "pts_t": 1.77,
+     "sessions": 123,
+     "events": 18,
+     "perm_p": 0.28,
+     "boot95_usd_per_trade": [
+      -184,
+      1199
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 8.1,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 17.1,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "corr_lit": 0.06,
+     "on_lit_off_days_per_mo": 1596
+    },
+    "2026H2": {
+     "trades": 8,
+     "per_week": 0.47,
+     "win_pct": 12.5,
+     "pf": 0.99,
+     "net": -47,
+     "per_month": -11,
+     "max_dd": -2216,
+     "pts_t": 0.57,
+     "sessions": 86,
+     "events": 12,
+     "perm_p": 0.305,
+     "boot95_usd_per_trade": [
+      -684,
+      1130
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 11.6,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 24.4,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "corr_lit": -0.09,
+     "on_lit_off_days_per_mo": 476
+    }
+   },
+   "all_targets_H1": {
+    "None": 6512,
+    "1.5": 426,
+    "3.0": 4385
+   }
+  },
+  {
+   "name": "tom_first3-short[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": null,
+   "spans": {
+    "2021-25": {
+     "trades": 126,
+     "per_week": 0.61,
+     "win_pct": 12.7,
+     "pf": 0.77,
+     "net": -14806,
+     "per_month": -302,
+     "max_dd": -25647,
+     "pts_t": -0.2,
+     "sessions": 1031,
+     "events": 147,
+     "perm_p": 0.74,
+     "boot95_usd_per_trade": [
+      -382,
+      191
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 4.9,
+      "fail_pct": 6.9,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 10.2,
+      "fail_pct": 19.2,
+      "median_sessions": 11
+     },
+     "corr_lit": 0.03,
+     "on_lit_off_days_per_mo": -392
+    },
+    "2026H1": {
+     "trades": 16,
+     "per_week": 0.65,
+     "win_pct": 12.5,
+     "pf": 0.72,
+     "net": -2512,
+     "per_month": -429,
+     "max_dd": -5770,
+     "pts_t": 0.8,
+     "sessions": 123,
+     "events": 18,
+     "perm_p": 0.324,
+     "boot95_usd_per_trade": [
+      -687,
+      684
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 8.1,
+      "fail_pct": 7.3,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 17.1,
+      "fail_pct": 18.7,
+      "median_sessions": 11
+     },
+     "corr_lit": -0.07,
+     "on_lit_off_days_per_mo": -977
+    },
+    "2026H2": {
+     "trades": 9,
+     "per_week": 0.52,
+     "win_pct": 0.0,
+     "pf": 0.0,
+     "net": -4236,
+     "per_month": -1034,
+     "max_dd": -4236,
+     "pts_t": -4.12,
+     "sessions": 86,
+     "events": 12,
+     "perm_p": 0.822,
+     "boot95_usd_per_trade": [
+      -667,
+      -273
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "corr_lit": 0.01,
+     "on_lit_off_days_per_mo": -1354
+    }
+   }
+  },
+  {
+   "name": "tom_all5[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": null,
+   "spans": {
+    "2021-25": {
+     "trades": 217,
+     "per_week": 1.05,
+     "win_pct": 17.1,
+     "pf": 0.88,
+     "net": -13492,
+     "per_month": -275,
+     "max_dd": -31778,
+     "pts_t": 0.69,
+     "sessions": 1031,
+     "events": 247,
+     "perm_p": 0.499,
+     "boot95_usd_per_trade": [
+      -329,
+      275
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 4.3,
+      "fail_pct": 23.3,
+      "median_sessions": 3
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 7.3,
+      "fail_pct": 59.3,
+      "median_sessions": 8
+     },
+     "corr_lit": -0.01,
+     "on_lit_off_days_per_mo": 57
+    },
+    "2026H1": {
+     "trades": 28,
+     "per_week": 1.14,
+     "win_pct": 32.1,
+     "pf": 2.72,
+     "net": 16717,
+     "per_month": 2854,
+     "max_dd": -2818,
+     "pts_t": 1.94,
+     "sessions": 123,
+     "events": 30,
+     "perm_p": 0.229,
+     "boot95_usd_per_trade": [
+      -188,
+      1731
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 17.1,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 35.0,
+      "fail_pct": 6.5,
+      "median_sessions": 11
+     },
+     "corr_lit": 0.01,
+     "on_lit_off_days_per_mo": 4664
+    },
+    "2026H2": {
+     "trades": 13,
+     "per_week": 0.76,
+     "win_pct": 7.7,
+     "pf": 0.67,
+     "net": -1909,
+     "per_month": -466,
+     "max_dd": -3505,
+     "pts_t": 0.2,
+     "sessions": 86,
+     "events": 20,
+     "perm_p": 0.439,
+     "boot95_usd_per_trade": [
+      -586,
+      579
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 11.6,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 24.4,
+      "fail_pct": 9.3,
+      "median_sessions": 11
+     },
+     "corr_lit": -0.08,
+     "on_lit_off_days_per_mo": 325
+    }
+   },
+   "all_targets_H1": {
+    "None": 16717,
+    "1.5": -1684,
+    "3.0": 4244
+   }
+  },
+  {
+   "name": "tom_all5-short[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": null,
+   "spans": {
+    "2021-25": {
+     "trades": 216,
+     "per_week": 1.05,
+     "win_pct": 16.2,
+     "pf": 0.91,
+     "net": -9938,
+     "per_month": -202,
+     "max_dd": -44738,
+     "pts_t": 0.82,
+     "sessions": 1031,
+     "events": 247,
+     "perm_p": 0.65,
+     "boot95_usd_per_trade": [
+      -257,
+      210
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 7.7,
+      "fail_pct": 18.4,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 14.1,
+      "fail_pct": 47.5,
+      "median_sessions": 10
+     },
+     "corr_lit": 0.03,
+     "on_lit_off_days_per_mo": -722
+    },
+    "2026H1": {
+     "trades": 27,
+     "per_week": 1.1,
+     "win_pct": 14.8,
+     "pf": 0.56,
+     "net": -5670,
+     "per_month": -968,
+     "max_dd": -9431,
+     "pts_t": 0.79,
+     "sessions": 123,
+     "events": 30,
+     "perm_p": 0.391,
+     "boot95_usd_per_trade": [
+      -555,
+      285
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 8.1,
+      "fail_pct": 13.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 17.1,
+      "fail_pct": 36.6,
+      "median_sessions": 11
+     },
+     "corr_lit": -0.06,
+     "on_lit_off_days_per_mo": -1478
+    },
+    "2026H2": {
+     "trades": 16,
+     "per_week": 0.93,
+     "win_pct": 0.0,
+     "pf": 0.0,
+     "net": -8369,
+     "per_month": -2044,
+     "max_dd": -8369,
+     "pts_t": -4.84,
+     "sessions": 86,
+     "events": 20,
+     "perm_p": 0.972,
+     "boot95_usd_per_trade": [
+      -661,
+      -383
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 16.3,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 48.8,
+      "median_sessions": null
+     },
+     "corr_lit": 0.04,
+     "on_lit_off_days_per_mo": -2468
+    }
+   }
+  },
+  {
+   "name": "opex_week[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": null,
+   "spans": {
+    "2021-25": {
+     "trades": 216,
+     "per_week": 1.05,
+     "win_pct": 11.6,
+     "pf": 0.56,
+     "net": -54157,
+     "per_month": -1103,
+     "max_dd": -61478,
+     "pts_t": -1.19,
+     "sessions": 1031,
+     "events": 248,
+     "perm_p": 0.948,
+     "boot95_usd_per_trade": [
+      -438,
+      -35
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 5.3,
+      "fail_pct": 22.3,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 9.9,
+      "fail_pct": 53.9,
+      "median_sessions": 10
+     },
+     "corr_lit": -0.0,
+     "on_lit_off_days_per_mo": -690
+    },
+    "2026H1": {
+     "trades": 21,
+     "per_week": 0.85,
+     "win_pct": 19.0,
+     "pf": 5.11,
+     "net": 28525,
+     "per_month": 4870,
+     "max_dd": -5478,
+     "pts_t": 0.53,
+     "sessions": 123,
+     "events": 30,
+     "perm_p": 0.059,
+     "boot95_usd_per_trade": [
+      -278,
+      4002
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 22.0,
+      "fail_pct": 6.5,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 39.8,
+      "fail_pct": 17.1,
+      "median_sessions": 9
+     },
+     "corr_lit": -0.03,
+     "on_lit_off_days_per_mo": 6974
+    },
+    "2026H2": {
+     "trades": 15,
+     "per_week": 0.87,
+     "win_pct": 6.7,
+     "pf": 0.07,
+     "net": -7736,
+     "per_month": -1889,
+     "max_dd": -7736,
+     "pts_t": -0.42,
+     "sessions": 86,
+     "events": 20,
+     "perm_p": 0.837,
+     "boot95_usd_per_trade": [
+      -678,
+      -300
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 20.9,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 55.8,
+      "median_sessions": null
+     },
+     "corr_lit": -0.13,
+     "on_lit_off_days_per_mo": -2211
+    }
+   },
+   "all_targets_H1": {
+    "None": 28525,
+    "1.5": -2329,
+    "3.0": -1101
+   }
+  },
+  {
+   "name": "opex_week-short[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": 1.5,
+   "spans": {
+    "2021-25": {
+     "trades": 216,
+     "per_week": 1.05,
+     "win_pct": 40.7,
+     "pf": 0.88,
+     "net": -8842,
+     "per_month": -180,
+     "max_dd": -23922,
+     "pts_t": 0.17,
+     "sessions": 1031,
+     "events": 248,
+     "perm_p": 0.002,
+     "boot95_usd_per_trade": [
+      -133,
+      53
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 0.6,
+      "fail_pct": 6.7,
+      "median_sessions": 7
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 1.5,
+      "fail_pct": 19.3,
+      "median_sessions": 19
+     },
+     "corr_lit": -0.02,
+     "on_lit_off_days_per_mo": -228
+    },
+    "2026H1": {
+     "trades": 23,
+     "per_week": 0.93,
+     "win_pct": 30.4,
+     "pf": 0.48,
+     "net": -4781,
+     "per_month": -816,
+     "max_dd": -6801,
+     "pts_t": -0.68,
+     "sessions": 123,
+     "events": 30,
+     "perm_p": 0.308,
+     "boot95_usd_per_trade": [
+      -463,
+      61
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 0.0,
+      "fail_pct": 5.7,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 0.0,
+      "fail_pct": 16.3,
+      "median_sessions": null
+     },
+     "corr_lit": 0.01,
+     "on_lit_off_days_per_mo": -927
+    },
+    "2026H2": {
+     "trades": 16,
+     "per_week": 0.93,
+     "win_pct": 50.0,
+     "pf": 0.75,
+     "net": -1087,
+     "per_month": -265,
+     "max_dd": -2526,
+     "pts_t": 1.49,
+     "sessions": 86,
+     "events": 20,
+     "perm_p": 0.089,
+     "boot95_usd_per_trade": [
+      -316,
+      174
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "corr_lit": 0.01,
+     "on_lit_off_days_per_mo": -71
+    }
+   }
+  },
+  {
+   "name": "opex_fri[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": null,
+   "spans": {
+    "2021-25": {
+     "trades": 43,
+     "per_week": 0.21,
+     "win_pct": 11.6,
+     "pf": 0.16,
+     "net": -19250,
+     "per_month": -392,
+     "max_dd": -19687,
+     "pts_t": -0.22,
+     "sessions": 1031,
+     "events": 48,
+     "perm_p": 0.925,
+     "boot95_usd_per_trade": [
+      -587,
+      -287
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "corr_lit": 0.03,
+     "on_lit_off_days_per_mo": -422
+    },
+    "2026H1": {
+     "trades": 3,
+     "per_week": 0.12,
+     "win_pct": 0.0,
+     "pf": 0.0,
+     "net": -1384,
+     "per_month": -236,
+     "max_dd": -1384,
+     "pts_t": -3.59,
+     "sessions": 123,
+     "events": 6,
+     "perm_p": 0.563,
+     "boot95_usd_per_trade": [
+      -848,
+      -244
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "corr_lit": 0.04,
+     "on_lit_off_days_per_mo": -66
+    },
+    "2026H2": {
+     "trades": 4,
+     "per_week": 0.23,
+     "win_pct": 0.0,
+     "pf": 0.0,
+     "net": -1783,
+     "per_month": -435,
+     "max_dd": -1783,
+     "pts_t": -2.99,
+     "sessions": 86,
+     "events": 4,
+     "perm_p": 0.695,
+     "boot95_usd_per_trade": [
+      -662,
+      -229
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "corr_lit": 0.05,
+     "on_lit_off_days_per_mo": -605
+    }
+   },
+   "all_targets_H1": {
+    "None": -1384,
+    "1.5": -1384,
+    "3.0": -1384
+   }
+  },
+  {
+   "name": "opex_fri-short[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": null,
+   "spans": {
+    "2021-25": {
+     "trades": 44,
+     "per_week": 0.21,
+     "win_pct": 25.0,
+     "pf": 2.21,
+     "net": 24174,
+     "per_month": 492,
+     "max_dd": -4552,
+     "pts_t": 1.27,
+     "sessions": 1031,
+     "events": 48,
+     "perm_p": 0.077,
+     "boot95_usd_per_trade": [
+      -244,
+      1596
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 3.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 7.8,
+      "fail_pct": 0.0,
+      "median_sessions": 10
+     },
+     "corr_lit": -0.0,
+     "on_lit_off_days_per_mo": 467
+    },
+    "2026H1": {
+     "trades": 3,
+     "per_week": 0.12,
+     "win_pct": 33.3,
+     "pf": 1.85,
+     "net": 1548,
+     "per_month": 264,
+     "max_dd": -913,
+     "pts_t": 0.92,
+     "sessions": 123,
+     "events": 6,
+     "perm_p": 0.112,
+     "boot95_usd_per_trade": [
+      -913,
+      3368
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 8.1,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 17.1,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "corr_lit": -0.01,
+     "on_lit_off_days_per_mo": -497
+    },
+    "2026H2": {
+     "trades": 3,
+     "per_week": 0.17,
+     "win_pct": 33.3,
+     "pf": 0.16,
+     "net": -782,
+     "per_month": -191,
+     "max_dd": -782,
+     "pts_t": -0.16,
+     "sessions": 86,
+     "events": 4,
+     "perm_p": 0.374,
+     "boot95_usd_per_trade": [
+      -756,
+      144
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "corr_lit": 0.03,
+     "on_lit_off_days_per_mo": -10
+    }
+   }
+  },
+  {
+   "name": "opex_next_mon[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": null,
+   "spans": {
+    "2021-25": {
+     "trades": 44,
+     "per_week": 0.21,
+     "win_pct": 22.7,
+     "pf": 2.42,
+     "net": 31977,
+     "per_month": 651,
+     "max_dd": -7514,
+     "pts_t": 1.37,
+     "sessions": 1031,
+     "events": 50,
+     "perm_p": 0.01,
+     "boot95_usd_per_trade": [
+      -216,
+      1909
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 4.8,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 10.0,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "corr_lit": -0.0,
+     "on_lit_off_days_per_mo": -47
+    },
+    "2026H1": {
+     "trades": 4,
+     "per_week": 0.16,
+     "win_pct": 0.0,
+     "pf": 0.0,
+     "net": -1274,
+     "per_month": -218,
+     "max_dd": -1274,
+     "pts_t": -4.21,
+     "sessions": 123,
+     "events": 6,
+     "perm_p": 0.544,
+     "boot95_usd_per_trade": [
+      -509,
+      -160
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "corr_lit": -0.01,
+     "on_lit_off_days_per_mo": -209
+    },
+    "2026H2": {
+     "trades": 4,
+     "per_week": 0.23,
+     "win_pct": 25.0,
+     "pf": 25.54,
+     "net": 21938,
+     "per_month": 5357,
+     "max_dd": -497,
+     "pts_t": 0.68,
+     "sessions": 86,
+     "events": 4,
+     "perm_p": 0.023,
+     "boot95_usd_per_trade": [
+      -381,
+      17033
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 11.6,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 24.4,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "corr_lit": -0.1,
+     "on_lit_off_days_per_mo": 8363
+    }
+   },
+   "all_targets_H1": {
+    "None": -1274,
+    "1.5": -1274,
+    "3.0": -1274
+   }
+  },
+  {
+   "name": "opex_next_mon-short[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": 3.0,
+   "spans": {
+    "2021-25": {
+     "trades": 44,
+     "per_week": 0.21,
+     "win_pct": 9.1,
+     "pf": 0.28,
+     "net": -17970,
+     "per_month": -366,
+     "max_dd": -17970,
+     "pts_t": -3.29,
+     "sessions": 1031,
+     "events": 50,
+     "perm_p": 0.994,
+     "boot95_usd_per_trade": [
+      -600,
+      -169
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "corr_lit": 0.03,
+     "on_lit_off_days_per_mo": -438
+    },
+    "2026H1": {
+     "trades": 4,
+     "per_week": 0.16,
+     "win_pct": 25.0,
+     "pf": 0.27,
+     "net": -1341,
+     "per_month": -229,
+     "max_dd": -1512,
+     "pts_t": 0.64,
+     "sessions": 123,
+     "events": 6,
+     "perm_p": 0.564,
+     "boot95_usd_per_trade": [
+      -756,
+      176
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "corr_lit": 0.02,
+     "on_lit_off_days_per_mo": -159
+    },
+    "2026H2": {
+     "trades": 4,
+     "per_week": 0.23,
+     "win_pct": 25.0,
+     "pf": 0.85,
+     "net": -308,
+     "per_month": -75,
+     "max_dd": -1244,
+     "pts_t": -0.99,
+     "sessions": 86,
+     "events": 4,
+     "perm_p": 0.426,
+     "boot95_usd_per_trade": [
+      -865,
+      1138
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "corr_lit": -0.11,
+     "on_lit_off_days_per_mo": 524
+    }
+   }
+  },
+  {
+   "name": "qend_last3[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": null,
+   "spans": {
+    "2021-25": {
+     "trades": 51,
+     "per_week": 0.25,
+     "win_pct": 15.7,
+     "pf": 0.45,
+     "net": -15527,
+     "per_month": -316,
+     "max_dd": -17766,
+     "pts_t": -0.23,
+     "sessions": 1031,
+     "events": 51,
+     "perm_p": 0.829,
+     "boot95_usd_per_trade": [
+      -559,
+      28
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 1.0,
+      "fail_pct": 3.9,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 2.0,
+      "fail_pct": 9.2,
+      "median_sessions": 11
+     },
+     "corr_lit": -0.0,
+     "on_lit_off_days_per_mo": -272
+    },
+    "2026H1": {
+     "trades": 5,
+     "per_week": 0.2,
+     "win_pct": 40.0,
+     "pf": 9.56,
+     "net": 14146,
+     "per_month": 2415,
+     "max_dd": -868,
+     "pts_t": 1.32,
+     "sessions": 123,
+     "events": 6,
+     "perm_p": 0.059,
+     "boot95_usd_per_trade": [
+      -587,
+      8051
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 8.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 17.9,
+      "fail_pct": 0.0,
+      "median_sessions": 10
+     },
+     "corr_lit": -0.03,
+     "on_lit_off_days_per_mo": 3903
+    },
+    "2026H2": {
+     "trades": 2,
+     "per_week": 0.12,
+     "win_pct": 0.0,
+     "pf": 0.0,
+     "net": -737,
+     "per_month": -180,
+     "max_dd": -737,
+     "pts_t": 0.0,
+     "sessions": 86,
+     "events": 3,
+     "perm_p": 0.347,
+     "boot95_usd_per_trade": null,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "corr_lit": 0.03,
+     "on_lit_off_days_per_mo": -60
+    }
+   },
+   "all_targets_H1": {
+    "None": 14146,
+    "1.5": -340,
+    "3.0": 1017
+   }
+  },
+  {
+   "name": "qend_last3-short[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": 3.0,
+   "spans": {
+    "2021-25": {
+     "trades": 48,
+     "per_week": 0.23,
+     "win_pct": 29.2,
+     "pf": 0.97,
+     "net": -650,
+     "per_month": -13,
+     "max_dd": -9775,
+     "pts_t": 0.49,
+     "sessions": 1031,
+     "events": 51,
+     "perm_p": 0.283,
+     "boot95_usd_per_trade": [
+      -265,
+      277
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 0.9,
+      "fail_pct": 1.6,
+      "median_sessions": 6
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 1.9,
+      "fail_pct": 3.7,
+      "median_sessions": 11
+     },
+     "corr_lit": -0.01,
+     "on_lit_off_days_per_mo": -36
+    },
+    "2026H1": {
+     "trades": 5,
+     "per_week": 0.2,
+     "win_pct": 20.0,
+     "pf": 0.39,
+     "net": -1667,
+     "per_month": -285,
+     "max_dd": -1840,
+     "pts_t": 0.2,
+     "sessions": 123,
+     "events": 6,
+     "perm_p": 0.609,
+     "boot95_usd_per_trade": [
+      -835,
+      408
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "corr_lit": -0.01,
+     "on_lit_off_days_per_mo": -248
+    },
+    "2026H2": {
+     "trades": 3,
+     "per_week": 0.17,
+     "win_pct": 0.0,
+     "pf": 0.0,
+     "net": -1360,
+     "per_month": -332,
+     "max_dd": -1360,
+     "pts_t": -2.02,
+     "sessions": 86,
+     "events": 3,
+     "perm_p": 0.809,
+     "boot95_usd_per_trade": [
+      -756,
+      -163
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "corr_lit": 0.03,
+     "on_lit_off_days_per_mo": -279
+    }
+   }
+  },
+  {
+   "name": "qstart_first2[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": 3.0,
+   "spans": {
+    "2021-25": {
+     "trades": 29,
+     "per_week": 0.14,
+     "win_pct": 27.6,
+     "pf": 0.71,
+     "net": -4127,
+     "per_month": -84,
+     "max_dd": -7164,
+     "pts_t": 1.15,
+     "sessions": 1031,
+     "events": 32,
+     "perm_p": 0.688,
+     "boot95_usd_per_trade": [
+      -472,
+      226
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "corr_lit": 0.06,
+     "on_lit_off_days_per_mo": -157
+    },
+    "2026H1": {
+     "trades": 3,
+     "per_week": 0.12,
+     "win_pct": 33.3,
+     "pf": 0.71,
+     "net": -248,
+     "per_month": -42,
+     "max_dd": -635,
+     "pts_t": 0.35,
+     "sessions": 123,
+     "events": 4,
+     "perm_p": 0.433,
+     "boot95_usd_per_trade": [
+      -635,
+      618
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "corr_lit": 0.06,
+     "on_lit_off_days_per_mo": -63
+    },
+    "2026H2": {
+     "trades": 3,
+     "per_week": 0.17,
+     "win_pct": 0.0,
+     "pf": 0.0,
+     "net": -2246,
+     "per_month": -548,
+     "max_dd": -2246,
+     "pts_t": -2.89,
+     "sessions": 86,
+     "events": 4,
+     "perm_p": 0.904,
+     "boot95_usd_per_trade": [
+      -756,
+      -734
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "corr_lit": -0.23,
+     "on_lit_off_days_per_mo": -549
+    }
+   },
+   "all_targets_H1": {
+    "None": -402,
+    "1.5": -560,
+    "3.0": -248
+   }
+  },
+  {
+   "name": "qstart_first2-short[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": null,
+   "spans": {
+    "2021-25": {
+     "trades": 27,
+     "per_week": 0.13,
+     "win_pct": 18.5,
+     "pf": 1.9,
+     "net": 12581,
+     "per_month": 256,
+     "max_dd": -7051,
+     "pts_t": 0.41,
+     "sessions": 1031,
+     "events": 32,
+     "perm_p": 0.164,
+     "boot95_usd_per_trade": [
+      -483,
+      1581
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 3.0,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 6.2,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "corr_lit": 0.02,
+     "on_lit_off_days_per_mo": 323
+    },
+    "2026H1": {
+     "trades": 3,
+     "per_week": 0.12,
+     "win_pct": 0.0,
+     "pf": 0.0,
+     "net": -2337,
+     "per_month": -399,
+     "max_dd": -2337,
+     "pts_t": -3.31,
+     "sessions": 123,
+     "events": 4,
+     "perm_p": 0.884,
+     "boot95_usd_per_trade": [
+      -825,
+      -756
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "corr_lit": 0.01,
+     "on_lit_off_days_per_mo": -206
+    },
+    "2026H2": {
+     "trades": 2,
+     "per_week": 0.12,
+     "win_pct": 0.0,
+     "pf": 0.0,
+     "net": -320,
+     "per_month": -78,
+     "max_dd": -320,
+     "pts_t": 0.0,
+     "sessions": 86,
+     "events": 4,
+     "perm_p": 0.264,
+     "boot95_usd_per_trade": null,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "corr_lit": -0.43,
+     "on_lit_off_days_per_mo": 0
+    }
+   }
+  },
+  {
+   "name": "dow_mon[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": null,
+   "spans": {
+    "2021-25": {
+     "trades": 187,
+     "per_week": 0.91,
+     "win_pct": 16.6,
+     "pf": 1.27,
+     "net": 28034,
+     "per_month": 571,
+     "max_dd": -24763,
+     "pts_t": 0.73,
+     "sessions": 1031,
+     "events": 213,
+     "perm_p": 0.075,
+     "boot95_usd_per_trade": [
+      -214,
+      560
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 10.0,
+      "fail_pct": 1.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 18.0,
+      "fail_pct": 41.9,
+      "median_sessions": 9
+     },
+     "corr_lit": 0.0,
+     "on_lit_off_days_per_mo": 150
+    },
+    "2026H1": {
+     "trades": 18,
+     "per_week": 0.73,
+     "win_pct": 22.2,
+     "pf": 1.23,
+     "net": 1514,
+     "per_month": 258,
+     "max_dd": -4681,
+     "pts_t": 0.85,
+     "sessions": 123,
+     "events": 26,
+     "perm_p": 0.437,
+     "boot95_usd_per_trade": [
+      -423,
+      798
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 5.7,
+      "fail_pct": 0.8,
+      "median_sessions": 4
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 5.7,
+      "fail_pct": 22.0,
+      "median_sessions": 4
+     },
+     "corr_lit": -0.03,
+     "on_lit_off_days_per_mo": 690
+    },
+    "2026H2": {
+     "trades": 15,
+     "per_week": 0.87,
+     "win_pct": 13.3,
+     "pf": 3.63,
+     "net": 16952,
+     "per_month": 4139,
+     "max_dd": -4146,
+     "pts_t": 0.59,
+     "sessions": 86,
+     "events": 17,
+     "perm_p": 0.136,
+     "boot95_usd_per_trade": [
+      -541,
+      4301
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 11.6,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 24.4,
+      "fail_pct": 29.1,
+      "median_sessions": 11
+     },
+     "corr_lit": -0.09,
+     "on_lit_off_days_per_mo": 7031
+    }
+   },
+   "all_targets_H1": {
+    "None": 1514,
+    "1.5": -2497,
+    "3.0": -441
+   }
+  },
+  {
+   "name": "dow_mon-short[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": 1.5,
+   "spans": {
+    "2021-25": {
+     "trades": 188,
+     "per_week": 0.91,
+     "win_pct": 27.7,
+     "pf": 0.45,
+     "net": -48673,
+     "per_month": -991,
+     "max_dd": -48673,
+     "pts_t": -2.3,
+     "sessions": 1031,
+     "events": 213,
+     "perm_p": 0.993,
+     "boot95_usd_per_trade": [
+      -351,
+      -165
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 0.0,
+      "fail_pct": 0.4,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 0.6,
+      "fail_pct": 32.8,
+      "median_sessions": 17
+     },
+     "corr_lit": -0.02,
+     "on_lit_off_days_per_mo": -1060
+    },
+    "2026H1": {
+     "trades": 20,
+     "per_week": 0.81,
+     "win_pct": 25.0,
+     "pf": 0.24,
+     "net": -7363,
+     "per_month": -1257,
+     "max_dd": -7464,
+     "pts_t": 0.18,
+     "sessions": 123,
+     "events": 26,
+     "perm_p": 0.869,
+     "boot95_usd_per_trade": [
+      -590,
+      -112
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 0.0,
+      "fail_pct": 22.0,
+      "median_sessions": null
+     },
+     "corr_lit": 0.0,
+     "on_lit_off_days_per_mo": -1344
+    },
+    "2026H2": {
+     "trades": 13,
+     "per_week": 0.76,
+     "win_pct": 23.1,
+     "pf": 0.31,
+     "net": -4286,
+     "per_month": -1047,
+     "max_dd": -4846,
+     "pts_t": -1.18,
+     "sessions": 86,
+     "events": 17,
+     "perm_p": 0.733,
+     "boot95_usd_per_trade": [
+      -608,
+      -9
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 10.5,
+      "median_sessions": null
+     },
+     "corr_lit": -0.02,
+     "on_lit_off_days_per_mo": -780
+    }
+   }
+  },
+  {
+   "name": "dow_tue[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": null,
+   "spans": {
+    "2021-25": {
+     "trades": 202,
+     "per_week": 0.98,
+     "win_pct": 16.3,
+     "pf": 0.77,
+     "net": -25315,
+     "per_month": -516,
+     "max_dd": -37221,
+     "pts_t": 0.86,
+     "sessions": 1031,
+     "events": 217,
+     "perm_p": 0.699,
+     "boot95_usd_per_trade": [
+      -333,
+      106
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 8.2,
+      "fail_pct": 2.5,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 11.8,
+      "fail_pct": 50.8,
+      "median_sessions": 7
+     },
+     "corr_lit": -0.06,
+     "on_lit_off_days_per_mo": 40
+    },
+    "2026H1": {
+     "trades": 22,
+     "per_week": 0.89,
+     "win_pct": 22.7,
+     "pf": 6.66,
+     "net": 39924,
+     "per_month": 6816,
+     "max_dd": -3608,
+     "pts_t": 1.01,
+     "sessions": 123,
+     "events": 26,
+     "perm_p": 0.005,
+     "boot95_usd_per_trade": [
+      -145,
+      4705
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 27.6,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 40.7,
+      "fail_pct": 13.8,
+      "median_sessions": 7
+     },
+     "corr_lit": -0.03,
+     "on_lit_off_days_per_mo": 11133
+    },
+    "2026H2": {
+     "trades": 14,
+     "per_week": 0.81,
+     "win_pct": 14.3,
+     "pf": 2.1,
+     "net": 8050,
+     "per_month": 1966,
+     "max_dd": -3908,
+     "pts_t": 0.79,
+     "sessions": 86,
+     "events": 17,
+     "perm_p": 0.227,
+     "boot95_usd_per_trade": [
+      -668,
+      2547
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 17.4,
+      "fail_pct": 0.0,
+      "median_sessions": 4
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 27.9,
+      "fail_pct": 31.4,
+      "median_sessions": 7
+     },
+     "corr_lit": -0.07,
+     "on_lit_off_days_per_mo": 4261
+    }
+   },
+   "all_targets_H1": {
+    "None": 39924,
+    "1.5": -948,
+    "3.0": 1657
+   }
+  },
+  {
+   "name": "dow_tue-short[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": 1.5,
+   "spans": {
+    "2021-25": {
+     "trades": 202,
+     "per_week": 0.98,
+     "win_pct": 35.6,
+     "pf": 0.66,
+     "net": -26440,
+     "per_month": -539,
+     "max_dd": -30770,
+     "pts_t": -0.28,
+     "sessions": 1031,
+     "events": 217,
+     "perm_p": 0.35,
+     "boot95_usd_per_trade": [
+      -226,
+      -35
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 0.0,
+      "fail_pct": 0.2,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 2.7,
+      "fail_pct": 26.6,
+      "median_sessions": 18
+     },
+     "corr_lit": 0.0,
+     "on_lit_off_days_per_mo": -607
+    },
+    "2026H1": {
+     "trades": 24,
+     "per_week": 0.98,
+     "win_pct": 12.5,
+     "pf": 0.2,
+     "net": -8893,
+     "per_month": -1518,
+     "max_dd": -8893,
+     "pts_t": -3.21,
+     "sessions": 123,
+     "events": 26,
+     "perm_p": 0.937,
+     "boot95_usd_per_trade": [
+      -565,
+      -147
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 0.0,
+      "fail_pct": 43.1,
+      "median_sessions": null
+     },
+     "corr_lit": -0.07,
+     "on_lit_off_days_per_mo": -1793
+    },
+    "2026H2": {
+     "trades": 15,
+     "per_week": 0.87,
+     "win_pct": 26.7,
+     "pf": 0.38,
+     "net": -3265,
+     "per_month": -797,
+     "max_dd": -3790,
+     "pts_t": -0.61,
+     "sessions": 86,
+     "events": 17,
+     "perm_p": 0.489,
+     "boot95_usd_per_trade": [
+      -465,
+      62
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 15.1,
+      "median_sessions": null
+     },
+     "corr_lit": -0.07,
+     "on_lit_off_days_per_mo": -1185
+    }
+   }
+  },
+  {
+   "name": "dow_wed[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": 3.0,
+   "spans": {
+    "2021-25": {
+     "trades": 195,
+     "per_week": 0.95,
+     "win_pct": 26.7,
+     "pf": 0.87,
+     "net": -11871,
+     "per_month": -242,
+     "max_dd": -13366,
+     "pts_t": 0.25,
+     "sessions": 1031,
+     "events": 215,
+     "perm_p": 0.527,
+     "boot95_usd_per_trade": [
+      -197,
+      87
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 3.2,
+      "fail_pct": 1.2,
+      "median_sessions": 7
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 11.6,
+      "fail_pct": 32.2,
+      "median_sessions": 13
+     },
+     "corr_lit": 0.0,
+     "on_lit_off_days_per_mo": -114
+    },
+    "2026H1": {
+     "trades": 21,
+     "per_week": 0.85,
+     "win_pct": 23.8,
+     "pf": 0.74,
+     "net": -2173,
+     "per_month": -371,
+     "max_dd": -4081,
+     "pts_t": -0.13,
+     "sessions": 123,
+     "events": 25,
+     "perm_p": 0.555,
+     "boot95_usd_per_trade": [
+      -443,
+      288
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 0.0,
+      "fail_pct": 4.9,
+      "median_sessions": null
+     },
+     "corr_lit": 0.13,
+     "on_lit_off_days_per_mo": -918
+    },
+    "2026H2": {
+     "trades": 12,
+     "per_week": 0.7,
+     "win_pct": 25.0,
+     "pf": 0.92,
+     "net": -313,
+     "per_month": -77,
+     "max_dd": -2711,
+     "pts_t": -0.24,
+     "sessions": 86,
+     "events": 18,
+     "perm_p": 0.132,
+     "boot95_usd_per_trade": [
+      -427,
+      460
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 12.8,
+      "median_sessions": null
+     },
+     "corr_lit": -0.08,
+     "on_lit_off_days_per_mo": 521
+    }
+   },
+   "all_targets_H1": {
+    "None": -4338,
+    "1.5": -4766,
+    "3.0": -2173
+   }
+  },
+  {
+   "name": "dow_wed-short[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": null,
+   "spans": {
+    "2021-25": {
+     "trades": 199,
+     "per_week": 0.97,
+     "win_pct": 15.1,
+     "pf": 0.85,
+     "net": -16044,
+     "per_month": -327,
+     "max_dd": -44105,
+     "pts_t": 0.8,
+     "sessions": 1031,
+     "events": 215,
+     "perm_p": 0.732,
+     "boot95_usd_per_trade": [
+      -344,
+      243
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 6.3,
+      "fail_pct": 2.4,
+      "median_sessions": 6
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 10.2,
+      "fail_pct": 52.6,
+      "median_sessions": 9
+     },
+     "corr_lit": 0.0,
+     "on_lit_off_days_per_mo": -234
+    },
+    "2026H1": {
+     "trades": 17,
+     "per_week": 0.69,
+     "win_pct": 11.8,
+     "pf": 0.71,
+     "net": -2271,
+     "per_month": -388,
+     "max_dd": -6384,
+     "pts_t": 0.0,
+     "sessions": 123,
+     "events": 25,
+     "perm_p": 0.2,
+     "boot95_usd_per_trade": [
+      -593,
+      648
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 8.1,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 17.1,
+      "fail_pct": 8.1,
+      "median_sessions": 11
+     },
+     "corr_lit": -0.03,
+     "on_lit_off_days_per_mo": -800
+    },
+    "2026H2": {
+     "trades": 16,
+     "per_week": 0.93,
+     "win_pct": 18.8,
+     "pf": 3.54,
+     "net": 18444,
+     "per_month": 4504,
+     "max_dd": -4249,
+     "pts_t": 0.66,
+     "sessions": 86,
+     "events": 18,
+     "perm_p": 0.106,
+     "boot95_usd_per_trade": [
+      -559,
+      4193
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 11.6,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 22.1,
+      "fail_pct": 34.9,
+      "median_sessions": 10
+     },
+     "corr_lit": 0.2,
+     "on_lit_off_days_per_mo": 26
+    }
+   }
+  },
+  {
+   "name": "dow_thu[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": null,
+   "spans": {
+    "2021-25": {
+     "trades": 183,
+     "per_week": 0.89,
+     "win_pct": 12.6,
+     "pf": 0.79,
+     "net": -19887,
+     "per_month": -405,
+     "max_dd": -45939,
+     "pts_t": -0.33,
+     "sessions": 1031,
+     "events": 214,
+     "perm_p": 0.629,
+     "boot95_usd_per_trade": [
+      -375,
+      205
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 7.8,
+      "fail_pct": 1.1,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 13.7,
+      "fail_pct": 36.7,
+      "median_sessions": 9
+     },
+     "corr_lit": 0.01,
+     "on_lit_off_days_per_mo": -33
+    },
+    "2026H1": {
+     "trades": 22,
+     "per_week": 0.89,
+     "win_pct": 4.5,
+     "pf": 0.44,
+     "net": -5787,
+     "per_month": -988,
+     "max_dd": -8736,
+     "pts_t": -1.99,
+     "sessions": 123,
+     "events": 25,
+     "perm_p": 0.815,
+     "boot95_usd_per_trade": [
+      -569,
+      237
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 8.1,
+      "fail_pct": 0.8,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 16.3,
+      "fail_pct": 39.0,
+      "median_sessions": 10
+     },
+     "corr_lit": 0.01,
+     "on_lit_off_days_per_mo": -2302
+    },
+    "2026H2": {
+     "trades": 12,
+     "per_week": 0.7,
+     "win_pct": 8.3,
+     "pf": 0.04,
+     "net": -6157,
+     "per_month": -1503,
+     "max_dd": -6157,
+     "pts_t": -2.66,
+     "sessions": 86,
+     "events": 18,
+     "perm_p": 0.69,
+     "boot95_usd_per_trade": [
+      -700,
+      -311
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 18.6,
+      "median_sessions": null
+     },
+     "corr_lit": -0.1,
+     "on_lit_off_days_per_mo": -1795
+    }
+   },
+   "all_targets_H1": {
+    "None": -5787,
+    "1.5": -7512,
+    "3.0": -6333
+   }
+  },
+  {
+   "name": "dow_thu-short[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": 3.0,
+   "spans": {
+    "2021-25": {
+     "trades": 186,
+     "per_week": 0.9,
+     "win_pct": 29.0,
+     "pf": 1.15,
+     "net": 10210,
+     "per_month": 208,
+     "max_dd": -17610,
+     "pts_t": -0.11,
+     "sessions": 1031,
+     "events": 214,
+     "perm_p": 0.009,
+     "boot95_usd_per_trade": [
+      -76,
+      208
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 5.4,
+      "fail_pct": 0.5,
+      "median_sessions": 8
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 15.9,
+      "fail_pct": 23.2,
+      "median_sessions": 13
+     },
+     "corr_lit": -0.01,
+     "on_lit_off_days_per_mo": 62
+    },
+    "2026H1": {
+     "trades": 23,
+     "per_week": 0.93,
+     "win_pct": 39.1,
+     "pf": 1.6,
+     "net": 3598,
+     "per_month": 614,
+     "max_dd": -4039,
+     "pts_t": 1.07,
+     "sessions": 123,
+     "events": 25,
+     "perm_p": 0.006,
+     "boot95_usd_per_trade": [
+      -183,
+      541
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 0.0,
+      "fail_pct": 0.8,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 7.3,
+      "fail_pct": 13.0,
+      "median_sessions": 17
+     },
+     "corr_lit": 0.06,
+     "on_lit_off_days_per_mo": 886
+    },
+    "2026H2": {
+     "trades": 12,
+     "per_week": 0.7,
+     "win_pct": 16.7,
+     "pf": 0.26,
+     "net": -4840,
+     "per_month": -1182,
+     "max_dd": -4840,
+     "pts_t": 0.33,
+     "sessions": 86,
+     "events": 18,
+     "perm_p": 0.878,
+     "boot95_usd_per_trade": [
+      -709,
+      -8
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 15.1,
+      "median_sessions": null
+     },
+     "corr_lit": 0.21,
+     "on_lit_off_days_per_mo": -1815
+    }
+   }
+  },
+  {
+   "name": "dow_fri[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": 3.0,
+   "spans": {
+    "2021-25": {
+     "trades": 169,
+     "per_week": 0.82,
+     "win_pct": 30.2,
+     "pf": 0.88,
+     "net": -8047,
+     "per_month": -164,
+     "max_dd": -14206,
+     "pts_t": 2.14,
+     "sessions": 1031,
+     "events": 211,
+     "perm_p": 0.399,
+     "boot95_usd_per_trade": [
+      -181,
+      102
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 2.8,
+      "fail_pct": 0.2,
+      "median_sessions": 8
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 8.1,
+      "fail_pct": 16.8,
+      "median_sessions": 12
+     },
+     "corr_lit": -0.0,
+     "on_lit_off_days_per_mo": -30
+    },
+    "2026H1": {
+     "trades": 20,
+     "per_week": 0.81,
+     "win_pct": 25.0,
+     "pf": 0.89,
+     "net": -887,
+     "per_month": -151,
+     "max_dd": -3030,
+     "pts_t": -0.24,
+     "sessions": 123,
+     "events": 25,
+     "perm_p": 0.43,
+     "boot95_usd_per_trade": [
+      -434,
+      419
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 0.0,
+      "fail_pct": 0.8,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 8.9,
+      "fail_pct": 9.8,
+      "median_sessions": 16
+     },
+     "corr_lit": -0.0,
+     "on_lit_off_days_per_mo": 411
+    },
+    "2026H2": {
+     "trades": 14,
+     "per_week": 0.81,
+     "win_pct": 7.1,
+     "pf": 0.16,
+     "net": -5680,
+     "per_month": -1387,
+     "max_dd": -6736,
+     "pts_t": -1.73,
+     "sessions": 86,
+     "events": 18,
+     "perm_p": 0.833,
+     "boot95_usd_per_trade": [
+      -622,
+      -114
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 24.4,
+      "median_sessions": null
+     },
+     "corr_lit": 0.07,
+     "on_lit_off_days_per_mo": -1343
+    }
+   },
+   "all_targets_H1": {
+    "None": -8702,
+    "1.5": -2335,
+    "3.0": -887
+   }
+  },
+  {
+   "name": "dow_fri-short[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": null,
+   "spans": {
+    "2021-25": {
+     "trades": 172,
+     "per_week": 0.83,
+     "win_pct": 18.6,
+     "pf": 0.84,
+     "net": -13469,
+     "per_month": -274,
+     "max_dd": -23425,
+     "pts_t": 1.64,
+     "sessions": 1031,
+     "events": 211,
+     "perm_p": 0.706,
+     "boot95_usd_per_trade": [
+      -322,
+      210
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 6.2,
+      "fail_pct": 1.4,
+      "median_sessions": 4
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 9.4,
+      "fail_pct": 34.8,
+      "median_sessions": 7
+     },
+     "corr_lit": -0.01,
+     "on_lit_off_days_per_mo": -183
+    },
+    "2026H1": {
+     "trades": 16,
+     "per_week": 0.65,
+     "win_pct": 6.2,
+     "pf": 0.42,
+     "net": -4598,
+     "per_month": -785,
+     "max_dd": -4826,
+     "pts_t": -0.27,
+     "sessions": 123,
+     "events": 25,
+     "perm_p": 0.379,
+     "boot95_usd_per_trade": [
+      -633,
+      275
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 8.1,
+      "fail_pct": 1.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 17.1,
+      "fail_pct": 22.0,
+      "median_sessions": 11
+     },
+     "corr_lit": -0.03,
+     "on_lit_off_days_per_mo": -1057
+    },
+    "2026H2": {
+     "trades": 12,
+     "per_week": 0.7,
+     "win_pct": 33.3,
+     "pf": 0.37,
+     "net": -2212,
+     "per_month": -540,
+     "max_dd": -2212,
+     "pts_t": -0.46,
+     "sessions": 86,
+     "events": 18,
+     "perm_p": 0.529,
+     "boot95_usd_per_trade": [
+      -434,
+      111
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "corr_lit": -0.01,
+     "on_lit_off_days_per_mo": -83
+    }
+   }
+  }
+ ],
+ "tod": [
+  {
+   "name": "globex_long_18:00-09:25[pick]",
+   "e_hm": 1080,
+   "x_hm": 565,
+   "tgt": null,
+   "spans": {
+    "2021-25": {
+     "trades": 962,
+     "per_week": 4.67,
+     "win_pct": 17.9,
+     "pf": 0.96,
+     "net": -20002,
+     "per_month": -407,
+     "max_dd": -92720,
+     "pts_t": 1.1,
+     "sessions": 1031,
+     "events": 1031,
+     "perm_p": 1.0,
+     "boot95_usd_per_trade": [
+      -172,
+      150
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 18.4,
+      "fail_pct": 79.1,
+      "median_sessions": 3
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 18.5,
+      "fail_pct": 81.5,
+      "median_sessions": 3
+     },
+     "corr_lit": 0.01,
+     "on_lit_off_days_per_mo": 447
+    },
+    "2026H1": {
+     "trades": 110,
+     "per_week": 4.47,
+     "win_pct": 18.2,
+     "pf": 1.3,
+     "net": 17033,
+     "per_month": 2908,
+     "max_dd": -15330,
+     "pts_t": 1.11,
+     "sessions": 123,
+     "events": 123,
+     "perm_p": 1.0,
+     "boot95_usd_per_trade": [
+      -318,
+      871
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 19.5,
+      "fail_pct": 75.6,
+      "median_sessions": 3
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 19.5,
+      "fail_pct": 80.5,
+      "median_sessions": 3
+     },
+     "corr_lit": 0.04,
+     "on_lit_off_days_per_mo": -4778
+    },
+    "2026H2": {
+     "trades": 78,
+     "per_week": 4.53,
+     "win_pct": 12.8,
+     "pf": 1.8,
+     "net": 29664,
+     "per_month": 7244,
+     "max_dd": -22092,
+     "pts_t": 0.09,
+     "sessions": 86,
+     "events": 86,
+     "perm_p": 1.0,
+     "boot95_usd_per_trade": [
+      -444,
+      1809
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 14.0,
+      "fail_pct": 75.6,
+      "median_sessions": 3
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 18.6,
+      "fail_pct": 75.6,
+      "median_sessions": 4
+     },
+     "corr_lit": -0.03,
+     "on_lit_off_days_per_mo": 14210
+    }
+   }
+  },
+  {
+   "name": "globex_short_18:00-09:25[pick]",
+   "e_hm": 1080,
+   "x_hm": 565,
+   "tgt": 3.0,
+   "spans": {
+    "2021-25": {
+     "trades": 969,
+     "per_week": 4.7,
+     "win_pct": 23.4,
+     "pf": 0.71,
+     "net": -154184,
+     "per_month": -3141,
+     "max_dd": -159051,
+     "pts_t": -1.47,
+     "sessions": 1031,
+     "events": 1031,
+     "perm_p": 1.0,
+     "boot95_usd_per_trade": [
+      -225,
+      -93
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 17.3,
+      "fail_pct": 77.7,
+      "median_sessions": 3
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 18.7,
+      "fail_pct": 80.8,
+      "median_sessions": 4
+     },
+     "corr_lit": -0.05,
+     "on_lit_off_days_per_mo": -2431
+    },
+    "2026H1": {
+     "trades": 95,
+     "per_week": 3.86,
+     "win_pct": 21.1,
+     "pf": 0.62,
+     "net": -18165,
+     "per_month": -3101,
+     "max_dd": -23816,
+     "pts_t": 0.15,
+     "sessions": 123,
+     "events": 123,
+     "perm_p": 1.0,
+     "boot95_usd_per_trade": [
+      -374,
+      8
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 8.9,
+      "fail_pct": 76.4,
+      "median_sessions": 3
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 8.9,
+      "fail_pct": 89.4,
+      "median_sessions": 3
+     },
+     "corr_lit": -0.11,
+     "on_lit_off_days_per_mo": -1923
+    },
+    "2026H2": {
+     "trades": 76,
+     "per_week": 4.42,
+     "win_pct": 19.7,
+     "pf": 0.55,
+     "net": -17558,
+     "per_month": -4288,
+     "max_dd": -20155,
+     "pts_t": -0.38,
+     "sessions": 86,
+     "events": 86,
+     "perm_p": 1.0,
+     "boot95_usd_per_trade": [
+      -418,
+      -24
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 15.1,
+      "fail_pct": 73.3,
+      "median_sessions": 6
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 79.1,
+      "median_sessions": 7
+     },
+     "corr_lit": -0.01,
+     "on_lit_off_days_per_mo": -6304
+    }
+   }
+  },
+  {
+   "name": "intraday_long_09:30-15:55[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": null,
+   "spans": {
+    "2021-25": {
+     "trades": 936,
+     "per_week": 4.54,
+     "win_pct": 16.1,
+     "pf": 0.9,
+     "net": -50654,
+     "per_month": -1032,
+     "max_dd": -95955,
+     "pts_t": 1.45,
+     "sessions": 1031,
+     "events": 1031,
+     "perm_p": 1.0,
+     "boot95_usd_per_trade": [
+      -180,
+      85
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 17.6,
+      "fail_pct": 78.7,
+      "median_sessions": 3
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 17.6,
+      "fail_pct": 82.4,
+      "median_sessions": 3
+     },
+     "corr_lit": -0.01,
+     "on_lit_off_days_per_mo": 69
+    },
+    "2026H1": {
+     "trades": 103,
+     "per_week": 4.19,
+     "win_pct": 15.5,
+     "pf": 1.52,
+     "net": 22610,
+     "per_month": 3860,
+     "max_dd": -15335,
+     "pts_t": 0.45,
+     "sessions": 123,
+     "events": 123,
+     "perm_p": 1.0,
+     "boot95_usd_per_trade": [
+      -244,
+      838
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 26.0,
+      "fail_pct": 66.7,
+      "median_sessions": 3
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 26.0,
+      "fail_pct": 74.0,
+      "median_sessions": 3
+     },
+     "corr_lit": -0.02,
+     "on_lit_off_days_per_mo": 7657
+    },
+    "2026H2": {
+     "trades": 67,
+     "per_week": 3.9,
+     "win_pct": 9.0,
+     "pf": 1.24,
+     "net": 7842,
+     "per_month": 1915,
+     "max_dd": -15024,
+     "pts_t": -0.23,
+     "sessions": 86,
+     "events": 86,
+     "perm_p": 1.0,
+     "boot95_usd_per_trade": [
+      -476,
+      1079
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 10.5,
+      "fail_pct": 82.6,
+      "median_sessions": 2
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 10.5,
+      "fail_pct": 89.5,
+      "median_sessions": 2
+     },
+     "corr_lit": -0.11,
+     "on_lit_off_days_per_mo": 6853
+    }
+   }
+  },
+  {
+   "name": "intraday_short_09:30-15:55[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": 3.0,
+   "spans": {
+    "2021-25": {
+     "trades": 947,
+     "per_week": 4.59,
+     "win_pct": 24.5,
+     "pf": 0.8,
+     "net": -85791,
+     "per_month": -1747,
+     "max_dd": -105544,
+     "pts_t": -0.43,
+     "sessions": 1031,
+     "events": 1031,
+     "perm_p": 1.0,
+     "boot95_usd_per_trade": [
+      -150,
+      -30
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 16.4,
+      "fail_pct": 66.7,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 19.0,
+      "fail_pct": 78.2,
+      "median_sessions": 5
+     },
+     "corr_lit": 0.03,
+     "on_lit_off_days_per_mo": -2417
+    },
+    "2026H1": {
+     "trades": 100,
+     "per_week": 4.07,
+     "win_pct": 19.0,
+     "pf": 0.49,
+     "net": -21884,
+     "per_month": -3736,
+     "max_dd": -25438,
+     "pts_t": -0.61,
+     "sessions": 123,
+     "events": 123,
+     "perm_p": 1.0,
+     "boot95_usd_per_trade": [
+      -359,
+      -63
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 8.1,
+      "fail_pct": 70.7,
+      "median_sessions": 4
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 8.1,
+      "fail_pct": 87.8,
+      "median_sessions": 4
+     },
+     "corr_lit": -0.02,
+     "on_lit_off_days_per_mo": -3344
+    },
+    "2026H2": {
+     "trades": 68,
+     "per_week": 3.95,
+     "win_pct": 26.5,
+     "pf": 0.72,
+     "net": -7528,
+     "per_month": -1838,
+     "max_dd": -10313,
+     "pts_t": 0.68,
+     "sessions": 86,
+     "events": 86,
+     "perm_p": 1.0,
+     "boot95_usd_per_trade": [
+      -307,
+      87
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 52.3,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 1.2,
+      "fail_pct": 83.7,
+      "median_sessions": 17
+     },
+     "corr_lit": 0.03,
+     "on_lit_off_days_per_mo": -1586
+    }
+   }
+  },
+  {
+   "name": "lasthour_long_15:00-15:55[pick]",
+   "e_hm": 900,
+   "x_hm": 955,
+   "tgt": 3.0,
+   "spans": {
+    "2021-25": {
+     "trades": 924,
+     "per_week": 4.48,
+     "win_pct": 36.8,
+     "pf": 0.7,
+     "net": -89150,
+     "per_month": -1816,
+     "max_dd": -89737,
+     "pts_t": -2.33,
+     "sessions": 1031,
+     "events": 1031,
+     "perm_p": 1.0,
+     "boot95_usd_per_trade": [
+      -144,
+      -50
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 9.6,
+      "fail_pct": 52.2,
+      "median_sessions": 6
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 14.3,
+      "fail_pct": 80.9,
+      "median_sessions": 8
+     },
+     "corr_lit": 0.02,
+     "on_lit_off_days_per_mo": -1854
+    },
+    "2026H1": {
+     "trades": 107,
+     "per_week": 4.35,
+     "win_pct": 44.9,
+     "pf": 1.58,
+     "net": 17783,
+     "per_month": 3036,
+     "max_dd": -5364,
+     "pts_t": 1.98,
+     "sessions": 123,
+     "events": 123,
+     "perm_p": 1.0,
+     "boot95_usd_per_trade": [
+      -2,
+      342
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 28.5,
+      "fail_pct": 31.7,
+      "median_sessions": 7
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 43.1,
+      "fail_pct": 53.7,
+      "median_sessions": 8
+     },
+     "corr_lit": 0.21,
+     "on_lit_off_days_per_mo": 789
+    },
+    "2026H2": {
+     "trades": 76,
+     "per_week": 4.42,
+     "win_pct": 38.2,
+     "pf": 1.08,
+     "net": 1918,
+     "per_month": 468,
+     "max_dd": -5506,
+     "pts_t": 0.18,
+     "sessions": 86,
+     "events": 86,
+     "perm_p": 1.0,
+     "boot95_usd_per_trade": [
+      -170,
+      231
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 29.1,
+      "fail_pct": 39.5,
+      "median_sessions": 6
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 44.2,
+      "fail_pct": 53.5,
+      "median_sessions": 8
+     },
+     "corr_lit": -0.03,
+     "on_lit_off_days_per_mo": 2906
+    }
+   }
+  },
+  {
+   "name": "lasthour_momentum_15:00-15:55[pick]",
+   "e_hm": 900,
+   "x_hm": 955,
+   "tgt": 3.0,
+   "spans": {
+    "2021-25": {
+     "trades": 881,
+     "per_week": 4.27,
+     "win_pct": 39.7,
+     "pf": 0.81,
+     "net": -48705,
+     "per_month": -992,
+     "max_dd": -56944,
+     "pts_t": -0.88,
+     "sessions": 1031,
+     "events": 1031,
+     "perm_p": 0.043,
+     "boot95_usd_per_trade": [
+      -102,
+      -6
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 9.8,
+      "fail_pct": 38.6,
+      "median_sessions": 7
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 16.3,
+      "fail_pct": 70.1,
+      "median_sessions": 9
+     },
+     "corr_lit": 0.01,
+     "on_lit_off_days_per_mo": -941
+    },
+    "2026H1": {
+     "trades": 96,
+     "per_week": 3.9,
+     "win_pct": 43.8,
+     "pf": 1.64,
+     "net": 16494,
+     "per_month": 2816,
+     "max_dd": -5954,
+     "pts_t": 0.95,
+     "sessions": 123,
+     "events": 123,
+     "perm_p": 0.049,
+     "boot95_usd_per_trade": [
+      -4,
+      365
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 30.9,
+      "fail_pct": 23.6,
+      "median_sessions": 6
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 55.3,
+      "fail_pct": 35.0,
+      "median_sessions": 9
+     },
+     "corr_lit": 0.15,
+     "on_lit_off_days_per_mo": 1545
+    },
+    "2026H2": {
+     "trades": 72,
+     "per_week": 4.19,
+     "win_pct": 43.1,
+     "pf": 1.2,
+     "net": 4081,
+     "per_month": 996,
+     "max_dd": -6786,
+     "pts_t": -0.12,
+     "sessions": 86,
+     "events": 86,
+     "perm_p": 0.181,
+     "boot95_usd_per_trade": [
+      -150,
+      261
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 24.4,
+      "fail_pct": 32.6,
+      "median_sessions": 6
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 37.2,
+      "fail_pct": 50.0,
+      "median_sessions": 7
+     },
+     "corr_lit": -0.09,
+     "on_lit_off_days_per_mo": 3852
+    }
+   }
+  },
+  {
+   "name": "lasthour_fade_15:00-15:55[pick]",
+   "e_hm": 900,
+   "x_hm": 955,
+   "tgt": 1.5,
+   "spans": {
+    "2021-25": {
+     "trades": 972,
+     "per_week": 4.71,
+     "win_pct": 39.5,
+     "pf": 0.72,
+     "net": -95721,
+     "per_month": -1950,
+     "max_dd": -98552,
+     "pts_t": -3.56,
+     "sessions": 1031,
+     "events": 1031,
+     "perm_p": 0.985,
+     "boot95_usd_per_trade": [
+      -143,
+      -57
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 6.0,
+      "fail_pct": 56.7,
+      "median_sessions": 7
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 13.2,
+      "fail_pct": 81.4,
+      "median_sessions": 11
+     },
+     "corr_lit": -0.03,
+     "on_lit_off_days_per_mo": -1769
+    },
+    "2026H1": {
+     "trades": 105,
+     "per_week": 4.27,
+     "win_pct": 41.9,
+     "pf": 0.84,
+     "net": -4880,
+     "per_month": -833,
+     "max_dd": -10838,
+     "pts_t": -0.02,
+     "sessions": 123,
+     "events": 123,
+     "perm_p": 0.818,
+     "boot95_usd_per_trade": [
+      -157,
+      79
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 11.4,
+      "fail_pct": 39.8,
+      "median_sessions": 8
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 31.7,
+      "fail_pct": 52.8,
+      "median_sessions": 13
+     },
+     "corr_lit": -0.05,
+     "on_lit_off_days_per_mo": 273
+    },
+    "2026H2": {
+     "trades": 80,
+     "per_week": 4.65,
+     "win_pct": 42.5,
+     "pf": 0.76,
+     "net": -5860,
+     "per_month": -1431,
+     "max_dd": -6926,
+     "pts_t": -0.2,
+     "sessions": 86,
+     "events": 86,
+     "perm_p": 0.772,
+     "boot95_usd_per_trade": [
+      -206,
+      64
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 1.2,
+      "fail_pct": 43.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 8.1,
+      "fail_pct": 73.3,
+      "median_sessions": 17
+     },
+     "corr_lit": -0.15,
+     "on_lit_off_days_per_mo": -1222
+    }
+   }
+  },
+  {
+   "name": "last30_momentum_15:25-15:55[pick]",
+   "e_hm": 925,
+   "x_hm": 955,
+   "tgt": 1.5,
+   "spans": {
+    "2021-25": {
+     "trades": 891,
+     "per_week": 4.32,
+     "win_pct": 43.0,
+     "pf": 0.76,
+     "net": -55996,
+     "per_month": -1141,
+     "max_dd": -60105,
+     "pts_t": -1.67,
+     "sessions": 1031,
+     "events": 1031,
+     "perm_p": 0.571,
+     "boot95_usd_per_trade": [
+      -101,
+      -26
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 3.0,
+      "fail_pct": 37.7,
+      "median_sessions": 8
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 9.0,
+      "fail_pct": 68.9,
+      "median_sessions": 12
+     },
+     "corr_lit": -0.04,
+     "on_lit_off_days_per_mo": -1019
+    },
+    "2026H1": {
+     "trades": 97,
+     "per_week": 3.94,
+     "win_pct": 42.3,
+     "pf": 0.72,
+     "net": -7871,
+     "per_month": -1344,
+     "max_dd": -10364,
+     "pts_t": -0.26,
+     "sessions": 123,
+     "events": 123,
+     "perm_p": 0.531,
+     "boot95_usd_per_trade": [
+      -208,
+      40
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 1.6,
+      "fail_pct": 39.8,
+      "median_sessions": 9
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 7.3,
+      "fail_pct": 69.9,
+      "median_sessions": 11
+     },
+     "corr_lit": 0.09,
+     "on_lit_off_days_per_mo": -1717
+    },
+    "2026H2": {
+     "trades": 71,
+     "per_week": 4.13,
+     "win_pct": 39.4,
+     "pf": 0.62,
+     "net": -9349,
+     "per_month": -2283,
+     "max_dd": -11318,
+     "pts_t": -0.58,
+     "sessions": 86,
+     "events": 86,
+     "perm_p": 0.674,
+     "boot95_usd_per_trade": [
+      -278,
+      26
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 54.7,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 94.2,
+      "median_sessions": null
+     },
+     "corr_lit": 0.16,
+     "on_lit_off_days_per_mo": -2807
+    }
+   }
+  }
+ ],
+ "pension": [
+  {
+   "name": "pension_th5.0[pick]",
+   "e_hm": 570,
+   "x_hm": 955,
+   "tgt": null,
+   "spans": {
+    "2021-25": {
+     "trades": 59,
+     "per_week": 0.29,
+     "win_pct": 20.3,
+     "pf": 1.12,
+     "net": 3332,
+     "per_month": 68,
+     "max_dd": -16762,
+     "pts_t": 1.0,
+     "sessions": 1031,
+     "events": 64,
+     "perm_p": 0.366,
+     "boot95_usd_per_trade": [
+      -420,
+      677
+     ],
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 2.9,
+      "fail_pct": 1.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 6.1,
+      "fail_pct": 4.3,
+      "median_sessions": 11
+     },
+     "corr_lit": -0.0,
+     "on_lit_off_days_per_mo": -72
+    },
+    "2026H1": {
+     "trades": 6,
+     "per_week": 0.24,
+     "win_pct": 16.7,
+     "pf": 5.23,
+     "net": 10241,
+     "per_month": 1748,
+     "max_dd": -2420,
+     "pts_t": 0.61,
+     "sessions": 123,
+     "events": 7,
+     "perm_p": 0.016,
+     "boot95_usd_per_trade": [
+      -642,
+      6118
+     ],
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 8.1,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 17.1,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "corr_lit": -0.02,
+     "on_lit_off_days_per_mo": 3153
+    },
+    "2026H2": {
+     "trades": 5,
+     "per_week": 0.29,
+     "win_pct": 0.0,
+     "pf": 0.0,
+     "net": -1782,
+     "per_month": -435,
+     "max_dd": -1782,
+     "pts_t": -3.82,
+     "sessions": 86,
+     "events": 7,
+     "perm_p": 0.446,
+     "boot95_usd_per_trade": [
+      -570,
+      -179
+     ],
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 0.0,
+      "fail_pct": 0.0,
+      "median_sessions": null
+     },
+     "corr_lit": 0.04,
+     "on_lit_off_days_per_mo": -332
+    }
+   }
+  },
+  {
+   "all_theta_H1": {
+    "2.0/None": 7363,
+    "2.0/1.5": 563,
+    "2.0/3.0": 3387,
+    "3.0/None": 9456,
+    "3.0/1.5": 917,
+    "3.0/3.0": 2696,
+    "5.0/None": 10241,
+    "5.0/1.5": 1701,
+    "5.0/3.0": 3481
+   }
+  }
+ ],
+ "dial": [
+  {
+   "name": "tom_last2 x1.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 4247,
+     "delta": 657,
+     "window_days": 95,
+     "perm_p": 0.362,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 8.0,
+      "fail_pct": 6.8,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 19.0,
+      "fail_pct": 26.1,
+      "median_sessions": 12
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 33139,
+     "delta": -392,
+     "window_days": 12,
+     "perm_p": 0.911,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 69.9,
+      "fail_pct": 2.4,
+      "median_sessions": 10
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 10042,
+     "delta": 97,
+     "window_days": 8,
+     "perm_p": 0.606,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "tom_last2 x0.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 2625,
+     "delta": -964,
+     "window_days": 95,
+     "perm_p": 0.662,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 7.1,
+      "fail_pct": 5.5,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 16.4,
+      "fail_pct": 23.2,
+      "median_sessions": 12
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 33920,
+     "delta": 388,
+     "window_days": 12,
+     "perm_p": 0.099,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.0,
+      "median_sessions": 10
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 9848,
+     "delta": -97,
+     "window_days": 8,
+     "perm_p": 0.41,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "tom_first3 x1.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 3679,
+     "delta": 90,
+     "window_days": 138,
+     "perm_p": 0.49,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 8.3,
+      "fail_pct": 7.7,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 19.1,
+      "fail_pct": 26.1,
+      "median_sessions": 12
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 36702,
+     "delta": 3171,
+     "window_days": 18,
+     "perm_p": 0.244,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 43.1,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 69.9,
+      "fail_pct": 2.4,
+      "median_sessions": 9
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 11640,
+     "delta": 1695,
+     "window_days": 11,
+     "perm_p": 0.144,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 26.7,
+      "fail_pct": 0.0,
+      "median_sessions": 6
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 46.5,
+      "fail_pct": 0.0,
+      "median_sessions": 9
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "tom_first3 x0.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 3512,
+     "delta": -77,
+     "window_days": 138,
+     "perm_p": 0.514,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 7.0,
+      "fail_pct": 4.5,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 15.6,
+      "fail_pct": 22.4,
+      "median_sessions": 12
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 29166,
+     "delta": -4366,
+     "window_days": 18,
+     "perm_p": 0.815,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 36.6,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 72.4,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 8250,
+     "delta": -1695,
+     "window_days": 11,
+     "perm_p": 0.874,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 11.6,
+      "fail_pct": 0.0,
+      "median_sessions": 6
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 29.1,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "tom_all5 x1.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 4336,
+     "delta": 747,
+     "window_days": 233,
+     "perm_p": 0.423,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 9.0,
+      "fail_pct": 8.4,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 20.8,
+      "fail_pct": 27.4,
+      "median_sessions": 12
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 36310,
+     "delta": 2779,
+     "window_days": 30,
+     "perm_p": 0.608,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 42.3,
+      "fail_pct": 0.8,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 66.7,
+      "fail_pct": 5.7,
+      "median_sessions": 8
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 11738,
+     "delta": 1792,
+     "window_days": 19,
+     "perm_p": 0.252,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 26.7,
+      "fail_pct": 0.0,
+      "median_sessions": 6
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 46.5,
+      "fail_pct": 0.0,
+      "median_sessions": 9
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "tom_all5 x0.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 2548,
+     "delta": -1042,
+     "window_days": 233,
+     "perm_p": 0.589,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 6.5,
+      "fail_pct": 3.9,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 14.1,
+      "fail_pct": 21.7,
+      "median_sessions": 12
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 29554,
+     "delta": -3978,
+     "window_days": 30,
+     "perm_p": 0.5,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 36.6,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 72.4,
+      "fail_pct": 0.0,
+      "median_sessions": 10
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 8153,
+     "delta": -1792,
+     "window_days": 19,
+     "perm_p": 0.75,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 11.6,
+      "fail_pct": 0.0,
+      "median_sessions": 6
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 29.1,
+      "fail_pct": 0.0,
+      "median_sessions": 12
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "opex_week x1.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 584,
+     "delta": -3005,
+     "window_days": 242,
+     "perm_p": 0.847,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 9.1,
+      "fail_pct": 9.3,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 19.6,
+      "fail_pct": 32.4,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 36862,
+     "delta": 3331,
+     "window_days": 28,
+     "perm_p": 0.444,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 37.4,
+      "fail_pct": 6.5,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 65.9,
+      "fail_pct": 13.8,
+      "median_sessions": 9
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 11151,
+     "delta": 1206,
+     "window_days": 20,
+     "perm_p": 0.431,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 38.4,
+      "fail_pct": 0.0,
+      "median_sessions": 9
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "opex_week x0.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 7863,
+     "delta": 4274,
+     "window_days": 242,
+     "perm_p": 0.086,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 7.9,
+      "fail_pct": 3.9,
+      "median_sessions": 6
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 17.3,
+      "fail_pct": 19.7,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 28731,
+     "delta": -4801,
+     "window_days": 28,
+     "perm_p": 0.654,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 35.8,
+      "fail_pct": 0.0,
+      "median_sessions": 6
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 66.7,
+      "fail_pct": 0.0,
+      "median_sessions": 10
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 8739,
+     "delta": -1206,
+     "window_days": 20,
+     "perm_p": 0.568,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 11.6,
+      "fail_pct": 0.0,
+      "median_sessions": 6
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 36.0,
+      "fail_pct": 0.0,
+      "median_sessions": 13
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "opex_fri x1.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 3357,
+     "delta": -232,
+     "window_days": 48,
+     "perm_p": 0.564,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 7.3,
+      "fail_pct": 6.6,
+      "median_sessions": 6
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 16.8,
+      "fail_pct": 24.9,
+      "median_sessions": 12
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 35096,
+     "delta": 1564,
+     "window_days": 5,
+     "perm_p": 0.18,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 9945,
+     "delta": 0,
+     "window_days": 4,
+     "perm_p": 0.516,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "opex_fri x0.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 4012,
+     "delta": 423,
+     "window_days": 48,
+     "perm_p": 0.432,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.2,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 23.3,
+      "median_sessions": 12
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 30500,
+     "delta": -3031,
+     "window_days": 5,
+     "perm_p": 0.957,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 9945,
+     "delta": 0,
+     "window_days": 4,
+     "perm_p": 0.523,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "opex_next_mon x1.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 2429,
+     "delta": -1160,
+     "window_days": 44,
+     "perm_p": 0.796,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 7.7,
+      "fail_pct": 7.2,
+      "median_sessions": 6
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 17.2,
+      "fail_pct": 25.5,
+      "median_sessions": 12
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 34150,
+     "delta": 619,
+     "window_days": 5,
+     "perm_p": 0.346,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 10499,
+     "delta": 553,
+     "window_days": 4,
+     "perm_p": 0.224,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 44.2,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "opex_next_mon x0.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 4884,
+     "delta": 1295,
+     "window_days": 44,
+     "perm_p": 0.216,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 7.3,
+      "fail_pct": 5.2,
+      "median_sessions": 6
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 16.8,
+      "fail_pct": 24.2,
+      "median_sessions": 12
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 32913,
+     "delta": -619,
+     "window_days": 5,
+     "perm_p": 0.669,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 35.8,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 9392,
+     "delta": -553,
+     "window_days": 4,
+     "perm_p": 0.793,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "qend_last3 x1.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 4608,
+     "delta": 1019,
+     "window_days": 51,
+     "perm_p": 0.259,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 8.3,
+      "fail_pct": 6.7,
+      "median_sessions": 6
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 17.4,
+      "fail_pct": 25.6,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 33998,
+     "delta": 466,
+     "window_days": 6,
+     "perm_p": 0.434,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 10041,
+     "delta": 96,
+     "window_days": 3,
+     "perm_p": 0.343,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "qend_last3 x0.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 1677,
+     "delta": -1913,
+     "window_days": 51,
+     "perm_p": 0.845,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 6.7,
+      "fail_pct": 6.4,
+      "median_sessions": 6
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 15.4,
+      "fail_pct": 24.1,
+      "median_sessions": 12
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 33065,
+     "delta": -466,
+     "window_days": 6,
+     "perm_p": 0.546,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 35.8,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 9849,
+     "delta": -96,
+     "window_days": 3,
+     "perm_p": 0.644,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "qstart_first2 x1.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 4805,
+     "delta": 1216,
+     "window_days": 29,
+     "perm_p": 0.157,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 8.1,
+      "fail_pct": 7.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 17.7,
+      "fail_pct": 24.3,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 34305,
+     "delta": 773,
+     "window_days": 4,
+     "perm_p": 0.268,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 11539,
+     "delta": 1594,
+     "window_days": 4,
+     "perm_p": 0.021,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "qstart_first2 x0.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 1803,
+     "delta": -1786,
+     "window_days": 29,
+     "perm_p": 0.884,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 16.7,
+      "fail_pct": 24.4,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 32751,
+     "delta": -780,
+     "window_days": 4,
+     "perm_p": 0.732,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 35.8,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 8351,
+     "delta": -1594,
+     "window_days": 4,
+     "perm_p": 0.981,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 11.6,
+      "fail_pct": 0.0,
+      "median_sessions": 6
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 36.0,
+      "fail_pct": 0.0,
+      "median_sessions": 13
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "dow_mon x1.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 2482,
+     "delta": -1108,
+     "window_days": 193,
+     "perm_p": 0.676,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 9.2,
+      "fail_pct": 8.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 18.6,
+      "fail_pct": 27.0,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 35609,
+     "delta": 2078,
+     "window_days": 23,
+     "perm_p": 0.573,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 40.7,
+      "fail_pct": 0.0,
+      "median_sessions": 6
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 9
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 9757,
+     "delta": -188,
+     "window_days": 16,
+     "perm_p": 0.85,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 44.2,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "dow_mon x0.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 3727,
+     "delta": 138,
+     "window_days": 193,
+     "perm_p": 0.458,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 6.4,
+      "fail_pct": 4.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 16.0,
+      "fail_pct": 22.1,
+      "median_sessions": 12
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 31454,
+     "delta": -2078,
+     "window_days": 23,
+     "perm_p": 0.346,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 35.8,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 10134,
+     "delta": 188,
+     "window_days": 16,
+     "perm_p": 0.127,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "dow_tue x1.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 5951,
+     "delta": 2361,
+     "window_days": 215,
+     "perm_p": 0.231,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 10.7,
+      "fail_pct": 8.3,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 23.5,
+      "fail_pct": 27.9,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 35487,
+     "delta": 1956,
+     "window_days": 26,
+     "perm_p": 0.655,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 12383,
+     "delta": 2437,
+     "window_days": 17,
+     "perm_p": 0.087,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 26.7,
+      "fail_pct": 0.0,
+      "median_sessions": 6
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 51.2,
+      "fail_pct": 0.0,
+      "median_sessions": 10
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "dow_tue x0.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 338,
+     "delta": -3251,
+     "window_days": 215,
+     "perm_p": 0.814,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 4.8,
+      "fail_pct": 3.1,
+      "median_sessions": 6
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 12.5,
+      "fail_pct": 19.8,
+      "median_sessions": 13
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 30387,
+     "delta": -3144,
+     "window_days": 26,
+     "perm_p": 0.466,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 33.3,
+      "fail_pct": 0.0,
+      "median_sessions": 6
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 69.9,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 7508,
+     "delta": -2437,
+     "window_days": 17,
+     "perm_p": 0.9,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 11.6,
+      "fail_pct": 0.0,
+      "median_sessions": 6
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 24.4,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "dow_wed x1.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 8580,
+     "delta": 4991,
+     "window_days": 212,
+     "perm_p": 0.055,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 9.2,
+      "fail_pct": 8.2,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 21.1,
+      "fail_pct": 28.5,
+      "median_sessions": 12
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 37547,
+     "delta": 4016,
+     "window_days": 25,
+     "perm_p": 0.259,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 39.0,
+      "fail_pct": 0.8,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 67.5,
+      "fail_pct": 5.7,
+      "median_sessions": 9
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 11929,
+     "delta": 1984,
+     "window_days": 18,
+     "perm_p": 0.198,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 25.6,
+      "fail_pct": 0.0,
+      "median_sessions": 6
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 47.7,
+      "fail_pct": 0.0,
+      "median_sessions": 9
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "dow_wed x0.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": -1179,
+     "delta": -4768,
+     "window_days": 212,
+     "perm_p": 0.892,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 5.3,
+      "fail_pct": 3.2,
+      "median_sessions": 6
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 11.9,
+      "fail_pct": 20.4,
+      "median_sessions": 12
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 29205,
+     "delta": -4327,
+     "window_days": 25,
+     "perm_p": 0.67,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 35.0,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 67.5,
+      "fail_pct": 0.0,
+      "median_sessions": 10
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 7957,
+     "delta": -1988,
+     "window_days": 18,
+     "perm_p": 0.807,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 18.6,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 25.6,
+      "fail_pct": 0.0,
+      "median_sessions": 7
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "dow_thu x1.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": -1170,
+     "delta": -4759,
+     "window_days": 206,
+     "perm_p": 0.972,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 8.1,
+      "fail_pct": 7.7,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 17.7,
+      "fail_pct": 29.6,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 34898,
+     "delta": 1366,
+     "window_days": 25,
+     "perm_p": 0.751,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 36.6,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 65.9,
+      "fail_pct": 2.4,
+      "median_sessions": 10
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 10592,
+     "delta": 646,
+     "window_days": 18,
+     "perm_p": 0.596,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 43.0,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "dow_thu x0.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 8777,
+     "delta": 5187,
+     "window_days": 206,
+     "perm_p": 0.045,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 8.0,
+      "fail_pct": 4.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 17.7,
+      "fail_pct": 19.1,
+      "median_sessions": 12
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 32165,
+     "delta": -1366,
+     "window_days": 25,
+     "perm_p": 0.225,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.0,
+      "median_sessions": 10
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 9299,
+     "delta": -646,
+     "window_days": 18,
+     "perm_p": 0.406,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 15.1,
+      "fail_pct": 0.0,
+      "median_sessions": 8
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 38.4,
+      "fail_pct": 0.0,
+      "median_sessions": 12
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "dow_fri x1.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 3474,
+     "delta": -115,
+     "window_days": 205,
+     "perm_p": 0.533,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 7.2,
+      "fail_pct": 7.5,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 15.3,
+      "fail_pct": 26.5,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 37908,
+     "delta": 4377,
+     "window_days": 24,
+     "perm_p": 0.184,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 40.7,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 69.9,
+      "fail_pct": 0.8,
+      "median_sessions": 9
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 10034,
+     "delta": 89,
+     "window_days": 17,
+     "perm_p": 0.779,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 40.7,
+      "fail_pct": 0.0,
+      "median_sessions": 10
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "dow_fri x0.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 4489,
+     "delta": 899,
+     "window_days": 205,
+     "perm_p": 0.368,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 7.7,
+      "fail_pct": 4.7,
+      "median_sessions": 6
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 17.3,
+      "fail_pct": 22.6,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 27681,
+     "delta": -5850,
+     "window_days": 24,
+     "perm_p": 0.865,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 27.6,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 58.5,
+      "fail_pct": 8.1,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 9856,
+     "delta": -89,
+     "window_days": 17,
+     "perm_p": 0.227,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 19.8,
+      "fail_pct": 0.0,
+      "median_sessions": 6
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 43.0,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "pension x1.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 3458,
+     "delta": -132,
+     "window_days": 63,
+     "perm_p": 0.52,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.7,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 17.0,
+      "fail_pct": 25.6,
+      "median_sessions": 12
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 33969,
+     "delta": 437,
+     "window_days": 7,
+     "perm_p": 0.508,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 39.0,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 72.4,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 10041,
+     "delta": 96,
+     "window_days": 7,
+     "perm_p": 0.586,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  },
+  {
+   "name": "pension x0.5",
+   "spans": {
+    "2021-25": {
+     "lit_net": 3589,
+     "dial_net": 2654,
+     "delta": -935,
+     "window_days": 63,
+     "perm_p": 0.674,
+     "eval_2wk": {
+      "starts": 1031,
+      "pass_pct": 6.7,
+      "fail_pct": 6.0,
+      "median_sessions": 6
+     },
+     "eval_2wk_base": {
+      "starts": 1031,
+      "pass_pct": 7.6,
+      "fail_pct": 6.6,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 1031,
+      "pass_pct": 16.2,
+      "fail_pct": 24.3,
+      "median_sessions": 12
+     },
+     "eval_1mo_base": {
+      "starts": 1031,
+      "pass_pct": 17.1,
+      "fail_pct": 24.4,
+      "median_sessions": 12
+     }
+    },
+    "2026H1": {
+     "lit_net": 33532,
+     "dial_net": 33090,
+     "delta": -441,
+     "window_days": 7,
+     "perm_p": 0.508,
+     "eval_2wk": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 123,
+      "pass_pct": 38.2,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 123,
+      "pass_pct": 69.9,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     },
+     "eval_1mo_base": {
+      "starts": 123,
+      "pass_pct": 71.5,
+      "fail_pct": 0.8,
+      "median_sessions": 10
+     }
+    },
+    "2026H2": {
+     "lit_net": 9945,
+     "dial_net": 9849,
+     "delta": -96,
+     "window_days": 7,
+     "perm_p": 0.43,
+     "eval_2wk": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_2wk_base": {
+      "starts": 86,
+      "pass_pct": 20.9,
+      "fail_pct": 0.0,
+      "median_sessions": 5
+     },
+     "eval_1mo": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     },
+     "eval_1mo_base": {
+      "starts": 86,
+      "pass_pct": 45.3,
+      "fail_pct": 0.0,
+      "median_sessions": 11
+     }
+    }
+   }
+  }
+ ],
+ "notes": {
+  "variants_logged": 174
+ }
+}
