@@ -76,7 +76,9 @@ def start_fleet(pol):
     return out
 
 
-def run_path(seq, blist, budget, stop, pol):
+def run_path(seq, blist, budget, stop, pol, rcap=None):
+    """rcap (post-hoc sensitivity): ('move', X) = MFFU's Risk team moves a Rapid live once it has paid X (all MFFU sims stop);
+    ('close', X) = we close a Rapid once it has paid X (stay under the Risk team's radar)."""
     accts = start_fleet(pol)
     avail, fees, owner, streak, stopped, live, fn_pays = 0.0, 0.0, 0.0, 0, False, None, 0
     cum6 = cum12 = None
@@ -143,6 +145,11 @@ def run_path(seq, blist, budget, stop, pol):
                     fn_pays += 1
             if a.rapid and cum is not None and cum >= 10000.0:
                 live = live or ("rapid10k", k)
+            if rcap and a.rapid and sum(a.f.pays) >= rcap[1]:
+                if rcap[0] == "move":
+                    live = live or ("risk_team", k)
+                else:
+                    continue                                # closed on purpose: slot freed, no live move
             if ev == "lost":
                 streak += 1
                 continue
