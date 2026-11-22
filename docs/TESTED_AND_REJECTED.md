@@ -1,4 +1,8 @@
 ## Tested and rejected (don't redo without a new idea)
+- **Edge hunt lane A, NQ RTH session structure (2026-11-22, `edge-a-session-2026-11-22.md`, `research/edge_hunt/a/session_edges.py`):** 14 variants
+  (ORB 5/15/30, IB extension narrow/all, failed-IB-break fade x2, overnight-high/low sweep fade, gap-and-go x2 (+2 void, ON-range definition error),
+  first-hour drive x2), 5m engine, $500 risk, stops 1 tick beyond structure, 2R. H1 2026 pick A30 (PF 1.40) goes PF 0.81 in Jul-Oct. All
+  trend-following variants +H1 / -H2, the IB-fail fades the reverse, none holds H1 + H2 + 2021-25; LIT corr ~0 but no money. Nothing adopted.
 - **2026-11-22 Regime guard round 3** (research/regime/guard3.py, regime-guard3-2026-11-22.md): shadow-setup hit rate R1, intraday variance ratio R2, trend-day share R3, thin volume R4, NQ-VIX co-movement R5, 2-of-5 vote R6; half / out; LIT and ATLAS. **0 of 22 pass, all fail the stage-0 kill-gate.** R1 sweeps pay worse in 2026 than in 2021-25 (flags 2026 87.5/80.8% vs OLD 70.4%). R5 flags LIT's best days. Best placebo 47.5% / 68.5% (95 needed). Closes the regime lever for market-weather and market-wide sweep signals, not every possible signal. ATLAS funded baseline moved 8.5/9.2/94.5 -> 8.2/8.3/94.2 because of a code change after 153552591; verdict unaffected.
 - **Zlarior edge, 5 pre-registered ideas (2026-11-20, `lit-edge-2026-11-20.md`, `tools/research/litedge.py`,
   `research/lit/litedge.json`, design `research/lit/litedge_design_2026-11-20.md`):** LIT $/month H1 / H2 / 2021-25 vs
