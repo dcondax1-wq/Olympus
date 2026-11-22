@@ -140,8 +140,32 @@ def build(web: str = WEB, out: str = LIST) -> dict:
         if lane == "redesign":
             sc = scores.get(lid) or {}
             rows[-1].update(url=url[:200], score=int(sc.get("score") or 0), why=[str(w)[:40] for w in (sc.get("why") or [])][:4], site="", code="")
+        try:                                             # the $ score (tools/lead_value.py: roofing / HVAC first, site_down, a phone)
+            from tools import lead_value as LV
+            rows[-1]["usd"] = LV.score(L)
+        except ImportError:
+            pass
+    # the big county leads (tools/web_leads_counties.py; the county files stay private in research/web_leads/counties/): ONLY the ranked
+    # first 100 + next 500 calls (tools/first_calls.py) go on the public list, with their lane / opener / trade / county / $ / concept link
+    have = {r["id"] for r in rows}
+    for fn in ("first100.json", "next500.json"):
+        for r in (rj(os.path.join(web, "portal", fn), {}) or {}).get("leads") or []:
+            if not isinstance(r, dict) or not r.get("county") or r.get("id") in have or r.get("id") in nev:
+                continue
+            have.add(r["id"])
+            lane = r.get("lane") if r.get("lane") in ("no_site", "site_down") else "no_site"
+            rows.append({"id": r["id"], "name": str(r.get("name") or "")[:80], "phone": digits(r.get("phone")), "town": str(r.get("town") or "")[:40],
+                         "state": "MD", "niche": str(r.get("niche") or "other")[:20], "kind": str(r.get("kind") or "")[:40], "code": str(r.get("code") or ""),
+                         "site": str(r.get("site") or ""), "heat": str(r.get("heat") or ""), "lane": lane, "opener": OPENERS[lane].format(name=str(r.get("name") or "")[:80]),
+                         "trade": str(r.get("trade") or "")[:30], "county": str(r.get("county") or "")[:30], "usd": int(r.get("score") or 0)})
+            ph = rows[-1]["phone"]
+            if ph and ph in listed:
+                rows[-1]["dnc"] = "listed"
+            elif ph and ph[:3] in checked:
+                rows[-1]["dnc"] = "clear"
     rank = {"trades": 0, "home": 0, "health": 1, "beauty": 2, "auto": 3, "food": 4}
-    rows.sort(key=lambda r: (r["lane"] == "redesign", not r["phone"], -r.get("score", 0), rank.get(r["niche"], 9), r["name"].lower()))
+    # biggest $ first (Today mode keeps this order after follow-ups and best-hour leads); redesign and no-phone rows last
+    rows.sort(key=lambda r: (r["lane"] == "redesign", not r["phone"], -r.get("usd", 0), -r.get("score", 0), rank.get(r["niche"], 9), r["name"].lower()))
     lanes = {k: sum(1 for r in rows if r["lane"] == k) for k in OPENERS}
     pb = rj(os.path.join(ROOT, "agency", "pricebook.json"), {}) or {}
     st = next((x for x in pb.get("packages") or [] if isinstance(x, dict) and x.get("id") == "starter"), {})
