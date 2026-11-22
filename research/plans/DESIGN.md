@@ -38,3 +38,10 @@ net $, $ to the owner per $ spent, chance of no payout, funded accounts lost, ch
 Rank by H2 net $ in 6 months per slot. A plan is a BUY candidate only if net > 0 in H1 AND H2 and the REF loss is at most
 2 x its price. Decide cards for the top 2 candidates (recommend yes / no with the honest risk); firm-level open questions
 (Lucid's written OK for bots at two firms, live-move rules) go in the card.
+
+## Addendum after a 60-path smoke run (mechanics only, before the scored run): the funded account never "died" because the
+sizer trades 0 micros at a tiny room. As every repo funded model (atlas_health / account_b MIN_ROOM), a funded account whose
+room to the floor is under $100 (25K) / $200 (50K) is STUCK = dead (counted lost, re-bought). Nothing else changed.
+Addendum 2 (same smoke run, before the scored run): MFFU Rapid payouts follow the bot's own built rule (engine/rapid.py: keep
+$1,000 above the buffer on the 50K, $500 on the 25K), not "everything above the buffer" - uncapped daily payouts otherwise
+leave the account at the stuck line. Capped plans request their cap as designed.
