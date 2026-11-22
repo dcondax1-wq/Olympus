@@ -1,9 +1,9 @@
 // CALLER PORTAL page (day-a11y 2026-11-21). The rules live in portalcore.js; this file only draws and saves (this phone only).
-import * as P from './portalcore.js?v=3';
+import * as P from './portalcore.js?v=4';
 
 const $ = (id) => document.getElementById(id);
 const UNLOCK = 'agency.portal.unlock';
-let conf = null, list = [], st = P.emptyState(), filter = 'today', page = 25, price = null;   // page: rows drawn (25 more per tap: 4,500 rows never at once)
+let conf = null, list = [], st = P.emptyState(), filter = 'today', page = 25, price = null, book = null;   // book = price.json (the proposal's numbers, from the price book)   // page: rows drawn (25 more per tap: 4,500 rows never at once)
 
 function store(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* private mode: works for this visit */ } }
 function read(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -39,6 +39,7 @@ async function open() {
   $('lock').hidden = true; $('main').hidden = false;
   $('hello').textContent = 'Signed in as ' + st.caller + (conf.agency ? ' · ' + conf.agency : '');
   $('identify').textContent = '"' + P.identify(st.caller, conf.agency) + '"';
+  try { book = await getJSON('price.json'); } catch (e) { book = null; }
   try { const j = await getJSON('calllist.json'); list = Array.isArray(j.leads) ? j.leads : []; price = j.price || null; } catch (e) { list = []; $('status').textContent = 'Could not load the list. Pull down to try again.'; }
   wire(); render();
   setInterval(render, 60000);
@@ -100,6 +101,9 @@ function row(L, s, best) {
   }
   const talked = P.entriesOf(st, L.id).some((e) => ['called', 'interested', 'booked', 'won'].indexOf(e.k) >= 0);
   if (talked && url) mailForm(li, L);
+  const keen = P.entriesOf(st, L.id).some((e) => e.k === 'interested' || e.k === 'booked');
+  if (keen && book && s.tone !== 'done' && !s.mail) proposalPanel(li, L);
+  if (s.mail) followUpPanel(li, L);
   // the best hour for this kind of business, the scripts, the Do Not Call field
   const bw = document.createElement('span'); bw.className = 'best'; bw.textContent = best ? 'Best hour now' : 'Best: ' + P.bestWords(L, conf);
   if (best || s.ok) li.querySelector('.why').appendChild(bw);
@@ -155,6 +159,38 @@ function mailForm(li, L) {
   });
 }
 
+// ---------------------------------------------------------------------------------------------------- close the sale
+function theirEmail(li) { const v = (li.querySelector('.theirEmail') || {}).value || ''; return v.trim(); }
+function logOnce(L, k) { const es = P.entriesOf(st, L.id), last = es[es.length - 1]; if (!(last && last.k === k && Date.now() - last.t < 600000)) { P.logOutcome(st, L, k, Date.now()); save(); } }
+function proposalPanel(li, L) {
+  const box = li.querySelector('.proposal'); box.hidden = false;
+  if (P.theirSite(L) || P.siteUrl(L, conf)) li.querySelector('.mailForm').hidden = false;   // their email, for "Email it"
+  const prop = () => P.proposalFor(L, st.caller, conf, book, Date.now());
+  box.querySelector('.openProp').addEventListener('click', () => {
+    try { localStorage.setItem('agency.portal.proposal', JSON.stringify({ lead: L, caller: st.caller, conf: { agency: conf.agency, agency_email: conf.agency_email, postal: conf.postal,
+      agency_number: conf.agency_number, public_base: conf.public_base, tz: conf.tz }, price: book, t: Date.now() })); } catch (e) { /* private mode: the copy email still works */ }
+    window.open('proposal.html', '_blank', 'noopener'); logOnce(L, 'proposal'); announce(L.name + ': proposal opened (print or save it as PDF).');
+  });
+  box.querySelector('.copyProp').addEventListener('click', () => { copy(prop().email, li); logOnce(L, 'proposal'); });
+  box.querySelector('.gmailProp').addEventListener('click', () => {
+    const to = theirEmail(li), m = li.querySelector('.msg');
+    if (!P.validEmail(to)) { m.textContent = 'Type their email address first (in the box below).'; return; }
+    if (!P.validEmail(conf.agency_email)) { m.textContent = 'The agency email is not set yet: copy the email instead.'; return; }
+    const x = prop(); window.open(P.gmailUrl(conf, to, x.subject, x.email), '_blank', 'noopener'); logOnce(L, 'proposal');
+    m.textContent = 'The agency Gmail opened with the proposal. Check it and press Send.';
+  });
+}
+function followUpPanel(li, L) {
+  const box = li.querySelector('.fuMail'), f = P.proposalFollowUp(L, st.caller, conf); box.hidden = false;
+  li.querySelector('.mailForm').hidden = false;   // their email, for "Email it"
+  box.querySelector('.copyFu').addEventListener('click', () => copy(f.email, li));
+  box.querySelector('.gmailFu').addEventListener('click', () => {
+    const to = theirEmail(li), m = li.querySelector('.msg');
+    if (!P.validEmail(to) || !P.validEmail(conf.agency_email)) { m.textContent = 'Copy the email and send it from the agency inbox.'; return; }
+    window.open(P.gmailUrl(conf, to, f.subject, f.email), '_blank', 'noopener');
+  });
+  box.querySelector('.sentFu').addEventListener('click', () => { P.logOutcome(st, L, 'fu_email', Date.now()); save(); render(); announce(L.name + ': follow-up email logged. That was the last step.'); });
+}
 function copy(text, li) {
   const done = () => { const m = li.querySelector('.msg'); if (m) m.textContent = 'Copied.'; };
   try { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(done, done); return; } } catch (e) { /* older phone */ }

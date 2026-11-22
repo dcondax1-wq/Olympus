@@ -15,8 +15,8 @@
      (python -m agency.portal build); portal.json = the public facts + the passphrase's salted hash (python -m agency.portal pass).
      Saved on this phone only ('agency.portal.v1'); it sends nothing by itself: Call opens the phone, Email opens the agency Gmail's compose,
      the log goes back as a file the owner imports (python -m agency.portal import). No secret, no private data, never the owner's address. -->
-<link rel="stylesheet" href="portal.css?v=3">
-<script type="module" src="portal.js?v=3"></script>
+<link rel="stylesheet" href="portal.css?v=4">
+<script type="module" src="portal.js?v=4"></script>
 </head>
 <body>
 <a class="skip" href="#list">Skip to the list</a>
@@ -150,6 +150,22 @@
     <label class="dncRow">Do Not Call list
       <select class="dncSel"><option value="unknown">Not checked</option><option value="clear">Checked: not on it</option><option value="listed">On the list: never call</option></select>
     </label>
+    <div class="proposal" hidden>
+      <p class="small"><b>Close today:</b> send the one-page proposal (their link, the price, 7 days, the deposit).</p>
+      <div class="row">
+        <button type="button" class="btn primary openProp">Open the proposal</button>
+        <button type="button" class="btn copyProp">Copy proposal email</button>
+        <button type="button" class="btn gmailProp">Email it</button>
+      </div>
+    </div>
+    <div class="fuMail" hidden>
+      <p class="small"><b>Last step:</b> the follow-up email for the proposal (then stop).</p>
+      <div class="row">
+        <button type="button" class="btn copyFu">Copy the email</button>
+        <button type="button" class="btn gmailFu">Email it</button>
+        <button type="button" class="btn sentFu">I sent it</button>
+      </div>
+    </div>
     <form class="mailForm" hidden>
       <label>Their email <input type="email" inputmode="email" maxlength="80" class="theirEmail"></label>
       <button type="submit" class="btn">Email them the link</button>

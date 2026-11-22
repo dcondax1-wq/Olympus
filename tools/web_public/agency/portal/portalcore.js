@@ -4,12 +4,14 @@
 // 1 call + 1 follow-up per business, never twice in a day, 'no' / 'do not call' = never again (every channel, once the log reaches the PC).
 // Self-contained on purpose: the page must work on the neutral public host with no Olympus file next to it.
 
-export const VERSION = 'p3';
+export const VERSION = 'p4';
 export const KEY = 'agency.portal.v1';
 export const DIALS = ['called', 'voicemail', 'interested', 'booked', 'no', 'dnc', 'won'];
 export const OUTCOMES = [
   { k: 'called', label: 'Talked' }, { k: 'voicemail', label: 'Voicemail' }, { k: 'interested', label: 'Interested' },
   { k: 'booked', label: 'Booked a call' }, { k: 'no', label: 'No' }, { k: 'dnc', label: 'Do not call' }, { k: 'won', label: 'Won' }];
+// log lines that are not calls: an email sent, a proposal sent, the proposal's follow-up email sent
+export const NOTES = ['emailed', 'proposal', 'fu_email'];
 export const FINAL = { no: 'Said no: never again', dnc: 'Do not call: never again', won: 'Won: Claude takes it from here' };
 export const NICHES = ['trades', 'health', 'beauty', 'auto', 'food', 'fitness', 'retail', 'pets', 'home', 'other'];
 const DOW3 = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -77,7 +79,7 @@ export function loadState(text) {
   const s = emptyState();
   if (!j || typeof j !== 'object') return s;
   s.caller = str(j.caller).slice(0, 40);
-  s.log = Array.isArray(j.log) ? j.log.filter((e) => e && typeof e === 'object' && typeof e.t === 'number' && str(e.id) && (DIALS.indexOf(e.k) >= 0 || e.k === 'emailed')) : [];
+  s.log = Array.isArray(j.log) ? j.log.filter((e) => e && typeof e === 'object' && typeof e.t === 'number' && str(e.id) && (DIALS.indexOf(e.k) >= 0 || NOTES.indexOf(e.k) >= 0)) : [];
   s.added = Array.isArray(j.added) ? j.added.filter((a) => a && str(a.id) && str(a.name)) : [];
   s.phones = j.phones && typeof j.phones === 'object' ? j.phones : {};
   s.dnc = Array.isArray(j.dnc) ? j.dnc.filter((x) => typeof x === 'string' && x.trim()) : [];
@@ -96,6 +98,8 @@ export function statusOf(lead, st, nowMs, conf) {
   if (st.dnc.indexOf(lead.id) >= 0) return { ok: false, tone: 'done', why: FINAL.dnc };
   if (dncOf(lead, st) === 'listed') return { ok: false, tone: 'done', why: 'On the National Do Not Call list: never call' };
   if (fin) return { ok: false, tone: 'done', why: FINAL[fin.k] };
+  const ps = proposalStep(lead, st, nowMs, conf);
+  if (ps) return ps;
   if (dials.length >= 2) return { ok: false, tone: 'done', why: 'Done: 1 call + 1 follow-up' };
   if (!phoneOf(lead, st)) return { ok: false, tone: 'need', why: 'Find the number first' };
   const today = partsIn(nowMs, tz).date;
@@ -140,7 +144,7 @@ export function bestWords(lead, conf) { const w = bestWindows(lead, conf); retur
 // TODAY: the first n callable leads for this hour: follow-ups due today first, then the ones in their best window now, then the rest (the list's order)
 export function todayList(leads, st, nowMs, conf, n) {
   const rows = [];
-  for (const L of leads) { const s = statusOf(L, st, nowMs, conf); if (s.ok) rows.push({ L, s, best: inBest(L, nowMs, conf), i: rows.length }); }
+  for (const L of leads) { const s = statusOf(L, st, nowMs, conf); if (s.ok || s.mail) rows.push({ L, s, best: inBest(L, nowMs, conf), i: rows.length }); }   // a due proposal email is today's work too
   rows.sort((a, b) => (b.s.due ? 1 : 0) - (a.s.due ? 1 : 0) || (b.best ? 1 : 0) - (a.best ? 1 : 0) || a.i - b.i);
   return rows.slice(0, n || 60);
 }
@@ -190,8 +194,65 @@ export function dayTally(st, nowMs, conf, price) {
   return c;
 }
 
+// ---------------------------------------------------------------------------------------------------- CLOSE THE SALE (2026-11-22)
+// after "Interested": a one-page proposal the same day (printable + a copy-text email), then ONE follow-up call on workday 2 and ONE
+// follow-up email on workday 5, then stop (a business that answers, says no or signs leaves the sequence). Numbers from price.json
+// (python -m agency.proposal, made from agency/pricebook.json).
+export const PROPOSAL_STEPS = [[2, 'call'], [5, 'email']];
+export function lastProposal(st, id) { let p = null; for (const e of st.log) if (e.id === id && e.k === 'proposal') p = e; return p; }
+export function proposalStep(lead, st, nowMs, conf) {
+  const p = lastProposal(st, lead.id); if (!p) return null;
+  const tz = (conf && conf.tz) || 'America/New_York', after = st.log.filter((e) => e.id === lead.id && e.t > p.t);
+  if (after.some((e) => e.k === 'booked' || e.k === 'interested')) return { ok: false, tone: 'wait', why: 'Proposal: they answered (see the notes)', track: 'proposal' };
+  const pd = partsIn(p.t, tz).date, today = partsIn(nowMs, tz).date, callDay = addWorkdays(pd, PROPOSAL_STEPS[0][0]), mailDay = addWorkdays(pd, PROPOSAL_STEPS[1][0]);
+  const called = after.some((e) => DIALS.indexOf(e.k) >= 0), mailed = after.some((e) => e.k === 'fu_email');
+  if (!called) {
+    if (today < callDay) return { ok: false, tone: 'wait', why: 'Proposal sent: follow-up call ' + dayWords(callDay, today), track: 'proposal' };
+    const w = windowAt(nowMs, conf);
+    return w.open ? { ok: true, tone: 'go', why: 'Proposal: follow-up call due', due: true, track: 'proposal' }
+      : { ok: false, tone: 'wait', why: 'Proposal call: calls open ' + w.next, track: 'proposal' };
+  }
+  if (!mailed) {
+    if (today < mailDay) return { ok: false, tone: 'wait', why: 'Proposal: follow-up email ' + dayWords(mailDay, today), track: 'proposal' };
+    return { ok: false, tone: 'go', why: 'Proposal: send the follow-up email (the last step)', due: true, mail: true, track: 'proposal' };
+  }
+  return { ok: false, tone: 'done', why: 'Proposal: a call and an email, no answer: stop here', track: 'proposal' };
+}
+const usd0 = (n) => '$' + Number(n || 0).toLocaleString('en-US');
+// the one-page proposal for a lead: {subject, email (copy text), sections (for proposal.html)}; price = price.json
+export function proposalFor(lead, caller, conf, price, nowMs) {
+  const P = price || {}, k = P.package || {}, nu = P.no_upfront || {}, care = P.care || {};
+  const redesign = laneOf(lead) === 'redesign', link = redesign ? theirSite(lead) : siteUrl(lead, conf);
+  const name = str(lead.name) || 'your business', who = str(caller) + ', ' + str(conf && conf.agency);
+  const valid = new Date(nowMs + (P.valid_days || 14) * 86400000).toISOString().slice(0, 10);
+  const sec = [
+    ['What you get', [k.name + ': up to ' + k.pages + ' pages, works on every phone, tap-to-call, a contact form, your own domain in your name, your Google profile linked.',
+      redesign ? 'We rebuild your current site (' + (link || 'your site') + ') faster and phone-friendly; your domain stays yours.' : 'Start from the draft we already built for you: ' + (link || '[the link]')]],
+    ['The price', [usd0(k.setup) + ' once + ' + usd0(k.monthly) + '/month care plan (hosting, backups, small edits up to ' + care.edit_minutes + ' minutes a month; a ' +
+      care.term_months + '-month term, then month to month)', 'Or ' + usd0(nu.monthly) + '/month for ' + nu.months + ' months with nothing upfront, care included.',
+      (P.tax_pct ? 'Maryland sales tax (' + P.tax_pct + '%) is added to the setup fee where it applies, on its own invoice line.' : '')].filter(Boolean)],
+    ['Timeline: live in ' + k.days + ' days', ['Day 0: your deposit and your content.', 'Days 1-3: we build it.', 'Days 4-5: you look; ' + P.revision_rounds + ' rounds of changes included.',
+      'Days 6-' + k.days + ': the balance is paid, your site goes live on your domain.']],
+    ['What we need from you', ['Your logo (any file) and 5-10 photos of your work or place.', 'Your services, prices if you show them, and your hours.',
+      'Your domain login, or we register one in your name.', 'Access to your Google Business Profile (or we help you claim it).']],
+    ['To start', ['A ' + usd0(P.deposit) + ' deposit (' + P.deposit_pct + '%) by the secure payment link we email you: card or bank. The other ' + usd0(P.balance) + ' on launch day.',
+      'Reply "I agree" to the agreement we send with it. Prices hold until ' + valid + '.']]];
+  const email = ['Hi ' + name + ' team,', '', 'Thanks for your time today. Here is the one-page proposal we talked about.', '']
+    .concat(...sec.map(([h, l]) => [h.toUpperCase()].concat(l.map((x) => '- ' + x), ['']))).concat(
+      ['Any question, just reply.', '', who, str(conf && conf.postal), str(conf && conf.agency_number) ? 'Call ' + str(conf.agency_number) + ': our AI assistant answers.' : '', '',
+        'Not interested? Reply "no thanks" and we won\'t contact you again.']).filter((x, i, a) => !(x === '' && a[i - 1] === '')).join('\n');
+  return { subject: 'Your website proposal, ' + name, email, sections: sec, valid, link, name, who };
+}
+export function proposalFollowUp(lead, caller, conf) {
+  const name = str(lead.name) || 'your business';
+  return { subject: 'Re: Your website proposal, ' + name,
+    email: ['Hi ' + name + ' team,', '', 'Just checking you got the website proposal I sent a few days ago. Happy to answer any question, or to change anything in it.',
+      'If now is not the right time, no problem: this is my last note.', '', str(caller) + ', ' + str(conf && conf.agency), str(conf && conf.postal), '',
+      'Not interested? Reply "no thanks" and we won\'t contact you again.'].join('\n') };
+}
+
 export function logOutcome(st, lead, k, nowMs) {
-  if (DIALS.indexOf(k) < 0 && k !== 'emailed') throw new Error('unknown outcome');
+  if (DIALS.indexOf(k) < 0 && NOTES.indexOf(k) < 0) throw new Error('unknown outcome');
   const e = { t: nowMs, id: lead.id, k, caller: st.caller, name: str(lead.name).slice(0, 80), code: str(lead.code) };
   st.log.push(e);
   if (k === 'dnc' || k === 'no') { if (st.dnc.indexOf(lead.id) < 0) st.dnc.push(lead.id); }

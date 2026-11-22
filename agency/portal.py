@@ -37,7 +37,7 @@ CONF = os.path.join(PORTAL, "portal.json")
 LIST = os.path.join(PORTAL, "calllist.json")
 ADDED = os.path.join(ROOT, "tools", "agency_added_leads.json")
 NICHES = ["trades", "health", "beauty", "auto", "food", "fitness", "retail", "pets", "home", "other"]
-OUTCOMES = ("called", "voicemail", "interested", "booked", "no", "dnc", "won", "emailed", "showed")
+OUTCOMES = ("called", "voicemail", "interested", "booked", "no", "dnc", "won", "emailed", "showed", "proposal", "fu_email")
 CHAINS = ["bonefish", "glory days", "crunch fitness", "bruster", "exxon", "ymca", "america's best wings", "medstar", "med star",
           "anchor bar", "planet fitness", "anytime fitness", "orangetheory", "subway", "mcdonald",
           "burger king", "wendy", "taco bell", "domino", "papa john", "pizza hut", "starbucks", "dunkin", "chick-fil-a", "chipotle",
