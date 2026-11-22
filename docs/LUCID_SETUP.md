@@ -32,7 +32,7 @@ No firm clearly beats Lucid for our bots. FundedNext is the fallback if Lucid sa
 
 ## Your steps (hands only)
 
-1. **Email Lucid first** (support@lucidtrading.com or the chat on their site), in your own words:
+1. **Ask Lucid first** (the chat / contact on support.lucidtrading.com), in your own words:
    "I run my own automated NQ strategy through NinjaTrader. I would run the same bot on a LucidPro 50K and on accounts at another
    firm (never opposite sides, never hedged). Is that allowed, and does LucidPro connect to NinjaTrader through Tradovate?"
    Buy nothing until they answer **yes in writing**.
