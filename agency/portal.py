@@ -103,7 +103,12 @@ def build(web: str = WEB, out: str = LIST) -> dict:
     nev, rows, seen = never_ids(), [], set()
     found = (rj(os.path.join(home(), "portal_log.json"), {}) or {}).get("phones") or {}   # numbers callers found on Google Maps by hand
     skip = {"chain": 0, "has a website": 0, "never again": 0}
-    scores = (rj(SCORES, {}) or {}).get("scores") or {}      # agency/redesign_score.py: how dated / slow each working site is (public page facts only)
+    scores = (rj(SCORES, {}) or {}).get("scores") or {}
+    # the National Do Not Call list (owner step: the FTC's free download for up to 5 area codes, saved as
+    # %USERPROFILE%\.olympus\dnc_scrub.json {"listed": ["3015550100", ...], "checked": ["301", "240", ...]}): a number in a checked area code is
+    # 'clear' or 'listed'; anything else stays 'unknown' (the caller can check by hand). Only that word goes into the public list
+    scrub = rj(os.path.join(home(), "dnc_scrub.json"), {}) or {}
+    listed, checked = {digits(x) for x in scrub.get("listed") or []}, {str(x)[:3] for x in scrub.get("checked") or []}      # agency/redesign_score.py: how dated / slow each working site is (public page facts only)
     for L in leads:
         lid = str(L.get("id") or "")
         if not lid or lid in seen or not str(L.get("name") or "").strip():
@@ -127,13 +132,21 @@ def build(web: str = WEB, out: str = LIST) -> dict:
                      "kind": str(f.get("kind") or L.get("kind") or L.get("niche_name") or "")[:40], "code": str(f.get("code") or codes.get(lid) or ""),
                      "site": str(f.get("path") or ""), "heat": str(L.get("heat") or ""),
                      "lane": lane, "opener": OPENERS[lane].format(name=str(L["name"]).strip()[:80])})   # Overture check (tools/web_leads_overture.py)
+        ph = rows[-1]["phone"]
+        if ph and ph in listed:
+            rows[-1]["dnc"] = "listed"
+        elif ph and ph[:3] in checked:
+            rows[-1]["dnc"] = "clear"
         if lane == "redesign":
             sc = scores.get(lid) or {}
             rows[-1].update(url=url[:200], score=int(sc.get("score") or 0), why=[str(w)[:40] for w in (sc.get("why") or [])][:4], site="", code="")
     rank = {"trades": 0, "home": 0, "health": 1, "beauty": 2, "auto": 3, "food": 4}
     rows.sort(key=lambda r: (r["lane"] == "redesign", not r["phone"], -r.get("score", 0), rank.get(r["niche"], 9), r["name"].lower()))
     lanes = {k: sum(1 for r in rows if r["lane"] == k) for k in OPENERS}
-    doc = {"v": 1, "kind": "caller-portal-list", "built": time.strftime("%Y-%m-%d"), "count": len(rows), "lanes": lanes,
+    pb = rj(os.path.join(ROOT, "agency", "pricebook.json"), {}) or {}
+    st = next((x for x in pb.get("packages") or [] if isinstance(x, dict) and x.get("id") == "starter"), {})
+    price = {"name": str(st.get("name") or "Starter site"), "setup": int(st.get("setup") or 1500), "monthly": int(st.get("monthly") or 79)}   # the pipeline's $ (agency/pricebook.json)
+    doc = {"v": 1, "kind": "caller-portal-list", "built": time.strftime("%Y-%m-%d"), "count": len(rows), "lanes": lanes, "price": price,
            "note": "public map data only (OpenStreetMap + businesses a caller added); no private data", "skipped": skip, "leads": rows}
     for r in rows:                                       # a phone downloads this: drop empty fields
         for k in [k for k, v in r.items() if v in ("", None, []) and k not in ("id", "name", "phone", "lane")]:

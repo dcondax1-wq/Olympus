@@ -77,8 +77,8 @@ const st = P.emptyState(); st.caller = 'Ann';
 const L = {id: 'a', name: 'Ace Roofing', phone: '(301) 555-0100', site: 'f/abcdefgh/', code: 'FR-1'};
 out.s0 = P.statusOf(L, st, T('2026-11-23T15:00:00Z'), conf);
 P.logOutcome(st, L, 'voicemail', T('2026-11-23T15:00:00Z'));
-out.s1 = P.statusOf(L, st, T('2026-11-23T20:00:00Z'), conf); out.s2 = P.statusOf(L, st, T('2026-11-24T15:00:00Z'), conf);
-P.logOutcome(st, L, 'called', T('2026-11-24T15:00:00Z'));
+out.s1 = P.statusOf(L, st, T('2026-11-23T20:00:00Z'), conf); out.s1b = P.statusOf(L, st, T('2026-11-24T15:00:00Z'), conf); out.s2 = P.statusOf(L, st, T('2026-11-25T15:00:00Z'), conf);
+P.logOutcome(st, L, 'called', T('2026-11-25T15:00:00Z'));
 out.s3 = P.statusOf(L, st, T('2026-11-30T15:00:00Z'), conf);
 const B = {id: 'b', name: 'Bee Salon', phone: '3015550111', site: 'f/zzzzzzzz/'};
 P.logOutcome(st, B, 'dnc', T('2026-11-23T15:00:00Z')); out.sb = P.statusOf(B, st, T('2026-12-10T15:00:00Z'), conf); out.dnc = st.dnc.slice();
@@ -122,9 +122,9 @@ def node():
     check("b. weekends, Thanksgiving and the day after are closed, with when it opens", not o["sat"]["open"] and o["sat"]["why"] == "Weekend" and o["sat"]["next"] == "Mon 9:00 am"
           and not o["thx"]["open"] and "Thanksgiving" in o["thx"]["why"] and not o["blackfri"], (o["sat"], o["thx"]))
     check("b. federal holidays (observed dates)", o["hol"] == ["Thanksgiving", "Independence Day", "Memorial Day"], o["hol"])
-    check("b. 1 call + 1 follow-up: first call, then never twice in a day, then the follow-up, then done",
-          o["s0"]["ok"] and o["s0"]["why"] == "First call" and not o["s1"]["ok"] and "Called today" in o["s1"]["why"]
-          and o["s2"]["ok"] and "Follow-up" in o["s2"]["why"] and o["s3"]["tone"] == "done" and "1 call + 1 follow-up" in o["s3"]["why"], (o["s1"], o["s3"]))
+    check("b. 1 call + 1 follow-up: first call, never twice in a day, the follow-up comes back on its day (a voicemail: 2 workdays), then done",
+          o["s0"]["ok"] and o["s0"]["why"] == "First call" and not o["s1"]["ok"] and "Called today" in o["s1"]["why"] and "Wed Nov 25" in o["s1"]["why"]
+          and not o["s1b"]["ok"] and "Follow-up tomorrow (after a voicemail)" == o["s1b"]["why"] and o["s2"]["ok"] and o["s2"]["due"] and "Follow-up due" in o["s2"]["why"] and o["s3"]["tone"] == "done" and "1 call + 1 follow-up" in o["s3"]["why"], (o["s1"], o["s3"]))
     check("b. 'do not call' = never again (and undo within reach for a mis-tap)", o["sb"]["tone"] == "done" and "never again" in o["sb"]["why"] and o["dnc"] == ["b"]
           and o["undo"][0] == 0, (o["sb"], o["undo"]))
     check("b. no number = 'find the number first'; a number found by hand makes it callable", o["sc"]["tone"] == "need" and o["sc2"] == "go", o["sc"])
@@ -278,6 +278,18 @@ def sitecheck():
           res["a"]["down"] and res["b"]["down"] and res["c"]["score"] == 0 and res["c"]["checked"], res)
 
 
+def dialing_static():
+    from agency import portal as PT
+    html, js, core = (open(os.path.join(D, f), encoding="utf-8").read() for f in ("index.html", "portal.js", "portalcore.js"))
+    check("a. dialing session: Today is the first tab and the default; the end-of-day card; the scripts drawer and the Do Not Call field on every row",
+          html.index('data-f="today" aria-pressed="true"') < html.index('data-f="go"') and "filter = 'today'" in js and 'id="eodH"' in html and 'class="scripts"' in html and 'class="dncSel"' in html)
+    check("a. texts only when they asked, typed by a human: no sms: link anywhere, the drawer says so", "sms:" not in html + js + core and "ONLY if they asked you to text" in html)
+    lst = json.load(open(os.path.join(D, "calllist.json"), encoding="utf-8"))
+    pb = json.load(open(os.path.join(ROOT, "agency", "pricebook.json"), encoding="utf-8"))
+    st = next(x for x in pb["packages"] if x["id"] == "starter")
+    check("a. the list carries the price book's Starter price (the pipeline's $)", lst.get("price") == {"name": st["name"], "setup": st["setup"], "monthly": st["monthly"]}, lst.get("price"))
+
+
 def lanes():
     """the lanes from the Overture check: no_site / site_down / redesign, the opener per lane (the same words in Python and JS), the redesign score"""
     tmp = tempfile.mkdtemp(prefix="portal-lanes-")
@@ -309,6 +321,66 @@ def lanes():
         check("c. the opener per lane is the same in Python (agency/portal.py OPENERS) and the page (portalcore.js)", same)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
+
+
+NODE3 = r"""
+import * as P from '%s';
+const o = {}, T = (x) => Date.parse(x);
+const c = {tz: 'America/New_York', hours: [540, 1020], agency: 'Peak Web', agency_number: '(301) 555-0142', public_base: 'https://sites.example.com'};
+o.wd = [P.addWorkdays('2026-11-23', 2), P.addWorkdays('2026-11-25', 2), P.addWorkdays('2026-11-20', 1)];
+o.best = [P.bestWindows({niche: 'trades'}, c), P.bestWindows({niche: 'food'}, c), P.bestWindows({niche: 'retail'}, c), P.bestWindows({niche: 'trades'}, Object.assign({}, c, {hours: [420, 1080]}))];
+o.inBest = [P.inBest({niche: 'food'}, T('2026-11-23T19:30:00Z'), c), P.inBest({niche: 'food'}, T('2026-11-23T15:00:00Z'), c)];
+const st = P.emptyState(); st.caller = 'Ann';
+const mk = (i, niche) => ({id: 'x' + i, name: 'Biz ' + i, phone: '30155501' + String(10 + i), niche, site: 'f/abcdefgh/'});
+const leads = [mk(1, 'retail'), mk(2, 'food'), mk(3, 'food'), mk(4, 'retail')];
+P.logOutcome(st, leads[3], 'voicemail', T('2026-11-20T15:00:00Z'));      // Fri: its follow-up is due Tue 11-24
+const tl = P.todayList(leads, st, T('2026-11-24T19:30:00Z'), c, 60);     // Tue 2:30 pm ET: food is in its best hour
+o.today = tl.map((r) => [r.L.id, !!r.s.due, r.best]);
+o.n60 = P.todayList(Array.from({length: 90}, (_, i) => mk(i + 10, 'food')), P.emptyState(), T('2026-11-24T19:30:00Z'), c, 60).length;
+const D = mk(7, 'food'); o.dnc = [P.dncOf(D, st), P.dncOf(Object.assign({dnc: 'clear'}, D), st)]; P.setDnc(st, D, 'listed');
+o.dncS = P.statusOf(D, st, T('2026-11-24T15:00:00Z'), c); o.dncLoad = P.loadState(JSON.stringify({dncCheck: {a: 'listed', b: 'hack'}})).dncCheck;
+o.sc = [P.scripts({name: 'Ace', lane: 'no_site', site: 'f/abcdefgh/'}, 'Ann', c), P.scripts({name: 'Ace', lane: 'site_down'}, 'Ann', c), P.scripts({name: 'Ace', lane: 'redesign'}, 'Ann', c)];
+const s2 = P.emptyState(), day = '2026-11-24T';
+P.logOutcome(s2, {id: 'a'}, 'voicemail', T(day + '14:00:00Z')); P.logOutcome(s2, {id: 'b'}, 'called', T(day + '14:10:00Z')); P.logOutcome(s2, {id: 'c'}, 'interested', T(day + '14:20:00Z'));
+P.logOutcome(s2, {id: 'd'}, 'booked', T(day + '14:30:00Z')); P.logOutcome(s2, {id: 'e'}, 'no', T(day + '14:40:00Z')); P.logOutcome(s2, {id: 'c'}, 'emailed', T(day + '14:21:00Z'));
+P.logOutcome(s2, {id: 'f'}, 'interested', T('2026-11-23T15:00:00Z'));   // yesterday: not in today's tally
+o.tally = P.dayTally(s2, T(day + '20:00:00Z'), c, {name: 'Starter site', setup: 1500, monthly: 79});
+console.log(JSON.stringify(o));
+"""
+
+
+def node3():
+    if not shutil.which("node"):
+        return
+    tmp = tempfile.mkdtemp(prefix="portal-node3-")
+    try:
+        f = os.path.join(tmp, "t.mjs")
+        open(f, "w").write(NODE3 % os.path.join(D, "portalcore.js").replace("\\", "/"))
+        r = subprocess.run(["node", f], capture_output=True, text=True, timeout=60)
+        if r.returncode:
+            check("b. node3 runs", False, r.stderr[-300:])
+            return
+        o = json.loads(r.stdout.strip().splitlines()[-1])
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    check("b. follow-ups come back on workdays: Mon + 2 = Wed; the Wed before Thanksgiving + 2 = Tue Dec 1 (Thanksgiving, the day after, the weekend skipped); Fri + 1 = Mon",
+          o["wd"] == ["2026-11-25", "2026-12-01", "2026-11-23"], o["wd"])
+    check("b. the best hours per kind of business (restaurants 2-4 pm, trades 7-9 am + 4-6 pm, retail 10-12), clipped to the portal's calling hours (9-5 by default)",
+          o["best"][0] == [[960, 1020]] and o["best"][1] == [[840, 960]] and o["best"][2] == [[600, 720]] and o["best"][3] == [[420, 540], [960, 1080]]
+          and o["inBest"] == [True, False], o["best"])
+    check("b. Today: follow-ups due today first, then the ones in their best hour now, then the rest; at most 60",
+          [x[0] for x in o["today"]] == ["x4", "x2", "x3", "x1"] and o["today"][0][1] and o["today"][1][2] and o["n60"] == 60, o["today"])
+    check("b. the Do Not Call field: 'unknown' by default, the PC's scrub can say 'clear', 'listed' = never call; junk states are dropped",
+          o["dnc"] == ["unknown", "clear"] and o["dncS"]["tone"] == "done" and "Do Not Call" in o["dncS"]["why"] and o["dncLoad"] == {"a": "listed"}, (o["dnc"], o["dncS"], o["dncLoad"]))
+    vm = [x["voicemail"] for x in o["sc"]]
+    tx = [x["text"] for x in o["sc"]]
+    check("b. a voicemail per lane (the caller says it: the name, the agency, the business, the agency number) and one text line per lane with 'Reply STOP'",
+          all("Ann with Peak Web here, for Ace" in v and "(301) 555-0142" in v for v in vm) and "free website draft" in vm[0] and "didn't load" in vm[1] and "free 2-minute check" in vm[2]
+          and all(t.endswith("Reply STOP to opt out.") for t in tx) and "https://sites.example.com/f/abcdefgh/" in tx[0] and "we built" not in tx[2], (vm, tx))
+    t = o["tally"]
+    check("b. the end-of-day tally: dials 5, connects 4 (talked / interested / booked / no), 1 show booked, pipeline 2 x the Starter setup = $3,000 + $158/mo; yesterday left out",
+          t["dials"] == 5 and t["connects"] == 4 and t["booked"] == 1 and t["pipelineN"] == 2 and t["pipeline"] == 3000 and t["monthly"] == 158
+          and t["text"] == "Today: 5 dials, 4 connects, 1 booked, 2 in the pipeline ($3,000 + $158/mo at Starter site prices).", t)
 
 
 NODE2 = r"""
@@ -380,8 +452,8 @@ def twenty():
             p.wait_for_selector("#list li.lead")
             first = p.evaluate("() => ({ rows: document.querySelectorAll('#list li.lead').length, more: !document.getElementById('moreRows').hidden,"
                                " lane: document.querySelector('#list li.lead .lane').textContent, opener: document.querySelector('#list li.lead .opener').textContent })")
-            check("d. 390 px: 25 rows at a time (Show 25 more), each with its lane and the line to say", first["rows"] == 25 and first["more"] and first["lane"] in ("No website", "Site down")
-                  and first["opener"].startswith(("I noticed", "I tried your website")), first)
+            check("d. 390 px: 25 rows at a time (Show 25 more), each with its lane and the line to say", first["rows"] == 25 and first["more"] and first["lane"].split(" ·")[0] in ("No website", "Site down", "Has a site")
+                  and first["opener"].startswith(("I noticed", "I tried your website", "I looked at your website")), first)
             wide, done = [], 0
             for k in range(20):
                 li = p.locator("#list li.lead.go").first
@@ -392,6 +464,19 @@ def twenty():
                 done += 1
             log = p.evaluate("JSON.parse(localStorage.getItem('agency.portal.v1')).log.length")
             check("d. a caller works 20 calls in a row (Call, then what happened) on 390 x 844 with never a sideways scroll; all 20 logged", done == 20 and log == 20 and max(wide) <= 1 and not errs, (wide, log, errs))
+            eod = p.evaluate("() => [document.getElementById('eDials').textContent, document.getElementById('eConn').textContent, document.getElementById('eText').textContent,"
+                             " document.querySelector(\".tabs button[aria-pressed='true']\").dataset.f]")
+            check("d. the end-of-day card after the 20 calls: 20 dials, 10 connects (the Talked ones), the tally line; Today stayed the open tab",
+                  eod[0] == "20" and eod[1] == "10" and eod[2].startswith("Today: 20 dials, 10 connects") and eod[3] == "today", eod)
+            li = p.locator("#list li.lead").first
+            name = li.locator(".name").text_content()
+            li.locator("details.scripts summary").click()
+            vm = li.locator(".vm").text_content()
+            li.locator(".dncSel").select_option("listed")
+            p.wait_for_timeout(200)
+            gone = p.evaluate("(n) => ![...document.querySelectorAll('#list li.lead .name')].some((e) => e.textContent === n)", name)
+            check("d. a row's scripts drawer shows the voicemail with the caller's name; 'On the list' in the Do Not Call field takes the business off Today at once",
+                  vm.startswith("Ann with Peak Web here, for ") and gone, (vm, gone))
             p.click(".tabs button[data-f='redesign']")
             p.wait_for_selector("#list li.lead")
             rd = p.evaluate("() => [...document.querySelectorAll('#list li.lead')].map((li) => [li.querySelector('.name').textContent, li.querySelector('.lane').textContent,"
@@ -515,8 +600,10 @@ if __name__ == "__main__":
     node()
     pcside()
     sitecheck()
+    dialing_static()
     lanes()
     node2()
+    node3()
     if "--static" not in sys.argv:
         browser()
         twenty()
