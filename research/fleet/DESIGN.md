@@ -6,7 +6,7 @@ owner the most payout $ in 6 months, and when does he reach $70,000 (the Corvett
 ## Engine
 research/plans/rank.py via research/onebook/book.py (real fills: ATLAS 10 ticks a side). One fleet = several account slots
 stepped on the SAME market path (same bots, same days: bad weeks hit every account together). 1,000 paths x 252 sessions
-(12 months, 5-session blocks, seed 23); 6-month numbers = the first 126 sessions; H1 / H2 / REF as rank.py.
+(24 months, 5-session blocks, seed 23; months 7-24 = "if the market stays like this"); 6-month numbers = the first 126 sessions; H1 / H2 / REF as rank.py.
 
 ## Start state = the owner's 4 MFFU accounts (sunk cost, no fee counted)
 Zlarior Builder 50K eval (-$807, room $1,025; book B09 = LIT eval, LIT + ATLAS once funded, the approved card),
