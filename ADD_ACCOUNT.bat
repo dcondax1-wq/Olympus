@@ -14,11 +14,12 @@ echo  ==== What NinjaTrader shows ====
 echo  (Easiest: type it on the page http://localhost:8766/add-account/ - on the PC, or your Tailscale link + /add-account/ on the phone.)
 echo.
 echo  ==== Add an account ====
-echo   1  New Builder 25K eval      (Zlarior trades it)
-echo   2  New Builder 50K eval      (Zlarior trades it)
-echo   3  New Rapid EOD 50K eval    (Zlarior + ATLAS)
-echo   4  ATLAS's FUNDED 25K        (after MFFU's Upgrade)
-echo   5  New Rapid EOD 25K eval    (Zlarior + ATLAS)
+echo   1  New Builder 25K eval      $63 (one was $43)  - Zlarior trades it
+echo   2  New Builder 50K eval      $91.80  - Zlarior trades it
+echo   3  New Rapid EOD 50K eval    $165 (CLUB)  - Zlarior + ATLAS
+echo   4  ATLAS's FUNDED 25K        no new buy  - after MFFU's Upgrade
+echo   5  New Rapid EOD 25K eval    $97.20 (CLUB)  - Zlarior + ATLAS
+echo   (FundedNext and Lucid are OFF: they need a written yes first. Easier: TRADE_HOME.bat, choice 4.)
 echo.
 set "CH="
 set /p CH=Type 1, 2, 3, 4 or 5 and press Enter: 
@@ -44,7 +45,7 @@ echo  Fix the Name (copy it again from NinjaTrader, Accounts tab) and run ADD_AC
 goto :end
 :done
 echo.
-echo  Done. Next: STOP BOT (if it runs), then START BOT and type the live phrase yourself.
+echo  Added HELD (not armed). Next: STOP BOT if it runs, then START BOT and type the live phrase yourself. Nothing trades until then.
 :end
 echo.
 pause
