@@ -203,6 +203,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             if q.endswith("/"):
                 q += "index.html"
             return os.path.join(WEB, *q.split("/"))
+        q = p.lstrip("/")
+        if q and "/" not in q and os.path.isfile(os.path.join(WEB, q)):    # the site's root files the apps load (pc_feed.js, age.css): on the real site too
+            return os.path.join(WEB, q)
         return os.path.join(WEB, "__missing__")
 
 
