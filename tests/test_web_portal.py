@@ -169,8 +169,10 @@ def pcside():
         PT.ADDED = os.path.join(tmp, "added.json")
         d = PT.build(web, out)
         ids = [r["id"] for r in d["leads"]]
-        check("c. build: chains, businesses with a website and the never-again list are left out; numbers first, then the best niches",
-              ids == ["a", "f", "d"] and d["skipped"] == {"chain": 1, "has a website": 1, "never again": 1}, (ids, d["skipped"]))
+        cl = next((r for r in d["leads"] if r["id"] == "c"), {})
+        check("c. build: chains and the never-again list are left out; a business WITH a website stays, last, on the redesign lane with its address; numbers first, then the best niches",
+              ids == ["a", "f", "d", "c"] and d["skipped"] == {"chain": 1, "has a website": 0, "never again": 1} and cl.get("lane") == "redesign" and cl.get("url") == "https://x.example"
+              and d["leads"][0]["lane"] == "no_site" and d["lanes"] == {"no_site": 3, "site_down": 0, "redesign": 1}, (ids, d["skipped"], cl))
         a = d["leads"][0]
         check("c. build: each row has the code, the site path, a clean 10-digit number; the file says public data only",
               a["code"] == "FR-1" and a["site"] == "f/aaaaaaaa/" and a["phone"] == "3015550100" and "no private data" in d["note"] and "agency_never" not in json.dumps(d), a)
@@ -183,7 +185,7 @@ def pcside():
         json.dump({"sites": []}, open(os.path.join(sweb, "factory", "sites.json"), "w"))
         ds = PT.build(sweb, os.path.join(tmp, "split.json"))
         check("c. build reads the split list (leads.json 'files' -> towns/*.json), first row per id, nothing outside towns/",
-              sorted(r["id"] for r in ds["leads"]) == ["a", "d", "f"] and next(r for r in ds["leads"] if r["id"] == "a")["name"] == "Ace Roofing", ds["leads"])
+              sorted(r["id"] for r in ds["leads"]) == ["a", "c", "d", "f"] and next(r for r in ds["leads"] if r["id"] == "a")["name"] == "Ace Roofing", ds["leads"])
         cp = os.path.join(tmp, "portal.json")
         c = PT.set_pass("blue river candle", cp)
         raw = open(cp).read()
@@ -258,6 +260,149 @@ def pcside():
         check("c. import refuses a file that is not a portal export", refused)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
+
+
+def sitecheck():
+    """agency/redesign_score.py: one home-page GET, page facts only (https, viewport, (c) year, speed, size, old code); never the page's text"""
+    from agency import redesign_score as SC
+    old = SC.score("http://old.example/", 200, b"<html><table><p>Call 301-555-0100, bob@old.example</p><footer>&copy; 2016 Old Co</footer><script src=jquery-1.8.js></script>", 3.4, 2026)
+    new = SC.score("https://new.example/", 200, b'<html><meta name="viewport" content="width=device-width"><footer>\xc2\xa9 2026</footer>', 0.6, 2026)
+    check("c. the redesign score: http +3, no viewport +3, (c) 3+ years old +2, slow +2, old code +1; a modern page scores 0",
+          old["score"] == 11 and new["score"] == 0 and "not mobile-friendly" in old["why"] and "old copyright (\u00a9 2016)" in old["why"], (old, new))
+    check("c. the score keeps page facts only: no phone, no email, no page text", "301" not in json.dumps(old) and "bob@" not in json.dumps(old) and "Old Co" not in json.dumps(old))
+    def boom(url):
+        raise OSError("timeout")
+    res = SC.run([{"id": "a", "url": "https://x.example"}, {"id": "b", "url": "ftp://y"}, {"id": "c", "url": "https://z.example"}],
+                 get=lambda u: boom(u) if "x." in u else ("https://z.example/", 200, b'<meta name="viewport">', 0.2))
+    check("c. a site that does not answer is marked down (not scored); a bad address is never fetched; results carry the check date",
+          res["a"]["down"] and res["b"]["down"] and res["c"]["score"] == 0 and res["c"]["checked"], res)
+
+
+def lanes():
+    """the lanes from the Overture check: no_site / site_down / redesign, the opener per lane (the same words in Python and JS), the redesign score"""
+    tmp = tempfile.mkdtemp(prefix="portal-lanes-")
+    os.environ["OLYMPUS_HOME"] = os.path.join(tmp, "home")
+    from agency import portal as PT
+    try:
+        web = os.path.join(tmp, "web")
+        os.makedirs(os.path.join(web, "leads"))
+        json.dump({"leads": [
+            {"id": "n", "name": "No Site Co", "phone": "3015550001", "town": "Frederick", "web": {"verdict": "none"}},
+            {"id": "s", "name": "Down Deli", "phone": "3015550002", "town": "Frederick", "web": {"verdict": "site_down", "url": "http://down.example", "status": "dns"}},
+            {"id": "r1", "name": "Old Site Dental", "phone": "3015550003", "town": "Frederick", "website": "http://old.example", "web": {"verdict": "has_site"}},
+            {"id": "r2", "name": "New Site Salon", "phone": "3015550004", "town": "Frederick", "website": "https://new.example", "web": {"verdict": "has_site"}},
+            {"id": "r3", "name": "Bad Url Shop", "phone": "3015550005", "town": "Frederick", "website": "javascript:alert(1)"}]}, open(os.path.join(web, "leads", "leads.json"), "w"))
+        sc = os.path.join(tmp, "scores.json")
+        json.dump({"scores": {"r1": {"score": 8, "why": ["not secure (http)", "not mobile-friendly", "old copyright (\u00a9 2019)"]}, "r2": {"score": 1, "why": ["heavy page"]}}}, open(sc, "w"))
+        PT.SCORES, PT.ADDED = sc, os.path.join(tmp, "added.json")
+        out = os.path.join(tmp, "list.json")
+        d = PT.build(web, out)
+        by = {r["id"]: r for r in d["leads"]}
+        check("c. lanes: no website -> no_site, a site that did not load -> site_down, a working site -> redesign (with its score and the reasons); a site with no usable address is left out",
+              by["n"]["lane"] == "no_site" and by["s"]["lane"] == "site_down" and by["r1"]["lane"] == "redesign" and by["r1"]["score"] == 8 and "not mobile-friendly" in by["r1"]["why"]
+              and "r3" not in by and d["lanes"] == {"no_site": 1, "site_down": 1, "redesign": 2}, (by, d["lanes"]))
+        check("c. redesign rows come after the first-site rows, the most dated site first", [r["id"] for r in d["leads"]][-2:] == ["r1", "r2"], [r["id"] for r in d["leads"]])
+        raw = open(out, encoding="utf-8").read()
+        check("c. the list file is compact (no indent) and leaves the standard opener out (the page says the same words)", "\n" not in raw.strip() and '"opener"' not in raw, raw[:200])
+        js = open(os.path.join(D, "portalcore.js"), encoding="utf-8").read()
+        same = all(PT.OPENERS[k].replace("{name}", "{n}").replace("'", "\\'") in js for k in PT.OPENERS)
+        check("c. the opener per lane is the same in Python (agency/portal.py OPENERS) and the page (portalcore.js)", same)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+NODE2 = r"""
+import * as P from '%s';
+const o = {}, c = {agency: 'Peak Web', agency_email: 'peak@gmail.example', postal: 'PO Box 12, Frederick MD 21701', public_base: 'https://sites.example.com', prices: {starter: '$1,500'}};
+const R = {id: 'r', name: 'Old Site Dental', lane: 'redesign', url: 'http://old.example', score: 8, why: ['not secure (http)', 'not mobile-friendly']};
+o.tabs = [P.tabOf(R, {tone: 'go'}), P.tabOf(R, {tone: 'done'}), P.tabOf({lane: 'site_down'}, {tone: 'go'}), P.tabOf({}, {tone: 'need'})];
+o.open = [P.opener(R), P.opener({name: 'Down Deli', lane: 'site_down'}), P.opener({name: 'No Site Co'})];
+o.their = [P.theirSite(R), P.theirSite({lane: 'redesign', url: 'javascript:alert(1)'}), P.theirSite({lane: 'no_site', url: 'https://x.example'})];
+o.mail = P.emailFor(R, 'Ann', c); o.lanes = P.LANES;
+console.log(JSON.stringify(o));
+"""
+
+
+def node2():
+    if not shutil.which("node"):
+        return
+    tmp = tempfile.mkdtemp(prefix="portal-node2-")
+    try:
+        f = os.path.join(tmp, "t.mjs")
+        open(f, "w").write(NODE2 % os.path.join(D, "portalcore.js").replace("\\", "/"))
+        r = subprocess.run(["node", f], capture_output=True, text=True, timeout=60)
+        o = json.loads(r.stdout.strip().splitlines()[-1]) if r.returncode == 0 else {}
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    check("b. the Redesign tab holds the businesses with a site (until done); site_down and no_site rows stay in the status tabs", o.get("tabs") == ["redesign", "done", "go", "need"], o.get("tabs"))
+    check("b. the opener per lane: redesign offers a free check (never 'we built you'), site_down says it did not load, no_site the built site",
+          o["open"][0].startswith("I looked at your website") and "we built" not in o["open"][0] and "didn't load" in o["open"][1] and o["open"][2].startswith("I noticed No Site Co doesn't have a website"), o.get("open"))
+    check("b. 'their current site' only for a redesign row with an http(s) address", o["their"] == ["http://old.example", "", ""], o.get("their"))
+    m = o["mail"]
+    check("b. the redesign email: honest subject, their address, the check's reasons, sender + postal address + 'no thanks'; no concept-site link",
+          m["ready"] and m["subject"] == "A free check of the Old Site Dental website" and "http://old.example" in m["body"] and "- not mobile-friendly" in m["body"]
+          and "PO Box 12" in m["body"] and "no thanks" in m["body"] and "sites.example.com" not in m["body"], m)
+
+
+def twenty():
+    """a caller works 20 calls on a 390 x 844 phone: never a sideways scroll, the Redesign tab sorted by the most dated site, 25 rows at a time"""
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        return
+    sys.path.insert(0, os.path.join(ROOT, "tests"))
+    import browser_kit as BK
+    from tests import agora_kit as AK
+    from agency import portal as PT
+    salt = "0123456789abcdef"
+    conf = dict(PT.DEFAULT_CONF, agency="Peak Web", agency_email="peak@gmail.example", postal="PO Box 12, Frederick MD 21701", public_base="https://sites.example.com")
+    conf["pass"] = {"salt": salt, "sha256": PT.pass_hash("blue river candle", salt)}
+    long = "Frederick County Very Long Business Name Plumbing Heating And Cooling Services"
+    leads = [{"id": f"g{i}", "name": (long if i % 7 == 0 else f"Business {i}"), "phone": f"301555{1000 + i}", "town": "Frederick", "niche": "trades", "kind": "Plumber",
+              "code": f"FR-{i}", "site": "f/abcdefg%d/" % (2 + i % 8), "lane": "site_down" if i % 5 == 0 else "no_site"} for i in range(40)]
+    leads += [{"id": f"r{i}", "name": f"Has Site {i}", "phone": f"240555{1000 + i}", "town": "Frederick", "niche": "health", "lane": "redesign",
+               "url": f"https://site{i}.example", "score": sc, "why": ["not mobile-friendly"] if sc else []} for i, sc in enumerate((2, 9, 5))]
+    srv, origin = AK.serve({"/agency/portal/portal.json": json.dumps(conf), "/agency/portal/calllist.json": json.dumps({"v": 1, "leads": leads})})
+    try:
+        with sync_playwright() as pw:
+            br = BK.launch(pw)
+            ctx = br.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True, reduced_motion="reduce", service_workers="block", timezone_id="America/New_York")
+            ctx.route(re.compile(r"^(?!https?://127\.0\.0\.1)"), lambda r: r.abort())
+            p = ctx.new_page()
+            p.clock.install(time=1795446000)          # Mon 2026-11-23 10:00 ET
+            errs = []
+            p.on("pageerror", lambda e: errs.append(str(e)[:120]))
+            p.add_init_script("window.open = () => null;")
+            p.goto(f"{origin}/agency/portal/", wait_until="load")
+            p.fill("#who", "Ann")
+            p.fill("#phrase", "blue river candle")
+            p.click("#lockForm button")
+            p.wait_for_selector("#list li.lead")
+            first = p.evaluate("() => ({ rows: document.querySelectorAll('#list li.lead').length, more: !document.getElementById('moreRows').hidden,"
+                               " lane: document.querySelector('#list li.lead .lane').textContent, opener: document.querySelector('#list li.lead .opener').textContent })")
+            check("d. 390 px: 25 rows at a time (Show 25 more), each with its lane and the line to say", first["rows"] == 25 and first["more"] and first["lane"] in ("No website", "Site down")
+                  and first["opener"].startswith(("I noticed", "I tried your website")), first)
+            wide, done = [], 0
+            for k in range(20):
+                li = p.locator("#list li.lead.go").first
+                li.locator(".call").click()
+                li.locator(".outcomes button", has_text=("Voicemail" if k % 2 else "Talked")).click()
+                p.wait_for_timeout(60)
+                wide.append(p.evaluate("() => Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) - innerWidth"))
+                done += 1
+            log = p.evaluate("JSON.parse(localStorage.getItem('agency.portal.v1')).log.length")
+            check("d. a caller works 20 calls in a row (Call, then what happened) on 390 x 844 with never a sideways scroll; all 20 logged", done == 20 and log == 20 and max(wide) <= 1 and not errs, (wide, log, errs))
+            p.click(".tabs button[data-f='redesign']")
+            p.wait_for_selector("#list li.lead")
+            rd = p.evaluate("() => [...document.querySelectorAll('#list li.lead')].map((li) => [li.querySelector('.name').textContent, li.querySelector('.lane').textContent,"
+                            " (li.querySelector('.site') || {}).textContent || '', li.querySelector('.opener').textContent.slice(0, 22)])")
+            check("d. the Redesign tab: the businesses with a site, the most dated first (9, 5, 2), 'Their current site', the free-check opener",
+                  [r[0] for r in rd] == ["Has Site 1", "Has Site 2", "Has Site 0"] and rd[0][1] == "Has a site · 9/11" and rd[0][2] == "Their current site" and rd[0][3] == "I looked at your websi", rd)
+            check("d. the Redesign tab: no sideways scroll either", p.evaluate("() => document.documentElement.scrollWidth - innerWidth") <= 1)
+            ctx.close()
+            br.close()
+    finally:
+        srv.shutdown()
 
 
 def browser():
@@ -369,7 +514,11 @@ if __name__ == "__main__":
     static()
     node()
     pcside()
+    sitecheck()
+    lanes()
+    node2()
     if "--static" not in sys.argv:
         browser()
+        twenty()
     print(f"\n{N[0] - len(FAILS)}/{N[0]} passed" + ("" if not FAILS else f"; FAILED: {FAILS}"))
     sys.exit(1 if FAILS else 0)

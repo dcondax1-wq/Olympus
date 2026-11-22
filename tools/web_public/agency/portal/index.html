@@ -15,8 +15,8 @@
      (python -m agency.portal build); portal.json = the public facts + the passphrase's salted hash (python -m agency.portal pass).
      Saved on this phone only ('agency.portal.v1'); it sends nothing by itself: Call opens the phone, Email opens the agency Gmail's compose,
      the log goes back as a file the owner imports (python -m agency.portal import). No secret, no private data, never the owner's address. -->
-<link rel="stylesheet" href="portal.css?v=1">
-<script type="module" src="portal.js?v=1"></script>
+<link rel="stylesheet" href="portal.css?v=2">
+<script type="module" src="portal.js?v=2"></script>
 </head>
 <body>
 <a class="skip" href="#list">Skip to the list</a>
@@ -70,11 +70,13 @@
     <nav class="tabs" aria-label="Filter the list">
       <button type="button" data-f="go" aria-pressed="true">Call now <span id="nGo"></span></button>
       <button type="button" data-f="need" aria-pressed="false">Need a number <span id="nNeed"></span></button>
+      <button type="button" data-f="redesign" aria-pressed="false">Redesign <span id="nRedesign"></span></button>
       <button type="button" data-f="wait" aria-pressed="false">Later <span id="nWait"></span></button>
       <button type="button" data-f="done" aria-pressed="false">Done <span id="nDone"></span></button>
     </nav>
     <p id="status" class="muted" role="status">Loading the list...</p>
     <ol id="list" class="list" tabindex="-1"></ol>
+    <button type="button" class="btn wide" id="moreRows" hidden>Show 25 more</button>
 
     <section class="card" aria-labelledby="addH">
       <h2 id="addH">Add a business you found on Google Maps</h2>
@@ -113,9 +115,11 @@
     </div>
     <p class="meta muted"></p>
     <p class="why"></p>
+    <p class="say"><span class="lane"></span> <q class="opener"></q></p>
+    <p class="checks small muted" hidden></p>
     <div class="row acts">
       <a class="btn primary call" href="#"></a>
-      <a class="btn site" href="#" target="_blank" rel="noopener">Their site</a>
+      <a class="btn site" href="#" target="_blank" rel="noopener noreferrer">Their site</a>
       <a class="btn maps" href="#" target="_blank" rel="noopener">Find on Google Maps</a>
     </div>
     <form class="phoneForm" hidden>

@@ -83,6 +83,16 @@ def chain(name) -> bool:
 
 
 # ------------------------------------------------------------------------------------------------ the list
+# the first line after "Hi, it's <caller> with <agency>." per lane (the Overture check, tools/web_leads_overture.py): honest, no pressure, no claim we
+# can't back. no_site = we built them a free concept site; site_down = their site did not load on the check date; redesign = they have a working site
+OPENERS = {
+    "no_site": "I noticed {name} doesn't have a website, so we built you one. It's free to look at. Can I email you the link?",
+    "site_down": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
+    "redesign": "I looked at your website. We help local businesses get a faster, mobile-friendly site that brings more calls. Can I email you a free 2-minute check of yours?",
+}
+SCORES = os.path.join(ROOT, "tools", "agency_site_scores.json")
+
+
 def build(web: str = WEB, out: str = LIST) -> dict:
     from agency import leadsfile
     leads = leadsfile.load(web)                     # leads.json, or its per-town files ("files": ["towns/<town>.json"])
@@ -92,6 +102,7 @@ def build(web: str = WEB, out: str = LIST) -> dict:
     nev, rows, seen = never_ids(), [], set()
     found = (rj(os.path.join(home(), "portal_log.json"), {}) or {}).get("phones") or {}   # numbers callers found on Google Maps by hand
     skip = {"chain": 0, "has a website": 0, "never again": 0}
+    scores = (rj(SCORES, {}) or {}).get("scores") or {}      # agency/redesign_score.py: how dated / slow each working site is (public page facts only)
     for L in leads:
         lid = str(L.get("id") or "")
         if not lid or lid in seen or not str(L.get("name") or "").strip():
@@ -101,8 +112,11 @@ def build(web: str = WEB, out: str = LIST) -> dict:
         if f.get("chain") or chain(L.get("name")):
             skip["chain"] += 1
             continue
-        if L.get("website"):
-            skip["has a website"] += 1
+        verdict = (L.get("web") or {}).get("verdict")
+        url = str(L.get("website") or (L.get("web") or {}).get("url") or "")
+        lane = "redesign" if (L.get("website") or verdict == "has_site") else "site_down" if verdict == "site_down" else "no_site"
+        if lane == "redesign" and not re.match(r"^https?://", url):
+            skip["has a website"] += 1                      # a website tag with no usable address: nothing honest to say about it
             continue
         if lid in nev:
             skip["never again"] += 1
@@ -111,12 +125,26 @@ def build(web: str = WEB, out: str = LIST) -> dict:
                      "state": str(L.get("state") or "MD")[:2].upper(), "niche": str(f.get("niche") or L.get("niche") or "other")[:20],
                      "kind": str(f.get("kind") or L.get("kind") or L.get("niche_name") or "")[:40], "code": str(f.get("code") or codes.get(lid) or ""),
                      "site": str(f.get("path") or ""), "heat": str(L.get("heat") or ""),
-                     "lane": "site_down" if (L.get("web") or {}).get("verdict") == "site_down" else "no_site"})   # Overture check (tools/web_leads_overture.py)
+                     "lane": lane, "opener": OPENERS[lane].format(name=str(L["name"]).strip()[:80])})   # Overture check (tools/web_leads_overture.py)
+        if lane == "redesign":
+            sc = scores.get(lid) or {}
+            rows[-1].update(url=url[:200], score=int(sc.get("score") or 0), why=[str(w)[:40] for w in (sc.get("why") or [])][:4], site="", code="")
     rank = {"trades": 0, "home": 0, "health": 1, "beauty": 2, "auto": 3, "food": 4}
-    rows.sort(key=lambda r: (not r["phone"], rank.get(r["niche"], 9), r["name"].lower()))
-    doc = {"v": 1, "kind": "caller-portal-list", "built": time.strftime("%Y-%m-%d"), "count": len(rows),
+    rows.sort(key=lambda r: (r["lane"] == "redesign", not r["phone"], -r.get("score", 0), rank.get(r["niche"], 9), r["name"].lower()))
+    lanes = {k: sum(1 for r in rows if r["lane"] == k) for k in OPENERS}
+    doc = {"v": 1, "kind": "caller-portal-list", "built": time.strftime("%Y-%m-%d"), "count": len(rows), "lanes": lanes,
            "note": "public map data only (OpenStreetMap + businesses a caller added); no private data", "skipped": skip, "leads": rows}
-    wj(out, doc)
+    for r in rows:                                       # a phone downloads this: drop empty fields
+        for k in [k for k, v in r.items() if v in ("", None, []) and k not in ("id", "name", "phone", "lane")]:
+            del r[k]
+        if r.get("state") == "MD":
+            del r["state"]
+        if r.get("opener") == OPENERS[r["lane"]].format(name=r["name"]):
+            del r["opener"]                                  # the page says the same line for its lane (portalcore.js opener())
+    os.makedirs(os.path.dirname(out) or ".", exist_ok=True)
+    with open(out + ".tmp", "w", encoding="utf-8", newline="\n") as f:
+        json.dump(doc, f, ensure_ascii=False, separators=(",", ":"))
+    os.replace(out + ".tmp", out)
     return doc
 
 
