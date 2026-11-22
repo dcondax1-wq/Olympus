@@ -2387,13 +2387,16 @@
    "osm": "https://www.openstreetmap.org/node/2296563592",
    "phone_src": "overture",
    "web": {
-    "verdict": "has_site",
+    "verdict": "site_down",
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.beersandcheers.com/",
-    "status": 403
-   },
-   "website": "http://www.beersandcheers.com/"
+    "status": 403,
+    "reason": "for_sale",
+    "domain": "beersandcheers.com",
+    "checked3": "2026-11-22T06:59Z",
+    "proof": "Your site beersandcheers.com didn't load: the address is now listed for sale. Checked Sun 11-22 1:59am ET."
+   }
   },
   {
    "id": "osm-n2713016927",

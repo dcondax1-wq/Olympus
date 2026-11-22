@@ -10656,11 +10656,11 @@
    "osm": "https://www.openstreetmap.org/node/1683739571",
    "phone_src": "overture",
    "web": {
-    "verdict": "has_site",
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.thatsamore.com/",
-    "status": 200
+    "status": 200,
+    "verdict": "has_site"
    },
    "website": "http://www.thatsamore.com/"
   },

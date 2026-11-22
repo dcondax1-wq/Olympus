@@ -30,8 +30,8 @@ ET = ZoneInfo("America/New_York")
 FOR_SALE = re.compile(r"(this domain|the domain)[^<]{0,40}(is|may be) (for sale|available)|buy this domain|domain (is )?for sale|make an offer|"
                       r"hugedomains|dan\.com|afternic|sedo\.com|undeveloped\.com|atom\.com/name", re.I)
 PARKED = re.compile(r"parked (free|domain|by)|domain parking|this (web ?page|site) is parked|godaddy\.com/park|parkingcrew|bodis\.com|"
-                    r"sedoparking|above\.com|namebright|is registered (at|with)|coming soon[^<]{0,40}(godaddy|namecheap|register)|"
-                    r"future home of|this domain (name )?(has been|was) registered", re.I)
+                    r"sedoparking|above\.com|namebright|coming soon[^<]{0,40}(godaddy|namecheap)", re.I)   # not 'future home of' / 'is registered with':
+# a business's own placeholder or licence line can say that, and then 'your domain is parked' would not be true
 REASON = {
     "dns_gone": "the address no longer points anywhere",
     "timeout": "it never answered",

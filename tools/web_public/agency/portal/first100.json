@@ -11,6 +11,34 @@
  },
  "leads": [
   {
+   "id": "ovt-23d85960-38f8-4138-bb6d-",
+   "name": "Roof Solutions , LLC",
+   "phone": "4109378068",
+   "town": "Aberdeen",
+   "state": "MD",
+   "niche": "trades",
+   "kind": "Roofing",
+   "code": "AB-14",
+   "site": "f/22vzyrf2/",
+   "heat": "hot",
+   "score": 133,
+   "open_weekdays": 0,
+   "why": [
+    "high-ticket trade: roofing",
+    "website is down",
+    "hot lead",
+    "storefront address"
+   ],
+   "trade": "roofing",
+   "county": "Harford County",
+   "lane": "site_down",
+   "opener": "Your old web address roofsolutionsplus.com now shows a 'for sale' page, so people who look you up online find nothing. We built you a fresh site. It's free to look at. Can I email you the link?",
+   "proof": "Your site roofsolutionsplus.com didn't load: the address is now listed for sale. Checked Sun 11-22 1:59am ET.",
+   "reason": "for_sale",
+   "src": "overture",
+   "rank": 1
+  },
+  {
    "id": "ovt-3e67ad36-e8cf-40f0-b8e9-",
    "name": "Thomas Air Conditioning Services",
    "phone": "4106793683",
@@ -32,11 +60,11 @@
    "trade": "HVAC",
    "county": "Harford County",
    "lane": "site_down",
-   "opener": "I tried to open Thomas Air Conditioning Services's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site thomasacservices.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 1
+   "rank": 2
   },
   {
    "id": "ovt-393f1815-ea26-46f3-a290-",
@@ -60,11 +88,11 @@
    "trade": "roofing",
    "county": "Prince George's County",
    "lane": "site_down",
-   "opener": "I tried to open RED Roofing and Home Improvements's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site aconstructionandhomeimprovementscompany.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 2
+   "rank": 3
   },
   {
    "id": "ovt-7f598688-1e0f-48bd-9ae8-",
@@ -88,11 +116,39 @@
    "trade": "HVAC",
    "county": "Anne Arundel County",
    "lane": "site_down",
-   "opener": "I tried to open Branzell Plumbing & Heating's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site branzellplumbing.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 3
+   "rank": 4
+  },
+  {
+   "id": "ovt-25e92b40-3e6d-4fd4-95ea-",
+   "name": "Maximus Heating & Cooling",
+   "phone": "8448204822",
+   "town": "Annapolis",
+   "state": "MD",
+   "niche": "trades",
+   "kind": "HVAC service",
+   "code": "AN-52",
+   "site": "f/hrsef57c/",
+   "heat": "hot",
+   "score": 133,
+   "open_weekdays": 0,
+   "why": [
+    "high-ticket trade: HVAC",
+    "website is down",
+    "hot lead",
+    "storefront address"
+   ],
+   "trade": "HVAC",
+   "county": "Anne Arundel County",
+   "lane": "site_down",
+   "opener": "Your old web address maximushvac.com now shows a 'for sale' page, so people who look you up online find nothing. We built you a fresh site. It's free to look at. Can I email you the link?",
+   "proof": "Your site maximushvac.com didn't load: the address is now listed for sale. Checked Sun 11-22 1:59am ET.",
+   "reason": "for_sale",
+   "src": "overture",
+   "rank": 5
   },
   {
    "id": "ovt-2c38d7ac-5816-4451-bc04-",
@@ -116,11 +172,11 @@
    "trade": "HVAC",
    "county": "Baltimore City",
    "lane": "site_down",
-   "opener": "I tried to open Apollo Plumbing & Heating's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site apolloservices.biz didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 4
+   "rank": 6
   },
   {
    "id": "ovt-82e0a6e7-8f2a-44e1-8c85-",
@@ -144,11 +200,11 @@
    "trade": "roofing",
    "county": "Baltimore City",
    "lane": "site_down",
-   "opener": "I tried to open Bollinger Roofing Company Inc's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site roofingbybollinger.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "not_found",
    "src": "overture",
-   "rank": 5
+   "rank": 7
   },
   {
    "id": "ovt-f94958e1-765a-409b-9289-",
@@ -172,11 +228,11 @@
    "trade": "roofing",
    "county": "Baltimore City",
    "lane": "site_down",
-   "opener": "I tried to open Correlli Roofing Co.'s website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site correlliroofingllc.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 6
+   "rank": 8
   },
   {
    "id": "ovt-90564611-9e16-406e-8dd7-",
@@ -200,11 +256,11 @@
    "trade": "roofing",
    "county": "Baltimore City",
    "lane": "site_down",
-   "opener": "I tried to open DMV Building Services's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site dmvbuildingservices.co didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 7
+   "rank": 9
   },
   {
    "id": "ovt-bc228bde-bf13-4c2d-8812-",
@@ -228,11 +284,11 @@
    "trade": "roofing",
    "county": "Baltimore County",
    "lane": "site_down",
-   "opener": "I tried to open Exterior Experts Inc's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site exteriorexpertsmd.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 8
+   "rank": 10
   },
   {
    "id": "ovt-310a5a0d-6c60-4679-89e4-",
@@ -256,11 +312,11 @@
    "trade": "HVAC",
    "county": "Baltimore City",
    "lane": "site_down",
-   "opener": "I tried to open Fitz Mechanical Inc.'s website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site fitzmechanicalbaltimore.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "not_found",
    "src": "overture",
-   "rank": 9
+   "rank": 11
   },
   {
    "id": "ovt-521c72f8-3e6b-4f55-8a21-",
@@ -284,11 +340,11 @@
    "trade": "roofing",
    "county": "Baltimore City",
    "lane": "site_down",
-   "opener": "I tried to open Get It Done Home Services's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site get-it-done-home-services.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 10
+   "rank": 12
   },
   {
    "id": "ovt-e23d6c4a-aba3-4572-9374-",
@@ -312,11 +368,39 @@
    "trade": "roofing",
    "county": "Baltimore County",
    "lane": "site_down",
-   "opener": "I tried to open Great American Gutters & Painting's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site baltimoregutterspainting.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 11
+   "rank": 13
+  },
+  {
+   "id": "ovt-226261c8-3c7e-4fb3-8b57-",
+   "name": "Jefferson's Home Solutions",
+   "phone": "4108494866",
+   "town": "Baltimore",
+   "state": "MD",
+   "niche": "trades",
+   "kind": "HVAC service",
+   "code": "BA-228",
+   "site": "f/es53yvxj/",
+   "heat": "hot",
+   "score": 133,
+   "open_weekdays": 0,
+   "why": [
+    "high-ticket trade: HVAC",
+    "website is down",
+    "hot lead",
+    "storefront address"
+   ],
+   "trade": "HVAC",
+   "county": "Baltimore County",
+   "lane": "site_down",
+   "opener": "Your old web address jshomesolutions.com now shows a 'for sale' page, so people who look you up online find nothing. We built you a fresh site. It's free to look at. Can I email you the link?",
+   "proof": "Your site jshomesolutions.com didn't load: the address is now listed for sale. Checked Sun 11-22 1:59am ET.",
+   "reason": "for_sale",
+   "src": "overture",
+   "rank": 14
   },
   {
    "id": "ovt-737e9d4f-6ba8-4736-93cd-",
@@ -340,11 +424,11 @@
    "trade": "HVAC",
    "county": "Baltimore County",
    "lane": "site_down",
-   "opener": "I tried to open Jim's Plumbing and Heating's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site jimsplumbingbaltimore.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 12
+   "rank": 15
   },
   {
    "id": "ovt-cc546e41-1f33-48d0-a35a-",
@@ -368,11 +452,11 @@
    "trade": "roofing",
    "county": "Baltimore City",
    "lane": "site_down",
-   "opener": "I tried to open Kelbie Home Improvement Inc - Baltimore Flat Roof Services's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site kelbieroofing.com didn't load: it never answered. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "timeout",
    "src": "overture",
-   "rank": 13
+   "rank": 16
   },
   {
    "id": "ovt-40a96cfc-5070-4a16-b1b4-",
@@ -396,11 +480,11 @@
    "trade": "HVAC",
    "county": "Baltimore County",
    "lane": "site_down",
-   "opener": "I tried to open Mitchell Plumbing & Heating's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site mitchellplumbingandheating.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "not_found",
    "src": "overture",
-   "rank": 14
+   "rank": 17
   },
   {
    "id": "ovt-578989c7-6230-44dc-8e4b-",
@@ -424,11 +508,11 @@
    "trade": "HVAC",
    "county": "Baltimore County",
    "lane": "site_down",
-   "opener": "I tried to open Ozone Heating And Air Conditioning's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site ozoneheatingandair.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 15
+   "rank": 18
   },
   {
    "id": "ovt-0a4edc2b-b992-4073-9788-",
@@ -452,11 +536,11 @@
    "trade": "HVAC",
    "county": "Baltimore County",
    "lane": "site_down",
-   "opener": "I tried to open Precision Heat Treating Corporation's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site precisionheattreating.biz didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 16
+   "rank": 19
   },
   {
    "id": "ovt-fafdce28-3333-4490-a30d-",
@@ -480,11 +564,11 @@
    "trade": "roofing",
    "county": "Baltimore County",
    "lane": "site_down",
-   "opener": "I tried to open Royalty Roofing's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site royaltyroofingmd.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 17
+   "rank": 20
   },
   {
    "id": "ovt-09a6953f-131d-4962-bd59-",
@@ -508,11 +592,11 @@
    "trade": "HVAC",
    "county": "Baltimore City",
    "lane": "site_down",
-   "opener": "I tried to open Sds Mechanical's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site sdsmechanical.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 18
+   "rank": 21
   },
   {
    "id": "ovt-0a25ee0b-5af3-475c-96b2-",
@@ -536,11 +620,11 @@
    "trade": "roofing",
    "county": "Baltimore City",
    "lane": "site_down",
-   "opener": "I tried to open Sealcote Roofing Co.'s website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site sealcoteroofing.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 19
+   "rank": 22
   },
   {
    "id": "ovt-1d565e65-3ae7-42ac-873c-",
@@ -564,11 +648,11 @@
    "trade": "roofing",
    "county": "Baltimore City",
    "lane": "site_down",
-   "opener": "I tried to open Tin Roof's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site tinroofbaltimore.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "not_found",
    "src": "overture",
-   "rank": 20
+   "rank": 23
   },
   {
    "id": "ovt-5b8d1d7c-6a2c-458d-a046-",
@@ -592,11 +676,11 @@
    "trade": "roofing",
    "county": "Baltimore City",
    "lane": "site_down",
-   "opener": "I tried to open William C Mcdermott & Son's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site williammcdermottroofing.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 21
+   "rank": 24
   },
   {
    "id": "ovt-d994bc1a-5d1b-4ccf-a210-",
@@ -620,11 +704,11 @@
    "trade": "HVAC",
    "county": "Baltimore City",
    "lane": "site_down",
-   "opener": "I tried to open Your Hvac Specialist's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site yourhvacspecialist.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "not_found",
    "src": "overture",
-   "rank": 22
+   "rank": 25
   },
   {
    "id": "ovt-d4c11276-01ba-4a48-8be9-",
@@ -648,11 +732,11 @@
    "trade": "HVAC",
    "county": "Harford County",
    "lane": "site_down",
-   "opener": "I tried to open Blevins Heating & Cooling's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site blevinsheatingandcooling.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 23
+   "rank": 26
   },
   {
    "id": "ovt-e5058fa2-153d-43a4-9943-",
@@ -676,11 +760,11 @@
    "trade": "HVAC",
    "county": "Harford County",
    "lane": "site_down",
-   "opener": "I tried to open Champion Heating & Cooling's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site championhvacservices.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 24
+   "rank": 27
   },
   {
    "id": "ovt-090f3dcb-bf2a-4226-9ea5-",
@@ -704,11 +788,11 @@
    "trade": "HVAC",
    "county": "Prince George's County",
    "lane": "site_down",
-   "opener": "I tried to open Beltsville Heating & Ac Inc's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site beltsvilleheatingandac.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 25
+   "rank": 28
   },
   {
    "id": "ovt-4aeb85bf-f01f-4f98-ad0b-",
@@ -732,11 +816,39 @@
    "trade": "roofing",
    "county": "Prince George's County",
    "lane": "site_down",
-   "opener": "I tried to open EMJ Contractors's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site emjcontractors.net didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 26
+   "rank": 29
+  },
+  {
+   "id": "ovt-0786286c-0479-4179-9975-",
+   "name": "Home Visions",
+   "phone": "3019374663",
+   "town": "Beltsville",
+   "state": "MD",
+   "niche": "trades",
+   "kind": "Roofing",
+   "code": "BE-46",
+   "site": "f/dg2e76n3/",
+   "heat": "hot",
+   "score": 133,
+   "open_weekdays": 0,
+   "why": [
+    "high-ticket trade: roofing",
+    "website is down",
+    "hot lead",
+    "storefront address"
+   ],
+   "trade": "roofing",
+   "county": "Prince George's County",
+   "lane": "site_down",
+   "opener": "Your old web address homevisionsinc.com now shows a 'for sale' page, so people who look you up online find nothing. We built you a fresh site. It's free to look at. Can I email you the link?",
+   "proof": "Your site homevisionsinc.com didn't load: the address is now listed for sale. Checked Sun 11-22 1:59am ET.",
+   "reason": "for_sale",
+   "src": "overture",
+   "rank": 30
   },
   {
    "id": "ovt-433f6859-58dd-4f2b-9e63-",
@@ -760,11 +872,11 @@
    "trade": "roofing",
    "county": "Prince George's County",
    "lane": "site_down",
-   "opener": "I tried to open R D Bean's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site rdbeancommercialroofingmd.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 27
+   "rank": 31
   },
   {
    "id": "ovt-207ca97c-12da-4ae3-aef0-",
@@ -788,11 +900,11 @@
    "trade": "HVAC",
    "county": "Prince George's County",
    "lane": "site_down",
-   "opener": "I tried to open Sensa-Air's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site sensaairhvac.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 28
+   "rank": 32
   },
   {
    "id": "ovt-21722f63-9bf6-4c22-b462-",
@@ -816,11 +928,11 @@
    "trade": "roofing",
    "county": "Montgomery County",
    "lane": "site_down",
-   "opener": "I tried to open Anissa Maroof, M.d.'s website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site dranissamaroof.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 29
+   "rank": 33
   },
   {
    "id": "ovt-3ec802f0-41a8-4950-8bb0-",
@@ -844,11 +956,11 @@
    "trade": "roofing",
    "county": "Montgomery County",
    "lane": "site_down",
-   "opener": "I tried to open Bethesda Sheet Metal & Roofing's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site bethesdasheetmetal.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 30
+   "rank": 34
   },
   {
    "id": "ovt-15a23ad2-b6fc-482a-a6bf-",
@@ -872,11 +984,11 @@
    "trade": "HVAC",
    "county": "Montgomery County",
    "lane": "site_down",
-   "opener": "I tried to open Service Master's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site servicemasterpcs.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 31
+   "rank": 35
   },
   {
    "id": "ovt-40dcbb03-a60d-4118-9d47-",
@@ -900,11 +1012,11 @@
    "trade": "roofing",
    "county": "Prince George's County",
    "lane": "site_down",
-   "opener": "I tried to open Area Roofing & Siding Company, Inc.'s website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site arearoofingandsiding.net didn't load: it never answered. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "timeout",
    "src": "overture",
-   "rank": 32
+   "rank": 36
   },
   {
    "id": "ovt-f15be6aa-b860-4f98-abf7-",
@@ -928,11 +1040,11 @@
    "trade": "roofing",
    "county": "Anne Arundel County",
    "lane": "site_down",
-   "opener": "I tried to open MPD Contractors & Installations Inc.'s website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site mpdcontractors.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "not_found",
    "src": "overture",
-   "rank": 33
+   "rank": 37
   },
   {
    "id": "ovt-87dedba5-b6cc-4a0b-9145-",
@@ -956,11 +1068,11 @@
    "trade": "roofing",
    "county": "Howard County",
    "lane": "site_down",
-   "opener": "I tried to open Nu Look Roofing, Siding, And Windows's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site nulookhomedesign.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "not_found",
    "src": "overture",
-   "rank": 34
+   "rank": 38
   },
   {
    "id": "ovt-bf9fe578-ed60-4e6d-8489-",
@@ -984,11 +1096,11 @@
    "trade": "roofing",
    "county": "Howard County",
    "lane": "site_down",
-   "opener": "I tried to open R & C Roofing's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site rcroofingmd.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "not_found",
    "src": "overture",
-   "rank": 35
+   "rank": 39
   },
   {
    "id": "ovt-27a44d70-5e51-4ef4-a8d8-",
@@ -1012,11 +1124,11 @@
    "trade": "roofing",
    "county": "Howard County",
    "lane": "site_down",
-   "opener": "I tried to open ReNew Home Designs's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site renewhomedesigns.com didn't load: it shows a server error. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "server_error",
    "src": "overture",
-   "rank": 36
+   "rank": 40
   },
   {
    "id": "ovt-949e67e8-d448-4d73-8aa0-",
@@ -1040,11 +1152,11 @@
    "trade": "roofing",
    "county": "Howard County",
    "lane": "site_down",
-   "opener": "I tried to open Ridgeline Roofers Columbia's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site ridgelineroofer.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 37
+   "rank": 41
   },
   {
    "id": "ovt-af1181b8-60de-49fa-9b3b-",
@@ -1068,11 +1180,11 @@
    "trade": "roofing",
    "county": "Howard County",
    "lane": "site_down",
-   "opener": "I tried to open Rsw America's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site rswamerica.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 38
+   "rank": 42
   },
   {
    "id": "ovt-9d6defe8-016f-4d3d-bfc3-",
@@ -1096,11 +1208,11 @@
    "trade": "roofing",
    "county": "Howard County",
    "lane": "site_down",
-   "opener": "I tried to open WJ Contracting's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site wjcontractingdc.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 39
+   "rank": 43
   },
   {
    "id": "ovt-bb094822-04b8-4c77-bd74-",
@@ -1124,11 +1236,11 @@
    "trade": "roofing",
    "county": "Montgomery County",
    "lane": "site_down",
-   "opener": "I tried to open Kalani Roofing & Construction's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site kalaniconstruction.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 40
+   "rank": 44
   },
   {
    "id": "ovt-4d3c2a67-2b8f-42ae-8b16-",
@@ -1152,11 +1264,11 @@
    "trade": "roofing",
    "county": "Anne Arundel County",
    "lane": "site_down",
-   "opener": "I tried to open Kith & Kin Contractors's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site kithandkincontractors.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 41
+   "rank": 45
   },
   {
    "id": "ovt-69fc0b34-b05f-4209-874b-",
@@ -1180,11 +1292,11 @@
    "trade": "HVAC",
    "county": "Harford County",
    "lane": "site_down",
-   "opener": "I tried to open Maryland Climate Control's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site marylandclimatecontrol.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 42
+   "rank": 46
   },
   {
    "id": "ovt-4168d725-fad7-4677-8b31-",
@@ -1208,11 +1320,11 @@
    "trade": "roofing",
    "county": "Carroll County",
    "lane": "site_down",
-   "opener": "I tried to open Residential Roofing, LLC's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site residentialroofingllc.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 43
+   "rank": 47
   },
   {
    "id": "ovt-ebb5fc1f-b971-4452-85e4-",
@@ -1236,11 +1348,39 @@
    "trade": "HVAC",
    "county": "Howard County",
    "lane": "site_down",
-   "opener": "I tried to open All American Mechanical Inc's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site allamericanaircondition.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 44
+   "rank": 48
+  },
+  {
+   "id": "ovt-40164ad0-6306-411c-8004-",
+   "name": "Chris Normile Roofing",
+   "phone": "4103434530",
+   "town": "Ellicott City",
+   "state": "MD",
+   "niche": "trades",
+   "kind": "Roofing",
+   "code": "EL-338",
+   "site": "f/ezjxgztm/",
+   "heat": "hot",
+   "score": 133,
+   "open_weekdays": 0,
+   "why": [
+    "high-ticket trade: roofing",
+    "website is down",
+    "hot lead",
+    "storefront address"
+   ],
+   "trade": "roofing",
+   "county": "Howard County",
+   "lane": "site_down",
+   "opener": "Your old web address chrisnormileroofing.com now shows a parked page from the domain company, so people who look you up online find nothing. We built you a fresh site. It's free to look at. Can I email you the link?",
+   "proof": "Your site chrisnormileroofing.com didn't load: the address now shows a parked page from the domain company. Checked Sun 11-22 1:59am ET.",
+   "reason": "parked",
+   "src": "overture",
+   "rank": 49
   },
   {
    "id": "ovt-dd8ca3b4-12ea-473e-b4d4-",
@@ -1264,11 +1404,11 @@
    "trade": "HVAC",
    "county": "Harford County",
    "lane": "site_down",
-   "opener": "I tried to open American Heating and Air Conditioning Inc's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site americanheatandair.com didn't load: it shows a server error. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "server_error",
    "src": "overture",
-   "rank": 45
+   "rank": 50
   },
   {
    "id": "ovt-e5445bb5-867f-44d5-88cc-",
@@ -1292,11 +1432,11 @@
    "trade": "HVAC",
    "county": "Harford County",
    "lane": "site_down",
-   "opener": "I tried to open WaterVale Geo Heating and Cooling's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site watervalegeothermal.com didn't load: it shows a server error. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "server_error",
    "src": "overture",
-   "rank": 46
+   "rank": 51
   },
   {
    "id": "ovt-29d43953-a81f-40be-a707-",
@@ -1320,11 +1460,11 @@
    "trade": "roofing",
    "county": "Carroll County",
    "lane": "site_down",
-   "opener": "I tried to open Roofing On Call's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site roofingoncall.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "not_found",
    "src": "overture",
-   "rank": 47
+   "rank": 52
   },
   {
    "id": "ovt-6169e6e7-0ee0-4a84-a5e7-",
@@ -1348,11 +1488,11 @@
    "trade": "roofing",
    "county": "Prince George's County",
    "lane": "site_down",
-   "opener": "I tried to open Black Sun Restorations, Llc's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site blacksunrestoration.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 48
+   "rank": 53
   },
   {
    "id": "ovt-f5f5a515-3cd5-4d07-8a77-",
@@ -1376,11 +1516,11 @@
    "trade": "HVAC",
    "county": "Howard County",
    "lane": "site_down",
-   "opener": "I tried to open Snell Plumbing, Heating & Air Conditioning's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site timsnellplumbingheatac.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 49
+   "rank": 54
   },
   {
    "id": "ovt-6a88fb70-ea2f-411a-b7f6-",
@@ -1404,11 +1544,11 @@
    "trade": "roofing",
    "county": "Montgomery County",
    "lane": "site_down",
-   "opener": "I tried to open Dice Residential's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site diceresidential.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 50
+   "rank": 55
   },
   {
    "id": "ovt-9aedcdd5-948e-48d0-b759-",
@@ -1432,11 +1572,11 @@
    "trade": "HVAC",
    "county": "Montgomery County",
    "lane": "site_down",
-   "opener": "I tried to open Elio\u2019s Home Improvement's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site elioshomeimprovement.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 51
+   "rank": 56
   },
   {
    "id": "ovt-c50f023c-9017-44ab-b618-",
@@ -1460,11 +1600,11 @@
    "trade": "HVAC",
    "county": "Montgomery County",
    "lane": "site_down",
-   "opener": "I tried to open Hvac Precision Services Inc's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site hvacprecision.com didn't load: it shows a server error. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "server_error",
    "src": "overture",
-   "rank": 52
+   "rank": 57
   },
   {
    "id": "ovt-1210bee3-1464-4971-86de-",
@@ -1488,11 +1628,11 @@
    "trade": "HVAC",
    "county": "Montgomery County",
    "lane": "site_down",
-   "opener": "I tried to open Kw Mechanical Llc's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site kwmechanicalhvac.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 53
+   "rank": 58
   },
   {
    "id": "ovt-973fecbc-dbc1-47a1-a950-",
@@ -1516,11 +1656,11 @@
    "trade": "HVAC",
    "county": "Montgomery County",
    "lane": "site_down",
-   "opener": "I tried to open Mario Bro Heating and Cooling's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site mariobrohvac.com didn't load: it shows a server error. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "server_error",
    "src": "overture",
-   "rank": 54
+   "rank": 59
   },
   {
    "id": "ovt-043cc3ed-0cfc-4301-93cd-",
@@ -1544,11 +1684,11 @@
    "trade": "roofing",
    "county": "Montgomery County",
    "lane": "site_down",
-   "opener": "I tried to open Russell Roofing Company's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site russellroofinggaithersburg.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 55
+   "rank": 60
   },
   {
    "id": "ovt-6db46bdc-9267-4cb2-b422-",
@@ -1572,11 +1712,11 @@
    "trade": "HVAC",
    "county": "Montgomery County",
    "lane": "site_down",
-   "opener": "I tried to open Santy And Sons Hvac's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site santyandsonshvac.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 56
+   "rank": 61
   },
   {
    "id": "ovt-6903dc4d-d694-402a-a3fc-",
@@ -1600,11 +1740,11 @@
    "trade": "HVAC",
    "county": "Anne Arundel County",
    "lane": "site_down",
-   "opener": "I tried to open Bair Necessities's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site bairnecessities.com didn't load: it never answered. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "timeout",
    "src": "overture",
-   "rank": 57
+   "rank": 62
   },
   {
    "id": "ovt-6153e02c-95dc-4289-b3d7-",
@@ -1628,11 +1768,11 @@
    "trade": "HVAC",
    "county": "Montgomery County",
    "lane": "site_down",
-   "opener": "I tried to open Don Hoffacker's Air Conditioning & Heating Inc's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site donhoffacker.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "not_found",
    "src": "overture",
-   "rank": 58
+   "rank": 63
   },
   {
    "id": "ovt-8e733ca1-95d8-4a0d-b2f4-",
@@ -1656,11 +1796,11 @@
    "trade": "roofing",
    "county": "Montgomery County",
    "lane": "site_down",
-   "opener": "I tried to open Seneca Creek's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site senecacreekhomepro.com didn't load: it never answered. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "timeout",
    "src": "overture",
-   "rank": 59
+   "rank": 64
   },
   {
    "id": "ovt-bc84485e-6b79-4de4-b93d-",
@@ -1684,11 +1824,11 @@
    "trade": "HVAC",
    "county": "Baltimore County",
    "lane": "site_down",
-   "opener": "I tried to open Long Green Heating and AC's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site longgreenheatingandac.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 60
+   "rank": 65
   },
   {
    "id": "ovt-19918619-46cd-4376-a751-",
@@ -1712,11 +1852,11 @@
    "trade": "roofing",
    "county": "Anne Arundel County",
    "lane": "site_down",
-   "opener": "I tried to open Kelbie Home Improvement - Glen Burnie Flat Roof Services's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site kelbieroofing.com didn't load: it never answered. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "timeout",
    "src": "overture",
-   "rank": 61
+   "rank": 66
   },
   {
    "id": "ovt-924181e6-e78a-461b-9aed-",
@@ -1740,11 +1880,11 @@
    "trade": "roofing",
    "county": "Anne Arundel County",
    "lane": "site_down",
-   "opener": "I tried to open Kelbie Home Improvement, Inc. Mhic 46033's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site kelbieroofing.com didn't load: it never answered. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "timeout",
    "src": "overture",
-   "rank": 62
+   "rank": 67
   },
   {
    "id": "ovt-5280b33a-bad0-4ae4-b965-",
@@ -1768,11 +1908,11 @@
    "trade": "HVAC",
    "county": "Carroll County",
    "lane": "site_down",
-   "opener": "I tried to open Alford Plumbing & Heating, Inc's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site alfordplumbingandheating.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "not_found",
    "src": "overture",
-   "rank": 63
+   "rank": 68
   },
   {
    "id": "ovt-02177b3a-9dfa-4c0c-9016-",
@@ -1796,11 +1936,11 @@
    "trade": "HVAC",
    "county": "Carroll County",
    "lane": "site_down",
-   "opener": "I tried to open Alford Plumbing and Heating's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site alfordplumbingandheating.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "not_found",
    "src": "overture",
-   "rank": 64
+   "rank": 69
   },
   {
    "id": "ovt-96ee465e-5f47-4fe2-b233-",
@@ -1824,11 +1964,11 @@
    "trade": "HVAC",
    "county": "Carroll County",
    "lane": "site_down",
-   "opener": "I tried to open Rittenhouse Fuel Co's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site rittenhouseenergyservices.net didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 65
+   "rank": 70
   },
   {
    "id": "ovt-82adc25a-d682-4fc4-8fba-",
@@ -1852,11 +1992,11 @@
    "trade": "HVAC",
    "county": "Harford County",
    "lane": "site_down",
-   "opener": "I tried to open G W Murk Services Co.'s website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site gwmurkheatair.rheemdealer.net didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 66
+   "rank": 71
   },
   {
    "id": "ovt-a7ed0bd3-a069-45db-b61c-",
@@ -1880,11 +2020,11 @@
    "trade": "HVAC",
    "county": "Howard County",
    "lane": "site_down",
-   "opener": "I tried to open Mecco Inc's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site meccoinc.net didn't load: it shows 'page not found'. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "not_found",
    "src": "overture",
-   "rank": 67
+   "rank": 72
   },
   {
    "id": "ovt-7660caa5-19a4-42bf-bfcf-",
@@ -1908,11 +2048,11 @@
    "trade": "HVAC",
    "county": "Anne Arundel County",
    "lane": "site_down",
-   "opener": "I tried to open Air Innovation LLC's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site airinnovationusa.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 68
+   "rank": 73
   },
   {
    "id": "ovt-a83fba5a-061d-489a-9ad1-",
@@ -1936,11 +2076,11 @@
    "trade": "HVAC",
    "county": "Prince George's County",
    "lane": "site_down",
-   "opener": "I tried to open Bill Myers Heating and Cooling's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site billmyersheatingandcooling.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 69
+   "rank": 74
   },
   {
    "id": "ovt-74a51f57-d60d-4964-8f8b-",
@@ -1964,11 +2104,11 @@
    "trade": "roofing",
    "county": "Prince George's County",
    "lane": "site_down",
-   "opener": "I tried to open Cooke & Associates, Inc's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site cookefloodvent.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 70
+   "rank": 75
   },
   {
    "id": "ovt-712e1de7-5413-44dd-bd86-",
@@ -1992,11 +2132,11 @@
    "trade": "HVAC",
    "county": "Prince George's County",
    "lane": "site_down",
-   "opener": "I tried to open Evergreen Plumbing Co.'s website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site theevergreenplumbingcompany.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 71
+   "rank": 76
   },
   {
    "id": "ovt-c8e9dc50-4b45-4807-ad63-",
@@ -2020,11 +2160,11 @@
    "trade": "roofing",
    "county": "Anne Arundel County",
    "lane": "site_down",
-   "opener": "I tried to open Mr Basement's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site mymrbasement.com didn't load: it never answered. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "timeout",
    "src": "overture",
-   "rank": 72
+   "rank": 77
   },
   {
    "id": "ovt-e0f1d669-582e-4977-94d2-",
@@ -2048,11 +2188,11 @@
    "trade": "roofing",
    "county": "Anne Arundel County",
    "lane": "site_down",
-   "opener": "I tried to open Storm Waterproofing LLC's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site stormwaterproofingmd.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "not_found",
    "src": "overture",
-   "rank": 73
+   "rank": 78
   },
   {
    "id": "ovt-4d1f0fa3-39a7-416d-93e2-",
@@ -2076,11 +2216,11 @@
    "trade": "HVAC",
    "county": "Baltimore County",
    "lane": "site_down",
-   "opener": "I tried to open Mitchell Plumbing & Heating's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site mitchellplumbingandheating.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "not_found",
    "src": "overture",
-   "rank": 74
+   "rank": 79
   },
   {
    "id": "ovt-81d24ecd-25a4-43ed-9610-",
@@ -2104,11 +2244,11 @@
    "trade": "roofing",
    "county": "Anne Arundel County",
    "lane": "site_down",
-   "opener": "I tried to open Three Rivers Roofing's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site threeriversroofingmd.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 75
+   "rank": 80
   },
   {
    "id": "ovt-d2a7fa2d-f115-404c-be35-",
@@ -2132,11 +2272,11 @@
    "trade": "roofing",
    "county": "Prince George's County",
    "lane": "site_down",
-   "opener": "I tried to open Hawkins Home Improvement's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site hawkinshouses.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 76
+   "rank": 81
   },
   {
    "id": "ovt-f67d0b29-7461-4de1-a418-",
@@ -2160,11 +2300,11 @@
    "trade": "HVAC",
    "county": "Carroll County",
    "lane": "site_down",
-   "opener": "I tried to open Van Sant Plumbing & Heating's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site vansantinc.com didn't load: it never answered. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "timeout",
    "src": "overture",
-   "rank": 77
+   "rank": 82
   },
   {
    "id": "ovt-51f156b1-a7d1-41a5-b503-",
@@ -2188,11 +2328,11 @@
    "trade": "HVAC",
    "county": "Carroll County",
    "lane": "site_down",
-   "opener": "I tried to open Van Sant, Inc.'s website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site vansantservices.com didn't load: browsers show a security warning (its certificate is broken). Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "ssl",
    "src": "overture",
-   "rank": 78
+   "rank": 83
   },
   {
    "id": "ovt-b4ffae7e-a2df-4368-b915-",
@@ -2216,11 +2356,11 @@
    "trade": "roofing",
    "county": "Carroll County",
    "lane": "site_down",
-   "opener": "I tried to open \u2705 Five K Construction Roofing & Remodeling's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site fivekconstruction.net didn't load: browsers show a security warning (its certificate is broken). Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "ssl",
    "src": "overture",
-   "rank": 79
+   "rank": 84
   },
   {
    "id": "ovt-f8ec0bf6-d704-4bae-81d3-",
@@ -2244,11 +2384,11 @@
    "trade": "roofing",
    "county": "Montgomery County",
    "lane": "site_down",
-   "opener": "I tried to open Premier Roofing Solutions Flat & Shingle Roof Contractor's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site roofcontractordc.com didn't load: browsers show a security warning (its certificate is broken). Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "ssl",
    "src": "overture",
-   "rank": 80
+   "rank": 85
   },
   {
    "id": "ovt-f1ddf0fb-14da-49c3-b194-",
@@ -2272,11 +2412,11 @@
    "trade": "HVAC",
    "county": "Baltimore County",
    "lane": "site_down",
-   "opener": "I tried to open Amc Hvac Mechanical Engineering, Llc's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site amchvacmec.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 81
+   "rank": 86
   },
   {
    "id": "ovt-a9feb2aa-90dc-4188-a478-",
@@ -2300,11 +2440,11 @@
    "trade": "roofing",
    "county": "Baltimore County",
    "lane": "site_down",
-   "opener": "I tried to open Baltimore Roofing Pros's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site baltimoreroofingpros.com didn't load: it never answered. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "timeout",
    "src": "overture",
-   "rank": 82
+   "rank": 87
   },
   {
    "id": "ovt-1a64d6f8-5961-4a1f-80f0-",
@@ -2328,11 +2468,11 @@
    "trade": "roofing",
    "county": "Baltimore County",
    "lane": "site_down",
-   "opener": "I tried to open Better Home Solutions LLC's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site betterhomesolutionsmd.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 83
+   "rank": 88
   },
   {
    "id": "ovt-ab8e74c4-df47-484d-a45d-",
@@ -2356,11 +2496,11 @@
    "trade": "roofing",
    "county": "Baltimore County",
    "lane": "site_down",
-   "opener": "I tried to open Premier Window & Building, Inc.'s website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site premierwindows.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "not_found",
    "src": "overture",
-   "rank": 84
+   "rank": 89
   },
   {
    "id": "ovt-0edefd35-56c8-46dd-9132-",
@@ -2384,11 +2524,11 @@
    "trade": "roofing",
    "county": "Baltimore County",
    "lane": "site_down",
-   "opener": "I tried to open Claddagh Construction Services's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site claddaghworks.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 85
+   "rank": 90
   },
   {
    "id": "ovt-22bb62a6-79e6-4cb3-b4ea-",
@@ -2412,11 +2552,11 @@
    "trade": "roofing",
    "county": "Baltimore County",
    "lane": "site_down",
-   "opener": "I tried to open Xpress Exterior Design, Llc's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site xpressexteriordesign.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 86
+   "rank": 91
   },
   {
    "id": "ovt-d8eadb7b-5881-4164-8295-",
@@ -2440,11 +2580,11 @@
    "trade": "HVAC",
    "county": "Anne Arundel County",
    "lane": "site_down",
-   "opener": "I tried to open American Sheet Metal, Inc. Heating and Air Conditioning's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site amsheetmetalheatingandac.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 87
+   "rank": 92
   },
   {
    "id": "ovt-3f31190e-992f-40c4-8afa-",
@@ -2468,11 +2608,11 @@
    "trade": "roofing",
    "county": "Anne Arundel County",
    "lane": "site_down",
-   "opener": "I tried to open C R Windows Inc.'s website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site crwindowsinc.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 88
+   "rank": 93
   },
   {
    "id": "ovt-b55e1610-f793-4d62-ae7a-",
@@ -2496,11 +2636,11 @@
    "trade": "roofing",
    "county": "Anne Arundel County",
    "lane": "site_down",
-   "opener": "I tried to open Tiffany Renovations's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site tiffanyrenovationsmd.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "not_found",
    "src": "overture",
-   "rank": 89
+   "rank": 94
   },
   {
    "id": "ovt-28750ad3-eac0-4d03-98ef-",
@@ -2524,11 +2664,11 @@
    "trade": "HVAC",
    "county": "Baltimore County",
    "lane": "site_down",
-   "opener": "I tried to open Abbott Brothers Plumbing & Heating of Maryland's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site abbottbrothersplumbingheating.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 90
+   "rank": 95
   },
   {
    "id": "ovt-4c708d3e-4014-4261-aaa5-",
@@ -2552,11 +2692,11 @@
    "trade": "HVAC",
    "county": "Baltimore County",
    "lane": "site_down",
-   "opener": "I tried to open Alpha Heating & Air Conditioning, LLC's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site alphahvac1.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "not_found",
    "src": "overture",
-   "rank": 91
+   "rank": 96
   },
   {
    "id": "ovt-da381de7-f05e-4ed1-bcb2-",
@@ -2580,11 +2720,11 @@
    "trade": "roofing",
    "county": "Anne Arundel County",
    "lane": "site_down",
-   "opener": "I tried to open ROI Construction Anne Arundel's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site annearundelroofer.com didn't load: it shows a server error. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "server_error",
    "src": "overture",
-   "rank": 92
+   "rank": 97
   },
   {
    "id": "ovt-a5bb3d6f-7769-4afa-aef7-",
@@ -2608,11 +2748,11 @@
    "trade": "HVAC",
    "county": "Montgomery County",
    "lane": "site_down",
-   "opener": "I tried to open 1st Place Heating & Air Conditioning's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site 1stplaceair.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 93
+   "rank": 98
   },
   {
    "id": "ovt-3b2489ec-d6dc-41a1-b7b2-",
@@ -2636,11 +2776,11 @@
    "trade": "roofing",
    "county": "Montgomery County",
    "lane": "site_down",
-   "opener": "I tried to open Cornerstone Building & Restoration's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site customroofingandrestoration.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "dns_gone",
    "src": "overture",
-   "rank": 94
+   "rank": 99
   },
   {
    "id": "ovt-a6656ce4-e076-411a-b27b-",
@@ -2664,149 +2804,9 @@
    "trade": "HVAC",
    "county": "Montgomery County",
    "lane": "site_down",
-   "opener": "I tried to open John C Grimberg Co's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+   "opener": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
    "proof": "Your site grimberg.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:01am and 1:53am ET.",
    "reason": "not_found",
-   "src": "overture",
-   "rank": 95
-  },
-  {
-   "id": "ovt-ba39ec6d-5956-4fd2-9156-",
-   "name": "Great American Gutter & Painting Llc",
-   "phone": "4437823980",
-   "town": "Rosedale",
-   "state": "MD",
-   "niche": "trades",
-   "kind": "Roofing",
-   "code": "RO-917",
-   "site": "f/7guyw7f4/",
-   "heat": "hot",
-   "score": 133,
-   "open_weekdays": 0,
-   "why": [
-    "high-ticket trade: roofing",
-    "website is down",
-    "hot lead",
-    "storefront address"
-   ],
-   "trade": "roofing",
-   "county": "Baltimore County",
-   "lane": "site_down",
-   "opener": "I tried to open Great American Gutter & Painting Llc's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
-   "proof": "Your site seamlessguttersmd.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
-   "reason": "dns_gone",
-   "src": "overture",
-   "rank": 96
-  },
-  {
-   "id": "ovt-e52f0503-a0fb-4068-b3b0-",
-   "name": "Dmv Exteriors",
-   "phone": "8443687663",
-   "town": "Sandy Spring",
-   "state": "MD",
-   "niche": "trades",
-   "kind": "Roofing",
-   "code": "SA-1",
-   "site": "f/gcn9sv7s/",
-   "heat": "hot",
-   "score": 133,
-   "open_weekdays": 0,
-   "why": [
-    "high-ticket trade: roofing",
-    "website is down",
-    "hot lead",
-    "storefront address"
-   ],
-   "trade": "roofing",
-   "county": "Montgomery County",
-   "lane": "site_down",
-   "opener": "I tried to open Dmv Exteriors's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
-   "proof": "Your site dmvexteriors.com didn't load: it shows a server error. Checked Sun 11-22 1:01am and 1:53am ET.",
-   "reason": "server_error",
-   "src": "overture",
-   "rank": 97
-  },
-  {
-   "id": "ovt-bc41c4b1-78b9-4ad9-8283-",
-   "name": "Affordable Heating & Cooling",
-   "phone": "4104656120",
-   "town": "Severn",
-   "state": "MD",
-   "niche": "trades",
-   "kind": "HVAC service",
-   "code": "SE-8",
-   "site": "f/ks7rkdjy/",
-   "heat": "hot",
-   "score": 133,
-   "open_weekdays": 0,
-   "why": [
-    "high-ticket trade: HVAC",
-    "website is down",
-    "hot lead",
-    "storefront address"
-   ],
-   "trade": "HVAC",
-   "county": "Anne Arundel County",
-   "lane": "site_down",
-   "opener": "I tried to open Affordable Heating & Cooling's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
-   "proof": "Your site affordableheatcool.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
-   "reason": "dns_gone",
-   "src": "overture",
-   "rank": 98
-  },
-  {
-   "id": "ovt-d84c39af-d8d5-434f-aa74-",
-   "name": "Millersville Roofing & Guttering",
-   "phone": "4105510577",
-   "town": "Severn",
-   "state": "MD",
-   "niche": "trades",
-   "kind": "Roofing",
-   "code": "SE-11",
-   "site": "f/td7a5f6g/",
-   "heat": "hot",
-   "score": 133,
-   "open_weekdays": 0,
-   "why": [
-    "high-ticket trade: roofing",
-    "website is down",
-    "hot lead",
-    "storefront address"
-   ],
-   "trade": "roofing",
-   "county": "Anne Arundel County",
-   "lane": "site_down",
-   "opener": "I tried to open Millersville Roofing & Guttering's website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
-   "proof": "Your site millersvilleroofing.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
-   "reason": "dns_gone",
-   "src": "overture",
-   "rank": 99
-  },
-  {
-   "id": "ovt-7f58c91c-d976-44a6-bb7e-",
-   "name": "Borchers Mechanical Services Inc.",
-   "phone": "3017414387",
-   "town": "Silver Spring",
-   "state": "MD",
-   "niche": "trades",
-   "kind": "HVAC service",
-   "code": "SI-12",
-   "site": "f/b8u8h6e5/",
-   "heat": "hot",
-   "score": 133,
-   "open_weekdays": 0,
-   "why": [
-    "high-ticket trade: HVAC",
-    "website is down",
-    "hot lead",
-    "storefront address"
-   ],
-   "trade": "HVAC",
-   "county": "Montgomery County",
-   "lane": "site_down",
-   "opener": "I tried to open Borchers Mechanical Services Inc.'s website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
-   "proof": "Your site borchersmechanical.info didn't load: the address no longer points anywhere. Checked Sun 11-22 1:01am and 1:53am ET.",
-   "reason": "dns_gone",
    "src": "overture",
    "rank": 100
   }
