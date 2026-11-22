@@ -1,18 +1,18 @@
 # Big leads beyond Frederick: counts by county and trade (Overture Maps, 2026-11-18.0 release)
 
-17,249 new leads with a phone in 8 counties (2,311 of them in the 'your website is down' lane). Top 1,000 by $ score got a concept site. Sorted high-ticket trades first. Overture has no ratings / review counts, so they are not in the score.
+17,230 new leads with a phone in 8 counties (2,292 of them in the 'your website is down' lane). Top 1,000 by $ score got a concept site. Sorted high-ticket trades first. Overture has no ratings / review counts, so they are not in the score.
 
 | County | Leads | site down | concept sites | beauty | retail | auto | remodeling / trades | health | professional | restaurant / food | contractor | pro | health (medical-adjacent) | dental | services | home services | fitness | landscaping | HVAC | electrical | roofing | plumbing | solar |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Prince George's County | 3,982 | 421 | 56 | 801 | 444 | 575 | 329 | 306 | 265 | 248 | 207 | 184 | 107 | 102 | 108 | 97 | 68 | 55 | 22 | 20 | 19 | 20 | 5 |
-| Baltimore County | 3,624 | 393 | 270 | 564 | 446 | 406 | 275 | 366 | 407 | 237 | 179 | 156 | 99 | 100 | 95 | 81 | 54 | 58 | 34 | 28 | 23 | 15 | 1 |
-| Baltimore City | 2,990 | 252 | 176 | 465 | 494 | 337 | 148 | 222 | 234 | 445 | 133 | 151 | 52 | 39 | 73 | 45 | 45 | 45 | 14 | 20 | 20 | 8 | 0 |
-| Montgomery County | 2,565 | 493 | 64 | 287 | 235 | 167 | 314 | 278 | 290 | 136 | 200 | 172 | 87 | 118 | 54 | 49 | 51 | 48 | 21 | 20 | 22 | 14 | 2 |
-| Anne Arundel County | 2,208 | 319 | 238 | 276 | 291 | 273 | 233 | 179 | 170 | 157 | 131 | 88 | 68 | 54 | 57 | 43 | 50 | 56 | 15 | 22 | 24 | 18 | 3 |
-| Harford County | 850 | 145 | 81 | 135 | 122 | 105 | 102 | 74 | 50 | 40 | 33 | 19 | 36 | 14 | 24 | 11 | 29 | 18 | 17 | 13 | 1 | 7 | 0 |
-| Howard County | 575 | 152 | 21 | 45 | 72 | 69 | 89 | 23 | 27 | 39 | 53 | 25 | 15 | 26 | 12 | 17 | 15 | 22 | 7 | 5 | 7 | 5 | 2 |
+| Prince George's County | 3,980 | 419 | 54 | 801 | 444 | 575 | 329 | 306 | 265 | 248 | 207 | 184 | 107 | 102 | 108 | 97 | 68 | 55 | 22 | 20 | 17 | 20 | 5 |
+| Baltimore County | 3,622 | 391 | 269 | 564 | 446 | 406 | 274 | 366 | 407 | 237 | 179 | 156 | 99 | 100 | 95 | 81 | 54 | 57 | 34 | 28 | 23 | 15 | 1 |
+| Baltimore City | 2,989 | 251 | 175 | 465 | 494 | 337 | 148 | 222 | 234 | 445 | 132 | 151 | 52 | 39 | 73 | 45 | 45 | 45 | 14 | 20 | 20 | 8 | 0 |
+| Montgomery County | 2,559 | 487 | 64 | 287 | 235 | 166 | 310 | 278 | 290 | 136 | 200 | 172 | 87 | 118 | 54 | 49 | 51 | 47 | 21 | 20 | 22 | 14 | 2 |
+| Anne Arundel County | 2,205 | 316 | 236 | 276 | 291 | 273 | 232 | 179 | 170 | 157 | 131 | 88 | 68 | 54 | 57 | 43 | 50 | 54 | 15 | 22 | 24 | 18 | 3 |
+| Harford County | 849 | 144 | 88 | 135 | 122 | 105 | 102 | 74 | 50 | 40 | 33 | 19 | 36 | 14 | 24 | 11 | 29 | 18 | 17 | 12 | 1 | 7 | 0 |
+| Howard County | 571 | 148 | 20 | 45 | 72 | 67 | 88 | 23 | 27 | 39 | 53 | 25 | 15 | 26 | 12 | 17 | 15 | 22 | 7 | 5 | 7 | 4 | 2 |
 | Carroll County | 455 | 136 | 94 | 31 | 69 | 85 | 62 | 16 | 12 | 16 | 30 | 16 | 9 | 9 | 19 | 4 | 19 | 22 | 14 | 6 | 10 | 6 | 0 |
-| **All** | **17,249** | **2311** | **1000** | **2604** | **2173** | **2017** | **1552** | **1464** | **1455** | **1318** | **966** | **811** | **473** | **462** | **442** | **347** | **331** | **324** | **144** | **134** | **126** | **93** | **13** |
+| **All** | **17,230** | **2292** | **1000** | **2604** | **2173** | **2014** | **1545** | **1464** | **1455** | **1318** | **965** | **811** | **473** | **462** | **442** | **347** | **331** | **320** | **144** | **133** | **124** | **92** | **13** |
 
 ## Top 25 by $ score
 
@@ -44,4 +44,4 @@
 | 24 | Sds Mechanical | HVAC | Baltimore City | site_down | 133 |
 | 25 | Sealcote Roofing Co. | roofing | Baltimore City | site_down | 133 |
 
-Dropped: {"has a website": 70976, "already listed / chain / bad phone": 6011, "has a website (checked, up)": 12165}. Data (c) Overture Maps Foundation (CDLA-Permissive-2.0 / ODbL).
+Data (c) Overture Maps Foundation (CDLA-Permissive-2.0 / ODbL). site_down = the business's own domain did not load (DNS gone, error page, or no answer in 20 s on a second try).

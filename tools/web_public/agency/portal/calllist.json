@@ -1,7 +1,7 @@
 {
  "v": 1,
  "kind": "caller-portal-list",
- "built": "2026-11-21",
+ "built": "2026-11-22",
  "count": 3827,
  "note": "public map data only (OpenStreetMap + businesses a caller added); no private data",
  "skipped": {

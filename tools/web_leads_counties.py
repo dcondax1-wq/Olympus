@@ -1,6 +1,6 @@
 """No-website leads beyond Frederick (lead 2026-11-22: 'find big leads'), from Overture Maps, by county.
 
-    python tools/web_leads_counties.py                     the 8 counties -> agency/leads/counties/<county>.json + COUNTS.md
+    python tools/web_leads_counties.py                     the 8 counties -> research/web_leads/counties/<county>.json (not published) + COUNTS.md
     python tools/web_leads_counties.py --top 1000          how many of the NEW leads get a concept site (repo size), by $ score
     python tools/web_leads_counties.py --no-http           skip the site checks (no site_down lane)
 
@@ -30,7 +30,7 @@ from tools import web_leads_overture as W  # noqa: E402
 COUNTIES = ["Baltimore County", "Baltimore", "Anne Arundel County", "Howard County", "Montgomery County", "Prince George's County",
             "Harford County", "Carroll County"]
 LABEL = {"Baltimore": "Baltimore City"}
-OUT_DIR = os.path.join(F.WEB, "leads", "counties")
+OUT_DIR = os.path.join(ROOT, "research", "web_leads", "counties")   # NOT in the public site: 17k business phones / addresses stay in the repo only
 COUNTS_MD = os.path.join(ROOT, "research", "handoff", "2026-11-22", "leads", "COUNTS.md")
 PLACES = os.path.join(W.CACHE, "places_central_2026-11-18.0.parquet")
 COUNTY_SHAPES = os.path.join(W.CACHE, "md_counties.parquet")

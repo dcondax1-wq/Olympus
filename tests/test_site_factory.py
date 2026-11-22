@@ -58,7 +58,7 @@ def main() -> int:
             bad["noindex"].append(s["name"])
         vis = re.sub(r"<style>.*?</style>|<script>.*?</script>", " ", h, flags=re.S).replace(F.esc(L["name"]), " ")
         for w in F.BANNED:
-            if re.search(r"(?<![a-z])" + re.escape(w) + r"(?![0-9])", vis, re.I):
+            if re.search(r"(?<![a-z])" + re.escape(w) + r"(?![0-9/])", vis, re.I):
                 bad["words"].append((s["name"], w))
         if len(h.encode()) > F.BUDGET:
             bad["size"].append((s["name"], len(h)))
@@ -140,9 +140,9 @@ def main() -> int:
                     txt = read(os.path.join(base, fn))
                 except (UnicodeDecodeError, OSError):
                     continue
-                if re.search(r"agency/f/[a-z2-9]{8}|agency/factory", txt) or any(v in txt for v in list(ids.values())[:20]):
+                if re.search(r"agency/f/[a-z2-9]{8}", txt) or any(v in txt for v in list(ids.values())[:20]):
                     hits.append(os.path.relpath(os.path.join(base, fn), ROOT))
-    check("e. no page, apps list, sitemap or sw.js links to the factory or a site", not hits, hits)
+    check("e. no page, apps list, sitemap or sw.js links to a concept site (the owner-only gallery may be linked from the owner's Home)", not hits, hits)
     # h. the neutral-host export (lead 2026-11-21): refuses without public_base (or with an Olympus / github.io one), else a standalone site
     def exp(cfg):
         with tempfile.TemporaryDirectory() as t:

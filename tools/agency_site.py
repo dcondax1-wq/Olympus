@@ -178,7 +178,7 @@ def build_files(cfg=None, prefix="../", base=""):
     c = Ctx(cfg, prefix, base or cfg.get("public_base", ""))
     sites = [s for s in json.load(open(os.path.join(WEB, "factory", "sites.json"), encoding="utf-8"))["sites"] if not s.get("chain")]
     pk, terms = offers()
-    tt = town_trades(sites)
+    tt = town_trades([s for s in sites if not s.get("county")])   # the 16 home towns get a local page (county leads: no page per suburb)
     towns = {t: f"areas/{slug(TRADE[n][0])}-{slug(t)}-md.html" for t, n, _k, _a, _c in tt}
     st, ce = pk.get("starter", {}), pk.get("callengine", {})
     files = {"style.css": CSS + "\n"}

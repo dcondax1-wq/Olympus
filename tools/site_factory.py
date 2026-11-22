@@ -605,7 +605,7 @@ def load_leads(only_ready: bool = False):
             continue
         rows += d.get("leads", []) if isinstance(d, dict) else []
     # the county search (tools/web_leads_counties.py): only the leads marked build_site (the top N by $ score; repo size)
-    for p in sorted(__import__("glob").glob(os.path.join(os.path.dirname(LEADS), "counties", "*.json"))):
+    for p in sorted(__import__("glob").glob(os.path.join(ROOT, "research", "web_leads", "counties", "*.json"))):
         try:
             d = json.load(open(p, encoding="utf-8"))
         except (OSError, ValueError):
