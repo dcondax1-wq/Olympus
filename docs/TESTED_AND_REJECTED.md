@@ -1,4 +1,5 @@
 ## Tested and rejected (don't redo without a new idea)
+- **2026-11-22 Regime guard round 3** (research/regime/guard3.py, regime-guard3-2026-11-22.md): shadow-setup hit rate R1, intraday variance ratio R2, trend-day share R3, thin volume R4, NQ-VIX co-movement R5, 2-of-5 vote R6; half / out; LIT and ATLAS. **0 of 22 pass, all fail the stage-0 kill-gate.** R1 sweeps pay worse in 2026 than in 2021-25 (flags 2026 87.5/80.8% vs OLD 70.4%). R5 flags LIT's best days. Best placebo 47.5% / 68.5% (95 needed). Closes the regime lever for market-weather and market-wide sweep signals, not every possible signal. ATLAS funded baseline moved 8.5/9.2/94.5 -> 8.2/8.3/94.2 because of a code change after 153552591; verdict unaffected.
 - **Zlarior edge, 5 pre-registered ideas (2026-11-20, `lit-edge-2026-11-20.md`, `tools/research/litedge.py`,
   `research/lit/litedge.json`, design `research/lit/litedge_design_2026-11-20.md`):** LIT $/month H1 / H2 / 2021-25 vs
   today $5,562 / $2,670 / $25: limit 2 ticks better than the model fill for 1 min, else market $5,184 / $2,585 / $26;
