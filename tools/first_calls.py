@@ -67,7 +67,7 @@ def score(L: dict, s: dict) -> tuple:
 
 OPENER = {
     "no_site": "I noticed {name} doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
-    "site_down": "I tried to open {name}'s website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+    "site_down": "I tried your website and it didn't load for me, so we built you a fresh one. It's free to look at. Can I email you the link?",
 }
 
 

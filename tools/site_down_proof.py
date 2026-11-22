@@ -142,5 +142,69 @@ def run(files=None, fetcher=fetch, now=None, threads=32, write=True) -> dict:
     return {"checked": len(todo), "came_back_up": dropped, "reasons": tally, "at": now}
 
 
+
+
+# ---------------------------------------------------------------- parked / for-sale sites that LOOK up (they answer 200)
+def find_parked(fetcher=fetch, threads=48, now=None, write=True) -> dict:
+    """the 'working sites' that are really a registrar's parking or 'buy this domain' page: the 16-town has_site leads become site_down
+    (reason parked / for_sale) again; high-ticket county places with such a page are added to their county file. Honest pitch:
+    'your old web address now shows a for-sale page'."""
+    from tools import web_leads_counties as C
+    from tools import lead_value as V
+    now = now or dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ")
+    out = {"towns_checked": 0, "towns_parked": 0, "county_checked": 0, "county_parked": 0}
+    # a. the 16-town leads marked has_site
+    tdocs = {p: json.load(open(p, encoding="utf-8")) for p in sorted(glob.glob(TOWN_GLOB))}
+    todo = [(p, L) for p, d in tdocs.items() for L in d["leads"] if (L.get("web") or {}).get("verdict") == "has_site" and L.get("website")]
+    with cf.ThreadPoolExecutor(max_workers=threads) as ex:
+        res = list(ex.map(lambda t: fetcher(t[1]["website"]), todo))
+    out["towns_checked"] = len(todo)
+    for (p, L), (st, body) in zip(todo, res):
+        r = classify(st, body)
+        if r in ("parked", "for_sale"):
+            dom = W.host(L["website"])
+            L.pop("website", None)
+            L["web"].update(verdict="site_down", reason=r, domain=dom, checked3=now, proof=proof_line(dom, r, "", now))
+            out["towns_parked"] += 1
+    # b. high-ticket county places whose own website answered (dropped as 'has a website') but may be parked
+    existing = {L["id"] for p in glob.glob(COUNTY_GLOB) for L in json.load(open(p))["leads"]}
+    cands = []
+    for p in C.candidates():
+        if not p.get("websites") or ("ovt-" + p["id"][:24]) in existing:
+            continue
+        site = next((u for u in p["websites"] if W.domain_is_theirs(u, p["name"])), "")
+        probe = {"category": str(p.get("tax") or p.get("cat") or ""), "name": p["name"], "niche": W.NICHE[p["cat"]]}
+        if site and V.trade(probe)[0] >= C.SITE_CHECK_MIN_VALUE and not W.F.chain_of(p["name"]):
+            cands.append((p, site))
+    with cf.ThreadPoolExecutor(max_workers=threads) as ex:
+        res = list(ex.map(lambda t: fetcher(t[1]), cands))
+    out["county_checked"] = len(cands)
+    add = {}
+    for (p, site), (st, body) in zip(cands, res):
+        r = classify(st, body)
+        if r in ("parked", "for_sale"):
+            L = C.lead_of(p, p["county"], now[:10], "site_down", site)
+            dom = W.host(site)
+            L["web"].update(reason=r, domain=dom, checked3=now, proof=proof_line(dom, r, "", now))
+            L["why"] = ["their web address shows a " + ("for-sale" if r == "for_sale" else "parked") + " page", "a phone to call"]
+            L["usd_score"] = V.score(L)
+            add.setdefault(C.LABEL.get(p["county"], p["county"]), []).append(L)
+            out["county_parked"] += 1
+    if write:
+        for p, d in tdocs.items():
+            with open(p, "w", encoding="utf-8") as f:
+                json.dump(d, f, indent=1)
+                f.write("\n")
+        for p in sorted(glob.glob(COUNTY_GLOB)):
+            d = json.load(open(p, encoding="utf-8"))
+            new = add.get(d.get("county"), [])
+            if new:
+                d["leads"] += new
+                with open(p, "w", encoding="utf-8") as f:
+                    json.dump(d, f, separators=(",", ":"))
+                    f.write("\n")
+    return out
+
+
 if __name__ == "__main__":
-    print(json.dumps(run(), indent=1))
+    print(json.dumps(find_parked() if "--parked" in sys.argv else run(), indent=1))
