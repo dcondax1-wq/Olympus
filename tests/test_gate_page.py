@@ -339,10 +339,19 @@ def test_page():
             check("c. every tap target >= 44 x 44, no sideways scroll, Jarvis's corner free at the end, no console error, nothing off the origin but the PC feed",
                   not t and AK.no_sideways(p) and not AK.corner(p) and not errs and not off, (t[:4], AK.corner(p), errs[:3], off[:3]))
             p.evaluate("() => window.scrollTo(0, 0)")
-            vis = p.evaluate("() => { const r = (s) => document.querySelector(s).getBoundingClientRect(); return [r('#q').top, r('#arenas').top, r('#arenas').bottom, r('#now').top]; }")
+            vis = p.evaluate("() => { const r = (s) => document.querySelector(s).getBoundingClientRect(); return [r('#q').top, r('.g-agrid').top, r('.g-agrid').bottom, r('#now').top, r('#moreBtn').bottom,"
+                             " [...document.querySelectorAll('.g-arena')].map((t) => t.dataset.arena), getComputedStyle(document.querySelector('#now')).display, getComputedStyle(document.querySelector('#elseSec')).display]; }")
             # 2026-11-20 17:00 ET (owner: "I want like 6 arenas, that's it, then a separate area for the smaller stuff"): search, then the 6 arenas whole on the first screen; Right now (details) below
-            check("c. at 390 x 844 the big search is near the top (one thumb), the 6 arenas right under it and whole on the first screen, Right now (details) below them",
-                  vis[0] < 160 and vis[1] < 260 and vis[2] <= 844 and vis[3] > vis[2], vis)
+            # 2026-11-22 (owner: "when I open Olympus it goes to More with all the other dashboards. I want 6 main dashboards"): the app opens on the 6, in his
+            # order; Right now and Everything else wait behind More (hidden until tapped, never remembered)
+            check("c. at 390 x 844 the search near the top, then the 6 dashboards (NQ Bot, Jarvis, Websites, Data City, Money, Kalshi) whole on the first screen with More under them; Right now + Everything else hidden until More",
+                  vis[0] < 160 and vis[1] < 260 and vis[2] <= 844 and vis[4] <= 844 and vis[5] == ["nq", "jarvis", "agency", "data", "money", "kalshi"] and vis[6] == "none" and vis[7] == "none", vis)
+            p.click("#moreBtn")
+            p.wait_for_timeout(300)
+            mv = p.evaluate("() => [getComputedStyle(document.querySelector('#now')).display, getComputedStyle(document.querySelector('#elseSec')).display, document.querySelector('#moreBtn').getAttribute('aria-expanded'),"
+                            " document.querySelector('#now').getBoundingClientRect().top > document.querySelector('.g-agrid').getBoundingClientRect().bottom - window.scrollY - 1]")
+            check("c. one tap on More shows Right now and Everything else below the 6 (aria-expanded), a second tap goes back", mv[0] != "none" and mv[1] != "none" and mv[2] == "true", mv)
+            p.click("#moreBtn")
             six = p.evaluate("() => [...document.querySelectorAll('#quick .g-q')].map((a) => [a.dataset.app, a.href.replace(location.origin, ''), a.querySelector('.g-qline').textContent])")
             check("c. Your six, one tap each (Cities, Kalshi, NQ bot, Jarvis, My day, Business), the NQ bot's live line 'Bots on · today +$272'",
                   [x[1] for x in six] == ["/cities/index.html", "/kalshi/index.html", "/nq/index.html", "/jarvis/index.html", "/planner/index.html", "/business/index.html", "/agency/index.html", "/hub/setup.html"]
@@ -398,6 +407,7 @@ def test_page():
             s5, o5 = serve({"/home.json": json.dumps(hj), "/business/decisions.json": dec, "/kalshi/k8.json": k8})
             ctx, p, errs, seen, off = AK.page(br, o5)
             open_gate(p, o5)
+            p.evaluate("() => window.GATE_MORE && window.GATE_MORE.open()")       # Right now sits behind More since 2026-11-22
             p.wait_for_timeout(600)
             ck = p.evaluate("() => ({ trade: document.querySelector('#nowTrade').hidden ? '' : document.querySelector('#nowTrade').innerText.replace(/\\s+/g, ' '),"
                             " next: [...document.querySelectorAll('#nowNext .g-nrow')].map((a) => [a.dataset.go, a.innerText.replace(/\\s+/g, ' ')]),"
@@ -504,7 +514,7 @@ def test_page():
             s5.shutdown()
 
             # gate-nav on the apps: Home > ARENA > app (ORGANIZE 2026-11-21: the arena crumb opens hub/arena.html; an arena's front page shows no own name)
-            for app, sel, hub in (("nq", "header.top .ag-navback", "NQ Bot"), ("kalshi", "a.olyback", "Kalshi"), ("cities", "a.gn-back", "Cities"), ("polis", "a.gn-back", "Cities")):
+            for app, sel, hub in (("nq", "header.top .ag-navback", "NQ Bot"), ("kalshi", "a.olyback", "Kalshi"), ("cities", "a.gn-back", "Data City"), ("polis", "a.gn-back", "Data City")):
                 ctx, p, errs, seen, off = AK.page(br, origin)
                 p.goto(f"{origin}/{app}/")
                 p.wait_for_function("window.OLYMPUS_GATE_NAV && window.OLYMPUS_GATE_NAV.placed() && document.querySelector('.gn-crumb') && document.querySelector('.gn-crumb').textContent", timeout=60000)
@@ -527,7 +537,7 @@ def test_page():
                     p.fill("#gnQ", "")
                     p.wait_for_timeout(150)
                     dl = p.evaluate("() => ({ hubs: [...document.querySelectorAll('.gn-dist')].map((a) => a.href.replace(location.origin, '')), first: document.querySelector('.gn-body .gn-sec').textContent, here: (document.querySelector('.gn-dist.gn-here') || {}).dataset })")
-                    ARENAS = ["nq", "kalshi", "business", "agency", "jarvis", "cities", "else"]      # ORGANIZE 2026-11-21: the same top level as Home
+                    ARENAS = ["nq", "jarvis", "agency", "data", "money", "kalshi", "else"]      # the same top level as Home (2026-11-22 order)
                     check("c. Go to with an empty box: the ARENAS first (each opens its arena page), this app's arena marked", dl["hubs"] == [f"/hub/arena.html?a={h}" for h in ARENAS] and dl["first"] == "Arenas" and dl["here"] == {"arena": "nq"}, dl)
                     t = AK.taps(p)
                     check("c. the Go to sheet: every tap >= 44 px", not t, t[:4])

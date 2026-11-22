@@ -30,9 +30,12 @@ HEAD = """# OLYMPUS map
 
 **How Olympus is organized (2026-11-21, owner: "more organized").** One structure, everywhere:
 
-1. **Home** (`gate/`) shows **the 6 arenas** (NQ Bot, Kalshi, Business, Websites, Jarvis, Cities) and **Everything else**. Each arena tile opens the
-   arena's **front page** (its main app), and the row under the tiles ("All apps in ...") opens the arena's page `hub/arena.html?a=<arena>`: every live app
-   of that arena grouped by job. So **every app is at most 2 taps from Home**.
+1. **Home** (`gate/`, where the Olympus app opens) shows **the 6 main dashboards** in the owner's order (2026-11-22): **NQ Bot** (ZEUS: accounts,
+   trades, brain), **Jarvis**, **Websites** (agency, factory, caller portal), **Data City** (+ the Research hub), **Money** (My MFFU Accounts, payouts,
+   Decide, taxes), **Kalshi**. Each tile opens its dashboard and has at most 2 short links. Everything else is one tap away under **More** (never the
+   landing page: nothing remembers it). Under More, "All apps in ..." opens each arena's page `hub/arena.html?a=<arena>`: every live app grouped by job,
+   so **every app is at most 2 taps from Home** (3 for the rare ones behind More).
+   A fresh launch of the installed app always lands on Home: the Jarvis page (where the owner's icon was saved) sends a launch there, once per launch.
 2. **Every page has the same way back:** `Home > arena > app` at the top (plain names, not Greek ones), plus "Go to" (search, then the same 7 arenas). One tap on Home goes Home.
    It comes from `olympus/gate-nav.js`, loaded by the AGORA shell (`agora-ui.js`), by the a11y kit (`a11y.js`) or directly; the public client pages
    (agency demos, audits, showcase, factory, caller portal, concept sites) never get it.
@@ -290,7 +293,7 @@ def selftest():
     ck("the unknown app has the fallbacks (bundled data, the kit test)", reads_of("zzz-none") == FALLBACK_DATA and test_of("zzz-none") == "covered by `tests.test_olympus_kit`")
     real = build()
     n = len(parse_apps(read(os.path.join(WEB, "jarvis", "apps.js"))))
-    ck("the real map has one row per BUILT_INS app and the arenas", real.count("\n| ") >= n and n > 30 and all(f"| {d} |" in real for d in ("NQ Bot", "Business", "Kalshi", "Everything else")), n)
+    ck("the real map has one row per BUILT_INS app and the arenas", real.count("\n| ") >= n and n > 30 and all(f"| {d} |" in real for d in ("NQ Bot", "Money", "Kalshi", "Data City", "Everything else")), n)
     ck("deterministic", build() == real)
     ck("the map has the arenas, retired -> replacement, one place per fact and the merged list",
        "## The arenas" in real and "| Delphi (`delphi`) |" in real and "## One place per fact" in real and "| Odeon | trading/#reelsCard |" in real)

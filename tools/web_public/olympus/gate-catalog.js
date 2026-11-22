@@ -369,13 +369,13 @@
      The breadcrumb on every page is Home > arena > app (gate-nav.js), and hub/arena.html?a=<id> lists an arena's apps grouped by section.
      RETIRED apps redirect to REPLACE[id] (gate-nav.js; ?stay=1 keeps the old page). FACTS = the one page that owns each fact; the pages that
      also show it get a small "the one place: X" link (gate-nav.js). */
-  var ARENAS = [
-    { id: 'nq', name: 'NQ Bot', front: 'nq', line: 'The bots, the evals, the trades and the research', hubs: ['bots', 'today', 'research'], apps: ['today'], not: ['inbox', 'compass', 'stoa', 'hestia', 'helios', 'herald'] },
-    { id: 'kalshi', name: 'Kalshi', front: 'kalshi', line: 'The Kalshi bot, its bets and its edges', hubs: ['kalshi'], apps: ['kalshicity', 'tyche'] },
-    { id: 'business', name: 'Business', front: 'business', line: 'Accounts, payouts, the money plan and your day', hubs: ['money', 'plan'], not: ['agency'] },
-    { id: 'agency', name: 'Websites', front: 'agency', line: 'The website business: leads, sites, calls, offers', hubs: [], apps: ['agency'] },
+  var ARENAS = [   // 2026-11-22 (owner: "6 main dashboards"): the Home's tiles in his order, then Everything else (= More)
+    { id: 'nq', name: 'NQ Bot', front: 'nq', line: 'ZEUS: the accounts, the trades, the brain', hubs: ['bots', 'today'], apps: ['today'], not: ['inbox', 'compass', 'stoa', 'hestia', 'helios', 'herald'] },
     { id: 'jarvis', name: 'Jarvis', front: 'jarvis', line: 'Ask anything; today at a glance; your AI team', hubs: ['jarvis', 'me'], apps: ['inbox', 'compass', 'stoa', 'hestia', 'helios', 'herald'] },
-    { id: 'cities', name: 'Cities', front: 'cities', line: 'The 3D world of all your apps', hubs: ['worlds'], not: ['kalshicity', 'tyche'] },
+    { id: 'agency', name: 'Websites', front: 'agency', line: 'The website business: leads, the site factory, the caller portal', hubs: [], apps: ['agency'] },
+    { id: 'data', name: 'Data City', front: 'cities', frontPath: 'cities/world/index.html', line: 'Every idea tested as a city, and the Research hub', hubs: ['worlds', 'research'], not: ['kalshicity', 'tyche'] },
+    { id: 'money', name: 'Money', front: 'business', frontPath: 'business/mffu.html', line: 'My MFFU Accounts, payouts, decisions, taxes and the money plan', hubs: ['money', 'plan'], not: ['agency'] },
+    { id: 'kalshi', name: 'Kalshi', front: 'kalshi', line: 'The Kalshi bot, its bets and its edges', hubs: ['kalshi'], apps: ['kalshicity', 'tyche'] },
     { id: 'else', name: 'Everything else', front: '', line: 'Settings, the PC, help and the workshop', hubs: ['settings'] }
   ];
   var AR = {}, ARN = {};

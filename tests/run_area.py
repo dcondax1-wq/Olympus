@@ -66,6 +66,7 @@ AREAS["jarvis"].append("jarvis_money_answers")  # lead QA 2026-11-21: the 60 mon
 AREAS["olympus"].append("pulse")         # day-arenas 2026-11-20: the shared prop-trader cards in the main apps (olympus/pulse.js), CLS 0, light + dark
 AREAS["olympus"].append("archive_banners")  # day-archive 2026-11-20: the "Archived · data <date>, N days old -> live app" strip on every archived page (tools/archive_banners.py)
 AREAS["olympus"].append("olympus_nav")     # day-a11y 2026-11-21 ORGANIZE: link crawler (no 404), every app <= 2 taps from Home, Home > arena > app on every page, retired -> replacement
+AREAS["olympus"].append("home_six")        # day-a11y 2026-11-22: the app opens on the 6 main dashboards (gate/), More hides the rest, the installed app's launch lands on Home
 AREAS["olympus"].insert(0, "site_sweep")  # night-siteqa 2026-11-20: every href / src of the main pages + doors.js points at a real file (no browser, 1 s); its own line
 AREAS["pc"].append("disk_clean")        # night-clean 2026-11-19: the weekly container clean (tools/disk_clean.py); its own line, no clash with the pc list
 AREAS["pc"].append("account_box")     # 2026-11-20: the Add account box (engine/account_box.py, /add-account/); its own line

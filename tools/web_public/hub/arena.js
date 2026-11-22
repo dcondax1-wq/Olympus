@@ -10,7 +10,7 @@
   d.title = A.name + ' · Olympus';
   $('arName').textContent = A.name; $('arLine').textContent = A.line + ' · ' + A.count + ' app' + (A.count === 1 ? '' : 's');
   var F = A.front ? C.byId(A.front) : null;
-  if (F) { var f = $('arFront'); f.href = href(F); $('arFrontName').textContent = 'Open ' + A.name + ' (the front page)'; $('arFrontLine').textContent = F.line; f.hidden = false; }
+  if (F) { var f = $('arFront'); f.href = A.frontPath ? '../' + A.frontPath : href(F); $('arFrontName').textContent = 'Open ' + A.name + ' (the front page)'; $('arFrontLine').textContent = F.line; f.hidden = false; }
   var L = C.arenaLayout(A.id), box = $('arList');
   L.forEach(function (sec) {
     var list = sec.apps.filter(function (a) { return !F || a.id !== F.id; }); if (!list.length) return;

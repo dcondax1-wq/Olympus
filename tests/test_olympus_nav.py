@@ -116,9 +116,9 @@ def structure():
         check("b. the catalog loads in node", False, r.stderr[-300:])
         return None
     o = json.loads(r.stdout)
-    six = re.findall(r"var SIX = \[([^\]]*)\]", text("gate/arenas.js"))
+    six = re.findall(r"var TILES = \[([^\]]*)\]", text("gate/arenas.js"))      # the 6 tiles' ids (2026-11-22)
     six = re.findall(r"'([a-z]+)'", six[0]) if six else []
-    check("b. the arenas are the Home's six + Everything else", sorted(o["arenas"]) == sorted(six + ["else"]), (o["arenas"], six))
+    check("b. the arenas are the Home's 6 dashboards in the same order + Everything else", o["arenas"] == six + ["else"], (o["arenas"], six))
     check("b. every live app sits in an arena", not o["noArena"], o["noArena"])
     check("b. every retired app opens a LIVE replacement", not o["noRep"] and not o["repRetired"], (o["noRep"], o["repRetired"]))
     check("b. one place per fact: accounts / payout / 7-day clocks each owned by one live page (My MFFU Accounts)", all(f[2] and exists(f[1]) for f in o["facts"]) and {f[0] for f in o["facts"]} == {"accounts", "payout", "clocks"}, o["facts"])
@@ -135,7 +135,7 @@ def structure():
 def reach(P, o):
     g = text("gate/index.html")
     arena_links = set(re.findall(r'data-to="hub/arena\.html\?a=([a-z]+)"', g))
-    want = set(o["arenas"]) if o else {"nq", "kalshi", "business", "agency", "jarvis", "cities", "else"}
+    want = set(o["arenas"]) if o else {"nq", "jarvis", "agency", "data", "money", "kalshi", "else"}
     check("c. Home links every arena's page (so every live app is <= 2 taps from Home)", want <= arena_links, sorted(want - arena_links))
     a11y = text("olympus/a11y.js")
     check("c. a11y.js loads the breadcrumb (gate-nav.js) on every page that has neither it nor the AGORA shell; never on Home, in a frame or on the public pages",
