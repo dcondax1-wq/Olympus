@@ -1007,7 +1007,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.dtbrews.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "dtbrews.com",
+    "proof": "Your site dtbrews.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -1286,7 +1290,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://lasamericasmercado.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "lasamericasmercado.com",
+    "proof": "Your site lasamericasmercado.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -2090,47 +2098,6 @@
    }
   },
   {
-   "id": "osm-n11660153864",
-   "name": "Aqua Hair Bar",
-   "niche": "beauty",
-   "niche_name": "Salon / beauty",
-   "kind": "shop=hairdresser",
-   "town": "Rockville",
-   "city": "Rockville",
-   "state": "MD",
-   "phone": "(301) 881-5500",
-   "email": "",
-   "street": "12274 Rockville Pike",
-   "zip": "",
-   "address": "12274 Rockville Pike, Rockville",
-   "addr_src": "map",
-   "lat": 39.057994,
-   "lon": -77.122429,
-   "mailable": false,
-   "hours": "",
-   "facebook": false,
-   "trade": "salon",
-   "category": "hairdresser",
-   "score": 6,
-   "heat": "warm",
-   "why": [
-    "no website on the map",
-    "a street address (real storefront)",
-    "salon / beauty: customers search for this online"
-   ],
-   "offer": "starter site $1,500 with online booking + phone-scan 3D tour of the salon $300-$800",
-   "offer_usd": 1500,
-   "osm": "https://www.openstreetmap.org/node/11660153864",
-   "phone_src": "overture",
-   "web": {
-    "verdict": "site_down",
-    "src": "overture",
-    "checked": "2026-11-21",
-    "url": "https://aquahairbar.com",
-    "status": "TimeoutError"
-   }
-  },
-  {
    "id": "osm-n14362322063",
    "name": "Bogot\u00e1 Coffee House",
    "niche": "food",
@@ -2756,7 +2723,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "https://www.mirabeaubakerycafe.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "mirabeaubakerycafe.com",
+    "proof": "Your site mirabeaubakerycafe.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -4618,7 +4589,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.dulcineabarandgrill.com",
-    "status": "gaierror"
+    "status": "gaierror",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "dulcineabarandgrill.com",
+    "proof": "Your site dulcineabarandgrill.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -5416,7 +5391,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.rockvillehappyfeet.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "rockvillehappyfeet.com",
+    "proof": "Your site rockvillehappyfeet.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -5615,46 +5594,6 @@
     "status": 200
    },
    "website": "https://www.kenwoodinc.com"
-  },
-  {
-   "id": "osm-w1332524321",
-   "name": "Kumbia",
-   "niche": "food",
-   "niche_name": "Restaurant / food",
-   "kind": "amenity=restaurant",
-   "town": "Rockville",
-   "city": "Rockville",
-   "state": "MD",
-   "phone": "(301) 417-4934",
-   "email": "",
-   "street": "100 Gibbs Street",
-   "zip": "20850",
-   "address": "100 Gibbs Street, Rockville MD 20850",
-   "addr_src": "map",
-   "lat": 39.085339,
-   "lon": -77.152221,
-   "mailable": true,
-   "hours": "",
-   "facebook": false,
-   "trade": "restaurant",
-   "category": "restaurant",
-   "score": 5,
-   "heat": "cold",
-   "why": [
-    "no website on the map",
-    "a street address (real storefront)"
-   ],
-   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
-   "offer_usd": 1500,
-   "osm": "https://www.openstreetmap.org/way/1332524321",
-   "phone_src": "overture",
-   "web": {
-    "verdict": "site_down",
-    "src": "overture",
-    "checked": "2026-11-21",
-    "url": "http://www.kumbiarestaurant.com/",
-    "status": "TimeoutError"
-   }
   },
   {
    "id": "osm-n12169200109",
@@ -5935,7 +5874,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.lifestylespanails.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "lifestylespanails.com",
+    "proof": "Your site lifestylespanails.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -6303,7 +6246,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "https://www.mikeandsonsrockville.com/?utm_source=bing&utm_medium=websiteurl&utm_campaign=search",
-    "status": "SSLError"
+    "status": "SSLError",
+    "reason": "ssl",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "mikeandsonsrockville.com",
+    "proof": "Your site mikeandsonsrockville.com didn't load: browsers show a security warning (its certificate is broken). Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -6531,7 +6478,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "https://www.nebelstreetautomotive.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "nebelstreetautomotive.com",
+    "proof": "Your site nebelstreetautomotive.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -6571,7 +6522,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.newyorkmart.com/",
-    "status": "TimeoutError"
+    "status": "TimeoutError",
+    "reason": "timeout",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "newyorkmart.com",
+    "proof": "Your site newyorkmart.com didn't load: it never answered. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -7608,7 +7563,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.protintshopmd.com/",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "protintshopmd.com",
+    "proof": "Your site protintshopmd.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -8198,7 +8157,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.zamzammarketmd.com/index.htmlhttp://",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "zamzammarketmd.com",
+    "proof": "Your site zamzammarketmd.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -8429,7 +8392,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://Asadursmarket.net/",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "asadursmarket.net",
+    "proof": "Your site asadursmarket.net didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -8616,7 +8583,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.thebeerandwinecellar.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "thebeerandwinecellar.com",
+    "proof": "Your site thebeerandwinecellar.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -9120,7 +9091,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://danabazararlington.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "danabazararlington.com",
+    "proof": "Your site danabazararlington.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -10409,7 +10384,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.pikekitchen.com/",
-    "status": "SSLError"
+    "status": "SSLError",
+    "reason": "ssl",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "pikekitchen.com",
+    "proof": "Your site pikekitchen.com didn't load: browsers show a security warning (its certificate is broken). Checked Sun 11-22 1:53am ET."
    }
   },
   {

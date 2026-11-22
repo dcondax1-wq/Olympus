@@ -127,7 +127,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www6.mycaseyscoffee.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "www6.mycaseyscoffee.com",
+    "proof": "Your site www6.mycaseyscoffee.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -1368,7 +1372,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.bowlbrunswick.com/about-us/128/1",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "bowlbrunswick.com",
+    "proof": "Your site bowlbrunswick.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -2193,7 +2201,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://personalityhairsalon.com/",
-    "status": 404
+    "status": 404,
+    "reason": "not_found",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "personalityhairsalon.com",
+    "proof": "Your site personalityhairsalon.com didn't load: it shows 'page not found'. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -3611,7 +3623,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.kalexanderextensions.com/",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "kalexanderextensions.com",
+    "proof": "Your site kalexanderextensions.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -3995,7 +4011,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "https://www.nirvanahairloft.com",
-    "status": 301
+    "status": 301,
+    "reason": "other",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "nirvanahairloft.com",
+    "proof": "Your site nirvanahairloft.com didn't load: it didn't load. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -5193,7 +5213,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "https://www.bagelbinandhoagiehouse.com/",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "bagelbinandhoagiehouse.com",
+    "proof": "Your site bagelbinandhoagiehouse.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -5274,45 +5298,6 @@
    "website": "https://bippyspub.com"
   },
   {
-   "id": "osm-n11005656681",
-   "name": "Bohemian House Art & Soul",
-   "niche": "retail",
-   "niche_name": "Shop",
-   "kind": "shop=psychic",
-   "town": "Ellicott City",
-   "city": "Ellicott City",
-   "state": "MD",
-   "phone": "(410) 680-8388",
-   "email": "",
-   "street": "8320 Main Street",
-   "zip": "21043",
-   "address": "8320 Main Street, Ellicott City MD 21043",
-   "addr_src": "nearest",
-   "lat": 39.268188,
-   "lon": -76.799787,
-   "mailable": true,
-   "hours": "",
-   "facebook": false,
-   "trade": "retail",
-   "category": "psychic",
-   "score": 4,
-   "heat": "cold",
-   "why": [
-    "no website on the map"
-   ],
-   "offer": "starter site $1,500 (hours, map, what's in stock) + Google profile $199-$399/mo",
-   "offer_usd": 1500,
-   "osm": "https://www.openstreetmap.org/node/11005656681",
-   "phone_src": "overture",
-   "web": {
-    "verdict": "site_down",
-    "src": "overture",
-    "checked": "2026-11-21",
-    "url": "https://bohemianhouse.net/",
-    "status": "TimeoutError"
-   }
-  },
-  {
    "id": "osm-n1736637402",
    "name": "Bon Appetit Cafe & Bakery",
    "niche": "food",
@@ -5348,7 +5333,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://bonappetitbakeryellicottcity.dishdesigner.website/",
-    "status": "OSError"
+    "status": "OSError",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "bonappetitbakeryellicottcity.dishdesigner.website",
+    "proof": "Your site bonappetitbakeryellicottcity.dishdesigner.website didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -5572,7 +5561,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://discoveriescenter.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "discoveriescenter.com",
+    "proof": "Your site discoveriescenter.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -5833,7 +5826,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.jjliquors.net/",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "jjliquors.net",
+    "proof": "Your site jjliquors.net didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -6101,45 +6098,6 @@
     "verdict": "none",
     "src": "overture",
     "checked": "2026-11-21"
-   }
-  },
-  {
-   "id": "osm-n11005656693",
-   "name": "RoaTech",
-   "niche": "retail",
-   "niche_name": "Shop",
-   "kind": "shop=electronics",
-   "town": "Ellicott City",
-   "city": "Ellicott City",
-   "state": "MD",
-   "phone": "(410) 979-6000",
-   "email": "",
-   "street": "8056 Main Street",
-   "zip": "21043",
-   "address": "8056 Main Street, Ellicott City MD 21043",
-   "addr_src": "nearest",
-   "lat": 39.267684,
-   "lon": -76.795729,
-   "mailable": true,
-   "hours": "",
-   "facebook": false,
-   "trade": "retail",
-   "category": "electronics",
-   "score": 4,
-   "heat": "cold",
-   "why": [
-    "no website on the map"
-   ],
-   "offer": "starter site $1,500 (hours, map, what's in stock) + Google profile $199-$399/mo",
-   "offer_usd": 1500,
-   "osm": "https://www.openstreetmap.org/node/11005656693",
-   "phone_src": "overture",
-   "web": {
-    "verdict": "site_down",
-    "src": "overture",
-    "checked": "2026-11-21",
-    "url": "http://www.roatech.us",
-    "status": "TimeoutError"
    }
   },
   {
@@ -6596,7 +6554,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "https://www.wbmusicshop.com",
-    "status": "gaierror"
+    "status": "gaierror",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "wbmusicshop.com",
+    "proof": "Your site wbmusicshop.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {

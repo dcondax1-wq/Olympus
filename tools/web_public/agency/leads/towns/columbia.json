@@ -496,7 +496,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://Columbiasquash.com/",
-    "status": "gaierror"
+    "status": "gaierror",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "columbiasquash.com",
+    "proof": "Your site columbiasquash.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -2139,7 +2143,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.harperschoiceliquors.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "harperschoiceliquors.com",
+    "proof": "Your site harperschoiceliquors.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -2530,7 +2538,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "https://www.rbdentalcenter.com",
-    "status": "gaierror"
+    "status": "gaierror",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "rbdentalcenter.com",
+    "proof": "Your site rbdentalcenter.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -2848,7 +2860,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.totalathletenutrition.com/",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "totalathletenutrition.com",
+    "proof": "Your site totalathletenutrition.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -3081,7 +3097,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "https://www.ctwineandspirits.info",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "ctwineandspirits.info",
+    "proof": "Your site ctwineandspirits.info didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -3930,7 +3950,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://nailexpolaurel.com/",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "nailexpolaurel.com",
+    "proof": "Your site nailexpolaurel.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -4389,7 +4413,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.sindysdeliandcafe.webs.com/",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "sindysdeliandcafe.webs.com",
+    "proof": "Your site sindysdeliandcafe.webs.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -5918,7 +5946,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.sushinari.com",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "sushinari.com",
+    "proof": "Your site sushinari.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -6671,7 +6703,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://www.waterloo-pizza-exxon.com/",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "waterloo-pizza-exxon.com",
+    "proof": "Your site waterloo-pizza-exxon.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {

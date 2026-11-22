@@ -247,7 +247,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://centuryautoservice-germantown.com/",
-    "status": "SSLCertVerificationError"
+    "status": "SSLCertVerificationError",
+    "reason": "ssl",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "centuryautoservice-germantown.com",
+    "proof": "Your site centuryautoservice-germantown.com didn't load: browsers show a security warning (its certificate is broken). Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -1103,7 +1107,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://Zengardendayspa.com/",
-    "status": 521
+    "status": 521,
+    "reason": "server_error",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "zengardendayspa.com",
+    "proof": "Your site zengardendayspa.com didn't load: it shows a server error. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -2874,7 +2882,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "https://provisions-cafe.com/",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "provisions-cafe.com",
+    "proof": "Your site provisions-cafe.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {

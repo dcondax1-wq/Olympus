@@ -43,7 +43,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://caplescarcarellc.com/",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "caplescarcarellc.com",
+    "proof": "Your site caplescarcarellc.com didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -1624,7 +1628,11 @@
     "src": "overture",
     "checked": "2026-11-21",
     "url": "http://salonbynatalie.net",
-    "status": "dns"
+    "status": "dns",
+    "reason": "dns_gone",
+    "checked3": "2026-11-22T06:53Z",
+    "domain": "salonbynatalie.net",
+    "proof": "Your site salonbynatalie.net didn't load: the address no longer points anywhere. Checked Sun 11-22 1:53am ET."
    }
   },
   {
@@ -2264,45 +2272,6 @@
     "verdict": "none",
     "src": "overture",
     "checked": "2026-11-21"
-   }
-  },
-  {
-   "id": "osm-w1302108747",
-   "name": "Tobacco Hut",
-   "niche": "retail",
-   "niche_name": "Shop",
-   "kind": "shop=tobacco",
-   "town": "Westminster",
-   "city": "Westminster",
-   "state": "MD",
-   "phone": "(443) 289-8881",
-   "email": "",
-   "street": "Baltimore Boulevard",
-   "zip": "21157",
-   "address": "Baltimore Boulevard, Westminster MD 21157",
-   "addr_src": "nearest",
-   "lat": 39.573825,
-   "lon": -76.984803,
-   "mailable": false,
-   "hours": "",
-   "facebook": false,
-   "trade": "retail",
-   "category": "tobacco",
-   "score": 4,
-   "heat": "cold",
-   "why": [
-    "no website on the map"
-   ],
-   "offer": "starter site $1,500 (hours, map, what's in stock) + Google profile $199-$399/mo",
-   "offer_usd": 1500,
-   "osm": "https://www.openstreetmap.org/way/1302108747",
-   "phone_src": "overture",
-   "web": {
-    "verdict": "site_down",
-    "src": "overture",
-    "checked": "2026-11-21",
-    "url": "https://tobaccohut.com/",
-    "status": "TimeoutError"
    }
   },
   {
