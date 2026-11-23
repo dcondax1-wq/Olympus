@@ -154,7 +154,9 @@
     out.push({ id: 'next', ok: step != null ? true : null, title: 'Next step in $',
       say: step != null ? step : 'No account numbers yet. On the PC: TRADE_HOME, press 1 (Status).', menu: step != null ? null : 1 });
     // the account lines (owner's ask), their own list under the checklist: armed / running, room $, today $, next window
-    const acctRows = L ? accountRows(L).map((r) => ({ id: r.id, ok: !fresh ? null : r.armed.v && r.run === true, title: r.name,
+    // red team 2026-11-23: green only when the core's "ar" CONFIRMS armed (sure); an armed guess from the badge alone is grey (null)
+    const acctRows = L ? accountRows(L).map((r) => ({ id: r.id, ok: !fresh ? null : !r.armed.v || r.run === false ? false
+      : r.armed.sure && r.run === true ? true : null, title: r.name,
       say: (fresh ? '' : 'Old report (' + ageText(age) + '): ') + rowText(r) })) : [];
     // 6 Fleet (engine/fleet_mgr via the status post's "fl" block, night-fleetmgr 2026-11-23): the accounts, MFFU's slots, the next money move.
     // Info only: it never counts as a to-do (ok true), and it is shown only when the PC sends it.
