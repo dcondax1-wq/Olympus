@@ -1,5 +1,5 @@
 // CALLER PORTAL page (day-a11y 2026-11-21). The rules live in portalcore.js; this file only draws and saves (this phone only).
-import * as P from './portalcore.js?v=4';
+import * as P from './portalcore.js?v=5';
 
 const $ = (id) => document.getElementById(id);
 const UNLOCK = 'agency.portal.unlock';

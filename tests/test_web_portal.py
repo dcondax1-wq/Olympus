@@ -97,6 +97,7 @@ out.all = P.allLeads([L], st).map((x) => x.id);
 out.tally = P.tally(st, conf, 0);
 out.junk = P.loadState('{"log":[{"t":"x"},{"t":1,"id":"a","k":"hack"},{"t":2,"id":"a","k":"won"}],"dnc":[1,"z"]}');
 out.ident = P.identify('Ann', 'Peak Web');
+out.sign = [P.signer('Ann', {agency: 'Peak Web'}), P.signer('Ann', {agency: ''}), P.signer('Ann', null)];
 out.exp = Object.keys(P.exportDoc(st, 0)).sort();
 console.log(JSON.stringify(out));
 """
@@ -142,6 +143,8 @@ def node():
           o["add"][0]["by"] == "Ann" and o["add"][0]["phone"] == "3015550199" and "Already" in o["add"][1] and "10-digit" in o["add"][2] and "add-1" in o["all"], o["add"])
     check("b. the tally: calls, booked, won, and what it could pay ($300 a sale, $40 a booked call)", o["tally"]["calls"] == 2 and o["tally"]["maybe"] == 0, o["tally"])
     check("b. a junk saved state loads safely (bad lines dropped)", len(o["junk"]["log"]) == 1 and o["junk"]["dnc"] == ["z"], o["junk"])
+    check("b. signature: 'Ann, Peak Web'; no stray comma while the agency name is not set (night-calls 2026-11-23)",
+          o["sign"] == ["Ann, Peak Web", "Ann", "Ann"], o["sign"])
     check("b. the identify line", o["ident"] == "Hi, it's Ann with Peak Web. We build websites for local businesses.", o["ident"])
     check("b. the export carries the log, the added businesses, the numbers found, the caller", o["exp"] == ["added", "app", "caller", "exported", "log", "phones", "v", "version"], o["exp"])
 

@@ -1,5 +1,5 @@
 // the one-page proposal (2026-11-22): reads what the portal stored on this phone, draws it with textContent only
-import * as P from './portalcore.js?v=4';
+import * as P from './portalcore.js?v=5';
 
 const $ = (id) => document.getElementById(id);
 const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };

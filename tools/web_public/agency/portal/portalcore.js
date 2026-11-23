@@ -223,7 +223,7 @@ const usd0 = (n) => '$' + Number(n || 0).toLocaleString('en-US');
 export function proposalFor(lead, caller, conf, price, nowMs) {
   const P = price || {}, k = P.package || {}, nu = P.no_upfront || {}, care = P.care || {};
   const redesign = laneOf(lead) === 'redesign', link = redesign ? theirSite(lead) : siteUrl(lead, conf);
-  const name = str(lead.name) || 'your business', who = str(caller) + ', ' + str(conf && conf.agency);
+  const name = str(lead.name) || 'your business', who = signer(caller, conf);
   const valid = new Date(nowMs + (P.valid_days || 14) * 86400000).toISOString().slice(0, 10);
   const sec = [
     ['What you get', [k.name + ': up to ' + k.pages + ' pages, works on every phone, tap-to-call, a contact form, your own domain in your name, your Google profile linked.',
@@ -247,7 +247,7 @@ export function proposalFollowUp(lead, caller, conf) {
   const name = str(lead.name) || 'your business';
   return { subject: 'Re: Your website proposal, ' + name,
     email: ['Hi ' + name + ' team,', '', 'Just checking you got the website proposal I sent a few days ago. Happy to answer any question, or to change anything in it.',
-      'If now is not the right time, no problem: this is my last note.', '', str(caller) + ', ' + str(conf && conf.agency), str(conf && conf.postal), '',
+      'If now is not the right time, no problem: this is my last note.', '', signer(caller, conf), str(conf && conf.postal), '',
       'Not interested? Reply "no thanks" and we won\'t contact you again.'].join('\n') };
 }
 
@@ -276,6 +276,8 @@ export function theirSite(lead) { const u = str(lead && lead.url); return laneOf
 export function tabOf(lead, s) { return laneOf(lead) === 'redesign' && s.tone !== 'done' ? 'redesign' : s.tone; }
 // the banned-address check runs on the PC (agency/public.py) before public_base is written: no private name ships in this file
 export function publicBase(conf) { const b = str(conf && conf.public_base).replace(/\/+$/, ''); return /^https:\/\/[^\s"'<>]{4,}$/.test(b) ? b : ''; }
+// "Name, Agency" for a signature; no stray comma while the agency name is not set yet
+export function signer(caller, conf) { return [str(caller), str(conf && conf.agency)].filter(Boolean).join(', '); }
 export function siteUrl(lead, conf) {
   const b = publicBase(conf), p = str(lead.site);
   return b && /^f\/[a-z2-9]{8}\/$/.test(p) ? b + '/' + p : '';   // the neutral host serves the sites at <base>/f/<id>/
@@ -283,7 +285,7 @@ export function siteUrl(lead, conf) {
 export function mapsUrl(lead) { return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent([lead.name, lead.town, lead.state].map(str).filter(Boolean).join(' ')); }
 export function emailFor(lead, caller, conf) {
   const pr = (conf && conf.prices) || {};
-  const sign = [str(caller) + ', ' + str(conf && conf.agency), str(conf && conf.postal), '', 'Not interested? Reply "no thanks" and we won\'t contact you again.'];
+  const sign = [signer(caller, conf), str(conf && conf.postal), '', 'Not interested? Reply "no thanks" and we won\'t contact you again.'];
   const base = validEmail(conf && conf.agency_email) && str(conf && conf.postal).length >= 8 && str(conf && conf.agency) && str(caller);
   if (laneOf(lead) === 'redesign') {    // they have a site: a free check of it, no "we built you one"
     const why = Array.isArray(lead.why) ? lead.why.filter((x) => typeof x === 'string').slice(0, 3) : [];
