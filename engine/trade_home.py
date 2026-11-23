@@ -116,12 +116,12 @@ def _ago(sec):
 
 # ------------------------------------------------------------------------------------------------ 1. Status (one plain screen)
 def _guard_line():
-    """engine/pc_guard.line() on the Windows PC ("Windows guard: on / OFF / not set up"); "" elsewhere."""
+    """engine/win_guard.line() on the Windows PC ("Windows guard: on / OFF / not set up"); "" elsewhere."""
     if os.name != "nt":
         return ""
     try:
-        from . import pc_guard
-        return pc_guard.line()
+        from . import win_guard
+        return win_guard.line()
     except Exception:  # noqa: BLE001
         return ""
 

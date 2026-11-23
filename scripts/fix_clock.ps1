@@ -10,7 +10,7 @@ guard, rightly, blocked every new entry). Run ONCE as administrator (FIX_CLOCK.b
      works without an administrator,
   5. prints the drift BEFORE and AFTER (HTTPS Date header of three sites, median; w32tm /stripchart as the fallback) and one
      [OK] / [FIX] line.
-  6. runs scripts\pc_guard.ps1 in the same window (Windows cannot kill a trade: Update active hours, no auto-restart while
+  6. runs scripts\win_guard.ps1 in the same window (Windows cannot kill a trade: Update active hours, no auto-restart while
      signed in, no sleep on AC, network adapter power saving off, a Startup check); -Off undoes it from its saved values.
 Safe to run twice. -Off removes the task and puts the poll, servers and step limits back to the Windows defaults
 (FIX_CLOCK_OFF.bat); it leaves the time service on Automatic and running.
@@ -116,8 +116,8 @@ if ($Off) {
     } catch {
         Write-Host ('  [FIX] Could not put a time setting back: ' + $_.Exception.Message)
     }
-    # the PC guard (scripts\pc_guard.ps1): Windows Update / power / network adapter back to the saved values
-    $guard = Join-Path $PSScriptRoot 'pc_guard.ps1'
+    # the PC guard (scripts\win_guard.ps1): Windows Update / power / network adapter back to the saved values
+    $guard = Join-Path $PSScriptRoot 'win_guard.ps1'
     if (Test-Path -LiteralPath $guard) { & $guard -Off }
     exit 0
 }
@@ -187,9 +187,9 @@ try {
 if ($taskOk) { Say 'Task OlympusClock: every 15 min, at boot and at wake, as SYSTEM (no administrator needed again)' }
 
 # 4b. the PC guard in this same administrator window (no second Yes): Windows Update active hours + no restart while
-# signed in, never sleep / hibernate / disk sleep on AC, network adapter power saving off, a Startup check (scripts\pc_guard.ps1)
-$guard = Join-Path $PSScriptRoot 'pc_guard.ps1'
-if (Test-Path -LiteralPath $guard) { & $guard } else { Say 'PC guard: scripts\pc_guard.ps1 is missing (double-click UPDATE.bat)' }
+# signed in, never sleep / hibernate / disk sleep on AC, network adapter power saving off, a Startup check (scripts\win_guard.ps1)
+$guard = Join-Path $PSScriptRoot 'win_guard.ps1'
+if (Test-Path -LiteralPath $guard) { & $guard } else { Say 'PC guard: scripts\win_guard.ps1 is missing (double-click UPDATE.bat)' }
 
 # 5. AFTER
 Start-Sleep -Seconds 3

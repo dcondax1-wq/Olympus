@@ -9,11 +9,11 @@ administrator window (FIX_CLOCK.bat / MONDAY_SETUP: one Yes for administrator, n
      (-NoRestart: the adapter is not reset now, so NinjaTrader keeps its connection; it applies at the next restart).
   3. A check only (changes nothing): the Startup shortcuts that start NinjaTrader and the bot at sign-in are there.
   4. -Off (FIX_CLOCK_OFF.bat) puts back exactly what it changed, from the values it saved before the first change
-     (%ProgramData%\Olympus\pc_guard_prev.json, writable by administrators only). A value that was not there is removed.
+     (%ProgramData%\Olympus\win_guard_prev.json, writable by administrators only). A value that was not there is removed.
 Never touches Defender, the firewall, accounts, BitLocker or anything else. Every program by its full System32 path.
 Safe to run twice (the saved "before" values are kept from the first run). One [OK] / [FIX] line per item.
-Writes data\pc_guard.json (on / off + one word per item, no secrets) for the Start page, readiness and TRADE_HOME.
-Tests: tests\test_pc_guard.py (LE_PG_T_DIR=<folder>: a fake machine.json stands in for the registry, powercfg and the
+Writes data\win_guard.json (on / off + one word per item, no secrets) for the Start page, readiness and TRADE_HOME.
+Tests: tests\test_win_guard.py (LE_PG_T_DIR=<folder>: a fake machine.json stands in for the registry, powercfg and the
 adapters; nothing real is read or written). Windows PowerShell 5.1, ASCII only.
 #>
 param([switch]$Off)
@@ -27,9 +27,9 @@ if ($Fake) {
     $StatusPath = Join-Path $Fake 'status.json'
 } else {
     $StateDir = Join-Path ([Environment]::GetFolderPath('CommonApplicationData')) 'Olympus'
-    $StatusPath = Join-Path (Join-Path $Root 'data') 'pc_guard.json'
+    $StatusPath = Join-Path (Join-Path $Root 'data') 'win_guard.json'
 }
-$PrevPath = Join-Path $StateDir 'pc_guard_prev.json'
+$PrevPath = Join-Path $StateDir 'win_guard_prev.json'
 $WU = 'HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
 $WUP = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate'
 $AU = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU'

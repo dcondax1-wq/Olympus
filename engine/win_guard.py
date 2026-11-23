@@ -1,5 +1,5 @@
-"""The PC guard's state for the Start page, readiness and TRADE_HOME (night-pcguard 2026-11-23): data/pc_guard.json, written
-by scripts/pc_guard.ps1 (run in FIX_CLOCK.bat's administrator window; undone by FIX_CLOCK_OFF.bat). Read-only, never raises.
+"""The PC guard's state for the Start page, readiness and TRADE_HOME (night-pcguard 2026-11-23): data/win_guard.json, written
+by scripts/win_guard.ps1 (run in FIX_CLOCK.bat's administrator window; undone by FIX_CLOCK_OFF.bat). Read-only, never raises.
 
   status(path)  {"on": True | False | None (never run), "t", "items": {update, power, nic, bot_startup, nt_startup}}
   line(path)    "Windows guard: on" | "Windows guard: OFF (...)" | "Windows guard: not set up (...)"
@@ -10,7 +10,7 @@ import json
 import os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PATH = os.path.join(ROOT, "data", "pc_guard.json")
+PATH = os.path.join(ROOT, "data", "win_guard.json")
 FIX = "right-click FIX_CLOCK.bat > Run as administrator once"
 MISSING = {"bot_startup": "the bot does not start at sign-in", "nt_startup": "NinjaTrader does not start at sign-in"}
 
