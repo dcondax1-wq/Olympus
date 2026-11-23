@@ -137,22 +137,22 @@ def advice(ev: dict, rows: list, cd: dict, st: dict) -> tuple | None:
         what = "failed its eval" if r["stage"] == "failed" else "funded account was lost"
         return (f"fleet:dead:{r['key']}:{ev.get('n', 0)}", f"{nm} {what}", dead_move(r, rows, cd, st))
     if k == "passed":
-        return (f"fleet:passed:{r['key']}", f"{nm} PASSED",
+        return (f"fleet:passed:{r['key']}:{r.get('gen', 0)}", f"{nm} PASSED",
                 "MFFU issues the funded account (usually within a day). When it shows in NinjaTrader: one tap on the PC's Start page, "
                 "then START BOT + your phrase.")
     if k == "payout":
         n = int(r.get("payouts_n") or 0)
         if r["plan"].startswith("builder") and n >= BUILDER_LAST:
-            return (f"fleet:payout:{r['key']}:{n}", f"{nm} took payout {n}: close it, buy the next account",
+            return (f"fleet:payout:{r['key']}:{r.get('gen', 0)}:{n}", f"{nm} took payout {n}: close it, buy the next account",
                     f"Never take payout #5 (MFFU moves you to live and every sim account sleeps). After today, close {nm} in MFFU. "
                     f"Next: {next_move([x for x in rows if x['key'] != r['key']], cd, st)}.")
         if r["plan"].startswith("rapid") and float(r.get("paid") or 0) >= RAPID_LIVE_WARN:
-            return (f"fleet:rapidlive:{r['key']}", f"{nm}: {usd(r.get('paid'))} paid in all: Rapid live-move risk",
+            return (f"fleet:rapidlive:{r['key']}:{r.get('gen', 0)}", f"{nm}: {usd(r.get('paid'))} paid in all: Rapid live-move risk",
                     "MFFU's risk team can move a Rapid to live (their example: about $7,000 paid), and then every MFFU sim account "
                     "sleeps. The fleet plan's check: closing near $6,500 paid kept most of the money. Your call; tell Claude.")
         return None
     if k == "closed":
-        return (f"fleet:closed:{r['key']}:{ev.get('n', 0)}", f"{nm} is off the bot: its slot is free",
+        return (f"fleet:closed:{r['key']}:{r.get('gen', 0)}", f"{nm} is off the bot: its slot is free",
                 f"Next: {next_move([x for x in rows if x['key'] != r['key']], cd, st)}.")
     return None
 
@@ -176,7 +176,7 @@ def changes(prev: dict, rows: list) -> list:
         if int(r.get("payouts_n") or 0) > int(p.get("payouts_n") or 0):
             out.append({"kind": "payout", "row": r})
     for key, p in prev.items():
-        if key not in now and p.get("stage") not in ("closed",):
+        if key not in now and p.get("stage") not in ("closed",) and int(p.get("miss") or 0) >= 1:
             out.append({"kind": "closed", "row": {**p, "key": key, "stage": "closed"}})
     return out
 
@@ -188,7 +188,12 @@ def step(st: dict, rows: list, cd: dict) -> tuple:
     first = not prev and not st.get("seeded")
     evs = changes(prev, rows)
     alerts = []
+    gen = st.setdefault("gen", {})
     for ev in evs:
+        ev["row"] = {**ev["row"], "gen": int(gen.get(ev["row"]["key"]) or 0)}
+        if ev["kind"] == "added" and prev:          # red team 2: a new account on a key = a new generation of its alert keys
+            gen[ev["row"]["key"]] = int(gen.get(ev["row"]["key"]) or 0) + 1
+            ev["row"]["gen"] = gen[ev["row"]["key"]]
         if ev["kind"] == "added":
             if prev:                                    # a new account after the first look: the streak ends; a re-buy counts
                 st["dead_streak"] = 0
@@ -204,7 +209,9 @@ def step(st: dict, rows: list, cd: dict) -> tuple:
         a = advice(ev, rows, cd, st)
         if a and a[0] not in (st.get("told") or {}):
             alerts.append({"key": a[0], "title": a[1][:120], "body": a[2][:600]})
-    st["rows"] = {r["key"]: {k: r.get(k) for k in ("label", "plan", "stage", "payouts_n", "paid")} for r in rows}
+    keep = {k: {**v, "miss": int(v.get("miss") or 0) + 1} for k, v in prev.items()   # red team 2: gone once = wait one more tick
+            if k not in {r["key"] for r in rows} and int(v.get("miss") or 0) < 1 and v.get("stage") != "closed"}
+    st["rows"] = {**keep, **{r["key"]: {k: r.get(k) for k in ("label", "plan", "stage", "payouts_n", "paid")} for r in rows}}
     st["seeded"] = True
     return st, alerts
 
@@ -255,8 +262,15 @@ def gather() -> list:
             label = KEY_LABEL.get(key) or (f"{LABEL[plan]}" + (" #2" if key == "rapid2" else "") if role == "rapid" else
                                            str(r.get("label") or LABEL[plan]))
             pv = pays.get("atlas" if key == "atlas" else key) or {}
-            rows.append({"key": key, "label": label[:40], "plan": plan, "stage": stage,
-                         "payouts_n": int(pv.get("payouts_n") or 0), "paid": float(pv.get("paid") or 0)})
+            n_pay, paid = int(pv.get("payouts_n") or 0), float(pv.get("paid") or 0)
+            if role == "rapid":                 # red team 2: the autopilot's Rapid view has no payouts_n / paid: read the slot
+                try:
+                    from . import rapid as RP
+                    pz = (RP.read(RP.slot_path(key)) or {}).get("payouts") or {}
+                    n_pay, paid = len(pz), round(sum(float(v) for v in pz.values()), 2)
+                except Exception:
+                    pass
+            rows.append({"key": key, "label": label[:40], "plan": plan, "stage": stage, "payouts_n": n_pay, "paid": paid})
     except Exception:
         pass
     return rows
