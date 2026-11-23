@@ -148,9 +148,13 @@ def main():
 
     # ---- the wiring and the files
     pr = open(os.path.join(ROOT, "tools", "pc_report.py"), encoding="utf-8").read()
-    hook = pr[pr.index("def main("):]
+    # night-tasks 2026-11-23 moved the soft hooks into after_run(), called by main() only on a real run (night-reds3: same checks)
+    hook = pr[pr.index("def after_run("):pr.index("\ndef ", pr.index("def after_run(") + 10)]
+    main_src = pr[pr.index("def main("):]
     check("pc_report.py calls the Sunday hook after its own run, not on --dry-run, inside a try (it can never stop the 15-minute report)",
-          "weekly_money_report" in hook and "if not a.dry_run:" in hook and re.search(r"try:\s+from tools import weekly_money_report as _wmr\s+_wmr\.maybe_run\(", hook) is not None)
+          "weekly_money_report" in hook and re.search(r"try:\s+from tools import weekly_money_report as _wmr\s+_wmr\.maybe_run\(", hook) is not None
+          and main_src.count("after_run(") >= 1 and main_src.count("after_run(") == len(re.findall(r"if not a\.dry_run:\s+after_run\(", main_src))
+          and main_src.index("run_once(") < main_src.index("after_run("))
     code = open(os.path.join(ROOT, "tools", "weekly_money_report.py"), encoding="utf-8").read()
     check("the report reaches the network only through pc_report.ntfy_post (no urllib / requests of its own), and has no key or token in it",
           "ntfy_post" in code and not re.search(r"^\s*(import|from)\s+(urllib|requests|http|socket)", code, re.M) and not re.search(r"api[_-]?key|password|bearer", code, re.I))

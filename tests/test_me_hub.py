@@ -174,12 +174,14 @@ def test_static():
           and "getJSON(base + 'me/me.json')" in gate_js and "H.size || plural(H.count, 'app')" in gate_js and "C.findHubs ? C.findHubs(q) : []" in gate_js and "ME: X.ME" in gate_js)
     check("a. gate-nav: Go to shows a hub's size (the Me hub: its areas, not '0 apps') and loads the catalog ?v=me1", "h.size || (h.count + ' apps')" in nav and "gate-catalog.js?v=nv12" in nav)
     pr = AK.read(os.path.join(ROOT, "tools", "pc_report.py"))
-    # integration 2026-11-23: night-tasks moved the soft hooks into after_run(quiet), which main() calls only on a real run
-    hook = pr[pr.index("def after_run("):pr.index("\ndef ", pr.index("def after_run(") + 5)]
-    mn = pr[pr.index("def main("):]
+    # night-tasks 2026-11-23 moved the soft hooks out of main() into after_run(), which main() calls only on a real run
+    # (night-reds3: the same three guarantees, checked where the code now lives)
+    hook = pr[pr.index("def after_run("):pr.index("\ndef ", pr.index("def after_run(") + 10)]
+    main_src = pr[pr.index("def main("):]
     check("a. the PC report's 15-minute task calls me_hub.maybe_run softly (after calendar_sync, never on --dry-run, inside try)",
           re.search(r"try:\s+from tools import me_hub as _me\s+_me\.maybe_run\(", hook) is not None and hook.index("_cal.maybe_run(") < hook.index("_me.maybe_run(")
-          and "after_run(a.quiet)" in mn and mn.index("if not a.dry_run:") < mn.index("after_run(a.quiet)"))
+          and main_src.count("after_run(") >= 1
+          and main_src.count("after_run(") == len(re.findall(r"if not a\.dry_run:\s+after_run\(", main_src)))
     gi = AK.read(os.path.join(ROOT, ".gitignore"))
     check("a. data/me/ (the phone files) is gitignored; the typed inputs live outside the repo (%USERPROFILE%\\.olympus\\me)", re.search(r"(?m)^data/me/$", gi) is not None)
     doc = AK.read(os.path.join(ROOT, "docs", "ME_HUB.md"))

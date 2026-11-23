@@ -289,8 +289,16 @@ def et_day_hm(t):
     return d.strftime("%Y-%m-%d"), d.strftime("%H:%M")
 
 
-def reviews(root: str) -> dict:
-    """ZEUS daily reviews (engine/zeus_review on the PC: logs/zeus/review_<day>.json; pulled copies data/pc_days/<day>/review.json)."""
+REVIEWS_TRACKED = os.path.join("research", "zeus", "reviews.json")   # night-reds3: the reviews' text, tracked (see reviews())
+
+
+def _review_text(r: dict) -> str:
+    txt = r.get("text") if isinstance(r.get("text"), str) else "\n".join(map(str, r.get("text") or []))
+    return txt or oneline(json.dumps(r.get("items"))[:600])
+
+
+def local_reviews(root: str) -> dict:
+    """The reviews on THIS machine only (gitignored): the PC's logs/zeus/review_<day>.json, the cloud's data/pc_days/<day>/review.json."""
     out = {}
     for p in sorted(glob.glob(os.path.join(root, "logs", "zeus", "review_*.json")) + glob.glob(os.path.join(root, "data", "pc_days", "*", "review.json"))):
         r = read_json(p, {}) or {}
@@ -298,6 +306,34 @@ def reviews(root: str) -> dict:
         if day and isinstance(r, dict):
             out[day] = r
     return out
+
+
+def reviews(root: str) -> dict:
+    """ZEUS daily reviews = the tracked snapshot (research/zeus/reviews.json: {day: {"day", "text"}}, scrubbed) + this machine's
+    local review files (a local one wins for its day). night-reds3 2026-11-23: the reviews came ONLY from gitignored files, so the
+    committed vault (built where data/pc_days was pulled) never matched a fresh build in another checkout; the snapshot makes the
+    build the same everywhere. snapshot_reviews() (the rebuild command, main) adds new local days to it."""
+    out = {d: v for d, v in (read_json(os.path.join(root, REVIEWS_TRACKED), {}) or {}).items() if isinstance(v, dict)}
+    out.update(local_reviews(root))
+    return out
+
+
+def snapshot_reviews(root: str = ROOT) -> int:
+    """Merge this machine's local reviews into the tracked snapshot (only their scrubbed text: what the vault shows anyway). Days are
+    added or updated, never dropped. -> the number of days changed. Called by main() (the repo rebuild), never by build()."""
+    path = os.path.join(root, REVIEWS_TRACKED)
+    cur = {d: v for d, v in (read_json(path, {}) or {}).items() if isinstance(v, dict)}
+    n = 0
+    for d, r in local_reviews(root).items():
+        row = {"day": d, "text": scrub(_review_text(r))}
+        if cur.get(d) != row:
+            cur[d], n = row, n + 1
+    if n:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8", newline="\n") as fh:
+            json.dump(dict(sorted(cur.items())), fh, indent=1, ensure_ascii=False)
+            fh.write("\n")
+    return n
 
 
 # ------------------------------------------------------------------------------------------------ strategies
@@ -598,8 +634,7 @@ class Brain:
             if ev:
                 lines += ["## Board", ""] + [f"- {et_day_hm(e['t'])[1]} ET · {e.get('kind')} ({e.get('src')}): {unlink_md(oneline(e.get('text'), 300))}" for e in ev] + [""]
             if rv:
-                txt = rv.get("text") if isinstance(rv.get("text"), str) else "\n".join(map(str, rv.get("text") or []))
-                lines += ["## ZEUS daily review", "", callout("info", "What the bot learned today", [unlink_md(txt or oneline(json.dumps(rv.get("items"))[:600]))]), ""]
+                lines += ["## ZEUS daily review", "", callout("info", "What the bot learned today", [unlink_md(_review_text(rv))]), ""]
             if wd.get(d):
                 lines += ["## Research written", ""] + [f"- {link(w['name'], w['short'])} ({w['verdict']})" for w in sorted(wd[d], key=lambda w: w["stem"])] + [""]
             self.add("Days", f"Day {d}", "\n".join(lines))
@@ -901,6 +936,10 @@ def main(argv=None) -> int:
         d = check(a.out)
         print("ZEUS Brain up to date" if not d else f"ZEUS Brain differs in {len(d)} note(s): " + ", ".join(d[:8]))
         return 1 if d else 0
+    if not a.vault and os.path.abspath(a.out) == os.path.abspath(REPO_VAULT):
+        k = snapshot_reviews(ROOT)                    # the repo's vault: the reviews it shows stay reproducible (tracked)
+        if k:
+            print(f"reviews snapshot: {k} day(s) added / updated ({REVIEWS_TRACKED})")
     res = build(a.vault, standalone=False) if a.vault else build(a.out)
     print(f"ZEUS Brain: {res['notes']} notes in {res['folder']} · {len(res['wrote'])} written · {len(res['removed'])} removed")
     return 0

@@ -235,12 +235,31 @@ def main() -> int:
         os_ = open(os.path.join(ROOT, "tools", "obsidian_sync.py"), encoding="utf-8").read()
         check("f. hooks: the cloud learn night rebuilds vault/ (soft, --skip brain); the PC sync builds hourly (soft)",
               "obsidian_brain.build(os.path.join(root, \"vault\")" in ln and '"brain" not in skip' in ln
+              and ln.index("obsidian_brain.snapshot_reviews(root)") < ln.index("obsidian_brain.build(os.path.join(root, \"vault\")")
               and "_brain.build(cfg[\"vault\"], standalone=False)" in os_ and "BRAIN_EVERY_S" in os_)
         src = open(os.path.join(ROOT, "tools", "obsidian_brain.py"), encoding="utf-8").read()
         check("f. no network, no broker / order import, no clock", not re.search(r"urllib|requests|socket|ninjatrader|engine\.live\b|place_order|time\.time|datetime\.now", src))
         src2 = open(os.path.join(ROOT, "tools", "obsidian_more.py"), encoding="utf-8").read()
         check("f. the big layer too: no network, no broker, no clock, no live file written",
               not re.search(r"urllib|requests|socket|ninjatrader|engine\.live\b|place_order|time\.time|\.now\(|today\(|open\([^)]*['\"]w", src2))
+        # h. (night-reds3 2026-11-23) the reviews must not depend on gitignored files: the tracked snapshot carries them
+        hr = os.path.join(tmp, "h_repo")
+        fixture(hr)
+        w(hr, "data/pc_days/2026-11-17/review.json", json.dumps({"day": "2026-11-17", "text": "ZEUS Nov 17: Zlarior no trade, owner@example.com"}))
+        before = os.path.isfile(os.path.join(hr, OB.REVIEWS_TRACKED))
+        OB.build(os.path.join(tmp, "h_v0"), root=hr)
+        check("h. build() never writes the tracked review snapshot (tests and the PC build stay read-only)",
+              os.path.isfile(os.path.join(hr, OB.REVIEWS_TRACKED)) == before)
+        n = OB.snapshot_reviews(hr)
+        snap = json.load(open(os.path.join(hr, OB.REVIEWS_TRACKED), encoding="utf-8"))
+        check("h. snapshot_reviews: the local reviews become tracked, scrubbed text (no email)", n == len(OB.local_reviews(hr)) and n >= 1 and "2026-11-17" in snap
+              and "owner@example.com" not in json.dumps(snap) and "Zlarior no trade" in snap["2026-11-17"]["text"], snap)
+        check("h. ... a second snapshot changes nothing", OB.snapshot_reviews(hr) == 0)
+        shutil.rmtree(os.path.join(hr, "data", "pc_days"))
+        OB.build(os.path.join(tmp, "h_v1"), root=hr)
+        day = open(os.path.join(tmp, "h_v1", OB.SUB, "Days", "Day 2026-11-17.md"), encoding="utf-8").read()
+        check("h. a checkout WITHOUT the pulled files still shows the day's review (the committed vault = a fresh build anywhere)",
+              "## ZEUS daily review" in day and "Zlarior no trade" in day, day[-300:])
         # g.
         real = os.path.join(tmp, "realbuild")
         rr = OB.build(real, root=ROOT)
