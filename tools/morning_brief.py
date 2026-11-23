@@ -1,4 +1,15 @@
-"""MORNING BRIEF (2026-11-18): one short ZEUS push at about 07:30 ET on CME trading days, in the owner's "important only" set
+"""MORNING BRIEF (2026-11-18; night-brief 2026-11-23: the ONE daily phone message, at most 8 lines, build()):
+  READY / NOT READY + the first blocker's fix (engine/readiness via the "rd" block; a PC problem / an old report = NOT READY)
+  one line per account: armed, $, room, yesterday's $ (the previous CME session), $ to pass / to payout / payout READY $, the MFFU
+  7-day deadline when 3 days or fewer are left
+  Today: the bots' hours, today's big news, the T1 ban times (Rapid funded: flat -2/+2 min), an early close, overnight trades
+  Next money move: engine/fleet_mgr's next move
+  Edge · Needs you · Decide cards waiting: N (tools/web_public/business/decisions.json)
+The evening half is tools/pc_guard.day_summary (16:15 ET): the day's $ per account + the payouts ready + "Tomorrow: <next move>" +
+the day's low-priority lines (engine/alert_bus.digest_peek), ONE message (the 16:20 digest sends nothing on a trading day).
+Tests: python -X utf8 -m tests.test_daily_brief, tests.test_notify (section h).
+
+The 2026-11-18 version (kept below for the sources): one short ZEUS push at about 07:30 ET on CME trading days, in the owner's "important only" set
 (notify_settings.json type morning_brief, ON by default; morning_brief_at = the time). Four lines, phone-sized:
 
   ZEUS - Wed Nov 18 - PC ok                                                  (the title)
@@ -241,13 +252,44 @@ def session_start(now) -> int:
     return int(s.timestamp())
 
 
+def prev_session(now) -> tuple:
+    """(t0, t1) of the trading session before today's: 18:00 ET the evening before the previous CME trading date -> its 17:00."""
+    try:
+        from engine import cme_calendar as C
+        closed = C.full_closure
+    except Exception:  # noqa: BLE001
+        closed = lambda d: False  # noqa: E731
+    d = dt.datetime.fromtimestamp(session_start(now), ET).date() + dt.timedelta(days=1)    # today's trading date
+    p = d - dt.timedelta(days=1)
+    while p.weekday() >= 5 or closed(p):
+        p -= dt.timedelta(days=1)
+    t0 = int(dt.datetime.combine(p - dt.timedelta(days=1), dt.time(18, 0), ET).timestamp())
+    return t0, int(dt.datetime.combine(p, dt.time(17, 0), ET).timestamp())
+
+
+def day_pnl(snap: dict, now: int, rs: list, plan_doc=None, t0=None, t1=None) -> dict:
+    """{board key: (n trades, $)} of the CLOSED real trades between t0 and t1 (paper left out). Never raises."""
+    try:
+        per, _o, _n = _trades(snap, now if t1 is None else t1, rs, plan_doc, t0)
+        return per
+    except Exception:  # noqa: BLE001
+        return {}
+
+
 def overnight(snap: dict, now: int, rs: list, plan_doc=None) -> str:
     """'no trades' / 'Zlarior +$605 (1 trade)' / '... · ATLAS SHORT open' since 18:00 ET (paper left out)."""
+    per, opened, nm = _trades(snap, now, rs, plan_doc, session_start(now))
+    bits = [f"{nm(k)} {signed(s)} ({n} trade{'s' if n != 1 else ''})" for k, (n, s) in per.items()]
+    bits += [f"{nm(k)} {side or 'trade'} open".replace("  ", " ") for k, side in opened]
+    return ", ".join(bits) if bits else "no trades"
+
+
+def _trades(snap: dict, now: int, rs: list, plan_doc, t0) -> tuple:
+    """(per {key: (n, $)}, opened [(key, side)], name fn) of the real trades between t0 and now."""
     from engine import board_events as B
     pa = _plan_accounts(plan_doc if plan_doc is not None else B.plan())
     names = dict(zip([r.get("key") for r in rs], short_labels(rs)))
     L = _d(snap.get("live"))
-    t0 = session_start(now)
     per, seen, opened = {}, set(), []
 
     def add(k, t):
@@ -288,9 +330,7 @@ def overnight(snap: dict, now: int, rs: list, plan_doc=None) -> str:
         if p and not any(x[0] == k for x in opened):
             opened.append((k, str(p.get("side") or "").upper()))
     nm = lambda k: names.get(k) or CARD_NAME.get(k) or safe(k, 20)   # noqa: E731
-    bits = [f"{nm(k)} {signed(s)} ({n} trade{'s' if n != 1 else ''})" for k, (n, s) in per.items()]
-    bits += [f"{nm(k)} {side or 'trade'} open".replace("  ", " ") for k, side in opened]
-    return ", ".join(bits) if bits else "no trades"
+    return per, opened, nm
 
 
 # ------------------------------------------------------------------------------------------------ today
@@ -394,8 +434,111 @@ def roll_needs(snap: dict, now: int) -> list:
 
 
 # ------------------------------------------------------------------------------------------------ the message
-def build(snap: dict, now: int | None = None, plan_doc=None, events=None, root: str | None = None) -> dict:
-    """{"title", "body", "lines": [4], "day"}. Never raises on a bad snapshot (a part that fails says so)."""
+MAX_LINES = 8                       # night-brief 2026-11-23: the owner reads ONE message and does nothing else
+IDLE_LIMIT = 7                      # MFFU's inactivity rule (calendar days)
+IDLE_SHOW = 3                       # show the 7-day deadline when 3 days or fewer are left
+
+
+def ready_line(snap: dict, pc: str, pc_needs: list) -> tuple:
+    """('READY for 02:00' / 'NOT READY: <blocker>. Fix: <fix>', title word) from engine/readiness's last verdict (the status post's
+    "rd" block: s ok | warn | no, w, b, f); a PC problem (bot down, NinjaTrader closed) or an old report wins."""
+    if pc != "PC ok":
+        fix = pc_needs[0].split(": ", 1)[-1] if pc_needs else "check the PC: STATUS.bat"
+        return f"NOT READY: {pc.replace('PC: ', '')}. Fix: {fix}", "NOT READY"
+    rd = _d(snap.get("rd"))
+    st, w = rd.get("s"), (f" for {rd['w']}" if rd.get("w") else "")
+    if st == "no":
+        return (f"NOT READY{w}: {safe(rd.get('b') or 'see the PC', 80)}. Fix: {safe(rd.get('f') or 'double-click HEALTH_CHECK.bat', 90)}",
+                "NOT READY")
+    if st == "warn":
+        return f"READY{w}, 1 to watch: {safe(rd.get('b') or 'see the PC', 80)}", "READY"
+    if st == "ok":
+        return f"READY{w}: PC, clock, NinjaTrader, bars and accounts checked", "READY"
+    return "PC ok (no readiness check in the last report)", "PC ok"
+
+
+def account_line(r: dict, lab: str, yday, hb_fresh: bool) -> tuple:
+    """'Zlarior 50K armed · $49,193 · room $1,025 · yesterday +$300 · $3,807 to pass' (+ the payout / 7-day parts). -> (line, needs)."""
+    src = _d(r.get("_src"))
+    ev = _d(src.get("eval"))
+    badge = str(src.get("badge") or "").upper()
+    st = str(r.get("stage") or "eval")
+    needs = []
+    bits = [lab + (" armed" if badge == "LIVE" else f" NOT armed ({badge.lower()})" if badge else "")]
+    bits.append(money(r.get("balance")))
+    room = _f(src.get("room"))
+    room = _f(ev.get("room")) if room is None else room
+    if r.get("locked"):
+        bits.append("LOCKED by MFFU")
+        needs.append(f"{label(r)} locked: check MFFU")
+    elif st == "failed":
+        bits.append("failed")
+    elif st == "passed":
+        bits.append("PASSED")
+        needs.append(f"{label(r)} passed: tap it on the Start page when MFFU issues it")
+    if room is not None and st in ("eval", "funded") and not r.get("locked"):
+        bits.append(f"room {money(room)}")
+    if yday is not None:
+        bits.append(f"yesterday {signed(yday[1])}" + (f" ({yday[0]} trades)" if yday[0] > 1 else ""))
+    if st == "funded":
+        tail, need = funded_part(r)
+        if tail:
+            bits.append(tail.strip(" ()"))
+        if need:
+            needs.append(need)
+    elif st == "eval":
+        tp = _f(r.get("to_pass"))
+        if tp is not None and tp > 0:
+            bits.append(f"{money(tp)} to pass")
+    q = _f(src.get("quiet_days"))
+    ka_cover = hb_fresh and bool(_d(src.get("keepalive")).get("cover"))
+    if q is not None and st in ("eval", "funded") and not r.get("locked"):
+        left = IDLE_LIMIT - int(q)
+        if left <= IDLE_SHOW and not ka_cover:
+            bits.append(f"MFFU 7-day: trade within {max(0, left)} day(s)")
+            if left <= 1:
+                needs.append(f"{label(r)} {int(q)} days without a trade: 1 MNQ by hand")
+    return " · ".join(bits), needs
+
+
+def news_bans(now: int) -> str:
+    """'T1 news ban (Rapid funded, flat -2/+2 min): 08:30' or '' (engine/multi_account.tier1_releases)."""
+    try:
+        from engine.multi_account import tier1_releases
+        rel = sorted(tier1_releases(_et(now).date().isoformat()))
+        if not rel:
+            return ""
+        return "T1 news ban (Rapid funded, flat -2/+2 min): " + ", ".join(f"{_et(r):%H:%M}" for r in rel[:3])
+    except Exception:  # noqa: BLE001
+        return ""
+
+
+def fleet_line() -> str:
+    """The fleet manager's next money move (engine/fleet_mgr: its last tick's tiny), '' when none."""
+    try:
+        from engine import fleet_mgr as FM
+        t = FM.read_tiny() or {}
+        s = str(t.get("s") or "")
+        return s.split("Next: ", 1)[1] if "Next: " in s else ""
+    except Exception:  # noqa: BLE001
+        return ""
+
+
+def cards_waiting(path: str | None = None) -> int:
+    """Decide cards still open (tools/web_public/business/decisions.json). 0 when unreadable."""
+    try:
+        from engine import fleet_mgr as FM
+        return sum(1 for v in FM.cards(path).values() if v == "open")
+    except Exception:  # noqa: BLE001
+        return 0
+
+
+def build(snap: dict, now: int | None = None, plan_doc=None, events=None, root: str | None = None, fleet: str | None = None,
+          waiting: int | None = None) -> dict:
+    """{"title", "body", "lines" (<= MAX_LINES), "day"}: line 1 READY / NOT READY (+ the fix), one line per account (armed, $,
+    room, yesterday $, $ to pass / to payout / payout READY, the MFFU 7-day deadline when <= 3 days), Today (hours, news, the T1
+    ban, an early close), the next money move (engine/fleet_mgr), then edge + needs you + decide cards waiting. Never raises on
+    a bad snapshot (a part that fails says so)."""
     now = int(now if now is not None else snap.get("t"))
     e = _et(now)
     pc, needs = pc_text(snap)
@@ -405,21 +548,37 @@ def build(snap: dict, now: int | None = None, plan_doc=None, events=None, root: 
         rs = []
         needs.append(f"brief: accounts not readable ({x.__class__.__name__})")
     age = snap.get("hb_age")
-    acc, n2 = accounts_line(rs, hb_fresh=age is not None and age <= HB_FRESH_S)
-    if not rs and snap.get("hb_age") is not None:
-        acc = "No account numbers in the last report"
+    fresh = age is not None and age <= HB_FRESH_S
+    rl, word = ready_line(snap, pc, needs)
+    t0, t1 = prev_session(now)
+    yd = day_pnl(snap, now, rs, plan_doc, t0, t1)
+    acc = []
+    for r, lab in zip(rs, short_labels(rs)):
+        ln, n2 = account_line(r, label(r), yd.get(r.get("key")), fresh)
+        if not fresh and age is not None:        # red team 2: never an old number shown as today's
+            ln += f" · as of {int(age) // 3600} h {int(age) % 3600 // 60} min ago"
+        acc.append(ln)
+        needs += n2
+    if not acc:
+        acc = ["No account numbers in the last report"]
+    keep = MAX_LINES - 4                             # READY + Today + Next + Needs
+    if len(acc) > keep:
+        acc = acc[:keep - 1] + [f"+{len(acc) - keep + 1} more accounts: TRADE_HOME -> 1 (Status)"]
     try:
         ov = overnight(snap, now, rs, plan_doc)
     except Exception:  # noqa: BLE001
         ov = "not readable"
-    today = windows_line(now)
-    extra = [x for x in (news_today(now, root), early_note(now)) if x]
-    needs += n2 + roll_needs(snap, now)
+    extra = [x for x in (news_today(now, root), news_bans(now), early_note(now)) if x]
+    today = f"Today: {windows_line(now)}" + "".join(f" · {x}" for x in extra) + (f" · overnight {ov}" if ov != "no trades" else "")
+    mv = fleet_line() if fleet is None else fleet
+    needs += roll_needs(snap, now)
     nd = ", ".join(needs[:2]) + (f" (+{len(needs) - 2} more)" if len(needs) > 2 else "") if needs else "none"
-    title = f"ZEUS - {e:%a %b} {e.day} - {pc}"
-    lines = [f"ZEUS · {e:%a %b} {e.day} · {pc}", acc, f"Overnight: {ov} · Today: {today}" + "".join(f" · {x}" for x in extra),
-             f"Edge: {edge_text(snap)} · Needs you: {nd}"]
-    return {"title": title, "body": "\n".join(lines[1:]), "lines": lines, "day": e.date().isoformat(), "needs": len(needs)}
+    nw = cards_waiting() if waiting is None else int(waiting)
+    lines = [rl] + acc + [today] + ([f"Next money move: {mv}"] if mv else []) + \
+            [f"Edge {edge_text(snap)} · Needs you: {nd}" + (f" · Decide cards waiting: {nw}" if nw else "")]
+    title = f"ZEUS - {e:%a %b} {e.day} - {word}"
+    lines = [ln[:400] for ln in lines[:MAX_LINES]]       # red team 2: the body = the 8 lines, under the 4,096 B push limit
+    return {"title": title, "body": "\n".join(lines)[:3900], "lines": lines, "day": e.date().isoformat(), "needs": len(needs)}
 
 
 def board_post(b: dict, env=None) -> dict | None:

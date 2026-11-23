@@ -772,6 +772,24 @@ def digest_add(title: str, body: str = "", key: str = "", path=None, now=None) -
         return False
 
 
+def digest_peek(day: str, path=None) -> list:
+    """The waiting low-priority lines for the evening message (tools/pc_guard.day_summary, night-brief 2026-11-23: ONE evening
+    message, not two); marks them as carried by `day` (digest_flush then drops them instead of sending them again). Never raises."""
+    try:
+        path = path or DIGEST_PATH
+        with _LOCK:
+            d = _state(path)
+            items = [i for i in d.get("items") or [] if isinstance(i, dict) and i.get("shown") in (None, day)]
+            for i in items:
+                i["shown"] = day
+            d["items"] = [i for i in d.get("items") or [] if isinstance(i, dict)]
+            if items:
+                _save_state(d, path)
+        return [str(i.get("line") or "") for i in items]
+    except Exception:
+        return []
+
+
 def digest_flush(now=None, path=None, cfg: dict | None = None, force: bool = False) -> str:
     """The 15-minute report: from DIGEST_AT ET, once a day, the waiting low-priority lines as ONE silent post ("sent" / "none" /
     "not yet" / "done today"). Never raises."""
@@ -787,6 +805,20 @@ def digest_flush(now=None, path=None, cfg: dict | None = None, force: bool = Fal
             if not force and e.hour * 60 + e.minute < DIGEST_AT:
                 return "not yet"
             items = [i for i in d.get("items") or [] if isinstance(i, dict)]
+            trading = False
+            if not force:
+                try:
+                    from . import cme_calendar as C
+                    trading = e.weekday() < 5 and not C.full_closure(e.date())
+                except Exception:
+                    trading = e.weekday() < 5
+            if trading:
+                # a CME trading day: the 16:15 day summary carries the lines (digest_peek); drop what it showed, keep the rest
+                # for tomorrow's summary: ONE evening message, never a second digest
+                d["day"] = day
+                d["items"] = [i for i in items if not i.get("shown")]
+                _save_state(d, path, t)
+                return "in the day summary"
             d["day"] = day
             d["items"] = []
             _save_state(d, path, t)

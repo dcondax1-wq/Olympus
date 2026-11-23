@@ -117,7 +117,7 @@ def part_e(b):
     check("e. digest add", AB.digest_add("Update applied", "a1 -> b2", key="u:1", path=p))
     check("e. same key = one line", not AB.digest_add("Update applied", "a1 -> b2", key="u:1", path=p))
     AB.digest_add("Update skipped", "local changes", key="u:2", path=p)
-    morning = 1795010400                                   # 2026-11-18 ~ 10:00 ET
+    morning = 1795010400 + 3 * 86400                       # Sat 2026-11-21 ~ 10:00 ET (a trading day's lines ride the day summary)
     e = AB._et(morning)
     t_morning = morning - (e.hour * 60 + e.minute - 10 * 60) * 60
     t_eve = t_morning + 6 * 3600 + 25 * 60                 # 16:25 ET

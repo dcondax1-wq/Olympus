@@ -336,6 +336,7 @@ AREAS["pc"].append("payout_rt")         # red team 2026-11-23: the #5 guard per 
 AREAS["pc"].append("rapid50k_onboard")   # night-r50k 2026-11-23: buy the Rapid EOD 50K -> one tap, slot rapid2, keep-alive key rapid2, $165
 AREAS["pc"].append("rules_watch")         # night-rulewatch 2026-11-23: MFFU help pages vs mffu_rules.json, daily, alert on a real change
 AREAS["pc"].append("fleet_mgr")           # night-fleetmgr 2026-11-23: one alert per account change with the next money move (advice only), the Fleet line
+AREAS["pc"].append("daily_brief")         # night-brief 2026-11-23: ONE 07:30 brief (<= 8 lines) + ONE evening message (digest merged)
 AREAS["pc"].append("package_b")         # audit 2026-11-22 package B: every critical alarm reaches the phone
 AREAS["pc"].append("notify_rt")         # red team 2026-11-23: no hourly update-alert storm, subscribe reminder, never blocks, ALERTS_OFF
 AREAS["privacy"] += ["alerts_start_code", "cross_site"]
