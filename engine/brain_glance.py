@@ -7,7 +7,8 @@ lines. Built from what the heartbeat already carries (engine/heartbeat.Heartbeat
 plus the live board's account cards (engine/live_board.build: today's $, room, position), so it adds no work to the bot.
 
 Bots: Zlarior (LIT, the 50K), ATLAS (the 25K), Rapid EOD (only when data/rapid.json names an account: the extra account
-with lane "rapid" in acct.accounts). BLITZ is never in it (hidden, paper: owner 2026-11-16).
+with lane "rapid" in acct.accounts), then every other extra account of acct.accounts (night-truth 2026-11-22: "Zlarior 25K #2"
+was missing from the phone). BLITZ is never in it (hidden, paper: owner 2026-11-16). armed_map(): the core post's "ar".
 
 It rides on the PC's 15-minute status (tools/pc_report.lite -> pc.glance, under MAX_BYTES) and the heartbeat / live.json
 (engine/heartbeat "glance"), so the phone shows it even without GitHub.
@@ -311,6 +312,43 @@ def cut_logs(g, n: int) -> None:
                 g[k] = g[k][:n]
 
 
+def _plan_floor(pr: dict, days: dict) -> float | None:
+    """The MFFU floor without a broker anchor: end-of-day trailing (start - mll, raised by each day's closing high, never above
+    plan_rules.lock), or static (plan_rules.lock = start - mll). None when the plan is unknown."""
+    st, mll, lock = _f(_d(pr).get("start")), _f(_d(pr).get("mll")), _f(_d(pr).get("lock"))
+    if st is None or mll is None:
+        return None
+    if lock is not None and lock < st:     # static: engine/multi_account sends start - mll as the lock
+        return lock
+    bal, hi = st, st
+    for k in sorted(_d(days)):
+        bal += _f(days[k], 0) or 0
+        hi = max(hi, bal)
+    fl = hi - mll
+    return min(fl, lock) if lock is not None else fl
+
+
+def armed_map(hb: dict | None) -> dict:
+    """{"lit", "atlas", <extra account id>: 1 armed and its adapter enabled (the live gate passed) | 0} for the phone's
+    one-line account rows (pc_report core "ar"; ~50 bytes). The badge "LIVE" only says the account is a real one, not that
+    it is armed. Never raises."""
+    out = {}
+    try:
+        hb = _d(hb)
+        acc = _d(_d(hb.get("health")).get("account"))
+        if acc:
+            out["lit"] = int(bool(acc.get("armed")) and acc.get("enabled", True) is not False)
+        ab = _d(_d(_d(hb.get("second")).get("route")).get("account_b"))
+        if ab and not ab.get("error"):
+            out["atlas"] = int(_ab_armed(ab))
+        for r in _l(_d(hb.get("health")).get("accounts")):
+            if isinstance(r, dict) and r.get("id") and not r.get("error"):
+                out[str(r["id"])] = int(bool(r.get("armed")) and bool(r.get("enabled")))
+    except Exception:  # noqa: BLE001
+        pass
+    return out
+
+
 def rapid(hb: dict, rid: str = "rapid") -> dict | None:
     """The Rapid EOD 25K / 50K (engine/rapid.py): only when its lane (an extra account, lane / id "rapid") is configured;
     rid "rapid2" = the 2nd Rapid (data/rapid2.json, day-multirapid)."""
@@ -326,14 +364,28 @@ def rapid(hb: dict, rid: str = "rapid") -> dict | None:
     prof = sum(_f(v, 0) or 0 for v in days.values()) if days else None
     floor = _f(_d(_d(row.get("eval")).get("anchor")).get("floor"))
     bal = (_f(pr.get("start")) or 0) + prof if prof is not None and pr.get("start") is not None else None
+    if floor is None:                     # no broker anchor yet (a new account): MFFU's own floor from the plan + the days
+        floor = _plan_floor(pr, days)
+    if bal is None and _f(pr.get("start")) is not None and not days:
+        bal = _f(pr.get("start"))         # no closed day yet: the start balance (was: no room on the phone at all)
     room = (bal - floor) if bal is not None and floor is not None else None
     lk = row.get("locked") or hrow.get("locked")
     dis = _d(row.get("account")).get("disabled") or hrow.get("disabled")
-    out = {"id": rid, "name": "Rapid EOD" + (" #2" if rid == "rapid2" else ""),
-           "what": "LIT + ATLAS · MFFU Rapid EOD " + ("25K" if _f(pr.get("start")) == 25000.0 else "50K"),
+    size = "25K" if _f(pr.get("start")) == 25000.0 else "50K"
+    is_rapid = rid in ("rapid", "rapid2")
+    if is_rapid:
+        name, what = "Rapid EOD" + (" #2" if rid == "rapid2" else ""), "LIT + ATLAS · MFFU Rapid EOD " + size
+    else:                                 # another extra account (b25k_2 = "Zlarior 25K #2"): LIT's setups on its own account
+        try:
+            from .mffu_view import owner_name
+            name = owner_name(rid, row.get("name") or hrow.get("name"), row.get("plan") or hrow.get("plan"))
+        except Exception:  # noqa: BLE001
+            name = str(row.get("name") or hrow.get("name") or rid)
+        what = "LIT · MFFU " + str(row.get("plan") or hrow.get("plan") or ("Builder " + size))
+    out = {"id": rid, "name": name, "what": what,
            "on": bool(hrow.get("enabled", row.get("enabled"))) and bool(row.get("running", hb.get("running"))),
            "armed": bool(hrow.get("armed")), "mode": hrow.get("label") or _d(row.get("account")).get("label"),
-           "wait": "Trades the same LIT setups as Zlarior (and ATLAS's when LIT is flat).",
+           "wait": "Trades the same LIT setups as Zlarior" + (" (and ATLAS's when LIT is flat)." if is_rapid else "."),
            "why": _t(("Locked today: " + str(lk)) if lk else ("Off: " + str(dis)) if dis else "", 170) or None,
            "pos": _pos(row.get("position")), "day": _usd(_f(row.get("day_pnl"), hrow.get("day_pnl"))),
            "room": _usd(room), "mll": _usd(pr.get("mll")), "log": []}
@@ -348,7 +400,12 @@ def build(hb: dict | None, board: dict | None = None, now=None, max_bytes: int =
             return None
         bd = _d(board)
         bots = [lit(hb, bd.get("lit")), atlas(hb, bd.get("atlas"))]
-        for rid in ("rapid", "rapid2"):
+        ids = ["rapid", "rapid2"]           # the Rapid lanes first, then every other extra account (b25k_2 ...), BLITZ never
+        for r0 in _l(_d(hb.get("acct")).get("accounts")) + _l(_d(hb.get("health")).get("accounts")):
+            i = str(_d(r0).get("id") or "")
+            if i and i not in ids and not re.search(r"blitz|acct_c", i, re.I):
+                ids.append(i)
+        for rid in ids:
             r = rapid(hb, rid)
             if r:
                 bots.append(r)

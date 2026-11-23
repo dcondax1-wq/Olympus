@@ -35,6 +35,49 @@
     return out.length ? out[0].t : null;
   }
 
+  // night-truth 2026-11-22: one line per account (Zlarior 50K, ATLAS, every extra account): armed / running, room $, today $, next
+  // window. Armed comes from the core's "ar" (engine/brain_glance.armed_map: 1 = armed and the live gate passed); the badge "LIVE" only
+  // says the account is a real one (an older PC without "ar": the badge, marked "?").
+  const size = (t) => { const m = /(25|50|100|150)\s*k/i.exec(String(t || '')); return m ? m[1] + 'K' : ''; };
+  function winText(c) {
+    const w = isObj(c) && isObj(c.window) ? c.window : null;
+    if (!w) return null;
+    if (w.open) return 'window open now';
+    return String(w.text || '').replace(/^next entry window\s*/i, 'next ') || null;
+  }
+  function accountRows(lite) {
+    const L = isObj(lite) ? lite : {};
+    const bd = isObj(L.board) ? L.board : {}, ar = isObj(L.ar) ? L.ar : null, pc = isObj(L.pc) ? L.pc : {};
+    const lit = isObj(bd.lit) ? bd.lit : null, atl = isObj(bd.atlas) ? bd.atlas : null;
+    const litWin = winText(lit), rows = [];
+    const armedOf = (id, badge) => (ar && id in ar ? { v: ar[id] === 1 || ar[id] === true, sure: true }
+      : badge == null ? { v: null, sure: false } : { v: String(badge).toUpperCase() === 'LIVE', sure: false });
+    if (lit) rows.push({ id: 'lit', name: String(lit.name || 'Zlarior') + ' ' + (size(lit.plan) || '50K'), armed: armedOf('lit', lit.badge),
+      run: L.board && L.board.running != null ? !!L.board.running : pc.running, room: num(lit.room), today: num(lit.today_pnl), win: litWin, funded: false });
+    if (atl && atl.configured !== false) rows.push({ id: 'atlas', name: 'ATLAS ' + (size(atl.plan) || '25K') + (/funded/i.test(String(atl.status || atl.plan || '')) ? ' funded' : ''),
+      armed: armedOf('atlas', atl.badge), run: L.board && L.board.running != null ? !!L.board.running : pc.running, room: num(atl.room),
+      today: num(atl.today_pnl), win: winText(atl), funded: /funded/i.test(String(atl.status || '')) });
+    for (const a of realAccounts(L)) {
+      const ev = isObj(a.eval) ? a.eval : {};
+      if (a.id === 'atlas' || a.id === 'mffu50k_eval') continue;
+      if (lit && num(ev.balance) === num(lit.balance) && num(ev.floor) === num(lit.floor)) continue;   // the bot's main account = the lit card
+      const conn = isObj(a.conn) ? a.conn : {};
+      const nm = /rapid/i.test(String(a.id) + ' ' + String(a.plan || '')) ? 'Rapid EOD ' + (size(a.plan) || size(a.name) || '')
+        : String(a.name || a.id).replace(/^MFFU\s+/i, '').replace(/\bBuilder\s+/i, '');
+      rows.push({ id: String(a.id), name: nm.trim(), armed: armedOf(String(a.id), a.badge), run: conn.running != null ? !!conn.running : a.running,
+        room: num(ev.room), today: num(ev.today) != null ? num(ev.today) : num(isObj(a.pnl) ? a.pnl.today : null), win: litWin,
+        funded: String(a.kind || '') === 'funded' });
+    }
+    return rows;
+  }
+  function rowText(r) {
+    const arm = r.armed.v === true ? 'ARMED' : r.armed.v === false ? 'NOT armed' : 'armed ?';
+    const run = r.run === true ? 'running' : r.run === false ? 'STOPPED' : 'running ?';
+    const sg = (n) => (n == null ? '-' : (n > 0.5 ? '+' : n < -0.5 ? '-' : '') + usd(n));
+    return arm + (r.armed.sure || r.armed.v == null ? '' : ' ?') + ', ' + run + ' · room ' + (r.room == null ? '-' : usd(r.room)) +
+      ' · today ' + sg(r.today) + ' · ' + (r.win || 'next window: -');
+  }
+
   function today(lite, o) {
     o = o || {};
     const now = num(o.now) != null ? +o.now : Date.now() / 1000;
@@ -84,15 +127,21 @@
         'Not checked lately. On the PC: TRADE_HOME, press 5 (Phone alerts), send a test, then tap "I got my test alert" below.',
       menu: aok ? null : 5, tick: true });
 
-    // 4 every account armed (badge LIVE = you armed it; anything else is held)
-    const held = accts.filter((a) => String(a.badge || '').toUpperCase() !== 'LIVE');
-    const arm = !L || !fresh ? null : !accts.length ? false : held.length === 0;
+    // 4 every account armed: the core's "ar" (1 = armed + live gate passed) for every account row; an older PC: badge LIVE as before
+    const rowsA = L ? accountRows(L) : [];
+    const held = rowsA.filter((r) => r.armed.v !== true);
+    const arm = !L || !fresh ? null : !rowsA.length ? false : held.length === 0;
     out.push({ id: 'armed', ok: arm, title: 'Every account armed',
-      say: arm === true ? accts.length + ' account(s) armed.' :
-        !accts.length && L && fresh ? 'No account is on the bot yet. On the PC: TRADE_HOME, press 4 (Add an account).' :
-        arm === false ? held.map(nameOf).join(', ') + ' held. On the PC: TRADE_HOME, press 2 (Start bot) and type the phrase yourself.' :
+      say: arm === true ? rowsA.length + ' account(s) armed.' :
+        !rowsA.length && L && fresh ? 'No account is on the bot yet. On the PC: TRADE_HOME, press 4 (Add an account).' :
+        arm === false ? held.map((r) => r.name).join(', ') + ' not armed. On the PC: TRADE_HOME, press 2 (Start bot) and type the phrase yourself.' :
         'Cannot tell: the PC is silent. On the PC: TRADE_HOME, press 1 (Status).',
-      menu: arm === true ? null : accts.length || !L || !fresh ? 2 : 4 });
+      menu: arm === true ? null : rowsA.length || !L || !fresh ? 2 : 4 });
+    // 4b one line per account (owner's ask): armed / running, room $, today $, next window
+    for (const r of rowsA) {
+      out.push({ id: 'acct:' + r.id, ok: !fresh ? null : r.armed.v === true && r.run === true ? true : false, title: r.name,
+        say: (fresh ? '' : 'Old report (' + ageText(age) + '): ') + rowText(r), menu: null, acct: true });
+    }
 
     // 5 next money step
     const step = L ? nextStep(L, o.mffuView) : null;
@@ -101,7 +150,7 @@
     return { age, fresh, lines: out, left: out.filter((x) => x.ok !== true).length };
   }
 
-  const API = { today, nextStep, ageText, FRESH_S, ALERT_OK_DAYS };
+  const API = { today, nextStep, ageText, accountRows, rowText, FRESH_S, ALERT_OK_DAYS };
   root.TRADING_HOME = API;
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
 })(typeof window !== 'undefined' ? window : globalThis);
