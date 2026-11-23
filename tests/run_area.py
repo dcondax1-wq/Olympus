@@ -159,6 +159,7 @@ for _a in ("fleet", "pc"):                  # fix-trade 2026-11-21: an added Rap
     if "rapid_arm" not in AREAS[_a]:
         AREAS[_a].append("rapid_arm")
 SLOW = {"olympus_shell", "fit_edge", "jarvis_hub", "phone_e2e", "olympus_kit", "olympus_themes", "olympus_render", "zenith_mode", "ui_polish", "datacity", "jarvis_home"}
+SLOW.add("lit_live")   # night-reds 2026-11-22: the whole replay (9,923 intraday polls) takes ~15-25 min, so 900 s cut it off as "93 failed"; alone it is OK
 
 
 AREAS["agency"].append("web_audit")         # day-web-audit 2026-11-20: tools/site_audit.py (prospect phone audit -> agency/audit/)
