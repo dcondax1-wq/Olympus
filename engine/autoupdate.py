@@ -906,7 +906,7 @@ RESTART_DATA = ("research/lit/mffu_rules.json", "research/props/firm_rules.json"
 IMPORT_CHECK = ["-X", "utf8", "-c", "import server; print('[PASS] the bot server imports (%d routes)' % len(server.app.routes))"]
 IMPORT_TIMEOUT_S = 120
 CRASH_RUNS = 3
-CRASH_WINDOW_S = 600
+CRASH_WINDOW_S = 600         # a run shorter than this (start to next start) is a short run; CRASH_RUNS + 1 in a row = rollback
 DELIBERATE_S = 300           # an owner restart (Bot Control / the phone / START BOT) marks the next start "not a crash" this long
 
 
@@ -972,11 +972,16 @@ def crash_check(sh=None, now=None, path: str = STATE_PATH, notify_fn=None, count
         if count and not g.get("starts"):
             g["t"] = float(now)                       # the window starts at the restart, not when the update began testing
         t0 = float(g.get("t") or 0)
-        if now - t0 > CRASH_WINDOW_S:                 # the new code has run past the window: it is the good one now
+        # night-rollback 2026-11-23: the window follows the CHAIN of short runs (each start within CRASH_WINDOW_S of the one
+        # before, the supervisor's own "short run" rule), not 10 min from the first start. Before, code that crashed ~3 min
+        # after each start (the supervisor waits 5 / 15 / 60 s) reached its 4th start after 10 min: the guard read that as
+        # "ran fine", cleared itself, and the bad code crash-looped for good with no rollback and no push.
+        starts = [float(x) for x in (g.get("starts") or [])]
+        last = starts[-1] if starts else t0
+        if now - last > CRASH_WINDOW_S:               # the last run lasted past the window: the new code is the good one now
             s.pop("crash_guard", None)
             save_state(s, path)
             return {**out, "status": "cleared", "reason": "ran past the crash window"}
-        starts = [float(x) for x in (g.get("starts") or []) if now - float(x) <= CRASH_WINDOW_S]
         d = g.get("deliberate") if isinstance(g.get("deliberate"), dict) else None
         if count and d:
             g.pop("deliberate", None)
@@ -1014,13 +1019,13 @@ def crash_check(sh=None, now=None, path: str = STATE_PATH, notify_fn=None, count
             s["bad_sha"] = g["new"]
             s["crash_sha"] = g["new"]                 # a newer main on top of it with no bot-code change is not taken either
             s["last"] = {"t": int(now), "mode": "crash", "status": "rolled_back", "old": g["new"], "new": g["old"],
-                         "reason": f"{CRASH_RUNS} short runs in {CRASH_WINDOW_S // 60} min after the update: back to {g['old'][:7]}"}
+                         "reason": f"{CRASH_RUNS} short runs in a row after the update: back to {g['old'][:7]}"}
             s["history"] = (list(s.get("history") or []) + [s["last"]])[-20:]
         save_state(s, path)
         if back and "requirements.txt" in (g.get("changed") or []):
             sh.py(["-m", "pip", "install", "-q", "-r", "requirements.txt"], timeout=900)
         title = "Update rolled back" if back else "Update crash loop: ROLLBACK FAILED"
-        body = (f"The new code {g['new'][:7]} kept stopping ({len(starts)} starts in {CRASH_WINDOW_S // 60} min). "
+        body = (f"The new code {g['new'][:7]} kept stopping ({len(starts)} starts, each within {CRASH_WINDOW_S // 60} min of the last). "
                 + (f"Back on {g['old'][:7]}, the version that ran fine; the bad one is skipped." if back
                    else f"Could not go back ({(o or '').strip()[-100:]}): fix by hand."))
         try:
@@ -1110,7 +1115,8 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
         if "requirements.txt" in changed:
             sh.py(["-m", "pip", "install", "-q", "-r", "requirements.txt"], timeout=900)
         return done("rolled_back" if back else "failed",
-                    f"{why}; " + (f"rolled back to {old[:7]}" if back else f"ROLLBACK FAILED ({rout.strip()[-120:]}): fix by hand"),
+                    f"new code {new[:7]}: {why}; " + (f"rolled back to {old[:7]}, the version that ran fine" if back
+                                                       else f"ROLLBACK FAILED ({rout.strip()[-120:]}): fix by hand"),
                     alert=True, bad_sha=new, **({"held": held} if held else {}))
 
     if "requirements.txt" in changed:

@@ -449,6 +449,8 @@ AREAS["pc"] += ["post_update_check"]   # night-verify 2026-11-23: the read-only 
 AREAS["nq"] += ["k7proof"]   # night-k7proof 2026-11-23: the 7-day keep-alive on all 4 MFFU accounts (calendars, Thanksgiving, PC off, consent, clock)
 AREAS["nq"] += ["k7proof_rt"]   # red team night-k7proof: per-slot Rapid keys keep the START summary, phone clock and BLITZ-free lists right
 AREAS["pc"] += ["monday", "mondaysim_rt"]   # night-mondaysim 2026-11-23 + red team: UPDATE.bat exit 0/1/2 read right (MONDAY, TRADE_HOME 7), START always runs
+AREAS["pc"] += ["rollback_world"]   # night-rollback 2026-11-23: a bad landing rolls itself back (health / import / crash loop), temp git world
+AREAS["pc"] += ["rollback_rt"]      # red team night-rollback: owner / 16:00 restarts never roll a good update back, no good/bad loop, never mid-trade
 
 if __name__ == "__main__":
     sys.exit(main())
