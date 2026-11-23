@@ -71,7 +71,7 @@ def test_static():
           and html.count("<h1") == 1 and 'role="status"' in html and 'aria-live="polite"' in html and 'role="dialog"' not in html)
     check("a. one base-path line: gate/ -> '../', the site root (olympus-live.html) -> ''; agora.css + gate.css, then themes, the catalog, hub-status and gate.js load from GATE_BASE, in order (async = false)",
           r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g25'" in html and "b + 'olympus/agora.css" in html
-          and "['olympus/themes.js?v=o11', 'pc_feed.js?v=n8', 'olympus/gate-catalog.js?v=nv12', 'olympus/hub-status.js?v=h4', 'age.js?v=1', 'business/payoutcoach.js?v=4', 'gate/gate.js?v=g22', 'olympus/home-fx.js?v=x2', 'olympus/a11y.js']" in html and "s.async = false" in html)
+          and "['olympus/themes.js?v=o11', 'pc_feed.js?v=n8', 'olympus/gate-catalog.js?v=nv12', 'olympus/hub-status.js?v=h5', 'age.js?v=1', 'business/payoutcoach.js?v=4', 'gate/gate.js?v=g22', 'olympus/home-fx.js?v=x2', 'olympus/a11y.js']" in html and "s.async = false" in html)
     tiles = re.findall(r'class="g-hub[^"]*" data-hub="(\w+)" data-to="hub/index.html\?h=(\w+)"', html)
     check("a. the hub tiles are plain links in the page (they work even if gate.js fails), in the owner's order (night A 2026-11-16): Bots & Evals (wide) and My Money (wide) first, Kalshi and Worlds near the end, Settings & Help last",
           [t[0] for t in tiles] == HUBS and all(a == b for a, b in tiles) and 'class="g-hub g-wide" data-hub="bots"' in html and 'class="g-hub g-wide" data-hub="money"' in html and html.count('class="g-hline"') == len(HUBS))
@@ -113,7 +113,7 @@ def test_static():
           and "lsSet(LS_PLAN" not in js and not re.search(r"sessionStorage|indexedDB", js + nav)
           and all("try {" in ln for ln in (js + nav).splitlines() if "localStorage." in ln), ls)
     check("a. truth.js is the one source for drawdown and data age (a module tag), with a light copy of its rules only when it does not load; 6 h = old, 20 min = fresh",
-          "olympus/truth.js?v=r13" in js and "T.agesOf(home, t)" in js and "T.accountsOf(home)" in js and "lightAges" in js and "STALE_S = 6 * 3600" in js and "FRESH_S = 20 * 60" in js)
+          "olympus/truth.js?v=r14" in js and "T.agesOf(home, t)" in js and "T.accountsOf(home)" in js and "lightAges" in js and "STALE_S = 6 * 3600" in js and "FRESH_S = 20 * 60" in js)
     check("a. the words: 'Drawdown left' with 'of $X max loss', 'Bring the bots back' -> nq/ with its 5 steps (?howto=1), 'Old numbers', 'Not hearing from your PC for'",
           "'Drawdown left'" in js and "' max loss, '" in js and 'data-to="nq/index.html?howto=1"' in html and ">Bring the bots back<" in html and "'Old numbers'" in js and "'Not hearing from your PC for '" in js)
     check("a. the AGORA look: its tokens (night #14110e, gold #c8a24a, serif titles, tabular numbers; each one a theme slot's fallback), no neon / glow / techno font in the Gate or gate-nav",
