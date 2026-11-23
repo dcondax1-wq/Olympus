@@ -43,7 +43,7 @@ if (-not $Python -or -not (Test-Path -LiteralPath $Python)) { Write-Host '  [FIX
 if (-not (Test-Path -LiteralPath $Script)) { Write-Host '  [FIX] tools\pc_report.py is missing: update the bot folder from the zip first.'; exit 1 }
 $Pyw = [System.IO.Path]::Combine((Split-Path -Parent $Python), 'pythonw.exe')
 if (-not (Test-Path -LiteralPath $Pyw)) { $Pyw = $Python }
-$argLine = "-X utf8 `"$Script`" --quiet"
+$argLine = "-X utf8 `"$Script`" --quiet --by task"
 
 if ($DryRun) {
     Write-Host "  DRY RUN - would install the task $TaskName every 15 minutes while you are signed in: $Pyw $argLine (start in $Root)"

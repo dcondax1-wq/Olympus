@@ -185,6 +185,17 @@ python -X utf8 -m engine.accounts status
 3. Any day after: TRADE_HOME.bat > **9 Fix the clock** (or Start page > Sync the clock) works without an administrator.
 - **You see:** BEFORE "the PC clock is 24.5 s behind internet time", AFTER "under 1 s", then "[OK] The clock matches internet time and OlympusClock keeps it that way." "[FIX]" = send Claude a photo of that window.
 
+### What the one admin click does (FIX_CLOCK.bat, or MONDAY_SETUP's one "Yes")
+One administrator window, one Yes. Each line ends [OK] or [FIX]. Safe to run twice.
+1. **Clock:** the time fix above (OlympusClock keeps it right every 15 minutes).
+2. **Windows Update can't restart mid-trade:** active hours 01:00-17:00 New York time (shown in your PC's own time), and no automatic restart while you are signed in. Restart Windows yourself on **Saturday** (Start > Power > Update and restart).
+3. **The PC never sleeps while plugged in:** no sleep, no hibernate, the disk never sleeps, USB power saving off (your current power plan, plugged in only; battery settings untouched).
+4. **The internet adapter stays on:** Windows may no longer turn the Wi-Fi / network adapter off to save power (applies after the next restart; the adapter is not reset now, so NinjaTrader stays connected).
+5. **A check, no change:** NinjaTrader and the bot start when you sign in (the Startup shortcuts). Missing = one [FIX] line: double-click START_BOT.bat once (it adds them).
+- Never touched: Defender, the firewall, your accounts, BitLocker, anything else.
+- **Undo:** right-click **tools/bat/FIX_CLOCK_OFF.bat** > Run as administrator: every setting goes back to exactly what it was before the first run (the old values were saved first).
+- **Check:** TRADE_HOME Status and the Monday readiness lines say **Windows guard: on** (or OFF / not set up, with the step).
+
 Each: what it does, when to use it, what to tap or type, what you should see. Phone: manual > **New**.
 
 ### N1. Start the bot (and arm a new account like the Rapid)

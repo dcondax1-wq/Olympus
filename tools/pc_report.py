@@ -1955,6 +1955,58 @@ def log_line(work, rec):
 
 
 LOCK_STALE_S = 600
+# night-tasks 2026-11-23: the public status topic showed two full runs every 15 min, 122 s apart (two schedulers). The run
+# lock above only stops OVERLAPPING runs; this gap stops a second full run that starts within MIN_GAP_S of the last one's
+# start, whoever starts it (the 15-minute task, the server's keeper, a forgotten old task). --force runs anyway.
+MIN_GAP_S = 300
+RUNS_KEEP = 60
+
+
+def _starts_path(work: str) -> str:
+    return os.path.join(work, "runs.jsonl")
+
+
+def last_start(work: str) -> dict:
+    """The last full run's start {"t", "by", "ppid"} (data/pc_report/runs.jsonl, newest line), {} when none. Never raises."""
+    try:
+        with open(_starts_path(work), encoding="utf-8") as fh:
+            lines = [ln for ln in fh.read().splitlines() if ln.strip()]
+        for ln in reversed(lines):
+            r = json.loads(ln)
+            if r.get("ran"):
+                return r
+    except Exception:
+        pass
+    return {}
+
+
+def note_start(work: str, by: str, ran: bool, now=None, why: str = "") -> None:
+    """One line per full-run attempt (who started it: --by task | keeper | ?, and the parent pid), the last RUNS_KEEP kept:
+    the PC shows which scheduler is the extra one (tools/task_audit.py lists the tasks)."""
+    try:
+        p = _starts_path(work)
+        rec = {"t": int(now or time.time()), "by": str(by or "?")[:20], "ppid": os.getppid(), "ran": bool(ran)}
+        if why:
+            rec["why"] = why[:80]
+        try:
+            with open(p, encoding="utf-8") as fh:
+                old = [ln for ln in fh.read().splitlines() if ln.strip()][-(RUNS_KEEP - 1):]
+        except OSError:
+            old = []
+        tmp = p + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as fh:
+            fh.write("\n".join(old + [json.dumps(rec, separators=(",", ":"))]) + "\n")
+        from engine.fsutil import replace as _rep
+        _rep(tmp, p)
+    except Exception:
+        pass
+
+
+def too_soon(work: str, now=None, gap_s: int = MIN_GAP_S) -> int | None:
+    """Seconds since the last full run started when that is under gap_s (= skip this one), else None."""
+    t = int(num(last_start(work).get("t")) or 0)
+    now = int(now or time.time())
+    return (now - t) if t and 0 <= now - t < gap_s else None
 
 
 def run_lock(work: str, now=None):
@@ -2361,6 +2413,106 @@ def send_test(cfg: dict, http=None) -> tuple:
                      "FEED STALE, bot down).", title="Bots back: test", priority="default", tags="white_check_mark", http=http)
 
 
+def after_run(quiet: bool = True) -> None:
+    """The soft hooks after a real full run (tests replace this function: they would touch the PC's real data/)."""
+    try:                           # the daily digest of low-priority news (engine/alert_bus.digest_flush): once a day from 16:20 ET, silent
+        from engine import alert_bus as _ab
+        _ab.digest_flush()
+    except Exception:
+        pass
+    try:                           # payout autopilot (engine/payout_autopilot): payout ready after the close, the #5 guard, the Rapid $10k day
+        from engine import payout_autopilot as _pa
+        _pa.tick()
+    except Exception:
+        pass
+    try:                           # fleet manager (engine/fleet_mgr): one alert per account change with the next money move (advice only)
+        from engine import fleet_mgr as _fm
+        _fm.tick()
+    except Exception:
+        pass
+    try:                           # MFFU rule-change watcher (tools/rules_watch.py): weekdays from 17:05 ET, once a day; alerts only on a real change
+        from tools import rules_watch as _rw
+        _rw.maybe_run()
+    except Exception:
+        pass
+    # the Sunday money report (tools/weekly_money_report.py): once a week, Sunday from 17:00 ET, on your private topic; soft, never stops this run
+    try:
+        from tools import weekly_money_report as _wmr
+        _wmr.maybe_run(say=(lambda *_: None) if quiet else print)
+    except Exception:
+        pass
+    # your day (tools/calendar_sync.py, docs/CONNECT_DAY.md): your calendars -> data/day/day.json every 15 minutes, only once
+    # you connected one (tools/bat/CONNECT_DAY.bat); private, read by the phone through the PC's own link; soft, never stops this run
+    try:
+        from tools import calendar_sync as _cal
+        _cal.maybe_run(say=(lambda *_: None) if quiet else print)
+    except Exception:
+        pass
+    # shortcuts to a moved .bat follow it (tools/bat_shortcuts.py, red team 2026-11-23: 42 .bat files went to tools\\bat): once a day
+    try:
+        from tools import bat_shortcuts as _bs
+        _bs.fix()
+    except Exception:
+        pass
+    # the Me hub (tools/me_hub.py, docs/ME_HUB.md): home WiFi / devices / this PC, the Apple Watch days, data/me/me.json for the phone's
+    # Me hub (private, the PC's own link only) and its reminders (cards due, dates, car, a new device) on your private topic; soft
+    try:
+        from tools import me_hub as _me
+        _me.maybe_run(say=(lambda *_: None) if quiet else print)
+    except Exception:
+        pass
+    # nightly learning (engine/learn_loop.py, docs/LEARN_LOOP.md): after 17:00 ET on weekdays and at the weekend, once a day, only
+    # when flat; a detached below-normal child that backtests + runs queued experiments. Research only, never a live setting; soft
+    try:
+        from engine import learn_loop as _ll
+        _ll.maybe_run(say=(lambda *_: None) if quiet else print)
+    except Exception:
+        pass
+    # Obsidian living sync (tools/obsidian_sync.py, docs/OBSIDIAN_SYNC.md): the bots' day, trades + pictures, research, business,
+    # STATE into <vault>/OLYMPUS/Sync, only once you set a vault (data/obsidian_sync.json); at most every 10 min; soft
+    try:
+        from tools import obsidian_sync as _obs
+        _obs.maybe_run(say=(lambda *_: None) if quiet else print)
+    except Exception:
+        pass
+    # ZEUS edge light (tools/edge_pc.py): once a day after 17:00 ET a detached low-priority `tools/edge_health.py --pc` (LIT on the
+    # PC's own bars, ~30 s) -> data/edge/tiny.json = the status "eh" above. Research only, never a bot setting; LE_EDGE=0 = off; soft
+    try:
+        from tools import edge_pc as _ep
+        _ep.maybe_run(say=(lambda *_: None) if quiet else print)
+    except Exception:
+        pass
+    # Kalshi rewards PAPER test (tools/kalshi_rewards_paper.py, owner 2026-11-17): keeps one detached low-priority child running
+    # (public Kalshi data, GET only, never an order); ledger + public summary in data/kalshi_rewards/; LE_KALSHI_REWARDS=0 = off; soft
+    try:
+        from tools import kalshi_rewards_paper as _krp
+        _krp.maybe_run(say=(lambda *_: None) if quiet else print)
+    except Exception:
+        pass
+    # Kalshi K1 rules PAPER test (tools/kalshi_paper.py: weather lock + NQ hourly model; public data, GET only, never an order);
+    # same pattern: one detached child, ledger + public summary in data/kalshi_k1/; LE_KALSHI_K1=0 = off; soft
+    try:
+        from tools import kalshi_paper as _kp1
+        _kp1.maybe_run(say=(lambda *_: None) if quiet else print)
+    except Exception:
+        pass
+    # Kalshi K8 clock bot (engine/kalshi_clock.py + engine/kalshi_live.py): keeps the paper loop running and brings the LIVE
+    # loop back after a PC restart ONLY while the owner's typed phrase is on record; OFF by default; never touches the futures bot
+    try:
+        from engine import kalshi_live as _klv
+        _klv.maybe_run(say=(lambda *_: None) if quiet else print)
+    except Exception:
+        pass
+    # self-heal (engine/self_heal.py, docs/SELF_HEAL.md), LAST: it may run pip for a few minutes. At most once an hour the known PC
+    # faults get their logged remedy (stale git lock, a file in the update's way, stuck order files, stale pid, missing packages,
+    # clock) + the weekly disk clean; one alert only when it could NOT fix something. Never starts, stops, arms or routes the bot; LE_SELF_HEAL=0 = off; soft
+    try:
+        from engine import self_heal as _sh
+        _sh.maybe_run(say=(lambda *_: None) if quiet else print)
+    except Exception:
+        pass
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Report the PC bots to the phone without GitHub (ntfy.sh, free).")
     ap.add_argument("--work", default=WORK_DEFAULT)
@@ -2374,6 +2526,8 @@ def main(argv=None) -> int:
     ap.add_argument("--bars", action="store_true", help="only the NQ chart post (le-bars), from the last run's live.json")
     ap.add_argument("--pulse", action="store_true", help="only the core status post, at once (a bot state change: engine/state_pulse.py)")
     ap.add_argument("--why", default="", help="with --pulse: what changed (plain words, for the record)")
+    ap.add_argument("--by", default="?", help="who starts this run (task | keeper): logged in data/pc_report/runs.jsonl")
+    ap.add_argument("--force", action="store_true", help="run even when the last full run started under 5 min ago")
     a = ap.parse_args(argv)
     if a.pulse:                        # exit 3 = another report run is busy: the pulse tries again after its debounce
         lk = None if a.dry_run else run_lock(a.work)
@@ -2426,6 +2580,16 @@ def main(argv=None) -> int:
         if not a.quiet:
             print("  [OK]  another report run is busy right now (the 15-minute task or the bot server): nothing to do")
         return 0
+    if not a.dry_run and not a.force:  # one full run per 5 min whoever starts it (two schedulers posted pairs 122 s apart)
+        ago = too_soon(a.work)
+        if ago is not None:
+            run_unlock(lk)
+            note_start(a.work, a.by, False, why=f"the last run started {ago} s ago")
+            if not a.quiet:
+                print(f"  [OK]  the last report run started {ago} s ago: nothing to do (one run per {MIN_GAP_S // 60} min)")
+            return 0
+    if not a.dry_run:
+        note_start(a.work, a.by, True)
     if not a.dry_run:                  # the real report run: the morning brief may post its one Board event (tools/morning_brief.py)
         os.environ["LE_PC_REPORT"] = "1"
         # zero-setup phone alerts (night-notify 2026-11-22): the private alert topic is made here once per PC (random words +
@@ -2443,103 +2607,8 @@ def main(argv=None) -> int:
         print(card_text(rec["card"]))
         for e in rec.get("errors") or []:
             print(f"  [..] {e}")
-    # the Sunday money report (tools/weekly_money_report.py): once a week, Sunday from 17:00 ET, on your private topic; soft, never stops this run
     if not a.dry_run:
-        try:                           # the daily digest of low-priority news (engine/alert_bus.digest_flush): once a day from 16:20 ET, silent
-            from engine import alert_bus as _ab
-            _ab.digest_flush()
-        except Exception:
-            pass
-        try:                           # payout autopilot (engine/payout_autopilot): payout ready after the close, the #5 guard, the Rapid $10k day
-            from engine import payout_autopilot as _pa
-            _pa.tick()
-        except Exception:
-            pass
-        try:                           # fleet manager (engine/fleet_mgr): one alert per account change with the next money move (advice only)
-            from engine import fleet_mgr as _fm
-            _fm.tick()
-        except Exception:
-            pass
-        try:                           # MFFU rule-change watcher (tools/rules_watch.py): weekdays from 17:05 ET, once a day; alerts only on a real change
-            from tools import rules_watch as _rw
-            _rw.maybe_run()
-        except Exception:
-            pass
-        try:
-            from tools import weekly_money_report as _wmr
-            _wmr.maybe_run(say=(lambda *_: None) if a.quiet else print)
-        except Exception:
-            pass
-        # your day (tools/calendar_sync.py, docs/CONNECT_DAY.md): your calendars -> data/day/day.json every 15 minutes, only once
-        # you connected one (tools/bat/CONNECT_DAY.bat); private, read by the phone through the PC's own link; soft, never stops this run
-        try:
-            from tools import calendar_sync as _cal
-            _cal.maybe_run(say=(lambda *_: None) if a.quiet else print)
-        except Exception:
-            pass
-        # shortcuts to a moved .bat follow it (tools/bat_shortcuts.py, red team 2026-11-23: 42 .bat files went to tools\\bat): once a day
-        try:
-            from tools import bat_shortcuts as _bs
-            _bs.fix()
-        except Exception:
-            pass
-        # the Me hub (tools/me_hub.py, docs/ME_HUB.md): home WiFi / devices / this PC, the Apple Watch days, data/me/me.json for the phone's
-        # Me hub (private, the PC's own link only) and its reminders (cards due, dates, car, a new device) on your private topic; soft
-        try:
-            from tools import me_hub as _me
-            _me.maybe_run(say=(lambda *_: None) if a.quiet else print)
-        except Exception:
-            pass
-        # nightly learning (engine/learn_loop.py, docs/LEARN_LOOP.md): after 17:00 ET on weekdays and at the weekend, once a day, only
-        # when flat; a detached below-normal child that backtests + runs queued experiments. Research only, never a live setting; soft
-        try:
-            from engine import learn_loop as _ll
-            _ll.maybe_run(say=(lambda *_: None) if a.quiet else print)
-        except Exception:
-            pass
-        # Obsidian living sync (tools/obsidian_sync.py, docs/OBSIDIAN_SYNC.md): the bots' day, trades + pictures, research, business,
-        # STATE into <vault>/OLYMPUS/Sync, only once you set a vault (data/obsidian_sync.json); at most every 10 min; soft
-        try:
-            from tools import obsidian_sync as _obs
-            _obs.maybe_run(say=(lambda *_: None) if a.quiet else print)
-        except Exception:
-            pass
-        # ZEUS edge light (tools/edge_pc.py): once a day after 17:00 ET a detached low-priority `tools/edge_health.py --pc` (LIT on the
-        # PC's own bars, ~30 s) -> data/edge/tiny.json = the status "eh" above. Research only, never a bot setting; LE_EDGE=0 = off; soft
-        try:
-            from tools import edge_pc as _ep
-            _ep.maybe_run(say=(lambda *_: None) if a.quiet else print)
-        except Exception:
-            pass
-        # Kalshi rewards PAPER test (tools/kalshi_rewards_paper.py, owner 2026-11-17): keeps one detached low-priority child running
-        # (public Kalshi data, GET only, never an order); ledger + public summary in data/kalshi_rewards/; LE_KALSHI_REWARDS=0 = off; soft
-        try:
-            from tools import kalshi_rewards_paper as _krp
-            _krp.maybe_run(say=(lambda *_: None) if a.quiet else print)
-        except Exception:
-            pass
-        # Kalshi K1 rules PAPER test (tools/kalshi_paper.py: weather lock + NQ hourly model; public data, GET only, never an order);
-        # same pattern: one detached child, ledger + public summary in data/kalshi_k1/; LE_KALSHI_K1=0 = off; soft
-        try:
-            from tools import kalshi_paper as _kp1
-            _kp1.maybe_run(say=(lambda *_: None) if a.quiet else print)
-        except Exception:
-            pass
-        # Kalshi K8 clock bot (engine/kalshi_clock.py + engine/kalshi_live.py): keeps the paper loop running and brings the LIVE
-        # loop back after a PC restart ONLY while the owner's typed phrase is on record; OFF by default; never touches the futures bot
-        try:
-            from engine import kalshi_live as _klv
-            _klv.maybe_run(say=(lambda *_: None) if a.quiet else print)
-        except Exception:
-            pass
-        # self-heal (engine/self_heal.py, docs/SELF_HEAL.md), LAST: it may run pip for a few minutes. At most once an hour the known PC
-        # faults get their logged remedy (stale git lock, a file in the update's way, stuck order files, stale pid, missing packages,
-        # clock) + the weekly disk clean; one alert only when it could NOT fix something. Never starts, stops, arms or routes the bot; LE_SELF_HEAL=0 = off; soft
-        try:
-            from engine import self_heal as _sh
-            _sh.maybe_run(say=(lambda *_: None) if a.quiet else print)
-        except Exception:
-            pass
+        after_run(a.quiet)
     return 0
 
 

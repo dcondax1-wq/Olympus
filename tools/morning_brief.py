@@ -443,7 +443,7 @@ def ready_line(snap: dict, pc: str, pc_needs: list) -> tuple:
     """('READY for 02:00' / 'NOT READY: <blocker>. Fix: <fix>', title word) from engine/readiness's last verdict (the status post's
     "rd" block: s ok | warn | no, w, b, f); a PC problem (bot down, NinjaTrader closed) or an old report wins."""
     if pc != "PC ok":
-        fix = pc_needs[0].split(": ", 1)[-1] if pc_needs else "check the PC: STATUS.bat"
+        fix = pc_needs[0].split(": ", 1)[-1] if pc_needs else "check the PC: tools/bat/STATUS.bat"
         return f"NOT READY: {pc.replace('PC: ', '')}. Fix: {fix}", "NOT READY"
     rd = _d(snap.get("rd"))
     st, w = rd.get("s"), (f" for {rd['w']}" if rd.get("w") else "")
