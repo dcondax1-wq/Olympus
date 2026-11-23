@@ -90,7 +90,8 @@ if _MODE in ("raise", "log"):
                 if not isinstance(args[0], int) and not os.path.exists(args[0]):   # os.makedirs(exist_ok=True) on a folder that is there
                     _check(ev, [args[0]])
             elif ev in ("os.remove", "os.rmdir", "os.truncate", "shutil.rmtree"):
-                _check(ev, [args[0]])
+                if isinstance(args[0], int) or os.path.lexists(args[0]):   # a clean-up of what is not there changes nothing
+                    _check(ev, [args[0]])
         except PermissionError:
             raise
         except Exception:  # noqa: BLE001
