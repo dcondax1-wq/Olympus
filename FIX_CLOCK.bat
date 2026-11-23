@@ -5,12 +5,13 @@ rem bot's clock guard never needs you again. Prints the drift before and after. 
 setlocal EnableExtensions
 title Olympus - FIX THE CLOCK
 cd /d "%~dp0"
-net session >nul 2>&1
+rem full paths only: this window is elevated and the bot folder is user-writable (no program is looked up in it)
+set "PS=%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe"
+"%SystemRoot%\System32\net.exe" session >nul 2>&1
 if errorlevel 1 goto :noadmin
-where powershell >nul 2>&1
-if errorlevel 1 goto :nops
+if not exist "%PS%" goto :nops
 if not exist "%~dp0scripts\fix_clock.ps1" goto :nofile
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\fix_clock.ps1"
+"%PS%" -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\fix_clock.ps1"
 goto :end
 :noadmin
 echo.

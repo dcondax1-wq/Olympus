@@ -3,20 +3,27 @@ FIX_CLOCK: make the Windows clock follow internet time for good (owner 2026-11-2
 guard, rightly, blocked every new entry). Run ONCE as administrator (FIX_CLOCK.bat checks that). It
   1. sets the Windows Time service (w32time) to Automatic and starts it,
   2. sets the time servers (time.cloudflare.com, time.windows.com, pool.ntp.org, flag 0x9), a 900 s poll and a phase-correction
-     limit big enough that a 30 s jump is accepted (the default refuses big steps),
+     limit of 3600 s (1 hour: a 30 s jump is accepted, a bad time-server answer cannot move the clock by days),
   3. turns on "Set time automatically" (Type NTP) and syncs now (w32tm /resync /force),
   4. registers the Scheduled Task OlympusClock: runs as SYSTEM, every 15 minutes + at boot + at wake, w32tm /resync /force, and
      the owner's own (non-admin) account may start it (schtasks /run /tn OlympusClock), so the bot's Start page "Sync the clock"
      works without an administrator,
   5. prints the drift BEFORE and AFTER (HTTPS Date header of three sites, median; w32tm /stripchart as the fallback) and one
      [OK] / [FIX] line.
-Safe to run twice. -Off removes the task (FIX_CLOCK_OFF.bat); it leaves the time service on Automatic.
+Safe to run twice. -Off removes the task and puts the poll, servers and step limits back to the Windows defaults
+(FIX_CLOCK_OFF.bat); it leaves the time service on Automatic and running.
+Every program is called by its full path under %SystemRoot%\System32 (the bot folder is user-writable: nothing in it is run
+elevated or as SYSTEM except this script, which the owner starts himself).
 It touches only Windows' own time settings: no trading file, no strategy, no live switch. Windows PowerShell 5.1 safe, ASCII only.
 #>
 param([switch]$Off)
 $ErrorActionPreference = 'Continue'
 $TaskName = 'OlympusClock'
 $Peers = 'time.cloudflare.com,0x9 time.windows.com,0x9 pool.ntp.org,0x9'
+$MaxStep = 3600                      # seconds; Windows' standalone default is 54000 (15 h)
+$Sys32 = [Environment]::GetFolderPath('System')   # the real System32 from Windows, not an environment variable
+$W32tm = Join-Path $Sys32 'w32tm.exe'
+$ScExe = Join-Path $Sys32 'sc.exe'
 
 function Say([string]$t) { Write-Host ('  ' + $t) }
 
@@ -54,7 +61,7 @@ function Get-Drift {
 # Fallback: w32tm's own chart against Cloudflare; the sign of w32tm's offset is not relied on, so only the size is shown.
 function Get-DriftAbs {
     try {
-        $o = & w32tm /stripchart /computer:time.cloudflare.com /samples:3 /dataonly 2>&1 | Out-String
+        $o = & $W32tm /stripchart /computer:time.cloudflare.com /samples:3 /dataonly 2>&1 | Out-String
         $m = [regex]::Matches($o, '([+-]\d+\.\d+)s')
         if ($m.Count -ge 1) { return [Math]::Abs([double]$m[$m.Count - 1].Groups[1].Value) }
     } catch { }
@@ -95,29 +102,41 @@ if ($Off) {
     } else {
         Write-Host '  [OK] There was no OlympusClock task: nothing to remove.'
     }
+    # put Windows' own defaults back (standalone PC): servers, weekly poll, 54000 s step limits. The service stays on.
+    $p = 'HKLM:\SYSTEM\CurrentControlSet\Services\W32Time'
+    try {
+        Set-ItemProperty -Path "$p\Parameters" -Name NtpServer -Value 'time.windows.com,0x9' -ErrorAction Stop
+        Set-ItemProperty -Path "$p\TimeProviders\NtpClient" -Name SpecialPollInterval -Value 604800 -Type DWord -ErrorAction Stop
+        Set-ItemProperty -Path "$p\Config" -Name MaxPosPhaseCorrection -Value 54000 -Type DWord -ErrorAction Stop
+        Set-ItemProperty -Path "$p\Config" -Name MaxNegPhaseCorrection -Value 54000 -Type DWord -ErrorAction Stop
+        try { & $W32tm /config /update 2>&1 | Out-Null } catch { }
+        Write-Host '  [OK] Windows time settings are back to the Windows defaults (the time service stays on).'
+    } catch {
+        Write-Host ('  [FIX] Could not put a time setting back: ' + $_.Exception.Message)
+    }
     exit 0
 }
 
 $before = Show-Drift 'BEFORE'
 
 # 1. the Windows Time service: Automatic and running
-try { & sc.exe config w32time start= auto | Out-Null } catch { }
+try { & $ScExe config w32time start= auto | Out-Null } catch { }
 try { Set-Service -Name w32time -StartupType Automatic -ErrorAction Stop } catch { }
 try { Start-Service -Name w32time -ErrorAction Stop } catch { }
 Start-Sleep -Seconds 2
 $svc = Get-Service -Name w32time -ErrorAction SilentlyContinue
 if ($svc -and $svc.Status -eq 'Running') { Say 'Windows Time service: Automatic, running' } else { Say 'Windows Time service: could not start it yet' }
 
-# 2. time servers, 900 s poll, big steps accepted, "Set time automatically" (Type NTP)
-try { & w32tm /config /syncfromflags:manual /manualpeerlist:"$Peers" /reliable:no /update 2>&1 | Out-Null } catch { }
+# 2. time servers, 900 s poll, steps up to 1 hour accepted, "Set time automatically" (Type NTP)
+try { & $W32tm /config /syncfromflags:manual /manualpeerlist:"$Peers" /reliable:no /update 2>&1 | Out-Null } catch { }
 $p = 'HKLM:\SYSTEM\CurrentControlSet\Services\W32Time'
 try {
     Set-ItemProperty -Path "$p\Parameters" -Name Type -Value 'NTP' -ErrorAction Stop
     Set-ItemProperty -Path "$p\Parameters" -Name NtpServer -Value $Peers -ErrorAction Stop
     Set-ItemProperty -Path "$p\TimeProviders\NtpClient" -Name SpecialPollInterval -Value 900 -Type DWord -ErrorAction Stop
-    Set-ItemProperty -Path "$p\Config" -Name MaxPosPhaseCorrection -Value 86400 -Type DWord -ErrorAction Stop
-    Set-ItemProperty -Path "$p\Config" -Name MaxNegPhaseCorrection -Value 86400 -Type DWord -ErrorAction Stop
-    Say 'Time servers: cloudflare, windows, pool.ntp.org; polls every 15 min; steps up to a day accepted'
+    Set-ItemProperty -Path "$p\Config" -Name MaxPosPhaseCorrection -Value $MaxStep -Type DWord -ErrorAction Stop
+    Set-ItemProperty -Path "$p\Config" -Name MaxNegPhaseCorrection -Value $MaxStep -Type DWord -ErrorAction Stop
+    Say 'Time servers: cloudflare, windows, pool.ntp.org; polls every 15 min; steps up to 1 hour accepted'
 } catch {
     Say ('Could not write a time setting: ' + $_.Exception.Message)
 }
@@ -127,7 +146,7 @@ Start-Sleep -Seconds 3
 # 3. sync now (the service needs a moment after a restart: up to 4 tries)
 $synced = $false
 for ($i = 1; $i -le 4; $i++) {
-    $o = & w32tm /resync /force 2>&1 | Out-String
+    $o = & $W32tm /resync /force 2>&1 | Out-String
     if ($LASTEXITCODE -eq 0 -and $o -notmatch 'error|denied|not been started') { $synced = $true; break }
     Start-Sleep -Seconds 3
 }
@@ -136,7 +155,8 @@ if ($synced) { Say 'Sync now: done' } else { Say 'Sync now: Windows did not answ
 # 4. the Scheduled Task OlympusClock (SYSTEM, every 15 min + boot + wake)
 $taskOk = $false
 try {
-    $act = New-ScheduledTaskAction -Execute 'w32tm.exe' -Argument '/resync /force'
+    if (-not (Test-Path -LiteralPath $W32tm -PathType Leaf)) { throw ('w32tm.exe not found at ' + $W32tm) }
+    $act = New-ScheduledTaskAction -Execute $W32tm -Argument '/resync /force'
     $trg = @()
     $trg += New-ScheduledTaskTrigger -AtStartup
     $trg += New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes 15) -RepetitionDuration (New-TimeSpan -Days 7300)
