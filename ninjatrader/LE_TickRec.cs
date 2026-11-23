@@ -21,6 +21,8 @@
 //  1. MarketDataEventArgs.Volume (long), .Bid and .Ask (double: the best bid / ask when the Last event fires). If Bid / Ask
 //     are 0 the recorder falls back to the last Bid / Ask events it saw; Python then uses the tick rule.
 //  2. MarketDataEventArgs.Time in NinjaTrader's display time zone (same assumption as LE_Feed.SafeMarketData).
+// DISK: no writing while the drive has under 10 GB free (status low_disk=1); one file per root per ET day; python -m
+// engine.tickrec ingest deletes a raw file 7 days after its day once it is in data\\ticks.
 #region Using declarations
 using System;
 using System.Collections.Generic;
@@ -68,6 +70,8 @@ namespace NinjaTrader.NinjaScript.AddOns
         private volatile bool on;
         private long rows;
         private TimeZoneInfo eastern;
+        private const long MinFreeBytes = 10L * 1024 * 1024 * 1024;     // 10 GB free on the drive, else no writing
+        private readonly object InstLock = new object();                 // Subscribe / Unsubscribe from the timer and from Stop
 
         protected override void OnStateChange()
         {
@@ -162,6 +166,18 @@ namespace NinjaTrader.NinjaScript.AddOns
                 if (terminated)
                     return;
                 bool want = File.Exists(flagPath);
+                // red team 2026-11-23: never fill the disk the bot and NinjaTrader need: under MinFreeBytes free on this drive the
+                // recorder stops writing (status low_disk=1) and starts again by itself once there is room
+                bool lowDisk = false;
+                try
+                {
+                    lowDisk = new DriveInfo(Path.GetPathRoot(folder)).AvailableFreeSpace < MinFreeBytes;
+                }
+                catch (Exception)
+                {
+                }
+                if (lowDisk)
+                    want = false;
                 string lt = "";
                 if (want && File.Exists(listPath))
                     lt = File.ReadAllText(listPath).Trim();
@@ -172,7 +188,7 @@ namespace NinjaTrader.NinjaScript.AddOns
                     Unsubscribe();
                     on = false;
                 }
-                else if (want && (!on || lt != listText))
+                else if (want && (!on || lt != listText) && !terminated)
                 {
                     Unsubscribe();
                     listText = lt;
@@ -180,10 +196,14 @@ namespace NinjaTrader.NinjaScript.AddOns
                     on = true;
                 }
                 string names = "";
-                foreach (RecInst i in insts)
-                    names += (names.Length > 0 ? ";" : "") + i.Name;
+                lock (InstLock)
+                {
+                    foreach (RecInst i in insts)
+                        names += (names.Length > 0 ? ";" : "") + i.Name;
+                }
                 File.WriteAllText(statusPath, DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)
-                    + ",on=" + (on ? "1" : "0") + ",instruments=" + names + ",rows=" + rows.ToString(CultureInfo.InvariantCulture) + "\n");
+                    + ",on=" + (on ? "1" : "0") + ",low_disk=" + (lowDisk ? "1" : "0") + ",instruments=" + names
+                + ",rows=" + rows.ToString(CultureInfo.InvariantCulture) + "\n");
             }
             catch (Exception)
             {
@@ -191,6 +211,12 @@ namespace NinjaTrader.NinjaScript.AddOns
         }
 
         private void Subscribe(string lt)
+        {
+            lock (InstLock)
+                SubscribeLocked(lt);
+        }
+
+        private void SubscribeLocked(string lt)
         {
             foreach (string raw in lt.Split('\n'))
             {
@@ -217,6 +243,12 @@ namespace NinjaTrader.NinjaScript.AddOns
         }
 
         private void Unsubscribe()
+        {
+            lock (InstLock)
+                UnsubscribeLocked();
+        }
+
+        private void UnsubscribeLocked()
         {
             foreach (RecInst i in insts)
             {
