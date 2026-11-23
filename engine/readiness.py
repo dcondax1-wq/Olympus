@@ -649,16 +649,38 @@ def plan_alert(v: dict, st: dict, now, slot: str | None, reason: str = "") -> di
     for b in fresh:
         sent[b["key"]] = now
     st["last_alert"] = now
-    return {"key": f"ready:no:{int(now)}", "title": headline({**v, "blockers": [top], "level": NOT_READY}), "body": body[:600], "quiet": False}
+    return {"key": f"ready:no:{int(now)}", "title": headline({**v, "blockers": [top], "level": NOT_READY}), "body": body[:600], "quiet": False,
+            "blocker": top.get("key"), "n_blockers": len(bl)}
+
+
+GUARD_TOLD_S = 6 * 3600           # the guard's own clock alarm (engine/guards: key guard:clock:<day>) within this = the phone knows
+
+
+def guard_told(blocker, path=None, now=None) -> bool:
+    """night-alertproof 2026-11-23: the bot's guard already put the SAME problem on the phone (its le-guard push records its ntfy
+    copy as crit:guard:clock:<day> in engine/notify's instant state when delivered), so readiness does not send a 2nd alert for
+    it. Only the clock today (the one blocker both watch). Never raises."""
+    if blocker != "clock":
+        return False
+    try:
+        from . import notify as N
+        t = time.time() if now is None else now
+        keys = (N._instant_state(path).get("keys") or {})
+        return any(str(k).startswith("crit:guard:clock:") and t - float(v or 0) <= GUARD_TOLD_S for k, v in keys.items())
+    except Exception:
+        return False
 
 
 def send_alert(a: dict, sender=None) -> str:
     """Telegram / Discord first (engine/alert_bus), ntfy / Web Push as its fallbacks; with the bus off the old ops path
-    (push.pc_send_now). Returns 'bus' | 'zero' (ntfy + the app, no setup) | 'push' | 'none'. Never raises."""
+    (push.pc_send_now). Returns 'bus' | 'zero' (ntfy + the app, no setup) | 'push' | 'told' (the guard sent the same clock alarm) |
+    'none'. Never raises."""
     try:
         if sender is not None:
             sender(a)
             return "sender"
+        if a.get("blocker") == "clock" and int(a.get("n_blockers") or 1) <= 1 and guard_told("clock"):
+            return "told"                    # the guard's "Clock drift: entries blocked" is on the phone already: one alert, not two
         from . import alert_bus as AB
         ev = {"kind": "problem", "key": a["key"], "title": a["title"], "body": a["body"], "notify_type": "problems",
               "report": True, "soft": bool(a.get("quiet"))}

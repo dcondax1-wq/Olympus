@@ -333,6 +333,7 @@ AREAS["pc"].append("alert_drill")       # day-alerts 2026-11-21: end-to-end aler
 AREAS["pc"].append("alerts_box")        # alerts-phone 2026-11-21: /alerts/ = ALERTS_SETUP Telegram from the phone (engine/alerts_box.py); its own line
 AREAS["pc"].append("alerts_start_code")   # day-security3 2026-11-21: the /alerts/ page's one-time START code; its own line
 AREAS["pc"].append("alert_map")         # night-notify 2026-11-22: every critical event has a zero-setup phone route (engine/alert_map.py), digest, de-dup
+AREAS["pc"].append("alert_proof")       # night-alertproof 2026-11-23: every critical alert reaches the phone with zero setup, once per channel
 AREAS["pc"].append("payout_autopilot")   # night-payout 2026-11-22: payout ready after the close, the Builder #5 guard, the Rapid $10k day, TRADE_HOME P
 AREAS["pc"].append("payout_rt")         # red team 2026-11-23: the #5 guard per funded account, the count per account, #4 checks MFFU
 AREAS["pc"].append("rapid50k_onboard")   # night-r50k 2026-11-23: buy the Rapid EOD 50K -> one tap, slot rapid2, keep-alive key rapid2, $165
