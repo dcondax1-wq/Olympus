@@ -656,7 +656,10 @@ def plan_alert(v: dict, st: dict, now, slot: str | None, reason: str = "") -> di
 GUARD_TOLD_S = 6 * 3600           # the guard's own clock alarm (engine/guards: key guard:clock:<day>) within this = the phone knows
 
 
-def guard_told(blocker, path=None, now=None) -> bool:
+GUARD_EARLY_S = 15 * 60           # the guard's probe (every 15 min) may see the drift before readiness does
+
+
+def guard_told(blocker, path=None, now=None, since=None) -> bool:
     """night-alertproof 2026-11-23: the bot's guard already put the SAME problem on the phone (its le-guard push records its ntfy
     copy as crit:guard:clock:<day> in engine/notify's instant state when delivered), so readiness does not send a 2nd alert for
     it. Only the clock today (the one blocker both watch). Never raises."""
@@ -666,7 +669,9 @@ def guard_told(blocker, path=None, now=None) -> bool:
         from . import notify as N
         t = time.time() if now is None else now
         keys = (N._instant_state(path).get("keys") or {})
-        return any(str(k).startswith("crit:guard:clock:") and t - float(v or 0) <= GUARD_TOLD_S for k, v in keys.items())
+        lo = (float(since) - GUARD_EARLY_S) if since else None       # this episode only (red team 2026-11-23)
+        return any(str(k).startswith("crit:guard:clock:") and t - float(v or 0) <= GUARD_TOLD_S
+                   and (lo is None or float(v or 0) >= lo) for k, v in keys.items())
     except Exception:
         return False
 
@@ -679,7 +684,7 @@ def send_alert(a: dict, sender=None) -> str:
         if sender is not None:
             sender(a)
             return "sender"
-        if a.get("blocker") == "clock" and int(a.get("n_blockers") or 1) <= 1 and guard_told("clock"):
+        if a.get("blocker") == "clock" and int(a.get("n_blockers") or 1) <= 1 and guard_told("clock", since=a.get("blocker_since")):
             return "told"                    # the guard's "Clock drift: entries blocked" is on the phone already: one alert, not two
         from . import alert_bus as AB
         ev = {"kind": "problem", "key": a["key"], "title": a["title"], "body": a["body"], "notify_type": "problems",
@@ -716,7 +721,14 @@ def tick(now=None, ctx=None, checks=None, reason: str = "", sender=None, facts=N
         if reason == "start" and not slot and active_period(now):
             slot = "start"
         before = (json.loads(json.dumps(_dd(st.get("sent")))), st.get("last_alert"))
+        # red team 2026-11-23: when each blocker STARTED (this episode), so a guard alarm from an earlier episode the same day
+        # never counts as "told" for a new one
+        prev_since, last = _dd(st.get("since")), _dd(st.get("last_keys"))
+        st["since"] = {b["key"]: (prev_since.get(b["key"]) if b["key"] in last and b["key"] in prev_since else int(now))
+                       for b in _ll(v.get("blockers")) if isinstance(b, dict) and b.get("key")}
         a = plan_alert(v, st, now, slot, reason)
+        if a:
+            a["blocker_since"] = _dd(st.get("since")).get(a.get("blocker"))
         via = send_alert(a, sender) if a else None
         if a and via == "none":                     # nothing reached a phone: not "told" (package B), the next tick sends it again
             st["sent"] = before[0]
