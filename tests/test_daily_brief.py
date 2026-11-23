@@ -20,6 +20,7 @@ import os
 import shutil
 import sys
 import tempfile
+import time
 from zoneinfo import ZoneInfo
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -129,6 +130,13 @@ def part_e():
     b = build(ts(2026, 11, 24, 7, 31), rows=ROWS * 2)
     size = len((b["title"] + "\n" + b["body"]).encode("utf-8"))
     check("e. fits ntfy (< 4,096 bytes) and <= 8 lines", size < 4096 and len(b["body"].split("\n")) <= 8, size)
+    old = build(ts(2026, 11, 24, 7, 31), snap={"hb_age": 3 * 3600 + 600})
+    check("rt2. a 3 h old report: every account line says how old its numbers are (and the brief says NOT READY)",
+          old["lines"][0].startswith("NOT READY") and all("as of 3 h 10 min ago" in x for x in old["lines"][1:5]), old["lines"])
+    check("rt2. a fresh report: no age tail", not any("as of" in x for x in build(ts(2026, 11, 24, 7, 31))["lines"]))
+    big = build(ts(2026, 11, 24, 7, 31), snap={"rd": {"s": "no", "b": "x" * 5000, "f": "y" * 5000}})
+    check("rt2. a huge blocker text still fits (<= 8 lines, < 4,096 B)", len(big["body"].encode()) < 4096
+          and len(big["body"].split("\n")) <= 8, len(big["body"]))
 
 
 def part_f():
@@ -137,8 +145,13 @@ def part_f():
     tmp = tempfile.mkdtemp()
     try:
         pa = os.path.join(tmp, "pa.json")
-        json.dump({"last": {"views": [{"name": "ATLAS 25K", "ready": True, "amount": 1000.0},
+        json.dump({"last": {"t": int(time.time()), "views": [{"name": "ATLAS 25K", "ready": True, "amount": 1000.0},
                                       {"name": "Zlarior 25K #2", "ready": False, "guard": "stop"}]}}, open(pa, "w"))
+        old = os.path.join(tmp, "pa_old.json")
+        json.dump({"last": {"t": int(time.time()) - 3 * 86400, "views": [{"name": "ATLAS 25K", "ready": True, "amount": 1000.0}]}},
+                  open(old, "w"))
+        check("rt2. an autopilot run 3 days old: no 'Payout ready' in the evening (no stale payout shown as today's)",
+              "Payout ready" not in G.evening_extra("2026-11-24", pa_path=old, digest_path=os.path.join(tmp, "d0.json"), fleet=""))
         dg = os.path.join(tmp, "digest.json")
         AB.digest_add("Update applied", "a1 -> b2", key="u:1", path=dg)
         ex = G.evening_extra("2026-11-24", pa_path=pa, digest_path=dg, fleet="buy a Rapid EOD 50K ($165 with CLUB)")

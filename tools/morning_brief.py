@@ -508,7 +508,7 @@ def news_bans(now: int) -> str:
         rel = sorted(tier1_releases(_et(now).date().isoformat()))
         if not rel:
             return ""
-        return "T1 news ban -2/+2 min: " + ", ".join(f"{_et(r):%H:%M}" for r in rel[:3])
+        return "T1 news ban (Rapid funded, flat -2/+2 min): " + ", ".join(f"{_et(r):%H:%M}" for r in rel[:3])
     except Exception:  # noqa: BLE001
         return ""
 
@@ -555,6 +555,8 @@ def build(snap: dict, now: int | None = None, plan_doc=None, events=None, root: 
     acc = []
     for r, lab in zip(rs, short_labels(rs)):
         ln, n2 = account_line(r, label(r), yd.get(r.get("key")), fresh)
+        if not fresh and age is not None:        # red team 2: never an old number shown as today's
+            ln += f" · as of {int(age) // 3600} h {int(age) % 3600 // 60} min ago"
         acc.append(ln)
         needs += n2
     if not acc:
@@ -575,7 +577,8 @@ def build(snap: dict, now: int | None = None, plan_doc=None, events=None, root: 
     lines = [rl] + acc + [today] + ([f"Next money move: {mv}"] if mv else []) + \
             [f"Edge {edge_text(snap)} · Needs you: {nd}" + (f" · Decide cards waiting: {nw}" if nw else "")]
     title = f"ZEUS - {e:%a %b} {e.day} - {word}"
-    return {"title": title, "body": "\n".join(lines), "lines": lines[:MAX_LINES], "day": e.date().isoformat(), "needs": len(needs)}
+    lines = [ln[:400] for ln in lines[:MAX_LINES]]       # red team 2: the body = the 8 lines, under the 4,096 B push limit
+    return {"title": title, "body": "\n".join(lines)[:3900], "lines": lines, "day": e.date().isoformat(), "needs": len(needs)}
 
 
 def board_post(b: dict, env=None) -> dict | None:

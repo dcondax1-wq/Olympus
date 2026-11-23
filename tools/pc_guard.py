@@ -357,7 +357,9 @@ def evening_extra(day: str, pa_path=None, digest_path=None, fleet=None) -> str:
         import json as _json
         from engine import payout_autopilot as PA
         with open(pa_path or PA.STATE_PATH, encoding="utf-8") as fh:
-            v = (_json.load(fh).get("last") or {}).get("views") or []
+            last = _json.load(fh).get("last") or {}
+        import time as _time                    # red team 2: an autopilot run older than 2 h = not today's payouts: say nothing
+        v = (last.get("views") or []) if _time.time() - float(last.get("t") or 0) <= 7200 else []
         rdy = [f"{x.get('name')} {money(x.get('amount'))}" for x in v if isinstance(x, dict) and x.get("ready")]
         stop = [str(x.get("name")) for x in v if isinstance(x, dict) and x.get("guard") == "stop"]
         if rdy:
