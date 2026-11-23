@@ -251,3 +251,23 @@ Each one fails safe:
 - If NinjaTrader gives nothing for 7 weekdays in a row, `bf_<ROOT>_end.txt` is written and later passes stop there.
 
 The owner still has 2 one-time steps (install + enable), and both wait for the red-team review.
+
+### Other free, legitimate NQ tick / order-flow sources (checked 2026-11-23; futures only, nothing paid)
+
+| Source | Free? | What | How far back | Steps / verdict |
+|---|---|---|---|---|
+| **NinjaTrader ticks with the MFFU login** (this backfill) | Yes | Every trade, with the best bid/ask at that moment when the feed has it | About 1 rolling year (NT staff, forum) | Automatic via LE_TickRec, or Tools → Historical Data → Download Tick (TICKS_HOWTO B). **Best path** |
+| **NinjaTrader Market Replay** | Yes (limited) | Ticks + Level 2 depth (market by price, not by order) | About 90 days. Today's Level 2 appears after midnight ET | Tools → Historical Data → "Get Market Replay data" → NQ, a date → OK. The only free way to see DOM pulls; heavy (one day at a time) |
+| MFFU platforms (NinjaTrader, Tradovate, TradingView, Quantower, Volumetrica, DeepChart, ATAS; help center Oct 2026) | Platform yes | Live charts only | none | No API or history download named. Rithmic isn't listed now |
+| Tradovate API | **No** | Ticks | | About $25/month add-on, plus a CME sub-vendor licence for market data (forum/blog figures) |
+| Rithmic R\|API | **No** | Ticks | 2011+ via some brokers | Broker fees (e.g. AMP $100/month) + a conformance review; MFFU doesn't list Rithmic |
+| CME DataMine samples | Yes | Sample days of market depth / trades | A few sample days | Each dataset page or CME's FTP → right-click → Save As. Good for checking a parser, too short to test anything |
+| Databento | $125 signup credit, **card required** | Trades, top of book, full MBO | 2010; MBO from 2017 | Sign up → portal cost estimate → GLBX.MDP3 NQ. A card on file is a payment method, so it is **not used here** without the owner's explicit yes |
+| Sierra Chart CME trial | Trial | Ticks with bid/ask volume (unconfirmed) | Possibly years | Trial lasts to the end of the month you start it. Trial terms, so not a standing source |
+| ATAS Start / Bookmap Digital / Kinetick free / IBKR | Delayed, EOD or paid | | | Not usable: 15-min delayed futures, crypto-only, end-of-day only, or a paid data subscription |
+
+**One fix that came out of this.** When a feed gives no quote, NinjaTrader fills one in itself (Bid = Last, Ask = Bid + 1
+tick; NT8 Help "Developing for Tick Replay"). That would have put every trade *at the bid*, and the quote rule would have
+called every trade a sell, a fake delta that looks real. `engine/tickrec.frame` now spots it: more than 90% of trades at
+the bid, or more than 90% at the ask, means the quote was filled in, so it is dropped and the tick rule is used instead.
+Tested both ways.

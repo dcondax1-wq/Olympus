@@ -91,6 +91,13 @@ def py_part():
         open(os.path.join(rd, "NQ_2026-11-20.csv"), "a").write("1795185000201,21000,1,21000,21000.25\n")
         T.ingest()
         ok(len(T.read_day("2026-11-20")) == 5, "past live day ignored once the server's day is in")
+        # NinjaTrader's filled-in quotes (Bid = Last, Ask = Bid + 1 tick) must not turn every trade into a sell
+        px = [21000 + 0.25 * (i % 7) for i in range(200)]
+        fx = T.frame(list(range(200)), "NQ", px, [1] * 200, px, [x + 0.25 for x in px])
+        ok(fx.bid.eq(0).all() and (fx.side == -1).mean() < 0.5, "filled-in quotes dropped -> tick rule (not 100% sells)")
+        rb = [x - 0.25 if i % 2 else x for i, x in enumerate(px)]
+        rx = T.frame(list(range(200)), "NQ", px, [1] * 200, rb, [b + 0.25 for b in rb])
+        ok(rx.bid.gt(0).all(), "real quotes (about half at the bid) are kept")
         # autopilot
         calls = []
 

@@ -143,10 +143,23 @@ def classify(price, bid, ask) -> np.ndarray:
     return side
 
 
+def quotes_filled_in(price, bid, ask) -> bool:
+    """NinjaTrader fills in a quote when the feed gives none (Bid = Last, Ask = Bid + 1 tick; NT8 Help 'Developing for Tick
+    Replay'). Then every trade sits AT the bid and the quote rule would call all of them sells. Real NQ trades hit the bid
+    about half the time, so > 90 % at the bid (with a quote present) = filled in -> drop the quote, use the tick rule."""
+    p, b, a = (np.asarray(x, float) for x in (price, bid, ask))
+    q = (b > 0) & (a > 0)
+    if q.sum() < 50:
+        return False
+    return float(np.mean(p[q] == b[q])) > 0.9 or float(np.mean(p[q] == a[q])) > 0.9
+
+
 def frame(t_ns, root, price, size, bid=None, ask=None) -> pd.DataFrame:
     n = len(price)
     bid = np.zeros(n) if bid is None else np.asarray(bid, float)
     ask = np.zeros(n) if ask is None else np.asarray(ask, float)
+    if quotes_filled_in(price, bid, ask):
+        bid, ask = np.zeros(n), np.zeros(n)
     df = pd.DataFrame({"t_ns": np.asarray(t_ns, np.int64), "root": root, "price": np.asarray(price, float),
                        "size": np.asarray(size, np.int64), "bid": bid, "ask": ask})
     df = df.sort_values("t_ns", kind="stable").reset_index(drop=True)
