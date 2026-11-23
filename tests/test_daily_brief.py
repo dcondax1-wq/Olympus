@@ -10,6 +10,8 @@ message (tools/pc_guard.day_summary + the payouts ready, the next money move and
   f. evening: ONE message: the day summary carries the payouts ready, "Do not take payout #5", "Tomorrow: <next move>" and the
      digest's lines; the 16:20 digest then sends nothing on a trading day (on a Saturday it still does)
   g. de-dup: the brief once a day (guard:brief:<day>), the digest lines carried once
+  v. night-briefv2: the PUSHED brief is 5 lines, money first (yesterday $ per account, room to max loss, keep-alive act days,
+     news blackout, bot armed / READY); a-e test the detailed build_full
     python -X utf8 -m tests.test_daily_brief
 """
 from __future__ import annotations
@@ -63,7 +65,7 @@ def build(now, rows=None, snap=None, **kw):
     try:
         s = {"t": now, "hb_age": 120, "cond": {}, "rd": {"s": "ok", "w": "02:00"}, "eh": {"z": ["G"], "a": ["G"]}}
         s.update(snap or {})
-        return MB.build(s, now, plan_doc={"accounts": []}, events=[], root=os.path.join(ROOT, "no-news"),
+        return MB.build_full(s, now, plan_doc={"accounts": []}, events=[], root=os.path.join(ROOT, "no-news"),
                         fleet=kw.get("fleet", "decide the Rapid EOD 50K card first"), waiting=kw.get("waiting", 4))
     finally:
         MB.rows, MB._trades = keep
@@ -185,8 +187,60 @@ def part_f():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def five(now, rows=None, snap=None, trades=None):
+    keep = MB.rows, MB._trades, MB.build_full
+    MB.rows = lambda s, n, p=None, e=None: list(ROWS if rows is None else rows)
+    if trades is not None:
+        MB._trades = lambda s, n, rs, p, t0: (trades(t0, n), [], lambda k: k)
+    try:
+        s = {"t": now, "hb_age": 120, "cond": {}, "rd": {"s": "ok", "w": "02:00"}, "eh": {"z": ["G"], "a": ["G"]}}
+        s.update(snap or {})
+        return MB.build(s, now, plan_doc={"accounts": []}, events=[], root=os.path.join(ROOT, "no-news"))
+    finally:
+        MB.rows, MB._trades, MB.build_full = keep
+
+
+def part_v2():
+    """night-briefv2: the pushed brief = the day in 5 lines, money first."""
+    tue = ts(2026, 11, 24, 7, 31)
+    t0, _ = MB.prev_session(tue)
+    b = five(tue, trades=lambda a, n: {"zlarior": (1, 300.0), "atlas": (2, -120.4)} if a == t0 else {})
+    L = b["lines"]
+    check("v1. exactly 5 lines: Yesterday / Room / Keep-alive / News / Bot, money first", len(L) == 5
+          and [x.split(":")[0] for x in L] == ["Yesterday", "Room to max loss", "Keep-alive today", "News", "Bot"], L)
+    check("v2. yesterday's $ per account + the total (the previous CME session); the title carries the total",
+          L[0] == "Yesterday: Zlarior 50K +$300 · Zlarior 25K #2 +$0 · ATLAS 25K -$120 · Rapid EOD 25K +$0 · total +$180"
+          and b["title"].endswith("READY - +$180 yesterday"), (L[0], b["title"]))
+    low = [row("z", "Zlarior", "MFFU Builder 50K", 49000.0, room=1045.7), row("a", "ATLAS", "MFFU Builder 25K", 25300.0, stage="funded", room=310.0)]
+    L = five(tue, rows=low)["lines"]
+    check("v3. room in $ per account, lowest first, under $500 marked LOW", L[1] == "Room to max loss: ATLAS 25K $310 LOW · Zlarior 50K $1,046", L[1])
+    ka = [row("z", "Zlarior", "MFFU Builder 50K", 49000.0, quiet=6), row("r", "Rapid EOD", "MFFU Rapid EOD 25K", 25000.0, quiet=6),
+          row("q", "Zlarior 25K #2", "MFFU Builder 25K", 25000.0, quiet=3)]
+    ka[0]["_src"]["keepalive"]["on"] = True
+    L = five(tue, rows=ka)["lines"]
+    check("v4. keep-alive act day today: ON = its window, OFF = 1 MNQ by hand; an account 3 days quiet is not due",
+          L[2] == "Keep-alive today: Zlarior 50K (keep-alive trades 15:33-15:48 ET) · Rapid EOD 25K (keep-alive OFF: 1 MNQ by hand before 16:05 ET)",
+          L[2])
+    check("v5. nobody due: 'no account is due'", five(tue, rows=low)["lines"][2] == "Keep-alive today: no account is due")
+    check("v6. no news: 'News: no big release today'; Thanksgiving: the early close", five(tue)["lines"][3].startswith("News:")
+          and "early close 13:00" in five(ts(2026, 11, 26, 7, 35))["lines"][3], five(ts(2026, 11, 26, 7, 35))["lines"][3])
+    na = five(tue, rows=[row("z", "Zlarior", "MFFU Builder 50K", 49000.0), row("p", "Rapid EOD", "MFFU Rapid EOD 25K", 25000.0, badge="PAPER")],
+              snap={"rd": {"s": "no", "w": "02:00", "b": "Rapid EOD 25K is not armed", "f": "START BOT and type the phrase"}})
+    check("v7. bot line: NOT READY + its fix, armed / NOT armed per account; the title says NOT READY",
+          na["lines"][4] == "Bot: NOT READY for 02:00: Rapid EOD 25K is not armed. Fix: START BOT and type the phrase · armed: Zlarior 50K"
+          " · NOT armed: Rapid EOD 25K (paper)" and "NOT READY" in na["title"], na["lines"][4])
+    big = five(tue, rows=ROWS * 3)
+    check("v8. many accounts: still 5 lines, < 4,096 B, no long id", len(big["lines"]) == 5 and len((big["title"] + big["body"]).encode()) < 4096
+          and "987654321" not in five(tue, rows=[row("o", "EVBLDR987654321", "MFFU Builder 25K", 25000.0)])["body"])
+    old = five(tue, snap={"hb_age": 3 * 3600 + 600})
+    check("v9. a 3 h old report: the $ lines say how old, the bot line says NOT READY", "numbers 3 h 10 min old" in old["lines"][0]
+          and old["lines"][4].startswith("Bot: NOT READY"), old["lines"])
+    check("v10. the brief that is pushed (pushes) is the 5-line one", "b = build(snap, now, plan_doc, events)" in
+          open(os.path.join(ROOT, "tools", "morning_brief.py"), encoding="utf-8").read().split("def pushes", 1)[1])
+
+
 def main() -> int:
-    for f in (part_a, part_b, part_c, part_d, part_e, part_f):
+    for f in (part_a, part_b, part_c, part_d, part_e, part_f, part_v2):
         try:
             f()
         except Exception as e:  # noqa: BLE001
