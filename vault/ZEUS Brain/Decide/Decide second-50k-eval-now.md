@@ -1,10 +1,10 @@
 ---
 tags:
   - zeus/decide
-  - decide/open
+  - decide/superseded
 type: "decide"
 id: "second-50k-eval-now"
-status: "open"
+status: "superseded"
 added: "2026-11-21"
 usd_month: 63
 recommend: "yes"
@@ -12,12 +12,12 @@ recommend: "yes"
 
 # Decide: Buy a 2nd Builder 50K eval now ($91.80) next to Zlarior's, running the same LIT signal (only the first to pass becomes the funded 50K)?
 
-> [!question] OPEN · +$63 a month
+> [!note] SUPERSEDED · +$63 a month
 > Answer it on the Decide card (Business app): YES / NO / LATER.
 
 |  |  |
 |---|---|
-| Status | open |
+| Status | superseded |
 | Added | 2026-11-21 |
 | $ a month | +$63 |
 | Claude recommends | yes |

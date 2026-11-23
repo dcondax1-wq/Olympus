@@ -1,10 +1,10 @@
 ---
 tags:
   - zeus/decide
-  - decide/open
+  - decide/waiting
 type: "decide"
 id: "rapid-funded-refit"
-status: "open"
+status: "waiting"
 added: "2026-11-21"
 usd_month: 314
 recommend: "yes"
@@ -12,12 +12,12 @@ recommend: "yes"
 
 # Decide: Rapid funded: let a winner pay up to $2,000 on the 25K ($4,000 on a 50K) and keep $1,000 ($2,000) in the account?
 
-> [!question] OPEN · +$314 a month
+> [!note] WAITING · +$314 a month
 > Answer it on the Decide card (Business app): YES / NO / LATER.
 
 |  |  |
 |---|---|
-| Status | open |
+| Status | waiting |
 | Added | 2026-11-21 |
 | $ a month | +$314 |
 | Claude recommends | yes |

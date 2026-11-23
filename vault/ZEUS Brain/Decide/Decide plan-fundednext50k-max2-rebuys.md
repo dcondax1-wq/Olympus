@@ -1,10 +1,10 @@
 ---
 tags:
   - zeus/decide
-  - decide/open
+  - decide/waiting
 type: "decide"
 id: "plan-fundednext50k-max2-rebuys"
-status: "open"
+status: "waiting"
 added: "2026-11-22"
 usd_month: 1546
 recommend: "yes"
@@ -12,12 +12,12 @@ recommend: "yes"
 
 # Decide: FundedNext Rapid Daily 50K (~$150 with code RAPID): add one, with at most 2 re-buys (max $450 at risk)?
 
-> [!question] OPEN · +$1,546 a month
+> [!note] WAITING · +$1,546 a month
 > Answer it on the Decide card (Business app): YES / NO / LATER.
 
 |  |  |
 |---|---|
-| Status | open |
+| Status | waiting |
 | Added | 2026-11-22 |
 | $ a month | +$1,546 |
 | Claude recommends | yes |

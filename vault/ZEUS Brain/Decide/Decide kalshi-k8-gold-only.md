@@ -1,10 +1,10 @@
 ---
 tags:
   - zeus/decide
-  - decide/open
+  - decide/later
 type: "decide"
 id: "kalshi-k8-gold-only"
-status: "open"
+status: "later"
 added: "2026-11-21"
 usd_month: -17
 recommend: "no"
@@ -12,12 +12,12 @@ recommend: "no"
 
 # Decide: Kalshi K8 live from Monday: bet only the 2 gold windows (drop silver 4:45 PM) to make the bot switching itself off rarer?
 
-> [!question] OPEN · -$17 a month
+> [!note] LATER · -$17 a month
 > Answer it on the Decide card (Business app): YES / NO / LATER.
 
 |  |  |
 |---|---|
-| Status | open |
+| Status | later |
 | Added | 2026-11-21 |
 | $ a month | -$17 |
 | Claude recommends | no |

@@ -1,10 +1,10 @@
 ---
 tags:
   - zeus/decide
-  - decide/open
+  - decide/superseded
 type: "decide"
 id: "rapid25-lit-bank"
-status: "open"
+status: "superseded"
 added: "2026-11-18"
 usd_month: 164
 recommend: "yes"
@@ -12,12 +12,12 @@ recommend: "yes"
 
 # Decide: Rapid 25K: Zlarior trades 1 micro and takes profit at the day's room (instead of skipping most trades)?
 
-> [!question] OPEN · +$164 a month
+> [!note] SUPERSEDED · +$164 a month
 > Answer it on the Decide card (Business app): YES / NO / LATER.
 
 |  |  |
 |---|---|
-| Status | open |
+| Status | superseded |
 | Added | 2026-11-18 |
 | $ a month | +$164 |
 | Claude recommends | yes |

@@ -21,7 +21,7 @@ recommend: "yes"
 | Added | 2026-11-22 |
 | $ a month | +$2,282 |
 | Claude recommends | yes |
-| Changes | Buy the Rapid EOD 50K (CLUB $165); if it fails or dies, re-buy at most twice, then stop that slot (Claude adds the counter to the money book) |
+| Changes | YES = you buy one Rapid EOD 50K on MFFU (CLUB $165); the PC's Start page shows it as 'New Rapid EOD 50K eval: Zlarior + ATLAS?' -> one tap (added NOT armed, Rapid slot 2) -> START BOT + you type the phrase. Today's approved sizing (LIT eval two_week, ATLAS $500 lane). If it fails or dies: re-buy at most twice, then that slot stops (engine/fleet_mgr counts it). Claude never buys or arms. |
 | $ a month by market | jan-jun: +$5,001 · jul-oct: +$2,282 · 2021-25: -$52 |
 
 ## Why
@@ -43,5 +43,9 @@ Highest money per account by far and MFFU confirms no payout cap on Rapid; the 2
 ## Links
 
 - Write-up: [[plan-ranking-2026-11-22|Plan ranking]]
+- Strategy: [[Zlarior (LIT)]]
+- Strategy: [[ATLAS]]
 - Strategy: [[Rapid lanes]]
+- Account: [[Account Zlarior]]
+- Account: [[Account ATLAS]]
 - [[ZEUS Decisions]] · [[ZEUS Home]]

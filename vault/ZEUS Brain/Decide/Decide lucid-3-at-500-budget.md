@@ -1,10 +1,10 @@
 ---
 tags:
   - zeus/decide
-  - decide/open
+  - decide/waiting
 type: "decide"
 id: "lucid-3-at-500-budget"
-status: "open"
+status: "waiting"
 added: "2026-11-22"
 usd_month: 2215
 recommend: "later"
@@ -12,12 +12,12 @@ recommend: "later"
 
 # Decide: LucidPro 50K: add up to 3 on top of the Rapid EOD 50K + FundedNext 50K plan, and raise the monthly eval budget from $300 to $500?
 
-> [!question] OPEN · +$2,215 a month
+> [!note] WAITING · +$2,215 a month
 > Answer it on the Decide card (Business app): YES / NO / LATER.
 
 |  |  |
 |---|---|
-| Status | open |
+| Status | waiting |
 | Added | 2026-11-22 |
 | $ a month | +$2,215 |
 | Claude recommends | later |

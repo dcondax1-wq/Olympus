@@ -7,11 +7,12 @@ type: "hub"
 
 # ZEUS Weeks
 
-> [!abstract] 47 weekly reviews
+> [!abstract] 48 weekly reviews
 > Each week: every bot's trades and $, best and worst trade, the losses' reasons, the news, the research and the decisions.
 
 | Week | Trades | Net $ | Live + paper | Live + paper $ |
 |---|---|---|---|---|
+| [[Week 2026-W48\|2026-W48]] | 0 | $0 | 0 | $0 |
 | [[Week 2026-W47\|2026-W47]] | 3 | +$1,550 | 3 | +$1,550 |
 | [[Week 2026-W46\|2026-W46]] | 0 | $0 | 0 | $0 |
 | [[Week 2026-W45\|2026-W45]] | 1 | -$169 | 1 | -$169 |

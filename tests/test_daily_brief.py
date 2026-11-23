@@ -224,7 +224,7 @@ def part_v2():
           L[2])
     check("v5. nobody due: 'no account is due'", five(tue, rows=low)["lines"][2] == "Keep-alive today: no account is due")
     check("v6. no news: 'News: no big release today'; Thanksgiving: the early close", five(tue)["lines"][3].startswith("News:")
-          and "early close 13:00" in five(ts(2026, 11, 26, 7, 35))["lines"][3], five(ts(2026, 11, 26, 7, 35))["lines"][3])
+          and "half day, closes 13:00 ET" in five(ts(2026, 11, 26, 7, 35))["lines"][3], five(ts(2026, 11, 26, 7, 35))["lines"][3])
     na = five(tue, rows=[row("z", "Zlarior", "MFFU Builder 50K", 49000.0), row("p", "Rapid EOD", "MFFU Rapid EOD 25K", 25000.0, badge="PAPER")],
               snap={"rd": {"s": "no", "w": "02:00", "b": "Rapid EOD 25K is not armed", "f": "START BOT and type the phrase"}})
     check("v7. bot line: NOT READY + its fix, armed / NOT armed per account; the title says NOT READY",

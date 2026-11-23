@@ -4,13 +4,13 @@ tags:
   - news/gdp
 type: "news"
 news_type: "gdp"
-releases: 1
-last: "2026-10-29"
+releases: 2
+last: "2026-11-25"
 ---
 
 # News: GDP
 
-> [!info] 1 high-impact releases 2026-2026
+> [!info] 2 high-impact releases 2026-2026
 > Gross domestic product, quarterly growth.
 
 ## How the bots did on these days (all backtests, costs in)
@@ -23,6 +23,7 @@ _none_
 
 ## Releases (newest first)
 
+- 2026-11-25 08:30 ET · GDP Q3 second estimate
 - [[Day 2026-10-29|2026-10-29]] 08:30 ET · GDP Q3 advance estimate
 
 [[ZEUS News]] · [[Lesson news hit]] · [[Lesson news soon]] · [[ZEUS Home]]

@@ -418,7 +418,7 @@ def part_g(tmp, dd_c):
     bad = [d.get("id") for d in items if not (re.fullmatch(r"[a-z0-9][a-z0-9_-]{1,39}", str(d.get("id"))) and d.get("question") and d.get("why")
                                               and "$" in str(d.get("impact")) and isinstance(d.get("impact_usd"), (int, float))
                                               and set(d.get("options") or []) <= {"yes", "no", "later"} and d.get("options")
-                                              and d.get("status") in ("open", "yes", "no", "later", "done") and d.get("source"))]
+                                              and d.get("status") in ("open", "yes", "no", "later", "done", "superseded", "waiting") and d.get("source"))]   # = test_decide (night-decide)
     check("g. Decide card: the ATLAS proposal added once (open, yes/no/later, test_decide's schema), BLITZ (hidden) never",
           len(new) == 1 and new[0]["status"] == "open" and not bad and not any(i.get("id", "").startswith("learn-blitz") for i in items)
           and out["decide_added"] == ["learn-atlas-edge-2026w47"], (out["decide_added"], bad))

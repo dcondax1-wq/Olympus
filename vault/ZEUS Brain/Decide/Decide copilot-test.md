@@ -1,10 +1,10 @@
 ---
 tags:
   - zeus/decide
-  - decide/open
+  - decide/later
 type: "decide"
 id: "copilot-test"
-status: "open"
+status: "later"
 added: "2026-11-20"
 usd_month: 600
 recommend: "later"
@@ -12,12 +12,12 @@ recommend: "later"
 
 # Decide: Big idea: run a free 30-day test of a 'Prop Slot Planner' page for other prop traders (faceless brand, no name), plus 1 short video a day?
 
-> [!question] OPEN · +$600 a month
+> [!note] LATER · +$600 a month
 > Answer it on the Decide card (Business app): YES / NO / LATER.
 
 |  |  |
 |---|---|
-| Status | open |
+| Status | later |
 | Added | 2026-11-20 |
 | $ a month | +$600 |
 | Claude recommends | later |

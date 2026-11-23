@@ -4,13 +4,13 @@ tags:
   - news/sentiment
 type: "news"
 news_type: "sentiment"
-releases: 1
-last: "2026-10-27"
+releases: 2
+last: "2026-11-24"
 ---
 
 # News: Consumer sentiment
 
-> [!info] 1 high-impact releases 2026-2026
+> [!info] 2 high-impact releases 2026-2026
 > Consumer sentiment / confidence surveys (10:00 ET).
 
 ## How the bots did on these days (all backtests, costs in)
@@ -23,6 +23,7 @@ _No backtest trade on these days._
 
 ## Releases (newest first)
 
+- 2026-11-24 10:00 ET · CB Consumer Confidence (Nov)
 - [[Day 2026-10-27|2026-10-27]] 10:00 ET · CB Consumer Confidence
 
 [[ZEUS News]] · [[Lesson news hit]] · [[Lesson news soon]] · [[ZEUS Home]]

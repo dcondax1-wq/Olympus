@@ -7,7 +7,7 @@ type: "hub"
 
 # ZEUS News
 
-> [!info] 233 high-impact US releases, 13 types
+> [!info] 236 high-impact US releases, 13 types
 > From data/news/events.csv (official calendars) + the ForexFactory archive. Each type note shows how every bot did on those days.
 
 | Type | Releases | Last | 2026 trades those days | $ those days |
@@ -19,15 +19,18 @@ type: "hub"
 | [[News ADP jobs\|ADP jobs]] | 1 | 2026-11-04 | 0 | $0 |
 | [[News CPI (consumer inflation)\|CPI (consumer inflation)]] | 50 | 2027-12-10 | 17 | +$7,210 |
 | [[News PPI (producer inflation)\|PPI (producer inflation)]] | 2 | 2026-11-13 | 6 | +$97 |
-| [[News PCE inflation\|PCE inflation]] | 1 | 2026-10-29 | 0 | $0 |
-| [[News GDP\|GDP]] | 1 | 2026-10-29 | 0 | $0 |
+| [[News PCE inflation\|PCE inflation]] | 2 | 2026-11-25 | 0 | $0 |
+| [[News GDP\|GDP]] | 2 | 2026-11-25 | 0 | $0 |
 | [[News PMI surveys (ISM, S&P)\|PMI surveys (ISM, S&P)]] | 2 | 2026-11-04 | 0 | $0 |
-| [[News Consumer sentiment\|Consumer sentiment]] | 1 | 2026-10-27 | 1 | -$827 |
+| [[News Consumer sentiment\|Consumer sentiment]] | 2 | 2026-11-24 | 1 | -$827 |
 | [[News Other jobs data\|Other jobs data]] | 1 | 2026-11-03 | 0 | $0 |
 | [[News Other releases\|Other releases]] | 2 | 2026-10-15 | 6 | +$97 |
 
 ## Next on the calendar
 
+- 2026-11-24 10:00 ET · [[News Consumer sentiment|CB Consumer Confidence (Nov)]]
+- 2026-11-25 08:30 ET · [[News GDP|GDP Q3 second estimate]]
+- 2026-11-25 08:30 ET · [[News PCE inflation|Personal Income & Outlays / Core PCE (Oct)]]
 - 2026-12-04 08:30 ET · [[News Jobs report (NFP)|Non-Farm Payrolls (jobs report)]]
 - 2026-12-09 14:00 ET · [[News FOMC rate decision|FOMC rate decision + projections]]
 - 2026-12-09 14:30 ET · [[News FOMC press conference|FOMC press conference]]
@@ -45,8 +48,5 @@ type: "hub"
 - 2027-03-17 14:00 ET · [[News FOMC rate decision|FOMC rate decision]]
 - 2027-03-17 14:30 ET · [[News FOMC press conference|FOMC press conference]]
 - 2027-04-02 08:30 ET · [[News Jobs report (NFP)|Non-Farm Payrolls (jobs report)]]
-- 2027-04-07 14:00 ET · [[News FOMC minutes|FOMC minutes (Mar meeting)]]
-- 2027-04-13 08:30 ET · [[News CPI (consumer inflation)|CPI (consumer inflation)]]
-- 2027-04-28 14:00 ET · [[News FOMC rate decision|FOMC rate decision]]
 
 Back to [[ZEUS Home]]

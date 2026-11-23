@@ -1,10 +1,10 @@
 ---
 tags:
   - zeus/decide
-  - decide/open
+  - decide/superseded
 type: "decide"
 id: "buy-rapid50-now"
-status: "open"
+status: "superseded"
 added: "2026-11-21"
 usd_month: 554
 recommend: "yes"
@@ -12,12 +12,12 @@ recommend: "yes"
 
 # Decide: Buy the 5th funded slot (Rapid EOD 50K, $165 with CLUB) now from your pocket, instead of waiting for ATLAS's first payout (about Jan 13)?
 
-> [!question] OPEN · +$554 a month
+> [!note] SUPERSEDED · +$554 a month
 > Answer it on the Decide card (Business app): YES / NO / LATER.
 
 |  |  |
 |---|---|
-| Status | open |
+| Status | superseded |
 | Added | 2026-11-21 |
 | $ a month | +$554 |
 | Claude recommends | yes |

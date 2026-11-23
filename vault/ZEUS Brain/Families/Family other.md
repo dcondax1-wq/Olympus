@@ -7,11 +7,12 @@ type: "family"
 
 # Research family: other
 
-> [!abstract] 104 write-ups
-> adopt-candidate 16, finding 14, info 17, promising 14, rejected 35, research 8
+> [!abstract] 105 write-ups
+> adopt-candidate 16, finding 14, info 17, promising 14, rejected 35, research 9
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-23 | [[payday-check-2026-11-23\|Payday check]] | research |
 | 2026-11-22 | [[edge-c-calendar-2026-11-22\|Edge hunt lane C]] | research |
 | 2026-11-22 | [[edge-b-cross-2026-11-22\|Edge hunt lane B]] | adopt-candidate |
 | 2026-11-22 | [[edge-a-session-2026-11-22\|Edge hunt lane A]] | research |

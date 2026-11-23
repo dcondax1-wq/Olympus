@@ -1,10 +1,10 @@
 ---
 tags:
   - zeus/decide
-  - decide/open
+  - decide/superseded
 type: "decide"
 id: "refill-25k-with-rapid50"
-status: "open"
+status: "superseded"
 added: "2026-11-21"
 usd_month: 249
 recommend: "yes"
@@ -12,12 +12,12 @@ recommend: "yes"
 
 # Decide: When a Builder 25K dies (ATLAS's funded 25K lost, or the 25K #2 eval fails), put a Rapid EOD 50K ($165) in that slot instead of a new $63 Builder 25K?
 
-> [!question] OPEN · +$249 a month
+> [!note] SUPERSEDED · +$249 a month
 > Answer it on the Decide card (Business app): YES / NO / LATER.
 
 |  |  |
 |---|---|
-| Status | open |
+| Status | superseded |
 | Added | 2026-11-21 |
 | $ a month | +$249 |
 | Claude recommends | yes |
