@@ -1,28 +1,28 @@
 ---
 tags:
   - zeus/decide
-  - decide/no
+  - decide/open
 type: "decide"
 id: "keep-1000-rapid"
-status: "no"
+status: "open"
 added: "2026-11-16"
-usd_month: -20
-recommend: "no"
+usd_month: -18
+recommend: "yes"
 ---
 
 # Decide: Rapid funded payouts: always leave $1,000 above the buffer in each Rapid?
 
-> [!failure] NO · -$20 a month
+> [!question] OPEN · -$18 a month
 > Answer it on the Decide card (Business app): YES / NO / LATER.
 
 |  |  |
 |---|---|
-| Status | no |
+| Status | open |
 | Added | 2026-11-16 |
-| $ a month | -$20 |
-| Claude recommends | no |
+| $ a month | -$18 |
+| Claude recommends | yes |
 | Changes | Rapid funded payout rule: the 25K keeps $500 above the buffer today (a yes raises it to $1,000); the 50K preset keeps $1,000 already |
-| $ a month by market | jan-jun: +$56 · jul-oct: -$20 · 2021-25: -$3 |
+| $ a month by market | jan-jun: +$49 · jul-oct: -$18 · 2021-25: -$2 |
 
 ## Why
 
@@ -30,18 +30,18 @@ Leaving more in the Rapid after each payout gives the bot more room, so fewer fu
 
 ## Impact
 
--$20 a month in a Jul-Oct-like market (+$56 Jan-Jun-like, -$3 2021-25-like); first payout about 4 trading days later.
+About $0 on its own: -$18 a month in a Jul-Oct-like market (+$49 Jan-Jun-like, -$2 2021-25-like); first payout about 1-2 weeks later.
 
 ## Risk
 
-Rapid 25K no payout in 6 months 10.4% -> 11.5%; Rapid 25K funded account lost 28.3% -> 19.7%; in a 2021-25-like market it costs $3 a month
+Safer: a funded Rapid 25K lost in 6 months 24.0% -> 14.2% (Jan-Jun-like), 34.5% -> 24.8% (Jul-Oct-like): about 10 fewer lost Rapids in 100.
 
 ## Why Claude recommends that
 
-Keep $500 on the Rapid 25K (as built): payouts come sooner for about the same money. $1,000 is the safer choice (fewer accounts lost), so a yes is fine if you prefer safety. A Rapid 50K keeps $1,000 already.
+Yes, best together with rapid-funded-refit (a bigger winner cap): the $1,000 kept in pays for the bigger cap's extra risk. On its own it costs about nothing and loses 10 fewer funded Rapids in 100.
 
 ## Links
 
-- Write-up: [[rapid-levers-2026-11-16|Rapid EOD 50K levers]]
+- Write-up: [[rapid-funded-refit-2026-11-21|Rapid EOD funded refit]]
 - Strategy: [[Rapid lanes]]
 - [[ZEUS Decisions]] · [[ZEUS Home]]

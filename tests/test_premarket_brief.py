@@ -71,9 +71,14 @@ def main():
         check("no rewrite when only built_at changes", open(p).read() == m1)
 
     # 3b. no churn between two cloud builds 30 min apart when no new bar arrived (only built_at differs)
-    c1 = P.build(at("2026-11-20T06:10"), bars=bars, measured=meas)
-    c2 = P.build(at("2026-11-20T06:40"), bars=bars, measured=meas)
-    check("no churn: 06:10 vs 06:40", {**c1, "built_at": 0} == {**c2, "built_at": 0})
+    # (night-reds 2026-11-22: a fixed 2026-11-20 broke once the PC's Nov 20 bars landed; take the first weekday after the
+    # newest bar, so "no new bar arrived" stays true whatever data/ holds)
+    nd = bars[-1][1].date() + dt.timedelta(days=1)          # a bar = (epoch, ET datetime, o, h, l, c)
+    while nd.weekday() >= 5:
+        nd += dt.timedelta(days=1)
+    c1 = P.build(at(f"{nd}T06:10"), bars=bars, measured=meas)
+    c2 = P.build(at(f"{nd}T06:40"), bars=bars, measured=meas)
+    check(f"no churn: 06:10 vs 06:40 ({nd}, after the newest bar)", {**c1, "built_at": 0} == {**c2, "built_at": 0})
 
     # 4. no look-ahead: a brief at 08:05 never sees a bar that closes after 08:05
     bars_to = dt.datetime.strptime(b["data"]["bars_to"], "%Y-%m-%d %H:%M")

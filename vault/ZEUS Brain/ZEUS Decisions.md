@@ -6,10 +6,28 @@ type: "decisions"
 
 # ZEUS Decisions
 
-> [!question] 2 open
+> [!question] 12 open
 > Answer on the Decide card (Business app). A yes means Claude tests it; nothing live changes without proof.
 
 ## Open
+
+> [!question] Rapid 25K: Zlarior trades 1 micro and takes profit at the day's room (instead of skipping most trades)?
+> **Why:** MFFU closes a Rapid that goes 7 days without a trade, and the 30% best-day guard makes the Rapid 25K skip most trades: the red team's replay of Nov 6-19 traded it on 1 day in 10. With this lane on, the same days traded on 4. In the simulation 56% / 44% of evals (Jan-Jun / Jul-Oct-like) hit 5 trading days without a trade as built; 22% / 9% with it.
+> **Impact:** With MFFU's 7-day inactivity close counted: +$164 a month in a Jul-Oct-like market (+$363 Jan-Jun-like, +$4 2021-25-like); the eval passes in 71% / 90% of runs instead of 41% / 54%; first payout about 3 weeks sooner (Feb 5-9 vs Feb 24-26).
+> Added 2026-11-18 · write-up [[rapid25-pass-2026-11-21|Rapid EOD 25K]] · id `rapid25-lit-bank`
+> Card: [[Decide rapid25-lit-bank|open the card note]]
+
+> [!question] Rapid funded payouts: always leave $1,000 above the buffer in each Rapid?
+> **Why:** Leaving more in the Rapid after each payout gives the bot more room, so fewer funded accounts get stuck; each payout is smaller and comes later.
+> **Impact:** About $0 on its own: -$18 a month in a Jul-Oct-like market (+$49 Jan-Jun-like, -$2 2021-25-like); first payout about 1-2 weeks later.
+> Added 2026-11-16 · write-up [[rapid-funded-refit-2026-11-21|Rapid EOD funded refit]] · id `keep-1000-rapid`
+> Card: [[Decide keep-1000-rapid|open the card note]]
+
+> [!question] Rapid funded: let a winner pay up to $2,000 on the 25K ($4,000 on a 50K) and keep $1,000 ($2,000) in the account?
+> **Why:** The Rapid funded presets copied the Builder's winner cap ($1,000 / $2,000), made for the Builder's 50% consistency and $2,000 payout cap. MFFU's Rapid EOD funded has neither. A bigger cap pays more; keeping more in the account stops it losing more.
+> **Impact:** Rapid 25K: +$314 a month in a Jul-Oct-like market (+$541 Jan-Jun-like, -$1 2021-25-like). A Rapid 50K (once bought): +$647 / +$1,460 / +$4.
+> Added 2026-11-21 · write-up [[rapid-funded-refit-2026-11-21|Rapid EOD funded refit]] · id `rapid-funded-refit`
+> Card: [[Decide rapid-funded-refit|open the card note]]
 
 > [!question] Big idea: run a free 30-day test of a 'Prop Slot Planner' page for other prop traders (faceless brand, no name), plus 1 short video a day?
 > **Why:** Bot income depends on the market (about $0 in a 2021-25-like market). The one thing no prop tool sells yet is our planner: which account to buy next, when, and what you keep after tax.
@@ -22,6 +40,48 @@ type: "decisions"
 > **Impact:** $0 to ~$160 a month (central ~$100: ATLAS ~5 ticks and Zlarior ~1 tick better per entry); not provable from 1-minute bars, so it is a 2-week test that the fills will settle.
 > Added 2026-11-20 · write-up [[nq-speed-fills-2026-11-20|NQ bot speed and fills]] · id `fast-entry`
 > Card: [[Decide fast-entry|open the card note]]
+
+> [!question] Buy the 5th funded slot (Rapid EOD 50K, $165 with CLUB) now from your pocket, instead of waiting for ATLAS's first payout (about Jan 13)?
+> **Why:** MFFU allows 5 funded accounts; you hold 4. The Rapid EOD 50K is the biggest earner in the plan, and every week it waits is a week it is not passing its eval.
+> **Impact:** After MFFU's cut, fees and the 30% tax pot: +$554 a month to Jun 30 in a Jul-Oct-like market (+$164 if the edge halves, -$80 2021-25-like); Dec-Feb in total +$2,673 / +$514 / -$225.
+> Added 2026-11-21 · write-up [[fleet-90day-2026-11-21|The 90-day money machine]] · id `buy-rapid50-now`
+> Card: [[Decide buy-rapid50-now|open the card note]]
+
+> [!question] When a Builder 25K dies (ATLAS's funded 25K lost, or the 25K #2 eval fails), put a Rapid EOD 50K ($165) in that slot instead of a new $63 Builder 25K?
+> **Why:** A Builder 25K slot earns a few hundred a month; a Rapid EOD 50K slot earns several times that. MFFU allows 3 Rapid EOD 50Ks, so the swap fits the caps.
+> **Impact:** After MFFU's cut, fees and the 30% tax pot: +$249 a month to Jun 30 in a Jul-Oct-like market (+$126 if the edge halves, -$72 2021-25-like); Dec-Feb in total +$43 / +$12 / -$173.
+> Added 2026-11-21 · write-up [[fleet-90day-2026-11-21|The 90-day money machine]] · id `refill-25k-with-rapid50`
+> Card: [[Decide refill-25k-with-rapid50|open the card note]]
+
+> [!question] Buy a 2nd Builder 50K eval now ($91.80) next to Zlarior's, running the same LIT signal (only the first to pass becomes the funded 50K)?
+> **Why:** MFFU's public pages allow parallel evals (10 at once; the funded caps apply on the pass), so you don't need the written yes. Two tries at the 50K = it is funded sooner.
+> **Impact:** After MFFU's cut, fees and the 30% tax pot: +$63 a month to Jun 30 in a Jul-Oct-like market (+$8 if the edge halves, -$5 2021-25-like); Dec-Feb in total +$479 / +$115 / +$32.
+> Added 2026-11-21 · write-up [[fleet-90day-2026-11-21|The 90-day money machine]] · id `second-50k-eval-now`
+> Card: [[Decide second-50k-eval-now|open the card note]]
+
+> [!question] Kalshi K8 live from Monday: bet only the 2 gold windows (drop silver 4:45 PM) to make the bot switching itself off rarer?
+> **Why:** The newest week (Nov 16-20) was the worst of 16 (6 of 15 won). Gold-only trips the stops about 4x less often, but silver also made money in the history (74% won, +$0.92 a bet).
+> **Impact:** About -$4 a week: +$12.23 -> +$8.02 a week as in the history (+$6.17 -> +$3.97 if the edge is 10 points weaker); after 4 weeks $103 -> $88 on average.
+> Added 2026-11-21 · write-up [[kalshi-k8-live-2026-11-21|K8 goes live Monday]] · id `kalshi-k8-gold-only`
+> Card: [[Decide kalshi-k8-gold-only|open the card note]]
+
+> [!question] Rapid EOD 50K ($165): buy it with a hard stop of at most 2 re-buys (3 evals in all, max $495 at risk)?
+> **Why:** Best plan in the ranking: daily payouts, 90%, no payout cap. MFFU's own pages (2026-11-22) say the '5 payouts then live' rule is Builder only; a Rapid goes live only at $10,000 in one day or by MFFU's choice.
+> **Impact:** About +$2,282 a month in a Jul-Oct-like market (+$5,001 Jan-Jun-like) over 6 months from one account; first payout ~9 weeks after the buy (median). Same purchase as card buy-rapid50-now, plus the re-buy stop.
+> Added 2026-11-22 · write-up [[plan-ranking-2026-11-22|Plan ranking]] · id `plan-rapid50k-max2-rebuys`
+> Card: [[Decide plan-rapid50k-max2-rebuys|open the card note]]
+
+> [!question] FundedNext Rapid Daily 50K (~$150 with code RAPID): add one, with at most 2 re-buys (max $450 at risk)?
+> **Why:** Second best in the ranking and a different firm (MFFU limits: 5 sim funded, and a live move pauses every MFFU sim account). FundedNext allows copying the same strategy across firms under your name.
+> **Impact:** About +$1,546 a month in a Jul-Oct-like market (+$1,679 Jan-Jun-like) over 6 months; first payout ~5 weeks after the buy (median); payouts max $1,200 each, 5 per account.
+> Added 2026-11-22 · write-up [[plan-ranking-2026-11-22|Plan ranking]] · id `plan-fundednext50k-max2-rebuys`
+> Card: [[Decide plan-fundednext50k-max2-rebuys|open the card note]]
+
+> [!question] LucidPro 50K: add up to 3 on top of the Rapid EOD 50K + FundedNext 50K plan, and raise the monthly eval budget from $300 to $500?
+> **Why:** Same bots (LIT) on more accounts at a third firm, outside MFFU's caps and live-move risk. Paper test (fleet v2, 75 fleets x 3 spans x 1,000 paths): beats the $300 plan in both 2026 halves, also if the Lucid price is $50 higher.
+> **Impact:** vs the $300 plan, 6 months: about +$1,786 a month (Jan-Jun-like) / +$2,215 a month (Jul-Oct-like); $70k about 1.5 months sooner in Jul-Oct-like (6.9 vs 8.4 months). About half is just the extra $200 a month of budget; the 3 Lucid accounts add +$5.9k / +$9.4k over 6 months on top of a $500 plan with none.
+> Added 2026-11-22 · write-up [[fleet-v2-2026-11-22|Fleet v2]] · id `lucid-3-at-500-budget`
+> Card: [[Decide lucid-3-at-500-budget|open the card note]]
 
 ## Yes
 
@@ -86,18 +146,6 @@ type: "decisions"
 > **Impact:** +$125 a month in a Jul-Oct-like market (+$141 Jan-Jun-like, -$26 2021-25-like); first payout about 7 trading days sooner.
 > Added 2026-11-17 · write-up [[funded25-lit-atlas-2026-11-17|ATLAS's funded Builder 25K]] · id `zlarior-funded25`
 > Card: [[Decide zlarior-funded25|open the card note]]
-
-> [!failure]- Rapid 25K: Zlarior trades 1 micro and takes profit at the day's room (instead of skipping most trades)?
-> **Why:** Today the 30% best-day guard skips 60-65% of Zlarior's trades there. Banking at the room passes and pays sooner, but fails a little more.
-> **Impact:** At real fills (ATLAS 10 ticks a side): +$101 a month in a Jul-Oct-like market (+$24 Jan-Jun-like, +$1 2021-25-like); first payout about 6-9 days sooner. At backtest fills it was +$83.
-> Added 2026-11-18 · write-up [[rapid-launch-2026-11-20|Rapid EOD 25K launch check]] · id `rapid25-lit-bank`
-> Card: [[Decide rapid25-lit-bank|open the card note]]
-
-> [!failure]- Rapid funded payouts: always leave $1,000 above the buffer in each Rapid?
-> **Why:** Leaving more in the Rapid after each payout gives the bot more room, so fewer funded accounts get stuck; each payout is smaller and comes later.
-> **Impact:** -$20 a month in a Jul-Oct-like market (+$56 Jan-Jun-like, -$3 2021-25-like); first payout about 4 trading days later.
-> Added 2026-11-16 · write-up [[rapid-levers-2026-11-16|Rapid EOD 50K levers]] · id `keep-1000-rapid`
-> Card: [[Decide keep-1000-rapid|open the card note]]
 
 ## Later
 

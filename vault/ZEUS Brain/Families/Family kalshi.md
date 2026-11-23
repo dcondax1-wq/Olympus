@@ -7,11 +7,12 @@ type: "family"
 
 # Research family: kalshi
 
-> [!abstract] 16 write-ups
-> finding 1, rejected 9, research 6
+> [!abstract] 17 write-ups
+> finding 1, rejected 9, research 7
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-21 | [[kalshi-k8-live-2026-11-21\|K8 goes live Monday]] | research |
 | 2026-11-20 | [[kalshi-k8-monday-2026-11-20\|Kalshi K8 for a $55 account, ready by Monday 6 PM]] | research |
 | 2026-11-19 | [[kalshi-red-team-K8-2026-11-19\|Kalshi red team on K8]] | research |
 | 2026-11-19 | [[kalshi-metals-2026-11-19\|Kalshi K8 commodities]] | research |

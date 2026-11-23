@@ -7,30 +7,34 @@ type: "apps"
 
 # ZEUS Apps (Olympus + Jarvis)
 
-> [!info] 77 apps behind 4 doors
-> Every app, behind one of the FOUR DOORS (ZEUS Trading, Money, Kalshi, More: `tools/web_public/olympus/doors.js`, `docs/ORGANIZATION.md`, 2026-11-18; the same lists as the Atlas command center `tools/web_public/atlas/`). The door is the way you find it (column District); the **group** column is the older registry group (`jarvis/apps.js`: trading / money / life) that the launcher and the Jarvis switcher use. **This file is generated: `python tools/olympus_map_build.py` (do not edit the table by hand; `tests.test_olympus_map` fails when it is stale).**
+> [!info] 77 apps behind 7 doors
+> **How Olympus is organized (2026-11-21, owner: "more organized").** One structure, everywhere:
 
-Finding things: Atlas has search (names and plain words), pinned rooms (long-press a room or tap the star), recent rooms, a "what needs me now" strip and an all-apps-on-one-screen view. The Zenith launcher button and the Jarvis orb have the same search, favourites (long-press a tile), recent apps and a MAP view.
-Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks). No app places orders. Look: AGORA (`docs/DESIGN_AGORA.md`). Wiring a new app: `tools/wire_new_apps.py` + `tools/new_apps.json` (`docs/NEW_APPS_WIRING.md`).
-77 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
+1. **Home** (`gate/`, where the Olympus app opens) shows **the 6 main dashboards** in the owner's order (2026-11-22): **NQ Bot** (ZEUS: accounts, trades, brain), **Jarvis**, **Websites** (agency, factory, caller portal), **Data City** (+ the Research hub), **Money** (My MFFU Accounts, payouts, Decide, taxes), **Kalshi**. Each tile opens its dashboard and has at most 2 short links. Everything else is one tap away under **More** (never the landing page: nothing remembers it). Under More, "All apps in ..." opens each arena's page `hub/arena.html?a=<arena>`: every live app grouped by job, so ...
+The arenas, the retired list and the fact owners are DATA in `tools/web_public/olympus/gate-catalog.js` (ARENAS, REPLACE, FACTS). **This file is generated: `python tools/olympus_map_build.py` (do not edit by hand; `tests.test_olympus_map` fails when it is stale).** The link crawler and the nav checks: `tests.test_olympus_nav`.
+Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks). No app places orders. Look: OLYMPUS NIGHT (`docs/DESIGN_AGORA.md`).
 
 ## Doors
 
-- [[Apps ZEUS Trading|ZEUS Trading]]: 28 apps
-- [[Apps Money|Money]]: 15 apps
+- [[Apps NQ Bot|NQ Bot]]: 28 apps
+- [[Apps Jarvis|Jarvis]]: 9 apps
+- [[Apps Websites|Websites]]: 1 apps
+- [[Apps Data City|Data City]]: 13 apps
+- [[Apps Money|Money]]: 18 apps
 - [[Apps Kalshi|Kalshi]]: 5 apps
-- [[Apps More|More]]: 29 apps
+- [[Apps Everything else|Everything else]]: 3 apps
 
 ## Where the organizing code lives
 
 | Piece | File | Test |
 |---|---|---|
-| The four doors (ZEUS Trading, Money, Kalshi, More: each door's shortcuts in plain words + every app in exactly one door) | `tools/web_public/olympus/doors.js` (= `web_next/js/next/doors.js`); the page `hub/doors.html` + `hub/doors.js`; the Gate's four door tiles; docs/ORGANIZATION.md | `tests.test_apps_list` (part d) |
-| Atlas command center (districts, search, pins, recent, needs-me strip, one-screen map) | `tools/web_public/atlas/` (`atlas.js`, `hub.js`, `atlas.css`) | `node --test tests/test_atlas_standalone_hub.mjs`, `tests/test_atlas_intro.mjs` |
-| Zenith launcher sheet (favourites, search, recent, MAP) | `tools/web_public/launcher.js` = `web_next/js/next/launcher.js` (byte-identical) | `tests.test_apps_list` |
-| Jarvis switcher (search, MAP, favourites, recent) | `tools/web_public/jarvis/switcher.js` | `tests.test_jarvis_hub` (parts n, p, s) |
-| World-to-world jump (hyperspace out of the page you tap, each world's arrival signature through a View Transition; reduced motion = a fade) | `tools/web_public/olympus/warp.js` + `warp.css` (themes.js loads it and reads the arrival in `<head>`; agora.css / jarvis.css / kalshi.css / zenith_agora.css @import warp.css) | `tests.test_warp` |
-| App registry | `tools/web_public/jarvis/apps.js` -> `olympus/apps-list.js` | `tests.test_apps_list` |
+| The arenas, retired -> replacement, one place per fact, every app's plain name and hub | `tools/web_public/olympus/gate-catalog.js` (ARENAS, REPLACE, FACTS, R) | `tests.test_olympus_nav`, `tests.test_gate_page`, `tests.test_hubs` |
+| The breadcrumb Home > arena > app, Go to, the retired redirect, the Main copy chips | `tools/web_public/olympus/gate-nav.js` (loaded by `agora-ui.js`, `a11y.js` or the page) | `tests.test_olympus_nav` |
+| The arena pages | `tools/web_public/hub/arena.html` + `arena.js` + `arena.css` | `tests.test_olympus_nav` |
+| Home: the 6 arenas, Everything else, the All apps row | `tools/web_public/gate/index.html`, `gate/arenas.js`, `gate/gate.js` | `tests.test_gate_page` |
+| The hubs (an older grouping; their tabs still show in search) | `tools/web_public/hub/` | `tests.test_hubs` |
+| App registry (Jarvis switcher, launcher) | `tools/web_public/jarvis/apps.js` -> `olympus/apps-list.js` | `tests.test_apps_list` |
+| The four doors (2026-11-18; hidden on Home since the arenas, kept for old links) | `tools/web_public/olympus/doors.js`, `hub/doors.html` | `tests.test_apps_list` (part d) |
 | This map | `tools/olympus_map_build.py` -> `docs/OLYMPUS_MAP.md` | `tests.test_olympus_map` |
 
 Back to [[ZEUS Home]]
