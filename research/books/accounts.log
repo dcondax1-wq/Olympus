@@ -1,0 +1,18 @@
+556 account rows
+227 s
+   fixed {'acct': 'b50', 'book': 'Z+M+S+B+H', 'rule': 'first', 'net_m': 3692, 'p_neg': 0.0, 'pass60': 76.7, 'pass_med': 4.0, 'first_pay': 20.0, 'tpw': 14.06} 
+   fixed five {'acct': 'b50', 'book': 'Z+M+S+B+H', 'rule': 'first', 'net_m': 3692, 'p_neg': 0.0, 'pass60': 76.7, 'pass_med': 4.0, 'first_pay': 20.0, 'tpw': 14.06}
+b50 money {'acct': 'b50', 'book': 'Z+A+H+NA+cam', 'rule': 'first', 'net_m': 4569, 'p_neg': 0.0, 'pass60': 96.0, 'pass_med': 5.0, 'first_pay': 19.0, 'tpw': 10.98} 
+     five {'acct': 'b50', 'book': 'Z+A+H+NA+cam', 'rule': 'first', 'net_m': 4569, 'p_neg': 0.0, 'pass60': 96.0, 'pass_med': 5.0, 'first_pay': 19.0, 'tpw': 10.98}
+   fixed {'acct': 'b25', 'book': 'Z+M+S+B+H', 'rule': 'first', 'net_m': 2088, 'p_neg': 0.0, 'pass60': 73.7, 'pass_med': 4.0, 'first_pay': 20.0, 'tpw': 14.06} 
+   fixed five {'acct': 'b25', 'book': 'Z+M+S+B+H', 'rule': 'first', 'net_m': 2088, 'p_neg': 0.0, 'pass60': 73.7, 'pass_med': 4.0, 'first_pay': 20.0, 'tpw': 14.06}
+b25 money {'acct': 'b25', 'book': 'Z+A+B+H+tds', 'rule': 'adds', 'net_m': 2250, 'p_neg': 0.3, 'pass60': 71.7, 'pass_med': 3.0, 'first_pay': 21.0, 'tpw': 17.77} 
+     five {'acct': 'b25', 'book': 'Z+A+B+H+tds', 'rule': 'adds', 'net_m': 2250, 'p_neg': 0.3, 'pass60': 71.7, 'pass_med': 3.0, 'first_pay': 21.0, 'tpw': 17.77}
+   fixed {'acct': 'r25', 'book': 'Z+A+P+H+T', 'rule': 'adds', 'net_m': 2910, 'p_neg': 0.7, 'pass60': 99.7, 'pass_med': 22.0, 'first_pay': 39.0, 'tpw': 10.43} 
+   fixed five {'acct': 'r25', 'book': 'Z+A+P+H+T', 'rule': 'adds', 'net_m': 2910, 'p_neg': 0.7, 'pass60': 99.7, 'pass_med': 22.0, 'first_pay': 39.0, 'tpw': 10.43}
+r25 money {'acct': 'r25', 'book': 'Z+A+H+NA+tds', 'rule': 'adds', 'net_m': 3011, 'p_neg': 3.7, 'pass60': 81.3, 'pass_med': 26.0, 'first_pay': 46.0, 'tpw': 12.34} 
+     five {'acct': 'r25', 'book': 'Z+A+H+NA+tds', 'rule': 'adds', 'net_m': 3011, 'p_neg': 3.7, 'pass60': 81.3, 'pass_med': 26.0, 'first_pay': 46.0, 'tpw': 12.34}
+   fixed {'acct': 'r50', 'book': 'Z+A+B+H+O', 'rule': 'adds', 'net_m': 6698, 'p_neg': 0.3, 'pass60': 96.0, 'pass_med': 18.0, 'first_pay': 31.0, 'tpw': 18.59} 
+   fixed five {'acct': 'r50', 'book': 'Z+A+B+H+O', 'rule': 'adds', 'net_m': 6698, 'p_neg': 0.3, 'pass60': 96.0, 'pass_med': 18.0, 'first_pay': 31.0, 'tpw': 18.59}
+r50 money {'acct': 'r50', 'book': 'Z+A+NA+cam+tds', 'rule': 'adds', 'net_m': 7972, 'p_neg': 1.7, 'pass60': 87.3, 'pass_med': 19.0, 'first_pay': 35.0, 'tpw': 13.63} 
+     five {'acct': 'r50', 'book': 'Z+A+NA+cam+tds', 'rule': 'adds', 'net_m': 7972, 'p_neg': 1.7, 'pass60': 87.3, 'pass_med': 19.0, 'first_pay': 35.0, 'tpw': 13.63}

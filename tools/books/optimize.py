@@ -185,7 +185,7 @@ def pvals():
             X = C[:, ix]
             mx.append(float((X.mean(1) / (X.std(1, ddof=1) / math.sqrt(n) + 1e-9)).max()))
         mx = np.array(mx)
-        for kind in ("money", "five", "fixed_money", "fixed_five"):
+        for kind in ("money", "five", "fixed_money", "fixed_five", "under5"):
             p = A["picks"][acct][kind]
             if not p:
                 continue
@@ -206,7 +206,7 @@ def final(n=2000):
     jobs, seen = [], set()
     for acct in ACCTS:
         want = [(TODAY[acct], "first"), ("Z", "first"), ("Z+A", "first")]
-        for kind in ("money", "five", "fixed_money", "fixed_five"):
+        for kind in ("money", "five", "fixed_money", "fixed_five", "under5"):
             p = A["picks"][acct][kind]
             if p:
                 want.append((p["book"], p["rule"]))
