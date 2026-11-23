@@ -176,6 +176,8 @@ Not in any area, checked once: test_nq_desk 32/33 (colour tokens), pre-existing 
 ## Lead-only edits needed (not done here)
 - **wirepatch:** `git apply --check research/handoff/2026-11-23/lead_wires.patch` fails only on its tools/ship.py hunk (reds2's vault_sync
   changed main() around it); the other hunks apply.
+  **Fixed by night-wirepatch2 21f370c33 (10:48 UTC):** `git apply --check` of its `lead_wires_v2.patch` is CLEAN on night-integrate
+  937029213 (checked 10:52 UTC). Not merged here: it only carries the patch for the lead (sw.js, build_web_dashboard.py, CLAUDE.md, ship.py).
 - **business_goals:** `python tools/money/goals_build.py` (with the live board) at landing.
 - **sw.js:** seedata / payday / decide page bumps (payoutcoach v3, mffumodel v6, mffucenter v3, gate g21, nq r33, decide.js) need the cache bump.
 - **Check for the owner (not a Monday blocker):** tools/bat/MONEY_INBOX.bat registers the sign-in task "OlympusMoneyInbox" with its OWN full
