@@ -34,9 +34,11 @@ OK, FIX, NOT_INSTALLED, INFO = "ok", "fix", "not installed", "info"
 CLOCK_FIX = "right-click FIX_CLOCK.bat > Run as administrator (or MONDAY_SETUP.bat)"
 REPORT_TASK = "OlympusPCReport"
 # pieces of tonight's combined update that may live on other branches: (label, module)
-OPTIONAL = (("Payout autopilot", "engine.payout_autopilot"), ("Fleet manager", "engine.fleet_manager"),
-            ("Rules watch", "engine.rules_watch"), ("State pulse", "engine.state_pulse"), ("Win guard", "engine.win_guard"),
-            ("Task audit", "engine.task_audit"), ("Zero-touch (MONDAY_SETUP)", "engine.monday"),
+# red team 2: the module paths as they are on tonight's branches (engine/fleet_mgr.py, tools/rules_watch.py, tools/task_audit.py):
+# the old engine.fleet_manager / engine.rules_watch / engine.task_audit never exist, so they read "not installed" for ever
+OPTIONAL = (("Payout autopilot", "engine.payout_autopilot"), ("Fleet manager", "engine.fleet_mgr"),
+            ("Rules watch", "tools.rules_watch"), ("State pulse", "engine.state_pulse"), ("Win guard", "engine.win_guard"),
+            ("Task audit", "tools.task_audit"), ("Zero-touch (MONDAY_SETUP)", "engine.monday"),
             ("Recovery matrix", "engine.recovery"), ("Fault notes", "engine.fault_note"))
 CORE = ("engine.readiness", "engine.arm_report", "engine.alert_bus", "engine.keepalive", "engine.self_heal", "engine.notify")
 

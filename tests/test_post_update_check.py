@@ -48,7 +48,7 @@ def t_optional():
     def imp(m):
         if m == "engine.win_guard":
             raise ModuleNotFoundError(f"No module named '{m}'", name=m)
-        if m == "engine.rules_watch":
+        if m == "tools.rules_watch":
             raise ModuleNotFoundError("No module named 'yaml'", name="yaml")
         if m == "engine.state_pulse":
             raise SyntaxError("bad")
@@ -153,6 +153,15 @@ def t_hooks():
           not any(w in src for w in ("--confirm", ".arm(", "bot.start", "send_test", "alerts.send(")))
 
 
+def t_rt2():
+    """red team 2: every OPTIONAL path is a real module of tonight's branches (a wrong path reads 'not installed' for ever)."""
+    known = {"engine/fleet_mgr.py", "tools/rules_watch.py", "tools/task_audit.py", "engine/payout_autopilot.py", "engine/state_pulse.py",
+             "engine/win_guard.py", "engine/monday.py", "engine/recovery.py", "engine/fault_note.py"}     # on origin night-* 2026-11-23
+    paths = {m.replace(".", "/") + ".py" for _l, m in P.OPTIONAL}
+    check("rt2. OPTIONAL names the real module paths (engine.fleet_mgr, tools.rules_watch, tools.task_audit)", paths <= known,
+          sorted(paths - known))
+
+
 def main():
     t_summary()
     t_optional()
@@ -160,6 +169,7 @@ def main():
     t_bounded()
     t_readonly()
     t_hooks()
+    t_rt2()
     bad = [n for n, ok in RES if not ok]
     print(f"\n{len(RES) - len(bad)}/{len(RES)} passed" + (f"; FAILED: {bad}" if bad else ""))
     return 1 if bad else 0
