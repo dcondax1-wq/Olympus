@@ -25,6 +25,19 @@ Numbers below are from the PC's report on Nov 20, 6:00 ET. Live numbers: the ZEU
 | **K8** (Kalshi clock bot) | Small bets on gold and silver 15-minute price markets on Kalshi. | 05:15-05:30 ET (gold down) and 16:45-17:00 ET (gold + silver up), weekdays | **No, paper** until you type the Kalshi phrase. With $55: $2.50 a bet, at most 3 a day, worst week -$13.75 |
 | **ZEUS** | The name for the whole PC bot (it runs Zlarior + ATLAS through NinjaTrader). | - | - |
 
+## What READY means (PC self-check, 2026-11-22)
+
+1. The PC checks itself 3 times a day, plus when the bot starts and the moment something breaks: **17:30 ET** (before the 18:00 open), **01:15** (45 min before the 02:00 window) and **08:45**.
+2. **READY** (mint) means the bot can trade the next window: PC clock within 5 s, NinjaTrader connected, price bars fresh, every account armed, no account halted, disk and updates fine.
+3. **NOT READY** (gold) means something would stop a trade. Your phone gets ONE alert (Telegram / Discord first) like "NOT READY for 02:00: PC clock 25 s behind", with the exact fix.
+4. The same alert repeats at most once an hour, and the same problem never twice within 30 minutes. Fix it and the next check says READY.
+5. **READY, 1 to watch** (mint) is a small thing (restart pending, disk getting low, 7-day deadline): it will not stop a trade tonight.
+6. At 17:30 you get one quiet "READY for the next window" line. No news is not a promise: look at the phone pages (Trading Home first line, Brain > All bots banner).
+7. Most fixes need you at the PC (arming needs your phrase, the clock sync, NinjaTrader's connection). The alert says which.
+8. The check only reads. It never starts, stops, arms or changes anything.
+9. On the PC: `python -X utf8 -m engine.readiness` prints it now; HEALTH_CHECK.bat shows the longer list.
+10. Claude can read the same verdict from the cloud: `python tools/ready_check.py`.
+
 ## 2. A normal day (ET)
 
 | Time | The PC does by itself | You see on the phone |

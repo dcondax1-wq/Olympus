@@ -184,6 +184,9 @@ out.silent = T.today({ ...good, t: now - 7200 }, { now, alertsOkAt: now, mffuVie
 out.none = T.today(null, { now });
 const fund = { t: fresh, board: { running: true }, accounts: [acc('atlas', 'ATLAS 25K', 'LIVE', { balance: 401, room: 700 }, 'funded')], k7: { a: [] } };
 out.funded = T.today(fund, { now, alertsOkAt: now, mffuView: F.mffuView });
+out.rdok = T.today({ ...good, rd: { s: 'ok', w: '02:00' } }, { now, alertsOkAt: now - 86400, mffuView: F.mffuView });
+out.rdno = T.today({ ...good, rd: { s: 'no', w: '02:00', b: 'PC clock 25 s behind', f: 'On the PC: Sync now.' } }, { now, alertsOkAt: now - 86400, mffuView: F.mffuView });
+out.rdold = T.today({ ...good, t: now - 7200, rd: { s: 'ok', w: '02:00' } }, { now, alertsOkAt: now, mffuView: F.mffuView });
 console.log(JSON.stringify(out));
 """
 
@@ -206,6 +209,13 @@ def core():
     check("i4. no report at all -> nothing is shown as done (bot / armed / keep-alive), every unchecked line names a menu number",
           not n["bot"]["ok"] and n["armed"]["ok"] is not True and n["keepalive"]["ok"] is None and all(l["ok"] is True or l["menu"] for l in o["none"]["lines"]), n)
     check("i5. funded ATLAS: the next step is the payout in $ ('$1,000 payout')", "$1,000 payout" in f["next"]["say"] and "ATLAS" in f["next"]["say"], f["next"])
+    ro, rn, rs = by(o["rdok"]), by(o["rdno"]), by(o["rdold"])
+    check("i7. ready check from the PC: READY = mint, done, first line; no 'rd' (older PC) = no extra line",
+          o["rdok"]["lines"][0]["id"] == "ready" and ro["ready"]["ok"] is True and ro["ready"]["tone"] == "mint" and "READY for 02:00" in ro["ready"]["say"]
+          and o["rdok"]["left"] == 0 and "ready" not in g, ro.get("ready"))
+    check("i8. NOT READY = gold, not done, says the first blocker and its fix, counts as 1 to do; a 2 h old post shows no ready line",
+          rn["ready"]["ok"] is False and rn["ready"]["tone"] == "gold" and "NOT READY for 02:00: PC clock 25 s behind" in rn["ready"]["say"]
+          and "Sync now" in rn["ready"]["say"] and o["rdno"]["left"] == 1 and "ready" not in rs, rn.get("ready"))
     check("i6. alerts are only ever 'done' by his own tick (the public post cannot show it)", g["alerts"]["ok"] and not b["alerts"]["ok"] and b["alerts"]["tick"], "")
 
 

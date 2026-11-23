@@ -926,6 +926,11 @@ def _autostart_startup():
     LIVEPUB.start()                      # phone live.json every minute (engine/live_publish.py)
     EXEC_AUDIT.start()
     AUTOUPDATE.start()                   # daily check in the CME halt + hourly outside trading time; nothing until --enable
+    try:                                 # day-ready 2026-11-22: 90 s after the server starts, one READY / NOT READY check (engine/readiness; read-only)
+        from engine import readiness as _rdy
+        _rdy.start_after_boot()
+    except Exception as _e:
+        print(f"[ready] off: {_e.__class__.__name__}", flush=True)
     PCWATCH.start()                      # PC health + Sunday self-test / readiness (engine/pc_health.py; off in a dev / test server)
     try:
         REPORT_KEEPER.start()            # the phone report even without its Windows task (engine/report_keeper.py; off in a dev / test server)

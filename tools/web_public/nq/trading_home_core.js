@@ -1,4 +1,4 @@
-// TRADING HOME core (owner 2026-11-22): the 5-line "Today" checklist from the PC's PUBLIC status post only (status_feed.json,
+// TRADING HOME core (owner 2026-11-22): the 5-line "Today" checklist (+ a READY / NOT READY line first when the post carries the PC's ready check) from the PC's PUBLIC status post only (status_feed.json,
 // read by ../pc_feed.js). Pure: no DOM, no fetch. Browser: window.TRADING_HOME; node tests: module.exports. Sends nothing, arms nothing.
 // Each line: {id, ok: true | false | null (null = the phone cannot see it), title, say (plain words), menu (the TRADE_HOME number on the PC)}.
 (function (root) {
@@ -43,6 +43,15 @@
     const fresh = age != null && age <= FRESH_S;
     const accts = L ? realAccounts(L) : [];
     const out = [];
+
+    // 0 READY / NOT READY (engine/readiness via the status post's "rd" block, day-ready 2026-11-22): the PC's own pre-window self-check
+    const rd = L && fresh && isObj(L.rd) ? L.rd : null;
+    const rds = rd && (rd.s === 'ok' || rd.s === 'warn' || rd.s === 'no') ? rd.s : null;
+    if (rds) out.push({ id: 'ready', ok: rds === 'ok' || rds === 'warn' ? true : rds === 'no' ? false : null, tone: rds === 'no' ? 'gold' : rds ? 'mint' : null, title: 'Ready to trade',
+      say: rds === 'ok' ? 'READY' + (rd.w ? ' for ' + rd.w : '') + '. The PC checked its clock, NinjaTrader, bars and accounts.' :
+        rds === 'warn' ? 'READY, 1 to watch: ' + (rd.b || 'see the PC') + '.' :
+        'NOT READY' + (rd.w ? ' for ' + rd.w : '') + ': ' + (rd.b || 'see the PC') + '. ' + (rd.f || 'On the PC: double-click HEALTH_CHECK.bat.'),
+      menu: rds === 'no' ? 1 : null });
 
     // 1 bot running
     let run = null;

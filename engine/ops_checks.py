@@ -1571,6 +1571,14 @@ def tick(now=None, ctx=None, state=None, sender=None, state_path: str = STATE_PA
             out += alerts_plus.ops_tick(ctx, state, now, lambda p: send(p, state, sender=sender), real)
         except Exception as e:
             ops_log(f"alerts plus failed: {e.__class__.__name__}: {scrub(str(e), 120)}")
+        if real:                         # day-ready 2026-11-22 (engine/readiness): the READY / NOT READY verdict, written for the status post;
+            try:                         # the alert only at 17:30 / 01:15 / 08:45 ET or when a NEW blocker appears (read-only, never arms or starts)
+                from . import readiness
+                rr = readiness.tick(now, ctx=ctx, reason="tick")
+                if rr.get("alert"):
+                    out.append({"key": rr["alert"]["key"], "title": rr["alert"]["title"], "via": rr.get("via")})
+            except Exception as e:
+                ops_log(f"readiness failed: {e.__class__.__name__}")
         if do_backup and real and weekly_review_due(state, now):
             state["weekly_review_wk"] = "%d-W%02d" % _et(now).isocalendar()[:2]   # once a week, even when it fails
             try:                       # business/week.json + the board event "Weekly review ready" (tools/weekly_review.py)
