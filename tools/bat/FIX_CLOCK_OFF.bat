@@ -3,7 +3,6 @@ set "LE_HOME=%~dp0"
 if not exist "%~dp0engine\" if exist "%~dp0..\..\engine\" for %%I in ("%~dp0..\..") do set "LE_HOME=%%~fI\"
 rem FIX THE CLOCK, UNDO: removes the task OlympusClock and puts the Windows time settings back to the Windows defaults
 rem (right-click > Run as administrator). Windows keeps its own time service on Automatic. Run FIX_CLOCK.bat again any time.
-rem It also undoes the PC GUARD: Windows Update, sleep, disk, USB and network adapter settings go back to the values it saved.
 setlocal EnableExtensions
 title Olympus - FIX THE CLOCK (undo)
 cd /d "%LE_HOME%"
