@@ -385,7 +385,8 @@ def early_note(now: int) -> str:
         ec = cme_calendar.early_close(_et(now).date())
     except Exception:  # noqa: BLE001
         ec = None
-    return f"early close {_hm(ec)}" if ec else ""
+    # night-tgweek 2026-11-23: the owner's words ("half day, closes 13:15"); entries end 15 min before (engine/cme_calendar.entry_cut)
+    return f"half day, closes {_hm(ec)} ET (no new entry from {_hm(ec - 15)})" if ec else ""
 
 
 # ------------------------------------------------------------------------------------------------ edge, PC, roll

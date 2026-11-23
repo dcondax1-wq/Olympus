@@ -151,7 +151,7 @@ export function plan(bot, brief, news, nowS) {
   for (const w of wins) w.state = weekend ? 'closed' : mod >= w.fm && mod < w.tm ? 'open' : mod < w.fm ? 'later' : 'over';
   const nx = wins.filter((w) => w.state === 'later').sort((a, b) => a.fm - b.fm)[0];
   const today = p.day, ev = arr(isObj(news) ? news.events : null).filter((e) => isObj(e) && e.date === today);
-  const early = isObj(brief) && brief.early_close ? `Early close today: ${str(brief.early_close, 80)}` : '';
+  const early = isObj(brief) && brief.early_close ? `Half day: closes ${str(brief.early_close, 80)} ET` : '';
   return { windows: wins, open: wins.some((w) => w.state === 'open'), next: nx ? { who: nx.who, at: nx.from, inMin: nx.fm - mod } : null,
     countdown: weekend ? 'Weekend: the next window is Monday' : nx ? `${nx.who} opens at ${nx.from} ET (in ${nx.fm - mod >= 60 ? Math.floor((nx.fm - mod) / 60) + ' h ' : ''}${(nx.fm - mod) % 60} min)` : wins.some((w) => w.state === 'open') ? 'A window is open now' : 'Today\'s windows are over',
     news: ev.map((e) => ({ time: str(e.time, 5), title: str(e.title, 80), past: toM(e.time) !== null && toM(e.time) < mod })), early, clock: clock(nowS) };
