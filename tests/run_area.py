@@ -452,5 +452,8 @@ AREAS["pc"] += ["monday", "mondaysim_rt"]   # night-mondaysim 2026-11-23 + red t
 AREAS["pc"] += ["rollback_world"]   # night-rollback 2026-11-23: a bad landing rolls itself back (health / import / crash loop), temp git world
 AREAS["pc"] += ["rollback_rt"]      # red team night-rollback: owner / 16:00 restarts never roll a good update back, no good/bad loop, never mid-trade
 
+AREAS["pc"].append("faststart")   # night-faststart 2026-11-23: START BOT looks sooner and more often (same limits), on a fake clock
+AREAS["pc"].append("faststart_rt")   # red team 2026-11-23: stop_server keeps its old limit on a slow-answering server; checklist only after the bot start
+
 if __name__ == "__main__":
     sys.exit(main())

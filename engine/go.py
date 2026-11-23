@@ -272,13 +272,32 @@ def _ps(script, *args):
     return ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script, *args]
 
 
+# night-faststart 2026-11-23 (owner: "running the bot takes too long"): START's waits look as soon as the thing can be ready
+# and then often; every limit is unchanged (server 120 s, stop 30 s, checklist 90 s, NinjaTrader / chart 15 min). Waiting
+# only: nothing here trades, arms or changes a setting. _sleep / _clock: tests count the seconds START sits waiting.
+def _sleep(s):           # looked up at call time: tests that set go.time.sleep keep working
+    time.sleep(s)
+
+
+def _clock():
+    return time.time()
+
+
+SERVER_EVERY_S = 0.5     # was 2 s: the first look came 2 s after the start, every look after it 2 s late at most
+STOP_EVERY_S = 0.5       # was 1 s
+CHECK_EVERY_S = 3        # the launch checklist: was a 10 s sleep BEFORE the first look, then every 10 s
+CHECK_MAX_S = 90         # unchanged: up to ~90 s for the startup reconcile
+NT_EVERY_S_CONSOLE = 2   # NinjaTrader's log-in: was 5 s
+FEED_EVERY_S_CONSOLE = 3 # the chart fix (live bars back): was 15 s
+
+
 def start_server(wait_s=120) -> bool:
     # hidden window (owner 2026-10-27 "I don't wanna use powershell at all"): the dashboard is the bot's face
     ps = _ps(RUN_BOT)
     subprocess.Popen(["cmd", "/c", "start", "Liquidity Engine bot", "/min", *ps[:1], "-WindowStyle", "Hidden", *ps[1:]], cwd=ROOT)
-    t0 = time.time()
-    while time.time() - t0 < wait_s:
-        time.sleep(2)
+    t0 = _clock()
+    while _clock() - t0 < wait_s:
+        _sleep(SERVER_EVERY_S)
         if server_up():
             return True
     return False
@@ -286,10 +305,15 @@ def start_server(wait_s=120) -> bool:
 
 def stop_server():
     subprocess.run(_ps(STOP_BOT, "-KeepAutostart"), cwd=ROOT)
-    for _ in range(30):
+    # red team 2026-11-23: the limit counts the 30 s of WAITING, as before (30 x 1 s sleeps + each look's own time, up to
+    # 3 s on a server that still holds the port but no longer answers). A 30 s wall clock would give such a server
+    # 30 s instead of up to 2 min, and START would say "did not stop" sooner
+    slept = 0.0
+    while slept < 30:
         if not server_up():
             return True
-        time.sleep(1)
+        _sleep(STOP_EVERY_S)
+        slept += STOP_EVERY_S
     return False
 
 
@@ -319,7 +343,7 @@ def nt_running() -> bool:
     return "NinjaTrader.exe" in (r.stdout or "")
 
 
-def ensure_ninjatrader(wait_s=900, connected=None, sleep=time.sleep) -> bool:
+def ensure_ninjatrader(wait_s=900, connected=None, sleep=None, every=None) -> bool:
     """NinjaTrader open (started here when it is not) and showing a CONNECTED connection; waits up to 15 min for the
     owner's NinjaTrader log-in. True = connected."""
     from . import autoresume
@@ -333,9 +357,10 @@ def ensure_ninjatrader(wait_s=900, connected=None, sleep=time.sleep) -> bool:
         else:
             print(f"     NinjaTrader not found at {NT_EXE}: open it yourself")
     print("     Log in to NinjaTrader and connect your MFFU account (this window waits up to 15 minutes)")
-    t0 = time.time()
-    while time.time() - t0 < wait_s:
-        sleep(5)
+    sleep = sleep or _sleep
+    t0 = _clock()
+    while _clock() - t0 < wait_s:
+        sleep(NT_EVERY_S_CONSOLE if every is None else every)
         if connected() is True:
             print("     NinjaTrader connected")
             return True
@@ -366,7 +391,7 @@ def _roll_text(why) -> bool:
         return False
 
 
-def ensure_feed(wait_s=900, problem=None, sleep=time.sleep) -> bool:
+def ensure_feed(wait_s=900, problem=None, sleep=None, every=None) -> bool:
     """The NinjaTrader bar feed fresh (the Sim test and every trade need it); shows the chart fix once and waits up to
     15 min for it. True = fresh."""
     problem = problem or feed_problem
@@ -382,9 +407,10 @@ def ensure_feed(wait_s=900, problem=None, sleep=time.sleep) -> bool:
         inst = "MNQ 12-26"
     print(f"       1. Open the {inst} chart, set it to 5 Minute (or New > Chart: {inst}, Minute, 5).")
     print("       2. Right-click the chart > Indicators > LE_BarFeed > Add > OK (already listed? Remove it, Add it again).")
-    t0 = time.time()
-    while time.time() - t0 < wait_s:
-        sleep(15)
+    sleep = sleep or _sleep
+    t0 = _clock()
+    while _clock() - t0 < wait_s:
+        sleep(FEED_EVERY_S_CONSOLE if every is None else every)
         if problem() is None:
             print("     Live bars OK")
             return True
@@ -402,6 +428,19 @@ def startup_shortcuts():
           + (f"$n=$sh.CreateShortcut((Join-Path $st 'NinjaTrader 8 (Liquidity Engine).lnk')); $n.TargetPath='{NT_EXE}'; "
              f"$n.WorkingDirectory='{os.path.dirname(NT_EXE)}'; $n.Save()" if os.path.exists(NT_EXE) else ""))
     subprocess.run(["powershell", "-NoProfile", "-Command", ps], capture_output=True)
+
+
+def checklist_launch(max_s=None, every=None):
+    """START's launch checklist: look NOW, then every CHECK_EVERY_S until all green or CHECK_MAX_S (night-faststart: was
+    sleep 10 s first, then every 10 s, 9 looks). -> (lines, red). Read only."""
+    max_s = CHECK_MAX_S if max_s is None else max_s
+    every = CHECK_EVERY_S if every is None else every
+    t0 = _clock()
+    lines, red = checklist_lines()
+    while red != 0 and _clock() - t0 < max_s:
+        _sleep(every)
+        lines, red = checklist_lines()
+    return lines, red
 
 
 def checklist_lines():
@@ -920,12 +959,7 @@ def _step_arm(cfg, phrase, dry=False, open_page=True, inp=None) -> int:
         pass
     startup_shortcuts()
     print("\n Launch checklist (the bot unlocks entries by itself once everything reconciles):")
-    lines, red = [], None
-    for _ in range(9):                                     # up to ~90 s for the startup reconcile
-        time.sleep(10)
-        lines, red = checklist_lines()
-        if red == 0:
-            break
+    lines, red = checklist_launch()
     print("\n".join(lines))
     print("\n [OK] Running. Leave the PC on, plugged in, NinjaTrader open. First trades from 02:00 ET." if red == 0 else
           "\n [..] Running; lines with .. are still settling or need the fix shown on the dashboard.")
