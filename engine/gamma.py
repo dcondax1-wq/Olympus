@@ -35,7 +35,8 @@ def refresh_history(max_age_h=12):
             tmp = path + ".tmp"
             with open(tmp, "wb") as fh:
                 fh.write(raw)
-            os.replace(tmp, path)
+            from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+            _fs_replace(tmp, path)
     except Exception:
         pass
     return path

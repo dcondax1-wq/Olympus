@@ -253,33 +253,35 @@ def tracker_checks(tmp):
     now = ts("2026-11-09", 9)
     B, fb = acct(s, now, tmp, tag="f0")
     ev = B.eval_view(now)
-    check("d. fresh funded 25K: balance $25,000, floor $24,000, room $1,000, payout line $26,850, status funded, session 1",
-          ev["stage"] == "funded" and ev["balance"] == 25000 and ev["floor"] == 24000 and ev["room"] == 1000 and ev["target"] == 26850
+    # owner's plan (CLAUDE.md, engine/funded_life ask_above): the first request is the MAX $1,000 once $2,100 profit is on the
+    # account (buffer $1,100 + $1,000), so the payout line of a $25,000 funded account is $27,100 (was $26,850 = buffer + $750)
+    check("d. fresh funded 25K: balance $25,000, floor $24,000, room $1,000, payout line $27,100, status funded, session 1",
+          ev["stage"] == "funded" and ev["balance"] == 25000 and ev["floor"] == 24000 and ev["room"] == 1000 and ev["target"] == 27100
           and ev["status"] == "funded" and ev["session"] == 1 and ev["funded"]["payouts_max"] == 5, ev)
     st = B.eval_state(now)
     q = AB.qty(B.spec, {"risk_pts": 40.0, "tgt_pts": 60.0}, st)
     check("d. the bot's state sizes with the funded rule (3 micros at a 40-pt stop)", q["qty"] == 3 and st["room"] == 1000.0, (st, q))
-    days = [("2026-11-09", 600.0), ("2026-11-10", 500.0), ("2026-11-11", 400.0), ("2026-11-12", 500.0)]
+    days = [("2026-11-09", 600.0), ("2026-11-10", 500.0), ("2026-11-11", 500.0), ("2026-11-12", 500.0)]
     cl = [[d, ts(d, 10), v, ts(d, 9, 30)] for d, v in days]
     now = ts("2026-11-12", 16, 30)
     B, fb = acct(s, now, tmp, closes=cl, tag="f1")
     ev = B.eval_view(now)
     t = ev["funded"]
-    check("d. +$2,000 over 4 days: balance $27,000, floor locked at $25,100, buffer reached, best day 30%, PAYOUT READY $900 "
-          "($720 to you)", ev["balance"] == 27000 and ev["floor"] == 25100 and t["buffer_reached"] and t["status"] == "ready"
-          and t["max_request"] == 900 and t["to_you"] == 720 and abs(t["best_day_pct"] - 30.0) < 0.1 and t["eligible"], (ev, t))
+    check("d. +$2,100 over 4 days: balance $27,100, floor locked at $25,100, buffer reached, best day 29%, PAYOUT READY $1,000 "
+          "($800 to you)", ev["balance"] == 27100 and ev["floor"] == 25100 and t["buffer_reached"] and t["status"] == "ready"
+          and t["max_request"] == 1000 and t["to_you"] == 800 and abs(t["best_day_pct"] - 600 / 21) < 0.1 and t["eligible"], (ev, t))
     B._lifecycle(now)
     B._lifecycle(now)
     P = [p for p in fb.pushed]
-    check("d. ONE 'PAYOUT READY: request $900' push with the account_b record line; the bot never requests it",
-          len(P) == 1 and P[0]["title"] == "PAYOUT READY: request $900"
-          and "python -X utf8 -m engine.account_b --payout 2026-11-12=900" in P[0]["body"] and "never requests" in P[0]["body"], P)
-    s2 = AB.normalize(funded_block(payouts={"2026-11-12": 900.0}), sc)
+    check("d. ONE 'PAYOUT READY: request $1,000' push with the account_b record line; the bot never requests it",
+          len(P) == 1 and P[0]["title"] == "PAYOUT READY: request $1,000"
+          and "python -X utf8 -m engine.account_b --payout 2026-11-12=1000" in P[0]["body"] and "never requests" in P[0]["body"], P)
+    s2 = AB.normalize(funded_block(payouts={"2026-11-12": 1000.0}), sc)
     B2, fb2 = acct(s2, ts("2026-11-13", 9), tmp, closes=cl, tag="f2")
     ev2 = B2.eval_view(ts("2026-11-13", 9))
-    check("d. after the $900 payout: balance $26,100, floor $25,100 (start + $100), room $1,000, payouts 1/5, a new cycle",
+    check("d. after the $1,000 payout: balance $26,100, floor $25,100 (start + $100), room $1,000, payouts 1/5, a new cycle",
           ev2["balance"] == 26100 and ev2["floor"] == 25100 and ev2["room"] == 1000 and ev2["funded"]["payouts_n"] == 1
-          and ev2["funded"]["cycle_profit"] == 0 and ev2["funded"]["paid_to_you"] == 720, ev2)
+          and ev2["funded"]["cycle_profit"] == 0 and ev2["funded"]["paid_to_you"] == 800, ev2)
     big = [[d, ts(d, 10), v, ts(d, 9, 30)] for d, v in (("2026-11-09", 1500.0), ("2026-11-10", 200.0), ("2026-11-11", 150.0))]
     B3, fb3 = acct(s, ts("2026-11-11", 16, 30), tmp, closes=big, tag="f3")
     t3 = B3.funded_view(ts("2026-11-11", 16, 30))
@@ -491,7 +493,7 @@ def view_checks(tmp):
     info = B.info(now)
     check("g. info() (heartbeat second.route.account_b): stage funded, sizing funded, the compact tracker, the passed eval",
           info.get("stage") == "funded" and info.get("sizing") == "funded" and isinstance(info.get("funded"), dict)
-          and info["funded"].get("ask_at_balance") == 26850 and "funded" not in info["eval"] and info["eval"]["status"] == "funded"
+          and info["funded"].get("ask_at_balance") == 27100 and "funded" not in info["eval"] and info["eval"]["status"] == "funded"
           and info.get("eval_account") == EVAL_NAME and len(json.dumps(info)) < 6000, {k: info.get(k) for k in ("stage", "sizing")})
     cp = second.compact({"t": 1, "day": "2026-11-11", "strategies": {k: {"label": k, "short": k, "on": True, "trades": []} for k in KEYS}},
                         route={"keys": [], "account": None, "open": None, "routed": [], "account_b": info})
@@ -500,7 +502,7 @@ def view_checks(tmp):
     from engine import live_board as LB
     a = LB.atlas_now({"second": {"route": {"account_b": info}, "strategies": {}}}, now)
     check("g. live board: ATLAS card stage funded, $ to the payout line, the tracker (buffer, best day, payouts), the funded size text",
-          a.get("stage") == "funded" and a["target_balance"] == 26850 and a["to_target"] == 350 and a["funded"]["payouts_max"] == 5
+          a.get("stage") == "funded" and a["target_balance"] == 27100 and a["to_target"] == 600 and a["funded"]["payouts_max"] == 5
           and a["funded"]["buffer_reached"] is True and "60% of the room" in a["micros"]["what"] and not a.get("blocks"), a)
     lost = B.info(now)
     lost["eval"] = {**lost["eval"], "status": "lost"}
@@ -511,7 +513,7 @@ def view_checks(tmp):
     pg = GO.payout_goal({"accounts": [], "second": {"route": {"account_b": info}}}, {})
     check("g. Goals: ATLAS's card is funded (the tracker's sentence), the payout goal reads ATLAS's tracker",
           g["stage"] == "funded" and g["sentence"] == info["funded"]["text"] and pg["stage"] == "funded" and pg["funded"] == 1
-          and pg["ask_at"] == 26850, (g, pg))
+          and pg["ask_at"] == 27100, (g, pg))
     from engine import scale_plan as SP
     rows = SP.overlay([], acct_b=info)
     check("g. scale plan: ATLAS's row is funded", any(r_.get("strategy") == "ATLAS" and r_.get("stage") == "funded" for r_ in rows), rows)

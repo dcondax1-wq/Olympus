@@ -1,8 +1,8 @@
 {
  "v": 1,
- "asof": "2026-11-11",
+ "asof": "2026-11-20",
  "note": "The people of OLYMPUS: one named character per real worker. Built by tools/people_build.py from handoff/agents_now.json, the Archive, the app list and git (when present). A person only says what that worker's own files say. Nothing here is a trade.",
- "git": true,
+ "git": false,
  "people": [
   {
    "id": "scanner:chrysos",
@@ -722,11 +722,7 @@
    ],
    "job": "A clean, beautiful Jarvis first screen with a golden-hour courtyard",
    "branch": "worktree-agent-a43a2daec19cf8666",
-   "agent": "Jarvis home",
-   "git": {
-    "t": 1794377525,
-    "s": "Jarvis home v2: the NQ bot cards stack below the fold (nothing past the right edge)"
-   }
+   "agent": "Jarvis home"
   },
   {
    "id": "builder:ab25b5ae",
@@ -819,11 +815,7 @@
    ],
    "job": "The agent factory: watch every worker and what it learned",
    "branch": "worktree-agent-a1d36b031da943214",
-   "agent": "Ergasterion",
-   "git": {
-    "t": 1794365040,
-    "s": "Ergasterion tests: Talk prompt checked from the queue's west side, facing compared modulo a turn"
-   }
+   "agent": "Ergasterion"
   },
   {
    "id": "builder:a545b014",
@@ -854,11 +846,7 @@
    ],
    "job": "The NQ page and the kit that updates the PC's bot folder",
    "branch": "worktree-agent-a545b014870ea708c",
-   "agent": "NQ bot",
-   "git": {
-    "t": 1794362441,
-    "s": "test_zenith_nq: the stale case also blocks the old phone live feed (20/20 in the browser)"
-   }
+   "agent": "NQ bot"
   },
   {
    "id": "builder:afc68d30",
@@ -1396,7 +1384,7 @@
     "scene": "athens",
     "place": "zenith"
    },
-   "bio": "NQ bots · Zlarior · ATLAS · BLITZ",
+   "bio": "NQ bots · Zlarior · ATLAS",
    "appName": "Zenith"
   },
   {
@@ -1473,7 +1461,7 @@
    "name": "Leda",
    "title": "Lives in Data City",
    "kind": "villager",
-   "area": "trading",
+   "area": "data",
    "app": "datacity",
    "seed": 4088500284,
    "temperament": "calm",
@@ -1519,7 +1507,7 @@
    "name": "Theano",
    "title": "Lives in Daphne",
    "kind": "villager",
-   "area": "trading",
+   "area": "data",
    "app": "tree",
    "seed": 1559642007,
    "temperament": "wry",
@@ -1542,7 +1530,7 @@
    "name": "Filippos",
    "title": "Lives in Prometheus",
    "kind": "villager",
-   "area": "trading",
+   "area": "data",
    "app": "prometheus",
    "seed": 1974583939,
    "temperament": "wry",
@@ -1747,9 +1735,9 @@
   {
    "id": "villager:cities",
    "name": "Simon",
-   "title": "Lives in Cities",
+   "title": "Lives in Data City",
    "kind": "villager",
-   "area": "trading",
+   "area": "data",
    "app": "cities",
    "seed": 4040132800,
    "temperament": "calm",
@@ -1758,21 +1746,21 @@
     "rate": 0.97
    },
    "sources": [
-    "../cities/jarvis.json"
+    "../cities/world/jarvis.json"
    ],
    "home": {
     "scene": "athens",
     "place": "cities"
    },
-   "bio": "A world of city islands",
-   "appName": "Cities"
+   "bio": "The 3D city of everything: every app, every idea tested",
+   "appName": "Data City"
   },
   {
    "id": "villager:kalshicity",
    "name": "Helene",
    "title": "Lives in Kalshi City",
    "kind": "villager",
-   "area": "money",
+   "area": "kalshi",
    "app": "kalshicity",
    "seed": 2679938938,
    "temperament": "curious",
@@ -2071,7 +2059,7 @@
    "name": "Selene",
    "title": "Lives in Dionysus",
    "kind": "villager",
-   "area": "money",
+   "area": "kalshi",
    "app": "dionysus",
    "seed": 2272535689,
    "temperament": "blunt",
@@ -2232,7 +2220,7 @@
    "name": "Kleon",
    "title": "Lives in Sibyl",
    "kind": "villager",
-   "area": "money",
+   "area": "kalshi",
    "app": "sibyl",
    "seed": 981490486,
    "temperament": "curious",
@@ -2692,7 +2680,7 @@
    "name": "Charis",
    "title": "Lives in Archive",
    "kind": "villager",
-   "area": "trading",
+   "area": "data",
    "app": "archive",
    "seed": 144478627,
    "temperament": "wry",
@@ -2715,7 +2703,7 @@
    "name": "Damon",
    "title": "Lives in Pinakes",
    "kind": "villager",
-   "area": "trading",
+   "area": "data",
    "app": "pinakes",
    "seed": 3754457726,
    "temperament": "curious",
@@ -2738,7 +2726,7 @@
    "name": "Kyra",
    "title": "Lives in Colosseum",
    "kind": "villager",
-   "area": "trading",
+   "area": "data",
    "app": "colosseum",
    "seed": 1932641631,
    "temperament": "wry",
@@ -2849,11 +2837,149 @@
    "appName": "Polis"
   },
   {
-   "id": "villager:clio",
+   "id": "villager:agency",
    "name": "Nike",
-   "title": "Lives in Clio",
+   "title": "Lives in Websites",
+   "kind": "villager",
+   "area": "web",
+   "app": "agency",
+   "seed": 235825068,
+   "temperament": "calm",
+   "voice": {
+    "pitch": 1.28,
+    "rate": 1.04
+   },
+   "sources": [
+    "../agency/jarvis.json"
+   ],
+   "home": {
+    "scene": "athens",
+    "place": "agency"
+   },
+   "bio": "Website business HQ: next step, leads, audits, 3D demos, offers, calls",
+   "appName": "Websites"
+  },
+  {
+   "id": "villager:business",
+   "name": "Ourania",
+   "title": "Lives in Money",
+   "kind": "villager",
+   "area": "money",
+   "app": "business",
+   "seed": 2264793805,
+   "temperament": "blunt",
+   "voice": {
+    "pitch": 1.14,
+    "rate": 1.08
+   },
+   "sources": [
+    "../business/jarvis.json"
+   ],
+   "home": {
+    "scene": "athens",
+    "place": "business"
+   },
+   "bio": "Every money model: next step, what is missing, $ estimate",
+   "appName": "Money"
+  },
+  {
+   "id": "villager:trading",
+   "name": "Kalliope",
+   "title": "Lives in Trading",
    "kind": "villager",
    "area": "trading",
+   "app": "trading",
+   "seed": 1373103416,
+   "temperament": "calm",
+   "voice": {
+    "pitch": 1.0,
+    "rate": 1.07
+   },
+   "sources": [
+    "../trading/jarvis.json"
+   ],
+   "home": {
+    "scene": "athens",
+    "place": "trading"
+   },
+   "bio": "Every trade: today, calendar, stats, payout rules",
+   "appName": "Trading"
+  },
+  {
+   "id": "villager:board",
+   "name": "Lykos",
+   "title": "Lives in Board",
+   "kind": "villager",
+   "area": "trading",
+   "app": "board",
+   "seed": 4262917137,
+   "temperament": "blunt",
+   "voice": {
+    "pitch": 1.07,
+    "rate": 1.02
+   },
+   "sources": [
+    "../board/jarvis.json"
+   ],
+   "home": {
+    "scene": "athens",
+    "place": "board"
+   },
+   "bio": "What the bot, you and Claude know: accounts, events, notes",
+   "appName": "Board"
+  },
+  {
+   "id": "villager:why",
+   "name": "Nikon Β",
+   "title": "Lives in Why",
+   "kind": "villager",
+   "area": "trading",
+   "app": "why",
+   "seed": 1487314471,
+   "temperament": "wry",
+   "voice": {
+    "pitch": 1.23,
+    "rate": 0.96
+   },
+   "sources": [
+    "../why/jarvis.json"
+   ],
+   "home": {
+    "scene": "athens",
+    "place": "why"
+   },
+   "bio": "Why our trades win and lose, per bot, in plain $",
+   "appName": "Why"
+  },
+  {
+   "id": "villager:widget",
+   "name": "Sotiris Θ",
+   "title": "Lives in Widget",
+   "kind": "villager",
+   "area": "money",
+   "app": "widget",
+   "seed": 3809239019,
+   "temperament": "wry",
+   "voice": {
+    "pitch": 0.88,
+    "rate": 1.03
+   },
+   "sources": [
+    "../widget/jarvis.json"
+   ],
+   "home": {
+    "scene": "athens",
+    "place": "widget"
+   },
+   "bio": "Your accounts as an iPhone widget + the big Glance page",
+   "appName": "Widget"
+  },
+  {
+   "id": "villager:clio",
+   "name": "Galene Γ",
+   "title": "Lives in Clio",
+   "kind": "villager",
+   "area": "data",
    "app": "clio",
    "seed": 3492331088,
    "temperament": "calm",
@@ -2873,7 +2999,7 @@
   },
   {
    "id": "villager:atlas",
-   "name": "Ourania",
+   "name": "Myrto Α",
    "title": "Lives in Atlas",
    "kind": "villager",
    "area": "life",
@@ -2896,10 +3022,10 @@
   },
   {
    "id": "villager:athena",
-   "name": "Kalliope",
+   "name": "Thais Θ",
    "title": "Lives in Athena",
    "kind": "villager",
-   "area": "life",
+   "area": "data",
    "app": "athena",
    "seed": 3144180704,
    "temperament": "calm",
@@ -2919,10 +3045,10 @@
   },
   {
    "id": "villager:kalshi",
-   "name": "Lykos",
+   "name": "Petros Β",
    "title": "Lives in Kalshi",
    "kind": "villager",
-   "area": "money",
+   "area": "kalshi",
    "app": "kalshi",
    "seed": 230157117,
    "temperament": "blunt",
@@ -2943,7 +3069,7 @@
    "name": "Thekla Θ",
    "title": "Lives in Tyche",
    "kind": "villager",
-   "area": "money",
+   "area": "kalshi",
    "app": "tyche",
    "seed": 763055358,
    "temperament": "curious",

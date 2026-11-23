@@ -514,7 +514,7 @@ def status_static():
     bat = rb(STATUS_BAT)
     check("tools/bat/STATUS.bat: CRLF, ASCII, local scripts\\pc_status.ps1 first (pauses on the same line), alone it fetches pc/pc_status.ps1",
           b"\n" not in bat.replace(b"\r\n", b"") and all(c < 128 for c in bat) and re.search(rb'if exist "%LE_HOME%scripts\\pc_status\.ps1" goto :local', bat)
-          and re.search(rb'-File "%LE_HOME%scripts\\pc_status\.ps1" %\* & echo\. & pause & exit /b', bat) and b"nq-dashboard/pc/pc_status.ps1" in bat and b"-UseBasicParsing" in bat)
+          and re.search(rb'-File "%LE_HOME%scripts\\pc_status\.ps1" %\* & echo\. & pause & exit /b', bat) and b"https://dcondax1-wq.github.io/pc/pc_status.ps1" in bat and b"-UseBasicParsing" in bat)
     check("STATUS: the site copies (pc/STATUS.bat, pc/pc_status.ps1) are identical to the repo files", rb(os.path.join(WEB, "STATUS.bat")) == bat and rb(os.path.join(WEB, "pc_status.ps1")) == rb(STATUS_PS1))
     src = rb(STATUS_PS1).decode("ascii", "replace")
     code = re.sub(r"(?s)<#.*?#>", "", src)
