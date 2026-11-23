@@ -595,9 +595,39 @@ def status_runs(pwsh):
         shutil.rmtree(d, ignore_errors=True)
 
 
+def sec_pins():
+    """security 2026-11-23 (night-secps): a .bat downloaded ALONE fetches its script from the public site; it runs it ONLY when the
+    file's sha256 equals the hash pinned in the .bat (anyone who could change the site could otherwise run code on the PC). The
+    bot folder's copy (scripts\\, the auto-updated checkout) is always run first and needs no download."""
+    import hashlib
+    for bat, ps in (("STATUS", "pc_status"), ("PC_CARE", "pc_care"), ("CLEAN_STORAGE", "clean_storage")):
+        want = hashlib.sha256(rb(os.path.join(ROOT, "scripts", ps + ".ps1"))).hexdigest()
+        for p in (os.path.join(ROOT, "tools", "bat", bat + ".bat"), os.path.join(WEB, bat + ".bat")):
+            b = rb(p)
+            m = re.search(rb"\$pin = '([0-9a-f]{64})'", b)
+            rel = os.path.relpath(p, ROOT)
+            check(f"sec. {rel}: pins scripts/{ps}.ps1's sha256 (re-pin after editing the script: {want[:12]}...)",
+                  m is not None and m.group(1).decode() == want, (m.group(1).decode() if m else None, want))
+            web = b.split(b":web", 1)[-1].split(b":nops", 1)[0]
+            i_dl, i_h, i_run = web.find(b"Invoke-WebRequest"), web.find(b"Get-FileHash -Algorithm SHA256"), web.rfind(b"-File $t")
+            check(f"sec. {rel}: download -> hash check -> run, in that order; a mismatch deletes the file, says so, and exits",
+                  0 <= i_dl < i_h < i_run and b"if ($h -ne $pin)" in web and b"Remove-Item -LiteralPath $t" in web
+                  and b"NOT run" in web and b"exit 1 }; & powershell" in web, rel)
+            check(f"sec. {rel}: the local scripts\\{ps}.ps1 still runs first (no download in the bot folder)",
+                  re.search(rb'if exist "%LE_HOME%scripts\\' + ps.encode() + rb'\.ps1" goto :local', b) is not None
+                  and b.find(b":local") < b.find(b":web\r\n"), rel)
+        site_ps = os.path.join(WEB, ps + ".ps1")
+        check(f"sec. the site copy pc/{ps}.ps1 = scripts/{ps}.ps1 (what the pin was taken from)",
+              os.path.exists(site_ps) and hashlib.sha256(rb(site_ps)).hexdigest() == want)
+    for p in (os.path.join(ROOT, "tools", "bat", "STATUS.bat"),):
+        b = rb(p)
+        check("sec. still CRLF + ASCII after the pin", b"\n" not in b.replace(b"\r\n", b"") and all(c < 128 for c in b))
+
+
 def main() -> int:
     static()
     status_static()
+    sec_pins()
     health()
     pwsh = find_pwsh()
     if pwsh:
