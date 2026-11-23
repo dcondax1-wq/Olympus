@@ -220,7 +220,7 @@ Off early: the same line with --off instead of --hand-trade 60.
 
 ### N3. Keep-alive: no account closed for 7 days without a trade
 - **What:** MFFU can close an account with no trade for 7 days. With keep-alive ON, the bot places ONE 1-MNQ trade on that account on day 6 (15:33-15:48 ET, out about 2 min later). Cost about -$2.40, at most -$22.90. Your own trades reset the clock. It arrived OFF.
-- **When:** nothing extra (Nov 22): typing I ACCEPT LIVE RISK at a START (START BOT, the Start page, MONDAY_SETUP.bat) also turns it ON for exactly the real accounts that START arms. The window says `Keep-alive ON for: ...`. Sim / paper accounts are never included. KEEPALIVE_ON.bat (type KEEP ALIVE ON) still works too.
+- **When:** nothing extra (Nov 22): typing I ACCEPT LIVE RISK at a START (START BOT, the Start page, MONDAY_SETUP.bat) also turns it ON for exactly the real accounts that START arms. The window says `Keep-alive ON for: ...`. Sim / paper accounts are never included. KEEPALIVE_ON.bat (type KEEP ALIVE ON) still works too: it says "[OK] Keep-alive is ON."
 - **Off:** tools/bat/KEEPALIVE_OFF.bat or TRADE_HOME > k. It STAYS off: a later START does not turn it back on (only KEEPALIVE_ON.bat does).
 - **You see:** pushes "Keep-alive today on ...", the entry, then "closed ... about -$2.40". "Keep-alive ... did not go through" = place 1 MNQ by hand on that account before 16:05 ET, in and out. Off: tools/bat/KEEPALIVE_OFF.bat (no phrase): "[OK] Keep-alive is OFF on every account."
 ```

@@ -14,7 +14,7 @@ Safe to run twice: the update is a no-op when current, the clock is skipped once
 and leaves a running bot alone, the alert test only sends a test. It never types, stores or defaults the phrase.
 Run it with a normal double-click: the bot must NOT run as administrator (files it writes elevated would lock the normal
 account out). Started as administrator anyway, it does the clock and the alert test only and says to double-click it again.
-Tests: python -X utf8 -m tests.test_monday (fakes; nothing runs).
+Tests: python -X utf8 -m tests.test_monday (fakes; nothing runs; night-mondaysim 2026-11-23).
 """
 from __future__ import annotations
 
@@ -28,6 +28,26 @@ CLOCK_TASK = "OlympusClock"
 
 def _sys32(exe: str) -> str:
     return os.path.join(os.environ.get("SystemRoot") or r"C:\Windows", "System32", exe)
+
+
+def _ps_q(text: str) -> str:
+    """A PowerShell single-quoted string body: ' doubled (a bot folder under a user name like O'Neil keeps working)."""
+    return str(text).replace("'", "''")
+
+
+def bat_cmd(path: str) -> list:
+    """cmd.exe argv for a .bat whose path may hold spaces or ( ) & (OneDrive - Personal, "Bot (1)"): `cmd /c call "<path>"`.
+    A bare `cmd /c "<path>"` loses its quotes when the path holds a special character (cmd's /c quote rule)."""
+    return ["cmd", "/d", "/c", "call", path]
+
+
+def cmd_line(argv, nt=None):
+    """What subprocess gets for a bat_cmd() argv: on Windows ONE string with the path in quotes always (Python's own joining
+    leaves a path with & or ( but no space unquoted, and cmd then splits it); elsewhere (tests) the list unchanged."""
+    argv = list(argv)
+    if (os.name == "nt" if nt is None else nt) and argv[:4] == ["cmd", "/d", "/c", "call"] and len(argv) == 5:
+        return 'cmd /d /c call "' + str(argv[4]).replace('"', '') + '"'
+    return argv
 
 
 def _ps_exe() -> str:
@@ -58,7 +78,7 @@ class Real:
 
     def update(self) -> int:
         # stdin = NUL: UPDATE.bat's "Update anyway?" (trading time) answers no, and its pause returns at once
-        return subprocess.run(["cmd", "/c", os.path.join(ROOT, "UPDATE.bat")], cwd=ROOT, stdin=subprocess.DEVNULL).returncode
+        return subprocess.run(cmd_line(bat_cmd(os.path.join(ROOT, "UPDATE.bat"))), cwd=ROOT, stdin=subprocess.DEVNULL).returncode
 
     def clock_task(self) -> bool:
         r = subprocess.run([_sys32("schtasks.exe"), "/query", "/tn", CLOCK_TASK], capture_output=True, text=True)
@@ -69,12 +89,13 @@ class Real:
         if elevated:
             return subprocess.run([_ps_exe(), "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script], cwd=ROOT).returncode
         # one UAC "Yes" for the clock part only; "No" throws -> exit 1
-        cmd = (f"try {{ $p = Start-Process -FilePath '{_ps_exe()}' -Verb RunAs -Wait -PassThru -ArgumentList "
-               f"'-NoProfile -ExecutionPolicy Bypass -File \"{script}\"'; exit $p.ExitCode }} catch {{ exit 1 }}")
+        cmd = (f"try {{ $p = Start-Process -FilePath '{_ps_q(_ps_exe())}' -Verb RunAs -Wait -PassThru -ArgumentList "
+               f"'-NoProfile -ExecutionPolicy Bypass -File \"{_ps_q(script)}\"'; exit $p.ExitCode }} catch {{ exit 1 }}")
         return subprocess.run([_ps_exe(), "-NoProfile", "-Command", cmd], cwd=ROOT).returncode
 
     def start(self) -> int:
-        return subprocess.run([self.py, "-X", "utf8", "-m", "engine.go"], cwd=ROOT).returncode
+        # --no-pull: step 1 just ran UPDATE.bat (with its never-in-a-trade guard); no second update inside START BOT
+        return subprocess.run([self.py, "-X", "utf8", "-m", "engine.go", "--no-pull"], cwd=ROOT).returncode
 
     def alert_test(self) -> int:
         return subprocess.run([self.py, "-X", "utf8", os.path.join("tools", "alerts_setup.py"), "test"], cwd=ROOT).returncode
@@ -114,6 +135,8 @@ def run(pc=None, out=print) -> dict:
             line("1/4 Update", True, f"now on the newest version ({after[:7]})")
         elif rc == 0:
             line("1/4 Update", True, "already the newest version (or the update said why it waits, above)")
+        elif rc == 2:
+            line("1/4 Update", True, "updated, but its health check printed red lines above: do those after the start")
         else:
             line("1/4 Update", False, "did not go through; the old version keeps running. Send Claude a photo of the window")
     # 2. clock
@@ -158,9 +181,33 @@ def run(pc=None, out=print) -> dict:
     return res
 
 
-def main(argv=None) -> int:
-    r = run()
+def main(argv=None, run_fn=None, out=print) -> int:
+    """Never a traceback in the owner's window: Ctrl+C / a closed input = one plain line; anything else = one plain line +
+    the details in logs/monday_crash.log (for Claude)."""
+    try:
+        r = (run_fn or run)()
+    except (KeyboardInterrupt, EOFError):
+        out("\n [FIX] MONDAY SETUP stopped before the end. Double-click MONDAY_SETUP.bat again: it skips what is done.")
+        return 1
+    except Exception as e:  # noqa: BLE001
+        log = _crash_log(e)
+        out(f"\n [FIX] MONDAY SETUP hit a problem ({e.__class__.__name__}). Double-click MONDAY_SETUP.bat again; if it "
+            f"happens twice, send Claude a photo of this window{' (details in ' + log + ')' if log else ''}.")
+        return 1
     return 0 if all(ok is not False for _n, ok, _t in r["steps"]) else 1
+
+
+def _crash_log(e) -> str | None:
+    try:
+        import traceback
+        d = os.path.join(ROOT, "logs")
+        os.makedirs(d, exist_ok=True)
+        p = os.path.join(d, "monday_crash.log")
+        with open(p, "a", encoding="utf-8") as fh:
+            fh.write("".join(traceback.format_exception(type(e), e, e.__traceback__)) + "\n")
+        return os.path.join("logs", "monday_crash.log")
+    except Exception:  # noqa: BLE001
+        return None
 
 
 if __name__ == "__main__":

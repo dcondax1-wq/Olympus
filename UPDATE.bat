@@ -18,6 +18,8 @@ set "PY=python"
 if defined LE_PYTHON set "PY=%LE_PYTHON%"
 set "PYTHONIOENCODING=utf-8"
 set "PULLFAIL="
+rem exit code for MONDAY_SETUP (engine/monday.py): 0 done / waits by design, 1 not updated, 2 updated but red lines
+set "RC=0"
 
 echo.
 echo  ==== Liquidity Engine: UPDATE ====
@@ -49,6 +51,7 @@ rem changed by hand still blocks it.
 echo  [..] Getting the new version
 "%PY%" -X utf8 -m engine.autoupdate --pull
 if errorlevel 1 set "PULLFAIL=1"
+if defined PULLFAIL set "RC=1"
 if defined PULLFAIL echo  [FIX] The update did not go through: the old version stays. Send this window to Claude.
 if not defined PULLFAIL echo  [OK]  Code is up to date
 
@@ -73,6 +76,8 @@ echo  [OK]  UPDATE done. All green.
 goto :end
 
 :fixes
+rem red team 2026-11-23: RC=2 only HERE (the health check printed red lines); all green keeps RC=0
+if "%RC%"=="0" set "RC=2"
 echo.
 echo  [FIX] UPDATE done, but the red lines above need a fix.
 goto :end
@@ -86,10 +91,11 @@ echo  Not updated. Best time: after 16:00 ET.
 goto :end
 
 :nopython
+set "RC=1"
 echo  [FIX] Python not found. Install Python 3.12 from python.org and tick "Add python.exe to PATH".
 goto :end
 
 :end
 echo.
 pause
-endlocal
+endlocal & exit /b %RC%

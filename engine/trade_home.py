@@ -308,7 +308,8 @@ def run_cmd(argv):
     """Run one command with the console handed through unchanged (the owner types into it himself). Returns the exit code.
     Never passes stdin, never feeds a phrase, never captures: what the .bat asks, he answers."""
     try:
-        return subprocess.call(argv, cwd=ROOT)
+        from engine.monday import cmd_line
+        return subprocess.call(cmd_line(argv), cwd=ROOT)
     except Exception:  # noqa: BLE001
         return 1
 
@@ -323,7 +324,8 @@ def run_bat(name, run=None):
     path = bat_path(name)
     if not os.path.exists(path):
         return 1
-    return run(["cmd", "/c", path])
+    from engine.monday import bat_cmd
+    return run(bat_cmd(path))            # cmd /d /c call "<path>": a bot folder with spaces, ( ) or & still works (night-mondaysim)
 
 
 # result line after each action: re-read the one fact the action was for. `fx` = the readers (tests pass fakes).
@@ -568,6 +570,9 @@ def do_choice(ch, ask=input, out=say, run=None, fx=None, add_fn=None, unseen=Non
         title, bat, res = ACTIONS[ch]
         out(f"  {title}: it opens its own window. When it says 'Press any key', press a key to come back here.")
         rc = run_bat(bat, run)
+        if bat == "UPDATE.bat" and rc in (1, 2):     # UPDATE.bat's own result (night-mondaysim): 1 not updated, 2 red lines
+            return ("[FIX] The update did not go through: the old version keeps running. Send Claude a photo of its window."
+                    if rc == 1 else res(fx) + " Its health check printed red lines: do those.")
         return res(fx) if rc == 0 else f"[FIX] {bat} did not open. Tell Claude."
     if ch == "4":
         return add_flow(ask=ask, out=out, run=run, add_fn=add_fn, unseen=unseen)[1]
