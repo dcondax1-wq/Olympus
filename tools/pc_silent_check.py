@@ -12,6 +12,9 @@ Runs as its own step of the cloud monitor (.github/workflows/cloud-monitor.yml, 
      Check it: STOP BOT, START BOT." once, one reminder after 2 h, then nothing that trading day; "PC reporting again" when back
   3. the push goes to your PRIVATE alert topic when the repository secret LE_NTFY_TOPIC holds it (the topic your ntfy app
      already follows; never printed). Without it, the plain alert (no names, no ids, no $) goes to the public status topic.
+  4. (night-k7cloud 2026-11-23) the MFFU 7-day clock: the PC looks off (last post > 2 h) on an account's keep-alive act day (01:30 ET ..
+     16:05), or less than 24 h before its MFFU last day -> ONE push per account and day "PC looks off: <account> must trade by <date>",
+     telling to turn the PC on or place 1 MNQ by hand before 16:05 ET (k7_step; the last clock rows are kept for a long-off PC)
 State: <out>/pc_silent.json (published with the dashboard branch); today's pushes are also read back from the topic, so a lost
 state file never repeats one. Never places, changes or arms anything.
 
@@ -225,6 +228,108 @@ def preopen_step(prev: dict | None, seen_t, now, s: dict | None = None, fetched:
         return dict(_d(prev)), []
 
 
+# K7 CLOUD (night-k7cloud 2026-11-23): the PC is off on a keep-alive act day, or close to an account's MFFU last day. The PC cannot push
+# then, so the cloud does: ONE push per account and ET day, "PC looks off; <account> must trade by <date>; turn the PC on, or place 1 MNQ
+# by hand before 16:05 ET". The clock rows come from the PC's newest ext post (engine/clock7 via feed_clock); ntfy keeps only 12 h, so the
+# last rows seen are kept in the state (the Actions cache) and rebuilt from their base day: a PC off for days still gets its warning.
+K7_MARK = "PC looks off"
+K7_STALE_S = 2 * 3600            # the PC's last post older than this = "looks off" (the PC-silent push already went at 20 min)
+K7_BEFORE_S = 24 * 3600          # inside the last 24 h before the hand-trade time of an account's MFFU last day: warn, any hour
+K7_FROM = 90                     # act-day warnings 01:30 ET .. the hand-trade time (the pc-watch window)
+
+
+def hand_by(day) -> int:
+    """ET minute to place the hand trade by on `day`: 16:05 (MFFU flat 16:10), a CME half day: 5 min before its halt."""
+    try:
+        from engine.cme_calendar import early_close
+        ec = early_close(day)
+        return int(ec) - 5 if ec else 16 * 60 + 5
+    except Exception:
+        return 16 * 60 + 5
+
+
+def _k7_rows(rows, prev_rows, now) -> list:
+    """Fresh rows from the feed, else the kept ones rebuilt for `now` from their base day (clock7.row). [] when none."""
+    import datetime as _dt
+    if rows:
+        return [r for r in rows if isinstance(r, dict) and r.get("id") and r.get("hard")]
+    out = []
+    try:
+        from engine import clock7
+        for k in prev_rows or []:
+            base = _dt.date.fromisoformat(str(k["base_day"]))
+            r = clock7.row(str(k["id"]), str(k.get("nm") or k["id"]), base.isoformat(), None, now, k.get("on"))
+            if r:
+                out.append(r)
+    except Exception:
+        return []
+    return out
+
+
+def _keep(rows) -> list:
+    import datetime as _dt
+    out = []
+    for r in rows or []:
+        try:
+            lim = int(r.get("lim") or 7)
+            base = _dt.date.fromisoformat(str(r["hard"])) - _dt.timedelta(days=lim)
+            if lim == 7:                          # MFFU only: the keep-alive / hand-trade warning is MFFU's rule
+                out.append({"id": r["id"], "nm": r.get("nm"), "base_day": base.isoformat(), "on": r.get("on")})
+        except Exception:
+            continue
+    return out
+
+
+def k7_step(prev: dict | None, seen_t, now, rows=(), fetched: bool = True, sent=()) -> tuple:
+    """-> (state, [push]): per account, ONE push a day while the PC looks off (last post > K7_STALE_S) and either today is its keep-alive
+    act day inside 01:30 ET .. the hand-trade time, or its MFFU last day's hand-trade time is less than 24 h away. `sent` = the titles
+    of today's K7 pushes read back from the topic (a lost cache never repeats one). Never raises."""
+    import datetime as _dt
+    st = dict(_d(prev))
+    try:
+        now = int(now)
+        rows = _k7_rows(list(rows or ()), st.get("rows"), now)
+        if rows:
+            st["rows"] = _keep(rows)
+        e = notify._et(now)
+        day = e.date().isoformat()
+        done = set(_d(st.get("done")).get(day) or [])
+        if not fetched or (seen_t and now - int(seen_t) <= K7_STALE_S):
+            return st, []
+        mod = e.hour * 60 + e.minute
+        try:
+            from engine.cme_calendar import full_closure
+            closed = full_closure(e.date())
+        except Exception:
+            closed = False
+        last = notify.since_text(seen_t, now) if seen_t else "never seen"
+        out = []
+        for r in rows:
+            aid, nm = str(r["id"]), str(r.get("nm") or r["id"])[:40]
+            if int(r.get("lim") or 7) != 7 or aid in done or any(nm in t for t in sent or ()):
+                continue
+            hard = _dt.date.fromisoformat(str(r["hard"]))
+            hb = hand_by(hard)
+            dl_t = int(_dt.datetime(hard.year, hard.month, hard.day, hb // 60, hb % 60, tzinfo=notify.ET).timestamp())
+            act = r.get("act") == day and e.weekday() < 5 and not closed and K7_FROM <= mod < hand_by(e.date())
+            near = 0 <= dl_t - now <= K7_BEFORE_S
+            if not (act or near):
+                continue
+            when = f"{hard:%a} {hard.month}-{hard.day:02d}"
+            hb_today = hand_by(e.date()) if hard == e.date() else hb
+            body = (f"{K7_MARK} (last report {last}). {nm} must trade by {when} (MFFU's last day; no fill since "
+                    f"{r.get('lf') or 'its start'}). Turn the PC on (NinjaTrader + START BOT: the keep-alive trades by itself), or place "
+                    f"1 MNQ by hand before {hb_today // 60:02d}:{hb_today % 60:02d} ET while the account is flat, in and out.")
+            out.append({"key": f"k7cloud:{aid}:{day}", "title": f"{K7_MARK}: {nm} must trade by {when}", "body": body[:600],
+                        "priority": "urgent" if hard == e.date() else "high", "tags": "warning,computer"})
+            done.add(aid)
+        if out:
+            st["done"] = {day: sorted(done)}       # only today's (a new day starts empty)
+        return st, out
+    except Exception:  # noqa: BLE001
+        return st, []
+
+
 def read_hb(now):
     try:
         from engine import heartbeat
@@ -276,14 +381,19 @@ def run(out: str, now=None, env=None, get=None, post=None, hb=None, dry=False, s
     pre_sent = [int(m["time"]) for m in back if str(m.get("title") or "").startswith(PRE_MARK) and notify._f(m.get("time"))]
     st["pre"], pre = preopen_step(_d(prev.get("pre")), seen, now, s, fetched=bool(f_ok or hb.get("present")), sent=pre_sent,
                                   clock=feed_clock(f_msgs, now))
-    msgs = list(msgs) + pre
+    k7_sent = [str(m.get("title") or "") for m in back if str(m.get("title") or "").startswith(K7_MARK) and notify._f(m.get("time"))
+               and notify._et(m["time"]).date() == notify._et(now).date()]
+    st["k7"], k7 = k7_step(_d(prev.get("k7")), seen, now, feed_clock(f_msgs, now), fetched=bool(f_ok or hb.get("present")), sent=k7_sent)
+    msgs = list(msgs) + pre + k7
     sent = []
     bus = _bus(env) if not dry and post is http_post else None
     # the bus's own state / failure log: the runner's temp folder, never `out` (cloud-monitor commits dash/ to the PUBLIC dashboard
     # branch with git add -A; redteam 2026-11-21)
     bus_dir = (os.environ if env is None else env).get("RUNNER_TEMP") or out
     for m in msgs:
-        if bus is not None:                       # engine/alert_bus (repo secrets LE_TG_TOKEN + LE_TG_CHAT / LE_DISCORD_WEBHOOK)
+        # the K7 push stays on ntfy (night-k7cloud): both cloud-monitor (bus secrets) and pc-watch (none) run this script, each with
+        # its own state; only an ntfy post is read back by the other, so a bus send would let the second job send it again
+        if bus is not None and not str(m.get("key") or "").startswith("k7cloud:"):   # engine/alert_bus (LE_TG_* / LE_DISCORD_WEBHOOK)
             r = bus.deliver({"kind": "report", "key": "", "title": m["title"], "body": m["body"], "notify_type": "pc_silent",
                              "report": True, "dual": True}, cfg=_bus_cfg(bus, env), path=os.path.join(bus_dir, "alert_bus_sent.json"),
                             log_path=os.path.join(bus_dir, "alert_bus.jsonl"))
