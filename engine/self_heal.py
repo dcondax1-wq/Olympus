@@ -26,6 +26,8 @@ the bot server, never on a trade: it never starts, stops, arms or routes the bot
   server       the bot server does not answer while data/autostart.json   nothing automatic (the supervisor run_bot.ps1 restarts a
                says the bot should run                                      crashed server itself): board event, the step BOTS_BACK.bat;
                                                                             the 15-minute report already pushes "bot down"
+  nt           NinjaTrader.exe not running while data/autostart.json      opened (engine/go.NT_EXE, as START BOT / the auto-resume
+               says the bot should run (closed by hand, a crash)            do); it never logs in or arms: the bot reconnects itself
   pip          a package of requirements.txt is not installed             pip install of the missing ones only, outside 01:50-16:00 ET
                                                                             on a weekday and with no trade open
   clock        the bot's clock probe (logs/pc_health.json) 2+ s off       w32tm /resync, else schtasks /run OlympusClock (engine/go.sync_clock); no task: say FIX_CLOCK.bat
@@ -278,7 +280,7 @@ class Ctx:
     """Everything a remedy reads or runs, injectable for the tests (temp folders, fake git / processes / pip / clock)."""
 
     def __init__(self, root: str = ROOT, now=None, apply: bool = False, env=None, git=None, procs=None, ping=None, run=None,
-                 nt=..., temp=None, pkgs=None, sync_clock=None, flat=None, is_windows=None, say=SAY_OFF):
+                 nt=..., temp=None, pkgs=None, sync_clock=None, flat=None, is_windows=None, say=SAY_OFF, open_nt=None):
         self.root = root
         self.now = time.time() if now is None else float(now)
         self.apply = apply
@@ -292,6 +294,7 @@ class Ctx:
         self.pkgs = pkgs                     # fake installed packages {name_lower: version}; None = importlib.metadata
         self.sync_clock = sync_clock
         self.flat = flat                     # fn() -> None (flat) or why not
+        self.open_nt = open_nt               # fn() -> True when NinjaTrader was started (None = engine/go's NT_EXE)
         self.is_windows = (os.name == "nt") if is_windows is None else is_windows
         self.say = say
         self.stamp = _et(self.now).strftime("%Y%m%d-%H%M")
@@ -728,6 +731,37 @@ def fix_server(ctx) -> list:
                  "double-click BOTS_BACK.bat (a real account is never armed by it: you type the live phrase yourself)")]
 
 
+# ------------------------------------------------------------------------------------------------ 5b. NinjaTrader closed
+def _start_nt() -> bool:
+    from . import go
+    if not os.path.exists(go.NT_EXE):
+        return False
+    subprocess.Popen([go.NT_EXE], cwd=os.path.dirname(go.NT_EXE))
+    return True
+
+
+def fix_nt(ctx) -> list:
+    """NinjaTrader.exe is not running while the bot should run (data/autostart.json is there; night-zerotouch 2026-11-22: a
+    closed NinjaTrader mid-week stayed closed until the owner noticed): it is opened (the same program START BOT and the
+    auto-resume open). It never logs in, arms or starts anything: the running bot reconnects by itself once NinjaTrader's
+    own saved log-in connects. Windows only; never guessed when the process list cannot be read."""
+    if not ctx.is_windows or not os.path.isfile(os.path.join(ctx.root, "data", "autostart.json")):
+        return []
+    procs = ctx.procs()
+    if not procs or any(n.startswith("ninjatrader") for _q, n in procs):
+        return []
+    ok = {"v": False}
+
+    def go_open():
+        ok["v"] = bool((ctx.open_nt or _start_nt)())
+        if not ok["v"]:
+            raise RuntimeError("NinjaTrader.exe not found")
+    if _act(ctx, "open NinjaTrader (it was closed while the bot should run)", go_open):
+        return [item("nt", "nt", "fixed" if ctx.apply else "would", f"{'opened' if ctx.apply else 'would open'} NinjaTrader "
+                     "(it was closed); it connects with its saved log-in")]
+    return [item("nt", "nt", "need", "NinjaTrader is closed and could not be opened", "open NinjaTrader and log in")]
+
+
 # ------------------------------------------------------------------------------------------------ 6. Python packages
 _REQ = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)\s*(\[[^\]]*\])?\s*([<>=!~].*)?$")
 
@@ -1073,7 +1107,7 @@ def fix_site(ctx) -> list:
 
 
 REMEDIES = (("git_lock", fix_git_locks), ("update", fix_update), ("oif", fix_oif), ("pid", fix_pids), ("server", fix_server),
-            ("pip", fix_pip), ("clock", fix_clock), ("site", fix_site))
+            ("nt", fix_nt), ("pip", fix_pip), ("clock", fix_clock), ("site", fix_site))
 
 
 def run(ctx, state: dict | None = None, force_clean: bool = False, only=None, disk_free=None) -> dict:
@@ -1118,7 +1152,8 @@ def tiny(state: dict, now) -> dict:
     free = state.get("free")
     words = {"update_blocked": "the update is blocked", "server": "the bot server is down", "disk": "the disk is nearly full",
              "pip": "a package will not install", "clock": "the PC clock is off: " + CLOCK_FIX_SAY, "git_lock": "a git lock is stuck",
-             "oif_stuck": "an old order file is stuck", "pid": "a pid file is stuck"}
+             "oif_stuck": "an old order file is stuck", "pid": "a pid file is stuck",
+             "nt": "NinjaTrader is closed: open it and log in"}
     line = ("Self-heal: " + ("needs you: " + ", ".join(words.get(k, k) for k in need) if need else "all fine") + f" · fixed {fixed} this week"
             + (f" · {free:.0f} GB free" if isinstance(free, (int, float)) else "")
             + (f" · bot folder {sz.get('bot')} GB" if sz.get("bot") is not None else "")

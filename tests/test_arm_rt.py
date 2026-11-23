@@ -221,13 +221,17 @@ def main():
         G.shortcut = lambda: None
         for k, v in fakes.items():
             setattr(G, k, v)
-        from engine import ninjatrader as NT
-        nt_main = NT.main
+        from engine import ninjatrader as NT, rapid as RP, account_cli as AC
+        nt_main, rp_arm, ac_arm, ac_opt = NT.main, RP.arm, AC.arm, AC.resume_optin
         NT.main = fakes.get("nt_main", lambda a: 0)
+        # zerotouch 2026-11-22: never the owner's real data/rapid.json / data/accounts.json ("armed": true) from a test
+        RP.arm = lambda phrase, p=None: {"ok": True, "off": True}
+        AC.arm = lambda phrase: []
+        AC.resume_optin = lambda phrase: []
         try:
             rc, out = quiet(G.step_arm, cfg, G.LIVE_PHRASE, open_page=False, inp=lambda prompt="": "")
         finally:
-            NT.main = nt_main
+            NT.main, RP.arm, AC.arm, AC.resume_optin = nt_main, rp_arm, ac_arm, ac_opt
         d = json.load(open(AR.PATH)) if os.path.exists(AR.PATH) else {}
         return rc, out, {r["label"]: r["armed"] for r in d.get("rows", [])}
     paths = [

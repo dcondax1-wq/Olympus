@@ -155,9 +155,11 @@ def status_screen(now=None, bot=None, accounts=None, keepalive=None, alerts=None
     if held:
         P.append(("2", f"{len(held)} account(s) held: choose 2 (Start bot) and type the phrase yourself."))
     on = [k for k, v in ka.items() if v is True]
-    L.append(f"  Keep-alive: {'ON for ' + str(len(on)) + ' account(s)' if on else 'OFF'}")
+    L.append(f"  Keep-alive: {'ON for ' + ', '.join(_ka_name(k) for k in on) if on else 'OFF'}"
+             + ("  (off: KEEPALIVE_OFF.bat)" if on else ""))
     if not on:
-        P.append(("3", "Keep-alive is off: choose 3 and type KEEP ALIVE ON yourself."))
+        P.append(("2", "Keep-alive is off: choose 2 (Start bot) and type the phrase yourself: it turns the keep-alive on too "
+                       "(or 3: KEEP ALIVE ON)."))
     chans = [n for n, v in (("Telegram", tg), ("Discord", dc)) if v]
     L.append(f"  Alerts   : {', '.join(chans) + (' (bus on)' if bus else ' (bus OFF)') if chans else 'no phone channel set up'}")
     if not chans or not bus:
@@ -167,6 +169,13 @@ def status_screen(now=None, bot=None, accounts=None, keepalive=None, alerts=None
     L.append("")
     L.append("  [OK] Everything is green." if not P else "  [FIX] " + P[0][1])
     return L, P
+
+
+def _ka_name(key):
+    """A keep-alive key in plain words (lit -> Zlarior 50K, atlas -> ATLAS 25K, rapid -> Rapid EOD, x:<id> -> added <id>)."""
+    k = str(key or "")
+    return {"lit": "Zlarior 50K", "atlas": "ATLAS 25K", "rapid": "Rapid EOD"}.get(k) or \
+        ("added " + _mask(k[2:]) if k.startswith("x:") else _mask(k))
 
 
 def _mask(name):
@@ -264,6 +273,12 @@ def result_start(fx):
         "[FIX] The bot is not running yet. If you did not type the phrase, choose 2 again and type it yourself."
 
 
+def result_keepalive_off(fx):
+    on = [k for k, v in fx["keepalive"]().items() if v is True]
+    return "[OK] Keep-alive is OFF on every account (a START with the phrase keeps it off)." if not on else \
+        "[FIX] Keep-alive is still ON for " + ", ".join(_ka_name(k) for k in on) + ". Choose k again."
+
+
 def result_keepalive(fx):
     on = [k for k, v in fx["keepalive"]().items() if v is True]
     return f"[OK] Keep-alive is ON for {len(on)} account(s)." if on else \
@@ -310,6 +325,7 @@ def clock_action(fx, out):
 ACTIONS = {
     "2": ("Start bot", "START_BOT.bat", result_start),
     "3": ("Keep-alive on", "KEEPALIVE_ON.bat", result_keepalive),
+    "k": ("Keep-alive OFF", "KEEPALIVE_OFF.bat", lambda fx: result_keepalive_off(fx)),
     "6": ("Stop bot", "STOP_BOT.bat", result_stop),
     "7": ("Update", "UPDATE.bat", result_update),
 }
@@ -330,7 +346,8 @@ def alerts_action(ask, run, fx, out):
 MENU = ("  ==== TRADING HOME ====",
         "   1  Status (one screen)",
         "   2  Start bot            (you type the phrase)",
-        "   3  Keep-alive ON        (you type the phrase)",
+        "   3  Keep-alive ON        (you type the phrase; START's I ACCEPT LIVE RISK turns it on too)",
+        "   k  Keep-alive OFF       (stays off: a later START does not turn it back on)",
         "   4  Add an account",
         "   5  Phone alerts (setup + test)",
         "   6  Stop bot",
@@ -344,7 +361,7 @@ def do_choice(ch, ask=input, out=say, run=None, fx=None, add_fn=None, unseen=Non
     """One menu step -> its ONE result line (None = leave). The menu loop prints it and shows the menu again."""
     run = run or run_cmd
     fx = fx or _default_fx()
-    ch = (ch or "").strip()
+    ch = (ch or "").strip().lower()
     if ch == "0":
         return None
     if ch == "1":

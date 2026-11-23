@@ -893,7 +893,71 @@ def _step_arm(cfg, phrase, dry=False, open_page=True, inp=None) -> int:
     if open_page:
         _open()
     shortcut()
+    keepalive_consent(phrase)              # the same typed phrase: keep-alive ON for exactly the accounts armed above
     return _summary([AR.row(z_lbl, True)] + rows, 0)
+
+
+def armed_accounts(main_on=True) -> list:
+    """[(keep-alive key, label, NinjaTrader Name)] of every real MFFU account armed right now (after step_arm armed them):
+    the 50K (main_on: the bot runs on it), ATLAS's 25K, the Rapid slots and the engine.accounts rows with "armed": true.
+    Sim names are dropped by keepalive.start_consent; BLITZ (paper, hidden) and other firms are never listed. Never raises."""
+    out = []
+    try:
+        from . import account_cli
+        for r in account_cli.inventory():
+            role, name = r.get("role"), str(r.get("name") or "").strip()
+            if not name or r.get("sim") or r.get("mffu") is False or r.get("enabled", True) is False:
+                continue
+            if role == "main":
+                if not main_on:
+                    continue
+                key, lbl = "lit", "Zlarior 50K"
+            elif role == "b" and r.get("armed") is True:
+                key, lbl = "atlas", "ATLAS 25K"
+            elif role == "rapid" and r.get("armed") is True:
+                key, lbl = "rapid", account_cli.PLANS.get(r.get("plan"), {}).get("label") or "Rapid EOD"
+            elif role == "extra" and r.get("armed") is True and r.get("id"):
+                key, lbl = f"x:{r['id']}", account_cli.PLANS.get(r.get("plan"), {}).get("label") or "added account"
+            else:
+                continue
+            out.append((key, f"{lbl} ..{name[-4:]}", name))
+    except Exception:
+        pass
+    return out
+
+
+def _ka_path() -> str:
+    """data/keepalive.json next to the start config (CFG): the owner's real file on the PC, a temp copy in every test harness
+    that points CFG at a temp folder (a test never turns a real keep-alive on)."""
+    return os.path.join(os.path.dirname(CFG), "keepalive.json")
+
+
+def keepalive_consent(phrase, main_on=True) -> str:
+    """The START phrase also switches the MFFU 7-day keep-alive ON for exactly the accounts it armed (engine/keepalive
+    start_consent; owner 2026-11-22). Prints and returns the one summary line. Never raises."""
+    try:
+        from . import keepalive
+        r = keepalive.start_consent(phrase, armed_accounts(main_on), path=_ka_path())
+        line = r.get("line") or ""
+    except Exception as e:
+        line = f"Keep-alive NOT changed ({e.__class__.__name__}): KEEPALIVE_ON.bat turns it on."
+    if line:
+        print(f"\n [OK] {line}" if line.startswith("Keep-alive ON") else f"\n [..] {line}")
+    return line
+
+
+def keepalive_missing() -> list:
+    """Labels of the armed real accounts whose keep-alive is not ON yet and not switched OFF by the owner (the bot already
+    runs: START offers the phrase once for them). Never raises."""
+    try:
+        from . import keepalive
+        C = keepalive.load_config(None, path=_ka_path())
+        off = C.get("owner_off") or {}
+        from .ninjatrader import is_sim
+        return [lbl for k, lbl, n in armed_accounts() if not is_sim(n) and C["accounts"].get(k) is not True
+                and k not in off and "*" not in off]
+    except Exception:
+        return []
 
 
 def migrate():
@@ -956,6 +1020,16 @@ def run(dry=False, inp=input, py=sys.executable, pull=True) -> int:
 
     if bot_running():
         print("\n [OK] The bot is already running. Nothing changed. Opening the dashboard.")
+        miss = [] if dry else keepalive_missing()
+        if miss:                           # the bot came back by itself (auto-resume): the keep-alive still needs his phrase
+            print(f"\n MFFU 7-day keep-alive is not on yet for: {', '.join(miss)}.")
+            print(f"     It places ONE 1-MNQ trade on an account only when it would otherwise hit 7 days without a trade")
+            print(f"     (about -$2.40, at most -$22.90). Off any time: KEEPALIVE_OFF.bat.")
+            p = typed_phrase(ask(" Type  I ACCEPT LIVE RISK  to switch it on (Enter = leave it off)", "", inp))
+            if p == LIVE_PHRASE:
+                keepalive_consent(p)
+            else:
+                print("     Keep-alive left as it was.")
         if not dry:
             _open()
         return 0
@@ -975,6 +1049,8 @@ def run(dry=False, inp=input, py=sys.executable, pull=True) -> int:
     print("     Check each name against NinjaTrader's Accounts tab (the phrase arms every account listed here).")
     print("     Typing the line also lets the bot come back by itself after a restart (PC on + NinjaTrader connected);")
     print("     STOP BOT keeps it stopped until you start it again; the kill switch turns that off for good.")
+    print("     It also turns the MFFU 7-day keep-alive ON for these accounts: one 1-MNQ trade (about -$2.40, at most -$22.90)")
+    print("     only when an account would otherwise hit 7 days without a trade. Off any time: KEEPALIVE_OFF.bat.")
     phrase = typed_phrase(ask(" Type  I ACCEPT LIVE RISK  then Enter (anything else stops here, nothing armed)", None, inp))
     return step_arm(cfg, phrase, dry, inp=inp)
 
@@ -1218,7 +1294,20 @@ def status(state=None, connected=None, feed=None) -> dict:
     return {"steps": steps, "all_green": all(done.values()), "say": say, "lit": lit or None, "atlas": atlas or None, "blitz": blitz,
             "suggest_lit": (_read(AUTOSTART).get("nt_account") or "").strip() or None, "running": running,
             "market_open": market_open(), "job": job_status(), "phrase": LIVE_PHRASE,
-            "need_phrase": bool(not running and why), "resume_why": why}
+            "need_phrase": bool(not running and why), "resume_why": why, "keepalive": keepalive_view()}
+
+
+def keepalive_view() -> dict:
+    """The Start page / readiness: {"on": [labels], "off": [labels]} of the armed real accounts' 7-day keep-alive. Never raises."""
+    try:
+        from . import keepalive
+        C = keepalive.load_config(None, path=_ka_path())
+        rows = armed_accounts()
+        return {"on": [l for k, l, n in rows if C["accounts"].get(k) is True],
+                "off": [l for k, l, n in rows if C["accounts"].get(k) is not True],
+                "consent_day": (C.get("consent") or {}).get("day")}
+    except Exception:
+        return {"on": [], "off": []}
 
 
 # ---------------------------------------------------------------------------- one button: "Start trading"

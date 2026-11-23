@@ -56,7 +56,8 @@ Numbers below are from the PC's report on Nov 20, 6:00 ET. Live numbers: the ZEU
 
 | Day | What happens |
 |---|---|
-| Sun 18:00 ET | Market opens. The bot must be running by now (after a weekend update: START BOT). |
+| Sun / Mon, once | **MONDAY_SETUP.bat** (double-click, NOT as administrator): update, clock, start (you type I ACCEPT LIVE RISK once), alert test. See "What runs by itself". |
+| Sun 18:00 ET | Market opens. The bot must be running by now (after a weekend update: MONDAY_SETUP.bat or START BOT). |
 | Mon-Fri | Trading days as above. Zlarior aims for 2-4 trades a week; many days have 0 trades. That is normal. |
 | Fri from 16:15 | Weekly review page (Business > ZEUS this week): $ per account, trades vs plan, next week's news days. |
 | Fri / Sat 17:02 | Evals take code updates only now, so an update never stops them midweek. |
@@ -208,10 +209,8 @@ Off early: the same line with --off instead of --hand-trade 60.
 
 ### N3. Keep-alive: no account closed for 7 days without a trade
 - **What:** MFFU can close an account with no trade for 7 days. With keep-alive ON, the bot places ONE 1-MNQ trade on that account on day 6 (15:33-15:48 ET, out about 2 min later). Cost about -$2.40, at most -$22.90. Your own trades reset the clock. It arrived OFF.
-- **When:** Once: Sunday before 18:00 ET (you said yes on Nov 20).
-1. At the PC: double-click KEEPALIVE_ON.bat.
-2. Type KEEP ALIVE ON, then Enter.
-3. See "[OK] Keep-alive is ON." No restart needed.
+- **When:** nothing extra (Nov 22): typing I ACCEPT LIVE RISK at a START (START BOT, the Start page, MONDAY_SETUP.bat) also turns it ON for exactly the real accounts that START arms. The window says `Keep-alive ON for: ...`. Sim / paper accounts are never included. KEEPALIVE_ON.bat (type KEEP ALIVE ON) still works too.
+- **Off:** KEEPALIVE_OFF.bat or TRADE_HOME > k. It STAYS off: a later START does not turn it back on (only KEEPALIVE_ON.bat does).
 - **You see:** pushes "Keep-alive today on ...", the entry, then "closed ... about -$2.40". "Keep-alive ... did not go through" = place 1 MNQ by hand on that account before 16:05 ET, in and out. Off: KEEPALIVE_OFF.bat (no phrase): "[OK] Keep-alive is OFF on every account."
 ```
 python -X utf8 -m engine.keepalive --status
@@ -258,6 +257,32 @@ Read the last 10 lines before you walk away. The phone's Brain page shows the sa
 When MFFU passes an eval it renames the NinjaTrader account (MFFUEV... -> MFFUSF..., same last digits). If the saved ATLAS name
 is gone and exactly ONE account matches, START shows both names and asks you to type `YES` to switch; nothing changes without
 it, and your I ACCEPT LIVE RISK is still needed. Several or no match: one `[FIX]` line, ATLAS stays NOT armed.
+
+## What runs by itself (2026-11-22)
+**Your one weekly click:** `MONDAY_SETUP.bat` (Sunday evening or Monday before 02:00 ET). Double-click it normally. It does, one line each:
+1. **Update** (UPDATE.bat; never during a trade, skips itself in trading hours).
+2. **Clock** once: Windows asks "Yes" for administrator for the clock only. Already fixed = skipped. "No" = everything else still runs.
+3. **Start**: you type `I ACCEPT LIVE RISK` yourself. That one phrase arms every account listed, lets them come back by
+   themselves after a restart (auto-resume), and turns the 7-day keep-alive ON for them. Already running = left alone.
+4. **Alert test**: your phone should buzz.
+Then it lists "What comes back by itself" ([OK] / [FIX] + the one step). Safe to run twice.
+
+| If this happens | It comes back by itself? | How / your one step if not |
+|---|---|---|
+| PC restart, power cut | Yes, when auto-login is on | Signs in, opens NinjaTrader + the bot server; auto-resume re-arms the accounts you armed once NinjaTrader connects. Auto-login off = it waits at the sign-in screen (docs/PC_ALWAYS_ON.md step 2) |
+| Windows Update restart | Yes | No forced restart while signed in; if it restarts anyway, as above |
+| Bot server crash (or keeps crashing) | Yes | The supervisor restarts it; auto-resume re-arms. Still down: phone alert, BOTS_BACK.bat |
+| Update, or an update rolled back | Yes | The server restarts on the new (or the old) code; auto-resume re-arms |
+| NinjaTrader closed / disconnected | Yes, within the hour | Self-heal opens NinjaTrader; the bot reconnects when NinjaTrader's saved log-in connects. Phone alert "NinjaTrader closed" meanwhile. Log-in not saved = log in yourself |
+| Sleep / power save | Yes | The bot keeps the PC awake while it runs; the power plan never sleeps on AC |
+| 7 days with no trade | Yes (keep-alive ON) | One 1-MNQ trade on day 6 only for that account (about -$2.40, at most -$22.90) |
+| Kill switch, or a -$1,000 day | **No, on purpose** | Stays stopped. The kill switch also ends auto-resume: next start = you type the phrase |
+| STOP BOT | **No, on purpose** | Stays stopped until you start it |
+
+**Auto-resume's limits (unchanged):** it only re-arms the accounts you armed with the phrase at your last START, on exactly
+those NinjaTrader names. It has no expiry date; it ends with the kill switch, HOLD TO KILL or STOP BOT. It does not resume on a
+day the kill switch was used or the day lost $1,000, waits 10 minutes after a failed start (gives up after 3), and waits for
+NinjaTrader to show CONNECTED. Every resume or refusal pushes your phone. Check it: `python -X utf8 -m engine.recovery`.
 
 ## Where things are
 

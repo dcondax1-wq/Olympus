@@ -66,7 +66,7 @@ def logic():
                              accounts=[dict(rows[0])], keepalive={"x": True}, alerts=(True, True, True))
     check("a2. all green -> '[OK] Everything is green.'", L2[-1].strip() == "[OK] Everything is green." and not P2, L2)
     L3, P3 = T.status_screen(now=1, bot=None, accounts=[], keepalive={}, alerts=(False, False, False))
-    check("a3. everything down -> each problem names its menu number (7, 4, 3, 5)", [p[0] for p in P3] == ["7", "4", "3", "5"], P3)
+    check("a3. everything down -> each problem names its menu number (7, 4, 2 = START turns the keep-alive on too, 5)", [p[0] for p in P3] == ["7", "4", "2", "5"], P3)
 
     # menu: each number calls the existing .bat, never a phrase; one result line; back to the menu
     f = Fake(["2", "3", "6", "7", "0"])

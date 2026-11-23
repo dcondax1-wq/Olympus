@@ -443,7 +443,7 @@ def _evaluate(f: dict, now) -> dict:
             out.append(_b(NOT_READY if hard else WARN, f"{nm}: MFFU 7-day deadline in {max(0, int(left))} day(s)"
                           + (f", {int(ses)} session(s) to trade" if ses is not None else ""),
                           "MFFU closes an account with no filled trade in 7 days; the keep-alive is off.",
-                          "On the PC: double-click TRADE_HOME.bat, press 3, type KEEP ALIVE ON yourself (or let the bot take a trade).",
+                          "On the PC: double-click MONDAY_SETUP.bat (or START BOT) and type I ACCEPT LIVE RISK yourself: it turns the keep-alive on too.",
                           True, "k7:" + nm.lower()[:16]))
     # 7 a pending update / restart
     c = by.get("winupdate")

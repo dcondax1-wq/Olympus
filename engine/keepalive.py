@@ -1,5 +1,15 @@
 """Keep-alive trade for MFFU's 7-day inactivity rule (owner 2026-11-20: "if a account hasn't traded in 7 days it needs a very
 small trade to reset counter?"). OFF by default: one switch per account, and only the owner turns one on.
+The owner's two ways to turn it on (2026-11-22 night-zerotouch, owner: "make this automatic. I shouldn't need to do anything"):
+  * START BOT / the Start page / MONDAY_SETUP.bat: when HE types I ACCEPT LIVE RISK at a START (the phrase that already
+    authorizes live orders on these accounts), that same typed phrase also switches the keep-alive ON for exactly the real
+    MFFU accounts that START arms (start_consent below; engine/go.step_arm prints one line "Keep-alive ON for: ..."). Sim /
+    paper accounts and accounts the START did not arm stay as they are. The phrase is never written: data/keepalive.json
+    gets only a consent flag {"consent": {"t", "day", "accounts", "via": "start_phrase"}}, like data/auto_resume.json.
+    A START without the phrase ("Start trading" with a valid auto-resume, a resume after a reboot) never changes a switch.
+  * KEEPALIVE_ON.bat (he types KEEP ALIVE ON), as before.
+  The opt-out sticks: KEEPALIVE_OFF.bat (--off all) or --off <key> also records "owner_off", and a later START phrase does
+  NOT turn those back on (the summary says "stays OFF: you turned it off"); only KEEPALIVE_ON.bat / --on clears it.
 
 The rule. MFFU Terms section 7 "Dormant Accounts" (myfundedfutures.com/terms, updated 2026-10-09) and the help center (articles
 16596524, 14290805, 17036130, 18337038; all read 2026-11-20): every Evaluation and Sim Funded account needs at least one
@@ -343,7 +353,9 @@ def load_config(bot=None, path: str | None = None) -> dict:
     return {"accounts": {str(k): v is True for k, v in acc.items()},
             "hold_s": int(min(HOLD_RANGE[1], max(HOLD_RANGE[0], hold))), "lead_sessions": int(min(3, max(1, lead))),
             "skip": {str(k): str(v) for k, v in (raw.get("skip") or {}).items()} if isinstance(raw.get("skip"), dict) else {},
-            "start": start}
+            "start": start,
+            "owner_off": {str(k): str(v) for k, v in (raw.get("owner_off") or {}).items()} if isinstance(raw.get("owner_off"), dict) else {},
+            "consent": raw.get("consent") if isinstance(raw.get("consent"), dict) else None}
 
 
 def save_config(c: dict, path: str | None = None) -> str:
@@ -352,7 +364,9 @@ def save_config(c: dict, path: str | None = None) -> str:
     tmp = p + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump({"accounts": c.get("accounts") or {}, **({"skip": c["skip"]} if c.get("skip") else {}),
-                   **({"start": c["start"]} if c.get("start") else {})}, fh, indent=1)
+                   **({"start": c["start"]} if c.get("start") else {}),
+                   **({"owner_off": c["owner_off"]} if c.get("owner_off") else {}),
+                   **({"consent": c["consent"]} if c.get("consent") else {})}, fh, indent=1)
     os.replace(tmp, p)
     return p
 
@@ -1775,6 +1789,55 @@ def _warn(bot, st, g, P, on, now, out, Q, C) -> bool:
     return False
 
 
+# ------------------------------------------------------------------------------------------------ the START phrase's consent
+CONSENT_NOTE = "it only trades an account that would otherwise hit 7 days without a trade"
+
+
+def start_consent(phrase, armed, now=None, path: str | None = None) -> dict:
+    """The owner typed I ACCEPT LIVE RISK at a START (engine/go.step_arm, after every account is armed): the keep-alive goes
+    ON for exactly `armed` = [(key, label, NinjaTrader name)] of the real accounts that START armed. A Sim / paper name, a
+    key the owner switched OFF himself (owner_off, "*" = KEEPALIVE_OFF.bat) and any account not in `armed` are left as they
+    are. Without the exact phrase nothing changes. The phrase is never written: only {"consent": {"t", "day", "accounts",
+    "via"}}. Returns {"on": [labels], "kept_off": [labels], "line": the summary line ("" = nothing to say)}. Never raises."""
+    out = {"on": [], "kept_off": [], "line": "", "keys": []}
+    try:
+        from .tradovate import LIVE_PHRASE
+        if phrase != LIVE_PHRASE:
+            return out
+        try:
+            from .ninjatrader import is_sim
+        except Exception:
+            def is_sim(n):
+                return True
+        now = time.time() if now is None else float(now)
+        C = load_config(None, path=path or CONFIG_PATH)
+        off = C.get("owner_off") or {}
+        on_keys = []
+        for key, label, name in armed or []:
+            key, label, name = str(key or ""), str(label or key), str(name or "").strip()
+            if not key or not name or is_sim(name) or key in on_keys:
+                continue
+            if C["accounts"].get(key) is not True and (key in off or "*" in off):
+                out["kept_off"].append(label)
+                continue
+            C["accounts"][key] = True
+            on_keys.append(key)
+            out["on"].append(label)
+        if on_keys:
+            C["consent"] = {"t": int(now), "day": _cal(now), "accounts": on_keys, "via": "start_phrase"}
+            save_config(C, path or CONFIG_PATH)
+        out["keys"] = on_keys
+        parts = []
+        if out["on"]:
+            parts.append(f"Keep-alive ON for: {', '.join(out['on'])} ({CONSENT_NOTE}). Off: KEEPALIVE_OFF.bat or TRADE_HOME.")
+        if out["kept_off"]:
+            parts.append(f"Keep-alive stays OFF for: {', '.join(out['kept_off'])} (you turned it off; KEEPALIVE_ON.bat turns it on).")
+        out["line"] = " ".join(parts)
+    except Exception as e:  # noqa: BLE001
+        out["line"] = f"Keep-alive NOT changed ({e.__class__.__name__}): KEEPALIVE_ON.bat turns it on."
+    return out
+
+
 # ------------------------------------------------------------------------------------------------ status / CLI
 def status(bot=None, now=None) -> dict:
     """The switches, each account's last keep-alive and (with a bot) its plan. Never raises."""
@@ -1901,8 +1964,12 @@ def main(argv=None) -> int:
             return 2
         for k in keys:
             C["accounts"][k] = bool(a.on)
+        if a.on:
+            C["owner_off"] = {}                          # his ON clears every earlier OFF
+        else:                                            # sticks: a later START phrase leaves these OFF (start_consent)
+            C["owner_off"] = {**{k: _cal(time.time()) for k in keys}, "*": _cal(time.time())}
         print(f"keep-alive {'ON' if a.on else 'OFF'} for {', '.join(keys)} ({save_config(C)}); the bot reads it on its "
-              f"next poll")
+              f"next poll" + ("" if a.on else ". A START with the phrase keeps it OFF; KEEPALIVE_ON.bat turns it back on."))
         return 0
     try:
         for k in (a.on, a.off, a.skip, (a.start or [None])[0], (a.traded or [None])[0]):
@@ -1919,6 +1986,10 @@ def main(argv=None) -> int:
                   f"at most -{money(WORST_COST)}). The owner's decision only. Add --yes to switch it on.")
             return 2
         C["accounts"][key] = bool(a.on)
+        if a.on:
+            C["owner_off"].pop(key, None)
+        else:
+            C["owner_off"][key] = _cal(time.time())     # sticks: a later START phrase leaves it OFF
         print(f"keep-alive {key}: {'ON' if a.on else 'OFF'} ({save_config(C)}); the bot reads it on its next poll")
         return 0
     if a.skip:
