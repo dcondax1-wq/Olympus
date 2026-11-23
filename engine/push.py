@@ -1148,8 +1148,14 @@ def _crit_ntfy(p: dict) -> str:
     """The critical alarm's private-topic copy (engine/notify.instant_problem, its own de-dup by key; the app copy already
     went out, so no_app). Never raises."""
     try:
+        if p.get("silent"):
+            return "silent: app only"            # a "Resolved" notice / a silent level never rings ntfy (red team 2026-11-23)
+        # red team 2026-11-23: engine/alerts_plus repeats a critical alarm every 10 min (key crit:<id>:<n>) and restarts the cycle
+        # when a flapping condition comes back the same day; the app's "Got it" stops those repeats, ntfy cannot. So ntfy gets
+        # the FIRST notice per condition id only (the id is per day): key without the repeat number
+        k = str(p.get("ack") or p.get("key") or "")
         from . import notify
-        return notify.instant_problem({"key": f"crit:{p.get('key')}", "title": p.get("title"), "body": p.get("body"),
+        return notify.instant_problem({"key": f"crit:{k}", "title": p.get("title"), "body": p.get("body"),
                                        "code": str(p.get("kind") or "ops_crit"), "no_app": True})
     except Exception as e:  # noqa: BLE001
         return f"failed: {e.__class__.__name__}"

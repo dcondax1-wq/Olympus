@@ -152,8 +152,33 @@ def part_e(b):
     check("e2. ... and the report's card stops asking to subscribe", (c.get("tested") or {}).get("topic") == c["topic"], c.get("tested"))
 
 
+def part_f(b):
+    from engine import alerts_plus as AP
+    from engine import notify as N
+    from engine import push as P
+    calls = []
+    real = N.instant_problem
+    N.instant_problem = lambda p, **k: (calls.append(p["key"]), "sent")[1]
+    try:
+        st, now = {}, 1795300000
+        for i in range(7):                                  # a feed that flaps: on, (10 min) on, off, on again the same day
+            active = [] if i == 3 else [{"id": "feed_stale:2026-11-23", "kind": "feed_stale", "title": "FEED STALE", "body": "x"}]
+            st, out = AP.crit_step(st, active, {}, now + i * 600)
+            for p in out:
+                P._crit_ntfy(p)
+        keys = set(calls)
+        check("f1. a flapping critical condition (6 repeats + a resolve, then back): ntfy is asked with ONE key, the first notice",
+              keys == {"crit:feed_stale:2026-11-23"}, sorted(keys))
+        check("f2. 'Resolved' (silent) never goes to ntfy", all("clear" not in k for k in calls), calls)
+        calls.clear()
+        P._crit_ntfy({"key": "guard:clock:2026-11-23", "tag": "le-guard", "title": "Clock drift", "body": "x"})
+        check("f3. a guard push keeps its own (per-day) key", calls == ["crit:guard:clock:2026-11-23"], calls)
+    finally:
+        N.instant_problem = real
+
+
 def main() -> int:
-    for f in (part_a, part_b, part_c, part_d, part_e):
+    for f in (part_a, part_b, part_c, part_d, part_e, part_f):
         b = Box(tg=False, dc=False)
         saved = AB.DIGEST_PATH
         AB.DIGEST_PATH = os.path.join(b.dir, "data", "alert_digest.json")
