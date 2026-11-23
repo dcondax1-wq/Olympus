@@ -725,7 +725,7 @@ class RapidAtlas(AB.AccountB):
         F = self.spec.get("funded") or {}
         pays = F.get("payouts") or {}
         since = since_profit = None
-        if self.P["preset"] != PRESET and pays:       # the 25K: >= $250 net since the last payout (days after it)
+        if pays:                                      # MFFU: >= $250 (25K) / $500 (50K) net since the last payout (days after it)
             last = max(str(d) for d in pays)
             since = float(self.P["since"])
             since_profit = sum(v for d, v in self.days(today).items() if d > last)
@@ -828,7 +828,7 @@ def status(p: str | None = None, state_path: str | None = None, slot: str = "rap
     if funded:
         pays = blk.get("payouts") or {}
         since = since_profit = None
-        if P["preset"] != PRESET and pays:            # the 25K: >= $250 net since the last payout
+        if pays:                                      # MFFU: >= $250 (25K) / $500 (50K) net since the last payout (rt2 2026-11-23)
             last = max(str(d) for d in pays)
             since, since_profit = float(P["since"]), sum(v for d, v in days.items() if d > last)
         a = payout_advice(bal, P["start"], pays.keys(), _today(), P["buffer"], P["cushion"], since, since_profit)
