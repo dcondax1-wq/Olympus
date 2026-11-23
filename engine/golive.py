@@ -117,7 +117,7 @@ def run(cfg: dict | None = None, roundtrip: bool = False) -> dict:
         srv = email.utils.parsedate_to_datetime(hdr).timestamp() if hdr else None
         drift = (srv - (t0 + t1) / 2) if srv else None
         steps.append(_step("System clock", drift is not None and abs(drift) < 3, f"drift vs server Date header {drift:+.1f}s" if drift is not None else "no Date header",
-                           "Windows: Settings > Time & language > Sync now. A skewed clock mis-times the 15:55 flatten and bar closes.", warn=drift is not None and 1.5 < abs(drift) < 3))
+                           "Double-click FIX_CLOCK.bat once, right-click > Run as administrator. A skewed clock mis-times the 15:55 flatten and bar closes.", warn=drift is not None and 1.5 < abs(drift) < 3))
     except Exception as e:
         steps.append(_step("System clock", False, f"could not reach Tradovate: {e.__class__.__name__}", "Check the internet connection / firewall."))
 
