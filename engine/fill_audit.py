@@ -839,7 +839,7 @@ OWNER_HOLDS = ("paused by you", "owner flattened remotely")     # the owner's ow
 # STARTUP DISARMED, an unknown reason) stays a loud MISSED TRADE.
 RULE_HOLDS = ("GUARD", "size 0", "at 0 instead of", "signals", "one position on the 50K", "HEDGE", "hedge")
 LOUD_HOLDS = ("STARTUP DISARMED", "feed stale", "late", "not chasing", "refused", "never routed", "never took", "restart",
-              "unreadable", "failed")
+              "unreadable", "failed", "PC clock", "internet time")   # audit 2026-11-22: a clock block is a malfunction, loud
 
 
 def rule_hold(body: str) -> bool:

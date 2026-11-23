@@ -325,6 +325,7 @@ AREAS["pc"].append("alert_drill")       # day-alerts 2026-11-21: end-to-end aler
 AREAS["pc"].append("alerts_box")        # alerts-phone 2026-11-21: /alerts/ = ALERTS_SETUP Telegram from the phone (engine/alerts_box.py); its own line
 AREAS["pc"].append("alerts_start_code")   # day-security3 2026-11-21: the /alerts/ page's one-time START code; its own line
 AREAS["pc"].append("alert_map")         # night-notify 2026-11-22: every critical event has a zero-setup phone route (engine/alert_map.py), digest, de-dup
+AREAS["pc"].append("package_b")         # audit 2026-11-22 package B: every critical alarm reaches the phone
 AREAS["privacy"] += ["alerts_start_code", "cross_site"]
 AREAS["nq"].append("redteam2_live")
 AREAS["pc"].append("redteam2_wires")      # day-redteam2 2026-11-20: L2 rapid._other_names covers the extra accounts

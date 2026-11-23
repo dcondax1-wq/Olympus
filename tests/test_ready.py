@@ -63,7 +63,7 @@ def test_blockers():
     v = R.ready_verdict(MON_0115, facts=facts(drift_s=24.5))
     b = first(v)
     check("a2. PC clock 24.5 s behind -> NOT READY with the title the owner reads (the guard blocks at 5 s; ops_checks only warns below 30 s)",
-          v["level"] == "NOT_READY" and not v["ready"] and R.headline(v) == "NOT READY for 02:00: PC clock 25 s behind" and "Sync now" in b["exact_fix"]
+          v["level"] == "NOT_READY" and not v["ready"] and R.headline(v) == "NOT READY for 02:00: PC clock 25 s behind" and "FIX_CLOCK.bat" in b["exact_fix"] and "Sync now" not in b["exact_fix"]
           and b["needs_owner_at_pc"] is True and "5 s" in b["why_plain_words"], v)
     check("a2b. 3 s off is fine (inside the guard's limit); 'ahead' is worded 'ahead'", R.ready_verdict(MON_0115, facts=facts(drift_s=3.0))["level"] == "READY"
           and "ahead" in first(R.ready_verdict(MON_0115, facts=facts(drift_s=-9)))["what"], "")
