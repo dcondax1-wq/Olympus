@@ -1,4 +1,9 @@
 ## Tested and rejected (don't redo without a new idea)
+- **Day hunt (2026-11-23, `day-hunt-2026-11-23.md`, `tools/day_hunt.py`, design `research/lit/day_hunt_design_2026-11-23.md`):**
+  ESD = near-miss LIT setups (displacement 0.6-0.8 ATR) kept when ES1! printed a 0.8 ES-ATR body between NQ's extreme and trigger:
+  +0.2-0.3 trades/wk, LIT $ H1 -$2,118 / H2 -$3,930, PF 4.98 -> 4.32 / 2.91 -> 2.00, eval median pass 12 -> 14 sessions (H2),
+  1 winner in 23 new trades. Rejected. (ES 5m only from 2025-04, so the 2021-25 line is Apr-Dec 2025.) ATLAS funded 25K payout
+  odds from +$401: ~5% by 11-27, ~12% by 12-04 (the 50% best-day rule halves the $-only 32%).
 - **Zlarior more money, 2 pre-registered batches (2026-11-19, `lit-more-money-2026-11-19.md`, `tools/lit_more_money.py`,
   `research/lit/more_money.json`, designs `research/lit/more_money_design_batch1/2.md`, Lab rows `research/lab/lit_more_money.json`):**
   9 single versions, LIT $/month H1 / H2 / 2021-25 vs today $5,562 / $2,670 / $25: ES (MES) LIT filler on days NQ has not

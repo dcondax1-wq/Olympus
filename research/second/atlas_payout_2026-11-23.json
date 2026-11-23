@@ -1,0 +1,53 @@
+{
+ "profit0": 401.0,
+ "days0": [
+  -113.0,
+  514.0
+ ],
+ "n": 10000,
+ "pools": {
+  "recent Jul 1 - Nov 19": {
+   "sessions": 102,
+   "trades": 63,
+   "tpw": 3.09,
+   "Fri 11-27": 5.0,
+   "Fri 11-27 $ only (no best-day rule)": 14.2,
+   "Fri 12-04": 12.3,
+   "Fri 12-04 $ only (no best-day rule)": 32.1,
+   "median_abs_day_usd": 131.0,
+   "lost_or_stuck_10": 0.2
+  },
+  "fresh Oct 19 - Nov 19 only": {
+   "sessions": 24,
+   "trades": 17,
+   "tpw": 3.54,
+   "Fri 11-27": 4.8,
+   "Fri 11-27 $ only (no best-day rule)": 11.1,
+   "Fri 12-04": 10.3,
+   "Fri 12-04 $ only (no best-day rule)": 32.5,
+   "median_abs_day_usd": 113.0,
+   "lost_or_stuck_10": 0.1
+  },
+  "all 2026": {
+   "sessions": 230,
+   "trades": 167,
+   "tpw": 3.63,
+   "Fri 11-27": 4.8,
+   "Fri 11-27 $ only (no best-day rule)": 17.9,
+   "Fri 12-04": 12.6,
+   "Fri 12-04 $ only (no best-day rule)": 38.9,
+   "median_abs_day_usd": 154.0,
+   "lost_or_stuck_10": 0.3
+  }
+ },
+ "note": "best-day rule: at +$1,350 the best day must be <= $675; a one-trade +$949 day would need the cycle at +$1,898 instead. P['buffer'], P['pay_min'] from tools/uprisk.fplan('builder25k').",
+ "plan": {
+  "buffer": 1100.0,
+  "pay_min": 250.0,
+  "pay_max": 1000.0,
+  "cons": 0.5,
+  "cycle_days": 2,
+  "mll": 1000.0,
+  "dll": 600.0
+ }
+}
