@@ -8,6 +8,7 @@
  d. bounded: a hung check is skipped at its time box, the whole run stays within the budget, a raising check = one FIX row
  e. read-only: the bot folder's files are unchanged after a run (only logs/post_update.json when saved); the send is ONE
     message keyed by the update's sha; after_restart never raises and waits before it checks
+ g. day-notify: ONE 'Update installed, alerts OK' push a day (fake alert bus), its receipt, FIX always, ALERTS_OFF = old path
  f. the hooks: server.py starts it in a thread only after an update restart; UPDATE.bat's after_update prints it; Trading Home
 """
 import hashlib
@@ -116,12 +117,15 @@ def t_readonly():
           (set(before.items()) ^ set(after.items()), r["secs"]))
     check("e2. the real run lists every check, none raised out", len(r["rows"]) >= 10 and r["message"], r["message"])
     sent = []
-    s = P.send(r, sha="abc1234", poster=lambda p: sent.append(p) or "sent")
-    check("e3. ONE message keyed by the update's sha, title = the summary line", s == "sent" and len(sent) == 1
-          and sent[0]["key"] == "post_update:abc1234" and sent[0]["title"] == r["message"][:90], sent)
-    slept = []
     tmp = tempfile.mkdtemp()
-    old = P.OUT
+    old, old_sp = P.OUT, P.SENT_PATH
+    P.SENT_PATH = os.path.join(tmp, "post_update_sent.json")
+    s = P.send(r, sha="abc1234", poster=lambda p: sent.append(p) or "sent")
+    check("e3. ONE message keyed by the update's sha, title = the phone line (summary, or 'Update installed, alerts OK')",
+          s == "sent" and len(sent) == 1 and sent[0]["key"] == "post_update:abc1234"
+          and sent[0]["title"] == P.phone_text(r, "abc1234")[0], sent)
+    os.path.exists(P.SENT_PATH) and os.remove(P.SENT_PATH)
+    slept = []
     P.OUT = os.path.join(tmp, "post_update.json")
     try:
         res = P.after_restart("abc1234", delay_s=90, sleep=slept.append, ctx=P.Ctx(windows=False, connect=lambda *a, **k: True),
@@ -131,7 +135,68 @@ def t_readonly():
         check("e5. after_restart with a broken check list still returns (never raises)",
               P.after_restart("x", delay_s=0, sleep=lambda s: (_ for _ in ()).throw(RuntimeError("x"))) is None)
     finally:
-        P.OUT = old
+        P.OUT, P.SENT_PATH = old, old_sp
+
+
+class FakeBus:
+    """engine/alert_bus stand-in: records send_critical, answers with the given receipts (no network)."""
+
+    def __init__(self, receipts=("ntfy", "webpush"), r="sent"):
+        self.calls, self.digest, self.receipts, self.r = [], [], receipts, r
+
+    def send_critical(self, ev, on_done=None, wait=False, **k):
+        self.calls.append((ev, wait))
+        if on_done and self.r in ("sent", "failed"):
+            on_done({"ok": self.r == "sent", "receipts": {c: "id" for c in self.receipts} if self.r == "sent" else {}})
+        return self.r
+
+    def digest_add(self, title, body="", key=""):
+        self.digest.append((title, body, key))
+        return True
+
+
+def t_daynotify():
+    """day-notify 2026-11-23: ONE 'Update installed, alerts OK' push after the landing, with its delivery receipt."""
+    tmp = tempfile.mkdtemp()
+    sp = os.path.join(tmp, "sent.json")
+    green = P.summarize([P.row("A", P.OK, "fine"), P.row("Phone alerts", P.OK, "ntfy reachable")])
+    t16 = 1795467900                                   # Mon 2026-11-23 16:05 ET
+    b = FakeBus()
+    s = P.send(green, sha="abc1234def", bus=b, now=t16, sent_path=sp)
+    ev, wait = b.calls[0]
+    check("g1. all green: title 'Update installed, alerts OK', body names the version + checks", ev["title"] == "Update installed, alerts OK"
+          and "abc1234" in ev["body"] and "2/2 checks OK" in ev["body"] and "alerts work" in ev["body"], ev)
+    check("g2. through alert_bus.send_critical (both no-secret channels), WAITS for the receipts, key = the sha", wait is True
+          and ev["key"] == "post_update:abc1234def" and ev["kind"] == "problem", ev)
+    check("g3. the receipt: 'sent via ntfy + the Olympus app', res['receipts'] = the channels", s == "sent via ntfy + the Olympus app"
+          and green.get("receipts") == ["ntfy", "webpush"], (s, green.get("receipts")))
+    b2 = FakeBus()
+    s2 = P.send(P.summarize([P.row("A", P.OK, "fine")]), sha="fff9999", bus=b2, now=t16 + 3600, sent_path=sp)
+    check("g4. a 2nd green update the same ET day: no 2nd buzz, one digest line", not b2.calls and s2.startswith("digest") and len(b2.digest) == 1,
+          (s2, b2.calls))
+    b3 = FakeBus()
+    s3 = P.send(P.summarize([P.row("A", P.OK, "fine")]), sha="eee1111", bus=b3, now=t16 + 86400, sent_path=sp)
+    check("g5. the next day: the OK push goes again", len(b3.calls) == 1 and s3.startswith("sent"), s3)
+    b4 = FakeBus()
+    red = P.summarize([P.row("Phone alerts", P.FIX, "cannot reach ntfy", "check the PC's internet")])
+    P.send(red, sha="ddd2222", bus=b4, now=t16 + 86400 + 60, sent_path=sp)
+    check("g6. a FIX always goes (never the digest), title = the 'needs you' line, never 'alerts OK'", len(b4.calls) == 1
+          and b4.calls[0][0]["title"].startswith("Update: Phone alerts needs you") and "alerts OK" not in b4.calls[0][0]["title"], b4.calls)
+    b5 = FakeBus(r="failed")
+    sp5 = os.path.join(tmp, "sent5.json")
+    s5 = P.send(P.summarize([P.row("A", P.OK, "fine")]), sha="ccc3333", bus=b5, now=t16, sent_path=sp5)
+    check("g7. no channel answered: 'not delivered', the day is NOT used up (the next update tries again)",
+          s5.startswith("not delivered") and not os.path.exists(sp5), s5)
+    calls = []
+    import engine.notify as N
+    old = N.instant_problem
+    N.instant_problem = lambda p: calls.append(p) or "sent"
+    try:
+        s6 = P.send(P.summarize([P.row("A", P.OK, "fine")]), sha="bbb4444", bus=FakeBus(r="off"), now=t16, sent_path=os.path.join(tmp, "s6.json"))
+    finally:
+        N.instant_problem = old
+    check("g8. ALERTS_OFF ('off'): the old notify.instant_problem path, same key + title", s6 == "sent" and calls
+          and calls[0]["key"] == "post_update:bbb4444" and calls[0]["title"] == "Update installed, alerts OK", (s6, calls))
 
 
 def t_hooks():
@@ -168,6 +233,7 @@ def main():
     t_windows()
     t_bounded()
     t_readonly()
+    t_daynotify()
     t_hooks()
     t_rt2()
     bad = [n for n, ok in RES if not ok]

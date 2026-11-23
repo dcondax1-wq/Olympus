@@ -476,6 +476,7 @@ AREAS["pc_care"] = ["pc_care", "bat_menu", "fresh_start"]   # night-secps 2026-1
 AREAS["pc"] += ["startmsg"]   # night-startmsg 2026-11-23: START BOT's exit codes + its [FIX] reason in TRADE_HOME 2 / 8 and MONDAY SETUP
 AREAS["nq"] += ["tgweek"]   # night-tgweek 2026-11-23: Thanksgiving week (calendar, update windows, 'half day, closes 13:15' wording)
 AREAS["pc"] += ["k7cloud"]   # night-k7cloud 2026-11-23: the cloud warns 'PC looks off: <account> must trade by <date>' (tools/pc_silent_check.k7_step)
+AREAS["pc"] += ["alert_test"]   # day-notify 2026-11-23: the cloud "Send me a test alert" (tools/alert_test.py) + its read-back receipt; fakes only
 
 AREAS.setdefault("faults", [])
 AREAS["faults"] += [x for x in ("state_safe", "multi_account") if x not in AREAS["faults"]]   # night-statesafe 2026-11-23: a damaged state file never means a clean day
