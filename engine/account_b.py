@@ -1086,6 +1086,8 @@ class AccountB:
                 continue
             self.notified.append(p["key"])
             self.log("risk", f"{p['title']}: {t['text']}")
+            if str(p["key"]).endswith(":ready") and _autopilot_on():
+                continue                # engine/payout_autopilot sends the ONE "Payout ready" (after the close, the MFFU clicks)
             self._send(p)
         if ev.get("status") == "stuck":
             key = f"acctb:fstuck:{(self.spec.get('funded') or {}).get('start') or '?'}:{self.name}"
@@ -1980,6 +1982,15 @@ TRACKER_KEYS = ("name", "plan", "label", "status", "text", "start", "today", "ba
                 "cons_need_profit", "cons_frac", "more_days", "first_trade", "eligible_from", "eligible", "ready", "max_request",
                 "request_min", "request_max", "to_you", "split", "payouts_n", "payouts_max", "paid_gross", "paid_to_you",
                 "graduated", "lost", "why", "payouts", "eval_account", "record_cmd", "ask_amount", "ask_goal", "stop4")
+
+
+def _autopilot_on() -> bool:
+    """engine/payout_autopilot.active(): it owns the phone's payout-ready alert (LE_PAYOUT_AUTOPILOT=0 = the old pushes)."""
+    try:
+        from . import payout_autopilot as PA
+        return PA.active()
+    except Exception:
+        return False
 
 
 def compact_tracker(t: dict | None) -> dict | None:

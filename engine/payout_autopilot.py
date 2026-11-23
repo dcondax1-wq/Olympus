@@ -56,6 +56,13 @@ STEPS = ("In the MFFU dashboard (myfundedfutures.com): left menu Payouts -> requ
          "business hours. Then tell Olympus you took it: TRADE_HOME -> P.")
 
 
+def active() -> bool:
+    """The autopilot owns the phone's "payout ready" alert (lead 2026-11-23: ONE alert per payout event), so the bot's own pushes
+    (funded_life.notices "PAYOUT READY" via account_b._funded_lifecycle, RapidAtlas "rapidpay:") stay off the phone; they still
+    log and mark their key. LE_PAYOUT_AUTOPILOT=0 = the old behavior exactly (both send)."""
+    return os.environ.get("LE_PAYOUT_AUTOPILOT", "1").strip() != "0"
+
+
 def _f(x, d=None):
     try:
         v = float(x)
