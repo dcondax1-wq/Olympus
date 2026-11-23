@@ -164,6 +164,23 @@ def session_window(rp: Replay, n=SESSIONS):
     return b, idx, pick
 
 
+def trade_window_cut(rp: Replay):
+    """night-reds2 2026-11-23: the last SESSIONS sessions of the data may hold no reference trade (the old engine model went
+    quiet: the cloud copy's last one was 10-27), and every trade check then failed on an empty list. Then the data is cut
+    at 18:00 ET of the day the last reference trade CLOSED, so the replay's last 3 sessions contain it: every check still
+    runs on a real trade (nothing is skipped). None = the newest sessions already have one (the window is unchanged)."""
+    ref = ref_backtest(rp)
+    b, idx, _days = session_window(rp)
+    start_t = int(b.t[idx[0]])
+    if ref["state"].get("position") or any(t["entry_t"] >= start_t - SECS for t in ref["trades"]):
+        return None
+    if not ref["trades"]:
+        return None
+    last = ref["trades"][-1]
+    d = et(int(last["exit_t"])).date()
+    return int(dt.datetime(d.year, d.month, d.day, 18, 0, tzinfo=ZoneInfo("America/New_York")).timestamp()), last
+
+
 # ------------------------------------------------------------------------------------------------ tests
 def test_replay(rp: Replay):
     print("\n== 1. Bar-by-bar replay of the last 3 sessions (PaperAdapter) ==")
@@ -657,6 +674,8 @@ def test_restart(rp: Replay, ref_trades, start_t):
 # ------------------------------------------------------------------------------------------------ main
 def main():
     t_all = time.perf_counter()
+    print("RETIRED (lead 2026-11-23): this replays the retired 'engine' model; the live bot runs LIT, whose live loop = backtest "
+          "check is tests.test_lit_live. tests/run_area.py no longer runs this suite; by hand it still runs in full.")
     # This harness replays the Liquidity Engine (engine/model.py) through the live loop and compares it with Engine
     # backtests. Since 2026-10-18 live_model.json runs LIT (tests/test_lit_live.py checks that one), so the bot here is
     # pinned to the engine's lock (live_model.json while it says "engine", else live_model_engine.json).
@@ -670,6 +689,12 @@ def main():
     rp.install_globals()
     print(f"Liquidity Engine live dry run  ({'quick' if QUICK else 'full'})  data through {hm(rp.frames[('NQ', '5m')]['time'].max())} ET")
     try:
+        cw = trade_window_cut(rp)
+        if cw:
+            cut, last = cw
+            rp.frames = {k: v[v["time"] < cut].reset_index(drop=True) for k, v in rp.frames.items()}
+            print(f"  the newest {SESSIONS} sessions have no reference trade (the engine's last: {hm(last['entry_t'])} ET): the data is "
+                  f"cut at {hm(cut)} ET so the replay's {SESSIONS} sessions end with it (every check runs on a real trade)")
         b, idx, days, ref_trades, ref_open, bot, mean_ms = test_replay(rp)
         start_t = int(b.t[idx[0]])
         test_failure_injection(rp, ref_trades, start_t)

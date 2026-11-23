@@ -2193,6 +2193,11 @@ def part_rewards(br, url, tmp):
 def main():
     global STEP, PASTE, STEP_PINNED, PASTE_PINNED
     part_a()
+    from tests import pw_skip
+    if pw_skip.missing("the browser parts (b ...)"):       # night-reds2: a container without it; the PC runs everything
+        n = sum(RES)
+        print(f"\nkalshi page: {n}/{len(RES)} " + ("PASS (browser parts skipped)" if n == len(RES) else "FAILED"))
+        return 0 if n == len(RES) else 1
     tmp = site(tempfile.mkdtemp(prefix="le_kalshi_page_"))
     srv = serve(tmp)
     try:

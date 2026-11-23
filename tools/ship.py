@@ -65,6 +65,26 @@ def build_zip(out):
     return z
 
 
+def vault_sync() -> bool:
+    """night-reds2 2026-11-23: vault/ is GENERATED from the repo (tools/obsidian_brain.py: STATE.md, docs, research write-ups,
+    the app map). A landing that changed those left it stale until the nightly rebuild, and tests.test_obsidian_brain g went
+    red on every branch cut from it. Rebuilt here (1-2 s, deterministic) and committed as its own commit before the push.
+    True = a rebuild commit was made. A failing build never blocks a ship (the test then says so)."""
+    r = subprocess.run([sys.executable, "-X", "utf8", "tools/obsidian_brain.py", "--check"], cwd=ROOT, capture_output=True, text=True)
+    if r.returncode == 0:
+        return False
+    b = subprocess.run([sys.executable, "-X", "utf8", "tools/obsidian_brain.py"], cwd=ROOT, capture_output=True, text=True)
+    if b.returncode != 0:
+        print(f"  [..] vault rebuild failed: {(b.stdout + b.stderr).strip()[-200:]}")
+        return False
+    if not sh("git", "status", "--porcelain", "--", "vault", check=False):
+        return False
+    sh("git", "add", "-A", "--", "vault")
+    sh("git", "commit", "-q", "-m", "vault: rebuilt for this landing (tools/obsidian_brain.py)")
+    print("  [OK] vault/ was stale: rebuilt and committed")
+    return True
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--zip")
@@ -74,6 +94,7 @@ def main(argv=None) -> int:
     if dirty:
         raise SystemExit("[STOP] uncommitted changes: commit first\n  " + "\n  ".join(dirty[:10]))
     sh(sys.executable, "tools/model_versions.py", "--check")
+    vault_sync()
     if subprocess.run([sys.executable, "tools/win_paths.py"], cwd=ROOT).returncode != 0:   # even with --no-tests: a bad name
         raise SystemExit("[STOP] a file name Windows refuses: the PC update would roll back. Nothing pushed")  # blocks every PC update
     if not a.no_tests and subprocess.run([sys.executable, "tests/smoke.py"], cwd=ROOT).returncode != 0:
