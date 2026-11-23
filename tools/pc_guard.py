@@ -363,7 +363,7 @@ def evening_extra(day: str, pa_path=None, digest_path=None, fleet=None) -> str:
         rdy = [f"{x.get('name')} {money(x.get('amount'))}" for x in v if isinstance(x, dict) and x.get("ready")]
         stop = [str(x.get("name")) for x in v if isinstance(x, dict) and x.get("guard") == "stop"]
         if rdy:
-            out.append("Payout ready: " + ", ".join(rdy) + " (request it in MFFU, then TRADE_HOME -> P)")
+            out.append("REQUEST PAYOUT TODAY: " + ", ".join(rdy) + " (MFFU dashboard > Payouts, then TRADE_HOME -> P)")
         if stop:
             out.append("Do not take payout #5 on " + ", ".join(stop) + ": close it")
     except Exception:

@@ -478,7 +478,7 @@ def bank_pnl(bank: dict, qty: int, mfe_r, risk_pts, model_pnl: float, comm: floa
 
 def payout_advice(balance: float, start: float = 50000.0, paid_days=(), today: str | None = None,
                   buffer: float = BUFFER, cushion: float = CUSHION, since: float | None = None,
-                  since_profit: float | None = None) -> dict:
+                  since_profit: float | None = None, first_trade: str | None = None) -> dict:
     """Funded: what to withdraw today. MFFU pays above the $2,100 buffer ($500 min); the bot keeps $1,000 more in
     (the 25K: $1,100 buffer, keep $500 more, and MFFU's >= $250 net since the last payout: `since` / `since_profit`,
     checked only when both are given and a payout was already made)."""
@@ -489,10 +489,18 @@ def payout_advice(balance: float, start: float = 50000.0, paid_days=(), today: s
     short = None
     if ready and since is not None and since_profit is not None and list(paid_days) and float(since_profit) < float(since):
         ready, short = False, round(float(since) - float(since_profit), 2)
+    # night-payday 2026-11-23: the FIRST request waits 24 h after the first funded trade (not on MFFU's own Rapid pages; a third-party
+    # page says so, research/lit/mffu_rules.json rapid_eod_25k "first_payout_wait"; Rapid 50K "first request 24 h after the first
+    # trade"): needs MFFU confirm, so never on the first funded trading day itself (the check runs after the close)
+    wait = None
+    if ready and not list(paid_days) and today is not None and first_trade is not None and str(today) <= str(first_trade):
+        ready, wait = False, f"first request the trading day after the first funded trade {first_trade} (24 h; needs MFFU confirm)"
     out = {"keep_at": keep, "request": amt if ready else 0.0, "to_you": round(amt * SPLIT, 2) if ready else 0.0, "ready": ready,
             "to_next": round(max(0.0, keep + PAY_MIN - float(balance)), 2)}
     if short is not None:                 # MFFU's net-since-the-last-payout rule (the 25K's $250) not met yet
         out["to_next"], out["since_short"] = short, short
+    if wait is not None:
+        out["wait"] = wait
     return out
 
 
@@ -729,10 +737,12 @@ class RapidAtlas(AB.AccountB):
             last = max(str(d) for d in pays)
             since = float(self.P["since"])
             since_profit = sum(v for d, v in self.days(today).items() if d > last)
-        a = payout_advice(bal, start, pays.keys(), today, self.P["buffer"], self.P["cushion"], since, since_profit)
+        traded = sorted(d for d, v in self.days(today).items() if abs(v) > 1e-9)
+        a = payout_advice(bal, start, pays.keys(), today, self.P["buffer"], self.P["cushion"], since, since_profit,
+                          traded[0] if traded else None)
         paid = sum(float(v) for v in (F.get("payouts") or {}).values())
         text = (f"PAYOUT READY: request ${a['request']:,.0f} (${a['to_you']:,.0f} to you); keeps ${a['keep_at']:,.0f} in the account"
-                if a["ready"] else
+                if a["ready"] else f"payout waits: {a['wait']}" if a.get("wait") else
                 f"next payout once ${a['since_short']:,.0f} more is made since the last one (MFFU: >= ${self.P['since']:,.0f})"
                 if a.get("since_short") is not None else
                 f"next payout once the balance passes ${a['keep_at'] + PAY_MIN:,.0f} (${a['to_next']:,.0f} to go)")
@@ -832,10 +842,12 @@ def status(p: str | None = None, state_path: str | None = None, slot: str = "rap
         if pays:                                      # MFFU: >= $250 (25K) / $500 (50K) net since the last payout (rt2 2026-11-23)
             last = max(str(d) for d in pays)
             since, since_profit = float(P["since"]), sum(v for d, v in days.items() if d > last)
-        a = payout_advice(bal, P["start"], pays.keys(), _today(), P["buffer"], P["cushion"], since, since_profit)
+        traded = sorted(d for d, v in days.items() if abs(v) > 1e-9)
+        a = payout_advice(bal, P["start"], pays.keys(), _today(), P["buffer"], P["cushion"], since, since_profit, traded[0] if traded else None)
         out["payout"] = a
         out["text"] = (f"{nm} funded {blk['account']}: balance ${bal:,.0f}; "
                        + (f"request ${a['request']:,.0f} today (${a['to_you']:,.0f} to you)" if a["ready"] else
+                          f"payout waits: {a['wait']}" if a.get("wait") else
                           f"no payout yet (${a['to_next']:,.0f} to go; the bot keeps ${a['keep_at']:,.0f} in)"))
     else:
         best = max(days.values()) if days else 0.0

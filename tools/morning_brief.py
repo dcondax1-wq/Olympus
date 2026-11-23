@@ -213,6 +213,21 @@ def funded_part(r: dict) -> tuple:
     return (f" ({money(ta)} to payout)" if ta is not None and ta > 0 else ""), None
 
 
+def payday_line(rs: list) -> str:
+    """'REQUEST PAYOUT TODAY: ATLAS 25K $1,000 ($800 to you) - MFFU dashboard > Payouts, then TRADE_HOME -> P' for every funded account
+    whose tracker says ready (MFFU's rules AND the owner's plan: the max request), else ''. A Builder's #5 is never ready (funded_life)."""
+    out = []
+    for r in rs:
+        f = _d(_d(r.get("_src")).get("funded"))
+        amt = _f(f.get("max_request"))
+        if f.get("ready") and not f.get("lost") and amt and amt > 0:
+            ty = _f(f.get("to_you"))
+            out.append(f"{label(r)} {money(amt)}" + (f" ({money(ty)} to you)" if ty else ""))
+    if not out:
+        return ""
+    return "REQUEST PAYOUT TODAY: " + ", ".join(out) + " - MFFU dashboard > Payouts, then TRADE_HOME -> P"
+
+
 def accounts_line(rs: list, hb_fresh: bool = True) -> tuple:
     """(line, [needs you]). hb_fresh False (the bot's last report is old): a keep-alive "cover" never hides the 7-day line."""
     parts, needs = [], []
@@ -561,7 +576,12 @@ def build(snap: dict, now: int | None = None, plan_doc=None, events=None, root: 
         needs += n2
     if not acc:
         acc = ["No account numbers in the last report"]
-    keep = MAX_LINES - 4                             # READY + Today + Next + Needs
+    # night-payday 2026-11-23 (lead: "money in hand is the goal"): a payout MFFU pays today is its own line, right under READY, in the
+    # same words as the phone push ("REQUEST PAYOUT TODAY: ATLAS 25K $1,000"); every brief until the owner records it (TRADE_HOME -> P)
+    pay = payday_line(rs) if fresh else ""
+    if pay:
+        needs = [n for n in needs if not str(n).startswith("request the ")]
+    keep = MAX_LINES - 4 - (1 if pay else 0)         # READY + Today + Next + Needs (+ the payout line)
     if len(acc) > keep:
         acc = acc[:keep - 1] + [f"+{len(acc) - keep + 1} more accounts: TRADE_HOME -> 1 (Status)"]
     try:
@@ -574,9 +594,9 @@ def build(snap: dict, now: int | None = None, plan_doc=None, events=None, root: 
     needs += roll_needs(snap, now)
     nd = ", ".join(needs[:2]) + (f" (+{len(needs) - 2} more)" if len(needs) > 2 else "") if needs else "none"
     nw = cards_waiting() if waiting is None else int(waiting)
-    lines = [rl] + acc + [today] + ([f"Next money move: {mv}"] if mv else []) + \
+    lines = [rl] + ([pay] if pay else []) + acc + [today] + ([f"Next money move: {mv}"] if mv else []) + \
             [f"Edge {edge_text(snap)} · Needs you: {nd}" + (f" · Decide cards waiting: {nw}" if nw else "")]
-    title = f"ZEUS - {e:%a %b} {e.day} - {word}"
+    title = f"ZEUS - {e:%a %b} {e.day} - {word}" + (" - REQUEST PAYOUT TODAY" if pay else "")
     lines = [ln[:400] for ln in lines[:MAX_LINES]]       # red team 2: the body = the 8 lines, under the 4,096 B push limit
     return {"title": title, "body": "\n".join(lines)[:3900], "lines": lines, "day": e.date().isoformat(), "needs": len(needs)}
 

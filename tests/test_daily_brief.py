@@ -92,8 +92,9 @@ def part_a():
     na = build(tue, rows=[row("z", "Zlarior", "MFFU Builder 50K", 49000.0, to_pass=4000.0, badge="PAPER")])
     check("a. an account not armed says so", "Zlarior 50K NOT armed (paper)" in na["lines"][1], na["lines"][1])
     pr = build(tue, rows=[row("atlas", "ATLAS", "MFFU Builder 25K", 27100.0, stage="funded", funded={"ready": True, "max_request": 1000.0})])
-    check("a. a payout ready: on its line and under needs you", "payout READY $1,000" in pr["lines"][1]
-          and "request the ATLAS 25K payout $1,000" in pr["lines"][-1], pr["lines"])
+    check("a. a payout ready (night-payday): line 2 'REQUEST PAYOUT TODAY: ATLAS 25K $1,000 - MFFU dashboard > Payouts ...', the account "
+          "line says payout READY, Needs you does not repeat it", pr["lines"][1].startswith("REQUEST PAYOUT TODAY: ATLAS 25K $1,000 - MFFU dashboard > Payouts")
+          and "payout READY $1,000" in pr["lines"][2] and "request the ATLAS 25K payout" not in pr["lines"][-1], pr["lines"])
 
 
 def part_b():
@@ -150,13 +151,13 @@ def part_f():
         old = os.path.join(tmp, "pa_old.json")
         json.dump({"last": {"t": int(time.time()) - 3 * 86400, "views": [{"name": "ATLAS 25K", "ready": True, "amount": 1000.0}]}},
                   open(old, "w"))
-        check("rt2. an autopilot run 3 days old: no 'Payout ready' in the evening (no stale payout shown as today's)",
-              "Payout ready" not in G.evening_extra("2026-11-24", pa_path=old, digest_path=os.path.join(tmp, "d0.json"), fleet=""))
+        check("rt2. an autopilot run 3 days old: no 'REQUEST PAYOUT TODAY' in the evening (no stale payout shown as today's)",
+              "REQUEST PAYOUT" not in G.evening_extra("2026-11-24", pa_path=old, digest_path=os.path.join(tmp, "d0.json"), fleet=""))
         dg = os.path.join(tmp, "digest.json")
         AB.digest_add("Update applied", "a1 -> b2", key="u:1", path=dg)
         ex = G.evening_extra("2026-11-24", pa_path=pa, digest_path=dg, fleet="buy a Rapid EOD 50K ($165 with CLUB)")
         check("f. the evening message adds: payout ready $, the #5 stop, Tomorrow: <next move>, Also: <digest line>",
-              "Payout ready: ATLAS 25K $1,000" in ex and "Do not take payout #5 on Zlarior 25K #2" in ex
+              "REQUEST PAYOUT TODAY: ATLAS 25K $1,000" in ex and "Do not take payout #5 on Zlarior 25K #2" in ex
               and "Tomorrow: buy a Rapid EOD 50K ($165 with CLUB)" in ex and "Also: Update applied: a1 -> b2" in ex, ex)
         tue_eve = ts(2026, 11, 24, 16, 25)
         r = AB.digest_flush(now=tue_eve, path=dg, cfg={"telegram": None, "discord": None, "ntfy": False, "webpush": False})

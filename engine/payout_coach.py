@@ -147,8 +147,8 @@ def sentence(c: dict) -> str:
     if s == "graduated":
         return "5 sim payouts done: MFFU moves you to live (you trade it in person)."
     if s == "ready":
-        return (f"PAYOUT READY: request {usd(c['request_today'])} today ({usd(c['to_you'])} to you, {usd(c['net'])} after the 30% "
-                "tax pot).")
+        return (f"REQUEST PAYOUT TODAY: {usd(c['request_today'])} ({usd(c['to_you'])} to you, {usd(c['net'])} after the 30% "
+                "tax pot). MFFU dashboard > Payouts, then TRADE_HOME -> P.")
     if s == "allowed":
         return (f"MFFU would pay {usd(c['request_today'])} today; the plan waits for the full {usd(c['request_today'] + c['plan_wait'])} "
                 f"({usd(c['plan_wait'])} more).")
