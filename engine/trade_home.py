@@ -608,6 +608,7 @@ MENU = ("  ==== TRADING HOME ====",
         "   T  Test all alerts      (OK / FAIL per channel, plain words)",
         "   P  I took a payout       (records it: the account + the Money pipeline)",
         "   R  Contract roll        (December: chart to the new contract; waits until flat)",
+        "   F  FINISH SETUP TONIGHT (never-sleep, order flow, ATLAS on both Zlarior accounts; you type the phrase)",
         "   0  Close")
 
 
@@ -618,6 +619,10 @@ def do_choice(ch, ask=input, out=say, run=None, fx=None, add_fn=None, unseen=Non
     ch = (ch or "").strip().lower()
     if ch == "0":
         return None
+    if ch == "f":                       # owner 2026-11-23: one key finishes tonight's setup (tools/finish_tonight.py)
+        rc = run([sys.executable, "-X", "utf8", os.path.join(ROOT, "tools", "finish_tonight.py")])
+        return "[OK] Finish setup ran: read its lines above (F5 in NinjaTrader is the one click left)" if rc == 0 \
+            else "[FIX] Finish setup stopped: read the [FIX] line above"
     if ch == "1":
         lines, _p = status_screen()
         for ln in lines[:-1]:
