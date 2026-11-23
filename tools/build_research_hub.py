@@ -205,9 +205,13 @@ def live():
         s = word.get(a.get("status"), (a.get("status") or "").upper())
         rows.append({"k": label, "s": s, "t": R.clean(f"{a['plan']} · {a['stage']} · runs {a['bots']}".replace("<=", "≤").replace(">=", "≥"), 170), "src": cur(ACCOUNTS)})
     st = read(STATE)
-    ka = "Keep-alive (one tiny trade so MFFU's 7-day no-trade close never hits): built, OFF per account; you switch it on (TRADE_HOME.bat, option 3)"
-    if "keep-alive" in st.lower() and "OFF per account" in st and "3 Keep-alive on" in st:
-        rows.append({"k": "Keep-alive", "s": "OFF until you", "t": ka, "src": "STATE.md"})
+    if "Keep-alive is now part of the START phrase" in st:        # night-zerotouch (STATE.md 2026-11-23)
+        rows.append({"k": "Keep-alive", "s": "ON at START",
+                     "t": "Keep-alive (one tiny trade so MFFU's 7-day no-trade close never hits): your START phrase turns it on for the "
+                          "accounts it arms; off any time with TRADE_HOME k", "src": "STATE.md"})
+    elif "keep-alive" in st.lower() and "OFF per account" in st and "3 Keep-alive on" in st:
+        rows.append({"k": "Keep-alive", "s": "OFF until you", "src": "STATE.md",
+                     "t": "Keep-alive (one tiny trade so MFFU's 7-day no-trade close never hits): built, OFF per account; you switch it on (TRADE_HOME.bat, option 3)"})
     fl = json.loads(read(FLEET))
     nb = fl.get("next_buy") or {}
     if nb.get("what"):
