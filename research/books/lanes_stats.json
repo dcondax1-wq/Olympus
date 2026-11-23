@@ -1,0 +1,1123 @@
+{
+ "lanes": {
+  "Z": {
+   "name": "LIT (Zlarior)",
+   "H1": {
+    "trades": 80,
+    "tpw": 3.12,
+    "win": 22.5,
+    "pf": 3.6,
+    "net": 14192,
+    "per_month": 2328,
+    "max_dd": -1372,
+    "win_days_pw": 0.7
+   },
+   "H2": {
+    "trades": 40,
+    "tpw": 2.56,
+    "win": 35.0,
+    "pf": 2.94,
+    "net": 6525,
+    "per_month": 1757,
+    "max_dd": -920,
+    "win_days_pw": 0.9
+   },
+   "REF": {
+    "trades": 511,
+    "tpw": 2.37,
+    "win": 16.6,
+    "pf": 0.99,
+    "net": -680,
+    "per_month": -13,
+    "max_dd": -9812,
+    "win_days_pw": 0.39
+   }
+  },
+  "A": {
+   "name": "ATLAS (as live)",
+   "H1": {
+    "trades": 107,
+    "tpw": 4.18,
+    "win": 34.6,
+    "pf": 2.71,
+    "net": 18687,
+    "per_month": 3066,
+    "max_dd": -1112,
+    "win_days_pw": 1.37
+   },
+   "H2": {
+    "trades": 50,
+    "tpw": 3.21,
+    "win": 34.0,
+    "pf": 1.9,
+    "net": 3970,
+    "per_month": 1069,
+    "max_dd": -1492,
+    "win_days_pw": 1.03
+   },
+   "REF": {
+    "trades": 1061,
+    "tpw": 4.93,
+    "win": 18.7,
+    "pf": 0.95,
+    "net": -8009,
+    "per_month": -156,
+    "max_dd": -22773,
+    "win_days_pw": 0.88
+   }
+  },
+  "E": {
+   "name": "ATLAS EMA",
+   "H1": {
+    "trades": 60,
+    "tpw": 2.34,
+    "win": 20.0,
+    "pf": 2.43,
+    "net": 8265,
+    "per_month": 1356,
+    "max_dd": -1747,
+    "win_days_pw": 0.47
+   },
+   "H2": {
+    "trades": 26,
+    "tpw": 1.67,
+    "win": 26.9,
+    "pf": 2.55,
+    "net": 3111,
+    "per_month": 838,
+    "max_dd": -805,
+    "win_days_pw": 0.45
+   },
+   "REF": {
+    "trades": 550,
+    "tpw": 2.55,
+    "win": 10.4,
+    "pf": 0.86,
+    "net": -10953,
+    "per_month": -214,
+    "max_dd": -14860,
+    "win_days_pw": 0.26
+   }
+  },
+  "M": {
+   "name": "ATLAS MACD",
+   "H1": {
+    "trades": 29,
+    "tpw": 1.13,
+    "win": 37.9,
+    "pf": 3.29,
+    "net": 8452,
+    "per_month": 1387,
+    "max_dd": -1227,
+    "win_days_pw": 0.43
+   },
+   "H2": {
+    "trades": 15,
+    "tpw": 0.96,
+    "win": 33.3,
+    "pf": 1.22,
+    "net": 365,
+    "per_month": 98,
+    "max_dd": -853,
+    "win_days_pw": 0.32
+   },
+   "REF": {
+    "trades": 338,
+    "tpw": 1.57,
+    "win": 18.0,
+    "pf": 1.03,
+    "net": 1805,
+    "per_month": 35,
+    "max_dd": -13196,
+    "win_days_pw": 0.28
+   }
+  },
+  "S": {
+   "name": "ATLAS S/R",
+   "H1": {
+    "trades": 29,
+    "tpw": 1.13,
+    "win": 65.5,
+    "pf": 3.55,
+    "net": 4911,
+    "per_month": 806,
+    "max_dd": -425,
+    "win_days_pw": 0.74
+   },
+   "H2": {
+    "trades": 16,
+    "tpw": 1.03,
+    "win": 50.0,
+    "pf": 1.69,
+    "net": 947,
+    "per_month": 255,
+    "max_dd": -1201,
+    "win_days_pw": 0.51
+   },
+   "REF": {
+    "trades": 327,
+    "tpw": 1.52,
+    "win": 35.8,
+    "pf": 0.97,
+    "net": -1331,
+    "per_month": -26,
+    "max_dd": -5603,
+    "win_days_pw": 0.54
+   }
+  },
+  "B": {
+   "name": "BLITZ",
+   "H1": {
+    "trades": 221,
+    "tpw": 8.63,
+    "win": 54.3,
+    "pf": 1.32,
+    "net": 4303,
+    "per_month": 706,
+    "max_dd": -1659,
+    "win_days_pw": 1.17
+   },
+   "H2": {
+    "trades": 109,
+    "tpw": 6.99,
+    "win": 54.1,
+    "pf": 1.59,
+    "net": 3246,
+    "per_month": 874,
+    "max_dd": -1180,
+    "win_days_pw": 1.15
+   },
+   "REF": {
+    "trades": 1869,
+    "tpw": 8.68,
+    "win": 47.8,
+    "pf": 0.87,
+    "net": -19176,
+    "per_month": -374,
+    "max_dd": -22221,
+    "win_days_pw": 0.91
+   }
+  },
+  "P": {
+   "name": "post-close follow",
+   "H1": {
+    "trades": 34,
+    "tpw": 1.33,
+    "win": 44.1,
+    "pf": 1.39,
+    "net": 1484,
+    "per_month": 243,
+    "max_dd": -740,
+    "win_days_pw": 0.59
+   },
+   "H2": {
+    "trades": 22,
+    "tpw": 1.41,
+    "win": 40.9,
+    "pf": 1.23,
+    "net": 671,
+    "per_month": 181,
+    "max_dd": -2060,
+    "win_days_pw": 0.58
+   },
+   "REF": {
+    "trades": 247,
+    "tpw": 1.15,
+    "win": 39.7,
+    "pf": 0.99,
+    "net": -305,
+    "per_month": -6,
+    "max_dd": -6853,
+    "win_days_pw": 0.45
+   }
+  },
+  "H": {
+   "name": "stop hunt Asia resweep",
+   "H1": {
+    "trades": 38,
+    "tpw": 1.48,
+    "win": 39.5,
+    "pf": 2.41,
+    "net": 3055,
+    "per_month": 501,
+    "max_dd": -615,
+    "win_days_pw": 0.59
+   },
+   "H2": {
+    "trades": 40,
+    "tpw": 2.56,
+    "win": 30.0,
+    "pf": 1.07,
+    "net": 272,
+    "per_month": 73,
+    "max_dd": -1253,
+    "win_days_pw": 0.77
+   },
+   "REF": {
+    "trades": 480,
+    "tpw": 2.23,
+    "win": 31.5,
+    "pf": 1.09,
+    "net": 4883,
+    "per_month": 95,
+    "max_dd": -5289,
+    "win_days_pw": 0.7
+   }
+  },
+  "T": {
+   "name": "stop hunt trend idm5",
+   "H1": {
+    "trades": 35,
+    "tpw": 1.37,
+    "win": 40.0,
+    "pf": 1.76,
+    "net": 1983,
+    "per_month": 325,
+    "max_dd": -648,
+    "win_days_pw": 0.51
+   },
+   "H2": {
+    "trades": 24,
+    "tpw": 1.54,
+    "win": 41.7,
+    "pf": 2.2,
+    "net": 2037,
+    "per_month": 548,
+    "max_dd": -485,
+    "win_days_pw": 0.64
+   },
+   "REF": {
+    "trades": 408,
+    "tpw": 1.89,
+    "win": 32.6,
+    "pf": 1.17,
+    "net": 6968,
+    "per_month": 136,
+    "max_dd": -3304,
+    "win_days_pw": 0.6
+   }
+  },
+  "O": {
+   "name": "edge-a ORB-30",
+   "H1": {
+    "trades": 84,
+    "tpw": 3.28,
+    "win": 54.8,
+    "pf": 1.34,
+    "net": 3051,
+    "per_month": 501,
+    "max_dd": -1382,
+    "win_days_pw": 1.8
+   },
+   "H2": {
+    "trades": 49,
+    "tpw": 3.14,
+    "win": 40.8,
+    "pf": 0.7,
+    "net": -2248,
+    "per_month": -605,
+    "max_dd": -3779,
+    "win_days_pw": 1.28
+   },
+   "REF": {
+    "trades": 887,
+    "tpw": 4.12,
+    "win": 49.6,
+    "pf": 1.06,
+    "net": 5169,
+    "per_month": 101,
+    "max_dd": -3441,
+    "win_days_pw": 2.04
+   }
+  },
+  "W": {
+   "name": "edge-c Monday long",
+   "H1": {
+    "trades": 18,
+    "tpw": 0.7,
+    "win": 22.2,
+    "pf": 1.22,
+    "net": 653,
+    "per_month": 107,
+    "max_dd": -2133,
+    "win_days_pw": 0.16
+   },
+   "H2": {
+    "trades": 13,
+    "tpw": 0.83,
+    "win": 15.4,
+    "pf": 2.63,
+    "net": 3871,
+    "per_month": 1042,
+    "max_dd": -1870,
+    "win_days_pw": 0.13
+   },
+   "REF": {
+    "trades": 188,
+    "tpw": 0.87,
+    "win": 16.5,
+    "pf": 1.1,
+    "net": 3684,
+    "per_month": 72,
+    "max_dd": -9576,
+    "win_days_pw": 0.14
+   }
+  },
+  "IB": {
+   "name": "grid IB (div:IB:ib_nar_mid_r2_13)",
+   "H1": {
+    "trades": 49,
+    "tpw": 1.91,
+    "win": 44.9,
+    "pf": 1.29,
+    "net": 1485,
+    "per_month": 244,
+    "max_dd": -950,
+    "win_days_pw": 0.86
+   },
+   "H2": {
+    "trades": 32,
+    "tpw": 2.05,
+    "win": 28.1,
+    "pf": 0.38,
+    "net": -2383,
+    "per_month": -642,
+    "max_dd": -2584,
+    "win_days_pw": 0.58
+   },
+   "REF": {
+    "trades": 433,
+    "tpw": 2.01,
+    "win": 43.0,
+    "pf": 0.95,
+    "net": -2390,
+    "per_month": -47,
+    "max_dd": -4700,
+    "win_days_pw": 0.86
+   }
+  },
+  "NA": {
+   "name": "grid NA (div:NA:na_vm125_1030_n99_trail_check_vxh)",
+   "H1": {
+    "trades": 83,
+    "tpw": 3.24,
+    "win": 38.6,
+    "pf": 2.07,
+    "net": 9169,
+    "per_month": 1504,
+    "max_dd": -1224,
+    "win_days_pw": 0.9
+   },
+   "H2": {
+    "trades": 19,
+    "tpw": 1.22,
+    "win": 26.3,
+    "pf": 1.09,
+    "net": 256,
+    "per_month": 69,
+    "max_dd": -2446,
+    "win_days_pw": 0.19
+   },
+   "REF": {
+    "trades": 356,
+    "tpw": 1.65,
+    "win": 30.6,
+    "pf": 0.91,
+    "net": -4338,
+    "per_month": -85,
+    "max_dd": -8017,
+    "win_days_pw": 0.35
+   }
+  },
+  "cam": {
+   "name": "grid cam (third:cam:cam_break4_bar_r3_u11)",
+   "H1": {
+    "trades": 66,
+    "tpw": 2.58,
+    "win": 39.4,
+    "pf": 1.27,
+    "net": 2450,
+    "per_month": 402,
+    "max_dd": -2080,
+    "win_days_pw": 1.02
+   },
+   "H2": {
+    "trades": 31,
+    "tpw": 1.99,
+    "win": 22.6,
+    "pf": 0.61,
+    "net": -1938,
+    "per_month": -522,
+    "max_dd": -2808,
+    "win_days_pw": 0.45
+   },
+   "REF": {
+    "trades": 463,
+    "tpw": 2.15,
+    "win": 31.5,
+    "pf": 0.99,
+    "net": -1087,
+    "per_month": -21,
+    "max_dd": -8051,
+    "win_days_pw": 0.68
+   }
+  },
+  "d80": {
+   "name": "grid d80 (hunt:d80:d80_c2_u12_r2)",
+   "H1": {
+    "trades": 7,
+    "tpw": 0.27,
+    "win": 85.7,
+    "pf": 203.88,
+    "net": 1704,
+    "per_month": 280,
+    "max_dd": -8,
+    "win_days_pw": 0.23
+   },
+   "H2": {
+    "trades": 12,
+    "tpw": 0.77,
+    "win": 50.0,
+    "pf": 1.14,
+    "net": 155,
+    "per_month": 42,
+    "max_dd": -727,
+    "win_days_pw": 0.38
+   },
+   "REF": {
+    "trades": 141,
+    "tpw": 0.65,
+    "win": 44.0,
+    "pf": 0.89,
+    "net": -1443,
+    "per_month": -28,
+    "max_dd": -3925,
+    "win_days_pw": 0.29
+   }
+  },
+  "eod": {
+   "name": "grid eod (e2:eod:eod_lrev_t1.5_1500)",
+   "H1": {
+    "trades": 29,
+    "tpw": 1.13,
+    "win": 31.0,
+    "pf": 1.34,
+    "net": 1286,
+    "per_month": 211,
+    "max_dd": -2126,
+    "win_days_pw": 0.35
+   },
+   "H2": {
+    "trades": 16,
+    "tpw": 1.03,
+    "win": 31.2,
+    "pf": 0.41,
+    "net": -1292,
+    "per_month": -348,
+    "max_dd": -1770,
+    "win_days_pw": 0.32
+   },
+   "REF": {
+    "trades": 243,
+    "tpw": 1.13,
+    "win": 23.9,
+    "pf": 0.54,
+    "net": -18604,
+    "per_month": -363,
+    "max_dd": -19490,
+    "win_days_pw": 0.27
+   }
+  },
+  "fav": {
+   "name": "grid fav (hunt:fav:fav_d0_n6_u11_in_poc)",
+   "H1": {
+    "trades": 30,
+    "tpw": 1.17,
+    "win": 30.0,
+    "pf": 1.05,
+    "net": 251,
+    "per_month": 41,
+    "max_dd": -2610,
+    "win_days_pw": 0.35
+   },
+   "H2": {
+    "trades": 9,
+    "tpw": 0.58,
+    "win": 0.0,
+    "pf": 0.0,
+    "net": -2155,
+    "per_month": -580,
+    "max_dd": -2155,
+    "win_days_pw": 0.0
+   },
+   "REF": {
+    "trades": 245,
+    "tpw": 1.14,
+    "win": 26.1,
+    "pf": 0.54,
+    "net": -21748,
+    "per_month": -424,
+    "max_dd": -22716,
+    "win_days_pw": 0.3
+   }
+  },
+  "gapf": {
+   "name": "grid gapf (e2:gapf:gapf_g0.25_low_or15_r2)",
+   "H1": {
+    "trades": 9,
+    "tpw": 0.35,
+    "win": 55.6,
+    "pf": 2.49,
+    "net": 1158,
+    "per_month": 190,
+    "max_dd": -455,
+    "win_days_pw": 0.2
+   },
+   "H2": {
+    "trades": 4,
+    "tpw": 0.26,
+    "win": 75.0,
+    "pf": 3.46,
+    "net": 638,
+    "per_month": 172,
+    "max_dd": -260,
+    "win_days_pw": 0.19
+   },
+   "REF": {
+    "trades": 70,
+    "tpw": 0.32,
+    "win": 28.6,
+    "pf": 0.64,
+    "net": -3812,
+    "per_month": -74,
+    "max_dd": -5192,
+    "win_days_pw": 0.09
+   }
+  },
+  "ksq": {
+   "name": "grid ksq (plus:ksq:ksq_n6_bar_tvix)",
+   "H1": {
+    "trades": 5,
+    "tpw": 0.2,
+    "win": 40.0,
+    "pf": 1.01,
+    "net": 6,
+    "per_month": 1,
+    "max_dd": -369,
+    "win_days_pw": 0.08
+   },
+   "H2": {
+    "trades": 2,
+    "tpw": 0.13,
+    "win": 50.0,
+    "pf": 0.58,
+    "net": -20,
+    "per_month": -5,
+    "max_dd": -49,
+    "win_days_pw": 0.06
+   },
+   "REF": {
+    "trades": 55,
+    "tpw": 0.26,
+    "win": 27.3,
+    "pf": 0.82,
+    "net": -1633,
+    "per_month": -32,
+    "max_dd": -3609,
+    "win_days_pw": 0.07
+   }
+  },
+  "lsq": {
+   "name": "grid lsq (hunt:lsq:lsq_1130_am50_against_mid_r2)",
+   "H1": {
+    "trades": 14,
+    "tpw": 0.55,
+    "win": 64.3,
+    "pf": 2.41,
+    "net": 1123,
+    "per_month": 184,
+    "max_dd": -508,
+    "win_days_pw": 0.35
+   },
+   "H2": {
+    "trades": 1,
+    "tpw": 0.06,
+    "win": 100.0,
+    "pf": null,
+    "net": 174,
+    "per_month": 47,
+    "max_dd": 0,
+    "win_days_pw": 0.06
+   },
+   "REF": {
+    "trades": 82,
+    "tpw": 0.38,
+    "win": 29.3,
+    "pf": 0.58,
+    "net": -3930,
+    "per_month": -77,
+    "max_dd": -4076,
+    "win_days_pw": 0.11
+   }
+  },
+  "lxf": {
+   "name": "grid lxf (hunt:lxf:lxf_k10_or30_r2_l13)",
+   "H1": {
+    "trades": 18,
+    "tpw": 0.7,
+    "win": 66.7,
+    "pf": 1.61,
+    "net": 781,
+    "per_month": 128,
+    "max_dd": -549,
+    "win_days_pw": 0.47
+   },
+   "H2": {
+    "trades": 11,
+    "tpw": 0.71,
+    "win": 18.2,
+    "pf": 0.25,
+    "net": -1603,
+    "per_month": -432,
+    "max_dd": -1820,
+    "win_days_pw": 0.13
+   },
+   "REF": {
+    "trades": 223,
+    "tpw": 1.04,
+    "win": 52.9,
+    "pf": 1.09,
+    "net": 1849,
+    "per_month": 36,
+    "max_dd": -3394,
+    "win_days_pw": 0.55
+   }
+  },
+  "odc": {
+   "name": "grid odc (plus:odc:odc_k75_d945_tvix)",
+   "H1": {
+    "trades": 18,
+    "tpw": 0.7,
+    "win": 38.9,
+    "pf": 1.48,
+    "net": 1064,
+    "per_month": 174,
+    "max_dd": -1925,
+    "win_days_pw": 0.27
+   },
+   "H2": {
+    "trades": 12,
+    "tpw": 0.77,
+    "win": 16.7,
+    "pf": 0.66,
+    "net": -633,
+    "per_month": -170,
+    "max_dd": -981,
+    "win_days_pw": 0.13
+   },
+   "REF": {
+    "trades": 84,
+    "tpw": 0.39,
+    "win": 23.8,
+    "pf": 0.67,
+    "net": -4230,
+    "per_month": -82,
+    "max_dd": -5790,
+    "win_days_pw": 0.09
+   }
+  },
+  "orb2": {
+   "name": "grid orb2 (e2:orb2:orb2_or15_eod_to12)",
+   "H1": {
+    "trades": 40,
+    "tpw": 1.56,
+    "win": 57.5,
+    "pf": 2.5,
+    "net": 5512,
+    "per_month": 904,
+    "max_dd": -555,
+    "win_days_pw": 0.9
+   },
+   "H2": {
+    "trades": 21,
+    "tpw": 1.35,
+    "win": 42.9,
+    "pf": 0.78,
+    "net": -624,
+    "per_month": -168,
+    "max_dd": -1121,
+    "win_days_pw": 0.58
+   },
+   "REF": {
+    "trades": 367,
+    "tpw": 1.7,
+    "win": 49.3,
+    "pf": 1.13,
+    "net": 4464,
+    "per_month": 87,
+    "max_dd": -4610,
+    "win_days_pw": 0.84
+   }
+  },
+  "pdx": {
+   "name": "grid pdx (e2:pdx:pdx_rv0_r2_to15)",
+   "H1": {
+    "trades": 30,
+    "tpw": 1.17,
+    "win": 43.3,
+    "pf": 1.17,
+    "net": 740,
+    "per_month": 121,
+    "max_dd": -805,
+    "win_days_pw": 0.51
+   },
+   "H2": {
+    "trades": 10,
+    "tpw": 0.64,
+    "win": 20.0,
+    "pf": 0.41,
+    "net": -1098,
+    "per_month": -296,
+    "max_dd": -1205,
+    "win_days_pw": 0.13
+   },
+   "REF": {
+    "trades": 214,
+    "tpw": 0.99,
+    "win": 32.7,
+    "pf": 0.72,
+    "net": -9894,
+    "per_month": -193,
+    "max_dd": -11113,
+    "win_days_pw": 0.32
+   }
+  },
+  "poc": {
+   "name": "grid poc (plus:poc:poc_u15_tvix)",
+   "H1": {
+    "trades": 14,
+    "tpw": 0.55,
+    "win": 28.6,
+    "pf": 1.64,
+    "net": 1392,
+    "per_month": 228,
+    "max_dd": -1326,
+    "win_days_pw": 0.16
+   },
+   "H2": {
+    "trades": 10,
+    "tpw": 0.64,
+    "win": 20.0,
+    "pf": 0.85,
+    "net": -277,
+    "per_month": -75,
+    "max_dd": -1285,
+    "win_days_pw": 0.13
+   },
+   "REF": {
+    "trades": 213,
+    "tpw": 0.99,
+    "win": 14.1,
+    "pf": 0.62,
+    "net": -17430,
+    "per_month": -340,
+    "max_dd": -22380,
+    "win_days_pw": 0.14
+   }
+  },
+  "rs": {
+   "name": "grid rs (e2:rs:rs_lead_z0.5_1000_r2)",
+   "H1": {
+    "trades": 27,
+    "tpw": 1.05,
+    "win": 59.3,
+    "pf": 1.9,
+    "net": 2453,
+    "per_month": 402,
+    "max_dd": -719,
+    "win_days_pw": 0.62
+   },
+   "H2": {
+    "trades": 23,
+    "tpw": 1.47,
+    "win": 34.8,
+    "pf": 0.94,
+    "net": -184,
+    "per_month": -49,
+    "max_dd": -1804,
+    "win_days_pw": 0.51
+   },
+   "REF": {
+    "trades": 45,
+    "tpw": 0.21,
+    "win": 46.7,
+    "pf": 1.24,
+    "net": 1199,
+    "per_month": 23,
+    "max_dd": -1137,
+    "win_days_pw": 0.1
+   }
+  },
+  "tds": {
+   "name": "grid tds (third:tds:tds_60_p_bar9_start_all)",
+   "H1": {
+    "trades": 47,
+    "tpw": 1.84,
+    "win": 31.9,
+    "pf": 2.08,
+    "net": 8524,
+    "per_month": 1398,
+    "max_dd": -3039,
+    "win_days_pw": 0.59
+   },
+   "H2": {
+    "trades": 25,
+    "tpw": 1.6,
+    "win": 24.0,
+    "pf": 0.83,
+    "net": -749,
+    "per_month": -202,
+    "max_dd": -2363,
+    "win_days_pw": 0.38
+   },
+   "REF": {
+    "trades": 412,
+    "tpw": 1.91,
+    "win": 18.9,
+    "pf": 0.7,
+    "net": -26146,
+    "per_month": -510,
+    "max_dd": -29475,
+    "win_days_pw": 0.36
+   }
+  },
+  "vwp": {
+   "name": "grid vwp (plus:vwp:vwp_u12_s1_t2)",
+   "H1": {
+    "trades": 38,
+    "tpw": 1.48,
+    "win": 39.5,
+    "pf": 0.95,
+    "net": -251,
+    "per_month": -41,
+    "max_dd": -1261,
+    "win_days_pw": 0.59
+   },
+   "H2": {
+    "trades": 28,
+    "tpw": 1.79,
+    "win": 32.1,
+    "pf": 0.79,
+    "net": -872,
+    "per_month": -235,
+    "max_dd": -1495,
+    "win_days_pw": 0.58
+   },
+   "REF": {
+    "trades": 431,
+    "tpw": 2.0,
+    "win": 32.0,
+    "pf": 0.77,
+    "net": -15002,
+    "per_month": -293,
+    "max_dd": -16540,
+    "win_days_pw": 0.64
+   }
+  },
+  "vwr": {
+   "name": "grid vwr (e2:vwr:vwr_med_k1.5_vwap)",
+   "H1": {
+    "trades": 36,
+    "tpw": 1.41,
+    "win": 47.2,
+    "pf": 1.35,
+    "net": 1423,
+    "per_month": 233,
+    "max_dd": -1398,
+    "win_days_pw": 0.66
+   },
+   "H2": {
+    "trades": 61,
+    "tpw": 3.91,
+    "win": 45.9,
+    "pf": 1.12,
+    "net": 824,
+    "per_month": 222,
+    "max_dd": -2032,
+    "win_days_pw": 1.79
+   },
+   "REF": {
+    "trades": 504,
+    "tpw": 2.34,
+    "win": 41.1,
+    "pf": 0.61,
+    "net": -27955,
+    "per_month": -545,
+    "max_dd": -28978,
+    "win_days_pw": 0.96
+   }
+  }
+ },
+ "gate": [
+  "Z",
+  "A",
+  "E",
+  "M",
+  "S",
+  "B",
+  "P",
+  "H",
+  "T",
+  "O",
+  "W",
+  "IB",
+  "NA",
+  "cam",
+  "d80",
+  "eod",
+  "fav",
+  "gapf",
+  "ksq",
+  "lsq",
+  "lxf",
+  "odc",
+  "orb2",
+  "pdx",
+  "poc",
+  "rs",
+  "tds",
+  "vwr"
+ ],
+ "grid_picks": {
+  "lsq": {
+   "cell": "hunt:lsq:lsq_1130_am50_against_mid_r2",
+   "h1_net_500": 2438,
+   "h1_trades": 14,
+   "cells": 216
+  },
+  "fav": {
+   "cell": "hunt:fav:fav_d0_n6_u11_in_poc",
+   "h1_net_500": 480,
+   "h1_trades": 30,
+   "cells": 72
+  },
+  "d80": {
+   "cell": "hunt:d80:d80_c2_u12_r2",
+   "h1_net_500": 1704,
+   "h1_trades": 7,
+   "cells": 12
+  },
+  "lxf": {
+   "cell": "hunt:lxf:lxf_k10_or30_r2_l13",
+   "h1_net_500": 877,
+   "h1_trades": 18,
+   "cells": 54
+  },
+  "orb2": {
+   "cell": "e2:orb2:orb2_or15_eod_to12",
+   "h1_net_500": 6786,
+   "h1_trades": 40,
+   "cells": 18
+  },
+  "pdx": {
+   "cell": "e2:pdx:pdx_rv0_r2_to15",
+   "h1_net_500": 1753,
+   "h1_trades": 30,
+   "cells": 18
+  },
+  "rs": {
+   "cell": "e2:rs:rs_lead_z0.5_1000_r2",
+   "h1_net_500": 4248,
+   "h1_trades": 27,
+   "cells": 16
+  },
+  "gapf": {
+   "cell": "e2:gapf:gapf_g0.25_low_or15_r2",
+   "h1_net_500": 2401,
+   "h1_trades": 9,
+   "cells": 24
+  },
+  "vwr": {
+   "cell": "e2:vwr:vwr_med_k1.5_vwap",
+   "h1_net_500": 2508,
+   "h1_trades": 36,
+   "cells": 18
+  },
+  "eod": {
+   "cell": "e2:eod:eod_lrev_t1.5_1500",
+   "h1_net_500": 2097,
+   "h1_trades": 29,
+   "cells": 18
+  },
+  "NA": {
+   "cell": "div:NA:na_vm125_1030_n99_trail_check_vxh",
+   "h1_net_500": 19389,
+   "h1_trades": 83,
+   "cells": 144
+  },
+  "IB": {
+   "cell": "div:IB:ib_nar_mid_r2_13",
+   "h1_net_500": 2441,
+   "h1_trades": 49,
+   "cells": 24
+  },
+  "vwp": {
+   "cell": "plus:vwp:vwp_u12_s1_t2",
+   "h1_net_500": 283,
+   "h1_trades": 38,
+   "cells": 8
+  },
+  "odc": {
+   "cell": "plus:odc:odc_k75_d945_tvix",
+   "h1_net_500": 2062,
+   "h1_trades": 18,
+   "cells": 8
+  },
+  "ksq": {
+   "cell": "plus:ksq:ksq_n6_bar_tvix",
+   "h1_net_500": -209,
+   "h1_trades": 5,
+   "cells": 8
+  },
+  "poc": {
+   "cell": "plus:poc:poc_u15_tvix",
+   "h1_net_500": 2712,
+   "h1_trades": 14,
+   "cells": 4
+  },
+  "cam": {
+   "cell": "third:cam:cam_break4_bar_r3_u11",
+   "h1_net_500": 8266,
+   "h1_trades": 66,
+   "cells": 44
+  },
+  "tds": {
+   "cell": "third:tds:tds_60_p_bar9_start_all",
+   "h1_net_500": 17350,
+   "h1_trades": 47,
+   "cells": 48
+  }
+ },
+ "grid_cells_tried": {
+  "lsq": 216,
+  "fav": 72,
+  "d80": 12,
+  "lxf": 54,
+  "orb2": 18,
+  "pdx": 18,
+  "rs": 16,
+  "gapf": 24,
+  "vwr": 18,
+  "eod": 18,
+  "news": 8,
+  "NA": 144,
+  "IB": 24,
+  "vwp": 8,
+  "odc": 8,
+  "pva": 1,
+  "ksq": 8,
+  "poc": 4,
+  "cam": 44,
+  "tds": 48
+ }
+}

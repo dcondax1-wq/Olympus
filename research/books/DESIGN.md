@@ -40,3 +40,10 @@ capped at the plan's max micros and the room left after every open trade's full 
 N = grid cells tried + books screened + account rows tried. Test of each pick: one-sided paired t on the H1 real days of
 (book daily $ - today's setup daily $) at $250 a trade; Bonferroni needs p < 0.05 / N. Also a White reality check
 (5-day block bootstrap, max-t over every screened book). Out-of-sample Jul-Oct and 2021-25 decide whether to trust it.
+
+## Amendment (written after the stage-2 screen printed its top 10, before any account-stage number)
+The H1 screen's top books are all built on grid cells picked on H1 (tds, NA, cam), which lose money in Jul-Oct and 2021-25 on
+their own (stage-1 table). The main pick stays exactly as above. A SECOND pool is added and picked by the same H1-only rules:
+books made only of the 11 fixed-rule lanes (Z, A, E, M, S, B, P, H, T, O, W: no cell chosen by this study). Top 15 by H1 $
+and top 10 among >= 5 trades a week go to the account stage; picks reported side by side. Its books are already inside the
+114,506 screened, so N does not grow beyond the extra account rows.

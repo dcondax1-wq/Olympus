@@ -120,7 +120,7 @@ def edge_lanes():
 def grid_lanes(fills):
     """per grid family: the cell with the most net $ in 2026 Jan-Jun at $500 a trade after real fills (H1 ONLY)."""
     picks, tried, out = {}, {}, []
-    adj = extra_ticks("x", fills) * TICK
+    adj = extra_ticks("x", "real") * TICK                       # cells are always picked at REAL fills (same cells in both files)
     for src, fams in GRID.items():
         cells = json.load(open(os.path.join(ROOT, "research", "retest", f"cells_{src}.json")))
         for fam in fams:
