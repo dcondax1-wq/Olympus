@@ -669,8 +669,8 @@ def send(ev: dict, on_done=None, cfg: dict | None = None, wait: bool = False, _z
             return r
 
         if wait:
-            run()
-            return "sent"
+            r = run()
+            return "sent" if (r or {}).get("ok") else "failed"     # audit 2026-11-22 (package B): "sent" = it reached a channel
         th = threading.Thread(target=run, name="alert-bus", daemon=True)
         with _LOCK:
             _THREADS[:] = [x for x in _THREADS if x.is_alive()]
@@ -702,7 +702,7 @@ def zero_cfg(cfg: dict | None = None) -> dict:
     return c
 
 
-def send_critical(ev: dict, on_done=None, cfg: dict | None = None, wait: bool = False) -> str:
+def send_critical(ev: dict, on_done=None, cfg: dict | None = None, wait: bool = False, no_app: bool = False) -> str:
     """A critical event that must reach the phone with ZERO setup. Bus active (Telegram / Discord set up, not switched off) =
     send(). Otherwise: the private ntfy topic AND the Olympus app (both, so an "accepted" by Apple alone never hides it), the
     same de-dup by key. ALERTS_OFF = "off" (the call sites' old path, exactly).
@@ -715,6 +715,8 @@ def send_critical(ev: dict, on_done=None, cfg: dict | None = None, wait: bool = 
         if cfg is None and switched_off():
             return "off"                                # ALERTS_OFF = every call site's old path, exactly (as documented)
         z = zero_cfg(c)
+        if no_app:
+            z["webpush"] = False                        # the caller's Olympus app copy already went out (engine/push._pc_send)
         ev = dict(_d(ev))
         ev["only"] = [ch for ch in ZERO if ch in channels(z)]
         if not ev["only"]:
@@ -793,7 +795,7 @@ def digest_flush(now=None, path=None, cfg: dict | None = None, force: bool = Fal
         r = send_critical({"kind": "report", "key": f"digest:{day}", "title": f"Olympus daily digest ({len(items)})", "body": body,
                            "notify_type": "daily_summary", "report": True, "silent": True, "need": 1},
                           cfg=cfg, wait=True)
-        return "sent" if r in ("sent", "queued") else r
+        return r if r in ("sent", "queued", "failed") else r
     except Exception:
         return "failed"
 
