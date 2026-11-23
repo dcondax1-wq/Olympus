@@ -28,6 +28,14 @@ Cloud (the PC-silent monitor): repo secrets LE_TG_TOKEN + LE_TG_CHAT and / or LE
 Off switch: the file %USERPROFILE%\\.olympus\\alert_bus_off (ALERTS_OFF.bat) or LE_ALERT_BUS=0 -> every call site takes its
 old path exactly (ntfy + Web Push). Also off when neither Telegram nor Discord is set up (nothing changes before setup).
 Test: TEST_ALERT.bat (tools/alerts_setup.py --test). Tests: python -X utf8 -m tests.test_alert_bus
+
+ZERO-SETUP PATH (night-notify 2026-11-22, owner: "get notifications going on your own"): send_critical(ev) is the call for the
+events that must reach the phone even when the owner set up NOTHING (no Telegram, no Discord): with the bus active it is send();
+otherwise it delivers through the two channels that need no secret, the private ntfy topic (made automatically once per PC by
+the 15-minute report: tools/pc_report.ensure_topic, random words + digits, never derived from the PC name or an account id) AND
+the installed Olympus app (Web Push), same de-dup by key. Low-priority news (an update applied, a WARN) goes to digest_add() and
+reaches the phone once a day in ONE silent post (digest_flush, from the 15-minute report at DIGEST_AT ET). Every critical event
+and its sender: engine/alert_map.py (tests/test_alert_map.py checks each one has a working sender).
 """
 from __future__ import annotations
 
@@ -522,6 +530,8 @@ def is_silent(ev: dict, now=None, s: dict | None = None) -> bool:
     """No sound: inside the quiet hours, unless the kind always rings (bot stopped, the dual emergencies) or is in
     ring_in_quiet_hours (entries / exits only when the owner put TRADE_RING there)."""
     k = ev.get("kind")
+    if ev.get("silent"):
+        return True                        # the daily digest: never a buzz
     if k in ALWAYS_RING or ev.get("dual"):
         return False
     try:
@@ -549,8 +559,9 @@ def deliver(ev: dict, cfg: dict | None = None, path=None, log_path=None, now=Non
         silent = is_silent(ev, now=now, s=s)
         order = list(ev.get("only") or channels(cfg))
         dual = ev.get("kind") in DUAL or bool(ev.get("dual"))
-        need = 2 if dual else 1
+        need = int(_f(ev.get("need")) or (2 if dual else 1))
         need = min(need, len(order)) or 1
+        dual = dual or need > 1
         for i, delay in enumerate((0,) + tuple(ev.get("backoff", BACKOFF))):
             if delay:
                 _SLEEP(delay)
@@ -616,7 +627,7 @@ def _warn_down(res: dict, cfg: dict, path, log_path, now) -> None:
                 cfg=cfg, path=path, log_path=log_path, now=now)
 
 
-def send(ev: dict, on_done=None, cfg: dict | None = None, wait: bool = False) -> str:
+def send(ev: dict, on_done=None, cfg: dict | None = None, wait: bool = False, _zero: bool = False) -> str:
     """THE call for every alert: queue one event, return at once ("queued" | "dup" | "off" | "bad"). A daemon thread delivers
     (deliver). on_done(result) runs on that thread after delivery (e.g. notify.instant_record). wait=True = deliver here (a
     script). Never raises, never blocks the caller (unless wait)."""
@@ -627,7 +638,7 @@ def send(ev: dict, on_done=None, cfg: dict | None = None, wait: bool = False) ->
         if os.environ.get("LE_SELFTEST_CHILD") == "1" and _HTTP is None:
             return "off"                                  # a PC self-test child never sends a real alert (engine/push SEALED)
         c = cfg if cfg is not None else config()
-        if ev.get("kind") != "test" and not active(cfg=c):
+        if ev.get("kind") != "test" and not _zero and not active(cfg=c):
             return "off"
         key = str(ev.get("key") or "")
         if ev.get("kind") not in ("test", "channel_down"):
@@ -659,8 +670,8 @@ def send(ev: dict, on_done=None, cfg: dict | None = None, wait: bool = False) ->
             return r
 
         if wait:
-            run()
-            return "sent"
+            r = run()
+            return "sent" if (r or {}).get("ok") else "failed"     # audit 2026-11-22 (package B): "sent" = it reached a channel
         th = threading.Thread(target=run, name="alert-bus", daemon=True)
         with _LOCK:
             _THREADS[:] = [x for x in _THREADS if x.is_alive()]
@@ -679,6 +690,96 @@ def drain(timeout: float = 90.0) -> bool:
     for th in ths:
         th.join(max(0.0, end - time.time()))
     return not any(th.is_alive() for th in ths)
+
+
+# ------------------------------------------------------------------------------------------------ zero-setup path
+ZERO = ("ntfy", "webpush")            # the channels that need no secret: the private ntfy topic + the installed Olympus app
+
+
+def zero_cfg(cfg: dict | None = None) -> dict:
+    """The config with Telegram / Discord taken out (the no-secret channels only)."""
+    c = dict(cfg if cfg is not None else config())
+    c["telegram"], c["discord"] = None, None
+    return c
+
+
+def send_critical(ev: dict, on_done=None, cfg: dict | None = None, wait: bool = False, no_app: bool = False) -> str:
+    """A critical event that must reach the phone with ZERO setup. Bus active (Telegram / Discord set up, not switched off) =
+    send(). Otherwise: the private ntfy topic AND the Olympus app (both, so an "accepted" by Apple alone never hides it), the
+    same de-dup by key. ALERTS_OFF = "off" (the call sites' old path, exactly).
+    Returns like send(). Never raises."""
+    try:
+        c = cfg if cfg is not None else config()
+        if active(cfg=c):
+            return send(ev, on_done=on_done, cfg=c, wait=wait)
+        if cfg is None and switched_off():
+            return "off"                                # ALERTS_OFF = every call site's old path, exactly (as documented)
+        z = zero_cfg(c)
+        if no_app:
+            z["webpush"] = False                        # the caller's Olympus app copy already went out (engine/push._pc_send)
+        ev = dict(_d(ev))
+        ev["only"] = [ch for ch in ZERO if ch in channels(z)]
+        if not ev["only"]:
+            return "off"
+        # both no-secret channels for a critical one (not the first that answers; no forced ring); a soft notice (keep-alive line, a
+        # rule's own hold) = the first that answers, so one event is one buzz
+        ev.setdefault("need", 1 if ev.get("soft") else len(ev["only"]))
+        return send(ev, on_done=on_done, cfg=z, wait=wait, _zero=True)
+    except Exception:
+        return "bad"
+
+
+DIGEST_PATH = os.path.join(ROOT, "data", "alert_digest.json")    # gitignored: low-priority items waiting for the daily digest
+DIGEST_AT = 16 * 60 + 20              # ET minutes: one digest a day, after the 16:15 day summary
+DIGEST_MAX = 12                       # lines kept (the oldest are dropped)
+
+
+def digest_add(title: str, body: str = "", key: str = "", path=None, now=None) -> bool:
+    """One low-priority line for the daily digest (no phone buzz now). Same key twice = one line. Never raises."""
+    try:
+        path = path or DIGEST_PATH
+        t = time.time() if now is None else now
+        with _LOCK:
+            d = _state(path)
+            items = [i for i in d.get("items") or [] if isinstance(i, dict)]
+            k = str(key or title)
+            if any(i.get("key") == k for i in items):
+                return False
+            items.append({"key": k, "t": int(t), "line": redact(f"{title}" + (f": {body}" if body else ""))[:200]})
+            d["items"] = items[-DIGEST_MAX:]
+            _save_state(d, path, t)
+        return True
+    except Exception:
+        return False
+
+
+def digest_flush(now=None, path=None, cfg: dict | None = None, force: bool = False) -> str:
+    """The 15-minute report: from DIGEST_AT ET, once a day, the waiting low-priority lines as ONE silent post ("sent" / "none" /
+    "not yet" / "done today"). Never raises."""
+    try:
+        path = path or DIGEST_PATH
+        t = time.time() if now is None else now
+        e = _et(t)
+        day = e.date().isoformat()
+        with _LOCK:
+            d = _state(path)
+            if not force and d.get("day") == day:
+                return "done today"
+            if not force and e.hour * 60 + e.minute < DIGEST_AT:
+                return "not yet"
+            items = [i for i in d.get("items") or [] if isinstance(i, dict)]
+            d["day"] = day
+            d["items"] = []
+            _save_state(d, path, t)
+        if not items:
+            return "none"
+        body = "\n".join(f"- {i.get('line')}" for i in items)
+        r = send_critical({"kind": "report", "key": f"digest:{day}", "title": f"Olympus daily digest ({len(items)})", "body": body,
+                           "notify_type": "daily_summary", "report": True, "silent": True, "need": 1},
+                          cfg=cfg, wait=True)
+        return r if r in ("sent", "queued", "failed") else r
+    except Exception:
+        return "failed"
 
 
 # ------------------------------------------------------------------------------------------------ the test alert

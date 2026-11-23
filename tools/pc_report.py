@@ -2251,6 +2251,13 @@ def main(argv=None) -> int:
         return 0
     if not a.dry_run:                  # the real report run: the morning brief may post its one Board event (tools/morning_brief.py)
         os.environ["LE_PC_REPORT"] = "1"
+        # zero-setup phone alerts (night-notify 2026-11-22): the private alert topic is made here once per PC (random words +
+        # digits, outside the repo), so the fast alarm, readiness and trade alerts have a phone route with NO owner setup
+        try:
+            if not load_cfg()["topic"]:
+                ensure_topic()
+        except Exception:
+            pass
     try:
         rec = run_once(work=a.work, dry=a.dry_run, port=a.port)
     finally:
@@ -2261,6 +2268,11 @@ def main(argv=None) -> int:
             print(f"  [..] {e}")
     # the Sunday money report (tools/weekly_money_report.py): once a week, Sunday from 17:00 ET, on your private topic; soft, never stops this run
     if not a.dry_run:
+        try:                           # the daily digest of low-priority news (engine/alert_bus.digest_flush): once a day from 16:20 ET, silent
+            from engine import alert_bus as _ab
+            _ab.digest_flush()
+        except Exception:
+            pass
         try:
             from tools import weekly_money_report as _wmr
             _wmr.maybe_run(say=(lambda *_: None) if a.quiet else print)

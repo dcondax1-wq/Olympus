@@ -53,7 +53,9 @@ TYPES = ("trade_opened", "trade_closed", "eval_milestones", "account_status", "r
 # its auto-update, engine/autoupdate).
 # owner 2026-11-18 evening: "I want notifications when we get in a trade in any account" -> trade_opened ON, sent the moment the
 # bot routes the entry (instant_entry below, from engine/push.pc_notify), not at the next 15-minute report.
-IMPORTANT = ("trade_opened", "trade_closed", "account_status", "daily_summary", "morning_brief", "pc_silent", "problems")   # problems = emergencies (bot down, NinjaTrader closed)
+IMPORTANT = ("trade_opened", "trade_closed", "account_status", "room_low", "daily_summary", "morning_brief", "pc_silent", "problems")   # problems = emergencies (bot down, NinjaTrader closed)
+# night-notify 2026-11-22 (owner: "every important event"): room_low ON = daily loss limit 70% used, max drawdown 50% / 75% used
+# (tools/pc_guard: once a day / once per level per eval). Before it was OFF, so "daily loss limit near" reached no phone.
 # A trade's entry and result in quiet hours (23:00-07:00 ET) come WITHOUT sound but still show (as before 2026-11-20). Putting
 # TRADE_RING in ring_in_quiet_hours (notify_settings.json) makes them ring at night: the owner's yes / no, asked on STATE.md
 # 'Waiting on the owner' (lead 2026-11-20; ATLAS enters around 03:00-04:00 ET, LIT from 02:00 ET on several accounts).
@@ -960,11 +962,38 @@ def instant_problem(p: dict, now=None, path=None, cfg=None, poster=None) -> str:
             r = alert_bus.send(alert_bus.from_problem(p, problem_message(p, now=now, s=s)),
                                on_done=lambda res: res.get("ok") and _record_problem(p, key, path, now, count=False))
             return "sent" if r in ("queued", "sent") else f"alert bus: {r}"
+        if poster is None and cfg is None and not p.get("dup_of"):
+            # night-notify 2026-11-22: no Telegram / Discord = the private ntfy topic AND the Olympus app (alert_bus.send_critical,
+            # the no-secret channels). Before: ntfy only, and a PC without a topic sent the bot-down alarm to NO phone
+            try:
+                from . import alert_bus
+                r = alert_bus.send_critical(alert_bus.from_problem(p, problem_message(p, now=now, s=s)),
+                                            on_done=lambda res: res.get("ok") and _record_problem(
+                                                p, key, path, now, count="ntfy" in _d(res.get("receipts"))),
+                                            no_app=bool(p.get("no_app")))
+                if r in ("queued", "sent"):
+                    return "sent"
+                if r == "dup":
+                    return "already sent"
+            except Exception:
+                pass
         cfg = cfg if cfg is not None else alert_cfg()
-        if not cfg.get("topic"):
-            return "no private alert topic on this PC"
-        ok = (poster or _post)(cfg["ntfy"], cfg["topic"], problem_message(p, now=now, s=s))
+        msg = problem_message(p, now=now, s=s)
+        ok = bool(cfg.get("topic")) and (poster or _post)(cfg["ntfy"], cfg["topic"], msg)
         if not ok:
+            # audit 2026-11-22 package B: no topic / ntfy refused -> the Olympus app (Web Push), so the alarm still reaches a phone
+            if not p.get("no_app"):
+                try:
+                    from . import push
+                    r = push.pc_send_now(push.report_payload({"key": key, "title": msg["title"], "body": msg["body"],
+                                                              "priority": msg.get("priority"), "kind": "problems"}))
+                    if int((r or {}).get("sent") or 0) > 0:
+                        _record_problem(p, key, path, now, count=False)
+                        return "sent (app)"
+                except Exception:
+                    pass
+            if not cfg.get("topic"):
+                return "no private alert topic on this PC"
             return "ntfy did not take it (the 15-minute report sends it instead)"
         _record_problem(p, key, path, now)
         return "sent"

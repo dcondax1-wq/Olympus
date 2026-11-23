@@ -377,8 +377,8 @@ def _evaluate(f: dict, now) -> dict:
         n = int(abs(float(d)) + 0.5)
         out.append(_b(NOT_READY, f"PC clock {n} s {'behind' if d > 0 else 'ahead'}",
                       f"The bot blocks every new entry while the PC clock is more than {mx:.0f} s off internet time.",
-                      "On the PC: Settings > Time & language > Date & time > turn 'Set time automatically' on, then press 'Sync now'. "
-                      "No restart needed.", True, "clock"))
+                      "On the PC: double-click FIX_CLOCK.bat once, right-click > Run as administrator. No restart needed.",
+                      True, "clock"))
     # 3 NinjaTrader: the folder and the connection
     c = by.get("nt_folder")
     if c and c.get("level") == "bad":
@@ -644,20 +644,31 @@ def plan_alert(v: dict, st: dict, now, slot: str | None, reason: str = "") -> di
 
 def send_alert(a: dict, sender=None) -> str:
     """Telegram / Discord first (engine/alert_bus), ntfy / Web Push as its fallbacks; with the bus off the old ops path
-    (push.pc_send_now). Returns 'bus' | 'push' | 'none'. Never raises."""
+    (push.pc_send_now). Returns 'bus' | 'zero' (ntfy + the app, no setup) | 'push' | 'none'. Never raises."""
     try:
         if sender is not None:
             sender(a)
             return "sender"
         from . import alert_bus as AB
+        ev = {"kind": "problem", "key": a["key"], "title": a["title"], "body": a["body"], "notify_type": "problems",
+              "report": True, "soft": bool(a.get("quiet"))}
         if AB.active():
-            r = AB.send({"kind": "problem", "key": a["key"], "title": a["title"], "body": a["body"], "notify_type": "problems",
-                         "report": True, "soft": bool(a.get("quiet"))}, wait=True)
-            return "bus" if r in ("sent", "queued") else "none"
-        from . import ops_checks as OC
+            r = AB.send(ev, wait=True)
+            if r == "sent":
+                return "bus"
+        # night-notify 2026-11-22: with NO Telegram / Discord the old path below is kind "ready", which engine/push.pc_app_ok drops
+        # (LE_PUSH_EXTRA only): "Zlarior is not armed" / "PC clock 7 s behind" reached NO phone. Now: the private ntfy topic AND
+        # the Olympus app (alert_bus.send_critical, the no-secret channels)
+        else:
+            r = AB.send_critical(ev, wait=True)
+            if r in ("sent", "dup"):
+                return "zero"
+        # audit 2026-11-22 package B: the last way = the Olympus app as a report "problems" payload (kind "ready" alone was dropped
+        # by push.pc_app_ok); 'none' when nothing took it, so tick() rolls the de-dup back and the next tick sends it again
         from . import push
-        push.pc_send_now(OC._payload("ready", a["title"], a["body"], a["key"], time.time()))
-        return "push"
+        res = push.pc_send_now(push.report_payload({"key": a["key"], "title": a["title"], "body": a["body"], "kind": "problems",
+                                                    "priority": "low" if a.get("quiet") else "high"}))
+        return "push" if int((res or {}).get("sent") or 0) > 0 else "none"
     except Exception:
         return "none"
 
@@ -672,8 +683,15 @@ def tick(now=None, ctx=None, checks=None, reason: str = "", sender=None, facts=N
         slot = due_slot(now, st)
         if reason == "start" and not slot and active_period(now):
             slot = "start"
+        before = (json.loads(json.dumps(_dd(st.get("sent")))), st.get("last_alert"))
         a = plan_alert(v, st, now, slot, reason)
         via = send_alert(a, sender) if a else None
+        if a and via == "none":                     # nothing reached a phone: not "told" (package B), the next tick sends it again
+            st["sent"] = before[0]
+            if before[1] is None:
+                st.pop("last_alert", None)
+            else:
+                st["last_alert"] = before[1]
         if slot in ("1730", "0115", "0845"):
             st.setdefault("slots", {})[f"{_et(now).date().isoformat()}:{slot}"] = int(now)
             st["slots"] = dict(list(st["slots"].items())[-12:])

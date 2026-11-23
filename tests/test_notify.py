@@ -61,7 +61,7 @@ def settings():
         imp = {k for k, v in s["alerts"].items() if v}
         check("a. no file: the defaults ('important only': trade results, pass/fail/locked/payout, daily summary, PC silent, problems; "
               "quiet 23:00-07:00, summary 16:15, silent after 20 min, reminder 2 h)",
-              imp == {"trade_opened", "trade_closed", "account_status", "daily_summary", "morning_brief", "pc_silent", "problems"} and s["quiet_hours"] == {"from": "23:00", "to": "07:00"}
+              imp == {"trade_opened", "trade_closed", "account_status", "room_low", "daily_summary", "morning_brief", "pc_silent", "problems"} and s["quiet_hours"] == {"from": "23:00", "to": "07:00"}
               and s["daily_summary_at"] == "16:15" and s["morning_brief_at"] == "07:30"
               and s["pc_silent_after_min"] == 20 and s["pc_silent_remind_after_min"] == 120, s)
         p = os.path.join(tmp, "s.json")
@@ -94,8 +94,8 @@ def settings():
     kept = [m["key"] for m in N.apply(every, at(2026, 11, 17, 10, 0), N.merge({}))]
     check("a. 'important only' defaults: entries (owner 2026-11-18 evening), trade results, target reached, PASSED / LOCKED / payout READY, the day "
           "summary, the morning brief, PC silent + problems (bot down, fill size), a quiet eval (MFFU's 7-day rule, account_status since "
-          "2026-11-20: as 'other' it was dropped) are kept; 25-75 %, room low, other are dropped",
-          kept == ["open:lit:1", "close:atlas:2", "guard:day:2026-11-16", "cond:bot_down:1", "fill:lit:1:size", "guard:quiet:lit:d",
+          "2026-11-20: as 'other' it was dropped), room low (daily loss / drawdown, ON since night-notify 2026-11-22) are kept; 25-75 %, other are dropped",
+          kept == ["open:lit:1", "close:atlas:2", "guard:dd:lit:x:75", "guard:dll:lit:d", "guard:day:2026-11-16", "cond:bot_down:1", "fill:lit:1:size", "guard:quiet:lit:d",
                    "guard:goal:lit:2026-11-02:100", "life:passed:atlas:a",
                    "life:locked:atlas:a", "life:payout_ready:x:f50:abc:2026-11-13", "pc_silent:2026-11-16:1", "guard:brief:2026-11-18"], kept)
     night, day = at(2026, 11, 17, 3, 10), at(2026, 11, 17, 10, 0)

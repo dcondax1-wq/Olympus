@@ -1,3 +1,35 @@
+# Phone alerts in 1 minute (no Telegram, no Discord, no keys)
+
+Since 2026-11-22 the PC sends every important alert with ZERO setup to two places: the **Olympus app** on your Home Screen and
+your **private ntfy topic** (the PC makes it by itself, once). You only tell the phone to show them:
+
+1. iPhone: open **Olympus from the Home Screen** -> tap **Allow notifications** -> **Allow**. (That is enough.)
+2. Backup, optional: App Store -> **ntfy** (free) -> open it -> **+** -> type the topic that **TEST_ALERT.bat** prints on the PC
+   (looks like `nq-amber-falcon-river-7291`) -> **Subscribe**.
+3. On the PC: double-click **TEST_ALERT.bat** (or TRADE_HOME -> **T**). Each channel says **OK** or **FAIL** + what to do.
+
+What buzzes (engine/alert_map.py; `python -X utf8 -m engine.alert_map` prints this live):
+
+| Event | Goes to (no setup) |
+|---|---|
+| Bot stopped / crashed in trading hours | Olympus app + ntfy, rings at night |
+| An account NOT armed after START (checked 90 s after START, and 17:30 / 01:15 / 08:45 ET) | Olympus app + ntfy |
+| Entries blocked: PC clock off, feed stale, NinjaTrader not connected, kill switch | Olympus app + ntfy |
+| Trade entry ($ risk, $ at target) and exit ($ result, today, $ to pass), every account | Olympus app + ntfy |
+| Daily loss limit 70% used; max drawdown 50% / 75% used; open trade into a halt; trade with no stop | Olympus app + ntfy |
+| Payout can be requested; PASSED / FAILED / LOCKED | Olympus app + ntfy |
+| MFFU 7-day no-trade deadline (day 5+) | Olympus app + ntfy |
+| Update failed / rolled back | Olympus app + ntfy |
+| Update applied / skipped, other low-priority news | ONE silent daily digest at 16:20 ET |
+| PC silent (the cloud notices the PC stopped) | needs ONE repo secret `LE_NTFY_TOPIC` = your topic (the cloud cannot know it) |
+
+- **No spam:** one alert per event (same key = sent once, also after a restart); a soft notice (keep-alive line) = one channel only.
+- **Quiet hours** (23:00-07:00 ET): ordinary alerts arrive without sound; bot stopped / problems / account status / room low still
+  ring. Trades at night: silent until you say yes (STATE.md). All-day sound: `{"quiet_hours": {"off": true}}` (tell Claude).
+- **Privacy:** the topic is random words + digits, never your PC name or an account id, kept only in
+  `%USERPROFILE%\.olympus\ntfy.json`, never in the repo or a public post.
+- Telegram / Discord (below) are optional extras: when set up they go first, ntfy and the app stay the backups.
+
 # Phone alerts: Telegram / Discord first (engine/alert_bus.py, 2026-11-21)
 
 One `send(event)` for every alert. Order: **Telegram -> Discord -> private ntfy -> the Olympus app (Web Push)**; the first one
@@ -8,7 +40,7 @@ topic, so alerts no longer share its 250-a-day cap. Messages you send to the bot
 |---|---|
 | Setup (once) | phone: PC link + `:8444/alerts/` (Telegram), or `ALERTS_SETUP.bat` (1 Telegram, 2 Discord, 3 both) |
 | Check every channel | `TEST_ALERT.bat` (prints OK / FAIL + the receipt id per channel) |
-| Back to the old path exactly | `ALERTS_OFF.bat` (undo: `ALERTS_ON.bat`) |
+| Back to the old path exactly | `ALERTS_OFF.bat` (undo: `ALERTS_ON.bat`; off also stops the zero-setup copies of readiness / update alerts) |
 | Secrets | `%USERPROFILE%\.olympus\alerts.json` only (never the repo, never printed) |
 | Failure log | `data\alert_bus.jsonl` (redacted) |
 | Cloud "PC silent" | repo secrets `LE_TG_TOKEN` + `LE_TG_CHAT` and / or `LE_DISCORD_WEBHOOK` (optional) |
