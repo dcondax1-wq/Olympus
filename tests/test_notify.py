@@ -441,7 +441,12 @@ def brief():
         t3l = " | ".join(b3["lines"])
         check("h. overnight = since 18:00 ET, paper left out (on the Today line); yesterday's $ on the account line; payout READY -> needs you",
               "overnight Zlarior 50K +$605 (1 trade), ATLAS 25K SHORT open" in t3l and "Zlarior 50K armed · $49,193 · room $1,025 · yesterday +$300" in t3l
-              and "payout READY $1,000" in t3l and "Needs you: request the ATLAS 25K payout $1,000" in t3l, b3["lines"])
+              and "payout READY $1,000" in t3l, b3["lines"])
+        check("h. night-payday: a payout MFFU pays today = line 2 'REQUEST PAYOUT TODAY: ATLAS 25K $1,000 - MFFU dashboard > Payouts, then "
+              "TRADE_HOME -> P' + the title says it; not repeated under Needs you; 8 lines at most; a brief with no payout ready has no such line",
+              b3["lines"][1] == "REQUEST PAYOUT TODAY: ATLAS 25K $1,000 - MFFU dashboard > Payouts, then TRADE_HOME -> P"
+              and b3["title"].endswith(" - REQUEST PAYOUT TODAY") and "request the ATLAS 25K payout" not in t3l and len(b3["lines"]) <= 8
+              and not any("REQUEST PAYOUT" in x for x in MB.build(snap(wed), wed, plan, [], news)["lines"]), (b3["title"], b3["lines"]))
         b4 = MB.build(snap(wed, cond={"bot_down": "x"}, eh={"d": "2026-11-17", "z": ["G", 3.8, 3.9], "a": ["A", 1.2, 2.0, "2026-11-17"], "t": wed}), wed, plan, [], news)
         check("h. a problem: NOT READY in the title, line 1 = 'NOT READY: bot down. Fix: STOP BOT, START BOT'; edge 'Zlarior GREEN, ATLAS AMBER'",
               b4["title"].endswith("NOT READY") and b4["lines"][0] == "NOT READY: bot down. Fix: STOP BOT, START BOT"

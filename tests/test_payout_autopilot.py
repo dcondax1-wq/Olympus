@@ -68,8 +68,8 @@ def part_b():
     v = PA.builder(b25(GOOD), "atlas")
     check("b. 25K at $2,230 profit, 5 days, best 22%: ready $1,000, $800 to you", v["ready"] and v["amount"] == 1000 and v["to_you"] == 800, v)
     a = PA.alerts([v], AFTER)
-    check("b. ONE alert 'Payout ready: ATLAS 25K can request $1,000 now'", len(a) == 1 and a[0]["title"].startswith(
-        "Payout ready: ATLAS 25K can request $1,000 now"), a)
+    check("b. ONE alert 'REQUEST PAYOUT TODAY: ATLAS 25K $1,000'", len(a) == 1 and a[0]["title"].startswith(
+        "REQUEST PAYOUT TODAY: ATLAS 25K $1,000"), a)
     check("b. the alert has the MFFU dashboard clicks (help-center words) and the record step", "left menu Payouts" in a[0]["body"]
           and "Personal Settings > KYC" in a[0]["body"] and "Riseworks" in a[0]["body"]
           and "TRADE_HOME -> P" in a[0]["body"] and "$800 reaches you" in a[0]["body"], a[0]["body"])
@@ -102,9 +102,9 @@ def part_c():
     v = PA.builder(t4, "atlas")
     a = PA.alerts([v], AFTER)
     keys = [x["key"] for x in a]
-    check("c. 4 taken: 'Do not take payout #5: close after payout 4' + '#5 available: do NOT take it', no 'Payout ready'",
+    check("c. 4 taken: 'Do not take payout #5: close after payout 4' + '#5 available: do NOT take it', no 'REQUEST PAYOUT TODAY'",
           any(x["title"].endswith("do not take payout #5: close after payout 4") for x in a)
-          and any("do NOT take it" in x["title"] for x in a) and not any(x["title"].startswith("Payout ready") for x in a), a)
+          and any("do NOT take it" in x["title"] for x in a) and not any(x["title"].startswith("REQUEST PAYOUT TODAY") for x in a), a)
     sent = {k: 1 for k in keys}
     check("c. the #5 guard is ONE alert (and the offer once a cycle)", not PA.alerts([v], AFTER + 86400, sent), PA.alerts([v], AFTER + 86400, sent))
     check("c. the guard stop shows even before the close (phone card + alert)", PA.alerts([v], ts(2026, 11, 24, 10)) and
@@ -115,7 +115,7 @@ def part_c():
     p5 = dict(p4, **{"2026-11-20": 1000})
     v5 = PA.builder(b25(GOOD, p5, prior=5000), "atlas")
     check("c. 5 taken (it happened anyway): no payout alert, 'live' words", v5["guard"] == "live" and not
-          [x for x in PA.alerts([v5], AFTER) if x["title"].startswith("Payout ready")], v5)
+          [x for x in PA.alerts([v5], AFTER) if x["title"].startswith("REQUEST PAYOUT TODAY")], v5)
 
 
 def rap(ready=True, req=900.0, stage="funded", today_net=0.0, since_short=None):
@@ -134,10 +134,17 @@ def part_d():
     check("d. Rapid 25K: $27,300 -> $700 (keeps $26,600), 90% = $630", adv["ready"] and adv["request"] == 700 and adv["to_you"] == 630, adv)
     adv = R.payout_advice(27300.0, 25000.0, ("2026-11-20",), "2026-11-24", 1100.0, 500.0, 250.0, 120.0)
     check("d. Rapid 25K: only $120 net since the last payout: not ready ($130 short)", not adv["ready"] and adv["since_short"] == 130, adv)
+    # night-payday: the first request waits 24 h after the first funded trade (third-party wording: needs MFFU confirm)
+    adv = R.payout_advice(27300.0, 25000.0, (), "2026-11-24", 1100.0, 500.0, first_trade="2026-11-24")
+    adv2 = R.payout_advice(27300.0, 25000.0, (), "2026-11-25", 1100.0, 500.0, first_trade="2026-11-24")
+    adv3 = R.payout_advice(27300.0, 25000.0, ("2026-11-25",), "2026-11-26", 1100.0, 500.0, 250.0, 600.0, first_trade="2026-11-26")
+    check("d. Rapid first payout: not on the first funded trading day ('needs MFFU confirm'), ready the next day; a later payout never waits",
+          not adv["ready"] and "needs MFFU confirm" in adv.get("wait", "") and adv2["ready"] and adv2["request"] == 700 and adv3["ready"],
+          (adv, adv2, adv3))
     v = PA.rapid(rap(), "rapid")
     a = PA.alerts([v], AFTER)
-    check("d. Rapid ready after the close: 'Payout ready: Rapid EOD 25K can request $900 now', $810 to you",
-          a and a[0]["title"] == "Payout ready: Rapid EOD 25K can request $900 now" and "$810 reaches you" in a[0]["body"], a)
+    check("d. Rapid ready after the close: 'REQUEST PAYOUT TODAY: Rapid EOD 25K $900', $810 to you",
+          a and a[0]["title"] == "REQUEST PAYOUT TODAY: Rapid EOD 25K $900" and "$810 reaches you" in a[0]["body"], a)
     sent = {a[0]["key"]: 1}
     check("d. Rapid: once a day", not PA.alerts([v], AFTER + 600, sent))
     check("d. Rapid: daily payouts = the next day again", PA.alerts([v], AFTER + 86400, sent))

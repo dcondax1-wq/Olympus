@@ -113,11 +113,13 @@ KYC**, a **Riseworks** account, then sign the Riseworks agreements MFFU emails y
 Not on those pages: the request button's name, the account picker, fees.
 | What | When | Alert |
 |---|---|---|
-| Payout ready (Builder) | after the close (16:10 ET; half days 13:00 / 13:15), MFFU's rules met AND the max request ($1,000 25K / $2,000 50K) | "Payout ready: ATLAS 25K can request $1,000 now" + the MFFU clicks, once a cycle |
+| Payout ready (Builder) | after the close (16:10 ET; half days 13:00 / 13:15), MFFU's rules met AND the max request ($1,000 25K / $2,000 50K) | "REQUEST PAYOUT TODAY: ATLAS 25K $1,000" + the MFFU clicks, once a cycle |
 | Payout ready (Rapid EOD) | after the close, $500+ above the buffer + the bot's cushion, 25K: $250 net since the last | once a day (daily payouts), 90% to you |
 | Builder payout #4 | the 4th ready | "(payout #4, the LAST)": after it close the account |
 | Builder payout #5 | 4 recorded | ONE "do not take payout #5: close after payout 4"; when MFFU would pay a 5th: "do NOT take it" (5th = live, every sim sleeps) |
 | Rapid $10,000 day | a Rapid day at $6,000+ net (one $10k day = MFFU moves it live) | at once, in the session |
+| Wording (2026-11-23) | the push, the 16:15 summary, the morning brief (line 2 + title) and the phone card | "REQUEST PAYOUT TODAY: ATLAS 25K $1,000" until it is recorded |
+| Rapid first request | not on the first funded trading day (24 h after the first trade: a third-party page only, **needs MFFU confirm**: the support message is docs/MFFU_SUPPORT_ASKS.md) | - |
 | Record | TRADE_HOME -> P (pick, $, Y) | the account's own record + data/payout_ledger.json -> the Money pipeline / Corvette fund |
 
 ## Where the bot and MFFU differ (all stricter on our side, on purpose)

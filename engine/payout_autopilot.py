@@ -5,7 +5,8 @@ routes, never sizes. It reads the PC's own numbers (the same trackers the dashbo
 
   1. PAYOUT READY   each CME trading day after the close (16:10 ET; a half day: its halt, 13:00 / 13:15 ET), per funded
                     account: may a payout be requested under MFFU's rules, and how much -> ONE alert
-                    "Payout ready: ATLAS 25K can request $1,000 now ($800 to you)" + the MFFU dashboard clicks.
+                    "REQUEST PAYOUT TODAY: ATLAS 25K $1,000" ($800 to you) + the MFFU dashboard clicks (night-payday
+                    2026-11-23: the lead's wording; the same words on the phone card, the 16:15 summary and the morning brief).
                     Builder (engine/funded_life.track): $1,100 / $2,100 buffer, $250 / $500 min, $1,000 / $2,000 max, the first
                     one 48 h after the first funded trade, >= 2 traded days in the cycle, best day <= 50% of the cycle, and the
                     owner's plan (ask only at the max: each Builder gets only 4 payouts, see 2, so a small one wastes a slot).
@@ -162,7 +163,8 @@ def rapid(st: dict, key: str, name: str | None = None, split: float = 0.9) -> di
     if not out["ready"]:
         out["amount"] = out["to_you"] = 0.0
         if st.get("stage") == "funded":
-            out["why"] = [f"{usd(a.get('since_short'))} more net since the last payout (MFFU's rule)" if a.get("since_short")
+            out["why"] = [a["wait"] if a.get("wait") else
+                          f"{usd(a.get('since_short'))} more net since the last payout (MFFU's rule)" if a.get("since_short")
                           is not None else f"{usd(a.get('to_next'))} to go (the bot keeps {usd(a.get('keep_at'))} in)"]
     return out
 
@@ -197,7 +199,7 @@ def alerts(views: list, now, sent: dict | None = None) -> list:
             continue
         cyc = v.get("cycle") if v["kind"] == "builder" else day_after
         last = v.get("guard") == "last"
-        title = f"Payout ready: {nm} can request {usd(v['amount'])} now" + (" (payout #4, the LAST)" if last else "")
+        title = f"REQUEST PAYOUT TODAY: {nm} {usd(v['amount'])}" + (" (payout #4, the LAST)" if last else "")
         body = (f"{usd(v['to_you'])} reaches you. " + STEPS.format(acct=nm, amt=usd(v["amount"]))
                 + (" This is payout #4: after it, close the account (never take #5: MFFU moves you to live). First check MFFU's "
                     "Payouts page shows exactly 3 paid: if it shows 4, do NOT request (that would be #5)." if last else "")
@@ -295,7 +297,7 @@ def block(views: list) -> dict:
         if v.get("guard") in ("stop", "live"):
             line = "STOP: do not take payout #5, close after payout 4" if v["guard"] == "stop" else v["why"][0]
         elif v.get("ready"):
-            line = f"request {usd(v['amount'])} now ({usd(v['to_you'])} to you)" + (" - the LAST one (#4)" if v.get("guard") == "last" else "")
+            line = f"REQUEST PAYOUT TODAY: {usd(v['amount'])} ({usd(v['to_you'])} to you)" + (" - the LAST one (#4)" if v.get("guard") == "last" else "")
         else:
             line = (v.get("why") or ["building"])[0]
         rows.append({"name": v["name"], "line": str(line)[:140], "ready": bool(v.get("ready")), "stop": v.get("guard") == "stop"})
