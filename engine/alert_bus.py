@@ -725,6 +725,10 @@ def send_critical(ev: dict, on_done=None, cfg: dict | None = None, wait: bool = 
         # both no-secret channels for a critical one (not the first that answers; no forced ring); a soft notice (keep-alive line, a
         # rule's own hold) = the first that answers, so one event is one buzz
         ev.setdefault("need", 1 if ev.get("soft") else len(ev["only"]))
+        if int(_f(ev.get("need")) or 0) == 1 and "webpush" in ev["only"]:
+            # night-alertproof 2026-11-23: a one-channel notice tries the Olympus app FIRST. An app "sent" means a phone accepted it;
+            # an ntfy "ok" only means ntfy.sh stored it, even when nobody follows the topic (the owner may have only the app)
+            ev["only"] = ["webpush"] + [c for c in ev["only"] if c != "webpush"]
         return send(ev, on_done=on_done, cfg=z, wait=wait, _zero=True)
     except Exception:
         return "bad"

@@ -163,10 +163,15 @@ def chans(got):
     return [g[0] for g in got]
 
 
-def expect(b, name, got, words, dual=False, trade=False, both=False):
+def expect(b, name, got, words, dual=False, trade=False, both=False, soft=False):
     """The channel order per set-up, once per channel, and the words. both (night-notify 2026-11-22): a critical problem with no
     Telegram / Discord reaches ntfy AND the Olympus app (engine/alert_bus.send_critical), ntfy first; ALERTS_OFF = the old path."""
     c = chans(got)
+    if soft and b.mode == "ntfy":                # night-alertproof: a soft (one-channel) notice tries the Olympus app first
+        check(f"[{b.mode}] {name}: ONE channel, the Olympus app first (a phone that accepted it)", c == ["app"], c)
+        miss = [w for w in words if not all(w in g[1] for g in got)]
+        check(f"[{b.mode}] {name}: the words {words}", got and not miss, (miss, [g[1] for g in got]))
+        return
     if both and b.mode == "ntfy":
         ok_ch = bool(c) and c[0] == "ntfy" and set(c) == {"app", "ntfy"} and len(c) == 2
         check(f"[{b.mode}] {name}: arrives (ntfy first) AND on the Olympus app, once per channel", ok_ch, c)
@@ -251,7 +256,7 @@ def drill(mode):
               "body": "MFFU's 7-day rule: no trade for 5 days (MFFU's limit 7). Stop 21,030.00, target 21,050.00 (10 points, $20). "
                       "The bot closes it in about 5 min: about -$2.40, at most -$23."}
         got = run(b, lambda: N.instant_problem(ka, now=t))
-        expect(b, "11 keep-alive placed", got, ["Keep-alive on Zlarior 50K", "1 MNQ", "$23"])
+        expect(b, "11 keep-alive placed", got, ["Keep-alive on Zlarior 50K", "1 MNQ", "$23"], soft=True)
         kf = {"key": "ka:refused:lit:2026-11-17", "code": "keepalive", "title": "Keep-alive on Zlarior 50K did not go through",
               "body": "your pause blocks it. Place 1 MNQ by hand on this account before 16:05 ET (in and out, about -$2.40)."}
         got = run(b, lambda: N.instant_problem(kf, now=t))
