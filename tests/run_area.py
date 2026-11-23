@@ -448,6 +448,7 @@ AREAS["nq"].append("roll_rt")           # red team 2026-11-23: TRADE_HOME R repo
 AREAS["pc"] += ["post_update_check"]   # night-verify 2026-11-23: the read-only check after an update restart, one phone message
 AREAS["nq"] += ["k7proof"]   # night-k7proof 2026-11-23: the 7-day keep-alive on all 4 MFFU accounts (calendars, Thanksgiving, PC off, consent, clock)
 AREAS["nq"] += ["k7proof_rt"]   # red team night-k7proof: per-slot Rapid keys keep the START summary, phone clock and BLITZ-free lists right
+AREAS["pc"] += ["monday", "mondaysim_rt"]   # night-mondaysim 2026-11-23 + red team: UPDATE.bat exit 0/1/2 read right (MONDAY, TRADE_HOME 7), START always runs
 
 if __name__ == "__main__":
     sys.exit(main())
