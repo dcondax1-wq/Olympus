@@ -335,6 +335,7 @@ def run(a, runner=None, say=print, root: str = ROOT, days_dir: str = PC_DAYS, ca
     if "brain" not in skip and os.path.isdir(os.path.join(root, "research", "writeups")):
         try:                                   # ZEUS Brain (tools/obsidian_brain.py): rebuild vault/ with tonight's days, research, lessons
             from tools import obsidian_brain
+            obsidian_brain.snapshot_reviews(root)   # night-reds3: the pulled reviews become tracked text, so vault/ rebuilds the same anywhere
             br = obsidian_brain.build(os.path.join(root, "vault"), root=root)
             res["brain"] = {"ok": True, "notes": br["notes"], "wrote": len(br["wrote"]), "removed": len(br["removed"])}
         except Exception as e:  # noqa: BLE001
