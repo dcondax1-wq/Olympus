@@ -66,12 +66,12 @@ if _MODE in ("raise", "log"):
         finally:
             _busy[0] = False
 
-    def _check(ev, paths):
+    def _check(ev, paths, soft=False):
         for p in paths:
             k, full = _kind(p, ev)
             if not k:
                 continue
-            if k == "protected" and _MODE == "raise":
+            if k == "protected" and _MODE == "raise" and not soft:
                 raise PermissionError(f"write guard: a test may not change the live file {full} ({ev}); use a temp folder")
             _note(k, full, ev)
 
@@ -86,6 +86,10 @@ if _MODE in ("raise", "log"):
                     _check(ev, [path])
             elif ev in ("os.rename", "os.link", "os.symlink"):
                 _check(ev, [args[0], args[1]] if len(args) > 1 else [args[0]])
+            elif ev == "sqlite3.connect":           # sqlite opens its file in C (no "open" event): data/memory.db ...
+                db = args[0] if args else None
+                if isinstance(db, (str, bytes, os.PathLike)) and os.fsdecode(db) not in (":memory:", "") and not os.fsdecode(db).startswith("file:"):
+                    _check(ev, [db], soft=os.path.exists(db))   # creating a live db is refused; opening the live one only logged
             elif ev == "os.mkdir":
                 if not isinstance(args[0], int) and not os.path.exists(args[0]):   # os.makedirs(exist_ok=True) on a folder that is there
                     _check(ev, [args[0]])
