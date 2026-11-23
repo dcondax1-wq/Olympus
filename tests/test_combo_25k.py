@@ -286,7 +286,9 @@ def compare(rows_live, rows_ref, label, det):
     qty = [(k[0], hm(k[1]), L[k][4], F[k][4]) for k in both if L[k][4] != F[k][4]]
     check(f"{label}: the same side and micros on every common trade", not side and not qty, {"side": side, "qty": qty})
     usd = [(k[0], hm(k[1]), L[k][5], F[k][5], L[k][6], F[k][6]) for k in both
-           if abs(L[k][5] - F[k][5]) > max(0.06, 0.02 * F[k][4]) and F[k][6] != "cut"]
+           if abs(L[k][5] - F[k][5]) > max(0.06, 0.02 * F[k][4]) + (0.5 * F[k][4] if L[k][6] in ("HEDGE", "LIT PRIORITY") else 0.0)]
+    # a close the live bot makes at MARKET for the no-hedge rule (HEDGE) books its real fill: up to 1 tick ($0.50) a micro from
+    # the simulator's price at the same minute; every other exit must match to the cent
     check(f"{label}: the same exit $ on every common trade (booked on the 25K = the simulator's $ at those micros)", not usd, usd)
     lab = [(k[0], hm(k[1])) for k in both if L[k][1] == "A" and L[k][7] != CX.label_of(type("A", (), {"name": "Zlarior 25K #2"}))]
     check(f"{label}: every ATLAS entry on the 25K says who traded it ('ATLAS on Zlarior 25K #2')", not lab, lab)
