@@ -70,7 +70,7 @@ EXT_KIND = "le-live-ext"
 EXT_PARTS = 2                    # at most 2 ext posts a run (ntfy.sh free: a few hundred messages a day per IP)
 EXT_EVERY_S = 2640               # the ext goes every 3rd 15-minute run (44 min), or at once when its news changed (ext_hash). Was every 2nd (29 min) until
                                  # 2026-11-20: 96 core + 96 ext + 24 chart posts a day left no room under ntfy's 250 for the other programs and the alerts
-EXT_ORDER = ("rd", "brd", "life", "mf", "k7", "board_trades", "at", "fq", "zl", "learn", "lab", "glance", "kalshi_rewards", "kalshi_k1", "kalshi_live", "ap")   # "at": engine/feed_trades
+EXT_ORDER = ("rd", "fl", "brd", "life", "mf", "k7", "board_trades", "at", "fq", "zl", "learn", "lab", "glance", "kalshi_rewards", "kalshi_k1", "kalshi_live", "ap")   # "at": engine/feed_trades
 EXT_LAST = ("glog",)   # red-team 2026-11-21: the Brain's long thought stream takes only the room every other block left (cut 5/3, then out)
 # "zl": ZEUS learned, the nightly line (engine/zeus_learn.read_tiny, <= 220 bytes) -> the ZEUS page's "ZEUS learned" card
 CORE_KEYS = ("eh", "v", "kind", "lite", "src", "t", "every_s", "host", "model_state", "price", "day_pnl", "pc_verdict", "pc", "reporter",
@@ -540,6 +540,11 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
         snap["ap"] = _ap.read_card()
     except Exception:
         snap["ap"] = None
+    try:                                    # the Fleet line (engine/fleet_mgr: labels + counts + the next money move, <= 200 bytes, no ids)
+        from engine import fleet_mgr as _fm
+        snap["fl"] = _fm.read_tiny()
+    except Exception:
+        snap["fl"] = None
     try:                                    # READY / NOT READY (engine/readiness, day-ready 2026-11-22): the last verdict, <= 200 bytes, plain words, no ids
         from engine import readiness as _rd
         snap["rd"] = _rd.rd(_rd.read_last(os.path.join(root, "data", "ready_last.json"), now=now))
@@ -710,6 +715,8 @@ def full(snap: dict) -> dict:
         out["zl"] = snap["zl"]
     if isinstance(snap.get("rd"), dict):     # READY / NOT READY verdict (engine/readiness.rd, <= 200 bytes; no time inside: the ext hash stays still)
         out["rd"] = snap["rd"]
+    if isinstance(snap.get("fl"), dict):     # the Fleet line (engine/fleet_mgr.tiny): rides an ext post (EXT_ORDER)
+        out["fl"] = {k: snap["fl"].get(k) for k in ("s", "n", "sl")}
     if isinstance(snap.get("ap"), dict):     # the Money pipeline card (agency/pipeline.read_card): rides an ext post (EXT_ORDER)
         out["ap"] = snap["ap"]
     try:                                     # Olympus phone notifications (2026-11-19): the PC's PUBLIC push key + box key + its phones'
@@ -2276,6 +2283,11 @@ def main(argv=None) -> int:
         try:                           # payout autopilot (engine/payout_autopilot): payout ready after the close, the #5 guard, the Rapid $10k day
             from engine import payout_autopilot as _pa
             _pa.tick()
+        except Exception:
+            pass
+        try:                           # fleet manager (engine/fleet_mgr): one alert per account change with the next money move (advice only)
+            from engine import fleet_mgr as _fm
+            _fm.tick()
         except Exception:
             pass
         try:                           # MFFU rule-change watcher (tools/rules_watch.py): weekdays from 17:05 ET, once a day; alerts only on a real change
