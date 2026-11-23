@@ -59,8 +59,30 @@ Branch `night-integrate` only; nothing pushed to `pc`. No arming, no strategy / 
 | 35 | night-rollback-rt (built on night-integrate 7bd71589e) | dcccbdd45 | tests/run_area.py |
 | 36 | night-faststart-rt (brings night-faststart) | 70645b3b4 | research/lit/live_check.json (a test-written file: kept ours) |
 
-Not merged (not on the lead's list and no -rt review yet): night-addacct, night-alertproof, night-asks, night-blitzfills, night-calls,
-night-decide, night-docs, night-faults, night-leadwires, night-reds2, night-reds3, night-secps, night-wirepatch.
+### Round 6 (the lead's queued notes, read at 06:21 UTC)
+| # | What | Head | Conflicts / notes |
+|---|---|---|---|
+| - | **night-pcguard(-rt) taken OUT** (lead: no pwsh test) | d323ecf86 | pcguard's 3 commits reverted by hand in ONE commit; night-tasks(-rt) kept (they came in the same merge) |
+| 37 | night-decide | f5fffc734 | none |
+| 38 | night-docs | e0e2db1f8 | STATE.md (docs' new 'Waiting on you' list kept + cleanup's ONE FRONT DOOR line); OWNER_MANUAL: MONDAY_SETUP.bat + the 'Your week' menu line = the merged menu (k, 10-14, M, T, P, R) |
+| 39 | night-reds3 | 36a77cf07 | tests/test_me_hub.py: reds3's check kept (stricter: every after_run call under 'if not a.dry_run') |
+| 40 | night-reds2 | 44b8a06b1 | tests/run_area.py |
+| 41 | night-hermetic (final) | 786ab34e2 | none |
+| 42 | night-faults | 43b898647 | none |
+| 43 | night-asks | 278c24ab6 | none |
+| 44 | night-addacct | 2fe11aa53 | none |
+| 45 | night-secps | b16577d0a | none |
+| 46 | night-startcheck (on faststart-rt) | 01eb3bd42 | none |
+| 47 | night-startmsg (contains mondaysim-rt) | 4c26877eb | tests/run_area.py |
+| 48 | night-seedata | fdcdde105 | none |
+| 49 | night-payday | 30f16ca82 | business/mffu.html ?v= tags: the higher of each (payoutcoach v3, mffumodel v6, mffucenter v3); lead wire done: gate/index.html payoutcoach v=3 + test_gate_page pin |
+| 50 | night-livevsbt (contains night-briefv2) | e84586e4c | tools/morning_brief.py, tests/test_notify.py (below) |
+| 51 | night-newsweek | 4dfbefad9 | tests/run_area.py |
+| 52 | night-tgweek | f8e3d2212 | tests/run_area.py, tests/test_notify.py (tgweek's 'half day, closes 13:15 ET' on build_full) |
+| 53 | night-k7cloud (no workflow file in it) | e058d1c21 | tests/run_area.py |
+| 54 | night-statesafe | ed76c71a2 | engine/live.py, engine/account_b.py, engine/post_update_check.py (below) |
+
+Not merged: night-blitzfills (lead: out), night-wirepatch (lead applies at landing), night-calls, night-leadwires, night-landrehearsal (not on any list).
 
 ## Resolutions (both sides' intent kept, no safety check dropped)
 - **run_area.py (notify-rt, zerotouch):** append-only lines, both kept (`package_b` + `notify_rt`; `bat_menu`, `context_refresh`, `bat_shortcuts` + `zerotouch`), `if __name__` block kept last.
@@ -117,6 +139,24 @@ night-decide, night-docs, night-faults, night-leadwires, night-reds2, night-reds
   ("in the day summary"); notify-rt's b6 ran on today's date, so it was red on every weekday. b6 now runs on a Saturday (one digest a
   day, then 'done today'), which keeps both intents; 27/27.
 - **tests/test_ops.py (roll vs reds):** reds' stricter clock check kept (it also wants "Run as administrator").
+
+- **morning brief (night-payday vs night-briefv2/livevsbt):** briefv2 made the PUSHED brief a new 5-line `build()` and renamed the old
+  builder `build_full()`; night-payday's "REQUEST PAYOUT TODAY: ATLAS 25K $1,000 - ..." line lived only in the old builder, so the push
+  would have lost it. build_full keeps payday's line AND livevsbt's line (keep = MAX_LINES - 4 - pay - lvb). The 5-line `build()` now puts
+  payday's line FIRST (money in hand first) and the title ends " - REQUEST PAYOUT TODAY", only while a payout is ready. New check in
+  test_notify h; test_live_vs_bt d3's source pin follows the merged line. notify 103/103, live_vs_bt 21/21, daily_brief 46/46.
+- **state file damaged (night-statesafe vs night-faults):** faults made LIT / ATLAS start a clean day + one owner push when the state file
+  is unreadable; statesafe (later, red team #19 pending) never starts a clean day: today's .bak, else a proved rebuild from exec_audit,
+  else NO NEW ENTRIES today + its own alert. statesafe's version kept in live._restore and account_b._load (faults' clean-day branch is
+  exactly what statesafe replaces; keeping both would push twice). faults 34/34, state_safe 30/30.
+- **more bare os.replace:** fault_note.py (night-faults), go.py start_last (night-startmsg), post_update_check (statesafe made the same
+  fix: its version kept) -> fsutil.replace. selfheal 14/14.
+- **old-place .bat names in the new branches:** faults' CLEAN_STORAGE.bat text (engine/live.py, engine/ninjatrader.py: message text only),
+  docs' STATE lines -> tools/bat/. docs/STATE_HISTORY.md (verbatim history) added to test_bat_menu's HISTORY. pcguard's
+  CLAUDE_REFERENCE entry removed (pcguard is out).
+- **Research Hub:** hub-data.json rebuilt (Decide statuses moved); its keep-alive line now reads the START-phrase rule from STATE.md.
+- **live_check.json** = pc's copy (lead); tools/web_hub_snapshot.json = pc's copy (checked).
+- **jarvis_biz (payplan red):** its payout pin followed night-payplan's payday.json (ATLAS about $800 around Wed Dec 23, source 2026-11-23). 130/130.
 
 ## Tests
 See the table in the final summary (sent to the lead). Script used for the moved-.bat lint: test_bat_menu d (all files, not only the first 25).
