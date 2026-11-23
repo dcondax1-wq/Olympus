@@ -41,6 +41,30 @@ $PW = @(
     @('usb', '2a737441-1930-4402-8d77-b2bebba308a3', '48e6b7a6-50f5-4782-a5d4-53bb8f07e226', 'USB selective suspend off when plugged in')
 )
 $NicProps = @('AllowComputerToTurnOffDevice', 'SelectiveSuspend')
+# red team 2026-11-23: the "before" file must never steer an elevated write. -Off puts back ONLY the exact values this script
+# writes: these Windows Update names, these powercfg GUIDs on a GUID-shaped plan, these adapter properties as Enabled/Disabled.
+$AllowReg = @{}
+foreach ($w in @(@($WU, 'ActiveHoursStart'), @($WU, 'ActiveHoursEnd'), @($WU, 'SmartActiveHoursState'), @($WUP, 'SetActiveHours'),
+                 @($WUP, 'ActiveHoursStart'), @($WUP, 'ActiveHoursEnd'), @($AU, 'NoAutoRebootWithLoggedOnUsers'))) {
+    $AllowReg['reg|' + $w[0] + '|' + $w[1]] = $true
+}
+$AllowPw = @{}
+foreach ($p in $PW) { $AllowPw[$p[1] + '|' + $p[2]] = $true }
+$GuidRx = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+function Allowed([string]$key, $it) {
+    if (-not $it) { return $false }
+    $v = [string]$it.value
+    if ($it.kind -eq 'reg') {
+        return ($AllowReg.ContainsKey($key) -and (('reg|' + [string]$it.a + '|' + [string]$it.b) -eq $key) -and
+                ((-not $it.had) -or ($v -match '^[0-9]{1,10}$')))
+    }
+    if ($it.kind -eq 'power') {
+        return ($AllowPw.ContainsKey([string]$it.a + '|' + [string]$it.b) -and ([string]$it.c -match $GuidRx) -and
+                ((-not $it.had) -or ($v -match '^[0-9]{1,10}$')))
+    }
+    if ($it.kind -eq 'nic') { return (($NicProps -contains [string]$it.b) -and (@('Enabled', 'Disabled') -contains $v)) }
+    return $false
+}
 $script:Fix = 0
 
 function Say([string]$tag, [string]$t) { Write-Host ('  [' + $tag + '] ' + $t); if ($tag -eq 'FIX') { $script:Fix++ } }
@@ -176,7 +200,16 @@ function Load-Prev {
 }
 function Save-Prev($items) {
     try {
-        if (-not (Test-Path -LiteralPath $StateDir)) { New-Item -ItemType Directory -Path $StateDir -Force | Out-Null }
+        if (-not (Test-Path -LiteralPath $StateDir)) {
+            New-Item -ItemType Directory -Path $StateDir -Force | Out-Null
+            if (-not $Fake) {                        # administrators + SYSTEM write, users read (ProgramData lets users create)
+                try {
+                    $acl = New-Object System.Security.AccessControl.DirectorySecurity
+                    $acl.SetSecurityDescriptorSddlForm('O:BAD:PAI(A;OICI;FA;;;BA)(A;OICI;FA;;;SY)(A;OICI;0x1200a9;;;BU)')
+                    Set-Acl -LiteralPath $StateDir -AclObject $acl
+                } catch { }
+            }
+        }
         $o = [pscustomobject]@{ v = 1; saved = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'); items = $items }
         $o | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $PrevPath -Encoding ASCII
         return $true
@@ -213,6 +246,11 @@ if ($Off) {
     foreach ($k in @($prev.Keys | Sort-Object)) {
         $it = $prev[$k]
         $ok = $false
+        if (-not (Allowed $k $it)) {
+            Say 'FIX' ('Ignored a saved value this script never writes (not put back): ' + $k)
+            $newPrev.Remove($k)
+            continue
+        }
         if ($it.kind -eq 'reg') {
             if ($it.had) { $ok = Set-RegDword $it.a $it.b ([int]$it.value) } else { $ok = Remove-RegVal $it.a $it.b }
         } elseif ($it.kind -eq 'power') {
