@@ -115,7 +115,16 @@ def _ago(sec):
 
 
 # ------------------------------------------------------------------------------------------------ 1. Status (one plain screen)
-def status_screen(now=None, bot=None, accounts=None, keepalive=None, alerts=None, clock=-1):
+def _update_check():
+    """The last post-update check (engine/post_update_check, logs/post_update.json): its one message, or None. Never raises."""
+    try:
+        from engine import post_update_check as puc
+        return puc.last()
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def status_screen(now=None, bot=None, accounts=None, keepalive=None, alerts=None, clock=-1, upd=-1):
     """-> (lines, problems). Plain words, one line per fact; `problems` = [(menu number, what to do)] for the unchecked ones."""
     import time
     now = now if now is not None else time.time()
@@ -164,6 +173,9 @@ def status_screen(now=None, bot=None, accounts=None, keepalive=None, alerts=None
         P.append(("5", "Phone alerts are not set up: choose 5."))
     n_today = st.get("trades_today") if answers else None
     L.append(f"  Last trade: {('%s trade(s) today' % n_today) if n_today is not None else 'unknown (bot not answering)'}")
+    uc = _update_check() if upd == -1 else upd             # night-verify: the check after the last update (upd=None: none yet)
+    if isinstance(uc, dict) and uc.get("message"):
+        L.append(f"  Update   : {uc['message']} ({_ago(now - float(uc.get('t') or now))} ago)")
     L.append("")
     L.append("  [OK] Everything is green." if not P else "  [FIX] " + P[0][1])
     return L, P

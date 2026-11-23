@@ -419,3 +419,4 @@ AREAS["agency"].append("pricebook")      # day-caller2 2026-11-21: one price boo
 AREAS["agency"].append("trade_scripts")   # day-caller2 2026-11-22: per-trade call scripts
 AREAS["money"].append("money_pipeline")     # day-a11y 2026-11-22: the MONEY PIPELINE (business/pipeline.html + agency/pipeline.py) + the Corvette fund
 AREAS["pc"] += ["clockfix"]        # 2026-11-22: FIX_CLOCK.bat + OlympusClock task + the schtasks fallback (engine/go.sync_clock, self_heal.fix_clock)
+AREAS["pc"] += ["post_update_check"]   # night-verify 2026-11-23: the read-only check after an update restart, one phone message
