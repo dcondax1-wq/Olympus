@@ -145,3 +145,83 @@ Fixes to `engine/tickrec.py`. Tests: `tests/test_tickrec.py` 20/20 (18 before, 2
 - Research only, branch `day-ofprogram` (built on `day-orderflow`), not merged to `pc`.
 - No live_model file touched and nothing armed.
 - `engine.tickrec` still imports nothing that trades, and nothing in the bot imports it. The test checks both.
+
+## Round 2 (same day): the LVN family pushed further, LVN/HVN as LIT confluence, and volume-at-price features
+
+The rules were pre-registered in `research/orderflow/of_lvn.py` and committed before the first run, giving 35 stand-alone
+tests in all. Holm's correction covers every variant plus the B1 test from round 1, and the placebo uses 5,000 coin-flip
+draws. Results are in `research/orderflow/lvn_results.json`.
+
+### Short answer
+
+| What | Result |
+|---|---|
+| LVN rejection on ES, London / NY AM / NY PM, 1m and 5m profiles, prior day / week / 20-day composite (27 variants + 1 union lane) | **0 pass.** Only 3 of 27 variants make money in every span they have. None of those 3 reaches 1 trade a week, and none survives Holm |
+| Best single variant, NQ 5m prior-day profile, AM | +$10,388 / **-$1,371** / +$2,046 (PF 1.25 / 0.66 / 1.88), 0.5-0.65 trades a week, Holm p 0.042. It loses in 2026 H1 |
+| Union lane (all 3 windows, so more trades) | 1.3-1.7 trades a week, but **-$17,572** in 2021-25 and -$2,510 in H1. More trades = worse |
+| LIT sweep into an LVN / HVN | Sweeps into an HVN were bad in 2021-25 (74 trades, -0.37R, -$14,504) but good in 2026 H1 (+0.75R). This is the usual flip. All 3 rules are **rejected** |
+| Volume-at-price features (developing POC migration, single prints, poor high/low magnet) on 1m and 5m | **0 pass.** dPOC migration on 5m: +$9,165 / +$971 / -$443, 0.5 trades a week. Single prints trade 3 a week but lose in 2021-25 (-$48,736) |
+| Live | **Unchanged.** Nothing armed |
+
+### LVN variants (net $, PF, trades a week; spans 2021-25 / 2026 H1 / 2026 H2; ES "2021-25" = 2025-04..12)
+
+| Variant | 2021-25 | 2026 H1 | 2026 H2 | Holm p |
+|---|---|---|---|---|
+| NQ 5m D1 AM | +$10,388, 1.25, 0.65 | -$1,371, 0.66, 0.46 | +$2,046, 1.88, 0.50 | 0.042 |
+| NQ 5m D1 PM | -$6,956, 0.81 | +$1,329, 1.77 | +$874, 1.44 | 1.0 |
+| NQ 5m D1 London | -$21,004, 0.57 | -$2,468, 0.59 | -$188, 0.94 | 1.0 |
+| NQ 5m C20 London | -$1,192, 0.98, 0.92 | +$3,125, 1.43, 0.96 | +$1,674, 1.54, 0.55 | 0.185 |
+| NQ 5m W5 (AM / PM / London) | -$685 / -$11,673 / -$25,476 | +$1,322 / +$155 / -$298 | -$1,470 / -$2,635 / -$653 | ≥ 0.9 |
+| NQ 5m C20 (AM / PM) | -$7,389 / -$2,659 | -$4,882 / -$453 | -$2,521 / +$1,141 | ≥ 0.27 |
+| ES 5m (9 variants) | 8 of 9 lose; best PM D1 +$517 | best W5 AM +$1,319 | best D1 London +$2,240 (4 trades) | 1.0 |
+| NQ 1m profile (9 variants, 2026 only) | n/a | best D1 PM +$2,117, 1.77, 0.46 | D1 PM +$783, 1.39, 0.35 | 1.0 (PM D1 p 0.22) |
+| Union NQ 5m D1, all windows | -$17,572, 0.86, 1.7 | -$2,510, 0.79, 1.38 | +$2,732, 1.37, 1.29 | 0.80 |
+
+**Honest reading:**
+- Round 1's B1 (10:00-15:00) is not robust. Split it into AM and PM and the money sits in 2021-25 AM only; 2026 H1 AM loses.
+- London and ES don't work. A finer 1m profile doesn't help. Wider profiles (week, 20-day) don't help.
+- The PM window on the prior-day profile is positive in both 2026 halves on 5m *and* on 1m. But it loses in 2021-25 and
+  trades only 0.3-0.5 a week. That's a pattern, not an edge.
+- OF3 (the tick version) stays pre-registered unchanged, but the prior for it is now low.
+
+### Add-on value of the least-bad variant (NQ 5m D1 AM)
+
+| | 2021-25 | 2026 H1 | 2026 H2 |
+|---|---|---|---|
+| Correlation with LIT, daily | -0.05 | +0.03 | -0.03 |
+| LIT alone → LIT + X (at $500) | $4,738 → $15,126 | $30,033 → **$28,663** | $8,212 → $10,258 |
+| "Rapid book" LIT + ATLAS → + X at $250, $/month | $488 → $623 | $9,776 → **$9,649** | $3,362 → $3,630 |
+| Book max drawdown before → after | $25,478 → $21,085 | $2,768 → $3,025 | $2,214 → $2,466 |
+
+The book is a plain sum of daily $ (LIT replay + the 3 ATLAS members at r × $250); it is not an MFFU rule simulation. It
+loses money in the half that decides LIT changes (H1), so it is not a second lane.
+
+### LIT confluence (prior-day NQ profile, a node within 5 pts of the sweep extreme)
+
+| | 2021-25 | 2026 H1 | 2026 H2 |
+|---|---|---|---|
+| Into an LVN: n, avg R | 19, +0.07R | 5, +2.19R | 0 |
+| Into an HVN: n, avg R | 74, **-0.37R** | 11, +0.75R | 5, -0.08R |
+| Rest | +0.11R | +0.56R | +0.67R |
+| L1 skip HVN sweeps, $ | **+$14,504** | -$6,120 | -$464 |
+| L2 x1.25 on LVN sweeps, $ | +$358 | +$584 | 0 trades |
+| L3 x0.5 on HVN sweeps, $ | +$7,252 | -$3,060 | -$232 |
+
+**All rejected.** L2 is positive where it trades, but with 5 and 0 trades in 2026 it has no real test, which matches
+round 1's `vp_sweep_level5` (POC/VAH/VAL) result. The HVN skip would have been a big 2021-25 win and costs 2026 money.
+
+### Volume-at-price features
+
+| Feature | 2021-25 (5m) | 2026 H1 (1m / 5m) | 2026 H2 (1m / 5m) | Trades a week | Holm p |
+|---|---|---|---|---|---|
+| V1 developing-POC migration | +$9,165, PF 1.67 | -$421 / +$971 | +$158 / -$443 | 0.4-0.6 | 1.0 |
+| V2 single prints (fade the first PM revisit) | -$48,736, 0.78 | -$1,390 / -$10,396 | +$337 / +$4,353 | 2.9-3.7 | ≥ 0.63 |
+| V3 poor high/low magnet | +$3,360 (19 trades) | 1 trade | 3 trades | 0.04-0.15 | 1.0 |
+
+### What this means for the owner
+
+1. Bars can't carry an order-flow edge for NQ. 41 pre-registered bar tests over two rounds, 0 pass. LIT stays exactly as
+   it is.
+2. The only way left to test order flow is real ticks (OF1-OF3, `TICKS_HOWTO.md`). OF1 is the most promising: it targets
+   the one thing every proxy agreed on.
+3. The poor-high revisit fact holds (50% vs 37% next-day revisit). It is too rare to trade: 0.1 a week.
