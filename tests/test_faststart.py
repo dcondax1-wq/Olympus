@@ -85,22 +85,44 @@ def main() -> int:
             return None if C.t - mark["fd"] >= 20.0 else "stale"
         t0 = C.t
         check("chart fix: live bars back at 20 s -> seen by 21 s (was 30 s)", G.ensure_feed(problem=prob) and C.t - t0 <= 21, C.t - t0)
-        green_at = {"t": C.t + 12}
-        G._http = lambda path, body=None, timeout=5: {"items": [{"state": "good" if C.t >= green_at["t"] else "wait", "label": "x", "detail": ""}]}
-        t0 = C.t
-        lines, red = G.checklist_launch()
-        check("launch checklist: green 12 s after the start -> printed at 12 s (was 20 s)", red == 0 and C.t - t0 <= 12, C.t - t0)
-        t0 = C.t
-        lines, red = G.checklist_launch()
-        check("launch checklist: already green -> printed at once (was a 10 s sleep first)", red == 0 and C.t - t0 == 0, C.t - t0)
-        green_at["t"] = C.t + 10_000
-        t0 = C.t
-        lines, red = G.checklist_launch()
-        check("launch checklist: never green -> still gives up at ~90 s (limit unchanged), lines kept", red == 1 and 90 <= C.t - t0 <= 93
-              and lines and lines[0].startswith("  [..]"), (C.t - t0, lines))
+        # night-startcheck 2026-11-23: the launch checklist (always empty: it read "items" / "good" from an endpoint that sends
+        # "checks" with pass / warn / fail) is gone; START prints the readiness verdict ONCE after arming, never a wait loop
+        import threading as _th
+        from engine import readiness as RD
+        keep_rv = RD.ready_verdict
+        try:
+            RD.ready_verdict = lambda *a, **k: {"ready": True, "level": "READY", "window": "02:00", "blockers": []}
+            t0 = C.t
+            lines, ok = G.ready_lines()
+            check("ready check: READY -> 'READY for the next window' at once (no 90 s checklist wait)", ok is True and C.t - t0 == 0
+                  and lines == ["  READY for the next window"], (lines, C.t - t0))
+            RD.ready_verdict = lambda *a, **k: {"ready": False, "level": "NOT_READY", "window": "02:00", "blockers": [
+                {"what": "PC clock 25 s behind", "exact_fix": "SYNC_CLOCK.bat", "level": "NOT_READY"}]}
+            lines, ok = G.ready_lines()
+            check("ready check: NOT READY -> the phone's headline + the first blocker's fix, ok False",
+                  ok is False and lines[0] == f"  {RD.headline(RD.ready_verdict())}" and "PC clock 25 s behind -> fix: SYNC_CLOCK.bat" in lines[1], lines)
+
+            def slow(*a, **k):
+                _th.Event().wait(2.0)
+                return {"ready": True, "level": "READY", "blockers": []}
+            RD.ready_verdict = slow
+            w0 = keep_time = real_time()
+            lines, ok = G.ready_lines(max_s=0.2)
+            check("ready check: a slow verdict never holds START: 'still checking' after its limit (here 0.2 s), ok unknown",
+                  ok is None and "still checking" in lines[0] and real_time() - w0 < 1.5, (lines, real_time() - keep_time))
+
+            def bad(*a, **k):
+                raise RuntimeError("x")
+            RD.ready_verdict = bad
+            lines, ok = G.ready_lines()
+            check("ready check: a broken verdict says 'not readable', never raises", ok is None and "not readable: RuntimeError" in lines[0], lines)
+        finally:
+            RD.ready_verdict = keep_rv
         src = open(os.path.join(ROOT, "engine", "go.py"), encoding="utf-8").read()
         arm = src[src.index("def _step_arm("):src.index("def armed_accounts(")]
-        check("_step_arm uses checklist_launch (no fixed 10 s sleep left in it)", "checklist_launch()" in arm and "time.sleep(10)" not in arm)
+        check("_step_arm prints ready_lines() once; the dead launch checklist and its 90 s wait are gone from go.py",
+              "ready_lines()" in arm and "time.sleep(10)" not in arm and "checklist_launch" not in src and "checklist_lines" not in src
+              and "/api/dash/launch" not in src and "CHECK_MAX_S" not in src)
     finally:
         time.time, time.sleep = real_time, real_sleep
         for k, v in keep.items():

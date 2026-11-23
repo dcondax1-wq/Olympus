@@ -91,7 +91,7 @@ def t_go():
     print("b. engine/go: step_arm + the running-bot offer", flush=True)
     keep = {k: getattr(G, k) for k in ("CFG", "armed_accounts", "arm_problem", "resolve_atlas", "arm_b", "env_has_live", "server_up",
                                         "server_stale", "env_newer_than_server", "start_server", "stop_server", "bot_running",
-                                        "verify_routes", "checklist_lines", "_open", "shortcut", "startup_shortcuts", "mixup",
+                                        "verify_routes", "ready_lines", "_open", "shortcut", "startup_shortcuts", "mixup",
                                         "keepalive_missing", "keepalive_consent", "names")}
     from engine import ninjatrader as NT, rapid as RP, account_cli as AC, arm_report as AR
     keep_mod = (NT.main, RP.arm, AC.arm, AC.resume_optin, AR.PATH, time.sleep)
@@ -105,7 +105,7 @@ def t_go():
             for k, v in dict(arm_problem=lambda cfg: None, resolve_atlas=lambda cfg, inp=None: None, arm_b=lambda a: {"ok": True},
                              env_has_live=lambda: True, server_up=lambda: True, server_stale=lambda: False,
                              env_newer_than_server=lambda: False, start_server=lambda: True, stop_server=lambda: None,
-                             bot_running=lambda: False, verify_routes=lambda a, b: [], checklist_lines=lambda: ([], 0),
+                             bot_running=lambda: False, verify_routes=lambda a, b: [], ready_lines=lambda: ([], True),
                              _open=lambda: None, shortcut=lambda: None, startup_shortcuts=lambda: None).items():
                 setattr(G, k, v)
             RP.arm = lambda phrase, path=None: {"off": True}

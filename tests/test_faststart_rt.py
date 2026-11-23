@@ -61,8 +61,8 @@ def main():
     src = open(os.path.join(ROOT, "engine", "go.py"), encoding="utf-8").read()
     ss = src[src.index("def start_server("):src.index("def stop_server(")]
     arm = src[src.index("def _step_arm("):src.index("def armed_accounts(")]
-    check("3. start_server never reads the checklist; _step_arm reads it only after the bot start",
-          "checklist" not in ss and arm.index("ninjatrader.main(start)") < arm.index("checklist_launch()"))
+    check("3. start_server never reads the ready check; _step_arm reads it (once) only after the bot start",
+          "ready_lines" not in ss and arm.index("ninjatrader.main(start)") < arm.index("ready_lines()"))
     ok = sum(RES)
     print(f"\nfaststart red team: {'PASS' if ok == len(RES) else 'FAIL'} ({ok}/{len(RES)})")
     return ok == len(RES)
