@@ -488,5 +488,7 @@ AREAS["faults"] += [x for x in ("state_safe", "multi_account") if x not in AREAS
 AREAS["nq"].append("state_safe")
 AREAS["faults"].append("state_safe_rt"); AREAS["nq"].append("state_safe_rt")   # red team: .bak is a copy (no false pause), a real loss lock replaces a damaged-state pause
 
+AREAS["nq"].append("accounts_screen"); AREAS["pc"].append("accounts_screen")   # day-accounts 2026-11-23: nq/accounts.html (one card per account + 7-day clock) + the new Rapid's keep-alive end to end + cloud K7 fixes
+
 if __name__ == "__main__":
     sys.exit(main())
