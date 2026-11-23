@@ -52,10 +52,15 @@ def part_a():
     check("a. a Builder Name stays Builder 50K", ib["plan"] == "builder50k" and ib["kind"] == "fresh_eval", ib)
     both = OB.known_codes(rows=[{"name": "MFFUEVREOD1", "plan": "builder25k"}], rapid_names=["MFFUEVREOD2"])
     check("a. a code seen as Builder AND Rapid is not trusted", "REOD" not in both, both)
-    i0 = OB.infer(R50, 50000.0, known={})
+    # integration 2026-11-23: night-startfix made EVREOD MFFU's confirmed Rapid EOD prefix (seen on the owner's PC), so the
+    # "no Rapid known yet: still a choice" case is a guess-only Rapid code (RPD); EVREOD at $50,000 alone = Rapid EOD 50K
+    i0 = OB.infer("MFFUEVRPD99002", 50000.0, known={})
     o0 = OB.offers(i0)
     check("a. no Rapid on the PC yet: still a choice (not confirmed), Rapid EOD 50K first",
           i0["kind"] == "unknown" and o0[0]["act"] == "add:rapideod" and "Pick one" in OB.say(i0, o0), (i0, o0))
+    ir = OB.infer(R50, 50000.0, known={})
+    check("a. EVREOD (MFFU's Rapid EOD prefix, night-startfix) at $50,000 with nothing learned = Rapid EOD 50K, not a guess",
+          ir["plan"] == "rapideod" and ir["kind"] == "fresh_eval" and not ir["guess"], ir)
     check("a. the Start page passes the learned codes (status -> infer(..., known))",
           "known_codes() if cands" in open(os.path.join(ROOT, "engine", "onboard.py"), encoding="utf-8").read())
 
