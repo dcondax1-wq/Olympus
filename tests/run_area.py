@@ -441,6 +441,7 @@ AREAS["pc"].append("bat_shortcuts")     # red team 2026-11-23: a shortcut to a m
 AREAS["pc"] += ["zerotouch"]      # night-zerotouch 2026-11-22: START phrase = keep-alive consent, MONDAY_SETUP.bat, recovery matrix, NinjaTrader reopen
 AREAS["pc"].append("zerotouch_rt")      # red team 2026-11-23: an old explicit keep-alive OFF sticks, NinjaTrader reopen back-off, no-console start
 AREAS["pc"] += ["rollback_world"]   # night-rollback 2026-11-23: a bad landing rolls itself back (health / import / crash loop), temp git world
+AREAS["pc"] += ["rollback_rt"]      # red team night-rollback: owner / 16:00 restarts never roll a good update back, no good/bad loop, never mid-trade
 
 if __name__ == "__main__":
     sys.exit(main())
