@@ -161,6 +161,30 @@ def _day_path(day: str, ext: str) -> str:
     return os.path.join(TICK_DIR, day + ext)
 
 
+KEY = ["t_ns", "root", "price", "size", "bid", "ask"]
+
+
+def _nth(df: pd.DataFrame) -> pd.Series:
+    """The n-th identical row (same ms, price, size, bid, ask) within df: 0, 1, 2 ..."""
+    return df.groupby(KEY, sort=False).cumcount()
+
+
+def _merge(old: pd.DataFrame | None, new: pd.DataFrame) -> pd.DataFrame:
+    """old + new without double counting and WITHOUT losing real repeated prints (red team 2026-11-23: NQ prints the same
+    price and size several times in one millisecond in a sweep; a plain drop_duplicates kept ONE, so the volume and the
+    delta of every busy second came out too small). Rows are matched by (row, n-th identical): re-reading a growing file
+    adds only its new rows; an identical row that appears twice in one source stays twice."""
+    parts = []
+    for x in (old, new):
+        if x is not None and len(x):
+            x = x[COLS].reset_index(drop=True)
+            parts.append(x.assign(_n=_nth(x).values))
+    if not parts:
+        return new[COLS].iloc[0:0]
+    both = pd.concat(parts, ignore_index=True).drop_duplicates(subset=KEY + ["_n"])
+    return both.sort_values(["root", "t_ns", "_n"], kind="stable").drop(columns="_n").reset_index(drop=True)
+
+
 def write_days(df: pd.DataFrame, tick_dir: str | None = None) -> list[str]:
     """Merge df into one file per ET date (de-duplicated on every column, so re-ingesting is harmless)."""
     global TICK_DIR
@@ -174,9 +198,7 @@ def write_days(df: pd.DataFrame, tick_dir: str | None = None) -> list[str]:
     pq = _has_pyarrow()
     for day, part in df.groupby(et_day.values):
         old = read_day(day)
-        both = pd.concat([old, part[COLS]], ignore_index=True) if old is not None else part[COLS]
-        both = both.drop_duplicates(subset=["t_ns", "root", "price", "size", "bid", "ask"]).sort_values(["root", "t_ns"], kind="stable")
-        both = both.reset_index(drop=True)
+        both = _merge(old, part[COLS])
         if pq:
             p = _day_path(day, ".parquet")
             both.to_parquet(p + ".tmp", index=False)
@@ -224,21 +246,98 @@ def read_rec_csv(path: str) -> pd.DataFrame:
                  x["bid"].values, x["ask"].values)
 
 
-def ingest(nd: str | None = None) -> dict:
+RAW_KEEP_DAYS = 7          # raw le_ticks CSVs kept this many days after their ET day once ingested (the daily files hold them)
+STATE_NAME = "_ingest_state.json"
+
+
+def _state_path() -> str:
+    return os.path.join(TICK_DIR, STATE_NAME)
+
+
+def _load_state() -> dict:
+    try:
+        with open(_state_path(), encoding="utf-8") as f:
+            d = json.load(f)
+        return d if isinstance(d, dict) else {}
+    except Exception:
+        return {}
+
+
+def _save_state(st: dict) -> None:
+    try:
+        os.makedirs(TICK_DIR, exist_ok=True)
+        with open(_state_path() + ".tmp", "w", encoding="utf-8") as f:
+            json.dump(st, f, indent=1)
+        os.replace(_state_path() + ".tmp", _state_path())
+    except Exception:
+        pass
+
+
+def refresh_instruments(nd: str | None = None, today: dt.date | None = None) -> bool:
+    """While recording: the instrument list follows the front contract (red team 2026-11-23: it was written once at
+    `enable`, so after the December roll the recorder kept the thin expiring contract). True = rewritten."""
+    nd = nd or nt_dir()
+    if not nd or not is_enabled():
+        return False
+    rd = os.path.join(nd, REC_DIR)
+    if not os.path.exists(os.path.join(rd, "enabled.txt")):
+        return False
+    roots = [r for r in (_cfg().get("roots") or ["NQ", "ES"]) if str(r).upper() in ROOTS_OK]
+    want = "\n".join(front_names(roots, today)) + "\n"
+    p = os.path.join(rd, "instruments.txt")
+    try:
+        if open(p, encoding="utf-8").read() == want:
+            return False
+    except OSError:
+        pass
+    with open(p, "w", encoding="utf-8") as f:
+        f.write(want)
+    return True
+
+
+def ingest(nd: str | None = None, today: str | None = None) -> dict:
+    """le_ticks CSVs -> daily files. Only a CSV that changed since the last ingest is read (red team 2026-11-23: every run
+    re-read and re-wrote EVERY day since recording began, every minute, on the trading PC); a raw CSV older than
+    RAW_KEEP_DAYS whose last version is ingested is deleted (the daily file holds it: disk stays bounded)."""
     nd = nd or nt_dir()
     if not nd:
         return {"ok": False, "why": "no Documents\\NinjaTrader 8 folder here"}
+    today = today or dt.datetime.now(ET).strftime("%Y-%m-%d")
     files = sorted(glob.glob(os.path.join(nd, REC_DIR, "*_????-??-??.csv")))
-    rows, written = 0, set()
+    st = _load_state()
+    rows, written, read, removed = 0, set(), 0, []
     for f in files:
         try:
-            df = read_rec_csv(f)
-        except Exception as e:
-            print("tickrec: skip", os.path.basename(f), e)
+            sig = [int(os.path.getmtime(f)), int(os.path.getsize(f))]
+        except OSError:
             continue
-        rows += len(df)
-        written.update(write_days(df))
-    return {"ok": True, "files": len(files), "rows": rows, "written": sorted(written)}
+        name = os.path.basename(f)
+        if st.get(name) != sig:
+            try:
+                df = read_rec_csv(f)
+            except Exception as e:
+                print("tickrec: skip", name, e)
+                continue
+            read += 1
+            rows += len(df)
+            written.update(write_days(df))
+            st[name] = sig
+        day = name.rsplit("_", 1)[-1][:10]
+        try:
+            old = (dt.date.fromisoformat(today) - dt.date.fromisoformat(day)).days > RAW_KEEP_DAYS
+        except ValueError:
+            old = False
+        if old and st.get(name) == sig:
+            try:
+                os.remove(f)
+                st.pop(name, None)
+                removed.append(name)
+            except OSError:
+                pass
+    _save_state(st)
+    rolled = refresh_instruments(nd)
+    return {"ok": True, "files": len(files), "read": read, "rows": rows, "written": sorted(written), "removed_raw": removed,
+            "instruments_rolled": rolled}
 
 
 def parse_nt_export(path: str, root: str, tz: str = "America/New_York") -> pd.DataFrame:
