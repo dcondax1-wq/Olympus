@@ -31,7 +31,7 @@ import time
 from .data import DATA_DIR
 from .instruments import INSTRUMENTS
 
-DB_PATH = os.path.join(DATA_DIR, "memory.db")
+DB_PATH = os.environ.get("LE_MEMORY_DB") or os.path.join(DATA_DIR, "memory.db")   # LE_MEMORY_DB: tests (tests/__init__.py) use a temp db
 REAL_SOURCES = ("paper", "live")
 
 SCHEMA = """

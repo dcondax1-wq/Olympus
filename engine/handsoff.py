@@ -78,8 +78,9 @@ def points(kind: str, t) -> int:
 
 
 # ---------------------------------------------------------------------------------------------- recording
-def record(kind: str, src: str = "pc", detail: str = "", now=None, path: str = PATH, **extra) -> dict | None:
-    """Append one event. Never raises (returns None on failure)."""
+def record(kind: str, src: str = "pc", detail: str = "", now=None, path: str | None = None, **extra) -> dict | None:
+    """Append one event. Never raises (returns None on failure). path None = PATH read at call time (a test can point it away)."""
+    path = path or PATH
     try:
         t = int(time.time() if now is None else now)
         row = {"t": t, "kind": str(kind), "src": str(src)[:16], "detail": str(detail)[:200], "in_hours": in_hours(t), **extra}
