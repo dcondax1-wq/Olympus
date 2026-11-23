@@ -37,7 +37,7 @@ until it is recorded. Then: MFFU dashboard (myfundedfutures.com) -> left menu **
 First payout only: Personal Settings > KYC, a Riseworks account, sign the Riseworks agreements MFFU emails. Paid in 6-12 business hours.
 Then TRADE_HOME -> P (records it: the push stops, the Money pipeline counts it).
 
-## Needs MFFU confirm (ask support before the first request)
+## Needs MFFU confirm (ask support before the first request: the copy-paste message is docs/MFFU_SUPPORT_ASKS.md)
 1. Rapid EOD funded: is there a 24 h wait after the first funded trade? (we wait one trading day to be safe)
 2. A request made after the 16:10 close, or on a weekend: does it count, and is it paid the next business day?
 3. One sim-funded Builder per person (Builder 50K guide) vs 1 x 50K + 2 x 25K (limits article): under the strict reading Zlarior's

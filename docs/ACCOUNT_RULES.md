@@ -119,7 +119,7 @@ Not on those pages: the request button's name, the account picker, fees.
 | Builder payout #5 | 4 recorded | ONE "do not take payout #5: close after payout 4"; when MFFU would pay a 5th: "do NOT take it" (5th = live, every sim sleeps) |
 | Rapid $10,000 day | a Rapid day at $6,000+ net (one $10k day = MFFU moves it live) | at once, in the session |
 | Wording (2026-11-23) | the push, the 16:15 summary, the morning brief (line 2 + title) and the phone card | "REQUEST PAYOUT TODAY: ATLAS 25K $1,000" until it is recorded |
-| Rapid first request | not on the first funded trading day (24 h after the first trade: a third-party page only, **needs MFFU confirm**) | - |
+| Rapid first request | not on the first funded trading day (24 h after the first trade: a third-party page only, **needs MFFU confirm**: the support message is docs/MFFU_SUPPORT_ASKS.md) | - |
 | Record | TRADE_HOME -> P (pick, $, Y) | the account's own record + data/payout_ledger.json -> the Money pipeline / Corvette fund |
 
 ## Where the bot and MFFU differ (all stricter on our side, on purpose)
