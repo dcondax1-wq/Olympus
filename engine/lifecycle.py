@@ -55,7 +55,8 @@ STAGES = ("eval", "funded", "payout_ready") + STAND_DOWN
 FLAT_FROM, OPEN_AT = 16 * 60 + 10, 18 * 60      # MFFU: flat by 16:10 ET, the next session opens 18:00 ET
 TICK_EVERY_S = 30                       # facts are re-read at most this often (a refusal is handled at once)
 RECHECK_S = 180                         # a REJECTED without the risk text yet: NinjaTrader's Log is re-read this long
-PRICES = {"25K": "$63 (or $43 with a code)", "50K": "$91.80", "Rapid": "about $94 with a code"}
+PRICES = {"25K": "$63 (or $43 with a code)", "50K": "$91.80", "Rapid": "$97.20 (25K) / $165 (50K) with CLUB",
+          "Rapid 25K": "$97.20 with CLUB", "Rapid 50K": "$165 with CLUB"}       # the owner's real prices (CLAUDE.md)
 _RULES: dict = {}
 
 
@@ -223,7 +224,8 @@ def detect(f: dict) -> dict:
 # ------------------------------------------------------------------------------------------------ the texts
 def texts(stage: str, label: str, d: dict) -> tuple:
     """(title, body) of a stage's push, $ first, plain words."""
-    size = "Rapid" if "Rapid" in label else "25K" if "25K" in label else "50K"
+    size = ("Rapid 25K" if "25K" in label else "Rapid 50K" if "50K" in label else "Rapid") if "Rapid" in label else \
+        "25K" if "25K" in label else "50K"
     if stage == "passed":
         return (f"{label} PASSED: {money(d.get('balance'))}",
                 "MFFU locks it until the funded account is issued. Send Claude the new account name. No more orders go to it; "

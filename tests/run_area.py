@@ -333,6 +333,9 @@ AREAS["pc"].append("alerts_start_code")   # day-security3 2026-11-21: the /alert
 AREAS["pc"].append("alert_map")         # night-notify 2026-11-22: every critical event has a zero-setup phone route (engine/alert_map.py), digest, de-dup
 AREAS["pc"].append("payout_autopilot")   # night-payout 2026-11-22: payout ready after the close, the Builder #5 guard, the Rapid $10k day, TRADE_HOME P
 AREAS["pc"].append("payout_rt")         # red team 2026-11-23: the #5 guard per funded account, the count per account, #4 checks MFFU
+AREAS["pc"].append("rapid50k_onboard")   # night-r50k 2026-11-23: buy the Rapid EOD 50K -> one tap, slot rapid2, keep-alive key rapid2, $165
+AREAS["pc"].append("rules_watch")         # night-rulewatch 2026-11-23: MFFU help pages vs mffu_rules.json, daily, alert on a real change
+AREAS["pc"].append("fleet_mgr")           # night-fleetmgr 2026-11-23: one alert per account change with the next money move (advice only), the Fleet line
 AREAS["pc"].append("package_b")         # audit 2026-11-22 package B: every critical alarm reaches the phone
 AREAS["pc"].append("notify_rt")         # red team 2026-11-23: no hourly update-alert storm, subscribe reminder, never blocks, ALERTS_OFF
 AREAS["privacy"] += ["alerts_start_code", "cross_site"]
