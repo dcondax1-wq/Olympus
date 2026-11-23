@@ -143,7 +143,13 @@ MAX_TRIES = 2                   # attempts a day when an entry did not fill (a r
 RETRY_S = 120
 CLOSE_RETRY_S = 30
 MIN_ROOM = 100.0                # never on an account with less room than this (the presets' "stuck" line)
-PRIORITY = ("lit", "atlas", "rapid")           # one NinjaTrader account = one target: the first lane's key wins
+PRIORITY = ("lit", "atlas", "rapid", "rapid2")  # one NinjaTrader account = one target: the first lane's key wins
+# night-r50k 2026-11-23: the 2nd Rapid (engine/rapid slot "rapid2", e.g. the Rapid EOD 50K) is its own key, as in engine/lifecycle
+# (key_of): before, its LIT lane was keyed "rapid" and its ATLAS lane (bot.acct_r2) was not listed, so the two Rapids were ONE target.
+
+
+def _rapid_key(spec: dict | None, obj=None) -> str:
+    return "rapid2" if ((spec or {}).get("slot") == "rapid2" or getattr(obj, "slot", None) == "rapid2") else "rapid"
 MFFU_PLANS = ("mffu_builder_25k", "mffu_builder_50k", "mffu_rapid_eod_25k", "mffu_rapid_eod_50k")
 
 ALERT_RETRY_S = 300             # an alert ntfy did not take is tried again after this (never more often)
@@ -492,7 +498,7 @@ def hb_block(bot) -> dict | None:
         lane = {}
         for g in targets(bot):
             for ln in g["lanes"]:
-                if ln["key"] in ("lit", "atlas", "rapid"):
+                if ln["key"] in ("lit", "atlas", "rapid", "rapid2"):
                     lane.setdefault(ln["key"], g["key"])
         C = load_config(bot)
         on = {k: True for k, v in C["accounts"].items() if v}
@@ -762,7 +768,7 @@ def lanes(bot) -> list:
     if ad is not None and str((getattr(bot, "state", None) or {}).get("model") or cfg.get("model") or "lit") == "lit":
         out.append({"key": "lit", "kind": "lit", "obj": bot, "adapter": ad, "trade": True,
                     "nt": str(cfg.get("nt_account") or getattr(ad, "account", "") or "") or None})
-    for attr, key in (("acct_b", "atlas"), ("acct_r", "rapid")):
+    for attr, key in (("acct_b", "atlas"), ("acct_r", "rapid"), ("acct_r2", "rapid2")):
         o = getattr(bot, attr, None)
         if o is not None and not getattr(o, "problem", None):
             out.append({"key": key, "kind": "acct", "obj": o, "adapter": getattr(o, "adapter", None), "trade": True,
@@ -771,7 +777,7 @@ def lanes(bot) -> list:
         if getattr(a, "problem", None):
             continue
         sp = getattr(a, "spec", None) or {}
-        key = "rapid" if sp.get("lane") == "rapid" else f"x:{getattr(a, 'id', None) or sp.get('id')}"
+        key = _rapid_key(sp, a) if sp.get("lane") == "rapid" else f"x:{getattr(a, 'id', None) or sp.get('id')}"
         out.append({"key": key, "kind": "extra", "obj": a, "adapter": getattr(a, "adapter", None), "trade": True,
                     "nt": str(sp.get("nt_account") or "") or None if sp.get("adapter") == "ninjatrader" else None})
     c = getattr(bot, "acct_c", None)                    # BLITZ (paper / hidden): never a target, its side still counts
@@ -819,7 +825,7 @@ def _plan_id(g) -> str | None:
     if key == "lit":
         cfg = getattr(obj, "cfg", None) or {}
         return "mffu_builder_25k" if "25" in str(cfg.get("plan") or cfg.get("preset") or "") else "mffu_builder_50k"
-    if key == "rapid":
+    if key in ("rapid", "rapid2"):
         pre = str(sp.get("preset") or sp.get("plan") or "")
         for ln in g["lanes"]:
             pre = pre or str(((getattr(ln["obj"], "spec", None) or {}).get("preset")) or "")
@@ -1007,8 +1013,8 @@ def _facts(bot, g, now) -> dict | None:
         elif key == "atlas":
             f = LC.atlas_facts(obj, now)
             day = LC._today_pnl(obj, today)
-        elif key == "rapid":
-            ra = getattr(bot, "acct_r", None)
+        elif key in ("rapid", "rapid2"):
+            ra = getattr(bot, "acct_r2" if key == "rapid2" else "acct_r", None)
             lane = next((ln["obj"] for ln in g["lanes"] if ln["kind"] == "extra"), None)
             f = LC.rapid_facts(ra, lane, now)
             day = LC._today_pnl(ra if ra is not None else lane, today)
@@ -1819,7 +1825,13 @@ def known_keys(path: str | None = None) -> set:
         from .multi_account import load_file
         for sp in load_file():
             if sp.get("id"):
-                ks.add("rapid" if sp.get("lane") == "rapid" else f"x:{sp['id']}")
+                ks.add(_rapid_key(sp) if sp.get("lane") == "rapid" else f"x:{sp['id']}")
+    except Exception:
+        pass
+    try:                                                 # the 2nd Rapid's slot (data/rapid2.json) when it is set
+        from . import rapid as _rp
+        if _rp.read(_rp.slot_path("rapid2")):
+            ks.add("rapid2")
     except Exception:
         pass
     try:

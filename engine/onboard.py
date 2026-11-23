@@ -48,8 +48,10 @@ PLAN_LABEL = {"builder25k": "Builder 25K", "builder50k": "Builder 50K", "rapideo
 
 
 # ------------------------------------------------------------------------------------------------ pure inference
-def parse_name(name) -> dict:
-    """{"firm", "stage" (eval / funded / None), "code", "plan" (builder / rapid / None), "guess"} from the Name alone."""
+def parse_name(name, known: dict | None = None) -> dict:
+    """{"firm", "stage" (eval / funded / None), "code", "plan" (builder / rapid / None), "guess"} from the Name alone.
+    known = {code: plan} learned from the accounts the bot ALREADY runs (known_codes): a Rapid code seen on the owner's own Rapid
+    (night-r50k 2026-11-23: the Rapid EOD 25K he bought) is no longer a guess, so a 2nd Rapid gets ONE button, not "pick one"."""
     n = str(name or "").strip().upper().replace(" ", "")
     m = _NAME.match(n)
     if not m:
@@ -60,7 +62,36 @@ def parse_name(name) -> dict:
         plan, guess = "builder", False
     elif code.startswith("RP") or "RAPID" in code or code in RAPID_CODES:
         plan = "rapid"
+    if code and (known or {}).get(code) in ("builder", "rapid"):
+        plan, guess = known[code], False
     return {"firm": "MFFU", "stage": STAGE_CODES.get(st), "code": code, "plan": plan, "guess": guess}
+
+
+def known_codes(rows=None, rapid_names=None) -> dict:
+    """{letter code: "builder" | "rapid"} from the Names the bot already trades (engine/account_cli.inventory + the Rapid slots),
+    so the prefix MFFU really uses is learned from the owner's own accounts (MFFU publishes none). A code seen on both = left out.
+    Never raises."""
+    seen: dict = {}
+    try:
+        if rows is None:
+            from . import account_cli
+            rows = account_cli.inventory()
+        for r in rows or []:
+            pl = str(r.get("plan") or "")
+            kind = "rapid" if pl in RAPIDS else "builder" if pl.startswith("builder") else None
+            m = _NAME.match(str(r.get("name") or "").strip().upper().replace(" ", ""))
+            if kind and m and m.group(2):
+                seen.setdefault(m.group(2), set()).add(kind)
+        if rapid_names is None:
+            from . import rapid as _rp
+            rapid_names = [b.get("account") for _s, b in _rp.read_all()]
+        for nm in rapid_names or []:
+            m = _NAME.match(str(nm or "").strip().upper().replace(" ", ""))
+            if m and m.group(2):
+                seen.setdefault(m.group(2), set()).add("rapid")
+    except Exception:
+        pass
+    return {c: next(iter(k)) for c, k in seen.items() if len(k) == 1}
 
 
 def size_of(balance) -> str | None:
@@ -81,9 +112,10 @@ def _plan_key(plan, size) -> str | None:
     return None
 
 
-def infer(name, balance=None, life_stage=None, outcome=None) -> dict:
-    """What a NinjaTrader Name is. life_stage = its lifecycle stage (passed / locked / ...), outcome = new_accounts' memory."""
-    p = parse_name(name)
+def infer(name, balance=None, life_stage=None, outcome=None, known: dict | None = None) -> dict:
+    """What a NinjaTrader Name is. life_stage = its lifecycle stage (passed / locked / ...), outcome = new_accounts' memory,
+    known = known_codes() (the owner's own accounts' Name codes)."""
+    p = parse_name(name, known)
     size = size_of(balance)
     stage = p["stage"] or "eval"
     plan = _plan_key(p["plan"], size)
@@ -244,9 +276,10 @@ def status(rows=None, folder: str | None = None, path: str | None = None, names=
         kw = {"names": names} if names is not None else {}
         cands = [c for c in na.candidates(folder, path, now=now, **kw) if c["name"] not in _used(path)]
         evals = bot_evals(outcomes, stages) if cands else []
+        known = known_codes() if cands else {}
         out = []
         for c in cands:
-            i = infer(c["name"], c.get("balance"), stages.get(_hash(c["name"]) or ""), outcomes.get(c["name"]))
+            i = infer(c["name"], c.get("balance"), stages.get(_hash(c["name"]) or ""), outcomes.get(c["name"]), known)
             o = offers(i, evals)
             out.append({**c, **i, "options": o, "say": say(i, o), "armed_note": ARMED_LATER})
         return {"new": out, "running": bool(_go().bot_running()), "armed_note": ARMED_LATER}
