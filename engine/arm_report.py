@@ -53,6 +53,18 @@ def find_funded_candidates(old, nt_names, taken=None) -> list:
     return out
 
 
+_ID = re.compile(r"[A-Za-z]*\d[A-Za-z0-9_]{4,}")
+
+
+def mask(text) -> str:
+    """Account Names / ids -> their last 4 ('MFFUSFBLDR000006018' -> '...6018'): the glance rides in the PUBLIC status post
+    (red team 2026-11-23: a START reason quotes NinjaTrader's full Names)."""
+    def m(x):
+        w = x.group(0)
+        return "..." + w[-4:] if sum(ch.isdigit() for ch in w) >= 3 else w
+    return _ID.sub(m, str(text or ""))
+
+
 def row(label, armed, reason="", fix="") -> dict:
     return {"label": label, "armed": bool(armed), "reason": str(reason or "")[:200], "fix": str(fix or "")[:200]}
 
@@ -92,7 +104,7 @@ def glance_reason(key, path=None, now=None) -> str | None:
             return None
         for r in d.get("rows") or []:
             if str(r.get("label") or "").lower().startswith(str(key).lower()) and r.get("armed") is False:
-                return f"{r['label'].split(' ')[0]} is NOT armed: {str(r.get('reason') or 'see the Start page')[:90]}"[:110]
+                return f"{r['label'].split(' ')[0]} is NOT armed: {mask(str(r.get('reason') or 'see the Start page'))[:90]}"[:110]
     except Exception:  # noqa: BLE001
         pass
     return None
