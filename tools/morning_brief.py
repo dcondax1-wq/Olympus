@@ -534,7 +534,7 @@ def cards_waiting(path: str | None = None) -> int:
 
 
 def build(snap: dict, now: int | None = None, plan_doc=None, events=None, root: str | None = None, fleet: str | None = None,
-          waiting: int | None = None) -> dict:
+          waiting: int | None = None, lvb: str | None = None) -> dict:
     """{"title", "body", "lines" (<= MAX_LINES), "day"}: line 1 READY / NOT READY (+ the fix), one line per account (armed, $,
     room, yesterday $, $ to pass / to payout / payout READY, the MFFU 7-day deadline when <= 3 days), Today (hours, news, the T1
     ban, an early close), the next money move (engine/fleet_mgr), then edge + needs you + decide cards waiting. Never raises on
@@ -561,7 +561,13 @@ def build(snap: dict, now: int | None = None, plan_doc=None, events=None, root: 
         needs += n2
     if not acc:
         acc = ["No account numbers in the last report"]
-    keep = MAX_LINES - 4                             # READY + Today + Next + Needs
+    if lvb is None:                                  # night-livevsbt: live vs backtest, from the last daily check (read only)
+        try:
+            from engine import live_vs_bt as _lvb
+            lvb = _lvb.last_line(now)
+        except Exception:  # noqa: BLE001
+            lvb = ""
+    keep = MAX_LINES - 4 - (1 if lvb else 0)         # READY + Today + Next + Needs (+ live vs backtest)
     if len(acc) > keep:
         acc = acc[:keep - 1] + [f"+{len(acc) - keep + 1} more accounts: TRADE_HOME -> 1 (Status)"]
     try:
@@ -574,7 +580,7 @@ def build(snap: dict, now: int | None = None, plan_doc=None, events=None, root: 
     needs += roll_needs(snap, now)
     nd = ", ".join(needs[:2]) + (f" (+{len(needs) - 2} more)" if len(needs) > 2 else "") if needs else "none"
     nw = cards_waiting() if waiting is None else int(waiting)
-    lines = [rl] + acc + [today] + ([f"Next money move: {mv}"] if mv else []) + \
+    lines = [rl] + acc + ([lvb] if lvb else []) + [today] + ([f"Next money move: {mv}"] if mv else []) + \
             [f"Edge {edge_text(snap)} · Needs you: {nd}" + (f" · Decide cards waiting: {nw}" if nw else "")]
     title = f"ZEUS - {e:%a %b} {e.day} - {word}"
     lines = [ln[:400] for ln in lines[:MAX_LINES]]       # red team 2: the body = the 8 lines, under the 4,096 B push limit

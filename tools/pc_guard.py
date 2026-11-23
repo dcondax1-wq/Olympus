@@ -458,6 +458,11 @@ def guard(state: dict | None, snap: dict, roll_state=None) -> tuple:
         cands += morning_brief.pushes(snap, st["sent"], now)
     except Exception:
         pass
+    try:                     # live vs backtest (engine/live_vs_bt.py, read-only): one line a day per drifting bot, after 16:20 ET
+        from engine import live_vs_bt
+        cands += live_vs_bt.pushes(now, st["sent"])
+    except Exception:
+        pass
     try:                     # the 01:45 ET "ready for 02:00" push (tools/launch_card.py, read-only): silent when all is well
         from tools import launch_card
         cands += launch_card.ready_push(snap, now)
