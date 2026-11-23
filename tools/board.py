@@ -246,11 +246,14 @@ def lines(board: dict, now=None) -> list:
         last = B._d(r.get("last"))
         lt = f"{B.day_text(last['t'])} {last.get('kind')}: {B.clean(last.get('text'), 60)}" if last.get("t") else "-"
         bal = B.usd(r.get("balance"))
-        if "funded" in str(r.get("chip") or r.get("stage") or "").lower():   # MFFU sim-funded starts at $0 (CLAUDE.md): profit = balance
+        if "funded" in str(r.get("chip") or r.get("stage") or "").lower():   # MFFU sim-funded starts at $0 (CLAUDE.md): profit = balance;
+            # print time only (audit D7): the stored / published row keeps the PC's own number
             from engine.mffu_view import money_view
             mv = money_view(r.get("balance"), r.get("floor"), r.get("room"), True, f"{r.get('plan') or ''} {r.get('name') or ''}")
             if mv.get("balance") is not None:
-                bal = f"{B.usd(mv['balance'])} (MFFU from $0, floor {B.usd(mv['floor'])})"
+                bal = (f"{B.usd(mv['balance'])} (MFFU from $0, floor {B.usd(mv['floor'])}, payout +{B.usd(mv['payout_need'])} to the "
+                       f"{B.usd(mv['payout_ask'])} request)" if mv.get("payout_need") else
+                       f"{B.usd(mv['balance'])} (MFFU from $0, floor {B.usd(mv['floor'])}, the {B.usd(mv.get('payout_ask'))} payout is ready)")
         out.append(f"  {r.get('name')} | {r.get('plan') or '-'} | {stage} | {bal} | {B.usd(r.get('room'))} | "
                    f"{B.usd(r.get('to_pass'))} | {src} | {lt}")
     evs = [e for e in board.get("events") or [] if e.get("kind") != "balance" or e.get("src") != "bot"][:10]

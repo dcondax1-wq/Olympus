@@ -87,14 +87,16 @@ def owner_name(acct_id=None, name=None, plan=None, stage=None) -> str:
         return "Account"
 
 
-MFFU_SIZES = {"50K": {"start": 50000.0, "mll": 2000.0, "lock": 100.0}, "25K": {"start": 25000.0, "mll": 1000.0, "lock": 100.0}}
+MFFU_SIZES = {"50K": {"start": 50000.0, "mll": 2000.0, "lock": 100.0, "buffer": 2100.0, "max": 2000.0},
+              "25K": {"start": 25000.0, "mll": 1000.0, "lock": 100.0, "buffer": 1100.0, "max": 1000.0}}   # = pc_feed.js MFFU
 
 
 def money_view(balance=None, floor=None, room=None, funded: bool = False, plan=None, start=None) -> dict:
     """MFFU's own terms (owner 2026-11-20, CLAUDE.md): a sim-FUNDED account starts at $0 and MFFU shows its profit as the balance
     (ATLAS funded "$401", not $25,401). Python twin of tools/web_public/pc_feed.js mffuView: a funded balance still in eval terms
     (> half the start) is shifted by the start; one already in MFFU terms is kept; the floor moves with it (room unchanged,
-    floor capped at the +$100 lock). An eval is returned as it is. -> {"balance", "floor", "room", "mffu": True when shifted}"""
+    floor capped at the +$100 lock). An eval is returned as it is. -> {"balance", "floor", "room", "mffu": True when shifted,
+    funded only: "payout_at" / "payout_ask" / "payout_need" (the max request: balance $2,100 on a 25K, $4,100 on a 50K)}"""
     b, fl, rm, st0 = _f(balance), _f(floor), _f(room), _f(start)
     out = {"balance": b, "floor": fl, "room": rm, "mffu": False}
     if not funded or b is None:
@@ -108,7 +110,9 @@ def money_view(balance=None, floor=None, room=None, funded: bool = False, plan=N
     nb = round(b - shift, 2)
     nf = round(fl - shift, 2) if fl is not None else (round(nb - rm, 2) if rm is not None else -R["mll"])
     nf = min(nf, R["lock"])
-    return {"balance": nb, "floor": nf, "room": rm if rm is not None else round(nb - nf, 2), "mffu": bool(shift)}
+    at = R["buffer"] + R["max"]                  # the first payout goal = the max request (CLAUDE.md: $1,000 on a 25K at $2,100)
+    return {"balance": nb, "floor": nf, "room": rm if rm is not None else round(nb - nf, 2), "mffu": bool(shift),
+            "payout_at": at, "payout_ask": R["max"], "payout_need": max(0.0, round(at - nb, 2))}
 
 
 def _days_stats(days: list, balance, start, start_bal=None) -> dict:

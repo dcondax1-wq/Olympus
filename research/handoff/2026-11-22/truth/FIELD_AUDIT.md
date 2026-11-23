@@ -30,9 +30,13 @@ present); `mf.a[] id nm sd l4 td lt bd wd eq n w bt wt aw al pf ct f{cp bd cd ef
 ## Python side + Trading Home (lead, night-truth)
 | Reader | Field read | Sent? | Fix |
 |---|---|---|---|
-| nq/trading_home_core.js "Every account armed" | `accounts[].badge == LIVE` as "armed" | badge = a REAL account, not armed; ATLAS not in `accounts[]` at all | core `ar` {lit, atlas, <extra id>: 1/0} (engine/brain_glance.armed_map: armed + live gate); ATLAS counted from board.atlas |
-| engine/brain_glance.build bots | extra accounts other than rapid/rapid2 | Zlarior 25K #2 (b25k_2) sent in acct.accounts, never shown | every extra account gets a bot row (owner name via mffu_view.owner_name) |
-| engine/brain_glance.rapid room | `eval.anchor.floor` | absent until a broker anchor exists (new Rapid: phone had no room) | floor from plan_rules + days (EOD trail, capped at lock; static = start - mll) |
+| nq/trading_home_core.js "Every account armed" | `accounts[].badge == LIVE` as "armed" | badge = a REAL account, not armed; ATLAS not in `accounts[]` at all | core `ar` {bot: [on, armed]} (pc_report.armed_core of the glance); held = off / locked / not LIVE / ar armed 0; synthetic ATLAS row from board.atlas |
+| engine/brain_glance.build bots | extra accounts other than rapid/rapid2 | Zlarior 25K #2 (b25k_2) sent in acct.accounts, never shown | Package C (other builder): LEAD_WIRES |
+| engine/brain_glance.rapid room | `eval.anchor.floor` | absent until a broker anchor exists (new Rapid: phone had no room) | Package C (other builder): LEAD_WIRES |
 | mffucenter.js:233 life_why | `life.acc[].why` | dropped by pc_report._life ON PURPOSE (ext size; tests.test_live_publish pins it) | none: the page shows nothing in its place |
 | tools/board.py ACCOUNTS | funded balance | $25,401 (eval terms) | engine/mffu_view.money_view (twin of pc_feed.js mffuView): $401, floor -$599 |
 | (already on land-fixes) brain_glance.atlas armed | `account_b.armed` | never in account_b.info | _ab_armed (kind LIVE + enabled) |
+| nq/braincore.js on / armed | `pc.glance.bots[].armed` (ext, up to 44 min old) | glance only | prefers core `ar`; desk rows fresh25 / rapid1 get on / armed |
+| business/accounts.js Balance | funded `balance` | $25,401 (eval terms) | "Balance (MFFU, from $0)" $401 + "To the max payout" via PC_FEED.mffuView |
+| pc_report full() accounts[] | `enabled` / `locked` / `armed` | dropped | kept when the PC sends them |
+| pc_report post t | the 5-min heartbeat | the bot's 15 s live.json existed on 127.0.0.1 | gather() prefers it when newer (4 s timeout, full fallback); hb_t / hb_age unchanged |

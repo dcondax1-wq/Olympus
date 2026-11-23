@@ -28,7 +28,10 @@ STALE_SESSIONS = 3
 SKIP = re.compile(r"^(tv_|_)")
 WHY = {"ES": "ES research bars: the PC has no ES / MES feed (LEAD_WIRES: add it to engine/ninjatrader.feed_instruments)",
        "VIX": "CBOE daily close (engine/news.py refresh on the PC)", "VXN": "CBOE daily close (engine/news.py refresh on the PC)",
-       "1d": "daily bars: tools/data_pull.py builds 5m / 15m / 1h only"}
+       "1d": "daily bars: tools/data_pull.py builds 5m / 15m / 1h only",
+       # audit D8 (2026-11-22): the two notes that had no reason
+       "GEX": "squeezemetrics DIX.csv, refreshed by engine/gamma.py on the PC (every 12 h while the server runs); the repo copy is the last one committed",
+       "CBOE": "CBOE vol indexes (VIX9D / VIX3M / VIX1D / VVIX / SKEW): a one-off research export, no job refreshes it; no bot reads it (research only)"}
 
 
 def _last_line(path: str) -> str | None:

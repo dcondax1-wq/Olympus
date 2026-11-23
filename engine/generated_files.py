@@ -27,7 +27,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GENERATED = (
     "cache/dash/*",                       # engine/dash_data.py dashboard cache (5y, bt_*, coverage, es_fresh)
     "data/GEX_1d.csv",                    # engine/gamma.py daily GEX refresh
-    "data/VIX_1d.csv", "data/VXN_1d.csv", "data/CBOE_vol_1d.csv",   # engine/news.py CBOE daily closes
+    "data/VIX_1d.csv", "data/VXN_1d.csv", "data/CBOE_vol_1d.csv",   # engine/news.py CBOE daily closes (CBOE_vol_1d: a research export, no job)
     "data/news/ff_thisweek.json", "data/news/ff_archive.csv", "data/news/hub.json",   # engine/news.py, tools/news_hub.py
     "data/news/events.csv", "data/news/official_meta.json",   # engine/news_official.py (ops task, once a day: future rows only)
     "data/lit_learning.json",             # engine/lit_learn.py learning loop

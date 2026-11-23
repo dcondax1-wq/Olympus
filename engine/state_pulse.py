@@ -165,7 +165,8 @@ def write_state(st: dict, work: str = WORK) -> None:
         p = os.path.join(work, STATE_FILE)
         with open(p + ".tmp", "w", encoding="utf-8") as fh:
             json.dump(st, fh)
-        os.replace(p + ".tmp", p)
+        from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+        _fs_replace(p + ".tmp", p)
     except Exception:  # noqa: BLE001
         pass
 

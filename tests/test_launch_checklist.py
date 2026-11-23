@@ -10,6 +10,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -207,8 +208,28 @@ def wiring_checks():
     bot = SimpleNamespace(cfg={"adapter": "paper"}, running=False, state={}, health={}, ledger=[], log=[])
     hb = heartbeat.Heartbeat(bot, every_s=300, log=lambda *a: None)
     pl = hb.payload()
-    check("heartbeat payload has 'launch' with items", isinstance(pl.get("launch"), dict) and len(pl["launch"].get("items") or []) == 12,
-          pl.get("launch"))
+    # audit D4 (2026-11-22): the real PC has data/rapid.json, rapid2.json, account_c.json -> 1-3 optional lines (blitz, rapid, rapid2);
+    # the 12 base lines must all be there, the optional ones may be (was: exactly 12, red on the owner's PC every Sunday)
+    keys = [i.get("key") for i in (pl.get("launch") or {}).get("items") or []]
+    base = {"anchor", "allow", "b", "startup", "nt", "feed", "roll", "broker", "sim", "sim_add", "armed", "up"}
+    extra = [k for k in keys if k not in base]
+    check("heartbeat payload has 'launch' with the 12 base items (+ optional blitz / rapid lines)", isinstance(pl.get("launch"), dict)
+          and base <= set(keys) and len(keys) == 12 + len(extra) and all(re.match(r"^(blitz|rapid\d*)$", str(k)) for k in extra),
+          keys)
+    from engine import rapid as _rp                # the owner's PC: data/rapid.json + rapid2.json set (simulated in a temp folder)
+    tmpd = tempfile.mkdtemp(prefix="lc_rapid_")
+    old_p, old_p2 = _rp.PATH, _rp.PATH2
+    try:
+        _rp.PATH, _rp.PATH2 = os.path.join(tmpd, "rapid.json"), os.path.join(tmpd, "rapid2.json")
+        for fp in (_rp.PATH, _rp.PATH2):
+            with open(fp, "w", encoding="utf-8") as fh:
+                json.dump({"account": "SIMTEST-0001", "plan": "rapid_25k", "enabled": True}, fh)
+        k2 = [i.get("key") for i in (heartbeat.Heartbeat(bot, every_s=300, log=lambda *a: None).payload().get("launch") or {}).get("items") or []]
+        check("launch with rapid.json + rapid2.json set (the owner's PC): the 12 base lines + rapid + rapid2",
+              base <= set(k2) and {"rapid", "rapid2"} <= set(k2) and len(k2) == 12 + len([k for k in k2 if k not in base]), k2)
+    finally:
+        _rp.PATH, _rp.PATH2 = old_p, old_p2
+        shutil.rmtree(tmpd, ignore_errors=True)
     check("heartbeat 'launch' under 4 KB", len(json.dumps(pl["launch"])) < 4096, len(json.dumps(pl["launch"])))
     check("heartbeat 'launch' facts carry the chart contract (roll)", isinstance((pl["launch"].get("facts") or {}).get("roll"), dict),
           (pl["launch"].get("facts") or {}).get("roll"))

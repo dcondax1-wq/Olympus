@@ -75,7 +75,7 @@ EXT_LAST = ("glog",)   # red-team 2026-11-21: the Brain's long thought stream ta
 # "zl": ZEUS learned, the nightly line (engine/zeus_learn.read_tiny, <= 220 bytes) -> the ZEUS page's "ZEUS learned" card
 CORE_KEYS = ("eh", "v", "kind", "lite", "src", "t", "every_s", "host", "model_state", "price", "day_pnl", "pc_verdict", "pc", "reporter",
              "board", "accounts", "trimmed", "wp", "ar", "pulse")   # wp: the phone app's push set-up (engine/push.app_block: public keys, ~230 bytes)
-# ar: each account armed 1 / 0 (engine/brain_glance.armed_map); pulse: the time of a state-change post (engine/state_pulse.py)
+# ar: {glance bot id: [on, armed]} in the CORE (split(): the glance itself rides the ext, up to 44 min old); pulse: the time of a state-change post (engine/state_pulse.py)
 BRD_BYTES = 1200
 HB_STALE_S = 900                 # the bot beats every 5 min: older than 15 min = the bot is not reporting
 BAR_STALE_S = 300                # the last 1-minute bar older than 5 min while the market is open = FEED STALE
@@ -393,6 +393,30 @@ def read_heartbeat(root: str = ROOT) -> tuple:
     return pl, push, src
 
 
+LOCAL_LIVE_TIMEOUT_S = 4
+LOCAL_LIVE_MAX = 256 * 1024
+
+
+def local_live(port=PORT_DEFAULT, http=None) -> dict | None:
+    """The bot server's own live.json (GET 127.0.0.1:<port>/api/site/live.json: engine/live_publish.build of the running bot), or None
+    (not 200, not JSON, not kind "le-live", no t). 4 s timeout. Never raises."""
+    url = f"http://127.0.0.1:{port}/api/site/live.json"
+    try:
+        if http is not None:
+            st, txt = http("GET", url, None, None, LOCAL_LIVE_TIMEOUT_S)
+        else:
+            req = urllib.request.Request(url, method="GET")
+            req.add_header("User-Agent", UA)
+            with urllib.request.urlopen(req, timeout=LOCAL_LIVE_TIMEOUT_S) as r:
+                st, txt = r.status, r.read(LOCAL_LIVE_MAX).decode("utf-8", "replace")
+        if int(st or 0) != 200:
+            return None
+        j = json.loads(txt)
+        return j if isinstance(j, dict) and j.get("kind") == "le-live" and num(j.get("t")) else None
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def nt_running(env=None):
     """True / False on Windows (tasklist), None elsewhere. LE_PR_T_NT=1|0 for tests."""
     env = os.environ if env is None else env
@@ -482,6 +506,13 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
             snap["live"] = live_publish.build(hb, now=hb_t or now, hb_last=push, every_s=num(hb.get("every_s")) or 300)
         except Exception as e:
             snap["live_error"] = f"{e.__class__.__name__}: {str(e)[:120]}"
+    if snap["server"]:
+        try:                                # audit D3 (2026-11-22): the running bot's own live.json (rebuilt every ~15 s) when it is newer
+            lv = local_live(port, http)     # than the 5-minute heartbeat file; hb_t / hb_age stay the heartbeat's (the PC-silent rules)
+            if lv and (num(lv.get("t")) or 0) > (hb_t or 0):
+                snap["live"], snap["live_t"] = lv, int(num(lv["t"]))
+        except Exception:  # noqa: BLE001
+            pass
     snap["alerts_pc"] = _telegram_on(root)
     snap["alert_bus"] = _bus_active()       # Telegram / Discord through engine/alert_bus (ALERTS_SETUP.bat): a route of its own
     try:                                    # self-heal (engine/self_heal.py, night-selfheal): fixed / needs you + what grows on disk, <= 300 bytes
@@ -625,7 +656,7 @@ def full(snap: dict) -> dict:
     pc = _d(L.get("pc"))
     bd = _d(L.get("board"))
     hb = _d(snap.get("hb"))
-    out = {"v": 1, "kind": "le-live", "lite": True, "src": "pc_report", "t": snap.get("hb_t"), "every_s": L.get("every_s") or hb.get("every_s"),
+    out = {"v": 1, "kind": "le-live", "lite": True, "src": "pc_report", "t": snap.get("live_t") or snap.get("hb_t"), "every_s": L.get("every_s") or hb.get("every_s"),
            "host": L.get("host") or hb.get("host"), "model_state": L.get("model_state"), "price": L.get("price"), "day_pnl": L.get("day_pnl"),
            "pc_verdict": verdict_now(snap, L.get("pc_verdict")),
            "pc": {k: pc.get(k) for k in ("running", "adapter", "position", "model_state", "host", "model", "present", "t", "age_s", "silent", "every_s",
@@ -650,7 +681,9 @@ def full(snap: dict) -> dict:
                                                      "dll", "dll_used", "today", "session", "status") if _d(a.get("eval")).get(k) is not None}
         accts.append({"id": a["id"], "name": a.get("name"), "plan": a.get("plan"), "kind": a.get("kind"), "source": a.get("source"),
                       "badge": a.get("badge"), "conn": {k: _d(a.get("conn")).get(k) for k in ("present", "t", "running", "connected", "host")},
-                      "eval": ev, "pnl": a.get("pnl"), "running": a.get("running"), "trades": [], "days": []})
+                      "eval": ev, "pnl": a.get("pnl"), "running": a.get("running"), "trades": [], "days": [],
+                      # audit D2: Trading Home holds an account that is off / locked / not armed (optional: an old PC sends none)
+                      **{k: a.get(k) for k in ("enabled", "locked", "armed") if a.get(k) is not None}})
     if accts:
         out["accounts"] = accts
     try:                                           # the Board's cut (engine/board_events.status_block: events + account rows); the ext
@@ -722,13 +755,6 @@ def full(snap: dict) -> dict:
     for k in ("learn", "lab"):                     # the learning loop / ZEUS Lab notes when the reporter's snapshot has them
         if isinstance(snap.get(k), dict):
             out[k] = snap[k]
-    try:                                           # night-truth 2026-11-22: each account armed (1) or not (0), in the CORE (~50 bytes):
-        from engine import brain_glance as _bg     # the badge "LIVE" only says the account is real; the glance rides the ext
-        ar = _bg.armed_map(hb)
-        if ar:
-            out["ar"] = ar
-    except Exception:  # noqa: BLE001
-        pass
     if snap.get("pulse"):                          # a state-change post (engine/state_pulse.py): when, so readers know it is one
         out["pulse"] = int(snap["pulse"])
     return {k: v for k, v in out.items() if v is not None}
@@ -830,6 +856,9 @@ def split(out: dict, max_bytes: int = MAX_STATUS_BYTES, parts: int | None = None
     g = _d(core.get("pc")).pop("glance", None)
     if g:
         x["glance"] = g
+        ar = armed_core(g)
+        if ar:                                     # night-truth / audit D1: on + armed per bot ride every core post (~60 bytes)
+            core["ar"] = ar
     tr = _d(core.get("board")).pop("trades", None)  # the last 3 trades: history, not the heartbeat (pc_feed lays them back in board)
     if tr:
         x["board_trades"] = tr
@@ -869,6 +898,15 @@ def split(out: dict, max_bytes: int = MAX_STATUS_BYTES, parts: int | None = None
         except Exception:  # noqa: BLE001
             pass
     return pub, [public(e) for e in exts]
+
+
+def armed_core(glance) -> dict:
+    """{bot id: [on 1/0, armed 1/0]} of the brain glance (engine/brain_glance: its armed rule), for the core post's "ar"."""
+    out = {}
+    for b in _d(glance).get("bots") or []:
+        if isinstance(b, dict) and b.get("id"):
+            out[str(b["id"])[:16]] = [int(bool(b.get("on"))), int(bool(b.get("armed")))]
+    return out
 
 
 def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
@@ -925,6 +963,10 @@ def ext_hash(exts) -> str:
     the next EXT_EVERY_S."""
     import hashlib
     keep = [{k: _news_of(k, v) for k, v in _d(e.get("x")).items() if k not in ("glance", "glog")} for e in exts or []]
+    # audit D1 (2026-11-22): a bot turning on / off, armed / disarmed or its "why not armed" is news (the Brain page waited up to 44 min);
+    # the glance's other fields (levels, logs, texts, $) still are not
+    keep.append([[b.get("id"), bool(b.get("on")), bool(b.get("armed")), b.get("nar")]
+                 for e in exts or [] for b in (_d(_d(e.get("x")).get("glance")).get("bots") or []) if isinstance(b, dict)])
     return hashlib.sha1(json.dumps(keep, sort_keys=True, default=str).encode("utf-8")).hexdigest()[:16]
 
 

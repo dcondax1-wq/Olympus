@@ -57,6 +57,9 @@ AREAS = {
     "board": ["board", "payout_coach", "bots_back", "live_link", "edge_chip", "zeus_hub", "help_page", "decide"],                                       # night-board 2026-11-17: the Board (docs/BOARD.md)
     "journal": ["journal_edge", "journal_page", "kronos_page", "apollo_page", "kratos_page", "kairos_page", "odeon_page"],   # night-botgap 2026-11-18: the trade-journal apps + Mnemosyne's "The bot's edge"
 }
+# audit D6 (2026-11-22): the PC self-test's suites that sat in no area (cloud landings never ran them)
+AREAS["pc"] += ["start_api", "launch_checklist", "nt_outgoing", "nt_exec_audit", "selfheal", "ops", "run_switch", "new_accounts", "go",
+                "nt_roll_guard", "broker_balance", "eval_fix", "fsutil", "account_rename"]
 AREAS["money"] += ["widget", "money_dash"]      # night-revamp-dash 2026-11-20: the Scriptable widget + Glance page (tools/web_public/widget/)
 AREAS["olympus"].append("olympus_shell")  # night-revamp-main 2026-11-20: the main pages: no sideways scroll, nothing under the bottom bar, keys above the home bar (tools/olympus_shell_audit.py)
 AREAS["agency"].append("web_expert")       # team web-expert 2026-11-20: agency/expert/ (the playbook, the 5-tap diagnosis) + Jarvis 'web' answers

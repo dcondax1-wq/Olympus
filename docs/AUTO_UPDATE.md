@@ -25,8 +25,9 @@ updating the files every time we make changes, so do it now."
 - **Since 2026-11-20 Olympus `pc` is the main home** (owner): commit and push only there (`python tools/ship.py`, or
   `git push origin HEAD:pc` from a clone of dcondax1-wq/Olympus). The old demetrades2000-coder/nq-liquidity-engine repo is
   retired: never push to it.
-- Test it, then push the release to the backup: `git push olympus <release>:pc` (attach the repo first: add_repo
-  `dcondax1-wq/olympus` with push access). The PC installs it within the hour when it is flat. The backup's default
+- Test it, then push the release by URL, never by a remote name you have not checked: `git push https://github.com/dcondax1-wq/Olympus
+  <release>:pc` (attach the repo first: add_repo `dcondax1-wq/olympus` with push access). In an old clone `origin` (or `olympus`) can
+  still point at the retired repo: `git remote -v` first (audit E4, 2026-11-22). The PC installs it within the hour when it is flat. The backup's default
   branch `main` only holds a README, so none of the repo's scheduled GitHub Actions run there (private repos have few
   free minutes).
 - `update_source.json` (repo root) names the backup: remote `olympus`, URL with the account name in it (so Git

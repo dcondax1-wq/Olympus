@@ -156,9 +156,9 @@ def main() -> int:
         probe = lambda off: (lambda url: {"ok": True, "date": 1000.0 + off, "t0": 999.8, "t1": 1000.2})
         net = oc.internet(probe=probe(0.4))
         check("internet: answers -> up, clock drift from the Date header", net["up"] and abs(net["drift_s"] - 0.4) < 1e-6, net)
-        check("clock: 0.4 s OK, 5 s WARN, 90 s FIX with 'Sync now'", oc.check_clock(net)["level"] == oc.OK
+        check("clock: 0.4 s OK, 5 s WARN, 90 s FIX with FIX_CLOCK.bat (land-fixes: was 'Sync now')", oc.check_clock(net)["level"] == oc.OK
               and oc.check_clock(oc.internet(probe=probe(5)))["level"] == oc.WARN
-              and oc.check_clock(oc.internet(probe=probe(-90)))["level"] == oc.BAD and "Sync now" in oc.check_clock(oc.internet(probe=probe(-90)))["fix"])
+              and oc.check_clock(oc.internet(probe=probe(-90)))["level"] == oc.BAD and "FIX_CLOCK.bat" in oc.check_clock(oc.internet(probe=probe(-90)))["fix"])
         # the entry guard counts only the drift the probe proves (owner's busy Surface 2026-10-25 read "5.0 s ahead")
         from engine import guards as _G
         _real = oc.internet

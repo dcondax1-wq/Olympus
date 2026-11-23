@@ -23,7 +23,6 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
-from engine import brain_glance as G  # noqa: E402
 from engine import mffu_view as MV  # noqa: E402
 from engine import state_pulse as SP  # noqa: E402
 from tools import pc_report as R  # noqa: E402
@@ -176,7 +175,7 @@ def report_tests():
                 body = json.loads(posts[0][2])
             check("pc_report --pulse: ONE post, the core only (kind le-live), marked as a pulse", r["posted"] and len(posts) == 1
                   and body.get("kind") == "le-live" and body.get("pulse") == now, (r, body.get("kind"), body.get("pulse")))
-            check("pc_report --pulse: the core carries each account armed (ar)", body.get("ar") == {"lit": 1}, body.get("ar"))
+            check("pc_report --pulse: the core carries each bot [on, armed] (ar)", (body.get("ar") or {}).get("lit") == [1, 1], body.get("ar"))
             st = SP.read_state(work)
             bars = R.read_json(os.path.join(work, R.BARS_STATE), {})
             check("pc_report --pulse: counted in pulse.json and in the PC's day (bars.json all)", SP.day_count(st, now) == 1
@@ -228,37 +227,83 @@ def audit_tests():
     ids = {a["id"] for a in real["accounts"]} | {"lit", "atlas"}
     check("audit: tonight's real post has the 4 accounts (Zlarior 50K + ATLAS cards, 3 accounts rows)",
           {"mffu50k_eval", "b25k_2", "rapid"} <= ids and real["board"].get("atlas"), sorted(ids))
-    check("audit: tonight's real glance missed Zlarior 25K #2 (the bug this branch fixes)",
-          "b25k_2" not in [b["id"] for b in real["pc"]["glance"]["bots"]])
-    hb = {"t": 1, "running": True,
-          "health": {"account": {"armed": True, "enabled": True, "label": "LIVE"},
-                     "accounts": [{"id": "rapid", "armed": True, "enabled": True, "label": "LIVE"},
-                                  {"id": "b25k_2", "name": "Zlarior Builder 25K #2", "plan": "Builder 25K", "armed": False, "enabled": True, "label": "LIVE"}]},
-          "second": {"route": {"account_b": {"kind": "LIVE", "enabled": True, "label": "ATLAS x"}}},
-          "acct": {"accounts": [
-              {"id": "rapid", "plan": "Rapid EOD 25K", "enabled": True, "running": True, "eval": {"days": {}},
-               "plan_rules": {"start": 25000.0, "mll": 1000.0, "lock": 25100.0}, "account": {"label": "LIVE ACCOUNT"}, "day_pnl": 0},
-              {"id": "b25k_2", "name": "Zlarior Builder 25K #2", "plan": "Builder 25K", "enabled": True, "running": True,
-               "eval": {"days": {"2026-11-20": 23.62}}, "plan_rules": {"start": 25000.0, "mll": 1000.0, "lock": 25100.0},
-               "account": {"label": "LIVE ACCOUNT"}, "day_pnl": 0}]}}
-    am = G.armed_map(hb)
-    check("audit: armed_map = each account armed + live gate (ATLAS from account_b kind/enabled, no 'armed' key needed)",
-          am == {"lit": 1, "atlas": 1, "rapid": 1, "b25k_2": 0}, am)
-    g = G.build(hb, {})
-    bots = {b["id"]: b for b in g["bots"]}
-    check("audit: the glance now has every extra account (Zlarior 25K #2 named the owner's way)",
-          "b25k_2" in bots and bots["b25k_2"]["name"] == "Zlarior 25K #2", list(bots))
-    check("audit: Rapid's room without a broker anchor = MFFU's floor from the plan ($1,000, was missing)", bots["rapid"].get("room") == 1000,
-          bots["rapid"])
-    check("audit: the 25K #2 room from its days: EOD trail $25,023.62 - $1,000 -> room $1,000", bots["b25k_2"].get("room") == 1000,
-          bots["b25k_2"])
-    check("audit: the trailing floor stops at the lock", G._plan_floor({"start": 25000, "mll": 1000, "lock": 25100}, {"d": 3000}) == 25100)
-    check("audit: a static plan floor is start - mll", G._plan_floor({"start": 25000, "mll": 1000, "lock": 24000}, {"d": 3000}) == 24000)
-    check("audit: 'ar' and 'pulse' ride the CORE post (the glance rides the ext, every 44 min)", "ar" in R.CORE_KEYS and "pulse" in R.CORE_KEYS)
-    tr = R.split({"v": 1, "kind": "le-live", "t": 1, "ar": am, "pc": {"running": True}, "reporter": {"t": 1}})[0]
-    check("audit: the privacy pass keeps 'ar' as sent", tr.get("ar") == am, tr.get("ar"))
+    check("audit: tonight's real post had no 'ar' and ATLAS not in accounts[] (what Trading Home missed)",
+          "ar" not in real and "atlas" not in {a["id"] for a in real["accounts"]})
+    g = real["pc"]["glance"]
+    core, exts = R.split({"v": 1, "kind": "le-live", "t": 1, "pc": {"running": True, "glance": g}, "reporter": {"t": 1}})
+    check("audit D1: the core carries 'ar' {bot: [on, armed]} from the glance (the glance itself rides the ext)",
+          core.get("ar") == {"lit": [1, 1], "atlas": [1, 0], "rapid": [1, 1]} and "glance" not in core.get("pc", {}), core.get("ar"))
+    check("audit D1: 'ar' and 'pulse' are CORE keys", "ar" in R.CORE_KEYS and "pulse" in R.CORE_KEYS)
+    g2 = json.loads(json.dumps(g))
+    g2["bots"][0]["lv"] = [["x", 1, 2]]
+    g2["bots"][0]["wait"] = "something else"
+    e2 = R.split({"v": 1, "kind": "le-live", "t": 1, "pc": {"running": True, "glance": g2}, "reporter": {"t": 1}})[1]
+    check("audit D1: ext_hash does not move when only non-armed glance fields change", R.ext_hash(exts) == R.ext_hash(e2))
+    g3 = json.loads(json.dumps(g))
+    g3["bots"][1]["armed"] = True
+    e3 = R.split({"v": 1, "kind": "le-live", "t": 1, "pc": {"running": True, "glance": g3}, "reporter": {"t": 1}})[1]
+    check("audit D1: ... and moves when a bot is armed (the ext goes now, not in 44 min)", R.ext_hash(exts) != R.ext_hash(e3))
+    snap = {"t": 1, "hb_t": 1, "hb": {}, "live": {"pc": {"running": True}, "accounts": [
+        {"id": "b25k_2", "name": "x", "kind": "eval", "eval": {"room": 1}, "enabled": False, "locked": "daily loss"},
+        {"id": "mffu50k_eval", "kind": "eval", "eval": {"room": 1}}]}}
+    rows = {a["id"]: a for a in R.full(snap).get("accounts") or []}
+    check("audit D2: full() account rows keep enabled / locked (only when the PC sends them)", rows["b25k_2"].get("enabled") is False
+          and rows["b25k_2"].get("locked") == "daily loss" and "enabled" not in rows["mffu50k_eval"], rows)
+
+    class LH:
+        def __init__(self, st, body):
+            self.st, self.body, self.calls = st, body, []
+
+        def __call__(self, method, url, body=None, headers=None, timeout=15):
+            self.calls.append((url, timeout))
+            if url.endswith("/api/site/live.json"):
+                return self.st, json.dumps(self.body)
+            if url.startswith("http://127.0.0.1"):
+                return 200, '{"ok": true}'
+            return 200, "{}"
+    tmp = tempfile.mkdtemp(prefix="pulse_live_")
+    try:
+        root = os.path.join(tmp, "root")
+        os.makedirs(os.path.join(root, "logs", "pc_hb"))
+        hb_t = 1_795_400_000
+        with open(os.path.join(root, "logs", "pc_hb", "heartbeat.json"), "w") as fh:
+            json.dump({"t": hb_t, "running": True, "adapter": "paper"}, fh)
+        env = {"LE_PR_T_NT": "1", "LE_PR_T_MARKET": "1"}
+        old = {k: os.environ.get(k) for k in env}
+        os.environ.update(env)
+        try:
+            newer = {"kind": "le-live", "t": hb_t + 240, "pc": {"running": True}, "board": {}, "accounts": []}
+            h = LH(200, newer)
+            sn = R.gather(hb_t + 250, root=root, http=h, feed_problem=lambda: None)
+            st = R.full(sn)
+            check("audit D3: a newer le-live live.json from the bot (127.0.0.1) wins: the post's t = its t, hb_age unchanged",
+                  sn.get("live_t") == hb_t + 240 and st["t"] == hb_t + 240 and sn["hb_t"] == hb_t and sn["hb_age"] == 250, (sn.get("live_t"), st["t"], sn["hb_age"]))
+            check("audit D3: the local fetch has a 4 s timeout", any(u.endswith("/api/site/live.json") and t == 4 for u, t in h.calls), h.calls)
+            for why, hh in (("a 500", LH(500, newer)), ("a wrong kind", LH(200, {**newer, "kind": "le-x"})), ("an older t", LH(200, {**newer, "t": hb_t - 5}))):
+                sn = R.gather(hb_t + 250, root=root, http=hh, feed_problem=lambda: None)
+                check(f"audit D3: {why} falls back to the heartbeat", not sn.get("live_t") and R.full(sn)["t"] == hb_t, sn.get("live_t"))
+        finally:
+            for k, v in old.items():
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.environ[k] = v
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    import importlib.util
+    import re as _re
+    from engine import pc_selftest
+    sp = importlib.util.spec_from_file_location("run_area_x", os.path.join(ROOT, "tests", "run_area.py"))
+    ra = importlib.util.module_from_spec(sp)
+    sp.loader.exec_module(ra)
+    allm = {x for v in ra.AREAS.values() for x in v}
+    miss = [m.group(1) for s_ in pc_selftest.SUITES for a in (s_.get("argv") or []) for m in [_re.match(r"tests\.test_(\w+)$", str(a))]
+            if m and m.group(1) not in allm]
+    check("audit D6: every PC self-test suite sits in a run_area area (cloud landings run them)", not miss and "launch_checklist" in ra.AREAS["pc"], miss)
     doc = open(os.path.join(ROOT, "research", "handoff", "2026-11-22", "truth", "FIELD_AUDIT.md"), encoding="utf-8").read()
     check("audit: the field audit table is written (research/handoff/2026-11-22/truth/FIELD_AUDIT.md)", "| " in doc and "sent" in doc.lower())
+    from tools import data_health
+    check("audit D8: GEX_1d and CBOE_vol_1d stale notes say why", all(data_health.WHY.get(x) for x in ("GEX", "CBOE")))
 
 
 # ---------------------------------------------------------------------------------------------- (3) $0 view
@@ -273,13 +318,15 @@ def zero_tests():
     v4 = MV.money_view(27000.0, 26000.0, 1000.0, True, "Builder 25K")
     check("$0 view: the floor is capped at the +$100 lock", v4["floor"] == 100.0 and v4["balance"] == 2000.0, v4)
     from tools import board as BD
-    lines = BD.lines({"pc": {"t": 1795401816, "via": "ntfy"}, "accounts": [
+    brd = {"pc": {"t": 1795401816, "via": "ntfy"}, "accounts": [
         {"name": "ATLAS", "plan": "MFFU Builder 25K (funded)", "stage": "funded", "chip": "funded", "balance": 25401.38, "floor": 24401.38,
          "room": 1000.0, "src": "PC live"},
-        {"name": "Zlarior", "plan": "MFFU Builder 50K", "stage": "eval", "balance": 49213.9, "room": 1045.7, "src": "PC live"}]}, now=1795401900)
+        {"name": "Zlarior", "plan": "MFFU Builder 50K", "stage": "eval", "balance": 49213.9, "room": 1045.7, "src": "PC live"}]}
+    lines = BD.lines(brd, now=1795401900)
+    check("$0 view: print time only: the stored board row keeps the PC's 25,401.38", brd["accounts"][0]["balance"] == 25401.38)
     at = next(x for x in lines if x.strip().startswith("ATLAS"))
     zl = next(x for x in lines if x.strip().startswith("Zlarior"))
-    check("$0 view: board.py read shows ATLAS funded as $401 (floor -$599), not $25,401", "$401 (MFFU from $0, floor -$599)" in at
+    check("$0 view: board.py read shows ATLAS funded as '$401 ... payout +$1,699', not $25,401", "$401 (MFFU from $0, floor -$599, payout +$1,699" in at
           and "25,401" not in at, at)
     check("$0 view: board.py keeps the eval's balance", "$49,214" in zl, zl)
 
@@ -288,10 +335,10 @@ def zero_tests():
 NODE = r"""
 const T = require(process.argv[1]); const L = require(process.argv[2]);
 const out = {};
-out.real = T.today(L, { now: L.t + 60 }).lines;
-const L2 = JSON.parse(JSON.stringify(L)); L2.ar = { lit: 1, atlas: 1, rapid: 1, b25k_2: 0 };
-out.ar = T.today(L2, { now: L2.t + 60 }).lines;
-out.old = T.today(L2, { now: L2.t + 3 * 3600 }).lines;
+out.real = T.today(L, { now: L.t + 60 });
+const L2 = JSON.parse(JSON.stringify(L)); L2.ar = { lit: [1, 1], atlas: [1, 1], rapid: [1, 1], b25k_2: [1, 0] };
+out.ar = T.today(L2, { now: L2.t + 60 });
+out.old = T.today(L2, { now: L2.t + 3 * 3600 });
 console.log(JSON.stringify(out));
 """
 
@@ -307,23 +354,61 @@ def home_tests():
     except ValueError:
         check("trading home: the node run works", False, r.stderr[-300:])
         return
-    acct = [x for x in o["real"] if x.get("acct")]
+    acct = o["real"]["accounts"]
     names = [x["title"] for x in acct]
     check("trading home: the 4 accounts each get one line (tonight's real post)", len(acct) == 4
-          and names == ["Zlarior 50K", "ATLAS 25K funded", "Zlarior 25K #2", "Rapid EOD 25K"], names)
+          and sorted(names) == sorted(["Zlarior 50K", "ATLAS 25K funded", "Zlarior 25K #2", "Rapid EOD 25K"]), names)
     z = acct[0]["say"]
     check("trading home: a line = armed / running, room $, today $, next window", all(w in z for w in ("running", "room $1,046", "today $0", "next Mon 02:00-15:30 ET")), z)
-    check("trading home: ATLAS's line has its own window", "02:00-05:00" in acct[1]["say"], acct[1]["say"])
+    atl = next(x for x in acct if x["id"] == "atlas")
+    check("trading home: ATLAS's line has its own window", "02:00-05:00" in atl["say"], atl["say"])
     check("trading home: an older PC without 'ar' says the armed flag is a guess ('?')", "ARMED ?" in z, z)
-    a2 = {x["id"]: x for x in o["ar"]}
-    check("trading home: 'ar' decides armed: Zlarior 25K #2 NOT armed, its line red", a2["acct:b25k_2"]["say"].startswith("NOT armed")
-          and a2["acct:b25k_2"]["ok"] is False and a2["acct:lit"]["ok"] is True, a2["acct:b25k_2"])
-    check("trading home: 'Every account armed' names the one held", a2["armed"]["ok"] is False and "Zlarior 25K #2" in a2["armed"]["say"]
-          and "ATLAS" not in a2["armed"]["say"], a2["armed"]["say"])
-    old = [x for x in o["old"] if x.get("acct")]
+    a2 = {x["id"]: x for x in o["ar"]["accounts"]}
+    arm = {x["id"]: x for x in o["ar"]["lines"]}["armed"]
+    check("trading home: 'ar' decides armed: Zlarior 25K #2 NOT armed, its line red", a2["b25k_2"]["say"].startswith("NOT armed")
+          and a2["b25k_2"]["ok"] is False and a2["mffu50k_eval"]["ok"] is True, a2["b25k_2"])
+    check("trading home: 'Every account armed' names the one held", arm["ok"] is False and "Zlarior Builder 25K #2" in arm["say"]
+          and "ATLAS" not in arm["say"], arm["say"])
+    old = o["old"]["accounts"]
     check("trading home: a 3-hour-old report says so on each line", all(x["say"].startswith("Old report") and x["ok"] is None for x in old), old[:1])
     html = open(os.path.join(ROOT, "tools", "web_public", "nq", "trading_home.html"), encoding="utf-8").read()
-    check("trading home: the page renders the core's lines (textContent, no innerHTML)", "res.lines.forEach" in html and "innerHTML" not in html)
+    check("trading home: the page renders the core's lines (textContent, no innerHTML)", "res.lines.forEach" in html and "res.accounts" in html and "innerHTML" not in html)
+
+
+ACC_NODE = r"""
+const fs = require('fs');
+const mk = (tag) => ({ tag, className: '', textContent: '', children: [], style: {}, appendChild(c) { this.children.push(c); return c; }, setAttribute() {} });
+global.document = { createElement: mk, getElementById: () => mk('div'), documentElement: mk('html') };
+global.fetch = async () => ({ ok: false });
+const out = {};
+const run = (withFeed) => {
+  global.window = withFeed ? { PC_FEED: require(process.argv[2]) } : {};
+  eval(fs.readFileSync(process.argv[1], 'utf8'));
+  const c = window.ACCOUNTS_PAGE.card({ name: 'ATLAS', plan: 'MFFU Builder 25K', stage: 'funded', status: 'live' },
+    { stage: 'funded', balance: 25401.38, floor: 24401.38, room: 1000, today: 0 }, null);
+  const flat = []; const walk = (n) => { if (n.textContent) flat.push(n.textContent); (n.children || []).forEach(walk); }; walk(c);
+  return flat;
+};
+out.feed = run(true); out.raw = run(false);
+console.log(JSON.stringify(out));
+"""
+
+
+def accounts_page_tests():
+    if not shutil.which("node"):
+        return
+    r = subprocess.run(["node", "-e", ACC_NODE, os.path.join(ROOT, "tools", "web_public", "business", "accounts.js"),
+                        os.path.join(ROOT, "tools", "web_public", "pc_feed.js")], capture_output=True, text=True, timeout=30)
+    try:
+        o = json.loads(r.stdout)
+    except ValueError:
+        check("accounts page: the node run works", False, r.stderr[-300:])
+        return
+    f = " | ".join(o["feed"])
+    check("accounts page (audit E2): ATLAS funded $25,401 shows 'Balance (MFFU, from $0)' $401 + the max-payout need $1,699",
+          "Balance (MFFU, from $0)" in f and "$401" in f and "$1,699 more, then ask $1,000" in f and "$25,401" not in f, f)
+    w = " | ".join(o["raw"])
+    check("accounts page: without PC_FEED it shows the raw balance as before", "Balance" in w and "$25,401" in w and "from $0" not in w, w)
 
 
 if __name__ == "__main__":
@@ -332,6 +417,7 @@ if __name__ == "__main__":
     audit_tests()
     zero_tests()
     home_tests()
+    accounts_page_tests()
     n, ok = len(RESULTS), sum(RESULTS)
     print(f"\n{ok}/{n} passed")
     sys.exit(0 if ok == n else 1)
