@@ -27,8 +27,22 @@ writes `data/`, `logs/`, `cache/` or a top config file can change live state the
 
 Not dirty but red / slow in the scan (not part of this job): `obsidian_brain`, `land_branch` and `why_page` rc 1 (they were already red here); `lit_live`, `combo_50k`, `shadow_leads` and `fleet` took longer than the 600 s scan budget.
 
-## Not scanned dynamically
-The other ~390 suites (jarvis / olympus / zenith / kalshi / cities / agency / money / board / journal areas; mostly page and browser tests, not in the PC self-test). The self-test's guard covers any of them that join pc_selftest.SUITES later. Run `python tools/hermetic_scan.py <area>` per area to sweep them (about 1-2 h each).
+## Area sweep (2026-11-23, after the red team merge 786ab34e): every remaining run_area area
+Python Playwright 1.63 (on the pre-installed Chromium) and duckdb were installed in this container, so the browser suites really
+ran. The first pass without them crashed early and could not show their writes. Every suite that was red was then scanned a second time.
+| Area | Suites | Dirty | Fixed | Red (not hermetic problems) |
+|---|---|---|---|---|
+| jarvis | 26 | 0 | - | jarvis_skills, jarvis_voice, jarvis_shortcuts, fit_edge (page wait times out at 240 s), phone_e2e (needs a GitHub clone) |
+| olympus | 46 | 0 | - | 19 page suites with 1-3 failing checks each (themes, warp, oracle, fates, athena, hephaestus, labyrinth, nemesis, prometheus, tyche, pantheon, mind, nav, home_fx, node_suites, dashfx, brain3d) |
+| zenith | 12 | 0 | - | phone_e2e |
+| kalshi | 18 | 0 | - | kalshicity_page, kalshi_k8_dash (1-2 checks each) |
+| cities | 7 | 0 | - | world_build (1 check) |
+| agency | 26 | 0 | - | trade_scripts (1 check) |
+| money | 21 | 0 | - | - |
+| **total** | **156** | **0** | | the red ones ran to their end (n-1 of n checks) except fit_edge and phone_e2e |
+Repo (not live) files a suite rewrites while it runs, all restored by the suite or the scan, none in data/ logs/ cache/:
+`tools/web_public/cities/{cities,fixture}.json`, `agency/storefront/dist/*-copy-test.json`, `research/handoff/2026-11-03/hermes/*.jpg`,
+and `docs/shots/effects/lab-*-golden.jpg` (sfx_lab: it was left modified once and was put back with git). These are not live state; they are listed for the lead only.
 
 ## For the lead
 - The guard runs in **raise** mode in the self-test, so a future suite that writes a live file goes red. If it had passed before, that holds the auto-update (the regression rule), which is the point. Its first [FAIL] line names the file.
