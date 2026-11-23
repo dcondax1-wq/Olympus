@@ -97,8 +97,9 @@ def tracker_checks():
           and n[0]["title"] == "PAYOUT READY: request $1,000" and "WAIT" not in n[0]["body"], (t, n))
     t = FL.track({**d, "2026-11-09": 300.0}, {f"2026-10-0{i}": 0.01 for i in range(1, 5)}, "builder25k", today="2026-11-09")
     n = FL.notices(t, 1)
-    check("payout #5 warning: the ready push of the 5th sim payout says MFFU then moves the account to LIVE + the others go dormant",
-          t["payouts_n"] == 4 and n and "payout 5 of 5" in n[0]["body"] and "dormant" in n[0]["body"] and "Ask Claude" in n[0]["body"], n)
+    check("payout #5 never offered (fleet plan 2026-11-22): 4 taken -> status 'stop', no PAYOUT READY push, the text says close it "
+          "(engine/payout_autopilot sends the one 'do not take payout #5' alert)",
+          t["payouts_n"] == 4 and t["status"] == "stop" and not t["ready"] and not n and "Do NOT take payout #5" in t["text"], (t["status"], n))
     t = FL.track({"2026-11-03": 1500.0, "2026-11-04": 100.0, "2026-11-05": 100.0}, {}, "builder50k", today="2026-11-05")
     check("consistency below the buffer ($1,700 of $2,100): no consistency push (nothing to wait for yet)",
           t["status"] == "consistency" and t["above_buffer"] < 0 and not FL.notices(t, 1), t)

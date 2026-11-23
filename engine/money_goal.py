@@ -373,7 +373,15 @@ def heartbeat_block(path: str | None = None) -> dict | None:
             return None
         if inp["settings"].get("publish") is False:
             return {"v": VERSION, "t": inp["updated"], "hidden": True, "inputs": {"settings": inp["settings"]}}
-        return {"v": VERSION, "t": inp["updated"], "inputs": {**inp, "savings": inp["savings"][-24:]}}
+        out = {"v": VERSION, "t": inp["updated"], "inputs": {**inp, "savings": inp["savings"][-24:]}}
+        try:                                       # the Rapid payouts the owner confirmed (engine/payout_autopilot), $ only
+            from . import payout_autopilot as PA
+            led = PA.ledger_rows()
+            if led:
+                out["ledger"] = led[-24:]
+        except Exception:
+            pass
+        return out
     except Exception:
         return None
 
@@ -555,6 +563,22 @@ def payouts(rows: list) -> list:
     return sorted(out, key=lambda x: x["day"])
 
 
+def ledger_extra(money, pays: list) -> list:
+    """The payout ledger's Rapid rows (engine/payout_autopilot.record: the owner's "I took it"), from the money block ("ledger",
+    heartbeat_block) or, on the PC, the ledger file; none that is already in pays (same day + $). Never raises."""
+    try:
+        rows = money.get("ledger") if isinstance(money, dict) and isinstance(money.get("ledger"), list) else None
+        if rows is None:
+            from . import payout_autopilot as PA
+            rows = PA.ledger_rows()
+        have = {(p["day"], round(float(p["gross"]), 2)) for p in pays}
+        return [{"day": str(r["day"]), "gross": round(float(r["gross"]), 2), "to_you": round(float(r["to_you"]), 2),
+                 "type": "rapid", "name": str(r.get("name") or "Rapid EOD")} for r in rows
+                if isinstance(r, dict) and _DAY.match(str(r.get("day") or "")) and (str(r["day"]), round(float(r["gross"]), 2)) not in have]
+    except Exception:
+        return []
+
+
 def month_in(inputs: dict, pays: list, month: str) -> dict:
     """The month's income lines: jobs + Kalshi (the owner's figures) + prop payouts to you (recorded with the bot)."""
     m = (inputs.get("months") or {}).get(month) or {}
@@ -718,6 +742,7 @@ def build(data: dict | None, money=None, now=None, rates: dict | None = None) ->
     st = stack(data, rates)
     rows = st.pop("_rows")
     pays = payouts(rows)
+    pays = sorted(pays + ledger_extra(money, pays), key=lambda x: x["day"])   # the Rapid payouts the owner confirmed (payout ledger)
     mi = month_in(inp, pays, month)
     nx = next_action(st, rows)
     # goal 1: the $10K month (the bar: jobs / Kalshi / prop payouts)

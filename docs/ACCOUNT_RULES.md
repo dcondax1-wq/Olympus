@@ -100,6 +100,17 @@ Checked 2026-11-20 ([Rapid EOD 25K](https://help.myfundedfutures.com/en/articles
 Checked 2026-11-20 ([live FAQ](https://help.myfundedfutures.com/en/articles/12109396-comprehensive-faq-live-accounts-at-myfunded-futures),
 [going live](https://help.myfundedfutures.com/en/articles/10101257), [Rapid live](https://help.myfundedfutures.com/en/articles/13134718-understanding-rapid-live)).
 
+## Payout autopilot (engine/payout_autopilot.py, 2026-11-22)
+Claude never requests a payout: the phone says when and how much, you click it in MFFU, then TRADE_HOME -> **P** records it.
+| What | When | Alert |
+|---|---|---|
+| Payout ready (Builder) | after the close (16:10 ET; half days 13:00 / 13:15), MFFU's rules met AND the max request ($1,000 25K / $2,000 50K) | "Payout ready: ATLAS 25K can request $1,000 now" + the MFFU clicks, once a cycle |
+| Payout ready (Rapid EOD) | after the close, $500+ above the buffer + the bot's cushion, 25K: $250 net since the last | once a day (daily payouts), 90% to you |
+| Builder payout #4 | the 4th ready | "(payout #4, the LAST)": after it close the account |
+| Builder payout #5 | 4 recorded | ONE "do not take payout #5: close after payout 4"; when MFFU would pay a 5th: "do NOT take it" (5th = live, every sim sleeps) |
+| Rapid $10,000 day | a Rapid day at $6,000+ net (one $10k day = MFFU moves it live) | at once, in the session |
+| Record | TRADE_HOME -> P (pick, $, Y) | the account's own record + data/payout_ledger.json -> the Money pipeline / Corvette fund |
+
 ## Where the bot and MFFU differ (all stricter on our side, on purpose)
 | Rule | MFFU | Bot |
 |---|---|---|

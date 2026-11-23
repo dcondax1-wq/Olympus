@@ -2276,6 +2276,11 @@ def main(argv=None) -> int:
             _ab.digest_flush()
         except Exception:
             pass
+        try:                           # payout autopilot (engine/payout_autopilot): payout ready after the close, the #5 guard, the Rapid $10k day
+            from engine import payout_autopilot as _pa
+            _pa.tick()
+        except Exception:
+            pass
         try:
             from tools import weekly_money_report as _wmr
             _wmr.maybe_run(say=(lambda *_: None) if a.quiet else print)

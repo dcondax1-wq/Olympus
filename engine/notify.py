@@ -235,6 +235,10 @@ def kind_of(key: str) -> str:
         return "daily_summary"
     if k.startswith("guard:brief:"):                # tools/morning_brief.py: the 07:30 ET ZEUS brief
         return "morning_brief"
+    if k.startswith(("payout:", "payout5:")):     # engine/payout_autopilot: payout ready, the Builder #5 guard
+        return "account_status"
+    if k.startswith("rapid10k:"):                   # engine/payout_autopilot: a Rapid day near MFFU's $10,000 live line
+        return "problems"
     if k.startswith("breaker:"):                    # engine/circuit_breaker: live vs twin SIZE DOWN / PAUSE advice for an account
         return "account_status"
     if k.startswith("guard:quiet:"):                # tools/pc_guard: an account 5+ days without a trade (MFFU can close it after 7;

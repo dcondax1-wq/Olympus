@@ -45,6 +45,7 @@ PLANS = {
 # MFFU per person (help center, conflicting wording, research/lit/mffu_rules.json "accounts"): 1 active sim-funded Builder
 # 50K; up to 2 active sim-funded 25K; a general article says up to 5 sim funded (25K/50K). The plan uses 1 x 50K + 2 x 25K.
 MAX_FUNDED = {"builder50k": 1, "builder25k": 2}
+STOP_AFTER = 4                 # take payouts 1-4, never the 5th (fleet plan 2026-11-22; engine/payout_autopilot.BUILDER_LAST)
 
 
 def _num(x, d=None):
@@ -155,7 +156,10 @@ def track(day_pnl: dict, payouts: dict | None = None, plan: str | dict | None = 
     elif cprof <= 0 and cyc:
         why.append(f"cycle profit {_money(cprof)}: nothing to pay yet")
     eligible = not why
-    ready = eligible and above >= P["ask_above"]       # the owner's plan: ask once $2,000 / $1,000 (the max) sits above the buffer
+    # fleet plan 2026-11-22 (research/writeups/fleet-plan-2026-11-22.md): take payouts 1-4, NEVER the 5th (MFFU moves you to live
+    # and every sim account sleeps): after the 4th the tracker never says "ready" again (engine/payout_autopilot warns instead)
+    stop4 = n_pay >= STOP_AFTER and not graduated
+    ready = eligible and above >= P["ask_above"] and not stop4   # the owner's plan: ask once the max sits above the buffer
     # trade M more days (consistency + the 2-day minimum), at a typical day that does not beat the best day
     typ = [v for d, v in cyc.items() if v > 0 and d != best_day]
     per = min(best, sum(typ) / len(typ)) if typ else float(P["typical_day"])
@@ -181,7 +185,8 @@ def track(day_pnl: dict, payouts: dict | None = None, plan: str | dict | None = 
            "to_you": round((max_req if eligible else 0.0) * P["split"], 2), "split": P["split"],
            "payouts_n": n_pay, "payouts_max": int(P["max_payouts"]), "paid_gross": round(sum(pay.values()), 2),
            "paid_to_you": round(sum(pay.values()) * P["split"], 2), "graduated": graduated, "lost": lost, "why": why}
-    out["status"] = ("lost" if lost else "graduated" if graduated else "ready" if ready else "eligible" if eligible else
+    out["stop4"] = stop4
+    out["status"] = ("lost" if lost else "graduated" if graduated else "stop" if stop4 else "ready" if ready else "eligible" if eligible else
                      "consistency" if (cprof > 0 and not cons_ok) else "building")
     out["text"] = sentence(out)
     return out
@@ -194,6 +199,9 @@ def sentence(t: dict) -> str:
         return f"{t['name']}: the max-loss floor was reached, the funded account is gone. Buy a new eval."
     if s == "graduated":
         return f"{t['name']}: {t['payouts_n']} sim payouts done ({_money(t['paid_to_you'])} to you): MFFU moves you to live."
+    if s == "stop":
+        return (f"{t['name']}: 4 payouts taken. Do NOT take payout #5 (MFFU moves you to live and every sim account sleeps): "
+                "close this account.")
     if s == "ready":
         return f"PAYOUT READY on {t['name']}: request {_money(t['max_request'])} in the MFFU dashboard ({_money(t['to_you'])} to you)."
     if s == "eligible":

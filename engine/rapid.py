@@ -823,7 +823,8 @@ def status(p: str | None = None, state_path: str | None = None, slot: str = "rap
     paid = sum(float(v) for v in (blk.get("payouts") or {}).values()) if funded else 0.0
     bal = P["start"] + sum(days.values()) - paid
     out = {"on": True, "account": blk["account"], "stage": blk.get("stage") or "eval", "armed": blk.get("armed") is True,
-           "start": start, "balance": round(bal, 2), "days_traded": len([v for v in days.values() if abs(v) > 1e-9])}
+           "start": start, "balance": round(bal, 2), "days_traded": len([v for v in days.values() if abs(v) > 1e-9]),
+           "today_net": round(days.get(_today(), 0.0), 2), "label": nm}   # today_net: engine/payout_autopilot's $10k-day check
     if funded:
         pays = blk.get("payouts") or {}
         since = since_profit = None

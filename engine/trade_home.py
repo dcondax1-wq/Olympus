@@ -327,6 +327,37 @@ def alerts_action(ask, run, fx, out):
     return "[OK] Nothing changed."
 
 
+def payout_action(ask, out, views=None, rec=None):
+    """P: the owner TOOK a payout in the MFFU dashboard -> pick the account, the $ (Enter = the ready amount), one yes.
+    It only RECORDS (engine/payout_autopilot.record); it never requests a payout."""
+    from engine import payout_autopilot as PA
+    try:
+        v = PA.gather() if views is None else views
+    except Exception:
+        v = []
+    if not v:
+        return "[OK] No funded account on this PC yet: nothing to record."
+    for i, x in enumerate(v, 1):
+        out(f"   {i}  {x['name']}" + (f"  (ready: {PA.usd(x['amount'])})" if x.get("ready") else "")
+            + ("  STOP: 4 payouts taken, do not take #5" if x.get("guard") == "stop" else ""))
+    c = (ask("  Which account did MFFU pay? (number, Enter = back): ") or "").strip()
+    if not c.isdigit() or not 1 <= int(c) <= len(v):
+        return "[OK] Nothing recorded."
+    x = v[int(c) - 1]
+    dflt = int(x["amount"]) if x.get("amount") else None
+    a = (ask(f"  How much did you request, in $?{f' (Enter = {dflt})' if dflt else ''}: ") or "").strip().replace("$", "").replace(",", "")
+    amt = a or (str(dflt) if dflt else "")
+    try:
+        amt_f = float(amt)
+    except ValueError:
+        return "[FIX] Type the $ amount, e.g. 1000. Nothing recorded."
+    yes = (ask(f"  Record {PA.usd(amt_f)} paid on {x['name']} today? Y = yes: ") or "").strip().lower()
+    if yes != "y":
+        return "[OK] Nothing recorded."
+    r = (rec or PA.record)(x["key"], amt_f)
+    return ("[OK] " + r["say"]) if r.get("ok") else f"[FIX] {r.get('error')}"
+
+
 MENU = ("  ==== TRADING HOME ====",
         "   1  Status (one screen)",
         "   2  Start bot            (you type the phrase)",
@@ -338,6 +369,7 @@ MENU = ("  ==== TRADING HOME ====",
         "   8  Do my Sunday / daily routine (status, start, keep-alive, alert test)",
         "   9  Fix the clock",
         "   T  Test all alerts      (OK / FAIL per channel, plain words)",
+        "   P  I took a payout       (records it: the account + the Money pipeline)",
         "   0  Close")
 
 
@@ -366,6 +398,8 @@ def do_choice(ch, ask=input, out=say, run=None, fx=None, add_fn=None, unseen=Non
         return routine(ask, out, run, fx)
     if ch == "9":
         return clock_action(fx, out)
+    if ch.lower() == "p":
+        return payout_action(ask, out)
     if ch.lower() == "t":
         out("  Test all alerts: its window lists each channel OK or FAIL. Press a key there to come back here.")
         rc = run_bat("TEST_ALERT.bat", run)

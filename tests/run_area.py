@@ -325,6 +325,7 @@ AREAS["pc"].append("alert_drill")       # day-alerts 2026-11-21: end-to-end aler
 AREAS["pc"].append("alerts_box")        # alerts-phone 2026-11-21: /alerts/ = ALERTS_SETUP Telegram from the phone (engine/alerts_box.py); its own line
 AREAS["pc"].append("alerts_start_code")   # day-security3 2026-11-21: the /alerts/ page's one-time START code; its own line
 AREAS["pc"].append("alert_map")         # night-notify 2026-11-22: every critical event has a zero-setup phone route (engine/alert_map.py), digest, de-dup
+AREAS["pc"].append("payout_autopilot")   # night-payout 2026-11-22: payout ready after the close, the Builder #5 guard, the Rapid $10k day, TRADE_HOME P
 AREAS["pc"].append("package_b")         # audit 2026-11-22 package B: every critical alarm reaches the phone
 AREAS["pc"].append("notify_rt")         # red team 2026-11-23: no hourly update-alert storm, subscribe reminder, never blocks, ALERTS_OFF
 AREAS["privacy"] += ["alerts_start_code", "cross_site"]
