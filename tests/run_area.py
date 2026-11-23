@@ -71,6 +71,9 @@ AREAS["olympus"].insert(0, "site_sweep")  # night-siteqa 2026-11-20: every href 
 AREAS["pc"].append("disk_clean")        # night-clean 2026-11-19: the weekly container clean (tools/disk_clean.py); its own line, no clash with the pc list
 AREAS["pc"].append("account_box")     # 2026-11-20: the Add account box (engine/account_box.py, /add-account/); its own line
 AREAS["pc"].append("phone_link")      # 2026-11-20: the bot server's own private Tailscale port :8444 (engine/phone_link.py)
+AREAS["pc"] += [m for m in ("start_api", "launch_checklist", "nt_outgoing", "nt_exec_audit", "selfheal", "ops", "run_switch",
+                             "new_accounts", "go", "nt_roll_guard", "broker_balance", "eval_fix", "fsutil", "account_rename")
+                 if m not in AREAS["pc"]]   # night-startfix 2026-11-22 (audit Package D): the PC self-test's suites, run at landing too
 AREAS["pc"] += ["arm_report", "arm_rt"]   # day-armfix 2026-11-22 + red team 2026-11-23: START summary, ATLAS funded rename (keeps every number)
 AREAS["pc"].append("self_heal_pc")    # night-selfheal 2026-11-20: the PC self-heal (engine/self_heal.py, docs/SELF_HEAL.md); its own line
 AREAS["pc"].append("remote_ctl")      # night-phonectl 2026-11-20: phone remote through the backup repo (olympus/control, engine/remote_ctl.py)

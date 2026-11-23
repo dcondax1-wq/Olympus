@@ -35,7 +35,7 @@ LIT = "MFFUEVBLDR000006016"
 OK = lambda: (True, "selftest faked")  # noqa: E731
 ORIG = {k: getattr(G, k) for k in ("nt_account_names", "nt_balances", "role_of", "bot_running", "arm_b", "SECOND_PATH",
                                     "ALLOW_PATH", "CFG", "SELFTEST", "arm_problem", "env_has_live", "server_up", "server_stale",
-                                    "env_newer_than_server", "start_server", "stop_server", "verify_routes", "_open", "shortcut")}
+                                    "env_newer_than_server", "start_server", "stop_server", "verify_routes", "soft_routes", "_open", "shortcut")}
 
 
 def reset():
@@ -217,6 +217,7 @@ def main():
         G.start_server = lambda: True
         G.stop_server = lambda: None
         G.verify_routes = lambda lit, atlas: []
+        G.soft_routes = lambda lit, atlas: []
         G._open = lambda: None
         G.shortcut = lambda: None
         for k, v in fakes.items():
@@ -233,10 +234,8 @@ def main():
     paths = [
         ("server did not start", dict(server_up=lambda: False, start_server=lambda: False), 1),
         ("bot did not start", dict(nt_main=lambda a: 1), 1),
-        ("route check stopped the bot", dict(verify_routes=lambda lit, atlas: ["ATLAS's 25K is not armed"]), 1),
+        ("route check stopped the bot", dict(verify_routes=lambda lit, atlas: ["Zlarior is on 'X', not the 50K 'Y'"]), 1),
         ("arm problem", dict(arm_problem=lambda cfg: "the 50K is missing"), 1),
-        ("ATLAS arm refused", dict(arm_b=lambda atlas, path=None, selftest=None: {"ok": False, "error": "selftest failed"},
-                                   verify_routes=lambda lit, atlas: ["ATLAS's 25K is not armed"]), 1),
         ("an error mid-way, bot not running", dict(env_has_live=lambda: 1 / 0), "exc"),
     ]
     for nm, fk, want in paths:
@@ -249,6 +248,14 @@ def main():
         rc, out, st = run_path(tmp)
         check("d. everything fine: ARMED for both, no banner", rc == 0 and "ARMED: Zlarior 50K" in out and "ARMED: ATLAS 25K" in out
               and "NOT TRADING" not in out and st.get("Zlarior 50K") and st.get("ATLAS 25K"), (rc, out[-300:], st))
+    with tempfile.TemporaryDirectory() as tmp:            # audit Package A: an unarmed ATLAS never stops Zlarior's 50K
+        stops = []
+        rc, out, st = run_path(tmp, arm_b=lambda atlas, path=None, selftest=None: {"ok": False, "error": "selftest failed"},
+                               soft_routes=lambda lit, atlas: ["ATLAS's 25K is not armed"],
+                               nt_main=lambda a: (stops.append(a) if "--stop" in a else None, 0)[1])
+        check("d. ATLAS arm refused: Zlarior keeps running (no --stop), 'Running Zlarior ... ATLAS NOT armed', the summary "
+              "ARMED Zlarior / NOT ARMED ATLAS", rc == 0 and not stops and "ATLAS NOT armed" in out and "ARMED: Zlarior 50K" in out
+              and "NOT ARMED: ATLAS 25K" in out and st.get("Zlarior 50K") and st.get("ATLAS 25K") is False, (rc, stops, out[-400:], st))
     with tempfile.TemporaryDirectory() as tmp:
         rc, out, st = run_path(tmp, env_has_live=lambda: 1 / 0, bot_running=lambda: True)
         check("d. an error AFTER the bot runs: a [CHECK] line, never a guessed ARMED / NOT ARMED", isinstance(rc, ZeroDivisionError)

@@ -206,14 +206,35 @@ def wiring_checks():
     from engine import heartbeat, live_publish, pc_cc_api
     bot = SimpleNamespace(cfg={"adapter": "paper"}, running=False, state={}, health={}, ledger=[], log=[])
     hb = heartbeat.Heartbeat(bot, every_s=300, log=lambda *a: None)
-    pl = hb.payload()
-    # the 12 base lines always; BLITZ / Rapid / Rapid 2 add one line each only when that PC has them configured (the
-    # owner's PC runs a Rapid EOD 25K: 13 lines there, 2026-11-22 self-test "6 of 31" - the count is not the contract)
+    # sealed from the PC's real data/rapid.json, rapid2.json, account_c.json (2026-11-22: the owner's PC runs a Rapid EOD
+    # 25K, 13 lines there and the self-test failed "exactly 12"): the 12 base lines always, + one per configured extra
+    from engine import launch_check as LCK, rapid as RPD
     base = ["anchor", "allow", "b", "startup", "nt", "feed", "roll", "broker", "sim", "sim_add", "armed", "up"]
-    keys = [i.get("key") for i in ((pl.get("launch") or {}).get("items") or [])]
-    check("heartbeat payload has 'launch' with items", isinstance(pl.get("launch"), dict) and all(k in keys for k in base)
-          and all(k in base or k in ("blitz", "rapid", "rapid2") for k in keys) and len(keys) == len(set(keys)),
-          keys or pl.get("launch"))
+    keep = (RPD.PATH, getattr(RPD, "PATH2", None), LCK.facts)
+    sealed = tempfile.mkdtemp(prefix="le_lc_seal_")
+    real_facts = LCK.facts
+
+    def keys_of(p):
+        return [i.get("key") for i in ((p.get("launch") or {}).get("items") or [])]
+    try:
+        RPD.PATH, RPD.PATH2 = os.path.join(sealed, "rapid.json"), os.path.join(sealed, "rapid2.json")
+        LCK.facts = lambda *a, **k: real_facts(*a, **{"c_root": sealed, **k})
+        pl = hb.payload()
+        keys = keys_of(pl)
+        check("heartbeat payload has 'launch' with items (sealed: exactly the 12 base lines)",
+              isinstance(pl.get("launch"), dict) and keys == base, keys or pl.get("launch"))
+        RPD.save({"account": "MFFUEVRPD900000001", "plan": "mffu_rapid_eod_25k", "start": "2026-11-20"}, RPD.PATH)
+        RPD.save({"account": "MFFUEVRPD900000002", "plan": "mffu_rapid_eod_50k", "start": "2026-11-20"}, RPD.PATH2)
+        os.makedirs(os.path.join(sealed, "data"), exist_ok=True)
+        with open(os.path.join(sealed, "data", "account_c.json"), "w") as fh:
+            json.dump({"account_c": {"account": "Sim101", "plan": "builder25k"}}, fh)
+        k2 = keys_of(hb.payload())
+        check("with a fake rapid.json, rapid2.json and account_c.json: the 12 base keys a subset, + rapid, rapid2, blitz "
+              "(n = 12 + 3)", set(base) <= set(k2) and {"rapid", "rapid2", "blitz"} <= set(k2) and len(k2) == 15
+              and len(set(k2)) == 15, k2)
+    finally:
+        RPD.PATH, RPD.PATH2, LCK.facts = keep
+        shutil.rmtree(sealed, ignore_errors=True)
     check("heartbeat 'launch' under 4 KB", len(json.dumps(pl["launch"])) < 4096, len(json.dumps(pl["launch"])))
     check("heartbeat 'launch' facts carry the chart contract (roll)", isinstance((pl["launch"].get("facts") or {}).get("roll"), dict),
           (pl["launch"].get("facts") or {}).get("roll"))

@@ -181,33 +181,54 @@ def slot_problem(name, size, balances=None) -> str | None:
     return None
 
 
-def verify_routes(lit, atlas, state=None, b=None) -> list:
-    """After the start: the problems with who trades where ([] = Zlarior on the 50K, ATLAS armed on the 25K)."""
+def route_problems(lit, atlas, state=None, b=None) -> dict:
+    """After the start: who trades where, split in two (audit 2026-11-22 Package A: an unarmed ATLAS stopped Zlarior's 50K
+    and the Start job retried every 60 s = the Re-arm loop).
+      hard: the bot must be stopped (not running, Zlarior not on the 50K, the 25K also an extra, not NinjaTrader, ATLAS
+            ARMED on another Name / plan: a double or wrong route).
+      soft: said, never stopped: ATLAS's 25K not armed (its orders are refused by the live gate anyway), or an UNARMED
+            ATLAS block on another Name / plan (it cannot trade)."""
     from . import second
     if state is None:
         try:
             state = _http("/api/live/state")
         except Exception as e:
-            return [f"bot state not readable ({e.__class__.__name__})"]
+            return {"hard": [f"bot state not readable ({e.__class__.__name__})"], "soft": []}
     b = second.load_cfg(SECOND_PATH).get("account_b") if b is None else b
+    b = b or {}
     cfg = (state or {}).get("cfg") or {}
-    out = []
+    hard, soft = [], []
     if not (state or {}).get("running"):
-        out.append("the bot is not running")
+        hard.append("the bot is not running")
     if cfg.get("nt_account") != lit:
-        out.append(f"Zlarior is on {cfg.get('nt_account')!r}, not the 50K {lit!r}")
+        hard.append(f"Zlarior is on {cfg.get('nt_account')!r}, not the 50K {lit!r}")
     for e in cfg.get("accounts") or []:                 # extra LIT accounts (data/accounts.json) must not include the 25K
         if isinstance(e, dict) and e.get("enabled", True) is not False and str(e.get("nt_account") or "") == atlas:
-            out.append(f"Zlarior also lists the 25K {atlas!r} as an extra account (data/accounts.json)")
+            hard.append(f"Zlarior also lists the 25K {atlas!r} as an extra account (data/accounts.json)")
     if cfg.get("adapter") != "ninjatrader":
-        out.append(f"the bot runs on {cfg.get('adapter')!r}, not NinjaTrader")
-    if str((b or {}).get("account") or "") != atlas:
-        out.append(f"ATLAS is on {(b or {}).get('account')!r}, not the 25K {atlas!r}")
-    elif (b or {}).get("armed") is not True:
-        out.append("ATLAS's 25K is not armed")
-    if str((b or {}).get("plan") or "") != "builder25k":
-        out.append(f"ATLAS plan is {(b or {}).get('plan')!r}, not builder25k")
-    return out
+        hard.append(f"the bot runs on {cfg.get('adapter')!r}, not NinjaTrader")
+    armed = b.get("armed") is True
+    side = hard if armed else soft
+    if str(b.get("account") or "") != atlas:
+        side.append(f"ATLAS is on {b.get('account')!r}, not the 25K {atlas!r}")
+    elif not armed:
+        soft.append("ATLAS's 25K is not armed")
+    if str(b.get("plan") or "") != "builder25k":
+        side.append(f"ATLAS plan is {b.get('plan')!r}, not builder25k")
+    return {"hard": hard, "soft": soft}
+
+
+def verify_routes(lit, atlas, state=None, b=None) -> list:
+    """The HARD route problems only ([] = nothing that needs the bot stopped; see route_problems for the soft ones)."""
+    return route_problems(lit, atlas, state, b)["hard"]
+
+
+def soft_routes(lit, atlas, state=None, b=None) -> list:
+    """The soft ones (ATLAS not armed): said on the page / console, never a stop, never a retry loop."""
+    try:
+        return route_problems(lit, atlas, state, b)["soft"]
+    except Exception:
+        return []
 
 
 def sims_passed() -> dict:
@@ -872,7 +893,11 @@ def _step_arm(cfg, phrase, dry=False, open_page=True, inp=None) -> int:
         print(" [STOP] Wrong account set-up: " + "; ".join(probs) + ". Stopping the bot (nothing traded).")
         ninjatrader.main(["--stop"])
         return _summary(_all_down(rows, z_lbl, "the bot was stopped: " + "; ".join(probs)[:120], "fix the first NOT ARMED line, then START BOT again"), 1)
-    print(f"\n [OK] Zlarior trades the 50K {cfg['lit']} · ATLAS trades the 25K {cfg['atlas']} (checked in the running bot)")
+    soft = soft_routes(cfg["lit"], cfg["atlas"])
+    if soft:                               # an unarmed ATLAS never stops Zlarior's 50K (audit Package A)
+        print(f"\n [OK] Running Zlarior on the 50K {cfg['lit']}; ATLAS NOT armed: {'; '.join(soft)} (checked in the running bot)")
+    else:
+        print(f"\n [OK] Zlarior trades the 50K {cfg['lit']} · ATLAS trades the 25K {cfg['atlas']} (checked in the running bot)")
     ninjatrader.main(["--enable-auto-resume", "--account", cfg["lit"], "--confirm", phrase, *wm])
     try:                                   # and each armed account added with engine.accounts resumes with it
         from . import account_cli
@@ -1082,6 +1107,14 @@ def role_of(name, cfg=None, b=None, extras=None) -> str | None:
     for e in (_extras() if extras is None else extras):
         if str(e.get("nt_account") or "").strip() == name:
             return f"the funded account {e.get('id')}" if e.get("mode") == "funded" else f"the extra Zlarior account {e.get('id')}"
+    try:                                   # the Rapid EOD slots (data/rapid.json, rapid2.json; audit Package A: the Start page
+        from . import rapid               # offered the armed Rapid as "New account", and its Name could go to ATLAS / an extra)
+        for sl in rapid.SLOTS:
+            blk = rapid.read(rapid.slot_path(sl))
+            if blk and str(blk.get("account") or "").strip() == name:
+                return "the Rapid EOD" + (" #2" if sl == "rapid2" else "")
+    except Exception:                      # a broken rapid.json never crashes START
+        pass
     return None
 
 
@@ -1100,6 +1133,9 @@ def set_names(lit, atlas) -> dict:
         e = next((e for e in _extras() if str(e.get("nt_account") or "").strip() == n), None)
         if e:
             return {"ok": False, "error": f"Not saved: {n} is already the account {e.get('id')} (remove it in Accounts first)."}
+        who = role_of(n, cfg={}, b={}, extras=[])          # only the Rapid / BLITZ slots here (Zlarior / ATLAS are being set)
+        if who and who.startswith("the Rapid EOD"):
+            return {"ok": False, "error": f"Not saved: {n} is already {who} (one account, one route: remove it there first)."}
     if bot_running():
         return {"ok": False, "error": "Stop the bot first: it reads the accounts when it starts."}
     cfg = _read(CFG)
@@ -1331,8 +1367,10 @@ def resume_now(start_fn, connected=None, live_state=None, env=None, state_fn=Non
         except Exception:
             pass
         return {"ok": False, "error": "Wrong account set-up, so the bot was stopped: " + "; ".join(probs), "stop": True}
-    return {"ok": True, "say": f"Running: Zlarior → 50K {cfg['lit']} · ATLAS → 25K {cfg['atlas']}",
-            "refused_accounts": d.get("refused_accounts") or []}
+    soft = soft_routes(cfg["lit"], cfg["atlas"], state=st)
+    say = (f"Running Zlarior → 50K {cfg['lit']}; ATLAS NOT armed: {'; '.join(soft)}" if soft else
+           f"Running: Zlarior → 50K {cfg['lit']} · ATLAS → 25K {cfg['atlas']}")
+    return {"ok": True, "say": say, "soft": soft, "refused_accounts": d.get("refused_accounts") or []}
 
 
 def sync_clock(run=None) -> dict:
@@ -1386,8 +1424,9 @@ def step_auto(cfg, phrase="", py=sys.executable, after_update=False, sleep=time.
     if bot_running():
         lit, atlas = _names(cfg)
         probs = verify_routes(lit, atlas) if lit and atlas else ["the account names are not set"]
-        _note("running", "Already running." if not probs else "Running with the wrong set-up: " + "; ".join(probs),
-              need=None if not probs else "stop")
+        soft = soft_routes(lit, atlas) if not probs else []
+        _note("running", ("Already running." + (f" ATLAS NOT armed: {'; '.join(soft)}." if soft else "")) if not probs else
+              "Running with the wrong set-up: " + "; ".join(probs), need=None if not probs else "stop")
         return 0 if not probs else 1
     if not after_update:
         _note("update", "Looking for a newer version")
@@ -1492,7 +1531,9 @@ def step_auto(cfg, phrase="", py=sys.executable, after_update=False, sleep=time.
                 ninjatrader.main(["--stop"])
             _note("start", "Not running: " + "; ".join(probs) + ". Trying again in a minute.", retry_s=60)
             return 1
-        _note("running", f"Running: Zlarior → 50K {lit} · ATLAS → 25K {atlas}.")
+        soft = soft_routes(lit, atlas)        # ATLAS not armed: said once, no stop, no retry (the old 60 s Re-arm loop)
+        _note("running", f"Running Zlarior → 50K {lit}; ATLAS NOT armed: {'; '.join(soft)}." if soft else
+              f"Running: Zlarior → 50K {lit} · ATLAS → 25K {atlas}.")
         return 0
     if phrase != LIVE_PHRASE:
         _note("arm", f"Type I ACCEPT LIVE RISK once to arm every account ({why}).", need="phrase")
@@ -1580,6 +1621,19 @@ def accounts(cards=None) -> dict:
                      "armed": n["armed"], "enabled": n["enabled"], "start": (n["funded"] or {}).get("start") or n["eval_start"],
                      "note": None if not n["problem"] or n["problem"] == "disabled in the config" else n["problem"],
                      **_money(n["nt_account"], n["preset"], False, bals)})
+    try:                                            # the Rapid EOD slots (engine/rapid.py): LIT + ATLAS on one account
+        from . import rapid
+        for sl, blk in rapid.read_all():
+            n = str(blk.get("account") or "").strip()
+            funded = str(blk.get("stage") or "").lower() == "funded"
+            info = rapid.plan_info(blk)
+            rows.append({"name": n, "id": sl, "bot": "Zlarior + ATLAS", "role": "rapid", "plan": "rapideod25" if "25" in
+                         str(info.get("label") or "") else "rapideod", "plan_label": f"MFFU {info.get('label') or 'Rapid EOD'}"
+                         + (" funded" if funded else ""), "state": "funded" if funded else "eval",
+                         "armed": blk.get("armed") is True, "start": blk.get("funded_start") if funded else blk.get("start"),
+                         "note": None, **_money(n, str(blk.get("plan") or "mffu_rapid_eod_50k"), False, bals)})
+    except Exception:
+        pass
     cb = _c()                                       # BLITZ's own 25K (account C, engine/account_c.py): only when set
     if str(cb.get("account") or "").strip():
         from .ninjatrader import is_sim
@@ -1653,18 +1707,14 @@ def add_account(name, plan="builder50k", strategy="zlarior", start=None) -> dict
         return {"ok": True, "say": f"Zlarior → 50K {name}. Not armed. Set its MFFU balance and floor with Change balance."}
     if not lit:
         return {"ok": False, "error": "Zlarior's main account is the 50K: add the 50K first."}
-    import re
-    from . import multi_account as ma
-    base = re.sub(r"[^A-Za-z0-9_-]", "", name)[:32] or "acct"
-    ids = {str(e.get("id")) for e in _extras()}
-    ident = next(x for x in (base if i == 0 else f"{base}-{i}" for i in range(100)) if x not in ids)
-    rc, lines = _quiet(ma.main, ["--add", "--id", ident, "--name", label, "--nt-account", name, "--preset", preset, "--mode",
-                                 "two_week", "--eval-start", start, "--adapter", "ninjatrader", "--file", _accounts_path()])
-    if rc:
-        return {"ok": False, "error": "Not added: " + (lines[-1] if lines else "see the log"), "lines": lines}
-    _allow(name)
-    return {"ok": True, "say": f"Zlarior also trades {name} ({label}, from {start}). Not armed: it joins at the next start.",
-            "lines": lines}
+    # an extra Zlarior account: the same code as `engine.accounts add` (audit Package A: this branch wrote an untagged row
+    # that START never armed or reported, and skipped the name / MFFU-limit checks)
+    from . import account_cli
+    r = account_cli.add(plan, name, start=start)
+    if not r.get("ok"):
+        return {"ok": False, "error": "Not added: " + str(r.get("error") or "see the log")}
+    return {"ok": True, "say": f"Zlarior also trades {name} ({label}, from {start}). Not armed: armed at the next START "
+                               "(you type the phrase).", "lines": [r.get("say") or ""] + list(r.get("notes") or [])}
 
 
 def remove_account(name) -> dict:
@@ -1675,6 +1725,12 @@ def remove_account(name) -> dict:
     b_on = str(_b().get("account") or "").strip()
     ex = next((e for e in _extras() if name and name in (str(e.get("nt_account") or "").strip(), str(e.get("id") or ""))), None)
     c_on = str(_c().get("account") or "").strip()
+    if name and not ex and name not in (lit, atlas, b_on, c_on) and str(role_of(name) or "").startswith("the Rapid EOD"):
+        if bot_running():
+            return {"ok": False, "error": "Stop the bot first: it reads the accounts when it starts."}
+        from . import account_cli                   # the same code as `engine.accounts remove` (the Rapid's own off switch)
+        r = account_cli.remove(name)
+        return {"ok": bool(r.get("ok")), "say": r.get("say"), "error": r.get("error")}
     if name and name == c_on and name not in (lit, atlas, b_on) and not ex:
         if bot_running():
             return {"ok": False, "error": "Stop the bot first: it reads the accounts when it starts."}
@@ -1752,6 +1808,9 @@ def to_funded(name, funded_name, start, plan=None, balance=None) -> dict:
         return _b_to_funded(row, funded_name, start, balance)
     if row.get("role") == "c":
         return _c_to_funded(row, funded_name, start, balance)
+    if row.get("role") == "rapid":                  # the Rapid's own funded switch (engine.accounts add --funded / one tap)
+        return {"ok": False, "error": "A Rapid EOD goes funded with the one tap on the Start page (Move Zlarior + ATLAS here) "
+                                      "or: python -X utf8 -m engine.accounts add --plan rapideod25 --name \"<funded Name>\" --funded"}
     plan = str(plan or row.get("plan") or "builder50k").lower()
     if plan not in PLANS:
         return {"ok": False, "error": "Pick a plan: Builder 50K or Builder 25K."}
@@ -1772,8 +1831,20 @@ def to_funded(name, funded_name, start, plan=None, balance=None) -> dict:
     if rc:
         return {"ok": False, "error": "Not switched: " + (lines[-1] if lines else "see the log"), "lines": lines}
     _allow(funded_name)
-    return {"ok": True, "say": f"{funded_name} is funded ({PLANS[plan][1]}) from {start}. Not armed: it joins at the next start.",
-            "lines": [ln for ln in lines if "python" not in ln]}
+    try:                                   # tagged like `engine.accounts add` rows, so START's arm step arms + reports it
+        from . import account_cli, multi_account as ma
+        rows = ma.load_file(_accounts_path())
+        hit = False
+        for r in rows:
+            if str(r.get("nt_account") or "").strip() == funded_name and not isinstance(r.get("cli"), dict):
+                r["cli"] = {"by": account_cli.TAG, "plan": plan, "bots": "lit", "added": session_day()}
+                hit = True
+        if hit:
+            ma.save_file(rows, _accounts_path())
+    except Exception as e:
+        lines.append(f"[..] could not tag {funded_name} for START ({e.__class__.__name__}): arm it with START BOT")
+    return {"ok": True, "say": f"{funded_name} is funded ({PLANS[plan][1]}) from {start}. Not armed: armed at the next START "
+                               "(you type the phrase).", "lines": [ln for ln in lines if "python" not in ln]}
 
 
 def _b_to_funded(row, funded_name, start, balance=None) -> dict:

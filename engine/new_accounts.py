@@ -291,9 +291,8 @@ def notices(now=None, folder: str | None = None, path: str | None = None, **kw) 
         out = []
         for c in candidates(folder, path, now=now, **kw):
             bal = f" (${float(c['balance']):,.0f})" if c.get("balance") is not None else ""
-            roles = " or ".join(ROLE_LABEL[r] for r in c["roles"] if r != "blitz" or "blitz" in ROLE_SETTERS)
             out.append(push.text_payload("PC", "ops", f"New MFFU account: {c['name']}",
-                                         f"NinjaTrader shows {c['name']}{bal}. Open the Start page and tap Use for {roles}. "
+                                         f"NinjaTrader shows {c['name']}{bal}. Open the Start page and tap the right button. "
                                          "The bot never trades it before your tap and the live phrase.",
                                          key=f"newacct:{c['name']}", t=now, url="#/start"))
         return out

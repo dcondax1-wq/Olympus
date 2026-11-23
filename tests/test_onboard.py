@@ -287,7 +287,7 @@ def startfix(tmp, nt):
         fh.write(f"{REOD},{int(time.time())},25000,0,0,25000\n")
     names = {x["name"] for x in OB.status(folder=nt)["new"]}
     check("the owner's case: a Name engine/rapid already has (configured + armed) is NOT offered as a new account",
-          REOD not in names and AC.known_role(REOD) and G.role_of(REOD) is None, (names, AC.known_role(REOD)))
+          REOD not in names and AC.known_role(REOD) and G.role_of(REOD) == "the Rapid EOD", (names, AC.known_role(REOD)))
     rapid.off()
     check("a Rapid switched off still counts as known (its account is not 'new'), a truly new Name is not known",
           REOD not in {x["name"] for x in OB.status(folder=nt)["new"]} and AC.known_role(REOD)
