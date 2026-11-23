@@ -443,6 +443,7 @@ AREAS["pc"] += ["zerotouch"]      # night-zerotouch 2026-11-22: START phrase = k
 AREAS["pc"].append("zerotouch_rt")      # red team 2026-11-23: an old explicit keep-alive OFF sticks, NinjaTrader reopen back-off, no-console start
 AREAS["nq"] += ["roll_dec_audit", "nt_roll_guard", "dec_roll", "roll"]   # night-roll 2026-11-23: the December roll (ROLL.md): audit with fakes + the three roll suites (were in no area)
 AREAS["nq"].append("roll_rt")           # red team 2026-11-23: TRADE_HOME R reports what tools/bat/ROLL.bat found (exit 2 = not now)
+AREAS["pc"] += ["post_update_check"]   # night-verify 2026-11-23: the read-only check after an update restart, one phone message
 
 if __name__ == "__main__":
     sys.exit(main())

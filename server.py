@@ -810,6 +810,12 @@ def _open_nt():
 def _autostart_resume():
     rec = _wd.load(_AUTOSTART["path"])
     marker = _au.take_restart_marker()   # set when this restart follows an auto-update (engine/autoupdate.py)
+    if marker:                           # night-verify: check the new pieces on this PC, one phone message (read-only, own thread,
+        try:                             # 90 s later so the bot resumes first; never blocks this restart)
+            from engine import post_update_check as _puc
+            _puc.start_bg(str(marker.get("sha") or "") or None)
+        except Exception:
+            pass
     try:                                 # hands-off score: a restart nobody asked for (engine/handsoff.py)
         from engine import handsoff as _ho
         _ho.note_server_start(marker, path=_ho.path_for(BOT))

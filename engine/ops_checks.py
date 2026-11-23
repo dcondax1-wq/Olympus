@@ -1704,6 +1704,15 @@ def after_update() -> int:
     shutil.rmtree(bd, ignore_errors=True)
     checks = run_checks(gather())
     print(render(checks, color))
+    try:                                                     # night-verify: the new pieces on THIS PC (read-only, < 30 s)
+        from . import post_update_check as _puc
+        res = _puc.run()
+        _puc.save(res)
+        print("\n What the update brought, checked on this PC:")
+        for ln in _puc.lines(res):
+            print(ln)
+    except Exception as e:  # noqa: BLE001
+        print(f"[ .. ] post-update check skipped ({e.__class__.__name__})")
     return 1 if fails or summary(checks)["bad"] else 0
 
 
