@@ -18,6 +18,9 @@ import sys
 
 ROOT = os.getcwd()
 CONFLICT = re.compile(r"<<<<<<< [^\n]*\n(.*?)=======\n(.*?)>>>>>>> [^\n]*\n", re.S)
+# the conflicts where BOTH sides are right (checked by hand 2026-11-23): docs, STATE.md, run_area lines, the TRADE_HOME menu /
+# do_choice branches, the alert_bus docstring. Any other conflicted file = code: the script stops and names it.
+SAFE_BOTH = {"STATE.md", "tests/run_area.py", "engine/trade_home.py", "engine/alert_bus.py"}
 KEEP_NEW = {"MONDAY_SETUP.bat"}                      # new top-folder .bat files that stay there (the owner double-clicks them)
 SKIP = ("tools/bat/", "research/", "docs/handoff", "tools/web_public/pc/", "docs/BAT_FILES.md", "tests/test_bat_menu.py",
         "tests/test_bat_shortcuts.py")
@@ -38,6 +41,9 @@ def main() -> int:
         print("run it from the repo root of the merge (tools/bat/ must exist)")
         return 1
     for p in [x for x in git("diff", "--name-only", "--diff-filter=U").split("\n") if x]:
+        if p not in SAFE_BOTH and not (p.startswith("docs/") and p.endswith(".md")):
+            print(f"[FIX] {p}: a code conflict: resolve by hand (never both sides of code), then run this again")
+            return 1
         f = os.path.join(ROOT, p)
         try:
             s = open(f, encoding="utf-8").read()
