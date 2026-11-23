@@ -59,7 +59,8 @@
         add({ id: ck, card: ck, name: c.name || ck, plan: c.plan || '', stage: st === 'funded' || c.stage === 'funded' ? 'funded' : /failed|lost/.test(st) ? 'failed' : 'eval',
               status: st, balance: num(c.balance), floor: num(c.floor), room: num(c.room), to_target: num(c.to_target), target_balance: num(c.target_balance),
               profit: num(c.profit), today: num(c.today_pnl), dll: num(c.dll), dll_used: num(c.dll_used), mll: num(c.mll), session: num(c.session),
-              start_balance: num(c.balance) != null && num(c.profit) != null ? r2(num(c.balance) - num(c.profit)) : null, t, src: label });
+              start_balance: num(c.balance) != null && num(c.profit) != null ? r2(num(c.balance) - num(c.profit)) : null, t, src: label,
+              badge: c.badge || null, running: bd.running != null ? !!bd.running : null });
       }
       const lit = out.find((x) => x.id === 'lit'), atl = out.find((x) => x.id === 'atlas');
       const accts = (Array.isArray(src.accounts) ? src.accounts : []).filter((a) => isObj(a) && a.id && ['eval', 'funded'].includes(a.kind) && a.source !== 'cloud' && a.source !== 'pc_blitz'
@@ -75,7 +76,8 @@
         const r = { id: String(a.id), name: a.name || a.id, plan: a.plan || '', stage: a.kind === 'funded' ? 'funded' : st === 'failed' ? 'failed' : 'eval', status: st,
                     balance: num(e.balance), floor: num(e.floor), room: num(e.room), to_target: num(e.to_target), target_balance: num(e.target_balance),
                     profit: num(e.profit), today: num(e.today), dll: num(e.dll), dll_used: num(e.dll_used), mll: num(e.mll), session: num(e.session),
-                    start_balance: num(e.start_balance), t: num(a.conn && a.conn.t) || t, src: label };
+                    start_balance: num(e.start_balance), t: num(a.conn && a.conn.t) || t, src: label,
+                    badge: a.badge || null, running: isObj(a.conn) && a.conn.running != null ? !!a.conn.running : a.running != null ? !!a.running : null };
         // the bot's main account is the lit card too (a plan without "pc" ids): the same balance + floor within TOL, or the one Builder 50K row
         // with the card's floor; the ATLAS card's own ledger row (id atlas / acct_b) is the ATLAS card
         const litSame = lit && !lit.alias && lit.src === label && (rulesOf(lit.plan) || RULES.builder50k) === rulesOf(r.plan || r.name || '50k')

@@ -320,7 +320,8 @@
       var a = A[k]; if (!a || !a.has) return;
       var fd = obj(obj(board[k]).funded), funded = a.kind === 'funded' || obj(board[k]).stage === 'funded';
       cards.push({ key: k, name: a.name, size: a.size, kind: funded ? 'funded' : 'eval', balance: num(a.balance), room: num(a.room), mll: num(a.mll), toPass: funded ? null : num(a.toTarget),
-        toAsk: funded ? coachNeed(a, board[k]) : null, askAt: funded ? num(fd.ask_at_balance) : null, today: num(a.today) || 0 });
+        toAsk: funded ? coachNeed(a, board[k]) : null, askAt: funded ? num(fd.ask_at_balance) : null, today: num(a.today) || 0,
+        armed: obj(board[k]).badge ? String(obj(board[k]).badge).toUpperCase() === 'LIVE' : null });   // night-seedata: badge LIVE = armed by the owner
     });
     if (T && T.extraOf) { try { T.extraOf(home).forEach(function (a) { cards.push({ key: a.key, name: a.name, size: a.size, kind: a.kind, balance: num(a.balance), room: num(a.room), mll: num(a.mll), toPass: num(a.toTarget), toAsk: null, askAt: null, today: num(a.today) || 0 }); today += num(a.today) || 0; }); } catch (e) { /* the two bots' rows stay */ } }
     var open = [];   // olympus2: the open trade(s) from the board cards (engine/live_board.py position: side, qty, entry, stop, target, unrealized_usd)

@@ -403,6 +403,20 @@ def real_build(tmp):
           not [f for f in found if f["kind"] == "canary"], [str(f) for f in found if f["kind"] == "canary"][:6])
 
 
+def snapshot_guard():
+    """night-seedata 2026-11-23: a test that runs the real site build in-process (bwd.build / BW.build) must point HUB_SNAPSHOT at a temp copy
+    or put the tracked tools/web_hub_snapshot.json back (a local build refreshes it), so a test run never leaves the repo dirty"""
+    tdir, bad = os.path.join(ROOT, "tests"), []
+    for fn in sorted(os.listdir(tdir)):
+        if not fn.endswith(".py"):
+            continue
+        with open(os.path.join(tdir, fn), encoding="utf-8") as fh:
+            t = fh.read()
+        if re.search(r"\b(bwd|BW)\.build\(", t) and "HUB_SNAPSHOT" not in t and "web_hub_snapshot" not in t:
+            bad.append(fn)
+    check("e. every test that runs the site build keeps tools/web_hub_snapshot.json untouched (a temp HUB_SNAPSHOT or a restore)", not bad, bad)
+
+
 def main() -> int:
     tmp = tempfile.mkdtemp(prefix="privacy-", dir=TMP_BASE)
     snap_path = os.path.join(ROOT, "tools", "web_hub_snapshot.json")      # a local build refreshes it: put it back as it was
@@ -415,6 +429,7 @@ def main() -> int:
         detectors(tmp)
         scrub(tmp)
         sources()
+        snapshot_guard()
         planted_build(tmp)
         shutil.rmtree(os.path.join(tmp, "planted"), ignore_errors=True)
         ntfy()

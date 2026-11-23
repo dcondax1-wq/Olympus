@@ -136,8 +136,17 @@ def main() -> int:
         out = os.path.join(tmp, "site")
         import contextlib
         import io
-        with contextlib.redirect_stdout(io.StringIO()):
-            bwd.build(sp, None, out)
+        # night-seedata 2026-11-23: build() refreshes the tracked tools/web_hub_snapshot.json on a machine with research files; a test
+        # writes a temp copy instead, so a test run never dirties the repo
+        real_snap = bwd.HUB_SNAPSHOT
+        bwd.HUB_SNAPSHOT = os.path.join(tmp, "web_hub_snapshot.json")
+        if os.path.isfile(real_snap):
+            shutil.copyfile(real_snap, bwd.HUB_SNAPSHOT)
+        try:
+            with contextlib.redirect_stdout(io.StringIO()):
+                bwd.build(sp, None, out)
+        finally:
+            bwd.HUB_SNAPSHOT = real_snap
         data = json.load(open(os.path.join(out, "data.json"), encoding="utf-8"))
         check("data.json has accounts", [s["id"] for s in data.get("accounts") or []] == ["mffu50k_eval", "cloud_paper"])
         check("data.json live.pc has no raw acct block", "acct" not in (data["live"].get("pc") or {}))

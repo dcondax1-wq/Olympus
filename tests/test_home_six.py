@@ -64,6 +64,40 @@ def static():
           and "localStorage" not in js.split("function more()")[1] and "replaceState" in js.split("function more()")[1])
 
 
+ARENA_NODE = r"""
+global.window = { setTimeout: () => 0, location: { hash: '', pathname: '/', search: '' } };
+global.document = { readyState: 'complete', getElementById: () => null, addEventListener() {}, documentElement: { classList: { toggle() {}, contains: () => false } } };
+global.fetch = () => Promise.reject(new Error('offline'));
+const A = require(%s);
+const cards = [{ key: 'lit', kind: 'eval', today: 0, room: 1024.58, armed: true }, { key: 'atlas', kind: 'funded', today: 186, room: 1073.2, toAsk: 1277, armed: true },
+               { key: 'b25k_2', kind: 'eval', today: 0, room: 1000, armed: null }];
+const pd = { rows: { H2: { accounts: { Z50: { name: 'Zlarior 50K (eval)', first_pay_med: '2027-01-21', first_pay_usd: 1600 }, A25: { name: 'ATLAS 25K (funded)', first_pay_med: '2026-12-23', first_pay_usd: 800 } } } } };
+const on = A.lines({ N: { cards, running: true } }, null, null, '2026-11-19', pd), off = A.lines({ N: { cards, running: false } }, null, null, '2026-11-19', null);
+const ready = A.lines({ N: { cards: [{ key: 'atlas', kind: 'funded', today: 0, room: 2000, toAsk: 0 }], running: true } }, null, null, '2026-11-19', pd);
+console.log(JSON.stringify({ on, off, ready, np: A.nextPay(pd), none: A.nextPay({}) }));
+"""
+
+
+def arena_lines():
+    """night-seedata 2026-11-23 (owner: "seeing my data is hard"): Home's first screen is the 6 tiles (Right now sits behind More), so the NQ and
+    Money tiles' live lines carry the money: today $, the tightest drawdown $, the bot ON/OFF + accounts armed, the payout progress + its likely date"""
+    import subprocess
+    p = subprocess.run(["node", "-e", ARENA_NODE % json.dumps(os.path.join(W, "gate", "arenas.js"))], capture_output=True, text=True, timeout=60)
+    try:
+        r = json.loads(p.stdout.strip().splitlines()[-1])
+    except Exception:
+        check("a. node ran gate/arenas.js lines()", False, (p.stdout[-300:], p.stderr[-300:]))
+        return
+    check("a. NQ tile: 'Today +$186 · $1,000 drawdown left · bot on, 2 armed' (badge LIVE = armed; unknown accounts not counted)",
+          r["on"]["nq"]["text"] == "Today +$186 · $1,000 drawdown left · bot on, 2 armed", r["on"]["nq"])
+    check("a. NQ tile with the bot stopped: '... · BOT OFF' in red", r["off"]["nq"]["text"].endswith(" · BOT OFF") and r["off"]["nq"]["cls"] == "down", r["off"]["nq"])
+    check("a. Money tile: 'Payout: $823 of $2,100 · ~Dec 23' (the soonest first payout in business/payday.json); no plan = no date; ready = 'ask MFFU', no date",
+          r["on"]["money"]["text"] == "Payout: $823 of $2,100 · ~Dec 23" and r["off"]["money"]["text"] == "Payout: $823 of $2,100" and r["np"] == "Dec 23" and r["none"] == ""
+          and r["ready"]["money"]["text"] == "Payout ready: ask MFFU", (r["on"].get("money"), r["off"].get("money"), r["ready"].get("money")))
+    g = text("gate/gate.js")
+    check("a. gate.js passes each bot card's armed state (badge LIVE) to the tiles", "armed: obj(board[k]).badge ? String(obj(board[k]).badge).toUpperCase() === 'LIVE' : null" in g)
+
+
 def browser():
     try:
         from playwright.sync_api import sync_playwright
@@ -146,6 +180,7 @@ def browser():
 
 if __name__ == "__main__":
     static()
+    arena_lines()
     if "--static" not in sys.argv:
         browser()
     print(f"\n{N[0] - len(FAILS)}/{N[0]} passed" + ("" if not FAILS else f"; FAILED: {FAILS}"))
