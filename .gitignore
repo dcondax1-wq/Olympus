@@ -11,6 +11,10 @@ data/lite.json
 data/start_bot.json
 data/live_state.json
 data/guards_state.json
+# engine/readiness.py (day-ready 2026-11-22): the last READY verdict + alert de-dup (bot-made)
+data/ready_last.json
+data/ready_state.json
+data/ready_*.tmp
 data/combo_50k.json
 data/ninjatrader_state.json
 data/ninjatrader_reset_ok.json
@@ -312,6 +316,3 @@ data/alerts_box.jsonl
 # engine/shadow_leads.py (observe-only paper-lead log, 2026-11-21): local output + off switch
 data/shadow_leads.jsonl
 data/shadow_leads.json
-data/ready_last.json
-data/ready_state.json
-data/ready_*.tmp
