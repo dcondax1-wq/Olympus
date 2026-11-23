@@ -1979,7 +1979,7 @@ TRACKER_KEYS = ("name", "plan", "label", "status", "text", "start", "today", "ba
                 "cycle_days", "cycle_days_need", "best_day", "best_day_on", "best_day_pct", "cons_limit_pct", "cons_ok",
                 "cons_need_profit", "cons_frac", "more_days", "first_trade", "eligible_from", "eligible", "ready", "max_request",
                 "request_min", "request_max", "to_you", "split", "payouts_n", "payouts_max", "paid_gross", "paid_to_you",
-                "graduated", "lost", "why", "payouts", "eval_account", "record_cmd")
+                "graduated", "lost", "why", "payouts", "eval_account", "record_cmd", "ask_amount", "ask_goal", "stop4")
 
 
 def compact_tracker(t: dict | None) -> dict | None:

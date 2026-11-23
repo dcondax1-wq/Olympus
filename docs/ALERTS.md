@@ -17,7 +17,8 @@ What buzzes (engine/alert_map.py; `python -X utf8 -m engine.alert_map` prints th
 | Entries blocked: PC clock off, feed stale, NinjaTrader not connected, kill switch | Olympus app + ntfy |
 | Trade entry ($ risk, $ at target) and exit ($ result, today, $ to pass), every account | Olympus app + ntfy |
 | Daily loss limit 70% used; max drawdown 50% / 75% used; open trade into a halt; trade with no stop | Olympus app + ntfy |
-| Payout can be requested; PASSED / FAILED / LOCKED | Olympus app + ntfy |
+| Payout can be requested (after the close: $ + the MFFU clicks; record it with TRADE_HOME -> P); PASSED / FAILED / LOCKED | Olympus app + ntfy |
+| Builder payout #4 taken: do NOT take #5 (live move); a Rapid day near the $10,000 live line | Olympus app + ntfy |
 | MFFU 7-day no-trade deadline (day 5+) | Olympus app + ntfy |
 | Update failed / rolled back | Olympus app + ntfy |
 | Update applied / skipped, other low-priority news | ONE silent daily digest at 16:20 ET |
