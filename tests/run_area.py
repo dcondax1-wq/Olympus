@@ -481,3 +481,4 @@ AREAS["faults"].append("state_safe_rt"); AREAS["nq"].append("state_safe_rt")   #
 
 if __name__ == "__main__":
     sys.exit(main())
+AREAS["nq"].append("accounts_screen"); AREAS["pc"].append("accounts_screen")   # day-accounts 2026-11-23: nq/accounts.html (one card per account + 7-day clock) + the new Rapid's keep-alive end to end + cloud K7 fixes

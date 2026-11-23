@@ -186,9 +186,46 @@ def feed_clock(msgs, now) -> list:
     try:
         from engine import clock7
         k = clock7.build(best.get("mf"), None, now) if best.get("mf") else {"a": _d(best.get("k7")).get("a") or []}
-        return list(_d(k).get("a") or [])
+        rows = list(_d(k).get("a") or [])
+        # day-accounts 2026-11-23: the PC's own k7 rows know the keep-alive's fills and its ON switches (the heartbeat's keepalive
+        # block); the mf rows alone do not, so after a keep-alive trade the cloud counted from the older strategy trade and pushed
+        # "must trade" for an account that had traded. Per account the NEWER base day wins; "on" comes from the PC's row.
+        if best.get("mf") and isinstance(_d(best.get("k7")).get("a"), list) and _d(best.get("k7")).get("a"):
+            pc = {str(r.get("id")): r for r in _d(best["k7"]).get("a") if isinstance(r, dict) and r.get("id") and r.get("hard")}
+            out = []
+            for r in rows:
+                p = pc.get(str(r.get("id")))
+                if p and str(p["hard"]) > str(r.get("hard")):
+                    base = _dt_base(p)
+                    r2 = clock7.row(str(r["id"]), r.get("nm"), base if p.get("base") != "start" else None,
+                                    None if p.get("base") != "start" else _next_day(base), now, p.get("on"))
+                    r = r2 or r
+                elif p and p.get("on") is not None:
+                    r = {**r, "on": p.get("on")}
+                out.append(r)
+            seen = {str(r.get("id")) for r in out}
+            for aid, p in pc.items():              # an account the PC's k7 has and its mf block does not (cut for size)
+                if aid not in seen:
+                    base = _dt_base(p)
+                    r2 = clock7.row(aid, p.get("nm") or aid, base if p.get("base") != "start" else None,
+                                    None if p.get("base") != "start" else _next_day(base), now, p.get("on"))
+                    if r2:
+                        out.append(r2)
+            rows = sorted(out, key=lambda r: (r["left"], r["id"]))
+        return rows
     except Exception:
         return []
+
+
+def _dt_base(r) -> str:
+    """The day a k7 row counts from (its last fill, or the day before its start): hard - its limit."""
+    import datetime as _dt
+    return (_dt.date.fromisoformat(str(r["hard"])[:10]) - _dt.timedelta(days=int(r.get("lim") or 7))).isoformat()
+
+
+def _next_day(d: str) -> str:
+    import datetime as _dt
+    return (_dt.date.fromisoformat(d) + _dt.timedelta(days=1)).isoformat()
 
 
 def preopen_step(prev: dict | None, seen_t, now, s: dict | None = None, fetched: bool = True, sent=(), clock=()) -> tuple:
@@ -306,7 +343,9 @@ def k7_step(prev: dict | None, seen_t, now, rows=(), fetched: bool = True, sent=
         out = []
         for r in rows:
             aid, nm = str(r["id"]), str(r.get("nm") or r["id"])[:40]
-            if int(r.get("lim") or 7) != 7 or aid in done or any(nm in t for t in sent or ()):
+            # day-accounts 2026-11-23: the exact title, not a substring: "Rapid EOD 25K" is inside "Rapid EOD 25K #2", so the 1st
+            # Rapid's push silenced the 2nd Rapid's (the new Rapid EOD 25K) for the day
+            if int(r.get("lim") or 7) != 7 or aid in done or any(str(t).startswith(f"{K7_MARK}: {nm} must trade by ") for t in sent or ()):
                 continue
             hard = _dt.date.fromisoformat(str(r["hard"]))
             hb = hand_by(hard)
