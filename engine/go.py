@@ -2227,7 +2227,13 @@ def main(argv=None):
     a = ap.parse_args(argv)
     if a.step:
         return job_main(a.step, after_update=a.after_update)
-    return run(dry=a.dry_run, pull=not a.no_pull)
+    try:
+        return run(dry=a.dry_run, pull=not a.no_pull)
+    except (KeyboardInterrupt, EOFError):
+        # night-mondaysim 2026-11-23: Ctrl+C or a closed window input = one plain line, never a traceback (nothing was armed
+        # unless the phrase had already been typed; a step already done is skipped next time)
+        print("\n [FIX] START BOT stopped before the end. Double-click START_BOT.bat (or MONDAY_SETUP.bat) again: done steps are skipped.")
+        return 1
 
 
 if __name__ == "__main__":

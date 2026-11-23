@@ -19,6 +19,7 @@ set "PYTHONIOENCODING=utf-8"
 "%PY%" --version >nul 2>&1
 if errorlevel 1 goto :nopython
 "%PY%" -X utf8 -m engine.monday
+if errorlevel 1 echo  [FIX] A step above says [FIX]: do that one line, then double-click MONDAY_SETUP.bat again.
 goto :end
 :nopython
 echo  [FIX] Python not found. Install Python 3.12 from python.org and tick "Add python.exe to PATH".

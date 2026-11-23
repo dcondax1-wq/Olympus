@@ -280,7 +280,8 @@ def run_cmd(argv):
     """Run one command with the console handed through unchanged (the owner types into it himself). Returns the exit code.
     Never passes stdin, never feeds a phrase, never captures: what the .bat asks, he answers."""
     try:
-        return subprocess.call(argv, cwd=ROOT)
+        from engine.monday import cmd_line
+        return subprocess.call(cmd_line(argv), cwd=ROOT)
     except Exception:  # noqa: BLE001
         return 1
 
@@ -295,7 +296,8 @@ def run_bat(name, run=None):
     path = bat_path(name)
     if not os.path.exists(path):
         return 1
-    return run(["cmd", "/c", path])
+    from engine.monday import bat_cmd
+    return run(bat_cmd(path))            # cmd /d /c call "<path>": a bot folder with spaces, ( ) or & still works (night-mondaysim)
 
 
 # result line after each action: re-read the one fact the action was for. `fx` = the readers (tests pass fakes).
