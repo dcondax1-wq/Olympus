@@ -240,7 +240,8 @@ def _write(path, d) -> None:
     tmp = f"{path}.{os.getpid()}.tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(d, fh, indent=1)
-    os.replace(tmp, path)
+    from . import fsutil as _fsutil          # integration 2026-11-23: land-fixes' Windows / OneDrive-safe replace (test_selfheal rule)
+    _fsutil.replace(tmp, path)
 
 
 def tick(now=None, views=None, sender=None, path: str | None = None) -> dict:
