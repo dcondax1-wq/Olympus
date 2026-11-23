@@ -250,6 +250,15 @@ Check it any time at the PC: which accounts are on, the last result, the next pl
 3. Tell Claude, so the bad update gets fixed.
 - **You see:** push "Update rolled back": "The new code ... kept stopping (4 starts in 10 min). Back on ..., the version that ran fine; the bad one is skipped." "Update crash loop: ROLLBACK FAILED" = send Claude that text now. An open trade's stop and target still sit at the broker.
 
+## What the START window must say (2026-11-22)
+After you type the phrase, the last thing the START BOT window (and the Start page) prints is one line per account:
+- `ARMED: Zlarior 50K` / `ARMED: ATLAS 25K` = that account will trade.
+- `NOT ARMED: <account>: <one plain reason> -> <exact fix>` = it will NOT trade. A banner `NOT TRADING: ...` follows.
+Read the last 10 lines before you walk away. The phone's Brain page shows the same reason ("ATLAS is NOT armed: ...").
+When MFFU passes an eval it renames the NinjaTrader account (MFFUEV... -> MFFUSF..., same last digits). If the saved ATLAS name
+is gone and exactly ONE account matches, START shows both names and asks you to type `YES` to switch; nothing changes without
+it, and your I ACCEPT LIVE RISK is still needed. Several or no match: one `[FIX]` line, ATLAS stays NOT armed.
+
 ## Where things are
 
 | Need | Page |

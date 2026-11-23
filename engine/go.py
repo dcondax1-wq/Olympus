@@ -566,13 +566,240 @@ def arm_problem(cfg) -> str | None:
     return None
 
 
-def step_arm(cfg, phrase, dry=False, open_page=True) -> int:
+LAST_ROWS = []           # the last START's per-account rows (engine/arm_report): the Start page's status line reads them
+SELFTEST = None          # tests: a fake for engine.ninjatrader --selftest in the funded-name switch
+
+
+def nt_account_names() -> list:
+    """Every account Name NinjaTrader's Accounts tab lists, from LE_BarFeed's accounts.csv ([] when it is not there)."""
+    try:
+        return [r["name"] for r in nt_names()]
+    except Exception:
+        return []
+
+
+def _atlas_fix(why):
+    """A plain 'exact fix' for the reason ATLAS's arm failed (engine/arm_report: 'NOT ARMED: ATLAS 25K: <why> -> <fix>')."""
+    w = str(why or "").lower()
+    if "not in ninjatrader" in w or "not the 25k" in w or "switch" in w:
+        return "START BOT again and type YES at the switch question; or Start page > Accounts > Funded"
+    if "selftest" in w:
+        return "close NinjaTrader, open it, log in, then START BOT again"
+    return "send Claude a photo of this window"
+
+
+def resolve_atlas(cfg, inp=None) -> str | None:
+    """The eval -> funded rename (2026-11-22: MFFU renamed ATLAS's NinjaTrader account MFFUEV... -> MFFUSF..., the saved name
+    stayed the eval's and ATLAS ended the START armed false). Called only after the owner typed the live phrase. When the saved
+    ATLAS name is not in NinjaTrader's account list and exactly ONE account has the same plan family and last 4 digits, both
+    names are SHOWN and the owner must type YES; only then the name moves (engine/account_b.to_funded, the funded switch;
+    data/start_bot.json follows). Never silent, never without YES, never a guess. Returns None (fine / switched) or the plain
+    reason ATLAS cannot be armed (a [FIX] line is printed)."""
+    from . import arm_report, second
+    atlas = str(cfg.get("atlas") or "").strip()
+    bacc = str((second.load_cfg(SECOND_PATH).get("account_b") or {}).get("account") or "").strip()
+    nt = nt_account_names()
+    if not atlas or (bacc == atlas and (not nt or atlas in nt)):
+        if atlas and atlas in nt:          # the old eval Name still listed next to its funded rename: say it, change nothing
+            twin = arm_report.find_funded_candidates(atlas, nt, lambda n: role_of(n, cfg))
+            if len(twin) == 1:
+                print(f" [CHECK] ATLAS trades {atlas}, but NinjaTrader also lists {twin[0]} (the same account number, funded). "
+                      "If MFFU moved ATLAS to that one: Start page > Accounts > Funded. Nothing changed.")
+        return None
+    if bacc == atlas:                       # the saved name is not in NinjaTrader's list any more
+        bals = nt_balances()
+        old, cands = atlas, [c for c in arm_report.find_funded_candidates(atlas, nt, lambda n: role_of(n, cfg))
+                             if not slot_problem(c, "25K", bals)]
+    elif bacc and atlas in nt and arm_report.renamed(bacc, atlas):   # the start config already holds the funded name, account B not
+        old, cands = bacc, [atlas]
+    else:
+        return None                          # arm_b says its own plain reason
+    if len(cands) != 1:
+        why = (f"{old} is not in NinjaTrader's account list and no other account matches it (same plan, same last 4 digits)"
+               if not cands else
+               f"{old} is not in NinjaTrader's account list and {len(cands)} accounts could be its funded rename: "
+               + ", ".join(cands))
+        print(f" [FIX] ATLAS: {why}. Open NinjaTrader's Accounts tab, find the funded 25K, then Start page > Accounts > Funded. ATLAS is NOT armed.")
+        return why
+    new = cands[0]
+    if bot_running():
+        why = f"{old} is not in NinjaTrader; {new} looks like its funded rename, but the bot is running (a name switch needs it stopped)"
+        print(" [FIX] ATLAS: the 25K name can only switch while the bot is stopped: STOP BOT, then START BOT and type YES. ATLAS is NOT armed.")
+        return why
+    print(f"\n ATLAS: the saved 25K name is NOT in NinjaTrader's account list.")
+    print(f"        saved name (passed eval):  {old}")
+    print(f"        NinjaTrader has (funded):  {new}   <- same plan, same last digits, the only match")
+    if inp is None:
+        why = f"{old} is not in NinjaTrader; {new} looks like its funded rename and needs your YES"
+        print(f" [FIX] Run START_BOT.bat and type YES at the switch question (the Start page cannot ask it). ATLAS is NOT armed.")
+        return why
+    try:
+        ans = ask(f" Type YES to switch ATLAS from {old} to {new} (anything else leaves ATLAS NOT armed)", None, inp)
+    except (EOFError, KeyboardInterrupt, OSError):
+        ans = ""                            # no console / piped stdin ran out: never a YES
+    if str(ans or "").strip().upper() != "YES":
+        print(" ATLAS name NOT switched.")
+        return f"you did not type YES to switch {old} to {new}"
+    bal = nt_balances().get(new)
+    lit, _ = _names(cfg)
+    r = (arm_b_switch(old, new, bal, lit))
+    if not r.get("ok"):
+        why = f"switching to {new} failed: {r.get('error')}"
+        print(f" [FIX] {why}")
+        return why
+    cfg["atlas"] = new
+    _save(cfg)
+    if r.get("say"):
+        print(f" {r['say']}")
+    else:
+        print(f" ATLAS name switched to the funded account {new}. Funded start balance "
+              + (f"${float(bal):,.2f} (NinjaTrader)" if bal is not None else "= the plan start") + "; fix it on the Start page > Change balance if it differs.")
+    return None
+
+
+BAL_TOL = 50.0          # an eval switch takes NinjaTrader's balance as the funded start only within $50 of the plan start
+
+
+def arm_b_switch(old, new, bal, lit) -> dict:
+    """The name move after the owner's YES. ATLAS ALREADY FUNDED here (stage "funded": its funded start, start balance,
+    payouts and the closed trades in its state file are real history): rename_funded() moves ONLY the Name and keeps every
+    number (red team 2026-11-23: account_b.to_funded refuses an already-funded account, and any name change made the bot drop
+    the state file, i.e. the funded profit, best day and consistency would restart at zero). A passed EVAL: the funded switch
+    (account_b.to_funded), but only on a fresh funded balance (NinjaTrader within $50 of the plan start): later than that the
+    funded account has history and the start day / balance must be typed on the Start page."""
+    from . import account_b
+    cur = account_b.raw_cfg(SECOND_PATH) or {}
+    if str(cur.get("stage") or "eval").strip().lower() == "funded":
+        return rename_funded(old, new, lit)
+    try:
+        from . import multi_account as MA
+        plan = str(cur.get("plan") or "builder25k").lower().replace(" ", "").replace("_", "")
+        start_bal = float(MA.rules_of({"preset": (account_b.PLANS.get(plan) or account_b.PLANS["builder25k"])["preset"]})["start"])
+    except Exception:
+        start_bal = None
+    if bal is not None and start_bal is not None and abs(float(bal) - start_bal) > BAL_TOL:
+        return {"ok": False, "error": f"NinjaTrader shows ${float(bal):,.2f} on {new}, not the fresh ${start_bal:,.0f}: the funded "
+                                      "account already has history, so its first funded day and start balance must be typed on the "
+                                      "Start page > Accounts > Funded (nothing switched)"}
+    return account_b.to_funded(new, dt.date.today().isoformat(), bal, path=SECOND_PATH, allow_path=ALLOW_PATH,
+                               lit_account=lit, selftest=SELFTEST)
+
+
+def rename_funded(old, new, lit=None) -> dict:
+    """ATLAS's funded account got a new NinjaTrader Name (same account): the local block keeps EVERY field (stage, funded
+    start, funded start balance, payouts, eval account, plan, sizing, strategies) except the Name, which is DISARMED until
+    arm_b (the typed phrase) arms it again; the state file (closes, ledger, open trade, held, lock) moves to the new Name
+    (a copy of the old one is kept), so the funded tracker, best day and consistency carry on. Refused: not funded, not an
+    eval->funded rename pair, Zlarior's own account, the NinjaTrader self-test failing, or any write failing (then nothing
+    is changed). Returns {"ok", "error" | "say"}."""
+    import json as _json
+    import re as _re
+    import shutil as _sh
+    from . import account_b, arm_report, second
+    path = SECOND_PATH
+    cur = account_b.raw_cfg(path)
+    if not isinstance(cur, dict) or str(cur.get("account") or "").strip() != str(old).strip():
+        return {"ok": False, "error": f"ATLAS's saved account is not {old}: nothing switched"}
+    if str(cur.get("stage") or "").strip().lower() != "funded":
+        return {"ok": False, "error": "ATLAS is not funded here: use the funded switch"}
+    if not arm_report.renamed(old, new):
+        return {"ok": False, "error": f"{new} is not the funded rename of {old}: nothing switched"}
+    if lit and str(new).strip() == str(lit).strip():
+        return {"ok": False, "error": f"{new} is Zlarior's own account: nothing switched"}
+    ok, line = (SELFTEST or second._selftest_ok)()
+    if not ok:
+        return {"ok": False, "error": f"engine.ninjatrader --selftest failed ({line}): ATLAS NOT switched"}
+    blk = {k: v for k, v in cur.items() if k not in ("armed", "confirm")}
+    blk.update(account=str(new).strip(), renamed_from=str(old).strip())
+    sp = account_b.state_file(path)
+    st = None
+    try:
+        with open(sp, encoding="utf-8") as fh:
+            st = _json.load(fh)
+    except FileNotFoundError:
+        st = None
+    except Exception as e:
+        return {"ok": False, "error": f"ATLAS's state file could not be read ({e.__class__.__name__}): nothing switched"}
+    if isinstance(st, dict) and st.get("account") == str(old).strip():
+        try:
+            _sh.copyfile(sp, os.path.splitext(sp)[0] + f".renamed_{_re.sub(r'[^A-Za-z0-9_-]', '_', str(old))}.json")
+        except Exception as e:
+            return {"ok": False, "error": f"ATLAS's state file could not be kept ({e.__class__.__name__}): nothing switched"}
+    else:
+        st = None                           # no file, or another account's: nothing to carry
+    account_b.write_local(blk, path, why=f"Funded account renamed by MFFU: {old} -> {new} (every funded number kept).")
+    if account_b.raw_cfg(path) != blk:
+        account_b.write_local(cur, path, why="rename write check failed: put back")
+        return {"ok": False, "error": "the account_b write check failed: ATLAS not switched (put back)"}
+    if st is not None:
+        try:
+            tmp = sp + ".rename.tmp"
+            with open(tmp, "w", encoding="utf-8") as fh:
+                _json.dump({**st, "account": str(new).strip()}, fh, default=str)
+            os.replace(tmp, sp)
+        except Exception as e:
+            account_b.write_local(cur, path, why="state carry-over failed: put back")
+            return {"ok": False, "error": f"ATLAS's state could not move to {new} ({e.__class__.__name__}): not switched (put back)"}
+    try:
+        from .ninjatrader import allow_account
+        allow_account(str(new).strip(), path=ALLOW_PATH)
+    except Exception:
+        pass
+    return {"ok": True, "say": f"ATLAS's funded account is now {new}; funded start, balance, payouts and trades kept."}
+
+
+def _all_down(rows, z_lbl, why, fix):
+    """The bot did not start / was stopped: no account trades, whatever the files say. Keeps the account's own reason first."""
+    from . import arm_report as AR
+    out = [AR.row(z_lbl, False, why, fix)]
+    for r in rows:
+        out.append(r if not r["armed"] else AR.row(r["label"], False, f"armed in the files, but {why}", fix))
+    return out
+
+
+def _summary(rows, rc):
+    """The loud end of every START: one line per account + the 'NOT TRADING' banner, and data/arm_status.json for the phone."""
+    from . import arm_report
+    global LAST_ROWS
+    LAST_ROWS = list(rows)
+    print("\n ---- WHAT HAPPENED ----")
+    for ln in arm_report.lines(rows):
+        print(" " + ln if ln else "")
+    arm_report.save(rows)
+    return rc
+
+
+def step_arm(cfg, phrase, dry=False, open_page=True, inp=None) -> int:
+    """step 4 (_step_arm) with the loud summary also on an error (red team 2026-11-23): bot not running = every account NOT
+    ARMED with the error as the reason; bot running = one [CHECK] line (the summary never guesses ARMED). Re-raises."""
+    try:
+        return _step_arm(cfg, phrase, dry=dry, open_page=open_page, inp=inp)
+    except Exception as e:
+        if phrase == LIVE_PHRASE and not dry:
+            why = f"START stopped by an error ({e.__class__.__name__})"
+            try:
+                up = bot_running()
+            except Exception:
+                up = False
+            if up:
+                print(f"\n [CHECK] {why} after the bot started: open the Start page to see which accounts are armed.")
+            else:
+                from . import arm_report as AR
+                _summary([AR.row("Zlarior 50K", False, why, "send Claude a photo of this window"),
+                          AR.row("ATLAS 25K", False, why, "send Claude a photo of this window")], 1)
+        raise
+
+
+def _step_arm(cfg, phrase, dry=False, open_page=True, inp=None) -> int:
     """4. only with the typed phrase: NINJATRADER_LIVE in .env.local.ps1, the server (re)started so it reads it, the 25K
     armed, the bot started on the 50K, the routes checked in the running bot (stopped when wrong), auto-resume on, the
     Startup-folder shortcuts, then the launch checklist."""
+    from . import arm_report as AR
+    z_lbl, a_lbl = "Zlarior 50K", "ATLAS 25K"
     if phrase != LIVE_PHRASE:
         print(" Stopped. Nothing is armed.")
-        return 1
+        why, fix = "the live phrase was not typed", "START BOT again and type I ACCEPT LIVE RISK yourself"
+        return _summary([AR.row(z_lbl, False, why, fix), AR.row(a_lbl, False, why, fix)], 1) if not dry else 1
     print("\n 4/4 Starting the bot")
     if dry:
         print("     (dry run: would set NINJATRADER_LIVE, start the server, start the bot)")
@@ -580,25 +807,39 @@ def step_arm(cfg, phrase, dry=False, open_page=True) -> int:
     bad = arm_problem(cfg)
     if bad:
         print(f" [FIX] {bad}. Nothing is armed.")
-        return 1
+        return _summary([AR.row(z_lbl, False, bad, "do the [FIX] above, then START BOT again"),
+                         AR.row(a_lbl, False, bad, "do the [FIX] above, then START BOT again")], 1)
     # every account is armed BEFORE any server (re)start below (2026-11-21 Rapid arm bug): a fresh server resumes the bot
     # from its autostart record at boot (server.py _autostart_resume) and the bot reads these files then
-    rb = arm_b(cfg["atlas"])
+    rows = []
+    why_name = resolve_atlas(cfg, inp)       # the eval -> funded rename: both names shown, the owner types YES (or a plain [FIX])
+    if why_name:
+        rb = {"ok": False, "error": why_name}
+    else:
+        rb = arm_b(cfg["atlas"])
     print(f"     25K (ATLAS): {'armed' if rb.get('ok') else 'NOT armed: ' + str(rb.get('error'))[:160]}")
+    rows.append(AR.row(a_lbl, rb.get("ok"), rb.get("error"), _atlas_fix(rb.get("error"))))
     try:                                   # the Rapid EOD (engine/rapid.py): armed only here, after the typed phrase
         from . import rapid
         rr = rapid.arm(phrase)
         if not rr.get("off"):
             lbl = rapid.plan_info(rapid.read() or {})["label"]        # "Rapid EOD 25K" / "Rapid EOD 50K": the size shows here too
             print(f"     {lbl} (LIT + ATLAS): {'armed ' + str(rr.get('account')) if rr.get('ok') else 'NOT armed: ' + str(rr.get('error'))[:160]}")
+            rows.append(AR.row(f"{lbl} (LIT + ATLAS)", rr.get("ok"), rr.get("error"), "send Claude a photo of this window"))
     except Exception as e:
         print(f"     Rapid EOD: NOT armed ({e.__class__.__name__}: {e})")
+        rows.append(AR.row("Rapid EOD", False, f"{e.__class__.__name__}: {e}", "send Claude a photo of this window"))
     try:                                   # accounts added with engine.accounts (engine/account_cli.py): armed only here
         from . import account_cli
         for ln in account_cli.arm(phrase):
             print(f"     {ln}")
+            if ln.startswith("Added accounts armed:"):
+                rows += [AR.row(n.strip(), True) for n in ln.split(":", 1)[1].split(",") if n.strip()]
+            elif "NOT armed" in ln:
+                rows.append(AR.row(ln.split(":")[0][:60], False, ln, "send Claude a photo of this window"))
     except Exception as e:
         print(f"     Added accounts: NOT armed ({e.__class__.__name__}: {e})")
+        rows.append(AR.row("Added accounts", False, f"{e.__class__.__name__}: {e}", "send Claude a photo of this window"))
     added = False
     if not env_has_live():
         add_env_live()
@@ -610,7 +851,7 @@ def step_arm(cfg, phrase, dry=False, open_page=True) -> int:
         stop_server()
     if not server_up() and not start_server():
         print(' [FIX] The server did not start in 2 minutes. Double-click HEALTH_CHECK.bat (the server runs hidden).')
-        return 1
+        return _summary(_all_down(rows, z_lbl, "the bot server did not start", "double-click HEALTH_CHECK.bat"), 1)
     from . import ninjatrader
     wm = ["--write-mode", cfg["write_mode"]] if cfg.get("write_mode") else []
     start = ["--start", "--account", cfg["lit"], "--confirm", phrase, *wm]
@@ -624,12 +865,12 @@ def step_arm(cfg, phrase, dry=False, open_page=True) -> int:
         rc = ninjatrader.main(start)
     if rc:
         print(" [FIX] The bot did not start (see the lines above). Send Claude a photo of this window.")
-        return 1
+        return _summary(_all_down(rows, z_lbl, "the bot did not start", "send Claude a photo of this window"), 1)
     probs = verify_routes(cfg["lit"], cfg["atlas"])
     if probs:
         print(" [STOP] Wrong account set-up: " + "; ".join(probs) + ". Stopping the bot (nothing traded).")
         ninjatrader.main(["--stop"])
-        return 1
+        return _summary(_all_down(rows, z_lbl, "the bot was stopped: " + "; ".join(probs)[:120], "fix the first NOT ARMED line, then START BOT again"), 1)
     print(f"\n [OK] Zlarior trades the 50K {cfg['lit']} · ATLAS trades the 25K {cfg['atlas']} (checked in the running bot)")
     ninjatrader.main(["--enable-auto-resume", "--account", cfg["lit"], "--confirm", phrase, *wm])
     try:                                   # and each armed account added with engine.accounts resumes with it
@@ -652,7 +893,7 @@ def step_arm(cfg, phrase, dry=False, open_page=True) -> int:
     if open_page:
         _open()
     shortcut()
-    return 0
+    return _summary([AR.row(z_lbl, True)] + rows, 0)
 
 
 def migrate():
@@ -735,7 +976,7 @@ def run(dry=False, inp=input, py=sys.executable, pull=True) -> int:
     print("     Typing the line also lets the bot come back by itself after a restart (PC on + NinjaTrader connected);")
     print("     STOP BOT keeps it stopped until you start it again; the kill switch turns that off for good.")
     phrase = typed_phrase(ask(" Type  I ACCEPT LIVE RISK  then Enter (anything else stops here, nothing armed)", None, inp))
-    return step_arm(cfg, phrase, dry)
+    return step_arm(cfg, phrase, dry, inp=inp)
 
 
 def phrase_also_arms() -> list:
@@ -1258,7 +1499,9 @@ def step_auto(cfg, phrase="", py=sys.executable, after_update=False, sleep=time.
     _note("arm", "Arming and starting: Zlarior → 50K, ATLAS → 25K" + "".join(f", {x}" for x in unarmed_added()))
     rc = step_arm(cfg, phrase, open_page=False)
     if rc:
-        _note("arm", "Arming did not finish (see the lines below). Press Start trading to try again.")
+        bad = [r for r in LAST_ROWS if not r["armed"]]
+        _note("arm", "NOT TRADING: " + "; ".join(f"{r['label']}: {r['reason']} -> {r['fix']}" for r in bad[:2])[:400]
+              if bad else "Arming did not finish (see the lines below). Press Start trading to try again.")
         return rc
     left = unarmed_added()                 # the phrase was typed but an added account could not be armed: said, never silent
     _note("running", f"Running: Zlarior → 50K {lit} · ATLAS → 25K {atlas}."
