@@ -207,7 +207,9 @@
       const told = isObj(P.funded) ? P.funded : {};
       const state = { balance: bal.v, cycle_start_balance: f && num(f.cp) != null && bal.v != null ? r2(bal.v - num(f.cp)) : num(told.cycle_start_balance),
                       best_day: f && num(f.bd) != null ? num(f.bd) : num(told.best_day), cycle_days: f && num(f.cd) != null ? num(f.cd) : num(told.cycle_days),
-                      first_trade: told.first_trade || null, last_trade: told.last_trade || null, payouts_n: f && num(f.pn) != null ? num(f.pn) : num(told.payouts_n),
+                      // the PC's tracker sends ft (first funded trade, when known) and the row's lt (last traded day): night-truth 2026-11-22,
+                      // the coach's 7-day countdown read only accounts.json's told.last_trade (null) while the PC sent lt
+                      first_trade: (f && f.ft) || told.first_trade || null, last_trade: (mf && mf.lt) || told.last_trade || null, payouts_n: f && num(f.pn) != null ? num(f.pn) : num(told.payouts_n),
                       eligible_from: f && f.ef ? f.ef : null, room: room.v };
       try { const c = ctx.coach.coach(state, pk, ctx.today); out.payout = { c, src: f ? 'PC payout tracker' : 'PLAN (what you told Claude)', t: f ? mfT : null }; } catch (e) { out.payout = null; }
     }

@@ -71,7 +71,12 @@ const COACH = require(path.join(W, 'business', 'payoutcoach.js')), PC = require(
   const z2 = BC.brain('lit', { ...src, lite: P2 }, NOW), a2 = BC.brain('atlas', { ...src, lite: P2 }, NOW);
   const v2 = { grade: z2.grade, think: z2.thoughts, athink: a2.thoughts, regions: a2.regions, steps: a2.steps.filter((s) => s.lobe === 'ema').map((s) => s.state),
     cur: a2.current && a2.current.label, dll: a2.risk.find((r) => r.k === 'dll'), lpx: z2.watch.length && z2.watch[0].dist };
-  console.log(JSON.stringify({ v2, z, a, zs: { stopped: zs.stopped, states: zs.steps.map((s) => s.state) }, none: { has: none.has, steps: none.steps.length, health: none.health },
+  // audit E3 (2026-11-22): the core's "ar" {bot: [on, armed]} wins over the (up to 44 min old) glance; b25k_2 / Rapid armed on the desk rows
+  const P3 = JSON.parse(JSON.stringify(PC)); P3.ar = { lit: [1, 0], b25k_2: [1, 1], rapid: [0, 0] };
+  const z3 = BC.brain('lit', { ...src, lite: P3 }, NOW);
+  const ar = { armed: z3.armed, on: z3.on, run: z3.health[3].value, acc: z3.accounts.map((x) => [x.key, x.armed === undefined ? null : x.armed]),
+    f: BC.accountArmed(P3, 'fresh25'), r: BC.accountArmed(P3, 'rapid1'), none: BC.accountArmed(PC, 'fresh25') };
+  console.log(JSON.stringify({ ar, v2, z, a, zs: { stopped: zs.stopped, states: zs.steps.map((s) => s.state) }, none: { has: none.has, steps: none.steps.length, health: none.health },
     n: [BC.stageN('5m CISD (5/10)'), BC.stageN('Sweep'), BC.stageN(''), BC.stageN('In trade (9/10)')] }));
 })().catch((e) => console.log(JSON.stringify({ err: String(e && e.stack || e) })));
 """
@@ -94,6 +99,10 @@ def test_node():
         check("b. the node harness ran", False, o["err"])
         return
     z, a = o["z"], o["a"]
+    ar = o["ar"]
+    check("b. 'ar' in the core post wins: Zlarior [on 1, armed 0] reads 'on, not armed' though the glance says armed; b25k_2 armed, Rapid off",
+          ar["armed"] is False and ar["on"] is True and ar["run"] != "armed, live" and ar["f"] == {"on": True, "armed": True}
+          and ar["r"] == {"on": False, "armed": False}, ar)
     check("b. stageN: '5m CISD (5/10)' = 5, a bare label = its place, none = null, 'In trade (9/10)' = 9", o["n"] == [5, 2, None, 9], o["n"])
     check("b. Zlarior: the 10 stages of engine/brain.py in order (Levels ... Done for today), 1-4 passed, 5m CISD NOW, 6-10 waiting; armed, LIVE",
           [s["label"] for s in z["steps"]][:5] == ["Levels", "Sweep", "Inducement", "Displacement", "5m CISD"] and len(z["steps"]) == 10

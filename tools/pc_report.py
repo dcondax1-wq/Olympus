@@ -74,7 +74,8 @@ EXT_ORDER = ("rd", "brd", "life", "mf", "k7", "board_trades", "at", "fq", "zl", 
 EXT_LAST = ("glog",)   # red-team 2026-11-21: the Brain's long thought stream takes only the room every other block left (cut 5/3, then out)
 # "zl": ZEUS learned, the nightly line (engine/zeus_learn.read_tiny, <= 220 bytes) -> the ZEUS page's "ZEUS learned" card
 CORE_KEYS = ("eh", "v", "kind", "lite", "src", "t", "every_s", "host", "model_state", "price", "day_pnl", "pc_verdict", "pc", "reporter",
-             "board", "accounts", "trimmed", "wp")   # wp: the phone app's push set-up (engine/push.app_block: public keys, ~230 bytes)
+             "board", "accounts", "trimmed", "wp", "ar", "pulse")   # wp: the phone app's push set-up (engine/push.app_block: public keys, ~230 bytes)
+# ar: {glance bot id: [on, armed]} in the CORE (split(): the glance itself rides the ext, up to 44 min old); pulse: the time of a state-change post (engine/state_pulse.py)
 BRD_BYTES = 1200
 HB_STALE_S = 900                 # the bot beats every 5 min: older than 15 min = the bot is not reporting
 BAR_STALE_S = 300                # the last 1-minute bar older than 5 min while the market is open = FEED STALE
@@ -392,6 +393,30 @@ def read_heartbeat(root: str = ROOT) -> tuple:
     return pl, push, src
 
 
+LOCAL_LIVE_TIMEOUT_S = 4
+LOCAL_LIVE_MAX = 256 * 1024
+
+
+def local_live(port=PORT_DEFAULT, http=None) -> dict | None:
+    """The bot server's own live.json (GET 127.0.0.1:<port>/api/site/live.json: engine/live_publish.build of the running bot), or None
+    (not 200, not JSON, not kind "le-live", no t). 4 s timeout. Never raises."""
+    url = f"http://127.0.0.1:{port}/api/site/live.json"
+    try:
+        if http is not None:
+            st, txt = http("GET", url, None, None, LOCAL_LIVE_TIMEOUT_S)
+        else:
+            req = urllib.request.Request(url, method="GET")
+            req.add_header("User-Agent", UA)
+            with urllib.request.urlopen(req, timeout=LOCAL_LIVE_TIMEOUT_S) as r:
+                st, txt = r.status, r.read(LOCAL_LIVE_MAX).decode("utf-8", "replace")
+        if int(st or 0) != 200:
+            return None
+        j = json.loads(txt)
+        return j if isinstance(j, dict) and j.get("kind") == "le-live" and num(j.get("t")) else None
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def nt_running(env=None):
     """True / False on Windows (tasklist), None elsewhere. LE_PR_T_NT=1|0 for tests."""
     env = os.environ if env is None else env
@@ -481,6 +506,13 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
             snap["live"] = live_publish.build(hb, now=hb_t or now, hb_last=push, every_s=num(hb.get("every_s")) or 300)
         except Exception as e:
             snap["live_error"] = f"{e.__class__.__name__}: {str(e)[:120]}"
+    if snap["server"]:
+        try:                                # audit D3 (2026-11-22): the running bot's own live.json (rebuilt every ~15 s) when it is newer
+            lv = local_live(port, http)     # than the 5-minute heartbeat file; hb_t / hb_age stay the heartbeat's (the PC-silent rules)
+            if lv and (num(lv.get("t")) or 0) > (hb_t or 0):
+                snap["live"], snap["live_t"] = lv, int(num(lv["t"]))
+        except Exception:  # noqa: BLE001
+            pass
     snap["alerts_pc"] = _telegram_on(root)
     snap["alert_bus"] = _bus_active()       # Telegram / Discord through engine/alert_bus (ALERTS_SETUP.bat): a route of its own
     try:                                    # self-heal (engine/self_heal.py, night-selfheal): fixed / needs you + what grows on disk, <= 300 bytes
@@ -624,7 +656,7 @@ def full(snap: dict) -> dict:
     pc = _d(L.get("pc"))
     bd = _d(L.get("board"))
     hb = _d(snap.get("hb"))
-    out = {"v": 1, "kind": "le-live", "lite": True, "src": "pc_report", "t": snap.get("hb_t"), "every_s": L.get("every_s") or hb.get("every_s"),
+    out = {"v": 1, "kind": "le-live", "lite": True, "src": "pc_report", "t": snap.get("live_t") or snap.get("hb_t"), "every_s": L.get("every_s") or hb.get("every_s"),
            "host": L.get("host") or hb.get("host"), "model_state": L.get("model_state"), "price": L.get("price"), "day_pnl": L.get("day_pnl"),
            "pc_verdict": verdict_now(snap, L.get("pc_verdict")),
            "pc": {k: pc.get(k) for k in ("running", "adapter", "position", "model_state", "host", "model", "present", "t", "age_s", "silent", "every_s",
@@ -649,7 +681,9 @@ def full(snap: dict) -> dict:
                                                      "dll", "dll_used", "today", "session", "status") if _d(a.get("eval")).get(k) is not None}
         accts.append({"id": a["id"], "name": a.get("name"), "plan": a.get("plan"), "kind": a.get("kind"), "source": a.get("source"),
                       "badge": a.get("badge"), "conn": {k: _d(a.get("conn")).get(k) for k in ("present", "t", "running", "connected", "host")},
-                      "eval": ev, "pnl": a.get("pnl"), "running": a.get("running"), "trades": [], "days": []})
+                      "eval": ev, "pnl": a.get("pnl"), "running": a.get("running"), "trades": [], "days": [],
+                      # audit D2: Trading Home holds an account that is off / locked / not armed (optional: an old PC sends none)
+                      **{k: a.get(k) for k in ("enabled", "locked", "armed") if a.get(k) is not None}})
     if accts:
         out["accounts"] = accts
     try:                                           # the Board's cut (engine/board_events.status_block: events + account rows); the ext
@@ -721,6 +755,8 @@ def full(snap: dict) -> dict:
     for k in ("learn", "lab"):                     # the learning loop / ZEUS Lab notes when the reporter's snapshot has them
         if isinstance(snap.get(k), dict):
             out[k] = snap[k]
+    if snap.get("pulse"):                          # a state-change post (engine/state_pulse.py): when, so readers know it is one
+        out["pulse"] = int(snap["pulse"])
     return {k: v for k, v in out.items() if v is not None}
 
 
@@ -758,6 +794,7 @@ def _fit_core(out: dict, max_bytes: int) -> dict:
         out = {"v": 1, "kind": "le-live", "lite": True, "src": "pc_report", "t": out.get("t"), "trimmed": True, "pc": out.get("pc"),
                "pc_verdict": {k: _d(out.get("pc_verdict")).get(k) for k in ("code", "label", "level")},
                "reporter": out.get("reporter"), **({"wp": out["wp"]} if out.get("wp") else {}),
+               **({"ar": out["ar"]} if out.get("ar") else {}), **({"pulse": out["pulse"]} if out.get("pulse") else {}),
                "board": {"t": bb.get("t"), "data_t": bb.get("data_t"),
                          **{k: {x: _d(bb.get(k)).get(x) for x in ("id", "name", "room", "mll", "balance", "today_pnl", "status")}
                             for k in ("lit", "atlas", "blitz") if bb.get(k)}}}
@@ -819,6 +856,9 @@ def split(out: dict, max_bytes: int = MAX_STATUS_BYTES, parts: int | None = None
     g = _d(core.get("pc")).pop("glance", None)
     if g:
         x["glance"] = g
+        ar = armed_core(g)
+        if ar:                                     # night-truth / audit D1: on + armed per bot ride every core post (~60 bytes)
+            core["ar"] = ar
     tr = _d(core.get("board")).pop("trades", None)  # the last 3 trades: history, not the heartbeat (pc_feed lays them back in board)
     if tr:
         x["board_trades"] = tr
@@ -858,6 +898,15 @@ def split(out: dict, max_bytes: int = MAX_STATUS_BYTES, parts: int | None = None
         except Exception:  # noqa: BLE001
             pass
     return pub, [public(e) for e in exts]
+
+
+def armed_core(glance) -> dict:
+    """{bot id: [on 1/0, armed 1/0]} of the brain glance (engine/brain_glance: its armed rule), for the core post's "ar"."""
+    out = {}
+    for b in _d(glance).get("bots") or []:
+        if isinstance(b, dict) and b.get("id"):
+            out[str(b["id"])[:16]] = [int(bool(b.get("on"))), int(bool(b.get("armed")))]
+    return out
 
 
 def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
@@ -914,6 +963,10 @@ def ext_hash(exts) -> str:
     the next EXT_EVERY_S."""
     import hashlib
     keep = [{k: _news_of(k, v) for k, v in _d(e.get("x")).items() if k not in ("glance", "glog")} for e in exts or []]
+    # audit D1 (2026-11-22): a bot turning on / off, armed / disarmed or its "why not armed" is news (the Brain page waited up to 44 min);
+    # the glance's other fields (levels, logs, texts, $) still are not
+    keep.append([[b.get("id"), bool(b.get("on")), bool(b.get("armed")), b.get("nar")]
+                 for e in exts or [] for b in (_d(_d(e.get("x")).get("glance")).get("bots") or []) if isinstance(b, dict)])
     return hashlib.sha1(json.dumps(keep, sort_keys=True, default=str).encode("utf-8")).hexdigest()[:16]
 
 
@@ -2110,8 +2163,15 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
         if num(rec.get("ext_t")):
             status["xt"] = int(rec["ext_t"])         # when the extras last went (readers merge the newest ext with this core)
         body = json.dumps(status, separators=(",", ":"), default=str, ensure_ascii=False)
+        sig = core_sig(status)
+        rec["core_sig"] = sig
+        repeat = (not due and num(last.get("status_t")) and snap["t"] - float(last["status_t"]) < CORE_MIN_GAP_S
+                  and last.get("core_sig") == sig)
         if dry:
-            say(f"[dry] status ({len(body.encode('utf-8'))} bytes) -> {cfg['ntfy']}/{cfg['status_topic']}")
+            say(f"[dry] status ({len(body.encode('utf-8'))} bytes) -> {cfg['ntfy']}/{cfg['status_topic']}"
+                + (" [would be skipped: same state posted under 5 min ago]" if repeat else ""))
+        elif repeat:                                  # night-truth 2026-11-22: a 2nd run minutes after the last post (two tasks on the PC:
+            rec["core_skipped"] = "same state posted under 5 min ago"   # posts came in pairs ~2 min apart) saves ntfy's day
         else:
             ok, why = ntfy_post(cfg["ntfy"], cfg["status_topic"], _signed(body, core=True, real=http is None), priority="min", http=http)
             if SIGN_STATE.get("why") and SIGN_STATE["why"] != "off (LE_STATUS_SIGN=0)":
@@ -2195,6 +2255,100 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
     return rec
 
 
+CORE_MIN_GAP_S = 300             # a core post with the same state (core_sig) as one under 5 min old is not sent again
+
+
+def core_sig(status: dict) -> str:
+    """The state a reader acts on in a core post (running, verdict, problems, armed, badges, positions, trades today, account
+    status), without the times and the $ that move every minute. Same sig = nothing new for the phone."""
+    st = _d(status)
+    bd = _d(st.get("board"))
+    pc = _d(st.get("pc"))
+    rp = _d(st.get("reporter"))
+    key = {"run": pc.get("running"), "pos": pc.get("position"), "v": _d(st.get("pc_verdict")).get("code"),
+           "srv": rp.get("server"), "nt": rp.get("nt"), "pr": rp.get("problems"), "ar": st.get("ar"),
+           "c": [[k, _d(bd.get(k)).get("badge"), _d(bd.get(k)).get("status"), _d(bd.get(k)).get("trades_today"),
+                  bool(_d(bd.get(k)).get("position"))] for k in ("lit", "atlas")],
+           "a": [[_d(a).get("id"), _d(a).get("badge"), _d(a).get("running"), _d(_d(a).get("eval")).get("status"),
+                  bool(_d(a).get("position"))] for a in (st.get("accounts") or [])]}
+    import hashlib
+    return hashlib.sha1(json.dumps(key, sort_keys=True, default=str).encode("utf-8")).hexdigest()[:12]
+
+
+def count_posts(work: str, now, n: int = 1, kind: str = "pulse") -> None:
+    """n more posts of this PC today in data/pc_report/bars.json (days[utc day]["all"] + [kind]): the chart's and the ext's
+    daily share (day_used) see them. Never raises."""
+    try:
+        p = os.path.join(work, BARS_STATE)
+        st = read_json(p, {}) or {}
+        st = st if isinstance(st, dict) else {}
+        days = {k: dict(v) for k, v in _d(st.get("days")).items() if isinstance(v, dict)}
+        cnt = days.setdefault(_utc_day(now), {})
+        cnt["all"] = int(num(cnt.get("all")) or 0) + int(n)
+        cnt[kind] = int(num(cnt.get(kind)) or 0) + int(n)
+        st["days"] = days
+        write_json(p, st)
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def pulse_once(work: str = WORK_DEFAULT, why: str = "", dry: bool = False, http=None, env=None, now=None, root: str = ROOT,
+               port=PORT_DEFAULT, feed_problem=None, say=print, feed_path: str | None = None) -> dict:
+    """A state-change post (engine/state_pulse.py, `--pulse`): ONLY the core status post, at once; no ext, no chart, no alerts
+    (the trade alerts go at once from the bot itself), last.json "t" untouched (the 15-minute cadence and the keeper go on as
+    before). Held, never sent, when this PC already sent state_pulse.DAY_MAX pulses today or ntfy's day is down to the trade
+    alert reserve (this PC's count or ntfy's own). -> {"posted", "held", "bytes"}"""
+    from engine import state_pulse as SP
+    res = {"posted": False, "held": None}
+    cfg = load_cfg(env, feed_path)
+    if not cfg["status_topic"]:
+        res["held"] = "no status topic"
+        return res
+    t = int(now or time.time())
+    pst = SP.read_state(work)
+    if SP.day_count(pst, t) >= SP.DAY_MAX:
+        res["held"] = f"ntfy budget: {SP.DAY_MAX} pulses today already"
+        return res
+    if not dry and day_used(work, t) + 1 > NTFY_DAY_CAP - TRADE_ALERT_RESERVE:
+        res["held"] = "ntfy budget: the last posts of the day are kept for trade alerts"
+        return res
+    quota = None if dry else ntfy_quota(cfg["ntfy"], http=http)
+    if quota_holds(quota, 0):
+        res["held"] = "ntfy budget (ntfy's own count): the last posts of the day are kept for trade alerts"
+        return res
+    snap = gather(t, root=root, env=env, http=http, port=port, feed_problem=feed_problem)
+    snap["pulse"] = snap["t"]
+    if http is None:
+        try:                                        # the phone app's push set-up rides every core post (as in run_once)
+            from engine import push as _push
+            snap["wp"] = _push.app_block()
+        except Exception:  # noqa: BLE001
+            pass
+    status, _exts = posts(snap)
+    last = read_json(os.path.join(work, "last.json"), {}) or {}
+    if num(last.get("ext_t")):
+        status["xt"] = int(last["ext_t"])
+    if not status.get("t"):
+        res["held"] = "the bot has never reported on this PC"
+        return res
+    body = json.dumps(status, separators=(",", ":"), default=str, ensure_ascii=False)
+    res["bytes"] = len(body.encode("utf-8"))
+    if dry:
+        say(f"[dry] pulse status ({res['bytes']} bytes, {why or 'a change'}) -> {cfg['ntfy']}/{cfg['status_topic']}")
+        return res
+    ok, w = ntfy_post(cfg["ntfy"], cfg["status_topic"], _signed(body, core=True, real=http is None), priority="min", http=http)
+    if not ok:
+        res["held"] = "status: " + w
+        return res
+    res["posted"] = True
+    SP.write_state({**SP.count_one(SP.read_state(work), t), "post_t": t, "post_why": str(why)[:120]}, work)
+    count_posts(work, t, 1, "pulse")
+    last.update(status_t=snap["t"], core_sig=core_sig(status), pulse_t=snap["t"])   # "t" (the run's time) is kept: the cadence
+    write_json(os.path.join(work, "last.json"), last)
+    write_json(os.path.join(work, "status.json"), status, compact=True)
+    return res
+
+
 def send_test(cfg: dict, http=None) -> tuple:
     return ntfy_post(cfg["ntfy"], cfg["topic"], "Reporting is back: this phone gets the bots' alerts from the PC (trade opened / closed, "
                      "FEED STALE, bot down).", title="Bots back: test", priority="default", tags="white_check_mark", http=http)
@@ -2211,7 +2365,20 @@ def main(argv=None) -> int:
     ap.add_argument("--quiet", action="store_true", help="no card (the scheduled task)")
     ap.add_argument("--again", action="store_true", help="with --test: send the test push again")
     ap.add_argument("--bars", action="store_true", help="only the NQ chart post (le-bars), from the last run's live.json")
+    ap.add_argument("--pulse", action="store_true", help="only the core status post, at once (a bot state change: engine/state_pulse.py)")
+    ap.add_argument("--why", default="", help="with --pulse: what changed (plain words, for the record)")
     a = ap.parse_args(argv)
+    if a.pulse:                        # exit 3 = another report run is busy: the pulse tries again after its debounce
+        lk = None if a.dry_run else run_lock(a.work)
+        if not a.dry_run and lk is None:
+            return 3
+        try:
+            r = pulse_once(work=a.work, why=a.why, dry=a.dry_run, port=a.port, say=(lambda *_: None) if a.quiet else print)
+        finally:
+            run_unlock(lk)
+        if not a.quiet:
+            print("  [OK]  pulse posted" if r.get("posted") else f"  [..]  pulse not posted: {r.get('held')}")
+        return 0
     if a.setup or a.test:
         try:
             cfg = ensure_topic()

@@ -182,8 +182,18 @@ const bad = { t: fresh, board: { running: false }, accounts: [acc('z', 'MFFU 50K
 out.bad = T.today(bad, { now, mffuView: F.mffuView });
 out.silent = T.today({ ...good, t: now - 7200 }, { now, alertsOkAt: now, mffuView: F.mffuView });
 out.none = T.today(null, { now });
-const fund = { t: fresh, board: { running: true }, accounts: [acc('atlas', 'ATLAS 25K', 'LIVE', { balance: 401, room: 700 }, 'funded')], k7: { a: [] } };
+// real-shaped (tonight's post): ATLAS is NOT in "accounts", only board.atlas (funded, balance in eval terms $25,401)
+const atlasCard = { id: 'atlas', name: 'ATLAS', plan: 'MFFU Builder 25K funded', badge: 'LIVE', configured: true, balance: 25401.38, floor: 24401.38,
+  room: 1000, today_pnl: 0, status: 'funded', window: { open: false, text: 'next entry window Mon 02:00-05:00 ET' } };
+const fund = { t: fresh, board: { running: true, atlas: atlasCard }, accounts: [], k7: { a: [] } };
 out.funded = T.today(fund, { now, alertsOkAt: now, mffuView: F.mffuView });
+const real = { t: fresh, board: { running: true, lit: { name: 'Zlarior', plan: 'MFFU Builder 50K', badge: 'LIVE', balance: 49213.9, floor: 48168.2, room: 1045.7,
+  today_pnl: 0, window: { open: false, text: 'next entry window Mon 02:00-15:30 ET' } }, atlas: atlasCard },
+  accounts: [acc('mffu50k_eval', 'MFFU 50K Eval', 'LIVE', { balance: 49213.9, floor: 48168.2, room: 1045.7, to_target: 3786, today: 0 }),
+             acc('b25k_2', 'Zlarior Builder 25K #2', 'LIVE', { balance: 25023.62, floor: 24023.62, room: 1000, to_target: 1476, today: 0 })], k7: { a: [] } };
+out.real = T.today(real, { now, alertsOkAt: now, mffuView: F.mffuView });
+out.atlasOff = T.today({ ...real, board: { ...real.board, atlas: { ...atlasCard, enabled: false } } }, { now, alertsOkAt: now, mffuView: F.mffuView });
+out.arLit = T.today({ ...real, ar: { lit: [1, 0], atlas: [1, 1] } }, { now, alertsOkAt: now, mffuView: F.mffuView });
 out.rdok = T.today({ ...good, rd: { s: 'ok', w: '02:00' } }, { now, alertsOkAt: now - 86400, mffuView: F.mffuView });
 out.rdno = T.today({ ...good, rd: { s: 'no', w: '02:00', b: 'PC clock 25 s behind', f: 'On the PC: Sync now.' } }, { now, alertsOkAt: now - 86400, mffuView: F.mffuView });
 out.rdold = T.today({ ...good, t: now - 7200, rd: { s: 'ok', w: '02:00' } }, { now, alertsOkAt: now, mffuView: F.mffuView });
@@ -216,6 +226,18 @@ def core():
     check("i8. NOT READY = gold, not done, says the first blocker and its fix, counts as 1 to do; a 2 h old post shows no ready line",
           rn["ready"]["ok"] is False and rn["ready"]["tone"] == "gold" and "NOT READY for 02:00: PC clock 25 s behind" in rn["ready"]["say"]
           and "Sync now" in rn["ready"]["say"] and o["rdno"]["left"] == 1 and "ready" not in rs, rn.get("ready"))
+    rl, ao, al = by(o["real"]), by(o["atlasOff"]), by(o["arLit"])
+    names = [a["title"] for a in o["real"]["accounts"]]
+    check("i9. real-shaped post (no atlas row, board.atlas only): ATLAS is listed and counted (3 accounts armed)",
+          "ATLAS 25K funded" in names and rl["armed"]["say"].startswith("3 account(s) armed"), (names, rl["armed"]["say"]))
+    check("i10. ATLAS enabled:false -> held ('off'), not '3 account(s) armed'", ao["armed"]["ok"] is False and "ATLAS (off)" in ao["armed"]["say"],
+          ao["armed"]["say"])
+    check("i11. the core's ar {lit: [on 1, armed 0]} holds Zlarior even with its LIVE badge", al["armed"]["ok"] is False and "not armed" in al["armed"]["say"]
+          and al["armed"]["say"].startswith("50K Eval"), al["armed"]["say"])
+    za = o["real"]["accounts"][0]["say"]
+    check("i12. one line per account: armed / running, room $, today $, next window (the 4 lines stay out of the 5-line checklist)",
+          len(o["real"]["lines"]) == 5 and "running" in za and "room $1,046" in za and "today $0" in za and "next Mon 02:00-15:30 ET" in za
+          and "02:00-05:00" in o["real"]["accounts"][-1]["say"], o["real"]["accounts"])
     check("i6. alerts are only ever 'done' by his own tick (the public post cannot show it)", g["alerts"]["ok"] and not b["alerts"]["ok"] and b["alerts"]["tick"], "")
 
 

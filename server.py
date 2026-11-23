@@ -795,6 +795,10 @@ from engine import report_keeper as _rk
 # the phone report keeper (engine/report_keeper.py): re-installs the 15-minute task OlympusPCReport when it is missing and runs
 # tools/pc_report.py itself when the task is late (ntfy status + trade pushes); read-only towards the bot (LE_REPORT_KEEPER=0 = off)
 REPORT_KEEPER = _rk.Keeper()
+from engine import state_pulse as _sp
+# the state pulse (engine/state_pulse.py, night-truth 2026-11-22): a bot state CHANGE (running <-> stopped, armed / disarmed, an entry
+# block, a trade opened / closed) posts the phone's status at once (debounced 30 s, <= 24 a day), not at the next 15-minute report
+PULSE = _sp.Pulse(BOT, HEARTBEAT, LIVEPUB)
 
 
 def _open_nt():
@@ -936,6 +940,10 @@ def _autostart_startup():
         REPORT_KEEPER.start()            # the phone report even without its Windows task (engine/report_keeper.py; off in a dev / test server)
     except Exception as e:
         print(f"[report keeper] off: {e.__class__.__name__}: {e}", flush=True)
+    try:
+        PULSE.start()                    # a bot state change reaches the phone at once (engine/state_pulse.py; off in a dev / test server)
+    except Exception as e:
+        print(f"[pulse] off: {e.__class__.__name__}: {e}", flush=True)
 
 
 app.router.add_event_handler("startup", _autostart_startup)

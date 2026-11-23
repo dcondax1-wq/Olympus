@@ -48,7 +48,7 @@ AREAS = {
     "cities": ["world_build", "cities_page", "kalshicity_page", "datacity", "world_page"],
     "nq": ["lit_live", "risk_monitors", "no_yahoo", "risk_invariants", "mffu_rules", "holidays", "holiday_replay", "guards", "sizing_caps", "second", "eval_lifecycle", "lifecycle", "live_board", "live_publish", "mffu_view", "heartbeat",
            "lit_scale_in", "lit_learn", "learn_loop", "zeus_lab", "setup_grade", "other_markets", "keepalive", "rehearse_caps"],
-    "pc": ["autoupdate_source", "pc_doctor", "obsidian_sync", "autorun", "update_from_zip", "pc_publish", "pc_publish_cloudflare", "gh_publish", "cloudflare_setup", "public_build_privacy", "bots_back", "report_keeper", "trade_watch_atlas", "setup_everything", "calendar_sync", "me_hub", "live_link", "roll_now", "pc_guard", "launch_kit", "second_backup", "clean_pc", "clean_storage", "lite", "win_scripts", "fresh_start", "pc_health", "pc_selftest", "pc_silent", "notify", "pc_command_center", "one_time_setup", "board", "phone_safety", "kalshi_live", "kalshi_clock", "datapipe", "datafeed", "risk_monitors", "pc_bars", "lucid_rt"],
+    "pc": ["autoupdate_source", "pc_doctor", "obsidian_sync", "autorun", "update_from_zip", "pc_publish", "pc_publish_cloudflare", "gh_publish", "cloudflare_setup", "public_build_privacy", "bots_back", "report_keeper", "state_pulse", "trade_watch_atlas", "setup_everything", "calendar_sync", "me_hub", "live_link", "roll_now", "pc_guard", "launch_kit", "second_backup", "clean_pc", "clean_storage", "lite", "win_scripts", "fresh_start", "pc_health", "pc_selftest", "pc_silent", "notify", "pc_command_center", "one_time_setup", "board", "phone_safety", "kalshi_live", "kalshi_clock", "datapipe", "datafeed", "risk_monitors", "pc_bars", "lucid_rt"],
     "agency": ["agency", "agency_billing", "cold_calls", "agency_storefront", "agency_upsells", "biz_models"],
     "privacy": ["public_build_privacy", "private_link", "repo_secrets", "phone_safety"],       # team Q2 2026-11-14, docs/PRIVACY.md
     "money": ["money_machines", "digital_products", "money_door", "payout_plan", "payout_coach", "biz_models", "business_pages", "mffu_center", "business_goals", "weekly_review", "money_plan", "combo_account"],
@@ -57,6 +57,9 @@ AREAS = {
     "board": ["board", "payout_coach", "bots_back", "live_link", "edge_chip", "zeus_hub", "help_page", "decide"],                                       # night-board 2026-11-17: the Board (docs/BOARD.md)
     "journal": ["journal_edge", "journal_page", "kronos_page", "apollo_page", "kratos_page", "kairos_page", "odeon_page"],   # night-botgap 2026-11-18: the trade-journal apps + Mnemosyne's "The bot's edge"
 }
+# audit D6 (2026-11-22): the PC self-test's suites that sat in no area (cloud landings never ran them)
+AREAS["pc"] += ["start_api", "launch_checklist", "nt_outgoing", "nt_exec_audit", "selfheal", "ops", "run_switch", "new_accounts", "go",
+                "nt_roll_guard", "broker_balance", "eval_fix", "fsutil", "account_rename"]
 AREAS["money"] += ["widget", "money_dash"]      # night-revamp-dash 2026-11-20: the Scriptable widget + Glance page (tools/web_public/widget/)
 AREAS["olympus"].append("olympus_shell")  # night-revamp-main 2026-11-20: the main pages: no sideways scroll, nothing under the bottom bar, keys above the home bar (tools/olympus_shell_audit.py)
 AREAS["agency"].append("web_expert")       # team web-expert 2026-11-20: agency/expert/ (the playbook, the 5-tap diagnosis) + Jarvis 'web' answers
