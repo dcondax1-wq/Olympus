@@ -61,6 +61,18 @@ const check = (n, c, i) => out.push((c ? 'PASS ' : 'FAIL ') + n + (c ? '' : '   
     const t4 = await pg.$$eval('li.row', (a) => a.map((x) => x.innerText));
     check('j7. no PC report at all: nothing shows done and each line says what to do', t4.length === 5 && /No report from the PC/.test(t4[0]) && !/✓/.test(t4.join('')), t4);
     await ctx.close();
+    ({ pg, errs, ctx } = await open({ ...mk(true, 'LIVE', true), rd: { s: 'no', w: '02:00', b: 'PC clock 25 s behind', f: 'On the PC: Sync now.' } }));
+    const t5 = await pg.$$eval('li.row', (a) => a.map((x) => x.innerText));
+    const gold = await pg.evaluate(() => getComputedStyle(document.querySelector('li.row[data-id="ready"] .t')).color);
+    const ov5 = await pg.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    check('j8. phone 390x844: NOT READY line first, gold, first blocker + fix shown, no sideways scroll',
+      t5.length === 6 && /NOT READY for 02:00: PC clock 25 s behind/.test(t5[0]) && /Sync now/.test(t5[0]) && gold === 'rgb(241, 193, 75)' && ov5 <= 0 && !errs.length, [t5.length, gold, ov5, errs]);
+    await ctx.close();
+    ({ pg, errs, ctx } = await open({ ...mk(true, 'LIVE', true), rd: { s: 'ok', w: '02:00' } }));
+    const t6 = await pg.$$eval('li.row', (a) => a.map((x) => x.innerText));
+    const mint = await pg.evaluate(() => getComputedStyle(document.querySelector('li.row[data-id="ready"] .t')).color);
+    check('j9. phone: READY line is mint', t6.length === 6 && /READY for 02:00/.test(t6[0]) && mint === 'rgb(119, 219, 137)', [t6[0], mint]);
+    await ctx.close();
   } catch (e) { check('j. page check ran', false, String(e).slice(0, 300)); }
   await browser.close(); srv.close();
   console.log(out.join('\n'));

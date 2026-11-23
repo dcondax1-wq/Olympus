@@ -329,6 +329,13 @@ def build(hb: dict | None, board: dict | None = None, now=None, max_bytes: int =
             if r:
                 bots.append(r)
         out = {"v": VERSION, "t": int(_f(hb.get("t"), now or time.time())), "bots": [{k: v for k, v in b.items() if v not in (None, [], "")} for b in bots]}
+        try:                          # READY / NOT READY (engine/readiness, day-ready 2026-11-22): the first blocker, <= 90 bytes, no fix text
+            from . import readiness
+            r = readiness.rd(readiness.read_last(now=now), 90, fix=False)
+            if r:
+                out["rd"] = r
+        except Exception:  # noqa: BLE001
+            pass
         return fit(out, max_bytes)
     except Exception as e:  # noqa: BLE001
         return {"v": VERSION, "error": f"{e.__class__.__name__}: {_t(e, 100)}"}

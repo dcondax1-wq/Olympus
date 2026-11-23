@@ -75,6 +75,8 @@ AREAS["pc"].append("self_heal_pc")    # night-selfheal 2026-11-20: the PC self-h
 AREAS["pc"].append("remote_ctl")      # night-phonectl 2026-11-20: phone remote through the backup repo (olympus/control, engine/remote_ctl.py)
 AREAS["pc"] += ["trading_home"]   # 2026-11-22: TRADE_HOME.bat menu (engine/trade_home.py), add-account prices, nq/trading_home.html at 390x844
 AREAS["pc"] += ["nqops", "pc_always_on"]   # day-nqops 2026-11-21: Sunday/daily preflight, cloud pre-open push, the MFFU 7-day clock (engine/preflight.py, engine/clock7.py, nq/clock7.js); the PC always-on tool (tools/pc_always_on.py)
+AREAS["pc"].append("ready")         # day-ready 2026-11-22: READY / NOT READY self-check (engine/readiness.py, tools/ready_check.py, the "rd" status block)
+AREAS["pc"].append("ready_rt")      # red team 2026-11-23: start hook never blocks, read-only, no spam, no false NOT READY
 AREAS["pc"].append("lucid")         # day-nqdash3 2026-11-22: the second firm, LucidPro 50K OFF by default (engine/account_cli lucidpro50k, docs/LUCID_SETUP.md)
 AREAS["agency"].append("web_offers")
 AREAS["agency"].append("web_outreach")
