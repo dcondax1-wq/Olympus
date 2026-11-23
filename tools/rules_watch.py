@@ -41,6 +41,9 @@ HELP = "https://help.myfundedfutures.com/en/articles/"
 UA = "Mozilla/5.0 (compatible; olympus-rules-watch/1)"
 TIMEOUT_S = 12
 MIN_TEXT = 400                    # a page with less readable text than this = unreachable (an error page, a login wall)
+RETRY_S = 3600                    # red team 2: all pages down -> the next try an hour later
+MAX_ALERTS = 3                    # red team 2: more real changes than this in one run = ONE digest alert (a page layout change
+                                  # that still parses as numbers must not send a storm of "rule changed" alerts)
 RUN_FROM = 17 * 60 + 5            # ET minutes, weekdays: after the close, once a day
 
 P = {"b25": HELP + "17036130-builder-plan-25k-a-comprehensive-look", "b50": HELP + "14290805-builder-plan-50k-a-comprehensive-guide",
@@ -266,12 +269,21 @@ def report(res: dict, path: str | None = None, sender=None, board=None) -> list:
     old = _read(path)
     told = dict(old.get("told") or {})
     sent = []
-    for r in res["rows"]:
-        if r["status"] != "changed":
-            continue
+    new = [r for r in res["rows"] if r["status"] == "changed" and f"rulewatch:{r['id']}:{r['seen']}" not in told]
+    if len(new) > MAX_ALERTS:
+        keys = [f"rulewatch:{r['id']}:{r['seen']}" for r in new]
+        key = "rulewatch:digest:" + str(res.get("day") or res["t"])
+        title = f"MFFU help pages: {len(new)} rules read differently today"[:120]
+        body = ("Too many at once to be real rule changes: likely MFFU changed its page layout. The bot still uses the stored "
+                "rules. Tell Claude to check: " + "; ".join(f"{r['what']} {fmt(r, r['stored'])} -> {fmt(r, r['seen'])}"
+                                                            for r in new))[:600]
+        if key not in told and (sender or _send)({"key": key, "title": title, "body": body}):
+            for k in keys + [key]:
+                told[k] = res["t"]
+            sent.append(key)
+        new = []
+    for r in new:
         key = f"rulewatch:{r['id']}:{r['seen']}"
-        if key in told:
-            continue
         title, body = alert_text(r)
         ok = (sender or _send)({"key": key, "title": title, "body": body})
         if ok:
@@ -308,7 +320,12 @@ def due(now, path: str | None = None) -> bool:
     e = dt.datetime.fromtimestamp(now, ET)
     if e.weekday() >= 5 or e.hour * 60 + e.minute < RUN_FROM:
         return False
-    return _read(path or REPORT_PATH).get("day") != e.date().isoformat()
+    rep = _read(path or REPORT_PATH)
+    if rep.get("day") == e.date().isoformat():
+        return False
+    # red team 2: no page answered last time (PC offline / MFFU down): retry hourly, not every 15 min (each try can take
+    # 9 pages x 12 s = ~2 min of tools/pc_report's run)
+    return not (rep.get("day") is None and rep.get("t") and now - float(rep["t"]) < RETRY_S)
 
 
 def maybe_run(now=None, http=None, sender=None, path: str | None = None) -> dict | None:
