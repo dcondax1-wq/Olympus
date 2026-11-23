@@ -2273,6 +2273,12 @@ def main(argv=None) -> int:
             _cal.maybe_run(say=(lambda *_: None) if a.quiet else print)
         except Exception:
             pass
+        # shortcuts to a moved .bat follow it (tools/bat_shortcuts.py, red team 2026-11-23: 42 .bat files went to tools\\bat): once a day
+        try:
+            from tools import bat_shortcuts as _bs
+            _bs.fix()
+        except Exception:
+            pass
         # the Me hub (tools/me_hub.py, docs/ME_HUB.md): home WiFi / devices / this PC, the Apple Watch days, data/me/me.json for the phone's
         # Me hub (private, the PC's own link only) and its reminders (cards due, dates, car, a new device) on your private topic; soft
         try:
