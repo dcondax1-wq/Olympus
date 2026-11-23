@@ -33,7 +33,8 @@ HEADER = ('set "LE_HOME=%~dp0"\r\nif not exist "%~dp0engine\\" if exist "%~dp0..
 ALLOW = {"scripts/move_bot.ps1": {"MOVE_BOT"}, "tests/test_pc_care.py": {"PC_CARE", "CLEAN_STORAGE", "UNDO_PC_TUNE", "STATUS"},
          "tests/test_clean_storage.py": {"CLEAN_STORAGE"}, "tests/test_zenith_pages.py": {"FRESH_START"},
          "tests/test_trading_home.py": {"TEST_ALERT"}, "tools/web_public/settings/index.html": {"FRESH_START"},
-         "tools/build_web_dashboard.py": {"RUN_MONEY"}}   # a print line only; helpers never edit the builder (the lead may)
+         "tools/build_web_dashboard.py": {"RUN_MONEY"},
+         "tools/web_public/cities/brain-data.json": {"GITHUB_SIGNIN"}}   # built from research/findings/LEDGER.md (history, as it was)   # a print line only; helpers never edit the builder (the lead may)
 LOOSE = {"MOVE_BOT.bat": {"move_bot.ps1"}}          # the BOT_MOVE folder copy runs the script next to it
 HISTORY = ("research/", "docs/handoff", "tools/bat/", "tools/web_public/pc/", "docs/BAT_FILES.md")
 
