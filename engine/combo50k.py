@@ -407,8 +407,10 @@ def _write_switch(block: dict, root: str | None = None) -> str:
     tmp = p + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(block, fh, indent=1)
-        from .fsutil import replace as _rep
-        _rep(tmp, p)
+    # red team 2026-11-23: the rename AFTER the file is closed. Inside the `with` it renamed a file still open for writing:
+    # Windows refuses that (PermissionError, retried, then raised), so the owner's --on / --off never wrote the switch
+    from .fsutil import replace as _rep
+    _rep(tmp, p)
     return p
 
 

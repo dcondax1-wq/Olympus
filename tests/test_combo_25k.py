@@ -255,8 +255,15 @@ def run_segment(H, R, a, z, rules, label):
         errs = []
         mx = [0]
 
-        def on_poll(bot, w, fake=fake, mx=mx):
-            q = sum(abs(q) for (ac, _), (q, _x) in fake.pos.items() if ac == NAME25)
+        both = []
+
+        def on_poll(bot, w, fake=fake, mx=mx, both=both):
+            # red team 2026-11-23: the fake NinjaTrader nets one (account, instrument) position, so "fake positions <= 1" could
+            # never fail; the honest check is both lanes holding a position on the 25K at the same poll
+            acc = next((a for a in bot.accts.accounts if a.id == "z25b"), None)
+            lane = (bot.acct_x or {}).get("z25b")
+            if acc is not None and lane is not None and acc.open_t is not None and lane.open_t is not None:
+                both.append((hm(int(bot.clock())), hm(int(acc.open_t)), hm(int(lane.open_t))))
             mx[0] = max(mx[0], len([1 for (ac, _), (q2, _x) in fake.pos.items() if ac == NAME25 and q2]))
         H.run(b, fake, T5.poll_times(day, cs), errs, on_poll=on_poll)
         fake_max = max(fake_max, mx[0])
@@ -265,6 +272,8 @@ def run_segment(H, R, a, z, rules, label):
         bad = one_position_25k(b)
         if bad:
             two_pos.append((day, bad))
+        if both:
+            two_pos.append((day, [("both lanes open at", x) for x in both[:5]]))
         logs += [f"{day} {x['text']}" for x in b.log if ("25K" in x["text"] or NAME25 in x["text"] or "ATLAS on" in x["text"])]
         if not b.acct_x:
             errors.append(f"{day} the combo lane did not start: " + "; ".join(x["text"] for x in list(b.log)[:30] if "combo" in x["text"].lower() or "ATLAS" in x["text"]))
