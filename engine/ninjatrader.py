@@ -2601,7 +2601,7 @@ class NinjaTraderAdapter:
         except Exception as e:
             # night-faults 2026-11-23: a failed save (disk full, a lock) was only last_error: silent. The write-ahead record is
             # what a restart restores the open bracket from, so the owner hears it (one alert per 30 min; logged every time)
-            msg = f"state save failed ({e.__class__.__name__}: {e}): free disk space (CLEAN_STORAGE.bat); a restart now could lose track of an open bracket"
+            msg = f"state save failed ({e.__class__.__name__}: {e}): free disk space (tools/bat/CLEAN_STORAGE.bat); a restart now could lose track of an open bracket"
             now = float(self.clock())
             if now - float(getattr(self, "_save_alert_t", 0) or 0) >= 1800:
                 self._save_alert_t = now

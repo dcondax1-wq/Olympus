@@ -2153,10 +2153,6 @@ towards orders: none places, sizes, arms or routes anything, and none requests a
 - A bot-state change (running, armed, an entry block, a trade) reaches the phone in seconds: a debounced (30 s) fresh heartbeat +
   live.json + `pc_report --pulse` (core post only), at most 24 pulses a UTC day inside ntfy's 250 budget (the trade-alert reserve kept).
 
-### win_guard (`engine/win_guard.py` + `scripts/win_guard.ps1`, night-pcguard)
-- The Windows guard state (Update, power, NIC, the bot and NinjaTrader at sign-in) from data/win_guard.json, written in
-  FIX_CLOCK.bat's administrator window (undone by FIX_CLOCK_OFF.bat); shown on the Start page, readiness and TRADE_HOME.
-
 ### task_audit (`tools/task_audit.py`, night-tasks)
 - Keeps exactly ONE 15-minute phone-report runner (OlympusPCReport from this folder). Deletes only tasks our scripts named; a
   foreign task that runs pc_report is reported (TRADE_HOME line + the exact command), never touched.

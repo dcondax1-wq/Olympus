@@ -38,7 +38,7 @@ ALLOW = {"scripts/move_bot.ps1": {"MOVE_BOT"}, "tests/test_pc_care.py": {"PC_CAR
          "tests/test_bat_shortcuts.py": {"BOTS_BACK", "KALSHI_LIVE"},
          "tools/web_public/cities/brain-data.json": {"GITHUB_SIGNIN"}}   # integration: a generated copy of LEDGER.md history (research/ is HISTORY)   # its fake shortcuts point at the OLD place on purpose   # a print line only; helpers never edit the builder (the lead may)
 LOOSE = {"MOVE_BOT.bat": {"move_bot.ps1"}}          # the BOT_MOVE folder copy runs the script next to it
-HISTORY = ("research/", "docs/handoff", "tools/bat/", "tools/web_public/pc/", "docs/BAT_FILES.md")
+HISTORY = ("research/", "docs/handoff", "docs/STATE_HISTORY.md", "tools/bat/", "tools/web_public/pc/", "docs/BAT_FILES.md")
 
 
 def check(name, cond, info=""):

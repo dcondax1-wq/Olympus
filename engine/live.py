@@ -1219,7 +1219,7 @@ class LiveBot:
                 self._save_alert_t = now
                 self._problem_bg({"key": f"state_save:{now // 1800}", "code": "bot_down", "title": "Bot cannot save its state",
                                   "body": f"{e.__class__.__name__}: {str(e)[:120]}. Trading goes on; free disk space "
-                                          "(CLEAN_STORAGE.bat) so a restart keeps today's trades."})
+                                          "(tools/bat/CLEAN_STORAGE.bat) so a restart keeps today's trades."})
 
     def _problem_bg(self, p):
         """One private problem push (engine/notify.instant_problem) in a daemon thread: the internet being down never blocks
