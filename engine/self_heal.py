@@ -729,6 +729,10 @@ def fix_server(ctx) -> list:
 
 
 # ------------------------------------------------------------------------------------------------ 5b. NinjaTrader closed
+NT_BACKOFF_S = 6 * 3600                     # closed again within 6 h of self-heal's own open = on purpose: left closed
+NT_MAX_DAY = 2                              # at most 2 opens a day
+
+
 def _start_nt() -> bool:
     from . import go
     if not os.path.exists(go.NT_EXE):
@@ -747,6 +751,22 @@ def fix_nt(ctx) -> list:
     procs = ctx.procs()
     if not procs or any(n.startswith("ninjatrader") for _q, n in procs):
         return []
+    # red team 2026-11-23: closing NinjaTrader by hand is not STOP BOT, but the owner may close it on purpose (an NT update, a
+    # break): reopen at most NT_MAX_DAY times a day, and never again when it was closed within NT_BACKOFF_S of our own open
+    # (closed again = on purpose): then one "need" line, the owner decides.
+    sp = os.path.join(ctx.root, "data", "self_heal_nt.json")
+    try:
+        with open(sp, encoding="utf-8") as fh:
+            st = json.load(fh)
+        st = st if isinstance(st, dict) else {}
+    except Exception:
+        st = {}
+    day = _et(ctx.now).date().isoformat()
+    opens = [float(t) for t in (st.get("opens") or []) if isinstance(t, (int, float))]
+    today = [t for t in opens if _et(t).date().isoformat() == day]
+    if (opens and ctx.now - max(opens) < NT_BACKOFF_S) or len(today) >= NT_MAX_DAY:
+        return [item("nt", "nt", "need", "NinjaTrader is closed again after self-heal opened it: left closed (closed on purpose?)",
+                     "open NinjaTrader and log in when you want the bot to trade; STOP BOT if you want it stopped")]
     ok = {"v": False}
 
     def go_open():
@@ -754,6 +774,13 @@ def fix_nt(ctx) -> list:
         if not ok["v"]:
             raise RuntimeError("NinjaTrader.exe not found")
     if _act(ctx, "open NinjaTrader (it was closed while the bot should run)", go_open):
+        if ctx.apply and ok["v"]:
+            try:
+                os.makedirs(os.path.dirname(sp), exist_ok=True)
+                with open(sp, "w", encoding="utf-8") as fh:
+                    json.dump({"opens": (opens + [ctx.now])[-10:]}, fh)
+            except Exception:
+                pass
         return [item("nt", "nt", "fixed" if ctx.apply else "would", f"{'opened' if ctx.apply else 'would open'} NinjaTrader "
                      "(it was closed); it connects with its saved log-in")]
     return [item("nt", "nt", "need", "NinjaTrader is closed and could not be opened", "open NinjaTrader and log in")]

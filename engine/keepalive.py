@@ -1813,7 +1813,16 @@ def start_consent(phrase, armed, now=None, path: str | None = None) -> dict:
                 return True
         now = time.time() if now is None else float(now)
         C = load_config(None, path=path or CONFIG_PATH)
-        off = C.get("owner_off") or {}
+        off = dict(C.get("owner_off") or {})
+        try:                                   # red team 2026-11-23: a file from BEFORE owner_off existed (no "owner_off" and no
+            with open(path or CONFIG_PATH, encoding="utf-8") as fh:      # "consent" field): an explicit false there is his OFF
+                raw = json.load(fh)
+            if isinstance(raw, dict) and "owner_off" not in raw and "consent" not in raw:
+                legacy = {str(k): "before" for k, v in (raw.get("accounts") or {}).items() if v is False}
+                off.update(legacy)
+                C["owner_off"] = {**(C.get("owner_off") or {}), **legacy}     # kept in the file: every later START keeps it off
+        except Exception:
+            pass
         on_keys = []
         for key, label, name in armed or []:
             key, label, name = str(key or ""), str(label or key), str(name or "").strip()

@@ -433,6 +433,7 @@ AREAS["pc"] += ["clockfix"]        # 2026-11-22: FIX_CLOCK.bat + OlympusClock ta
 AREAS["pc"] += ["bat_menu", "context_refresh"]   # night-cleanup 2026-11-22: TRADE_HOME = the one front door (tools/bat/), CBOE / GEX / 1d refresh
 AREAS["pc"].append("bat_shortcuts")     # red team 2026-11-23: a shortcut to a moved .bat follows it to tools/bat (once a day, the 15-minute report)
 AREAS["pc"] += ["zerotouch"]      # night-zerotouch 2026-11-22: START phrase = keep-alive consent, MONDAY_SETUP.bat, recovery matrix, NinjaTrader reopen
+AREAS["pc"].append("zerotouch_rt")      # red team 2026-11-23: an old explicit keep-alive OFF sticks, NinjaTrader reopen back-off, no-console start
 
 if __name__ == "__main__":
     sys.exit(main())

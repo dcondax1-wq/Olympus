@@ -157,6 +157,7 @@ data/lit25.json.tmp
 data/lifecycle.json
 data/lifecycle.json.tmp
 data/keepalive.json
+data/self_heal_nt.json
 data/keepalive.json.tmp
 data/keepalive_state.json
 data/keepalive_state.json.tmp
