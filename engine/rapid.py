@@ -757,8 +757,9 @@ class RapidAtlas(AB.AccountB):
             if key not in self.notified:
                 self.notified.append(key)
                 self.log("risk", t["text"])
-                self._push_text(f"Rapid EOD: request ${t['request']:,.0f}", t["text"] + ". Then: python -X utf8 -m engine.rapid "
-                                f"--payout {today}={t['request']:.0f}", key)
+                if not AB._autopilot_on():  # engine/payout_autopilot sends the ONE "Payout ready" (LE_PAYOUT_AUTOPILOT=0 = this push)
+                    self._push_text(f"Rapid EOD: request ${t['request']:,.0f}", t["text"] + ". Then: python -X utf8 -m engine.rapid "
+                                    f"--payout {today}={t['request']:.0f}", key)
         if ev.get("status") in ("lost", "stuck"):
             key = f"rapidf:{ev['status']}:{(self.spec.get('funded') or {}).get('start')}:{self.name}"
             if key not in self.notified:

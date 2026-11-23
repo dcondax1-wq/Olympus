@@ -258,8 +258,53 @@ def part_rt2():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def part_one():
+    """lead 2026-11-23: ONE phone alert per payout event: the autopilot's. The bot's own 'PAYOUT READY' (account_b) and Rapid
+    'rapidpay:' pushes stay off the phone while LE_PAYOUT_AUTOPILOT is on (default) but still log + mark their key; =0 = both."""
+    import types
+    from engine import account_b as AB, rapid as R
+    t = dict(b25(GOOD), record_cmd="python -X utf8 -m engine.account_b --payout {day}={amount}")
+
+    def b_run():
+        sent, logs = [], []
+        o = types.SimpleNamespace(funded_view=lambda now: t, _funded_eval_view=lambda now: {"status": "funded"}, notified=[],
+                                  log=lambda k, m: logs.append(m), _send=sent.append, spec={"funded": {"start": "2026-11-02"}},
+                                  label="ATLAS 25K", name="A1", _push_text=lambda *a: sent.append(a))
+        AB.AccountB._funded_lifecycle(o, AFTER)
+        return sent, logs, o.notified
+
+    def r_run():
+        sent, logs = [], []
+        o = types.SimpleNamespace(funded_view=lambda now: {"ready": True, "request": 900.0, "to_you": 810.0, "text": "PAYOUT READY: request $900"},
+                                  _funded_eval_view=lambda now: {"status": "funded"}, notified=[], log=lambda k, m: logs.append(m),
+                                  _push_text=lambda *a: sent.append(a), spec={"funded": {}}, name="R1")
+        R.RapidAtlas._funded_lifecycle(o, AFTER)
+        return sent, logs, o.notified
+    old = os.environ.get("LE_PAYOUT_AUTOPILOT")
+    try:
+        os.environ.pop("LE_PAYOUT_AUTOPILOT", None)
+        bs, bl, bn = b_run()
+        rs, rl, rn = r_run()
+        auto = PA.alerts([PA.builder(t, "atlas")], AFTER) + PA.alerts([PA.rapid(rap(), "rapid")], AFTER)
+        check("one. autopilot on (default): the bot sends NO payout-ready push (Builder + Rapid); the autopilot's alerts are the ONE each",
+              PA.active() and not [p for p in bs if str(p.get("key", "")).endswith(":ready")] and not rs and len(auto) == 2, (bs, rs, auto))
+        check("one. ... the bot still logs it and marks its key (no lost data, no re-send later)",
+              bl and any(k.endswith(":ready") for k in bn) and rl and any(k.startswith("rapidpay:") for k in rn), (bl, bn, rl, rn))
+        os.environ["LE_PAYOUT_AUTOPILOT"] = "0"
+        bs, _, _ = b_run()
+        rs, _, _ = r_run()
+        check("one. LE_PAYOUT_AUTOPILOT=0: the old pushes come back exactly (Builder 'PAYOUT READY', Rapid 'Rapid EOD: request')",
+              not PA.active() and any(str(p.get("key", "")).endswith(":ready") and p["title"].startswith("PAYOUT READY") for p in bs)
+              and rs and rs[0][0] == "Rapid EOD: request $900", (bs, rs))
+    finally:
+        if old is None:
+            os.environ.pop("LE_PAYOUT_AUTOPILOT", None)
+        else:
+            os.environ["LE_PAYOUT_AUTOPILOT"] = old
+
+
 def main() -> int:
-    for f in (part_a, part_b, part_c, part_d, part_e, part_f, part_g, part_h, part_rt2):
+    for f in (part_a, part_b, part_c, part_d, part_e, part_f, part_g, part_h, part_rt2, part_one):
         try:
             f()
         except Exception as e:  # noqa: BLE001
