@@ -159,9 +159,29 @@ Not merged: night-blitzfills (lead: out), night-wirepatch (lead applies at landi
 - **jarvis_biz (payplan red):** its payout pin followed night-payplan's payday.json (ATLAS about $800 around Wed Dec 23, source 2026-11-23). 130/130.
 
 ## Tests
-See the table in the final summary (sent to the lead). Script used for the moved-.bat lint: test_bat_menu d (all files, not only the first 25).
+Final full run on 7b8a653f7 (+ jarvis_biz news pin after it). 'mine' = caused by the merge (fixed above); 'pre-existing' = red on
+land-fixes / pc too; 'branch' = red on that branch alone.
+| Check | Result | Reds |
+|---|---|---|
+| python tests/smoke.py | 11/11 green | - |
+| python -m engine.ninjatrader --selftest | OK | - |
+| python tools/site_checks.py | all fine | - |
+| python -m tests.test_lit_live (41dcac8e8) | OK: intraday 9,923 polls 0 differences (+29 on the known day 2026-04-03, the same on land-fixes); day-end 120/120 identical; paper LiveBot errors 0 | - |
+| run_area pc | 127 suites PASS, 1 red | me_hub: every check passes, the run fails on a browser timeout clicking the Mix tab (pre-existing, same on land-fixes) |
+| run_area money | 20 PASS, 1 red | business_goals: goals.json milestone dates moved with night-payplan's new payday plan (branch: payplan). Needs `python tools/money/goals_build.py` with the live board at landing (a cloud --offline build also rewrites accounts.json with 'PC: no report seen') |
+| run_area nq | 53 PASS, 0 red | - |
+| run_area cities | 5 PASS, 3 red | node_suites jarvis_biz (mine: news_week rebuild moved 'next big one' to newsweek's Nov 24 row; re-pinned after the run, 130/130); cities_page d (district banners) and kalshicity_page c (orb overlaps the 3D button): pre-existing (red on pc + hub before any merge) |
+Not in any area, checked once: test_nq_desk 32/33 (colour tokens), pre-existing (same on land-fixes).
 
 ## Lead-only edits needed (not done here)
+- **wirepatch:** `git apply --check research/handoff/2026-11-23/lead_wires.patch` fails only on its tools/ship.py hunk (reds2's vault_sync
+  changed main() around it); the other hunks apply.
+- **business_goals:** `python tools/money/goals_build.py` (with the live board) at landing.
+- **sw.js:** seedata / payday / decide page bumps (payoutcoach v3, mffumodel v6, mffucenter v3, gate g21, nq r33, decide.js) need the cache bump.
+- **Check for the owner (not a Monday blocker):** tools/bat/MONEY_INBOX.bat registers the sign-in task "OlympusMoneyInbox" with its OWN full
+  path (`/TR "%~f0" run`). If it was ever run from the top folder, that task now points at a file cleanup moved to tools/bat
+  (cleanup's notes say no task runs a .bat: this one does). Fix: run tools/bat/MONEY_INBOX.bat once (it re-creates the task with /F).
+- **MONDAY_SETUP.bat stays in the top folder** (13 kept .bat files): move it to tools/bat + a menu number only if you prefer.
 - None from the merges for sw.js / build_web_dashboard.py / jarvis/apps.js / the APPS table. web_next/js/next/start.js text changed
   (one string): if web_next's worker precaches it with a ?v= tag, the lead bumps it (site_checks is green).
 - tools/build_research_hub.py in ship / nightly after build_brain_hub.py (hub2 LEAD_WIRES).
