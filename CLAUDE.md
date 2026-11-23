@@ -32,6 +32,6 @@ an area; the old long brief is its last section).
 - Live strategy LIT: `engine/lit.py`, `engine/lit_live.py`, `STRATEGY.md`. PC bot: `server.py` + `engine/live.py` -> NinjaTrader
   via `engine/ninjatrader.py`. ATLAS: `engine/second.py`, `engine/account_b.py`. Apps: `tools/web_public/<id>/` (map: `docs/OLYMPUS_MAP.md`).
 - Home (owner 2026-11-20): **`dcondax1-wq/Olympus` branch `pc`** is the one main repo. Commit and push only there (`git push
-  origin HEAD:pc`, or `python tools/ship.py`); the PC updates itself from it (`docs/AUTO_UPDATE.md`). Never use the old
+  https://github.com/dcondax1-wq/Olympus HEAD:pc`, or `python tools/ship.py`); the PC updates itself from it (`docs/AUTO_UPDATE.md`). Never use the old
   `demetrades2000-coder/nq-liquidity-engine` repo or its `claude/clever-heisenberg-51zwcr` branch.
 - Key checks: `python -X utf8 -m tests.test_lit_live` (live loop = backtest), `python -m engine.ninjatrader --selftest`.

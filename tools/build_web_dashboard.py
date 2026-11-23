@@ -1340,7 +1340,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
                                 capture_output=True, text=True, timeout=180)
             r2 = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "money_publish.py"), "--site", out, "--src", mtmp, "--quiet"],
                                 capture_output=True, text=True, timeout=60)
-            print(f"  money: engine rc={r1.returncode}, publish rc={r2.returncode} -> money/*.json (sample data until the PC runs RUN_MONEY.bat)")
+            print(f"  money: engine rc={r1.returncode}, publish rc={r2.returncode} -> money/*.json (sample data until the PC runs tools/bat/RUN_MONEY.bat)")
     except Exception as e:  # noqa: BLE001
         print(f"  money: skipped ({e})")
     # Jarvis brain v3: strategy facts + global search index (+ agents-now.json); NQ how-to copy; never fatal

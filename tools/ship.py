@@ -97,6 +97,12 @@ def main(argv=None) -> int:
     vault_sync()
     if subprocess.run([sys.executable, "tools/win_paths.py"], cwd=ROOT).returncode != 0:   # even with --no-tests: a bad name
         raise SystemExit("[STOP] a file name Windows refuses: the PC update would roll back. Nothing pushed")  # blocks every PC update
+    # LEAD_CHECKLIST A3 (2026-11-23): the Research Brain + Hub data follow LEDGER / write-ups / decisions; a stale file turns
+    # tests.test_brain_hub / test_research_hub2 red on the phone site. Order matters: the hub reads brain-data.json.
+    for tool in ("tools/build_brain_hub.py", "tools/build_research_hub.py", "tools/build_strategy_lab.py"):
+        if subprocess.run([sys.executable, tool, "--check"], cwd=ROOT).returncode != 0:
+            subprocess.run([sys.executable, tool], cwd=ROOT)
+            raise SystemExit(f"[STOP] {tool} was stale: rebuilt it; commit the new data file and ship again. Nothing pushed")
     if not a.no_tests and subprocess.run([sys.executable, "tests/smoke.py"], cwd=ROOT).returncode != 0:
         raise SystemExit("[STOP] smoke check red: nothing pushed")
     rem = home_remote()
