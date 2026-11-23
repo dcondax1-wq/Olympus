@@ -70,7 +70,8 @@ def part_b():
     a = PA.alerts([v], AFTER)
     check("b. ONE alert 'Payout ready: ATLAS 25K can request $1,000 now'", len(a) == 1 and a[0]["title"].startswith(
         "Payout ready: ATLAS 25K can request $1,000 now"), a)
-    check("b. the alert has the MFFU dashboard clicks and the record step", "Request Payout" in a[0]["body"]
+    check("b. the alert has the MFFU dashboard clicks (help-center words) and the record step", "left menu Payouts" in a[0]["body"]
+          and "Personal Settings > KYC" in a[0]["body"] and "Riseworks" in a[0]["body"]
           and "TRADE_HOME -> P" in a[0]["body"] and "$800 reaches you" in a[0]["body"], a[0]["body"])
     small = {"2026-11-03": 400, "2026-11-04": 400, "2026-11-05": 400, "2026-11-06": 300}       # $1,500: $400 above the buffer
     v = PA.builder(b25(small), "atlas")

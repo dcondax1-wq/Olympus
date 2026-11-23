@@ -102,6 +102,11 @@ Checked 2026-11-20 ([live FAQ](https://help.myfundedfutures.com/en/articles/1210
 
 ## Payout autopilot (engine/payout_autopilot.py, 2026-11-22)
 Claude never requests a payout: the phone says when and how much, you click it in MFFU, then TRADE_HOME -> **P** records it.
+How to request (MFFU help center, checked 2026-11-23): dashboard left menu **Payouts** ("Request and track your earnings",
+[dashboard](https://help.myfundedfutures.com/en/articles/8229980-navigating-your-dashboard)). First payout only: **Personal Settings >
+KYC**, a **Riseworks** account, then sign the Riseworks agreements MFFU emails you; paid in **6-12 business hours**
+([first payout](https://help.myfundedfutures.com/en/articles/11542406-guide-to-your-first-payout-quick-and-easy-process)).
+Not on those pages: the request button's name, the account picker, fees.
 | What | When | Alert |
 |---|---|---|
 | Payout ready (Builder) | after the close (16:10 ET; half days 13:00 / 13:15), MFFU's rules met AND the max request ($1,000 25K / $2,000 50K) | "Payout ready: ATLAS 25K can request $1,000 now" + the MFFU clicks, once a cycle |
