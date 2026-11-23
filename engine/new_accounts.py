@@ -5,7 +5,7 @@ pass, a fresh eval after a fail or a new purchase) with a new Name, and that Nam
 notices it and offers it to the owner; it never assigns, arms or trades anything by itself.
 
   candidates(folder)   the non-Sim NinjaTrader account Names (LE_BarFeed's accounts.csv rows + outgoing\\*_<Name>_Position.txt,
-                       engine/go.nt_names) that no bot uses (engine/go.role_of), the owner did not dismiss, and the bot did
+                       engine/go.nt_names) that no bot uses (engine/account_cli.known_role), the owner did not dismiss, and the bot did
                        not retire (a Name replaced through use()). Sized by balance: ~$50,000 -> Zlarior's slot, ~$25,000 ->
                        ATLAS's / BLITZ's (unknown balance: every slot).
   options              per Name, what a tap does, from the slot's last eval outcome (the Start page's account rows,
@@ -176,7 +176,9 @@ def candidates(folder: str | None = None, path: str | None = None, names=None, r
         names = list(go.nt_names(folder))
         have = {str(r.get("name") or "").strip() for r in names}
         names += [{"name": n, "balance": None, "src": "NinjaTrader connection log"} for n in log_names(folder) if n not in have]
-    role_of = role_of or go.role_of
+    if role_of is None:                    # every configured account counts (Rapid, account_b, extras, Lucid): account_cli.known_role
+        from . import account_cli
+        role_of = account_cli.known_role
     skip = set(s.get("dismissed") or []) | set((s.get("retired") or {}).keys())
     out = []
     seen = dict(s.get("first_seen") or {})

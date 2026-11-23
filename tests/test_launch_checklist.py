@@ -207,8 +207,13 @@ def wiring_checks():
     bot = SimpleNamespace(cfg={"adapter": "paper"}, running=False, state={}, health={}, ledger=[], log=[])
     hb = heartbeat.Heartbeat(bot, every_s=300, log=lambda *a: None)
     pl = hb.payload()
-    check("heartbeat payload has 'launch' with items", isinstance(pl.get("launch"), dict) and len(pl["launch"].get("items") or []) == 12,
-          pl.get("launch"))
+    # the 12 base lines always; BLITZ / Rapid / Rapid 2 add one line each only when that PC has them configured (the
+    # owner's PC runs a Rapid EOD 25K: 13 lines there, 2026-11-22 self-test "6 of 31" - the count is not the contract)
+    base = ["anchor", "allow", "b", "startup", "nt", "feed", "roll", "broker", "sim", "sim_add", "armed", "up"]
+    keys = [i.get("key") for i in ((pl.get("launch") or {}).get("items") or [])]
+    check("heartbeat payload has 'launch' with items", isinstance(pl.get("launch"), dict) and all(k in keys for k in base)
+          and all(k in base or k in ("blitz", "rapid", "rapid2") for k in keys) and len(keys) == len(set(keys)),
+          keys or pl.get("launch"))
     check("heartbeat 'launch' under 4 KB", len(json.dumps(pl["launch"])) < 4096, len(json.dumps(pl["launch"])))
     check("heartbeat 'launch' facts carry the chart contract (roll)", isinstance((pl["launch"].get("facts") or {}).get("roll"), dict),
           (pl["launch"].get("facts") or {}).get("roll"))

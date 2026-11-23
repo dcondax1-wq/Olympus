@@ -34,6 +34,59 @@ REAL = [os.path.join(ROOT, p) for p in (".env.local.ps1", "second_model.json", "
                                          "data/auto_resume.json", "data/account_b.json")]
 
 
+# Files the RUNNING bot / a real START job writes by itself on the owner's PC while this test runs (2026-11-22 self-test:
+# "did not change" failed on the PC only): for these the check is exact on THIS process's own writes (WriteWatch), never a
+# hash another process can move. The rest (.env.local.ps1, second_model.json, start_bot.json, the allowlist) stay hashed too.
+LIVE_WRITTEN = {os.path.join(ROOT, p) for p in ("data/autostart.json", "data/auto_resume.json", "data/account_b.json",
+                                                "data/eval_anchor.json", "data/accounts.json", "data/sim_roundtrip_last.json",
+                                                "logs/start_job.json", "logs/start_job.log")}
+
+
+class WriteWatch:
+    """Every file THIS process opens for writing or replaces / renames onto (builtins / io open, os.replace / rename,
+    os.remove / unlink): the exact "did the test touch a real file" record, whatever the running bot does meanwhile."""
+
+    def __init__(self, watch):
+        self.watch = {os.path.normcase(os.path.abspath(p)) for p in watch}
+        self.hits = []
+
+    def _note(self, path):
+        try:
+            q = os.path.normcase(os.path.abspath(os.fspath(path)))
+        except Exception:
+            return
+        if q in self.watch:
+            self.hits.append(q)
+
+    def __enter__(self):
+        import builtins
+        import io
+        self._saved = (builtins.open, io.open, os.replace, os.rename, os.remove, os.unlink)
+        o_open, _, o_rep, o_ren, o_rm, o_un = self._saved
+
+        def op(file, mode="r", *a, **k):
+            if isinstance(file, (str, bytes, os.PathLike)) and any(c in str(mode) for c in "wax+"):
+                self._note(file)
+            return o_open(file, mode, *a, **k)
+
+        def wrap(fn, i):
+            def f(*a, **k):
+                if len(a) > i and not any(k.get(x) is not None for x in ("dir_fd", "src_dir_fd", "dst_dir_fd")):
+                    self._note(a[i])           # a dir_fd call names a file inside that folder (rmtree of a temp dir)
+                return fn(*a, **k)
+            return f
+        builtins.open = io.open = op
+        os.replace, os.rename = wrap(o_rep, 1), wrap(o_ren, 1)
+        os.remove, os.unlink = wrap(o_rm, 0), wrap(o_un, 0)
+        return self
+
+    def __exit__(self, *exc):
+        import builtins
+        import io
+        builtins.open, io.open, os.replace, os.rename, os.remove, os.unlink = self._saved
+        return False
+
+
 def check(name, cond, info=""):
     RES.append(bool(cond))
     print(("[PASS] " if cond else "[FAIL] ") + name + ("" if cond else f"  -> {str(info)[:400]}"), flush=True)
@@ -143,6 +196,12 @@ def tmp_files(w):
 
 
 def main():
+    with WriteWatch(REAL) as ww:
+        rc = _main(ww)
+    return rc
+
+
+def _main(ww):
     real_before = digest(REAL)
     env0 = {k: os.environ.get(k) for k in ("NINJATRADER_FOLDER", "LE_CLOUD", "LE_DASH_PASSWORD", "LE_PAPER_AUTOSTART")}
     with tempfile.TemporaryDirectory() as tmp:
@@ -559,8 +618,13 @@ def main():
             os.environ.pop(k, None)
         else:
             os.environ[k] = v
-    check("the real .env.local.ps1, data/ files, second_model.json and logs/start_job.* did not change", digest(REAL) == real_before,
-          {p: (real_before[p], v) for p, v in digest(REAL).items() if real_before[p] != v})
+    moved = {p: (real_before[p], v) for p, v in digest(REAL).items() if real_before[p] != v}
+    check("the real .env.local.ps1, data/ files, second_model.json and logs/start_job.* did not change",
+          not ww.hits and not [p for p in moved if p not in LIVE_WRITTEN],
+          {"written by this test": sorted(set(ww.hits)), "changed": moved})
+    if [p for p in moved if p in LIVE_WRITTEN] and not ww.hits:
+        print("  (note: " + ", ".join(os.path.relpath(p, ROOT) for p in moved if p in LIVE_WRITTEN) +
+              " changed meanwhile, written by the running bot, not by this test)", flush=True)
     n = sum(RES)
     print(f"start api: {n}/{len(RES)} {'ALL PASS' if n == len(RES) else 'FAILED'}")
     return 0 if n == len(RES) else 1

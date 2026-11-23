@@ -198,6 +198,40 @@ def inventory() -> list:
     return rows
 
 
+def known_role(name, rows=None) -> str | None:
+    """THE shared "is this account already ours" check (2026-11-22: the Start page offered the armed Rapid EOD 25K as a
+    "New account" because onboarding only asked engine/go.role_of, which never reads data/rapid*.json): engine/go.role_of
+    (Zlarior / ATLAS / BLITZ / extras incl. Lucid), else every inventory() row (Rapid + Rapid 2, account_b, extras), else a
+    Rapid file that names it even while switched off (its eval kept as history). None = truly new. Never raises."""
+    n = str(name or "").strip()
+    if not n:
+        return None
+    go = _go()
+    try:
+        who = go.role_of(n)
+        if who:
+            return who
+    except Exception:
+        pass
+    label = {"main": "Zlarior's account", "b": "ATLAS's account", "extra": "an added account", "rapid": "the Rapid EOD",
+             "c": "BLITZ's account"}
+    try:
+        for r in (inventory() if rows is None else rows):
+            if str(r.get("name") or "").strip() == n:
+                return label.get(r.get("role"), "a configured account") + (f" ({r['id']})" if r.get("id") else "")
+    except Exception:
+        pass
+    try:
+        rp = _rapid()
+        for sl in rp.SLOTS:
+            d = rp.load(rp.slot_path(sl))
+            if n in (str(d.get("account") or "").strip(), str(d.get("eval_account") or "").strip()):
+                return f"the Rapid EOD ({sl})"
+    except Exception:
+        pass
+    return None
+
+
 def slots(rows=None) -> dict:
     """What MFFU slots are used (Sim and non-MFFU accounts never count)."""
     rows = inventory() if rows is None else rows

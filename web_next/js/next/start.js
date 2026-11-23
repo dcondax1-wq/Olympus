@@ -242,9 +242,16 @@ function newAcctLine(d) {
       ${(r.options || []).map((o) => o.act === 'dismiss'
     ? `<button type="button" class="btn ${o.primary ? 'primary' : 'ghost'} sm" data-na-no="${esc(r.name)}">${esc(o.label)}</button>`
     : `<button type="button" class="btn ${o.primary ? 'primary' : 'ghost'} sm" data-na-use="${esc(o.act)}" data-label="${esc(o.label)}" data-name="${esc(r.name)}" ${can ? '' : 'disabled title="A step is running"'}>${esc(o.label)}</button>`).join('')}</span>`}</div>`).join('');
-  const rearm = d.local && d.running ? `<div class="st-ro st-rearm" style="flex-wrap:wrap">${icon('refresh')}<span style="flex:1 1 220px;min-width:0">Re-arm now: added accounts join only at a START. This stops the bot when it is flat and starts it again with your phrase.</span>
+  // 2026-11-22 loop fix: offered only while an added account is NOT armed (engine/onboard.rearm_pending), never again right
+  // after a good re-arm; the last Re-arm's result stays on one line (engine/onboard.rearm_last).
+  const ra = d.new_accounts?.rearm || {};
+  const pend = ra.pending || [];
+  const last = ra.last && ra.last.t && Date.now() / 1000 - ra.last.t < 6 * 3600 ? ra.last : null;
+  const lastLine = last ? `<div class="st-ro ${last.state === 'failed' || last.state === 'refused' ? 'warn' : ''} st-rearm-last" style="flex-wrap:wrap">${icon(last.state === 'done' ? 'check' : last.state === 'running' ? 'refresh' : 'info')}<span style="flex:1 1 220px;min-width:0">${esc(last.say)}</span></div>` : '';
+  const busy = last && last.state === 'running';
+  const rearm = lastLine + (d.local && d.running && pend.length && !busy ? `<div class="st-ro st-rearm" style="flex-wrap:wrap">${icon('refresh')}<span style="flex:1 1 220px;min-width:0">Re-arm now: ${esc(pend.join(', '))} ${pend.length > 1 ? 'are' : 'is'} added but not armed yet (accounts join only at a START). This stops the bot when it is flat and starts it again with your phrase.</span>
       <span class="st-acts"><input id="stRearmPhrase" autocomplete="off" spellcheck="false" placeholder="${esc(d.phrase || 'I ACCEPT LIVE RISK')}" style="min-width:160px">
-      <button type="button" class="btn primary sm" data-na-rearm ${can ? '' : 'disabled'}>Re-arm now</button></span></div>` : '';
+      <button type="button" class="btn primary sm" data-na-rearm ${can ? '' : 'disabled'}>Re-arm now</button></span></div>` : '');
   return lines + rearm;
 }
 

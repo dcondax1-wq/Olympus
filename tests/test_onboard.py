@@ -267,6 +267,79 @@ def api(tmp, nt):
           and "Armed at the next START (you type the phrase)" in part and "Re-arm now" in part)
 
 
+REOD = "MFFUEVREOD900006020"                                      # MFFU's real Rapid EOD eval prefix (made-up digits)
+
+
+def startfix(tmp, nt):
+    """night-startfix 2026-11-22 (the owner's PC): (1) the armed Rapid EOD 25K was offered as "New account ... Pick one";
+    (2) "Re-arm now" came back asking again after every press."""
+    from engine import account_cli as AC
+    i = OB.infer
+    a, b, c = i(REOD, 25000), i(REOD, 50000), i(REOD, None)
+    check("EVREOD = MFFU's Rapid EOD eval: confirmed with a 25K / 50K balance (one 'Zlarior + ATLAS' button, no choice); "
+          "no balance -> still the choice (size unknown)",
+          (a["kind"], a["plan"]) == ("fresh_eval", "rapideod25") and (b["kind"], b["plan"]) == ("fresh_eval", "rapideod")
+          and prim(OB.offers(a))["act"] == "add:rapideod25" and "not clear" not in OB.say(a, OB.offers(a))
+          and c["kind"] == "unknown" and "add:builder25k" in acts(OB.offers(c)), (a, c))
+    G.bot_running = lambda: False
+    rapid.save({"account": REOD, "plan": "mffu_rapid_eod_25k", "start": "2026-11-20", "armed": True})
+    with open(os.path.join(nt, "le_feed", "accounts.csv"), "a") as fh:
+        fh.write(f"{REOD},{int(time.time())},25000,0,0,25000\n")
+    names = {x["name"] for x in OB.status(folder=nt)["new"]}
+    check("the owner's case: a Name engine/rapid already has (configured + armed) is NOT offered as a new account",
+          REOD not in names and AC.known_role(REOD) and G.role_of(REOD) is None, (names, AC.known_role(REOD)))
+    rapid.off()
+    check("a Rapid switched off still counts as known (its account is not 'new'), a truly new Name is not known",
+          REOD not in {x["name"] for x in OB.status(folder=nt)["new"]} and AC.known_role(REOD)
+          and AC.known_role("MFFUEVBLDR900000555") is None)
+    rapid.save({"account": REOD, "plan": "mffu_rapid_eod_25k", "start": "2026-11-20", "armed": True})
+    check("one shared known-accounts check: ATLAS (account_b), an added (CLI / Lucid) extra and Zlarior all known",
+          AC.known_role(L50) and AC.known_role(SF25) and all(AC.known_role(r.get("nt_account")) for r in MA.load_file(G.ACCOUNTS_PATH)),
+          [AC.known_role(n) for n in (L50, SF25)])
+    na_src = open(os.path.join(ROOT, "engine", "new_accounts.py"), encoding="utf-8").read()
+    check("new_accounts.candidates asks account_cli.known_role (not only go.role_of)", "account_cli.known_role" in na_src)
+    # (2) Re-arm: only offered when an added account is NOT armed; one press = one STOP + one START; the result line
+    inv = [{"name": REOD, "role": "rapid", "armed": True, "sim": False}, {"name": L25, "role": "b", "armed": True, "sim": False}]
+    check("Re-arm pending: everything armed -> nothing to re-arm (the page offers no button)", OB.rearm_pending(inv, []) == [])
+    inv2 = inv + [{"name": N25, "role": "extra", "armed": False, "sim": False, "cli": True, "plan": "builder25k"},
+                  {"name": "MFFUEVX1", "role": "extra", "armed": False, "sim": False, "cli": False, "plan": "builder25k"},
+                  {"name": "LUCID1", "role": "extra", "armed": False, "sim": False, "cli": True, "plan": "lucidpro50k"},
+                  {"name": "Sim101", "role": "b", "armed": False, "sim": True}]
+    check("Re-arm pending: a CLI-added account not armed -> listed; a non-CLI extra, Lucid without its OK, Sim never",
+          OB.rearm_pending(inv2, []) == [N25], OB.rearm_pending(inv2, []))
+    jobs, stops = [], []
+    keep = (G.job_start, G.sims_passed, G.job_status)
+    state = os.path.join(tmp, "new_accounts.json")
+    job = {"step": None, "running": False}
+    G.job_start = lambda step, phrase=None, **k: (jobs.append(step), job.update(step="arm", running=True, t0=time.time(), rc=None),
+                                                  {"ok": True, "step": step})[2]
+    G.sims_passed = lambda: {"sim1": True}
+    G.job_status = lambda: dict(job)
+    run = {"on": True}
+    G.bot_running = lambda: run["on"]
+    try:
+        r1 = OB.rearm(G.LIVE_PHRASE, stop_fn=lambda: (stops.append(1), run.update(on=False)), flat_reason=lambda: None, path=state)
+        l1 = OB.rearm_last(state)
+        run["on"] = True                         # the server resumed the bot meanwhile; the START job still runs
+        r2 = OB.rearm(G.LIVE_PHRASE, stop_fn=lambda: (stops.append(1), run.update(on=False)), flat_reason=lambda: None, path=state)
+        check("one Re-arm = one STOP + one START; a second press while that START runs is refused BEFORE stopping (no loop)",
+              r1["ok"] and stops == [1] and jobs == ["arm"] and not r2["ok"] and "already running" in r2["error"], (r1, r2, stops, jobs))
+        check("the result line: running while the START job runs", l1 and l1["state"] == "running" and "Re-arm" in l1["say"], l1)
+        job.update(running=False, rc=0)
+        l2 = OB.rearm_last(state)
+        job.update(rc=1, lines=[" NOT ARMED: Rapid EOD 25K: the live phrase was not typed -> START BOT again"])
+        l3 = OB.rearm_last(state)
+        check("the result line: done (rc 0) / failed with the job's NOT ARMED line (never silent)",
+              l2["state"] == "done" and l3["state"] == "failed" and "NOT ARMED" in l3["say"], (l2, l3))
+    finally:
+        G.job_start, G.sims_passed, G.job_status = keep
+    G.bot_running = lambda: False
+    js = open(os.path.join(ROOT, "web_next", "js", "next", "start.js"), encoding="utf-8").read()
+    part = js.split("function newAcctLine")[1].split("function wireNewAcct")[0]
+    check("Start page: Re-arm offered only with pending accounts and not while a Re-arm runs; the last result shown",
+          "pend.length" in part and "!busy" in part and "ra.last" in part and "lastLine" in part)
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix="le_onboard_")
     keep = {k: getattr(G, k) for k in ("CFG", "SECOND_PATH", "ALLOW_PATH", "ACCOUNTS_PATH", "ANCHOR_PATH", "bot_running")}
@@ -275,6 +348,7 @@ def main():
         pure()
         nt = flow(tmp)
         api(tmp, nt)
+        startfix(tmp, nt)
     finally:
         for k, v in keep.items():
             setattr(G, k, v)
