@@ -1,0 +1,1035 @@
+{
+ "built": "2026-11-23 17:56 UTC",
+ "script": "research/tradetypes/trade_types.py",
+ "writeup": "research/writeups/new-trade-types-2026-11-23.md",
+ "spans": {
+  "H1": [
+   "2026-01-01",
+   "2026-06-30"
+  ],
+  "H2": [
+   "2026-07-01",
+   "2026-10-31"
+  ],
+  "REF": [
+   "2021-10-18",
+   "2025-12-31"
+  ]
+ },
+ "costs": "$1.90 a micro round trip + 1 tick a side (MNQ $0.50, MES $1.25); $250 risk a trade, max 20 micros",
+ "ref_note": "ES/NQ lanes: REF = 2025-04-14 .. 2025-12-31 only (ES1! history starts 2025-04-14)",
+ "baseline": {
+  "LIT+ATLAS": {
+   "H1": {
+    "n": 184,
+    "per_week": 7.19,
+    "win_pct": 55.4,
+    "pf": 3.17,
+    "net": 39229,
+    "per_month": 6436,
+    "max_dd": -1698,
+    "avg": 213.2
+   },
+   "H2": {
+    "n": 86,
+    "per_week": 5.51,
+    "win_pct": 53.5,
+    "pf": 2.69,
+    "net": 14915,
+    "per_month": 4016,
+    "max_dd": -1488,
+    "avg": 173.4
+   },
+   "REF": {
+    "n": 1510,
+    "per_week": 7.01,
+    "win_pct": 42.8,
+    "pf": 1.06,
+    "net": 12429,
+    "per_month": 242,
+    "max_dd": -20462,
+    "avg": 8.2
+   }
+  },
+  "LIT only": {
+   "H1": {
+    "n": 80,
+    "per_week": 3.12,
+    "win_pct": 58.8,
+    "pf": 3.45,
+    "net": 20868,
+    "per_month": 3424,
+    "max_dd": -2264,
+    "avg": 260.8
+   },
+   "H2": {
+    "n": 40,
+    "per_week": 2.56,
+    "win_pct": 50.0,
+    "pf": 2.78,
+    "net": 9659,
+    "per_month": 2601,
+    "max_dd": -1492,
+    "avg": 241.5
+   },
+   "REF": {
+    "n": 511,
+    "per_week": 2.37,
+    "win_pct": 53.6,
+    "pf": 1.03,
+    "net": 2065,
+    "per_month": 40,
+    "max_dd": -13047,
+    "avg": 4.0
+   }
+  }
+ },
+ "variants": {
+  "H1 overnight drift 18:00->09:30 long": {
+   "lane": 2,
+   "banned_everywhere": false,
+   "stats": {
+    "H1": {
+     "n": 128,
+     "per_week": 5.0,
+     "win_pct": 54.7,
+     "pf": 1.26,
+     "net": 4906,
+     "per_month": 805,
+     "max_dd": -4196,
+     "avg": 38.3
+    },
+    "H2": {
+     "n": 88,
+     "per_week": 5.0,
+     "win_pct": 45.5,
+     "pf": 0.9,
+     "net": -1673,
+     "per_month": -399,
+     "max_dd": -3544,
+     "avg": -19.0
+    },
+    "REF": {
+     "n": 1067,
+     "per_week": 4.91,
+     "win_pct": 51.6,
+     "pf": 0.99,
+     "net": -698,
+     "per_month": -13,
+     "max_dd": -12012,
+     "avg": -0.7
+    }
+   },
+   "p_by_span": {
+    "H1": 0.151,
+    "H2": 0.648,
+    "REF": 0.5305
+   },
+   "p_worst_span": 0.648,
+   "positive_all_3": false,
+   "corr_daily_vs_lit_atlas": 0.015,
+   "p_holm": 1.0,
+   "p_bh": 1.0,
+   "passes": false
+  },
+  "H2 turn of month 18:00->15:55 long": {
+   "lane": 2,
+   "banned_everywhere": false,
+   "stats": {
+    "H1": {
+     "n": 24,
+     "per_week": 0.94,
+     "win_pct": 62.5,
+     "pf": 2.07,
+     "net": 4683,
+     "per_month": 768,
+     "max_dd": -2180,
+     "avg": 195.1
+    },
+    "H2": {
+     "n": 16,
+     "per_week": 0.91,
+     "win_pct": 62.5,
+     "pf": 1.43,
+     "net": 1752,
+     "per_month": 418,
+     "max_dd": -1895,
+     "avg": 109.5
+    },
+    "REF": {
+     "n": 197,
+     "per_week": 0.91,
+     "win_pct": 51.3,
+     "pf": 1.02,
+     "net": 764,
+     "per_month": 15,
+     "max_dd": -4093,
+     "avg": 3.9
+    }
+   },
+   "p_by_span": {
+    "H1": 0.1285,
+    "H2": 0.098,
+    "REF": 0.487
+   },
+   "p_worst_span": 0.487,
+   "positive_all_3": true,
+   "corr_daily_vs_lit_atlas": 0.062,
+   "p_holm": 1.0,
+   "p_bh": 1.0,
+   "passes": false
+  },
+  "H3 pre-holiday 18:00->close long": {
+   "lane": 2,
+   "banned_everywhere": false,
+   "stats": {
+    "H1": {
+     "n": 5,
+     "per_week": 0.2,
+     "win_pct": 60.0,
+     "pf": 13.26,
+     "net": 1340,
+     "per_month": 220,
+     "max_dd": -109,
+     "avg": 268.0
+    },
+    "H2": {
+     "n": 2,
+     "per_week": 0.11,
+     "win_pct": 50.0,
+     "pf": 0.13,
+     "net": -976,
+     "per_month": -233,
+     "max_dd": -1116,
+     "avg": -488.2
+    },
+    "REF": {
+     "n": 43,
+     "per_week": 0.2,
+     "win_pct": 60.5,
+     "pf": 1.39,
+     "net": 1993,
+     "per_month": 38,
+     "max_dd": -970,
+     "avg": 46.3
+    }
+   },
+   "p_by_span": {
+    "H1": 0.275,
+    "H2": 1.0,
+    "REF": 0.2455
+   },
+   "p_worst_span": 1.0,
+   "positive_all_3": false,
+   "corr_daily_vs_lit_atlas": -0.04,
+   "p_holm": 1.0,
+   "p_bh": 1.0,
+   "passes": false
+  },
+  "H4 Thanksgiving Wed+Fri long": {
+   "lane": 2,
+   "banned_everywhere": false,
+   "stats": {
+    "H1": {
+     "n": 0,
+     "per_week": 0.0,
+     "win_pct": null,
+     "pf": null,
+     "net": 0,
+     "per_month": 0,
+     "max_dd": 0,
+     "avg": null
+    },
+    "H2": {
+     "n": 0,
+     "per_week": 0.0,
+     "win_pct": null,
+     "pf": null,
+     "net": 0,
+     "per_month": 0,
+     "max_dd": 0,
+     "avg": null
+    },
+    "REF": {
+     "n": 10,
+     "per_week": 0.05,
+     "win_pct": 80.0,
+     "pf": 3.17,
+     "net": 895,
+     "per_month": 17,
+     "max_dd": -388,
+     "avg": 89.5
+    }
+   },
+   "p_by_span": {
+    "H1": 1.0,
+    "H2": 1.0,
+    "REF": 0.2465
+   },
+   "p_worst_span": 1.0,
+   "positive_all_3": false,
+   "corr_daily_vs_lit_atlas": -0.009,
+   "p_holm": 1.0,
+   "p_bh": 1.0,
+   "passes": false
+  },
+  "H5 post-FOMC 14:30->15:55 with the first 30 min": {
+   "lane": 2,
+   "banned_everywhere": false,
+   "stats": {
+    "H1": {
+     "n": 4,
+     "per_week": 0.16,
+     "win_pct": 50.0,
+     "pf": 2.59,
+     "net": 574,
+     "per_month": 94,
+     "max_dd": -200,
+     "avg": 143.5
+    },
+    "H2": {
+     "n": 3,
+     "per_week": 0.17,
+     "win_pct": 33.3,
+     "pf": 0.69,
+     "net": -191,
+     "per_month": -46,
+     "max_dd": -350,
+     "avg": -63.7
+    },
+    "REF": {
+     "n": 34,
+     "per_week": 0.16,
+     "win_pct": 44.1,
+     "pf": 0.77,
+     "net": -1298,
+     "per_month": -25,
+     "max_dd": -2898,
+     "avg": -38.2
+    }
+   },
+   "p_by_span": {
+    "H1": 0.076,
+    "H2": 0.6228,
+    "REF": 0.7935
+   },
+   "p_worst_span": 0.7935,
+   "positive_all_3": false,
+   "corr_daily_vs_lit_atlas": 0.02,
+   "p_holm": 1.0,
+   "p_bh": 1.0,
+   "passes": false
+  },
+  "H6 post-FOMC next session with the FOMC move": {
+   "lane": 2,
+   "banned_everywhere": false,
+   "stats": {
+    "H1": {
+     "n": 4,
+     "per_week": 0.16,
+     "win_pct": 50.0,
+     "pf": 0.46,
+     "net": -1050,
+     "per_month": -172,
+     "max_dd": -1214,
+     "avg": -262.4
+    },
+    "H2": {
+     "n": 3,
+     "per_week": 0.17,
+     "win_pct": 0.0,
+     "pf": 0.0,
+     "net": -2585,
+     "per_month": -617,
+     "max_dd": -2585,
+     "avg": -861.7
+    },
+    "REF": {
+     "n": 32,
+     "per_week": 0.15,
+     "win_pct": 62.5,
+     "pf": 1.38,
+     "net": 2014,
+     "per_month": 39,
+     "max_dd": -1822,
+     "avg": 62.9
+    }
+   },
+   "p_by_span": {
+    "H1": 0.692,
+    "H2": 0.9915,
+    "REF": 0.1782
+   },
+   "p_worst_span": 0.9915,
+   "positive_all_3": false,
+   "corr_daily_vs_lit_atlas": 0.044,
+   "p_holm": 1.0,
+   "p_bh": 1.0,
+   "passes": false
+  },
+  "X1 close->open long (BANNED, reference)": {
+   "lane": 2,
+   "banned_everywhere": true,
+   "stats": {
+    "H1": {
+     "n": 122,
+     "per_week": 4.77,
+     "win_pct": 50.0,
+     "pf": 1.1,
+     "net": 1983,
+     "per_month": 325,
+     "max_dd": -6585,
+     "avg": 16.3
+    },
+    "H2": {
+     "n": 86,
+     "per_week": 4.89,
+     "win_pct": 48.8,
+     "pf": 1.0,
+     "net": 27,
+     "per_month": 6,
+     "max_dd": -3071,
+     "avg": 0.3
+    },
+    "REF": {
+     "n": 1024,
+     "per_week": 4.71,
+     "win_pct": 52.2,
+     "pf": 1.08,
+     "net": 7440,
+     "per_month": 144,
+     "max_dd": -11563,
+     "avg": 7.3
+    }
+   },
+   "p_by_span": {
+    "H1": 0.361,
+    "H2": 0.4995,
+    "REF": 0.182
+   },
+   "p_worst_span": 0.4995,
+   "positive_all_3": true,
+   "corr_daily_vs_lit_atlas": 0.006,
+   "p_holm": null,
+   "p_bh": null,
+   "passes": false
+  },
+  "E1 monthly OPEX Fri long 18:00->15:55": {
+   "lane": 3,
+   "banned_everywhere": false,
+   "stats": {
+    "H1": {
+     "n": 4,
+     "per_week": 0.16,
+     "win_pct": 50.0,
+     "pf": 1.26,
+     "net": 234,
+     "per_month": 38,
+     "max_dd": -885,
+     "avg": 58.5
+    },
+    "H2": {
+     "n": 3,
+     "per_week": 0.17,
+     "win_pct": 33.3,
+     "pf": 0.06,
+     "net": -2196,
+     "per_month": -524,
+     "max_dd": -2196,
+     "avg": -732.1
+    },
+    "REF": {
+     "n": 31,
+     "per_week": 0.14,
+     "win_pct": 35.5,
+     "pf": 0.61,
+     "net": -2507,
+     "per_month": -48,
+     "max_dd": -3066,
+     "avg": -80.9
+    }
+   },
+   "p_by_span": {
+    "H1": 0.529,
+    "H2": 0.974,
+    "REF": 0.88
+   },
+   "p_worst_span": 0.974,
+   "positive_all_3": false,
+   "corr_daily_vs_lit_atlas": 0.052,
+   "p_holm": 1.0,
+   "p_bh": 1.0,
+   "passes": false
+  },
+  "E2 quad witching / rebalance Fri long": {
+   "lane": 3,
+   "banned_everywhere": false,
+   "stats": {
+    "H1": {
+     "n": 2,
+     "per_week": 0.08,
+     "win_pct": 0.0,
+     "pf": 0.0,
+     "net": -1217,
+     "per_month": -200,
+     "max_dd": -1217,
+     "avg": -608.6
+    },
+    "H2": {
+     "n": 1,
+     "per_week": 0.06,
+     "win_pct": 100.0,
+     "pf": 99.0,
+     "net": 305,
+     "per_month": 73,
+     "max_dd": 0,
+     "avg": 305.1
+    },
+    "REF": {
+     "n": 17,
+     "per_week": 0.08,
+     "win_pct": 41.2,
+     "pf": 1.0,
+     "net": -2,
+     "per_month": 0,
+     "max_dd": -1887,
+     "avg": -0.1
+    }
+   },
+   "p_by_span": {
+    "H1": 1.0,
+    "H2": 1.0,
+    "REF": 0.5072
+   },
+   "p_worst_span": 1.0,
+   "positive_all_3": false,
+   "corr_daily_vs_lit_atlas": -0.022,
+   "p_holm": 1.0,
+   "p_bh": 1.0,
+   "passes": false
+  },
+  "E3 quad witching last-hour fade": {
+   "lane": 3,
+   "banned_everywhere": false,
+   "stats": {
+    "H1": {
+     "n": 1,
+     "per_week": 0.04,
+     "win_pct": 0.0,
+     "pf": 0.0,
+     "net": -62,
+     "per_month": -10,
+     "max_dd": -62,
+     "avg": -62.4
+    },
+    "H2": {
+     "n": 1,
+     "per_week": 0.06,
+     "win_pct": 0.0,
+     "pf": 0.0,
+     "net": -94,
+     "per_month": -22,
+     "max_dd": -94,
+     "avg": -93.9
+    },
+    "REF": {
+     "n": 17,
+     "per_week": 0.08,
+     "win_pct": 52.9,
+     "pf": 0.85,
+     "net": -123,
+     "per_month": -2,
+     "max_dd": -453,
+     "avg": -7.2
+    }
+   },
+   "p_by_span": {
+    "H1": 1.0,
+    "H2": 1.0,
+    "REF": 0.4175
+   },
+   "p_worst_span": 1.0,
+   "positive_all_3": false,
+   "corr_daily_vs_lit_atlas": 0.011,
+   "p_holm": 1.0,
+   "p_bh": 1.0,
+   "passes": false
+  },
+  "E4 CPI/NFP straddle of the 08:30 bar": {
+   "lane": 3,
+   "banned_everywhere": false,
+   "stats": {
+    "H1": {
+     "n": 9,
+     "per_week": 0.35,
+     "win_pct": 22.2,
+     "pf": 0.28,
+     "net": -1092,
+     "per_month": -179,
+     "max_dd": -1485,
+     "avg": -121.3
+    },
+    "H2": {
+     "n": 6,
+     "per_week": 0.34,
+     "win_pct": 33.3,
+     "pf": 0.15,
+     "net": -619,
+     "per_month": -148,
+     "max_dd": -707,
+     "avg": -103.1
+    },
+    "REF": {
+     "n": 41,
+     "per_week": 0.19,
+     "win_pct": 46.3,
+     "pf": 0.78,
+     "net": -1003,
+     "per_month": -19,
+     "max_dd": -1374,
+     "avg": -24.5
+    }
+   },
+   "p_by_span": {
+    "H1": 0.9932,
+    "H2": 0.98,
+    "REF": 0.761
+   },
+   "p_worst_span": 0.9932,
+   "positive_all_3": false,
+   "corr_daily_vs_lit_atlas": 0.004,
+   "p_holm": 1.0,
+   "p_bh": 1.0,
+   "passes": false
+  },
+  "S1 NQ/ES intraday z 2.0": {
+   "lane": 1,
+   "banned_everywhere": false,
+   "stats": {
+    "H1": {
+     "n": 200,
+     "per_week": 7.81,
+     "win_pct": 52.0,
+     "pf": 0.75,
+     "net": -11314,
+     "per_month": -1856,
+     "max_dd": -14279,
+     "avg": -56.6
+    },
+    "H2": {
+     "n": 127,
+     "per_week": 7.56,
+     "win_pct": 54.3,
+     "pf": 1.03,
+     "net": 622,
+     "per_month": 156,
+     "max_dd": -7969,
+     "avg": 4.9
+    },
+    "REF": {
+     "n": 305,
+     "per_week": 8.2,
+     "win_pct": 54.1,
+     "pf": 0.75,
+     "net": -11520,
+     "per_month": -1301,
+     "max_dd": -11726,
+     "avg": -37.8
+    }
+   },
+   "p_by_span": {
+    "H1": 0.8968,
+    "H2": 0.4685,
+    "REF": 0.9515
+   },
+   "p_worst_span": 0.9515,
+   "positive_all_3": false,
+   "corr_daily_vs_lit_atlas": 0.075,
+   "p_holm": 1.0,
+   "p_bh": 1.0,
+   "passes": false
+  },
+  "S2 NQ/ES intraday z 2.5": {
+   "lane": 1,
+   "banned_everywhere": false,
+   "stats": {
+    "H1": {
+     "n": 138,
+     "per_week": 5.39,
+     "win_pct": 47.8,
+     "pf": 0.72,
+     "net": -9574,
+     "per_month": -1571,
+     "max_dd": -12806,
+     "avg": -69.4
+    },
+    "H2": {
+     "n": 85,
+     "per_week": 5.06,
+     "win_pct": 63.5,
+     "pf": 0.92,
+     "net": -1386,
+     "per_month": -346,
+     "max_dd": -6279,
+     "avg": -16.3
+    },
+    "REF": {
+     "n": 210,
+     "per_week": 5.65,
+     "win_pct": 51.9,
+     "pf": 0.87,
+     "net": -4033,
+     "per_month": -455,
+     "max_dd": -8423,
+     "avg": -19.2
+    }
+   },
+   "p_by_span": {
+    "H1": 0.9058,
+    "H2": 0.6075,
+    "REF": 0.7578
+   },
+   "p_worst_span": 0.9058,
+   "positive_all_3": false,
+   "corr_daily_vs_lit_atlas": 0.053,
+   "p_holm": 1.0,
+   "p_bh": 1.0,
+   "passes": false
+  },
+  "S3 NQ/ES 1-3 day z 1.5 (daily legs)": {
+   "lane": 1,
+   "banned_everywhere": false,
+   "stats": {
+    "H1": {
+     "n": 20,
+     "per_week": 0.78,
+     "win_pct": 40.0,
+     "pf": 0.92,
+     "net": -459,
+     "per_month": -75,
+     "max_dd": -4440,
+     "avg": -23.0
+    },
+    "H2": {
+     "n": 10,
+     "per_week": 0.6,
+     "win_pct": 30.0,
+     "pf": 0.19,
+     "net": -7121,
+     "per_month": -1780,
+     "max_dd": -8306,
+     "avg": -712.1
+    },
+    "REF": {
+     "n": 22,
+     "per_week": 0.59,
+     "win_pct": 54.5,
+     "pf": 1.52,
+     "net": 1621,
+     "per_month": 183,
+     "max_dd": -1089,
+     "avg": 73.7
+    }
+   },
+   "p_by_span": {
+    "H1": 0.5212,
+    "H2": 0.9948,
+    "REF": 0.2467
+   },
+   "p_worst_span": 0.9948,
+   "positive_all_3": false,
+   "corr_daily_vs_lit_atlas": 0.002,
+   "p_holm": 1.0,
+   "p_bh": 1.0,
+   "passes": false
+  },
+  "S4 NQ/ES 1-3 day z 2.0 (daily legs)": {
+   "lane": 1,
+   "banned_everywhere": false,
+   "stats": {
+    "H1": {
+     "n": 11,
+     "per_week": 0.43,
+     "win_pct": 36.4,
+     "pf": 0.76,
+     "net": -1480,
+     "per_month": -243,
+     "max_dd": -4956,
+     "avg": -134.6
+    },
+    "H2": {
+     "n": 8,
+     "per_week": 0.48,
+     "win_pct": 50.0,
+     "pf": 0.42,
+     "net": -3792,
+     "per_month": -948,
+     "max_dd": -6462,
+     "avg": -474.1
+    },
+    "REF": {
+     "n": 10,
+     "per_week": 0.27,
+     "win_pct": 60.0,
+     "pf": 1.55,
+     "net": 605,
+     "per_month": 68,
+     "max_dd": -581,
+     "avg": 60.5
+    }
+   },
+   "p_by_span": {
+    "H1": 0.6062,
+    "H2": 0.8053,
+    "REF": 0.297
+   },
+   "p_worst_span": 0.8053,
+   "positive_all_3": false,
+   "corr_daily_vs_lit_atlas": -0.032,
+   "p_holm": 1.0,
+   "p_bh": 1.0,
+   "passes": false
+  },
+  "X2 NQ/ES 1-3 day z 1.5 continuous (BANNED)": {
+   "lane": 1,
+   "banned_everywhere": true,
+   "stats": {
+    "H1": {
+     "n": 20,
+     "per_week": 0.78,
+     "win_pct": 35.0,
+     "pf": 0.62,
+     "net": -3920,
+     "per_month": -643,
+     "max_dd": -7696,
+     "avg": -196.0
+    },
+    "H2": {
+     "n": 10,
+     "per_week": 0.6,
+     "win_pct": 20.0,
+     "pf": 0.02,
+     "net": -9356,
+     "per_month": -2339,
+     "max_dd": -9516,
+     "avg": -935.6
+    },
+    "REF": {
+     "n": 22,
+     "per_week": 0.59,
+     "win_pct": 50.0,
+     "pf": 1.64,
+     "net": 2327,
+     "per_month": 263,
+     "max_dd": -1374,
+     "avg": 105.8
+    }
+   },
+   "p_by_span": {
+    "H1": 0.766,
+    "H2": 1.0,
+    "REF": 0.1825
+   },
+   "p_worst_span": 1.0,
+   "positive_all_3": false,
+   "corr_daily_vs_lit_atlas": -0.017,
+   "p_holm": null,
+   "p_bh": null,
+   "passes": false
+  },
+  "R1 LIT if its last 40 > 0, ATLAS always": {
+   "lane": 4,
+   "banned_everywhere": false,
+   "stats": {
+    "H1": {
+     "n": 184,
+     "per_week": 7.19,
+     "win_pct": 55.4,
+     "pf": 3.17,
+     "net": 39229,
+     "per_month": 6436,
+     "max_dd": -1698,
+     "avg": 213.2
+    },
+    "H2": {
+     "n": 86,
+     "per_week": 5.51,
+     "win_pct": 53.5,
+     "pf": 2.69,
+     "net": 14915,
+     "per_month": 4016,
+     "max_dd": -1488,
+     "avg": 173.4
+    },
+    "REF": {
+     "n": 1292,
+     "per_week": 6.0,
+     "win_pct": 41.3,
+     "pf": 1.1,
+     "net": 16864,
+     "per_month": 329,
+     "max_dd": -13271,
+     "avg": 13.1
+    }
+   },
+   "p_by_span": {
+    "H1": 1.0,
+    "H2": 1.0,
+    "REF": 0.1472
+   },
+   "p_worst_span": 1.0,
+   "positive_all_3": false,
+   "corr_daily_vs_lit_atlas": null,
+   "lit_atlas_trades_switched_off": 218,
+   "p_holm": 1.0,
+   "p_bh": 1.0,
+   "passes": false
+  },
+  "R2 rotate to the better of last 40": {
+   "lane": 4,
+   "banned_everywhere": false,
+   "stats": {
+    "H1": {
+     "n": 87,
+     "per_week": 3.4,
+     "win_pct": 51.7,
+     "pf": 2.61,
+     "net": 16318,
+     "per_month": 2677,
+     "max_dd": -2118,
+     "avg": 187.6
+    },
+    "H2": {
+     "n": 47,
+     "per_week": 3.01,
+     "win_pct": 57.4,
+     "pf": 3.95,
+     "net": 10244,
+     "per_month": 2758,
+     "max_dd": -876,
+     "avg": 218.0
+    },
+    "REF": {
+     "n": 600,
+     "per_week": 2.79,
+     "win_pct": 40.2,
+     "pf": 0.88,
+     "net": -9118,
+     "per_month": -178,
+     "max_dd": -13834,
+     "avg": -15.2
+    }
+   },
+   "p_by_span": {
+    "H1": 0.69,
+    "H2": 0.2245,
+    "REF": 0.9583
+   },
+   "p_worst_span": 0.9583,
+   "positive_all_3": false,
+   "corr_daily_vs_lit_atlas": null,
+   "lit_atlas_trades_switched_off": 1046,
+   "p_holm": 1.0,
+   "p_bh": 1.0,
+   "passes": false
+  },
+  "R3 rotate to the better of last 20": {
+   "lane": 4,
+   "banned_everywhere": false,
+   "stats": {
+    "H1": {
+     "n": 89,
+     "per_week": 3.48,
+     "win_pct": 58.4,
+     "pf": 3.82,
+     "net": 22540,
+     "per_month": 3698,
+     "max_dd": -1895,
+     "avg": 253.3
+    },
+    "H2": {
+     "n": 47,
+     "per_week": 3.01,
+     "win_pct": 51.1,
+     "pf": 3.18,
+     "net": 10848,
+     "per_month": 2921,
+     "max_dd": -1215,
+     "avg": 230.8
+    },
+    "REF": {
+     "n": 571,
+     "per_week": 2.65,
+     "win_pct": 40.6,
+     "pf": 0.9,
+     "net": -7929,
+     "per_month": -155,
+     "max_dd": -11791,
+     "avg": -13.9
+    }
+   },
+   "p_by_span": {
+    "H1": 0.2117,
+    "H2": 0.1557,
+    "REF": 0.9463
+   },
+   "p_worst_span": 0.9463,
+   "positive_all_3": false,
+   "corr_daily_vs_lit_atlas": null,
+   "lit_atlas_trades_switched_off": 1073,
+   "p_holm": 1.0,
+   "p_bh": 1.0,
+   "passes": false
+  },
+  "R4 rotate to the better of last 60": {
+   "lane": 4,
+   "banned_everywhere": false,
+   "stats": {
+    "H1": {
+     "n": 79,
+     "per_week": 3.09,
+     "win_pct": 54.4,
+     "pf": 2.94,
+     "net": 16522,
+     "per_month": 2711,
+     "max_dd": -2264,
+     "avg": 209.1
+    },
+    "H2": {
+     "n": 46,
+     "per_week": 2.95,
+     "win_pct": 56.5,
+     "pf": 2.55,
+     "net": 5256,
+     "per_month": 1415,
+     "max_dd": -876,
+     "avg": 114.3
+    },
+    "REF": {
+     "n": 576,
+     "per_week": 2.67,
+     "win_pct": 41.3,
+     "pf": 1.03,
+     "net": 2161,
+     "per_month": 42,
+     "max_dd": -10226,
+     "avg": 3.8
+    }
+   },
+   "p_by_span": {
+    "H1": 0.5245,
+    "H2": 0.8498,
+    "REF": 0.6272
+   },
+   "p_worst_span": 0.8498,
+   "positive_all_3": false,
+   "corr_daily_vs_lit_atlas": null,
+   "lit_atlas_trades_switched_off": 1079,
+   "p_holm": 1.0,
+   "p_bh": 1.0,
+   "passes": false
+  }
+ },
+ "family_size": 18,
+ "n_pass": 0
+}
