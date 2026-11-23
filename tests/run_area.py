@@ -467,5 +467,7 @@ AREAS["pc"] += ["ship_vault"]   # night-reds2 2026-11-23: ship.py rebuilds + com
 
 AREAS["pc"].append("add_account")   # night-addacct 2026-11-23: TRADE_HOME 4 = Name -> guessed plan -> HELD -> paper check; ADD_ACCOUNT.bat 6 = Lucid
 
+AREAS["pc_care"] = ["pc_care", "bat_menu", "fresh_start"]   # night-secps 2026-11-23: STATUS / PC_CARE / CLEAN_STORAGE run a site download only on a pinned sha256
+
 if __name__ == "__main__":
     sys.exit(main())

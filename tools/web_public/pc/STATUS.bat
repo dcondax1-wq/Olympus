@@ -6,6 +6,8 @@ rem the heartbeat the bot PC publishes), is NinjaTrader running, how old the las
 rem changed, closed, deleted or installed, and no Administrator is needed. It ends with ONE sentence of what to do. Works on the main PC
 rem and on the Surface. Works from the bot folder, or downloaded alone (then it fetches the script from
 rem https://dcondax1-wq.github.io/pc/). docs\PC_PERFORMANCE.md
+rem security 2026-11-23: alone, the downloaded script runs ONLY when its sha256 equals the one pinned below
+rem (the copy in scripts\ from the auto-updated checkout is always preferred). tests/test_pc_care.py checks the pin.
 setlocal EnableExtensions
 title Liquidity Engine - STATUS
 cd /d "%LE_HOME%"
@@ -18,7 +20,7 @@ goto :web
 powershell -NoProfile -ExecutionPolicy Bypass -File "%LE_HOME%scripts\pc_status.ps1" %* & echo. & pause & exit /b
 
 :web
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$t = Join-Path $env:TEMP 'le_pc_status.ps1'; try { Invoke-WebRequest -Uri 'https://dcondax1-wq.github.io/pc/pc_status.ps1' -OutFile $t -UseBasicParsing -TimeoutSec 60 } catch { Write-Host '  [FIX] Could not download STATUS. Check the internet and double-click again, or send Claude a photo of this window.'; exit 1 }; & powershell -NoProfile -ExecutionPolicy Bypass -File $t" & echo. & pause & exit /b
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$t = Join-Path $env:TEMP 'le_pc_status.ps1'; $pin = '73b82bbdcd34cc13a939efdc46794c4199e685ef577425c512337c5857f472cf'; try { Invoke-WebRequest -Uri 'https://dcondax1-wq.github.io/pc/pc_status.ps1' -OutFile $t -UseBasicParsing -TimeoutSec 60 } catch { Write-Host '  [FIX] Could not download STATUS. Check the internet and double-click again, or send Claude a photo of this window.'; exit 1 }; $h = (Get-FileHash -Algorithm SHA256 -LiteralPath $t).Hash.ToLower(); if ($h -ne $pin) { Remove-Item -LiteralPath $t -Force -ErrorAction SilentlyContinue; Write-Host '  [FIX] The downloaded STATUS script is not the one this file expects (its fingerprint differs), so it was NOT run. Run it from the bot folder (tools\bat), or send Claude a photo of this window.'; exit 1 }; & powershell -NoProfile -ExecutionPolicy Bypass -File $t" & echo. & pause & exit /b
 
 :nops
 echo  [FIX] Windows PowerShell not found. Send a photo of this window to Claude.
