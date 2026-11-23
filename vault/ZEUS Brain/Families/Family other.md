@@ -7,11 +7,13 @@ type: "family"
 
 # Research family: other
 
-> [!abstract] 105 write-ups
-> adopt-candidate 16, finding 14, info 17, promising 14, rejected 35, research 9
+> [!abstract] 107 write-ups
+> adopt-candidate 16, finding 14, info 17, promising 14, rejected 36, research 10
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-23 | [[popular-ict-2026-11-23\|Popular ICT / SMC strategies on CME NQ, run exactly as taught]] | rejected |
+| 2026-11-23 | [[popular-classic-2026-11-23\|Popular classic NQ / ES strategies, as the textbook states them]] | research |
 | 2026-11-23 | [[payday-check-2026-11-23\|Payday check]] | research |
 | 2026-11-22 | [[edge-c-calendar-2026-11-22\|Edge hunt lane C]] | research |
 | 2026-11-22 | [[edge-b-cross-2026-11-22\|Edge hunt lane B]] | adopt-candidate |

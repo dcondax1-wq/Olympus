@@ -27,7 +27,7 @@ stage: "passed"
 ## Plan
 
 - **bots**: ATLAS
-- **payout**: 1st payout ~Jan 4 (~$800 to you; 8 in 10 runs between Dec 8 and Feb 26) - payday plan 2026-11-20, middle case
+- **payout**: 1st payout ~Dec 17 (~$747 to you; 8 in 10 runs between Dec 1 and Feb 3) - payday plan 2026-11-23, middle case
 - **usd_month**: $500
 - **cost**: paid
 
