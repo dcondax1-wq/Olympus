@@ -275,7 +275,10 @@ def glance_checks(REF):
     check("6. ATLAS armed on the phone = a LIVE account B whose live gate passed (enabled); SIM / PAPER / gate refused / explicit false = not",
           G._ab_armed({"kind": "LIVE", "enabled": True}) is True and G._ab_armed({"kind": "LIVE", "enabled": False}) is False
           and G._ab_armed({"kind": "SIM", "enabled": True}) is False and G._ab_armed({"kind": "PAPER", "enabled": True}) is False
-          and G._ab_armed({"armed": False, "kind": "LIVE", "enabled": True}) is False and G._ab_armed({}) is False)
+          and G._ab_armed({"armed": False, "kind": "LIVE", "enabled": True}) is False and G._ab_armed({}) is False
+          # red team 2: an armed flag with the live gate's refusal = NOT armed (the same rule as Zlarior / the extras)
+          and G._ab_armed({"armed": True, "kind": "LIVE", "enabled": True, "disabled": "phrase missing"}) is False
+          and G._ab_armed({"armed": True, "enabled": False}) is False and G._ab_armed({"armed": True, "enabled": True}) is True)
     # 2026-11-22 (night audit, package C): armed on the phone only when the live gate let it through; else its reason
     def _bots(hb):
         return {b["id"]: b for b in (G.build(hb) or {}).get("bots") or []}
