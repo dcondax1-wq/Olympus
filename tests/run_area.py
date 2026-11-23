@@ -420,3 +420,4 @@ AREAS["agency"].append("trade_scripts")   # day-caller2 2026-11-22: per-trade ca
 AREAS["money"].append("money_pipeline")     # day-a11y 2026-11-22: the MONEY PIPELINE (business/pipeline.html + agency/pipeline.py) + the Corvette fund
 AREAS["pc"] += ["clockfix"]        # 2026-11-22: FIX_CLOCK.bat + OlympusClock task + the schtasks fallback (engine/go.sync_clock, self_heal.fix_clock)
 AREAS["nq"] += ["roll_dec_audit", "nt_roll_guard", "dec_roll", "roll"]   # night-roll 2026-11-23: the December roll (ROLL.md): audit with fakes + the three roll suites (were in no area)
+AREAS["nq"].append("roll_rt")           # red team 2026-11-23: TRADE_HOME R reports what ROLL.bat found (exit 2 = not now)

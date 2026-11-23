@@ -397,7 +397,12 @@ def do_choice(ch, ask=input, out=say, run=None, fx=None, add_fn=None, unseen=Non
     if ch.lower() == "r":
         out("  Contract roll: ROLL.bat opens its own window. When it says 'Press any key', press a key to come back here.")
         rc = run_bat("ROLL.bat", run)
-        return result_roll(fx) if rc == 0 else "[FIX] ROLL.bat did not open. Tell Claude."
+        # red team 2026-11-23: tools/roll_now.py exits 1 (a click for you) / 2 (not now: too early or a trade open), and run_bat
+        # says 1 for a missing file too: the result line re-reads the roll itself instead of "did not open"
+        if rc == 2:
+            return ("[OK] Not now: ROLL.bat waits until every account is flat and it is the evening before the roll (after "
+                    "16:00 ET). Nothing was switched. Choose R again then.")
+        return result_roll(fx)
     return "[FIX] Type a number from the list."
 
 
