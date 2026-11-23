@@ -405,6 +405,7 @@ def real_build(tmp):
 
 def main() -> int:
     tmp = tempfile.mkdtemp(prefix="privacy-", dir=TMP_BASE)
+    os.environ.setdefault("LE_SCRUB_CACHE", os.path.join(tmp, "site_privacy_cache.json"))   # night-hermetic: never logs/ (children inherit)
     snap_path = os.path.join(ROOT, "tools", "web_hub_snapshot.json")      # a local build refreshes it: put it back as it was
     try:
         with open(snap_path, "rb") as fh:

@@ -102,6 +102,8 @@ class Replay:
         news.guard = lambda now=None, params=None, vol=None, events=None: {"allowed": True, "reasons": [], "regime": None,
                                                                             "next_high": None, "now": now}
         gamma.refresh_history = lambda max_age_h=12: os.path.join(DATA_DIR, "GEX_1d.csv")
+        from engine import memory as _mem        # night-hermetic: completed replay trades go to a temp db, never data/memory.db
+        _mem.MEMORY.path, _mem.MEMORY._ready = os.path.join(self.tmp, "memory.db"), False
 
     def bot(self, cfg=None, state_path=None, start_now=None):
         b = live.LiveBot()
