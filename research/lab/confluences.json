@@ -1,0 +1,1275 @@
+{
+ "date": "2026-11-23",
+ "source": "research/writeups/confluences-2026-11-23.md",
+ "prereg": "research/confluence/PREREG.md",
+ "n_tests_split": 20,
+ "entries": [
+  {
+   "id": "conf_lit_smt",
+   "bot": "LIT",
+   "name": "ES/NQ SMT divergence at the sweep",
+   "spans": {
+    "H1": {
+     "tagged": {
+      "n": 6,
+      "win": 33.3,
+      "avg_r": -0.678,
+      "pf": 0.0,
+      "usd": -1125
+     },
+     "untagged": {
+      "n": 74,
+      "win": 60.8,
+      "avg_r": 0.97,
+      "pf": 5.74,
+      "usd": 35026
+     }
+    },
+    "H2": {
+     "tagged": {
+      "n": 10,
+      "win": 50.0,
+      "avg_r": -0.122,
+      "pf": 0.61,
+      "usd": -436
+     },
+     "untagged": {
+      "n": 30,
+      "win": 50.0,
+      "avg_r": 1.032,
+      "pf": 3.54,
+      "usd": 10355
+     }
+    },
+    "2021-25": {
+     "tagged": {
+      "n": 11,
+      "win": 63.6,
+      "avg_r": -0.365,
+      "pf": 0.04,
+      "usd": -1192
+     },
+     "untagged": {
+      "n": 500,
+      "win": 53.6,
+      "avg_r": 0.023,
+      "pf": 1.03,
+      "usd": 2457
+     }
+    }
+   },
+   "p_2026": 0.00011909976209058507,
+   "holm_2026": 0.0024,
+   "p_2021_25": 0.024037288177645857,
+   "holm_2021_25": 0.4567,
+   "skip_untagged_gate": false,
+   "verdict": "anti-confluence (tagged trades lost in all 3 spans; Holm 2026 p 0.002; 27 trades, ES from 2025-04 only)",
+   "status": "rejected"
+  },
+  {
+   "id": "conf_lit_htf_pda",
+   "bot": "LIT",
+   "name": "1h/4h FVG or order block at the entry",
+   "spans": {
+    "H1": {
+     "tagged": {
+      "n": 43,
+      "win": 72.1,
+      "avg_r": 1.459,
+      "pf": 11.54,
+      "usd": 33562
+     },
+     "untagged": {
+      "n": 37,
+      "win": 43.2,
+      "avg_r": 0.134,
+      "pf": 1.06,
+      "usd": 339
+     }
+    },
+    "H2": {
+     "tagged": {
+      "n": 20,
+      "win": 40.0,
+      "avg_r": 0.186,
+      "pf": 1.65,
+      "usd": 2178
+     },
+     "untagged": {
+      "n": 20,
+      "win": 60.0,
+      "avg_r": 1.301,
+      "pf": 5.14,
+      "usd": 7741
+     }
+    },
+    "2021-25": {
+     "tagged": {
+      "n": 281,
+      "win": 52.3,
+      "avg_r": 0.016,
+      "pf": 0.97,
+      "usd": -1545
+     },
+     "untagged": {
+      "n": 230,
+      "win": 55.7,
+      "avg_r": 0.013,
+      "pf": 1.07,
+      "usd": 2810
+     }
+    }
+   },
+   "p_2026": 0.25994162121892805,
+   "holm_2026": 1.0,
+   "p_2021_25": 0.9829561824105667,
+   "holm_2021_25": 1.0,
+   "skip_untagged_gate": false,
+   "verdict": "noise (flips between spans, Holm 1.0)",
+   "status": "rejected"
+  },
+  {
+   "id": "conf_lit_key_sweep",
+   "bot": "LIT",
+   "name": "sweep took PDH/PDL, PWH/PWL or Asia/London high-low",
+   "spans": {
+    "H1": {
+     "tagged": {
+      "n": 42,
+      "win": 57.1,
+      "avg_r": 1.014,
+      "pf": 5.02,
+      "usd": 20215
+     },
+     "untagged": {
+      "n": 38,
+      "win": 60.5,
+      "avg_r": 0.66,
+      "pf": 4.91,
+      "usd": 13686
+     }
+    },
+    "H2": {
+     "tagged": {
+      "n": 19,
+      "win": 47.4,
+      "avg_r": 0.887,
+      "pf": 3.74,
+      "usd": 6774
+     },
+     "untagged": {
+      "n": 21,
+      "win": 52.4,
+      "avg_r": 0.614,
+      "pf": 2.15,
+      "usd": 3145
+     }
+    },
+    "2021-25": {
+     "tagged": {
+      "n": 263,
+      "win": 52.9,
+      "avg_r": -0.091,
+      "pf": 0.77,
+      "usd": -12079
+     },
+     "untagged": {
+      "n": 248,
+      "win": 54.8,
+      "avg_r": 0.126,
+      "pf": 1.29,
+      "usd": 13344
+     }
+    }
+   },
+   "p_2026": 0.4691513091301879,
+   "holm_2026": 1.0,
+   "p_2021_25": 0.1122738150705901,
+   "holm_2021_25": 1.0,
+   "skip_untagged_gate": false,
+   "verdict": "noise (flips between spans, Holm 1.0)",
+   "status": "rejected"
+  },
+  {
+   "id": "conf_lit_killzone",
+   "bot": "LIT",
+   "name": "killzone (London 02-05, NY AM 08:30-11)",
+   "spans": {
+    "H1": {
+     "tagged": {
+      "n": 54,
+      "win": 61.1,
+      "avg_r": 0.954,
+      "pf": 6.75,
+      "usd": 26876
+     },
+     "untagged": {
+      "n": 26,
+      "win": 53.8,
+      "avg_r": 0.621,
+      "pf": 2.82,
+      "usd": 7025
+     }
+    },
+    "H2": {
+     "tagged": {
+      "n": 25,
+      "win": 56.0,
+      "avg_r": 1.098,
+      "pf": 3.45,
+      "usd": 7779
+     },
+     "untagged": {
+      "n": 15,
+      "win": 40.0,
+      "avg_r": 0.154,
+      "pf": 2.05,
+      "usd": 2140
+     }
+    },
+    "2021-25": {
+     "tagged": {
+      "n": 299,
+      "win": 51.2,
+      "avg_r": -0.027,
+      "pf": 0.92,
+      "usd": -5117
+     },
+     "untagged": {
+      "n": 212,
+      "win": 57.5,
+      "avg_r": 0.073,
+      "pf": 1.17,
+      "usd": 6381
+     }
+    }
+   },
+   "p_2026": 0.23097273076122538,
+   "holm_2026": 1.0,
+   "p_2021_25": 0.4664689113426733,
+   "holm_2021_25": 1.0,
+   "skip_untagged_gate": false,
+   "verdict": "noise (flips between spans, Holm 1.0)",
+   "status": "rejected"
+  },
+  {
+   "id": "conf_lit_bias",
+   "bot": "LIT",
+   "name": "daily bias agrees (prior day close vs open + 4h trend)",
+   "spans": {
+    "H1": {
+     "tagged": {
+      "n": 29,
+      "win": 62.1,
+      "avg_r": 1.134,
+      "pf": 7.89,
+      "usd": 17602
+     },
+     "untagged": {
+      "n": 51,
+      "win": 56.9,
+      "avg_r": 0.682,
+      "pf": 3.73,
+      "usd": 16299
+     }
+    },
+    "H2": {
+     "tagged": {
+      "n": 13,
+      "win": 38.5,
+      "avg_r": -0.011,
+      "pf": 2.38,
+      "usd": 2032
+     },
+     "untagged": {
+      "n": 27,
+      "win": 55.6,
+      "avg_r": 1.107,
+      "pf": 3.11,
+      "usd": 7886
+     }
+    },
+    "2021-25": {
+     "tagged": {
+      "n": 190,
+      "win": 53.2,
+      "avg_r": 0.074,
+      "pf": 0.96,
+      "usd": -1423
+     },
+     "untagged": {
+      "n": 321,
+      "win": 54.2,
+      "avg_r": -0.021,
+      "pf": 1.05,
+      "usd": 2688
+     }
+    }
+   },
+   "p_2026": 0.9197398814980045,
+   "holm_2026": 1.0,
+   "p_2021_25": 0.5046338903172007,
+   "holm_2021_25": 1.0,
+   "skip_untagged_gate": false,
+   "verdict": "noise (flips between spans, Holm 1.0)",
+   "status": "rejected"
+  },
+  {
+   "id": "conf_lit_vol_spike",
+   "bot": "LIT",
+   "name": "volume spike on the CISD / signal bar (>=1.5x 20-bar avg)",
+   "spans": {
+    "H1": {
+     "tagged": {
+      "n": 27,
+      "win": 70.4,
+      "avg_r": 1.314,
+      "pf": 9.64,
+      "usd": 16858
+     },
+     "untagged": {
+      "n": 53,
+      "win": 52.8,
+      "avg_r": 0.608,
+      "pf": 3.59,
+      "usd": 17043
+     }
+    },
+    "H2": {
+     "tagged": {
+      "n": 10,
+      "win": 50.0,
+      "avg_r": 0.247,
+      "pf": 1.1,
+      "usd": 135
+     },
+     "untagged": {
+      "n": 30,
+      "win": 50.0,
+      "avg_r": 0.909,
+      "pf": 3.56,
+      "usd": 9783
+     }
+    },
+    "2021-25": {
+     "tagged": {
+      "n": 195,
+      "win": 53.8,
+      "avg_r": 0.122,
+      "pf": 1.14,
+      "usd": 5422
+     },
+     "untagged": {
+      "n": 316,
+      "win": 53.8,
+      "avg_r": -0.052,
+      "pf": 0.93,
+      "usd": -4158
+     }
+    }
+   },
+   "p_2026": 0.5513802016678664,
+   "holm_2026": 1.0,
+   "p_2021_25": 0.2269982097620885,
+   "holm_2021_25": 1.0,
+   "skip_untagged_gate": false,
+   "verdict": "noise (flips between spans, Holm 1.0)",
+   "status": "rejected"
+  },
+  {
+   "id": "conf_lit_vix_hi",
+   "bot": "LIT",
+   "name": "VIX regime: prior close >= 20",
+   "spans": {
+    "H1": {
+     "tagged": {
+      "n": 20,
+      "win": 70.0,
+      "avg_r": 1.347,
+      "pf": 9.88,
+      "usd": 11128
+     },
+     "untagged": {
+      "n": 60,
+      "win": 55.0,
+      "avg_r": 0.679,
+      "pf": 4.13,
+      "usd": 22773
+     }
+    },
+    "H2": {
+     "tagged": {
+      "n": 0
+     },
+     "untagged": {
+      "n": 40,
+      "win": 50.0,
+      "avg_r": 0.744,
+      "pf": 2.91,
+      "usd": 9919
+     }
+    },
+    "2021-25": {
+     "tagged": {
+      "n": 171,
+      "win": 55.6,
+      "avg_r": 0.087,
+      "pf": 1.3,
+      "usd": 7738
+     },
+     "untagged": {
+      "n": 340,
+      "win": 52.9,
+      "avg_r": -0.022,
+      "pf": 0.91,
+      "usd": -6473
+     }
+    }
+   },
+   "p_2026": 0.346893287280687,
+   "holm_2026": 1.0,
+   "p_2021_25": 0.45565669706974565,
+   "holm_2021_25": 1.0,
+   "skip_untagged_gate": false,
+   "verdict": "noise (flips between spans, Holm 1.0)",
+   "status": "rejected"
+  },
+  {
+   "id": "conf_lit_on_tight",
+   "bot": "LIT",
+   "name": "tight overnight (18:00-02:00 range < its 20-day median)",
+   "spans": {
+    "H1": {
+     "tagged": {
+      "n": 36,
+      "win": 66.7,
+      "avg_r": 0.76,
+      "pf": 4.99,
+      "usd": 13871
+     },
+     "untagged": {
+      "n": 44,
+      "win": 52.3,
+      "avg_r": 0.916,
+      "pf": 4.97,
+      "usd": 20030
+     }
+    },
+    "H2": {
+     "tagged": {
+      "n": 23,
+      "win": 52.2,
+      "avg_r": 0.945,
+      "pf": 3.36,
+      "usd": 5295
+     },
+     "untagged": {
+      "n": 17,
+      "win": 47.1,
+      "avg_r": 0.471,
+      "pf": 2.56,
+      "usd": 4624
+     }
+    },
+    "2021-25": {
+     "tagged": {
+      "n": 271,
+      "win": 55.0,
+      "avg_r": 0.015,
+      "pf": 0.95,
+      "usd": -2639
+     },
+     "untagged": {
+      "n": 240,
+      "win": 52.5,
+      "avg_r": 0.014,
+      "pf": 1.09,
+      "usd": 3904
+     }
+    }
+   },
+   "p_2026": 0.9309549085650386,
+   "holm_2026": 1.0,
+   "p_2021_25": 0.993756433665244,
+   "holm_2021_25": 1.0,
+   "skip_untagged_gate": false,
+   "verdict": "noise (flips between spans, Holm 1.0)",
+   "status": "rejected"
+  },
+  {
+   "id": "conf_lit_round",
+   "bot": "LIT",
+   "name": "sweep extreme within 5 pts of a 00/50 level",
+   "spans": {
+    "H1": {
+     "tagged": {
+      "n": 20,
+      "win": 80.0,
+      "avg_r": 0.178,
+      "pf": 1.79,
+      "usd": 990
+     },
+     "untagged": {
+      "n": 60,
+      "win": 51.7,
+      "avg_r": 1.069,
+      "pf": 5.52,
+      "usd": 32911
+     }
+    },
+    "H2": {
+     "tagged": {
+      "n": 5,
+      "win": 20.0,
+      "avg_r": 0.487,
+      "pf": 4.72,
+      "usd": 2012
+     },
+     "untagged": {
+      "n": 35,
+      "win": 54.3,
+      "avg_r": 0.78,
+      "pf": 2.7,
+      "usd": 7907
+     }
+    },
+    "2021-25": {
+     "tagged": {
+      "n": 98,
+      "win": 53.1,
+      "avg_r": 0.003,
+      "pf": 0.75,
+      "usd": -5236
+     },
+     "untagged": {
+      "n": 413,
+      "win": 54.0,
+      "avg_r": 0.017,
+      "pf": 1.08,
+      "usd": 6501
+     }
+    }
+   },
+   "p_2026": 0.09743365326972123,
+   "holm_2026": 1.0,
+   "p_2021_25": 0.9338697296612753,
+   "holm_2021_25": 1.0,
+   "skip_untagged_gate": false,
+   "verdict": "noise (flips between spans, Holm 1.0)",
+   "status": "rejected"
+  },
+  {
+   "id": "conf_lit_pd_side",
+   "bot": "LIT",
+   "name": "premium/discount: long below / short above prior day 50%",
+   "spans": {
+    "H1": {
+     "tagged": {
+      "n": 56,
+      "win": 53.6,
+      "avg_r": 0.512,
+      "pf": 3.32,
+      "usd": 15137
+     },
+     "untagged": {
+      "n": 24,
+      "win": 70.8,
+      "avg_r": 1.624,
+      "pf": 10.33,
+      "usd": 18764
+     }
+    },
+    "H2": {
+     "tagged": {
+      "n": 27,
+      "win": 55.6,
+      "avg_r": 0.91,
+      "pf": 2.97,
+      "usd": 6388
+     },
+     "untagged": {
+      "n": 13,
+      "win": 38.5,
+      "avg_r": 0.398,
+      "pf": 2.8,
+      "usd": 3531
+     }
+    },
+    "2021-25": {
+     "tagged": {
+      "n": 308,
+      "win": 55.5,
+      "avg_r": -0.018,
+      "pf": 0.99,
+      "usd": -504
+     },
+     "untagged": {
+      "n": 203,
+      "win": 51.2,
+      "avg_r": 0.063,
+      "pf": 1.04,
+      "usd": 1769
+     }
+    }
+   },
+   "p_2026": 0.2987767830949349,
+   "holm_2026": 1.0,
+   "p_2021_25": 0.5724350625353107,
+   "holm_2021_25": 1.0,
+   "skip_untagged_gate": false,
+   "verdict": "noise (flips between spans, Holm 1.0)",
+   "status": "rejected"
+  },
+  {
+   "id": "conf_atlas_killzone",
+   "bot": "ATLAS",
+   "name": "killzone (London 02-05, NY AM 08:30-11)",
+   "spans": {
+    "H1": {
+     "tagged": {
+      "n": 85,
+      "win": 60.0,
+      "avg_r": 1.216,
+      "pf": 3.94,
+      "usd": 19744
+     },
+     "untagged": {
+      "n": 19,
+      "win": 21.1,
+      "avg_r": -0.427,
+      "pf": 0.51,
+      "usd": -1382
+     }
+    },
+    "H2": {
+     "tagged": {
+      "n": 35,
+      "win": 51.4,
+      "avg_r": 0.592,
+      "pf": 2.26,
+      "usd": 3480
+     },
+     "untagged": {
+      "n": 11,
+      "win": 72.7,
+      "avg_r": 0.877,
+      "pf": 3.78,
+      "usd": 1776
+     }
+    },
+    "2021-25": {
+     "tagged": {
+      "n": 772,
+      "win": 36.3,
+      "avg_r": 0.161,
+      "pf": 1.26,
+      "usd": 24689
+     },
+     "untagged": {
+      "n": 227,
+      "win": 41.0,
+      "avg_r": -0.3,
+      "pf": 0.51,
+      "usd": -14325
+     }
+    }
+   },
+   "p_2026": 0.014249694547857537,
+   "holm_2026": 0.2707,
+   "p_2021_25": 0.00013480880317580317,
+   "holm_2021_25": 0.0027,
+   "skip_untagged_gate": false,
+   "verdict": "real in Jan-Jun + 2021-25 (Holm 2021-25 p 0.003), broke in Jul-Oct; as a filter it loses Jul-Oct",
+   "status": "rejected"
+  },
+  {
+   "id": "conf_atlas_on_tight",
+   "bot": "ATLAS",
+   "name": "tight overnight (18:00-02:00 range < its 20-day median)",
+   "spans": {
+    "H1": {
+     "tagged": {
+      "n": 53,
+      "win": 50.9,
+      "avg_r": 1.013,
+      "pf": 3.38,
+      "usd": 11614
+     },
+     "untagged": {
+      "n": 51,
+      "win": 54.9,
+      "avg_r": 0.815,
+      "pf": 2.44,
+      "usd": 6748
+     }
+    },
+    "H2": {
+     "tagged": {
+      "n": 24,
+      "win": 45.8,
+      "avg_r": 1.045,
+      "pf": 3.25,
+      "usd": 4549
+     },
+     "untagged": {
+      "n": 22,
+      "win": 68.2,
+      "avg_r": 0.241,
+      "pf": 1.52,
+      "usd": 707
+     }
+    },
+    "2021-25": {
+     "tagged": {
+      "n": 528,
+      "win": 38.8,
+      "avg_r": 0.107,
+      "pf": 1.18,
+      "usd": 11516
+     },
+     "untagged": {
+      "n": 471,
+      "win": 35.7,
+      "avg_r": -0.0,
+      "pf": 0.98,
+      "usd": -1152
+     }
+    }
+   },
+   "p_2026": 0.3598065493860053,
+   "holm_2026": 1.0,
+   "p_2021_25": 0.40365955874945325,
+   "holm_2021_25": 1.0,
+   "skip_untagged_gate": false,
+   "verdict": "points the right way in all 3 spans but not significant (Holm 1.0); as a filter it loses",
+   "status": "rejected"
+  },
+  {
+   "id": "conf_atlas_smt",
+   "bot": "ATLAS",
+   "name": "ES/NQ SMT divergence at the sweep",
+   "spans": {
+    "H1": {
+     "tagged": {
+      "n": 9,
+      "win": 44.4,
+      "avg_r": 1.415,
+      "pf": 3.35,
+      "usd": 2405
+     },
+     "untagged": {
+      "n": 95,
+      "win": 53.7,
+      "avg_r": 0.869,
+      "pf": 2.87,
+      "usd": 15957
+     }
+    },
+    "H2": {
+     "tagged": {
+      "n": 6,
+      "win": 50.0,
+      "avg_r": 1.246,
+      "pf": 2.49,
+      "usd": 1016
+     },
+     "untagged": {
+      "n": 40,
+      "win": 57.5,
+      "avg_r": 0.573,
+      "pf": 2.56,
+      "usd": 4240
+     }
+    },
+    "2021-25": {
+     "tagged": {
+      "n": 14,
+      "win": 50.0,
+      "avg_r": -0.021,
+      "pf": 0.91,
+      "usd": -122
+     },
+     "untagged": {
+      "n": 985,
+      "win": 37.2,
+      "avg_r": 0.057,
+      "pf": 1.09,
+      "usd": 10487
+     }
+    }
+   },
+   "p_2026": 0.5352151649582936,
+   "holm_2026": 1.0,
+   "p_2021_25": 0.8110014151323474,
+   "holm_2021_25": 1.0,
+   "skip_untagged_gate": false,
+   "verdict": "noise (flips between spans, Holm 1.0)",
+   "status": "rejected"
+  },
+  {
+   "id": "conf_atlas_htf_pda",
+   "bot": "ATLAS",
+   "name": "1h/4h FVG or order block at the entry",
+   "spans": {
+    "H1": {
+     "tagged": {
+      "n": 56,
+      "win": 48.2,
+      "avg_r": 0.848,
+      "pf": 2.73,
+      "usd": 9802
+     },
+     "untagged": {
+      "n": 48,
+      "win": 58.3,
+      "avg_r": 0.995,
+      "pf": 3.21,
+      "usd": 8560
+     }
+    },
+    "H2": {
+     "tagged": {
+      "n": 22,
+      "win": 59.1,
+      "avg_r": 0.53,
+      "pf": 2.23,
+      "usd": 1591
+     },
+     "untagged": {
+      "n": 24,
+      "win": 54.2,
+      "avg_r": 0.78,
+      "pf": 2.75,
+      "usd": 3665
+     }
+    },
+    "2021-25": {
+     "tagged": {
+      "n": 541,
+      "win": 38.4,
+      "avg_r": 0.033,
+      "pf": 1.03,
+      "usd": 2036
+     },
+     "untagged": {
+      "n": 458,
+      "win": 36.0,
+      "avg_r": 0.084,
+      "pf": 1.14,
+      "usd": 8328
+     }
+    }
+   },
+   "p_2026": 0.6943866688427336,
+   "holm_2026": 1.0,
+   "p_2021_25": 0.6935097388848307,
+   "holm_2021_25": 1.0,
+   "skip_untagged_gate": false,
+   "verdict": "noise (flips between spans, Holm 1.0)",
+   "status": "rejected"
+  },
+  {
+   "id": "conf_atlas_key_sweep",
+   "bot": "ATLAS",
+   "name": "sweep took PDH/PDL, PWH/PWL or Asia/London high-low",
+   "spans": {
+    "H1": {
+     "tagged": {
+      "n": 30,
+      "win": 60.0,
+      "avg_r": 1.259,
+      "pf": 3.64,
+      "usd": 6686
+     },
+     "untagged": {
+      "n": 74,
+      "win": 50.0,
+      "avg_r": 0.777,
+      "pf": 2.67,
+      "usd": 11675
+     }
+    },
+    "H2": {
+     "tagged": {
+      "n": 12,
+      "win": 58.3,
+      "avg_r": 1.089,
+      "pf": 3.42,
+      "usd": 1849
+     },
+     "untagged": {
+      "n": 34,
+      "win": 55.9,
+      "avg_r": 0.509,
+      "pf": 2.3,
+      "usd": 3407
+     }
+    },
+    "2021-25": {
+     "tagged": {
+      "n": 369,
+      "win": 32.2,
+      "avg_r": 0.007,
+      "pf": 1.01,
+      "usd": 277
+     },
+     "untagged": {
+      "n": 630,
+      "win": 40.3,
+      "avg_r": 0.086,
+      "pf": 1.13,
+      "usd": 10087
+     }
+    }
+   },
+   "p_2026": 0.2881140462002842,
+   "holm_2026": 1.0,
+   "p_2021_25": 0.5383245841157257,
+   "holm_2021_25": 1.0,
+   "skip_untagged_gate": false,
+   "verdict": "noise (flips between spans, Holm 1.0)",
+   "status": "rejected"
+  },
+  {
+   "id": "conf_atlas_bias",
+   "bot": "ATLAS",
+   "name": "daily bias agrees (prior day close vs open + 4h trend)",
+   "spans": {
+    "H1": {
+     "tagged": {
+      "n": 58,
+      "win": 55.2,
+      "avg_r": 0.862,
+      "pf": 3.04,
+      "usd": 10398
+     },
+     "untagged": {
+      "n": 46,
+      "win": 50.0,
+      "avg_r": 0.985,
+      "pf": 2.79,
+      "usd": 7964
+     }
+    },
+    "H2": {
+     "tagged": {
+      "n": 19,
+      "win": 68.4,
+      "avg_r": 0.797,
+      "pf": 3.37,
+      "usd": 2886
+     },
+     "untagged": {
+      "n": 27,
+      "win": 48.1,
+      "avg_r": 0.565,
+      "pf": 2.09,
+      "usd": 2370
+     }
+    },
+    "2021-25": {
+     "tagged": {
+      "n": 585,
+      "win": 40.7,
+      "avg_r": -0.022,
+      "pf": 0.96,
+      "usd": -3068
+     },
+     "untagged": {
+      "n": 414,
+      "win": 32.6,
+      "avg_r": 0.167,
+      "pf": 1.25,
+      "usd": 13432
+     }
+    }
+   },
+   "p_2026": 0.9691956285629878,
+   "holm_2026": 1.0,
+   "p_2021_25": 0.15400506590897234,
+   "holm_2021_25": 1.0,
+   "skip_untagged_gate": false,
+   "verdict": "noise (flips between spans, Holm 1.0)",
+   "status": "rejected"
+  },
+  {
+   "id": "conf_atlas_vol_spike",
+   "bot": "ATLAS",
+   "name": "volume spike on the CISD / signal bar (>=1.5x 20-bar avg)",
+   "spans": {
+    "H1": {
+     "tagged": {
+      "n": 41,
+      "win": 53.7,
+      "avg_r": 0.78,
+      "pf": 2.57,
+      "usd": 5544
+     },
+     "untagged": {
+      "n": 63,
+      "win": 52.4,
+      "avg_r": 1.005,
+      "pf": 3.13,
+      "usd": 12818
+     }
+    },
+    "H2": {
+     "tagged": {
+      "n": 12,
+      "win": 50.0,
+      "avg_r": 0.841,
+      "pf": 3.07,
+      "usd": 1723
+     },
+     "untagged": {
+      "n": 34,
+      "win": 58.8,
+      "avg_r": 0.597,
+      "pf": 2.38,
+      "usd": 3533
+     }
+    },
+    "2021-25": {
+     "tagged": {
+      "n": 480,
+      "win": 35.2,
+      "avg_r": 0.056,
+      "pf": 1.09,
+      "usd": 5582
+     },
+     "untagged": {
+      "n": 519,
+      "win": 39.3,
+      "avg_r": 0.056,
+      "pf": 1.07,
+      "usd": 4783
+     }
+    }
+   },
+   "p_2026": 0.8725502120148638,
+   "holm_2026": 1.0,
+   "p_2021_25": 0.9983596055775096,
+   "holm_2021_25": 1.0,
+   "skip_untagged_gate": false,
+   "verdict": "noise (flips between spans, Holm 1.0)",
+   "status": "rejected"
+  },
+  {
+   "id": "conf_atlas_vix_hi",
+   "bot": "ATLAS",
+   "name": "VIX regime: prior close >= 20",
+   "spans": {
+    "H1": {
+     "tagged": {
+      "n": 25,
+      "win": 52.0,
+      "avg_r": 0.386,
+      "pf": 1.91,
+      "usd": 2107
+     },
+     "untagged": {
+      "n": 79,
+      "win": 53.2,
+      "avg_r": 1.084,
+      "pf": 3.25,
+      "usd": 16255
+     }
+    },
+    "H2": {
+     "tagged": {
+      "n": 2,
+      "win": 100.0,
+      "avg_r": 0.994,
+      "pf": null,
+      "usd": 284
+     },
+     "untagged": {
+      "n": 44,
+      "win": 54.5,
+      "avg_r": 0.645,
+      "pf": 2.47,
+      "usd": 4972
+     }
+    },
+    "2021-25": {
+     "tagged": {
+      "n": 340,
+      "win": 37.6,
+      "avg_r": 0.071,
+      "pf": 1.08,
+      "usd": 3554
+     },
+     "untagged": {
+      "n": 659,
+      "win": 37.2,
+      "avg_r": 0.049,
+      "pf": 1.08,
+      "usd": 6810
+     }
+    }
+   },
+   "p_2026": 0.3096758882854543,
+   "holm_2026": 1.0,
+   "p_2021_25": 0.8727653388967385,
+   "holm_2021_25": 1.0,
+   "skip_untagged_gate": false,
+   "verdict": "noise (flips between spans, Holm 1.0)",
+   "status": "rejected"
+  },
+  {
+   "id": "conf_atlas_round",
+   "bot": "ATLAS",
+   "name": "sweep extreme within 5 pts of a 00/50 level",
+   "spans": {
+    "H1": {
+     "tagged": {
+      "n": 19,
+      "win": 63.2,
+      "avg_r": 1.219,
+      "pf": 4.88,
+      "usd": 4760
+     },
+     "untagged": {
+      "n": 85,
+      "win": 50.6,
+      "avg_r": 0.848,
+      "pf": 2.63,
+      "usd": 13602
+     }
+    },
+    "H2": {
+     "tagged": {
+      "n": 4,
+      "win": 75.0,
+      "avg_r": 2.144,
+      "pf": 12.2,
+      "usd": 1741
+     },
+     "untagged": {
+      "n": 42,
+      "win": 54.8,
+      "avg_r": 0.519,
+      "pf": 2.09,
+      "usd": 3515
+     }
+    },
+    "2021-25": {
+     "tagged": {
+      "n": 223,
+      "win": 37.7,
+      "avg_r": -0.094,
+      "pf": 0.83,
+      "usd": -4625
+     },
+     "untagged": {
+      "n": 776,
+      "win": 37.2,
+      "avg_r": 0.1,
+      "pf": 1.15,
+      "usd": 14990
+     }
+    }
+   },
+   "p_2026": 0.24907508462583205,
+   "holm_2026": 1.0,
+   "p_2021_25": 0.1559297699522015,
+   "holm_2021_25": 1.0,
+   "skip_untagged_gate": false,
+   "verdict": "noise (flips between spans, Holm 1.0)",
+   "status": "rejected"
+  },
+  {
+   "id": "conf_atlas_pd_side",
+   "bot": "ATLAS",
+   "name": "premium/discount: long below / short above prior day 50%",
+   "spans": {
+    "H1": {
+     "tagged": {
+      "n": 38,
+      "win": 52.6,
+      "avg_r": 1.305,
+      "pf": 3.62,
+      "usd": 8953
+     },
+     "untagged": {
+      "n": 66,
+      "win": 53.0,
+      "avg_r": 0.692,
+      "pf": 2.53,
+      "usd": 9409
+     }
+    },
+    "H2": {
+     "tagged": {
+      "n": 19,
+      "win": 42.1,
+      "avg_r": 0.378,
+      "pf": 1.36,
+      "usd": 714
+     },
+     "untagged": {
+      "n": 27,
+      "win": 66.7,
+      "avg_r": 0.86,
+      "pf": 4.24,
+      "usd": 4542
+     }
+    },
+    "2021-25": {
+     "tagged": {
+      "n": 335,
+      "win": 31.0,
+      "avg_r": 0.186,
+      "pf": 1.26,
+      "usd": 11718
+     },
+     "untagged": {
+      "n": 664,
+      "win": 40.5,
+      "avg_r": -0.009,
+      "pf": 0.98,
+      "usd": -1354
+     }
+    }
+   },
+   "p_2026": 0.5582112864395867,
+   "holm_2026": 1.0,
+   "p_2021_25": 0.16472583098860816,
+   "holm_2021_25": 1.0,
+   "skip_untagged_gate": false,
+   "verdict": "noise (flips between spans, Holm 1.0)",
+   "status": "rejected"
+  },
+  {
+   "id": "conf_lit_size_2plus",
+   "bot": "LIT",
+   "name": "x1.5 size on 2+ of the 10 confluences",
+   "spans": null,
+   "verdict": "leverage, not skill: 95-98% of trades carry 2+ tags; same as flat x1.5; luck p 0.02 / 0.83 / 0.83; fails 2021-25 eval",
+   "status": "rejected"
+  },
+  {
+   "id": "conf_atlas_size_2plus",
+   "bot": "ATLAS",
+   "name": "x1.5 size on 2+ of the 10 confluences",
+   "spans": null,
+   "verdict": "the funded 25K preset caps size (x1.5 adds $0 funded); eval Jul-Oct 2-week pass 43.5 -> 42.0%",
+   "status": "rejected"
+  },
+  {
+   "id": "conf_lit_skip_smt_posthoc",
+   "bot": "LIT",
+   "name": "POST-HOC: skip LIT setups that have ES/NQ SMT",
+   "spans": null,
+   "verdict": "clears the money gate (+$770 / +$1,013 / +$8 a month) with luck p 0.01-0.05 in 2026 and 0.48 in 2021-25, but it was chosen after seeing the split, reverses the textbook idea and rests on 27 trades (ES data from 2025-04): forward-paper only, re-test at 60+ tagged trades",
+   "status": "watch (post-hoc)",
+   "luck_p": {
+    "lit:H1": 0.05,
+    "lit:H2": 0.04,
+    "lit:2021-25": 0.475,
+    "eval:H1": 0.01,
+    "eval:H2": 0.03
+   }
+  }
+ ]
+}
