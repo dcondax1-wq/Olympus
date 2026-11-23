@@ -768,7 +768,9 @@ class Account:
         today = trading_day(now)
         pnl = self.day_pnl(today)
         lim = _num(self.rules.get("dll_lock", self.rules.get("dll")))
-        if lim and pnl <= -abs(lim) and not (self.lock and self.lock.get("day") == today):
+        # red team 2026-11-23: a damaged-state pause (state_damaged) never stands in for a REAL loss lock: the keep-alive ignores
+        # the pause on purpose, so a real daily loss replaces it (else the keep-alive could trade past a real loss lock)
+        if lim and pnl <= -abs(lim) and not (self.lock and self.lock.get("day") == today and not self.lock.get("state_damaged")):
             self.lock = {"day": today, "reason": f"daily loss ${pnl:,.0f} (limit ${abs(lim):,.0f})", "t": int(now)}
             self.log("risk", f"DAILY LOSS LOCK-OUT: {self.lock['reason']}: no new entry on this account today; the other "
                              "accounts keep trading")

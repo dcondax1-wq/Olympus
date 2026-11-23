@@ -34,13 +34,19 @@ def bak_of(path: str) -> str:
 
 
 def rotate(path: str, good: bool) -> None:
-    """Before a save: the current file -> <path>.bak, only when it is known good (written / read cleanly by this process)."""
+    """Before a save: a COPY of the current file -> <path>.bak, only when it is known good (written / read cleanly by this
+    process). Red team 2026-11-23: a copy, never a move: moving the file away left NO live_state.json between the two
+    renames (every reader - readiness, guards, the circuit breaker - saw it missing), and a save whose second rename failed
+    (or a power cut between them) left only the .bak: on a restart the next day that read as "damaged" and paused entries."""
     if not good:
         return
     try:
         if os.path.exists(path):
+            import shutil
             from .fsutil import replace as _replace
-            _replace(path, bak_of(path))
+            tmp = bak_of(path) + ".tmp"
+            shutil.copyfile(path, tmp)
+            _replace(tmp, bak_of(path))
     except Exception:
         pass
 
@@ -78,6 +84,21 @@ def load(path: str, day_of, today: str) -> dict:
         except Exception:
             pass
     return out
+
+
+def bak_complete(blob, day: str, trading_day, audit_path=None, account=None) -> bool:
+    """Red team 2026-11-23: today's .bak is the save BEFORE the damaged one, so it can miss that save's own event. A model
+    event (an exit the model shows) is replayed by the next poll; an ORDER is not (an entry routed in that save sits at the
+    broker with no ledger row: today's P&L and the daily-loss stop would miss it). True = no order for this account in the
+    NinjaTrader OIF audit log after the .bak was saved (or no audit log: paper). For the lead to wire in live._restore /
+    account_b._load before using a .bak (helpers do not edit those files)."""
+    try:
+        if not audit_path or not account or not os.path.exists(audit_path):
+            return True
+        la = _last_audit_t(audit_path, account, day, trading_day)
+        return la is None or la <= int((blob or {}).get("saved_at") or 0)
+    except Exception:
+        return False
 
 
 # ------------------------------------------------------------------------------------------------ 3. LIT's rebuild
