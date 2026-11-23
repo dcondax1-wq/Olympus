@@ -114,7 +114,7 @@ def builder(t: dict, key: str, name: str | None = None) -> dict:
     split = _f(t.get("split"), 0.8) or 0.8
     out = {"key": key, "name": nm, "kind": "builder", "payouts_n": n, "next_n": n + 1, "ready": False, "amount": 0.0,
            "to_you": 0.0, "guard": None, "why": list(t.get("why") or [])[:3], "cycle": str(t.get("cycle_start") or ""),
-           "lost": bool(t.get("lost")), "mffu_would_pay": amt if elig else 0.0}
+           "lost": bool(t.get("lost")), "mffu_would_pay": amt if elig else 0.0, "acct_start": str(t.get("start") or "")}
     if t.get("lost"):
         out["why"] = ["the funded account is lost"]
         return out
@@ -173,7 +173,7 @@ def alerts(views: list, now, sent: dict | None = None) -> list:
                 f"One day of $10,000 net moves a Rapid to LIVE and puts every MFFU sim account to sleep. Today is "
                 f"{usd(v['today_net'])}. Do not add hand trades today; tell Claude to check the sizing.", "problem")
         if v.get("guard") == "stop":
-            add(f"payout5:stop:{v['key']}", f"{nm}: do not take payout #5: close after payout 4",
+            add(f"payout5:stop:{v['key']}:{v.get('acct_start') or '-'}", f"{nm}: do not take payout #5: close after payout 4",
                 "4 payouts are in. Payout #5 makes MFFU move you to live and every sim account (all evals, ATLAS, the Rapids) "
                 "goes to sleep. Stop here: let the bot finish the day, then close this account in MFFU and buy the next eval.")
             if v.get("mffu_would_pay") and day_after:
@@ -186,7 +186,8 @@ def alerts(views: list, now, sent: dict | None = None) -> list:
         last = v.get("guard") == "last"
         title = f"Payout ready: {nm} can request {usd(v['amount'])} now" + (" (payout #4, the LAST)" if last else "")
         body = (f"{usd(v['to_you'])} reaches you. " + STEPS.format(acct=nm, amt=usd(v["amount"]))
-                + (" This is payout #4: after it, close the account (never take #5: MFFU moves you to live)." if last else "")
+                + (" This is payout #4: after it, close the account (never take #5: MFFU moves you to live). First check MFFU's "
+                    "Payouts page shows exactly 3 paid: if it shows 4, do NOT request (that would be #5)." if last else "")
                 + (f" Payout {v['next_n']} of 4." if v["kind"] == "builder" and not last else ""))
         add(f"payout:{v['key']}:{cyc}", title, body)
     return out
@@ -325,6 +326,10 @@ def record(key: str, amount, day: str | None = None, ledger_path: str | None = N
     rows = [x for x in L.get("rows") or [] if isinstance(x, dict) and not (x.get("key") == key and x.get("day") == day)]
     rows.append({"key": key, "day": day, "gross": amt, "to_you": round(amt * split, 2), "kind": kind, "t": int(time.time())})
     n = sum(1 for x in rows if x.get("key") == key)
+    if kind == "builder":                    # red team 2026-11-23: a 2nd funded ATLAS (after a new eval) is a NEW account: count its
+        own = _own_count(key, rec)           # payouts from its own record, else only the ledger rows since its funded start
+        if own is not None:
+            n = own
     if kind == "builder" and n >= BUILDER_LAST + 1:
         warn = "That was payout #5: MFFU moves you to live and every sim account sleeps. Tell Claude now."
     elif kind == "builder" and n == BUILDER_LAST:
@@ -333,6 +338,25 @@ def record(key: str, amount, day: str | None = None, ledger_path: str | None = N
     _write(lp, L)
     say = f"Recorded {usd(amt)} ({usd(amt * split)} to you) on {day}; the Money pipeline counts it."
     return {"ok": True, "say": say + (f" {warn}" if warn else ""), "warn": warn, "n": n}
+
+
+def _own_count(key: str, rec: dict | None = None) -> int | None:
+    """Payouts recorded on the CURRENT funded account of this slot (after record()): the tracker's payouts_n. None = unknown."""
+    try:
+        if rec and rec.get("count"):
+            return int(rec["count"](key))
+        if key == "atlas":
+            from . import account_b as A
+            s = A.funded_status()
+            return int((s.get("tracker") or {}).get("payouts_n")) if s.get("ok") else None
+        if key.startswith("x:"):
+            from . import funded_life as FL
+            for t in FL.local_status():
+                if str(t.get("id")) == key[2:]:
+                    return int(t.get("payouts_n"))
+    except Exception:  # noqa: BLE001
+        return None
+    return None
 
 
 def ledger_rows(path: str | None = None, kinds=("rapid",)) -> list:
