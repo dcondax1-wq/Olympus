@@ -539,8 +539,8 @@ def clock_sync():
         guards.clock_heal(b, p, day, now_real=T + 201)          # while syncing: no second thread, no push yet
         n_push = len(b.pushes)
         wait("syncing")
-        check("C5. flat: one sync attempt in a thread (the guard tick does not wait), the push after the result: 'synced by itself'",
-              quick and len(calls) == 1 and n_push == 1 and len(b.pushes) == 2 and "synced by itself" in json.dumps(b.pushes[-1])
+        check("C5. flat: one sync attempt in a thread (the guard tick does not wait), the push after the result: 'the bot synced it'",
+              quick and len(calls) == 1 and n_push == 1 and len(b.pushes) == 2 and "the bot synced it" in json.dumps(b.pushes[-1])
               and "25 s off" in json.dumps(b.pushes[-1]), (quick, calls, b.pushes))
         check("C6. after the sync: probe due now, bad 1 (block lifted pending the confirming probe)",
               guards._CLOCK["t"] == 0.0 and guards._CLOCK["bad"] == 1 and not guards.clock_problem(b, c), dict(guards._CLOCK))
@@ -559,6 +559,29 @@ def clock_sync():
         guards._CLOCK.update({"win": False, "sync_t": 0.0})
         guards.clock_heal(b, p, day, now_real=T + 5000); wait("syncing")
         check("C10. not on Windows: never a sync", len(calls) == 2, calls)
+        # red team 2: a sync that "ran" (ok) but left the clock wrong retries every 300 s: ONE "sync ran" push a day, not one per try
+        answer[0] = {"ok": True, "say": "Clock sync started by the OlympusClock task", "via": "task"}
+        guards._CLOCK.update({"win": True, "sync_t": 0.0})
+        b._clock_synced_pushed = None
+        n0 = len(b.pushes)
+        for k in range(4):
+            guards._CLOCK.update({"bad": 2, "drift": 25.0})
+            guards.clock_heal(b, p, day, now_real=T + 9000 + 300 * k); wait("syncing")
+        check("C12. 4 'ok' syncs that do not fix the clock: 4 tries, ONE push that day, it never says 'fixed'",
+              len(calls) == 6 and len(b.pushes) == n0 + 1 and "fixed" not in json.dumps(b.pushes[-1]).lower(), (len(calls), b.pushes[n0:]))
+        # red team 2: the real flat check also sees a hand / unknown NQ position NinjaTrader shows on a real account
+        guards._CLOCK["flat"] = None
+        from engine import hand_hedge as HH
+        old = (HH.folder_of, HH.scan)
+        try:
+            HH.folder_of, HH.scan = (lambda bot: "X"), (lambda f, now=None: [{"account": "MFFUEV1", "side": "LONG", "qty": 1}])
+            why = guards._clock_flat(b)
+            HH.scan = lambda f, now=None: (_ for _ in ()).throw(OSError("x"))
+            why2 = guards._clock_flat(b)
+        finally:
+            HH.folder_of, HH.scan = old
+        check("C13. a hand NQ position in NinjaTrader = not flat (no clock sync); unreadable = not flat",
+              why and "position" in why and why2 and "cannot tell" in why2, (why, why2))
     finally:
         guards._CLOCK.update({"drift": None, "bad": 0, "t": 0.0, "ok_t": 0.0, "probe": None, "running": False,
                               "sync": None, "flat": None, "win": None, "sync_t": 0.0, "syncing": False})

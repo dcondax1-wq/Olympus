@@ -868,6 +868,13 @@ def _clock_flat(bot) -> str | None:
         return _CLOCK["flat"]()
     if getattr(bot, "_open_routed", None) is not None:
         return "a trade is open"
+    try:                               # red team 2: a hand trade / any NQ position NinjaTrader shows on a real account
+        from . import hand_hedge as HH
+        fo = HH.folder_of(bot)
+        if fo and HH.scan(fo):
+            return "an NQ position is open in NinjaTrader"
+    except Exception as e:  # noqa: BLE001
+        return f"cannot tell if flat ({e.__class__.__name__})"
     try:
         from . import self_heal
         return self_heal.trade_open(self_heal.Ctx(nt=None, git=lambda *a, **k: None, procs=[], ping=lambda: True, pkgs={}))
@@ -896,8 +903,12 @@ def _clock_sync_run(bot, day, off):
             _CLOCK["t"] = 0.0           # probe again at once ...
             _CLOCK["bad"] = 1           # ... as a 20 s confirming probe: a right clock clears the block, a wrong one keeps it
             bot._clock_pushed = day
-            _notify(bot, f"clock-synced:{day}:{int(time.time())}", "Clock fixed",
-                    f"PC clock was {off:.0f} s off: synced by itself. Entries resume after one confirming check.")
+            # red team 2: ONE push a day (a sync that "ran" but did not fix the clock retries every 300 s: no storm, no false "fixed")
+            if getattr(bot, "_clock_synced_pushed", None) != day:
+                bot._clock_synced_pushed = day
+                _notify(bot, f"clock-synced:{day}", "Clock sync ran",
+                        f"PC clock was {off:.0f} s off: the bot synced it. Entries resume after one confirming check; if the block "
+                        f"stays, {CLOCK_FIX}.")
         elif getattr(bot, "_clock_pushed", None) != day:
             bot._clock_pushed = day
             _notify(bot, f"clock:{day}", "Clock drift: entries blocked", f"PC clock was {off:.0f} s off: could not sync: {CLOCK_FIX}.")

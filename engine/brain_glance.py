@@ -271,7 +271,7 @@ def _ab_armed(ab) -> bool:
     the allowlist: engine/ninjatrader._live_gate), so a LIVE + enabled account B is armed. Before 2026-11-22 this read
     ab.get("armed") and always showed "NOT armed" on the phone while ATLAS was trading live."""
     if "armed" in ab:
-        return bool(ab.get("armed"))
+        return _gate_armed(ab)            # red team 2: the same rule as Zlarior / the extras (armed AND enabled AND no reason)
     return str(ab.get("kind") or "").upper() == "LIVE" and bool(ab.get("enabled"))
 
 
