@@ -2321,7 +2321,8 @@ def record_last(rc, why="", now=None, since=None) -> None:
         os.makedirs(os.path.dirname(p), exist_ok=True)
         with open(p + ".tmp", "w", encoding="utf-8") as fh:
             json.dump({"t": int(time.time() if now is None else now), "rc": int(rc), "why": str(why or "")[:200]}, fh)
-        os.replace(p + ".tmp", p)
+        from . import fsutil as _fsutil              # integration 2026-11-23: land-fixes' Windows-safe replace
+        _fsutil.replace(p + ".tmp", p)
     except Exception:  # noqa: BLE001
         pass
 

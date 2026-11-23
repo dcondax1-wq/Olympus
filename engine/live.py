@@ -342,6 +342,8 @@ class LiveBot:
         self._blocked_entries = set()    # entry_t of engine entries we deliberately did not route
         self._flattened = set()          # entry_t of positions the clock-based safety flatten already closed
         self._no_entries_day = None      # trading day a remote "flatten" ended (engine/remote_ctl.py): no new entries that day
+        self._state_block_day = None     # night-statesafe: trading day the state file was damaged beyond repair (engine/state_safe)
+        self._state_good = False         # the state file on disk is one this process wrote / read cleanly (.bak rotation)
         self._restored = None
         self._nt_feed = None             # engine.ninjatrader.NinjaTraderBars for data_source "ninjatrader"
         self._nt_notes = {}              # rate limit for the ninjatrader feed notes: key -> (text, unix time logged)
@@ -1192,7 +1194,8 @@ class LiveBot:
                 "open_src": self._open_src, "second_prov": {str(k): v for k, v in self._second_prov.items()},
                 "seen": [list(k) for k in list(self.seen)[-2000:]], "ledger": self.ledger[-300:],
                 "week_exits": self.lit_week_hist() if self.cfg else [], "eval_days": self.eval_days() if self.cfg else {},
-                "day_pnl_routed": self.day_pnl_routed(), "trades_today": self.trades_today()}
+                "day_pnl_routed": self.day_pnl_routed(), "trades_today": self.trades_today(),
+                **({"state_block_day": self._state_block_day} if self._state_block_day else {})}
 
     def _save_state(self):
         if not self.cfg:
@@ -1203,7 +1206,10 @@ class LiveBot:
             with open(tmp, "w", encoding="utf-8") as f:
                 json.dump(self._state_blob(), f, default=_jsonable)
             from .fsutil import replace as _replace
+            from . import state_safe as _ss
+            _ss.rotate(self.state_path, self._state_good)   # night-statesafe: the previous good copy -> live_state.json.bak
             _replace(tmp, self.state_path)            # retried: Windows refuses a replace while a reader has it open
+            self._state_good = True
         except Exception as e:
             # night-faults 2026-11-23: was silent (health only). Logged every time; the real bot also pushes the private
             # problem topic once per 30 min (disk full: a restart would lose today's ledger, kill flag and alert keys)
@@ -1231,18 +1237,44 @@ class LiveBot:
 
     def _restore(self, clear_kill=False):
         """Pick up today's ledger / kill flag / alert de-dup keys after a server restart. Older files are ignored."""
-        if not os.path.exists(self.state_path):
-            return
-        try:
-            with open(self.state_path, encoding="utf-8") as f:
-                s = json.load(f)
-        except Exception as e:
-            self._log("warn", f"live_state.json unreadable ({e}) - starting clean")
-            if self.state_path == STATE_PATH:     # night-faults: the real bot also tells the owner (one push a day)
-                from .fault_note import corrupt
-                corrupt(self.state_path, e, "the bot started with a clean day (today's ledger, kill flag and alert keys are gone)")
-            return
+        from . import state_safe as _ss
         today = trading_day(self.clock())
+        got = _ss.load(self.state_path, lambda b: b.get("day"), today)
+        if got["blob"] is None and not got["damaged"]:
+            return
+        s = got["blob"]
+        if got["damaged"]:
+            # night-statesafe 2026-11-23: never a clean day (that dropped the kill flag and today's daily loss)
+            nm = os.path.basename(self.state_path)
+            if s is not None:
+                self._log("warn", f"{got['why']}: restored from today's backup {nm}.bak")
+            else:
+                rb = None
+                if self.cfg:
+                    ad = self.adapter
+                    rb = _ss.rebuild_lit(today, trading_day, getattr(ad, "audit_path", None), getattr(ad, "account", None))
+                if rb is not None:
+                    s = {"version": STATE_VERSION, "day": today, "sym": self.cfg.get("sym"), "tf": self.cfg.get("tf"),
+                         "ledger": rb["ledger"], "kill": rb["kill"], "saved_at": rb["copy_t"]}
+                    ob = got.get("old_bak")          # the earlier days (weekly stop, the eval's days) from an older backup
+                    if isinstance(ob, dict) and ob.get("sym") == self.cfg.get("sym"):
+                        s.update({k: ob[k] for k in ("week_exits", "eval_days") if k in ob})
+                    self._log("warn", f"{got['why']}: today's {len(rb['ledger'])} ledger rows and the kill flag "
+                                      f"({'ON' if rb['kill'] else 'off'}) rebuilt from logs/exec_audit")
+                else:
+                    self._state_block_day = today
+                    self.health["state_damaged"] = got["why"]
+                    self._log("risk", f"{got['why']}: today's numbers cannot be rebuilt: NO NEW ENTRIES for the rest of today "
+                                      "(exits and brackets untouched)")
+                    _ss.alert(nm, today, self.state_path == STATE_PATH)
+                    ob = got.get("old_bak")          # an older backup still carries the week's / the eval's earlier days
+                    s = ob if isinstance(ob, dict) and ob.get("sym") == (self.cfg or {}).get("sym") else None
+                    if s is None:
+                        return
+        else:
+            self._state_good = True
+        if s.get("state_block_day") == today:
+            self._state_block_day = today            # a damaged-state pause outlives a restart the same day
         try:                         # engine/keepalive: the saved ledger's CONFIRMED fill days outlive an earlier day's ledger
             from . import keepalive as _ka
             self._ka_seed = _ka.seed_days(s.get("ledger") or [])
@@ -1825,6 +1857,8 @@ class LiveBot:
             why = "feed stale"
         if not why and self._no_entries_day is not None and self._no_entries_day == trading_day(now):
             why = "the owner flattened remotely today"
+        if not why and self._state_block_day is not None and self._state_block_day == trading_day(now):
+            why = "the state file was damaged today (no new entries until the next trading day)"
         q, reasons = (0, []) if why else self._second_qty(sc, t)
         if not why and q < 1:
             why = "size 0 (" + "; ".join(reasons) + ")"
@@ -2122,6 +2156,8 @@ class LiveBot:
             return "feed stale"
         if self._no_entries_day is not None and self._no_entries_day == trading_day(now):
             return "the owner flattened remotely today"
+        if self._state_block_day is not None and self._state_block_day == trading_day(now):
+            return "the state file was damaged today (no new entries until the next trading day)"
         return None
 
     def _combo_opposite(self, d):
@@ -3215,6 +3251,10 @@ class LiveBot:
             elif self._no_entries_day is not None and self._no_entries_day == trading_day(now):
                 self._blocked_entries.add(ent["entry_t"])
                 self._log("risk", f"Entry at {_et(ent['entry_t']):%H:%M} ET NOT routed: the owner flattened remotely today "
+                                  "(no new entries until the next trading day)")
+            elif self._state_block_day is not None and self._state_block_day == trading_day(now):
+                self._blocked_entries.add(ent["entry_t"])
+                self._log("risk", f"Entry at {_et(ent['entry_t']):%H:%M} ET NOT routed: the state file was damaged today "
                                   "(no new entries until the next trading day)")
             elif age > late_after:
                 self._blocked_entries.add(ent["entry_t"])

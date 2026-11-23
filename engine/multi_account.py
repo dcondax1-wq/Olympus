@@ -1365,6 +1365,8 @@ class AccountRouter:
         saved = self._load()
         for acc in self.accounts:
             acc.restore((saved.get("accounts") or {}).get(acc.id) or {}, today)
+            if getattr(self, "_state_pause", None):
+                acc.lock = {"day": today, "reason": self._state_pause, "t": int(self.clock()), "state_damaged": True}
             if acc.problem is not None:
                 self.log("risk", f"[{acc.name}] not trading: {acc.problem}")
                 continue
@@ -1446,10 +1448,28 @@ class AccountRouter:
 
     # ---- persistence
     def _load(self) -> dict:
+        """night-statesafe 2026-11-23: an unreadable live_state_accounts.json never means a clean day (each extra account's lock-out
+        and today's ledger, so its daily loss, were gone): today's .bak, else the older .bak's history + every account locked out
+        today (self._state_pause, applied in start()) + one phone message."""
+        self._state_pause = None
         try:
-            with open(self.state_path, encoding="utf-8") as fh:
-                d = json.load(fh)
-            return d if isinstance(d, dict) else {}
+            from . import state_safe as _ss
+            today = trading_day(self.clock())
+            got = _ss.load(self.state_path, lambda b: b.get("day"), today)
+            if got["damaged"]:
+                nm = os.path.basename(self.state_path)
+                if got["blob"] is not None:
+                    self.log("warn", f"{got['why']}: restored from today's backup {nm}.bak")
+                    return got["blob"]
+                self._state_pause = f"the state file was damaged today ({got['why']}): no new entry until the next trading day"
+                self.log("risk", f"{got['why']}: today's numbers cannot be rebuilt: NO NEW ENTRY on the extra accounts today "
+                                 "(exits and brackets untouched)")
+                _ss.alert(nm, today, self.real_bot())
+                ob = got.get("old_bak")
+                return ob if isinstance(ob, dict) else {}
+            if got["blob"] is not None:
+                self._state_good = True
+            return got["blob"] or {}
         except Exception:
             return {}
 
@@ -1466,7 +1486,10 @@ class AccountRouter:
                 with open(tmp, "w", encoding="utf-8") as fh:
                     json.dump(blob, fh, default=str)
                 from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+                from . import state_safe as _ss
+                _ss.rotate(self.state_path, getattr(self, "_state_good", False))   # night-statesafe: previous good copy -> .bak
                 _fs_replace(tmp, self.state_path)
+                self._state_good = True
             except Exception as e:
                 self.log("warn", f"accounts state save failed: {e.__class__.__name__}: {e}")
 

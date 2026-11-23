@@ -324,3 +324,5 @@ data/shadow_leads.jsonl
 data/shadow_leads.json
 data/arm_status.json
 data/bat_shortcuts.json
+# night-statesafe 2026-11-23: the previous good copy of each bot state file (engine/state_safe.rotate)
+data/live_state*.json.bak

@@ -474,5 +474,9 @@ AREAS["pc"] += ["startmsg"]   # night-startmsg 2026-11-23: START BOT's exit code
 AREAS["nq"] += ["tgweek"]   # night-tgweek 2026-11-23: Thanksgiving week (calendar, update windows, 'half day, closes 13:15' wording)
 AREAS["pc"] += ["k7cloud"]   # night-k7cloud 2026-11-23: the cloud warns 'PC looks off: <account> must trade by <date>' (tools/pc_silent_check.k7_step)
 
+AREAS.setdefault("faults", [])
+AREAS["faults"] += [x for x in ("state_safe", "multi_account") if x not in AREAS["faults"]]   # night-statesafe 2026-11-23: a damaged state file never means a clean day
+AREAS["nq"].append("state_safe")
+
 if __name__ == "__main__":
     sys.exit(main())

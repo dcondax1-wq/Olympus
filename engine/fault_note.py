@@ -59,7 +59,8 @@ def corrupt(path, err, what: str = "", now=None) -> dict:
                 cur[name] = {"t": int(now), "text": text}
                 with open(LOG + ".tmp", "w", encoding="utf-8") as fh:
                     json.dump(cur, fh, indent=1)
-                os.replace(LOG + ".tmp", LOG)
+                from . import fsutil as _fsutil      # integration 2026-11-23: land-fixes' Windows-safe replace
+                _fsutil.replace(LOG + ".tmp", LOG)
             except Exception:
                 pass
         if first and (real or PUSH is not None):
