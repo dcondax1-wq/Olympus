@@ -113,6 +113,9 @@ night-decide, night-docs, night-faults, night-leadwires, night-reds2, night-reds
   do_choice keeps M / P / T and adds R. R runs **tools/bat/ROLL.bat** (night-roll called `ROLL.bat` at the top folder, where cleanup no
   longer has it: R would have said "did not open"). Roll's / verify's owner lines that named ROLL.bat, ONE_TIME_SETUP.bat, CLEAN_PC.bat
   by the old place (engine/readiness READY fix, trade_home, post_update_check) now say tools/bat/.
+- **notify-rt test b6 vs night-brief (date-dependent red):** night-brief sends a CME trading day's digest inside the 16:15 day summary
+  ("in the day summary"); notify-rt's b6 ran on today's date, so it was red on every weekday. b6 now runs on a Saturday (one digest a
+  day, then 'done today'), which keeps both intents; 27/27.
 - **tests/test_ops.py (roll vs reds):** reds' stricter clock check kept (it also wants "Run as administrator").
 
 ## Tests

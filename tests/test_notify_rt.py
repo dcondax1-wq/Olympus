@@ -89,7 +89,8 @@ def part_b(b):
     check("b5. the digest keeps at most 12 lines", len(d["items"]) == 12, len(d["items"]))
     import datetime as dt
     from zoneinfo import ZoneInfo
-    day = dt.datetime.now(ZoneInfo("America/New_York")).replace(hour=16, minute=30)
+    # integration 2026-11-23: a Saturday (night-brief sends a CME trading day's digest inside the 16:15 day summary instead)
+    day = dt.datetime(2026, 11, 21, 16, 30, tzinfo=ZoneInfo("America/New_York"))
     r1 = AB.digest_flush(now=day.timestamp(), cfg=ZCFG())
     r2 = AB.digest_flush(now=day.timestamp() + 900, cfg=ZCFG())
     check("b6. one digest a day, then 'done today'", r1 == "sent" and r2 == "done today", (r1, r2))
