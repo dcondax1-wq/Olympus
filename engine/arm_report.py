@@ -89,7 +89,8 @@ def save(rows, path=None, now=None) -> None:
         tmp = path + ".tmp"
         with open(tmp, "w", encoding="utf-8") as fh:
             json.dump({"t": int(now if now is not None else time.time()), "rows": rows}, fh)
-        os.replace(tmp, path)
+        from . import fsutil as _fsutil
+        _fsutil.replace(tmp, path)
     except Exception:  # noqa: BLE001
         pass
 

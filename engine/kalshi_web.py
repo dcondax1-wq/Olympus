@@ -166,7 +166,8 @@ def save_key(key_id, private_key, env=None) -> tuple:
         tmp = path + ".tmp"
         with open(tmp, "w", encoding="ascii") as fh:
             fh.write(data)
-        os.replace(tmp, path)
+        from engine import fsutil as _fsutil
+        _fsutil.replace(tmp, path)
     _lock_down(folder, [pem_path, id_path])
     return check_key(env)
 

@@ -65,7 +65,8 @@ def set_on(on: bool, path: str | None = None) -> str:
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump({"poll_on_tick": bool(on), "saved_at": int(time.time()),
                    "note": "engine/fast_entry.py: the minute's first poll on NinjaTrader's first tick instead of +2 s"}, fh, indent=1)
-    os.replace(tmp, p)
+    from . import fsutil as _fsutil
+    _fsutil.replace(tmp, p)
     _CACHE.update(t=0.0, path=None)
     return p
 
