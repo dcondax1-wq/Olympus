@@ -289,3 +289,7 @@ research/lab/TRADER_LAYER_decisions_*.json
 # Home Screen icon options (tools/icon_options_build.py, icon_options_detail.py, icon_options_minimal.py rebuild them);
 # the live icon is web/icons/ (tools/icon_temple.py, 2026-11-18)
 tools/web_public/icon_options/
+
+# day-orderflow 2026-11-23: tick recorder output (big, per-PC) and its on/off switch
+data/ticks/
+data/tickrec.json

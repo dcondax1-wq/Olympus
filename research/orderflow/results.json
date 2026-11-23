@@ -1,0 +1,198 @@
+{
+ "made": "2026-11-23T17:56:07+00:00",
+ "tick_days": 0,
+ "mode": "PROXY",
+ "note": "PROXY = 5m bar-shape guess at delta (volume x close location). Not order flow; can reject, cannot prove.",
+ "tick_days_note": "0 tick days on disk; REAL mode needs >= 60",
+ "LIT S1/S4 (proxy)": {
+  "2021-25": {
+   "all": {
+    "n": 535,
+    "win%": 18.3,
+    "pf": 1.04,
+    "net$": 4106,
+    "avg$": 7.7,
+    "maxDD$": 20685,
+    "avgR": 0.04,
+    "per_wk": 2.48
+   },
+   "S1 div": {
+    "n": 103,
+    "win%": 22.3,
+    "pf": 1.58,
+    "net$": 14013,
+    "avg$": 136.0,
+    "maxDD$": 8767,
+    "avgR": 0.347,
+    "per_wk": 0.48
+   },
+   "S1 no div": {
+    "n": 432,
+    "win%": 17.4,
+    "pf": 0.88,
+    "net$": -9907,
+    "avg$": -22.9,
+    "maxDD$": 26104,
+    "avgR": -0.033,
+    "per_wk": 2.0
+   },
+   "S4 confirmed": {
+    "n": 480,
+    "win%": 18.5,
+    "pf": 1.1,
+    "net$": 9767,
+    "avg$": 20.3,
+    "maxDD$": 17614,
+    "avgR": 0.065,
+    "per_wk": 2.22
+   },
+   "S4 refuted": {
+    "n": 55,
+    "win%": 16.4,
+    "pf": 0.59,
+    "net$": -5662,
+    "avg$": -102.9,
+    "maxDD$": 7578,
+    "avgR": -0.175,
+    "per_wk": 0.25
+   }
+  },
+  "2026 H1": {
+   "all": {
+    "n": 85,
+    "win%": 18.8,
+    "pf": 3.55,
+    "net$": 30666,
+    "avg$": 360.8,
+    "maxDD$": 3097,
+    "avgR": 0.606,
+    "per_wk": 3.42
+   },
+   "S1 div": {
+    "n": 18,
+    "win%": 11.1,
+    "pf": 2.27,
+    "net$": 4077,
+    "avg$": 226.5,
+    "maxDD$": 2162,
+    "avgR": 0.236,
+    "per_wk": 0.72
+   },
+   "S1 no div": {
+    "n": 67,
+    "win%": 20.9,
+    "pf": 4.02,
+    "net$": 26589,
+    "avg$": 396.9,
+    "maxDD$": 2492,
+    "avgR": 0.706,
+    "per_wk": 2.7
+   },
+   "S4 confirmed": {
+    "n": 62,
+    "win%": 19.4,
+    "pf": 2.75,
+    "net$": 16455,
+    "avg$": 265.4,
+    "maxDD$": 2410,
+    "avgR": 0.523,
+    "per_wk": 2.49
+   },
+   "S4 refuted": {
+    "n": 23,
+    "win%": 17.4,
+    "pf": 6.39,
+    "net$": 14211,
+    "avg$": 617.9,
+    "maxDD$": 1301,
+    "avgR": 0.831,
+    "per_wk": 0.93
+   }
+  },
+  "2026 H2": {
+   "all": {
+    "n": 42,
+    "win%": 33.3,
+    "pf": 2.19,
+    "net$": 8212,
+    "avg$": 195.5,
+    "maxDD$": 1741,
+    "avgR": 0.579,
+    "per_wk": 2.83
+   },
+   "S1 div": {
+    "n": 7,
+    "win%": 28.6,
+    "pf": 0.74,
+    "net$": -339,
+    "avg$": -48.4,
+    "maxDD$": 1137,
+    "avgR": -0.075,
+    "per_wk": 0.47
+   },
+   "S1 no div": {
+    "n": 35,
+    "win%": 34.3,
+    "pf": 2.53,
+    "net$": 8551,
+    "avg$": 244.3,
+    "maxDD$": 1741,
+    "avgR": 0.709,
+    "per_wk": 2.36
+   },
+   "S4 confirmed": {
+    "n": 32,
+    "win%": 34.4,
+    "pf": 1.77,
+    "net$": 3968,
+    "avg$": 124.0,
+    "maxDD$": 1588,
+    "avgR": 0.477,
+    "per_wk": 2.15
+   },
+   "S4 refuted": {
+    "n": 10,
+    "win%": 30.0,
+    "pf": 3.49,
+    "net$": 4244,
+    "avg$": 424.4,
+    "maxDD$": 1236,
+    "avgR": 0.905,
+    "per_wk": 0.67
+   }
+  }
+ },
+ "S2 absorption (proxy)": {
+  "2021-25": {
+   "n": 271,
+   "win%": 38.0,
+   "pf": 1.1,
+   "net$": 7808,
+   "avg$": 28.8,
+   "maxDD$": 5497,
+   "avgR": 0.088,
+   "per_wk": 1.24
+  },
+  "2026 H1": {
+   "n": 20,
+   "win%": 40.0,
+   "pf": 1.38,
+   "net$": 1936,
+   "avg$": 96.8,
+   "maxDD$": 2373,
+   "avgR": 0.23,
+   "per_wk": 0.78
+  },
+  "2026 H2": {
+   "n": 20,
+   "win%": 30.0,
+   "pf": 0.75,
+   "net$": -1616,
+   "avg$": -80.8,
+   "maxDD$": 4067,
+   "avgR": -0.149,
+   "per_wk": 0.99
+  }
+ },
+ "S3 stacked imbalance": "NOT TESTED: needs bid x ask volume per price (tick data). Code ready: real_mode."
+}
