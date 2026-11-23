@@ -8,6 +8,8 @@ Card: **plan-rapid50k-max2-rebuys** (open). Buy it on MFFU with the CLUB code: *
    already taught the bot the name code. It goes into the 2nd Rapid slot, **NOT armed**.
 3. **START BOT** -> you type the live phrase yourself -> it is armed. Nothing else arms it.
 4. Keep-alive, readiness (NOT READY / not armed), the payout autopilot and the alerts list it as its own account.
+5. **Keep-alive is OFF on it until you say yes** (its own key `rapid2`; your yes for the Rapid 25K does not carry over). After the
+   add, run KEEPALIVE_ON.bat once, or: `python -X utf8 -m engine.keepalive --on rapid2 --yes` (red team 2, 2026-11-23).
 
 ## Sizing on it today (approved, unchanged)
 | Lane | Today's setting |

@@ -236,8 +236,31 @@ def part_h():
         "place_order", "PLACE;", "arm(", "requests.post", "submit_payout")))
 
 
+def part_rt2():
+    """red team 2 (2026-11-23): the Rapid 50K's $500-since-last rule (MFFU; was checked on the 25K only)."""
+    from engine import rapid as R
+    tmp = tempfile.mkdtemp()
+    try:
+        bp = os.path.join(tmp, "rapid.json")
+        # a 50K funded Rapid: +$6,000, a $900 payout on 11-10 (less than advised), then +$1,000 -$700 = $300 net since; $55,400
+        json.dump({"account": "RT50", "plan": "rapideod50k", "stage": "funded", "funded_start": "2026-11-02",
+                   "payouts": {"2026-11-10": 900.0}}, open(bp, "w"))
+        closes = [["2026-11-05", 0, 6000.0], ["2026-11-12", 0, 1000.0], ["2026-11-13", 0, -700.0]]
+        json.dump({"account": "RT50", "closes": closes}, open(os.path.join(tmp, "live_state_acctr.json"), "w"))
+        st = R.status(p=bp, state_path=tmp)
+        a = st.get("payout") or {}
+        check("rt2. Rapid 50K: $300 net since the last payout < MFFU's $500: not ready, $200 short",
+              not a.get("ready") and a.get("since_short") == 200, st)
+        closes.append(["2026-11-16", 0, 900.0])
+        json.dump({"account": "RT50", "closes": closes}, open(os.path.join(tmp, "live_state_acctr.json"), "w"))
+        a = R.status(p=bp, state_path=tmp).get("payout") or {}
+        check("rt2. Rapid 50K: $1,200 since: ready again", a.get("ready") and a.get("request") == 3200, a)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def main() -> int:
-    for f in (part_a, part_b, part_c, part_d, part_e, part_f, part_g, part_h):
+    for f in (part_a, part_b, part_c, part_d, part_e, part_f, part_g, part_h, part_rt2):
         try:
             f()
         except Exception as e:  # noqa: BLE001
