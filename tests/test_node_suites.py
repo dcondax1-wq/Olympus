@@ -28,7 +28,8 @@ GROUPS = {
              "test_intro_failed_kit", "test_kalshi_status_freshness", "test_kalshicity_network_switch",
              "test_launcher_celestial_glyphs", "test_observatory_lesson_clock", "test_observatory_scan_race",
              "test_oracle_city_quality", "test_oracle_fallback_city", "test_oracle_fallback_honesty", "test_oracle_future_source",
-             "test_pantheon_gpu_recovery", "test_prometheus_fallback", "test_jarvis_biz"],
+             "test_pantheon_gpu_recovery", "test_prometheus_fallback", "test_jarvis_biz",
+             "test_atlas_intro", "test_atlas_standalone_hub"],   # night-reds 2026-11-22: were orphans (both green)
 }
 # red because the page was rebuilt (not a pin): the test reads code that moved. Owner today: day-cities3 (cities/).
 STALE = {

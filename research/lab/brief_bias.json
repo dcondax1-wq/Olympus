@@ -88,17 +88,17 @@
      "up_days_pct": 53.7
     },
     "2026H2": {
-     "base_pct": 50.0,
-     "days": 99,
-     "hit_pct": 44.6,
-     "hits": 25,
-     "n": 56,
-     "p": 0.8252,
+     "base_pct": 50.1,
+     "days": 100,
+     "hit_pct": 45.6,
+     "hits": 26,
+     "n": 57,
+     "p": 0.7865,
      "sub": {
       "no_tier1": {
-       "hit_pct": 51.1,
-       "hits": 24,
-       "n": 47
+       "hit_pct": 52.1,
+       "hits": 25,
+       "n": 48
       },
       "tier1_day": {
        "hit_pct": 11.1,
@@ -111,9 +111,9 @@
        "n": 6
       },
       "vix_elevated": {
-       "hit_pct": 40.0,
-       "hits": 2,
-       "n": 5
+       "hit_pct": 50.0,
+       "hits": 3,
+       "n": 6
       },
       "vix_normal": {
        "hit_pct": 44.4,
@@ -121,7 +121,7 @@
        "n": 45
       }
      },
-     "up_days_pct": 43.4
+     "up_days_pct": 43.0
     }
    },
    "works": false
@@ -211,17 +211,17 @@
      "up_days_pct": 53.7
     },
     "2026H2": {
-     "base_pct": 50.0,
-     "days": 99,
-     "hit_pct": 39.8,
+     "base_pct": 49.9,
+     "days": 100,
+     "hit_pct": 39.3,
      "hits": 35,
-     "n": 88,
-     "p": 0.9789,
+     "n": 89,
+     "p": 0.9833,
      "sub": {
       "no_tier1": {
-       "hit_pct": 44.3,
+       "hit_pct": 43.7,
        "hits": 31,
-       "n": 70
+       "n": 71
       },
       "tier1_day": {
        "hit_pct": 22.2,
@@ -234,9 +234,9 @@
        "n": 11
       },
       "vix_elevated": {
-       "hit_pct": 25.0,
+       "hit_pct": 22.2,
        "hits": 2,
-       "n": 8
+       "n": 9
       },
       "vix_normal": {
        "hit_pct": 36.8,
@@ -244,11 +244,11 @@
        "n": 68
       }
      },
-     "up_days_pct": 43.4
+     "up_days_pct": 43.0
     }
    },
    "works": false
   }
  },
- "to": "2026-11-19"
+ "to": "2026-11-20"
 }

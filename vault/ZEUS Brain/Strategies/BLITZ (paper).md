@@ -77,11 +77,16 @@ _No trades in the published trade list._
 > - BLITZ trend-day SIZE (range so far, first-hour range / volume, overnight range / open's place in it, gap, VIX change, 2-sigma excursion, VWAP side / distance, held at the previous check, time; 430 tilts): 39 survivors vs 36 on shuffled facts = chance. - BLITZ + a 10:30 check: H1 25K slot $270 -> $54. - BLITZ in-day streak size (2026-10-31, `blitz-streak-size-2026-10-31.md`, `tools/bzx_streak.py`, run `bzx_streak`): eval size x m after a same-day BLITZ loss / win (7 cells, 10 shuffled controls). H1 pick x0.5 after a loss: slot $286 / $53 / -$40 a month vs today $286 / $52 / -$39; 2021-25 no better than shuffled (after-loss trades are the BETTER ones there). - BLITZ cold-streak size on its ...
 > Write-ups: [[atlas-blitz-edge-2026-10-30|ATLAS + BLITZ edge night]], [[blitz-streak-size-2026-10-31|BLITZ in-day streak size]]
 
+> [!failure]- One-account combined book
+> 13 books x 4 MFFU accounts (+ today = 53) on rank.py at real fills: first-come, LIT-priority 50% day budget, ATLAS NY-only / London-only / strict windows, ATLAS x0.5 eval, LIT eval then both funded, LIT x0.75 / x0.5, + BLITZ $300, ATLAS lane x2. Pick (Jan-Jun, eval fail <= LIT + 2 pts): Rapid EOD 50K LIT + ATLAS, LIT x0.5 in the eval $4,918 / $2,204 / -$88 a month vs today's 2 accounts $981 / $857 / -$62; paired 2021-25 -$156 (SE $32), 2022 -$781, Jul-Oct without ATLAS's 5 best days +$114 (SE $136): fails the 2021-25 bar, no card. Every mixing trick makes less than plain first-come in Jul-Oct (-$60 to -$1,352/mo); the gain is the Rapid 50K account (open card plan-rapid50k-max2-rebuys). ...
+> Write-ups: [[one-account-book-2026-11-22|One account, combined book]]
+
 
 ## Write-ups
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-22 | [[one-account-book-2026-11-22\|One account, combined book]] | research |
 | 2026-11-19 | [[one-account-combo-2026-11-19\|ONE account, several bots]] | research |
 | 2026-11-18 | [[win-loss-anatomy-2026-11-18\|Why we win, why we lose]] | finding |
 | 2026-11-18 | [[blitz-review-2026-11-18\|BLITZ review]] | rejected |

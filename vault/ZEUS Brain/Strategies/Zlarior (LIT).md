@@ -81,6 +81,17 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 ## Tested and rejected
 
+> [!failure]- Edge hunt lane D: small meta-labeled SIZE + re-entry on LIT
+> 31 pre-registered versions. 16 walk-forward size rules (logistic / depth-2 tree x 7 or 13 facts known at the fill x 0.5 / 1.5, 0.75 / 1.25, down-only 0.5, up-only 1.5; monthly refit, purged + embargoed, MFFU caps on the eval path): all 12 that cut size lose 2026 H1 (-$1.6k..-$15.7k) and pass fewer 2-week evals (6.7-37% vs 44.5%); the 4 up-only ones are leverage (a flat x1.25 with no model makes more in H1); the only one through the money gate (tree 13 facts, up-only 1.5: +$5.7k / +$3.2k / +$0.5k, eval +$3.1k / +$0.2k) is chance (shuffled multipliers beat it 29% / 45%, shuffled labels 23% / 15%, in-sample H1 +$12.4k vs +$5.7k), funded +$15-18 a month with more account loss (1.7 -> 1.9%, 3.0 ...
+> Write-ups: [[edge-d-meta-2026-11-22|Edge hunt lane D]], [[meta-labeling|Meta-labeling]]
+
+> [!failure]- Edge hunt C, calendar / money-flow timing
+> 174 variants on NQ 5m, structural 1-tick stop, LIT size, costs in, permutation p per cell: turn of month (last 2 / first 3 / all 5), OpEx week / Friday / Monday after, quarter end / start, month-end pension fade (2 / 3 / 5%), day of week (long + short), last-hour long / momentum / fade, Globex overnight, intraday drift, each x 3 targets, plus x1.5 / x0.5 LIT dials on 13 windows. 0 pass: every long cell wins 2026 and loses 2021-25; the only cell positive in all 3 spans (Monday long, no target) is a lottery (top 3 trades > 100% of net, p .44 / .14 / .075, random long-only day sets pass 6.6%); dials are chance (best H1 p .10). Last-hour momentum beats random days (p .05 / .04) but loses ...
+> Write-ups: [[edge-c-calendar-2026-11-22|Edge hunt lane C]]
+
+> [!failure]- 2026-11-22 Regime guard round 3
+> (research/regime/guard3.py, regime-guard3-2026-11-22.md): shadow-setup hit rate R1, intraday variance ratio R2, trend-day share R3, thin volume R4, NQ-VIX co-movement R5, 2-of-5 vote R6; half / out; LIT and ATLAS. **0 of 22 pass, all fail the stage-0 kill-gate.** R1 sweeps pay worse in 2026 than in 2021-25 (flags 2026 87.5/80.8% vs OLD 70.4%). R5 flags LIT's best days. Best placebo 47.5% / 68.5% (95 needed). Closes the regime lever for market-weather and market-wide sweep signals, not every possible signal. ATLAS funded baseline moved 8.5/9.2/94.5 -> 8.2/8.3/94.2 because of a code change after 153552591; verdict unaffected.
+
 > [!failure]- Zlarior edge, 5 pre-registered ideas
 > LIT $/month H1 / H2 / 2021-25 vs today $5,562 / $2,670 / $25: limit 2 ticks better than the model fill for 1 min, else market $5,184 / $2,585 / $26; skip a setup when the 1m entry is > 60 min after the sweep bar $849 / $824 / $119 (1.2 / 0.8 trades a week); Tier-1 day target capped at 4R $4,997 / $2,616 / $89; MES instead of MNQ when ES's planned target R >= 1.25 x NQ's $5,069 / $9,656 / $198 (fails Jan-Jun, eval -$10.6k / +$7.0k; paper lead, forward only); no +1R breakeven in the first 10 min $5,068 / $2,670 / $25. 0 pass. Fill map: limits 10-50% of the risk better fill 0-60% and miss $17-34k of Jan-Jun winners. +10 ticks a trade: $5,176 / $2,447 / -$353. Cold run (7 twin trades -4.2R) = ...
 > Write-ups: [[lit-edge-2026-11-20|Zlarior]]
@@ -156,11 +167,33 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 > [!failure]- Learn loop first night
 > Zlarior size x1.25 on low dealer gamma / after a tight Asia range / on a many-times-touched or an old swept level / on a fast fill after the CISD, x0.75 the day after a VIX jump; ATLAS x1.25 after Zlarior was stopped on the other side, x0.5 on a two-way day: all 8 rejected (best: old level +$138 / +$125 a month at the LIT size but eval path Jul-Oct -$34). The loop re-checks them on new bars.
 
+> [!failure]- Holidays / roll / FOMC windows
+> Thanksgiving week, CME roll-date week, Dec 15 - Jan 5, FOMC days x sit out / half, LIT and ATLAS (LIT roll = already rejected): 0 of 14. 2021-25 windows all weak (LIT PF 0.14-0.89, ATLAS 0.51-0.75 vs ~1.1) but 2026 windows profitable (FOMC LIT +$634/trade, ATLAS roll PF 8.9): sit-outs lose Jan-Jun $ (LIT FOMC -$2,535, ATLAS roll -$2,985). Thanksgiving / late Dec have no 2026 sample (untestable). Nearest: ATLAS FOMC out (funded lost down in all 3, but Jan-Jun fixed -$1,223).
+> Write-ups: [[holidays-2026-11-21|Thanksgiving week, roll weeks, Dec 15]]
+
+> [!failure]- Rapid 25K slot
+> one engine at real fills (rank.py): ATLAS only $707 / $141 a month vs today's LIT + ATLAS $1,883 / $800 (rejected again); bank lane = card rapid25-lit-bank NO (eval fail 0.5 -> 3.1%); a Rapid EOD 50K in the slot $5,001 / $2,281 a month but 2021-25 -$560 vs -$300 and eval fail 2.5 / 4.6% vs 0.3 / 2.4%: fails the pre-set safety bar (already on cards buy-rapid50-now / plan-rapid50k-max2-rebuys). Today's lanes stay.
+> Write-ups: [[rapid25-slot-2026-11-22|Rapid 25K slot]]
+
+> [!failure]- One-account combined book
+> 13 books x 4 MFFU accounts (+ today = 53) on rank.py at real fills: first-come, LIT-priority 50% day budget, ATLAS NY-only / London-only / strict windows, ATLAS x0.5 eval, LIT eval then both funded, LIT x0.75 / x0.5, + BLITZ $300, ATLAS lane x2. Pick (Jan-Jun, eval fail <= LIT + 2 pts): Rapid EOD 50K LIT + ATLAS, LIT x0.5 in the eval $4,918 / $2,204 / -$88 a month vs today's 2 accounts $981 / $857 / -$62; paired 2021-25 -$156 (SE $32), 2022 -$781, Jul-Oct without ATLAS's 5 best days +$114 (SE $136): fails the 2021-25 bar, no card. Every mixing trick makes less than plain first-come in Jul-Oct (-$60 to -$1,352/mo); the gain is the Rapid 50K account (open card plan-rapid50k-max2-rebuys). ...
+> Write-ups: [[one-account-book-2026-11-22|One account, combined book]]
+
+> [!failure]- 2026-11-22 Lucid accounts on a $300 a month fleet
+> REJECTED as a way to speed up at $300: adding 1/2/3/5 LucidPro 50K (LIT only, assumed $126) to the Rapid EOD 50K + FundedNext 50K plan out of the SAME $300 budget leaves Jan-Jun-like unchanged (+$264 +- $324 with 2, -$53 +- $370 with 3) and only helps Jul-Oct-like (+$4.7k to +$5.6k over 6 months); buying Lucid FIRST (5 accounts) loses $16.3k Jan-Jun-like and halves the worst 10% ($27.2k -> $16.3k), because the Lucid copies displace the bigger accounts. It works only with a larger budget ($500: 3 Lucid = Decide card lucid-3-at-500-budget). 75 fleets tried.
+> Write-ups: [[fleet-v2-2026-11-22|Fleet v2]]
+
 
 ## Write-ups
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-22 | [[rapid25-slot-2026-11-22\|Rapid 25K slot]] | rejected |
+| 2026-11-22 | [[plan-ranking-2026-11-22\|Plan ranking]] | research |
+| 2026-11-22 | [[one-account-book-2026-11-22\|One account, combined book]] | research |
+| 2026-11-22 | [[edge-d-meta-2026-11-22\|Edge hunt lane D]] | rejected |
+| 2026-11-21 | [[live-vs-model-2026-11-21\|Live vs model, every real trade so far]] | info |
+| 2026-11-21 | [[holidays-2026-11-21\|Thanksgiving week, roll weeks, Dec 15]] | rejected |
 | 2026-11-20 | [[skeptic-atlas-streak-2026-11-20\|Skeptic check of Decide card atlas-funded-streak-1micro]] | research |
 | 2026-11-20 | [[regime-guard-2026-11-20\|Regime guard]] | rejected |
 | 2026-11-20 | [[lit-eval-rescue-2026-11-20\|Zlarior eval rescue]] | rejected |
@@ -195,14 +228,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-11-04 | [[2026-11-04_lit_ideas_round3\|LIT ideas round 3]] | research |
 | 2026-11-04 | [[2026-11-04_lit_ideas_round2\|LIT ideas round 2]] | research |
 | 2026-11-04 | [[2026-11-04_lit_ideas_night\|LIT ideas night]] | rejected |
-| 2026-11-03 | [[2026-11-03-slippage\|How much slippage each bot survives]] | info |
-| 2026-11-03 | [[2026-11-03-prometheus\|PROMETHEUS]] | rejected |
-| 2026-11-03 | [[2026-11-03-night-rnd\|Night R&D 2026-11-03]] | adopt-candidate |
-| 2026-11-03 | [[2026-11-03-money-plan\|The money plan on today's settings]] | adopt-candidate |
-| 2026-11-03 | [[2026-11-03-fates\|FATES]] | info |
-| 2026-11-03 | [[2026-11-03-eval-dp\|Zlarior eval size worked out state by state]] | promising |
 
-... and 68 older (see the families).
+... and 74 older (see the families).
 
 ## Links
 

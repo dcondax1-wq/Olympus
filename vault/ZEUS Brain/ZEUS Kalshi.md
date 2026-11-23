@@ -15,6 +15,7 @@ type: "kalshi"
 - **KALSHI: the one page (K8 gold/silver clock bets, $55, live from Monday 2026-11-23)** (`docs/KALSHI.md`): Updated 2026-11-20 (day-kalshi). Older Kalshi docs (KALSHI_GO_LIVE, KALSHI_VM_UPDATE, KALSHICITY, KALSHI_PUBLISH, the planner comparison) are about the retired crypto bot on the Oracle VM and the old kalshi-feed; **this page is the current one**.
 - **KALSHI CITY** (`docs/KALSHICITY.md`): A night city built from the Kalshi bot's bets, plus the engine that keeps learning which slices of those bets have an edge. Read only: it reads the public `kalshi-feed` (`kalshi.json`), never calls Kalshi, never holds a key, never places an order.
 - **Kalshi: going live with real money (risk rules)** (`docs/KALSHI_GO_LIVE.md`): 2026-11-13, team K1. For the owner's real-money Kalshi account and the bot on the Oracle VM. Paper research only from here: nothing in this repo can reach the VM, place an order or read a key. **You apply these rules yourself**, through the "kalshi-server" chat on the VM.
+- **Kalshi K8: your Monday (Nov 23) checklist, one page** (`docs/KALSHI_MONDAY.md`): Goal: real bets start on **Monday's 4:45 PM ET window** ($55, $2.50 a bet). Expect about **+$12 a week** if it works like its history (+$6 if it is weaker). The bot stops itself before a bad day passes -$8, a bad week -$13.75, or a dip of -$19.25 from its best point.
 - **Kalshi page and Planner: what the best apps have, what we have, what was added (2026-11-03)** (`docs/KALSHI_PLANNER_COMPARISON.md`): Screens (iPhone 13 profile, 390 x 844, WebKit): `research/handoff/2026-11-03/kalshi_planner/`.
 - **Kalshi in Jarvis: how the Kalshi numbers reach the phone** (`docs/KALSHI_PUBLISH.md`): The owner's Kalshi bot ("Kalshi Edge v2") trades **real money** 24/7 on an **Oracle Cloud VM** (Ubuntu, `/home/<you>/kalshi`). It does not run on the Windows PC. Its own Claude chat, **"kalshi-server"**, also runs on that VM. The phone side is built and live: - the Jarvis Kalshi card; - the ...
 - **Kalshi: what the bot should stop doing** (`docs/KALSHI_STOP_LIST.md`): Suggestions only. Nothing here touches the bot. You decide.
@@ -136,6 +137,7 @@ type: "kalshi"
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-21 | [[kalshi-k8-live-2026-11-21\|K8 goes live Monday]] | research |
 | 2026-11-20 | [[kalshi-k8-monday-2026-11-20\|Kalshi K8 for a $55 account, ready by Monday 6 PM]] | research |
 | 2026-11-19 | [[kalshi-red-team-K8-2026-11-19\|Kalshi red team on K8]] | research |
 | 2026-11-19 | [[kalshi-metals-2026-11-19\|Kalshi K8 commodities]] | research |

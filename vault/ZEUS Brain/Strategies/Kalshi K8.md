@@ -44,6 +44,7 @@ key: "k8"
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-21 | [[kalshi-k8-live-2026-11-21\|K8 goes live Monday]] | research |
 | 2026-11-20 | [[kalshi-k8-monday-2026-11-20\|Kalshi K8 for a $55 account, ready by Monday 6 PM]] | research |
 | 2026-11-20 | [[fleet-plan-2026-11-20\|Fleet plan to June 2027]] | research |
 | 2026-11-19 | [[kalshi-red-team-K8-2026-11-19\|Kalshi red team on K8]] | research |

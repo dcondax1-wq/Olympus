@@ -71,8 +71,13 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-51 entries from docs/TESTED_AND_REJECTED.md, newest first.
+61 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
+- **Edge hunt lane B, cross-asset triggers** · [[edge-b-cross-2026-11-22|Edge hunt lane B]]
+- **Edge hunt lane D: small meta-labeled SIZE + re-entry on LIT** · [[Zlarior (LIT)]] · [[edge-d-meta-2026-11-22|Edge hunt lane D]], [[meta-labeling|Meta-labeling]]
+- **Edge hunt C, calendar / money-flow timing** · [[Zlarior (LIT)]] · [[edge-c-calendar-2026-11-22|Edge hunt lane C]]
+- **Edge hunt lane A, NQ RTH session structure** · [[edge-a-session-2026-11-22|Edge hunt lane A]]
+- **2026-11-22 Regime guard round 3** · [[Zlarior (LIT)]], [[ATLAS]]
 - **Zlarior edge, 5 pre-registered ideas** · [[Zlarior (LIT)]] · [[lit-edge-2026-11-20|Zlarior]]
 - **ATLAS edge at real fills** · [[ATLAS]] · [[atlas-edge-2026-11-20|ATLAS edge at real fills]]
 - **ATLAS real-fill fixes** · [[ATLAS]] · [[atlas-fills-2026-11-20|ATLAS real fills]]
@@ -124,9 +129,20 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 - **Regime sizing** · [[Zlarior (LIT)]] · [[lit-regime-sizing-2026-11-17|LIT regime sizing]]
 - **Learn loop first night** · [[Zlarior (LIT)]], [[ATLAS]]
 - ****Kalshi K8 better edge** · [[Kalshi K8]] · [[kalshi-k8-monday-2026-11-20|Kalshi K8 for a $55 account, ready by Monday 6 PM]]
+- **edge2** · [[ATLAS]] · [[edge2-2026-11-21|edge2]]
+- **Holidays / roll / FOMC windows** · [[Zlarior (LIT)]], [[ATLAS]] · [[holidays-2026-11-21|Thanksgiving week, roll weeks, Dec 15]]
+- **Rapid 25K slot** · [[Zlarior (LIT)]], [[ATLAS]], [[Rapid lanes]] · [[rapid25-slot-2026-11-22|Rapid 25K slot]]
+- **One-account combined book** · [[Zlarior (LIT)]], [[ATLAS]], [[BLITZ (paper)]] · [[one-account-book-2026-11-22|One account, combined book]]
+- **2026-11-22 Lucid accounts on a $300 a month fleet** · [[Zlarior (LIT)]], [[Rapid lanes]] · [[fleet-v2-2026-11-22|Fleet v2]]
 
 ## Rejected in the write-ups
 
+- 2026-11-22 [[regime-guard-2026-11-22|Regime guard round 3]] ([[Family risk|risk]])
+- 2026-11-22 [[rapid25-slot-2026-11-22|Rapid 25K slot]] ([[Family money|money]])
+- 2026-11-22 [[fleet-v2-2026-11-22|Fleet v2]] ([[Family money|money]])
+- 2026-11-22 [[edge-d-meta-2026-11-22|Edge hunt lane D]] ([[Family risk|risk]])
+- 2026-11-21 [[holidays-2026-11-21|Thanksgiving week, roll weeks, Dec 15]] ([[Family other|other]])
+- 2026-11-21 [[edge2-2026-11-21|edge2]] ([[Family other|other]])
 - 2026-11-20 [[regime-guard-2026-11-20|Regime guard]] ([[Family filters|filters]])
 - 2026-11-20 [[premarket-brief-2026-11-20|Premarket brief]] ([[Family bias|bias]])
 - 2026-11-20 [[newstrat-ict-smt-2026-11-20|New strategy for the extra accounts]] ([[Family other|other]])
@@ -204,6 +220,7 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## What worked or looks promising
 
+- 2026-11-22 [[edge-b-cross-2026-11-22|Edge hunt lane B]] (adopt-candidate)
 - 2026-11-19 [[atlas-more-money-2026-11-19|ATLAS more money]] (adopt-candidate)
 - 2026-11-17 [[rule-native-2026-11-17|Rule-native search]] (adopt-candidate)
 - 2026-11-17 [[payout-policy-funded25-2026-11-17|Funded Builder 25K payout policy]] (adopt-candidate)

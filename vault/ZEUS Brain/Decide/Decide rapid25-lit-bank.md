@@ -1,51 +1,49 @@
 ---
 tags:
   - zeus/decide
-  - decide/no
+  - decide/open
 type: "decide"
 id: "rapid25-lit-bank"
-status: "no"
+status: "open"
 added: "2026-11-18"
-usd_month: 101
-recommend: "no"
+usd_month: 164
+recommend: "yes"
 ---
 
 # Decide: Rapid 25K: Zlarior trades 1 micro and takes profit at the day's room (instead of skipping most trades)?
 
-> [!failure] NO · +$101 a month
+> [!question] OPEN · +$164 a month
 > Answer it on the Decide card (Business app): YES / NO / LATER.
 
 |  |  |
 |---|---|
-| Status | no |
+| Status | open |
 | Added | 2026-11-18 |
-| $ a month | +$101 |
-| Claude recommends | no |
+| $ a month | +$164 |
+| Claude recommends | yes |
 | Changes | python -X utf8 -m engine.rapid --lit-bank on (built OFF) |
-| $ a month by market | jan-jun: +$24 · jul-oct: +$101 · 2021-25: +$1 |
+| $ a month by market | jan-jun: +$363 · jul-oct: +$164 · 2021-25: +$4 |
 
 ## Why
 
-Today the 30% best-day guard skips 60-65% of Zlarior's trades there. Banking at the room passes and pays sooner, but fails a little more.
+MFFU closes a Rapid that goes 7 days without a trade, and the 30% best-day guard makes the Rapid 25K skip most trades: the red team's replay of Nov 6-19 traded it on 1 day in 10. With this lane on, the same days traded on 4. In the simulation 56% / 44% of evals (Jan-Jun / Jul-Oct-like) hit 5 trading days without a trade as built; 22% / 9% with it.
 
 ## Impact
 
-At real fills (ATLAS 10 ticks a side): +$101 a month in a Jul-Oct-like market (+$24 Jan-Jun-like, +$1 2021-25-like); first payout about 6-9 days sooner. At backtest fills it was +$83.
+With MFFU's 7-day inactivity close counted: +$164 a month in a Jul-Oct-like market (+$363 Jan-Jun-like, +$4 2021-25-like); the eval passes in 71% / 90% of runs instead of 41% / 54%; first payout about 3 weeks sooner (Feb 5-9 vs Feb 24-26).
 
 ## Risk
 
-At real fills: Rapid 25K eval fails within 60 trading days 0.5% -> 3.1% (Jan-Jun-like) and 2.0% -> 2.7% (Jul-Oct-like); funded Rapid lost in 6 months 27.2% -> 28.7% / 38.0% -> 39.1%; eval passes in about 21-30 trading days instead of 26-33.
+Trades more: without the inactivity close it fails the eval a bit more often (0.5% -> 3.1% Jan-Jun-like, 2.0% -> 2.7% Jul-Oct-like) and loses a funded Rapid a bit more often (27% -> 29%, 38% -> 39%). In Nov 6-19 its 3 extra trades (1 micro each) lost $288 in a cold week.
 
 ## Why Claude recommends that
 
-Not yet: the money is real (+$101 a month Jul-Oct-like) but at real fills the eval fails 6x as often in a Jan-Jun-like market (0.5% -> 3.1%), over the 1-point limit set before the test. A yes is fine if you prefer a faster pass; it stays built OFF.
+Turn it on: as built the Rapid 25K hardly trades and risks MFFU's 7-day inactivity close; this lane passes much more often and sooner for slightly more eval risk. The pre-set test (which did not model the inactivity close) said no; with the close counted it wins in both 2026 halves.
 
 ## Links
 
-- Write-up: [[rapid-launch-2026-11-20|Rapid EOD 25K launch check]]
+- Write-up: [[rapid25-pass-2026-11-21|Rapid EOD 25K]]
 - Strategy: [[Zlarior (LIT)]]
-- Strategy: [[ATLAS]]
 - Strategy: [[Rapid lanes]]
 - Account: [[Account Zlarior]]
-- Account: [[Account ATLAS]]
 - [[ZEUS Decisions]] · [[ZEUS Home]]

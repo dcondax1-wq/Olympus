@@ -41,8 +41,16 @@ def hsl(h):
     return H * 360, S, L
 
 
+# OLYMPUS NIGHT (owner 2026-11-20, CLAUDE.md): violet outlines #3e255e / #4d2e76 + the glow #9d59ee are the house look, not
+# neon (night-reds 2026-11-22: the archive banner on 46 pages carries the glow and failed the Why page's audit). Only these three.
+NIGHT_OK = {"#9d59ee", "#3e255e", "#4d2e76"}
+NIGHT_RGB = {(157, 89, 238), (62, 37, 94), (77, 46, 118)}
+
+
 def is_neon(h):
     """Cool or magenta, saturated, bright enough to glow: cyan/mint 150-200, blue/violet 205-330 (aegean #4b7a99 passes)."""
+    if h[:7].lower() in NIGHT_OK:
+        return False
     if h.lower() in OLD_ACCENTS or (len(h) == 9 and h[:7].lower() in OLD_ACCENTS):
         return True
     H, S, L = hsl(h)
@@ -52,6 +60,8 @@ def is_neon(h):
 def neon_rgba(line):
     out = []
     for m in re.finditer(r"rgba?\(\s*(\d+)[ ,]+(\d+)[ ,]+(\d+)", line):
+        if tuple(int(x) for x in m.groups()) in NIGHT_RGB:
+            continue
         r, g, b = (int(x) / 255 for x in m.groups())
         H, L, S = colorsys.rgb_to_hls(r, g, b)
         if S >= .5 and .38 <= L <= .92 and 150 <= H * 360 <= 335:

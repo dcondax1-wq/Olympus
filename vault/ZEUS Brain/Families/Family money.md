@@ -7,11 +7,19 @@ type: "family"
 
 # Research family: money
 
-> [!abstract] 10 write-ups
-> finding 1, info 4, research 5
+> [!abstract] 18 write-ups
+> finding 1, info 4, rejected 2, research 11
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-22 | [[rapid25-slot-2026-11-22\|Rapid 25K slot]] | rejected |
+| 2026-11-22 | [[rank-rent-pay-per-job-2026-11-22\|Rank-and-rent and pay-per-booked-job for Maryland trades]] | research |
+| 2026-11-22 | [[plan-ranking-2026-11-22\|Plan ranking]] | research |
+| 2026-11-22 | [[one-account-book-2026-11-22\|One account, combined book]] | research |
+| 2026-11-22 | [[fleet-v2-2026-11-22\|Fleet v2]] | rejected |
+| 2026-11-22 | [[fleet-plan-2026-11-22\|Fleet plan]] | research |
+| 2026-11-21 | [[fleet-90day-2026-11-21\|The 90-day money machine]] | research |
+| 2026-11-21 | [[corvette-plan-2026-11-21\|The Corvette plan]] | research |
 | 2026-11-20 | [[payday-plan-2026-11-20\|Payday plan]] | research |
 | 2026-11-20 | [[money-ideas-2026-11-20\|Money ideas]] | finding |
 | 2026-11-20 | [[keep-the-most-2026-11-20\|Keep the most of every payout]] | info |

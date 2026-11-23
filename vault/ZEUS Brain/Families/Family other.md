@@ -7,11 +7,17 @@ type: "family"
 
 # Research family: other
 
-> [!abstract] 98 write-ups
-> adopt-candidate 15, finding 14, info 16, promising 14, rejected 33, research 6
+> [!abstract] 104 write-ups
+> adopt-candidate 16, finding 14, info 17, promising 14, rejected 35, research 8
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-22 | [[edge-c-calendar-2026-11-22\|Edge hunt lane C]] | research |
+| 2026-11-22 | [[edge-b-cross-2026-11-22\|Edge hunt lane B]] | adopt-candidate |
+| 2026-11-22 | [[edge-a-session-2026-11-22\|Edge hunt lane A]] | research |
+| 2026-11-21 | [[live-vs-model-2026-11-21\|Live vs model, every real trade so far]] | info |
+| 2026-11-21 | [[holidays-2026-11-21\|Thanksgiving week, roll weeks, Dec 15]] | rejected |
+| 2026-11-21 | [[edge2-2026-11-21\|edge2]] | rejected |
 | 2026-11-20 | [[web-business-2026-11-20\|The website business for local businesses]] | research |
 | 2026-11-20 | [[security-2026-11-20\|Security check]] | finding |
 | 2026-11-20 | [[redteam-live2-2026-11-20\|Red team 2 of the live bot]] | finding |

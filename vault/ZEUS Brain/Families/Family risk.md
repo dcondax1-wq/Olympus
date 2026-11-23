@@ -7,11 +7,15 @@ type: "family"
 
 # Research family: risk
 
-> [!abstract] 68 write-ups
-> adopt-candidate 27, adopted 1, finding 8, info 3, promising 3, rejected 16, research 10
+> [!abstract] 72 write-ups
+> adopt-candidate 27, adopted 1, finding 10, info 3, promising 3, rejected 18, research 10
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-22 | [[regime-guard-2026-11-22\|Regime guard round 3]] | rejected |
+| 2026-11-22 | [[edge-d-meta-2026-11-22\|Edge hunt lane D]] | rejected |
+| 2026-11-21 | [[rapid25-pass-2026-11-21\|Rapid EOD 25K]] | finding |
+| 2026-11-21 | [[rapid-funded-refit-2026-11-21\|Rapid EOD funded refit]] | finding |
 | 2026-11-20 | [[rapid50-ready-2026-11-20\|Rapid EOD 50K readiness]] | finding |
 | 2026-11-20 | [[rapid-launch-2026-11-20\|Rapid EOD 25K launch check]] | finding |
 | 2026-11-20 | [[lit-eval-rescue-2026-11-20\|Zlarior eval rescue]] | rejected |

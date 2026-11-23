@@ -222,7 +222,7 @@ def part_d():
           'name="theme-color" content="#000000"' in html and 'data-theme="agora"' in html and "agora.css" in html and "agora-apps.css" in html
           and "a11y.css" in html and "a11y.js" in html and 'src="why.js' in html)
     check("d. manifest + icon + jarvis.json tile", all(os.path.isfile(os.path.join(APP, f)) for f in ("manifest.webmanifest", "icon.svg", "jarvis.json"))
-          and json.load(open(os.path.join(APP, "manifest.webmanifest"), encoding="utf-8"))["theme_color"] == "#14110e")
+          and json.load(open(os.path.join(APP, "manifest.webmanifest"), encoding="utf-8"))["theme_color"] == "#000000")   # OLYMPUS NIGHT (owner 2026-11-20): black, as the theme-color meta above
     tile = json.load(open(os.path.join(APP, "jarvis.json"), encoding="utf-8"))
     check("d. jarvis.json tile: name, status, 3 kpis, lines, theme", tile.get("name") and tile.get("status") and len(tile.get("kpis") or []) == 3
           and tile.get("lines") and tile.get("theme") == "#14110e", tile)

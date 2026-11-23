@@ -63,6 +63,9 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 ## Tested and rejected
 
+> [!failure]- 2026-11-22 Regime guard round 3
+> (research/regime/guard3.py, regime-guard3-2026-11-22.md): shadow-setup hit rate R1, intraday variance ratio R2, trend-day share R3, thin volume R4, NQ-VIX co-movement R5, 2-of-5 vote R6; half / out; LIT and ATLAS. **0 of 22 pass, all fail the stage-0 kill-gate.** R1 sweeps pay worse in 2026 than in 2021-25 (flags 2026 87.5/80.8% vs OLD 70.4%). R5 flags LIT's best days. Best placebo 47.5% / 68.5% (95 needed). Closes the regime lever for market-weather and market-wide sweep signals, not every possible signal. ATLAS funded baseline moved 8.5/9.2/94.5 -> 8.2/8.3/94.2 because of a code change after 153552591; verdict unaffected.
+
 > [!failure]- ATLAS edge at real fills
 > 14 of 15 fail at 6 and 10 ticks on 60% and 40% sizing. Limit at the 5m open / 1-2 ticks better with a 1-2 min timeout (only ~52% fill, the runners are missed: funded $151-285 a month Jan-Jun-like vs $503), limit 2 min then market, the next 5m open, per leg +0 / +5 min (picked +0), drop EMA (-$301 a month Jul-Oct-like), EMA half size, the day stop after a loss (re-check at real fills), 3 losses -> 3 sessions off, a weekly cap at 35% of the room. Info only (1m bars, 2021-25 untestable): EMA +60 s, per-leg minute (MACD +1: Jul-Oct $436 vs $402). ES versions of the 3 legs (`tools/atlas_es.py`): PF 0.60-0.84 in 2026 at 3 ES ticks, all lose at 10. Passed: 2 losses in a row -> 1 micro (Decide ...
 > Write-ups: [[atlas-edge-2026-11-20|ATLAS edge at real fills]]
@@ -130,11 +133,33 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 > [!failure]- Learn loop first night
 > Zlarior size x1.25 on low dealer gamma / after a tight Asia range / on a many-times-touched or an old swept level / on a fast fill after the CISD, x0.75 the day after a VIX jump; ATLAS x1.25 after Zlarior was stopped on the other side, x0.5 on a two-way day: all 8 rejected (best: old level +$138 / +$125 a month at the LIT size but eval path Jul-Oct -$34). The loop re-checks them on new bars.
 
+> [!failure]- edge2
+> 10 pre-registered. ATLAS deep limits 8 / 16 ticks better for 15 min: fill 38-45%, miss $22-39k of winners, funded $ halves. ATLAS stop entry +12 ticks / 5 min (A3): H1 funded $511 -> $631, lost 16 -> 3%, 2021-24 PF 0.80 -> 0.99, but H2 $401 -> $398 / 20.7 -> 23.5% and 2025 6t -$74/mo: fails (PAPER LEAD - skipped signals lose every year, -0.22..-0.66R); +20 ticks / 10 min worse in H2. New NQ setups at $250: IB failed-break fade, IB break-retest limit, prior-day level break-retest limit, opening gap fade to the prior close, first-hour trend at 10:30 (+$45 / +$197 / +$121 a month, PF 1.08 H1, 0.5/wk H2), overnight-inside breakout: none PF >= 1.2 in all 3 periods; all add -$500 days on a ...
+> Write-ups: [[edge2-2026-11-21|edge2]]
+
+> [!failure]- Holidays / roll / FOMC windows
+> Thanksgiving week, CME roll-date week, Dec 15 - Jan 5, FOMC days x sit out / half, LIT and ATLAS (LIT roll = already rejected): 0 of 14. 2021-25 windows all weak (LIT PF 0.14-0.89, ATLAS 0.51-0.75 vs ~1.1) but 2026 windows profitable (FOMC LIT +$634/trade, ATLAS roll PF 8.9): sit-outs lose Jan-Jun $ (LIT FOMC -$2,535, ATLAS roll -$2,985). Thanksgiving / late Dec have no 2026 sample (untestable). Nearest: ATLAS FOMC out (funded lost down in all 3, but Jan-Jun fixed -$1,223).
+> Write-ups: [[holidays-2026-11-21|Thanksgiving week, roll weeks, Dec 15]]
+
+> [!failure]- Rapid 25K slot
+> one engine at real fills (rank.py): ATLAS only $707 / $141 a month vs today's LIT + ATLAS $1,883 / $800 (rejected again); bank lane = card rapid25-lit-bank NO (eval fail 0.5 -> 3.1%); a Rapid EOD 50K in the slot $5,001 / $2,281 a month but 2021-25 -$560 vs -$300 and eval fail 2.5 / 4.6% vs 0.3 / 2.4%: fails the pre-set safety bar (already on cards buy-rapid50-now / plan-rapid50k-max2-rebuys). Today's lanes stay.
+> Write-ups: [[rapid25-slot-2026-11-22|Rapid 25K slot]]
+
+> [!failure]- One-account combined book
+> 13 books x 4 MFFU accounts (+ today = 53) on rank.py at real fills: first-come, LIT-priority 50% day budget, ATLAS NY-only / London-only / strict windows, ATLAS x0.5 eval, LIT eval then both funded, LIT x0.75 / x0.5, + BLITZ $300, ATLAS lane x2. Pick (Jan-Jun, eval fail <= LIT + 2 pts): Rapid EOD 50K LIT + ATLAS, LIT x0.5 in the eval $4,918 / $2,204 / -$88 a month vs today's 2 accounts $981 / $857 / -$62; paired 2021-25 -$156 (SE $32), 2022 -$781, Jul-Oct without ATLAS's 5 best days +$114 (SE $136): fails the 2021-25 bar, no card. Every mixing trick makes less than plain first-come in Jul-Oct (-$60 to -$1,352/mo); the gain is the Rapid 50K account (open card plan-rapid50k-max2-rebuys). ...
+> Write-ups: [[one-account-book-2026-11-22|One account, combined book]]
+
 
 ## Write-ups
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-22 | [[rapid25-slot-2026-11-22\|Rapid 25K slot]] | rejected |
+| 2026-11-22 | [[plan-ranking-2026-11-22\|Plan ranking]] | research |
+| 2026-11-22 | [[one-account-book-2026-11-22\|One account, combined book]] | research |
+| 2026-11-21 | [[live-vs-model-2026-11-21\|Live vs model, every real trade so far]] | info |
+| 2026-11-21 | [[holidays-2026-11-21\|Thanksgiving week, roll weeks, Dec 15]] | rejected |
+| 2026-11-21 | [[edge2-2026-11-21\|edge2]] | rejected |
 | 2026-11-20 | [[skeptic-live-patches-2026-11-20\|Skeptic check of the two live sizing patches]] | research |
 | 2026-11-20 | [[skeptic-atlas-streak-2026-11-20\|Skeptic check of Decide card atlas-funded-streak-1micro]] | research |
 | 2026-11-20 | [[regime-guard-2026-11-20\|Regime guard]] | rejected |
@@ -169,14 +194,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-10-30 | [[discretion-score-2026-10-30\|Discretion score for ATLAS and BLITZ]] | rejected |
 | 2026-10-30 | [[blitz-edge-2026-10-30b\|BLITZ edge, rounds 2-4]] | rejected |
 | 2026-10-30 | [[atlas-windows-entries-2026-10-30\|ATLAS per-member trading windows and limit entries]] | rejected |
-| 2026-10-30 | [[atlas-edge-2026-10-30b\|ATLAS edge, day session]] | promising |
-| 2026-10-30 | [[atlas-blitz-edge-2026-10-30\|ATLAS + BLITZ edge night]] | adopt-candidate |
-| 2026-10-29 | [[structure-management\|Trade like a person]] | adopt-candidate |
-| 2026-10-29 | [[mind\|Mind]] | finding |
-| 2026-10-28 | [[scalp-na-mffu\|BLITZ]] | promising |
-| 2026-10-27 | [[b-holds-vs-lit-priority\|B-holds vs LIT priority]] | rejected |
 
-... and 19 older (see the families).
+... and 25 older (see the families).
 
 ## Links
 
