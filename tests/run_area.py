@@ -465,5 +465,7 @@ AREAS["pc"].append("faststart")   # night-faststart 2026-11-23: START BOT looks 
 AREAS["pc"].append("faststart_rt")   # red team 2026-11-23: stop_server keeps its old limit on a slow-answering server; checklist only after the bot start
 AREAS["pc"] += ["ship_vault"]   # night-reds2 2026-11-23: ship.py rebuilds + commits a stale generated vault/ before the push
 
+AREAS["pc"].append("add_account")   # night-addacct 2026-11-23: TRADE_HOME 4 = Name -> guessed plan -> HELD -> paper check; ADD_ACCOUNT.bat 6 = Lucid
+
 if __name__ == "__main__":
     sys.exit(main())

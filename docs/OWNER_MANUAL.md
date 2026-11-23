@@ -185,7 +185,7 @@ python -X utf8 -m engine.phone_safety --on
 
 ### 9. Add an account
 1. Buy it at MFFU with the CLUB code. Open NinjaTrader: the new account shows in the Accounts tab.
-2. Open `http://localhost:8766/add-account/` on the PC (or your PC link + `/add-account/` on the phone). Pick the plan, type or tap the Name, type I ACCEPT LIVE RISK.
+2. Easiest (night-addacct 2026-11-23): TRADE_HOME.bat > **4**. Pick the new account by its number, press Enter for the plan it guessed (or type another number). It is added HELD and ends with one line: "Added + paper-checked". Or open `http://localhost:8766/add-account/` on the PC (or your PC link + `/add-account/` on the phone). Pick the plan, type or tap the Name, type I ACCEPT LIVE RISK.
 3. Tap Add. It starts trading once the bot is flat (or: START_BOT.bat + your phrase, N1 below). Check it at the PC:
 ```
 python -X utf8 -m engine.accounts status

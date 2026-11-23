@@ -120,34 +120,41 @@ def logic():
           by["builder50k"]["price"] == "$91.80" and by["builder25k"]["price"].startswith("$63") and "$43" in by["builder25k"]["price"]
           and by["rapideod25"]["price"].startswith("$97.20") and by["rapideod"]["price"].startswith("$165"), by)
     check("f2. each price matches engine/account_cli's own CLUB price text (no drift)",
-          all(AC.PLANS[k]["price"].split(" ")[0].rstrip(",") in by[k]["price"] for k in T.ENGINE_PLANS if k != "builder25k")
+          all(AC.PLANS[k]["price"].split(" ")[0].rstrip(",") in by[k]["price"] for k in T.ENGINE_PLANS if k not in ("builder25k", "lucidpro50k"))   # Lucid: no real price until the owner buys (CLAUDE.md)
           and AC.PLANS["builder25k"]["price"].startswith("$63") and "FundedNext" in by["fundednext"]["label"] and by["fundednext"]["price"] == "OFF"
-          and by["lucidpro50k"]["price"] == "OFF" and by["fundednext"].get("off") and by["lucidpro50k"].get("off"), by)
+          and by["fundednext"].get("off") and not by["lucidpro50k"].get("off") and "HELD" in by["lucidpro50k"]["who"], by)   # night-addacct: Lucid addable, HELD
+    # night-addacct 2026-11-23: Name first, the plan guessed (Enter = take it), the paper check last; tests/test_add_account.py has the rest
     added = []
-    f8 = Fake(["3", "1", "y"])
-    ok, line = T.add_flow(ask=f8.ask, out=f8.say, run=f8.run, unseen={"RAPID-TEST-1234": 25000.0}, add_fn=lambda k, n: added.append((k, n)) or {"ok": True, "say": "[OK] Rapid added"})
-    check("g. add: pick 3 (Rapid 25K), tap the NinjaTrader Name by number, ONE Y -> added HELD + the exact next sentence",
+    ok_check = lambda n, k: (True, "[OK] Added + paper-checked: fake")   # noqa: E731
+    f8 = Fake(["1", "3"])
+    ok, line = T.add_flow(ask=f8.ask, out=f8.say, run=f8.run, unseen={"RAPID-TEST-1234": 25000.0}, check_fn=ok_check,
+                          add_fn=lambda k, n: added.append((k, n)) or {"ok": True, "say": "[OK] Rapid added"}, infer=lambda n, b: {})
+    check("g. add: tap the NinjaTrader Name by number, pick 3 (Rapid 25K) -> added HELD + paper check + the exact next sentence",
           ok and added == [("rapideod25", "RAPID-TEST-1234")] and "HELD" in line and "choose 2 (Start bot)" in line and "type the live phrase yourself" in line
-          and any("NOT armed" in l for l in f8.out) and any("$97.20" in l for l in f8.out) and sum("Type Y" in p for p in f8.prompts) == 1, (ok, line, added, f8.out))
-    f9 = Fake(["3", "", "y"])
+          and any("NOT armed" in l for l in f8.out) and any("$97.20" in l for l in f8.out) and any("paper-checked" in l for l in f8.out)
+          and len(f8.prompts) == 2 and not any("RAPID-TEST-1234" in l for l in f8.out), (ok, line, added, f8.out))
+    f9 = Fake([""])
     ok9, l9 = T.add_flow(ask=f9.ask, out=f9.say, run=f9.run, unseen={}, add_fn=lambda k, n: added.append((k, n)) or {"ok": True})
     check("g2. an empty Name adds nothing", not ok9 and "Nothing added" in l9 and len(added) == 1, (ok9, l9))
-    f10 = Fake(["1", "SOME-NAME-5678", "n"])
-    ok10, l10 = T.add_flow(ask=f10.ask, out=f10.say, run=f10.run, unseen={}, add_fn=lambda k, n: added.append((k, n)) or {"ok": True})
-    check("g3. anything but Y cancels, nothing added", not ok10 and "Cancelled" in l10 and len(added) == 1, l10)
-    for n, w in (("6", "FundedNext"), ("7", "Lucid")):
-        fo = Fake([n])
-        oko, lo = T.add_flow(ask=fo.ask, out=fo.say, run=fo.run, unseen={}, add_fn=lambda k, nn: added.append((k, nn)) or {"ok": True})
-        check(f"g4. {w} is OFF: names the written-yes step, adds nothing", not oko and "OFF" in lo and "written yes" in lo.lower() and len(added) == 1, lo)
-    fr = Fake(["2", "B25-NAME-9999", "y"])
-    ok11, l11 = T.add_flow(ask=fr.ask, out=fr.say, run=fr.run, unseen={})
-    check("g5. no add_fn: runs `engine.accounts add --plan builder25k --name ...` (the same code as ADD_ACCOUNT.bat), nothing else",
-          ok11 and fr.ran[0][-6:] == ["engine.accounts", "add", "--plan", "builder25k", "--name", "B25-NAME-9999"] and len(fr.ran) == 1, fr.ran)
-    fa = Fake(["5", "ATLAS-FUND-1", "y"])
-    T.add_flow(ask=fa.ask, out=fa.say, run=fa.run, unseen={}, today="2026-11-22")
+    f10 = Fake(["SOME-NAME-5678", "q"])
+    ok10, l10 = T.add_flow(ask=f10.ask, out=f10.say, run=f10.run, unseen={}, add_fn=lambda k, n: added.append((k, n)) or {"ok": True}, infer=lambda n, b: {})
+    check("g3. Q cancels, nothing added", not ok10 and "Cancelled" in l10 and len(added) == 1, l10)
+    fo = Fake(["SOME-NAME-5678", "6"])
+    oko, lo = T.add_flow(ask=fo.ask, out=fo.say, run=fo.run, unseen={}, add_fn=lambda k, nn: added.append((k, nn)) or {"ok": True}, infer=lambda n, b: {})
+    check("g4. FundedNext is OFF: names the written-yes step, adds nothing", not oko and "OFF" in lo and "written yes" in lo.lower() and len(added) == 1, lo)
+    fr = Fake(["B25-NAME-9999", "2"])
+    calls, real_add = [], AC.add
+    AC.add = lambda k, n, **kw: calls.append((k, n)) or {"ok": True, "say": "[OK] Builder 25K eval B25-NAME-9999 = added"}
+    try:
+        ok11, l11 = T.add_flow(ask=fr.ask, out=fr.say, run=fr.run, unseen={}, infer=lambda n, b: {}, check_fn=ok_check)
+    finally:
+        AC.add = real_add
+    check("g5. no add_fn: engine/account_cli.add (the code `engine.accounts add` / ADD_ACCOUNT.bat run), in this window, Name masked",
+          ok11 and calls == [("builder25k", "B25-NAME-9999")] and not fr.ran and not any("B25-NAME-9999" in l for l in fr.out), (calls, fr.out))
+    fa = Fake(["ATLAS-FUND-1", "5"])
+    T.add_flow(ask=fa.ask, out=fa.say, run=fa.run, unseen={}, today="2026-11-22", infer=lambda n, b: {}, check_fn=ok_check)
     check("g6. ATLAS funded 25K = engine.lit25 --funded NAME --start DATE (as ADD_ACCOUNT.bat option 4)",
-          fa.ran and fa.ran[0][-6:] == ["engine.lit25", "--funded", "ATLAS-FUND-1", "--start", "2026-11-22"][-6:] if False else fa.ran[0][-5:] == ["engine.lit25", "--funded", "ATLAS-FUND-1", "--start", "2026-11-22"], fa.ran)
-
+          fa.ran and fa.ran[0][-5:] == ["engine.lit25", "--funded", "ATLAS-FUND-1", "--start", "2026-11-22"], fa.ran)
 
 def files():
     for rel in ("TRADE_HOME.bat", "scripts/trade_home.ps1"):
