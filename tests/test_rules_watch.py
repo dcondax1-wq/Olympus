@@ -138,7 +138,10 @@ def part_d():
     try:
         p = os.path.join(tmp, "rw.json")
         r = RW.maybe_run(now=ts(2026, 11, 23, 17, 10), http=lambda u: (503, ""), sender=lambda a: True, path=p)
-        check("d. every page down: no alert, the day NOT marked done", r and not r["alerts"] and RW.due(ts(2026, 11, 23, 17, 30), p), r)
+        check("d. every page down: no alert, the day NOT marked done (tried again an hour later)", r and not r["alerts"]
+              and RW.due(ts(2026, 11, 23, 18, 15), p), r)
+        check("rt2. ... but not every 15 min (each try can hold pc_report ~2 min): none before the hour",
+              not RW.due(ts(2026, 11, 23, 17, 30), p) and not RW.due(ts(2026, 11, 23, 18, 5), p))
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
@@ -175,8 +178,35 @@ def part_f():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def part_rt2():
+    """red team 2: a layout change that still parses as numbers = ONE digest alert, not one per rule."""
+    tmp = tempfile.mkdtemp()
+    try:
+        r2 = copy.deepcopy(RULES)
+        r2["limits"]["builder_25k"]["target"] = 9999.0
+        r2["limits"]["builder_25k"]["mll"] = 9999.0
+        r2["limits"]["builder_50k"]["target"] = 9999.0
+        r2["limits"]["builder_50k"]["mll"] = 9999.0
+        r2["limits"]["builder_50k"]["buffer"] = 9999.0
+        res = RW.run(http=http_ok, rules=r2, now=ts(2026, 11, 24, 17, 10))
+        sent = []
+        out = RW.report(res, path=os.path.join(tmp, "rw.json"), sender=lambda a: sent.append(a) or True, board=lambda t: None)
+        check("rt2. 5 'changes' at once: ONE digest alert naming them, not 5", len(sent) == 1 and "digest" in sent[0]["key"]
+              and "layout" in sent[0]["body"], [a["key"] for a in sent])
+        out2 = RW.report(res, path=os.path.join(tmp, "rw.json"), sender=lambda a: sent.append(a) or True, board=lambda t: None)
+        check("rt2. ... and never again for the same values", not out2 and len(sent) == 1, out2)
+        r3 = copy.deepcopy(RULES)
+        r3["limits"]["builder_25k"]["target"] = 9999.0
+        res = RW.run(http=http_ok, rules=r3, now=ts(2026, 11, 24, 17, 10))
+        s3 = []
+        RW.report(res, path=os.path.join(tmp, "rw3.json"), sender=lambda a: s3.append(a) or True, board=lambda t: None)
+        check("rt2. one real change: still its own alert", len(s3) == 1 and s3[0]["key"].startswith("rulewatch:b25_target:"), s3)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def main() -> int:
-    for f in (part_a, part_b, part_c, part_d, part_e, part_f):
+    for f in (part_a, part_b, part_c, part_d, part_e, part_f, part_rt2):
         try:
             f()
         except Exception as e:  # noqa: BLE001

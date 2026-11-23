@@ -134,8 +134,23 @@ def part_h():
     st, _ = run({}, fleet())
     st, al = run(st, fleet(lit={"stage": "passed"}))
     check("h. passed: 'Zlarior 50K PASSED' + one tap on the Start page", al and al[0]["title"] == "Zlarior 50K PASSED" and "Start page" in al[0]["body"], al)
-    st, al = run(st, [r for r in fleet(lit={"stage": "passed"}) if r["key"] != "x:b25k_2"])
-    check("h. an account gone: 'its slot is free' + the next move", al and "slot is free" in al[0]["title"] and "Next:" in al[0]["body"], al)
+    gone = [r for r in fleet(lit={"stage": "passed"}) if r["key"] != "x:b25k_2"]
+    st, al = run(st, gone)
+    check("rt2. gone from ONE read only (a flaky inventory): no alert yet", not al, al)
+    st, al = run(st, gone)
+    check("h. an account gone (2 reads in a row): 'its slot is free' + the next move", al and "slot is free" in al[0]["title"]
+          and "Next:" in al[0]["body"], al)
+    st2, _ = run({}, fleet())
+    st2, al = run(st2, [r for r in fleet() if r["key"] != "atlas"])
+    st2, al2 = run(st2, fleet())
+    check("rt2. back on the next read: no 'closed', no 'added' noise", not al and not al2, (al, al2))
+    st3, _ = run({}, fleet())
+    st3, _ = run(st3, fleet(lit={"stage": "passed"}))
+    st3, _ = run(st3, fleet(lit={"stage": "failed"}))
+    st3, _ = run(st3, fleet(lit={"stage": "eval"}))                   # re-bought on the same key
+    st3, al = run(st3, fleet(lit={"stage": "passed"}))
+    check("rt2. a re-bought account on the same key that passes gets its own PASSED alert",
+          any(a["title"] == "Zlarior 50K PASSED" for a in al), al)
 
 
 def part_i():
@@ -192,8 +207,27 @@ def part_k():
     check("k. advice only: no buy / arm / order / payout request code", not any(w in src for w in ("arm(", "place_order", "record_payout", "requests.post")))
 
 
+def part_rt2():
+    """red team 2: gather() reads a Rapid's payouts n / $ paid from its own slot (the autopilot's view carries neither), so the
+    $6,500 live-move line can fire at all."""
+    from engine import account_cli as AC, rapid as RP, payout_autopilot as PA
+    old = (AC.inventory, RP.read, PA.gather)
+    try:
+        AC.inventory = lambda: [{"name": "R1", "plan": "rapideod25", "stage": "funded", "role": "rapid", "id": "rapid", "sim": False}]
+        RP.read = lambda p=None: {"account": "R1", "stage": "funded", "payouts": {"2026-12-01": 3500.0, "2026-12-09": 3200.0}}
+        PA.gather = lambda today=None: [{"key": "rapid", "kind": "rapid", "ready": False}]
+        rows = FM.gather()
+    finally:
+        AC.inventory, RP.read, PA.gather = old
+    check("rt2. gather: the Rapid's 2 payouts and $6,700 paid come from its slot", rows and rows[0]["payouts_n"] == 2
+          and rows[0]["paid"] == 6700.0, rows)
+    st, _ = run({}, [dict(rows[0], payouts_n=1, paid=3500.0)])
+    st, al = run(st, rows)
+    check("rt2. ... so the live-move risk alert fires", any("live-move" in a["title"] for a in al), al)
+
+
 def main() -> int:
-    for f in (part_a, part_b, part_c, part_d, part_e, part_f, part_g, part_h, part_i, part_j, part_k):
+    for f in (part_a, part_b, part_c, part_d, part_e, part_f, part_g, part_h, part_i, part_j, part_k, part_rt2):
         try:
             f()
         except Exception as e:  # noqa: BLE001
