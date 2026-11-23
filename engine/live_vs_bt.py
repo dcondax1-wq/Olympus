@@ -155,13 +155,24 @@ def cached(now=None, path=None, max_age=CACHE_S, RL=None) -> dict | None:
         return None
 
 
+def last(now=None, path=None, max_age=30 * 3600) -> dict | None:
+    """The last saved check when it is at most max_age old (the brief reads it), else None. Reads only."""
+    try:
+        now = int(time.time() if now is None else now)
+        with open(path or OUT, encoding="utf-8") as fh:
+            d = json.load(fh)
+        return d if isinstance(d, dict) and 0 <= now - int(d.get("t") or 0) <= max_age else None   # never a check from "later"
+    except Exception:
+        return None
+
+
 def last_line(now=None, path=None, max_age=30 * 3600) -> str:
     """The brief's line from the last saved check (the 16:20 ET run of the day before), '' when none / too old. Reads only."""
     try:
         now = int(time.time() if now is None else now)
         with open(path or OUT, encoding="utf-8") as fh:
             d = json.load(fh)
-        return brief_line(d) if now - int(d.get("t") or 0) <= max_age else ""
+        return brief_line(d) if 0 <= now - int(d.get("t") or 0) <= max_age else ""
     except Exception:
         return ""
 

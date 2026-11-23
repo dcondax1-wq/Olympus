@@ -132,6 +132,8 @@ def part_d(tmp, res):
     L.save({**res, "t": 1795600000}, p)
     check("d1. the brief reads the last saved check: one line", L.last_line(1795600000 + 3600, path=p).startswith("Live vs backtest: "))
     check("d2. older than 30 h: no line (never an old drift shown as today's)", L.last_line(1795600000 + 31 * 3600, path=p) == "")
+    check("d2b. a check saved 'later' than the clock (a test's fake time): ignored", L.last(1795600000 - 3600, path=p) is None
+          and L.last(1795600000 + 60, path=p) is not None)
     from tools import morning_brief as MB
     src = open(os.path.join(ROOT, "tools", "morning_brief.py"), encoding="utf-8").read()
     check("d3. the brief adds it as one line after the accounts and keeps <= 8 lines", "lines = [rl] + acc + ([lvb] if lvb else [])" in src
