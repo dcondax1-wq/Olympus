@@ -184,7 +184,7 @@ def lights(bot, now: int, h: dict) -> list:
     else:
         mx = float(c.get("max") or 5.0)
         out.append(_light("clock", "PC clock", abs(drift) <= mx, f"{abs(drift):.1f} s {'behind' if drift > 0 else 'ahead'} of internet time (max {mx:.0f} s)",
-                          "" if abs(drift) <= mx else "Windows Settings > Time > Sync now."))
+                          "" if abs(drift) <= mx else "Double-click FIX_CLOCK.bat once, right-click > Run as administrator."))
     # 4. startup reconcile
     st = (getattr(bot, "health", None) or {}).get("startup") or {}
     if not is_nt:

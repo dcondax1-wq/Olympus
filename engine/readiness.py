@@ -410,6 +410,19 @@ def _evaluate(f: dict, now) -> dict:
     if c and c.get("level") == "warn":
         out.append(_b(WARN, "1-minute open file is not updating", f"{c.get('text')}. Sizing waits for the bar close.",
                       str(c.get("fix") or "Reload the MNQ chart in NinjaTrader (F5)."), False, "feed_open"))
+    # 4b the quarterly contract roll (night-roll 2026-11-23): the chart left on the old contract = no new entry on any account
+    ro = _dd(f.get("roll"))
+    if ro.get("level") == "bad":
+        out.append(_b(NOT_READY, f"Chart still on {str(ro.get('chart') or 'the old contract')[:16]}",
+                      f"{str(ro.get('say') or 'chart and orders on different contracts')[:120]}. No account sends a new entry until "
+                      "the chart is on the order contract.",
+                      "On the PC: double-click tools/bat/ROLL.bat (or TRADE_HOME.bat > R). It shows the one NinjaTrader click and checks it.",
+                      True, "roll"))
+    elif ro.get("level") == "soon" and _dd(ro.get("roll")).get("in_days") == 1:
+        r = _dd(ro.get("roll"))
+        out.append(_b(WARN, f"Contract roll tomorrow: {r.get('old')} -> {r.get('new')}",
+                      "Orders switch by themselves at 00:00 ET; the NinjaTrader chart needs one click tonight after 16:00 ET.",
+                      "Tonight after 16:00 ET: double-click tools/bat/ROLL.bat (or TRADE_HOME.bat > R).", True, "roll_soon"))
     # 5 each account armed / held / locked, the kill switch
     try:
         from .preflight import arms
@@ -506,6 +519,11 @@ def gather_facts(now=None, ctx=None, checks=None) -> dict:
         try:
             from . import clock7, preflight
             f["k7"] = _ll(_dd(clock7.build(_dd(preflight.last_ext()).get("mf"), _dd(f["hb"]).get("keepalive"), now)).get("a"))
+        except Exception:
+            pass
+        try:
+            from . import roll_watch
+            f["roll"] = roll_watch.fact(now=now)
         except Exception:
             pass
         try:

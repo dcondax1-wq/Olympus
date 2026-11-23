@@ -454,7 +454,7 @@ def pc_conditions(bot, now=None) -> list:
                                     "Zlarior / ATLAS entry is held back."})
         if h.get("guard_block"):
             out.append({"id": f"clock:{day}", "kind": "clock", "title": "Clock drift: entries blocked",
-                        "body": f"{str(h['guard_block'])[:120]}. Windows: Settings > Time > Sync now."})
+                        "body": f"{str(h['guard_block'])[:120]}. Could not sync by itself: double-click FIX_CLOCK.bat once, right-click > Run as administrator."})
         try:
             from . import ai_watch
             out += ai_watch.crit_conditions(bot, now)          # the feed frozen mid-trade (engine/ai_watch.py)

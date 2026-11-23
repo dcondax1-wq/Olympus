@@ -137,7 +137,16 @@ def _report_tasks():
         return {}
 
 
-def status_screen(now=None, bot=None, accounts=None, keepalive=None, alerts=None, clock=-1, tasks=None, guard=None):
+def _roll_fact(now=None):
+    """engine/roll_watch.fact for this PC's chart (the December roll: chart vs order contract). Never raises."""
+    try:
+        from engine import roll_watch
+        return roll_watch.fact(now=now)
+    except Exception:  # noqa: BLE001
+        return {}
+
+
+def status_screen(now=None, bot=None, accounts=None, keepalive=None, alerts=None, clock=-1, tasks=None, guard=None, roll=-1):
     """-> (lines, problems). Plain words, one line per fact; `problems` = [(menu number, what to do)] for the unchecked ones."""
     import time
     now = now if now is not None else time.time()
@@ -160,6 +169,13 @@ def status_screen(now=None, bot=None, accounts=None, keepalive=None, alerts=None
         L.append(f"  Clock    : {abs(dr):.1f} s {'behind' if dr > 0 else 'ahead of'} internet time" + (" (fine)" if abs(dr) <= CLOCK_MAX_S else " (new entries are BLOCKED)"))
         if abs(dr) > CLOCK_MAX_S:
             P.append(("9", f"The PC clock is off: choose 9 (Fix the clock). If it says it needs an administrator: {CLOCK_FIX_SAY}."))
+    ro = (_roll_fact(now) if roll == -1 else roll) or {}
+    lvl = ro.get("level")
+    if lvl == "bad":
+        L.append(f"  Roll     : {ro.get('say')} (new entries are BLOCKED)")
+        P.append(("R", f"The NinjaTrader chart is on the old contract: choose R (Contract roll). It shows the one click."))
+    elif lvl in ("soon", "early"):
+        L.append(f"  Roll     : {ro.get('say')}")
     if not answers:
         P.append(("7", "The bot server is down: choose 7 (Update) to bring it back."))
     elif not run:
@@ -300,7 +316,7 @@ def run_bat(name, run=None):
 
 # result line after each action: re-read the one fact the action was for. `fx` = the readers (tests pass fakes).
 def _default_fx():
-    return {"bot": _bot_state, "keepalive": _keepalive_on, "alerts": _alert_channels, "sync_clock": _sync_clock}
+    return {"bot": _bot_state, "keepalive": _keepalive_on, "alerts": _alert_channels, "sync_clock": _sync_clock, "roll": _roll_fact}
 
 
 def result_start(fx):
@@ -337,6 +353,18 @@ def result_update(fx):
     st = fx["bot"]()
     return "[OK] Updated and the bot server answers. Choose 2 if the bot should trade." if isinstance(st, dict) else \
         "[FIX] The server does not answer yet. Wait a minute, then choose 1."
+
+
+def result_roll(fx):
+    ro = (fx.get("roll") or _roll_fact)() or {}
+    lvl = ro.get("level")
+    if lvl in ("ok", "early"):
+        return "[OK] Roll check: " + str(ro.get("say") or "chart and orders on the same contract") + "."
+    if lvl == "soon":
+        return "[OK] Nothing to do yet: " + str(ro.get("say")) + "."
+    if lvl == "bad":
+        return "[FIX] " + str(ro.get("say")) + ". Do the click tools/bat/ROLL.bat showed, then choose R again."
+    return "[FIX] The PC cannot see the chart's contract: open NinjaTrader with the LE_BarFeed chart, then choose R again."
 
 
 def _sync_clock():
@@ -508,6 +536,7 @@ MENU = ("  ==== TRADING HOME ====",
         "   M  More tools (every other button: undo steps, Kalshi, agency, money, setup)",
         "   T  Test all alerts      (OK / FAIL per channel, plain words)",
         "   P  I took a payout       (records it: the account + the Money pipeline)",
+        "   R  Contract roll        (December: chart to the new contract; waits until flat)",
         "   0  Close")
 
 
@@ -544,6 +573,15 @@ def do_choice(ch, ask=input, out=say, run=None, fx=None, add_fn=None, unseen=Non
         out("  Test all alerts: its window lists each channel OK or FAIL. Press a key there to come back here.")
         rc = run_bat("tools/bat/TEST_ALERT.bat", run)
         return "[OK] Test sent: check your phone buzzed." if rc == 0 else "[FIX] Nothing reached your phone: do the steps in that window."
+    if ch.lower() == "r":
+        out("  Contract roll: tools/bat/ROLL.bat opens its own window. When it says 'Press any key', press a key to come back here.")
+        rc = run_bat("tools/bat/ROLL.bat", run)
+        # red team 2026-11-23: tools/roll_now.py exits 1 (a click for you) / 2 (not now: too early or a trade open), and run_bat
+        # says 1 for a missing file too: the result line re-reads the roll itself instead of "did not open"
+        if rc == 2:
+            return ("[OK] Not now: tools/bat/ROLL.bat waits until every account is flat and it is the evening before the roll (after "
+                    "16:00 ET). Nothing was switched. Choose R again then.")
+        return result_roll(fx)
     return "[FIX] Type a number from the list."
 
 
