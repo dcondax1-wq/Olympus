@@ -1,0 +1,666 @@
+{
+ "source": "tools/lit_skipmap.py run (2026-11-23)",
+ "writeup": "research/writeups/lit-deep-2026-11-23.md",
+ "base": {
+  "2026_jan_jun": {
+   "tpw": 3.12,
+   "win": 58.8,
+   "pf": 4.98,
+   "usd_mo": 5562,
+   "maxdd": -2196
+  },
+  "2026_jul_oct": {
+   "tpw": 2.56,
+   "win": 50.0,
+   "pf": 2.91,
+   "usd_mo": 2670,
+   "maxdd": -1396
+  },
+  "2021_25": {
+   "tpw": 2.38,
+   "win": 53.8,
+   "pf": 1.01,
+   "usd_mo": 25,
+   "maxdd": -19426
+  }
+ },
+ "rows": [
+  {
+   "id": "litdeep_second_any",
+   "name": "2nd setup of the day",
+   "family": "second setup after the first trade",
+   "spans": {
+    "2026_jan_jun": {
+     "tpw": 3.87,
+     "win": 55.6,
+     "pf": 3.53,
+     "usd_mo": 4748,
+     "maxdd": -2706,
+     "d_usd_mo": -814,
+     "added_trades": 19,
+     "eval": {
+      "p10": 43.7,
+      "f10": 0.0,
+      "pass_med": 10.5,
+      "net": 28409
+     }
+    },
+    "2026_jul_oct": {
+     "tpw": 3.14,
+     "win": 49.0,
+     "pf": 2.84,
+     "usd_mo": 3361,
+     "maxdd": -1868,
+     "d_usd_mo": 691,
+     "added_trades": 9,
+     "eval": {
+      "p10": 39.1,
+      "f10": 0.0,
+      "pass_med": 11.0,
+      "net": 11325
+     }
+    },
+    "2021_25": {
+     "tpw": 2.8,
+     "win": 52.6,
+     "pf": 0.96,
+     "usd_mo": -85,
+     "maxdd": -20205,
+     "d_usd_mo": -110,
+     "added_trades": 90
+    }
+   },
+   "p_oos": 0.6656334366563343,
+   "p_holm": 1.0,
+   "verdict": "Rejected at the pick (Jan-Jun)"
+  },
+  {
+   "id": "litdeep_opp_after_stop",
+   "name": "Other side after a stop-out",
+   "family": "opposite side after a stop-out",
+   "spans": {
+    "2026_jan_jun": {
+     "tpw": 3.2,
+     "win": 58.5,
+     "pf": 4.87,
+     "usd_mo": 5533,
+     "maxdd": -2196,
+     "d_usd_mo": -29,
+     "added_trades": 2,
+     "eval": {
+      "p10": 44.5,
+      "f10": 0.0,
+      "pass_med": 11.0,
+      "net": 33603
+     }
+    },
+    "2026_jul_oct": {
+     "tpw": 2.69,
+     "win": 47.6,
+     "pf": 2.55,
+     "usd_mo": 2476,
+     "maxdd": -1396,
+     "d_usd_mo": -194,
+     "added_trades": 2,
+     "eval": {
+      "p10": 39.1,
+      "f10": 0.0,
+      "pass_med": 11.0,
+      "net": 10526
+     }
+    },
+    "2021_25": {
+     "tpw": 2.48,
+     "win": 53.9,
+     "pf": 1.03,
+     "usd_mo": 63,
+     "maxdd": -18297,
+     "d_usd_mo": 38,
+     "added_trades": 20
+    }
+   },
+   "p_oos": 0.45425457454254575,
+   "p_holm": 1.0,
+   "verdict": "Rejected at the pick (Jan-Jun)"
+  },
+  {
+   "id": "litdeep_continuation",
+   "name": "Same side again after a win / BE",
+   "family": "continuation LIT",
+   "spans": {
+    "2026_jan_jun": {
+     "tpw": 3.28,
+     "win": 58.3,
+     "pf": 4.6,
+     "usd_mo": 5449,
+     "maxdd": -2196,
+     "d_usd_mo": -113,
+     "added_trades": 4,
+     "eval": {
+      "p10": 44.5,
+      "f10": 0.0,
+      "pass_med": 10.0,
+      "net": 32413
+     }
+    },
+    "2026_jul_oct": {
+     "tpw": 2.69,
+     "win": 52.4,
+     "pf": 3.05,
+     "usd_mo": 2873,
+     "maxdd": -1231,
+     "d_usd_mo": 203,
+     "added_trades": 2,
+     "eval": {
+      "p10": 39.1,
+      "f10": 0.0,
+      "pass_med": 12.0,
+      "net": 12368
+     }
+    },
+    "2021_25": {
+     "tpw": 2.48,
+     "win": 53.4,
+     "pf": 1.0,
+     "usd_mo": -8,
+     "maxdd": -20951,
+     "d_usd_mo": -33,
+     "added_trades": 21
+    }
+   },
+   "p_oos": 0.6647335266473353,
+   "p_holm": 1.0,
+   "verdict": "Rejected at the pick (Jan-Jun)"
+  },
+  {
+   "id": "litdeep_htf_liq",
+   "name": "Sweeps of 5-day / 20-day highs and lows",
+   "family": "other liquidity (HTF swing points)",
+   "spans": {
+    "2026_jan_jun": {
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 4.98,
+     "usd_mo": 5562,
+     "maxdd": -2196,
+     "d_usd_mo": 0,
+     "added_trades": 0,
+     "eval": {
+      "p10": 44.5,
+      "f10": 0.0,
+      "pass_med": 11.0,
+      "net": 33663
+     }
+    },
+    "2026_jul_oct": {
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 2.91,
+     "usd_mo": 2670,
+     "maxdd": -1396,
+     "d_usd_mo": 0,
+     "added_trades": 0,
+     "eval": {
+      "p10": 39.1,
+      "f10": 0.0,
+      "pass_med": 12.0,
+      "net": 11735
+     }
+    },
+    "2021_25": {
+     "tpw": 2.39,
+     "win": 53.9,
+     "pf": 1.01,
+     "usd_mo": 25,
+     "maxdd": -19421,
+     "d_usd_mo": 0,
+     "added_trades": 1
+    }
+   },
+   "p_oos": 0.49265073492650735,
+   "p_holm": 1.0,
+   "verdict": "Rejected at the pick (Jan-Jun)"
+  },
+  {
+   "id": "litdeep_idm_none",
+   "name": "No inducement needed",
+   "family": "inducement variant",
+   "spans": {
+    "2026_jan_jun": {
+     "tpw": 3.75,
+     "win": 59.4,
+     "pf": 3.91,
+     "usd_mo": 5610,
+     "maxdd": -3704,
+     "d_usd_mo": 48,
+     "added_trades": 19,
+     "eval": {
+      "p10": 52.9,
+      "f10": 0.0,
+      "pass_med": 8.0,
+      "net": 37187
+     }
+    },
+    "2026_jul_oct": {
+     "tpw": 3.4,
+     "win": 39.6,
+     "pf": 1.79,
+     "usd_mo": 1849,
+     "maxdd": -2007,
+     "d_usd_mo": -821,
+     "added_trades": 15,
+     "eval": {
+      "p10": 33.3,
+      "f10": 0.0,
+      "pass_med": 8.0,
+      "net": 8632
+     }
+    },
+    "2021_25": {
+     "tpw": 3.32,
+     "win": 52.2,
+     "pf": 1.01,
+     "usd_mo": 16,
+     "maxdd": -21543,
+     "d_usd_mo": -9,
+     "added_trades": 218
+    }
+   },
+   "p_oos": 0.6109389061093891,
+   "p_holm": 1.0,
+   "verdict": "Rejected (picked on Jan-Jun, failed the check)"
+  },
+  {
+   "id": "litdeep_small_sweep",
+   "name": "Smaller sweep (0.25-0.5 ATR)",
+   "family": "smaller sweep size",
+   "spans": {
+    "2026_jan_jun": {
+     "tpw": 3.24,
+     "win": 57.8,
+     "pf": 4.36,
+     "usd_mo": 5364,
+     "maxdd": -2233,
+     "d_usd_mo": -198,
+     "added_trades": 3,
+     "eval": {
+      "p10": 44.5,
+      "f10": 0.0,
+      "pass_med": 11.0,
+      "net": 33621
+     }
+    },
+    "2026_jul_oct": {
+     "tpw": 2.63,
+     "win": 48.8,
+     "pf": 2.83,
+     "usd_mo": 2634,
+     "maxdd": -1396,
+     "d_usd_mo": -36,
+     "added_trades": 1,
+     "eval": {
+      "p10": 39.1,
+      "f10": 0.0,
+      "pass_med": 12.0,
+      "net": 11291
+     }
+    },
+    "2021_25": {
+     "tpw": 2.48,
+     "win": 52.8,
+     "pf": 0.98,
+     "usd_mo": -44,
+     "maxdd": -22393,
+     "d_usd_mo": -69,
+     "added_trades": 21
+    }
+   },
+   "p_oos": 0.8448155184481552,
+   "p_holm": 1.0,
+   "verdict": "Rejected at the pick (Jan-Jun)"
+  },
+  {
+   "id": "litdeep_disp_low",
+   "name": "Weaker displacement (0.5-0.8 ATR)",
+   "family": "displacement variant",
+   "spans": {
+    "2026_jan_jun": {
+     "tpw": 3.98,
+     "win": 61.8,
+     "pf": 4.69,
+     "usd_mo": 6230,
+     "maxdd": -1840,
+     "d_usd_mo": 668,
+     "added_trades": 24,
+     "eval": {
+      "p10": 50.4,
+      "f10": 0.0,
+      "pass_med": 8.0,
+      "net": 33587
+     }
+    },
+    "2026_jul_oct": {
+     "tpw": 3.78,
+     "win": 42.4,
+     "pf": 1.75,
+     "usd_mo": 1768,
+     "maxdd": -2708,
+     "d_usd_mo": -902,
+     "added_trades": 19,
+     "eval": {
+      "p10": 37.7,
+      "f10": 0.0,
+      "pass_med": 6.0,
+      "net": 12546
+     }
+    },
+    "2021_25": {
+     "tpw": 3.08,
+     "win": 51.9,
+     "pf": 1.0,
+     "usd_mo": -5,
+     "maxdd": -29304,
+     "d_usd_mo": -30,
+     "added_trades": 166
+    }
+   },
+   "p_oos": 0.6224377562243776,
+   "p_holm": 1.0,
+   "verdict": "Rejected at the pick (Jan-Jun)"
+  },
+  {
+   "id": "litdeep_hours_out",
+   "name": "Outside 02:00-15:30 (Asia 18:30-02:00, 15:30-15:45)",
+   "family": "outside the hours window",
+   "spans": {
+    "2026_jan_jun": {
+     "tpw": 4.73,
+     "win": 59.5,
+     "pf": 2.92,
+     "usd_mo": 4492,
+     "maxdd": -4132,
+     "d_usd_mo": -1070,
+     "added_trades": 51,
+     "eval": {
+      "p10": 48.7,
+      "f10": 0.0,
+      "pass_med": 6.5,
+      "net": 31282
+     }
+    },
+    "2026_jul_oct": {
+     "tpw": 4.1,
+     "win": 51.6,
+     "pf": 2.22,
+     "usd_mo": 3374,
+     "maxdd": -1658,
+     "d_usd_mo": 704,
+     "added_trades": 31,
+     "eval": {
+      "p10": 55.1,
+      "f10": 0.0,
+      "pass_med": 7.0,
+      "net": 11652
+     }
+    },
+    "2021_25": {
+     "tpw": 3.47,
+     "win": 52.1,
+     "pf": 0.92,
+     "usd_mo": -243,
+     "maxdd": -20688,
+     "d_usd_mo": -268,
+     "added_trades": 262
+    }
+   },
+   "p_oos": 0.7381261873812619,
+   "p_holm": 1.0,
+   "verdict": "Rejected at the pick (Jan-Jun)"
+  },
+  {
+   "id": "litdeep_cisd5_only",
+   "name": "5m CISD without the 1m confirmation",
+   "family": "1m CISD vs 5m CISD",
+   "spans": {
+    "2026_jan_jun": {
+     "tpw": 3.98,
+     "win": 51.0,
+     "pf": 2.69,
+     "usd_mo": 4241,
+     "maxdd": -2733,
+     "d_usd_mo": -1321,
+     "added_trades": 23,
+     "eval": {
+      "p10": 44.5,
+      "f10": 0.0,
+      "pass_med": 9.0,
+      "net": 29350
+     }
+    },
+    "2026_jul_oct": {
+     "tpw": 3.27,
+     "win": 43.1,
+     "pf": 1.83,
+     "usd_mo": 1667,
+     "maxdd": -2091,
+     "d_usd_mo": -1003,
+     "added_trades": 13,
+     "eval": {
+      "p10": 27.5,
+      "f10": 0.0,
+      "pass_med": 11.0,
+      "net": 11884
+     }
+    },
+    "2021_25": {
+     "tpw": 4.77,
+     "win": 46.1,
+     "pf": 0.67,
+     "usd_mo": -1637,
+     "maxdd": -83588,
+     "d_usd_mo": -1662,
+     "added_trades": 548
+    }
+   },
+   "p_oos": 1.0,
+   "p_holm": 1.0,
+   "verdict": "Rejected at the pick (Jan-Jun)"
+  },
+  {
+   "id": "litdeep_vix_near",
+   "name": "VIX band only 1.0-1.5R away",
+   "family": "setups the VIX band filters out",
+   "spans": {
+    "2026_jan_jun": {
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 4.98,
+     "usd_mo": 5562,
+     "maxdd": -2196,
+     "d_usd_mo": 0,
+     "added_trades": 0,
+     "eval": {
+      "p10": 44.5,
+      "f10": 0.0,
+      "pass_med": 11.0,
+      "net": 33663
+     }
+    },
+    "2026_jul_oct": {
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 2.91,
+     "usd_mo": 2670,
+     "maxdd": -1396,
+     "d_usd_mo": 0,
+     "added_trades": 0,
+     "eval": {
+      "p10": 39.1,
+      "f10": 0.0,
+      "pass_med": 12.0,
+      "net": 11735
+     }
+    },
+    "2021_25": {
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.01,
+     "usd_mo": 25,
+     "maxdd": -19426,
+     "d_usd_mo": 0,
+     "added_trades": 0
+    }
+   },
+   "p_oos": 1.0,
+   "p_holm": 1.0,
+   "verdict": "Rejected at the pick (Jan-Jun)"
+  },
+  {
+   "id": "litdeep_stop_wide",
+   "name": "Planned stop 5-8 or 80-120 pts",
+   "family": "stop-size filter",
+   "spans": {
+    "2026_jan_jun": {
+     "tpw": 3.28,
+     "win": 57.1,
+     "pf": 4.71,
+     "usd_mo": 5437,
+     "maxdd": -2419,
+     "d_usd_mo": -125,
+     "added_trades": 4,
+     "eval": {
+      "p10": 44.5,
+      "f10": 0.0,
+      "pass_med": 11.0,
+      "net": 33294
+     }
+    },
+    "2026_jul_oct": {
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 2.91,
+     "usd_mo": 2670,
+     "maxdd": -1396,
+     "d_usd_mo": 0,
+     "added_trades": 0,
+     "eval": {
+      "p10": 39.1,
+      "f10": 0.0,
+      "pass_med": 12.0,
+      "net": 11735
+     }
+    },
+    "2021_25": {
+     "tpw": 2.48,
+     "win": 53.7,
+     "pf": 1.01,
+     "usd_mo": 30,
+     "maxdd": -17648,
+     "d_usd_mo": 5,
+     "added_trades": 20
+    }
+   },
+   "p_oos": 0.4724527547245275,
+   "p_holm": 1.0,
+   "verdict": "Rejected at the pick (Jan-Jun)"
+  },
+  {
+   "id": "litdeep_wait_long",
+   "name": "Limit works 60 min instead of 30",
+   "family": "late tap",
+   "spans": {
+    "2026_jan_jun": {
+     "tpw": 3.24,
+     "win": 56.6,
+     "pf": 4.97,
+     "usd_mo": 5561,
+     "maxdd": -2196,
+     "d_usd_mo": -1,
+     "added_trades": 3,
+     "eval": {
+      "p10": 42.9,
+      "f10": 0.0,
+      "pass_med": 11.0,
+      "net": 32128
+     }
+    },
+    "2026_jul_oct": {
+     "tpw": 2.63,
+     "win": 51.2,
+     "pf": 2.88,
+     "usd_mo": 2633,
+     "maxdd": -1392,
+     "d_usd_mo": -37,
+     "added_trades": 2,
+     "eval": {
+      "p10": 39.1,
+      "f10": 0.0,
+      "pass_med": 12.0,
+      "net": 11633
+     }
+    },
+    "2021_25": {
+     "tpw": 2.5,
+     "win": 52.7,
+     "pf": 0.95,
+     "usd_mo": -110,
+     "maxdd": -21639,
+     "d_usd_mo": -135,
+     "added_trades": 25
+    }
+   },
+   "p_oos": 1.0,
+   "p_holm": 1.0,
+   "verdict": "Rejected at the pick (Jan-Jun)"
+  },
+  {
+   "id": "litdeep_monday_off",
+   "name": "Setups the Monday rule blocked",
+   "family": "Monday rule",
+   "spans": {
+    "2026_jan_jun": {
+     "tpw": 3.32,
+     "win": 56.5,
+     "pf": 4.42,
+     "usd_mo": 5215,
+     "maxdd": -2700,
+     "d_usd_mo": -347,
+     "added_trades": 8,
+     "eval": {
+      "p10": 42.0,
+      "f10": 0.0,
+      "pass_med": 12.0,
+      "net": 27665
+     }
+    },
+    "2026_jul_oct": {
+     "tpw": 2.69,
+     "win": 47.6,
+     "pf": 2.75,
+     "usd_mo": 2589,
+     "maxdd": -1544,
+     "d_usd_mo": -81,
+     "added_trades": 2,
+     "eval": {
+      "p10": 31.9,
+      "f10": 0.0,
+      "pass_med": 21.0,
+      "net": 11413
+     }
+    },
+    "2021_25": {
+     "tpw": 2.52,
+     "win": 54.0,
+     "pf": 1.01,
+     "usd_mo": 28,
+     "maxdd": -18749,
+     "d_usd_mo": 3,
+     "added_trades": 32
+    }
+   },
+   "p_oos": 0.511948805119488,
+   "p_holm": 1.0,
+   "verdict": "Rejected at the pick (Jan-Jun)"
+  }
+ ]
+}

@@ -1,4 +1,11 @@
 ## Tested and rejected (don't redo without a new idea)
+- **LIT deep skip map (2026-11-23, `lit-deep-2026-11-23.md`, `tools/lit_skipmap.py`, design `research/lit/lit_deep_design_2026-11-23.md`,
+  Lab `research/lab/lit_deep.json`):** every gate relaxed one at a time, skipped setups logged with the reason (~38 a week formed vs
+  3 taken), 13 families as strict ADD-ONS (1 live + 1 family trade a day): 2nd setup, other side after a stop, continuation, 5-/20-day
+  highs/lows as liquidity (1 new setup in 5 years), no inducement, sweep 0.25-0.5 ATR, displacement 0.5-0.8 ATR, Asia + 15:30-15:45,
+  5m CISD without the 1m confirmation (worst: -$1,321 / -$1,003 / -$1,662 a month), VIX band 1.0-1.5R, stops 5-8 / 80-120, 60-min
+  limit, Monday-rule blocks. $/month vs today H1 / H2 / 2021-25: best disp_low +$668 / -$902 / -$30, idm_none +$48 / -$821 / -$9.
+  0 of 13 pass; Holm-adjusted p 1.0 for all. Nothing changes.
 - **Zlarior more money, 2 pre-registered batches (2026-11-19, `lit-more-money-2026-11-19.md`, `tools/lit_more_money.py`,
   `research/lit/more_money.json`, designs `research/lit/more_money_design_batch1/2.md`, Lab rows `research/lab/lit_more_money.json`):**
   9 single versions, LIT $/month H1 / H2 / 2021-25 vs today $5,562 / $2,670 / $25: ES (MES) LIT filler on days NQ has not
