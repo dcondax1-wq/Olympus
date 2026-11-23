@@ -71,12 +71,13 @@ rem ---- 7. self-tests + health check
 echo  [..] Self-tests and health check (about a minute)
 "%PY%" -X utf8 -m engine.ops_checks --after-update
 if errorlevel 1 goto :fixes
-if "%RC%"=="0" set "RC=2"
 echo.
 echo  [OK]  UPDATE done. All green.
 goto :end
 
 :fixes
+rem red team 2026-11-23: RC=2 only HERE (the health check printed red lines); all green keeps RC=0
+if "%RC%"=="0" set "RC=2"
 echo.
 echo  [FIX] UPDATE done, but the red lines above need a fix.
 goto :end

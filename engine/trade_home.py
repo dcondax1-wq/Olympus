@@ -529,6 +529,9 @@ def do_choice(ch, ask=input, out=say, run=None, fx=None, add_fn=None, unseen=Non
         title, bat, res = ACTIONS[ch]
         out(f"  {title}: it opens its own window. When it says 'Press any key', press a key to come back here.")
         rc = run_bat(bat, run)
+        if bat == "UPDATE.bat" and rc in (1, 2):     # UPDATE.bat's own result (night-mondaysim): 1 not updated, 2 red lines
+            return ("[FIX] The update did not go through: the old version keeps running. Send Claude a photo of its window."
+                    if rc == 1 else res(fx) + " Its health check printed red lines: do those.")
         return res(fx) if rc == 0 else f"[FIX] {bat} did not open. Tell Claude."
     if ch == "4":
         return add_flow(ask=ask, out=out, run=run, add_fn=add_fn, unseen=unseen)[1]
