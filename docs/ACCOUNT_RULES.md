@@ -122,3 +122,9 @@ Claude never requests a payout: the phone says when and how much, you click it i
 **Open conflict (MFFU's own pages):** one Builder funded account per user (50K guide) vs 1 x 50K + 2 x 25K (limits article). Today's
 setup (ATLAS 25K funded + Zlarior's 50K and 25K #2 evals) is fine under both, but under the strict reading **Zlarior's 50K could
 not become funded while ATLAS's 25K is** (expected about Dec 24). We follow the limits article; MFFU decides at the pass.
+
+## Re-check 2026-11-23 (no number changed)
+- Rapid EOD 50K (if bought): daily payouts, $500 min above the $2,100 buffer, then **$500 net since the last payout**, no cap, 90% ([Rapid EOD 50K](https://help.myfundedfutures.com/en/articles/16158363-rapid-eod-50k-a-comprehensive-look)).
+- Payout speed: Rapid's first payout is eligible 24 h after the first funded trade; most payouts are approved instantly, otherwise 6-12 business hours ([payout overview](https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts)).
+- Builder 25K / 50K funded minimums unchanged ($250 / $500 above the $1,100 / $2,100 buffer, 80%). Bots allowed unchanged ([fair play](https://help.myfundedfutures.com/en/articles/8444599-fair-play-and-prohibited-trading-practices)).
+- 30-day cash from today's balances: research/writeups/fastest-money-2026-11-23.md section (d).

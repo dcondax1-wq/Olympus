@@ -175,3 +175,9 @@ Reading:
 - Same bots on every account: a bad stretch hits all accounts on the same days. That is modelled (one shared path), but no
   plan protects against a 2021-25-like market except spending less (S3, or a smaller budget).
 - 72 fleets + 15 sensitivity rows were tried. The picks follow the rule written before the run.
+
+## Update 2026-11-23 (rule check, research/writeups/fastest-money-2026-11-23.md)
+- FundedNext Rapid prices on the official page: 50K $149.99 (code RAPID), 25K $64.99 (https://fundednext.com/futures/rapid). The page names only Tradovate: get a written OK for NinjaTrader before the first buy.
+- Lucid supports NinjaTrader via CQG (https://intercom.help/lucid-trading/en/articles/11404614-lucid-trading-supported-platforms): one UNVERIFIED item here is now settled. Lucid's price is still unverified (403).
+- MFFU Rapid EOD 50K: each payout after the first needs $500 net since the last (https://help.myfundedfutures.com/en/articles/16158363-rapid-eod-50k-a-comprehensive-look); most payouts are approved instantly, otherwise 6-12 business hours (https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts).
+- 30 days from a fresh buy: no plan pays in the median path. FundedNext Rapid Daily pays inside 30 days on 34% (Jul-Oct-like) / 44% (Jan-Jun-like) of paths (backtest, research/money30/).

@@ -72,6 +72,13 @@ def live(P, start, comm, margin, mix, monthly_fee):
 
 for span in ("H1", "H2", "REF"):
     P = U.mc_paths(S, span, N, length=H, seed=41); o = {}
+    import os
+    if os.environ.get("ONLY_LIVE"):
+        for st in (300, 500):
+            o[f"live_1mnq_{st}_rt2.00_data12"] = summ(live(P, st, 2.00, 100.0, LA, 12.0))
+        out[span] = o
+        for k, v in o.items(): print(span, k, v, flush=True)
+        continue
     # ATLAS 25K Builder funded: MFFU profit $401, peak $401, floor -$599 (board 2026-11-23 10:12 ET)
     o["atlas25_ask_cap1000"] = summ(run_funded("a", "mffu_builder_25k", "cap", 401.0, 401.0, -599.0, ATL, P))
     o["atlas25_ask_min250"] = summ(run_funded("a", "mffu_builder_25k", 250.0, 401.0, 401.0, -599.0, ATL, P))

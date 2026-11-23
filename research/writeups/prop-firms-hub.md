@@ -77,3 +77,12 @@ NinjaTrader), Elite Trader Funding (semi-automated only).
 - LIT numbers: `research/lit/funded_firms.json` (tools/lit_funded_firms.py). Eval odds on the Business page: the stored
   Monte Carlo paths (`research/lab/montecarlo.json`) conditioned on today's profit and room.
 - Not modelled: payout processing days, a firm refusing a payout, taxes beyond a flat set-aside (not tax advice).
+
+## Rule check 2026-11-23 (research/writeups/fastest-money-2026-11-23.md)
+Official pages unless marked [3P].
+- FundedNext Rapid: 50K **$149.99** (code RAPID, list $299.99), 25K **$64.99**; Rapid Daily = daily payouts from $500 cycle profit, cap $1,000 -> $1,250 (50K), 90%, "99.99% within 24h"; the page names **only Tradovate** (NinjaTrader to confirm in writing). https://fundednext.com/futures/rapid ; bots: https://helpfutures.fundednext.com/en/articles/14298560-is-the-usage-of-automated-trading-systems-eas-and-bots-allowed-in-fundednext-futures
+- Lucid: bots + copiers allowed; **NinjaTrader supported via CQG**. https://intercom.help/lucid-trading/en/articles/11404728-permitted-activities , https://intercom.help/lucid-trading/en/articles/11404614-lucid-trading-supported-platforms ; LucidFlex payouts $500 min, 50% of profit up to $2,000, 5 days of $150+, paid within 2 business days: https://support.lucidtrading.com/en/articles/12945796
+- Tradeify: "We scan to ensure there are no similar orders on other accounts"; the same bot at other firms "breaks policy" (confirmed, ruled out). https://intercom.help/tradeify/en/articles/10468318-guidelines-for-traders
+- Topstep: no new Combines on any platform but TopstepX (no NinjaTrader). https://help.topstep.com/en/articles/11667498-important-changes-to-topstep-supported-platforms ; payouts $125 min, 5 winning days, 1-3 business days: https://help.topstep.com/en/articles/8284233-topstep-payout-policy
+- Alpha Futures: full automation "strictly forbidden" (official). https://help.alpha-futures.com/en/articles/9508585-prohibited-trading-practices
+- Apex / Take Profit Trader: automation banned [3P]; Bulenox: written approval first [3P].

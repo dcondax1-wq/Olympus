@@ -442,3 +442,10 @@ Sources (search results read 2026-10-18; pages not opened):
 - `research/lit/prop_firms.json`: every plan with its rules and results (scaled and plain LIT size; real history, Monday
   starts, Monte Carlo, Monday Monte Carlo, funded; 2026, H1, H2, 2021-25; the skip idea for the MFFU 25K / 50K plans).
 - Unit trades cache: `research/runs/_cache/lit_prop_unit.json` (gitignored; `python tools/lit_prop_firms.py unit` rebuilds it).
+
+## Update 2026-11-23
+Re-checked rules and 30-day cash per plan for LIT + ATLAS: research/writeups/fastest-money-2026-11-23.md (sources there). Changes vs this file:
+Topstep now sells new Combines only on TopstepX (no NinjaTrader; https://help.topstep.com/en/articles/11667498-important-changes-to-topstep-supported-platforms);
+Alpha Futures' ban is confirmed on its own page (https://help.alpha-futures.com/en/articles/9508585-prohibited-trading-practices);
+Tradeify's cross-firm bot ban is confirmed (https://intercom.help/tradeify/en/articles/10468318-guidelines-for-traders);
+FundedNext Rapid 25K is $64.99 / 50K $149.99 (https://fundednext.com/futures/rapid). Fastest fresh plan to the first payout for our bots: FundedNext Rapid Daily (34-44% paid inside 30 days, backtest).
