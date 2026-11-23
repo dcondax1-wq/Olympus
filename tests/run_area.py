@@ -420,3 +420,4 @@ AREAS["agency"].append("trade_scripts")   # day-caller2 2026-11-22: per-trade ca
 AREAS["money"].append("money_pipeline")     # day-a11y 2026-11-22: the MONEY PIPELINE (business/pipeline.html + agency/pipeline.py) + the Corvette fund
 AREAS["pc"] += ["clockfix"]        # 2026-11-22: FIX_CLOCK.bat + OlympusClock task + the schtasks fallback (engine/go.sync_clock, self_heal.fix_clock)
 AREAS["pc"] += ["zerotouch"]      # night-zerotouch 2026-11-22: START phrase = keep-alive consent, MONDAY_SETUP.bat, recovery matrix, NinjaTrader reopen
+AREAS["pc"].append("zerotouch_rt")      # red team 2026-11-23: an old explicit keep-alive OFF sticks, NinjaTrader reopen back-off, no-console start

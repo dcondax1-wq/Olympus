@@ -1025,7 +1025,10 @@ def run(dry=False, inp=input, py=sys.executable, pull=True) -> int:
             print(f"\n MFFU 7-day keep-alive is not on yet for: {', '.join(miss)}.")
             print(f"     It places ONE 1-MNQ trade on an account only when it would otherwise hit 7 days without a trade")
             print(f"     (about -$2.40, at most -$22.90). Off any time: KEEPALIVE_OFF.bat.")
-            p = typed_phrase(ask(" Type  I ACCEPT LIVE RISK  to switch it on (Enter = leave it off)", "", inp))
+            try:
+                p = typed_phrase(ask(" Type  I ACCEPT LIVE RISK  to switch it on (Enter = leave it off)", "", inp))
+            except (EOFError, KeyboardInterrupt, OSError):
+                p = ""                     # no console / piped stdin ran out: left off
             if p == LIVE_PHRASE:
                 keepalive_consent(p)
             else:
