@@ -1,0 +1,236 @@
+{
+ "H1": {
+  "atlas25_ask_cap1000": {
+   "cash30_p50": 800,
+   "cash30_p10": 0,
+   "cash30_mean": 501,
+   "p_paid30": 54.2,
+   "first_med": 12.0,
+   "p_lost": 0.4
+  },
+  "atlas25_ask_min250": {
+   "cash30_p50": 800,
+   "cash30_p10": 0,
+   "cash30_mean": 501,
+   "p_paid30": 55.7,
+   "first_med": 11.0,
+   "p_lost": 0.4
+  },
+  "atlas25_LIT+ATLAS_min250": {
+   "cash30_p50": 800,
+   "cash30_p10": 0,
+   "cash30_mean": 662,
+   "p_paid30": 66.5,
+   "first_med": 10.0,
+   "p_lost": 12.3
+  },
+  "zlarior50_eval_then_cap": {
+   "cash30_p50": 0,
+   "cash30_p10": 0,
+   "cash30_mean": 218,
+   "p_paid30": 12.9,
+   "first_med": 18.0,
+   "p_lost": 23.3,
+   "p_pass": 63.5
+  },
+  "zlarior50_eval_then_min500": {
+   "cash30_p50": 0,
+   "cash30_p10": 0,
+   "cash30_mean": 223,
+   "p_paid30": 13.4,
+   "first_med": 18.0,
+   "p_lost": 23.3,
+   "p_pass": 63.5
+  },
+  "b25_2_eval_then_min250": {
+   "cash30_p50": 0,
+   "cash30_p10": 0,
+   "cash30_mean": 176,
+   "p_paid30": 20.6,
+   "first_med": 16.0,
+   "p_lost": 2.2,
+   "p_pass": 72.9
+  },
+  "rapid25_eval_fresh_daily": {
+   "cash30_p50": 0,
+   "cash30_p10": 0,
+   "cash30_mean": 17,
+   "p_paid30": 1.2,
+   "first_med": 19.5,
+   "p_lost": 0.1,
+   "p_pass": 14.4
+  },
+  "live_1mnq_300": {
+   "cash30_p50": 644,
+   "cash30_p10": -200,
+   "cash30_mean": 1091,
+   "p_paid30": 63.7,
+   "first_med": 2.0,
+   "p_lost": 43.4
+  },
+  "live_1mnq_500": {
+   "cash30_p50": 1587,
+   "cash30_p10": -388,
+   "cash30_mean": 1537,
+   "p_paid30": 83.0,
+   "first_med": 2.0,
+   "p_lost": 20.2
+  }
+ },
+ "H2": {
+  "atlas25_ask_cap1000": {
+   "cash30_p50": 0,
+   "cash30_p10": 0,
+   "cash30_mean": 207,
+   "p_paid30": 23.9,
+   "first_med": 15.0,
+   "p_lost": 0.2
+  },
+  "atlas25_ask_min250": {
+   "cash30_p50": 0,
+   "cash30_p10": 0,
+   "cash30_mean": 236,
+   "p_paid30": 36.1,
+   "first_med": 13.0,
+   "p_lost": 0.2
+  },
+  "atlas25_LIT+ATLAS_min250": {
+   "cash30_p50": 596,
+   "cash30_p10": 0,
+   "cash30_mean": 591,
+   "p_paid30": 70.2,
+   "first_med": 9.0,
+   "p_lost": 12.0
+  },
+  "zlarior50_eval_then_cap": {
+   "cash30_p50": 0,
+   "cash30_p10": 0,
+   "cash30_mean": 189,
+   "p_paid30": 10.5,
+   "first_med": 17.0,
+   "p_lost": 20.1,
+   "p_pass": 57.4
+  },
+  "zlarior50_eval_then_min500": {
+   "cash30_p50": 0,
+   "cash30_p10": 0,
+   "cash30_mean": 201,
+   "p_paid30": 12.7,
+   "first_med": 17.0,
+   "p_lost": 20.1,
+   "p_pass": 57.4
+  },
+  "b25_2_eval_then_min250": {
+   "cash30_p50": 0,
+   "cash30_p10": 0,
+   "cash30_mean": 138,
+   "p_paid30": 20.1,
+   "first_med": 17.0,
+   "p_lost": 1.0,
+   "p_pass": 72.1
+  },
+  "rapid25_eval_fresh_daily": {
+   "cash30_p50": 0,
+   "cash30_p10": 0,
+   "cash30_mean": 6,
+   "p_paid30": 0.9,
+   "first_med": 20.0,
+   "p_lost": 0.1,
+   "p_pass": 30.3
+  },
+  "live_1mnq_300": {
+   "cash30_p50": 731,
+   "cash30_p10": -192,
+   "cash30_mean": 946,
+   "p_paid30": 62.3,
+   "first_med": 2.0,
+   "p_lost": 36.1
+  },
+  "live_1mnq_500": {
+   "cash30_p50": 1329,
+   "cash30_p10": -378,
+   "cash30_mean": 1290,
+   "p_paid30": 82.3,
+   "first_med": 2.0,
+   "p_lost": 15.3
+  }
+ },
+ "REF": {
+  "atlas25_ask_cap1000": {
+   "cash30_p50": 0,
+   "cash30_p10": 0,
+   "cash30_mean": 54,
+   "p_paid30": 6.5,
+   "first_med": 8.0,
+   "p_lost": 31.3
+  },
+  "atlas25_ask_min250": {
+   "cash30_p50": 0,
+   "cash30_p10": 0,
+   "cash30_mean": 57,
+   "p_paid30": 7.1,
+   "first_med": 8.0,
+   "p_lost": 31.3
+  },
+  "atlas25_LIT+ATLAS_min250": {
+   "cash30_p50": 0,
+   "cash30_p10": 0,
+   "cash30_mean": 85,
+   "p_paid30": 10.7,
+   "first_med": 9.0,
+   "p_lost": 65.1
+  },
+  "zlarior50_eval_then_cap": {
+   "cash30_p50": 0,
+   "cash30_p10": 0,
+   "cash30_mean": 6,
+   "p_paid30": 0.4,
+   "first_med": 20.5,
+   "p_lost": 81.6,
+   "p_pass": 10.6
+  },
+  "zlarior50_eval_then_min500": {
+   "cash30_p50": 0,
+   "cash30_p10": 0,
+   "cash30_mean": 6,
+   "p_paid30": 0.4,
+   "first_med": 20.5,
+   "p_lost": 81.6,
+   "p_pass": 10.6
+  },
+  "b25_2_eval_then_min250": {
+   "cash30_p50": 0,
+   "cash30_p10": 0,
+   "cash30_mean": 10,
+   "p_paid30": 1.3,
+   "first_med": 16.0,
+   "p_lost": 49.5,
+   "p_pass": 21.2
+  },
+  "rapid25_eval_fresh_daily": {
+   "cash30_p50": 0,
+   "cash30_p10": 0,
+   "cash30_mean": 1,
+   "p_paid30": 0.1,
+   "first_med": 12.0,
+   "p_lost": 15.0,
+   "p_pass": 1.9
+  },
+  "live_1mnq_300": {
+   "cash30_p50": -178,
+   "cash30_p10": -201,
+   "cash30_mean": -6,
+   "p_paid30": 36.6,
+   "first_med": 2.0,
+   "p_lost": 78.6
+  },
+  "live_1mnq_500": {
+   "cash30_p50": -366,
+   "cash30_p10": -399,
+   "cash30_mean": -22,
+   "p_paid30": 56.8,
+   "first_med": 3.0,
+   "p_lost": 56.9
+  }
+ }
+}

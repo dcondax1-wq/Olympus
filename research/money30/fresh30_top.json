@@ -1,0 +1,274 @@
+{
+ "fn_rapid_daily_50k": {
+  "H1": {
+   "net30_p50": -150,
+   "net30_p10": -150,
+   "net30_mean": 1115,
+   "p_paid30": 70.4,
+   "first_pay_med_sessions": 17.0,
+   "pass_in30": 82.4,
+   "pass_med": 6.0,
+   "gap": 2,
+   "p_paid_by21": 43.7,
+   "net30_p90": 4170
+  },
+  "H2": {
+   "net30_p50": -150,
+   "net30_p10": -150,
+   "net30_mean": 666,
+   "p_paid30": 70.8,
+   "first_pay_med_sessions": 22.0,
+   "pass_in30": 82.6,
+   "pass_med": 7.0,
+   "gap": 2,
+   "p_paid_by21": 34.3,
+   "net30_p90": 3090
+  },
+  "REF": {
+   "net30_p50": -150,
+   "net30_p10": -150,
+   "net30_mean": -95,
+   "p_paid30": 4.4,
+   "first_pay_med_sessions": 14.5,
+   "pass_in30": 22.1,
+   "pass_med": 4.0,
+   "gap": 2,
+   "p_paid_by21": 3.3,
+   "net30_p90": -150
+  }
+ },
+ "fn_rapid_daily_25k": {
+  "H1": {
+   "net30_p50": -100,
+   "net30_p10": -100,
+   "net30_mean": 903,
+   "p_paid30": 71.9,
+   "first_pay_med_sessions": 17.0,
+   "pass_in30": 86.6,
+   "pass_med": 7.0,
+   "gap": 2,
+   "p_paid_by21": 44.9,
+   "net30_p90": 3211
+  },
+  "H2": {
+   "net30_p50": -100,
+   "net30_p10": -100,
+   "net30_mean": 325,
+   "p_paid30": 65.9,
+   "first_pay_med_sessions": 22.0,
+   "pass_in30": 81.9,
+   "pass_med": 8.0,
+   "gap": 2,
+   "p_paid_by21": 30.6,
+   "net30_p90": 1538
+  },
+  "REF": {
+   "net30_p50": -100,
+   "net30_p10": -100,
+   "net30_mean": -55,
+   "p_paid30": 5.8,
+   "first_pay_med_sessions": 15.0,
+   "pass_in30": 21.6,
+   "pass_med": 4.0,
+   "gap": 2,
+   "p_paid_by21": 4.3,
+   "net30_p90": -100
+  }
+ },
+ "mffu_builder_50k": {
+  "H1": {
+   "net30_p50": -92,
+   "net30_p10": -92,
+   "net30_mean": 324,
+   "p_paid30": 67.4,
+   "first_pay_med_sessions": 26.0,
+   "pass_in30": 82.4,
+   "pass_med": 6.0,
+   "gap": 2,
+   "p_paid_by21": 24.4,
+   "net30_p90": 1508
+  },
+  "H2": {
+   "net30_p50": -92,
+   "net30_p10": -92,
+   "net30_mean": 284,
+   "p_paid30": 68.9,
+   "first_pay_med_sessions": 27.0,
+   "pass_in30": 82.6,
+   "pass_med": 7.0,
+   "gap": 2,
+   "p_paid_by21": 21.7,
+   "net30_p90": 1508
+  },
+  "REF": {
+   "net30_p50": -92,
+   "net30_p10": -92,
+   "net30_mean": -82,
+   "p_paid30": 1.8,
+   "first_pay_med_sessions": 23.5,
+   "pass_in30": 22.1,
+   "pass_med": 4.0,
+   "gap": 2,
+   "p_paid_by21": 0.6,
+   "net30_p90": -92
+  }
+ },
+ "mffu_builder_25k": {
+  "H1": {
+   "net30_p50": -63,
+   "net30_p10": -63,
+   "net30_mean": 132,
+   "p_paid30": 66.7,
+   "first_pay_med_sessions": 27.0,
+   "pass_in30": 86.6,
+   "pass_med": 7.0,
+   "gap": 2,
+   "p_paid_by21": 22.7,
+   "net30_p90": 737
+  },
+  "H2": {
+   "net30_p50": -63,
+   "net30_p10": -63,
+   "net30_mean": 67,
+   "p_paid30": 62.2,
+   "first_pay_med_sessions": 29.0,
+   "pass_in30": 81.9,
+   "pass_med": 8.0,
+   "gap": 2,
+   "p_paid_by21": 15.4,
+   "net30_p90": 737
+  },
+  "REF": {
+   "net30_p50": -63,
+   "net30_p10": -63,
+   "net30_mean": -59,
+   "p_paid30": 1.7,
+   "first_pay_med_sessions": 24.0,
+   "pass_in30": 21.6,
+   "pass_med": 4.0,
+   "gap": 2,
+   "p_paid_by21": 0.5,
+   "net30_p90": -63
+  }
+ },
+ "lucid_pro_25k": {
+  "H1": {
+   "net30_p50": -90,
+   "net30_p10": -90,
+   "net30_mean": 510,
+   "p_paid30": 66.3,
+   "first_pay_med_sessions": 31.0,
+   "pass_in30": 87.8,
+   "pass_med": 7.0,
+   "gap": 2,
+   "p_paid_by21": 14.9,
+   "net30_p90": 3176
+  },
+  "H2": {
+   "net30_p50": -90,
+   "net30_p10": -90,
+   "net30_mean": 221,
+   "p_paid30": 62.1,
+   "first_pay_med_sessions": 31.0,
+   "pass_in30": 83.6,
+   "pass_med": 7.0,
+   "gap": 2,
+   "p_paid_by21": 12.7,
+   "net30_p90": 1573
+  },
+  "REF": {
+   "net30_p50": -90,
+   "net30_p10": -90,
+   "net30_mean": -71,
+   "p_paid30": 1.3,
+   "first_pay_med_sessions": 27.0,
+   "pass_in30": 23.3,
+   "pass_med": 4.0,
+   "gap": 2,
+   "p_paid_by21": 0.4,
+   "net30_p90": -90
+  }
+ },
+ "topstep_50k": {
+  "H1": {
+   "net30_p50": -49,
+   "net30_p10": -49,
+   "net30_mean": 246,
+   "p_paid30": 76.2,
+   "first_pay_med_sessions": 28.0,
+   "pass_in30": 89.8,
+   "pass_med": 12.0,
+   "gap": 2,
+   "p_paid_by21": 16.3,
+   "net30_p90": 1751
+  },
+  "H2": {
+   "net30_p50": -49,
+   "net30_p10": -49,
+   "net30_mean": 201,
+   "p_paid30": 73.0,
+   "first_pay_med_sessions": 30.0,
+   "pass_in30": 86.5,
+   "pass_med": 12.0,
+   "gap": 2,
+   "p_paid_by21": 13.7,
+   "net30_p90": 1751
+  },
+  "REF": {
+   "net30_p50": -49,
+   "net30_p10": -49,
+   "net30_mean": -47,
+   "p_paid30": 2.4,
+   "first_pay_med_sessions": 28.5,
+   "pass_in30": 15.0,
+   "pass_med": 11.5,
+   "gap": 2,
+   "p_paid_by21": 0.1,
+   "net30_p90": -49
+  }
+ },
+ "apex_eod_50k": {
+  "H1": {
+   "net30_p50": -35,
+   "net30_p10": -35,
+   "net30_mean": 1536,
+   "p_paid30": 67.5,
+   "first_pay_med_sessions": 26.0,
+   "pass_in30": 82.4,
+   "pass_med": 6.0,
+   "gap": 2,
+   "p_paid_by21": 24.8,
+   "net30_p90": 6981
+  },
+  "H2": {
+   "net30_p50": -35,
+   "net30_p10": -35,
+   "net30_mean": 866,
+   "p_paid30": 69.4,
+   "first_pay_med_sessions": 25.5,
+   "pass_in30": 82.6,
+   "pass_med": 7.0,
+   "gap": 2,
+   "p_paid_by21": 25.9,
+   "net30_p90": 4018
+  },
+  "REF": {
+   "net30_p50": -35,
+   "net30_p10": -35,
+   "net30_mean": 0,
+   "p_paid30": 2.0,
+   "first_pay_med_sessions": 23.0,
+   "pass_in30": 22.1,
+   "pass_med": 4.0,
+   "gap": 2,
+   "p_paid_by21": 0.8,
+   "net30_p90": -35
+  }
+ },
+ "tpt_50k": {
+  "err": "TypeError(\"float() argument must be a string or a real number, not 'NoneType'\")"
+ },
+ "alpha_zero_50k": {
+  "err": "TypeError(\"float() argument must be a string or a real number, not 'NoneType'\")"
+ }
+}
