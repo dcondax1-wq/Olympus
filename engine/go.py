@@ -954,7 +954,11 @@ def armed_accounts(main_on=True) -> list:
             elif role == "b" and r.get("armed") is True:
                 key, lbl = "atlas", "ATLAS 25K"
             elif role == "rapid" and r.get("armed") is True:
-                key, lbl = "rapid", account_cli.PLANS.get(r.get("plan"), {}).get("label") or "Rapid EOD"
+                # night-k7proof 2026-11-23: the slot is the key (engine/keepalive PRIORITY / lanes: "rapid" or "rapid2"). Before,
+                # both slots were keyed "rapid": start_consent skipped the 2nd as a duplicate and the 2nd Rapid (the Rapid EOD 50K)
+                # never got the keep-alive from the START phrase
+                key = "rapid2" if r.get("id") == "rapid2" else "rapid"
+                lbl = account_cli.PLANS.get(r.get("plan"), {}).get("label") or "Rapid EOD"
             elif role == "extra" and r.get("armed") is True and r.get("id"):
                 key, lbl = f"x:{r['id']}", account_cli.PLANS.get(r.get("plan"), {}).get("label") or "added account"
             else:
