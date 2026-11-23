@@ -337,6 +337,7 @@ AREAS["agency"].append("web_showcase")   # day-web 2026-11-20: the owner's agenc
 AREAS["zenith"].append("zenith_settle")  # day-arenas 2026-11-20: Home start-up without jumps (zenith_settle.js, home.json first, the NQ strip slot)
 AREAS["olympus"].append("dashfx")        # day-arenas 2026-11-20: the dashboard FX layer (olympus/dashfx.js + dashfx.css, dashfx-lab.html); its own line
 AREAS["cities"].append("brain_hub")       # day-brain4 2026-11-22: the giant research brain (cities/brain.html); its own line
+AREAS["cities"].append("mind_brain")      # day-mind 2026-11-23: the 3D Strategy Brain (cities/mind/: a lobe per strategy, step chains, trade timelines)
 AREAS["olympus"].append("brain3d")       # day-arenas 2026-11-21: the bot brain in 3D (olympus/brain3d.js + brain3d-scene.js, brain3d-lab.html); its own line
 
 AREAS["agency"].append("site_factory")   # day-cities3 2026-11-21: Website Factory (tools/site_factory.py -> agency/f/<id>/ + agency/factory/)
