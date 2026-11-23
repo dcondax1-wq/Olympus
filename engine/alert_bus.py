@@ -709,6 +709,7 @@ def send_critical(ev: dict, on_done=None, cfg: dict | None = None, wait: bool = 
     same de-dup by key. ALERTS_OFF = "off" (the call sites' old path, exactly).
     Returns like send(). Never raises."""
     try:
+        ev = day_key(dict(_d(ev)))
         c = cfg if cfg is not None else config()
         if active(cfg=c):
             return send(ev, on_done=on_done, cfg=c, wait=wait)
@@ -727,6 +728,24 @@ def send_critical(ev: dict, on_done=None, cfg: dict | None = None, wait: bool = 
         return send(ev, on_done=on_done, cfg=z, wait=wait, _zero=True)
     except Exception:
         return "bad"
+
+
+_ATTEMPT_KEY = re.compile(r"^(auto:update:[a-z_]+):\d{9,11}$")
+
+
+def day_key(ev: dict) -> dict:
+    """Red team 2026-11-23: engine/autoupdate keys each attempt by its epoch ("auto:update:failed:<t>"), and the server tries
+    hourly outside trading time, so a failure that keeps happening would buzz the phone every hour all night. Same status +
+    same title = ONE alert per ET day; a different failure (another title) still goes at once."""
+    try:
+        m = _ATTEMPT_KEY.match(str(ev.get("key") or ""))
+        if m:
+            import hashlib
+            h = hashlib.sha1(str(ev.get("title") or "").encode("utf-8")).hexdigest()[:8]
+            ev["key"] = f"{m.group(1)}:{_et(time.time()).date().isoformat()}:{h}"
+    except Exception:
+        pass
+    return ev
 
 
 DIGEST_PATH = os.path.join(ROOT, "data", "alert_digest.json")    # gitignored: low-priority items waiting for the daily digest
