@@ -57,6 +57,7 @@ Branch `night-integrate` only; nothing pushed to `pc`. No arming, no strategy / 
 | 33 | night-k7proof-rt (brings night-k7proof) | 636d44b0d | none |
 | 34 | night-mondaysim-rt (brings night-mondaysim) | 1cb533b08 | tests/run_area.py |
 | 35 | night-rollback-rt (built on night-integrate 7bd71589e) | dcccbdd45 | tests/run_area.py |
+| 36 | night-faststart-rt (brings night-faststart) | 70645b3b4 | research/lit/live_check.json (a test-written file: kept ours) |
 
 Not merged (not on the lead's list and no -rt review yet): night-addacct, night-alertproof, night-asks, night-blitzfills, night-calls,
 night-decide, night-docs, night-faults, night-leadwires, night-reds2, night-reds3, night-secps, night-wirepatch.
