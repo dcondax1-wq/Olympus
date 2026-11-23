@@ -311,7 +311,8 @@ def tick(rows=None, cd=None, sender=None, path: str | None = None) -> dict:
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path + ".tmp", "w", encoding="utf-8") as fh:
             json.dump(st, fh, indent=1)
-        os.replace(path + ".tmp", path)
+        from . import fsutil as _fsutil      # integration 2026-11-23: land-fixes' Windows / OneDrive-safe replace (test_selfheal rule)
+        _fsutil.replace(path + ".tmp", path)
         return {"alerts": out, "tiny": st["tiny"]}
     except Exception as e:  # noqa: BLE001
         return {"alerts": [], "error": e.__class__.__name__}

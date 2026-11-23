@@ -18,6 +18,21 @@ Branch `night-integrate` only; nothing pushed to `pc`. No arming, no strategy / 
 | 10 | night-reds | 82b3ad644 | tests/test_ops.py |
 | 11 | night-payplan | 14ab88069 | none |
 
+### Round 2 (new -rt heads after 03:30 UTC)
+| # | Branch | Head | Conflicts |
+|---|---|---|---|
+| 12 | night-notify-rt (2nd) | eb230be27 | tests/run_area.py |
+| 13 | night-payout-rt | c4c8dc4a7 | none |
+| 14 | night-cleanup-rt (2nd) | ab8a8aad4 | none |
+| 15 | night-clockauto-rt | 3a23c382c | none |
+| 16 | night-zerotouch-rt | ab7cf0098 | engine/go.py, tests/run_area.py |
+| 17 | night-fleetmgr-rt (brings night-fleetmgr, night-rulewatch-rt, night-r50k) | cb513a246 | tests/run_area.py, tools/web_public/nq/trading_home_core.js |
+| 18 | night-r50k-rt | 8763055ca | tests/run_area.py (+ a semantic clash, below) |
+| 19 | night-rulewatch-rt | b0311df0b | none (already in via fleetmgr-rt) |
+
+Not merged (not on the lead's list and no -rt review yet): night-blitzfills, night-brief, night-decide, night-docs, night-hermetic,
+night-pcguard, night-roll, night-tasks.
+
 ## Resolutions (both sides' intent kept, no safety check dropped)
 - **run_area.py (notify-rt, zerotouch):** append-only lines, both kept (`package_b` + `notify_rt`; `bat_menu`, `context_refresh`, `bat_shortcuts` + `zerotouch`), `if __name__` block kept last.
 - **docs/ALERTS.md (cleanup-rt):** cleanup's `tools/bat/` paths + notify's "off also stops the zero-setup copies" note.
@@ -41,6 +56,17 @@ Branch `night-integrate` only; nothing pushed to `pc`. No arming, no strategy / 
   recovery.py, trade_home.py ACTIONS k, test_zerotouch, docs/OWNER_MANUAL, STATE.md, web_next/js/next/start.js text).
 - **MONDAY_SETUP.bat (zerotouch, new) stays in the top folder** as the one weekly double-click: test_bat_menu KEEP 12 -> 13 (NO_NUMBER: routine 8 is
   its menu twin) and docs/BAT_FILES.md has its reason line. **Lead decision** if it should instead move to tools/bat + a menu number.
+
+- **engine/go.py keep-alive prompt (zerotouch-rt):** zerotouch-rt's try/except (no console / piped stdin = left OFF, never a crash) + cleanup's
+  `tools/bat/KEEPALIVE_OFF.bat` path.
+- **trading_home_core.js (fleetmgr-rt vs startfix/truth):** HEAD's account lines (`accounts: acctRows`) AND fleetmgr's info-only Fleet line; one
+  return with both. node --check OK; site_checks fine (the page loads it without a ?v= tag).
+- **payout_autopilot.py `_write` (night-payout) and fleet_mgr.py state save (night-fleetmgr) vs land-fixes:** bare `os.replace` -> `fsutil.replace`
+  (land-fixes' Windows / OneDrive lock rule; test_selfheal red otherwise).
+- **EVREOD semantic clash (startfix vs r50k):** night-startfix made `EVREOD` MFFU's confirmed Rapid EOD prefix (seen on the owner's PC); r50k's
+  test still expected an EVREOD name with nothing learned to be "a choice". Kept startfix's rule (newer real-PC evidence; it arms nothing,
+  the owner still taps and types the phrase). The test's "still a choice" case now uses a guess-only `MFFUEVRPD...` name, plus a new check
+  that EVREOD at $50,000 = Rapid EOD 50K. test_rapid50k_onboard 27/27, test_onboard 38/38.
 
 ## Tests
 See the table in the final summary (sent to the lead). Script used for the moved-.bat lint: test_bat_menu d (all files, not only the first 25).
