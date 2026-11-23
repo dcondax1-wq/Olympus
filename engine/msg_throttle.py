@@ -61,7 +61,8 @@ def _write(path, obj):
         tmp = path + ".tmp"
         with open(tmp, "w", encoding="utf-8") as fh:
             json.dump(obj, fh, separators=(",", ":"))
-        os.replace(tmp, path)        # one try, no retry wait: best effort, it runs right after an order file is written
+        from . import fsutil as _fsutil
+        _fsutil.replace(tmp, path, sleep=lambda _s: None)   # best effort: no retry wait (instant re-tries only), it runs right after an order file is written
     except Exception:
         pass
 

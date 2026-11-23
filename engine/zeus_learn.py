@@ -107,11 +107,8 @@ def _write_json(path, obj, indent=None):
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(obj, fh, indent=indent, default=str, separators=None if indent else (",", ":"))
-    try:
         from .fsutil import replace as _rep         # retried on a Windows / OneDrive lock
         _rep(tmp, path)
-    except Exception:
-        os.replace(tmp, path)
 
 
 def _bytes(o) -> int:

@@ -114,7 +114,8 @@ def _jwrite(path, obj, indent=None):
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(obj, fh, indent=indent, separators=None if indent else (",", ":"), default=str)
         fh.write("\n" if indent else "")
-    os.replace(tmp, path)
+    from engine import fsutil as _fsutil
+    _fsutil.replace(tmp, path)
 
 
 def _day(x) -> dt.date:
@@ -660,7 +661,8 @@ def prune_tape(path, keep_from, max_bytes=3_000_000) -> int:
     with open(tmp, "w", encoding="utf-8") as fh:
         for r in sorted(keep, key=lambda r: r.get("o") or 0):
             fh.write(json.dumps(r, separators=(",", ":")) + "\n")
-    os.replace(tmp, path)
+    from engine import fsutil as _fsutil
+    _fsutil.replace(tmp, path)
     return len(rows) - len(keep)
 
 

@@ -353,7 +353,8 @@ def save_config(c: dict, path: str | None = None) -> str:
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump({"accounts": c.get("accounts") or {}, **({"skip": c["skip"]} if c.get("skip") else {}),
                    **({"start": c["start"]} if c.get("start") else {})}, fh, indent=1)
-    os.replace(tmp, p)
+    from . import fsutil as _fsutil
+    _fsutil.replace(tmp, p)
     return p
 
 
@@ -388,7 +389,8 @@ def save_state(st: dict, path: str):
         tmp = path + ".tmp"
         with open(tmp, "w", encoding="utf-8") as fh:
             json.dump(st, fh, indent=1)
-        os.replace(tmp, path)
+        from . import fsutil as _fsutil
+        _fsutil.replace(tmp, path)
 
 
 def _cut_day() -> str:

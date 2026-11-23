@@ -736,7 +736,8 @@ def rename_funded(old, new, lit=None) -> dict:
             tmp = sp + ".rename.tmp"
             with open(tmp, "w", encoding="utf-8") as fh:
                 _json.dump({**st, "account": str(new).strip()}, fh, default=str)
-            os.replace(tmp, sp)
+            from . import fsutil as _fsutil
+            _fsutil.replace(tmp, sp)
         except Exception as e:
             account_b.write_local(cur, path, why="state carry-over failed: put back")
             return {"ok": False, "error": f"ATLAS's state could not move to {new} ({e.__class__.__name__}): not switched (put back)"}

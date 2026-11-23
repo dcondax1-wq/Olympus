@@ -625,7 +625,8 @@ def _save_instant(st: dict, path, t_now: float) -> None:
     tmp = f"{path}.{os.getpid()}.{_th.get_ident()}.tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(out, fh)
-    os.replace(tmp, path)
+    from . import fsutil as _fsutil
+    _fsutil.replace(tmp, path)
 
 
 def _trade_entry_t(p: dict):

@@ -572,7 +572,8 @@ def _write(path: str, obj: dict) -> None:
         tmp = f"{path}.{os.getpid()}.tmp"
         with open(tmp, "w", encoding="utf-8") as fh:
             json.dump(obj, fh, separators=(",", ":"))
-        os.replace(tmp, path)
+        from . import fsutil as _fsutil
+        _fsutil.replace(tmp, path)
     except Exception:
         pass
 

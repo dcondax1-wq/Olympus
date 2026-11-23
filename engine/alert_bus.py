@@ -374,7 +374,8 @@ def _save_state(st: dict, path=None, now=None) -> None:
     tmp = f"{path}.{os.getpid()}.{threading.get_ident()}.tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(st, fh)
-    os.replace(tmp, path)
+    from . import fsutil as _fsutil
+    _fsutil.replace(tmp, path)
 
 
 def was_sent(key: str, path=None) -> bool:

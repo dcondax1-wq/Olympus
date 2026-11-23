@@ -126,11 +126,8 @@ def _write_json(path, obj):
         tmp = path + ".tmp"
         with open(tmp, "w", encoding="utf-8") as fh:
             json.dump(obj, fh, separators=(",", ":"), default=str)
-        try:
             from .fsutil import replace as _rep          # retried on a Windows / OneDrive lock
             _rep(tmp, path)
-        except Exception:
-            os.replace(tmp, path)
     except Exception:
         pass
 
