@@ -22,9 +22,13 @@ function drawLobeBar() {
   for (const L of M.LOBES) {
     const v = L.kind === 'strategy' ? M.live(L.id, S.glance, S.now()) : null;
     const b = el('button', { type: 'button', class: 'lobe' + (L.kind === 'research' ? ' res' : ''), 'data-lobe': L.id, 'aria-pressed': String(S.sel === L.id), style: `--c:${L.color}`, onclick: () => select(L.id === S.sel ? null : L.id) },
-      el('i'), el('span', { text: L.name }), v ? el('small', { text: v.word }) : null);
+      el('i'), el('span', { text: L.name }), el('small', { text: v ? lobeWord(L, v) : 'research' }));
     bar.append(b);
   }
+}
+function lobeWord(L, v) {
+  const ch = M.CHAINS[L.id] || [];
+  return v.word === 'live' && ch[v.idx] ? `${ch[v.idx].label} now` : v.word === 'stale' && ch[v.idx] ? `last: ${ch[v.idx].label}` : v.word;
 }
 function pcPill() {
   const p = $('pcPill'), g = S.glance, t = g && +g.t ? S.now() - +g.t : null;
@@ -187,8 +191,22 @@ async function startScene() {
   try {
     const Sc = await import('./mind-scene.js?v=m1');
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, low = Sc.isLowPower(window);
-    const tips = M.LOBES.map((L) => { const d = el('div', { class: 'tip', 'aria-hidden': 'true', text: L.name }); document.body.append(d); return [L.id, d]; });
-    const onFrame = (proj) => { for (const [id, d] of tips) { const p = proj(id); const ok = p && p.z < 1 && p.y > 90 && p.y < innerHeight - 80; d.style.display = ok ? '' : 'none'; if (ok) { d.style.left = p.x + 'px'; d.style.top = p.y + 'px'; d.style.opacity = !S.sel || S.sel === id ? '1' : '.35'; } } };
+    // the lobe names over the 3D, kept apart (M.placeLabels): selected first, then the strategies, then the research lobes
+    const tips = M.LOBES.map((L) => { const d = el('div', { class: 'tip' + (L.kind === 'strategy' ? ' st' : ''), 'aria-hidden': 'true', 'data-tip': L.id, text: L.name }); document.body.append(d); return { L, d, w: 0, h: 0 }; });
+    const onFrame = (proj) => {
+      const r = $('c').getBoundingClientRect(), items = [];
+      for (const t of tips) {
+        if (!t.w) { t.w = t.d.offsetWidth || t.L.name.length * 6.5; t.h = t.d.offsetHeight || 14; }
+        const p = proj(t.L.id);
+        if (p && p.z < 1) items.push({ id: t.L.id, x: p.x, y: p.y, z: p.z, w: t.w, h: t.h, pri: (S.sel === t.L.id ? 10 : 0) + (t.L.kind === 'strategy' ? 2 : 1) });
+      }
+      const pos = new Map(M.placeLabels(items, { w: r.width, h: r.height }).map((q) => [q.id, q]));
+      for (const t of tips) {
+        const q = pos.get(t.L.id), on = !!(q && q.show);
+        t.d.style.display = on ? '' : 'none';
+        if (on) { t.d.style.left = (r.left + q.x) + 'px'; t.d.style.top = (r.top + q.y) + 'px'; t.d.style.opacity = !S.sel || S.sel === t.L.id ? '1' : '.35'; }
+      }
+    };
     S.scene = await Sc.create($('c'), M.LOBES, { reduce, low, onPick: (id) => select(id), onLost: flat, onFrame });
     if (!S.scene) return flat();
     document.documentElement.dataset.mode = low ? '3d-low' : '3d';

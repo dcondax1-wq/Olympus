@@ -214,3 +214,23 @@ export function glow(lobeId, ctx) {
   if (L.kind === 'strategy') { const v = live(lobeId, ctx && ctx.glance, ctx && ctx.now); return v.word === 'live' ? 1 : v.word === 'done' ? .7 : v.has ? .6 : .5; }
   const r = research(lobeId, ctx && ctx.data, 0); return r ? Math.min(.9, .3 + r.total / 60) : .3;
 }
+
+/* ---------------- label placement (no two lobe names on top of each other) ---------------- */
+/** items: [{ id, x, y (the lobe's spot), w, h, pri (higher wins), z }] in one box { w, h }; each label tries centred above its
+ *  lobe, then below, then left / right; a label that still overlaps a placed one (or leaves the box) is hidden.
+ *  -> [{ id, x, y (top-left), show }] */
+export function placeLabels(items, box, gap = 2) {
+  const placed = [], out = new Map();
+  const hit = (a, b) => a.x < b.x + b.w + gap && b.x < a.x + a.w + gap && a.y < b.y + b.h + gap && b.y < a.y + a.h + gap;
+  const inBox = (r) => r.x >= 0 && r.y >= 0 && r.x + r.w <= box.w && r.y + r.h <= box.h;
+  const order = arr(items).filter((it) => isObj(it) && Number.isFinite(it.x) && Number.isFinite(it.y))
+    .sort((a, b) => (b.pri - a.pri) || ((a.z || 0) - (b.z || 0)));
+  for (const it of order) {
+    const w = it.w || 40, h = it.h || 14, tries = [[-w / 2, -h - 9], [-w / 2, 9], [-w - 10, -h / 2], [10, -h / 2]];
+    let got = null;
+    for (const [dx, dy] of tries) { const r = { x: it.x + dx, y: it.y + dy, w, h }; if (inBox(r) && !placed.some((p) => hit(p, r))) { got = r; break; } }
+    if (got) placed.push(got);
+    out.set(it.id, got ? { id: it.id, x: got.x, y: got.y, show: true } : { id: it.id, x: 0, y: 0, show: false });
+  }
+  return arr(items).filter((it) => out.has(it && it.id)).map((it) => out.get(it.id));
+}

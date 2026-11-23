@@ -27,7 +27,7 @@ Already done on the branch (not forbidden): a door in `cities/index.html` next t
 6. **Optional perf budget**: `tools/perf_budgets.json` `"strategybrain": {"eager_js_kb": 40, "three": true}` if it becomes an app
    (as a Cities sub-page, `perf_sweep --static` does not list it).
 
-Tests: `python -X utf8 -m tests.test_mind_brain` (54 checks: static, node on the real trades + findings, Chromium 390 x 844 through Node
+Tests: `python -X utf8 -m tests.test_mind_brain` (59 checks: static, node on the real trades + findings + label placement, Chromium 390 x 844 (layout, labels, low power) through Node
 Playwright; `MB_NO_BROWSER=1` skips the browser, `MIND_SHOTS=<dir>` saves the shots) and `python tests/run_area.py cities`.
 Screenshots: `research/handoff/2026-11-23/mind/shots/` (1 brain, 2 LIT live chain, 3 real trade timeline, 4 backtest timeline with
 every step, 5 ATLAS S/R timeline, 6 the 2D fallback).

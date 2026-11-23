@@ -72,6 +72,9 @@ o.firstSrc = M.tradesFor('lit', f)[0].src;
 o.research = M.LOBES.filter((l) => l.kind === 'research').map((l) => M.research(l.id, d).total);
 const g = { t: 1000, bots: [{ id: 'lit', stage: '5m CISD (5/10)', on: true }, { id: 'atlas', lobes: [{ id: 'ema', st: 'armed', text: 'x' }, { id: 'macd', st: 'off', text: 'off' }] }] };
 o.fresh = M.live('lit', g, 1100); o.stale = M.live('lit', g, 1000 + 3600); o.none = M.live('lit', null, 0); o.ema = M.live('ema', g, 1100); o.off = M.live('macd', g, 1100);
+const L = M.placeLabels([{ id: 'a', x: 100, y: 100, w: 80, h: 14, pri: 1 }, { id: 'b', x: 104, y: 102, w: 80, h: 14, pri: 2 }, { id: 'c', x: 102, y: 101, w: 80, h: 14, pri: 1 },
+  { id: 'd', x: 101, y: 100, w: 80, h: 14, pri: 0 }, { id: 'e', x: 100, y: 99, w: 80, h: 14, pri: 0 }], { w: 400, h: 300 });
+o.labels = L; o.labelsTop = L.find((q) => q.id === 'b');
 o.states = M.chainStates('lit', o.fresh).map((s) => s.state); o.inTrade = M.live('lit', { t: 1, bots: [{ id: 'lit', stage: 'In trade (9/10)' }] }, 2).idx;
 console.log(JSON.stringify(o));
 """
@@ -100,6 +103,10 @@ def node():
     check("n. live: fresh LIT at 5/10 = CISD now", o["fresh"]["word"] == "live" and o["states"] == ["done", "done", "now", "wait", "wait", "wait"], (o["fresh"], o["states"]))
     check("n. live: old report = stale, none = waiting", o["stale"]["word"] == "stale" and o["none"]["word"] == "waiting" and not o["none"]["has"], (o["stale"], o["none"]))
     check("n. live: ATLAS EMA armed = entry step, MACD off", o["ema"]["idx"] == 3 and o["off"]["word"] == "off", (o["ema"], o["off"]))
+    shown = [q for q in o["labels"] if q["show"]]
+    ov = sum(1 for i, a in enumerate(shown) for b in shown[i + 1:] if a["x"] < b["x"] + 82 and b["x"] < a["x"] + 82 and a["y"] < b["y"] + 16 and b["y"] < a["y"] + 16)
+    check("n. labels: overlapping lobes get moved or hidden, never drawn on top of each other", ov == 0 and len(shown) >= 2 and any(not q["show"] for q in o["labels"]), o["labels"])
+    check("n. labels: the higher priority keeps the spot above its lobe", o["labelsTop"]["show"] and o["labelsTop"]["y"] < 100, o["labelsTop"])
     check("n. live: in trade = the target step", o["inTrade"] == 5, o["inTrade"])
 
 
@@ -133,6 +140,10 @@ def browser():
     check("b. draw calls small", 0 < (o.get("stats") or {}).get("calls", 99) <= 8, o.get("stats"))
     check("b. no page error", not o.get("errors") and not o.get("flatErrors"), (o.get("errors"), o.get("flatErrors")))
     check("b. no sideways scroll at 390", o.get("sideways") is False)
+    lay = o.get("layout") or {}
+    check("b. brain under the header, lobe cards just below it", lay and lay["canvasTop"] >= lay["headerBottom"] - 30 and 0 <= lay["navTop"] - lay["canvasBottom"] <= 16 and lay["navBottom"] <= lay["vh"], lay)
+    check("b. no two lobe names overlap", (o.get("labels") or {}).get("overlaps") == 0 and (o.get("labels") or {}).get("shown", 0) >= 6, o.get("labels"))
+    check("b. low-power mode still 3D, light", o.get("lowMode") == "3d-low" and (o.get("lowStats") or {}).get("low") is True and not o.get("lowErrors"), (o.get("lowMode"), o.get("lowStats"), o.get("lowErrors")))
     check("b. PC pill live", "PC live" in (o.get("pill") or ""), o.get("pill"))
     check("b. LIT chain shows CISD now", "cisd:now" in (o.get("litNow") or []) and "Live" in (o.get("litState") or ""), (o.get("litNow"), o.get("litState")))
     check("b. trades + timeline chart", o.get("trades", 0) >= 5 and (o.get("tl") or {}).get("candles", 0) >= 5 and (o.get("tl") or {}).get("chips", 0) >= 8, (o.get("trades"), o.get("tl")))

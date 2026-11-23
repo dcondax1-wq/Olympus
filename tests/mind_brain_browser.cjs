@@ -26,6 +26,10 @@ const out = {};
     out.mode = await p.evaluate(() => document.documentElement.dataset.mode);
     out.stats = await p.evaluate(() => (window.__mind ? window.__mind.stats() : null));
     out.sideways = await p.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
+    out.layout = await p.evaluate(() => { const c = document.getElementById('c').getBoundingClientRect(), n = document.getElementById('lobes').getBoundingClientRect(), h = document.querySelector('.top').getBoundingClientRect();
+      return { canvasTop: c.top, canvasBottom: c.bottom, headerBottom: h.bottom, navTop: n.top, navBottom: n.bottom, vh: innerHeight }; });
+    out.labels = await p.evaluate(() => { const v = [...document.querySelectorAll('.tip')].filter((d) => d.style.display !== 'none').map((d) => d.getBoundingClientRect());
+      let o = 0; for (let i = 0; i < v.length; i++) for (let j = i + 1; j < v.length; j++) { const a = v[i], b = v[j]; if (a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom) o++; } return { shown: v.length, overlaps: o }; });
     out.pill = await p.textContent('#pcPill');
     if (SHOTS) await p.screenshot({ path: SHOTS + '/1_brain_390x844.png' });
     await p.click('button.lobe[data-lobe="lit"]'); await p.waitForTimeout(700);
@@ -55,8 +59,12 @@ const out = {};
     out.closed = await p.evaluate(() => document.getElementById('sheet').getAttribute('aria-hidden'));
     // a tap on the canvas at a lobe's projected spot opens that lobe
     const pr = await p.evaluate(() => window.__mind && window.__mind.project('sr'));
-    if (pr) { await p.mouse.click(pr.x, pr.y); await p.waitForTimeout(500); out.canvasPick = await p.evaluate(() => document.querySelector('#body h2') && document.querySelector('#body h2').textContent); }
+    const cr = await p.evaluate(() => { const r = document.getElementById('c').getBoundingClientRect(); return { x: r.left, y: r.top }; });
+    if (pr) { await p.mouse.click(cr.x + pr.x, cr.y + pr.y); await p.waitForTimeout(500); out.canvasPick = await p.evaluate(() => document.querySelector('#body h2') && document.querySelector('#body h2').textContent); }
     out.errors = errs; await ctx.close();
+    const lp = await page('?lite=1');
+    out.lowMode = await lp.p.evaluate(() => document.documentElement.dataset.mode); out.lowStats = await lp.p.evaluate(() => window.__mind && window.__mind.stats());
+    out.lowErrors = lp.errs; await lp.ctx.close();
     const f = await page('?lite=2d');
     out.flatMode = await f.p.evaluate(() => document.documentElement.dataset.mode);
     await f.p.click('#flat g[data-lobe="macd"]'); await f.p.waitForTimeout(500);

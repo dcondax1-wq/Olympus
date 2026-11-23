@@ -2,7 +2,7 @@
  * three.js r160 from cdnjs (pinned 0.160.0), else the site's own copy (../../jarvis/three.module.min.js, also r160).
  * create(canvas, lobes, { onPick(id|null), reduce, low, onLost }) -> Promise<{ select(id), setGlow(map), stats(), dispose() } | null>
  * Draw calls: a cortex point cloud (two hemispheres with folds), one halo point set for the lobes, one InstancedMesh of lobe cores,
- * synapse lines + travelling pulses, a fresnel glass shell. Low power (few cores / little memory / ?lite=1 / slow frames): half the
+ * synapse lines + travelling pulses, a folded cortex surface (gyri / sulci, key + back + rim light, far side fades). Low power (few cores / little memory / ?lite=1 / slow frames): half the
  * points, pixel ratio 1, no pulses, 30 fps. Paused on a hidden tab. Reduced motion: no auto-turn, frames drawn on interaction only.
  * Colours: OLYMPUS NIGHT (black, violet #3e255e/#4d2e76, glow #9d59ee, gold #f1c14b, mint #77db89). Read only. */
 export const THREE_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.module.min.js';
@@ -15,21 +15,34 @@ async function loadThree() {
 function rng(seed) { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
 const RAD = [1.15, .9, 1.5];
 
-const VS_PTS = `attribute float aSize; attribute float aA; attribute vec3 aC; attribute float aPh; uniform float uT, uPx, uLow, uFocus; uniform vec3 uFP;
+const VS_PTS = `attribute float aSize; attribute float aA; attribute vec3 aC; attribute float aPh; uniform float uT, uPx, uLow, uFocus, uZ; uniform vec3 uFP;
 varying vec3 vC; varying float vA;
 void main(){ vec4 mv = modelViewMatrix * vec4(position,1.0); gl_Position = projectionMatrix * mv;
  float tw = uLow > .5 ? 1.0 : .7 + .3 * sin(uT * 1.3 + aPh * 6.283);
  float near = uFocus * exp(-pow(distance(position, uFP) * 2.6, 2.0));
- vA = aA * tw * (1.0 - uFocus * .45) + near * .8; vC = mix(aC, vec3(1.0,.93,.72), near * .6);
+ float dep = clamp(1.0 - (-mv.z - uZ) * .42, .22, 1.35);
+ vA = (aA * tw * (1.0 - uFocus * .45) + near * .8) * dep; vC = mix(aC, vec3(1.0,.93,.72), near * .6);
  gl_PointSize = max(1.0, aSize * uPx * (1.0 + near) / max(.1, -mv.z)); }`;
 const FS_PTS = `precision mediump float; varying vec3 vC; varying float vA; void main(){ vec2 d = gl_PointCoord - .5; float r = dot(d,d) * 4.0; if (r > 1.0) discard;
  float g = pow(1.0 - r, 2.0); gl_FragColor = vec4(vC * (.55 + g), g * vA); }`;
 const VS_LN = `attribute vec3 aC; attribute float aA; varying vec3 vC; varying float vA; void main(){ gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); vC = aC; vA = aA; }`;
 const FS_LN = `precision mediump float; varying vec3 vC; varying float vA; void main(){ gl_FragColor = vec4(vC, vA); }`;
-const VS_GL = `varying vec3 vN; varying vec3 vV; void main(){ vec3 p = position; p += normal * sin(p.x*7.0+p.z*5.0)*sin(p.y*6.0+p.x*3.0)*.03;
- vec4 mv = modelViewMatrix * vec4(p,1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }`;
-const FS_GL = `precision mediump float; varying vec3 vN; varying vec3 vV; void main(){ float f = pow(1.0 - abs(dot(vN, vV)), 2.6);
- gl_FragColor = vec4(vec3(.62,.35,.93) * (.3 + f * 1.3), f * .5 + .02); }`;
+// the cortex: lit by a key light (top front left), a gold back light and a violet rim; sulci dark, gyri crests bright; far side fades
+const VS_GL = `attribute float aR; uniform float uZ; varying vec3 vN; varying vec3 vV; varying float vR; varying float vD;
+void main(){ vec4 mv = modelViewMatrix * vec4(position,1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); vR = aR;
+ vD = clamp(1.0 - (-mv.z - uZ) * .38, .25, 1.25); gl_Position = projectionMatrix * mv; }`;
+const FS_GL = `precision mediump float; varying vec3 vN; varying vec3 vV; varying float vR; varying float vD;
+void main(){ vec3 n = normalize(vN); float ndv = abs(dot(n, vV)); float rim = pow(1.0 - ndv, 2.4);
+ float key = max(dot(n, normalize(vec3(-.45,.75,.55))), 0.0); float back = pow(max(dot(n, normalize(vec3(.3,.2,-1.0))), 0.0), 2.0);
+ float crest = smoothstep(.15, .95, vR);
+ vec3 base = mix(vec3(.05,.025,.09), vec3(.30,.18,.46), crest) * (.35 + .9 * key);
+ vec3 col = base + vec3(.62,.35,.93) * rim * 1.35 + vec3(.95,.76,.3) * back * .22 * crest;
+ gl_FragColor = vec4(col * vD, (.20 + .38 * crest * key + rim * .55) * vD); }`;
+// gyri: a ridged, domain-warped sine field (0 = deep in a sulcus, 1 = on a crest)
+function ridge(x, y, z) {
+  const f = Math.sin(9.5 * x + 2.4 * Math.sin(7.3 * z + 1.1)) + Math.sin(8.7 * z + 2.1 * Math.sin(6.1 * y)) + Math.sin(10.3 * y + 1.9 * Math.sin(8.2 * x + .7 * z));
+  return 1 - Math.min(1, Math.abs(f) / 1.6);
+}
 
 export function isLowPower(w) {
   const n = (w && w.navigator) || {}, q = String((w && w.location && w.location.search) || '');
@@ -70,15 +83,44 @@ export async function create(canvas, lobes, cfg) {
     aC.set([col.r, col.g, col.b], i * 3); aS[i] = .03 + R() * .045; aA[i] = .22 + R() * .4; aP[i] = R();
   }
   const ptsMat = new THREE.ShaderMaterial({ vertexShader: VS_PTS, fragmentShader: FS_PTS, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-    uniforms: { uT: { value: 0 }, uPx: { value: 300 }, uLow: { value: low || reduce ? 1 : 0 }, uFocus: { value: 0 }, uFP: { value: ST.fp } } });
+    uniforms: { uT: { value: 0 }, uPx: { value: 300 }, uLow: { value: low || reduce ? 1 : 0 }, uFocus: { value: 0 }, uZ: { value: 5.4 }, uFP: { value: ST.fp } } });
   const g1 = new THREE.BufferGeometry();
   g1.setAttribute('position', new THREE.BufferAttribute(ap, 3)); g1.setAttribute('aC', new THREE.BufferAttribute(aC, 3));
   g1.setAttribute('aSize', new THREE.BufferAttribute(aS, 1)); g1.setAttribute('aA', new THREE.BufferAttribute(aA, 1)); g1.setAttribute('aPh', new THREE.BufferAttribute(aP, 1));
   rig.add(new THREE.Points(g1, ptsMat));
 
-  // ---- the glass shell ----
-  const shellGeo = new THREE.SphereGeometry(1, low ? 28 : 48, low ? 20 : 32); shellGeo.scale(RAD[0] * 1.02, RAD[1] * 1.02, RAD[2] * 1.02);
-  rig.add(new THREE.Mesh(shellGeo, new THREE.ShaderMaterial({ vertexShader: VS_GL, fragmentShader: FS_GL, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.FrontSide })));
+  // ---- the cortex surface: two folded hemispheres, the cerebellum and the stem, merged into one mesh (one draw call) ----
+  function part(geo, sx, sy, sz, cx, cy, cz, fold, flatBase) {
+    const p = geo.attributes.position, rr = new Float32Array(p.count);
+    for (let i = 0; i < p.count; i++) {
+      let x = p.getX(i) * sx, y = p.getY(i) * sy, z = p.getZ(i) * sz;
+      if (flatBase && y < -.35 * sy / .9) y = -.35 * sy / .9 + (y + .35 * sy / .9) * .5;
+      const r = fold ? ridge(x + cx, y + cy, z + cz) : .6, k = 1 + fold * (r - .55);
+      p.setXYZ(i, x * k + cx, y * k + cy, z * k + cz); rr[i] = r;
+    }
+    geo.setAttribute('aR', new THREE.BufferAttribute(rr, 1)); return geo;
+  }
+  const segW = low ? 40 : 120, segH = low ? 28 : 84;
+  const parts = [
+    part(new THREE.SphereGeometry(1, segW, segH), RAD[0] * .56, RAD[1] * .98, RAD[2] * .98, .5, 0, 0, .07, true),     // the hemispheres touch: the fissure
+    part(new THREE.SphereGeometry(1, segW, segH), RAD[0] * .56, RAD[1] * .98, RAD[2] * .98, -.5, 0, 0, .07, true),
+    part(new THREE.SphereGeometry(1, low ? 24 : 56, low ? 14 : 32), .72, .3, .42, 0, -.5, -1.02, .05, false),
+    part(new THREE.CylinderGeometry(.13, .09, .75, low ? 10 : 18, 1, true), 1, 1, 1, 0, -.78, -.45, 0, false),
+  ];
+  const cortexGeo = mergeParts(parts);
+  function mergeParts(list) {
+    let nv = 0, ni = 0; list.forEach((g) => { nv += g.attributes.position.count; ni += g.index.count; });
+    const pos = new Float32Array(nv * 3), ar = new Float32Array(nv), idx = new Uint32Array(ni); let ov = 0, oi = 0;
+    for (const g of list) {
+      pos.set(g.attributes.position.array, ov * 3); ar.set(g.attributes.aR.array, ov);
+      const I = g.index.array; for (let i = 0; i < I.length; i++) idx[oi + i] = I[i] + ov;
+      ov += g.attributes.position.count; oi += I.length; g.dispose();
+    }
+    const out = new THREE.BufferGeometry(); out.setAttribute('position', new THREE.BufferAttribute(pos, 3)); out.setAttribute('aR', new THREE.BufferAttribute(ar, 1));
+    out.setIndex(new THREE.BufferAttribute(idx, 1)); out.computeVertexNormals(); return out;
+  }
+  const cortexMat = new THREE.ShaderMaterial({ vertexShader: VS_GL, fragmentShader: FS_GL, transparent: true, depthWrite: false, side: THREE.FrontSide, uniforms: { uZ: { value: 5.4 } } });
+  const cortex = new THREE.Mesh(cortexGeo, cortexMat); cortex.renderOrder = -1; rig.add(cortex);
 
   // ---- the lobes: an instanced core each + a halo point set ----
   const NL = lobes.length, P = lobes.map((l) => new THREE.Vector3(l.pos[0], l.pos[1], l.pos[2]));
@@ -135,7 +177,8 @@ export async function create(canvas, lobes, cfg) {
   function size() {
     const w = canvas.clientWidth || innerWidth, h = canvas.clientHeight || innerHeight, dpr = Math.min(ST.low ? 1 : 2, devicePixelRatio || 1);
     renderer.setPixelRatio(dpr); renderer.setSize(w, h, false); camera.aspect = w / h; camera.fov = w < h ? 54 : 40; camera.updateProjectionMatrix();
-    ST.fit = Math.max(4.4, 1.45 / (Math.tan(camera.fov * Math.PI / 360) * Math.min(1, camera.aspect)));   // the whole brain fits the width
+    const tn = Math.tan(camera.fov * Math.PI / 360);
+    ST.fit = Math.max(3.2, 1.62 / (.88 * tn * camera.aspect), 1.12 / (.92 * tn));   // the brain fills ~85% of the width and fits the height
     const px = h * dpr * .55; [ptsMat, haloMat, pMat].forEach((m) => (m.uniforms.uPx.value = px)); if (!ST.sel) ST.zoomT = ST.fit; ST.dirty = true;
   }
   function project(i) {
@@ -176,8 +219,8 @@ export async function create(canvas, lobes, cfg) {
     const tS = (now - ST.t0) / 1000;
     if (!ptr.size) { ST.vy *= .94; ST.vp *= .9; ST.yaw += ST.vy + (reduce || ST.sel ? 0 : .0018 * dt / 16); ST.pitch = Math.max(-.9, Math.min(.9, ST.pitch + ST.vp)); }
     ST.zoom += (ST.zoomT - ST.zoom) * .1; ST.focus += (ST.focusT - ST.focus) * .12;
-    rig.rotation.set(ST.pitch, ST.yaw, 0); camera.position.set(0, .05, ST.zoom); camera.lookAt(0, .05, 0);
-    [ptsMat, haloMat].forEach((m) => { m.uniforms.uT.value = tS; m.uniforms.uFocus.value = ST.focus; });
+    rig.rotation.set(ST.pitch, ST.yaw, 0); camera.position.set(0, -.08, ST.zoom); camera.lookAt(0, -.08, 0);
+    [ptsMat, haloMat].forEach((m) => { m.uniforms.uT.value = tS; m.uniforms.uFocus.value = ST.focus; m.uniforms.uZ.value = ST.zoom; }); cortexMat.uniforms.uZ.value = ST.zoom;
     placeCores(tS);
     for (let k = 0; k < NP; k++) { const q = pulse[k]; q.u += q.v * dt / 1000; if (q.u > 1) { q.u = 0; q.c = Math.floor(Math.random() * curves.length); } curves[q.c].getPoint(q.u, tmp); pp.set([tmp.x, tmp.y, tmp.z], k * 3); }
     if (NP) pg.attributes.position.needsUpdate = true;

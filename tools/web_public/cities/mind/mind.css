@@ -3,11 +3,13 @@
   --bg: #000; --card: #16131e; --card2: #1d1828; --line: #3e255e; --line2: #4d2e76; --glow: #9d59ee;
   --gold: #f1c14b; --mint: #77db89; --red: #ff6b8a; --ink: #f3eefc; --mut: #a99cc2;
   --safe-b: env(safe-area-inset-bottom, 0px);
+  --st: max(calc(74px + env(safe-area-inset-top, 0px)), calc((100vh - var(--sh) - 330px) / 2));   /* the stage: under the header, brain + lobe cards centred */
+  --sh: max(240px, min(72vw, calc(100vh - 380px), 560px));
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); overflow: hidden; overscroll-behavior: none;
   font: 15px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; outline: none; }
+canvas#c { position: fixed; left: 0; top: var(--st); width: 100%; height: var(--sh); display: block; touch-action: none; outline: none; }
 button { font: inherit; color: inherit; }
 
 .top { position: fixed; top: 0; left: 0; right: 0; padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 8px;
@@ -21,18 +23,21 @@ button { font: inherit; color: inherit; }
 .pill.live { color: #04140a; background: var(--mint); border-color: var(--mint); box-shadow: 0 0 12px rgba(119,219,137,.5); }
 .pill.stale { color: #1a1300; background: var(--gold); border-color: var(--gold); }
 
-.lobes { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: flex; gap: 8px; overflow-x: auto; padding: 10px 16px calc(12px + var(--safe-b));
-  background: linear-gradient(rgba(0,0,0,0), #000 45%); scrollbar-width: none; }
+.lobes { position: fixed; left: 0; right: 0; top: calc(var(--st) + var(--sh) + 6px); z-index: 6; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  padding: 0 16px calc(12px + var(--safe-b)); max-width: 640px; margin: 0 auto; max-height: calc(100vh - var(--st) - var(--sh) - 6px); overflow-y: auto; scrollbar-width: none; }
+body.sheet-open .lobes { top: auto; bottom: 0; display: flex; max-width: none; max-height: none; overflow-x: auto; overflow-y: hidden; padding-top: 10px; }
 body.sheet-open .lobes { background: #000; border-top: 1px solid var(--line); }
+body.sheet-open .lobe small { display: none; }
 .lobes::-webkit-scrollbar { display: none; }
-.lobe { flex: 0 0 auto; display: flex; align-items: center; gap: 7px; padding: 9px 12px; border-radius: 14px; background: var(--card);
+.lobe { flex: 0 0 auto; display: grid; grid-template-columns: 9px 1fr; align-items: center; column-gap: 8px; text-align: left; padding: 9px 12px; min-width: 0; border-radius: 14px; background: var(--card);
   border: 1px solid var(--line); cursor: pointer; font-size: 13.5px; }
 .lobe i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); box-shadow: 0 0 10px var(--c); }
-.lobe small { color: var(--mut); font-size: 11px; }
+.lobe small { grid-column: 2; color: var(--mut); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.sheet-open .lobe { display: flex; gap: 7px; }
 .lobe[aria-pressed="true"] { border-color: var(--glow); box-shadow: 0 0 0 1px var(--glow), 0 0 18px rgba(157,89,238,.45); }
 .lobe.res { opacity: .85; }
 
-.flat { position: fixed; inset: 96px 0 70px; z-index: 1; display: grid; place-items: center; }
+.flat { position: fixed; left: 0; right: 0; top: var(--st); height: var(--sh); z-index: 1; display: grid; place-items: center; }
 .flat svg { width: min(100%, 420px); height: auto; }
 .flat .fl { cursor: pointer; }
 
@@ -93,4 +98,5 @@ body.sheet-open .lobes { background: #000; border-top: 1px solid var(--line); }
 .tag { font-size: 10.5px; padding: 1px 6px; border-radius: 6px; margin-right: 4px; }
 .tag.a { background: var(--mint); color: #04140a; } .tag.r { background: #d6336c; color: #fff; } .tag.o { background: var(--gold); color: #1a1300; }
 a.link { color: var(--glow); }
-.tip { position: fixed; z-index: 2; left: -999px; top: -999px; pointer-events: none; font-size: 11px; color: var(--ink); text-shadow: 0 0 6px #000, 0 0 2px #000; transform: translate(-50%, -150%); white-space: nowrap; }
+.tip { position: fixed; z-index: 2; left: -999px; top: -999px; pointer-events: none; font-size: 11px; color: var(--ink); text-shadow: 0 0 6px #000, 0 0 2px #000; white-space: nowrap; padding: 1px 5px; border-radius: 6px; background: rgba(0,0,0,.45); }
+.tip.st { color: var(--gold); font-weight: 600; }
