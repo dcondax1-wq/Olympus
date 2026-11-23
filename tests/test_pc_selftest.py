@@ -424,9 +424,21 @@ def t_real_mini():
     check("update_ready: only bot-made files -> clean", ok)
 
 
+def t_areas():
+    """Every tests.test_* suite the PC self-test runs sits in some tests/run_area.py area (audit Package D: 14 did not, so a
+    cloud landing never ran them and the PC found the reds)."""
+    import importlib
+    ra = importlib.import_module("tests.run_area")
+    from engine import pc_selftest as P
+    have = {m for v in ra.AREAS.values() for m in v}
+    miss = sorted(a["argv"][-1][len("tests.test_"):] for a in P.SUITES
+                  if str(a["argv"][-1]).startswith("tests.test_") and a["argv"][-1][len("tests.test_"):] not in have)
+    check("every PC self-test suite is in a run_area area (landings run it)", not miss, miss)
+
+
 def main():
     before = digest(REAL)
-    for t in (t_static, t_env, t_run, t_regression, t_autoupdate, t_runner_notice, t_api, t_real_mini):
+    for t in (t_static, t_env, t_run, t_regression, t_autoupdate, t_runner_notice, t_api, t_real_mini, t_areas):
         try:
             t()
         except Exception as e:

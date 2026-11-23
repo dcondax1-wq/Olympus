@@ -241,7 +241,8 @@ def main():
         okb = {"account": "B", "plan": "builder25k", "armed": True}
         check("verify: right", V("A", "B", state=okst, b=okb) == [])
         check("verify: Zlarior on the 25K", V("B", "A", state={"running": True, "cfg": {"nt_account": "B", "adapter": "ninjatrader"}}, b=okb) != [])
-        check("verify: ATLAS not armed", V("A", "B", state=okst, b={**okb, "armed": False}) != [])
+        check("verify: ATLAS not armed = soft (never a stop: audit Package A)", V("A", "B", state=okst, b={**okb, "armed": False}) == []
+              and g3.route_problems("A", "B", state=okst, b={**okb, "armed": False})["soft"] == ["ATLAS's 25K is not armed"])
         check("verify: ATLAS on a 50K plan", V("A", "B", state=okst, b={**okb, "plan": "builder50k"}) != [])
         check("verify: 25K also an extra Zlarior account", V("A", "B", state={"running": True, "cfg": {"nt_account": "A", "adapter": "ninjatrader", "accounts": [{"id": "x", "nt_account": "B"}]}}, b=okb) != [])
         check("verify: not running", V("A", "B", state={**okst, "running": False}, b=okb) != [])
@@ -313,9 +314,125 @@ def main():
             check("shortcuts: not Windows -> skipped", g2.ensure_shortcuts(mark=mark).get("skipped") == "not Windows" if os.name != "nt" else True)
     finally:
         G.subprocess.run = real_run
+    package_a()
     n = sum(RES)
     print(f"start bot: {n}/{len(RES)} {'ALL PASS' if n == len(RES) else 'FAILED'}")
     return 0 if n == len(RES) else 1
+
+
+def package_a():
+    """Audit 2026-11-22 Package A: an unarmed ATLAS never stops Zlarior; one account, one route (temp files, fake Names)."""
+    import importlib
+    import io
+    import json
+    from contextlib import redirect_stdout
+    g = importlib.reload(G)
+    from engine import account_cli as AC, multi_account as MA, new_accounts as NA, rapid
+    okst = {"running": True, "cfg": {"nt_account": "A", "adapter": "ninjatrader"}}
+    okb = {"account": "B", "plan": "builder25k", "armed": True}
+    rp = g.route_problems
+    soft = rp("A", "B", state=okst, b={**okb, "armed": False})
+    check("A1. ATLAS armed=False, Zlarior right: no hard problem, one soft 'ATLAS NOT armed'",
+          soft["hard"] == [] and len(soft["soft"]) == 1 and "not armed" in soft["soft"][0], soft)
+    hard = [rp("A", "B", state={"running": True, "cfg": {"nt_account": "X", "adapter": "ninjatrader"}}, b=okb)["hard"],
+            rp("A", "B", state={"running": True, "cfg": {"nt_account": "A", "adapter": "ninjatrader",
+                                                         "accounts": [{"id": "x", "nt_account": "B"}]}}, b=okb)["hard"],
+            rp("A", "B", state=okst, b={**okb, "account": "C50K"})["hard"]]
+    check("A2. hard still stops: Zlarior on the wrong Name, the 25K listed as an extra, ATLAS ARMED on a non-25K Name",
+          all(hard), hard)
+    keep = {k: getattr(g, k) for k in ("CFG", "SECOND_PATH", "ACCOUNTS_PATH", "ALLOW_PATH", "ANCHOR_PATH", "bot_running")}
+    keep_rp, keep_rp2, keep_na = rapid.PATH, getattr(rapid, "PATH2", None), NA.STATE_PATH
+    with tempfile.TemporaryDirectory() as tmp:
+        try:
+            from engine import ninjatrader as NT
+            g.CFG = os.path.join(tmp, "start_bot.json")
+            g.SECOND_PATH = os.path.join(tmp, "second_model.json")
+            g.ACCOUNTS_PATH = os.path.join(tmp, "accounts.json")
+            g.ALLOW_PATH = os.path.join(tmp, "allow.json")
+            g.ANCHOR_PATH = os.path.join(tmp, "anchor.json")
+            NA.STATE_PATH = os.path.join(tmp, "new_accounts.json")
+            rapid.PATH, rapid.PATH2 = os.path.join(tmp, "rapid.json"), os.path.join(tmp, "rapid2.json")
+            json.dump({"lit": "MFFUEVBLDR800000050", "atlas": "MFFUEVBLDR800000025"}, open(g.CFG, "w"))
+            # step_arm with ATLAS refused: Zlarior keeps running, never --stop
+            stops, calls = [], []
+            fake = dict(arm_problem=lambda cfg: None, resolve_atlas=lambda cfg, inp=None: None,
+                        arm_b=lambda a, path=None, selftest=None: {"ok": False, "error": "selftest failed"},
+                        env_has_live=lambda: True, server_up=lambda: True, server_stale=lambda: False,
+                        env_newer_than_server=lambda: False, verify_routes=lambda lit, atlas: [],
+                        soft_routes=lambda lit, atlas: ["ATLAS's 25K is not armed"], startup_shortcuts=lambda: None,
+                        checklist_lines=lambda: ([" [OK] all"], 0), shortcut=lambda: None, _open=lambda: None,
+                        bot_running=lambda: False)
+            saved = {k: getattr(g, k) for k in fake}
+            nt_main = NT.main
+            for k, v in fake.items():
+                setattr(g, k, v)
+            NT.main = lambda a: (stops.append(a) if "--stop" in a else calls.append(a), 0)[1]
+            g.time.sleep = lambda s: None
+            buf = io.StringIO()
+            try:
+                with redirect_stdout(buf):
+                    rc = g.step_arm(json.load(open(g.CFG)), g.LIVE_PHRASE, open_page=False)
+            finally:
+                NT.main = nt_main
+                for k, v in saved.items():
+                    setattr(g, k, v)
+            out = buf.getvalue()
+            check("A3. step_arm, ATLAS refused: no ninjatrader --stop, rc 0, prints 'Running Zlarior ... ATLAS NOT armed: <why>'",
+                  rc == 0 and not stops and "Running Zlarior" in out and "ATLAS NOT armed: ATLAS's 25K is not armed" in out,
+                  (rc, stops, out[-300:]))
+            # role_of knows the Rapid; candidates skip it; set_names refuses it
+            rapid.save({"account": "MFFUEVRPD123", "plan": "mffu_rapid_eod_25k", "start": "2026-11-20"})
+            g.bot_running = lambda: False
+            c = NA.candidates(names=[{"name": "MFFUEVRPD123", "balance": 25000}, {"name": "MFFUEVBLDR800000099", "balance": 25000}])
+            sn = g.set_names("MFFUEVBLDR800000050", "MFFUEVRPD123")
+            check("A4. role_of says 'the Rapid EOD' for data/rapid.json's Name; new_accounts.candidates leaves it out; "
+                  "set_names refuses it as ATLAS",
+                  g.role_of("MFFUEVRPD123") == "the Rapid EOD" and [x["name"] for x in c] == ["MFFUEVBLDR800000099"]
+                  and not sn["ok"] and "Rapid" in sn["error"], (g.role_of("MFFUEVRPD123"), c, sn))
+            open(rapid.PATH, "w").write("{broken")
+            check("A5. a broken rapid.json never crashes role_of", g.role_of("MFFUEVRPD123") is None)
+            os.remove(rapid.PATH)
+            rows = g.accounts()["rows"]
+            rapid.save({"account": "MFFUEVRPD123", "plan": "mffu_rapid_eod_25k", "start": "2026-11-20", "armed": True})
+            rows2 = g.accounts()["rows"]
+            rm = g.remove_account("MFFUEVRPD123")
+            check("A6. the Accounts panel lists the Rapid (role rapid, armed shown); remove_account switches it off",
+                  not any(r["role"] == "rapid" for r in rows) and any(r["role"] == "rapid" and r["armed"] for r in rows2)
+                  and rm["ok"] and rapid.read() is None, (rows2, rm))
+            # add_account extra branch = account_cli.add (tagged row; its checks)
+            r1 = g.add_account("MFFUEVBLDR800000061", "builder25k", "zlarior", "2026-11-23")
+            ex = {e.get("nt_account"): e for e in MA.load_file(g.ACCOUNTS_PATH)}
+            r_bad = g.add_account("MFFU;BAD|NAME", "builder25k", "zlarior", "2026-11-23")
+            g.bot_running = lambda: True
+            r_run = g.add_account("MFFUEVBLDR800000062", "builder25k", "zlarior", "2026-11-23")
+            g.bot_running = lambda: False
+            check("A7. Start page Accounts > Add (extra): a tagged 'cli' row, armed False; a bad Name refused; refused while running",
+                  r1["ok"] and isinstance(ex.get("MFFUEVBLDR800000061", {}).get("cli"), dict)
+                  and ex["MFFUEVBLDR800000061"].get("armed") is False and not r_bad["ok"] and not r_run["ok"], (r1, r_bad, r_run))
+            # to_funded writes a tagged row START arms
+            from engine import eval_life
+            keep_tf = eval_life.to_funded
+
+            def fake_tf(fname, start, plan=None, path=None):
+                MA.save_file(MA.load_file(path) + [{"id": "funded1", "name": "Zlarior funded", "nt_account": fname,
+                                                    "preset": "mffu_builder_25k", "mode": "funded", "adapter": "ninjatrader",
+                                                    "enabled": True, "armed": False, "funded": {"start": start}}], path)
+                print("[OK] funded")
+                return 0
+            eval_life.to_funded = fake_tf
+            try:
+                rf = g.to_funded("MFFUEVBLDR800000061", "MFFUSFBLDR800000071", "2026-11-23")
+            finally:
+                eval_life.to_funded = keep_tf
+            armed = AC.arm(g.LIVE_PHRASE)
+            check("A8. to_funded then account_cli.arm(phrase): 'Added accounts armed: ...' includes the funded Name's row",
+                  rf.get("ok") and any(ln.startswith("Added accounts armed:") and "funded" in ln for ln in armed)
+                  and next(e for e in MA.load_file(g.ACCOUNTS_PATH) if e.get("nt_account") == "MFFUSFBLDR800000071")["armed"] is True,
+                  (rf, armed))
+        finally:
+            for k, v in keep.items():
+                setattr(g, k, v)
+            rapid.PATH, rapid.PATH2, NA.STATE_PATH = keep_rp, keep_rp2, keep_na
 
 
 if __name__ == "__main__":

@@ -7,7 +7,8 @@ owner types the live phrase himself ("Re-arm now" = the existing START flow, rea
   parse_name(name)        MFFU<stage><plan><digits>: stage EV = eval, SF = sim-funded (FD / F read as funded too); plan
                           BLDR / BLD = Builder. Rapid: no MFFU document or code names its prefix (searched 2026-11-18), so RP...
                           / RAPID... are read as Rapid EOD (25K or 50K from the balance) but marked "guess" and the card
-                          offers the choice (Rapid first).
+                          offers the choice (Rapid first). EVREOD / SFREOD (MFFU's Rapid EOD prefix, seen 2026-11-22) =
+                          Rapid confirmed when the balance gives the size (no balance: still the choice).
   size_of(balance)        $35,000 and up = 50K, $10,000-35,000 = 25K (= go.slot_problem / new_accounts.SIZE_SPLIT), else None.
   infer(name, balance, stage_hint, outcome)
                           {"plan", "stage", "size", "kind", "guess", "passed", "why"}; kind = fresh_eval | passed_eval |
@@ -39,6 +40,7 @@ import time
 ARMED_LATER = "Armed at the next START (you type the phrase)."
 BUILDER_CODES = ("BLDR", "BLD", "BUILDER")
 RAPID_CODES = ("RPD", "RAPID", "RP", "REOD")       # not confirmed by MFFU: a guess (the card still offers the choice)
+RAPID_EOD_CODES = ("REOD", "RPEOD", "RAPIDEOD")  # MFFU's real Rapid EOD prefix (EVREOD seen on the owner's PC 2026-11-22)
 RAPIDS = ("rapideod", "rapideod25")
 STAGE_CODES = {"EV": "eval", "SF": "funded", "FD": "funded", "F": "funded"}
 _NAME = re.compile(r"^MFFU(EV|SF|FD|F)?([A-Z]*?)(\d+)$")
@@ -58,6 +60,8 @@ def parse_name(name) -> dict:
     plan, guess = None, True
     if code in BUILDER_CODES:
         plan, guess = "builder", False
+    elif code in RAPID_EOD_CODES:                  # MFFUEVREOD... = MFFU's Rapid EOD eval (owner's PC, 2026-11-22)
+        plan, guess = "rapid", False             # confirmed only with a 25K / 50K balance (infer)
     elif code.startswith("RP") or "RAPID" in code or code in RAPID_CODES:
         plan = "rapid"
     return {"firm": "MFFU", "stage": STAGE_CODES.get(st), "code": code, "plan": plan, "guess": guess}
@@ -87,6 +91,8 @@ def infer(name, balance=None, life_stage=None, outcome=None) -> dict:
     size = size_of(balance)
     stage = p["stage"] or "eval"
     plan = _plan_key(p["plan"], size)
+    if p["code"] in RAPID_EOD_CODES and size is None:   # REOD without a 25K / 50K balance: the size is a guess, so ask
+        p = {**p, "guess": True}
     try:
         bal = float(balance) if balance is not None else None
     except (TypeError, ValueError):
@@ -249,7 +255,9 @@ def status(rows=None, folder: str | None = None, path: str | None = None, names=
             i = infer(c["name"], c.get("balance"), stages.get(_hash(c["name"]) or ""), outcomes.get(c["name"]))
             o = offers(i, evals)
             out.append({**c, **i, "options": o, "say": say(i, o), "armed_note": ARMED_LATER})
-        return {"new": out, "running": bool(_go().bot_running()), "armed_note": ARMED_LATER}
+        running = bool(_go().bot_running())
+        return {"new": out, "running": running, "armed_note": ARMED_LATER,
+                "rearm": {"pending": rearm_pending() if running else [], "last": rearm_last(path)}}
     except Exception as e:
         return {"new": [], "error": f"{e.__class__.__name__}"}
 
@@ -335,7 +343,78 @@ def rearm_problem(cfg=None) -> str | None:
     return None
 
 
-def rearm(phrase: str, stop_fn=None, flat_reason=None, job=None) -> dict:
+def rearm_pending(rows=None, extras=None) -> list:
+    """Names an arm step would arm that are NOT armed now (added DISARMED since the bot started): ATLAS's account, a Rapid,
+    an account added with engine.accounts (Lucid only once its written OK is recorded). [] = nothing to re-arm, so the
+    page offers no "Re-arm now" (2026-11-22 loop: the button showed whenever the bot ran, so after a good re-arm it came
+    straight back asking again). Never raises."""
+    try:
+        from . import account_cli
+        rows = account_cli.inventory() if rows is None else rows
+        if extras is None:
+            try:
+                extras = _go()._extras()
+            except Exception:
+                extras = []
+        lucid_ok = {str(e.get("nt_account") or e.get("name") or "").strip() for e in extras
+                    if isinstance(e.get("cli"), dict) and e["cli"].get("lucid_ok")}
+        out = []
+        for r in rows:
+            if r.get("sim") or r.get("armed") is not False or r.get("enabled") is False:
+                continue
+            if r.get("role") == "extra" and (not r.get("cli") or
+                                             (r.get("plan") in account_cli.LUCID_PLANS and r["name"] not in lucid_ok)):
+                continue                       # not armed by the arm step (a non-CLI extra / Lucid without its OK)
+            if r.get("role") in ("b", "rapid", "extra") and r["name"] not in out:
+                out.append(r["name"])
+        return out
+    except Exception:
+        return []
+
+
+def _rearm_note(rec: dict, path=None) -> None:
+    try:
+        na = _na()
+        s = na._load(path)
+        s["rearm"] = {**rec, "t": int(time.time())}
+        na._save(s, path)
+    except Exception:
+        pass
+
+
+def rearm_last(path=None, job=None) -> dict | None:
+    """The last Re-arm and how its START went, one plain line for the page: {"t", "state" (running | done | failed |
+    refused), "say"}. The START job's own result once it ran (engine/go.job_status). Never raises."""
+    try:
+        rec = dict(_na()._load(path).get("rearm") or {})
+        if not rec:
+            return None
+        if not rec.get("ok"):
+            return {"t": rec.get("t"), "state": "refused", "say": f"Re-arm not done: {rec.get('error')}"}
+        j = job if job is not None else _go().job_status()
+        if j.get("step") != "arm" or float(j.get("t0") or 0) < float(rec.get("t") or 0) - 5:
+            return {"t": rec["t"], "state": "running", "say": "Re-arm: stopped while flat, START is starting…"}
+        if j.get("running"):
+            return {"t": rec["t"], "state": "running", "say": "Re-arm: START is running (about a minute)…"}
+        if j.get("rc") == 0:
+            return {"t": rec["t"], "state": "done", "say": "Re-arm done: START finished, every added account armed (see the job card)."}
+        last = next((ln.strip() for ln in reversed(j.get("lines") or []) if "NOT ARMED" in ln or "[FIX]" in ln or "[STOP]" in ln), "")
+        return {"t": rec["t"], "state": "failed",
+                "say": "Re-arm: START did not finish" + (f": {last[:160]}" if last else " (see the job card)") +
+                       ". The bot may be stopped: tap Start trading."}
+    except Exception:
+        return None
+
+
+def rearm(phrase: str, stop_fn=None, flat_reason=None, job=None, path=None) -> dict:
+    """One press = one STOP + one START (never a loop): the result is noted (rearm_last) for the page's line."""
+    r = _rearm(phrase, stop_fn, flat_reason, job)
+    if r.get("ok") or r.get("stopped"):        # a refusal (nothing stopped) is the press's own answer: the line keeps the
+        _rearm_note({"ok": bool(r.get("ok")), "error": r.get("error")}, path)   # last Re-arm that really ran
+    return r
+
+
+def _rearm(phrase: str, stop_fn=None, flat_reason=None, job=None) -> dict:
     """"Re-arm now": the typed phrase, then (only when flat) STOP and the START BOT arm step. The phrase reaches the job in
     its environment (engine/go.job_start), checked again by step_arm and engine/ninjatrader."""
     go = _go()
@@ -354,9 +433,11 @@ def rearm(phrase: str, stop_fn=None, flat_reason=None, job=None) -> dict:
         stop_fn()
         if go.bot_running():
             return {"ok": False, "error": "The bot did not stop: nothing changed."}
+    stopped = not go.bot_running()
     r = (job or go.job_start)("arm", phrase)
     if not r.get("ok"):
-        return {"ok": False, "error": f"Stopped, but START did not begin: {r.get('error')}. Tap Start trading."}
+        return {"ok": False, "stopped": stopped,
+                "error": f"Stopped, but START did not begin: {r.get('error')}. Tap Start trading."}
     return {"ok": True, "say": "Re-arming: stopped while flat, START runs now with your phrase (every added account)."}
 
 
