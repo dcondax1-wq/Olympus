@@ -972,7 +972,8 @@ def instant_problem(p: dict, now=None, path=None, cfg=None, poster=None) -> str:
                 from . import alert_bus
                 r = alert_bus.send_critical(alert_bus.from_problem(p, problem_message(p, now=now, s=s)),
                                             on_done=lambda res: res.get("ok") and _record_problem(
-                                                p, key, path, now, count="ntfy" in _d(res.get("receipts"))))
+                                                p, key, path, now, count="ntfy" in _d(res.get("receipts"))),
+                                            no_app=bool(p.get("no_app")))
                 if r in ("queued", "sent"):
                     return "sent"
                 if r == "dup":
@@ -980,10 +981,22 @@ def instant_problem(p: dict, now=None, path=None, cfg=None, poster=None) -> str:
             except Exception:
                 pass
         cfg = cfg if cfg is not None else alert_cfg()
-        if not cfg.get("topic"):
-            return "no private alert topic on this PC"
-        ok = (poster or _post)(cfg["ntfy"], cfg["topic"], problem_message(p, now=now, s=s))
+        msg = problem_message(p, now=now, s=s)
+        ok = bool(cfg.get("topic")) and (poster or _post)(cfg["ntfy"], cfg["topic"], msg)
         if not ok:
+            # audit 2026-11-22 package B: no topic / ntfy refused -> the Olympus app (Web Push), so the alarm still reaches a phone
+            if not p.get("no_app"):
+                try:
+                    from . import push
+                    r = push.pc_send_now(push.report_payload({"key": key, "title": msg["title"], "body": msg["body"],
+                                                              "priority": msg.get("priority"), "kind": "problems"}))
+                    if int((r or {}).get("sent") or 0) > 0:
+                        _record_problem(p, key, path, now, count=False)
+                        return "sent (app)"
+                except Exception:
+                    pass
+            if not cfg.get("topic"):
+                return "no private alert topic on this PC"
             return "ntfy did not take it (the 15-minute report sends it instead)"
         _record_problem(p, key, path, now)
         return "sent"

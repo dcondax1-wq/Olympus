@@ -1133,13 +1133,35 @@ def intake(msgs, now=None, path: str | None = None, key_path: str | None = None,
     return out
 
 
+# audit 2026-11-22 package B: the PC's critical alarms (engine/alerts_plus crit kinds, engine/guards' "le-guard" pushes: entries
+# blocked, clock drift, kill switch, no-stop mismatch, room under $400) reach the phone app at once, and the private ntfy topic too
+# (engine/notify.instant_problem). Not "update" (autoupdate has its own path) and not "hedge" (its own HEDGE route).
+CRITICAL_KINDS = ("clock", "kill", "unprotected", "eval_floor", "freeze", "feed_stale", "ops_crit")
+
+
+def critical(p: dict) -> bool:
+    p = p or {}
+    return p.get("kind") in CRITICAL_KINDS or p.get("tag") == "le-guard"
+
+
+def _crit_ntfy(p: dict) -> str:
+    """The critical alarm's private-topic copy (engine/notify.instant_problem, its own de-dup by key; the app copy already
+    went out, so no_app). Never raises."""
+    try:
+        from . import notify
+        return notify.instant_problem({"key": f"crit:{p.get('key')}", "title": p.get("title"), "body": p.get("body"),
+                                       "code": str(p.get("kind") or "ops_crit"), "no_app": True})
+    except Exception as e:  # noqa: BLE001
+        return f"failed: {e.__class__.__name__}"
+
+
 def pc_app_ok(p: dict) -> bool:
     """Which PC notices go to the phone (owner 2026-11-18, "important only"): every real-account entry / exit (notify_settings.json
     trade_opened / trade_closed; never Paper, Sim, BLITZ), tests, and the 15-minute report's alerts (kind "report", already filtered
     by engine/notify.apply). Every other kind (ops helper, risk, armed setups ...) only with LE_PUSH_EXTRA=1: none of them went to
     the ntfy alerts either, and several repeat what the report already says."""
     k = (p or {}).get("kind")
-    if k in ("test", "report"):
+    if k in ("test", "report") or critical(p):
         return True
     if k in ("fill", "outcome"):
         try:
@@ -1296,6 +1318,8 @@ def _pc_send(payload, sender=None, ntfy=None, ntfy_exit=None, retry_s=None) -> d
     if not trade:
         if app_ok:
             res = _app()
+        if critical(payload) and ntfy is None and sender is None:
+            res["ntfy"] = _crit_ntfy(payload)
         if k == "risk" and str(payload.get("key") or "").startswith("hedge"):
             try:                                 # drill 2026-11-21: HEDGE BLOCKED reached no phone without LE_PUSH_EXTRA (the app took
                 from . import notify             # only trades); now the private ntfy topic too (problems: rings at night)
@@ -1437,6 +1461,8 @@ def pc_send_now(payload: dict, sync=None, sender=None) -> dict:
     try:
         if sync is None and not pc_app_ok(payload):
             return {"sent": 0, "skipped": "not for the phone (LE_PUSH_EXTRA=1 sends it)"}
+        if critical(payload) and sync is None and sender is None:
+            _crit_ntfy(payload)
         cfg = pc_config(sync)
         if not enabled(cfg):
             return {"sent": 0, "skipped": "not configured"}
