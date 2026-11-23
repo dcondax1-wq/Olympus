@@ -142,7 +142,7 @@ Retired apps are not on Home, in search or in A to Z. Their old links open the r
 | Websites (`agency`) | Websites | web | Website business HQ: next step, leads, audits, 3D | `fixture.json`, `my_leads.json`, `leads.json`, `callrules.json`, `callscript.json`, ... | `tests.test_agency` |
 | Archive (`archive`) | Data City | data | The library of everything we ever tested, searchable | `fixture.json`, `index.json` | `tests.test_archive_page` |
 | Athena (`athena`) | Data City | data | The library: strategy, rules, quiz | `jarvis.json`, `library.json`, `drills.json` | `tests.test_athena_page` |
-| Data City (`cities`) | Data City | data | The 3D city of everything: every app, every | `brain-data.json`, `fixture.json` | `tests.test_cities_page` |
+| Data City (`cities`) | Data City | data | The 3D city of everything: every app, every | `brain-data.json`, `hub-data.json` (Research Hub, `tools/build_research_hub.py`), `fixture.json` | `tests.test_cities_page`, `tests.test_research_hub2` |
 | Clio (`clio`) | Data City | data | The research library: every study in plain words | `fixture.json`, `../writeups/index.json`, `hub.json`, `../data.json` | `tests.test_clio_page` |
 | Colosseum (`colosseum`) | Data City | data | Where strategies fight: seven rounds on real stored | `extra.json`, `fixture.json`, `../archive/index.json`, `../home.json` | `tests.test_colosseum_page` |
 | Data City (`datacity`) (retired) | Data City | data | Every combo tested, as a city | `fixture.json`, `city.json`, `jarvis.json`, `../data.json`, `../pantheon/pantheon.json` | `tests.test_datacity` |
