@@ -40,6 +40,12 @@ LEN, MO = MP.LEN, MP.MO
 SPANS = ("H2", "H1", "REF")
 ZL = {"room": 1025.0, "to_go": 3807.0, "session": 24}          # GEv adds 1 before the first step: Nov 20 = session 25
 N25_S0 = 2                                                       # Nov 18 + Nov 19 (no trade): Nov 20 = session 3
+A25_STATE = None                                                 # None = Nov 20 (money_plan.A25_PNL); --asof sets it
+# --asof: the board's numbers on a later day (the public status post, tools/board.fetch_lite). 2026-11-23 (night-payplan): Z50 $49,214,
+# $3,786 to pass, $1,046 room, session 26; N25 $25,024, session 4; ATLAS funded +$401 (days -$113, +$514; floor $24,401 = $1,000 room);
+# Rapid EOD 25K $25,000, session 2 (no trade yet).
+ASOF = {"2026-11-23": {"zl": {"room": 1045.7, "to_go": 3786.1, "session": 25}, "n25_s0": 3,
+                       "a25": {"bal": 401.38, "cyc": [-113.0, 514.0], "peak": 401.38}}}
 KEYS = ("Z50", "N25", "A25", "R25")
 NAMES = {"Z50": "Zlarior 50K (eval)", "N25": "Zlarior 25K #2 (eval)", "A25": "ATLAS 25K (funded)", "R25": "Rapid EOD 25K (eval)"}
 SPLIT = {"Z50": 0.8, "N25": 0.8, "A25": 0.8, "R25": 0.9}
@@ -77,8 +83,14 @@ def a25_seat(ask=None, pct=None, need=None, BYa=None):
     s = BL.Seat(lambda _=None: BL.GEv(BL.E25, BL.Zatlas25(), stuck=200.0), lambda: BL.GF("builder25k", cfg, z, ask=ask),
                 MP.P25, [])
     f = BL.GF("builder25k", cfg, z, ask=ask)
-    f.bal = f.trade_pnl = MP.A25_PNL
-    f.cyc = [MP.A25_PNL]
+    if A25_STATE:
+        f.bal = f.trade_pnl = A25_STATE["bal"]
+        f.cyc = list(A25_STATE["cyc"])
+        f.peak = A25_STATE["peak"]
+        f.floor = min(max(f.floor, f.peak - float(f.A["mll"])), float(f.A.get("lock", 100.0)))
+    else:
+        f.bal = f.trade_pnl = MP.A25_PNL
+        f.cyc = [MP.A25_PNL]
     f.first_trade, f.elig_from = "2027-01-01", U.cal(0)          # the 48 h first wait ended before Nov 20
     s.evals, s.f, s.wait = [], f, 0
     return MP.BSeat(s, BYa, BYa)
@@ -372,7 +384,13 @@ def main(argv=None):
     ap.add_argument("--only", default=None)
     ap.add_argument("--out", default=OUT)
     ap.add_argument("--lab", action="store_true", help="only rebuild the Lab rows from the saved results")
+    ap.add_argument("--asof", default=None, help="start from a later board (ASOF keys, e.g. 2026-11-23)")
     a = ap.parse_args(argv)
+    if a.asof:
+        global TODAY, START, ZL, N25_S0, A25_STATE
+        st = ASOF[a.asof]
+        TODAY = START = a.asof
+        ZL, N25_S0, A25_STATE = dict(st["zl"]), st["n25_s0"], dict(st["a25"])
     if a.lab:
         print("wrote", os.path.relpath(lab_rows(), ROOT))
         return 0

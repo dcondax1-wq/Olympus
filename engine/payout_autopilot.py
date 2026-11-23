@@ -46,8 +46,14 @@ SESSION_FROM = 18 * 60              # the session opens 18:00 ET the evening bef
 BUILDER_LAST = 4                    # take payouts 1-4, never the 5th (fleet plan 2026-11-22)
 LIVE_DAY_USD = 10000.0              # a plain Rapid: one $10,000 net day = MFFU moves it live
 WARN_10K_AT = 6000.0                # warn at 60% of it
-STEPS = ("Open the MFFU dashboard (myfundedfutures.com) and sign in -> Payouts -> Request Payout -> pick {acct} -> "
-         "type {amt} -> Submit. Then tell Olympus you took it: TRADE_HOME -> P.")
+# MFFU's help center (checked 2026-11-23): the dashboard's left panel has "Payouts: Request and track your earnings"
+# (help.myfundedfutures.com/en/articles/8229980); "Visit the MFFU payout dashboard to submit your request", first time KYC under
+# "Personal Settings > KYC", a Riseworks account, then the Riseworks agreements by email; "processed in 6-12 business hours"
+# (help.myfundedfutures.com/en/articles/11542406). The request button's own name is NOT on those pages: the words below say
+# only what they say.
+STEPS = ("In the MFFU dashboard (myfundedfutures.com): left menu Payouts -> request {amt} from {acct}. First payout only: "
+         "Personal Settings > KYC done, a Riseworks account, and sign the Riseworks agreements MFFU emails you. Paid in 6-12 "
+         "business hours. Then tell Olympus you took it: TRADE_HOME -> P.")
 
 
 def _f(x, d=None):
