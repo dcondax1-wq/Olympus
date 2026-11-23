@@ -152,7 +152,9 @@ def hedge_first_and_guard(f):
 
 def main():
     from engine import hand_hedge as HH
+    from engine import handsoff as _ho
     tmp = tempfile.mkdtemp(prefix="xhedge_")
+    _ho_path, _ho.PATH = _ho.PATH, os.path.join(tmp, "handsoff.jsonl")   # night-hermetic: hands-on events to the temp folder
     try:
         f = setup(tmp)
         feed(f, T0 - 70)                                       # NinjaTrader running: the newest 1m bar closed 10 s ago
@@ -253,6 +255,7 @@ def main():
         finally:
             HH.WINDOW_PATH = old
     finally:
+        _ho.PATH = _ho_path
         shutil.rmtree(tmp, ignore_errors=True)
     n = sum(RESULTS)
     print(f"\nhand hedge: {n}/{len(RESULTS)} checks passed")
