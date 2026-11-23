@@ -225,3 +225,29 @@ round 1's `vp_sweep_level5` (POC/VAH/VAL) result. The HVN skip would have been a
 2. The only way left to test order flow is real ticks (OF1-OF3, `TICKS_HOWTO.md`). OF1 is the most promising: it targets
    the one thing every proxy agreed on.
 3. The poor-high revisit fact holds (50% vs 37% next-day revisit). It is too rare to trade: 0.1 a week.
+
+## Round 3 (same day): zero-click tick backfill + the automatic study
+
+The owner asked for a way to get ticks without the Historical Data window.
+
+| What | Result |
+|---|---|
+| `ninjatrader/LE_TickRec.cs` backfill | While enabled, it asks NinjaTrader's history server for past **ticks** through the same `BarsRequest` call LE_Feed.cs uses (Tick, Value 1). That covers NQ and ES, using whichever contract was front on each date, one ET day at a time, newest first, back to 365 days or the end of the server's history |
+| When | A pass starts on enable and every day at 17:15 ET. Requests go out only outside 02:00-16:05 ET on weekdays (any time on weekends), one at a time, 5 s apart. A request stuck for 10 min is dropped and retried on the next pass |
+| Disk | Nothing is written, live or backfill, under 10 GB free; the earlier recorder had no such guard. Each backfill CSV becomes a `.done` marker once Python has it in `data/ticks`. A day is about 5-8 MB as parquet, so a year of NQ is about 2-3 GB |
+| Status line | `backfill=idle/running/waiting_window/low_disk/done, backfill_days=N (NQ), oldest=YYYY-MM-DD, bf_errors=N, low_disk=0/1`. `python -m engine.tickrec status` shows it |
+| Automatic study | `python -m engine.tickrec autopilot`, started by the PC's 15-minute report task (tools/pc_report.py) as its own low-priority process, only outside trading hours. It ingests, then runs `of_study.py` (OF1-OF3) **once at 60 NQ tick days** and once more when the backfill says done, **2 looks at most**. It leaves one phone line, which pc_report pushes once (push type daily_summary) |
+| Safety | No Account / order / OIF code (the tests scan for it). Nothing in the bot imports engine.tickrec; pc_report only starts it as a separate process. A backfilled day *replaces* a partial live day, so nothing is double counted |
+| Tests | `tests/test_tickrec_cs.py` (24): mcs C# 5 compile against `NtStubs.cs`, plus a 25-check behaviour driver on a fake history server (`NtStubsTick.cs`, `TickRecDriver.cs`). It covers off, the trading-hours wait, request order, contract and Tick 1, whole-day files via .tmp, the .done / .none / Saturday skips, the end of history, the 17:15 pass, the disk guard, a hung request and disable. It also tests the Python ingest, the autopilot (60 days, 2 looks, the trading-hours block) and the pc_report push / start. `tests/test_tickrec.py` 20/20; notify 96, pc_silent 30, report_keeper 19, pc_guard 42, pc_bars 74, risk_monitors 29, trade_watch_atlas 14: all pass. LE_Feed stub test: all pass |
+
+**Not verified:** there is no NinjaTrader here.
+1. Does a Tick `BarsRequest` return one bar per trade with `Bars.GetBid(i)` / `GetAsk(i)`? If GetBid / GetAsk don't exist in the owner's NT8 version, **F5 fails for every script**, so install only on a quiet evening and delete the file if F5 is red.
+2. How far back the server serves ticks. The forum says about 1 rolling year.
+3. Whether `Instrument.GetInstrument("NQ 09-25")` resolves expired contracts.
+
+Each one fails safe:
+- If the bid/ask is 0, Python uses the tick rule.
+- If NinjaTrader doesn't know an old contract, that day is marked `.none`.
+- If NinjaTrader gives nothing for 7 weekdays in a row, `bf_<ROOT>_end.txt` is written and later passes stop there.
+
+The owner still has 2 one-time steps (install + enable), and both wait for the red-team review.

@@ -529,7 +529,8 @@ def status() -> dict:
     nd = nt_dir()
     return {"enabled": is_enabled(), "config": _cfg(), "nt_dir": nd, "parquet": _has_pyarrow(), "tick_dir": TICK_DIR,
             "days": len(days_available()), "first": (days_available() or [None])[0], "last": (days_available() or [None])[-1],
-            "recorder_flag": bool(nd and os.path.exists(os.path.join(nd, REC_DIR, "enabled.txt")))}
+            "recorder_flag": bool(nd and os.path.exists(os.path.join(nd, REC_DIR, "enabled.txt"))),
+            "recorder": recorder_status(nd) if nd else {}}
 
 
 def selftest() -> bool:
