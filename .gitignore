@@ -309,6 +309,7 @@ data/agency_pipeline/
 data/alert_digest.json
 data/payout_autopilot.json
 data/payout_ledger.json
+data/rules_watch.json
 data/alert_bus_sent.json
 data/alert_bus.jsonl
 data/alert_bus_sent.json.*.tmp

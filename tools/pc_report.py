@@ -2278,6 +2278,11 @@ def main(argv=None) -> int:
             _pa.tick()
         except Exception:
             pass
+        try:                           # MFFU rule-change watcher (tools/rules_watch.py): weekdays from 17:05 ET, once a day; alerts only on a real change
+            from tools import rules_watch as _rw
+            _rw.maybe_run()
+        except Exception:
+            pass
         try:
             from tools import weekly_money_report as _wmr
             _wmr.maybe_run(say=(lambda *_: None) if a.quiet else print)

@@ -4,6 +4,10 @@ Owner 2026-11-20: "make sure you have all the rules for each account memorized".
 Source of truth: `research/lit/mffu_rules.json` (MFFU's public help center + plan pages, each value with its URL and the
 date checked). `python -X utf8 -m tests.test_account_rules` fails if a number the bot uses drifts from it.
 Last full check: **2026-11-20**. Re-check anything older than 7 days before a buy or a payout.
+**Daily watcher** (tools/rules_watch.py, 2026-11-23): every weekday after 17:05 ET the PC reads MFFU's own help pages (46 rules: DLL,
+MLL, consistency, buffers, payout min / max, accounts per user, inactivity, news window, the Rapid $10,000 live day) and compares them
+with this file. A real change = ONE phone alert "MFFU rule changed: <rule> was X, now Y (source); the bot still uses X until Claude
+updates it" + a board line. A page that moved or did not load is reported, never called a change. Nothing is changed automatically.
 
 Common to every MFFU account
 | Rule | Value | Source |
