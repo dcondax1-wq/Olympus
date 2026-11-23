@@ -1,0 +1,200 @@
+{
+"150 | L6 R50+FN+LU alt | K1 +BLITZ lane in every eval | S0 | 0 | REF": {
+"per_month": -46,
+"net6": -277,
+"p10": -867,
+"p50": -867,
+"p90": 933,
+"owner": 590,
+"fees": 867,
+"pays": 0.6,
+"live": 0.0,
+"p_neg": 85.0,
+"se": 54,
+"month_mean": [
+-39,
+-7,
+-19,
+-117,
+-41,
+-54
+],
+"per_eval_dollar": 0.68
+},
+"150 | L6 R50+FN+LU alt | K1 +BLITZ lane in every eval | S0 | 0 | H2": {
+"per_month": 5135,
+"net6": 30813,
+"p10": 10645,
+"p50": 30369,
+"p90": 51073,
+"owner": 31679,
+"fees": 867,
+"pays": 28.9,
+"live": 0.0,
+"p_neg": 0.7,
+"se": 480,
+"month_mean": [
+1140,
+4563,
+5627,
+4704,
+6497,
+8282
+],
+"per_eval_dollar": 36.56
+},
+"150 | L6 R50+FN+LU alt | K1 +BLITZ lane in every eval | S0 | 0 | H1": {
+"per_month": 7228,
+"net6": 43365,
+"p10": 18683,
+"p50": 43279,
+"p90": 69840,
+"owner": 44232,
+"fees": 867,
+"pays": 35.0,
+"live": 0.0,
+"p_neg": 0.0,
+"se": 613,
+"month_mean": [
+1788,
+5406,
+6018,
+6335,
+11185,
+12634
+],
+"per_eval_dollar": 51.03
+},
+"500 | L8 R50,LU | K1 +BLITZ lane in every eval | S0 | 0 | H1": {
+"per_month": 14838,
+"net6": 89026,
+"p10": 41518,
+"p50": 84964,
+"p90": 139589,
+"owner": 90229,
+"fees": 1203,
+"pays": 54.2,
+"live": 0.0,
+"p_neg": 0.1,
+"se": 1208,
+"month_mean": [
+1247,
+9435,
+14996,
+18734,
+21406,
+23208
+],
+"per_eval_dollar": 75.03
+},
+"500 | L8 R50,LU | K1 +BLITZ lane in every eval | S0 | 0 | H2": {
+"per_month": 9354,
+"net6": 56123,
+"p10": 22270,
+"p50": 56965,
+"p90": 89200,
+"owner": 57331,
+"fees": 1208,
+"pays": 42.8,
+"live": 0.0,
+"p_neg": 0.7,
+"se": 820,
+"month_mean": [
+732,
+6364,
+10457,
+11953,
+12988,
+13629
+],
+"per_eval_dollar": 47.45
+},
+"500 | L8 R50,LU | K1 +BLITZ lane in every eval | S0 | 0 | REF": {
+"per_month": -307,
+"net6": -1844,
+"p10": -2997,
+"p50": -2919,
+"p90": -832,
+"owner": 1079,
+"fees": 2924,
+"pays": 0.7,
+"live": 0.0,
+"p_neg": 91.0,
+"se": 124,
+"month_mean": [
+-331,
+-374,
+-241,
+-312,
+-322,
+-265
+],
+"per_eval_dollar": 0.37
+},
+"150 | L6 R50+FN+LU alt | K3 eval +BLITZ 2x on Rapid EOD only | S0 | 0 | H1": {
+"per_month": 6981,
+"net6": 41884,
+"p10": 17773,
+"p50": 41103,
+"p90": 67500,
+"owner": 42750,
+"fees": 867,
+"pays": 34.4,
+"live": 0.0,
+"p_neg": 0.0,
+"se": 596,
+"month_mean": [
+1717,
+5326,
+5911,
+6018,
+11073,
+11839
+],
+"per_eval_dollar": 49.32
+},
+"150 | L6 R50+FN+LU alt | K3 eval +BLITZ 2x on Rapid EOD only | S0 | 0 | REF": {
+"per_month": -32,
+"net6": -193,
+"p10": -867,
+"p50": -867,
+"p90": 1293,
+"owner": 674,
+"fees": 867,
+"pays": 0.6,
+"live": 0.0,
+"p_neg": 83.1,
+"se": 59,
+"month_mean": [
+-33,
+0,
+-16,
+-102,
+0,
+-43
+],
+"per_eval_dollar": 0.78
+},
+"150 | L6 R50+FN+LU alt | K3 eval +BLITZ 2x on Rapid EOD only | S0 | 0 | H2": {
+"per_month": 4706,
+"net6": 28237,
+"p10": 8923,
+"p50": 27506,
+"p90": 47971,
+"owner": 29104,
+"fees": 867,
+"pays": 27.6,
+"live": 0.0,
+"p_neg": 0.9,
+"se": 462,
+"month_mean": [
+1051,
+4376,
+5279,
+4169,
+5976,
+7385
+],
+"per_eval_dollar": 33.58
+}
+}

@@ -1,0 +1,542 @@
+{
+"mffu_builder_50k|today|H1": {
+"p_pass": 83.8,
+"pass_med": 7.0,
+"E_funded_owner": 5395,
+"p_funded_lost": 13.9,
+"first_pay_med": 17.0,
+"fee": 91.8,
+"EV_per_eval": 4429,
+"EV_per_eval_dollar": 48.25
+},
+"mffu_builder_50k|today|H2": {
+"p_pass": 84.6,
+"pass_med": 7.0,
+"E_funded_owner": 5355,
+"p_funded_lost": 15.7,
+"first_pay_med": 17.0,
+"fee": 91.8,
+"EV_per_eval": 4439,
+"EV_per_eval_dollar": 48.35
+},
+"mffu_builder_50k|today|REF": {
+"p_pass": 19.4,
+"pass_med": 5.0,
+"E_funded_owner": 186,
+"p_funded_lost": 97.2,
+"first_pay_med": 17.0,
+"fee": 91.8,
+"EV_per_eval": -56,
+"EV_per_eval_dollar": -0.61
+},
+"mffu_builder_50k|AGG2 eval|H1": {
+"p_pass": 54.6,
+"pass_med": 3.0,
+"E_funded_owner": 5395,
+"p_funded_lost": 13.9,
+"first_pay_med": 17.0,
+"fee": 91.8,
+"EV_per_eval": 2854,
+"EV_per_eval_dollar": 31.09
+},
+"mffu_builder_50k|AGG2 eval|H2": {
+"p_pass": 58.7,
+"pass_med": 5.0,
+"E_funded_owner": 5355,
+"p_funded_lost": 15.7,
+"first_pay_med": 17.0,
+"fee": 91.8,
+"EV_per_eval": 3052,
+"EV_per_eval_dollar": 33.24
+},
+"mffu_builder_50k|AGG2 eval|REF": {
+"p_pass": 14.7,
+"pass_med": 2.0,
+"E_funded_owner": 186,
+"p_funded_lost": 97.2,
+"first_pay_med": 17.0,
+"fee": 91.8,
+"EV_per_eval": -65,
+"EV_per_eval_dollar": -0.7
+},
+"mffu_builder_50k|LIT-only|H1": {
+"p_pass": 70.0,
+"pass_med": 9.0,
+"E_funded_owner": 4811,
+"p_funded_lost": 10.5,
+"first_pay_med": 25.0,
+"fee": 91.8,
+"EV_per_eval": 3276,
+"EV_per_eval_dollar": 35.69
+},
+"mffu_builder_50k|LIT-only|H2": {
+"p_pass": 82.3,
+"pass_med": 8.0,
+"E_funded_owner": 4765,
+"p_funded_lost": 13.6,
+"first_pay_med": 22.0,
+"fee": 91.8,
+"EV_per_eval": 3830,
+"EV_per_eval_dollar": 41.72
+},
+"mffu_builder_50k|LIT-only|REF": {
+"p_pass": 28.5,
+"pass_med": 15.0,
+"E_funded_owner": 390,
+"p_funded_lost": 83.0,
+"first_pay_med": 42.0,
+"fee": 91.8,
+"EV_per_eval": 19,
+"EV_per_eval_dollar": 0.21
+},
+"mffu_builder_25k|today|H1": {
+"p_pass": 87.7,
+"pass_med": 7.0,
+"E_funded_owner": 2605,
+"p_funded_lost": 17.2,
+"first_pay_med": 17.0,
+"fee": 63.0,
+"EV_per_eval": 2221,
+"EV_per_eval_dollar": 35.26
+},
+"mffu_builder_25k|today|H2": {
+"p_pass": 83.2,
+"pass_med": 8.0,
+"E_funded_owner": 2446,
+"p_funded_lost": 22.4,
+"first_pay_med": 18.0,
+"fee": 63.0,
+"EV_per_eval": 1972,
+"EV_per_eval_dollar": 31.31
+},
+"mffu_builder_25k|today|REF": {
+"p_pass": 19.5,
+"pass_med": 5.0,
+"E_funded_owner": 92,
+"p_funded_lost": 96.7,
+"first_pay_med": 19.0,
+"fee": 63.0,
+"EV_per_eval": -45,
+"EV_per_eval_dollar": -0.72
+},
+"mffu_builder_25k|AGG2 eval|H1": {
+"p_pass": 55.6,
+"pass_med": 4.0,
+"E_funded_owner": 2605,
+"p_funded_lost": 17.2,
+"first_pay_med": 17.0,
+"fee": 63.0,
+"EV_per_eval": 1385,
+"EV_per_eval_dollar": 21.99
+},
+"mffu_builder_25k|AGG2 eval|H2": {
+"p_pass": 55.4,
+"pass_med": 4.5,
+"E_funded_owner": 2446,
+"p_funded_lost": 22.4,
+"first_pay_med": 18.0,
+"fee": 63.0,
+"EV_per_eval": 1292,
+"EV_per_eval_dollar": 20.51
+},
+"mffu_builder_25k|AGG2 eval|REF": {
+"p_pass": 15.7,
+"pass_med": 2.0,
+"E_funded_owner": 92,
+"p_funded_lost": 96.7,
+"first_pay_med": 19.0,
+"fee": 63.0,
+"EV_per_eval": -49,
+"EV_per_eval_dollar": -0.77
+},
+"mffu_builder_25k|LIT-only|H1": {
+"p_pass": 75.4,
+"pass_med": 9.0,
+"E_funded_owner": 2308,
+"p_funded_lost": 16.0,
+"first_pay_med": 25.0,
+"fee": 63.0,
+"EV_per_eval": 1677,
+"EV_per_eval_dollar": 26.62
+},
+"mffu_builder_25k|LIT-only|H2": {
+"p_pass": 80.2,
+"pass_med": 7.5,
+"E_funded_owner": 2082,
+"p_funded_lost": 21.9,
+"first_pay_med": 23.0,
+"fee": 63.0,
+"EV_per_eval": 1607,
+"EV_per_eval_dollar": 25.51
+},
+"mffu_builder_25k|LIT-only|REF": {
+"p_pass": 27.3,
+"pass_med": 14.0,
+"E_funded_owner": 188,
+"p_funded_lost": 82.8,
+"first_pay_med": 49.0,
+"fee": 63.0,
+"EV_per_eval": -12,
+"EV_per_eval_dollar": -0.19
+},
+"mffu_rapid_eod_25k|today|H1": {
+"p_pass": 79.3,
+"pass_med": 33.0,
+"E_funded_owner": 16357,
+"p_funded_lost": 38.9,
+"first_pay_med": 10.0,
+"fee": 97.2,
+"EV_per_eval": 12874,
+"EV_per_eval_dollar": 132.45
+},
+"mffu_rapid_eod_25k|today|H2": {
+"p_pass": 85.5,
+"pass_med": 26.0,
+"E_funded_owner": 6445,
+"p_funded_lost": 47.0,
+"first_pay_med": 19.0,
+"fee": 97.2,
+"EV_per_eval": 5413,
+"EV_per_eval_dollar": 55.69
+},
+"mffu_rapid_eod_25k|today|REF": {
+"p_pass": 7.0,
+"pass_med": 31.0,
+"E_funded_owner": 349,
+"p_funded_lost": 100.0,
+"first_pay_med": 8.5,
+"fee": 97.2,
+"EV_per_eval": -73,
+"EV_per_eval_dollar": -0.75
+},
+"mffu_rapid_eod_25k|AGG2 eval|H1": {
+"p_pass": 86.6,
+"pass_med": 25.0,
+"E_funded_owner": 16357,
+"p_funded_lost": 38.9,
+"first_pay_med": 10.0,
+"fee": 97.2,
+"EV_per_eval": 14068,
+"EV_per_eval_dollar": 144.73
+},
+"mffu_rapid_eod_25k|AGG2 eval|H2": {
+"p_pass": 90.1,
+"pass_med": 19.0,
+"E_funded_owner": 6445,
+"p_funded_lost": 47.0,
+"first_pay_med": 19.0,
+"fee": 97.2,
+"EV_per_eval": 5710,
+"EV_per_eval_dollar": 58.74
+},
+"mffu_rapid_eod_25k|AGG2 eval|REF": {
+"p_pass": 14.7,
+"pass_med": 21.0,
+"E_funded_owner": 349,
+"p_funded_lost": 100.0,
+"first_pay_med": 8.5,
+"fee": 97.2,
+"EV_per_eval": -46,
+"EV_per_eval_dollar": -0.47
+},
+"mffu_rapid_eod_25k|LIT-only|H1": {
+"p_pass": 25.4,
+"pass_med": 42.0,
+"E_funded_owner": 6020,
+"p_funded_lost": 15.1,
+"first_pay_med": 28.0,
+"fee": 97.2,
+"EV_per_eval": 1432,
+"EV_per_eval_dollar": 14.73
+},
+"mffu_rapid_eod_25k|LIT-only|H2": {
+"p_pass": 41.1,
+"pass_med": 42.0,
+"E_funded_owner": 3784,
+"p_funded_lost": 27.1,
+"first_pay_med": 33.0,
+"fee": 97.2,
+"EV_per_eval": 1458,
+"EV_per_eval_dollar": 15.0
+},
+"mffu_rapid_eod_25k|LIT-only|REF": {
+"p_pass": 3.2,
+"pass_med": 51.0,
+"E_funded_owner": 293,
+"p_funded_lost": 80.5,
+"first_pay_med": 53.5,
+"fee": 97.2,
+"EV_per_eval": -88,
+"EV_per_eval_dollar": -0.9
+},
+"mffu_rapid_eod_50k|today|H1": {
+"p_pass": 93.9,
+"pass_med": 25.0,
+"E_funded_owner": 35280,
+"p_funded_lost": 40.4,
+"first_pay_med": 8.0,
+"fee": 165.0,
+"EV_per_eval": 32963,
+"EV_per_eval_dollar": 199.78
+},
+"mffu_rapid_eod_50k|today|H2": {
+"p_pass": 89.7,
+"pass_med": 24.0,
+"E_funded_owner": 16212,
+"p_funded_lost": 43.8,
+"first_pay_med": 15.0,
+"fee": 165.0,
+"EV_per_eval": 14378,
+"EV_per_eval_dollar": 87.14
+},
+"mffu_rapid_eod_50k|today|REF": {
+"p_pass": 9.8,
+"pass_med": 26.5,
+"E_funded_owner": 770,
+"p_funded_lost": 100.0,
+"first_pay_med": 7.0,
+"fee": 165.0,
+"EV_per_eval": -90,
+"EV_per_eval_dollar": -0.54
+},
+"mffu_rapid_eod_50k|AGG2 eval|H1": {
+"p_pass": 92.1,
+"pass_med": 16.0,
+"E_funded_owner": 35280,
+"p_funded_lost": 40.4,
+"first_pay_med": 8.0,
+"fee": 165.0,
+"EV_per_eval": 32328,
+"EV_per_eval_dollar": 195.93
+},
+"mffu_rapid_eod_50k|AGG2 eval|H2": {
+"p_pass": 91.9,
+"pass_med": 16.0,
+"E_funded_owner": 16212,
+"p_funded_lost": 43.8,
+"first_pay_med": 15.0,
+"fee": 165.0,
+"EV_per_eval": 14734,
+"EV_per_eval_dollar": 89.3
+},
+"mffu_rapid_eod_50k|AGG2 eval|REF": {
+"p_pass": 17.0,
+"pass_med": 20.0,
+"E_funded_owner": 770,
+"p_funded_lost": 100.0,
+"first_pay_med": 7.0,
+"fee": 165.0,
+"EV_per_eval": -34,
+"EV_per_eval_dollar": -0.21
+},
+"mffu_rapid_eod_50k|LIT-only|H1": {
+"p_pass": 44.5,
+"pass_med": 41.0,
+"E_funded_owner": 13165,
+"p_funded_lost": 11.5,
+"first_pay_med": 25.0,
+"fee": 165.0,
+"EV_per_eval": 5694,
+"EV_per_eval_dollar": 34.51
+},
+"mffu_rapid_eod_50k|LIT-only|H2": {
+"p_pass": 64.0,
+"pass_med": 38.0,
+"E_funded_owner": 9789,
+"p_funded_lost": 20.6,
+"first_pay_med": 25.0,
+"fee": 165.0,
+"EV_per_eval": 6100,
+"EV_per_eval_dollar": 36.97
+},
+"mffu_rapid_eod_50k|LIT-only|REF": {
+"p_pass": 4.2,
+"pass_med": 45.5,
+"E_funded_owner": 676,
+"p_funded_lost": 83.1,
+"first_pay_med": 42.5,
+"fee": 165.0,
+"EV_per_eval": -137,
+"EV_per_eval_dollar": -0.83
+},
+"fn_rapid_daily_50k|today|H1": {
+"p_pass": 83.8,
+"pass_med": 7.0,
+"E_funded_owner": 4551,
+"p_funded_lost": 17.9,
+"first_pay_med": 7.0,
+"fee": 149.99,
+"EV_per_eval": 3664,
+"EV_per_eval_dollar": 24.43
+},
+"fn_rapid_daily_50k|today|H2": {
+"p_pass": 84.6,
+"pass_med": 7.0,
+"E_funded_owner": 4531,
+"p_funded_lost": 18.6,
+"first_pay_med": 12.0,
+"fee": 149.99,
+"EV_per_eval": 3683,
+"EV_per_eval_dollar": 24.55
+},
+"fn_rapid_daily_50k|today|REF": {
+"p_pass": 19.4,
+"pass_med": 5.0,
+"E_funded_owner": 490,
+"p_funded_lost": 97.2,
+"first_pay_med": 6.0,
+"fee": 149.99,
+"EV_per_eval": -55,
+"EV_per_eval_dollar": -0.37
+},
+"fn_rapid_daily_50k|AGG2 eval|H1": {
+"p_pass": 54.6,
+"pass_med": 3.0,
+"E_funded_owner": 4551,
+"p_funded_lost": 17.9,
+"first_pay_med": 7.0,
+"fee": 149.99,
+"EV_per_eval": 2335,
+"EV_per_eval_dollar": 15.57
+},
+"fn_rapid_daily_50k|AGG2 eval|H2": {
+"p_pass": 58.7,
+"pass_med": 5.0,
+"E_funded_owner": 4531,
+"p_funded_lost": 18.6,
+"first_pay_med": 12.0,
+"fee": 149.99,
+"EV_per_eval": 2509,
+"EV_per_eval_dollar": 16.73
+},
+"fn_rapid_daily_50k|AGG2 eval|REF": {
+"p_pass": 14.7,
+"pass_med": 2.0,
+"E_funded_owner": 490,
+"p_funded_lost": 97.2,
+"first_pay_med": 6.0,
+"fee": 149.99,
+"EV_per_eval": -78,
+"EV_per_eval_dollar": -0.52
+},
+"fn_rapid_daily_50k|LIT-only|H1": {
+"p_pass": 70.0,
+"pass_med": 9.0,
+"E_funded_owner": 4261,
+"p_funded_lost": 13.7,
+"first_pay_med": 17.0,
+"fee": 149.99,
+"EV_per_eval": 2833,
+"EV_per_eval_dollar": 18.89
+},
+"fn_rapid_daily_50k|LIT-only|H2": {
+"p_pass": 82.3,
+"pass_med": 8.0,
+"E_funded_owner": 4188,
+"p_funded_lost": 16.0,
+"first_pay_med": 15.0,
+"fee": 149.99,
+"EV_per_eval": 3296,
+"EV_per_eval_dollar": 21.98
+},
+"fn_rapid_daily_50k|LIT-only|REF": {
+"p_pass": 28.5,
+"pass_med": 15.0,
+"E_funded_owner": 619,
+"p_funded_lost": 88.0,
+"first_pay_med": 23.0,
+"fee": 149.99,
+"EV_per_eval": 26,
+"EV_per_eval_dollar": 0.18
+},
+"lucid_pro_50k|today|H1": {
+"p_pass": 83.8,
+"pass_med": 7.0,
+"E_funded_owner": 7690,
+"p_funded_lost": 13.9,
+"first_pay_med": 22.0,
+"fee": 126.0,
+"EV_per_eval": 6318,
+"EV_per_eval_dollar": 50.14
+},
+"lucid_pro_50k|today|H2": {
+"p_pass": 84.6,
+"pass_med": 7.0,
+"E_funded_owner": 8149,
+"p_funded_lost": 15.3,
+"first_pay_med": 21.0,
+"fee": 126.0,
+"EV_per_eval": 6768,
+"EV_per_eval_dollar": 53.72
+},
+"lucid_pro_50k|today|REF": {
+"p_pass": 19.4,
+"pass_med": 5.0,
+"E_funded_owner": 127,
+"p_funded_lost": 97.3,
+"first_pay_med": 25.0,
+"fee": 126.0,
+"EV_per_eval": -101,
+"EV_per_eval_dollar": -0.8
+},
+"lucid_pro_50k|AGG2 eval|H1": {
+"p_pass": 54.6,
+"pass_med": 3.0,
+"E_funded_owner": 7690,
+"p_funded_lost": 13.9,
+"first_pay_med": 22.0,
+"fee": 126.0,
+"EV_per_eval": 4073,
+"EV_per_eval_dollar": 32.32
+},
+"lucid_pro_50k|AGG2 eval|H2": {
+"p_pass": 58.7,
+"pass_med": 5.0,
+"E_funded_owner": 8149,
+"p_funded_lost": 15.3,
+"first_pay_med": 21.0,
+"fee": 126.0,
+"EV_per_eval": 4657,
+"EV_per_eval_dollar": 36.96
+},
+"lucid_pro_50k|AGG2 eval|REF": {
+"p_pass": 14.7,
+"pass_med": 2.0,
+"E_funded_owner": 127,
+"p_funded_lost": 97.3,
+"first_pay_med": 25.0,
+"fee": 126.0,
+"EV_per_eval": -107,
+"EV_per_eval_dollar": -0.85
+},
+"lucid_pro_50k|LIT-only|H1": {
+"p_pass": 70.0,
+"pass_med": 9.0,
+"E_funded_owner": 5892,
+"p_funded_lost": 8.9,
+"first_pay_med": 30.0,
+"fee": 126.0,
+"EV_per_eval": 3999,
+"EV_per_eval_dollar": 31.74
+},
+"lucid_pro_50k|LIT-only|H2": {
+"p_pass": 82.3,
+"pass_med": 8.0,
+"E_funded_owner": 6082,
+"p_funded_lost": 12.0,
+"first_pay_med": 28.0,
+"fee": 126.0,
+"EV_per_eval": 4879,
+"EV_per_eval_dollar": 38.72
+},
+"lucid_pro_50k|LIT-only|REF": {
+"p_pass": 28.5,
+"pass_med": 15.0,
+"E_funded_owner": 323,
+"p_funded_lost": 80.1,
+"first_pay_med": 54.0,
+"fee": 126.0,
+"EV_per_eval": -34,
+"EV_per_eval_dollar": -0.27
+}
+}
