@@ -54,11 +54,11 @@ def lane_cfgs(tmp, folder):
     out = {"LIT main (Zlarior)": {**bot_cfg, "nt_state_path": os.path.join(tmp, "nt_lit.json"),
                                   "nt_audit_log": os.path.join(tmp, "oif_lit.log")}}
 
-    def acct_b(cls, name):
+    def acct_b(cls, name, slot="rapid"):
         b = object.__new__(cls)
         b.bot, b.name, b.rules, b.spec = bot, name, {"max_micros": 40}, {"armed": True}
-        b.slot = "rapid"                 # RapidAtlas.__init__ sets it (day-multirapid: rapid / rapid2); object.__new__ skips it
-        b.state_path = os.path.join(tmp, f"{cls.__name__}.json")
+        b.slot = slot                    # RapidAtlas.__init__ sets it (day-multirapid: rapid / rapid2); object.__new__ skips it
+        b.state_path = os.path.join(tmp, f"{cls.__name__}{'_2' if slot == 'rapid2' else ''}.json")
         return b.adapter_cfg()
     out["ATLAS account B"] = acct_b(AB.AccountB, "Sim102")
     router = object.__new__(MA.AccountRouter)
@@ -68,6 +68,12 @@ def lane_cfgs(tmp, folder):
                                  rules={"max_micros": 40})
     out["Rapid LIT lane"] = MA.AccountRouter.adapter_cfg(router, lane)
     out["Rapid ATLAS lane"] = acct_b(rapid.RapidAtlas, "Sim103")          # the same account as the Rapid LIT lane
+    # night-tgweek 2026-11-23: the 2nd Rapid (slot rapid2, the Rapid EOD 50K): its LIT lane + its ATLAS lane on one account
+    blk2 = {"account": "Sim107", "armed": True}
+    lane2 = types.SimpleNamespace(id="rapid2", spec={**rapid.lane_spec(blk2, bot_cfg, slot="rapid2"), "adapter": "ninjatrader"},
+                                  rules={"max_micros": 40})
+    out["Rapid #2 LIT lane"] = MA.AccountRouter.adapter_cfg(router, lane2)
+    out["Rapid #2 ATLAS lane"] = acct_b(rapid.RapidAtlas, "Sim107", slot="rapid2")
     extra = types.SimpleNamespace(id="x2", spec={"adapter": "ninjatrader", "nt_account": "Sim104", "armed": True},
                                   rules={"max_micros": 40})
     out["extra account"] = MA.AccountRouter.adapter_cfg(router, extra)
@@ -96,8 +102,10 @@ def t_replay(tmp):
     now = [0.0]
     cfgs = lane_cfgs(tmp, folder)
     accts = {n: c["nt_account"] for n, c in cfgs.items()}
-    check("7 lanes, each on a Sim account (the Rapid's two lanes share one), every cfg keeps the 15:55 flat + 02:00 LIT session",
-          len(cfgs) == 7 and accts["Rapid LIT lane"] == accts["Rapid ATLAS lane"] == "Sim103"
+    check("9 lanes, each on a Sim account (each Rapid's two lanes share one; the 2nd Rapid included), every cfg keeps the 15:55 "
+          "flat + 02:00 LIT session",
+          len(cfgs) == 9 and accts["Rapid LIT lane"] == accts["Rapid ATLAS lane"] == "Sim103"
+          and accts["Rapid #2 LIT lane"] == accts["Rapid #2 ATLAS lane"] == "Sim107"
           and all(int(c["params"]["flat_mod"]) == 955 for c in cfgs.values()), accts)
 
     def make(c):
@@ -156,7 +164,7 @@ def t_replay(tmp):
             fake.process()
             if side_of(ad) != "FLAT":
                 bad.append((name, "hand position not closed before the halt"))
-        check(f"{label}: all 7 lanes take an entry at halt - 16 min, refuse one at halt - 15, are flat with nothing working at "
+        check(f"{label}: all {len(cfgs)} lanes take an entry at halt - 16 min, refuse one at halt - 15, are flat with nothing working at "
               f"halt - 5 (not earlier), and close a hand position on the account before the halt", not bad, bad)
 
     bad = []

@@ -471,6 +471,7 @@ AREAS["pc"].append("add_account")   # night-addacct 2026-11-23: TRADE_HOME 4 = N
 
 AREAS["pc_care"] = ["pc_care", "bat_menu", "fresh_start"]   # night-secps 2026-11-23: STATUS / PC_CARE / CLEAN_STORAGE run a site download only on a pinned sha256
 AREAS["pc"] += ["startmsg"]   # night-startmsg 2026-11-23: START BOT's exit codes + its [FIX] reason in TRADE_HOME 2 / 8 and MONDAY SETUP
+AREAS["nq"] += ["tgweek"]   # night-tgweek 2026-11-23: Thanksgiving week (calendar, update windows, 'half day, closes 13:15' wording)
 
 if __name__ == "__main__":
     sys.exit(main())

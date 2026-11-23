@@ -466,7 +466,7 @@ def brief():
                                                                               for x in MB.build_full(snap(mon), mon, plan, [], news)["lines"]))
         fri = at(2026, 11, 27, 7, 31)
         bf = next(x for x in MB.build_full(snap(fri), fri, plan, [], news)["lines"] if x.startswith("Today:"))
-        check("h. Fri Nov 27 (early close 13:15): entries end 13:00, said plainly", "Zlarior till 13:00, ATLAS till 12:00" in bf and "early close 13:15" in bf, bf)
+        check("h. Fri Nov 27 (early close 13:15): entries end 13:00, said plainly", "Zlarior till 13:00, ATLAS till 12:00" in bf and "half day, closes 13:15 ET" in bf, bf)
 
         # once a day through the guard; a restart (state.json read back) never repeats it
         def run(st, now):

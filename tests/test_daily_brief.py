@@ -126,7 +126,7 @@ def part_d():
     check("d. Saturday: no brief", not MB.due(ts(2026, 11, 28, 7, 35)))
     check("d. Thanksgiving (13:00 halt): still a brief", MB.due(ts(2026, 11, 26, 7, 35)))
     tg = build(ts(2026, 11, 26, 7, 35))
-    check("d. ... with the early close said", any("early close 13:00" in x for x in tg["lines"]), tg["lines"])
+    check("d. ... with the early close said", any("half day, closes 13:00 ET" in x for x in tg["lines"]), tg["lines"])
 
 
 def part_e():

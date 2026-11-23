@@ -54,7 +54,8 @@ def dst_note(now) -> str | None:
 
 
 def calendar_lines(days) -> list:
-    """['Thu Nov 26 closed', 'Fri Nov 27 early close 13:15 ET (no new entry after 13:00)']"""
+    """['Fri Dec 25 closed', 'Fri Nov 27 half day, closes 13:15 ET (no new entry from 13:00)'] (an entry is refused AT 13:00:
+    engine/cme_calendar.entry_cut = halt - 15; night-tgweek 2026-11-23)"""
     out = []
     try:
         from . import cme_calendar as C
@@ -68,7 +69,7 @@ def calendar_lines(days) -> list:
             ec = C.early_close(d)
             if ec is not None:
                 cut = ec - 15
-                out.append(f"{WD[d.weekday()]} {d:%b %d} early close {ec // 60:02d}:{ec % 60:02d} ET (no new entry after "
+                out.append(f"{WD[d.weekday()]} {d:%b %d} half day, closes {ec // 60:02d}:{ec % 60:02d} ET (no new entry from "
                            f"{cut // 60:02d}:{cut % 60:02d})")
         except Exception:
             continue

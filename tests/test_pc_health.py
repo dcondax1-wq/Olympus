@@ -454,10 +454,10 @@ def t_readiness():
     check("no clock change on Sun 2026-11-08: no DST line", R.dst_note(ts(2026, 11, 8, 17, 30)) is None)
     th = R.build({**GOOD, "events": []}, ts(2026, 11, 22, 17, 30))["lines"]
     check("Thanksgiving week: Thu 13:00 and Fri 13:15 early closes with the last entry time; no high-impact news",
-          th[6] == "This week: Thu Nov 26 early close 13:00 ET (no new entry after 12:45); Fri Nov 27 early close 13:15 ET (no new entry after 13:00)"
+          th[6] == "This week: Thu Nov 26 half day, closes 13:00 ET (no new entry from 12:45); Fri Nov 27 half day, closes 13:15 ET (no new entry from 13:00)"
           and th[5] == "News: none high-impact", th[5:7])
     xm = R.build(GOOD, ts(2026, 12, 20, 17, 30))["lines"]
-    check("Christmas week: Thu Dec 24 early close, Fri Dec 25 closed", "Thu Dec 24 early close 13:15 ET" in xm[6] and "Fri Dec 25 closed" in xm[6], xm[6])
+    check("Christmas week: Thu Dec 24 early close, Fri Dec 25 closed", "Thu Dec 24 half day, closes 13:15 ET" in xm[6] and "Fri Dec 25 closed" in xm[6], xm[6])
     bad = R.build({**GOOD, "run_switch": False, "selftest": {**GOOD["selftest"], "failed": 2, "ok": False,
                                                               "first": [{"label": "Start page", "why": "x"}, {"label": "Heartbeat push"}]}}, now)
     check("problems first in the title: self-test failure, Run switch OFF (+1)", bad["title"] == "Before Monday: self-test: Start page (+1)"
