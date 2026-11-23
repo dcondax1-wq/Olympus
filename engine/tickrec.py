@@ -27,6 +27,8 @@ nothing that can trade (no engine.ninjatrader, engine.live, engine.tradovate). I
   python -m engine.tickrec run [--every 60]            ingest in a loop (only while enabled)
   python -m engine.tickrec import [FILE.txt | FOLDER]   NT8 tick export(s) -> data/ticks (UTC stamps; default folder
                                                        Documents\\NinjaTrader 8\\le_ticks\\export)
+  python -m engine.tickrec autopilot                   ingest + run the order-flow study at 60 NQ days (the PC's 15-min
+                                                       report task starts it outside 02:00-16:05 ET; nothing to click)
   python -m engine.tickrec selftest
 """
 from __future__ import annotations
@@ -157,8 +159,10 @@ def _day_path(day: str, ext: str) -> str:
     return os.path.join(TICK_DIR, day + ext)
 
 
-def write_days(df: pd.DataFrame, tick_dir: str | None = None) -> list[str]:
-    """Merge df into one file per ET date (de-duplicated on every column, so re-ingesting is harmless)."""
+def write_days(df: pd.DataFrame, tick_dir: str | None = None, replace_root: bool = False) -> list[str]:
+    """Merge df into one file per ET date (de-duplicated on every column, so re-ingesting is harmless).
+    replace_root=True: df is a WHOLE day from the history server (LE_TickRec backfill), so that root's old rows of the day
+    (a partial live recording with slightly different stamps) are replaced instead of merged."""
     global TICK_DIR
     if tick_dir:
         TICK_DIR = tick_dir
@@ -170,7 +174,8 @@ def write_days(df: pd.DataFrame, tick_dir: str | None = None) -> list[str]:
     pq = _has_pyarrow()
     for day, part in df.groupby(et_day.values):
         old = read_day(day)
-        both = pd.concat([old, part[COLS]], ignore_index=True) if old is not None else part[COLS]
+        if old is not None and replace_root:
+            old = old[~old.root.isin(part.root.unique())]
         both = _dedup(old, part[COLS])
         both = both.reset_index(drop=True)
         if pq:
@@ -220,8 +225,10 @@ def days_available() -> list[str]:
 
 # ------------------------------------------------------------------------------------------------------------ sources
 def read_rec_csv(path: str) -> pd.DataFrame:
-    """One LE_TickRec file: header t_ms,price,size,bid,ask (UTC ms). Root from the file name (<ROOT>_<date>.csv)."""
-    root = os.path.basename(path).split("_")[0].upper()
+    """One LE_TickRec file: header t_ms,price,size,bid,ask (UTC ms). Root from the file name: <ROOT>_<date>.csv (live) or
+    bf_<ROOT>_<date>.csv (backfill from the history server)."""
+    parts = os.path.basename(path).split("_")
+    root = (parts[1] if parts[0].lower() == "bf" else parts[0]).upper()
     x = pd.read_csv(path, on_bad_lines="skip")
     x = x.apply(pd.to_numeric, errors="coerce").dropna()
     x = x[(x["price"] > 0) & (x["size"] > 0)]
@@ -229,21 +236,188 @@ def read_rec_csv(path: str) -> pd.DataFrame:
                  x["bid"].values, x["ask"].values)
 
 
+def _et_today() -> str:
+    return dt.datetime.now(ET).strftime("%Y-%m-%d")
+
+
 def ingest(nd: str | None = None) -> dict:
+    """le_ticks CSVs -> data/ticks. Backfill days (bf_<ROOT>_<day>.csv, written whole by LE_TickRec) REPLACE that root's day,
+    then the csv is deleted and bf_<ROOT>_<day>.done left behind, so LE_TickRec never asks for it again and the disk stays small.
+    Live files are merged; a past day's live file is skipped once a backfill file for the same root / day exists."""
     nd = nd or nt_dir()
     if not nd:
         return {"ok": False, "why": "no Documents\\NinjaTrader 8 folder here"}
-    files = sorted(glob.glob(os.path.join(nd, REC_DIR, "*_????-??-??.csv")))
-    rows, written = 0, set()
-    for f in files:
+    rd = os.path.join(nd, REC_DIR)
+    bf = sorted(glob.glob(os.path.join(rd, "bf_*_????-??-??.csv")))
+    live = sorted(f for f in glob.glob(os.path.join(rd, "*_????-??-??.csv")) if not os.path.basename(f).lower().startswith("bf_"))
+    done_keys = {os.path.basename(f)[3:-5] for f in glob.glob(os.path.join(rd, "bf_*_????-??-??.done"))}
+    man_p = os.path.join(os.path.dirname(CFG_PATH), "tickrec_ingested.json")
+    try:
+        man = json.load(open(man_p, encoding="utf-8"))
+    except Exception:
+        man = {}
+    rows, written, n_bf, n_live = 0, set(), 0, 0
+    for f in bf:
+        try:
+            df = read_rec_csv(f)
+            written.update(write_days(df, replace_root=True))
+            rows += len(df)
+            n_bf += 1
+            key = os.path.basename(f)[3:-4]
+            with open(f[:-4] + ".done", "w", encoding="utf-8") as fh:
+                fh.write("%d rows ingested %s\n" % (len(df), dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")))
+            done_keys.add(key)
+            os.remove(f)
+        except Exception as e:
+            print("tickrec: skip", os.path.basename(f), e)
+    today = _et_today()
+    for f in live:
+        b = os.path.basename(f)
+        key = b[:-4]                                         # NQ_2026-11-23
+        if key in done_keys and key[-10:] < today:
+            continue                                         # the server's whole day is already in
+        sig = "%d:%d" % (os.path.getsize(f), int(os.path.getmtime(f)))
+        if man.get(b) == sig:
+            continue                                         # unchanged since the last ingest
         try:
             df = read_rec_csv(f)
         except Exception as e:
-            print("tickrec: skip", os.path.basename(f), e)
+            print("tickrec: skip", b, e)
             continue
         rows += len(df)
+        n_live += 1
         written.update(write_days(df))
-    return {"ok": True, "files": len(files), "rows": rows, "written": sorted(written)}
+        man[b] = sig
+    try:
+        os.makedirs(os.path.dirname(man_p), exist_ok=True)
+        with open(man_p, "w", encoding="utf-8") as fh:
+            json.dump(man, fh)
+    except Exception:
+        pass
+    return {"ok": True, "files": n_bf + n_live, "backfill_files": n_bf, "live_files": n_live, "rows": rows, "written": sorted(written)}
+
+
+# ------------------------------------------------------------------------------------------------------------ autopilot
+AUTO_PATH = os.path.join(ROOT, "data", "orderflow_auto.json")       # what the autopilot did (runs of the study)
+NOTE_PATH = os.path.join(ROOT, "data", "orderflow_note.json")       # the one phone line tools/pc_report.py pushes once
+STUDY_DAYS = 60
+
+
+def in_window(et: dt.datetime) -> bool:
+    """Heavy work only outside 02:00-16:05 ET on weekdays (the bot trades then); any time Saturday / Sunday (= LE_TickRec)."""
+    if et.weekday() >= 5:
+        return True
+    m = et.hour * 60 + et.minute
+    return m < 120 or m >= 16 * 60 + 5
+
+
+def nq_days() -> list[str]:
+    out = []
+    for d in days_available():
+        x = read_day(d)
+        if x is not None and (x.root == "NQ").any():
+            out.append(d)
+    return out
+
+
+def recorder_status(nd: str | None = None) -> dict:
+    nd = nd or nt_dir()
+    try:
+        line = open(os.path.join(nd, REC_DIR, "le_tickrec_status.txt"), encoding="utf-8").read().strip()
+    except Exception:
+        return {}
+    out = {}
+    for part in line.split(",")[1:]:
+        if "=" in part:
+            k, v = part.split("=", 1)
+            out[k] = v
+    return out
+
+
+def phone_line(res: dict, days: int) -> str:
+    """One line for the phone from of_study's results.json (PRE-REGISTERED block)."""
+    pr = (res or {}).get("PRE-REGISTERED (PREREG_ticks.md)") or {}
+    bits = []
+    for key, short in (("OF1", "OF1 absorption"), ("OF2", "OF2 blocks"), ("OF3A", "OF3 LVN")):
+        k = next((x for x in pr if x.startswith(key + " ") or x.startswith(key)), None)
+        v = pr.get(k) if k else None
+        if not isinstance(v, dict):
+            bits.append(short + " n/a")
+            continue
+        gains = ["%+d" % v[s]["gain$"] for s in ("2026 H1", "2026 H2") if isinstance(v.get(s), dict) and "gain$" in v[s]]
+        nets = ["%+d" % v[s]["net$"] for s in ("2026 H1", "2026 H2") if isinstance(v.get(s), dict) and "net$" in v[s]]
+        bits.append("%s %s (%s$)" % (short, v.get("verdict", "?"), "/".join(gains or nets) or "0"))
+    anyp = any("PASS" in b for b in bits)
+    return ("Order-flow test ran on %d tick days: " % days + "; ".join(bits) + ". "
+            + ("A PASS is a candidate only: Claude checks it next chat, nothing live changes without your yes."
+               if anyp else "Nothing passed, LIT stays as it is."))
+
+
+def autopilot(now: dt.datetime | None = None, study=None, nd: str | None = None) -> dict:
+    """Zero-click chain, run by the PC's 15-minute report task outside trading hours: ingest new recorder / backfill files,
+    then run research/orderflow/of_study.py ONCE when 60+ NQ tick days exist and once more when the backfill reports done
+    (2 looks in total, never more), and leave one phone line in data/orderflow_note.json. Read-only towards the bot."""
+    et = (now or dt.datetime.now(ET)).astimezone(ET)
+    if not is_enabled():
+        return {"ran": False, "why": "tick recorder is off"}
+    if not in_window(et):
+        return {"ran": False, "why": "trading hours (02:00-16:05 ET): later"}
+    lock = os.path.join(os.path.dirname(CFG_PATH), "tickrec_autopilot.lock")
+    try:
+        if os.path.exists(lock) and time.time() - os.path.getmtime(lock) < 3 * 3600:
+            return {"ran": False, "why": "another autopilot is running"}
+        os.makedirs(os.path.dirname(lock), exist_ok=True)
+        with open(lock, "w") as fh:
+            fh.write(str(os.getpid()))
+    except Exception:
+        return {"ran": False, "why": "no lock"}
+    try:
+        ing = ingest(nd)
+        days = nq_days()
+        try:
+            auto = json.load(open(AUTO_PATH, encoding="utf-8"))
+        except Exception:
+            auto = {"runs": []}
+        runs = auto.get("runs") or []
+        st = recorder_status(nd)
+        want = None
+        if len(days) >= STUDY_DAYS and not runs:
+            want = "first look"
+        elif runs and len(runs) < 2 and st.get("backfill") == "done" and len(days) >= runs[-1]["days"] + 20:
+            want = "final look (backfill done)"
+        out = {"ran": False, "ingest": {k: ing.get(k) for k in ("ok", "files", "rows")}, "nq_days": len(days),
+               "backfill": st.get("backfill"), "oldest": st.get("oldest")}
+        if not want:
+            out["why"] = "waiting: %d of %d NQ tick days" % (len(days), STUDY_DAYS) if len(days) < STUDY_DAYS else "already ran"
+            return out
+        res = (study or _run_study)()
+        line = phone_line(res, len(days))
+        runs.append({"t": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"), "days": len(days), "look": want,
+                     "first": days[0], "last": days[-1], "line": line})
+        auto["runs"] = runs
+        with open(AUTO_PATH, "w", encoding="utf-8") as fh:
+            json.dump(auto, fh, indent=1)
+        with open(NOTE_PATH, "w", encoding="utf-8") as fh:
+            json.dump({"key": "research:orderflow:%d" % len(days), "t": int(time.time()), "title": "Order flow: test result",
+                       "body": line}, fh)
+        out.update(ran=True, look=want, line=line)
+        return out
+    finally:
+        try:
+            os.remove(lock)
+        except Exception:
+            pass
+
+
+def _run_study() -> dict:
+    import subprocess
+    sp = os.path.join(ROOT, "research", "orderflow", "of_study.py")
+    subprocess.run([sys.executable, sp], cwd=ROOT, timeout=6 * 3600, check=False,
+                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        return json.load(open(os.path.join(ROOT, "research", "orderflow", "results.json"), encoding="utf-8"))
+    except Exception:
+        return {}
 
 
 def _parse_chunk(c: pd.DataFrame, root: str, tz: str) -> pd.DataFrame:
@@ -383,7 +557,7 @@ def selftest() -> bool:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="python -m engine.tickrec", description="read-only NQ/ES tick recorder")
-    ap.add_argument("cmd", choices=["status", "enable", "disable", "ingest", "run", "import", "selftest"])
+    ap.add_argument("cmd", choices=["status", "enable", "disable", "ingest", "run", "import", "selftest", "autopilot"])
     ap.add_argument("file", nargs="?")
     ap.add_argument("--root", default=None, help="default: from the file name (NQ 12-25.Last.txt -> NQ)")
     ap.add_argument("--roots", default="NQ,ES")
@@ -412,6 +586,8 @@ def main(argv=None) -> int:
         for fp in files:
             print(json.dumps(import_file(fp, a.root, a.tz)))
         print("done: %d tick days on disk (the study needs 60): python research/orderflow/of_study.py" % len(days_available()))
+    elif a.cmd == "autopilot":
+        print(json.dumps(autopilot(), default=str))
     elif a.cmd == "selftest":
         return 0 if selftest() else 1
     return 0

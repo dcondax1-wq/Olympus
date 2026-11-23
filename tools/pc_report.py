@@ -421,6 +421,8 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
     except Exception as e:
         snap["risk"] = []
         snap["risk_error"] = f"{e.__class__.__name__}: {str(e)[:120]}"
+    # the order-flow study's one result line (engine/tickrec autopilot writes data/orderflow_note.json; plain JSON, no import)
+    snap["research"] = [x for x in [read_json(os.path.join(root, "data", "orderflow_note.json"), None)] if isinstance(x, dict) and x.get("key")]
     try:                                    # the Kalshi rewards PAPER card (tools/kalshi_rewards_paper.py public summary, < 1 KB)
         from engine import live_publish as _lpk
         snap["kalshi_rewards"] = _lpk.kalshi_rewards_card(now, os.path.join(root, "data", "kalshi_rewards", "summary.json"))
@@ -1490,6 +1492,19 @@ def events(state: dict, snap: dict) -> tuple:
                          "priority": "high", "tags": "rotating_light"})
         except Exception:
             continue
+    # research results (data/orderflow_note.json): once each, normal priority, no age limit (a study can run for hours)
+    for w in snap.get("research") or []:
+        try:
+            key = str(w["key"])
+            if not key.startswith("research:") or key in st["seen"]:
+                continue
+            st["seen"][key] = now
+            if not st["seeded"]:
+                continue
+            msgs.append({"key": key, "title": str(w.get("title") or "Research")[:120], "body": str(w.get("body") or "")[:600],
+                         "priority": "default", "tags": "bar_chart"})
+        except Exception:
+            continue
     # MFFU account lifecycle (engine/lifecycle.py, the heartbeat "life" block): PASSED / LOCKED / FAILED / LOST / PAYOUT READY,
     # once each, at any hour (the account is stood down; the owner sends Claude the new account name)
     for e in _d(_d(snap.get("hb")).get("life")).get("ev") or []:
@@ -1717,12 +1732,39 @@ def _app_push(m: dict) -> bool:
         return False
 
 
+def tick_autopilot_kick(root: str = ROOT, now=None, popen=None) -> bool:
+    """Start `python -m engine.tickrec autopilot` (ingest the tick recorder / backfill, run the order-flow study at 60 days)
+    as its own low-priority process, only while the recorder is enabled and outside 02:00-16:05 ET on weekdays. It never runs
+    inside this report, never imports the tick code, and a running autopilot holds its own lock. True = started."""
+    try:
+        if not bool(_d(read_json(os.path.join(root, "data", "tickrec.json"), {})).get("enabled")):
+            return False
+        from zoneinfo import ZoneInfo
+        et = dt.datetime.fromtimestamp(now if now is not None else now_s(), ZoneInfo("America/New_York"))
+        m = et.hour * 60 + et.minute
+        if et.weekday() < 5 and 120 <= m < 16 * 60 + 5:
+            return False
+        lock = os.path.join(root, "data", "tickrec_autopilot.lock")
+        if os.path.exists(lock) and time.time() - os.path.getmtime(lock) < 3 * 3600:
+            return False
+        import subprocess
+        kw = {"cwd": root, "stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL, "stdin": subprocess.DEVNULL}
+        if os.name == "nt":
+            kw["creationflags"] = 0x00004000 | 0x08000000          # BELOW_NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW
+        (popen or subprocess.Popen)([sys.executable, "-m", "engine.tickrec", "autopilot"], **kw)
+        return True
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, now=None, root: str = ROOT, port=PORT_DEFAULT,
              feed_problem=None, say=print, feed_path: str | None = None, app_push=None) -> dict:
     """One run. app_push(msg) -> True when the phone app took that alert (tests); None = the real one when this PC has a phone
     (only on a real run: a test's fake http never reaches the PC's own push files)."""
     os.makedirs(work, exist_ok=True)
     cfg = load_cfg(env, feed_path)
+    if not dry and http is None:
+        tick_autopilot_kick(root)
     snap = gather(now, root=root, env=env, http=http, port=port, feed_problem=feed_problem)
     if app_push is None and http is None:           # Olympus phone notifications, the real run: the PC's own push key (made once)
         try:                                        # + its phones ride the core post (wp); the alerts go to the phones first

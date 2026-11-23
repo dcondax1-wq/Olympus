@@ -91,7 +91,12 @@ def main() -> int:
     users = [p for p in glob.glob(os.path.join(ROOT, "**", "*.py"), recursive=True)
              if "tickrec" not in os.path.basename(p) and "orderflow" not in p and "/scratch" not in p
              and re.search(r"engine\.tickrec|from \. import tickrec|import tickrec", open(p, encoding="utf-8", errors="replace").read())]
-    ok(users == [], "nothing imports engine.tickrec: %s" % users)
+    # the one allowed caller: tools/pc_report.py STARTS `python -m engine.tickrec autopilot` as its own process (no import)
+    rp = os.path.join(ROOT, "tools", "pc_report.py")
+    if rp in users and not re.search(r"^\s*(from engine import tickrec|import engine\.tickrec|from engine\.tickrec)",
+                                     open(rp, encoding="utf-8").read(), re.M):
+        users.remove(rp)
+    ok(users == [], "nothing imports engine.tickrec (pc_report only starts it as a process): %s" % users)
     print("test_tickrec: %d passed, %d failed" % (P, F))
     return 1 if F else 0
 

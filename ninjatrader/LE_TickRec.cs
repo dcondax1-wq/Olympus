@@ -17,10 +17,27 @@
 // Install it only after review, on a quiet evening: copy to Documents\NinjaTrader 8\bin\Custom\AddOns\, NinjaScript Editor, F5.
 // If F5 shows a red error in this file: delete the file from AddOns\ and press F5 again; nothing else changes.
 //
+// BACKFILL (day-ofprogram 2026-11-23, zero clicks): while enabled, the add-on also asks NinjaTrader's historical data server for
+// past TICKS of each root (front contract of that date, e.g. "NQ 09-26"), one ET calendar day at a time, newest first, back to
+// 365 days or until the server has stopped giving data (7 weekdays in a row empty). Same BarsRequest API LE_Feed.cs uses,
+// with BarsPeriodType.Tick / Value 1. Each day is written whole to le_ticks\bf_<ROOT>_<YYYY-MM-DD>.csv (same columns), via a
+// .tmp file and a rename, so a half-written day never looks finished. A day is skipped when bf_..csv, bf_..done (Python has
+// ingested it and deleted the csv) or bf_..none (the server had no ticks) exists; bf_<ROOT>_end.txt remembers where the
+// server's history ended, so later passes never go older than that (delete it to probe again).
+//   When: a pass starts when the flag file appears (enable) and every day at 17:15 ET; requests go out only OUTSIDE
+//   02:00-16:05 ET on weekdays (the bot trades then), any time on Saturday / Sunday. One request at a time, 5 s apart;
+//   a request that takes over 10 min is dropped and retried on the next pass.
+//   Disk guard: nothing is written (live or backfill) while the le_ticks drive has under 10 GB free.
+//   Status line adds: backfill=idle|running|waiting_window|low_disk|done,backfill_days=N,oldest=YYYY-MM-DD,bf_errors=N.
+//
 // UNVERIFIED (written without NinjaTrader; same API surface as LE_Feed.cs plus three fields):
 //  1. MarketDataEventArgs.Volume (long), .Bid and .Ask (double: the best bid / ask when the Last event fires). If Bid / Ask
 //     are 0 the recorder falls back to the last Bid / Ask events it saw; Python then uses the tick rule.
 //  2. MarketDataEventArgs.Time in NinjaTrader's display time zone (same assumption as LE_Feed.SafeMarketData).
+//  3. Backfill: a Tick BarsRequest returns one bar per trade (GetClose = price, GetVolume = size, GetTime = trade time in the
+//     display time zone) and Bars.GetBid(i) / GetAsk(i) give the quote at that trade (NT8 Help: Bars.GetBid / GetAsk). If
+//     they come back 0 Python falls back to the tick rule. How far back the server goes and whether it serves expired
+//     contracts ("NQ 09-25") through Instrument.GetInstrument are NinjaTrader's choice: the add-on simply stops where it ends.
 #region Using declarations
 using System;
 using System.Collections.Generic;
@@ -68,6 +85,26 @@ namespace NinjaTrader.NinjaScript.AddOns
         private volatile bool on;
         private long rows;
         private TimeZoneInfo eastern;
+        private volatile bool lowDisk;
+
+        // ---------------------------------------------------------------- backfill state (all touched under BfLock)
+        private static long MinFreeBytes = 10L * 1024 * 1024 * 1024;           // 10 GB free-disk guard
+        private static Func<DateTime> UtcNow = delegate { return DateTime.UtcNow; };   // the clock (a test driver swaps it)
+        private const int BfMaxDays = 365;
+        private const int BfEmptyStop = 7;                                      // weekdays in a row with no ticks = end of history
+        private readonly object BfLock = new object();
+        private bool bfPass;
+        private DateTime bfCursor;                                              // ET date being worked on
+        private DateTime bfLastPassDay = DateTime.MinValue;
+        private DateTime bfLastSent = DateTime.MinValue;
+        private BarsRequest bfReq;
+        private DateTime bfReqStarted;
+        private string bfReqRoot;
+        private DateTime bfReqDay;
+        private readonly Dictionary<string, int> bfEmpty = new Dictionary<string, int>();
+        private readonly Dictionary<string, DateTime> bfEnd = new Dictionary<string, DateTime>();   // root -> server history ends here
+        private string bfState = "idle";
+        private int bfErrors;
 
         protected override void OnStateChange()
         {
@@ -145,6 +182,10 @@ namespace NinjaTrader.NinjaScript.AddOns
             try { if (checkTimer != null) checkTimer.Dispose(); } catch (Exception) { }
             try { if (flushTimer != null) flushTimer.Dispose(); } catch (Exception) { }
             Unsubscribe();
+            lock (BfLock)
+            {
+                DropRequest();
+            }
             Flush(null);
             lock (RunLock)
             {
@@ -174,16 +215,23 @@ namespace NinjaTrader.NinjaScript.AddOns
                 }
                 else if (want && (!on || lt != listText))
                 {
+                    bool wasOn = on;
                     Unsubscribe();
                     listText = lt;
                     Subscribe(lt);
                     on = true;
+                    if (!wasOn)
+                        StartPass();                                            // enable = start a backfill pass
                 }
+                lowDisk = FreeBytes() < MinFreeBytes;
+                if (on)
+                    BackfillStep();
                 string names = "";
                 foreach (RecInst i in insts)
                     names += (names.Length > 0 ? ";" : "") + i.Name;
                 File.WriteAllText(statusPath, DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)
-                    + ",on=" + (on ? "1" : "0") + ",instruments=" + names + ",rows=" + rows.ToString(CultureInfo.InvariantCulture) + "\n");
+                    + ",on=" + (on ? "1" : "0") + ",instruments=" + names + ",rows=" + rows.ToString(CultureInfo.InvariantCulture)
+                    + BackfillStatus() + "\n");
             }
             catch (Exception)
             {
@@ -274,6 +322,339 @@ namespace NinjaTrader.NinjaScript.AddOns
             }
         }
 
+        // ================================================================================================ backfill
+        private long FreeBytes()
+        {
+            try
+            {
+                return new DriveInfo(Path.GetPathRoot(Path.GetFullPath(folder))).AvailableFreeSpace;
+            }
+            catch (Exception)
+            {
+                return long.MaxValue;                                           // unknown drive: never block on the guard alone
+            }
+        }
+
+        private DateTime EtNow()
+        {
+            return TimeZoneInfo.ConvertTimeFromUtc(UtcNow(), eastern);
+        }
+
+        // requests may go out: weekdays outside 02:00-16:05 ET, any time on Saturday / Sunday
+        public static bool InWindow(DateTime et)
+        {
+            if (et.DayOfWeek == DayOfWeek.Saturday || et.DayOfWeek == DayOfWeek.Sunday)
+                return true;
+            int m = et.Hour * 60 + et.Minute;
+            return m < 120 || m >= 16 * 60 + 5;
+        }
+
+        // NinjaTrader name of the front quarterly contract on an ET date ("NQ 12-26"); rolls 8 days before the 3rd Friday
+        // (the same rule as engine/tickrec.front_names)
+        public static string FrontName(string root, DateTime d)
+        {
+            int y = d.Year, m = d.Month;
+            for (int k = 0; k < 5; k++)
+            {
+                if (m % 3 == 0)
+                {
+                    DateTime first = new DateTime(y, m, 1);
+                    DateTime fri3 = first.AddDays(((int)DayOfWeek.Friday - (int)first.DayOfWeek + 7) % 7 + 14);
+                    if (d.Date <= fri3.AddDays(-8))
+                        break;
+                }
+                if (m == 12) { m = 1; y++; } else m++;
+            }
+            return root + " " + m.ToString("00", CultureInfo.InvariantCulture) + "-" + (y % 100).ToString("00", CultureInfo.InvariantCulture);
+        }
+
+        private string BfBase(string root, DateTime day)
+        {
+            return Path.Combine(folder, "bf_" + root + "_" + day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        }
+
+        private bool BfHave(string root, DateTime day)
+        {
+            string b = BfBase(root, day);
+            return File.Exists(b + ".csv") || File.Exists(b + ".done") || File.Exists(b + ".none");
+        }
+
+        private List<string> Roots()
+        {
+            List<string> r = new List<string>();
+            foreach (string raw in listText.Split('\n'))
+            {
+                string n = raw.Trim();
+                if (n.Length == 0)
+                    continue;
+                string root = n.Split(' ')[0].ToUpperInvariant();
+                if (!r.Contains(root))
+                    r.Add(root);
+            }
+            return r;
+        }
+
+        private void StartPass()
+        {
+            lock (BfLock)
+            {
+                DateTime et = EtNow();
+                bfPass = true;
+                bfCursor = et.Date.AddDays(-1);
+                bfLastPassDay = et.Date;
+                bfEmpty.Clear();
+                bfEnd.Clear();
+                foreach (string root in Roots())                                // bf_<ROOT>_end.txt: where an earlier pass found the end
+                {
+                    try
+                    {
+                        string p = Path.Combine(folder, "bf_" + root + "_end.txt");
+                        if (File.Exists(p))
+                            bfEnd[root] = DateTime.ParseExact(File.ReadAllText(p).Trim().Substring(0, 10), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+                bfState = "running";
+            }
+        }
+
+        private void DropRequest()
+        {
+            if (bfReq == null)
+                return;
+            try { bfReq.Dispose(); } catch (Exception) { }
+            bfReq = null;
+        }
+
+        // every 15 s (from Check, while on): start the nightly pass, then at most one request in flight
+        private void BackfillStep()
+        {
+            DateTime et = EtNow();
+            if (et.Hour * 60 + et.Minute >= 17 * 60 + 15 && bfLastPassDay != et.Date)
+                StartPass();
+            lock (BfLock)
+            {
+                if (bfReq != null)
+                {
+                    if ((UtcNow() - bfReqStarted).TotalMinutes > 10)
+                    {
+                        DropRequest();                                          // stuck: forget it, a later pass retries the day
+                        bfErrors++;
+                        bfCursor = bfCursor.AddDays(-1);
+                    }
+                    return;
+                }
+                if (!bfPass)
+                    return;
+                if (!InWindow(et)) { bfState = "waiting_window"; return; }
+                if (lowDisk) { bfState = "low_disk"; return; }
+                if ((UtcNow() - bfLastSent).TotalSeconds < 5)
+                    return;
+                bfState = "running";
+                List<string> roots = Roots();
+                DateTime stop = bfLastPassDay.AddDays(-BfMaxDays);
+                for (int guard = 0; guard < 2 * BfMaxDays && bfCursor >= stop; guard++)
+                {
+                    if (bfCursor.DayOfWeek != DayOfWeek.Saturday)
+                    {
+                        foreach (string root in roots)
+                        {
+                            int e;
+                            DateTime end;
+                            if (bfEmpty.TryGetValue(root, out e) && e >= BfEmptyStop)
+                                continue;                                       // this root's history has ended
+                            if (bfEnd.TryGetValue(root, out end) && bfCursor <= end)
+                                continue;                                       // ... found on an earlier pass
+                            if (BfHave(root, bfCursor))
+                                continue;
+                            Send(root, bfCursor);
+                            return;
+                        }
+                    }
+                    bfCursor = bfCursor.AddDays(-1);
+                }
+                bfPass = false;
+                bfState = "done";
+            }
+        }
+
+        // called under BfLock
+        private void Send(string root, DateTime day)
+        {
+            NinjaTrader.Cbi.Instrument ins = null;
+            try { ins = NinjaTrader.Cbi.Instrument.GetInstrument(FrontName(root, day)); } catch (Exception) { }
+            bfLastSent = UtcNow();
+            if (ins == null)
+            {
+                NoTicks(root, day);                                             // NinjaTrader does not know that contract
+                return;
+            }
+            TimeZoneInfo disp = NinjaTrader.Core.Globals.GeneralOptions.TimeZoneInfo;
+            DateTime fromUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(day, DateTimeKind.Unspecified), eastern);
+            DateTime toUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(day.AddDays(1), DateTimeKind.Unspecified), eastern);
+            BarsRequest req;
+            try
+            {
+                req = new BarsRequest(ins, TimeZoneInfo.ConvertTimeFromUtc(fromUtc, disp), TimeZoneInfo.ConvertTimeFromUtc(toUtc, disp));
+                BarsPeriod bp = new BarsPeriod();
+                bp.BarsPeriodType = BarsPeriodType.Tick;
+                bp.Value = 1;
+                req.BarsPeriod = bp;
+            }
+            catch (Exception)
+            {
+                bfErrors++;
+                bfCursor = bfCursor.AddDays(-1);
+                return;
+            }
+            bfReq = req;
+            bfReqStarted = UtcNow();
+            bfReqRoot = root;
+            bfReqDay = day;
+            try
+            {
+                req.Request(new Action<BarsRequest, ErrorCode, string>(delegate(BarsRequest b, ErrorCode code, string msg)
+                {
+                    SafeBackfilled(req, b, code);
+                }));
+            }
+            catch (Exception)
+            {
+                bfReq = null;
+                bfErrors++;
+                bfCursor = bfCursor.AddDays(-1);
+            }
+        }
+
+        private void NoTicks(string root, DateTime day)
+        {
+            try { File.WriteAllText(BfBase(root, day) + ".none", "no ticks from the server " + UtcNow().ToString("u", CultureInfo.InvariantCulture) + "\n"); } catch (Exception) { }
+            if (day.DayOfWeek != DayOfWeek.Sunday)
+            {
+                int e;
+                bfEmpty.TryGetValue(root, out e);
+                bfEmpty[root] = e + 1;
+                if (e + 1 >= BfEmptyStop)
+                {
+                    try { File.WriteAllText(Path.Combine(folder, "bf_" + root + "_end.txt"), day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "\n"); } catch (Exception) { }
+                }
+            }
+        }
+
+        private void SafeBackfilled(BarsRequest req, BarsRequest b, ErrorCode code)
+        {
+            string root;
+            DateTime day;
+            lock (BfLock)
+            {
+                if (req != bfReq)
+                    return;                                                     // dropped (timeout / stop) meanwhile
+                root = bfReqRoot;
+                day = bfReqDay;
+            }
+            int n = 0;
+            bool ok = false;
+            try
+            {
+                if (code == ErrorCode.NoError && b != null && b.Bars != null && !terminated && !lowDisk)
+                {
+                    n = WriteDay(b.Bars, root, day);
+                    ok = true;
+                }
+            }
+            catch (Exception)
+            {
+                ok = false;
+            }
+            lock (BfLock)
+            {
+                if (req != bfReq)
+                    return;
+                DropRequest();
+                if (!ok)
+                    bfErrors++;                                                 // an error is retried on the next pass
+                else if (n == 0)
+                    NoTicks(root, day);
+                else
+                    bfEmpty[root] = 0;
+            }
+        }
+
+        // the whole ET day into bf_<ROOT>_<day>.csv (via .tmp + rename); returns the number of trades written
+        private int WriteDay(Bars bars, string root, DateTime day)
+        {
+            TimeZoneInfo disp = NinjaTrader.Core.Globals.GeneralOptions.TimeZoneInfo;
+            string bfile = BfBase(root, day) + ".csv";
+            string tmp = bfile + ".tmp";
+            int n = 0;
+            using (StreamWriter w = new StreamWriter(tmp, false, new UTF8Encoding(false)))
+            {
+                w.Write("t_ms,price,size,bid,ask\n");
+                int count = bars.Count;
+                for (int i = 0; i < count; i++)
+                {
+                    long vol = bars.GetVolume(i);
+                    double px = bars.GetClose(i);
+                    if (vol <= 0 || px <= 0)
+                        continue;
+                    DateTime utc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(bars.GetTime(i), DateTimeKind.Unspecified), disp);
+                    if (TimeZoneInfo.ConvertTimeFromUtc(utc, eastern).Date != day.Date)
+                        continue;
+                    double bid = 0, ask = 0;
+                    try { bid = bars.GetBid(i); ask = bars.GetAsk(i); } catch (Exception) { bid = 0; ask = 0; }
+                    long ms = (utc.Ticks - EpochTicks) / TimeSpan.TicksPerMillisecond;
+                    w.Write(ms.ToString(CultureInfo.InvariantCulture) + "," + px.ToString("0.########", CultureInfo.InvariantCulture) + ","
+                        + vol.ToString(CultureInfo.InvariantCulture) + "," + bid.ToString("0.########", CultureInfo.InvariantCulture) + ","
+                        + ask.ToString("0.########", CultureInfo.InvariantCulture) + "\n");
+                    n++;
+                }
+            }
+            if (n == 0)
+            {
+                try { File.Delete(tmp); } catch (Exception) { }
+                return 0;
+            }
+            if (File.Exists(bfile))
+                File.Delete(bfile);
+            File.Move(tmp, bfile);
+            return n;
+        }
+
+        private string BackfillStatus()
+        {
+            int have = 0;
+            string oldest = "";
+            try
+            {
+                foreach (string f in Directory.GetFiles(folder, "bf_NQ_*"))           // NQ days: the ones the study needs
+                {
+                    string nm = Path.GetFileName(f);
+                    if (nm.Length != "bf_NQ_2026-01-01.csv".Length && nm.Length != "bf_NQ_2026-01-01.done".Length)
+                        continue;
+                    if (!(nm.EndsWith(".csv") || nm.EndsWith(".done")))
+                        continue;
+                    have++;
+                    string d = nm.Substring(6, 10);
+                    if (oldest.Length == 0 || string.CompareOrdinal(d, oldest) < 0)
+                        oldest = d;
+                }
+            }
+            catch (Exception)
+            {
+            }
+            string st;
+            int err;
+            lock (BfLock)
+            {
+                st = bfState;
+                err = bfErrors;
+            }
+            return ",backfill=" + st + ",backfill_days=" + have.ToString(CultureInfo.InvariantCulture) + ",oldest=" + oldest
+                + ",bf_errors=" + err.ToString(CultureInfo.InvariantCulture) + ",low_disk=" + (lowDisk ? "1" : "0");
+        }
+
         private void Flush(object state)
         {
             Dictionary<string, string> todo = new Dictionary<string, string>();
@@ -284,6 +665,8 @@ namespace NinjaTrader.NinjaScript.AddOns
                         todo[kv.Key] = kv.Value.ToString();
                 buf.Clear();
             }
+            if (lowDisk)
+                return;                                                         // under 10 GB free: drop, never fill the disk
             foreach (KeyValuePair<string, string> kv in todo)
             {
                 try

@@ -198,6 +198,8 @@ def kind_of(key: str) -> str:
         return "problems"
     if k.startswith(("pc_silent:", "pc_back:")):
         return "pc_silent"
+    if k.startswith("research:"):                   # engine/tickrec autopilot: the order-flow study's one result line
+        return "daily_summary"
     return "other"
 
 

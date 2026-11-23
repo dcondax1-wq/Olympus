@@ -76,6 +76,8 @@ namespace NinjaTrader.Data
         public double GetLow(int i) { return 0; }
         public double GetClose(int i) { return 0; }
         public long GetVolume(int i) { return 0; }
+        public double GetBid(int i) { return 0; }
+        public double GetAsk(int i) { return 0; }
     }
     public class BarsUpdateEventArgs : EventArgs { public int MinIndex; public int MaxIndex; }
     public class BarsRequest : IDisposable
@@ -94,6 +96,9 @@ namespace NinjaTrader.Data
         public MarketDataType MarketDataType { get; set; }
         public double Price { get; set; }
         public DateTime Time { get; set; }
+        public long Volume { get; set; }
+        public double Bid { get; set; }
+        public double Ask { get; set; }
     }
     public class MarketData
     {
