@@ -191,7 +191,7 @@ def part_f():
     sb = _read("START_BOT.bat").replace("\r\n", "\n")
     check("f5. START_BOT.bat: Python missing = the plain install line; engine.go failing = a plain [FIX] line, never only a traceback",
           '"%PY%" --version >nul 2>&1\nif errorlevel 1 goto :nopython' in sb and "if errorlevel 1 echo  [FIX] START BOT stopped" in sb
-          and ":nopython\necho  [FIX] Python not found" in sb and sb.index('-m engine.go %*') < sb.index("if errorlevel 1 echo  [FIX] START BOT"))
+          and "\n:nopython\n" in sb and "echo  [FIX] Python not found" in sb.split("\n:nopython\n", 1)[1][:80] and sb.index('-m engine.go %*') < sb.index("if errorlevel 1 echo  [FIX] START BOT"))
     ms = _read("MONDAY_SETUP.bat").replace("\r\n", "\n")
     check("f6. MONDAY_SETUP.bat: Python check, then engine.monday, then a closing [FIX] line on exit 1",
           ms.index("if errorlevel 1 goto :nopython") < ms.index("-m engine.monday") < ms.index("if errorlevel 1 echo  [FIX] A step above"))

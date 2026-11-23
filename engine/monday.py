@@ -165,7 +165,15 @@ def run(pc=None, out=print) -> dict:
         if rc == 0:
             line("3/4 Start", True, "the bot runs (see WHAT HAPPENED above for each account)." + kt)
         else:
-            line("3/4 Start", False, "not started: do the first [FIX] / NOT ARMED line above, then MONDAY_SETUP again." + kt)
+            why = ""
+            try:                                       # START BOT's own reason (engine/go.record_last, night-startmsg)
+                from . import go as _go
+                last = _go.last_start()
+                if last and last.get("rc") == rc and last.get("why"):
+                    why = " (" + str(last["why"]).rstrip(".")[:140] + ")"
+            except Exception:  # noqa: BLE001
+                pass
+            line("3/4 Start", False, f"not started{why}: do the first [FIX] / NOT ARMED line above, then MONDAY_SETUP again." + kt)
     # 4. alert test
     res["order"].append("alert")
     rc = pc.alert_test()

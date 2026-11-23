@@ -2272,6 +2272,84 @@ def _open():
         pass
 
 
+# night-startmsg 2026-11-23: START BOT's exit codes and its last [FIX] reason, for the windows that start it (TRADE_HOME 2,
+# MONDAY_SETUP step 3): they hand the console through (the owner types the phrase), so they cannot read the output.
+RC_STARTED, RC_STOPPED, RC_NO_PYTHON = 0, 1, 9           # 9 = START_BOT.bat found no Python (engine.go never ran)
+LAST_MAX_AGE_S = 1800
+
+
+def _last_path() -> str:
+    """data/start_last.json next to the start config (a temp copy in every test harness that points CFG at a temp folder)."""
+    return os.path.join(os.path.dirname(CFG), "start_last.json")
+
+
+class _FixTee:
+    """stdout as it is, plus the last plain [FIX] / 'Stopped. Nothing is armed.' line START BOT printed (no secrets: these
+    lines never carry the phrase or an id beyond what the window shows)."""
+
+    def __init__(self, inner):
+        self.inner, self.why, self._buf = inner, "", ""
+
+    def write(self, s):
+        try:
+            self._buf += str(s)
+            *done, self._buf = self._buf.split("\n")
+            for ln in done:
+                t = ln.strip()
+                if t.startswith(("[FIX]", "Stopped.")) and "START BOT stopped before the end" not in t:
+                    self.why = t.replace("[FIX]", "").strip()[:200]
+        except Exception:  # noqa: BLE001
+            pass
+        return self.inner.write(s)
+
+    def flush(self):
+        return self.inner.flush()
+
+    def __getattr__(self, k):
+        return getattr(self.inner, k)
+
+
+def record_last(rc, why="", now=None, since=None) -> None:
+    """data/start_last.json {"t", "rc", "why"} after a START BOT run. since = this run's start: a record written after it with the
+    same code and a reason (the re-run after an update, a child process) is kept, not blanked. Never raises."""
+    try:
+        p = _last_path()
+        if since is not None and not why:
+            old = last_start(max_age_s=None)
+            if old and int(old.get("rc", -1)) == int(rc) and float(old.get("t") or 0) >= since and old.get("why"):
+                return
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        with open(p + ".tmp", "w", encoding="utf-8") as fh:
+            json.dump({"t": int(time.time() if now is None else now), "rc": int(rc), "why": str(why or "")[:200]}, fh)
+        os.replace(p + ".tmp", p)
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def last_start(max_age_s: int = LAST_MAX_AGE_S, now=None) -> dict | None:
+    """The newest START BOT result (record_last) when it is fresh, else None. Never raises."""
+    try:
+        with open(_last_path(), encoding="utf-8") as fh:
+            d = json.load(fh)
+        now = time.time() if now is None else now
+        return d if isinstance(d, dict) and (max_age_s is None or now - float(d.get("t") or 0) <= max_age_s) else None
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def start_line(rc, last=None) -> str:
+    """One plain line for START BOT's exit code (TRADE_HOME 2, MONDAY_SETUP 3). last = last_start() (its [FIX] reason)."""
+    why = str((last or {}).get("why") or "").rstrip(".") if (last or {}).get("rc") == rc else ""
+    if rc == RC_STARTED:
+        return "[OK] START BOT finished: the bot runs (each account's line is in its window)."
+    if rc == RC_STOPPED:
+        return ("[FIX] START BOT stopped before arming" + (f": {why}." if why else ".") + " Nothing new is armed. Do that one thing, "
+                "then start it again (done steps are skipped).")
+    if rc == RC_NO_PYTHON:
+        return "[FIX] Python not found. Install Python 3.12 from python.org and tick \"Add python.exe to PATH\", then try again."
+    return f"[FIX] START BOT did not run (code {rc}). Send Claude a photo of its window."
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--dry-run", action="store_true")
@@ -2281,13 +2359,23 @@ def main(argv=None):
     a = ap.parse_args(argv)
     if a.step:
         return job_main(a.step, after_update=a.after_update)
+    tee = _FixTee(sys.stdout)
+    sys.stdout = tee
+    t_run = time.time()
+    rc = RC_STOPPED
     try:
-        return run(dry=a.dry_run, pull=not a.no_pull)
+        rc = run(dry=a.dry_run, pull=not a.no_pull)
+        return rc
     except (KeyboardInterrupt, EOFError):
         # night-mondaysim 2026-11-23: Ctrl+C or a closed window input = one plain line, never a traceback (nothing was armed
         # unless the phrase had already been typed; a step already done is skipped next time)
         print("\n [FIX] START BOT stopped before the end. Double-click START_BOT.bat (or MONDAY_SETUP.bat) again: done steps are skipped.")
+        tee.why = tee.why or "it was stopped before the end (Ctrl+C or the window closed)"
         return 1
+    finally:
+        sys.stdout = tee.inner
+        if not a.dry_run:
+            record_last(rc if isinstance(rc, int) else RC_STOPPED, tee.why if rc != RC_STARTED else "", since=t_run)
 
 
 if __name__ == "__main__":

@@ -627,6 +627,11 @@ def do_choice(ch, ask=input, out=say, run=None, fx=None, add_fn=None, unseen=Non
         title, bat, res = ACTIONS[ch]
         out(f"  {title}: it opens its own window. When it says 'Press any key', press a key to come back here.")
         rc = run_bat(bat, run)
+        if bat == "START_BOT.bat":                    # START BOT's own exit code + its [FIX] reason (night-startmsg)
+            from engine import go as _go
+            if rc == _go.RC_STARTED:
+                return res(fx)
+            return _go.start_line(rc, _go.last_start())
         if bat == "UPDATE.bat" and rc in (1, 2):     # UPDATE.bat's own result (night-mondaysim): 1 not updated, 2 red lines
             return ("[FIX] The update did not go through: the old version keeps running. Send Claude a photo of its window."
                     if rc == 1 else res(fx) + " Its health check printed red lines: do those.")
@@ -677,9 +682,13 @@ def routine(ask, out, run, fx):
             out("  " + lines[-1].strip())
         else:
             out(f"  {title}: it opens its own window. Type any phrase it asks for yourself, then press a key to come back here.")
-            run_bat(bat, run)
-            out("  " + {"Start bot": result_start, "Keep-alive ON": result_keepalive,
-                         "Alert test": lambda f: "[OK] Test sent: check your phone buzzed."}[title](fx))
+            rc = run_bat(bat, run)
+            if title == "Start bot" and rc != 0:          # START BOT's own exit code + reason (night-startmsg)
+                from engine import go as _go
+                out("  " + _go.start_line(rc, _go.last_start()))
+            else:
+                out("  " + {"Start bot": result_start, "Keep-alive ON": result_keepalive,
+                             "Alert test": lambda f: "[OK] Test sent: check your phone buzzed."}[title](fx))
         done.append(title)
     return "[OK] Routine finished: " + ", ".join(done) + "."
 
