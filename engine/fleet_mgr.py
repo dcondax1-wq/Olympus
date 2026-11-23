@@ -66,7 +66,9 @@ def cards(path: str | None = None) -> dict:
                 continue
             a = str(c.get("answer") or "").strip().lower()
             st = str(c.get("status") or "").strip().lower()
-            out[c["id"]] = a if a in ("yes", "no", "later") else ("yes" if st in ("yes", "approved") else "no" if st == "no" else "open")
+            # night-decide 2026-11-23: done = applied (a yes); later / superseded / waiting are NOT waiting for the owner's answer
+            out[c["id"]] = a if a in ("yes", "no", "later") else ("yes" if st in ("yes", "approved", "done") else
+                                                                    st if st in ("no", "later", "superseded", "waiting") else "open")
         return out
     except Exception:
         return {}
@@ -123,8 +125,13 @@ def dead_move(row: dict, rows: list, cd: dict, st: dict) -> str:
         return f"No re-buy: MFFU's cap for {LABEL.get(p, p)} is full ({s['taken']} of {s['total_cap']} funded slots planned)."
     extra = ""
     if p == "builder25k":
-        extra = (" Or a Rapid EOD 50K ($165) in this slot instead, if you say yes to card " + REFILL_CARD + "."
-                 if cd.get(REFILL_CARD) != "yes" else " Card " + REFILL_CARD + " is a yes: put a Rapid EOD 50K ($165) here instead.")
+        r50 = REBUY_CARD["rapideod50"]
+        if cd.get(REFILL_CARD) == "yes" or cd.get(r50) == "yes":
+            extra = " Your plan says a Rapid EOD 50K ($165) in this slot instead."
+        elif cd.get(REFILL_CARD) == "open":
+            extra = " Or a Rapid EOD 50K ($165) in this slot instead, if you say yes to card " + REFILL_CARD + "."
+        else:                                   # night-decide: the refill card is merged into the Rapid 50K plan card
+            extra = f" Or a Rapid EOD 50K ($165) in this slot instead: that is card {r50} (the fleet plan's buy)."
     price = "$63 ($43 if your code works)" if p == "builder25k" else usd(PRICE[p])
     return (f"Re-buy the same plan tonight: {LABEL[p]} {price} with CLUB (not a reset; every day sooner is a funded day sooner).{extra}")
 
