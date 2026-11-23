@@ -1,0 +1,23 @@
+{
+  "what": "SAMPLE rows for the Strategy Lab view (tools/build_strategy_lab.py) until research/lab/popular_ict.json and popular_classic.json land. Not results: the numbers are placeholders in the real files' shape, and the pages show a SAMPLE banner.",
+  "strategies": [
+    {"id": "sample_ict_silver_bullet", "name": "SAMPLE · ICT Silver Bullet", "family": "ICT", "verdict": "promising",
+     "rules": ["10:00-11:00 ET only: a liquidity sweep, then a fair value gap in the new direction.", "Entry on the return into the FVG.", "Stop past the sweep; target the opposite liquidity."],
+     "spans": {"2026 H1": {"tpw": 2.4, "win": 44, "pf": 1.6, "usd_mo": 820, "maxdd": 1500}, "2026 H2": {"tpw": 2.1, "win": 41, "pf": 1.4, "usd_mo": 510, "maxdd": 1700}, "2021-25": {"tpw": 2.3, "win": 42, "pf": 1.45, "usd_mo": 600, "maxdd": 2600}}},
+    {"id": "sample_ict_judas", "name": "SAMPLE · ICT Judas swing", "family": "ICT", "verdict": "rejected",
+     "rules": ["A false move at the NY open into a session high or low.", "Entry on the market structure shift back.", "Stop past the false move; target the other side of the range."],
+     "spans": {"2026 H1": {"tpw": 3.1, "win": 38, "pf": 1.1, "usd_mo": 120, "maxdd": 2400}, "2026 H2": {"tpw": 2.8, "win": 33, "pf": 0.85, "usd_mo": -260, "maxdd": 2900}, "2021-25": {"tpw": 3.0, "win": 36, "pf": 0.97, "usd_mo": -40, "maxdd": 4100}}},
+    {"id": "sample_ict_ote", "name": "SAMPLE · ICT OTE retracement", "family": "ICT", "verdict": "paper",
+     "rules": ["A displacement leg, then a 62-79% retracement (the OTE zone).", "Entry inside the zone on a 1m shift.", "Stop past the leg's start; target the leg's extreme and beyond."],
+     "spans": {"2026 H1": {"tpw": 1.8, "win": 47, "pf": 1.7, "usd_mo": 690, "maxdd": 1300}, "2026 H2": {"tpw": 1.6, "win": 45, "pf": 1.5, "usd_mo": 470, "maxdd": 1400}, "2021-25": {"tpw": 1.9, "win": 44, "pf": 1.35, "usd_mo": 380, "maxdd": 2500}}},
+    {"id": "sample_orb", "name": "SAMPLE · Opening range breakout", "family": "classic", "verdict": "rejected",
+     "rules": ["The first 15 minutes after 09:30 ET set the range.", "Entry on a 5m close outside it.", "Stop at the range's other side; target 2R."],
+     "spans": {"2026 H1": {"tpw": 4.6, "win": 39, "pf": 1.05, "usd_mo": 90, "maxdd": 3100}, "2026 H2": {"tpw": 4.4, "win": 37, "pf": 0.92, "usd_mo": -180, "maxdd": 3400}, "2021-25": {"tpw": 4.7, "win": 38, "pf": 1.0, "usd_mo": 0, "maxdd": 5200}}},
+    {"id": "sample_vwap_revert", "name": "SAMPLE · VWAP 2-sigma reversion", "family": "classic", "verdict": "promising",
+     "rules": ["Price stretches 2 standard deviations from the session VWAP.", "Entry on the first 5m close back inside the band.", "Stop past the stretch extreme; target VWAP."],
+     "spans": {"2026 H1": {"tpw": 2.9, "win": 55, "pf": 1.5, "usd_mo": 640, "maxdd": 1600}, "2026 H2": {"tpw": 2.7, "win": 53, "pf": 1.35, "usd_mo": 410, "maxdd": 1800}, "2021-25": {"tpw": 3.0, "win": 52, "pf": 1.3, "usd_mo": 350, "maxdd": 3000}}},
+    {"id": "sample_rsi2", "name": "SAMPLE · RSI(2) pullback", "family": "classic", "verdict": "rejected",
+     "rules": ["Trend filter: price above the 200 EMA (1h).", "Entry when RSI(2) drops under 10 on the 5m.", "Exit when RSI(2) is back over 70; stop 1.5 ATR."],
+     "spans": {"2026 H1": {"tpw": 5.2, "win": 61, "pf": 1.08, "usd_mo": 150, "maxdd": 2700}, "2026 H2": {"tpw": 5.0, "win": 58, "pf": 0.95, "usd_mo": -90, "maxdd": 3000}, "2021-25": {"tpw": 5.4, "win": 60, "pf": 1.02, "usd_mo": 40, "maxdd": 4800}}}
+  ]
+}

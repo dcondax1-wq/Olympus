@@ -1,0 +1,2138 @@
+{
+ "meta": {
+  "built": "2026-11-23",
+  "tool": "tools/popular_classic.py",
+  "data": "CME NQ1! 5m (TradingView) + ES1! 5m 2025-04+",
+  "sizing": "$400 risk a trade, MNQ $2/pt, 1-40 micros, $1.9 RT, 1 tick slippage in/out",
+  "spans": {
+   "H1": [
+    "2026-01-01",
+    "2026-06-30"
+   ],
+   "H2": [
+    "2026-07-01",
+    "2026-10-31"
+   ],
+   "2021-25": [
+    "2021-01-01",
+    "2025-12-31"
+   ]
+  },
+  "tests": 16,
+  "correction": "Holm over 16 one-sided t-tests of mean daily $ (2021-25)",
+  "pass_rule": "net > 0 and PF >= 1.1 in H1, H2 and 2021-25 (n >= 5 per 2026 half) and Holm p < 0.05",
+  "rapid": {
+   "25K": {
+    "target": 1500.0,
+    "trail": 1000.0,
+    "book_x": 0.5,
+    "addon_usd": 200.0
+   },
+   "50K": {
+    "target": 3000.0,
+    "trail": 2000.0,
+    "book_x": 1.0,
+    "addon_usd": 400.0
+   }
+  },
+  "paper_only": true
+ },
+ "rows": [
+  {
+   "id": "popc_orb30",
+   "name": "Opening Range Breakout 30 min",
+   "family": "breakout",
+   "symbol": "NQ (MNQ)",
+   "spans": {
+    "H1": {
+     "tpw": 3.89,
+     "win": 43.8,
+     "pf": 1.26,
+     "usd_mo": 696,
+     "maxdd": -2016,
+     "n": 105
+    },
+    "H2": {
+     "tpw": 4.06,
+     "win": 34.2,
+     "pf": 0.79,
+     "usd_mo": -649,
+     "maxdd": -3752,
+     "n": 73
+    },
+    "2021-25": {
+     "tpw": 4.39,
+     "win": 40.2,
+     "pf": 1.0,
+     "usd_mo": 9,
+     "maxdd": -7150,
+     "n": 965
+    }
+   },
+   "es_2026": {
+    "H1": {
+     "n": 113,
+     "tpw": 4.19,
+     "pf": 1.1,
+     "usd_mo": 375
+    },
+    "H2": {
+     "n": 74,
+     "tpw": 4.62,
+     "pf": 0.96,
+     "usd_mo": -187
+    }
+   },
+   "p_2021_25": 0.4866,
+   "p_holm": 1.0,
+   "corr": {
+    "H1": {
+     "corr_lit": -0.066,
+     "overlap_lit": 0.66,
+     "corr_atlas": -0.033,
+     "overlap_atlas": 0.37
+    },
+    "H2": {
+     "corr_lit": 0.014,
+     "overlap_lit": 0.5,
+     "corr_atlas": 0.05,
+     "overlap_atlas": 0.3
+    },
+    "2021-25": {
+     "corr_lit": -0.032,
+     "overlap_lit": 0.48,
+     "corr_atlas": -0.002,
+     "overlap_atlas": 0.48
+    }
+   },
+   "rapid_addon": {
+    "25K": {
+     "H1": {
+      "usd_mo_delta": 348,
+      "tpw": 8.63,
+      "book_tpw": 4.74,
+      "pass40": 84.8,
+      "book_pass40": 91.1,
+      "fail40": 15.2,
+      "book_fail40": 8.9
+     },
+     "H2": {
+      "usd_mo_delta": -321,
+      "tpw": 7.94,
+      "book_tpw": 3.94,
+      "pass40": 65.8,
+      "book_pass40": 100.0,
+      "fail40": 34.2,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": 5,
+      "tpw": 9.4,
+      "book_tpw": 5.01,
+      "pass40": 20.3,
+      "book_pass40": 27.7,
+      "fail40": 78.5,
+      "book_fail40": 62.0
+     }
+    },
+    "50K": {
+     "H1": {
+      "usd_mo_delta": 696,
+      "tpw": 8.63,
+      "book_tpw": 4.74,
+      "pass40": 84.8,
+      "book_pass40": 92.9,
+      "fail40": 15.2,
+      "book_fail40": 7.1
+     },
+     "H2": {
+      "usd_mo_delta": -642,
+      "tpw": 7.94,
+      "book_tpw": 3.94,
+      "pass40": 68.5,
+      "book_pass40": 100.0,
+      "fail40": 31.5,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": 9,
+      "tpw": 9.4,
+      "book_tpw": 5.01,
+      "pass40": 20.4,
+      "book_pass40": 27.7,
+      "fail40": 78.4,
+      "book_fail40": 62.0
+     }
+    }
+   },
+   "already_tested": "partly: ORB 2nd side after a failed break (E2 2026-11-13), OR high/low roots (strategy tree), allday",
+   "verdict": "rejected",
+   "why": "H2 PF 0.79 $-649/mo; 2021-25 PF 1.0 $9/mo; Holm p 1.0"
+  },
+  {
+   "id": "popc_vwaprev",
+   "name": "VWAP reversion (2 SD -> VWAP)",
+   "family": "mean_reversion",
+   "symbol": "NQ (MNQ)",
+   "spans": {
+    "H1": {
+     "tpw": 7.07,
+     "win": 18.8,
+     "pf": 0.73,
+     "usd_mo": -2592,
+     "maxdd": -16267,
+     "n": 191
+    },
+    "H2": {
+     "tpw": 7.67,
+     "win": 27.5,
+     "pf": 1.02,
+     "usd_mo": 139,
+     "maxdd": -9690,
+     "n": 138
+    },
+    "2021-25": {
+     "tpw": 7.67,
+     "win": 22.9,
+     "pf": 0.79,
+     "usd_mo": -2105,
+     "maxdd": -111639,
+     "n": 1688
+    }
+   },
+   "es_2026": {
+    "H1": {
+     "n": 199,
+     "tpw": 7.37,
+     "pf": 0.45,
+     "usd_mo": -6169
+    },
+    "H2": {
+     "n": 128,
+     "tpw": 8.0,
+     "pf": 0.49,
+     "usd_mo": -5945
+    }
+   },
+   "p_2021_25": 1.0,
+   "p_holm": 1.0,
+   "corr": {
+    "H1": {
+     "corr_lit": 0.068,
+     "overlap_lit": 0.61,
+     "corr_atlas": 0.036,
+     "overlap_atlas": 0.38
+    },
+    "H2": {
+     "corr_lit": 0.023,
+     "overlap_lit": 0.52,
+     "corr_atlas": -0.024,
+     "overlap_atlas": 0.22
+    },
+    "2021-25": {
+     "corr_lit": -0.042,
+     "overlap_lit": 0.47,
+     "corr_atlas": 0.014,
+     "overlap_atlas": 0.48
+    }
+   },
+   "rapid_addon": {
+    "25K": {
+     "H1": {
+      "usd_mo_delta": -1296,
+      "tpw": 11.81,
+      "book_tpw": 4.74,
+      "pass40": 24.4,
+      "book_pass40": 91.1,
+      "fail40": 75.6,
+      "book_fail40": 8.9
+     },
+     "H2": {
+      "usd_mo_delta": -646,
+      "tpw": 11.31,
+      "book_tpw": 3.94,
+      "pass40": 45.9,
+      "book_pass40": 100.0,
+      "fail40": 54.1,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": -1052,
+      "tpw": 12.68,
+      "book_tpw": 5.01,
+      "pass40": 14.6,
+      "book_pass40": 27.7,
+      "fail40": 85.4,
+      "book_fail40": 62.0
+     }
+    },
+    "50K": {
+     "H1": {
+      "usd_mo_delta": -2592,
+      "tpw": 11.81,
+      "book_tpw": 4.74,
+      "pass40": 25.4,
+      "book_pass40": 92.9,
+      "fail40": 74.6,
+      "book_fail40": 7.1
+     },
+     "H2": {
+      "usd_mo_delta": -1291,
+      "tpw": 11.31,
+      "book_tpw": 3.94,
+      "pass40": 45.9,
+      "book_pass40": 100.0,
+      "fail40": 54.1,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": -2104,
+      "tpw": 12.68,
+      "book_tpw": 5.01,
+      "pass40": 14.7,
+      "book_pass40": 27.7,
+      "fail40": 85.3,
+      "book_fail40": 62.0
+     }
+    }
+   },
+   "already_tested": "yes: VWAP reversion on low-VIX days (E2 2026-11-13), VWAP/band fades (scalp-mean-reversion)",
+   "verdict": "rejected",
+   "why": "H1 PF 0.73 $-2592/mo; H2 PF 1.02 $139/mo; 2021-25 PF 0.79 $-2105/mo; Holm p 1.0"
+  },
+  {
+   "id": "popc_vwaptrend",
+   "name": "VWAP trend pullback",
+   "family": "trend_pullback",
+   "symbol": "NQ (MNQ)",
+   "spans": {
+    "H1": {
+     "tpw": 6.93,
+     "win": 32.1,
+     "pf": 0.86,
+     "usd_mo": -1062,
+     "maxdd": -10197,
+     "n": 187
+    },
+    "H2": {
+     "tpw": 7.61,
+     "win": 33.6,
+     "pf": 0.93,
+     "usd_mo": -541,
+     "maxdd": -5340,
+     "n": 137
+    },
+    "2021-25": {
+     "tpw": 7.28,
+     "win": 31.1,
+     "pf": 0.8,
+     "usd_mo": -1656,
+     "maxdd": -88188,
+     "n": 1601
+    }
+   },
+   "es_2026": {
+    "H1": {
+     "n": 191,
+     "tpw": 7.07,
+     "pf": 0.78,
+     "usd_mo": -1901
+    },
+    "H2": {
+     "n": 123,
+     "tpw": 7.69,
+     "pf": 0.58,
+     "usd_mo": -4321
+    }
+   },
+   "p_2021_25": 1.0,
+   "p_holm": 1.0,
+   "corr": {
+    "H1": {
+     "corr_lit": -0.086,
+     "overlap_lit": 0.61,
+     "corr_atlas": -0.085,
+     "overlap_atlas": 0.36
+    },
+    "H2": {
+     "corr_lit": -0.122,
+     "overlap_lit": 0.47,
+     "corr_atlas": 0.046,
+     "overlap_atlas": 0.28
+    },
+    "2021-25": {
+     "corr_lit": -0.005,
+     "overlap_lit": 0.49,
+     "corr_atlas": 0.032,
+     "overlap_atlas": 0.49
+    }
+   },
+   "rapid_addon": {
+    "25K": {
+     "H1": {
+      "usd_mo_delta": -531,
+      "tpw": 11.67,
+      "book_tpw": 4.74,
+      "pass40": 31.9,
+      "book_pass40": 91.1,
+      "fail40": 68.1,
+      "book_fail40": 8.9
+     },
+     "H2": {
+      "usd_mo_delta": -458,
+      "tpw": 11.62,
+      "book_tpw": 3.94,
+      "pass40": 46.6,
+      "book_pass40": 100.0,
+      "fail40": 53.4,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": -828,
+      "tpw": 12.29,
+      "book_tpw": 5.01,
+      "pass40": 16.1,
+      "book_pass40": 27.7,
+      "fail40": 83.9,
+      "book_fail40": 62.0
+     }
+    },
+    "50K": {
+     "H1": {
+      "usd_mo_delta": -1062,
+      "tpw": 11.67,
+      "book_tpw": 4.74,
+      "pass40": 32.7,
+      "book_pass40": 92.9,
+      "fail40": 67.3,
+      "book_fail40": 7.1
+     },
+     "H2": {
+      "usd_mo_delta": -915,
+      "tpw": 11.62,
+      "book_tpw": 3.94,
+      "pass40": 46.6,
+      "book_pass40": 100.0,
+      "fail40": 53.4,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": -1656,
+      "tpw": 12.29,
+      "book_tpw": 5.01,
+      "pass40": 16.2,
+      "book_pass40": 27.7,
+      "fail40": 83.8,
+      "book_fail40": 62.0
+     }
+    }
+   },
+   "already_tested": "yes: VWAP pullback with trend (ATLAS new members 2026-11-18)",
+   "verdict": "rejected",
+   "why": "H1 PF 0.86 $-1062/mo; H2 PF 0.93 $-541/mo; 2021-25 PF 0.8 $-1656/mo; Holm p 1.0"
+  },
+  {
+   "id": "popc_rsi2_5m",
+   "name": "Connors RSI(2) 5m",
+   "family": "mean_reversion",
+   "symbol": "NQ (MNQ)",
+   "spans": {
+    "H1": {
+     "tpw": 12.41,
+     "win": 61.5,
+     "pf": 0.9,
+     "usd_mo": -462,
+     "maxdd": -5566,
+     "n": 335
+    },
+    "H2": {
+     "tpw": 12.5,
+     "win": 61.3,
+     "pf": 0.9,
+     "usd_mo": -407,
+     "maxdd": -2242,
+     "n": 225
+    },
+    "2021-25": {
+     "tpw": 12.3,
+     "win": 60.7,
+     "pf": 0.83,
+     "usd_mo": -754,
+     "maxdd": -40611,
+     "n": 2706
+    }
+   },
+   "es_2026": {
+    "H1": {
+     "n": 355,
+     "tpw": 13.15,
+     "pf": 0.9,
+     "usd_mo": -549
+    },
+    "H2": {
+     "n": 185,
+     "tpw": 11.56,
+     "pf": 0.5,
+     "usd_mo": -2748
+    }
+   },
+   "p_2021_25": 0.9998,
+   "p_holm": 1.0,
+   "corr": {
+    "H1": {
+     "corr_lit": -0.141,
+     "overlap_lit": 0.62,
+     "corr_atlas": 0.091,
+     "overlap_atlas": 0.37
+    },
+    "H2": {
+     "corr_lit": -0.166,
+     "overlap_lit": 0.51,
+     "corr_atlas": -0.006,
+     "overlap_atlas": 0.25
+    },
+    "2021-25": {
+     "corr_lit": -0.002,
+     "overlap_lit": 0.47,
+     "corr_atlas": 0.055,
+     "overlap_atlas": 0.47
+    }
+   },
+   "rapid_addon": {
+    "25K": {
+     "H1": {
+      "usd_mo_delta": -231,
+      "tpw": 17.15,
+      "book_tpw": 4.74,
+      "pass40": 68.7,
+      "book_pass40": 91.1,
+      "fail40": 31.3,
+      "book_fail40": 8.9
+     },
+     "H2": {
+      "usd_mo_delta": -165,
+      "tpw": 16.06,
+      "book_tpw": 3.94,
+      "pass40": 64.4,
+      "book_pass40": 100.0,
+      "fail40": 35.6,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": -377,
+      "tpw": 17.31,
+      "book_tpw": 5.01,
+      "pass40": 13.3,
+      "book_pass40": 27.7,
+      "fail40": 86.4,
+      "book_fail40": 62.0
+     }
+    },
+    "50K": {
+     "H1": {
+      "usd_mo_delta": -462,
+      "tpw": 17.15,
+      "book_tpw": 4.74,
+      "pass40": 69.6,
+      "book_pass40": 92.9,
+      "fail40": 30.4,
+      "book_fail40": 7.1
+     },
+     "H2": {
+      "usd_mo_delta": -330,
+      "tpw": 16.06,
+      "book_tpw": 3.94,
+      "pass40": 64.4,
+      "book_pass40": 100.0,
+      "fail40": 35.6,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": -753,
+      "tpw": 17.31,
+      "book_tpw": 5.01,
+      "pass40": 13.7,
+      "book_pass40": 27.7,
+      "fail40": 86.0,
+      "book_fail40": 62.0
+     }
+    }
+   },
+   "already_tested": "yes: Connors RSI(2) (famous published 2026-11-17; daily) + RSI fades (scalp-mean-reversion)",
+   "verdict": "rejected",
+   "why": "H1 PF 0.9 $-462/mo; H2 PF 0.9 $-407/mo; 2021-25 PF 0.83 $-754/mo; Holm p 1.0"
+  },
+  {
+   "id": "popc_rsi2_15m",
+   "name": "Connors RSI(2) 15m",
+   "family": "mean_reversion",
+   "symbol": "NQ (MNQ)",
+   "spans": {
+    "H1": {
+     "tpw": 3.52,
+     "win": 63.2,
+     "pf": 1.07,
+     "usd_mo": 75,
+     "maxdd": -1694,
+     "n": 95
+    },
+    "H2": {
+     "tpw": 4.28,
+     "win": 68.8,
+     "pf": 1.14,
+     "usd_mo": 154,
+     "maxdd": -785,
+     "n": 77
+    },
+    "2021-25": {
+     "tpw": 4.19,
+     "win": 61.0,
+     "pf": 0.9,
+     "usd_mo": -169,
+     "maxdd": -10879,
+     "n": 921
+    }
+   },
+   "es_2026": {
+    "H1": {
+     "n": 106,
+     "tpw": 3.93,
+     "pf": 1.15,
+     "usd_mo": 201
+    },
+    "H2": {
+     "n": 61,
+     "tpw": 3.81,
+     "pf": 0.78,
+     "usd_mo": -330
+    }
+   },
+   "p_2021_25": 0.8958,
+   "p_holm": 1.0,
+   "corr": {
+    "H1": {
+     "corr_lit": 0.071,
+     "overlap_lit": 0.65,
+     "corr_atlas": -0.054,
+     "overlap_atlas": 0.38
+    },
+    "H2": {
+     "corr_lit": -0.091,
+     "overlap_lit": 0.52,
+     "corr_atlas": -0.221,
+     "overlap_atlas": 0.26
+    },
+    "2021-25": {
+     "corr_lit": 0.061,
+     "overlap_lit": 0.49,
+     "corr_atlas": 0.006,
+     "overlap_atlas": 0.48
+    }
+   },
+   "rapid_addon": {
+    "25K": {
+     "H1": {
+      "usd_mo_delta": 38,
+      "tpw": 8.26,
+      "book_tpw": 4.74,
+      "pass40": 72.3,
+      "book_pass40": 91.1,
+      "fail40": 27.7,
+      "book_fail40": 8.9
+     },
+     "H2": {
+      "usd_mo_delta": 24,
+      "tpw": 8.31,
+      "book_tpw": 3.94,
+      "pass40": 100.0,
+      "book_pass40": 100.0,
+      "fail40": 0.0,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": -84,
+      "tpw": 9.2,
+      "book_tpw": 5.01,
+      "pass40": 21.3,
+      "book_pass40": 27.7,
+      "fail40": 75.4,
+      "book_fail40": 62.0
+     }
+    },
+    "50K": {
+     "H1": {
+      "usd_mo_delta": 75,
+      "tpw": 8.26,
+      "book_tpw": 4.74,
+      "pass40": 72.3,
+      "book_pass40": 92.9,
+      "fail40": 27.7,
+      "book_fail40": 7.1
+     },
+     "H2": {
+      "usd_mo_delta": 49,
+      "tpw": 8.31,
+      "book_tpw": 3.94,
+      "pass40": 100.0,
+      "book_pass40": 100.0,
+      "fail40": 0.0,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": -168,
+      "tpw": 9.2,
+      "book_tpw": 5.01,
+      "pass40": 21.3,
+      "book_pass40": 27.7,
+      "fail40": 75.3,
+      "book_fail40": 62.0
+     }
+    }
+   },
+   "already_tested": "yes: Connors RSI(2) (famous published 2026-11-17)",
+   "verdict": "rejected",
+   "why": "H1 PF 1.07 $75/mo; 2021-25 PF 0.9 $-169/mo; Holm p 1.0"
+  },
+  {
+   "id": "popc_donchian",
+   "name": "Donchian 20/10 breakout",
+   "family": "breakout",
+   "symbol": "NQ (MNQ)",
+   "spans": {
+    "H1": {
+     "tpw": 7.26,
+     "win": 40.3,
+     "pf": 0.88,
+     "usd_mo": -404,
+     "maxdd": -4775,
+     "n": 196
+    },
+    "H2": {
+     "tpw": 8.11,
+     "win": 37.7,
+     "pf": 0.66,
+     "usd_mo": -1306,
+     "maxdd": -7099,
+     "n": 146
+    },
+    "2021-25": {
+     "tpw": 9.11,
+     "win": 40.9,
+     "pf": 1.04,
+     "usd_mo": 143,
+     "maxdd": -8301,
+     "n": 2005
+    }
+   },
+   "es_2026": {
+    "H1": {
+     "n": 239,
+     "tpw": 8.85,
+     "pf": 0.93,
+     "usd_mo": -317
+    },
+    "H2": {
+     "n": 153,
+     "tpw": 9.56,
+     "pf": 0.83,
+     "usd_mo": -666
+    }
+   },
+   "p_2021_25": 0.2865,
+   "p_holm": 1.0,
+   "corr": {
+    "H1": {
+     "corr_lit": -0.069,
+     "overlap_lit": 0.64,
+     "corr_atlas": -0.168,
+     "overlap_atlas": 0.37
+    },
+    "H2": {
+     "corr_lit": -0.118,
+     "overlap_lit": 0.5,
+     "corr_atlas": 0.012,
+     "overlap_atlas": 0.27
+    },
+    "2021-25": {
+     "corr_lit": -0.011,
+     "overlap_lit": 0.48,
+     "corr_atlas": -0.025,
+     "overlap_atlas": 0.48
+    }
+   },
+   "rapid_addon": {
+    "25K": {
+     "H1": {
+      "usd_mo_delta": -202,
+      "tpw": 12.0,
+      "book_tpw": 4.74,
+      "pass40": 76.8,
+      "book_pass40": 91.1,
+      "fail40": 23.2,
+      "book_fail40": 8.9
+     },
+     "H2": {
+      "usd_mo_delta": -762,
+      "tpw": 12.12,
+      "book_tpw": 3.94,
+      "pass40": 49.3,
+      "book_pass40": 100.0,
+      "fail40": 50.7,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": 72,
+      "tpw": 14.12,
+      "book_tpw": 5.01,
+      "pass40": 27.2,
+      "book_pass40": 27.7,
+      "fail40": 72.8,
+      "book_fail40": 62.0
+     }
+    },
+    "50K": {
+     "H1": {
+      "usd_mo_delta": -404,
+      "tpw": 12.0,
+      "book_tpw": 4.74,
+      "pass40": 76.8,
+      "book_pass40": 92.9,
+      "fail40": 23.2,
+      "book_fail40": 7.1
+     },
+     "H2": {
+      "usd_mo_delta": -1523,
+      "tpw": 12.12,
+      "book_tpw": 3.94,
+      "pass40": 49.3,
+      "book_pass40": 100.0,
+      "fail40": 50.7,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": 144,
+      "tpw": 14.12,
+      "book_tpw": 5.01,
+      "pass40": 27.3,
+      "book_pass40": 27.7,
+      "fail40": 72.7,
+      "book_fail40": 62.0
+     }
+    }
+   },
+   "already_tested": "no (only turtle-soup fades were tested)",
+   "verdict": "rejected",
+   "why": "H1 PF 0.88 $-404/mo; H2 PF 0.66 $-1306/mo; 2021-25 PF 1.04 $143/mo; Holm p 1.0"
+  },
+  {
+   "id": "popc_nr7id",
+   "name": "NR7 inside-day breakout",
+   "family": "volatility_breakout",
+   "symbol": "NQ (MNQ)",
+   "spans": {
+    "H1": {
+     "tpw": 0.0,
+     "win": null,
+     "pf": null,
+     "usd_mo": 0,
+     "maxdd": 0,
+     "n": 0
+    },
+    "H2": {
+     "tpw": 0.11,
+     "win": 50.0,
+     "pf": 0.01,
+     "usd_mo": -72,
+     "maxdd": -295,
+     "n": 2
+    },
+    "2021-25": {
+     "tpw": 0.12,
+     "win": 34.6,
+     "pf": 0.62,
+     "usd_mo": -39,
+     "maxdd": -3066,
+     "n": 26
+    }
+   },
+   "es_2026": {
+    "H1": {
+     "n": 3,
+     "tpw": 0.11,
+     "pf": 0.0,
+     "usd_mo": -149
+    },
+    "H2": {
+     "n": 2,
+     "tpw": 0.12,
+     "pf": 0.0,
+     "usd_mo": -200
+    }
+   },
+   "p_2021_25": 0.8661,
+   "p_holm": 1.0,
+   "corr": {
+    "H1": {
+     "corr_lit": null,
+     "overlap_lit": null,
+     "corr_atlas": null,
+     "overlap_atlas": null
+    },
+    "H2": {
+     "corr_lit": 0.052,
+     "overlap_lit": 1.0,
+     "corr_atlas": 0.023,
+     "overlap_atlas": 0.0
+    },
+    "2021-25": {
+     "corr_lit": -0.065,
+     "overlap_lit": 0.35,
+     "corr_atlas": 0.011,
+     "overlap_atlas": 0.31
+    }
+   },
+   "rapid_addon": {
+    "25K": {
+     "H1": {
+      "usd_mo_delta": 0,
+      "tpw": 4.74,
+      "book_tpw": 4.74,
+      "pass40": 91.1,
+      "book_pass40": 91.1,
+      "fail40": 8.9,
+      "book_fail40": 8.9
+     },
+     "H2": {
+      "usd_mo_delta": -41,
+      "tpw": 4.06,
+      "book_tpw": 3.94,
+      "pass40": 100.0,
+      "book_pass40": 100.0,
+      "fail40": 0.0,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": -20,
+      "tpw": 5.13,
+      "book_tpw": 5.01,
+      "pass40": 26.5,
+      "book_pass40": 27.7,
+      "fail40": 63.4,
+      "book_fail40": 62.0
+     }
+    },
+    "50K": {
+     "H1": {
+      "usd_mo_delta": 0,
+      "tpw": 4.74,
+      "book_tpw": 4.74,
+      "pass40": 92.9,
+      "book_pass40": 92.9,
+      "fail40": 7.1,
+      "book_fail40": 7.1
+     },
+     "H2": {
+      "usd_mo_delta": -81,
+      "tpw": 4.06,
+      "book_tpw": 3.94,
+      "pass40": 100.0,
+      "book_pass40": 100.0,
+      "fail40": 0.0,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": -39,
+      "tpw": 5.13,
+      "book_tpw": 5.01,
+      "pass40": 26.5,
+      "book_pass40": 27.7,
+      "fail40": 63.4,
+      "book_fail40": 62.0
+     }
+    }
+   },
+   "already_tested": "yes: Crabel NR7 / NR4 / NR7-ID (famous published 2026-11-17)",
+   "verdict": "rejected",
+   "why": "H1 PF None $0/mo; H2 PF 0.01 $-72/mo; 2021-25 PF 0.62 $-39/mo; Holm p 1.0"
+  },
+  {
+   "id": "popc_bbsqueeze",
+   "name": "Bollinger squeeze breakout",
+   "family": "volatility_breakout",
+   "symbol": "NQ (MNQ)",
+   "spans": {
+    "H1": {
+     "tpw": 2.0,
+     "win": 33.3,
+     "pf": 0.88,
+     "usd_mo": -231,
+     "maxdd": -3546,
+     "n": 54
+    },
+    "H2": {
+     "tpw": 1.67,
+     "win": 23.3,
+     "pf": 0.41,
+     "usd_mo": -1185,
+     "maxdd": -5348,
+     "n": 30
+    },
+    "2021-25": {
+     "tpw": 1.79,
+     "win": 36.6,
+     "pf": 0.95,
+     "usd_mo": -91,
+     "maxdd": -18426,
+     "n": 393
+    }
+   },
+   "es_2026": {
+    "H1": {
+     "n": 47,
+     "tpw": 1.74,
+     "pf": 0.6,
+     "usd_mo": -832
+    },
+    "H2": {
+     "n": 23,
+     "tpw": 1.44,
+     "pf": 0.7,
+     "usd_mo": -475
+    }
+   },
+   "p_2021_25": 0.6834,
+   "p_holm": 1.0,
+   "corr": {
+    "H1": {
+     "corr_lit": 0.028,
+     "overlap_lit": 0.61,
+     "corr_atlas": -0.123,
+     "overlap_atlas": 0.35
+    },
+    "H2": {
+     "corr_lit": 0.187,
+     "overlap_lit": 0.36,
+     "corr_atlas": -0.057,
+     "overlap_atlas": 0.32
+    },
+    "2021-25": {
+     "corr_lit": 0.036,
+     "overlap_lit": 0.48,
+     "corr_atlas": -0.012,
+     "overlap_atlas": 0.47
+    }
+   },
+   "rapid_addon": {
+    "25K": {
+     "H1": {
+      "usd_mo_delta": -115,
+      "tpw": 6.74,
+      "book_tpw": 4.74,
+      "pass40": 67.0,
+      "book_pass40": 91.1,
+      "fail40": 33.0,
+      "book_fail40": 8.9
+     },
+     "H2": {
+      "usd_mo_delta": -583,
+      "tpw": 5.5,
+      "book_tpw": 3.94,
+      "pass40": 75.4,
+      "book_pass40": 100.0,
+      "fail40": 24.6,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": -45,
+      "tpw": 6.8,
+      "book_tpw": 5.01,
+      "pass40": 31.0,
+      "book_pass40": 27.7,
+      "fail40": 68.0,
+      "book_fail40": 62.0
+     }
+    },
+    "50K": {
+     "H1": {
+      "usd_mo_delta": -231,
+      "tpw": 6.74,
+      "book_tpw": 4.74,
+      "pass40": 67.0,
+      "book_pass40": 92.9,
+      "fail40": 33.0,
+      "book_fail40": 7.1
+     },
+     "H2": {
+      "usd_mo_delta": -1165,
+      "tpw": 5.5,
+      "book_tpw": 3.94,
+      "pass40": 75.4,
+      "book_pass40": 100.0,
+      "fail40": 24.6,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": -90,
+      "tpw": 6.8,
+      "book_tpw": 5.01,
+      "pass40": 31.0,
+      "book_pass40": 27.7,
+      "fail40": 67.6,
+      "book_fail40": 62.0
+     }
+    }
+   },
+   "already_tested": "partly: 15m Keltner squeeze (ATLAS members), lunch-box squeeze (new-strategy hunt)",
+   "verdict": "rejected",
+   "why": "H1 PF 0.88 $-231/mo; H2 PF 0.41 $-1185/mo; 2021-25 PF 0.95 $-91/mo; Holm p 1.0"
+  },
+  {
+   "id": "popc_gapfill",
+   "name": "Opening gap fill",
+   "family": "mean_reversion",
+   "symbol": "NQ (MNQ)",
+   "spans": {
+    "H1": {
+     "tpw": 1.78,
+     "win": 39.6,
+     "pf": 0.6,
+     "usd_mo": -645,
+     "maxdd": -4648,
+     "n": 48
+    },
+    "H2": {
+     "tpw": 1.61,
+     "win": 51.7,
+     "pf": 0.93,
+     "usd_mo": -71,
+     "maxdd": -1121,
+     "n": 29
+    },
+    "2021-25": {
+     "tpw": 2.27,
+     "win": 47.9,
+     "pf": 0.89,
+     "usd_mo": -198,
+     "maxdd": -18039,
+     "n": 499
+    }
+   },
+   "es_2026": {
+    "H1": {
+     "n": 58,
+     "tpw": 2.15,
+     "pf": 0.88,
+     "usd_mo": -201
+    },
+    "H2": {
+     "n": 47,
+     "tpw": 2.94,
+     "pf": 0.56,
+     "usd_mo": -1170
+    }
+   },
+   "p_2021_25": 0.9039,
+   "p_holm": 1.0,
+   "corr": {
+    "H1": {
+     "corr_lit": -0.065,
+     "overlap_lit": 0.65,
+     "corr_atlas": 0.049,
+     "overlap_atlas": 0.35
+    },
+    "H2": {
+     "corr_lit": 0.143,
+     "overlap_lit": 0.6,
+     "corr_atlas": -0.019,
+     "overlap_atlas": 0.28
+    },
+    "2021-25": {
+     "corr_lit": -0.042,
+     "overlap_lit": 0.47,
+     "corr_atlas": 0.027,
+     "overlap_atlas": 0.48
+    }
+   },
+   "rapid_addon": {
+    "25K": {
+     "H1": {
+      "usd_mo_delta": -322,
+      "tpw": 6.52,
+      "book_tpw": 4.74,
+      "pass40": 75.0,
+      "book_pass40": 91.1,
+      "fail40": 25.0,
+      "book_fail40": 8.9
+     },
+     "H2": {
+      "usd_mo_delta": -43,
+      "tpw": 5.5,
+      "book_tpw": 3.94,
+      "pass40": 100.0,
+      "book_pass40": 100.0,
+      "fail40": 0.0,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": -99,
+      "tpw": 7.28,
+      "book_tpw": 5.01,
+      "pass40": 24.8,
+      "book_pass40": 27.7,
+      "fail40": 71.1,
+      "book_fail40": 62.0
+     }
+    },
+    "50K": {
+     "H1": {
+      "usd_mo_delta": -645,
+      "tpw": 6.52,
+      "book_tpw": 4.74,
+      "pass40": 75.0,
+      "book_pass40": 92.9,
+      "fail40": 25.0,
+      "book_fail40": 7.1
+     },
+     "H2": {
+      "usd_mo_delta": -84,
+      "tpw": 5.5,
+      "book_tpw": 3.94,
+      "pass40": 100.0,
+      "book_pass40": 100.0,
+      "fail40": 0.0,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": -197,
+      "tpw": 7.28,
+      "book_tpw": 5.01,
+      "pass40": 25.0,
+      "book_pass40": 27.7,
+      "fail40": 70.8,
+      "book_fail40": 62.0
+     }
+    }
+   },
+   "already_tested": "yes: plain gap fade loses (E2 2026-11-13; G1 gap fade paper lead only)",
+   "verdict": "rejected",
+   "why": "H1 PF 0.6 $-645/mo; H2 PF 0.93 $-71/mo; 2021-25 PF 0.89 $-198/mo; Holm p 1.0"
+  },
+  {
+   "id": "popc_ib_break",
+   "name": "Initial Balance breakout",
+   "family": "breakout",
+   "symbol": "NQ (MNQ)",
+   "spans": {
+    "H1": {
+     "tpw": 3.37,
+     "win": 48.4,
+     "pf": 1.25,
+     "usd_mo": 482,
+     "maxdd": -1887,
+     "n": 91
+    },
+    "H2": {
+     "tpw": 3.39,
+     "win": 39.3,
+     "pf": 0.84,
+     "usd_mo": -334,
+     "maxdd": -3917,
+     "n": 61
+    },
+    "2021-25": {
+     "tpw": 4.14,
+     "win": 49.3,
+     "pf": 1.09,
+     "usd_mo": 224,
+     "maxdd": -6101,
+     "n": 910
+    }
+   },
+   "es_2026": {
+    "H1": {
+     "n": 113,
+     "tpw": 4.19,
+     "pf": 1.14,
+     "usd_mo": 419
+    },
+    "H2": {
+     "n": 68,
+     "tpw": 4.25,
+     "pf": 0.86,
+     "usd_mo": -457
+    }
+   },
+   "p_2021_25": 0.1364,
+   "p_holm": 1.0,
+   "corr": {
+    "H1": {
+     "corr_lit": -0.12,
+     "overlap_lit": 0.64,
+     "corr_atlas": 0.002,
+     "overlap_atlas": 0.37
+    },
+    "H2": {
+     "corr_lit": -0.177,
+     "overlap_lit": 0.57,
+     "corr_atlas": 0.051,
+     "overlap_atlas": 0.21
+    },
+    "2021-25": {
+     "corr_lit": -0.043,
+     "overlap_lit": 0.48,
+     "corr_atlas": 0.041,
+     "overlap_atlas": 0.48
+    }
+   },
+   "rapid_addon": {
+    "25K": {
+     "H1": {
+      "usd_mo_delta": 241,
+      "tpw": 8.11,
+      "book_tpw": 4.74,
+      "pass40": 89.3,
+      "book_pass40": 91.1,
+      "fail40": 10.7,
+      "book_fail40": 8.9
+     },
+     "H2": {
+      "usd_mo_delta": -341,
+      "tpw": 7.25,
+      "book_tpw": 3.94,
+      "pass40": 86.3,
+      "book_pass40": 100.0,
+      "fail40": 13.7,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": 112,
+      "tpw": 9.15,
+      "book_tpw": 5.01,
+      "pass40": 28.2,
+      "book_pass40": 27.7,
+      "fail40": 71.6,
+      "book_fail40": 62.0
+     }
+    },
+    "50K": {
+     "H1": {
+      "usd_mo_delta": 482,
+      "tpw": 8.11,
+      "book_tpw": 4.74,
+      "pass40": 89.3,
+      "book_pass40": 92.9,
+      "fail40": 10.7,
+      "book_fail40": 7.1
+     },
+     "H2": {
+      "usd_mo_delta": -680,
+      "tpw": 7.25,
+      "book_tpw": 3.94,
+      "pass40": 86.3,
+      "book_pass40": 100.0,
+      "fail40": 13.7,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": 225,
+      "tpw": 9.15,
+      "book_tpw": 5.01,
+      "pass40": 28.3,
+      "book_pass40": 27.7,
+      "fail40": 71.3,
+      "book_fail40": 62.0
+     }
+    }
+   },
+   "already_tested": "no (IB only as a scalp-mean-reversion level)",
+   "verdict": "rejected",
+   "why": "H2 PF 0.84 $-334/mo; 2021-25 PF 1.09 $224/mo; Holm p 1.0"
+  },
+  {
+   "id": "popc_ib_fade",
+   "name": "Initial Balance fade",
+   "family": "mean_reversion",
+   "symbol": "NQ (MNQ)",
+   "spans": {
+    "H1": {
+     "tpw": 3.11,
+     "win": 32.1,
+     "pf": 1.42,
+     "usd_mo": 1505,
+     "maxdd": -6348,
+     "n": 84
+    },
+    "H2": {
+     "tpw": 3.0,
+     "win": 31.5,
+     "pf": 1.24,
+     "usd_mo": 780,
+     "maxdd": -3043,
+     "n": 54
+    },
+    "2021-25": {
+     "tpw": 3.05,
+     "win": 28.9,
+     "pf": 0.82,
+     "usd_mo": -642,
+     "maxdd": -41807,
+     "n": 671
+    }
+   },
+   "es_2026": {
+    "H1": {
+     "n": 78,
+     "tpw": 2.89,
+     "pf": 0.89,
+     "usd_mo": -373
+    },
+    "H2": {
+     "n": 53,
+     "tpw": 3.31,
+     "pf": 0.36,
+     "usd_mo": -2960
+    }
+   },
+   "p_2021_25": 0.9707,
+   "p_holm": 1.0,
+   "corr": {
+    "H1": {
+     "corr_lit": -0.021,
+     "overlap_lit": 0.64,
+     "corr_atlas": -0.043,
+     "overlap_atlas": 0.37
+    },
+    "H2": {
+     "corr_lit": -0.001,
+     "overlap_lit": 0.55,
+     "corr_atlas": 0.282,
+     "overlap_atlas": 0.24
+    },
+    "2021-25": {
+     "corr_lit": -0.031,
+     "overlap_lit": 0.49,
+     "corr_atlas": 0.024,
+     "overlap_atlas": 0.47
+    }
+   },
+   "rapid_addon": {
+    "25K": {
+     "H1": {
+      "usd_mo_delta": 753,
+      "tpw": 7.85,
+      "book_tpw": 4.74,
+      "pass40": 79.0,
+      "book_pass40": 91.1,
+      "fail40": 21.0,
+      "book_fail40": 8.9
+     },
+     "H2": {
+      "usd_mo_delta": 570,
+      "tpw": 7.0,
+      "book_tpw": 3.94,
+      "pass40": 77.1,
+      "book_pass40": 100.0,
+      "fail40": 22.9,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": -321,
+      "tpw": 8.06,
+      "book_tpw": 5.01,
+      "pass40": 22.0,
+      "book_pass40": 27.7,
+      "fail40": 78.0,
+      "book_fail40": 62.0
+     }
+    },
+    "50K": {
+     "H1": {
+      "usd_mo_delta": 1505,
+      "tpw": 7.85,
+      "book_tpw": 4.74,
+      "pass40": 79.0,
+      "book_pass40": 92.9,
+      "fail40": 21.0,
+      "book_fail40": 7.1
+     },
+     "H2": {
+      "usd_mo_delta": 1140,
+      "tpw": 7.0,
+      "book_tpw": 3.94,
+      "pass40": 78.6,
+      "book_pass40": 100.0,
+      "fail40": 21.4,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": -641,
+      "tpw": 8.06,
+      "book_tpw": 5.01,
+      "pass40": 22.4,
+      "book_pass40": 27.7,
+      "fail40": 77.6,
+      "book_fail40": 62.0
+     }
+    }
+   },
+   "already_tested": "partly: IB as a scalp-mean-reversion fade level",
+   "verdict": "rejected",
+   "why": "2021-25 PF 0.82 $-642/mo; Holm p 1.0"
+  },
+  {
+   "id": "popc_ema921",
+   "name": "9/21 EMA pullback in trend",
+   "family": "trend_pullback",
+   "symbol": "NQ (MNQ)",
+   "spans": {
+    "H1": {
+     "tpw": 12.0,
+     "win": 37.0,
+     "pf": 1.0,
+     "usd_mo": 31,
+     "maxdd": -9438,
+     "n": 324
+    },
+    "H2": {
+     "tpw": 13.67,
+     "win": 26.0,
+     "pf": 0.62,
+     "usd_mo": -5761,
+     "maxdd": -24363,
+     "n": 246
+    },
+    "2021-25": {
+     "tpw": 13.05,
+     "win": 35.5,
+     "pf": 0.96,
+     "usd_mo": -546,
+     "maxdd": -59593,
+     "n": 2870
+    }
+   },
+   "es_2026": {
+    "H1": {
+     "n": 330,
+     "tpw": 12.22,
+     "pf": 0.78,
+     "usd_mo": -3143
+    },
+    "H2": {
+     "n": 206,
+     "tpw": 12.88,
+     "pf": 0.87,
+     "usd_mo": -1848
+    }
+   },
+   "p_2021_25": 0.8465,
+   "p_holm": 1.0,
+   "corr": {
+    "H1": {
+     "corr_lit": 0.017,
+     "overlap_lit": 0.62,
+     "corr_atlas": -0.093,
+     "overlap_atlas": 0.37
+    },
+    "H2": {
+     "corr_lit": -0.121,
+     "overlap_lit": 0.5,
+     "corr_atlas": 0.187,
+     "overlap_atlas": 0.26
+    },
+    "2021-25": {
+     "corr_lit": -0.006,
+     "overlap_lit": 0.48,
+     "corr_atlas": 0.009,
+     "overlap_atlas": 0.47
+    }
+   },
+   "rapid_addon": {
+    "25K": {
+     "H1": {
+      "usd_mo_delta": 16,
+      "tpw": 16.74,
+      "book_tpw": 4.74,
+      "pass40": 34.5,
+      "book_pass40": 91.1,
+      "fail40": 65.5,
+      "book_fail40": 8.9
+     },
+     "H2": {
+      "usd_mo_delta": -2905,
+      "tpw": 17.44,
+      "book_tpw": 3.94,
+      "pass40": 18.1,
+      "book_pass40": 100.0,
+      "fail40": 81.9,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": -273,
+      "tpw": 18.05,
+      "book_tpw": 5.01,
+      "pass40": 18.2,
+      "book_pass40": 27.7,
+      "fail40": 81.8,
+      "book_fail40": 62.0
+     }
+    },
+    "50K": {
+     "H1": {
+      "usd_mo_delta": 31,
+      "tpw": 16.74,
+      "book_tpw": 4.74,
+      "pass40": 34.5,
+      "book_pass40": 92.9,
+      "fail40": 65.5,
+      "book_fail40": 7.1
+     },
+     "H2": {
+      "usd_mo_delta": -5810,
+      "tpw": 17.44,
+      "book_tpw": 3.94,
+      "pass40": 18.1,
+      "book_pass40": 100.0,
+      "fail40": 81.9,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": -546,
+      "tpw": 18.05,
+      "book_tpw": 5.01,
+      "pass40": 18.6,
+      "book_pass40": 27.7,
+      "fail40": 81.4,
+      "book_fail40": 62.0
+     }
+    }
+   },
+   "already_tested": "partly: ATLAS's own EMA member is an EMA trend strategy (overlap expected)",
+   "verdict": "rejected",
+   "why": "H1 PF 1.0 $31/mo; H2 PF 0.62 $-5761/mo; 2021-25 PF 0.96 $-546/mo; Holm p 1.0"
+  },
+  {
+   "id": "popc_keltner",
+   "name": "Keltner channel breakout",
+   "family": "breakout",
+   "symbol": "NQ (MNQ)",
+   "spans": {
+    "H1": {
+     "tpw": 5.81,
+     "win": 47.1,
+     "pf": 1.35,
+     "usd_mo": 890,
+     "maxdd": -2260,
+     "n": 157
+    },
+    "H2": {
+     "tpw": 6.11,
+     "win": 36.4,
+     "pf": 0.7,
+     "usd_mo": -895,
+     "maxdd": -4490,
+     "n": 110
+    },
+    "2021-25": {
+     "tpw": 6.5,
+     "win": 38.7,
+     "pf": 1.12,
+     "usd_mo": 436,
+     "maxdd": -10131,
+     "n": 1430
+    }
+   },
+   "es_2026": {
+    "H1": {
+     "n": 165,
+     "tpw": 6.11,
+     "pf": 1.1,
+     "usd_mo": 357
+    },
+    "H2": {
+     "n": 106,
+     "tpw": 6.62,
+     "pf": 0.89,
+     "usd_mo": -459
+    }
+   },
+   "p_2021_25": 0.0763,
+   "p_holm": 1.0,
+   "corr": {
+    "H1": {
+     "corr_lit": -0.063,
+     "overlap_lit": 0.63,
+     "corr_atlas": -0.019,
+     "overlap_atlas": 0.38
+    },
+    "H2": {
+     "corr_lit": -0.143,
+     "overlap_lit": 0.56,
+     "corr_atlas": 0.235,
+     "overlap_atlas": 0.2
+    },
+    "2021-25": {
+     "corr_lit": -0.049,
+     "overlap_lit": 0.47,
+     "corr_atlas": -0.04,
+     "overlap_atlas": 0.47
+    }
+   },
+   "rapid_addon": {
+    "25K": {
+     "H1": {
+      "usd_mo_delta": 445,
+      "tpw": 10.56,
+      "book_tpw": 4.74,
+      "pass40": 75.9,
+      "book_pass40": 91.1,
+      "fail40": 24.1,
+      "book_fail40": 8.9
+     },
+     "H2": {
+      "usd_mo_delta": -427,
+      "tpw": 9.88,
+      "book_tpw": 3.94,
+      "pass40": 58.6,
+      "book_pass40": 100.0,
+      "fail40": 41.4,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": 218,
+      "tpw": 11.51,
+      "book_tpw": 5.01,
+      "pass40": 21.6,
+      "book_pass40": 27.7,
+      "fail40": 77.9,
+      "book_fail40": 62.0
+     }
+    },
+    "50K": {
+     "H1": {
+      "usd_mo_delta": 890,
+      "tpw": 10.56,
+      "book_tpw": 4.74,
+      "pass40": 75.9,
+      "book_pass40": 92.9,
+      "fail40": 24.1,
+      "book_fail40": 7.1
+     },
+     "H2": {
+      "usd_mo_delta": -854,
+      "tpw": 9.88,
+      "book_tpw": 3.94,
+      "pass40": 58.6,
+      "book_pass40": 100.0,
+      "fail40": 41.4,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": 437,
+      "tpw": 11.51,
+      "book_tpw": 5.01,
+      "pass40": 21.7,
+      "book_pass40": 27.7,
+      "fail40": 77.8,
+      "book_fail40": 62.0
+     }
+    }
+   },
+   "already_tested": "partly: 15m Keltner squeeze (ATLAS members)",
+   "verdict": "rejected",
+   "why": "H2 PF 0.7 $-895/mo; Holm p 1.0"
+  },
+  {
+   "id": "popc_crabel",
+   "name": "Crabel stretch",
+   "family": "volatility_breakout",
+   "symbol": "NQ (MNQ)",
+   "spans": {
+    "H1": {
+     "tpw": 3.59,
+     "win": 47.4,
+     "pf": 1.24,
+     "usd_mo": 603,
+     "maxdd": -3387,
+     "n": 97
+    },
+    "H2": {
+     "tpw": 3.28,
+     "win": 45.8,
+     "pf": 1.07,
+     "usd_mo": 147,
+     "maxdd": -3323,
+     "n": 59
+    },
+    "2021-25": {
+     "tpw": 4.41,
+     "win": 43.5,
+     "pf": 1.14,
+     "usd_mo": 406,
+     "maxdd": -8467,
+     "n": 971
+    }
+   },
+   "es_2026": {
+    "H1": {
+     "n": 121,
+     "tpw": 4.48,
+     "pf": 1.15,
+     "usd_mo": 488
+    },
+    "H2": {
+     "n": 75,
+     "tpw": 4.69,
+     "pf": 0.76,
+     "usd_mo": -763
+    }
+   },
+   "p_2021_25": 0.0592,
+   "p_holm": 0.9472,
+   "corr": {
+    "H1": {
+     "corr_lit": 0.039,
+     "overlap_lit": 0.65,
+     "corr_atlas": -0.034,
+     "overlap_atlas": 0.37
+    },
+    "H2": {
+     "corr_lit": -0.084,
+     "overlap_lit": 0.57,
+     "corr_atlas": -0.08,
+     "overlap_atlas": 0.22
+    },
+    "2021-25": {
+     "corr_lit": 0.018,
+     "overlap_lit": 0.49,
+     "corr_atlas": -0.007,
+     "overlap_atlas": 0.5
+    }
+   },
+   "rapid_addon": {
+    "25K": {
+     "H1": {
+      "usd_mo_delta": 302,
+      "tpw": 8.33,
+      "book_tpw": 4.74,
+      "pass40": 83.0,
+      "book_pass40": 91.1,
+      "fail40": 17.0,
+      "book_fail40": 8.9
+     },
+     "H2": {
+      "usd_mo_delta": 40,
+      "tpw": 7.0,
+      "book_tpw": 3.94,
+      "pass40": 97.3,
+      "book_pass40": 100.0,
+      "fail40": 0.0,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": 203,
+      "tpw": 9.42,
+      "book_tpw": 5.01,
+      "pass40": 26.6,
+      "book_pass40": 27.7,
+      "fail40": 72.8,
+      "book_fail40": 62.0
+     }
+    },
+    "50K": {
+     "H1": {
+      "usd_mo_delta": 603,
+      "tpw": 8.33,
+      "book_tpw": 4.74,
+      "pass40": 83.0,
+      "book_pass40": 92.9,
+      "fail40": 17.0,
+      "book_fail40": 7.1
+     },
+     "H2": {
+      "usd_mo_delta": 80,
+      "tpw": 7.0,
+      "book_tpw": 3.94,
+      "pass40": 97.3,
+      "book_pass40": 100.0,
+      "fail40": 0.0,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": 406,
+      "tpw": 9.42,
+      "book_tpw": 5.01,
+      "pass40": 27.1,
+      "book_pass40": 27.7,
+      "fail40": 72.3,
+      "book_fail40": 62.0
+     }
+    }
+   },
+   "already_tested": "partly: ATR-stretch fades (scalp-mean-reversion)",
+   "verdict": "rejected",
+   "why": "H2 PF 1.07 $147/mo; Holm p 0.9472"
+  },
+  {
+   "id": "popc_eodmom",
+   "name": "End-of-day momentum (last 30 min)",
+   "family": "momentum",
+   "symbol": "NQ (MNQ)",
+   "spans": {
+    "H1": {
+     "tpw": 4.48,
+     "win": 46.3,
+     "pf": 0.85,
+     "usd_mo": -361,
+     "maxdd": -3738,
+     "n": 121
+    },
+    "H2": {
+     "tpw": 4.78,
+     "win": 43.0,
+     "pf": 0.91,
+     "usd_mo": -213,
+     "maxdd": -2125,
+     "n": 86
+    },
+    "2021-25": {
+     "tpw": 4.73,
+     "win": 46.0,
+     "pf": 0.83,
+     "usd_mo": -435,
+     "maxdd": -29834,
+     "n": 1041
+    }
+   },
+   "es_2026": {
+    "H1": {
+     "n": 123,
+     "tpw": 4.56,
+     "pf": 0.81,
+     "usd_mo": -476
+    },
+    "H2": {
+     "n": 76,
+     "tpw": 4.75,
+     "pf": 0.58,
+     "usd_mo": -1291
+    }
+   },
+   "p_2021_25": 0.9941,
+   "p_holm": 1.0,
+   "corr": {
+    "H1": {
+     "corr_lit": 0.075,
+     "overlap_lit": 0.62,
+     "corr_atlas": 0.024,
+     "overlap_atlas": 0.36
+    },
+    "H2": {
+     "corr_lit": 0.048,
+     "overlap_lit": 0.5,
+     "corr_atlas": -0.069,
+     "overlap_atlas": 0.26
+    },
+    "2021-25": {
+     "corr_lit": -0.021,
+     "overlap_lit": 0.48,
+     "corr_atlas": -0.019,
+     "overlap_atlas": 0.47
+    }
+   },
+   "rapid_addon": {
+    "25K": {
+     "H1": {
+      "usd_mo_delta": -180,
+      "tpw": 9.22,
+      "book_tpw": 4.74,
+      "pass40": 69.6,
+      "book_pass40": 91.1,
+      "fail40": 30.4,
+      "book_fail40": 8.9
+     },
+     "H2": {
+      "usd_mo_delta": 53,
+      "tpw": 8.69,
+      "book_tpw": 3.94,
+      "pass40": 84.7,
+      "book_pass40": 100.0,
+      "fail40": 15.3,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": -217,
+      "tpw": 9.74,
+      "book_tpw": 5.01,
+      "pass40": 21.6,
+      "book_pass40": 27.7,
+      "fail40": 78.3,
+      "book_fail40": 62.0
+     }
+    },
+    "50K": {
+     "H1": {
+      "usd_mo_delta": -361,
+      "tpw": 9.22,
+      "book_tpw": 4.74,
+      "pass40": 69.6,
+      "book_pass40": 92.9,
+      "fail40": 30.4,
+      "book_fail40": 7.1
+     },
+     "H2": {
+      "usd_mo_delta": 108,
+      "tpw": 8.69,
+      "book_tpw": 3.94,
+      "pass40": 84.7,
+      "book_pass40": 100.0,
+      "fail40": 15.3,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": -435,
+      "tpw": 9.74,
+      "book_tpw": 5.01,
+      "pass40": 21.6,
+      "book_pass40": 27.7,
+      "fail40": 78.3,
+      "book_fail40": 62.0
+     }
+    }
+   },
+   "already_tested": "yes: Gao intraday momentum (famous published 2026-11-17), last-half-hour (E2)",
+   "verdict": "rejected",
+   "why": "H1 PF 0.85 $-361/mo; H2 PF 0.91 $-213/mo; 2021-25 PF 0.83 $-435/mo; Holm p 1.0"
+  },
+  {
+   "id": "popc_tuesday",
+   "name": "Turnaround Tuesday",
+   "family": "seasonality",
+   "symbol": "NQ (MNQ)",
+   "spans": {
+    "H1": {
+     "tpw": 0.19,
+     "win": 80.0,
+     "pf": 3.98,
+     "usd_mo": 177,
+     "maxdd": -349,
+     "n": 5
+    },
+    "H2": {
+     "tpw": 0.22,
+     "win": 25.0,
+     "pf": 0.34,
+     "usd_mo": -143,
+     "maxdd": -891,
+     "n": 4
+    },
+    "2021-25": {
+     "tpw": 0.3,
+     "win": 47.7,
+     "pf": 1.0,
+     "usd_mo": 0,
+     "maxdd": -2862,
+     "n": 65
+    }
+   },
+   "es_2026": {
+    "H1": {
+     "n": 6,
+     "tpw": 0.22,
+     "pf": 1.03,
+     "usd_mo": 5
+    },
+    "H2": {
+     "n": 9,
+     "tpw": 0.56,
+     "pf": 0.2,
+     "usd_mo": -396
+    }
+   },
+   "p_2021_25": 0.4992,
+   "p_holm": 1.0,
+   "corr": {
+    "H1": {
+     "corr_lit": -0.019,
+     "overlap_lit": 1.0,
+     "corr_atlas": 0.047,
+     "overlap_atlas": 0.6
+    },
+    "H2": {
+     "corr_lit": 0.229,
+     "overlap_lit": 0.75,
+     "corr_atlas": 0.023,
+     "overlap_atlas": 0.25
+    },
+    "2021-25": {
+     "corr_lit": -0.092,
+     "overlap_lit": 0.57,
+     "corr_atlas": -0.017,
+     "overlap_atlas": 0.51
+    }
+   },
+   "rapid_addon": {
+    "25K": {
+     "H1": {
+      "usd_mo_delta": 89,
+      "tpw": 4.93,
+      "book_tpw": 4.74,
+      "pass40": 91.1,
+      "book_pass40": 91.1,
+      "fail40": 8.9,
+      "book_fail40": 8.9
+     },
+     "H2": {
+      "usd_mo_delta": -81,
+      "tpw": 4.19,
+      "book_tpw": 3.94,
+      "pass40": 100.0,
+      "book_pass40": 100.0,
+      "fail40": 0.0,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": 0,
+      "tpw": 5.3,
+      "book_tpw": 5.01,
+      "pass40": 27.5,
+      "book_pass40": 27.7,
+      "fail40": 64.1,
+      "book_fail40": 62.0
+     }
+    },
+    "50K": {
+     "H1": {
+      "usd_mo_delta": 177,
+      "tpw": 4.93,
+      "book_tpw": 4.74,
+      "pass40": 91.1,
+      "book_pass40": 92.9,
+      "fail40": 8.9,
+      "book_fail40": 7.1
+     },
+     "H2": {
+      "usd_mo_delta": -161,
+      "tpw": 4.19,
+      "book_tpw": 3.94,
+      "pass40": 100.0,
+      "book_pass40": 100.0,
+      "fail40": 0.0,
+      "book_fail40": 0.0
+     },
+     "2021-25": {
+      "usd_mo_delta": 0,
+      "tpw": 5.3,
+      "book_tpw": 5.01,
+      "pass40": 27.5,
+      "book_pass40": 27.7,
+      "fail40": 63.9,
+      "book_fail40": 62.0
+     }
+    }
+   },
+   "already_tested": "partly: weekday as a strategy-tree condition",
+   "verdict": "rejected",
+   "why": "H2 PF 0.34 $-143/mo; 2021-25 PF 1.0 $0/mo; Holm p 1.0"
+  }
+ ]
+}
