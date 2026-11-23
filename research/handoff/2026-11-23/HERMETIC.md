@@ -11,7 +11,7 @@ writes `data/`, `logs/`, `cache/` or a top config file can change live state the
 | Self-test child | `engine/pc_selftest.child_env`: every suite runs with the guard in **raise** mode (PYTHONPATH + `LE_WRITE_GUARD_ROOT`), and HOME / USERPROFILE / OLYMPUS_HOME point into the suite's temp folder. The temp TMP, NinjaTrader folder, board and inbox redirects were already there. So a dirty suite now fails loudly instead of changing a live file. |
 | Every test process | `tests/__init__.py`: `LE_MEMORY_DB` = a temp db for every `python -m tests.*` and its children (`engine/memory.DB_PATH` honours it). |
 | Scan | `tools/hermetic_scan.py [areas] [--selftest] [--suites a,b]`: one suite at a time, with two detectors. (1) The guard in log mode. (2) A sha1 snapshot of `data/ logs/ cache/` + the config files before and after, which also catches node / PowerShell writers. Any change is put back afterwards. Output: `scratch/hermetic/scan.json`. |
-| Guard test | `tests/test_hermetic.py` (area pc): guard unit checks, the child_env seal, and a sample of the formerly dirty suites run under the snapshot (must be unchanged). |
+| Guard test | `tests/test_hermetic.py` (run_area pc, 14/14): guard unit checks, the child_env seal, and a sample of the formerly dirty suites run under the snapshot (must be unchanged). |
 
 ## Scan result: PC self-test suites + run_area pc / nq / fleet (142 suites, one at a time)
 14 were dirty. All are fixed; the rescan list is below.
@@ -33,3 +33,8 @@ The other ~390 suites (jarvis / olympus / zenith / kalshi / cities / agency / mo
 ## For the lead
 - The guard runs in **raise** mode in the self-test, so a future suite that writes a live file goes red. If it had passed before, that holds the auto-update (the regression rule), which is the point. Its first [FAIL] line names the file.
 - Shipping order: ship this together with or after night-truth (it is branched from it).
+
+## Verified (2026-11-23)
+- Rescan of the 14 dirty suites + arm_report / arm_rt / hand_hedge: 0 dirty of 17.
+- All 28 pc_selftest.SUITES through the real `run_suite` (guard in raise mode, temp HOME): 0 red.
+- tests.test_hermetic 14/14, tests.test_pc_selftest 65/65, the touched suites green (go 68, start_api 117, arm_report 28, arm_rt 47, rapid_arm 19, nqops 34, hand_hedge 29, rapid25 95, clean_storage 60), smoke 10/11 (zenith_mode: no Python playwright here).
