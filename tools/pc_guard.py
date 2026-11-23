@@ -348,7 +348,44 @@ def extra_name(a: dict) -> str:
         return "Extra account"
 
 
-def day_summary(snap: dict, now: int) -> list:
+def evening_extra(day: str, pa_path=None, digest_path=None, fleet=None) -> str:
+    """night-brief 2026-11-23: what the ONE evening message adds after the $ per account: the payouts ready now (engine/payout_autopilot's
+    last views), the fleet's next money move (engine/fleet_mgr) and the day's low-priority lines (engine/alert_bus.digest_peek: an update
+    applied ...). '' when none. Never raises."""
+    out = []
+    try:
+        import json as _json
+        from engine import payout_autopilot as PA
+        with open(pa_path or PA.STATE_PATH, encoding="utf-8") as fh:
+            v = (_json.load(fh).get("last") or {}).get("views") or []
+        rdy = [f"{x.get('name')} {money(x.get('amount'))}" for x in v if isinstance(x, dict) and x.get("ready")]
+        stop = [str(x.get("name")) for x in v if isinstance(x, dict) and x.get("guard") == "stop"]
+        if rdy:
+            out.append("Payout ready: " + ", ".join(rdy) + " (request it in MFFU, then TRADE_HOME -> P)")
+        if stop:
+            out.append("Do not take payout #5 on " + ", ".join(stop) + ": close it")
+    except Exception:
+        pass
+    try:
+        if fleet is None:
+            from engine import fleet_mgr as FM
+            s = str((FM.read_tiny() or {}).get("s") or "")
+            fleet = s.split("Next: ", 1)[1] if "Next: " in s else ""
+        if fleet:
+            out.append("Tomorrow: " + fleet)
+    except Exception:
+        pass
+    try:
+        from engine import alert_bus as AB
+        dg = [x for x in AB.digest_peek(day, digest_path) if x][:4]
+        if dg:
+            out.append("Also: " + "; ".join(dg))
+    except Exception:
+        pass
+    return (" " + " ".join(x.rstrip(".") + "." for x in out)) if out else ""
+
+
+def day_summary(snap: dict, now: int, sent: dict | None = None) -> list:
     """The day summary after the close (notify_settings.json daily_summary_at, 16:15 ET, up to the 17:00 CME break; CME
     trading days only): per account $ today, $ to pass and the room left, then tomorrow's big US news."""
     e = dt.datetime.fromtimestamp(int(now), ET)
@@ -367,6 +404,8 @@ def day_summary(snap: dict, now: int) -> list:
     except Exception:
         pass
     key = f"{PREFIX}day:{e.date().isoformat()}"
+    if key in (sent or {}):
+        return []                    # sent already: no rebuild (a later digest line waits for tomorrow's summary, never dropped)
     try:
         news = " " + notify.news_line(now) if notify else ""
     except Exception:
@@ -390,7 +429,7 @@ def day_summary(snap: dict, now: int) -> list:
     stale = age is None or age > HB_FRESH_S
     head = f"Day {e:%a %b %d}: {signed(tot)}" + (" (last report old)" if stale else "")
     body = ("; ".join(lines) + "." + (f" These are the numbers of the last report, {int(age) // 60} min ago." if stale and age is not None else "")
-            + news)
+            + news + evening_extra(e.date().isoformat()))
     return [{"key": key, "title": head, "body": body, "priority": "default", "tags": "memo"}]
 
 
@@ -409,7 +448,7 @@ def guard(state: dict | None, snap: dict, roll_state=None) -> tuple:
     except Exception:
         pass
     try:
-        cands += day_summary(snap, now)
+        cands += day_summary(snap, now, st["sent"])
     except Exception:
         pass
     try:                     # the 07:30 ET ZEUS morning brief (tools/morning_brief.py, read-only): once a day, + one Board event

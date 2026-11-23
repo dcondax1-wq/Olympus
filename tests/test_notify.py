@@ -406,16 +406,26 @@ def brief():
             return s
 
         wed = at(2026, 11, 18, 7, 32)
-        b = MB.build(snap(wed), wed, plan, [], news)
+        b = MB.build(snap(wed), wed, plan, [], news, fleet="decide the Rapid EOD 50K card first", waiting=4)
         ex = b["lines"]
-        check("h. Wed 07:32: 4 lines = 'ZEUS · Wed Nov 18 · PC ok', each account $ first (Zlarior 50K, 25K #2 side by side, ATLAS funded "
-              "$ to payout), overnight + today's hours + CPI, edge + needs you", ex == [
-                  "ZEUS · Wed Nov 18 · PC ok",
-                  "Zlarior 50K $49,193 ($3,807 to pass) · 25K #2 $25,000 ($1,500 to pass) · ATLAS 25K funded $25,000 ($2,100 to payout)",
-                  "Overnight: no trades · Today: Zlarior till 15:30, ATLAS till 12:00 · CPI m/m 08:30",
-                  "Edge: GREEN · Needs you: none"], ex)
-        check("h. the push: ASCII title 'ZEUS - Wed Nov 18 - PC ok', a 3-line body (4 with the title)",
-              b["title"] == "ZEUS - Wed Nov 18 - PC ok" and all(ord(c) < 128 for c in b["title"]) and len(b["body"].split("\n")) == 3, b)
+        check("h. Wed 07:32 (night-brief): READY line, one line per account (armed, $, room, $ to pass / to payout), Today (hours, CPI, "
+              "the T1 ban), the next money move, edge + needs you + decide cards", ex[0].startswith("PC ok") and ex[1:4] == [
+                  "Zlarior 50K armed · $49,193 · room $1,025 · $3,807 to pass",
+                  "Zlarior 25K #2 · $25,000 · room $1,000 · $1,500 to pass",
+                  "ATLAS 25K armed · $25,000 · room $1,000 · $2,100 to payout"]
+              and ex[4].startswith("Today: Zlarior till 15:30, ATLAS till 12:00 · CPI m/m 08:30")
+              and ex[5] == "Next money move: decide the Rapid EOD 50K card first"
+              and ex[6] == "Edge GREEN · Needs you: none · Decide cards waiting: 4" and len(ex) <= MB.MAX_LINES, ex)
+        check("h. the push: ASCII title 'ZEUS - Wed Nov 18 - PC ok', the body = the lines (<= 8)",
+              b["title"] == "ZEUS - Wed Nov 18 - PC ok" and all(ord(c) < 128 for c in b["title"]) and b["body"].split("\n") == ex, b)
+        rd = snap(wed)
+        rd["rd"] = {"s": "no", "w": "02:00", "b": "PC clock 25 s behind", "f": "double-click FIX_CLOCK.bat once, right-click > Run as administrator"}
+        br = MB.build(rd, wed, plan, [], news, fleet="", waiting=0)
+        check("h. readiness NOT READY: line 1 = the blocker + its fix, the title says NOT READY",
+              br["lines"][0] == "NOT READY for 02:00: PC clock 25 s behind. Fix: double-click FIX_CLOCK.bat once, right-click > Run as administrator"
+              and br["title"] == "ZEUS - Wed Nov 18 - NOT READY", br)
+        rd["rd"] = {"s": "ok", "w": "02:00"}
+        check("h. readiness ok: 'READY for 02:00 ...'", MB.build(rd, wed, plan, [], news, fleet="", waiting=0)["lines"][0].startswith("READY for 02:00"))
         odd = {"id": "EVBLDR987654321", "name": "EVBLDR987654321", "kind": "eval", "source": "pc", "plan": "MFFU Builder 25K",
                "eval": {"balance": 25100.0, "floor": 24100.0, "room": 1000.0, "to_target": 1400.0}, "trades": []}
         b2 = MB.build(snap(wed, extra=[odd]), wed, plan, [], news)
@@ -428,20 +438,24 @@ def brief():
         pos = {"side": "SHORT", "qty": 2, "entry_t": wed - 300}
         b3 = MB.build(snap(wed, trades=tr, atlas=atlas_card(balance=25000.0, status="funded", stage="funded", position=pos,
                                                            funded={"ready": True, "max_request": 1000.0})), wed, plan, [], news)
-        check("h. overnight = since 18:00 ET, paper left out: 'Zlarior 50K +$605 (1 trade), ATLAS 25K SHORT open'; payout READY -> needs you",
-              "Overnight: Zlarior 50K +$605 (1 trade), ATLAS 25K SHORT open" in b3["lines"][2] and "(payout READY $1,000)" in b3["lines"][1]
-              and "Needs you: request the ATLAS 25K payout $1,000" in b3["lines"][3], b3["lines"])
+        t3l = " | ".join(b3["lines"])
+        check("h. overnight = since 18:00 ET, paper left out (on the Today line); yesterday's $ on the account line; payout READY -> needs you",
+              "overnight Zlarior 50K +$605 (1 trade), ATLAS 25K SHORT open" in t3l and "Zlarior 50K armed · $49,193 · room $1,025 · yesterday +$300" in t3l
+              and "payout READY $1,000" in t3l and "Needs you: request the ATLAS 25K payout $1,000" in t3l, b3["lines"])
         b4 = MB.build(snap(wed, cond={"bot_down": "x"}, eh={"d": "2026-11-17", "z": ["G", 3.8, 3.9], "a": ["A", 1.2, 2.0, "2026-11-17"], "t": wed}), wed, plan, [], news)
-        check("h. a problem: 'PC: bot down' in the title, its one action under needs you; edge 'Zlarior GREEN, ATLAS AMBER'",
-              b4["title"].endswith("PC: bot down") and "Needs you: bot down: STOP BOT, START BOT" in b4["lines"][3]
-              and "Edge: Zlarior GREEN, ATLAS AMBER" in b4["lines"][3], b4["lines"])
+        check("h. a problem: NOT READY in the title, line 1 = 'NOT READY: bot down. Fix: STOP BOT, START BOT'; edge 'Zlarior GREEN, ATLAS AMBER'",
+              b4["title"].endswith("NOT READY") and b4["lines"][0] == "NOT READY: bot down. Fix: STOP BOT, START BOT"
+              and "Edge Zlarior GREEN, ATLAS AMBER" in b4["lines"][-1], b4["lines"])
         old = snap(wed)
         old.update(hb_age=2400)
-        check("h. an old report says so ('PC: last report 40 min old')", MB.build(old, wed, plan, [], news)["title"].endswith("PC: last report 40 min old"))
+        bo = MB.build(old, wed, plan, [], news)
+        check("h. an old report says so (NOT READY: last report 40 min old)", bo["lines"][0].startswith("NOT READY: last report 40 min old")
+              and bo["title"].endswith("NOT READY"), bo["lines"][0])
         mon = at(2026, 11, 23, 7, 31)
-        check("h. Monday: ATLAS has no EMA, so its hours start at 09:30", "Today: Zlarior till 15:30, ATLAS 09:30-12:00" in MB.build(snap(mon), mon, plan, [], news)["lines"][2])
+        check("h. Monday: ATLAS has no EMA, so its hours start at 09:30", any(x.startswith("Today: Zlarior till 15:30, ATLAS 09:30-12:00")
+                                                                              for x in MB.build(snap(mon), mon, plan, [], news)["lines"]))
         fri = at(2026, 11, 27, 7, 31)
-        bf = MB.build(snap(fri), fri, plan, [], news)["lines"][2]
+        bf = next(x for x in MB.build(snap(fri), fri, plan, [], news)["lines"] if x.startswith("Today:"))
         check("h. Fri Nov 27 (early close 13:15): entries end 13:00, said plainly", "Zlarior till 13:00, ATLAS till 12:00" in bf and "early close 13:15" in bf, bf)
 
         # once a day through the guard; a restart (state.json read back) never repeats it
@@ -463,11 +477,11 @@ def brief():
             posts.append({"m": method, "url": url, "body": body.decode("utf-8"), "h": headers})
             return 200, "{}"
         ok, _why = R.ntfy_post("https://ntfy.example", "topic-test", m[0]["body"], title=m[0]["title"], priority=m[0]["priority"], tags=m[0]["tags"], http=http)
-        check("h. the ntfy POST (stub): Title 'ZEUS - Wed Nov 18 - PC ok', a UTF-8 body of 3 lines, nothing sent for real",
-              ok and len(posts) == 1 and posts[0]["h"]["Title"] == "ZEUS - Wed Nov 18 - PC ok" and len(posts[0]["body"].split("\n")) == 3, posts)
+        check("h. the ntfy POST (stub): Title 'ZEUS - Wed Nov 18 - PC ok', a UTF-8 body of <= 8 lines, nothing sent for real",
+              ok and len(posts) == 1 and posts[0]["h"]["Title"] == "ZEUS - Wed Nov 18 - PC ok" and 4 <= len(posts[0]["body"].split("\n")) <= 8, posts)
         evs = [json.loads(x) for x in open(os.path.join(tmp, "board", "events.jsonl"), encoding="utf-8")]
         check("h. ONE Board event 'brief' for the day (a test board), not again on the later runs", [e["kind"] for e in evs] == ["brief"]
-              and evs[0]["data"]["day"] == "2026-11-18" and evs[0]["text"].startswith("ZEUS · Wed Nov 18 · PC ok | Zlarior 50K"), evs)
+              and evs[0]["data"]["day"] == "2026-11-18" and evs[0]["text"].startswith("PC ok") and " | Zlarior 50K armed" in evs[0]["text"], evs)
         os.environ.pop("LE_BOARD_DIR", None)
         check("h. no Board write outside the real report (no LE_PC_REPORT, no test board): a self-test never posts a fake brief",
               MB.board_post(b) is None)
