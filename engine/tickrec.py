@@ -253,6 +253,32 @@ def _et_today() -> str:
     return dt.datetime.now(ET).strftime("%Y-%m-%d")
 
 
+RAW_KEEP_DAYS = 7          # a live le_ticks CSV is deleted this many days after its ET day once it is in data/ticks
+
+
+def refresh_instruments(nd: str | None = None, today: dt.date | None = None) -> bool:
+    """While recording: the live instrument list follows the front contract (red team 2026-11-23: written once at `enable`,
+    so after the December roll the live recorder kept the expiring contract; the backfill already picks the contract per
+    date). True = rewritten."""
+    nd = nd or nt_dir()
+    if not nd or not is_enabled():
+        return False
+    rd = os.path.join(nd, REC_DIR)
+    if not os.path.exists(os.path.join(rd, "enabled.txt")):
+        return False
+    roots = [r for r in (_cfg().get("roots") or ["NQ", "ES"]) if str(r).upper() in ROOTS_OK]
+    want = "\n".join(front_names(roots, today)) + "\n"
+    p = os.path.join(rd, "instruments.txt")
+    try:
+        if open(p, encoding="utf-8").read() == want:
+            return False
+    except OSError:
+        pass
+    with open(p, "w", encoding="utf-8") as f:
+        f.write(want)
+    return True
+
+
 def ingest(nd: str | None = None) -> dict:
     """le_ticks CSVs -> data/ticks. Backfill days (bf_<ROOT>_<day>.csv, written whole by LE_TickRec) REPLACE that root's day,
     then the csv is deleted and bf_<ROOT>_<day>.done left behind, so LE_TickRec never asks for it again and the disk stays small.
@@ -301,13 +327,31 @@ def ingest(nd: str | None = None) -> dict:
         n_live += 1
         written.update(write_days(df))
         man[b] = sig
+    removed = []
+    for f in live:                                           # red team 2026-11-23: a live CSV RAW_KEEP_DAYS after its day, once
+        b = os.path.basename(f)                              # in data/ticks (its last version ingested, or the server's whole day
+        key = b[:-4]                                         # is in), is deleted: 2 roots x ~50 MB a day no longer pile up
+        try:
+            old = (dt.date.fromisoformat(today) - dt.date.fromisoformat(key[-10:])).days > RAW_KEEP_DAYS
+            sig = "%d:%d" % (os.path.getsize(f), int(os.path.getmtime(f)))
+        except (ValueError, OSError):
+            continue
+        if old and (man.get(b) == sig or key in done_keys):
+            try:
+                os.remove(f)
+                man.pop(b, None)
+                removed.append(b)
+            except OSError:
+                pass
     try:
         os.makedirs(os.path.dirname(man_p), exist_ok=True)
         with open(man_p, "w", encoding="utf-8") as fh:
             json.dump(man, fh)
     except Exception:
         pass
-    return {"ok": True, "files": n_bf + n_live, "backfill_files": n_bf, "live_files": n_live, "rows": rows, "written": sorted(written)}
+    rolled = refresh_instruments(nd)
+    return {"ok": True, "files": n_bf + n_live, "backfill_files": n_bf, "live_files": n_live, "rows": rows, "written": sorted(written),
+            "removed_raw": removed, "instruments_rolled": rolled}
 
 
 # ------------------------------------------------------------------------------------------------------------ autopilot
@@ -324,12 +368,62 @@ def in_window(et: dt.datetime) -> bool:
     return m < 120 or m >= 16 * 60 + 5
 
 
+LOCK_STALE_S = 7 * 3600     # longer than the study's longest run (red team 2026-11-23: was 3 h vs a 6 h study: two at once)
+STUDY_MIN_S = 2 * 3600      # the study starts only with this much time before 02:00 ET (weekday), else the next evening
+
+
+def start_window(et: dt.datetime) -> bool:
+    """A NEW heavy job may START: in_window and not 01:40-02:00 ET on a weekday (it would run into 02:00 ET)."""
+    if not in_window(et):
+        return False
+    if et.weekday() >= 5:
+        return True
+    m = et.hour * 60 + et.minute
+    return not (100 <= m < 120)
+
+
+def seconds_left(et: dt.datetime) -> float:
+    """Seconds from et until the next weekday 01:55 ET (5 min before the bot's 02:00 ET), capped at 6 h."""
+    cand = et.replace(hour=1, minute=55, second=0, microsecond=0)
+    if cand <= et:
+        cand += dt.timedelta(days=1)
+    while cand.weekday() >= 5:
+        cand += dt.timedelta(days=1)
+    return max(0.0, min(6 * 3600.0, (cand - et).total_seconds()))
+
+
 def nq_days() -> list[str]:
-    out = []
+    """ET days with NQ ticks on disk. Red team 2026-11-23: each day file is opened once per change (a cache keyed by its
+    mtime / size in data/ticks/_roots.json); before, every 15-minute autopilot kick re-read every stored day (GBs once the
+    year is backfilled)."""
+    cp = os.path.join(TICK_DIR, "_roots.json")
+    try:
+        cache = json.load(open(cp, encoding="utf-8"))
+    except Exception:
+        cache = {}
+    out, changed = [], False
     for d in days_available():
-        x = read_day(d)
-        if x is not None and (x.root == "NQ").any():
+        p = _day_path(d, ".parquet") if os.path.exists(_day_path(d, ".parquet")) else _day_path(d, ".csv.gz")
+        try:
+            sig = "%d:%d" % (os.path.getsize(p), int(os.path.getmtime(p)))
+        except OSError:
+            continue
+        c = cache.get(d)
+        if not (isinstance(c, dict) and c.get("sig") == sig):
+            x = read_day(d)
+            c = {"sig": sig, "roots": sorted(set(x.root.astype(str))) if x is not None and len(x) else []}
+            cache[d] = c
+            changed = True
+        if "NQ" in c.get("roots", []):
             out.append(d)
+    if changed:
+        try:
+            os.makedirs(TICK_DIR, exist_ok=True)
+            with open(cp + ".tmp", "w", encoding="utf-8") as fh:
+                json.dump(cache, fh)
+            os.replace(cp + ".tmp", cp)
+        except Exception:
+            pass
     return out
 
 
@@ -373,11 +467,11 @@ def autopilot(now: dt.datetime | None = None, study=None, nd: str | None = None)
     et = (now or dt.datetime.now(ET)).astimezone(ET)
     if not is_enabled():
         return {"ran": False, "why": "tick recorder is off"}
-    if not in_window(et):
-        return {"ran": False, "why": "trading hours (02:00-16:05 ET): later"}
+    if not start_window(et):
+        return {"ran": False, "why": "trading hours (01:40-16:05 ET on a weekday): later"}
     lock = os.path.join(os.path.dirname(CFG_PATH), "tickrec_autopilot.lock")
     try:
-        if os.path.exists(lock) and time.time() - os.path.getmtime(lock) < 3 * 3600:
+        if os.path.exists(lock) and time.time() - os.path.getmtime(lock) < LOCK_STALE_S:
             return {"ran": False, "why": "another autopilot is running"}
         os.makedirs(os.path.dirname(lock), exist_ok=True)
         with open(lock, "w") as fh:
@@ -403,7 +497,14 @@ def autopilot(now: dt.datetime | None = None, study=None, nd: str | None = None)
         if not want:
             out["why"] = "waiting: %d of %d NQ tick days" % (len(days), STUDY_DAYS) if len(days) < STUDY_DAYS else "already ran"
             return out
-        res = (study or _run_study)()
+        left = seconds_left(et)
+        if study is None and left < STUDY_MIN_S:
+            out["why"] = "the study waits for a longer quiet window (%d min before 02:00 ET)" % int(left // 60)
+            return out
+        res = study() if study is not None else _run_study(timeout=max(60.0, left - 300))
+        if not res:
+            out["why"] = "the study did not finish (stopped before 02:00 ET or failed): not counted, tried again later"
+            return out
         line = phone_line(res, len(days))
         runs.append({"t": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"), "days": len(days), "look": want,
                      "first": days[0], "last": days[-1], "line": line})
@@ -422,13 +523,24 @@ def autopilot(now: dt.datetime | None = None, study=None, nd: str | None = None)
             pass
 
 
-def _run_study() -> dict:
+def _run_study(timeout: float = 6 * 3600) -> dict:
+    """The study as its own process, stopped at `timeout` (before 02:00 ET). {} = it did not finish cleanly or did not write
+    a NEW results.json (red team 2026-11-23: a killed run returned the OLD results and used up one of the 2 looks)."""
     import subprocess
     sp = os.path.join(ROOT, "research", "orderflow", "of_study.py")
-    subprocess.run([sys.executable, sp], cwd=ROOT, timeout=6 * 3600, check=False,
-                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    rp = os.path.join(ROOT, "research", "orderflow", "results.json")
+    t0 = time.time()
     try:
-        return json.load(open(os.path.join(ROOT, "research", "orderflow", "results.json"), encoding="utf-8"))
+        r = subprocess.run([sys.executable, sp], cwd=ROOT, timeout=timeout, check=False,
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except subprocess.TimeoutExpired:
+        return {}
+    if r.returncode != 0:
+        return {}
+    try:
+        if os.path.getmtime(rp) < t0:
+            return {}
+        return json.load(open(rp, encoding="utf-8"))
     except Exception:
         return {}
 

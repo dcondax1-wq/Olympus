@@ -1742,10 +1742,10 @@ def tick_autopilot_kick(root: str = ROOT, now=None, popen=None) -> bool:
         from zoneinfo import ZoneInfo
         et = dt.datetime.fromtimestamp(now if now is not None else now_s(), ZoneInfo("America/New_York"))
         m = et.hour * 60 + et.minute
-        if et.weekday() < 5 and 120 <= m < 16 * 60 + 5:
+        if et.weekday() < 5 and 100 <= m < 16 * 60 + 5:     # red team: no start 01:40-02:00 either (it would run into 02:00)
             return False
         lock = os.path.join(root, "data", "tickrec_autopilot.lock")
-        if os.path.exists(lock) and time.time() - os.path.getmtime(lock) < 3 * 3600:
+        if os.path.exists(lock) and time.time() - os.path.getmtime(lock) < 7 * 3600:   # = engine.tickrec.LOCK_STALE_S
             return False
         import subprocess
         kw = {"cwd": root, "stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL, "stdin": subprocess.DEVNULL}

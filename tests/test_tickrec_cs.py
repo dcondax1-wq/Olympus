@@ -39,7 +39,7 @@ def ok(c, what):
 def cs_part():
     src = open(CS, encoding="utf-8").read()
     code = "\n".join(l for l in src.splitlines() if not l.strip().startswith("//"))
-    ok(not re.search(r"\bAccount\b|Submit|CreateOrder|Cancel|Flatten|incoming|ChangeOrder|\$\"|\?\.|=>", code),
+    ok(not re.search(r"\bAccount\b|\bOrders?\b|Submit|CreateOrder|PlaceOrder|Cancel|Flatten|incoming|ChangeOrder|\bAtm|\bATI\b|\bOIF\b|PLACE;|\$\"|\?\.|=>", code),
        "LE_TickRec.cs: no Account / order / OIF code, C# 5 only")
     if not (shutil.which("mcs") and shutil.which("mono")):
         print("SKIP: mono (mcs) not installed (apt-get install -y mono-mcs mono-runtime)")

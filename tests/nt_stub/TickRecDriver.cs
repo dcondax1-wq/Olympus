@@ -35,6 +35,9 @@ public static class TickRecDriver
            && !LE_TickRec.InWindow(new DateTime(2026, 11, 23, 16, 4, 0)), "no requests Mon 02:00-16:05 ET");
         Ok(LE_TickRec.InWindow(new DateTime(2026, 11, 23, 16, 5, 0)) && LE_TickRec.InWindow(new DateTime(2026, 11, 24, 1, 59, 0))
            && LE_TickRec.InWindow(new DateTime(2026, 11, 28, 11, 0, 0)), "requests 16:05-02:00 weekdays and all Saturday");
+        Ok(LE_TickRec.SendWindow(new DateTime(2026, 11, 24, 1, 39, 0)) && !LE_TickRec.SendWindow(new DateTime(2026, 11, 24, 1, 40, 0))
+           && !LE_TickRec.SendWindow(new DateTime(2026, 11, 24, 1, 59, 0)) && LE_TickRec.SendWindow(new DateTime(2026, 11, 28, 1, 50, 0))
+           && LE_TickRec.SendWindow(new DateTime(2026, 11, 24, 16, 5, 0)), "red team: a NEW request only until 01:40 ET on weekdays (it ends before 02:00)");
 
         // 1. off: nothing requested
         clock = new DateTime(2026, 11, 23, 22, 0, 0, DateTimeKind.Utc);          // 17:00 ET Monday

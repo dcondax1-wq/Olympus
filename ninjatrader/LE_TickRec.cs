@@ -93,6 +93,7 @@ namespace NinjaTrader.NinjaScript.AddOns
         private const int BfMaxDays = 365;
         private const int BfEmptyStop = 7;                                      // weekdays in a row with no ticks = end of history
         private readonly object BfLock = new object();
+        private readonly object InstLock = new object();                        // Subscribe / Unsubscribe: the 15 s timer vs Stop
         private bool bfPass;
         private DateTime bfCursor;                                              // ET date being worked on
         private DateTime bfLastPassDay = DateTime.MinValue;
@@ -104,6 +105,7 @@ namespace NinjaTrader.NinjaScript.AddOns
         private readonly Dictionary<string, int> bfEmpty = new Dictionary<string, int>();
         private readonly Dictionary<string, DateTime> bfEnd = new Dictionary<string, DateTime>();   // root -> server history ends here
         private string bfState = "idle";
+        private bool bfWriting;                                                 // SafeBackfilled is reading the Bars: never dispose them
         private int bfErrors;
 
         protected override void OnStateChange()
@@ -213,7 +215,7 @@ namespace NinjaTrader.NinjaScript.AddOns
                     Unsubscribe();
                     on = false;
                 }
-                else if (want && (!on || lt != listText))
+                else if (want && (!on || lt != listText) && !terminated)
                 {
                     bool wasOn = on;
                     Unsubscribe();
@@ -227,8 +229,11 @@ namespace NinjaTrader.NinjaScript.AddOns
                 if (on)
                     BackfillStep();
                 string names = "";
-                foreach (RecInst i in insts)
-                    names += (names.Length > 0 ? ";" : "") + i.Name;
+                lock (InstLock)
+                {
+                    foreach (RecInst i in insts)
+                        names += (names.Length > 0 ? ";" : "") + i.Name;
+                }
                 File.WriteAllText(statusPath, DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)
                     + ",on=" + (on ? "1" : "0") + ",instruments=" + names + ",rows=" + rows.ToString(CultureInfo.InvariantCulture)
                     + BackfillStatus() + "\n");
@@ -239,6 +244,12 @@ namespace NinjaTrader.NinjaScript.AddOns
         }
 
         private void Subscribe(string lt)
+        {
+            lock (InstLock)
+                SubscribeLocked(lt);
+        }
+
+        private void SubscribeLocked(string lt)
         {
             foreach (string raw in lt.Split('\n'))
             {
@@ -265,6 +276,12 @@ namespace NinjaTrader.NinjaScript.AddOns
         }
 
         private void Unsubscribe()
+        {
+            lock (InstLock)
+                UnsubscribeLocked();
+        }
+
+        private void UnsubscribeLocked()
         {
             foreach (RecInst i in insts)
             {
@@ -349,6 +366,18 @@ namespace NinjaTrader.NinjaScript.AddOns
             return m < 120 || m >= 16 * 60 + 5;
         }
 
+        // a NEW request only until 01:40 ET on a weekday (red team 2026-11-23): a request may take up to 10 min and its whole day
+        // is then written, so all of it ends before 02:00 ET, when the bot trades
+        public static bool SendWindow(DateTime et)
+        {
+            if (!InWindow(et))
+                return false;
+            if (et.DayOfWeek == DayOfWeek.Saturday || et.DayOfWeek == DayOfWeek.Sunday)
+                return true;
+            int m = et.Hour * 60 + et.Minute;
+            return !(m >= 100 && m < 120);
+        }
+
         // NinjaTrader name of the front quarterly contract on an ET date ("NQ 12-26"); rolls 8 days before the 3rd Friday
         // (the same rule as engine/tickrec.front_names)
         public static string FrontName(string root, DateTime d)
@@ -422,8 +451,8 @@ namespace NinjaTrader.NinjaScript.AddOns
 
         private void DropRequest()
         {
-            if (bfReq == null)
-                return;
+            if (bfReq == null || bfWriting)
+                return;                                                         // writing: SafeBackfilled drops it once done
             try { bfReq.Dispose(); } catch (Exception) { }
             bfReq = null;
         }
@@ -438,7 +467,7 @@ namespace NinjaTrader.NinjaScript.AddOns
             {
                 if (bfReq != null)
                 {
-                    if ((UtcNow() - bfReqStarted).TotalMinutes > 10)
+                    if (!bfWriting && (UtcNow() - bfReqStarted).TotalMinutes > 10)
                     {
                         DropRequest();                                          // stuck: forget it, a later pass retries the day
                         bfErrors++;
@@ -448,7 +477,7 @@ namespace NinjaTrader.NinjaScript.AddOns
                 }
                 if (!bfPass)
                     return;
-                if (!InWindow(et)) { bfState = "waiting_window"; return; }
+                if (!SendWindow(et)) { bfState = "waiting_window"; return; }
                 if (lowDisk) { bfState = "low_disk"; return; }
                 if ((UtcNow() - bfLastSent).TotalSeconds < 5)
                     return;
@@ -547,18 +576,21 @@ namespace NinjaTrader.NinjaScript.AddOns
         {
             string root;
             DateTime day;
+            bool late;
             lock (BfLock)
             {
                 if (req != bfReq)
                     return;                                                     // dropped (timeout / stop) meanwhile
                 root = bfReqRoot;
                 day = bfReqDay;
+                late = !InWindow(EtNow());                                       // the answer came in trading hours: no write now
+                bfWriting = !late;
             }
             int n = 0;
             bool ok = false;
             try
             {
-                if (code == ErrorCode.NoError && b != null && b.Bars != null && !terminated && !lowDisk)
+                if (!late && code == ErrorCode.NoError && b != null && b.Bars != null && !terminated && !lowDisk)
                 {
                     n = WriteDay(b.Bars, root, day);
                     ok = true;
@@ -570,9 +602,12 @@ namespace NinjaTrader.NinjaScript.AddOns
             }
             lock (BfLock)
             {
+                bfWriting = false;
                 if (req != bfReq)
                     return;
                 DropRequest();
+                if (late || terminated)
+                    return;                                                     // no marker: the day is asked again on a later pass
                 if (!ok)
                     bfErrors++;                                                 // an error is retried on the next pass
                 else if (n == 0)
@@ -589,6 +624,18 @@ namespace NinjaTrader.NinjaScript.AddOns
             string bfile = BfBase(root, day) + ".csv";
             string tmp = bfile + ".tmp";
             int n = 0;
+            // Bars.GetBid / GetAsk through reflection (red team 2026-11-23): if this NinjaTrader build has no such method the add-on
+            // still COMPILES (a missing member would block F5 for every script, LE_Feed included); the quote is then 0 and Python
+            // uses the tick rule
+            System.Reflection.MethodInfo getBid = null, getAsk = null;
+            try
+            {
+                getBid = bars.GetType().GetMethod("GetBid", new Type[] { typeof(int) });
+                getAsk = bars.GetType().GetMethod("GetAsk", new Type[] { typeof(int) });
+            }
+            catch (Exception)
+            {
+            }
             using (StreamWriter w = new StreamWriter(tmp, false, new UTF8Encoding(false)))
             {
                 w.Write("t_ms,price,size,bid,ask\n");
@@ -603,7 +650,20 @@ namespace NinjaTrader.NinjaScript.AddOns
                     if (TimeZoneInfo.ConvertTimeFromUtc(utc, eastern).Date != day.Date)
                         continue;
                     double bid = 0, ask = 0;
-                    try { bid = bars.GetBid(i); ask = bars.GetAsk(i); } catch (Exception) { bid = 0; ask = 0; }
+                    if (getBid != null && getAsk != null)
+                    {
+                        try
+                        {
+                            object[] ix = new object[] { i };
+                            bid = Convert.ToDouble(getBid.Invoke(bars, ix), CultureInfo.InvariantCulture);
+                            ask = Convert.ToDouble(getAsk.Invoke(bars, ix), CultureInfo.InvariantCulture);
+                        }
+                        catch (Exception)
+                        {
+                            bid = 0;
+                            ask = 0;
+                        }
+                    }
                     long ms = (utc.Ticks - EpochTicks) / TimeSpan.TicksPerMillisecond;
                     w.Write(ms.ToString(CultureInfo.InvariantCulture) + "," + px.ToString("0.########", CultureInfo.InvariantCulture) + ","
                         + vol.ToString(CultureInfo.InvariantCulture) + "," + bid.ToString("0.########", CultureInfo.InvariantCulture) + ","
