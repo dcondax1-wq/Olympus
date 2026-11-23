@@ -291,7 +291,12 @@ def news_hit(now: int, minutes: int = 2, events=None) -> str | None:
 
 
 # ---------------------------------------------------------------------------------------------- 7. clock drift
-_CLOCK = {"drift": None, "t": 0.0, "ok_t": 0.0, "bad": 0, "running": False, "probe": None}
+_CLOCK = {"drift": None, "t": 0.0, "ok_t": 0.0, "bad": 0, "running": False, "probe": None,
+          # self-sync (night audit 2026-11-22, package C): last attempt time, one at a time, injectable fakes for the tests
+          "sync_t": 0.0, "syncing": False, "sync": None, "flat": None, "win": None}
+CLOCK_SYNC_EVERY = 300          # s between two self-sync attempts
+CLOCK_SYNC_TIMEOUT = 120        # s the sync may take (go.sync_clock runs two 40 s commands at most)
+CLOCK_FIX = "double-click FIX_CLOCK.bat once, right-click > Run as administrator"   # = engine/go.CLOCK_FIX_SAY
 
 
 def clock_probe() -> float | None:
@@ -323,11 +328,12 @@ def _clock_run(probe):
 
 
 def clock_tick(bot, c, now_real=None):
-    """Start a probe in a thread when due (every clock_every_s; 20 s after a first bad answer, to confirm it)."""
+    """Start a probe in a thread when due (every clock_every_s; 20 s after a first bad answer, to confirm it; every 60 s while
+    the block is on, so a fixed clock frees the entries within a minute instead of 15)."""
     if not c.get("clock") or getattr(bot, "clock", None) is not time.time:
         return
     now_real = time.time() if now_real is None else now_real
-    every = 20.0 if _CLOCK["bad"] == 1 else float(c.get("clock_every_s") or 900)
+    every = 20.0 if _CLOCK["bad"] == 1 else 60.0 if _CLOCK["bad"] >= 2 else float(c.get("clock_every_s") or 900)
     if _CLOCK["running"] or now_real - _CLOCK["t"] < every:
         return
     _CLOCK["running"] = True
@@ -847,7 +853,75 @@ def tick(bot, now: int):
         bot._note_error(f"guards room / P&L check failed: {e.__class__.__name__}: {e}")
     p = clock_problem(bot, c)
     day = trading_day(now)
-    if p and getattr(bot, "_clock_pushed", None) != day:
-        bot._clock_pushed = day
-        _notify(bot, f"clock:{day}", "Clock drift: entries blocked", p + ". Windows: Settings > Time > Sync now.")
+    if p:
+        try:
+            clock_heal(bot, p, day)
+        except Exception as e:
+            bot._note_error(f"guards clock sync failed: {e.__class__.__name__}: {e}")
     bot.health["guard_block"] = p
+
+
+def _clock_flat(bot) -> str | None:
+    """Why a trade may be open (None = flat): the bot's own routed trade, then engine/self_heal.trade_open (LIT's files + every
+    NinjaTrader state file: the same no-trade-open rule as self_heal's GATED remedies). Any doubt = not flat."""
+    if _CLOCK.get("flat") is not None:
+        return _CLOCK["flat"]()
+    if getattr(bot, "_open_routed", None) is not None:
+        return "a trade is open"
+    try:
+        from . import self_heal
+        return self_heal.trade_open(self_heal.Ctx(nt=None, git=lambda *a, **k: None, procs=[], ping=lambda: True, pkgs={}))
+    except Exception as e:  # noqa: BLE001
+        return f"cannot tell if flat ({e.__class__.__name__})"
+
+
+def _clock_sync_run(bot, day, off):
+    """Daemon thread: engine/go.sync_clock() bounded by CLOCK_SYNC_TIMEOUT, then the one push that says how it went."""
+    try:
+        fn = _CLOCK.get("sync")
+        if fn is None:
+            from .go import sync_clock as fn
+        box = {}
+
+        def _do():
+            try:
+                box["r"] = fn()
+            except Exception as e:  # noqa: BLE001
+                box["r"] = {"ok": False, "error": f"{e.__class__.__name__}: {e}"}
+        th = threading.Thread(target=_do, name="guard-clock-sync-run", daemon=True)
+        th.start()
+        th.join(CLOCK_SYNC_TIMEOUT)
+        r = box.get("r") if not th.is_alive() else {"ok": False, "error": "timed out"}
+        if isinstance(r, dict) and r.get("ok"):
+            _CLOCK["t"] = 0.0           # probe again at once ...
+            _CLOCK["bad"] = 1           # ... as a 20 s confirming probe: a right clock clears the block, a wrong one keeps it
+            bot._clock_pushed = day
+            _notify(bot, f"clock-synced:{day}:{int(time.time())}", "Clock fixed",
+                    f"PC clock was {off:.0f} s off: synced by itself. Entries resume after one confirming check.")
+        elif getattr(bot, "_clock_pushed", None) != day:
+            bot._clock_pushed = day
+            _notify(bot, f"clock:{day}", "Clock drift: entries blocked", f"PC clock was {off:.0f} s off: could not sync: {CLOCK_FIX}.")
+    except Exception as e:  # noqa: BLE001
+        bot._note_error(f"guards clock sync failed: {e.__class__.__name__}: {e}")
+    finally:
+        _CLOCK["syncing"] = False
+
+
+def clock_heal(bot, p: str, day: str, now_real=None):
+    """The clock block is on: on Windows, flat, and no attempt in the last CLOCK_SYNC_EVERY s -> sync the clock in a daemon thread
+    (never blocks the guard tick). Otherwise (not Windows, a trade open) the plain daily push names FIX_CLOCK.bat."""
+    now_real = time.time() if now_real is None else now_real
+    win = _CLOCK["win"] if _CLOCK.get("win") is not None else os.name == "nt"
+    off = abs(float(_CLOCK.get("drift") or 0.0))
+    if win and not _CLOCK.get("syncing") and now_real - float(_CLOCK.get("sync_t") or 0.0) >= CLOCK_SYNC_EVERY:
+        why = _clock_flat(bot)
+        if not why:
+            _CLOCK["sync_t"] = now_real
+            _CLOCK["syncing"] = True
+            threading.Thread(target=_clock_sync_run, args=(bot, day, off), name="guard-clock-sync", daemon=True).start()
+            return
+    if _CLOCK.get("syncing"):
+        return                          # the push follows the result
+    if getattr(bot, "_clock_pushed", None) != day:
+        bot._clock_pushed = day
+        _notify(bot, f"clock:{day}", "Clock drift: entries blocked", f"{p}. {CLOCK_FIX[0].upper()}{CLOCK_FIX[1:]}.")

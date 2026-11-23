@@ -276,6 +276,31 @@ def glance_checks(REF):
           G._ab_armed({"kind": "LIVE", "enabled": True}) is True and G._ab_armed({"kind": "LIVE", "enabled": False}) is False
           and G._ab_armed({"kind": "SIM", "enabled": True}) is False and G._ab_armed({"kind": "PAPER", "enabled": True}) is False
           and G._ab_armed({"armed": False, "kind": "LIVE", "enabled": True}) is False and G._ab_armed({}) is False)
+    # 2026-11-22 (night audit, package C): armed on the phone only when the live gate let it through; else its reason
+    def _bots(hb):
+        return {b["id"]: b for b in (G.build(hb) or {}).get("bots") or []}
+    gl = _bots({"health": {"account": {"armed": True, "enabled": False, "disabled": "confirm phrase missing"}}, "running": True})["lit"]
+    check("6b. Zlarior armed but the live gate refused: NOT armed + the gate's reason", gl.get("armed") is not True
+          and gl.get("nar") == "NOT armed: confirm phrase missing", gl)
+    gl = _bots({"health": {"account": {"armed": True, "enabled": True}}, "running": True})["lit"]
+    gl2 = _bots({"health": {"account": {"armed": True, "disabled": "x" * 200}}, "running": True})["lit"]
+    check("6c. Zlarior armed + enabled + no reason = armed; a 'disabled' reason alone = NOT armed (cut to 90)",
+          gl.get("armed") is True and gl2.get("armed") is not True and gl2.get("nar") == "NOT armed: " + "x" * 90, (gl, gl2))
+    def _rp(**h):
+        hb = {"running": True, "acct": {"accounts": [{"id": "rapid", "plan_rules": {"start": 50000.0}, "running": True}]},
+              "health": {"accounts": [{"id": "rapid", "label": "LIVE", **h}]}}
+        return _bots(hb).get("rapid") or {}
+    r1, r2, r3 = _rp(armed=True, enabled=True), _rp(armed=True, enabled=False, disabled="phrase missing"), _rp(armed=True, disabled="NINJATRADER_LIVE off")
+    check("6d. Rapid follows the same rule (armed+enabled = armed; gate refused / disabled = NOT armed + reason)",
+          r1.get("armed") is True and r2.get("armed") is not True and r2.get("nar") == "NOT armed: phrase missing"
+          and r3.get("armed") is not True and r3.get("nar") == "NOT armed: NINJATRADER_LIVE off", (r1, r2, r3))
+    hb = {"running": True, "acct": {"accounts": [{"id": "b25k_2", "plan_rules": {"start": 25000.0}, "running": True},
+                                                 {"id": "blitz"}, {"id": "acct_c"}]},
+          "health": {"accounts": [{"id": "b25k_2", "armed": True, "enabled": True, "label": "LIVE"}, {"id": "blitz", "armed": True}]}}
+    bx = _bots(hb)
+    check("6e. extra accounts get a row (Zlarior 25K #2, armed, LIT · MFFU 25K); never BLITZ / account C",
+          "b25k_2" in bx and bx["b25k_2"].get("name") == "Zlarior 25K #2" and bx["b25k_2"].get("armed") is True
+          and bx["b25k_2"].get("what") == "LIT · MFFU 25K" and "blitz" not in bx and "acct_c" not in bx, list(bx))
     t_arm, b_arm = None, None
     for tr in [t for t in REF if t["day"] == "2026-10-13"][:1]:
         for t in range(int(tr["entry_t"]) - 3 * 3600, int(tr["entry_t"]) + 1, 300):

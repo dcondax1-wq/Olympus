@@ -154,16 +154,25 @@ def lit(hb: dict, card: dict | None) -> dict:
     acc = _d(_d(hb.get("health")).get("account"))
     st = _d(br.get("stage"))
     out = {"id": "lit", "name": "Zlarior", "what": "LIT · " + str(c.get("plan") or "MFFU Builder 50K"),
-           "on": bool(hb.get("running")), "armed": bool(acc.get("armed")), "mode": acc.get("label") or ("PAPER" if hb.get("adapter") == "paper" else None),
+           "on": bool(hb.get("running")), "armed": _gate_armed(acc), "mode": acc.get("label") or ("PAPER" if hb.get("adapter") == "paper" else None),
            "stage": _t(str(st.get("label") or "") + (f" ({st['n']}/10)" if st.get("n") else ""), 50) or None,
            "wait": _t(st.get("waiting") or c.get("waiting"), 170) or None,
            "why": _lit_why(br) if br else None, "lv": _lit_levels(br), "arm": _lit_armed(br),
            "pos": _pos(c.get("position") or br.get("trade")), "day": _usd(_f(c.get("today_pnl"), _f(br.get("day_pnl")))),
            "room": _usd(c.get("room")), "mll": _usd(c.get("mll")), "log": _log(br.get("log")), "at": br.get("at"),
            "px": _f(br.get("price")), "chk": _lit_checks(br), "blk": [_t(x, 60) for x in _l(_d(br.get("guards")).get("blocking"))[:2]]}
-    if not out["armed"] and _nar("Zlarior"):
+    if not out["armed"] and acc.get("disabled"):
+        out["nar"] = "NOT armed: " + str(acc["disabled"])[:90]      # the live gate's own reason first
+    elif not out["armed"] and _nar("Zlarior"):
         out["nar"] = _nar("Zlarior")             # the phone says why, not just a flag (small additive field)
     return out
+
+
+def _gate_armed(acc) -> bool:
+    """Armed on the phone only when the bot is armed AND the live gate let it through (enabled not False, no 'disabled'
+    reason). Before 2026-11-22 an armed flag alone showed ARMED while the gate refused (night audit, package C)."""
+    acc = _d(acc)
+    return bool(acc.get("armed")) and acc.get("enabled") is not False and not acc.get("disabled")
 
 
 def _lit_checks(br) -> list | None:
@@ -311,9 +320,29 @@ def cut_logs(g, n: int) -> None:
                 g[k] = g[k][:n]
 
 
+EXTRA_SKIP = ("blitz", "acct_c")      # hidden / paper lanes: never a glance row
+EXTRA_NAMES = {"b25k_2": "Zlarior 25K #2"}
+
+
 def rapid(hb: dict, rid: str = "rapid") -> dict | None:
     """The Rapid EOD 25K / 50K (engine/rapid.py): only when its lane (an extra account, lane / id "rapid") is configured;
     rid "rapid2" = the 2nd Rapid (data/rapid2.json, day-multirapid)."""
+    return extra(hb, rid)
+
+
+def extra_ids(hb: dict) -> list:
+    """Every extra account id in the heartbeat (health.accounts + acct.accounts), rapid / rapid2 first, blitz / acct_c skipped."""
+    hb = _d(hb)
+    ids = []
+    for r in _l(_d(hb.get("health")).get("accounts")) + _l(_d(hb.get("acct")).get("accounts")):
+        i = str(_d(r).get("id") or "")
+        if i and i not in ids and i not in EXTRA_SKIP and not i.startswith("acct_c"):
+            ids.append(i)
+    return [i for i in ("rapid", "rapid2") if i in ids] + [i for i in ids if i not in ("rapid", "rapid2")]
+
+
+def extra(hb: dict, rid: str) -> dict | None:
+    """One extra account's row (a Rapid lane, Zlarior 25K #2 ...); None when the heartbeat does not carry it."""
     hb = _d(hb)
     subs = _l(_d(hb.get("acct")).get("accounts"))
     hrow = next((r for r in _l(_d(hb.get("health")).get("accounts")) if isinstance(r, dict) and r.get("id") == rid), None)
@@ -329,14 +358,21 @@ def rapid(hb: dict, rid: str = "rapid") -> dict | None:
     room = (bal - floor) if bal is not None and floor is not None else None
     lk = row.get("locked") or hrow.get("locked")
     dis = _d(row.get("account")).get("disabled") or hrow.get("disabled")
-    out = {"id": rid, "name": "Rapid EOD" + (" #2" if rid == "rapid2" else ""),
-           "what": "LIT + ATLAS · MFFU Rapid EOD " + ("25K" if _f(pr.get("start")) == 25000.0 else "50K"),
+    size_ = "25K" if _f(pr.get("start")) == 25000.0 else "50K"
+    is_rapid = rid.startswith("rapid")
+    name = ("Rapid EOD" + (" #2" if rid == "rapid2" else "")) if is_rapid else \
+        EXTRA_NAMES.get(rid) or _t(row.get("name") or hrow.get("name") or rid, 30)
+    gate = {"armed": hrow.get("armed"), "enabled": hrow.get("enabled", row.get("enabled")), "disabled": dis}
+    out = {"id": rid, "name": name,
+           "what": ("LIT + ATLAS · MFFU Rapid EOD " + size_) if is_rapid else ("LIT · MFFU " + size_ if pr.get("start") is not None else "LIT"),
            "on": bool(hrow.get("enabled", row.get("enabled"))) and bool(row.get("running", hb.get("running"))),
-           "armed": bool(hrow.get("armed")), "mode": hrow.get("label") or _d(row.get("account")).get("label"),
-           "wait": "Trades the same LIT setups as Zlarior (and ATLAS's when LIT is flat).",
+           "armed": _gate_armed(gate), "mode": hrow.get("label") or _d(row.get("account")).get("label"),
+           "wait": "Trades the same LIT setups as Zlarior" + (" (and ATLAS's when LIT is flat)." if is_rapid else "."),
            "why": _t(("Locked today: " + str(lk)) if lk else ("Off: " + str(dis)) if dis else "", 170) or None,
            "pos": _pos(row.get("position")), "day": _usd(_f(row.get("day_pnl"), hrow.get("day_pnl"))),
            "room": _usd(room), "mll": _usd(pr.get("mll")), "log": []}
+    if not out["armed"] and dis:
+        out["nar"] = "NOT armed: " + str(dis)[:90]
     return out
 
 
@@ -348,8 +384,8 @@ def build(hb: dict | None, board: dict | None = None, now=None, max_bytes: int =
             return None
         bd = _d(board)
         bots = [lit(hb, bd.get("lit")), atlas(hb, bd.get("atlas"))]
-        for rid in ("rapid", "rapid2"):
-            r = rapid(hb, rid)
+        for rid in extra_ids(hb):
+            r = extra(hb, rid)
             if r:
                 bots.append(r)
         out = {"v": VERSION, "t": int(_f(hb.get("t"), now or time.time())), "bots": [{k: v for k, v in b.items() if v not in (None, [], "")} for b in bots]}
