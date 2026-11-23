@@ -61,7 +61,8 @@ def part_a():
     bad = [d.get("id") for d in items if not (re.fullmatch(r"[a-z0-9][a-z0-9_-]{1,39}", str(d.get("id"))) and d.get("question") and d.get("why")
                                               and "$" in str(d.get("impact")) and isinstance(d.get("impact_usd"), (int, float))
                                               and set(d.get("options") or []) <= {"yes", "no", "later"} and d.get("options")
-                                              and d.get("status") in ("open", "yes", "no", "later", "done") and d.get("source"))]
+                                              and d.get("status") in ("open", "yes", "no", "later", "done", "superseded", "waiting") and d.get("source")
+               and (d.get("status") != "superseded" or d.get("superseded_by")) and (d.get("status") != "waiting" or d.get("waiting_on")))]
     check("a. every item: id, question, a one-line why, $ impact (+ impact_usd), yes/no/later options, status, source", items and not bad, bad)
     ids = [d["id"] for d in items]
     check("a. seeded: payout ping $1,000, Zlarior on the funded 25K, Rapid 25K bank, ATLAS on the 50K funded / on the Rapid, keep $1,000, ask MFFU",

@@ -67,6 +67,10 @@ def part_b():
     check("b. re-buy the same plan tonight: Builder 25K $63 ($43 if your code works), not a reset", "Builder 25K $63" in b and "$43" in b
           and "not a reset" in b, b)
     check("b. the Rapid 50K refill offered only as a card question", "refill-25k-with-rapid50" in b and "$165" in b, b)
+    st2, _ = run({}, fleet())
+    _s, al2 = FM.step(st2, fleet(**{"x:b25k_2": {"stage": "failed"}}), {**OPEN, "refill-25k-with-rapid50": "superseded"})
+    check("b. refill card merged (2026-11-23 triage): the 25K re-buy points at the Rapid 50K plan card instead",
+          al2 and "plan-rapid50k-max2-rebuys" in al2[0]["body"] and "refill-25k" not in al2[0]["body"], al2)
 
 
 def part_c():
@@ -193,8 +197,10 @@ def part_j():
 def part_k():
     check("k. the owner's real prices", FM.PRICE == {"builder50k": 91.80, "builder25k": 63.0, "rapideod25": 97.20, "rapideod50": 165.0})
     cd = FM.cards()
-    check("k. decisions.json read: the four buying cards are open today (no buy is suggested as approved)",
-          all(cd.get(k) == "open" for k in ("plan-rapid50k-max2-rebuys", "plan-fundednext50k-max2-rebuys", "buy-rapid50-now", "refill-25k-with-rapid50")), cd)
+    check("k. decisions.json read (2026-11-23 triage): the Rapid 50K plan card open; buy-now / refill merged into it; FundedNext waiting",
+          cd.get("plan-rapid50k-max2-rebuys") == "open" and cd.get("buy-rapid50-now") == "superseded"
+          and cd.get("refill-25k-with-rapid50") == "superseded" and cd.get("plan-fundednext50k-max2-rebuys") == "waiting", cd)
+    check("k. no buy is suggested as approved (nothing is a yes)", FM.next_move([R("lit", "Zlarior 50K", "builder50k")], cd, {}).startswith("decide card"))
     tmp = tempfile.mkdtemp()
     try:
         p = os.path.join(tmp, "d.json")
