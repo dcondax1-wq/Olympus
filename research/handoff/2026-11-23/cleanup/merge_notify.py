@@ -2,6 +2,7 @@
 `git merge origin/night-notify-rt` stopped on its 3 conflicts (docs/ALERTS.md, engine/alert_bus.py, engine/trade_home.py):
 
     python research/handoff/2026-11-23/cleanup/merge_notify.py      then: git add -A && git commit --no-edit
+(the same after `git merge origin/night-payout-rt`: its TRADE_HOME "P" and run_area lines next to cleanup's "M" -> both kept)
 
 1. each conflict keeps BOTH sides (cleanup's tools/bat paths + menu 10-14 / M, notify's ZERO-SETUP text + "T Test all alerts");
 2. night-notify's own new lines that name a moved .bat by its old top-folder place get the tools/bat/ (tools\\bat\\) path, so
@@ -28,9 +29,11 @@ def main() -> int:
     if not os.path.isdir(os.path.join(ROOT, "tools", "bat")):
         print("run it from the repo root of the merge (tools/bat/ must exist)")
         return 1
-    for p in ("docs/ALERTS.md", "engine/alert_bus.py", "engine/trade_home.py"):
+    for p in ("docs/ALERTS.md", "engine/alert_bus.py", "engine/trade_home.py", "tests/run_area.py"):
         f = os.path.join(ROOT, p)
         s = open(f, encoding="utf-8").read()
+        if "<<<<<<<" not in s:
+            continue
         n = len(CONFLICT.findall(s))
         s = CONFLICT.sub(lambda m: keep_both(p, m.group(1), m.group(2)), s)
         if "<<<<<<<" in s or ">>>>>>>" in s:
