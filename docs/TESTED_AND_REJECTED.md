@@ -54,6 +54,12 @@
   -$580 / -$226 a month, funded 25K first payout Jan 4 -> Jan 13) and Zlarior stands down after a closed ATLAS loss
   (-$1,733 / -$297 / -$212 a month): both rejected. Anatomy: no bucket loses in both 2026 halves except ATLAS VIX < 15
   (already rejected 2026-11-18).
+- **Popular classic strategies (2026-11-23, `popular-classic-2026-11-23.md`, `tools/popular_classic.py`, `research/lab/popular_classic.json`):**
+  16 textbook versions fixed before the run (ORB 30, VWAP 2SD reversion, VWAP trend pullback, Connors RSI(2) 5m / 15m, Donchian 20/10,
+  NR7-ID, Bollinger squeeze, gap fill, IB breakout, IB fade, 9/21 EMA pullback, Keltner breakout, Crabel stretch, last-30-min momentum,
+  Turnaround Tuesday), NQ 5m RTH, $400 a trade MNQ, costs + slippage. 0 pass (Holm over 16 on 2021-25: best Crabel 0.95). Only Crabel
+  is positive in H1 / H2 / 2021-25 ($603 / $147 / $406 a month, H2 PF 1.07, ES H2 loses); Keltner / IB break / ORB win H1, lose H2; IB fade
+  wins 2026, loses 2021-25 (DD -$41.8k). Corr LIT / ATLAS within +/-0.3. As Rapid EOD add-ons all lower 2026 pass-in-40. Nothing adopted.
 - **Zlarior more money, 2 pre-registered batches (2026-11-19, `lit-more-money-2026-11-19.md`, `tools/lit_more_money.py`,
   `research/lit/more_money.json`, designs `research/lit/more_money_design_batch1/2.md`, Lab rows `research/lab/lit_more_money.json`):**
   9 single versions, LIT $/month H1 / H2 / 2021-25 vs today $5,562 / $2,670 / $25: ES (MES) LIT filler on days NQ has not
