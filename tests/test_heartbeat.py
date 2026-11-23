@@ -68,6 +68,8 @@ def fake_bot(**kw):
 
 
 def main() -> int:
+    from engine import push as _push       # red team 2026-11-23 (hermetic scan): the PC push key is made on first use; never in
+    _push.PC_KEY_PATH = os.path.join(tempfile.mkdtemp(prefix="le_pushkey_"), "push_pc_key.json")   # the real data/ from a test
     tmp = tempfile.mkdtemp(prefix="le_hbtest_")
     try:
         # ---------------------------------------------------------------- an origin with a real main history

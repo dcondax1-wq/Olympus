@@ -565,10 +565,11 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
         snap["zl"] = None
     try:                                    # the website money pipeline (agency/pipeline.py: counts + $ only, no names/phones/ids), refreshed each report
         from agency import pipeline as _ap
-        try:
-            _ap.write_card(_ap.build_card())
-        except Exception:
-            pass
+        if os.path.normcase(os.path.realpath(root)) == os.path.normcase(os.path.realpath(ROOT)):   # night-hermetic: a test's fake root
+            try:                                                                                  # never rewrites the real card
+                _ap.write_card(_ap.build_card())
+            except Exception:
+                pass
         snap["ap"] = _ap.read_card()
     except Exception:
         snap["ap"] = None

@@ -106,7 +106,8 @@ def test_preflight():
     sp = os.path.join(tmpd, "ops_state.json")
     MON = ts(2026, 11, 23, 1, 40)
     ctx = {"now": MON, "folder": tmpd, "ping": None, "hb": HB, "net": {"up": True, "n": 3, "drift_s": 0.2}, "state": st, "light": True}
-    real_rc, real_ext = OC.run_checks, PF.last_ext
+    real_rc, real_ext, real_log = OC.run_checks, PF.last_ext, OC.LOG_DIR
+    OC.LOG_DIR = tmpd                    # night-hermetic: the tick's ops log goes to the temp folder, never logs/ops-<day>.log
     OC.run_checks = lambda c: _checks()
     PF.last_ext = lambda path=None: ext_ok
     try:
@@ -115,7 +116,7 @@ def test_preflight():
     except Exception as e:  # noqa: BLE001
         sent.append({"err": repr(e)})
     finally:
-        OC.run_checks, PF.last_ext = real_rc, real_ext
+        OC.run_checks, PF.last_ext, OC.LOG_DIR = real_rc, real_ext, real_log
         shutil.rmtree(tmpd, ignore_errors=True)
     pre = [p for p in sent if str(p.get("key", "")).startswith("ops:pre:")]
     check("b. ops_checks.tick Monday 01:40 (preflight + pre-session windows both open): ONE push, the preflight's 'Ready for the week', not repeated",

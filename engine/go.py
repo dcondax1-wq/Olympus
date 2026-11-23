@@ -787,8 +787,21 @@ def _summary(rows, rc):
     print("\n ---- WHAT HAPPENED ----")
     for ln in arm_report.lines(rows):
         print(" " + ln if ln else "")
-    arm_report.save(rows)
+    arm_report.save(rows, path=_arm_status_path())
     return rc
+
+
+def _arm_status_path():
+    """data/arm_status.json for the real START; next to the config a test pointed this module at (SECOND_PATH / CFG in a temp
+    folder) otherwise, so a test run never rewrites the phone's live armed status (night-hermetic 2026-11-23: a suite's
+    leftover made the Brain glance say "not armed")."""
+    from . import arm_report
+    if os.path.normcase(os.path.realpath(arm_report.PATH)) != os.path.normcase(os.path.realpath(os.path.join(ROOT, "data", "arm_status.json"))):
+        return arm_report.PATH                       # a test pointed arm_report itself somewhere: that wins
+    for p, real in ((SECOND_PATH, None), (CFG, os.path.join(ROOT, "data", "start_bot.json"))):
+        if p and (real is None or os.path.normcase(os.path.realpath(p)) != os.path.normcase(os.path.realpath(real))):
+            return os.path.join(os.path.dirname(p), "arm_status.json")
+    return arm_report.PATH
 
 
 def step_arm(cfg, phrase, dry=False, open_page=True, inp=None) -> int:
