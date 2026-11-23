@@ -8,7 +8,7 @@
 | 4 | data/import_futures.build_daily writes a day the PC missed hours of as one finished bar (append-only: never corrected) | LOW | documented in data/SEAMS.md; not changed |
 | 5 | Moved .bat files still tell the owner "double-click ONE_TIME_SETUP.bat / LIVE_LINK.bat / UPDATE.bat ... again" by bare name (10 echo lines; most mean the same file) | LOW | not changed (.bat edits are lead-only for helpers) |
 
-Resolution for the night-notify merge: keep BOTH menus (cleanup's 10-14 + M, then notify's T) and in do_choice keep both branches,
+Resolution for the night-notify merge (scripted + verified: research/handoff/2026-11-23/cleanup/merge_notify.py, then bat_menu 18/18, trading_home, alert_map, alert_bus, notify_rt, notify, alert_drill, bat_shortcuts, trade_alerts all green on the merged tree): keep BOTH menus (cleanup's 10-14 + M, then notify's T) and in do_choice keep both branches,
 with T = run_bat("tools/bat/TEST_ALERT.bat", run); alert_bus docstring + docs/ALERTS.md: keep cleanup's tools/bat paths AND
 notify's ZERO-SETUP paragraph (the tests below pass on that tree).
 
