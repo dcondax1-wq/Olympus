@@ -276,7 +276,8 @@ def save_names(mf: dict | None, path: str | None = None) -> bool:
         tmp = path + ".tmp"
         with open(tmp, "w", encoding="utf-8") as fh:
             json.dump(out, fh)
-        os.replace(tmp, path)
+        from . import fsutil as _fsutil
+        _fsutil.replace(tmp, path)
         return True
     except Exception:  # noqa: BLE001
         return False

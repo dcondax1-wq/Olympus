@@ -228,7 +228,8 @@ def set_window(minutes: float, path: str | None = None, now: float | None = None
     tmp = p + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(w, fh)
-    os.replace(tmp, p)
+    from . import fsutil as _fsutil
+    _fsutil.replace(tmp, p)
     return w
 
 
