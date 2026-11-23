@@ -31,3 +31,20 @@ Tests: `python -X utf8 -m tests.test_mind_brain` (59 checks: static, node on the
 Playwright; `MB_NO_BROWSER=1` skips the browser, `MIND_SHOTS=<dir>` saves the shots) and `python tests/run_area.py cities`.
 Screenshots: `research/handoff/2026-11-23/mind/shots/` (1 brain, 2 LIT live chain, 3 real trade timeline, 4 backtest timeline with
 every step, 5 ATLAS S/R timeline, 6 the 2D fallback).
+
+## Round 3 (Strategy Lab + Today, 2026-11-23)
+
+7. **day-mind now contains `night-hub2`** (Research Hub v2: `cities/hub.html`, `hub.js`, `hub.css`, `hub-data.json`,
+   `tools/build_research_hub.py`, `tests/test_research_hub2.py`), merged so the Strategy Lab tab could be added to it. Conflicts resolved
+   in `cities/index.html` (Research Brain + Research Hub half tiles, Strategy Brain full width) and `tests/run_area.py` (both lines kept).
+   The small hub follow-up `ef53e041f` (keep-alive line, on night-integrate) is NOT in day-mind.
+8. **Rebuild the Strategy Lab data before each site build**: in `tools/ship.py` (or the lead's build step) run
+   `python tools/build_strategy_lab.py` (writes `cities/lab-data.json`; `--check` exits 1 when stale). Once the two research sessions land
+   `research/lab/popular_ict.json` / `popular_classic.json`, the next build replaces the SAMPLE fixture by itself (fixture: false, banner
+   gone). The "Best add-on to LIT" is picked only from those files (never a SAMPLE row, never a LEADERBOARD LIT variant). It needs every
+   span positive with PF >= 1.3 and 1-5 trades a week, and the worst span's $/month decides. Accepted shapes: a list or {strategies|rows: [...]};
+   spans as {name: {tpw, win, pf, usd_mo, maxdd}}, a list, or one flat object; optional `rules` (string or list, first 3 lines shown).
+9. **Today strip** reads `glog` (pc_report ext, 8 lines a bot) else the glance's 4 `log` lines a bot. Nothing new is needed from the PC.
+   With more lines in `glog` (e.g. LOG_N 8 -> 24 in engine/brain_glance.py), the owner would see the whole day, not just the last 8 steps.
+10. Tests: `tests/test_strategy_lab.py` (20: builder, popular-file shapes, best add-on rule, hub tab in Chromium: sort, filter, rows) added to
+    `run_area cities`; `tests.test_mind_brain` now 66.

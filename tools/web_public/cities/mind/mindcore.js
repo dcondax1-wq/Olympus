@@ -29,6 +29,7 @@ export const LOBES = [
   { id: 'r_kalshi', kind: 'research', name: 'Kalshi', fam: 4, color: '#9d59ee', pos: [.32, -.6, -.88] },
   { id: 'r_web', kind: 'research', name: 'Websites + calls', fam: 5, color: '#9d59ee', pos: [-.88, -.28, -.35] },
   { id: 'r_ops', kind: 'research', name: 'Ops', fam: 6, color: '#77db89', pos: [-.32, .38, -.98] },
+  { id: 'lab', kind: 'lab', name: 'Strategy Lab', color: '#f1c14b', pos: [0, -.3, .3] },   // one neuron per tested strategy around it (labNeurons)
 ];
 export const lobeById = (id) => LOBES.find((l) => l.id === id) || null;
 
@@ -233,4 +234,48 @@ export function placeLabels(items, box, gap = 2) {
     out.set(it.id, got ? { id: it.id, x: got.x, y: got.y, show: true } : { id: it.id, x: 0, y: 0, show: false });
   }
   return arr(items).filter((it) => out.has(it && it.id)).map((it) => out.get(it.id));
+}
+
+/* ---------------- the Strategy Lab cluster (cities/lab-data.json, tools/build_strategy_lab.py) ---------------- */
+export const VERDICT_COLOR = { live: '#f1c14b', paper: '#77db89', promising: '#77db89', rejected: '#8a6bbd' };   // dim violet: visible on the cortex, never brighter than a live / mint one
+export const VERDICT_WORD = { live: 'Live', paper: 'Paper', promising: 'Promising', rejected: 'Rejected' };
+const lastSpan = (r) => { const sp = arr(r && r.spans); return sp[sp.length - 1] || {}; };
+/** the lab rows, best first: live, then paper / promising, then rejected; inside each by the last span's $/month */
+export function labRows(lab) {
+  const R = { live: 0, paper: 1, promising: 1, rejected: 2 };
+  return arr(isObj(lab) ? lab.rows : null).filter((r) => isObj(r) && r.id)
+    .sort((a, b) => ((R[a.verdict] ?? 3) - (R[b.verdict] ?? 3)) || ((num(lastSpan(b).usd_mo) ?? -1e9) - (num(lastSpan(a).usd_mo) ?? -1e9)));
+}
+/** one neuron per strategy on a small sphere around the Strategy Lab lobe (golden-angle spiral: even, stable order) */
+export function labNeurons(lab) {
+  const L = lobeById('lab'), rows = labRows(lab), n = rows.length, ga = Math.PI * (3 - Math.sqrt(5));
+  return rows.map((r, i) => {
+    const y = n > 1 ? 1 - (i / (n - 1)) * 2 : 0, rad = Math.sqrt(1 - y * y), th = ga * i, k = .3;
+    return { id: 'lab:' + r.id, rid: r.id, color: VERDICT_COLOR[r.verdict] || VERDICT_COLOR.rejected, verdict: r.verdict,
+      pos: [L.pos[0] + Math.cos(th) * rad * k * 1.25, L.pos[1] + y * k * .7, L.pos[2] + Math.sin(th) * rad * k] };
+  });
+}
+export const labRow = (lab, rid) => labRows(lab).find((r) => r.id === rid) || null;
+export function labCounts(lab) {
+  const c = { live: 0, paper: 0, promising: 0, rejected: 0 }; labRows(lab).forEach((r) => { if (r.verdict in c) c[r.verdict] += 1; }); return c;
+}
+
+/* ---------------- today: every bot's thinking in time order (the PC glance) ---------------- */
+const BOT_COLOR = { lit: '#f1c14b', atlas: '#77db89', rapid: '#9d59ee', rapid2: '#9d59ee' };
+const ATLAS_LOBE = [['ema', /^\s*EMA\b/i], ['macd', /^\s*MACD\b/i], ['sr', /^\s*S\/R\b/i]];
+/** [{ hm, bot, name, lobe, color, text }] oldest first: the ext "glog" (8 a bot) when it came, else the glance's 4 a bot */
+export function today(glance, lite) {
+  const g = isObj(glance) ? glance : null, gl = isObj(lite) && isObj(lite.glog) ? lite.glog : {}, out = [];
+  for (const b of arr(g && g.bots)) {
+    if (!isObj(b) || !b.id || /blitz/i.test(String(b.id))) continue;
+    const a = arr(gl[b.id]), c = arr(b.log), rows = (a.length >= c.length ? a : c).filter((x) => Array.isArray(x) && /^\d{1,2}:\d{2}$/.test(String(x[0])));
+    for (const [hm, t] of rows) {
+      const text = str(t, 200), lobe = b.id === 'atlas' ? ((ATLAS_LOBE.find(([, rx]) => rx.test(text)) || [])[0] || 'atlas') : b.id === 'lit' ? 'lit' : b.id;
+      out.push({ hm: String(hm).padStart(5, '0'), bot: str(b.id, 12), name: b.id === 'lit' ? 'LIT' : b.id === 'atlas' ? 'ATLAS' : str(b.name || b.id, 20),
+        lobe, color: (lobeById(lobe) || {}).color || BOT_COLOR[b.id] || '#9d59ee', text });
+    }
+  }
+  const seen = new Set();
+  return out.filter((x) => { const k = x.bot + x.hm + x.text; if (seen.has(k)) return false; seen.add(k); return true; })
+    .sort((a, b) => a.hm.localeCompare(b.hm) || a.bot.localeCompare(b.bot));
 }

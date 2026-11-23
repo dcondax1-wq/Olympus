@@ -339,6 +339,7 @@ AREAS["olympus"].append("dashfx")        # day-arenas 2026-11-20: the dashboard 
 AREAS["cities"].append("brain_hub")       # day-brain4 2026-11-22: the giant research brain (cities/brain.html); its own line
 AREAS["cities"].append("mind_brain")      # day-mind 2026-11-23: the 3D Strategy Brain (cities/mind/: a lobe per strategy, step chains, trade timelines)
 AREAS["cities"].append("research_hub2")   # night-hub2 2026-11-22: the Research Hub (cities/hub.html, data tools/build_research_hub.py); its own line
+AREAS["cities"].append("strategy_lab")    # day-mind 2026-11-23: Strategy Lab data (tools/build_strategy_lab.py) + the Research Hub tab
 AREAS["olympus"].append("brain3d")       # day-arenas 2026-11-21: the bot brain in 3D (olympus/brain3d.js + brain3d-scene.js, brain3d-lab.html); its own line
 
 AREAS["agency"].append("site_factory")   # day-cities3 2026-11-21: Website Factory (tools/site_factory.py -> agency/f/<id>/ + agency/factory/)

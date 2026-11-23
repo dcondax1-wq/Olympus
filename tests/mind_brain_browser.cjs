@@ -8,8 +8,8 @@ const out = {};
   const b = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const now = Math.floor(Date.now() / 1000);
   const home = { live: { pc: { glance: { t: now - 120, bots: [
-    { id: 'lit', name: 'Zlarior', stage: '5m CISD (5/10)', wait: 'a 5m CISD back through 21,000.00', on: true },
-    { id: 'atlas', name: 'ATLAS', on: true, lobes: [{ id: 'ema', st: 'armed', text: 'Armed (long): entry at the next 5m open' }, { id: 'macd', st: 'window', text: 'watching the Asia low' }, { id: 'sr', st: 'done', text: 'Done for today' }] }] } } } };
+    { id: 'lit', name: 'Zlarior', stage: '5m CISD (5/10)', wait: 'a 5m CISD back through 21,000.00', on: true, log: [['10:12', '5m CISD short at 21,040.25: limit armed 30 min'], ['09:58', 'Swept the NY 08:30 high by 0.7 ATR'], ['03:10', 'London sweep without an inducement: skipped'], ['02:00', 'Levels mapped: 11 levels']] },
+    { id: 'atlas', name: 'ATLAS', on: true, lobes: [{ id: 'ema', st: 'armed', text: 'Armed (long): entry at the next 5m open' }, { id: 'macd', st: 'window', text: 'watching the Asia low' }, { id: 'sr', st: 'done', text: 'Done for today' }], log: [['09:41', 'EMA: trend pullback armed long at 21,010.50'], ['04:20', 'MACD: no divergence at the Asia low'], ['09:36', 'S/R: done for today']] }] } } } };
   async function page(q) {
     const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: SHOTS ? 2 : 1, hasTouch: true });
     const p = await ctx.newPage(), errs = [];
@@ -26,11 +26,12 @@ const out = {};
     out.mode = await p.evaluate(() => document.documentElement.dataset.mode);
     out.stats = await p.evaluate(() => (window.__mind ? window.__mind.stats() : null));
     out.sideways = await p.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
-    out.layout = await p.evaluate(() => { const c = document.getElementById('c').getBoundingClientRect(), n = document.getElementById('lobes').getBoundingClientRect(), h = document.querySelector('.top').getBoundingClientRect();
-      return { canvasTop: c.top, canvasBottom: c.bottom, headerBottom: h.bottom, navTop: n.top, navBottom: n.bottom, vh: innerHeight }; });
+    out.layout = await p.evaluate(() => { const c = document.getElementById('c').getBoundingClientRect(), n = document.getElementById('lobes').getBoundingClientRect(), h = document.querySelector('.top').getBoundingClientRect(), t = document.getElementById('today').getBoundingClientRect();
+      return { canvasTop: c.top, canvasBottom: c.bottom, todayTop: t.top, todayBottom: t.bottom, headerBottom: h.bottom, navTop: n.top, navBottom: n.bottom, vh: innerHeight }; });
     out.labels = await p.evaluate(() => { const v = [...document.querySelectorAll('.tip')].filter((d) => d.style.display !== 'none').map((d) => d.getBoundingClientRect());
       let o = 0; for (let i = 0; i < v.length; i++) for (let j = i + 1; j < v.length; j++) { const a = v[i], b = v[j]; if (a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom) o++; } return { shown: v.length, overlaps: o }; });
     out.pill = await p.textContent('#pcPill');
+    out.today = await p.evaluate(() => [...document.querySelectorAll('#today .tchip')].map((c) => c.querySelector('.tt') && c.querySelector('.tt').textContent + ' ' + c.dataset.lobe));
     if (SHOTS) await p.screenshot({ path: SHOTS + '/1_brain_390x844.png' });
     await p.click('button.lobe[data-lobe="lit"]'); await p.waitForTimeout(700);
     out.litNow = await p.evaluate(() => [...document.querySelectorAll('#chain li')].map((li) => li.dataset.step + ':' + li.className));
@@ -55,6 +56,15 @@ const out = {};
     await p.evaluate(() => document.getElementById('lobes').scrollLeft = 9999);
     await p.click('button.lobe[data-lobe="r_lit"]'); await p.waitForTimeout(500);
     out.finds = await p.evaluate(() => document.querySelectorAll('#body .find').length);
+    await p.click('button.lobe[data-lobe="lab"]'); await p.waitForTimeout(700);
+    out.lab = await p.evaluate(() => ({ sample: !!document.getElementById('labSample'), best: (document.getElementById('bestAddon') || {}).textContent || '', rows: document.querySelectorAll('#labList .tr').length }));
+    if (SHOTS) await p.screenshot({ path: SHOTS + '/7_strategy_lab.png' });
+    await p.click('#labList .tr:nth-child(3)'); await p.waitForTimeout(700);
+    out.neuron = await p.evaluate(() => ({ h: document.querySelector('#body h2').textContent, rules: document.querySelectorAll('#labRules li').length, spans: document.querySelectorAll('#labSpans tbody tr').length, sel: document.querySelector('button.lobe[data-lobe="lab"]').getAttribute('aria-pressed') }));
+    if (SHOTS) await p.screenshot({ path: SHOTS + '/8_lab_neuron.png' });
+    // a tap on a lab neuron in the 3D opens its card
+    const np = await p.evaluate(() => { const st = window.__mind.stats(); return st.neurons; });
+    out.neurons = np;
     await p.click('#close'); await p.waitForTimeout(400);
     out.closed = await p.evaluate(() => document.getElementById('sheet').getAttribute('aria-hidden'));
     // a tap on the canvas at a lobe's projected spot opens that lobe

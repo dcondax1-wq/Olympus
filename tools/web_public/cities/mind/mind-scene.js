@@ -137,6 +137,20 @@ export async function create(canvas, lobes, cfg) {
     cores.instanceMatrix.needsUpdate = true; if (cores.instanceColor) cores.instanceColor.needsUpdate = true;
   }
   rig.add(cores);
+  // ---- the Strategy Lab neurons: one small core per tested strategy (cfg.neurons from mindcore.labNeurons), one draw call ----
+  const NEU = Array.isArray(cfg.neurons) ? cfg.neurons : [], NN = NEU.length, NP3 = NEU.map((q) => new THREE.Vector3(q.pos[0], q.pos[1], q.pos[2]));
+  const neu = NN ? new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, low ? 0 : 2), new THREE.MeshBasicMaterial({ transparent: true, opacity: .95 }), NN) : null;
+  function placeNeurons(tS) {
+    if (!neu) return;
+    NEU.forEach((q, i) => {
+      const sel = ST.sel === q.id, base = q.verdict === 'live' ? .03 : q.verdict === 'rejected' ? .016 : .024;
+      const s = base * (sel ? 2.2 : 1) * (1 + (reduce || q.verdict === 'rejected' ? 0 : .15 * Math.sin(tS * 3 + i * 1.7)));
+      m4.makeScale(s, s, s).setPosition(NP3[i]); neu.setMatrixAt(i, m4);
+      col.set(q.color).multiplyScalar(ST.sel && !sel && ST.sel !== 'lab' ? .5 : q.verdict === 'rejected' ? .7 : 1.15); neu.setColorAt(i, col);
+    });
+    neu.instanceMatrix.needsUpdate = true; if (neu.instanceColor) neu.instanceColor.needsUpdate = true;
+  }
+  if (neu) rig.add(neu);
   const hp = new Float32Array(NL * 3), hc = new Float32Array(NL * 3), hs = new Float32Array(NL), ha = new Float32Array(NL), hph = new Float32Array(NL);
   lobes.forEach((l, i) => { hp.set(l.pos, i * 3); const c = new THREE.Color(l.color); hc.set([c.r, c.g, c.b], i * 3); hs[i] = l.kind === 'strategy' ? 1.2 : .85; ha[i] = .9; hph[i] = i / NL; });
   const hg = new THREE.BufferGeometry();
@@ -181,6 +195,10 @@ export async function create(canvas, lobes, cfg) {
     ST.fit = Math.max(3.2, 1.62 / (.88 * tn * camera.aspect), 1.12 / (.92 * tn));   // the brain fills ~85% of the width and fits the height
     const px = h * dpr * .55; [ptsMat, haloMat, pMat].forEach((m) => (m.uniforms.uPx.value = px)); if (!ST.sel) ST.zoomT = ST.fit; ST.dirty = true;
   }
+  function projectV(v) {
+    tmp.copy(v).applyMatrix4(rig.matrixWorld).project(camera);
+    return { x: (tmp.x * .5 + .5) * canvas.clientWidth, y: (-tmp.y * .5 + .5) * canvas.clientHeight, z: tmp.z };
+  }
   function project(i) {
     tmp.copy(P[i]).applyMatrix4(rig.matrixWorld).project(camera);
     return { x: (tmp.x * .5 + .5) * canvas.clientWidth, y: (-tmp.y * .5 + .5) * canvas.clientHeight, z: tmp.z };
@@ -203,7 +221,11 @@ export async function create(canvas, lobes, cfg) {
   function pick(cx, cy) {
     const r = canvas.getBoundingClientRect(); let best = -1, bd = 40;
     for (let i = 0; i < NL; i++) { const p = project(i); if (p.z > 1) continue; const d = Math.hypot(p.x - (cx - r.left), p.y - (cy - r.top)); if (d < bd) { bd = d; best = i; } }
-    const id = best >= 0 ? lobes[best].id : null; api.select(id); cfg.onPick && cfg.onPick(id);
+    let id = best >= 0 ? lobes[best].id : null;
+    for (let i = 0, nd = Math.min(bd * .7, 22); i < NN; i++) {          // a lab neuron wins only when it is clearly the nearer one
+      const p = projectV(NP3[i]); if (p.z > 1) continue; const d = Math.hypot(p.x - (cx - r.left), p.y - (cy - r.top)); if (d < nd) { nd = d; id = NEU[i].id; }
+    }
+    api.select(id); cfg.onPick && cfg.onPick(id);
   }
   canvas.addEventListener('pointerdown', onDown); canvas.addEventListener('pointermove', onMove); canvas.addEventListener('pointerup', onUp); canvas.addEventListener('pointercancel', onUp);
   canvas.addEventListener('wheel', onWheel, { passive: false });
@@ -221,7 +243,7 @@ export async function create(canvas, lobes, cfg) {
     ST.zoom += (ST.zoomT - ST.zoom) * .1; ST.focus += (ST.focusT - ST.focus) * .12;
     rig.rotation.set(ST.pitch, ST.yaw, 0); camera.position.set(0, -.08, ST.zoom); camera.lookAt(0, -.08, 0);
     [ptsMat, haloMat].forEach((m) => { m.uniforms.uT.value = tS; m.uniforms.uFocus.value = ST.focus; m.uniforms.uZ.value = ST.zoom; }); cortexMat.uniforms.uZ.value = ST.zoom;
-    placeCores(tS);
+    placeCores(tS); placeNeurons(tS);
     for (let k = 0; k < NP; k++) { const q = pulse[k]; q.u += q.v * dt / 1000; if (q.u > 1) { q.u = 0; q.c = Math.floor(Math.random() * curves.length); } curves[q.c].getPoint(q.u, tmp); pp.set([tmp.x, tmp.y, tmp.z], k * 3); }
     if (NP) pg.attributes.position.needsUpdate = true;
     renderer.render(scene, camera); ST.frames++; ST.dirty = false;
@@ -237,16 +259,17 @@ export async function create(canvas, lobes, cfg) {
 
   const api = {
     select(id) {
-      ST.sel = id || null; const i = lobes.findIndex((l) => l.id === id);
-      if (i >= 0) { ST.fp.copy(P[i]); ST.focusT = 1; ST.zoomT = ST.fit * .82; const yaw = Math.atan2(-P[i].x, P[i].z); let d = yaw - ST.yaw; d = Math.atan2(Math.sin(d), Math.cos(d)); ST.vy = d * .06; /* the inertia (x .94 a frame) turns the lobe to the front */ }
+      ST.sel = id || null; const i = lobes.findIndex((l) => l.id === id), ni = NEU.findIndex((q) => q.id === id);
+      if (ni >= 0) { ST.fp.copy(NP3[ni]); ST.focusT = 1; ST.zoomT = ST.fit * .84; }
+      else if (i >= 0) { ST.fp.copy(P[i]); ST.focusT = 1; ST.zoomT = ST.fit * .82; const yaw = Math.atan2(-P[i].x, P[i].z); let d = yaw - ST.yaw; d = Math.atan2(Math.sin(d), Math.cos(d)); ST.vy = d * .06; /* the inertia (x .94 a frame) turns the lobe to the front */ }
       else { ST.focusT = 0; ST.zoomT = ST.fit; }
       lineAlpha(); wake();
     },
     setGlow(map) { lobes.forEach((l, i) => { if (map && map[l.id] != null) glowV[i] = +map[l.id]; }); wake(); },
-    project(id) { const i = lobes.findIndex((l) => l.id === id); return i < 0 ? null : project(i); },
-    stats() { const info = renderer.info; return { frames: ST.frames, low: ST.low, calls: info.render.calls, points: NA + NL + NP, lobes: NL, three: THREE.REVISION }; },
+    project(id) { const i = lobes.findIndex((l) => l.id === id); if (i >= 0) return project(i); const n = NEU.findIndex((q) => q.id === id); return n < 0 ? null : projectV(NP3[n]); },
+    stats() { const info = renderer.info; return { frames: ST.frames, low: ST.low, calls: info.render.calls, points: NA + NL + NP, lobes: NL, neurons: NN, three: THREE.REVISION }; },
     dispose() { document.removeEventListener('visibilitychange', onVis); removeEventListener('resize', size); renderer.dispose(); },
   };
-  size(); placeCores(0); lineAlpha(); schedule();
+  size(); placeCores(0); placeNeurons(0); lineAlpha(); schedule();
   return api;
 }

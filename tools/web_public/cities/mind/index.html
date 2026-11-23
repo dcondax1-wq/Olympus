@@ -10,14 +10,15 @@
 <meta name="robots" content="noindex">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="mind.css?v=m1">
+<link rel="stylesheet" href="mind.css?v=m3">
 <!-- Read only: it reads the PC's status post (ntfy, pc_feed.js) and the site's JSON, sends nothing, places nothing. -->
 <script src="../../pc_feed.js?v=n7"></script>
-<script type="module" src="mind.js?v=m1"></script>
+<script type="module" src="mind.js?v=m3"></script>
 </head>
 <body>
 <canvas id="c" tabindex="0" aria-label="The strategy brain: one lobe per strategy and per research family. The lobe buttons below do the same."></canvas>
 <div class="flat" id="flat" hidden aria-label="Lobe map (2D)"></div>
+<div class="today" id="today" role="list" aria-label="Today: every bot's steps in time order"></div>
 
 <header class="top">
   <div class="row">

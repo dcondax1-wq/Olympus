@@ -75,6 +75,12 @@ o.fresh = M.live('lit', g, 1100); o.stale = M.live('lit', g, 1000 + 3600); o.non
 const L = M.placeLabels([{ id: 'a', x: 100, y: 100, w: 80, h: 14, pri: 1 }, { id: 'b', x: 104, y: 102, w: 80, h: 14, pri: 2 }, { id: 'c', x: 102, y: 101, w: 80, h: 14, pri: 1 },
   { id: 'd', x: 101, y: 100, w: 80, h: 14, pri: 0 }, { id: 'e', x: 100, y: 99, w: 80, h: 14, pri: 0 }], { w: 400, h: 300 });
 o.labels = L; o.labelsTop = L.find((q) => q.id === 'b');
+const lab = JSON.parse(fs.readFileSync('%(lab)s'));
+o.neu = M.labNeurons(lab); o.labN = lab.n; o.colors = Object.fromEntries(o.neu.map((q) => [q.verdict, q.color]));
+o.labOrder = M.labRows(lab).map((r) => r.verdict);
+o.today = M.today({ bots: [{ id: 'lit', log: [['10:12', 'b'], ['02:00', 'a']] }, { id: 'atlas', log: [['09:41', 'EMA: x'], ['04:20', 'MACD: y']] }, { id: 'blitz', log: [['01:00', 'z']] }] },
+  { glog: { lit: [['10:12', 'b'], ['09:58', 'c'], ['02:00', 'a']] } }).map((x) => x.hm + ' ' + x.lobe);
+o.todayNone = M.today(null, null).length;
 o.states = M.chainStates('lit', o.fresh).map((s) => s.state); o.inTrade = M.live('lit', { t: 1, bots: [{ id: 'lit', stage: 'In trade (9/10)' }] }, 2).idx;
 console.log(JSON.stringify(o));
 """
@@ -85,7 +91,7 @@ def node():
         r = subprocess.run(["node", "--check", os.path.join(WEB, f)], capture_output=True, text=True, timeout=30)
         check(f"n. node parses {f}", r.returncode == 0, r.stderr)
     code = NODE_CORE % {"core": os.path.join(WEB, "mindcore.js").replace("\\", "/"), "trades": os.path.join(PUB, "odeon", "trades.json").replace("\\", "/"),
-                        "data": os.path.join(PUB, "cities", "brain-data.json").replace("\\", "/")}
+                        "data": os.path.join(PUB, "cities", "brain-data.json").replace("\\", "/"), "lab": os.path.join(PUB, "cities", "lab-data.json").replace("\\", "/")}
     r = subprocess.run(["node", "--input-type=module", "-e", code], capture_output=True, text=True, timeout=60)
     try:
         o = json.loads(r.stdout.strip().splitlines()[-1])
@@ -107,6 +113,9 @@ def node():
     ov = sum(1 for i, a in enumerate(shown) for b in shown[i + 1:] if a["x"] < b["x"] + 82 and b["x"] < a["x"] + 82 and a["y"] < b["y"] + 16 and b["y"] < a["y"] + 16)
     check("n. labels: overlapping lobes get moved or hidden, never drawn on top of each other", ov == 0 and len(shown) >= 2 and any(not q["show"] for q in o["labels"]), o["labels"])
     check("n. labels: the higher priority keeps the spot above its lobe", o["labelsTop"]["show"] and o["labelsTop"]["y"] < 100, o["labelsTop"])
+    check("n. lab: one neuron per strategy, gold live / mint promising / dim violet rejected", len(o["neu"]) == o["labN"] and o["colors"].get("live") == "#f1c14b" and o["colors"].get("promising") == "#77db89" and o["colors"].get("rejected") == "#8a6bbd", o["colors"])
+    check("n. lab: live first, rejected last", o["labOrder"][0] == "live" and o["labOrder"][-1] == "rejected", o["labOrder"][:3])
+    check("n. today: glog wins, time order, ATLAS lines go to their lobe, BLITZ never shown", o["today"] == ["02:00 lit", "04:20 macd", "09:41 ema", "09:58 lit", "10:12 lit"] and o["todayNone"] == 0, o["today"])
     check("n. live: in trade = the target step", o["inTrade"] == 5, o["inTrade"])
 
 
@@ -136,12 +145,12 @@ def browser():
         check("b. browser run", False, (r.stderr or r.stdout or str(e))[:600])
         return
     check("b. no fatal", "fatal" not in o, o.get("fatal"))
-    check("b. 3D mounts (three r160)", str(o.get("mode", "")).startswith("3d") and (o.get("stats") or {}).get("lobes") == 10 and (o.get("stats") or {}).get("three") == "160", (o.get("mode"), o.get("stats")))
+    check("b. 3D mounts (three r160)", str(o.get("mode", "")).startswith("3d") and (o.get("stats") or {}).get("lobes") == 11 and (o.get("stats") or {}).get("three") == "160", (o.get("mode"), o.get("stats")))
     check("b. draw calls small", 0 < (o.get("stats") or {}).get("calls", 99) <= 8, o.get("stats"))
     check("b. no page error", not o.get("errors") and not o.get("flatErrors"), (o.get("errors"), o.get("flatErrors")))
     check("b. no sideways scroll at 390", o.get("sideways") is False)
     lay = o.get("layout") or {}
-    check("b. brain under the header, lobe cards just below it", lay and lay["canvasTop"] >= lay["headerBottom"] - 30 and 0 <= lay["navTop"] - lay["canvasBottom"] <= 16 and lay["navBottom"] <= lay["vh"], lay)
+    check("b. brain under the header, then the Today strip, then the lobe cards", lay and lay["canvasTop"] >= lay["headerBottom"] - 30 and 0 <= lay["todayTop"] - lay["canvasBottom"] <= 12 and 0 <= lay["navTop"] - lay["todayBottom"] <= 16 and lay["navBottom"] <= lay["vh"], lay)
     check("b. no two lobe names overlap", (o.get("labels") or {}).get("overlaps") == 0 and (o.get("labels") or {}).get("shown", 0) >= 6, o.get("labels"))
     check("b. low-power mode still 3D, light", o.get("lowMode") == "3d-low" and (o.get("lowStats") or {}).get("low") is True and not o.get("lowErrors"), (o.get("lowMode"), o.get("lowStats"), o.get("lowErrors")))
     check("b. PC pill live", "PC live" in (o.get("pill") or ""), o.get("pill"))
@@ -151,6 +160,13 @@ def browser():
     check("b. ATLAS EMA armed = entry now, has trades", o.get("emaNow") == ["entry"] and o.get("emaTrades", 0) >= 1, (o.get("emaNow"), o.get("emaTrades")))
     check("b. ATLAS S/R done for today = all steps done", o.get("srDone") == 6, o.get("srDone"))
     check("b. research lobe lists findings", o.get("finds", 0) >= 3, o.get("finds"))
+    t = o.get("today") or []
+    check("b. Today strip: every bot's steps in time order", len(t) == 7 and [x.split()[0] for x in t] == sorted(x.split()[0] for x in t) and "ema" in " ".join(t) and "lit" in " ".join(t), t)
+    lab = o.get("lab") or {}
+    check("b. Strategy Lab lobe: sample banner, best add-on card, strategy list", lab.get("sample") is True and "Best add-on to LIT" in lab.get("best", "") and lab.get("rows", 0) >= 10, lab)
+    nu = o.get("neuron") or {}
+    check("b. a lab strategy: 3 rule lines + its span numbers", nu.get("rules") == 3 and nu.get("spans", 0) >= 1 and nu.get("sel") == "true", nu)
+    check("b. one neuron per tested strategy in the 3D", o.get("neurons", 0) == json.load(open(os.path.join(PUB, "cities", "lab-data.json")))["n"], o.get("neurons"))
     check("b. close hides the sheet", o.get("closed") == "true")
     check("b. a canvas tap picks a lobe", bool(o.get("canvasPick")), o.get("canvasPick"))
     check("b. 2D fallback works", o.get("flatMode") == "2d" and o.get("flatPick") == "ATLAS MACD", (o.get("flatMode"), o.get("flatPick")))

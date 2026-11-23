@@ -5,7 +5,7 @@ import * as M from './mindcore.js?v=m1';
 
 const $ = (id) => document.getElementById(id);
 const SVGNS = 'http://www.w3.org/2000/svg';
-const S = { file: null, data: null, home: null, lite: null, glance: null, sel: null, trade: null, showAll: false, scene: null, now: () => Date.now() / 1000 };
+const S = { file: null, data: null, lab: null, home: null, lite: null, glance: null, sel: null, trade: null, showAll: false, scene: null, now: () => Date.now() / 1000 };
 
 function el(tag, attrs, ...kids) {
   const e = document.createElement(tag);
@@ -21,11 +21,12 @@ function drawLobeBar() {
   const bar = $('lobes'); bar.replaceChildren();
   for (const L of M.LOBES) {
     const v = L.kind === 'strategy' ? M.live(L.id, S.glance, S.now()) : null;
-    const b = el('button', { type: 'button', class: 'lobe' + (L.kind === 'research' ? ' res' : ''), 'data-lobe': L.id, 'aria-pressed': String(S.sel === L.id), style: `--c:${L.color}`, onclick: () => select(L.id === S.sel ? null : L.id) },
-      el('i'), el('span', { text: L.name }), el('small', { text: v ? lobeWord(L, v) : 'research' }));
+    const b = el('button', { type: 'button', class: 'lobe' + (L.kind === 'research' ? ' res' : ''), 'data-lobe': L.id, 'aria-pressed': String(S.sel === L.id || (L.id === 'lab' && String(S.sel || '').startsWith('lab:'))), style: `--c:${L.color}`, onclick: () => select(L.id === S.sel ? null : L.id) },
+      el('i'), el('span', { text: L.name }), el('small', { text: v ? lobeWord(L, v) : L.kind === 'lab' ? labWord() : 'research' }));
     bar.append(b);
   }
 }
+function labWord() { const c = M.labCounts(S.lab); const n = c.live + c.paper + c.promising + c.rejected; return n ? `${n} tested · ${c.paper + c.promising} promising` : 'loading'; }
 function lobeWord(L, v) {
   const ch = M.CHAINS[L.id] || [];
   return v.word === 'live' && ch[v.idx] ? `${ch[v.idx].label} now` : v.word === 'stale' && ch[v.idx] ? `last: ${ch[v.idx].label}` : v.word;
@@ -47,7 +48,9 @@ function select(id) {
   renderSheet(); sh.classList.add('open'); sh.setAttribute('aria-hidden', 'false'); sh.scrollTop = 0;
 }
 function renderSheet() {
+  if (String(S.sel || '').startsWith('lab:')) return neuronBody($('body'), S.sel.slice(4));
   const L = M.lobeById(S.sel), body = $('body'); if (!L) return;
+  if (L.kind === 'lab') return labBody(body);
   body.replaceChildren(el('h2', { text: L.name }), el('div', { class: 'muted', text: L.kind === 'strategy' ? L.sub : 'Research lobe: everything we tested in this family.' }));
   if (L.kind === 'strategy') strategyBody(L, body); else researchBody(L, body);
 }
@@ -148,6 +151,64 @@ function researchBody(L, body) {
   body.append(el('p', {}, el('a', { class: 'link', href: '../brain.html', text: 'Open the full Research Brain →' })));
 }
 
+/* ---------------- the Strategy Lab (cities/lab-data.json) ---------------- */
+const fmtN = (v, d = 0) => (v == null || !Number.isFinite(+v) ? '-' : (+v).toLocaleString('en-US', { maximumFractionDigits: d, minimumFractionDigits: d }));
+const fmtUsd = (v) => (v == null || !Number.isFinite(+v) ? '-' : (+v < 0 ? '-$' : '$') + Math.abs(Math.round(+v)).toLocaleString('en-US'));
+function sampleBanner(body) {
+  if (S.lab && S.lab.fixture) body.append(el('div', { class: 'sample', id: 'labSample', text: 'SAMPLE rows: the popular-strategy files (ICT + classic) have not landed yet. Rows marked SAMPLE are placeholders, not results. The LIT, ATLAS and Strategy Lab (LIT variant) rows are real.' }));
+}
+function labBody(body) {
+  const c = M.labCounts(S.lab), rows = M.labRows(S.lab);
+  body.replaceChildren(el('h2', { text: 'Strategy Lab' }), el('div', { class: 'muted', text: 'One neuron per tested strategy: gold live, mint paper / promising, dim violet rejected.' }));
+  sampleBanner(body);
+  if (!rows.length) { body.append(el('p', { class: 'muted', text: 'The Strategy Lab data did not load.' })); return; }
+  body.append(el('div', { class: 'state' }, el('b', { class: 'live', text: `${rows.length} strategies` }), document.createTextNode(` · ${c.live} live · ${c.paper} paper · ${c.promising} promising · ${c.rejected} rejected`)));
+  const b = S.lab.best_addon || {};
+  body.append(el('div', { class: 'best', id: 'bestAddon' }, el('b', { text: 'Best add-on to LIT' }), el('div', { text: b.name || 'None yet' }), el('p', { class: 'muted', text: b.why || '' })));
+  body.append(el('h3', { text: 'Every strategy' }));
+  const list = el('div', { class: 'trades', id: 'labList' });
+  for (const r of rows.slice(0, S.showAll ? rows.length : 14)) {
+    const sp = (r.spans || [])[r.spans.length - 1] || {};
+    list.append(el('button', { type: 'button', class: 'tr', 'data-rid': r.id, onclick: () => select('lab:' + r.id) },
+      el('span', {}, el('span', { class: 'tag v-' + r.verdict, text: M.VERDICT_WORD[r.verdict] || r.verdict }), document.createTextNode(' ' + r.name)),
+      el('span', { class: 'usd ' + ((sp.usd_mo || 0) > 0 ? 'win' : 'loss'), text: sp.usd_mo == null ? '-' : fmtUsd(sp.usd_mo) + '/mo' }),
+      el('span', { class: 'm', text: `${r.family} · PF ${fmtN(sp.pf, 2)} · ${fmtN(sp.tpw, 1)}/wk` }), el('span', { class: 'm', text: sp.k || '' })));
+  }
+  body.append(list);
+  if (!S.showAll && rows.length > 14) body.append(el('button', { type: 'button', class: 'more', text: `Show all ${rows.length}`, onclick: () => { S.showAll = true; renderSheet(); } }));
+  body.append(el('p', {}, el('a', { class: 'link', href: '../hub.html#lab', text: 'Sort them all in the Research Hub →' })));
+}
+function neuronBody(body, rid) {
+  const r = M.labRow(S.lab, rid);
+  body.replaceChildren();
+  if (!r) { body.append(el('h2', { text: 'Strategy Lab' }), el('p', { class: 'muted', text: 'This strategy is not in the lab file any more.' })); return; }
+  body.append(el('h2', { text: r.name }), el('div', { class: 'muted' }, el('span', { class: 'tag v-' + r.verdict, text: M.VERDICT_WORD[r.verdict] || r.verdict }), document.createTextNode(` ${r.family} · ${r.src}`)));
+  if (r.src === 'fixture') sampleBanner(body);
+  body.append(el('h3', { text: 'Rules' }));
+  const ol = el('ol', { class: 'rules', id: 'labRules' }); (r.rules || []).slice(0, 3).forEach((t) => ol.append(el('li', { text: t }))); body.append(ol);
+  body.append(el('h3', { text: 'The numbers' }));
+  const tb = el('table', { class: 'spans', id: 'labSpans' }), hr = el('tr');
+  ['Span', '/wk', 'Win', 'PF', '$/mo', 'Max DD'].forEach((h) => hr.append(el('th', { text: h }))); tb.append(el('thead', {}, hr));
+  const tbody = el('tbody');
+  for (const sp of r.spans || []) {
+    const tr = el('tr'); [sp.k, fmtN(sp.tpw, 1), sp.win == null ? '-' : fmtN(sp.win, 0) + '%', fmtN(sp.pf, 2), fmtUsd(sp.usd_mo), fmtUsd(sp.maxdd)]
+      .forEach((x, i) => tr.append(el('td', { class: i === 4 ? ((sp.usd_mo || 0) > 0 ? 'win' : 'loss') : '', text: x }))); tbody.append(tr);
+  }
+  tb.append(tbody); body.append(tb);
+  body.append(el('button', { type: 'button', class: 'more', text: '← All strategies', onclick: () => select('lab') }));
+}
+
+/* ---------------- today: every bot's thinking in time order ---------------- */
+function drawToday() {
+  const box = $('today'); if (!box) return;
+  const rows = M.today(S.glance, S.lite);
+  box.replaceChildren(el('b', { class: 'th', text: 'Today' }));
+  if (!rows.length) { box.append(el('span', { class: 'tchip none', text: S.glance ? 'No thinking logged yet today' : 'Waiting for the PC\'s report' })); return; }
+  for (const r of rows) box.append(el('button', { type: 'button', class: 'tchip', style: `--c:${r.color}`, 'data-lobe': r.lobe, title: r.text, onclick: () => { if (M.lobeById(r.lobe)) select(r.lobe); } },
+    el('span', { class: 'tt', text: r.hm }), el('span', { class: 'tb', text: r.name }), el('span', { class: 'tx', text: r.text })));
+  box.scrollLeft = box.scrollWidth;
+}
+
 /* ---------------- 2D fallback (no WebGL) ---------------- */
 function drawFlat() {
   const f = $('flat'); if (f.hidden) return;
@@ -170,15 +231,15 @@ async function boot() {
   drawLobeBar();
   $('close').addEventListener('click', () => select(null));
   addEventListener('keydown', (e) => { if (e.key === 'Escape') select(null); });
-  const [file, data, home] = await Promise.all([getJSON('../../odeon/trades.json'), getJSON('../brain-data.json'), getJSON('../../home.json')]);
-  Object.assign(S, { file, data, home }); S.glance = M.glanceOf(null, home);
-  drawLobeBar(); pcPill();
+  const [file, data, home, lab] = await Promise.all([getJSON('../../odeon/trades.json'), getJSON('../brain-data.json'), getJSON('../../home.json'), getJSON('../lab-data.json')]);
+  Object.assign(S, { file, data, home, lab }); S.glance = M.glanceOf(null, home);
+  drawLobeBar(); pcPill(); drawToday();
   startScene();
   try {
     const F = window.PC_FEED;
     if (F && F.fetchLatest) {
       const lite = await Promise.race([F.fetchLatest({ feedUrl: new URL('../../status_feed.json', import.meta.url).href }), new Promise((r) => setTimeout(() => r(null), 15000))]);
-      if (lite) { S.lite = lite; S.glance = M.glanceOf(lite, home); drawLobeBar(); pcPill(); if (S.sel) renderSheet(); }
+      if (lite) { S.lite = lite; S.glance = M.glanceOf(lite, home); drawLobeBar(); pcPill(); drawToday(); if (S.sel) renderSheet(); }
     }
   } catch (_) { /* the site's copy stays */ }
   const glow = {}; for (const L of M.LOBES) glow[L.id] = M.glow(L.id, { glance: S.glance, now: S.now(), data: S.data });
@@ -207,7 +268,7 @@ async function startScene() {
         if (on) { t.d.style.left = (r.left + q.x) + 'px'; t.d.style.top = (r.top + q.y) + 'px'; t.d.style.opacity = !S.sel || S.sel === t.L.id ? '1' : '.35'; }
       }
     };
-    S.scene = await Sc.create($('c'), M.LOBES, { reduce, low, onPick: (id) => select(id), onLost: flat, onFrame });
+    S.scene = await Sc.create($('c'), M.LOBES, { neurons: M.labNeurons(S.lab), reduce, low, onPick: (id) => select(id), onLost: flat, onFrame });
     if (!S.scene) return flat();
     document.documentElement.dataset.mode = low ? '3d-low' : '3d';
     window.__mind = { stats: () => S.scene.stats(), project: (id) => S.scene.project(id), select };
