@@ -30,9 +30,9 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HARN = os.path.join(ROOT, "tests", "win_harness")
 RES = []
 
-BATS = ["ONE_TIME_SETUP.bat", "UPDATE.bat", "HEALTH_CHECK.bat", "START_DASHBOARD.bat", "STOP_BOT.bat", "SETUP_SHORTCUTS.bat", "NO_CHART_MODE.bat",
-        "CLEAN_PC.bat", "UNDO_PC_TUNE.bat", "BOT_LITE.bat", "MOVE_BOT.bat", "FRESH_START.bat", "CLEAN_STORAGE.bat", "PC_CARE.bat", "STATUS.bat",
-        "PUBLISH_NQ.bat", "UNDO_PUBLISH_NQ.bat", "UPDATE_FROM_ZIP.bat", "UNDO_UPDATE.bat"]
+BATS = ["tools/bat/ONE_TIME_SETUP.bat", "UPDATE.bat", "HEALTH_CHECK.bat", "START_DASHBOARD.bat", "STOP_BOT.bat", "tools/bat/SETUP_SHORTCUTS.bat", "tools/bat/NO_CHART_MODE.bat",
+        "tools/bat/CLEAN_PC.bat", "tools/bat/UNDO_PC_TUNE.bat", "tools/bat/BOT_LITE.bat", "tools/bat/MOVE_BOT.bat", "tools/bat/FRESH_START.bat", "tools/bat/CLEAN_STORAGE.bat", "tools/bat/PC_CARE.bat", "tools/bat/STATUS.bat",
+        "tools/bat/PUBLISH_NQ.bat", "tools/bat/UNDO_PUBLISH_NQ.bat", "UPDATE_FROM_ZIP.bat", "tools/bat/UNDO_UPDATE.bat"]
 PS1 = ["one_time_setup.ps1", "run_bot.ps1", "stop_bot.ps1", "make_shortcuts.ps1", "install_ops_task.ps1",
        "install_autostart.ps1", "setup_dedicated_pc.ps1", "uninstall_autostart.ps1", "status.ps1", "schedule_pc.ps1",
        "schedule_pc_run.ps1", "clean_pc.ps1", "clean_storage.ps1", "pc_care.ps1", "pc_status.ps1", "pc_tune.ps1", "pc_keeper.ps1", "bot_lite.ps1", "move_bot.ps1", "publish_nq.ps1"]
@@ -74,10 +74,14 @@ def lint_bat(name: str, raw: bytes) -> list[str]:
         for m in re.finditer(r"(?i)\b(?:goto|call)\s+:([A-Za-z0-9_]+)", s):
             if m.group(1).lower() not in labels:
                 out.append(f"line {i}: target :{m.group(1)} does not exist")
-        for m in re.finditer(r'"%~dp0([^"]+)"', s):
-            p = m.group(1).replace("\\", os.sep)
-            if "%" not in p and not os.path.exists(os.path.join(ROOT, p)):
-                out.append(f"line {i}: {m.group(1)} does not exist in the repo")
+        # %~dp0 = the .bat's own folder (tools\bat\ for the moved ones, night-cleanup 2026-11-22); %LE_HOME% = the bot folder
+        for m in re.finditer(r'"(%~dp0|%LE_HOME%)([^"]+)"', s):
+            p = m.group(2).replace("\\", os.sep)
+            base = os.path.dirname(os.path.join(ROOT, name)) if m.group(1) == "%~dp0" else ROOT
+            if m.group(2) in ("engine\\", "..\\..\\engine\\"):     # the LE_HOME header's own probe (bot folder or a loose copy)
+                continue
+            if "%" not in p and not os.path.exists(os.path.normpath(os.path.join(base, p))):
+                out.append(f"line {i}: {m.group(2)} does not exist in the repo")
         if s.count("(") != s.count(")") and not s.lower().startswith("echo"):
             out.append(f"line {i}: unbalanced parentheses")
         if re.search(r"(?i)\bpowershell\b", s) and "-File" in s and "-ExecutionPolicy Bypass" not in s:
@@ -99,9 +103,9 @@ def static_bats():
           and re.search(r"(?im)^if /i \"%~1\"==\"--from-temp\" goto :main", upd)
           and upd.index("--from-temp") < upd.index("-m engine.autoupdate --pull")
           and "%~dp0scripts" not in upd, "")
-    one = rb("ONE_TIME_SETUP.bat").decode()
+    one = rb("tools/bat/ONE_TIME_SETUP.bat").decode()
     run_line = [ln for ln in one.split("\r\n") if "one_time_setup.ps1" in ln and ln.strip().lower().startswith("powershell")]
-    check("ONE_TIME_SETUP.bat: the PowerShell line and its pause / exit are one parsed line (the setup pulls a new .bat)",
+    check("tools/bat/ONE_TIME_SETUP.bat: the PowerShell line and its pause / exit are one parsed line (the setup pulls a new .bat)",
           run_line and "& pause" in run_line[0].lower() and "exit /b" in run_line[0].lower(), run_line)
 
 
@@ -393,7 +397,7 @@ def scenario_small(sb: Sandbox):
         code, out, err = sb.ps(script, *args, timeout=120)
         errs = ps_errors(out, err)
         check(f"[dry] {script} {' '.join(args)} exits 0, no PowerShell error", code == 0 and not errs, f"{code} {errs[:6]} {out[-800:]}")
-    # the SETUP_SHORTCUTS.bat pair, for real, twice (the second run replaces what the first made)
+    # the tools/bat/SETUP_SHORTCUTS.bat pair, for real, twice (the second run replaces what the first made)
     dk = os.path.join(sb.dir, "home", "Desktop")
     for old in ("LE START BOT.lnk", "LE UPDATE.lnk", "LE DASHBOARD.lnk", "LE HEALTH CHECK.lnk", "My own.lnk"):
         open(os.path.join(dk, old), "w").close()                  # the icons an older version made (and one of the owner's)

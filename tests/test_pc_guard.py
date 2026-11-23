@@ -236,7 +236,7 @@ def summary():
           and "120 min ago" in d[0]["body"], d)
     _s, m = run({}, {"t": day, "hb_age": None, "live": None})
     d = [x for x in m if ":day:" in x["key"]]
-    check("no report at all: 'no numbers', STATUS.bat named", d and "no numbers" in d[0]["title"] and "STATUS.bat" in d[0]["body"], d)
+    check("no report at all: 'no numbers', tools/bat/STATUS.bat named", d and "no numbers" in d[0]["title"] and "tools/bat/STATUS.bat" in d[0]["body"], d)
     check("guard never raises on junk", run({"sent": None}, {"t": day, "live": {"board": {"lit": "x", "atlas": 5}}, "hb_age": 1})[1] is not None)
 
 

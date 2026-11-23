@@ -362,7 +362,7 @@ def main() -> int:
         last = PP.read_json(os.path.join(work, "last.json"))
         lines = PP.status_lines(last)
         check("status: exactly six lines, PUBLISH 1/6 .. 6/6", len(lines) == 6 and [ln[:12] for ln in lines] == [f"PUBLISH {i}/6 " for i in range(1, 7)], lines)
-        check("status with no run yet: six lines that say what to do", len(PP.status_lines({})) == 6 and "PUBLISH_NQ.bat" in PP.status_lines({})[5])
+        check("status with no run yet: six lines that say what to do", len(PP.status_lines({})) == 6 and "tools/bat/PUBLISH_NQ.bat" in PP.status_lines({})[5])
         PP.log_line(work, {"t": 1, "ok": True})
         check("a local publish log is written (jsonl)", os.path.getsize(os.path.join(work, "publish_log.jsonl")) > 0)
         leaked = []

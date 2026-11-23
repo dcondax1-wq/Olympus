@@ -336,7 +336,7 @@ def part_h(b):
 
 
 def part_i(b):
-    for name, arg in (("ALERTS_SETUP.bat", "setup"), ("TEST_ALERT.bat", "test"), ("ALERTS_OFF.bat", "off"), ("ALERTS_ON.bat", "on")):
+    for name, arg in (("ALERTS_SETUP.bat", "setup"), ("tools/bat/TEST_ALERT.bat", "test"), ("tools/bat/ALERTS_OFF.bat", "off"), ("tools/bat/ALERTS_ON.bat", "on")):
         raw = open(os.path.join(ROOT, name), "rb").read()
         lf = raw.count(b"\n")
         check(f"i. {name}: CRLF, calls alerts_setup.py {arg}", lf and raw.count(b"\r\n") == lf

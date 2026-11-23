@@ -1,7 +1,7 @@
 @echo off
 rem FIX THE CLOCK (owner 2026-11-22): run ONCE, right-click > Run as administrator. Sets Windows' time service to Automatic, the
 rem time servers, a 15-minute poll, syncs now and registers the task OlympusClock (SYSTEM, every 15 min + boot + wake) so the
-rem bot's clock guard never needs you again. Prints the drift before and after. Safe to run twice. Undo: FIX_CLOCK_OFF.bat.
+rem bot's clock guard never needs you again. Prints the drift before and after. Safe to run twice. Undo: tools\bat\FIX_CLOCK_OFF.bat.
 setlocal EnableExtensions
 title Olympus - FIX THE CLOCK
 cd /d "%~dp0"

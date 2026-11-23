@@ -38,15 +38,15 @@ NAMES = {"lit": "Zlarior", "atlas": "ATLAS", "blitz": "BLITZ"}
 SIZES = {"lit": "50K", "atlas": "25K", "blitz": "25K"}
 RANK = {"bad": 3, "warn": 2, "info": 1, "ok": 0}
 FIX = {
-    "stopped": "On the PC double-click GO_LIVE_EVAL.bat (it starts the bot; you type the phrase for the real accounts).",
-    "down": "On the PC double-click GO_LIVE_EVAL.bat (it brings the bot back; you type the phrase); still red: HEALTH_CHECK.bat, send Claude a photo.",
+    "stopped": "On the PC double-click tools/bat/GO_LIVE_EVAL.bat (it starts the bot; you type the phrase for the real accounts).",
+    "down": "On the PC double-click tools/bat/GO_LIVE_EVAL.bat (it brings the bot back; you type the phrase); still red: HEALTH_CHECK.bat, send Claude a photo.",
     "feed": "In NinjaTrader: log in, open the MNQ 5-minute chart, right-click > Indicators > LE_BarFeed > Add.",
     "nt": "Open NinjaTrader on the PC and log in (Control Center > Connections).",
-    "armed": "Arm it yourself at the PC: double-click GO_LIVE_EVAL.bat and type the phrase when it asks.",
+    "armed": "Arm it yourself at the PC: double-click tools/bat/GO_LIVE_EVAL.bat and type the phrase when it asks.",
     "dd": "Nothing to do: the bot sizes from the drawdown left by itself. Check the MFFU dashboard shows the same.",
     "dll": "Nothing to do: the bot keeps its own stops and stops for the day at the limit.",
     "risk": "Open NinjaTrader > Positions now: check the position and its stop; flatten there by hand if it is wrong.",
-    "report": "On the PC double-click BOTS_BACK.bat: it reinstalls the 15-minute report and shows your alert topic.",
+    "report": "On the PC double-click tools/bat/BOTS_BACK.bat: it reinstalls the 15-minute report and shows your alert topic.",
 }
 
 

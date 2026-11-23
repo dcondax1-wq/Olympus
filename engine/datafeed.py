@@ -81,7 +81,10 @@ EXTRAS = ("review.json", "proposals.jsonl", "learn.json")   # from the nightly r
 UA = "olympus-pc-data/1"
 _ID = re.compile(r"^[a-z0-9]{6,24}$")
 _DAY = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-DAY_FILE = re.compile(r"^days/(\d{4}-\d{2}-\d{2})/(manifest\.json|trades\.jsonl\.gz|review\.json|proposals\.jsonl|learn\.json|gaps\.json|"
+# night-cleanup 2026-11-22: fills.jsonl.gz (pack_day sends it since day-speed 2026-11-20) was missing here, so the cloud refused
+# EVERY PC answer from Nov 20 on ("unexpected file in the bundle") and no bar after Nov 19 arrived. tests/test_datafeed_names.py
+# keeps this list = every name pack_day can write.
+DAY_FILE = re.compile(r"^days/(\d{4}-\d{2}-\d{2})/(manifest\.json|trades\.jsonl\.gz|fills\.jsonl\.gz|review\.json|proposals\.jsonl|learn\.json|gaps\.json|"
                       r"bars/(?:MNQ|NQ|MES|ES|GC|MGC|SI|SIL)_(?:1m|5m)\.csv\.gz)$")
 
 

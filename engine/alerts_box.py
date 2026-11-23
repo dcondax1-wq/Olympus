@@ -13,7 +13,7 @@ at the PC: http://localhost:8766/alerts/ on the PC, https://<pc>.<tailnet>.ts.ne
                          alerts_setup.save_raw exactly as ALERTS_SETUP option 1 does (not delivered = nothing saved, as there),
                          then the bus on as ALERTS_ON does (alerts_setup.switch(True): only when ALERTS_OFF had switched it off)
   POST /alerts/cancel    {} drop the wait (nothing saved)
-  POST /alerts/test      {} TEST_ALERT.bat: the test alert through every channel; the reply is {channel: true / false} only
+  POST /alerts/test      {} tools/bat/TEST_ALERT.bat: the test alert through every channel; the reply is {channel: true / false} only
 
 Every POST must pass check(): not cloud mode; the private link (engine/live_site.private_why: the PC itself, or a device signed in
 to the owner's tailnet; never the home WiFi, never Funnel / another tunnel); sent by this page (X-Olympus-Alerts: 1 header, JSON,
@@ -67,7 +67,7 @@ REASONS = {
     "test_failed": ("Telegram did not deliver the test message, so nothing was saved.",
                     "Tap Connect again. Fails twice? Double-click ALERTS_SETUP.bat on the PC once."),
     "save_failed": ("The test arrived but the PC could not save the setup.", "Double-click ALERTS_SETUP.bat on the PC once."),
-    "bus_off": ("Saved and tested, but the alert bus is switched off on this PC.", "Double-click ALERTS_ON.bat on the PC."),
+    "bus_off": ("Saved and tested, but the alert bus is switched off on this PC.", "Double-click tools/bat/ALERTS_ON.bat on the PC."),
     "cancelled": ("Stopped. Nothing saved.", "Tap Connect to start again."),
     "failed": ("It did not run on the PC. Nothing saved.", "Double-click ALERTS_SETUP.bat on the PC once."),
 }
@@ -241,7 +241,7 @@ def _wait_and_save(token: str, gen: int, code: str | None = None) -> dict:
         return {"state": "failed", "reason": "save_failed", "test_delivered": True}
     try:
         if os.path.exists(os.path.join(AB.home(), AB.OFF_NAME)):
-            S.switch(True, say=lambda *_a, **_k: None)   # ALERTS_ON.bat exactly: removes the ALERTS_OFF switch file
+            S.switch(True, say=lambda *_a, **_k: None)   # tools/bat/ALERTS_ON.bat exactly: removes the ALERTS_OFF switch file
     except Exception:  # noqa: BLE001
         pass
     return {"state": "done", "reason": None if AB.active() else "bus_off", "test_delivered": True}
@@ -291,7 +291,7 @@ def do_cancel() -> dict:
 
 
 def do_test() -> dict:
-    """TEST_ALERT.bat: one fake entry through every channel; the reply is only {channel: delivered?}."""
+    """tools/bat/TEST_ALERT.bat: one fake entry through every channel; the reply is only {channel: delivered?}."""
     cfg = AB.config()
     res = AB.test_all(cfg)
     chans = {ch: bool(r and r[0]) for ch, r in res.items()}

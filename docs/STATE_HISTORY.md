@@ -51,7 +51,7 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
   Rule: move 30% of every payout to a tax pot (Oikos + Ledger defaults now 30%, were 25%). Next federal estimated payment Jan 15, 2027. Education, not advice: research/writeups/taxes-2026-11-17.md.
 - More work (2026-11-17, "find more work"): Business -> More Work page (tools/web_public/business/work.html; the lead adds its card to business/index.html).
   Ranked: 1 agency websites ($500-$2,000/mo by month 2-3), 2 Google profile fix $149 ($150-$600/mo), 3 small freelance jobs ($300-$1,000/mo by month 3-6); DoorDash = floor. First $1,000 plan: 15 contacts a weekday. research/writeups/more-work-2026-11-17.md.
-- Business: fill agency/config.json (name, city, phone, address), then AGENCY_DAY.bat; list the 8 products, the 4 trading ones first (docs/BUSINESS_LISTING_KIT.md). $0 earned so far.
+- Business: fill agency/config.json (name, city, phone, address), then tools/bat/AGENCY_DAY.bat; list the 8 products, the 4 trading ones first (docs/BUSINESS_LISTING_KIT.md). $0 earned so far.
 - Words wave 2 (2026-11-17 night-words2): plainer $-first words on Aegis, Chrysos, Oikos (tax stays 30%), Ledger, phone Money card, Kalshi (new PAUSED banner: no real bets, rewards test on paper), ATLAS page, Live View. Text only, no logic changed.
 - Business pages (2026-11-17 night-pages): new Security tick list (business/security.html, never asks for a password) and Work week (business/schedule.html: PC checks 08:45 / 12:00 / 16:15 ET, Fri 16:30 review + payout check, tax dates, side-work blocks, one-tap phone calendar file); 4 doors on Business; plainer words on Business, My Accounts, Hestia, Planner, Zenith menu. Owner: do the Security list once (~1 hour).
 - Plain words (2026-11-17 night-w-life): first line of 23 Money + Life apps now says what the app is for and what to tap, in $ (estimates labelled); Kalshi apps say "paused"; Tyche title tag fixed. Text only, ids kept.
@@ -146,7 +146,7 @@ python tests/smoke.py (2 min) -> touched area's tests -> python tools/ship.py. A
 2. Rapid EOD 50K: buy (code FIFTYOFF/CLUB, ~$94), paste ONE line (docs/RAPID_EOD_SETUP.md), START BOT + phrase. LIT + ATLAS $500 from day one, 30% best-day guard, funded keep $1,000 above the buffer. Jul-Oct replay: pass median 20 sessions, 0 fails.
 3. Tell MFFU's funded 25K account name for ATLAS (passed).
 4. Add GitHub secret LE_NTFY_TOPIC = ntfy alert topic (else alerts go to the public status topic); merge/update `main` so the cloud monitor runs the new checks.
-5. Business: do the Security list once (~1 hour, business/security.html); fill agency/config.json then AGENCY_DAY.bat; list the 8 products (docs/BUSINESS_LISTING_KIT.md). $0 earned so far.
+5. Business: do the Security list once (~1 hour, business/security.html); fill agency/config.json then tools/bat/AGENCY_DAY.bat; list the 8 products (docs/BUSINESS_LISTING_KIT.md). $0 earned so far.
 6. Yes/no (W1): backtest on same 1m bars as live (branch night-w1-clean1m 94b955a): Jan-Jun $33,901 -> $33,171 (PF 4.98 -> 4.85); Jul-Oct + 2021-25 identical; live == backtest 120/120. On yes: merge, refresh STRATEGY.md / research/lit/final_results.json.
 7. Yes/no: lock the PC bot page to his devices (Tailscale only; anyone on home WiFi can reach Stop today).
 8. Yes/no: delete ~7 GB old test leftovers (python tools/disk_clean.py --apply; blocked for Claude).

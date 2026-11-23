@@ -2,7 +2,7 @@
 rem MFFU 7-day keep-alive ON for every MFFU account (the owner's yes 2026-11-20). Double-click, read, type the phrase.
 rem When an account has gone ~6 days without a trade, the bot places ONE 1-MNQ trade in and out on it (about -$2.40,
 rem at most -$22.90) so MFFU's 7-day rule never closes it. Claude never runs this file: it allows real orders.
-rem Undo any time: KEEPALIVE_OFF.bat. Uses engine/keepalive.py (--on all / --off all).
+rem Undo any time: tools\bat\KEEPALIVE_OFF.bat. Uses engine/keepalive.py (--on all / --off all).
 setlocal EnableExtensions EnableDelayedExpansion
 cd /d "%~dp0"
 title Liquidity Engine - 7-DAY KEEP-ALIVE ON

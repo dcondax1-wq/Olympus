@@ -9,7 +9,7 @@ owner's tailnet:
 
 Rules: Windows PC only (os.name == "nt"), Tailscale installed and signed in, LE_PHONE_LINK != "0". It never touches port 443 or
 any port another app uses, never turns Funnel on, and changes nothing when the bot server is already on a private port (any
-port, e.g. LIVE_LINK.bat put it on 443). Runs once in a background thread at server start (never blocks the bot, every call
+port, e.g. tools/bat/LIVE_LINK.bat put it on 443). Runs once in a background thread at server start (never blocks the bot, every call
 has a timeout). The pages themselves keep their own check (engine/live_site.private_why: tailnet devices only).
 
 Windows notes (review 2026-11-20, Tailscale 1.7x and newer):

@@ -1,4 +1,4 @@
-"""The December 2026 roll made safe and (almost) automatic: ROLL.bat + tools/roll_now.py, the dated phone pushes
+"""The December 2026 roll made safe and (almost) automatic: tools/bat/ROLL.bat + tools/roll_now.py, the dated phone pushes
 (engine/roll_watch.countdown -> tools/pc_guard.py -> tools/pc_report.py -> ntfy). Temp folders, a fake NinjaTrader folder,
 a fixed clock, fake HTTP: never the real network, never NinjaTrader, never an order.
 
@@ -11,7 +11,7 @@ a fixed clock, fake HTTP: never the real network, never NinjaTrader, never an or
                  pinned contract removed from data/autostart.json with a backup (nothing else in it changed); the add-on
                  mode needs no click (after the roll its contract list is fixed when the bot did not write it); --check
                  changes nothing; nothing to do on an ordinary day
-  D. static      ROLL.bat (CRLF, ASCII, runs tools\\roll_now.py, pauses); roll_now.py / pc_guard.py write no order file, no
+  D. static      tools/bat/ROLL.bat (CRLF, ASCII, runs tools\\roll_now.py, pauses); roll_now.py / pc_guard.py write no order file, no
                  live_model*.json, no live phrase; the order contract rule is unchanged (12-26 through Dec 9, 03-27 from Dec 10)
 
   python -X utf8 -m tests.test_roll_now
@@ -69,9 +69,9 @@ def countdown():
           (k7, k8, k9))
     m9 = roll_watch.countdown(st_at(at(2026, 12, 9, 10), "MNQ 12-26"), at(2026, 12, 9, 10))[0]
     m7 = roll_watch.countdown(st_at(at(2026, 12, 7, 10), "MNQ 12-26"), at(2026, 12, 7, 10))[0]
-    check("A: the eve says tonight (high priority), Monday says in 3 days; both name ROLL.bat, 16:00 ET and MNQ 03-27",
+    check("A: the eve says tonight (high priority), Monday says in 3 days; both name tools/bat/ROLL.bat, 16:00 ET and MNQ 03-27",
           "tonight" in m9["title"] and m9["priority"] == "high" and "in 3 days" in m7["title"]
-          and all("ROLL.bat" in m["body"] and "16:00 ET" in m["body"] and "MNQ 03-27" in m["body"] for m in (m7, m9)), (m7, m9))
+          and all("tools/bat/ROLL.bat" in m["body"] and "16:00 ET" in m["body"] and "MNQ 03-27" in m["body"] for m in (m7, m9)), (m7, m9))
     check("A: under 600 characters (one phone screen)", all(len(m["body"]) < 600 for m in (m7, m9)), [len(m7["body"]), len(m9["body"])])
     ku = keys(at(2026, 12, 8, 10), None)
     mu = roll_watch.countdown(st_at(at(2026, 12, 8, 10), None), at(2026, 12, 8, 10))[0]
@@ -80,8 +80,8 @@ def countdown():
     check("A: the eve after 16:00 with the chart already on 03-27 -> 'ready', no reminder", ke == ["roll:ready:MNQ 03-27"], ke)
     kl = keys(at(2026, 12, 10, 9), "MNQ 12-26")
     ml = roll_watch.countdown(st_at(at(2026, 12, 10, 9), "MNQ 12-26"), at(2026, 12, 10, 9))[0]
-    check("A: Thu Dec 10 with the chart on 12-26 -> the late alarm (no new entries), ROLL.bat named",
-          kl == ["roll:late:MNQ 03-27:2026-12-10"] and "no new entries" in ml["title"] and "ROLL.bat" in ml["body"], ml)
+    check("A: Thu Dec 10 with the chart on 12-26 -> the late alarm (no new entries), tools/bat/ROLL.bat named",
+          kl == ["roll:late:MNQ 03-27:2026-12-10"] and "no new entries" in ml["title"] and "tools/bat/ROLL.bat" in ml["body"], ml)
     kd = keys(at(2026, 12, 10, 9), "MNQ 03-27")
     check("A: Thu Dec 10 with the chart on 03-27 -> 'done' once (one key for the roll)", kd == ["roll:done:MNQ 03-27"], kd)
     check("A: a week later nothing", keys(at(2026, 12, 17, 9), "MNQ 03-27") == [])
@@ -136,8 +136,8 @@ def guard():
         h = FakeHTTP()
         b.run(h, now + 900)
         ps = [c for c in h.posts(cfg["topic"]) if "roll" in c["h"].get("Title", "").lower()]
-        check("B: the next run pushes the roll reminder to the private topic, ASCII title, ROLL.bat in the body",
-              len(ps) == 1 and "Contract roll in 2 days" in ps[0]["h"]["Title"] and "ROLL.bat" in ps[0]["body"]
+        check("B: the next run pushes the roll reminder to the private topic, ASCII title, tools/bat/ROLL.bat in the body",
+              len(ps) == 1 and "Contract roll in 2 days" in ps[0]["h"]["Title"] and "tools/bat/ROLL.bat" in ps[0]["body"]
               and all(ord(ch) < 128 for ch in ps[0]["h"]["Title"]), [c["h"] for c in h.posts()])
         h = FakeHTTP()
         b.run(h, now + 1800)
@@ -200,7 +200,7 @@ def roll_now():
         say = out.append
         f = b.facts(at(2026, 11, 13, 10))
         rc = RN.run(f, say=say)
-        check("C: an ordinary day: nothing to roll, the next roll date and ROLL.bat's day are said, exit 0",
+        check("C: an ordinary day: nothing to roll, the next roll date and tools/bat/ROLL.bat's day are said, exit 0",
               rc == 0 and any("Nothing to roll" in x and "Thu Dec 10" in x and "Wed Dec 09" in x for x in out), out)
         out.clear()
         f = b.facts(at(2026, 12, 9, 14, 0))
@@ -243,12 +243,12 @@ def roll_now():
         check("C: the old pinned MNQ 12-26 is removed from data/autostart.json, a backup kept, nothing else changed; restart hint said",
               "nt_instrument" not in rec["cfg"] and rec["cfg"]["nt_account"] == "Sim101" and rec["saved_at"] == 1 and len(baks) == 1
               and "MNQ 12-26" in open(os.path.join(b.root, "data", baks[0]), encoding="utf-8").read()
-              and any("STOP_BOT.bat, then BOTS_BACK.bat" in x for x in out), (rec, baks, out))
+              and any("STOP_BOT.bat, then tools/bat/BOTS_BACK.bat" in x for x in out), (rec, baks, out))
         b.chart("MNQ 12-26")
         out.clear()
         rc = RN.run(b.facts(eve), say=say, wait_s=60, regather=lambda: b.facts(eve), sleep=lambda s: None)
-        check("C: the click never comes -> [FIX] do the click, then ROLL.bat again, exit 1",
-              rc == 1 and any("[FIX]" in x and "ROLL.bat again" in x for x in out), out)
+        check("C: the click never comes -> [FIX] do the click, then tools/bat/ROLL.bat again, exit 1",
+              rc == 1 and any("[FIX]" in x and "tools/bat/ROLL.bat again" in x for x in out), out)
         out.clear()
         rc = RN.run(b.facts(eve), say=say, wait_s=0, regather=None)
         check("C: --wait 0 -> the click text and exit 1, no wait", rc == 1 and any("Instrument > MNQ 03-27" in x for x in out), out)
@@ -305,8 +305,8 @@ def roll_now():
 
 # ============================================================================================== D static
 def static():
-    raw = open(os.path.join(ROOT, "ROLL.bat"), "rb").read()
-    check("D: ROLL.bat CRLF, ASCII, runs tools\\roll_now.py, pauses, names the zip update when the script is missing",
+    raw = open(os.path.join(ROOT, "tools/bat/ROLL.bat"), "rb").read()
+    check("D: tools/bat/ROLL.bat CRLF, ASCII, runs tools\\roll_now.py, pauses, names the zip update when the script is missing",
           b"\n" not in raw.replace(b"\r\n", b"") and all(c < 128 for c in raw) and b'tools\\roll_now.py" %*' in raw
           and b"pause" in raw and b"UPDATE_FROM_ZIP.bat" in raw)
     for rel in ("tools/roll_now.py", "tools/pc_guard.py"):

@@ -82,7 +82,7 @@ AREAS["pc"].append("lucid")         # day-nqdash3 2026-11-22: the second firm, L
 AREAS["agency"].append("web_offers")
 AREAS["agency"].append("web_outreach")
 AREAS["agency"].append("agency_autopilot")
-AREAS["agency"].append("postcards")       # day-a11y 2026-11-20: personalised postcards (tools/postcards.py, POSTCARD_SETUP.bat), a fake Lob   # day-a11y 2026-11-20: the PC email autopilot (agency/autopilot/, EMAIL_SETUP.bat), fake Gmail, never the network   # day-a11y 2026-11-20: the Website Factory outreach + close kit (agency/outreach/)
+AREAS["agency"].append("postcards")       # day-a11y 2026-11-20: personalised postcards (tools/postcards.py, tools/bat/POSTCARD_SETUP.bat), a fake Lob   # day-a11y 2026-11-20: the PC email autopilot (agency/autopilot/, tools/bat/EMAIL_SETUP.bat), fake Gmail, never the network   # day-a11y 2026-11-20: the Website Factory outreach + close kit (agency/outreach/)
 AREAS["agency"].append("web_portal")      # day-a11y 2026-11-21: the CALLER PORTAL (agency/portal/ + agency/portal.py): the human cold caller's list, rules, log
 AREAS["agency"].append("site_quality")    # day-a11y 2026-11-22: the 150 concept sites on the call sheet (names, trade, call link, 44 px, photos), the premium top 20
 AREAS["trading"].append("panelfx")      # day-a11y 2026-11-20: the effects layer on Trading / Business / Planner (trading/panelfx.js)   # day-web-offers 2026-11-20: Agency Offers (agency/offers/): packages, proposal, terms, invoices + retainers, goal
@@ -417,9 +417,13 @@ def main(argv=None) -> int:
     return 0 if all(r["state"] == "PASS" for r in rows) else 1
 
 
-if __name__ == "__main__":
-    sys.exit(main())
+# (night-cleanup 2026-11-22: these lines used to sit below the __main__ block, so run_area.py never ran them)
 AREAS["agency"].append("pricebook")      # day-caller2 2026-11-21: one price book, checked everywhere (agency/pricebook.py --check)
 AREAS["agency"].append("trade_scripts")   # day-caller2 2026-11-22: per-trade call scripts
 AREAS["money"].append("money_pipeline")     # day-a11y 2026-11-22: the MONEY PIPELINE (business/pipeline.html + agency/pipeline.py) + the Corvette fund
 AREAS["pc"] += ["clockfix"]        # 2026-11-22: FIX_CLOCK.bat + OlympusClock task + the schtasks fallback (engine/go.sync_clock, self_heal.fix_clock)
+AREAS["pc"] += ["bat_menu", "context_refresh"]   # night-cleanup 2026-11-22: TRADE_HOME = the one front door (tools/bat/), CBOE / GEX / 1d refresh
+AREAS["pc"].append("bat_shortcuts")     # red team 2026-11-23: a shortcut to a moved .bat follows it to tools/bat (once a day, the 15-minute report)
+
+if __name__ == "__main__":
+    sys.exit(main())

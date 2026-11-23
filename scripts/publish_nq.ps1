@@ -1,5 +1,5 @@
 <#
-PUBLISH_NQ (double-click PUBLISH_NQ.bat). The NQ reporting chain without GitHub (docs\NQ_BOT_BACK.md).
+PUBLISH_NQ (double-click tools\bat\PUBLISH_NQ.bat). The NQ reporting chain without GitHub (docs\NQ_BOT_BACK.md).
 
   default   sets up the 15-minute Windows task "OlympusPublishNQ" (runs tools\pc_publish.py with pythonw, no window, only
             while you are signed in), switches the bot to GitHub-free mode (the file %USERPROFILE%\.olympus\no_github: the bot
@@ -40,7 +40,7 @@ if ($Remove) {
     try { Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction SilentlyContinue } catch { }
     if (Test-Path -LiteralPath $Marker) { Remove-Item -LiteralPath $Marker -Force -ErrorAction SilentlyContinue }
     Write-Host "[OK]  publish task $TaskName removed, GitHub-free bot mode switched off (applies at the bot's next start)."
-    Write-Host '      Your Netlify / folder settings were kept. To publish once by hand: PUBLISH_NQ.bat'
+    Write-Host '      Your Netlify / folder settings were kept. To publish once by hand: tools\bat\PUBLISH_NQ.bat'
     exit 0
 }
 
@@ -52,7 +52,7 @@ if (-not $Python) {
     }
 }
 if (-not $Python -or -not (Test-Path -LiteralPath $Python)) {
-    Write-Host '[FIX] python not found: install Python 3.12 (tick "Add python.exe to PATH"), then double-click PUBLISH_NQ.bat again.'
+    Write-Host '[FIX] python not found: install Python 3.12 (tick "Add python.exe to PATH"), then double-click tools\bat\PUBLISH_NQ.bat again.'
     exit 1
 }
 if (-not (Test-Path -LiteralPath $Script)) { Write-Host "[FIX] tools\pc_publish.py is missing in ${Root}: send a photo of this window to Claude."; exit 1 }
@@ -87,12 +87,12 @@ if (-not $Now) {
         Write-Host "[OK]  task ${TaskName}: publishes every 15 minutes while you are signed in"
     } catch {
         Write-Host "[FIX] could not create the task: $($_.Exception.Message)"
-        Write-Host '      Right-click PUBLISH_NQ.bat > Run as administrator once, or send a photo of this window to Claude.'
+        Write-Host '      Right-click tools\bat\PUBLISH_NQ.bat > Run as administrator once, or send a photo of this window to Claude.'
         exit 1
     }
     try {
         New-Item -ItemType Directory -Force -Path $Home1 | Out-Null
-        if (-not (Test-Path -LiteralPath $Marker)) { Set-Content -LiteralPath $Marker -Value 'GitHub-free bot mode (PUBLISH_NQ.bat). Delete this file or run UNDO_PUBLISH_NQ.bat to undo.' }
+        if (-not (Test-Path -LiteralPath $Marker)) { Set-Content -LiteralPath $Marker -Value 'GitHub-free bot mode (tools\bat\PUBLISH_NQ.bat). Delete this file or run tools\bat\UNDO_PUBLISH_NQ.bat to undo.' }
         Write-Host '[OK]  bot mode: GitHub-free (the bot writes logs\pc_hb on this PC; restart the bot once when the market is closed)'
     } catch { Write-Host "[SKIP] could not write ${Marker}: $($_.Exception.Message)" }
 }

@@ -4,9 +4,9 @@ Since 2026-11-22 the PC sends every important alert with ZERO setup to two place
 your **private ntfy topic** (the PC makes it by itself, once). You only tell the phone to show them:
 
 1. iPhone: open **Olympus from the Home Screen** -> tap **Allow notifications** -> **Allow**. (That is enough.)
-2. Backup, optional: App Store -> **ntfy** (free) -> open it -> **+** -> type the topic that **TEST_ALERT.bat** prints on the PC
+2. Backup, optional: App Store -> **ntfy** (free) -> open it -> **+** -> type the topic that **tools/bat/TEST_ALERT.bat** prints on the PC
    (looks like `nq-amber-falcon-river-7291`) -> **Subscribe**.
-3. On the PC: double-click **TEST_ALERT.bat** (or TRADE_HOME -> **T**). Each channel says **OK** or **FAIL** + what to do.
+3. On the PC: double-click **tools/bat/TEST_ALERT.bat** (or TRADE_HOME -> **T**). Each channel says **OK** or **FAIL** + what to do.
 
 What buzzes (engine/alert_map.py; `python -X utf8 -m engine.alert_map` prints this live):
 
@@ -40,8 +40,8 @@ topic, so alerts no longer share its 250-a-day cap. Messages you send to the bot
 | What | Where |
 |---|---|
 | Setup (once) | phone: PC link + `:8444/alerts/` (Telegram), or `ALERTS_SETUP.bat` (1 Telegram, 2 Discord, 3 both) |
-| Check every channel | `TEST_ALERT.bat` (prints OK / FAIL + the receipt id per channel) |
-| Back to the old path exactly | `ALERTS_OFF.bat` (undo: `ALERTS_ON.bat`; off also stops the zero-setup copies of readiness / update alerts) |
+| Check every channel | `tools/bat/TEST_ALERT.bat` (prints OK / FAIL + the receipt id per channel) |
+| Back to the old path exactly | `tools/bat/ALERTS_OFF.bat` (undo: `tools/bat/ALERTS_ON.bat`; off also stops the zero-setup copies of readiness / update alerts) |
 | Secrets | `%USERPROFILE%\.olympus\alerts.json` only (never the repo, never printed) |
 | Failure log | `data\alert_bus.jsonl` (redacted) |
 | Cloud "PC silent" | repo secrets `LE_TG_TOKEN` + `LE_TG_CHAT` and / or `LE_DISCORD_WEBHOOK` (optional) |
@@ -52,7 +52,7 @@ topic, so alerts no longer share its 250-a-day cap. Messages you send to the bot
 3. BotFather answers with a long token: long-press it -> **Copy** -> back to the page -> **Paste** -> **Connect**.
 4. Tap the big **Open @your_bot and tap START** button -> **START** in Telegram (within 3 minutes).
 5. The page says **Connected: test delivered** (or one plain reason + the fix). Saved on the PC only, same file as ALERTS_SETUP.
-6. Tailscale devices only (`engine/alerts_box.py`); **Send a test alert** there = TEST_ALERT.bat. No sound: iPhone Settings -> Notifications -> Telegram.
+6. Tailscale devices only (`engine/alerts_box.py`); **Send a test alert** there = tools/bat/TEST_ALERT.bat. No sound: iPhone Settings -> Notifications -> Telegram.
 
 ## Telegram, 2 minutes (recommended)
 iPhone:
@@ -79,4 +79,4 @@ PC:
    **Integrations** -> **Webhooks** -> New Webhook -> click it -> **Copy Webhook URL**.
 4. Double-click **ALERTS_SETUP.bat** -> type `2` -> Enter -> right-click to paste (hidden) -> Enter -> `Discord test: delivered`.
 
-Both: type `3` in step 5 / 4 and do both. Then double-click **TEST_ALERT.bat** once.
+Both: type `3` in step 5 / 4 and do both. Then double-click **tools/bat/TEST_ALERT.bat** once.

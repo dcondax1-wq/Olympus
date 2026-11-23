@@ -1,4 +1,4 @@
-"""BOTS_BACK.bat + scripts/bots_back.ps1 + tools/bots_back.py + tools/pc_report.py + scripts/pc_report_task.ps1 + the site's
+"""tools/bat/BOTS_BACK.bat + scripts/bots_back.ps1 + tools/bots_back.py + tools/pc_report.py + scripts/pc_report_task.ps1 + the site's
 tools/web_public/pc_feed.js (docs/BOTS_BACK.md, owner 2026-11-12: the bots and their reporting back without GitHub).
 
 Never the real network: every HTTP call goes to a fake (and LE_PR_NO_NET=1 makes the real one refuse); every Windows-only step
@@ -54,8 +54,8 @@ def rb(rel):
 
 # ============================================================================================== 1 static
 def static():
-    for name, script, extra in (("BOTS_BACK.bat", b'scripts\\bots_back.ps1" %* & echo. & pause & exit /b', b":old"),
-                                ("UNDO_BOTS_BACK.bat", b'scripts\\bots_back.ps1" -Remove & echo. & pause & exit /b', b"")):
+    for name, script, extra in (("tools/bat/BOTS_BACK.bat", b'scripts\\bots_back.ps1" %* & echo. & pause & exit /b', b":old"),
+                                ("tools/bat/UNDO_BOTS_BACK.bat", b'scripts\\bots_back.ps1" -Remove & echo. & pause & exit /b', b"")):
         b = rb(name)
         check(f"{name}: CRLF line endings, ASCII", b"\n" not in b.replace(b"\r\n", b"") and b.endswith(b"\r\n") and all(c < 128 for c in b))
         check(f"{name}: runs scripts\\bots_back.ps1 with -ExecutionPolicy Bypass and pauses", script in b and b"-ExecutionPolicy Bypass" in b, b[-300:])
@@ -297,7 +297,7 @@ def reporter():
         check("bot down: one push, the status says DOWN and reporter.server false (t stays the heartbeat's)",
               [c["h"]["Title"] for c in ps] == ["Bot down"] and st["pc_verdict"]["code"] == "DOWN" and st["reporter"]["server"] is False
               and st["t"] == now + 3340, (ps, st.get("pc_verdict")))
-        check("card: BOTS is FIX and NEXT says BOTS_BACK.bat", rec["card"][0][0] == "FIX" and "BOTS_BACK.bat" in rec["card"][-1][2], rec["card"])
+        check("card: BOTS is FIX and NEXT says tools/bat/BOTS_BACK.bat", rec["card"][0][0] == "FIX" and "tools/bat/BOTS_BACK.bat" in rec["card"][-1][2], rec["card"])
         h = FakeHTTP(server=False)
         b.run(h, now + 4500)
         check("bot down: not repeated within 3 hours", not h.posts(cfg["topic"]), h.posts(cfg["topic"]))
@@ -513,7 +513,7 @@ def pwsh_runs(pwsh):
         open(b.winlog, "w").close()
         rc, out = b.run(pwsh, ["-NoResume"], server=True, nt=True)
         py = [ln.split("tools/")[-1] for ln in b.lines(b.pylog)]
-        check("-NoResume (GO_LIVE_EVAL.bat part 1): no paper start resumed, the rest the same, still never a live phrase",
+        check("-NoResume (tools/bat/GO_LIVE_EVAL.bat part 1): no paper start resumed, the rest the same, still never a live phrase",
               rc == 0 and "--resume-paper" not in " ".join(py) and "no paper start resumed" in out and "pc_report.py" in py
               and not re.search(r"engine\.go|START_BOT|ACCEPT", " ".join(py)), (out, py))
         rc, out = b.run(pwsh, ["-Remove"])
@@ -525,7 +525,7 @@ def pwsh_runs(pwsh):
             fh.write("made by PUBLISH_NQ")
         rc, out = b.run(pwsh, server=True, nt=True)
         rc, out = b.run(pwsh, ["-Remove"])
-        check("-Remove: a marker someone else made (PUBLISH_NQ.bat) is kept", os.path.exists(os.path.join(b.home, "no_github")) and "left as it was" in out, out)
+        check("-Remove: a marker someone else made (tools/bat/PUBLISH_NQ.bat) is kept", os.path.exists(os.path.join(b.home, "no_github")) and "left as it was" in out, out)
         git = shutil.which("git")
         if git:
             subprocess.run([git, "init", "-q", b.root], capture_output=True, timeout=60)
@@ -664,15 +664,15 @@ def node_runs(node):
 
 
 def go_live_static():
-    """GO_LIVE_EVAL.bat (owner 2026-11-12: Zlarior + ATLAS on the eval tonight): part 1 = bots_back.ps1 -NoResume, part 2 = engine.go
+    """tools/bat/GO_LIVE_EVAL.bat (owner 2026-11-12: Zlarior + ATLAS on the eval tonight): part 1 = bots_back.ps1 -NoResume, part 2 = engine.go
     (START BOT, where the owner types the live phrase himself); the file never types or holds the phrase and never sets the live switch."""
-    bat = rb("GO_LIVE_EVAL.bat").decode("ascii")
+    bat = rb("tools/bat/GO_LIVE_EVAL.bat").decode("ascii")
     code = [ln for ln in bat.splitlines() if ln.strip() and not ln.lower().startswith("rem ")]
     body = "\n".join(code)
     i1, i2 = body.find("bots_back.ps1\" -NoResume"), body.find("-m engine.go")
-    check("GO_LIVE_EVAL.bat: CRLF, bots_back.ps1 -NoResume first, then engine.go (START BOT); old folder -> UPDATE_FROM_ZIP first",
+    check("tools/bat/GO_LIVE_EVAL.bat: CRLF, bots_back.ps1 -NoResume first, then engine.go (START BOT); old folder -> UPDATE_FROM_ZIP first",
           "\r\n" in bat and 0 < i1 < i2 and "UPDATE_FROM_ZIP.bat" in bat, (i1, i2))
-    check("GO_LIVE_EVAL.bat: never arms by itself (no live phrase to type, no NINJATRADER_LIVE, no --arm)",
+    check("tools/bat/GO_LIVE_EVAL.bat: never arms by itself (no live phrase to type, no NINJATRADER_LIVE, no --arm)",
           not [ln for ln in code if "ACCEPT" in ln or "NINJATRADER_LIVE" in ln or "--arm" in ln], code)
 
 

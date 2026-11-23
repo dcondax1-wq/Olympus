@@ -582,7 +582,7 @@ def fetch_interactive(sh, src: dict, timeout: float = 900) -> tuple:
     (the URL carries the account name, so it asks for that account, not another one saved on this PC). (code, words)."""
     env = {k: v for k, v in os.environ.items() if k not in ("GIT_TERMINAL_PROMPT", "GCM_INTERACTIVE")}
     env.update({"PYTHONIOENCODING": "utf-8", "LE_HEARTBEAT": "0", "LE_NO_AUTOSTART": "1"})
-    # BOTS_BACK.bat (and GO_LIVE_EVAL / SETUP_EVERYTHING step 3 through it) sets credential.interactive=never in this folder's
+    # tools/bat/BOTS_BACK.bat (and GO_LIVE_EVAL / SETUP_EVERYTHING step 3 through it) sets credential.interactive=never in this folder's
     # git config: Git Credential Manager then refuses to open its sign-in window ("user interactivity has been disabled")
     # and the one-time connect fails as "backup not reachable" (night-bot 2026-11-17, tools/pc_doctor.py). This one fetch
     # overrides it for itself only (the folder setting stays: the heartbeat and the background checks never prompt).
@@ -1431,7 +1431,7 @@ class DailyUpdater:
 
 # ---------------------------------------------------------------------- CLI
 def signin(root: str = ROOT, fetch=None, say=print) -> int:
-    """GITHUB_SIGNIN.bat: fetch the backup once with the console, so Git Credential Manager opens its GitHub sign-in window
+    """tools/bat/GITHUB_SIGNIN.bat: fetch the backup once with the console, so Git Credential Manager opens its GitHub sign-in window
     (only the first time) and saves the sign-in; the hourly auto-update then reads the PRIVATE backup with it. Fetch only:
     the checkout, the bot and its files are not touched. 0 = signed in and the backup answers. Never raises."""
     try:
@@ -1450,7 +1450,7 @@ def signin(root: str = ROOT, fetch=None, say=print) -> int:
         if c == 0:
             say("  [OK]   Signed in. The backup answers: the PC keeps updating itself every hour (outside trading time).")
             return 0
-        say("  [FIX]  GitHub did not answer (" + (why or f"git exit {c}") + "). Run GITHUB_SIGNIN.bat again and sign in as "
+        say("  [FIX]  GitHub did not answer (" + (why or f"git exit {c}") + "). Run tools/bat/GITHUB_SIGNIN.bat again and sign in as "
             + (acct or "the backup account") + ".")
         return 1
     except Exception as e:  # noqa: BLE001
@@ -1475,7 +1475,7 @@ def main(argv=None) -> int:
                                                          "repo in update_source.json and turn auto-update on (bot server "
                                                          "stopped; a GitHub sign-in window may open)")
     g.add_argument("--source-status", action="store_true", help="read only: exit 0 when connected to the backup repo, else 10")
-    g.add_argument("--signin", action="store_true", help="GITHUB_SIGNIN.bat (owner 2026-11-19: backup made private): one fetch of "
+    g.add_argument("--signin", action="store_true", help="tools/bat/GITHUB_SIGNIN.bat (owner 2026-11-19: backup made private): one fetch of "
                                                         "the backup WITH the GitHub sign-in window, so the saved sign-in lets the "
                                                         "hourly auto-update keep working; touches no code, safe while the bot runs")
     ap.add_argument("--port", type=int, default=int(os.environ.get("PORT") or 8766), help="the bot server's port (--connect)")

@@ -28,15 +28,15 @@ old code zips `OLYMPUS_BACKUP_*.zip` after 14 days (the newest 2 stay), `backups
 Python version, NinjaTrader's own `log` / `trace` text files after 14 days, test leftovers in TEMP after 2 days.
 **Never touched:** `data\` (trades, journal, state, bars), `live_model*.json`, `second_model.json`, notes, `.env*`, your copies
 (`logs\connect-*`, `logs\self_heal\keep-*`), NinjaTrader's database / workspaces / templates, any file git tracks except the
-bot-made ones listed in `engine/generated_files.py`. CLEAN_STORAGE.bat stays the big manual clean (Windows junk too).
+bot-made ones listed in `engine/generated_files.py`. tools/bat/CLEAN_STORAGE.bat stays the big manual clean (Windows junk too).
 
 ## Tells you (it could not fix)
 
 | You get | Do this |
 |---|---|
 | "update blocked by a local change in X" (a hand edit of a tracked file, or a `data\` file the update also brings) | Send Claude that line: keep or drop it |
-| "the bot server does not answer while it should run" (Board only: the 15-minute report already pushes "bot down") | Double-click BOTS_BACK.bat (a real account is never armed by it) |
-| "only X GB free after the clean" | Double-click CLEAN_STORAGE.bat (dry run first) |
+| "the bot server does not answer while it should run" (Board only: the 15-minute report already pushes "bot down") | Double-click tools/bat/BOTS_BACK.bat (a real account is never armed by it) |
+| "only X GB free after the clean" | Double-click tools/bat/CLEAN_STORAGE.bat (dry run first) |
 | "pip could not install ..." | `python -m pip install -r requirements.txt` |
 | "Windows did not sync the clock" | Windows Settings > Time & language > Date & time > Sync now |
 | "a stale git lock / order file could not be deleted" | Restart the PC once |

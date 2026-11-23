@@ -3,7 +3,7 @@ Read-only: it looks at what the bot already reports (its heartbeat, through engi
 LE_BarFeed contract file. It never blocks, places, changes or cancels an order, never arms anything, never edits a setting.
 
   contract roll   engine/roll_watch.countdown: one push a day from 3 days before the roll to the eve (Mon Dec 7 .. Wed Dec 9
-                  2026: "double-click ROLL.bat on Wed after 16:00 ET"), "roll ready" when the chart is already switched, the
+                  2026: "double-click tools/bat/ROLL.bat on Wed after 16:00 ET"), "roll ready" when the chart is already switched, the
                   late alarm while the chart sits on another month (no new entries), "roll done" once.
   drawdown        per eval account (Zlarior / LIT 50K, ATLAS 25K, BLITZ 25K; the board cards of engine/live_board): 50% and 75%
                   of the max loss used (1 - room / mll), once per level per eval; re-armed when it falls 10 points back.
@@ -375,7 +375,7 @@ def day_summary(snap: dict, now: int) -> list:
     age = snap.get("hb_age")
     if not cs:
         why = "the bot has not reported" if age is None else f"no account numbers in the last report ({int(age) // 60} min ago)"
-        return [{"key": key, "title": f"Day {e:%a %b %d}: no numbers", "body": f"No day summary: {why}. Double-click STATUS.bat on the PC.{news}",
+        return [{"key": key, "title": f"Day {e:%a %b %d}: no numbers", "body": f"No day summary: {why}. Double-click tools/bat/STATUS.bat on the PC.{news}",
                  "priority": "default", "tags": "memo"}]
     lines, tot = [], 0.0
     for k, c in cs:

@@ -1,5 +1,5 @@
 <#
-WEEKLY BACKUP task (BACKUP_SETUP.bat installs it; docs\DISASTER_RECOVERY.md "Second backup").
+WEEKLY BACKUP task (tools\bat\BACKUP_SETUP.bat installs it; docs\DISASTER_RECOVERY.md "Second backup").
 
   default   installs (or replaces) the Windows task "OlympusWeeklyBackup": every Sunday at 11:37, and later the same day when the
             PC was off then, it runs tools\second_backup.py --weekly --quiet with pythonw (no window), only while you are signed
@@ -63,7 +63,7 @@ try {
         -ExecutionTimeLimit (New-TimeSpan -Hours 2) -MultipleInstances IgnoreNew
     $principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -RunLevel Limited
     $task = New-ScheduledTask -Action $action -Trigger @($weekly) -Settings $settings -Principal $principal `
-        -Description "OLYMPUS: weekly code zip to the synced folder + git mirror push. Installed by BACKUP_SETUP.bat from $Root"
+        -Description "OLYMPUS: weekly code zip to the synced folder + git mirror push. Installed by tools\bat\BACKUP_SETUP.bat from $Root"
     if (Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue) { Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false }
     Register-ScheduledTask -TaskName $TaskName -InputObject $task | Out-Null
     Write-Host "  [OK] weekly backup task ${TaskName}: every Sunday 11:37 (zip + mirror, then a phone push)"

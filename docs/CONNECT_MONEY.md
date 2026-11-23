@@ -3,8 +3,8 @@
 Your own bank and card exports, on your PC, free and private. No paid aggregator, no bank password anywhere, nothing logs in to a bank.
 
 ## Your 3 steps
-1. On your bank's website (or app), download the last 3 months as **CSV** (or OFX / QFX) and save it in `%USERPROFILE%\.olympus\money_inbox\` (the folder is made the first time RUN_MONEY.bat runs). Do the same for each card or app you use.
-2. On the PC, double-click `RUN_MONEY.bat`.
+1. On your bank's website (or app), download the last 3 months as **CSV** (or OFX / QFX) and save it in `%USERPROFILE%\.olympus\money_inbox\` (the folder is made the first time tools/bat/RUN_MONEY.bat runs). Do the same for each card or app you use.
+2. On the PC, double-click `tools/bat/RUN_MONEY.bat`.
 3. Open **Oikos** on the iPhone through your live link: the "Your bank money" card shows it. Ask Jarvis "how much did I spend on food this month".
 
 Repeat step 1 once a month (overlapping files are fine: nothing counts twice).
@@ -29,7 +29,7 @@ Your balances live in `%USERPROFILE%\.olympus\money\balances.json` (made the fir
 `python tools\money_import.py --init-rules` writes `data\money_rules.json` (gitignored) with the default rules: first match wins, add words to `match`, change a `category`. Categories: rent, food, gas, subscriptions, trading_tools, utilities, transport, shopping, health, bank_fees, cash, people, prop_fees, other, income, prop_payout, income_other, kalshi_deposit, kalshi_withdrawal, transfer (ignored). `"privacy": {"publish_merchants": true}` shows merchant names on the phone. `"overrides": {"<row id>": "food"}` fixes one row (the id is in the private ledger).
 
 ## iPhone: log a cash expense (no app to install)
-Needs the live link (`LIVE_LINK.bat`, docs/LIVE_DASHBOARD.md) and, once, `MONEY_INBOX.bat` on the PC. That starts a tiny separate inbox (not the bot server) that can only add a line to `money_inbox\cash.jsonl`, reachable at `https://<your-pc>.<tailnet>.ts.net:8443/inbox` from your own Tailscale devices only.
+Needs the live link (`tools/bat/LIVE_LINK.bat`, docs/LIVE_DASHBOARD.md) and, once, `tools/bat/MONEY_INBOX.bat` on the PC. That starts a tiny separate inbox (not the bot server) that can only add a line to `money_inbox\cash.jsonl`, reachable at `https://<your-pc>.<tailnet>.ts.net:8443/inbox` from your own Tailscale devices only.
 
 Shortcut "Cash spent" (Shortcuts app, + , add these actions in order):
 1. **Ask for Input** (Number, "How much?"), then **Set Variable** `Amount`
@@ -47,8 +47,8 @@ Shortcut "Update balance": the same, with `kind` = `balance`, `name` = "Checking
 | Private files | `%USERPROFILE%\.olympus\money\` | `ledger.json`, `balances.json`, `networth_history.json`, `household.json`, `oikos_ledger.json` (outside the repo) |
 | Phone summary | `money_out/household.json` | served by `engine/live_site.py` (`MONEY_KEEP` + household) over the private link only; `tools/money_publish.py` never copies it |
 | Feeds | `tools/money/oikos.py` (reads `oikos_ledger.json` when no `--ledger`), `tools/money_scoreboard.py` (`household` block with `--private`, never in the cash totals), Oikos card `oikos/householdcore.js` + `household.js`, Jarvis `jdata.js` XFILES + `router.js` household_* + `skills.js` |
-| Inbox | `tools/money_inbox_server.py`, `MONEY_INBOX.bat` | 127.0.0.1:8767, POST /inbox append-only, Funnel refused, Tailscale user required through the proxy, 2 KB, 30 a minute |
-| Schedule | `RUN_MONEY.bat` | runs the importer before the scanners (every 30 minutes with its task) |
+| Inbox | `tools/money_inbox_server.py`, `tools/bat/MONEY_INBOX.bat` | 127.0.0.1:8767, POST /inbox append-only, Funnel refused, Tailscale user required through the proxy, 2 KB, 30 a minute |
+| Schedule | `tools/bat/RUN_MONEY.bat` | runs the importer before the scanners (every 30 minutes with its task) |
 | Tests | `tests.test_money_import` (+ `test_money_import_node.mjs`), `tests.test_money_inbox`, `tests.test_oikos_household` (browser, under flock) | fixtures `tests/fixtures/money_import/` (one per bank layout, fake numbers) |
 
 ## Honest limits

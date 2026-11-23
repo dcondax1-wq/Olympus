@@ -1,4 +1,4 @@
-"""ROLL.bat: the quarterly contract roll in one double-click (next: Dec 2026, MNQ 12-26 -> MNQ 03-27; docs/ROLL_DEC_2026.md).
+"""tools/bat/ROLL.bat: the quarterly contract roll in one double-click (next: Dec 2026, MNQ 12-26 -> MNQ 03-27; docs/ROLL_DEC_2026.md).
 
 What switches, and who switches it (read from the code, 2026-11-13):
   orders   engine/ninjatrader.nt_instrument picks the contract by the ET date: MNQ 12-26 through Wed 2026-12-09, MNQ 03-27 from
@@ -15,7 +15,7 @@ It acts only when that is safe: from the evening before the roll (after 15:55 ET
 NinjaTrader shows no open MNQ / NQ position and the bot's heartbeat shows no trade. It never places, changes or cancels an
 order, never arms anything, never starts or stops the bot and never edits live_model*.json or a strategy setting.
 
-  python tools/roll_now.py              the roll (ROLL.bat): checks, removes an old pin, waits up to 15 min for the chart click
+  python tools/roll_now.py              the roll (tools/bat/ROLL.bat): checks, removes an old pin, waits up to 15 min for the chart click
   python tools/roll_now.py --check      only says where things stand (changes nothing, never waits)
   python tools/roll_now.py --wait 0     do not wait for the chart click
 Exit 0 = rolled or nothing to do, 1 = something for you to do (the last line says what), 2 = not now (too early or in a trade).
@@ -133,7 +133,7 @@ def target(f: dict):
         if n == 1 and f["mod"] >= EVE_FROM_MOD:
             return new, "eve"
         if n == 1:
-            return None, f"too early: run ROLL.bat today after 16:00 ET ({day - dt.timedelta(days=1):%a %b %d})"
+            return None, f"too early: run tools/bat/ROLL.bat today after 16:00 ET ({day - dt.timedelta(days=1):%a %b %d})"
     return f["orders"], "now"
 
 
@@ -165,7 +165,7 @@ def decide(f: dict) -> dict:
         more = ""
         if nx:
             day, _o, new = nx
-            more = (f" Next roll {day:%a %b %d} ({new}): run ROLL.bat on {day - dt.timedelta(days=1):%a %b %d} after 16:00 ET"
+            more = (f" Next roll {day:%a %b %d} ({new}): run tools/bat/ROLL.bat on {day - dt.timedelta(days=1):%a %b %d} after 16:00 ET"
                     if (day - f["today"]).days > 1 else "")
         return {"code": "nothing", "target": tgt, "do": [],
                 "say": [f"Nothing to roll: chart and orders on {_month(tgt)}.{more}"]}
@@ -174,7 +174,7 @@ def decide(f: dict) -> dict:
         busy.append("the bot's heartbeat shows an open trade")
     if busy:
         return {"code": "busy", "target": tgt, "do": [],
-                "say": [f"Not now: {'; '.join(busy)}. Run ROLL.bat again once every bot is flat (15:55 ET at the latest). "
+                "say": [f"Not now: {'; '.join(busy)}. Run tools/bat/ROLL.bat again once every bot is flat (15:55 ET at the latest). "
                         "Nothing changed."]}
     do = []
     if pins_old:
@@ -238,7 +238,7 @@ def run(f: dict, check_only: bool = False, wait_s: int = WAIT_DEFAULT_S, regathe
         for x in d["say"]:
             say(f"  {x}")
         if check_only and d["code"] == "todo":
-            say("  To do: " + "; ".join(a[0] for a in d["do"]) + " (double-click ROLL.bat; --check changes nothing)")
+            say("  To do: " + "; ".join(a[0] for a in d["do"]) + " (double-click tools/bat/ROLL.bat; --check changes nothing)")
         return {"early": 2, "busy": 2, "nothing": 0}.get(d["code"], 1)
     tgt = d["target"]
     for kind, arg in d["do"]:
@@ -246,7 +246,7 @@ def run(f: dict, check_only: bool = False, wait_s: int = WAIT_DEFAULT_S, regathe
             bak = unpin(f["root"], list(arg), f["now"])
             say(f"  [OK]  removed the pinned contract {', '.join(arg.values())} from the bot's saved start (backup: "
                 f"{os.path.basename(bak)}). The bot follows the date from its next start.")
-            say("        The bot that runs now keeps it in memory: once, while flat, double-click STOP_BOT.bat, then BOTS_BACK.bat.")
+            say("        The bot that runs now keeps it in memory: once, while flat, double-click STOP_BOT.bat, then tools/bat/BOTS_BACK.bat.")
         elif kind == "feed_list":
             ok = nt.sync_feed_instruments(f["folder"], {k: v for k, v in (f.get("cfg") or {}).items() if k != "nt_instrument"},
                                           f["today"])
@@ -256,14 +256,14 @@ def run(f: dict, check_only: bool = False, wait_s: int = WAIT_DEFAULT_S, regathe
             say(f"  with LE_BarFeed is on {_month(tgt)}:")
             for ln in click_text(st, tgt):
                 say(f"     {ln}")
-            say("  [FIX] Open NinjaTrader with the LE_BarFeed chart on a dated contract (not ##-##), then double-click ROLL.bat again.")
+            say("  [FIX] Open NinjaTrader with the LE_BarFeed chart on a dated contract (not ##-##), then double-click tools/bat/ROLL.bat again.")
             return 1
         elif kind == "chart":
             say("  Your one job now (the bot waits; every bot is flat):")
             for ln in click_text(st, tgt):
                 say(f"     {ln}")
             if wait_s <= 0 or regather is None:
-                say("  [FIX] Do the click above, then double-click ROLL.bat again.")
+                say("  [FIX] Do the click above, then double-click tools/bat/ROLL.bat again.")
                 return 1
             say(f"  Waiting up to {wait_s // 60} minutes for the chart to show {_month(tgt)} ...")
             t0 = time.monotonic()
@@ -276,7 +276,7 @@ def run(f: dict, check_only: bool = False, wait_s: int = WAIT_DEFAULT_S, regathe
                     f = g
                     break
             if not ok:
-                say(f"  [FIX] The chart is still not on {_month(tgt)}. Do the click above, then double-click ROLL.bat again.")
+                say(f"  [FIX] The chart is still not on {_month(tgt)}. Do the click above, then double-click tools/bat/ROLL.bat again.")
                 return 1
             say(f"  [OK]  chart on {(f.get('st') or {}).get('chart')}")
     if roll_check is not None:
@@ -310,7 +310,7 @@ def history_check() -> str:
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(prog="python tools/roll_now.py", description="The contract roll in one double-click (ROLL.bat).")
+    ap = argparse.ArgumentParser(prog="python tools/roll_now.py", description="The contract roll in one double-click (tools/bat/ROLL.bat).")
     ap.add_argument("--check", action="store_true", help="only say where things stand")
     ap.add_argument("--wait", type=int, default=WAIT_DEFAULT_S, help="seconds to wait for the chart click (0 = no wait)")
     ap.add_argument("--folder", default=None, help="Documents\\NinjaTrader 8")
@@ -318,7 +318,7 @@ def main(argv=None) -> int:
     print("  ROLL: the quarterly contract switch (docs/ROLL_DEC_2026.md)")
     f = gather(folder=a.folder)
     if not f["folder_ok"]:
-        print(f"  [FIX] NinjaTrader's folder was not found ({f['folder']}). Open NinjaTrader once, then double-click ROLL.bat again.")
+        print(f"  [FIX] NinjaTrader's folder was not found ({f['folder']}). Open NinjaTrader once, then double-click tools/bat/ROLL.bat again.")
         return 1
     return run(f, check_only=a.check, wait_s=a.wait, regather=lambda: gather(folder=a.folder), roll_check=history_check)
 

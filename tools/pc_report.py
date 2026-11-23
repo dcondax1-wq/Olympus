@@ -1,5 +1,5 @@
 """PC report: the bots' reporting to the phone without GitHub (owner 2026-11-12, "we need to get these bots running again").
-Runs ON THE MAIN PC every 15 minutes (Task Scheduler task "OlympusPCReport", installed by BOTS_BACK.bat), stdlib only on top of
+Runs ON THE MAIN PC every 15 minutes (Task Scheduler task "OlympusPCReport", installed by tools/bat/BOTS_BACK.bat), stdlib only on top of
 the repo's own engine code (read-only use: engine/live_publish.build, engine/go.market_open). Free: ntfy.sh, no account.
 
   1. read     the bot's own last heartbeat on this PC (logs/pc_hb/heartbeat.json in GitHub-free mode, else the copy the bot keeps
@@ -585,9 +585,9 @@ def conditions(snap: dict) -> dict:
     """{code: plain sentence} of what is wrong right now (only what matters at this hour)."""
     out = {}
     mo, hb_age = snap.get("market_open"), snap.get("hb_age")
-    # a real eval is never resumed by BOTS_BACK.bat (paper / Sim only): GO_LIVE_EVAL.bat brings it back and you type the phrase
-    back = ("Double-click GO_LIVE_EVAL.bat on the PC (it brings the bot back; you type the phrase)." if snap.get("mode") == "LIVE"
-            else "Double-click BOTS_BACK.bat on the PC.")
+    # a real eval is never resumed by tools/bat/BOTS_BACK.bat (paper / Sim only): tools/bat/GO_LIVE_EVAL.bat brings it back and you type the phrase
+    back = ("Double-click tools/bat/GO_LIVE_EVAL.bat on the PC (it brings the bot back; you type the phrase)." if snap.get("mode") == "LIVE"
+            else "Double-click tools/bat/BOTS_BACK.bat on the PC.")
     if mo and not snap.get("server"):
         out["bot_down"] = "The bot server on the PC is not answering. " + back
     elif mo and (hb_age is None or hb_age > HB_STALE_S):
@@ -1835,7 +1835,7 @@ def card(snap: dict, cfg: dict | None = None, last: dict | None = None) -> list:
     if gh and snap.get("server") and snap.get("hb_src") == "last" and snap.get("hb_age") is not None and snap["hb_age"] <= HB_STALE_S:
         rp.append("GitHub-free mode set, the running bot still tries GitHub (restart it once when flat)")
     else:
-        rp.append("GitHub off" if gh else "GitHub pushes still on (double-click BOTS_BACK.bat)")
+        rp.append("GitHub off" if gh else "GitHub pushes still on (double-click tools/bat/BOTS_BACK.bat)")
     if snap.get("alerts_pc"):
         rp.append("Telegram on")
     if snap.get("alert_bus"):
@@ -1849,13 +1849,13 @@ def card(snap: dict, cfg: dict | None = None, last: dict | None = None) -> list:
     w = _d(_d(bd.get("lit")).get("window"))
     rows.append(("OK" if w.get("text") else "..", "WINDOW", f"LIT {w['text']}" if w.get("text") else "next entry window: weekdays 02:00-15:30 ET"))
     fixes = [r for r in rows if r[0] == "FIX"]
-    nxt = {"BOTS": "Double-click BOTS_BACK.bat again; if it stays red, double-click HEALTH_CHECK.bat and send Claude a photo.",
+    nxt = {"BOTS": "Double-click tools/bat/BOTS_BACK.bat again; if it stays red, double-click HEALTH_CHECK.bat and send Claude a photo.",
            "FEED": "In NinjaTrader: log in, open the MNQ 5-minute chart, right-click > Indicators > LE_BarFeed > Add.",
            "TRADE": "", "ROOM": "", "REPORT": "", "WINDOW": ""}
     if fixes:
         rows.append(("NEXT", "NEXT", nxt.get(fixes[0][1]) or "Send Claude a photo of this window."))
     elif not cfg.get("topic"):
-        rows.append(("NEXT", "NEXT", "Double-click BOTS_BACK.bat once to make your phone alert topic."))
+        rows.append(("NEXT", "NEXT", "Double-click tools/bat/BOTS_BACK.bat once to make your phone alert topic."))
     else:
         if _d(cfg.get("tested")).get("topic") != cfg.get("topic"):     # red team 2026-11-23: an auto-made topic nobody subscribes to
             rows.append(("NEXT", "NEXT", f"Phone: ntfy app -> + -> topic {cfg['topic']} -> Subscribe, then TRADE_HOME.bat > T (test all alerts)."))
@@ -2287,10 +2287,16 @@ def main(argv=None) -> int:
         except Exception:
             pass
         # your day (tools/calendar_sync.py, docs/CONNECT_DAY.md): your calendars -> data/day/day.json every 15 minutes, only once
-        # you connected one (CONNECT_DAY.bat); private, read by the phone through the PC's own link; soft, never stops this run
+        # you connected one (tools/bat/CONNECT_DAY.bat); private, read by the phone through the PC's own link; soft, never stops this run
         try:
             from tools import calendar_sync as _cal
             _cal.maybe_run(say=(lambda *_: None) if a.quiet else print)
+        except Exception:
+            pass
+        # shortcuts to a moved .bat follow it (tools/bat_shortcuts.py, red team 2026-11-23: 42 .bat files went to tools\\bat): once a day
+        try:
+            from tools import bat_shortcuts as _bs
+            _bs.fix()
         except Exception:
             pass
         # the Me hub (tools/me_hub.py, docs/ME_HUB.md): home WiFi / devices / this PC, the Apple Watch days, data/me/me.json for the phone's

@@ -10,7 +10,7 @@
   e. digest: low-priority items wait (no buzz), ONE silent post a day from 16:20 ET, same key = one line
   f. privacy: the auto topic is random words + digits (never the PC name, the user, an account id); not in the public status
      feed, not in any tracked file; TEST_ALERT prints plain words per channel, no secret
-  g. TRADE_HOME: "T Test all alerts" runs TEST_ALERT.bat
+  g. TRADE_HOME: "T Test all alerts" runs tools/bat/TEST_ALERT.bat
     python -X utf8 -m tests.test_alert_map        (~2 s)
 """
 from __future__ import annotations
@@ -167,7 +167,7 @@ def part_g(b):
     ran = []
     r = TH.do_choice("T", run=lambda *a, **k: (ran.append(a), 0)[1], fx={}, out=lambda *_: None)
     check("g. TRADE_HOME has 'T Test all alerts' in the menu", any("Test all alerts" in ln for ln in TH.MENU))
-    check("g. T runs TEST_ALERT.bat", ran and "TEST_ALERT.bat" in str(ran[0]) and r.startswith("[OK]"), f"{ran} {r}")
+    check("g. T runs tools/bat/TEST_ALERT.bat", ran and re.search(r"tools[\\/]+bat[\\/]+TEST_ALERT\.bat", str(ran[0])) and r.startswith("[OK]"), f"{ran} {r}")
 
 
 def main() -> int:

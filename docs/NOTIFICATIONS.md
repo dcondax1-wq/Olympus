@@ -56,7 +56,7 @@ the topic to follow).
 | "Add Olympus to your Home Screen first" | You are in a Safari tab: step 1 above. |
 | "Notifications are blocked" | iPhone Settings, Notifications, Olympus, turn on Allow Notifications. |
 | "Waiting for your PC" | The PC shares its key with its next report (every 15 min). Keep the PC on; Olympus finishes by itself. |
-| "Your PC confirms within 5 minutes" for much longer | The PC's 5-minute task is not running: on the PC, `SETUP_SHORTCUTS.bat` (task LiquidityEngineOps). Olympus sends it again by itself every 30 min. |
+| "Your PC confirms within 5 minutes" for much longer | The PC's 5-minute task is not running: on the PC, `tools/bat/SETUP_SHORTCUTS.bat` (task LiquidityEngineOps). Olympus sends it again by itself every 30 min. |
 | "Olympus is updating" | Swipe Olympus away, open it again from the Home Screen, tap Try again. |
 
 If the PC's key ever changes (its file was lost), the phone notices on its next open and subscribes again by itself.
@@ -147,7 +147,7 @@ Each trade is notified once, even when the cloud and the PC both trade it. One m
 Eval-timing changes appear only in the app's **Activity** page (System -> Activity, and a card on Today), next to every
 entry and result with its details (prices, stop, target, R, eval balance). The app icon shows a badge with the new ones.
 
-**From the PC's helper task** (`SETUP_SHORTCUTS.bat` adds the task `LiquidityEngineOps`, `engine/ops_checks.py`; each
+**From the PC's helper task** (`tools/bat/SETUP_SHORTCUTS.bat` adds the task `LiquidityEngineOps`, `engine/ops_checks.py`; each
 notice once, tagged "ops"): **All green for tonight** or **Fix before 02:00 ET: ...** at 01:40 ET, a **Day summary** at
 16:05 ET (trades, P&L, $ to go, session X of 10), a **Week** report on Sunday evening, **Internet was down N min** /
 **NinjaTrader disconnected** / **reconnected**, the MFFU **no trade for 5 days** reminder, **EVAL PASSED** / **Eval failed**

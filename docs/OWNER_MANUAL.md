@@ -109,11 +109,11 @@ python -X utf8 -m engine.account_b --payout YYYY-MM-DD=1000
 ## 6. Emergency playbook (max 3 steps each)
 
 Every line here was run in the code or read from it on 2026-11-20.
-"Your PC link" = the private Tailscale address of your PC (the LIVE_LINK.bat address). Port 8444 = the bot's own phone pages.
+"Your PC link" = the private Tailscale address of your PC (the tools/bat/LIVE_LINK.bat address). Port 8444 = the bot's own phone pages.
 
 ### 1. The PC is off or the phone says PC SILENT
 1. A trade open? Its stop and target sit at the broker and still work. To get out now: Tradovate / MFFU app on the phone > the account > Flatten.
-2. At the PC: double-click **PC_DOCTOR.bat**. It only looks. Read MOST LIKELY CAUSE and run the line under NEXT STEP.
+2. At the PC: double-click **tools/bat/PC_DOCTOR.bat**. It only looks. Read MOST LIKELY CAUSE and run the line under NEXT STEP.
 3. Still silent 20 min later: send Claude a photo of the PC_DOCTOR window. (The bot never chases a missed entry.)
 
 ### 2. A trade is open and the bot looks stuck
@@ -172,7 +172,7 @@ python -X utf8 -m engine.accounts status
 ### 10. Turn Kalshi off
 1. Kalshi is paper right now: no real money moves until you type the Kalshi phrase.
 2. Live and you want it off: your PC link + `:8444/kalshi-live/` > **STOP** (one tap). Phone KILL (card 8) also stops it.
-3. At the PC: double-click **KALSHI_STOP.bat**, type Y. It cancels every resting Kalshi order and switches Kalshi OFF.
+3. At the PC: double-click **tools/bat/KALSHI_STOP.bat**, type Y. It cancels every resting Kalshi order and switches Kalshi OFF.
 
 ## 7. New this week (landed Nov 21)
 
@@ -180,7 +180,7 @@ python -X utf8 -m engine.accounts status
 - **What:** The bot refuses every new entry while the PC clock is more than 5 seconds off internet time (the guard is right: it polls 3 s after the minute). If Windows will not sync by itself, FIX_CLOCK.bat sets it up once: Windows Time service on Automatic, three time servers, a check every 15 minutes, a sync now, and a task named OlympusClock (runs as the system, every 15 minutes, at boot and at wake).
 - **When:** Once, or when Status / the Start page / the Board says the PC clock is off or "double-click FIX_CLOCK.bat once".
 1. On the PC: right-click **FIX_CLOCK.bat** > **Run as administrator** (a plain double-click only tells you to do this).
-2. Wait for the last line. Safe to run twice. Undo: right-click FIX_CLOCK_OFF.bat > Run as administrator.
+2. Wait for the last line. Safe to run twice. Undo: right-click tools/bat/FIX_CLOCK_OFF.bat > Run as administrator.
 3. Any day after: TRADE_HOME.bat > **9 Fix the clock** (or Start page > Sync the clock) works without an administrator.
 - **You see:** BEFORE "the PC clock is 24.5 s behind internet time", AFTER "under 1 s", then "[OK] The clock matches internet time and OlympusClock keeps it that way." "[FIX]" = send Claude a photo of that window.
 
@@ -212,7 +212,7 @@ Off early: the same line with --off instead of --hand-trade 60.
 1. At the PC: double-click KEEPALIVE_ON.bat.
 2. Type KEEP ALIVE ON, then Enter.
 3. See "[OK] Keep-alive is ON." No restart needed.
-- **You see:** pushes "Keep-alive today on ...", the entry, then "closed ... about -$2.40". "Keep-alive ... did not go through" = place 1 MNQ by hand on that account before 16:05 ET, in and out. Off: KEEPALIVE_OFF.bat (no phrase): "[OK] Keep-alive is OFF on every account."
+- **You see:** pushes "Keep-alive today on ...", the entry, then "closed ... about -$2.40". "Keep-alive ... did not go through" = place 1 MNQ by hand on that account before 16:05 ET, in and out. Off: tools/bat/KEEPALIVE_OFF.bat (no phrase): "[OK] Keep-alive is OFF on every account."
 ```
 python -X utf8 -m engine.keepalive --status
 ```
@@ -224,7 +224,7 @@ Check it any time at the PC: which accounts are on, the last result, the next pl
 1. On the phone: your PC link + :8444/alerts/ (at the PC: http://localhost:8766/alerts/).
 2. Make your bot: Open BotFather, send /newbot, copy the token. Paste it, tap Connect.
 3. Tap Open your bot and START within 3 minutes.
-- **You see:** "Connected: test delivered", and Telegram gets "Olympus alerts are ON". Test later: that page's Send a test alert, or TEST_ALERT.bat at the PC: the phone gets "TEST: Zlarior 50K LONG opened ..." (no trade placed). At the PC instead: ALERTS_SETUP.bat (1 = Telegram, 2 = Discord, 3 = both). Back to the old way: ALERTS_OFF.bat (ALERTS_ON.bat undoes it). 23:00-07:00 ET alerts come silent; "bot stopped" and hedge alarms still ring. No sound at all: iPhone Settings > Notifications > Telegram > Allow + Sounds.
+- **You see:** "Connected: test delivered", and Telegram gets "Olympus alerts are ON". Test later: that page's Send a test alert, or tools/bat/TEST_ALERT.bat at the PC: the phone gets "TEST: Zlarior 50K LONG opened ..." (no trade placed). At the PC instead: ALERTS_SETUP.bat (1 = Telegram, 2 = Discord, 3 = both). Back to the old way: tools/bat/ALERTS_OFF.bat (tools/bat/ALERTS_ON.bat undoes it). 23:00-07:00 ET alerts come silent; "bot stopped" and hedge alarms still ring. No sound at all: iPhone Settings > Notifications > Telegram > Allow + Sounds.
 
 ### N5. Payout push: when to ask MFFU for money
 - **What:** When a funded account reaches your plan line you get ONE push: "PAYOUT READY: request $1,000". 25K: $1,000 at $2,100 profit. 50K: $2,000 at $4,100 profit (MFFU shows funded accounts from $0). It also needs 2+ traded days and no day over half the profit.

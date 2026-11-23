@@ -12,7 +12,7 @@ e. replies: opt-out and bounce = never again; trimmed words (no quoted thread, n
 f. Claude's drafts: an allowed kind with our links goes out; a foreign link or an unknown kind waits (one push); approved goes; a 'no' lead never
 g. no secret: the app password is in agency_mail.json only (not the log, the state, the branch, the printed output, the repo)
 h. the private branch: inbox/ + status.json pushed to 'agency-inbox' of a bare repo, a draft committed by another clone is read back
-i. the Windows side: EMAIL_SETUP.bat / EMAIL_STOP.bat (CRLF, the setup -> test -> task chain, stop removes the task), the 30-minute task script
+i. the Windows side: tools/bat/EMAIL_SETUP.bat / tools/bat/EMAIL_STOP.bat (CRLF, the setup -> test -> task chain, stop removes the task), the 30-minute task script
 """
 from __future__ import annotations
 
@@ -383,12 +383,12 @@ def main():
             sys.modules.pop(k_, None)
 
         # ---------------------------------------------------------------- i. the Windows side
-        bs, bt = open(os.path.join(ROOT, "EMAIL_SETUP.bat"), "rb").read(), open(os.path.join(ROOT, "EMAIL_STOP.bat"), "rb").read()
+        bs, bt = open(os.path.join(ROOT, "tools/bat/EMAIL_SETUP.bat"), "rb").read(), open(os.path.join(ROOT, "tools/bat/EMAIL_STOP.bat"), "rb").read()
         ps = open(os.path.join(ROOT, "scripts", "agency_mail_task.ps1"), encoding="utf-8").read()
         check("i. both .bat files use CRLF line endings", b"\r\n" in bs and b"\n" not in bs.replace(b"\r\n", b"") and b"\n" not in bt.replace(b"\r\n", b""))
         s = bs.decode()
-        check("i. EMAIL_SETUP.bat: setup -> a test email -> the task -> status (stops if setup fails)", s.index("autopilot setup") < s.index("autopilot test") < s.index("agency_mail_task.ps1") < s.index("autopilot status") and "if errorlevel 1 goto :end" in s)
-        check("i. EMAIL_STOP.bat: OFF, then the task removed", "autopilot stop" in bt.decode() and "-Remove" in bt.decode())
+        check("i. tools/bat/EMAIL_SETUP.bat: setup -> a test email -> the task -> status (stops if setup fails)", s.index("autopilot setup") < s.index("autopilot test") < s.index("agency_mail_task.ps1") < s.index("autopilot status") and "if errorlevel 1 goto :end" in s)
+        check("i. tools/bat/EMAIL_STOP.bat: OFF, then the task removed", "autopilot stop" in bt.decode() and "-Remove" in bt.decode())
         check("i. the task: 30 minutes, pythonw, its own name, never the bot", "OlympusAgencyMail" in ps and "Minutes 30" in ps and "pythonw" in ps and "agency.autopilot run" in ps and "engine" not in ps.split("#>")[1])
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

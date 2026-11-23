@@ -61,7 +61,7 @@ NEW_FOR_S = 24 * 3600
 DISK_LOW_PCT = 10.0
 UA = "olympus-me-home/1"
 KEEP_TESTS, KEEP_OUTAGES, KEEP_CHECKS = 120, 60, 200
-CONNECT = "Nothing to type: it runs with the PC report every 15 minutes once this PC has the update (BOTS_BACK.bat set that up)"
+CONNECT = "Nothing to type: it runs with the PC report every 15 minutes once this PC has the update (tools/bat/BOTS_BACK.bat set that up)"
 
 # the vendors worth naming on a home network: (pattern on the IEEE organization name, the name shown, what it usually is)
 VENDORS = [
@@ -496,7 +496,7 @@ def update(state: dict, now_s: float, online: bool | None = None, found: dict | 
         if f is not None and f < DISK_LOW_PCT:
             day = M.ny_day(now_s)
             ev.append({"key": f"home:disk:{day}", "title": "PC disk almost full",
-                       "body": f"The PC has {pc.get('disk_free_gb')} GB free ({f:.0f}%). Double-click CLEAN_STORAGE.bat on the PC.", "priority": "default", "tags": "floppy_disk"})
+                       "body": f"The PC has {pc.get('disk_free_gb')} GB free ({f:.0f}%). Double-click tools/bat/CLEAN_STORAGE.bat on the PC.", "priority": "default", "tags": "floppy_disk"})
     return st, ev
 
 

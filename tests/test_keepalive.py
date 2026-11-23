@@ -1282,7 +1282,7 @@ def t_cli_safety():
             rc = K.main(["--traded", "x:b25k_2"])
         check("a known key still works (x:b25k_2, lit, atlas, rapid)", rc == 0 and {"lit", "atlas", "rapid", "x:b25k_2"} <= K.known_keys(p),
               buf.getvalue())
-        # KEEPALIVE_ON.bat / KEEPALIVE_OFF.bat (owner's yes 2026-11-20): --on all needs --yes, then every known account
+        # KEEPALIVE_ON.bat / tools/bat/KEEPALIVE_OFF.bat (owner's yes 2026-11-20): --on all needs --yes, then every known account
         outs = []
         for argv in (["--on", "all"], ["--on", "all", "--off", "lit", "--yes"]):
             buf = io.StringIO()
@@ -1304,7 +1304,7 @@ def t_cli_safety():
         acc = K.load_config(None)["accounts"]
         check("--off all (no --yes needed): every account OFF", rc == 0 and acc and not any(acc.values()), acc)
         bats = {}
-        for b in ("KEEPALIVE_ON.bat", "KEEPALIVE_OFF.bat"):
+        for b in ("KEEPALIVE_ON.bat", "tools/bat/KEEPALIVE_OFF.bat"):
             with open(os.path.join(ROOT, b), "rb") as fh:
                 bats[b] = fh.read()
         on = bats["KEEPALIVE_ON.bat"].decode()
@@ -1314,8 +1314,8 @@ def t_cli_safety():
               and on.index("engine.keepalive --on all\r") < on.index('"KEEP ALIVE ON"') < on.index("--on all --yes")
               and on.count("--yes") == 1 and 'if /i not "!OK!"=="KEEP ALIVE ON" goto :no' in on
               and "EnableDelayedExpansion" in on, on[:300])   # delayed expansion: a typed quote never breaks the if (red-team 2026-11-21)
-        check("KEEPALIVE_OFF.bat: --off all, never --on", "engine.keepalive --off all" in bats["KEEPALIVE_OFF.bat"].decode()
-              and "--on" not in bats["KEEPALIVE_OFF.bat"].decode())
+        check("tools/bat/KEEPALIVE_OFF.bat: --off all, never --on", "engine.keepalive --off all" in bats["tools/bat/KEEPALIVE_OFF.bat"].decode()
+              and "--on" not in bats["tools/bat/KEEPALIVE_OFF.bat"].decode())
     finally:
         K.state_path_for, K.CONFIG_PATH = old_sp, old_cp
         shutil.rmtree(tmp, ignore_errors=True)
@@ -1425,7 +1425,7 @@ def t_redteam_1121():
                 with redirect_stdout(io.StringIO()):
                     rc = K.main(["--off", "all"])
                 after = _j.load(open(cfg, encoding="utf-8"))["accounts"]
-                check("red-team 11-21: --off all (KEEPALIVE_OFF.bat) also turns OFF a key only the config still names",
+                check("red-team 11-21: --off all (tools/bat/KEEPALIVE_OFF.bat) also turns OFF a key only the config still names",
                       rc == 0 and after.get("x:gone_acct") is False and after.get("lit") is False, after)
             finally:
                 K.CONFIG_PATH = old

@@ -415,7 +415,7 @@ def build(ledger, today, status, opts=None, asof=None):
 
 def bank_ledger(env=None):
     """the household ledger tools/money_import.py builds from your own bank exports (<OLYMPUS_HOME or %USERPROFILE%\\.olympus>/money/
-    oikos_ledger.json, private, outside the repo), when it exists; the default when no --ledger is given (RUN_MONEY.bat runs the importer first)"""
+    oikos_ledger.json, private, outside the repo), when it exists; the default when no --ledger is given (tools/bat/RUN_MONEY.bat runs the importer first)"""
     env = os.environ if env is None else env
     home = env.get("OLYMPUS_HOME") or os.path.join(env.get("USERPROFILE") or os.path.expanduser("~"), ".olympus")
     p = os.path.join(home, "money", "oikos_ledger.json")

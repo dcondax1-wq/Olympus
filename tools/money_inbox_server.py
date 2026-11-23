@@ -7,7 +7,7 @@ server (server.py / engine/live_site.py are not touched; this is its own process
   python tools/money_inbox_server.py                 listen on 127.0.0.1:8767 (this PC only)
   python tools/money_inbox_server.py --port 8767 --home DIR
 
-Reaching it from the iPhone: MONEY_INBOX.bat runs  tailscale serve --bg --yes --https=8443 http://127.0.0.1:8767  so the phone (signed in to
+Reaching it from the iPhone: tools/bat/MONEY_INBOX.bat runs  tailscale serve --bg --yes --https=8443 http://127.0.0.1:8767  so the phone (signed in to
 the SAME Tailscale account) posts to  https://<your-pc>.<tailnet>.ts.net:8443/inbox . Never Funnel: a Funnel (internet) request is refused.
 
 Routes (everything else is 404 / 405):

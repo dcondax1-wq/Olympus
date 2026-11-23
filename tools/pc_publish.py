@@ -1,5 +1,5 @@
 """PC publisher: the NQ reporting chain without GitHub (owner 2026-11-10). Runs ON THE MAIN PC every 15 minutes
-(Task Scheduler, PUBLISH_NQ.bat), stdlib only on top of the repo's own tools.
+(Task Scheduler, tools/bat/PUBLISH_NQ.bat), stdlib only on top of the repo's own tools.
 
   1. state   the cloud monitor's own code (tools/cloud_monitor.run) with the PC's own bars: the heartbeat the bot writes to
              logs/pc_hb/ (engine/nogithub.py) instead of the heartbeat branch. Runs in a child process with a time limit.
@@ -754,8 +754,8 @@ def status_lines(last: dict, now=None) -> list[str]:
     """The six-line card (also read by scripts/pc_status.ps1 through --status)."""
     now = now or now_s()
     if not last:
-        return ["PUBLISH 1/6 last run: never (run PUBLISH_NQ.bat)", "PUBLISH 2/6 provider: -", "PUBLISH 3/6 state: -", "PUBLISH 4/6 site: -",
-                "PUBLISH 5/6 sent: -", "PUBLISH 6/6 next: double-click PUBLISH_NQ.bat once, then follow docs/NQ_BOT_BACK.md"]
+        return ["PUBLISH 1/6 last run: never (run tools/bat/PUBLISH_NQ.bat)", "PUBLISH 2/6 provider: -", "PUBLISH 3/6 state: -", "PUBLISH 4/6 site: -",
+                "PUBLISH 5/6 sent: -", "PUBLISH 6/6 next: double-click tools/bat/PUBLISH_NQ.bat once, then follow docs/NQ_BOT_BACK.md"]
     ok = last.get("ok")
     return [
         f"PUBLISH 1/6 last run: {ago(last.get('t'), now)} -> {'OK' if ok else 'FAILED'}"

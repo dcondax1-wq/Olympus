@@ -1,11 +1,11 @@
-"""MONEY INBOX (tools/money_inbox_server.py + MONEY_INBOX.bat, 2026-11-14): the append-only inbox for the iPhone Shortcut. Checks:
+"""MONEY INBOX (tools/money_inbox_server.py + tools/bat/MONEY_INBOX.bat, 2026-11-14): the append-only inbox for the iPhone Shortcut. Checks:
   a. a real server on a free port: POST /inbox with JSON or plain text appends one checked line to <home>/money_inbox/cash.jsonl and
      answers in words; GET /health says nothing about money; every other path / method is 404 / 405; nothing else is ever written
   b. the guard: a Funnel (internet) request is refused, a proxied request without Tailscale's user is refused, the allow-list is honoured,
      a request from this PC itself is fine; bodies over 2 KB, no Content-Length, bad amounts / dates / kinds are refused; 30 a minute
   c. privacy: a card number typed in the text is masked before it is written
   d. the line is read by tools/money_import.py: a cash expense in the chosen category, a balance into the net-worth file, once each
-  e. the script: MONEY_INBOX.bat is ASCII + CRLF, every goto target exists, it serves on :8443 with tailscale serve and never turns on
+  e. the script: tools/bat/MONEY_INBOX.bat is ASCII + CRLF, every goto target exists, it serves on :8443 with tailscale serve and never turns on
      Funnel, it never touches the bot server's port 8766; the server binds 127.0.0.1 only, stdlib only, no subprocess
     python -X utf8 -m tests.test_money_inbox
 """
@@ -135,11 +135,11 @@ def main():
         srv.shutdown()
         shutil.rmtree(tmp, ignore_errors=True)
     # e. the script and the source
-    bat = open(os.path.join(ROOT, "MONEY_INBOX.bat"), "rb").read()
+    bat = open(os.path.join(ROOT, "tools/bat/MONEY_INBOX.bat"), "rb").read()
     txt = bat.decode("ascii", "replace")
     labels = {m.lower() for m in re.findall(r"^:(\w+)", txt, re.M)}
     gotos = {m.lower() for m in re.findall(r"goto :(\w+)", txt, re.I)} | {m.lower() for m in re.findall(r"call :(\w+)", txt, re.I)}
-    check("e. MONEY_INBOX.bat: ASCII, CRLF only, every goto / call target exists", all(c < 128 for c in bat) and bat.count(b"\n") == bat.count(b"\r\n") and gotos <= labels, gotos - labels)
+    check("e. tools/bat/MONEY_INBOX.bat: ASCII, CRLF only, every goto / call target exists", all(c < 128 for c in bat) and bat.count(b"\n") == bat.count(b"\r\n") and gotos <= labels, gotos - labels)
     check("e. it serves the inbox on :8443 with tailscale serve, never Funnel, never the bot server's 8766, and has an 'off' undo",
           "serve --bg --yes --https=8443 http://127.0.0.1:8767" in txt and not re.search(r"(?:%TS%\"|tailscale)\s+funnel", txt, re.I) and "8766" not in txt and ":off" in txt and "OlympusMoneyInbox" in txt)
     src = open(os.path.join(ROOT, "tools", "money_inbox_server.py"), encoding="utf-8").read()

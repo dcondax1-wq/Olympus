@@ -3,10 +3,10 @@
 One page for every day. The long first-time steps are in `docs/GO_LIVE_TONIGHT.md`. Something red?
 `docs/TROUBLESHOOTING.md`.
 
-**Last visit to the Surface:** `docs/ONE_TIME_SETUP.md` (one line to paste, then `ONE_TIME_SETUP.bat` does the rest:
+**Last visit to the Surface:** `docs/ONE_TIME_SETUP.md` (one line to paste, then `tools/bat/ONE_TIME_SETUP.bat` does the rest:
 no sleep, no update restarts, starts at logon, auto-update, the phone says "Surface offline" if it goes quiet).
 
-**Your desktop icons** (made once by double-clicking `SETUP_SHORTCUTS.bat` in the bot folder):
+**Your desktop icons** (made once by double-clicking `tools/bat/SETUP_SHORTCUTS.bat` in the bot folder):
 
 | Icon | What it does |
 |---|---|
@@ -157,7 +157,7 @@ LIT stays alone on its 50K. Try it on a Sim account first.
   x:b25k_2, rapid; add the date `yyyy-mm-dd` if it was not today: never a future day, at most 7 days back, an unknown
   account name is refused; it prints the new deadline). Or let the bot do it: the keep-alive
   trade (`engine/keepalive.py`, lands OFF; you said yes 2026-11-20: double-click `KEEPALIVE_ON.bat` and type KEEP ALIVE ON
-  to switch it on for every MFFU account, `KEEPALIVE_OFF.bat` to switch it off).
+  to switch it on for every MFFU account, `tools/bat/KEEPALIVE_OFF.bat` to switch it off).
 - **On a keep-alive day (switch ON), do not trade that account by hand between 15:33 and 15:50 ET**: the bot's close is a
   CLOSEPOSITION of the whole account, so it would close your trade too.
 - **Eval passed**: the bot stops on that account. Tell Claude before trading the funded account (sizing changes).

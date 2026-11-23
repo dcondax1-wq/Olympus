@@ -19,7 +19,7 @@ When a stream's file is a sample (`--fixture`, or a scanner failed), Mint marks 
 | Automatic | You |
 |---|---|
 | Fetching public pages, scoring, writing the JSON, building the Mint estimate, keeping each scanner's own memory between runs. | Reading "What to do today" (max 3 things) or the cards Stoa lights up. |
-| Marking data **Old** after 6 hours. | Double-clicking `RUN_MONEY.bat` if Mint or Stoa say data is old. |
+| Marking data **Old** after 6 hours. | Double-clicking `tools/bat/RUN_MONEY.bat` if Mint or Stoa say data is old. |
 | Showing Examples when a scanner is missing or broken. | Checking any deal or code on the firm's own page before you pay. Mercury only reports; you decide. |
 | Mercury's `expires` date lets Stoa warn "Deal ends in 20 h". | Keeping your Ledger up to date so Oikos has real entries. |
 
@@ -43,7 +43,7 @@ Sibyl (`tools/money/sibyl.py`) ranks kinds of Kalshi bet and writes `sibyl.json`
 
 **`sibyl_forward.json` is the memory, so it must survive between runs.** If it is lost, the start day restarts and the count begins again.
 
-- **On the PC (the plain way): `RUN_MONEY.bat` keeps it in a local folder on the PC**, next to the bot (`money_keep\`, made by the script; `RUN_MONEY.bat` now runs steps 2 and 3 after the money engine, reading `money_out\sibyl.json`). That folder is not synced anywhere: back it up if you care about the record, and do not delete it. A damaged file is refused (the script stops and says so) rather than restarted, because the start day is frozen.
+- **On the PC (the plain way): `tools/bat/RUN_MONEY.bat` keeps it in a local folder on the PC**, next to the bot (`money_keep\`, made by the script; `tools/bat/RUN_MONEY.bat` now runs steps 2 and 3 after the money engine, reading `money_out\sibyl.json`). That folder is not synced anywhere: back it up if you care about the record, and do not delete it. A damaged file is refused (the script stops and says so) rather than restarted, because the start day is frozen.
 - **In the cloud**: the free GitHub Actions copy only keeps its JSON as a 7-day download, so it would restart the count every run unless the file is saved on a state branch. Until that is set up, the PC folder is the only place the record is kept.
 - The Sibyl page reads `money/sibyl_forward.json` on the site; without it the card says "Not started". Nothing here touches the Kalshi bot, a key or an order.
 

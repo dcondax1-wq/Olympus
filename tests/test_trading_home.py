@@ -111,7 +111,7 @@ def logic():
     r6 = T.do_choice("5", ask=f6.ask, out=f6.say, run=f6.run, fx=fx_run)
     f7 = Fake(["1"])
     T.do_choice("5", ask=f7.ask, out=f7.say, run=f7.run, fx=fx_run)
-    check("e. alerts: 2 = TEST_ALERT.bat, 1 = ALERTS_SETUP.bat", os.path.basename(f6.ran[0][-1]) == "TEST_ALERT.bat" and r6.startswith("[OK]")
+    check("e. alerts: 2 = tools/bat/TEST_ALERT.bat, 1 = ALERTS_SETUP.bat", os.path.basename(f6.ran[0][-1]) == "TEST_ALERT.bat" and r6.startswith("[OK]")
           and os.path.basename(f7.ran[0][-1]) == "ALERTS_SETUP.bat", (f6.ran, f7.ran))
 
     # add an account: prices, one confirm, HELD
@@ -161,7 +161,7 @@ def files():
     check("h3. the .bat calls the ps1 and the ps1 opens engine.trade_home; neither holds a phrase",
           "scripts\\trade_home.ps1" in bat and "engine.trade_home" in ps and not any(p in ps + bat for p in PHRASES), "")
     check("h4. TRADE_HOME.bat and START/KEEPALIVE/STOP/UPDATE/TEST_ALERT/ALERTS_SETUP exist",
-          all(os.path.isfile(os.path.join(ROOT, b)) for b in ("TRADE_HOME.bat", "START_BOT.bat", "KEEPALIVE_ON.bat", "STOP_BOT.bat", "UPDATE.bat", "TEST_ALERT.bat", "ALERTS_SETUP.bat", "ADD_ACCOUNT.bat")), "")
+          all(os.path.isfile(os.path.join(ROOT, b)) for b in ("TRADE_HOME.bat", "START_BOT.bat", "KEEPALIVE_ON.bat", "STOP_BOT.bat", "UPDATE.bat", "tools/bat/TEST_ALERT.bat", "ALERTS_SETUP.bat", "ADD_ACCOUNT.bat")), "")
     ab = open(os.path.join(ROOT, "ADD_ACCOUNT.bat"), encoding="ascii").read()
     check("h5. ADD_ACCOUNT.bat lists the real prices, names FundedNext / Lucid as OFF, ends 'Added HELD'",
           "$91.80" in ab and "$63" in ab and "$97.20" in ab and "OFF" in ab and "Added HELD" in ab, "")

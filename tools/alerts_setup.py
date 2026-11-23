@@ -1,4 +1,4 @@
-"""ALERTS_SETUP.bat / TEST_ALERT.bat / ALERTS_OFF.bat / ALERTS_ON.bat (engine/alert_bus.py). Stdlib only.
+"""ALERTS_SETUP.bat / tools/bat/TEST_ALERT.bat / tools/bat/ALERTS_OFF.bat / tools/bat/ALERTS_ON.bat (engine/alert_bus.py). Stdlib only.
 
   python -X utf8 tools/alerts_setup.py setup     asks 1 Telegram, 2 Discord, 3 both; the token / webhook is pasted HIDDEN (getpass)
   python -X utf8 tools/alerts_setup.py test      a fake "TEST: Zlarior 50K LONG opened ..." through EVERY channel, with receipts
@@ -185,7 +185,7 @@ def test(say=print, cfg=None, make_topic: bool = True, show_topic: bool = False)
             pc_report.mark_tested(pc_report.load_cfg())
         except Exception:
             pass
-    if topic and show_topic:               # TEST_ALERT.bat only: on the PC screen (never logged, never in a public post)
+    if topic and show_topic:               # tools/bat/TEST_ALERT.bat only: on the PC screen (never logged, never in a public post)
         say(f"Phone, 1 minute: ntfy app (App Store, free) -> + -> topic {topic} -> Subscribe. "
             "And/or: Olympus from the Home Screen -> tap 'Allow notifications'.")
     return 0 if good else 1
@@ -201,7 +201,7 @@ def switch(on: bool, say=print, env=None) -> int:
     else:
         os.makedirs(os.path.dirname(p), exist_ok=True)
         with open(p, "w", encoding="utf-8") as fh:
-            fh.write("alert bus off: the old ntfy + Web Push path runs exactly as before. ALERTS_ON.bat removes this file.\n")
+            fh.write("alert bus off: the old ntfy + Web Push path runs exactly as before. tools/bat/ALERTS_ON.bat removes this file.\n")
         say("Alert bus OFF: alerts take the old path (ntfy private topic + the Olympus app), exactly as before.")
     return 0
 

@@ -1,5 +1,5 @@
 <#
-BOTS BACK (double-click BOTS_BACK.bat). Owner 2026-11-12: "We need to get these bots running again." The GitHub account is gone;
+BOTS BACK (double-click tools\bat\BOTS_BACK.bat). Owner 2026-11-12: "We need to get these bots running again." The GitHub account is gone;
 the bots never needed it to trade, only their reporting did. One double-click, safe to repeat (docs\BOTS_BACK.md):
 
   1 GITHUB   GitHub-free mode on: the file %USERPROFILE%\.olympus\no_github (engine\nogithub.py: the heartbeat goes to logs\pc_hb,
@@ -14,8 +14,8 @@ the bots never needed it to trade, only their reporting did. One double-click, s
              ntfy topic + the site's status. One test push the first time.
   5 CARD     six lines: bots, feed, last trade, drawdown left, reporting, next window (tools\pc_report.py)
 
-  -DryRun    say what it would do, change nothing         -Remove   undo 1 and 4 (UNDO_BOTS_BACK.bat)
-  -NoResume  skip step 3's paper resume (GO_LIVE_EVAL.bat: START BOT follows, where the owner types the live phrase himself)
+  -DryRun    say what it would do, change nothing         -Remove   undo 1 and 4 (tools\bat\UNDO_BOTS_BACK.bat)
+  -NoResume  skip step 3's paper resume (tools\bat\GO_LIVE_EVAL.bat: START BOT follows, where the owner types the live phrase himself)
 It never stops or restarts a running bot, never places an order, never touches live_model*.json, engine\ or NinjaTrader settings.
 Tests: tests\test_bots_back.py (pwsh with a fake python; LE_BB_T_NT=1|0 and LE_BB_T_LOG=<file> stand in for Windows-only steps).
 #>
@@ -97,7 +97,7 @@ if (-not $Python) {
     }
 }
 if (-not $Python -or -not (Test-Path -LiteralPath $Python)) {
-    Line 'FIX' 'Python not found: double-click ONE_TIME_SETUP.bat first, then BOTS_BACK.bat again.'
+    Line 'FIX' 'Python not found: double-click tools\bat\ONE_TIME_SETUP.bat first, then tools\bat\BOTS_BACK.bat again.'
     exit 1
 }
 if (-not (Test-Path -LiteralPath $Helper) -or -not (Test-Path -LiteralPath $Report) -or -not (Test-Path -LiteralPath $TaskScript)) {
@@ -108,7 +108,7 @@ $env:PYTHONIOENCODING = 'utf-8'
 $st = Read-State
 $state = @{ marker_made = [bool](P $st 'marker_made'); git_set = [bool](P $st 'git_set'); git_prev = [string](P $st 'git_prev'); t = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() }
 
-# ------------------------------------------------------------------ undo (UNDO_BOTS_BACK.bat)
+# ------------------------------------------------------------------ undo (tools\bat\UNDO_BOTS_BACK.bat)
 if ($Remove) {
     if ($DryRun) { Write-Host "  DRY RUN - would remove the task OlympusPCReport, the file $Marker (if BOTS_BACK made it) and the git setting it made"; exit 0 }
     & $TaskScript -Remove
@@ -144,7 +144,7 @@ $madeNow = $false
 try {
     New-Item -ItemType Directory -Force -Path $Home1 | Out-Null
     if (-not (Test-Path -LiteralPath $Marker)) {
-        Set-Content -LiteralPath $Marker -Value 'GitHub-free bot mode (BOTS_BACK.bat). Delete this file or run UNDO_BOTS_BACK.bat to undo.' -Encoding ASCII
+        Set-Content -LiteralPath $Marker -Value 'GitHub-free bot mode (tools\bat\BOTS_BACK.bat). Delete this file or run tools\bat\UNDO_BOTS_BACK.bat to undo.' -Encoding ASCII
         $state.marker_made = $true; $madeNow = $true
         Line 'OK' '1/5 GitHub pushes off (GitHub-free mode on; it applies when the bot server starts)'
     } else { Line 'OK' '1/5 GitHub pushes off (GitHub-free mode already on)' }
@@ -184,7 +184,7 @@ $wasUp = ($LASTEXITCODE -eq 0)
 if ($wasUp) {
     Line 'OK' '3/5 the bot server is already running (left alone)'
     if ($madeNow) {
-        Line 'SKIP' '    it started before GitHub-free mode: when it is flat and the market is closed, STOP_BOT.bat then BOTS_BACK.bat once'
+        Line 'SKIP' '    it started before GitHub-free mode: when it is flat and the market is closed, STOP_BOT.bat then tools\bat\BOTS_BACK.bat once'
     }
 } else {
     if (-not (TLog "START SERVER $RunBot")) {
@@ -196,7 +196,7 @@ if ($wasUp) {
     & $Python -X utf8 $Helper --wait-server 120
 }
 if ($NoResume) {
-    Line 'SKIP' '    no paper start resumed (GO_LIVE_EVAL.bat: START BOT comes next, where you type the live phrase yourself)'
+    Line 'SKIP' '    no paper start resumed (tools\bat\GO_LIVE_EVAL.bat: START BOT comes next, where you type the live phrase yourself)'
 } else {
     & $Python -X utf8 $Helper --resume-paper
 }
@@ -210,5 +210,5 @@ Write-Host ''
 Write-Host '  ---- status ----' -ForegroundColor Cyan
 & $Python -X utf8 $Report
 Write-Host ''
-Write-Host '  Safe to double-click again any time. Undo: UNDO_BOTS_BACK.bat. More: docs\BOTS_BACK.md'
+Write-Host '  Safe to double-click again any time. Undo: tools\bat\UNDO_BOTS_BACK.bat. More: docs\BOTS_BACK.md'
 exit 0

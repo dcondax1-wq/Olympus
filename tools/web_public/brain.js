@@ -172,7 +172,7 @@
     big.dataset.ageT = String(f.t || '');
     add(box, mk('div', 'bz-eb', f.stale ? 'Data is old' : 'Live'), big);
     if (f.stale) add(box, mk('p', 'small', f.t ? 'What you see below may be out of date: the bot has not checked in for over 20 minutes. ' +
-      'If the market is open, look at the PC (BOTS_BACK.bat brings the bots back).' : 'Nothing from the PC bot yet: start it on the PC.'));
+      'If the market is open, look at the PC (tools/bat/BOTS_BACK.bat brings the bots back).' : 'Nothing from the PC bot yet: start it on the PC.'));
     if (f.rep && f.rage != null) add(box, mk('p', 'small mut', `The PC's reporter looked ${agoT(f.rage)}` + (f.rep.server === false ? ' · bot server NOT answering' : '')));
     if (f.verdict && f.verdict.label) add(box, mk('p', 'small mut', `${f.verdict.label}${f.verdict.reason ? ': ' + f.verdict.reason : ''}`));
     return box;

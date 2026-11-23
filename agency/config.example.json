@@ -1,5 +1,5 @@
 {
-  "_read_me": "YOUR AGENCY IN ONE FILE. The first run copies this to agency/config.json (kept on this PC only, never uploaded: a tracked file edited on the PC would block the bot's auto-update). Change every YOUR ... word in agency/config.json, save, run RUN_AGENCY.bat again. The pitches, emails and demo sites read their names, numbers and prices from it.",
+  "_read_me": "YOUR AGENCY IN ONE FILE. The first run copies this to agency/config.json (kept on this PC only, never uploaded: a tracked file edited on the PC would block the bot's auto-update). Change every YOUR ... word in agency/config.json, save, run tools/bat/RUN_AGENCY.bat again. The pitches, emails and demo sites read their names, numbers and prices from it.",
   "agency": {
     "name": "YOUR AGENCY",
     "your_name": "YOUR NAME",

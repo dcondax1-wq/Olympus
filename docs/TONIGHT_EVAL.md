@@ -6,7 +6,7 @@ Claude got everything ready. **You arm the eval yourself** (MFFU requires you to
 ## Your 3 steps at the PC (before 01:45 ET; entries start 02:00 ET)
 1. **New code.** Double-click `STOP_BOT.bat`. Put the code zip and its `.sha256.txt` in Downloads, open the zip, copy
    `UPDATE_FROM_ZIP.bat` into the bot folder and double-click it (type Y if it asks).
-2. **Double-click `GO_LIVE_EVAL.bat`.** Part 1 turns GitHub off, checks NinjaTrader and its bars, installs the phone alerts and
+2. **Double-click `tools/bat/GO_LIVE_EVAL.bat`.** Part 1 turns GitHub off, checks NinjaTrader and its bars, installs the phone alerts and
    shows six lines (write down the alert topic). Part 2 is START BOT: log in to NinjaTrader if it asks, then type
    `I ACCEPT LIVE RISK` when it asks. That arms Zlarior (50K) and ATLAS (25K) and leaves BLITZ on paper.
 3. **iPhone:** install the free **ntfy** app, tap **+**, type the alert topic from step 2, tap **Subscribe**.
@@ -20,6 +20,6 @@ Claude got everything ready. **You arm the eval yourself** (MFFU requires you to
 | Phone | alerts on trade open / close with $, FEED STALE, bot down (ntfy); the site shows the PC's status every 15 min |
 | Stop everything | `STOP_BOT.bat` (orders at the broker keep their stop and target) |
 
-If step 2 says "the bot is already running": double-click `STOP_BOT.bat`, then `GO_LIVE_EVAL.bat` again.
+If step 2 says "the bot is already running": double-click `STOP_BOT.bat`, then `tools/bat/GO_LIVE_EVAL.bat` again.
 Checked before sending: `tests.test_go` 65/65, `engine.ninjatrader --selftest` PASS, `tests.test_bots_back` 80/80,
 `tests.test_lit_live` (every 2026 session through the live loop): 120/120 replay trades identical, session by session 0 differences so far.

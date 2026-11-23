@@ -132,7 +132,7 @@ def main() -> int:
         with open(p, "w", newline="") as fh:
             fh.write("time,open,high,low,close,volume\r\n1793668020,21000,21001,20999,21000.5,5\r\n")
         check("8c. Windows line ends read as before", list(nt.NinjaTraderBars(f).load(p)["time"]) == [1793668020])
-        # 9. LE_Feed installed (NO_CHART_MODE.bat copied it) but never started: the health line says so
+        # 9. LE_Feed installed (tools/bat/NO_CHART_MODE.bat copied it) but never started: the health line says so
         folder(f, {}, None)
         check("9a. no add-on, no status: chart mode (None)", nt.feed_addon_line(f, now) is None)
         os.makedirs(os.path.join(f, "bin", "Custom", "AddOns"))

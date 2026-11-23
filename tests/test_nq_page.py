@@ -51,12 +51,12 @@ def test_static():
     # howto.json = docs/NQ_BOT_BACK.md
     r = subprocess.run([sys.executable, os.path.join(AK.ROOT, "tools", "nq_howto_build.py"), "--check"], capture_output=True, text=True)
     hw = json.loads(AK.read(os.path.join(d, "howto.json")))
-    check("a. howto.json is the doc's steps (tools/nq_howto_build.py --check passes): 3 numbered steps (owner 2026-11-12: BOTS_BACK), step 1 is the zip update, step 2 BOTS_BACK.bat, step 3 the ntfy app, the undo line, no markup",
-          r.returncode == 0 and [s["n"] for s in hw["steps"]] == [1, 2, 3] and "UPDATE_FROM_ZIP.bat" in hw["steps"][0]["text"] and "BOTS_BACK.bat" in hw["steps"][1]["title"]
-          and "ntfy" in json.dumps(hw["steps"][2]) and "UNDO_UPDATE.bat" in hw["undo"] and "<" not in json.dumps(hw) and "**" not in json.dumps(hw), (r.stdout, hw["steps"][:1]))
+    check("a. howto.json is the doc's steps (tools/nq_howto_build.py --check passes): 3 numbered steps (owner 2026-11-12: BOTS_BACK), step 1 is the zip update, step 2 tools/bat/BOTS_BACK.bat, step 3 the ntfy app, the undo line, no markup",
+          r.returncode == 0 and [s["n"] for s in hw["steps"]] == [1, 2, 3] and "UPDATE_FROM_ZIP.bat" in hw["steps"][0]["text"] and "tools/bat/BOTS_BACK.bat" in hw["steps"][1]["title"]
+          and "ntfy" in json.dumps(hw["steps"][2]) and "tools/bat/UNDO_UPDATE.bat" in hw["undo"] and "<" not in json.dumps(hw) and "**" not in json.dumps(hw), (r.stdout, hw["steps"][:1]))
     doc = AK.read(os.path.join(AK.ROOT, "docs", "NQ_BOT_BACK.md"))
     steps = re.findall(r"^\d+\. \*\*", doc.split("## Do this")[1].split("\n## ")[0], re.M)
-    check("a. docs/NQ_BOT_BACK.md has at most 5 steps and the update step is folded in", 1 <= len(steps) <= 5 and "UPDATE_FROM_ZIP.bat" in doc and "UNDO_UPDATE.bat" in doc, len(steps))
+    check("a. docs/NQ_BOT_BACK.md has at most 5 steps and the update step is folded in", 1 <= len(steps) <= 5 and "UPDATE_FROM_ZIP.bat" in doc and "tools/bat/UNDO_UPDATE.bat" in doc, len(steps))
 
 
 HARNESS = r"""
@@ -250,10 +250,10 @@ def test_page():
             p.locator("#howBtn").click()
             p.wait_for_timeout(450)
             s = p.evaluate("""() => ({ open: !document.querySelector('#sheet').hidden, h: document.querySelector('#sheetH').textContent, steps: [...document.querySelectorAll('#sheetBody .steps li b')].map((e) => e.textContent),
-              code: [...document.querySelectorAll('#sheetBody .cmd')].map((e) => e.textContent), undo: document.querySelector('#sheetBody').textContent.includes('UNDO_UPDATE.bat'), focus: document.activeElement.id,
+              code: [...document.querySelectorAll('#sheetBody .cmd')].map((e) => e.textContent), undo: document.querySelector('#sheetBody').textContent.includes('tools/bat/UNDO_UPDATE.bat'), focus: document.activeElement.id,
               exp: document.querySelector('#howBtn').getAttribute('aria-expanded'), fits: document.querySelector('#sheet').getBoundingClientRect().height <= innerHeight })""")
-            check("c. tap 'Bring the bots back (3 steps)': the sheet opens with the doc's three steps (the zip update first, then BOTS_BACK.bat), at most one copy line, the undo line; focus moves to Close",
-                  s["open"] and s["h"] == "Bring the bots back (3 steps)" and len(s["steps"]) == 3 and s["steps"][0] == "Update the bot folder from the zip" and s["steps"][1].startswith("Double-click BOTS_BACK.bat") and len(s["code"]) <= 1
+            check("c. tap 'Bring the bots back (3 steps)': the sheet opens with the doc's three steps (the zip update first, then tools/bat/BOTS_BACK.bat), at most one copy line, the undo line; focus moves to Close",
+                  s["open"] and s["h"] == "Bring the bots back (3 steps)" and len(s["steps"]) == 3 and s["steps"][0] == "Update the bot folder from the zip" and s["steps"][1].startswith("Double-click tools/bat/BOTS_BACK.bat") and len(s["code"]) <= 1
                   and s["undo"] and s["focus"] == "sheetClose" and s["exp"] == "true" and s["fits"], s)
             check("c. the open sheet: every tap target >= 44 px, no sideways scroll", not AK.taps(p) and AK.no_sideways(p), AK.taps(p)[:4])
             AK.shot(p, "nq-sheet")

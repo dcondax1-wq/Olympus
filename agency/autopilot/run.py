@@ -1,11 +1,11 @@
 """EMAIL AUTOPILOT on the owner's PC (day-a11y 2026-11-20, the Website Factory). Stdlib only; a scheduled task, never the bot.
 
-  python -m agency.autopilot setup     once (EMAIL_SETUP.bat): the free business Gmail + its app password (typed hidden), your name,
+  python -m agency.autopilot setup     once (tools/bat/EMAIL_SETUP.bat): the free business Gmail + its app password (typed hidden), your name,
                                        business, phone, postal address, a test address, the booking / payment links; then the phrase gate:
                                        type SEND EMAILS to go live, anything else = DRY RUN (every message goes to your test address only)
   python -m agency.autopilot run       one pass (the task runs it every 30 minutes): read replies -> send Claude's allowed drafts ->
                                        the day's follow-ups and new emails within every limit -> the private branch -> the page's counts
-  python -m agency.autopilot stop      everything off (EMAIL_STOP.bat), nothing is sent again until setup + the phrase
+  python -m agency.autopilot stop      everything off (tools/bat/EMAIL_STOP.bat), nothing is sent again until setup + the phrase
   python -m agency.autopilot status    the day's numbers (no secret is ever printed)
   python -m agency.autopilot test      one test email to your test address (checks the Gmail login)
 Files (all in %USERPROFILE%\\.olympus, never the repo): agency_mail.json (the settings + app password), agency_mail_state.json (who got
@@ -386,7 +386,7 @@ def setup(ask=input, secret=getpass.getpass, out=print) -> int:
     if probs:
         c["mode"] = "off"
         write_json(path("agency_mail.json"), c, private=True)
-        out("  Saved, but still OFF: missing " + ", ".join(probs) + ". Run EMAIL_SETUP.bat again.")
+        out("  Saved, but still OFF: missing " + ", ".join(probs) + ". Run tools/bat/EMAIL_SETUP.bat again.")
         return 1
     out("")
     out("  Type SEND EMAILS to let it email businesses for real (max 20 new a day, Mon-Fri 9-16 ET, opt-outs honoured).")
@@ -396,7 +396,7 @@ def setup(ask=input, secret=getpass.getpass, out=print) -> int:
     c["t_set"] = int(time.time())
     write_json(path("agency_mail.json"), c, private=True)
     log(c, {"t": int(time.time()), "ev": "setup", "mode": c["mode"]})
-    out(f"  [OK] Saved. Mode: {c['mode'].upper()}{' (real emails)' if c['mode'] == 'live' else ' (test address only)'}. EMAIL_STOP.bat turns it off.")
+    out(f"  [OK] Saved. Mode: {c['mode'].upper()}{' (real emails)' if c['mode'] == 'live' else ' (test address only)'}. tools/bat/EMAIL_STOP.bat turns it off.")
     return 0
 
 
@@ -405,7 +405,7 @@ def stop(out=print) -> int:
     c["mode"] = "off"
     write_json(path("agency_mail.json"), c, private=True)
     log(c, {"t": int(time.time()), "ev": "stop"})
-    out("  [OK] Email autopilot OFF. Nothing is sent until EMAIL_SETUP.bat and the phrase again.")
+    out("  [OK] Email autopilot OFF. Nothing is sent until tools/bat/EMAIL_SETUP.bat and the phrase again.")
     return 0
 
 
@@ -419,7 +419,7 @@ def status(out=print) -> int:
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description="The Website Factory's email autopilot (OFF until EMAIL_SETUP.bat + SEND EMAILS).")
+    ap = argparse.ArgumentParser(description="The Website Factory's email autopilot (OFF until tools/bat/EMAIL_SETUP.bat + SEND EMAILS).")
     ap.add_argument("cmd", choices=["setup", "run", "stop", "status", "test"])
     a = ap.parse_args(argv)
     if a.cmd == "setup":
@@ -449,7 +449,7 @@ def main(argv=None) -> int:
                    push=(lambda files, msg: bridge.write_and_push(url, wd, files, msg)) if cfg.get("mode") != "off" else None,
                    outbox=(lambda: (bridge.sync(url, wd) or True) and bridge.read_outbox(wd)) if cfg.get("mode") != "off" else None)
     write_json(path("agency_mail_state.json"), state, private=True)
-    try:                                                  # the postcards ride the same task (tools/postcards.py; OFF unless POSTCARD_SETUP.bat)
+    try:                                                  # the postcards ride the same task (tools/postcards.py; OFF unless tools/bat/POSTCARD_SETUP.bat)
         sys.path.insert(0, ROOT)
         from tools import postcards as PC
         pc = PC.norm_cfg(read_json(path("postcards.json"), {}))

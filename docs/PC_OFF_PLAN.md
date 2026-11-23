@@ -1,13 +1,13 @@
 # Running the bot with the PC off: the honest answer (2026-11-03)
 
 **Short answer:** there is no truly free machine that can run NinjaTrader. Today, run the bot in **LITE mode** on the
-Surface (`BOT_LITE.bat`, free, the bot drops from ~690 MB to ~180 MB). For the PC-off goal, the **~$249 used mini PC
+Surface (`tools/bat/BOT_LITE.bat`, free, the bot drops from ~690 MB to ~180 MB). For the PC-off goal, the **~$249 used mini PC
 (16 GB)** is the real fix. **Azure for Students** works as a bridge for about **2-3 months** if you qualify and MFFU
 says yes to a VPS.
 
 | Option | Cost | Can it run NinjaTrader + the bot? | Verdict |
 |---|---|---|---|
-| **LITE mode on the Surface** (`BOT_LITE.bat`) | $0 | yes, with ~500 MB more free memory | **do it now** |
+| **LITE mode on the Surface** (`tools/bat/BOT_LITE.bat`) | $0 | yes, with ~500 MB more free memory | **do it now** |
 | **Used mini PC** (Lenovo M720q, i5, 16 GB, SSD) | ~$249 once + ~$2/month power | yes, easily (4x the Surface's memory) | **the real fix** |
 | Azure for Students, Windows VM B2s (4 GB) | $0 out of pocket; the $100 credit lasts ~3.4 months (on 15 h a weekday) | yes, tight (same 4 GB as the Surface: LITE needed) | bridge only |
 | Azure for Students, Windows VM B2ms (8 GB) | $100 credit lasts ~2.3 months (15 h a weekday) | yes, comfortable | bridge only |
@@ -66,7 +66,7 @@ Used Lenovo ThinkCentre M720q Tiny (i5-9500T, **16 GB**, 256 GB SSD, Windows 11 
 1-year warranty (details and links: `docs/PC_PERFORMANCE.md`). It runs 24/5 at ~15 W (about $2 a month of
 electricity), has 4x the Surface's memory, never overheats, and you reach it from the phone by Chrome Remote Desktop
 like the Surface now. **It costs about what 4-6 months of an Azure 8 GB VM would.** Moving the bot to it:
-`MOVE_BOT.bat` (`docs/MOVE_TO_MAIN_PC.md`).
+`tools/bat/MOVE_BOT.bat` (`docs/MOVE_TO_MAIN_PC.md`).
 
 ## 4. Check MFFU's rule before any VPS
 

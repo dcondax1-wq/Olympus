@@ -28,7 +28,14 @@ def refresh_history(max_age_h=12):
         return path
     try:
         raw = urllib.request.urlopen(urllib.request.Request(GEX_URL, headers=UA), timeout=30).read()
-        open(path, "wb").write(raw)
+        # night-cleanup 2026-11-22: only a real DIX.csv replaces the history (an error page or a cut-off download used to
+        # overwrite 15 years of GEX with whatever came back)
+        old_n = sum(1 for _ in open(path, "rb")) if os.path.exists(path) else 0
+        if raw[:22].lower().startswith(b"date,price,dix,gex") and raw.count(b"\n") >= old_n - 5:
+            tmp = path + ".tmp"
+            with open(tmp, "wb") as fh:
+                fh.write(raw)
+            os.replace(tmp, path)
     except Exception:
         pass
     return path

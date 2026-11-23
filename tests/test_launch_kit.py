@@ -553,9 +553,9 @@ def launch():
           good["checklist"] == "gate/launch_day.json" and good["report"]["level"] == "ok" and len(json.dumps(good)) < 8000, len(json.dumps(good)))
     # ---- what stops every account: said once, on top, with the one action
     c = LC.build(live_of(now, running=False), [], {}, now)
-    check("3. the bot stopped: one global flag (not one per bot), level bad, the headline, the GO_LIVE_EVAL.bat action",
+    check("3. the bot stopped: one global flag (not one per bot), level bad, the headline, the tools/bat/GO_LIVE_EVAL.bat action",
           [g["code"] for g in c["global"]] == ["stopped"] and c["level"] == "bad" and c["headline"].startswith("The bot is stopped on the PC")
-          and "GO_LIVE_EVAL.bat" in c["global"][0]["fix"] and all(not [f for f in r["flags"] if f["code"] == "stopped"] for r in c["bots"]), c)
+          and "tools/bat/GO_LIVE_EVAL.bat" in c["global"][0]["fix"] and all(not [f for f in r["flags"] if f["code"] == "stopped"] for r in c["bots"]), c)
     c = LC.build(live_of(now, feed={"stale": True, "entries_blocked": True, "block": "FEED STALE: 1m bar 7 min old", "age_1m_s": 420}), [], {}, now)
     check("3. FEED STALE: a global flag with the LE_BarFeed action; each bot's Feed fact says STALE",
           c["global"] and c["global"][0]["code"] == "feed" and "LE_BarFeed" in c["global"][0]["fix"] and all(r["feed"]["ok"] is False for r in c["bots"]), c["global"])
@@ -570,7 +570,7 @@ def launch():
     c = LC.build(live_of(now, account={"armed": False}, facts={"lit_armed": False, "b": {"armed": True}}), [], {}, now)
     z = c["bots"][0]
     check("3. Zlarior on its real account but not armed: 'real account, NOT armed', a bad flag with the arm-it-yourself action",
-          z["state"] == "real account, NOT armed" and [f["code"] for f in z["flags"]] == ["armed"] and "GO_LIVE_EVAL.bat" in z["flags"][0]["fix"]
+          z["state"] == "real account, NOT armed" and [f["code"] for f in z["flags"]] == ["armed"] and "tools/bat/GO_LIVE_EVAL.bat" in z["flags"][0]["fix"]
           and c["level"] == "bad", z)
     c = LC.build(live_of(now, atlas=atlas_card(badge="SIM")), [], {}, now)
     check("3. ATLAS on Sim: 'Sim', no flag; the headline says it", c["bots"][1]["state"] == "Sim" and not c["bots"][1]["flags"]
@@ -623,8 +623,8 @@ def report():
         work = os.path.join(d, "work")
         os.makedirs(work)
         r = LC.report_state(work, None, now)
-        check("3. report: the 15-minute report never ran on this PC -> warn 'has not run on this PC yet' + BOTS_BACK.bat", r["level"] == "warn"
-              and "has not run on this PC yet" in r["text"] and "BOTS_BACK.bat" in r["fix"], r)
+        check("3. report: the 15-minute report never ran on this PC -> warn 'has not run on this PC yet' + tools/bat/BOTS_BACK.bat", r["level"] == "warn"
+              and "has not run on this PC yet" in r["text"] and "tools/bat/BOTS_BACK.bat" in r["fix"], r)
 
         def last(**kw):
             with open(os.path.join(work, "last.json"), "w", encoding="utf-8") as fh:
@@ -742,20 +742,20 @@ def ready():
                      ("Christmas Day", at(2026, 12, 25, 1, 45))):
         _s, m = G.guard({}, snap(t, live_of(t)), roll_state={})
         check(f"3. no ready push at {label}", not rdy(m), (label, m))
-    down = {"bot_down": "The bot server on the PC is not answering. Double-click GO_LIVE_EVAL.bat on the PC."}
+    down = {"bot_down": "The bot server on the PC is not answering. Double-click tools/bat/GO_LIVE_EVAL.bat on the PC."}
     st, m = G.guard({}, snap(at(2026, 11, 16, 1, 36), live_of(mon), cond=down), roll_state={})
     rd = rdy(m)
     check("3. the bot server down at 01:36: 'NOT ready for 02:00 ET: The bot server on the PC is not answering', high, with the fix",
           rd and rd[0]["key"] == "guard:notready:2026-11-16" and rd[0]["title"].startswith("NOT ready for 02:00 ET: The bot server on the PC is not answering")
-          and rd[0]["priority"] == "high" and "Fix: The bot server on the PC is not answering. Double-click GO_LIVE_EVAL.bat" in rd[0]["body"], rd)
+          and rd[0]["priority"] == "high" and "Fix: The bot server on the PC is not answering. Double-click tools/bat/GO_LIVE_EVAL.bat" in rd[0]["body"], rd)
     st, m = G.guard(st, snap(at(2026, 11, 16, 1, 51), live_of(mon)), roll_state={})
     check("3. ... fixed by 01:51: then the 'Ready for 02:00 ET' push", [x["title"] for x in rdy(m)] == ["Ready for 02:00 ET: Zlarior LIVE armed, ATLAS LIVE armed"], rdy(m))
     _s, m = G.guard(st, snap(at(2026, 11, 16, 1, 58), live_of(mon), cond=down), roll_state={})
     check("3. ... and no second 'NOT ready' that day (the bot-down alert itself still comes from the report)", not rdy(m), rdy(m))
     _s, m = G.guard({}, snap(mon, live_of(mon, running=False), hb={"running": False}), roll_state={})
     rd = rdy(m)
-    check("3. the bot stopped at 01:45 (before the report's own 01:50 'stopped' alert): NOT ready, GO_LIVE_EVAL.bat",
-          rd and rd[0]["priority"] == "high" and "The bot is stopped on the PC" in rd[0]["title"] and "GO_LIVE_EVAL.bat" in rd[0]["body"], rd)
+    check("3. the bot stopped at 01:45 (before the report's own 01:50 'stopped' alert): NOT ready, tools/bat/GO_LIVE_EVAL.bat",
+          rd and rd[0]["priority"] == "high" and "The bot is stopped on the PC" in rd[0]["title"] and "tools/bat/GO_LIVE_EVAL.bat" in rd[0]["body"], rd)
     _s, m = G.guard({}, snap(mon, live_of(mon, account={"armed": False}, facts={"lit_armed": False, "b": {"armed": True}})), roll_state={})
     rd = rdy(m)
     check("3. Zlarior not armed: NOT ready, with the arm-it-yourself action",
@@ -811,7 +811,7 @@ def checklist():
     check("4. the page: what to look for at 01:45, what each push means, the fill check flags, each as a table (what / means / do)",
           all(h in doc for h in ("## 01:45 ET: what to look for", "## What each push means", "## Fill check flags")) and doc.count("|---|---|---|") == 3)
     for word, why in (("FEED STALE", "feed"), ("Bot down", "bot down"), ("NO STOP at NinjaTrader", "missing stop"), ("wrong size", "size"),
-                      ("LE_BarFeed", "the feed fix"), ("GO_LIVE_EVAL.bat", "bring back / arm"), ("STOP_BOT.bat", "stop everything"), ("Flatten", "flatten by hand")):
+                      ("LE_BarFeed", "the feed fix"), ("tools/bat/GO_LIVE_EVAL.bat", "bring back / arm"), ("STOP_BOT.bat", "stop everything"), ("Flatten", "flatten by hand")):
         check(f"4. the page names {why} ({word})", word in doc)
     rows = [r for s in js["sections"] for r in s["rows"]]
     check("4. every row has a one-line action (no line break, never empty) and the card has the same 3 sections, 3 steps and the stop line as the page",
@@ -921,8 +921,8 @@ def page_browser():
             p.reload()
             p.wait_for_function("window.GATE_LAUNCH && window.GATE_LAUNCH.ready() && document.querySelector('#launch').dataset.level === 'bad'", timeout=60000, polling=200)
             r = p.evaluate(CARD)
-            check("5. not ready: 'Fix now', the bot stopped on top with 'Do: ... GO_LIVE_EVAL.bat'", r["badge"] == "Fix now" and r["global"]
-                  and r["global"][0].startswith("The bot is stopped on the PC") and "Do: On the PC double-click GO_LIVE_EVAL.bat" in r["global"][0], r)
+            check("5. not ready: 'Fix now', the bot stopped on top with 'Do: ... tools/bat/GO_LIVE_EVAL.bat'", r["badge"] == "Fix now" and r["global"]
+                  and r["global"][0].startswith("The bot is stopped on the PC") and "Do: On the PC double-click tools/bat/GO_LIVE_EVAL.bat" in r["global"][0], r)
             check("5. ... and the fill check's flag on Zlarior's row with its action", any("Fill check: NinjaTrader filled 3 micros, the bot sent 5." in f
                                                                                          and "Do: Open NinjaTrader > Positions." in f for f in r["bots"][0]["flags"]), r["bots"][0])
             check("5. no sideways scroll with the long flag texts, no console error", AK.no_sideways(p) and not errs, errs[:3])
@@ -935,7 +935,7 @@ def page_browser():
             p.wait_for_function("window.GATE_LAUNCH && window.GATE_LAUNCH.ready()", timeout=60000, polling=200)
             r = p.evaluate(CARD)
             check("5. an older bot server (no launch route): 'Not available' and the one restart sentence, no error", r["badge"] == "Not available"
-                  and "runs an older version" in r["line"] and "STOP_BOT.bat, then GO_LIVE_EVAL.bat" in r["line"] and not errs, (r, errs[:3]))
+                  and "runs an older version" in r["line"] and "STOP_BOT.bat, then tools/bat/GO_LIVE_EVAL.bat" in r["line"] and not errs, (r, errs[:3]))
             ctx.close()
         # ---- any other copy of the site (not under /site/): no card, launch.js never loaded
         srv2, origin2 = AK.serve({"/home.json": json.dumps({"live": {"pc": {"t": now - 60, "running": True}}, "board": {"t": now - 60}})})

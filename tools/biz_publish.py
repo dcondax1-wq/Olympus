@@ -82,14 +82,14 @@ MODELS = [
 ]
 
 WEEK = [
-    {"day": 1, "title": "Set up (about 1 hour)", "tasks": ["Double-click AGENCY_DAY.bat: Notepad opens agency/config.json; put in your name, phone, email, postal address, city; save",
+    {"day": 1, "title": "Set up (about 1 hour)", "tasks": ["Double-click tools/bat/AGENCY_DAY.bat: Notepad opens agency/config.json; put in your name, phone, email, postal address, city; save",
                                                          "Make the free accounts: Netlify, Stripe, Payhip, Fiverr (real name, finish the ID check)",
-                                                         "Double-click AGENCY_DAY.bat again: 3 demo sites, the call list and TODAY.txt"]},
+                                                         "Double-click tools/bat/AGENCY_DAY.bat again: 3 demo sites, the call list and TODAY.txt"]},
     {"day": 2, "title": "First calls (1 hour)", "tasks": ["Drop the 3 site folders on app.netlify.com/drop, press Publish", "Call 10 owners from Call today, by hand, 10:00-12:00 or 14:00-16:00",
                                                        "Mark every call on the card (Contacted, Call back, Do not contact)"]},
     {"day": 3, "title": "Shop + gigs (1 hour)", "tasks": ["Payhip: upload the 8 products with docs/BUSINESS_LISTING_KIT.md (zips: RUN_MONEY or python -m money_machines.products.build_all --zip)",
                                                        "Fiverr: publish the logo and Google-profile gigs (docs/GIG_PACK.md)", "Make one Stripe payment link per plan, paste them in the billing kit"]},
-    {"day": 4, "title": "Calls + Instagram (1 hour)", "tasks": ["AGENCY_DAY.bat, then 10 more calls", "New Instagram (Professional); schedule the first week in Meta Business Suite",
+    {"day": 4, "title": "Calls + Instagram (1 hour)", "tasks": ["tools/bat/AGENCY_DAY.bat, then 10 more calls", "New Instagram (Professional); schedule the first week in Meta Business Suite",
                                                               "Put the shop link in the bio"]},
     {"day": 5, "title": "Follow up (1 hour)", "tasks": ["Call back everyone who asked; send the demo link only to those who said send it", "10 new calls", "Answer every Fiverr message the same day"]},
     {"day": 6, "title": "Close (1 hour)", "tasks": ["A yes: python -m agency.billing kit for their proposal + invoice with your payment link", "Tell Claude 'Agency: <business> said yes' to build the live site",
@@ -142,9 +142,9 @@ def next_action(m: dict, st: dict) -> str:
         return "Nothing: paused."
     if m["id"] == "agency":
         if not st.get("agency_config") or st.get("agency_placeholders"):
-            return "Double-click AGENCY_DAY.bat and fill in agency/config.json (name, phone, email, address, city)."
+            return "Double-click tools/bat/AGENCY_DAY.bat and fill in agency/config.json (name, phone, email, address, city)."
         if not st.get("demo_sites"):
-            return "Double-click AGENCY_DAY.bat: today's leads, 3 demo sites, the call list."
+            return "Double-click tools/bat/AGENCY_DAY.bat: today's leads, 3 demo sites, the call list."
         return f"Call {min(10, st.get('call_list') or st.get('leads') or 10)} owners from Call today (by hand, business hours)."
     if m["id"] == "products":
         return "Upload the 8 zips to a free Payhip shop, the 4 trading ones first (docs/BUSINESS_LISTING_KIT.md)." if st.get("product_zips") else \
@@ -208,7 +208,7 @@ def ready() -> list:
                                                            "New Instagram, switch to Professional", "Meta Business Suite > Planner: schedule week 1 from the posting sheet",
                                                            "Shop link in the bio once the products are up"]})
     out.append({"id": "demo-sites", "kind": "sites", "name": "Demo websites to sell", "usd": 1500.0, "minutes": 30, "where": "Netlify Drop (free)",
-                "file": "agency/out/", "steps": ["Double-click AGENCY_DAY.bat (fill agency/config.json the first time)",
+                "file": "agency/out/", "steps": ["Double-click tools/bat/AGENCY_DAY.bat (fill agency/config.json the first time)",
                                                   "Drop each site folder on app.netlify.com/drop, press Publish", "Call the owners on Call today, by hand, business hours"]})
     return out
 
@@ -230,7 +230,7 @@ def moves(tr: dict, models: list, rd: list) -> list:
                     "minutes": 60, "usd": [0, 100], "where": "Business > Ready to upload"})
     out.append({"id": "m-ai-apply", "what": "Apply to 2 AI-training sites and take the assessment (your own words).", "minutes": 90, "usd": [0, 400], "where": "AI training tasks"})
     out.append({"id": "m-fiverr", "what": "Publish the logo and Google-profile gigs on Fiverr (texts are ready).", "minutes": 60, "usd": [0, 100], "where": "Business > Ready to upload"})
-    out.append({"id": "m-agency", "what": "AGENCY_DAY.bat, then 10 calls by hand (one Starter sale = $1,500 + $79 a month).", "minutes": 75, "usd": [0, 1579], "where": "Website agency"})
+    out.append({"id": "m-agency", "what": "tools/bat/AGENCY_DAY.bat, then 10 calls by hand (one Starter sale = $1,500 + $79 a month).", "minutes": 75, "usd": [0, 1579], "where": "Website agency"})
     if len(prod) > 4:
         out.append({"id": "m-shop-rest", "what": f"Upload the other {len(prod) - 4} products (site templates, social kit, agency kit, planner).", "minutes": 60, "usd": [0, 50],
                     "where": "Business > Ready to upload"})

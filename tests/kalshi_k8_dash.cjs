@@ -162,8 +162,8 @@ const card = (st, k8, u) => ({ kind: 'kalshi_live_pub', v: 1, st, net: 0, f: 0, 
       && (await T(p, '#k8d-fit')).includes('Room for 3 more') && (await T(p, '#k8d-fit')).includes('2 of today\'s 3 left'), [sl, await T(p, '#k8d-fit')]);
     const lg2 = await p.evaluate(() => [...document.querySelectorAll('#k8d-legs li')].map((x) => [x.dataset.leg, x.innerText.replace(/\s+/g, ' ')]));
     step('v3. the 2 legs of the window with the last price vs fair (gold UP last 53¢ · fair 73¢ · +20¢)', lg2.length === 2 && lg2[0][0] === 'g17' && lg2[0][1].includes('last 53¢ · fair 73¢') && lg2[0][1].includes('+20¢'), lg2);
-    step('v4. "If something looks wrong": the PC page STOP (:8444/kalshi-live/), ZEUS Safety PAUSE / KILL, KALSHI_STOP.bat, the Kalshi app; filled bets settle by themselves',
-      dd.help.includes(':8444/kalshi-live/') && dd.help.includes('STOP (off now)') && dd.help.includes('ZEUS Safety') && dd.help.includes('KALSHI_STOP.bat') && dd.help.includes('Kalshi app') && dd.help.includes('settles by itself'), dd.help);
+    step('v4. "If something looks wrong": the PC page STOP (:8444/kalshi-live/), ZEUS Safety PAUSE / KILL, tools/bat/KALSHI_STOP.bat, the Kalshi app; filled bets settle by themselves',
+      dd.help.includes(':8444/kalshi-live/') && dd.help.includes('STOP (off now)') && dd.help.includes('ZEUS Safety') && dd.help.includes('tools/bat/KALSHI_STOP.bat') && dd.help.includes('Kalshi app') && dd.help.includes('settles by itself'), dd.help);
     await shot(p, 'kalshi-k8-liveday.png', '#k8d');
     await shot(p, 'kalshi-k8-liveday-help.png', '#k8d-help');
     await ctx.close();

@@ -27,7 +27,7 @@ START = "2015-01-01"                    # enough history for a 5-year percentile
 TIMEOUT = 45
 
 FRED = "https://fred.stlouisfed.org/graph/fredgraph.csv?id={sid}&cosd={start}"
-CBOE = "https://cdn.cboe.com/api/global/us_indices/daily_prices/{sym}_History.csv"
+CBOE = "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/{sym}_History.csv"   # Nov 2026: cdn.cboe.com 307s here
 CFTC_TFF = ("https://publicreporting.cftc.gov/resource/gpe5-46if.json?$select=report_date_as_yyyy_mm_dd,{cols}"
             "&$where=cftc_contract_market_code=%27{code}%27%20AND%20report_date_as_yyyy_mm_dd%3E=%27{start}%27"
             "&$order=report_date_as_yyyy_mm_dd&$limit=5000")

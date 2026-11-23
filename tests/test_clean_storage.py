@@ -1,4 +1,4 @@
-"""CLEAN_STORAGE.bat + scripts/clean_storage.ps1 (owner 2026-11-04: "an easy way to clear storage through both of my computers").
+"""tools/bat/CLEAN_STORAGE.bat + scripts/clean_storage.ps1 (owner 2026-11-04: "an easy way to clear storage through both of my computers").
 
 1. Static, always: the .bat (CRLF, ASCII, local script first, site download when it is alone), the site copies in
    tools/web_public/pc/ identical to the repo files, the script is ASCII, no PowerShell-7 syntax, only three places delete,
@@ -39,7 +39,7 @@ import time
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HARN = os.path.join(ROOT, "tests", "win_harness")
 PS1 = os.path.join(ROOT, "scripts", "clean_storage.ps1")
-BAT = os.path.join(ROOT, "CLEAN_STORAGE.bat")
+BAT = os.path.join(ROOT, "tools/bat/CLEAN_STORAGE.bat")
 WEB = os.path.join(ROOT, "tools", "web_public", "pc")
 STUBS = os.path.join(HARN, "clean_storage_stubs.ps1")
 ADMIN_EXPR = ("([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole("
@@ -62,15 +62,15 @@ def rb(path):
 # ============================================================================================== static
 def static():
     bat = rb(BAT)
-    check("CLEAN_STORAGE.bat: CRLF line endings, ASCII", b"\n" not in bat.replace(b"\r\n", b"") and bat.endswith(b"\r\n")
+    check("tools/bat/CLEAN_STORAGE.bat: CRLF line endings, ASCII", b"\n" not in bat.replace(b"\r\n", b"") and bat.endswith(b"\r\n")
           and all(c < 128 for c in bat))
-    check("CLEAN_STORAGE.bat: runs scripts\\clean_storage.ps1 first and pauses on the same line (the cleaner never pulls itself)",
-          re.search(rb'if exist "%~dp0scripts\\clean_storage\.ps1" goto :local', bat)
-          and re.search(rb'-ExecutionPolicy Bypass -File "%~dp0scripts\\clean_storage\.ps1" %\* & echo\. & pause & exit /b', bat) is not None)
-    check("CLEAN_STORAGE.bat: alone (downloaded from the site) it fetches pc/clean_storage.ps1 with -UseBasicParsing and runs it",
+    check("tools/bat/CLEAN_STORAGE.bat: runs scripts\\clean_storage.ps1 first and pauses on the same line (the cleaner never pulls itself)",
+          re.search(rb'if exist "%LE_HOME%scripts\\clean_storage\.ps1" goto :local', bat)
+          and re.search(rb'-ExecutionPolicy Bypass -File "%LE_HOME%scripts\\clean_storage\.ps1" %\* & echo\. & pause & exit /b', bat) is not None)
+    check("tools/bat/CLEAN_STORAGE.bat: alone (downloaded from the site) it fetches pc/clean_storage.ps1 with -UseBasicParsing and runs it",
           b"https://dcondax1-wq.github.io/pc/clean_storage.ps1" in bat and b"-UseBasicParsing" in bat
           and bat.count(b"-ExecutionPolicy Bypass") == 3)
-    check("site copy tools/web_public/pc/CLEAN_STORAGE.bat is the same file as CLEAN_STORAGE.bat",
+    check("site copy tools/web_public/pc/CLEAN_STORAGE.bat is the same file as tools/bat/CLEAN_STORAGE.bat",
           os.path.exists(os.path.join(WEB, "CLEAN_STORAGE.bat")) and rb(os.path.join(WEB, "CLEAN_STORAGE.bat")) == bat)
     check("site copy tools/web_public/pc/clean_storage.ps1 is the same file as scripts/clean_storage.ps1 (the build copies pc/)",
           os.path.exists(os.path.join(WEB, "clean_storage.ps1")) and rb(os.path.join(WEB, "clean_storage.ps1")) == rb(PS1))
@@ -115,8 +115,8 @@ def static():
           len(re.findall(r"New-Cat '(nt|bot)' [^\n]*'user' 'trading'", body)) == 2)
     check("Windows.old is skipped while the bot or NinjaTrader runs", body.count("$Busy") >= 6 and "skipped while the bot or NinjaTrader is running" in body)
     ba = rb(os.path.join(ROOT, "scripts", "clean_pc.ps1")).decode("utf-8", "replace")
-    check("CLEAN_PC reaches it: clean_pc.ps1 -Storage hands over, the PC_KIT gets CLEAN_STORAGE.bat + clean_storage.ps1, the end hints at it",
-          re.search(r"\[switch\]\$Storage", ba) and "clean_storage.ps1" in ba and "CLEAN_STORAGE.bat" in ba and ba.count("clean_storage.ps1") >= 3)
+    check("CLEAN_PC reaches it: clean_pc.ps1 -Storage hands over, the PC_KIT gets tools/bat/CLEAN_STORAGE.bat + clean_storage.ps1, the end hints at it",
+          re.search(r"\[switch\]\$Storage", ba) and "clean_storage.ps1" in ba and "tools\\bat\\CLEAN_STORAGE.bat" in ba and ba.count("clean_storage.ps1") >= 3)
     static_2026_11_19(code, body)
 
 
@@ -177,7 +177,7 @@ def static_2026_11_19(code, body):
           "J2 $moveTo 'README.txt'" in body and "Moved here by CLEAN_STORAGE" in body)
     check("the end: one plain 'Done: freed X GB. C: now Y GB free.' (the move counted in), and how to get the full clean when busy",
           '"Done: freed " + $frTxt + ". C: now "' in body and "Fmt ($script:Freed + $script:Moved)" in body
-          and "STOP BOT, close NinjaTrader, then double-click CLEAN_STORAGE.bat again" in body)
+          and "STOP BOT, close NinjaTrader, then double-click tools\\bat\\CLEAN_STORAGE.bat again" in body)
 
 
 # ============================================================================================== the health line (engine/pc_health)
@@ -191,9 +191,9 @@ def health():
     check("health: storage line is green with plenty free and says the sizes", lv(ls, "storage") == "green" and "bot 3.1 GB" in tx(ls, "storage")
           and "NinjaTrader 9.8 GB" in tx(ls, "storage") and "CLEAN_STORAGE" not in tx(ls, "storage"), ls)
     ls = H.lines({"disk_free_gb": 12, "storage": {"free_gb": 12.0, "bot_gb": 3.1, "nt_gb": None}})
-    check("health: 12 GB free = amber with 'Run CLEAN_STORAGE.bat' as the fix", lv(ls, "storage") == "amber" and "Run CLEAN_STORAGE.bat" in tx(ls, "storage"), ls)
+    check("health: 12 GB free = amber with 'Run tools/bat/CLEAN_STORAGE.bat' as the fix", lv(ls, "storage") == "amber" and "Run tools/bat/CLEAN_STORAGE.bat" in tx(ls, "storage"), ls)
     ls = H.lines({"disk_free_gb": 1.2, "storage": {"free_gb": 1.2}})
-    check("health: 1.2 GB free = red", lv(ls, "storage") == "red" and "Run CLEAN_STORAGE.bat" in tx(ls, "storage"), ls)
+    check("health: 1.2 GB free = red", lv(ls, "storage") == "red" and "Run tools/bat/CLEAN_STORAGE.bat" in tx(ls, "storage"), ls)
     check("health: no storage facts = no storage line (the old 8-line block is unchanged)",
           lv(H.lines({"disk_free_gb": 40}), "storage") is None and lv(H.lines({"disk_free_gb": 40}), "disk") == "green")
     b = {"t": 1, "level": "red", "lines": [{"key": "disk", "label": "Disk space", "level": "red", "text": "1.2 GB free"},

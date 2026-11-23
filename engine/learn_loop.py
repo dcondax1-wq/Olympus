@@ -29,7 +29,7 @@ Built on what exists (nothing re-implemented):
                 "Candidate: X, +$Y/month in both halves - review".
 research/learn/ is machine-local (gitignored): the PC's auto-update needs a clean tree (docs/AUTO_UPDATE.md).
 
-Schedule: tools/pc_report.py (the PC's 15-minute task, already installed by BOTS_BACK.bat) calls maybe_run(): weekdays
+Schedule: tools/pc_report.py (the PC's 15-minute task, already installed by tools/bat/BOTS_BACK.bat) calls maybe_run(): weekdays
 from 17:00 ET to midnight, Saturday, Sunday until 17:00 ET; once a learn day; never while a trade / bracket / pending
 entry is open; only on Windows (LE_LEARN=1 forces it elsewhere, LE_LEARN=0 turns it off). It starts one detached child
 (below-normal priority, no window, one thread for numpy) and returns at once.

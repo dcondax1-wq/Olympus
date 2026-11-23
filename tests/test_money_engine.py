@@ -3,7 +3,7 @@
   a. the five contract fixtures in tools/money/fixtures/ follow the data contract; the sample is labelled "not real"
   b. the engine's own --selftest (fake scanners: ok, slow, crashing, bad json, missing; lock file; stale fallback) passes
   c. a run with no scanners present works from the fixtures; the index has a low <= base <= high ESTIMATE and never an error
-  d. the schedule helpers: RUN_MONEY.bat (CRLF, every goto target exists) and .github/workflows/money-engine.yml (schedule + dispatch only, read-only token, no secrets)
+  d. the schedule helpers: tools/bat/RUN_MONEY.bat (CRLF, every goto target exists) and .github/workflows/money-engine.yml (schedule + dispatch only, read-only token, no secrets)
   e. paper only: the engine and the workflow never import engine/, never read keys, never place orders
     python -X utf8 -m tests.test_money_engine
 """
@@ -79,13 +79,13 @@ def test_run():
 
 
 def test_schedule():
-    bat = open(os.path.join(ROOT, "RUN_MONEY.bat"), "rb").read()
+    bat = open(os.path.join(ROOT, "tools/bat/RUN_MONEY.bat"), "rb").read()
     txt = bat.decode("ascii")
-    check("d. RUN_MONEY.bat is ASCII with CRLF line endings only", b"\r\n" in bat and bat.count(b"\n") == bat.count(b"\r\n"))
+    check("d. tools/bat/RUN_MONEY.bat is ASCII with CRLF line endings only", b"\r\n" in bat and bat.count(b"\n") == bat.count(b"\r\n"))
     labels = {m.lower() for m in re.findall(r"^:(\w+)", txt, re.M)}
     gotos = {m.lower() for m in re.findall(r"goto :(\w+)", txt, re.I)}
-    check("d. every goto target in RUN_MONEY.bat exists", gotos <= labels, gotos - labels)
-    check("d. RUN_MONEY.bat runs the engine, shows the Task Scheduler line (every 30 minutes) and has an 'auto' mode without pause", "tools\\money_engine.py" in txt and "/MO 30" in txt and 'auto' in txt and "schtasks /Create" in txt)
+    check("d. every goto target in tools/bat/RUN_MONEY.bat exists", gotos <= labels, gotos - labels)
+    check("d. tools/bat/RUN_MONEY.bat runs the engine, shows the Task Scheduler line (every 30 minutes) and has an 'auto' mode without pause", "tools\\money_engine.py" in txt and "/MO 30" in txt and 'auto' in txt and "schtasks /Create" in txt)
     wf = open(os.path.join(ROOT, ".github", "workflows", "money-engine.yml"), encoding="utf-8").read()
     on = wf.split("jobs:")[0]
     check("d. the workflow runs only on schedule and by hand (no push / pull_request trigger)", "schedule:" in on and "workflow_dispatch:" in on and not re.search(r"^\s*(push|pull_request)\s*:", on, re.M), on)

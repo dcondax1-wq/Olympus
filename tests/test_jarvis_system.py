@@ -317,7 +317,7 @@ def main() -> int:
           and "2 fills" in kp["row"]["text"] and kp["row"]["sub"] == "live on your PC", kp)
     check("e. a STOPPED K8 card is red with the plain step (type the phrase on the PC); an 'off' card is no card (paper / paused lines instead)",
           kp["stopped"]["value"] == "STOPPED" and kp["stopped"]["level"] == "bad" and "daily loss stop" in kp["stopped"]["text"]
-          and "KALSHI_LIVE.bat" in (kp["stopped"].get("todo") or "") and kp["off"] is None, kp)
+          and "tools/bat/KALSHI_LIVE.bat" in (kp["stopped"].get("todo") or "") and kp["off"] is None, kp)
     p0, p1 = O["planner0"], O["planner1"]
     check("f. the Planner not linked on this phone: one clear grey line (NOT LINKED, open it once), no error", p0["day"] is None and p0["row"]["value"] == "NOT LINKED"
           and p0["row"]["level"] == "" and "open the Planner once on this phone" in p0["row"]["text"] and not p0["linked"], p0)

@@ -6,7 +6,7 @@ Desktop icons for the owner (2026-10-26: "start from the dashboard only"): two i
 The older icons it made before (LE START BOT, LE UPDATE, LE DASHBOARD, LE HEALTH CHECK) are removed: the Start page does
 what they did. The .bat files stay in the project folder. Safe to run again: it replaces what it made.
 
-  powershell -ExecutionPolicy Bypass -File .\scripts\make_shortcuts.ps1          (SETUP_SHORTCUTS.bat runs this)
+  powershell -ExecutionPolicy Bypass -File .\scripts\make_shortcuts.ps1          (tools\bat\SETUP_SHORTCUTS.bat runs this)
   powershell -ExecutionPolicy Bypass -File .\scripts\make_shortcuts.ps1 -DryRun  (show what it would make)
   powershell -ExecutionPolicy Bypass -File .\scripts\make_shortcuts.ps1 -Remove  (delete the icons)
 #>

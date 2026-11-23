@@ -1,6 +1,6 @@
 # PC DOCTOR: why the phone hears nothing from the PC
 
-Double-click **PC_DOCTOR.bat** in the bot folder. It only looks (nothing is started, stopped, armed or sent).
+Double-click **tools/bat/PC_DOCTOR.bat** in the bot folder. It only looks (nothing is started, stopped, armed or sent).
 It prints one line per link, then **MOST LIKELY CAUSE** and **NEXT STEP (copy this line)**.
 The same card on the PC's own bot page: `http://127.0.0.1:8766/api/pc/doctor?text=1` (JSON without `?text=1`).
 

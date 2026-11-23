@@ -1,7 +1,7 @@
 """How do I... (tools/web_public/hub/help.html + help.js + help.json, 2026-11-18, night-help).
   a. the data: 24 questions (add an account, eval passed, payout, phone safety, restart, update, PC silent, Limit 0, accounts, ZEUS Lab,
      taxes, holidays, buy next, Kalshi, Cloudflare, MFFU address check); each 2-4 steps, a "where", at most ONE copy line, a link to a
-     page that exists (or https), facts that match the code (prices, the safety line, the payout line, PC_DOCTOR.bat, UPDATE.bat, phrase)
+     page that exists (or https), facts that match the code (prices, the safety line, the payout line, tools/bat/PC_DOCTOR.bat, UPDATE.bat, phrase)
   b. the page: AGORA look, textContent only (no innerHTML), one GET of help.json, no write, no outside script; linked from ZEUS (Help),
      the Doors page, Business, and the More door (olympus/doors.js = web_next copy): find('help') / find('how do I') find it
   c. node, the pure part: filler words skipped ("how do I pause" = pause), every word must match, valid() rules
@@ -79,14 +79,14 @@ def part_a():
           and "pay_max\": 1000.0" in rd(ROOT, "engine", "payout_coach.py") and by["payout"]["link"]["href"].endswith("accounts.html#coach")
           and 'id="coach"' in rd(WEB, "business", "accounts.html"), pay)
     check("a. the .bat files and icons named exist: ADD_ACCOUNT, UPDATE, PC_DOCTOR, START_BOT, STOP_BOT, LIVE_LINK; LE START / LE STOP BOT shortcuts",
-          all(os.path.isfile(os.path.join(ROOT, b)) for b in ("ADD_ACCOUNT.bat", "UPDATE.bat", "PC_DOCTOR.bat", "START_BOT.bat", "STOP_BOT.bat", "LIVE_LINK.bat"))
+          all(os.path.isfile(os.path.join(ROOT, b)) for b in ("ADD_ACCOUNT.bat", "UPDATE.bat", "tools/bat/PC_DOCTOR.bat", "START_BOT.bat", "STOP_BOT.bat", "tools/bat/LIVE_LINK.bat"))
           and "'LE START'" in rd(ROOT, "scripts", "make_shortcuts.ps1") and "'LE STOP BOT'" in rd(ROOT, "scripts", "make_shortcuts.ps1"))
     upd = rd(ROOT, "UPDATE.bat")
     check("a. update: [OK] / [FIX] are UPDATE.bat's own words; the read-only check line exists in engine/autoupdate.py",
           "[FIX]" in upd and "[OK]" in upd and "--source-status" in rd(ROOT, "engine", "autoupdate.py") and "[FIX]" in " ".join(by["update"]["steps"]))
     pcd = rd(ROOT, "docs", "PC_DOCTOR.md")
-    check("a. PC silent: PC_DOCTOR.bat, MOST LIKELY CAUSE / NEXT STEP, the doctor page on the PC",
-          "MOST LIKELY CAUSE" in pcd and "NEXT STEP" in pcd and by["pc-silent"]["copy"] in pcd and "PC_DOCTOR.bat" in by["pc-silent"]["where"])
+    check("a. PC silent: tools/bat/PC_DOCTOR.bat, MOST LIKELY CAUSE / NEXT STEP, the doctor page on the PC",
+          "MOST LIKELY CAUSE" in pcd and "NEXT STEP" in pcd and by["pc-silent"]["copy"] in pcd and "tools/bat/PC_DOCTOR.bat" in by["pc-silent"]["where"])
     rs = " ".join(by["restart"]["steps"])
     check("a. restart: only flat, 17:00-18:00 ET, STOP then START, the phrase typed by the owner (engine/go.py's own phrase), never a copy line of it",
           "flat" in rs and "17:00-18:00 ET" in rs and "LE STOP BOT" in rs and "I ACCEPT LIVE RISK" in rs and "I ACCEPT LIVE RISK" in rd(ROOT, "engine", "go.py")

@@ -2,12 +2,12 @@
 
 Why: on 2026-11-15 the bots ran LIVE ARMED all evening, but the public ntfy status topic (tools/web_public/status_feed.json)
 got nothing for 12+ hours and no trade pushes went out. The 15-minute report (tools/pc_report.py) only runs from the Windows
-task "OlympusPCReport", and only BOTS_BACK.bat (or SETUP_EVERYTHING step 3, which it skips when both evals are already armed)
+task "OlympusPCReport", and only tools/bat/BOTS_BACK.bat (or SETUP_EVERYTHING step 3, which it skips when both evals are already armed)
 installs that task. Nothing re-installed it, nothing noticed it was missing.
 
 What it does (a daemon thread of the bot server, started with the other watchers in server.py; read-only towards the bot):
   1. once per server start, on Windows: is the task OlympusPCReport there (schtasks /Query)? If not, it installs it the same
-     way BOTS_BACK.bat does (scripts/pc_report_task.ps1, hidden window). So the next bot start or auto-update heals it.
+     way tools/bat/BOTS_BACK.bat does (scripts/pc_report_task.ps1, hidden window). So the next bot start or auto-update heals it.
   2. once per server start: `tools/pc_report.py --test` (makes your private alert topic when there is none and sends the one
      test push; a no-op when that topic was already tested). Its output is never logged (the topic stays private).
   3. every 5 minutes: when the report's own last run (data/pc_report/last.json "t") is older than LATE_S or missing, it runs

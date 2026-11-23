@@ -215,7 +215,7 @@ def headlines(limit=60):
 
 
 # ------------------------------------------------------------------ volatility
-CBOE_URL = "https://cdn.cboe.com/api/global/us_indices/daily_prices/{name}_History.csv"
+CBOE_URL = "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/{name}_History.csv"   # Nov 2026: cdn.cboe.com 307s here
 
 
 def _cboe_parse(raw: bytes) -> pd.DataFrame:

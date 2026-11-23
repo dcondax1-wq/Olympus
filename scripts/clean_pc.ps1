@@ -1,5 +1,5 @@
 <#
-CLEAN_PC (double-click CLEAN_PC.bat in the bot folder). The owner, 2026-11-01: "start clearing my pc and make it run smoothly,
+CLEAN_PC (double-click tools\bat\CLEAN_PC.bat in the bot folder). The owner, 2026-11-01: "start clearing my pc and make it run smoothly,
 go deep". The Surface has 3.6 GB of memory and ran at 90%+ with the CPU at 100%, which slows NinjaTrader and the bot and heats
 the tablet (its screen glitches when hot). This makes it lighter. NinjaTrader, the bot (python), PowerShell, Edge (the Start
 page), Explorer, OneDrive (Documents and NinjaTrader's folder may live in OneDrive), Git and the Claude app are never touched.
@@ -26,7 +26,7 @@ each heavy step checks the clock again and stops before 01:15 ET so it never run
  12. v2 DEEP TUNE (scripts\pc_tune.ps1, before step 10): a trading power plan (Surface: CPU capped for less heat), unneeded
      services off, memory settings by RAM size, Defender skips only NinjaTrader's / the bot's data folders, network power
      saving off, Edge / Chrome / Office lighter, Storage Sense, a priority helper task and a Sunday care task. Every change is
-     recorded first and UNDO_PC_TUNE.bat (or -Undo) puts it all back. Details: the top of scripts\pc_tune.ps1.
+     recorded first and tools\bat\UNDO_PC_TUNE.bat (or -Undo) puts it all back. Details: the top of scripts\pc_tune.ps1.
   after: memory again and what changed, a HEALTH SCORE before and after (0-100: free memory, CPU idle, start-up apps, free
   disk, temperature when readable). Log: logs\clean_pc-YYYYMMDD-HHMM.txt
 ALSO (read-only, every run):
@@ -34,21 +34,21 @@ ALSO (read-only, every run):
      Replay, indicators), ATI, the size of its historical data; prints what to change by hand. Copies the workspaces to
      logs\nt_workspaces-YYYYMMDD (a backup before you change anything). NinjaTrader is never closed or modified.
   PC report: CPU, cores, memory (total, speed, slots), disks (SSD/HDD, free), graphics, Windows build, power plan,
-     start-up programs -> PC_REPORT-<computer>.txt next to CLEAN_PC.bat.
+     start-up programs -> PC_REPORT-<computer>.txt next to tools\bat\CLEAN_PC.bat.
 
-MAIN PC (no bot folder): copy the PC_KIT folder (CLEAN_PC.bat + scripts\clean_pc.ps1; the Surface run puts it in
-  OneDrive\PC_KIT, or on the Desktop) and double-click CLEAN_PC.bat there. It sees there is no bot (no server.py) and
+MAIN PC (no bot folder): copy the PC_KIT folder (tools\bat\CLEAN_PC.bat + scripts\clean_pc.ps1; the Surface run puts it in
+  OneDrive\PC_KIT, or on the Desktop) and double-click tools\bat\CLEAN_PC.bat there. It sees there is no bot (no server.py) and
   runs STANDALONE: it closes nothing that is running (it only lists it), keeps the Xbox / gaming apps, and the deep part
   runs any time unless NinjaTrader is open (then the same 01:15-16:05 ET weekday wait). -Standalone forces this mode.
 
-  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\clean_pc.ps1            (CLEAN_PC.bat runs this)
+  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\clean_pc.ps1            (tools\bat\CLEAN_PC.bat runs this)
   powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\clean_pc.ps1 -DryRun    (shows the plan, changes nothing)
   powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\clean_pc.ps1 -Report    (only the PC report + NinjaTrader check)
-  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\clean_pc.ps1 -Undo      (undo the deep tune; UNDO_PC_TUNE.bat)
+  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\clean_pc.ps1 -Undo      (undo the deep tune; tools\bat\UNDO_PC_TUNE.bat)
   powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\clean_pc.ps1 -Storage   (hands over to scripts\clean_storage.ps1:
-                                                                                        the disk-space cleaner, CLEAN_STORAGE.bat)
+                                                                                        the disk-space cleaner, tools\bat\CLEAN_STORAGE.bat)
 
-STORAGE (2026-11-04): the disk-space cleaner is its own script (CLEAN_STORAGE.bat -> scripts\clean_storage.ps1: a table of what
+STORAGE (2026-11-04): the disk-space cleaner is its own script (tools\bat\CLEAN_STORAGE.bat -> scripts\clean_storage.ps1: a table of what
   it would free, asks Y, temp / browser caches / Windows Update cache / old logs ...). This script only points to it (the last
   line of a run) and copies both files into the PC_KIT.
 #>
@@ -178,8 +178,8 @@ function Measure-Health {
 }
 function Get-TuneStateLine {
     $f = ''; if ($env:ProgramData) { $f = Join-Path (Join-Path $env:ProgramData 'LiquidityEngine') 'pc_tune_state.json' }
-    if (-not $f -or -not (Test-Path -LiteralPath $f)) { return 'not applied yet (CLEAN_PC.bat applies it outside trading hours)' }
-    try { $o = (Get-Content -LiteralPath $f -Raw -ErrorAction Stop) | ConvertFrom-Json; return "on, $(@($o.changes).Count) changes saved $($o.saved) (undo: UNDO_PC_TUNE.bat)" } catch { return 'on (undo: UNDO_PC_TUNE.bat)' }
+    if (-not $f -or -not (Test-Path -LiteralPath $f)) { return 'not applied yet (tools\bat\CLEAN_PC.bat applies it outside trading hours)' }
+    try { $o = (Get-Content -LiteralPath $f -Raw -ErrorAction Stop) | ConvertFrom-Json; return "on, $(@($o.changes).Count) changes saved $($o.saved) (undo: tools\bat\UNDO_PC_TUNE.bat)" } catch { return 'on (undo: tools\bat\UNDO_PC_TUNE.bat)' }
 }
 function Top-Programs([int]$N = 12) {
     try {
@@ -437,20 +437,20 @@ function Copy-PcKit {
         $base = $env:OneDrive; if (-not $base -or -not (Test-Path -LiteralPath $base)) { $base = [Environment]::GetFolderPath('Desktop') }
         $kit = Join-Path $base 'PC_KIT'; $ks = Join-Path $kit 'scripts'
         if (-not (Test-Path -LiteralPath $ks)) { New-Item -ItemType Directory -Path $ks -Force | Out-Null }
-        Copy-Item -LiteralPath (Join-Path $Root 'CLEAN_PC.bat') -Destination $kit -Force
+        Copy-Item -LiteralPath (Join-Path $Root 'tools\bat\CLEAN_PC.bat') -Destination $kit -Force
         Copy-Item -LiteralPath $PSCommandPath -Destination $ks -Force
         foreach ($x in @('pc_tune.ps1', 'pc_keeper.ps1')) { $src = Join-Path $PSScriptRoot $x; if (Test-Path -LiteralPath $src) { Copy-Item -LiteralPath $src -Destination $ks -Force } }
-        $ub = Join-Path $Root 'UNDO_PC_TUNE.bat'; if (Test-Path -LiteralPath $ub) { Copy-Item -LiteralPath $ub -Destination $kit -Force }
-        $sb = Join-Path $Root 'CLEAN_STORAGE.bat'; if (Test-Path -LiteralPath $sb) { Copy-Item -LiteralPath $sb -Destination $kit -Force }
+        $ub = Join-Path $Root 'tools\bat\UNDO_PC_TUNE.bat'; if (Test-Path -LiteralPath $ub) { Copy-Item -LiteralPath $ub -Destination $kit -Force }
+        $sb = Join-Path $Root 'tools\bat\CLEAN_STORAGE.bat'; if (Test-Path -LiteralPath $sb) { Copy-Item -LiteralPath $sb -Destination $kit -Force }
         $ss = Join-Path $PSScriptRoot 'clean_storage.ps1'; if (Test-Path -LiteralPath $ss) { Copy-Item -LiteralPath $ss -Destination $ks -Force }
-        Say 'OK' "Cleaner for your main PC: $kit (on the main PC double-click CLEAN_PC.bat in it)"
+        Say 'OK' "Cleaner for your main PC: $kit (on the main PC double-click tools\bat\CLEAN_PC.bat in it)"
     } catch { Say 'SKIP' "PC_KIT not copied: $($_.Exception.Message)" }
 }
 
 # ================================================================== storage: the disk-space cleaner is its own script
 if ($Storage) {
     $stor = Join-Path $PSScriptRoot 'clean_storage.ps1'
-    if (-not (Test-Path -LiteralPath $stor)) { Say 'FIX' 'scripts\clean_storage.ps1 is missing: double-click CLEAN_STORAGE.bat (it fetches it) or run UPDATE.bat'; exit 1 }
+    if (-not (Test-Path -LiteralPath $stor)) { Say 'FIX' 'scripts\clean_storage.ps1 is missing: double-click tools\bat\CLEAN_STORAGE.bat (it fetches it) or run UPDATE.bat'; exit 1 }
     & $stor -DryRun:$DryRun
     exit $LASTEXITCODE
 }
@@ -468,7 +468,7 @@ if ($Undo) {
 # ================================================================== the deep part (elevated)
 if ($AdminPart) {
     Head "DEEP PART (Administrator)$(if ($DryRun) { ' - dry run, nothing changed' })"
-    if (-not (Deep-Allowed)) { Say 'SKIP' 'Trading hours (weekdays 01:15-16:05 ET): the deep part waits. Double-click CLEAN_PC.bat again after 4:05 PM ET.'; exit 0 }
+    if (-not (Deep-Allowed)) { Say 'SKIP' 'Trading hours (weekdays 01:15-16:05 ET): the deep part waits. Double-click tools\bat\CLEAN_PC.bat again after 4:05 PM ET.'; exit 0 }
     # 6. Windows Search indexing off
     try {
         $s = Get-Service WSearch -ErrorAction Stop
@@ -484,7 +484,7 @@ if ($AdminPart) {
     Say 'OK' "Windows error reports: $(MB $wer) MB"
     $r = Remove-Old "$env:WINDIR\Minidump" 0; Say 'OK' "Crash dumps (Windows): $($r[0]) files, $(MB $r[1]) MB"
     try { if (-not $DryRun) { Delete-DeliveryOptimizationCache -Force -ErrorAction Stop | Out-Null }; Say 'OK' 'Delivery Optimization cache emptied' } catch { Say 'SKIP' 'Delivery Optimization cache: not available here' }
-    # 12. v2 deep tune (recorded first, undo-able: UNDO_PC_TUNE.bat); before the slow steps
+    # 12. v2 deep tune (recorded first, undo-able: tools\bat\UNDO_PC_TUNE.bat); before the slow steps
     $tune = Join-Path $PSScriptRoot 'pc_tune.ps1'
     if (-not (Test-Path -LiteralPath $tune)) { Say 'SKIP' 'Deep tune: scripts\pc_tune.ps1 is missing (run UPDATE.bat)' }
     elseif (Deep-Allowed) { & $tune -Log $Log -DryRun:$DryRun -Standalone:$Standalone -NoElevate }
@@ -591,7 +591,7 @@ if (-not $LightOnly) {
     Head 'Deep clean (needs Administrator)'
     if (-not (Deep-Allowed)) {
         if ($Standalone) { Say 'SKIP' 'NinjaTrader is open in trading hours (weekdays 01:15-16:05 ET): the deep part waits. Run it again after 4:05 PM ET or with NinjaTrader closed.' }
-        else { Say 'SKIP' 'Trading hours (weekdays 01:15-16:05 ET): the deep part waits so it never slows the bot. Double-click CLEAN_PC.bat again after 4:05 PM ET.' }
+        else { Say 'SKIP' 'Trading hours (weekdays 01:15-16:05 ET): the deep part waits so it never slows the bot. Double-click tools\bat\CLEAN_PC.bat again after 4:05 PM ET.' }
     } elseif ($DryRun) {
         Say '..' 'Would ask Windows for Administrator and run steps 6-12 (search indexing off, background Store apps off, Windows junk, unused preinstalled apps, the v2 deep tune, component store, Defender quick scan).'
     } else {
@@ -610,7 +610,7 @@ if (-not $LightOnly) {
             if ($Standalone) { $argList += '-Standalone' }
             $p = Start-Process -FilePath 'powershell.exe' -ArgumentList $argList -Verb RunAs -PassThru -Wait
             if ($p.ExitCode -eq 0) { Say 'OK' 'Deep part done (its lines are in the log)' } else { Say 'SKIP' "Deep part ended with code $($p.ExitCode)" }
-        } catch { Say 'SKIP' 'Deep part not run (Administrator was declined). Double-click CLEAN_PC.bat again and click Yes.' }
+        } catch { Say 'SKIP' 'Deep part not run (Administrator was declined). Double-click tools\bat\CLEAN_PC.bat again and click Yes.' }
     }
 }
 
@@ -626,8 +626,8 @@ Say '..' "Full log: $Log"
 try {
     $sd = $env:SystemDrive; if (-not $sd) { $sd = 'C:' }
     $dfree = [math]::Round((New-Object System.IO.DriveInfo $sd).AvailableFreeSpace / 1GB, 1)
-    Say '..' "Disk: $dfree GB free on $sd. To free more space double-click CLEAN_STORAGE.bat (shows what it would clear, asks Y)."
-} catch { Say '..' 'To free disk space double-click CLEAN_STORAGE.bat (shows what it would clear, asks Y).' }
+    Say '..' "Disk: $dfree GB free on $sd. To free more space double-click tools\bat\CLEAN_STORAGE.bat (shows what it would clear, asks Y)."
+} catch { Say '..' 'To free disk space double-click tools\bat\CLEAN_STORAGE.bat (shows what it would clear, asks Y).' }
 if ($Standalone) { Say '..' 'NinjaTrader was not touched. A restart finishes the Windows changes.' }
 else { Say '..' 'NinjaTrader and the bot were not touched. A restart finishes the Windows changes: do it after 4 PM ET (the bot comes back by itself; open the MNQ chart with LE_BarFeed again if it does not reopen).' }
 exit 0

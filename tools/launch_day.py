@@ -22,19 +22,19 @@ JS = os.path.join(ROOT, "tools", "web_public", "gate", "launch_day.json")
 DAY = "2026-11-16"
 TITLE = "Launch day: Monday Nov 16"
 INTRO = ("Zlarior (MFFU 50K eval, LIT) and ATLAS (25K eval) trade for real from 02:00 ET. You arm them yourself at the PC "
-         "(GO_LIVE_EVAL.bat, you type the phrase); nothing on the phone can trade, start or stop a bot.")
+         "(tools/bat/GO_LIVE_EVAL.bat, you type the phrase); nothing on the phone can trade, start or stop a bot.")
 STEPS = [
     "At 01:45 ET open the Olympus link on the iPhone. The Launch card must say Ready: Zlarior and ATLAS \"LIVE, armed\", feed fresh, no flags.",
     "In the ntfy app the \"Ready for 02:00 ET\" push is there (silent). A loud \"NOT ready\" names what is wrong and its fix.",
     "Anything red: do the one action in its row below. Nothing red: you are done; every entry and exit sends a push.",
 ]
 LOOK = {"id": "look", "title": "01:45 ET: what to look for", "cols": ["On the Launch card", "Good", "If not"], "rows": [
-    ["Zlarior 50K", "LIVE, armed", "PC: double-click GO_LIVE_EVAL.bat and type the phrase"],
-    ["ATLAS 25K", "LIVE, armed", "PC: double-click GO_LIVE_EVAL.bat and type the phrase"],
+    ["Zlarior 50K", "LIVE, armed", "PC: double-click tools/bat/GO_LIVE_EVAL.bat and type the phrase"],
+    ["ATLAS 25K", "LIVE, armed", "PC: double-click tools/bat/GO_LIVE_EVAL.bat and type the phrase"],
     ["Feed", "fresh (1-minute bar under 3 min old)", "NinjaTrader: open the MNQ 5-minute chart, right-click > Indicators > LE_BarFeed > Add"],
     ["Drawdown left", "the same as the MFFU dashboard", "send Claude a photo of both"],
     ["Flags", "none", "the action written under the flag"],
-    ["Phone alerts", "\"Phone alerts on: last check ... min ago\"", "PC: double-click BOTS_BACK.bat"],
+    ["Phone alerts", "\"Phone alerts on: last check ... min ago\"", "PC: double-click tools/bat/BOTS_BACK.bat"],
 ]}
 PUSHES = {"id": "pushes", "title": "What each push means", "cols": ["Push (ntfy)", "What it means", "Do"], "rows": [
     ["Ready for 02:00 ET", "both bots running and armed, feed fresh, drawdown left per account", "nothing"],
@@ -43,8 +43,8 @@ PUSHES = {"id": "pushes", "title": "What each push means", "cols": ["Push (ntfy)
     ["Zlarior 50K / ATLAS 25K trade closed", "the exit: how, +/- $ and R, drawdown left, today's $", "nothing"],
     ["... fill check: ...", "NinjaTrader did something else than the bot planned", "see the fill check table"],
     ["FEED STALE", "no fresh NinjaTrader bars: no new entries", "NinjaTrader: open the MNQ 5-minute chart, right-click > Indicators > LE_BarFeed > Add"],
-    ["Bot down", "the bot server on the PC does not answer or report", "PC: double-click GO_LIVE_EVAL.bat (it brings the bot back) and type the phrase"],
-    ["Bot stopped", "the server runs but the bot is stopped in entry hours", "PC: double-click GO_LIVE_EVAL.bat and type the phrase"],
+    ["Bot down", "the bot server on the PC does not answer or report", "PC: double-click tools/bat/GO_LIVE_EVAL.bat (it brings the bot back) and type the phrase"],
+    ["Bot stopped", "the server runs but the bot is stopped in entry hours", "PC: double-click tools/bat/GO_LIVE_EVAL.bat and type the phrase"],
     ["NinjaTrader closed", "NinjaTrader is not running on the PC", "PC: open NinjaTrader and log in"],
     ["50% / 75% of the drawdown used", "the eval used half / three quarters of its room", "nothing: the bot sizes down by itself"],
     ["Daily loss limit near", "today's loss is at 70% of the daily limit", "nothing: the bot keeps its stops"],

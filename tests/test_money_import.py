@@ -443,7 +443,7 @@ def test_connect(tmp, led):
     check("i. Oikos card: spending by category biggest first (spend only), subscriptions with their next date, leaks",
           v["cats"] and v["cats"][0][0] == "Rent" and all(c[1] > 0 for c in v["cats"]) and any(s[3] == "2026-11-28" for s in v["subs"]) and v["leaks"] >= 1, (v["cats"], v["subs"]))
     check("i. Oikos card: no file / another file / empty / a 60-day-old export -> off / off / empty / stale; the off line says how to connect",
-          o["off"][:4] == ["off", "off", "empty", "stale"] and "RUN_MONEY.bat" in o["off"][4], o["off"])
+          o["off"][:4] == ["off", "off", "empty", "stale"] and "tools/bat/RUN_MONEY.bat" in o["off"][4], o["off"])
     check("i. Oikos card money words", o["usd"] == ["$1,235", "-$12.50", "$15.49", "$0", "-", "+$50"], o["usd"])
     check("i. Jarvis routes the owner's questions: food this month, subscriptions, savings runway, this month's spending, net worth, gas last month",
           o["routes"] == ["household_spend_cat", "household_subs", "household_runway", "household_month", "household_networth", "household_spend_cat"], o["routes"])

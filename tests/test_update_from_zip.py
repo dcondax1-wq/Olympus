@@ -1,4 +1,4 @@
-"""UPDATE_FROM_ZIP.bat / UNDO_UPDATE.bat / tools/update_from_zip.py: updating the bot folder from a code zip, without GitHub (2026-11-11).
+"""UPDATE_FROM_ZIP.bat / tools/bat/UNDO_UPDATE.bat / tools/update_from_zip.py: updating the bot folder from a code zip, without GitHub (2026-11-11).
 
 Like tests/test_win_scripts.py: the .bat files are linted statically (CRLF, ASCII, labels, the run-from-a-copy rule), and the real
 work (tools/update_from_zip.py, plain Python, the same file the PC runs) really runs against FAKE bot folders and FAKE zips in a
@@ -110,7 +110,7 @@ def make_bot(base):
 
 ZIP_FILES = {
     "engine/lit.py": "VERSION = 'new'\n", "server.py": "print('server')\n", "engine/live.py": "LIVE = 1\n", "engine/new_mod.py": "NEW = True\n",
-    "README.md": "line one\nline two\n", "START_BOT.bat": "@echo off\r\necho start v2\r\n", "UNDO_UPDATE.bat": "@echo off\r\n", "live_model.json": MODEL_SAME_ZIP,
+    "README.md": "line one\nline two\n", "START_BOT.bat": "@echo off\r\necho start v2\r\n", "tools/bat/UNDO_UPDATE.bat": "@echo off\r\n", "live_model.json": MODEL_SAME_ZIP,
     "live_model_lit.json": MODEL_LIT_ZIP, "live_model_engine.json": '{"engine": 1}\n', ".gitignore": GITIGNORE, "docs/NOTES.md": "new notes\n", "docs/deep/a/b/c.md": "deep\n",
     "tools/update_from_zip.py": rb(TOOL), "requirements.txt": "tzdata\n",
     # things a zip should never hold; the updater must not write any of them
@@ -149,8 +149,8 @@ def six_lines(out):
 
 # ============================================================================================== 1. static
 def test_static():
-    upd, undo = rb(os.path.join(ROOT, "UPDATE_FROM_ZIP.bat")), rb(os.path.join(ROOT, "UNDO_UPDATE.bat"))
-    for name, raw in (("UPDATE_FROM_ZIP.bat", upd), ("UNDO_UPDATE.bat", undo)):
+    upd, undo = rb(os.path.join(ROOT, "UPDATE_FROM_ZIP.bat")), rb(os.path.join(ROOT, "tools/bat/UNDO_UPDATE.bat"))
+    for name, raw in (("UPDATE_FROM_ZIP.bat", upd), ("tools/bat/UNDO_UPDATE.bat", undo)):
         probs = lint_bat(name, raw)
         check(f"1. {name}: CRLF, ASCII, labels and paths exist, balanced parentheses", not probs, probs)
         txt = raw.decode("ascii")
@@ -162,7 +162,7 @@ def test_static():
     t = upd.decode("ascii")
     check("1. UPDATE_FROM_ZIP.bat: uses the folder's own updater, else takes it out of the zip (first run); asks before updating while the market is open (exit code 12); passes a dragged zip on",
           'if exist "%TOOL%" goto :run' in t and "tools/update_from_zip.py" in t and 'if not "%errorlevel%"=="12" goto :end' in t and "--allow-market-open" in t and "Type Y then Enter" in t and '"%~1"' in t and "--force" not in t)
-    check("1. UNDO_UPDATE.bat: runs the updater with --undo from a temp copy of the tool (the undo may remove the tool itself)", "--undo" in undo.decode() and 'le_update_from_zip.py" --undo' in undo.decode())
+    check("1. tools/bat/UNDO_UPDATE.bat: runs the updater with --undo from a temp copy of the tool (the undo may remove the tool itself)", "--undo" in undo.decode() and 'le_update_from_zip.py" --undo' in undo.decode())
     src = rb(TOOL).decode("utf-8")
     imports = set(re.findall(r"^(?:import|from)\s+([a-zA-Z_][\w.]*)", src, re.M)) - {"__future__"}
     std = {"argparse", "datetime", "glob", "hashlib", "json", "os", "re", "shutil", "socket", "subprocess", "sys", "time", "zipfile"}
@@ -174,7 +174,7 @@ def test_static():
     check("1. the hard local-only list names what the owner listed (alerts, tv, tv_device, autostart, live_state, memory.db, .env*, nt_bars, logs)",
           all(x in U.HARD_LOCAL for x in ("data/alerts.json", "data/tv.json", "data/tv_device.json", "data/autostart.json", "data/live_state.json", "data/memory.db", ".env", ".env.*", "data/nt_bars/", "logs/")))
     check("1. live_model*.json is the keep-if-changed rule; a wrong SHA-256 has no force path", U.KEEP_IF_CHANGED == ("live_model*.json",) and "EXIT_BADZIP" in src and src.index("check_zip(zip_path)") < src.index("rc = guards(a, folder)"))
-    for b in ("UPDATE_FROM_ZIP.bat", "UNDO_UPDATE.bat"):
+    for b in ("UPDATE_FROM_ZIP.bat", "tools/bat/UNDO_UPDATE.bat"):
         ga = subprocess.run(["git", "check-attr", "eol", "--", b], capture_output=True, text=True, cwd=ROOT).stdout
         check(f"1. {b}: .gitattributes keeps it CRLF", "eol: crlf" in ga, ga)
 
@@ -328,7 +328,7 @@ def test_flows():
               and sorted(os.listdir(bdir)) == ["files", "manifest.json", "state_before.txt"], (bdirs, os.listdir(bdir), state[:300]))
         check("3. the manifest lists what was replaced, added and kept (and holds no file contents)",
               sorted(man["replaced"]) == ["START_BOT.bat", "docs/NOTES.md", "engine/lit.py"]
-              and sorted(man["added"]) == ["UNDO_UPDATE.bat", "docs/deep/a/b/c.md", "engine/new_mod.py", "requirements.txt", "tools/update_from_zip.py"] and man["kept_model"] == ["live_model_lit.json"] and "data/alerts.json" in man["kept_local"] and man["done"] is True and "LOCAL-SECRET" not in json.dumps(man), man)
+              and sorted(man["added"]) == ["docs/deep/a/b/c.md", "engine/new_mod.py", "requirements.txt", "tools/bat/UNDO_UPDATE.bat", "tools/update_from_zip.py"] and man["kept_model"] == ["live_model_lit.json"] and "data/alerts.json" in man["kept_local"] and man["done"] is True and "LOCAL-SECRET" not in json.dumps(man), man)
 
         # ---- twice
         rc, out = run([zp, "--folder", bot], home, port)

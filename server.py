@@ -1026,7 +1026,7 @@ def health_ping():
 
 @app.get("/api/pc/doctor")
 def pc_doctor_api(text: int = 0):
-    """PC DOCTOR (tools/pc_doctor.py, PC_DOCTOR.bat): why the phone hears nothing from this PC, link by link. Read-only;
+    """PC DOCTOR (tools/pc_doctor.py, tools/bat/PC_DOCTOR.bat): why the phone hears nothing from this PC, link by link. Read-only;
     never shows the private alert topic, a login or an account id. ?text=1 = the same card as plain text."""
     from tools import pc_doctor as _pd
     r = _pd.run(ping={"ok": True, "bot_running": bool(BOT.running), "heartbeat": HEARTBEAT.status()})
@@ -1265,7 +1265,7 @@ if os.environ.get("LE_PREWARM", "1") != "0":
             print(f"[lit_dash] prewarm failed: {e}")
     threading.Thread(target=_prewarm_lit, name="lit-prewarm", daemon=True).start()
 # ---- LIVE SITE ---- (engine/live_site.py, docs/LIVE_DASHBOARD.md): the whole phone site at /site/ (the Gate, the dashboard, every
-# OLYMPUS app) with the bot's live numbers, for the private Tailscale link (LIVE_LINK.bat). Read-only over the link: a proxied
+# OLYMPUS app) with the bot's live numbers, for the private Tailscale link (tools/bat/LIVE_LINK.bat). Read-only over the link: a proxied
 # request may only GET / HEAD (POST etc. refused before any route), Funnel refused. Before the static mount: its routes win.
 try:
     from engine import live_site as _ls

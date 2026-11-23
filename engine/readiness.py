@@ -454,10 +454,10 @@ def _evaluate(f: dict, now) -> dict:
     gb = f.get("disk_free_gb")
     if gb is not None and gb < 2:
         out.append(_b(NOT_READY, f"Disk almost full ({gb:.1f} GB free)", "The bot cannot write its state or logs.",
-                      "On the PC: double-click CLEAN_STORAGE.bat (or Settings > System > Storage > Cleanup).", True, "disk"))
+                      "On the PC: double-click tools/bat/CLEAN_STORAGE.bat (or Settings > System > Storage > Cleanup).", True, "disk"))
     elif gb is not None and gb < 10:
         out.append(_b(WARN, f"Disk getting low ({gb:.0f} GB free)", "It can fill up within days.",
-                      "On the PC: double-click CLEAN_STORAGE.bat this week.", True, "disk"))
+                      "On the PC: double-click tools/bat/CLEAN_STORAGE.bat this week.", True, "disk"))
     c = by.get("internet")
     if c and c.get("level") == "bad":
         out.append(_b(NOT_READY, "PC has no internet", "No site answered; prices, pushes and the clock check fail.",

@@ -47,18 +47,18 @@ Default (agency/pricebook.json, 2026-11-21): Starter site $1,500 + $79 a month (
 | What | How |
 |---|---|
 | Business page (phone) | `tools/web_public/business/`: every model's next action, money range and the 7-day checklist. Reads `business.json` (made on the PC by `python tools/biz_publish.py`, gitignored) else `fixture.json` (DEMO) |
-| The agency day in one double-click | **`AGENCY_DAY.bat`** = `python -m agency.day`: leads in your city -> 3 demo sites + pitch kits -> the call list -> the Business page -> `agency/out/TODAY.txt` |
+| The agency day in one double-click | **`tools/bat/AGENCY_DAY.bat`** = `python -m agency.day`: leads in your city -> 3 demo sites + pitch kits -> the call list -> the Business page -> `agency/out/TODAY.txt` |
 | Listing kit | `docs/BUSINESS_LISTING_KIT.md` (`python -m money_machines.products.listing_kit`): the 5 products' titles, descriptions, tags, prices, covers and where to list free |
 | Tests | `python -X utf8 -m tests.test_biz_models` |
 
 ## 7-day launch checklist
-1. **Day 1, set up (1 h):** double-click `AGENCY_DAY.bat`, fill in `agency/config.json` (name, phone, email, postal address, city), save;
-   make the free accounts (Netlify, Stripe, Payhip, Fiverr with your real name and ID check); double-click `AGENCY_DAY.bat` again.
+1. **Day 1, set up (1 h):** double-click `tools/bat/AGENCY_DAY.bat`, fill in `agency/config.json` (name, phone, email, postal address, city), save;
+   make the free accounts (Netlify, Stripe, Payhip, Fiverr with your real name and ID check); double-click `tools/bat/AGENCY_DAY.bat` again.
 2. **Day 2, first calls (1 h):** drop the 3 site folders on app.netlify.com/drop and press Publish; call 10 owners from Call today, by
    hand, 10:00-12:00 or 14:00-16:00; mark every call on the card.
 3. **Day 3, shop and gigs (1 h):** upload the 8 products to Payhip with `docs/BUSINESS_LISTING_KIT.md`; publish the logo and
    Google-profile gigs on Fiverr (`docs/GIG_PACK.md`); make one Stripe payment link per plan.
-4. **Day 4, calls and Instagram (1 h):** `AGENCY_DAY.bat`, 10 calls; new Instagram (Professional), schedule week 1 in Meta Business
+4. **Day 4, calls and Instagram (1 h):** `tools/bat/AGENCY_DAY.bat`, 10 calls; new Instagram (Professional), schedule week 1 in Meta Business
    Suite; the shop link in the bio.
 5. **Day 5, follow up (1 h):** call back everyone who asked; send the demo link only to those who said send it; 10 new calls;
    answer every Fiverr message the same day.

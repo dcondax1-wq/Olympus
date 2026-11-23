@@ -25,15 +25,15 @@ TradersPost bot-failure guide (https://blog.traderspost.io/article/automated-tra
 | 7 | Session / news calendar | HAVE: CME holidays and early closes, official BLS / Fed calendar, news guard | `engine/cme_calendar.py`, `engine/news_official.py` |
 | 8 | Drawdown alerts | HAVE: "room getting low" pushes (now OFF by default, owner's choice), critical "drawdown left" alert repeats until Got it | `engine/notify.py`, `engine/alerts_plus.py` |
 | 9 | Heartbeat watchdog | HAVE: in-process watchdog, 5-min PC report, PC-silent push (the cloud check is built, not live until `main` is updated) | `engine/watchdog.py`, `tools/pc_report.py`, `tools/pc_silent_check.py` |
-| 10 | Backup PC / failover | MISSING on purpose: a hot spare could double the orders. `MOVE_BOT.bat` moves the bot by hand; the stop and target live at the broker, so a dead PC leaves the trade protected | `scripts/move_bot.ps1` |
+| 10 | Backup PC / failover | MISSING on purpose: a hot spare could double the orders. `tools/bat/MOVE_BOT.bat` moves the bot by hand; the stop and target live at the broker, so a dead PC leaves the trade protected | `scripts/move_bot.ps1` |
 | 11 | Latency monitoring | HAVE: poll time per stage, 15-min trend, signal-to-route latency per trade | `engine/poll_timing.py`, `engine/pc_health.py`, `engine/fill_audit.py` |
 | 12 | Data-gap detection | HAVE: bar gap alarms, FEED STALE blocks new entries, frozen feed in a trade alarm | `engine/live.py`, `engine/pcbars.py`, `engine/ai_watch.py` |
-| 13 | Rollover handling | HAVE: the order contract switches by date, roll warning, ROLL.bat for the chart | `engine/roll_watch.py`, `engine/ninjatrader.py` nt_instrument |
+| 13 | Rollover handling | HAVE: the order contract switches by date, roll warning, tools/bat/ROLL.bat for the chart | `engine/roll_watch.py`, `engine/ninjatrader.py` nt_instrument |
 | 14 | Equity-curve circuit breaker | **HAVE (advice, built tonight night-risk)**: live vs backtest twin per strategy, last 10 trades; SIZE DOWN / PAUSE advice to the Board + phone, never acts. The old equity filter (acts on size) stays OFF: a strategy change | `engine/circuit_breaker.py`, `engine/equity_filter.py`, `engine/guards.py` |
 | 15 | Per-strategy attribution | HAVE per account (each live account runs one strategy). PARTIAL for a Rapid with two lanes (not bought) | `tools/trading_export.py`, `engine/fleet.py` |
 | 16 | Paper / live parity checks | HAVE: live loop == backtest 120/120, live vs twin on the Trading page | `tests/test_lit_live.py`, `engine/fill_audit.py` |
 | 17 | Audit log | **HAVE (one timeline built tonight)**. Before: PARTIAL, the facts sat in 5 files | `engine/audit_trail.py`; OIF log, `engine/handsoff.py`, `engine/board_events.py`, `engine/rulelog.py` |
-| 18 | Version pinning / rollback | HAVE: fast-forward only, self-tests, roll back on failure, bad version remembered, UNDO_UPDATE.bat, rules fingerprint PC vs cloud | `engine/autoupdate.py`, `engine/alerts_plus.py` |
+| 18 | Version pinning / rollback | HAVE: fast-forward only, self-tests, roll back on failure, bad version remembered, tools/bat/UNDO_UPDATE.bat, rules fingerprint PC vs cloud | `engine/autoupdate.py`, `engine/alerts_plus.py` |
 | 19 | Secrets handling | HAVE: keys only in PC env vars / files, repo secret scan, no phrase in the order log, account ids kept out of public pages | `tests/test_repo_secrets.py`, `docs/PRIVACY.md` |
 | 20 | Duplicate-order guard | HAVE: one entry per setup, re-route after restart refused | `engine/guards.py` dup_problem |
 | 21 | Unprotected-position alarm | HAVE: a fill without its stop is closed at once + critical alert | `engine/ninjatrader.py` _tick_watch, `engine/alerts_plus.py` |
@@ -48,7 +48,7 @@ TradersPost bot-failure guide (https://blog.traderspost.io/article/automated-tra
 ## Built tonight (the 3 that most protect the money; no strategy change, nothing arms)
 
 ### 1. Phone PAUSE / FLATTEN / KILL (owner said YES), OFF until he turns it on
-- Page: `https://<this-pc>.<tailnet>.ts.net/safety/` (the LIVE_LINK.bat address + `/safety/`). Add it to the Home Screen.
+- Page: `https://<this-pc>.<tailnet>.ts.net/safety/` (the tools/bat/LIVE_LINK.bat address + `/safety/`). Add it to the Home Screen.
 - Buttons: **PAUSE** new trades until the next 4 PM ET (in the day: the rest of the session; at night: the whole next one), **RESUME**, **FLATTEN all now** (second tap), **KILL** = flatten all + stop (second tap).
   Each runs the same code as the old GitHub remote (`RemoteControl.run_cmd`): phone notice, hands-off record, heartbeat.
 - It can never start, arm, update or change settings: there is no such button or code path. Start stays on the PC with the phrase.

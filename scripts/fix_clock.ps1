@@ -11,7 +11,7 @@ guard, rightly, blocked every new entry). Run ONCE as administrator (FIX_CLOCK.b
   5. prints the drift BEFORE and AFTER (HTTPS Date header of three sites, median; w32tm /stripchart as the fallback) and one
      [OK] / [FIX] line.
 Safe to run twice. -Off removes the task and puts the poll, servers and step limits back to the Windows defaults
-(FIX_CLOCK_OFF.bat); it leaves the time service on Automatic and running.
+(tools\bat\FIX_CLOCK_OFF.bat); it leaves the time service on Automatic and running.
 Every program is called by its full path under %SystemRoot%\System32 (the bot folder is user-writable: nothing in it is run
 elevated or as SYSTEM except this script, which the owner starts himself).
 It touches only Windows' own time settings: no trading file, no strategy, no live switch. Windows PowerShell 5.1 safe, ASCII only.

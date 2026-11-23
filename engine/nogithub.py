@@ -1,7 +1,7 @@
 """GitHub-free mode for the PC bot (owner 2026-11-10: the GitHub account is gone and stays gone).
 
-On when the environment has LE_NO_GITHUB=1, or the file %USERPROFILE%\\.olympus\\no_github exists (PUBLISH_NQ.bat / BOTS_BACK.bat
-make it; UNDO_PUBLISH_NQ.bat removes it), or (2026-11-18) the checkout's update_source.json names the backup repo (a remote
+On when the environment has LE_NO_GITHUB=1, or the file %USERPROFILE%\\.olympus\\no_github exists (tools/bat/PUBLISH_NQ.bat / tools/bat/BOTS_BACK.bat
+make it; tools/bat/UNDO_PUBLISH_NQ.bat removes it), or (2026-11-18) the checkout's update_source.json names the backup repo (a remote
 other than origin: the code already comes from the backup, so origin is the lost account). LE_NO_GITHUB=0 turns it off.
 Before 2026-11-18 a PC without the marker kept pushing its heartbeat to the suspended account (22 failed pushes a day, a red
 "Heartbeat to the cloud" on UPDATE / HEALTH CHECK). When on, nothing in the bot talks to origin GitHub:

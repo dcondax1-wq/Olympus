@@ -1,5 +1,5 @@
 <#
-PC REPORT task (BOTS_BACK.bat installs it, UNDO_BOTS_BACK.bat removes it; docs\BOTS_BACK.md).
+PC REPORT task (tools\bat\BOTS_BACK.bat installs it, tools\bat\UNDO_BOTS_BACK.bat removes it; docs\BOTS_BACK.md).
 
   default   installs (or replaces) the Windows task "OlympusPCReport": every 15 minutes, and at sign-in, it runs
             tools\pc_report.py --quiet with pythonw (no window), only while you are signed in, at most one at a time. It reads the
@@ -66,13 +66,13 @@ try {
         -ExecutionTimeLimit (New-TimeSpan -Minutes 10) -MultipleInstances IgnoreNew
     $principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -RunLevel Limited
     $task = New-ScheduledTask -Action $action -Trigger @($daily, $logon) -Settings $settings -Principal $principal `
-        -Description "OLYMPUS: report the PC bots to the phone without GitHub (ntfy.sh). Installed by BOTS_BACK.bat from $Root"
+        -Description "OLYMPUS: report the PC bots to the phone without GitHub (ntfy.sh). Installed by tools\bat\BOTS_BACK.bat from $Root"
     if (Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue) { Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false }
     Register-ScheduledTask -TaskName $TaskName -InputObject $task | Out-Null
     Write-Host "  [OK] 4/5 report task ${TaskName}: every 15 minutes (phone alerts + site status, free ntfy.sh)"
 } catch {
     Write-Host "  [FIX] 4/5 could not create the report task: $($_.Exception.Message)"
-    Write-Host '        Right-click BOTS_BACK.bat > Run as administrator once, or send a photo of this window to Claude.'
+    Write-Host '        Right-click tools\bat\BOTS_BACK.bat > Run as administrator once, or send a photo of this window to Claude.'
     exit 1
 }
 exit 0

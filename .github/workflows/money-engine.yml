@@ -5,7 +5,7 @@ name: money-engine
 
 on:
   schedule:
-    - cron: "17 */3 * * *"            # every 3 hours (free-tier friendly); the PC runs RUN_MONEY.bat every 30 minutes
+    - cron: "17 */3 * * *"            # every 3 hours (free-tier friendly); the PC runs tools/bat/RUN_MONEY.bat every 30 minutes
   workflow_dispatch:
     inputs:
       fixture:

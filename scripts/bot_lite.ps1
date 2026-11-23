@@ -1,5 +1,5 @@
 <#
-BOT LITE (2026-11-03): the bot on very little memory. One click (BOT_LITE.bat):
+BOT LITE (2026-11-03): the bot on very little memory. One click (tools\bat\BOT_LITE.bat):
   1. turns LITE mode on (data\lite.json {"on": true}; engine\lite.py): the bot's read-only add-ons (Bot Brain, Trade
      pictures, the paper second strategies' worker process, AI watch, Mind, the dashboard backtest) are off and it keeps
      100 days of history instead of 5 years. Trades exactly the same (tests\test_lite.py). About 690 MB -> 180 MB.
@@ -118,7 +118,7 @@ try {
 Write-Host ""
 Write-Host " NinjaTrader memory checklist (do once, after 4:05 PM ET):" -ForegroundColor Cyan
 Say "1. Close every chart, Market Analyzer, SuperDOM and Strategies tab. Keep only the Control Center."
-Say "   (The LE_Feed add-on gives the bot its bars with no chart: NO_CHART_MODE.bat, then F5 once.)"
+Say "   (The LE_Feed add-on gives the bot its bars with no chart: tools\bat\NO_CHART_MODE.bat, then F5 once.)"
 Say "2. Workspaces > New > name it LITE > Workspaces > Save. NinjaTrader opens it next time."
 Say "3. Control Center: close the Orders, Executions, Strategies and Log tabs you don't read (Accounts can stay)."
 Say "4. Tools > Options > Market data: untick 'Show Tick Replay'. Tools > Database Management: Repair DB once a month."

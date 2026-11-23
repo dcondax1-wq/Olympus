@@ -1,4 +1,4 @@
-"""Second backup: tools/second_backup.py (git mirror on Codeberg / GitLab + the weekly zip to a synced folder), BACKUP_SETUP.bat,
+"""Second backup: tools/second_backup.py (git mirror on Codeberg / GitLab + the weekly zip to a synced folder), tools/bat/BACKUP_SETUP.bat,
 scripts/backup_task.ps1 (the Sunday task). Temp git repos, a local bare repo as the "mirror", fake HTTP for the hosts' API and
 ntfy; never the real network, never the real Task Scheduler (LE_BB_T_LOG), never the owner's settings folder.
 
@@ -269,8 +269,8 @@ def auth_checks():
 
 # ============================================================================================== static + pwsh
 def static_checks():
-    raw = open(os.path.join(ROOT, "BACKUP_SETUP.bat"), "rb").read()
-    check("BACKUP_SETUP.bat: CRLF, ASCII, setup -> task -> one run, -Remove, pauses",
+    raw = open(os.path.join(ROOT, "tools/bat/BACKUP_SETUP.bat"), "rb").read()
+    check("tools/bat/BACKUP_SETUP.bat: CRLF, ASCII, setup -> task -> one run, -Remove, pauses",
           b"\n" not in raw.replace(b"\r\n", b"") and all(c < 128 for c in raw) and b"second_backup.py\" --setup" in raw
           and b"backup_task.ps1\"" in raw and b"second_backup.py\" --weekly" in raw and b"-Remove" in raw and b"pause" in raw)
     ps = open(os.path.join(ROOT, "scripts", "backup_task.ps1"), "rb").read()
