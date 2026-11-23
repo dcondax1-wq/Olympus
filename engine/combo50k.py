@@ -125,7 +125,7 @@ def factor_of(rules: dict, stage: str) -> float:
     return float(f if f is not None else 1.0)
 
 
-def normalize(raw) -> dict:
+def normalize(raw, plan: str = PLAN) -> dict:
     """The rule values (research/lab/combo_50k.json, or a harness dict) -> {"conflict", "atlas_size_factor": {"eval",
     "funded"}, "guards", "problem": why it cannot run or None, "unknown": [keys ignored]}. A "rules" sub-dict is read too.
     conflict "first" (the research file) = first_in; atlas_size_factor a number or {"eval": x, "funded": y}; a null guard =
@@ -140,8 +140,8 @@ def normalize(raw) -> dict:
         out["problem"] = f"conflict {src.get('conflict')!r} unknown ({' | '.join(CONFLICTS)}, or first / zprio / zfull)"
     out["conflict"] = ALIASES.get(c, c)
     acct = str(src.get("account") or PLAN).strip().lower().replace(" ", "").replace("_", "")
-    if acct != PLAN:
-        out["problem"] = out["problem"] or f"account {src.get('account')!r}: this build is the Builder 50K only (builder50k)"
+    if acct not in (PLAN, plan):        # the research file is the 50K's; the 25K #2 (engine/combo25.py) reads the same values
+        out["problem"] = out["problem"] or f"account {src.get('account')!r}: this build is the Builder 50K / 25K (builder50k)"
     bots = src.get("bots")
     if bots is not None and (not isinstance(bots, (list, tuple)) or not {"lit", "atlas"} <= {str(b).lower() for b in bots}):
         out["problem"] = out["problem"] or f"bots {bots!r}: this build is Zlarior (lit) + ATLAS (atlas)"
@@ -196,21 +196,33 @@ def normalize(raw) -> dict:
     return out
 
 
-def load_rules(root: str | None = None) -> dict:
+def load_rules(root: str | None = None, plan: str = PLAN) -> dict:
     """research/lab/combo_50k.json (the rule values another helper finalises), else DEFAULTS. Never raises."""
     raw = _read(_path(RULES_REL, root))
-    out = normalize(raw if isinstance(raw, dict) else {})
+    out = normalize(raw if isinstance(raw, dict) else {}, plan=plan)
     out["file"] = RULES_REL if isinstance(raw, dict) else None
     return out
 
 
 # ------------------------------------------------------------------------------------------------ the owner's switch
 def read_switch(root: str | None = None) -> dict:
-    """data/combo_50k.json -> {"on": bool, "account": str, ...}; absent / unreadable = {"on": False}."""
+    """data/combo_50k.json -> {"on": bool, "account": str, "accounts": [str], ...}; absent / unreadable = {"on": False}.
+    "accounts" (owner 2026-11-23: the 50K AND the Builder 25K #2) = every NinjaTrader Name the combo is on for; a file of
+    the first build (one "account") reads as that one Name."""
     j = _read(_path(SWITCH_REL, root))
     if not isinstance(j, dict):
         return {"on": False}
-    return {**j, "on": j.get("on") is True, "account": str(j.get("account") or "").strip()}
+    one = str(j.get("account") or "").strip()
+    many = j.get("accounts")
+    names = [str(x).strip() for x in many if str(x or "").strip()] if isinstance(many, list) else ([one] if one else [])
+    return {**j, "on": j.get("on") is True, "account": one or (names[0] if names else ""),
+            "accounts": list(dict.fromkeys(names)) if j.get("on") is True else []}
+
+
+def switch_on_for(name: str, root: str | None = None) -> bool:
+    """The owner's switch is on for this NinjaTrader account Name (data/combo_50k.json)."""
+    nm = str(name or "").strip()
+    return bool(nm) and nm in read_switch(root).get("accounts", [])
 
 
 def _is_sim(name: str) -> bool:
@@ -253,8 +265,8 @@ def build(bot):
         sw = read_switch()
         if not sw.get("on"):
             return None
-        if not own or sw.get("account") != own:
-            return {"off_why": f"the switch is for {sw.get('account') or '?'}, this bot trades {own or 'paper'}: OFF"}
+        if not own or own not in sw.get("accounts", []):
+            return {"off_why": f"the switch is for {', '.join(sw.get('accounts') or []) or '?'}, this bot trades {own or 'paper'}: OFF"}
         rules = load_rules()
         src = SWITCH_REL
     if rules.get("problem"):
@@ -265,9 +277,11 @@ def build(bot):
 
 
 def ab_spec(combo: dict, eval_start: str | None, stage: str = "eval", funded: dict | None = None) -> dict:
-    """engine/account_b's sizing spec on the builder50k preset (the same rules the study sized ATLAS with)."""
+    """engine/account_b's sizing spec on the combo's plan preset (builder50k; the 25K #2 = builder25k, engine/combo25.py):
+    the same rules the study sized ATLAS with."""
     from . import account_b as AB
-    blk = {"account": combo.get("account") or "combo50k", "plan": PLAN, "eval_start": eval_start or "", "strategies": list(MEMBERS)}
+    blk = {"account": combo.get("account") or "combo50k", "plan": combo.get("plan") or PLAN, "eval_start": eval_start or "",
+           "strategies": list(MEMBERS)}
     spec = AB.normalize(blk, lit_account=None)
     if stage == "funded":
         spec = {**spec, "stage": "funded", "funded": funded or {"start": eval_start or "", "balance": float(spec["rules"]["start"]),
@@ -290,7 +304,7 @@ def atlas_qty(combo: dict, trade: dict, state: dict | None, eval_start: str | No
     r = AB.qty(spec, trade, dict(state), base=base, key=key) if stage != "funded" else AB.funded_qty(spec, trade, dict(state), base=base, key=key)
     q0 = int(r.get("qty") or 0)
     g = combo.get("guards") or {}
-    maxq = int(min(int(g.get("max_micros") or combo.get("max_micros") or 40), int(spec["rules"]["max_micros"])))
+    maxq = int(min(int(g.get("max_micros") or combo.get("max_micros") or 40), int(spec["rules"]["max_micros"])))   # 25K: 20
     reasons = list(r.get("reasons") or [])
     f = factor_of(combo, stage)
     q = q0
@@ -417,6 +431,9 @@ def set_on(account: str, phrase: str, root: str | None = None, selftest=None, to
             return {"ok": False, "error": f"{nm} is ATLAS's own account (account B): the combo is ATLAS on Zlarior's 50K"}
     except Exception:
         pass
+    rapid = _rapid_name(nm, root)
+    if rapid:
+        return {"ok": False, "error": f"{nm} is {rapid}: ATLAS already trades it in its own lane (engine/rapid.py)"}
     sim = _is_sim(nm)
     if not sim and not decide_yes(root):
         return {"ok": False, "error": f"the Decide card {DECIDE_ID} is not answered yes yet: test on Sim101 first, then decide"}
@@ -424,26 +441,48 @@ def set_on(account: str, phrase: str, root: str | None = None, selftest=None, to
     if not ok:
         return {"ok": False, "error": f"engine.ninjatrader --selftest failed ({line}): nothing switched on"}
     day = today or _dt.date.today().isoformat()
-    blk = {"on": True, "account": nm, "sim": bool(sim), "set": day, "phrase_typed": day, "conflict": rules["conflict"],
-           "atlas_size_factor": rules["atlas_size_factor"]}
+    old = read_switch(root)
+    names = list(dict.fromkeys(list(old.get("accounts") or []) + [nm]))     # the 50K AND the 25K #2: one Name each time
+    blk = {"on": True, "account": names[0], "accounts": names, "sim": bool(sim), "set": day, "phrase_typed": day,
+           "conflict": rules["conflict"], "atlas_size_factor": rules["atlas_size_factor"],
+           "set_by_account": {**(old.get("set_by_account") or {}), nm: day}}
     p = _write_switch(blk, root)
     return {"ok": True, "path": p, "block": blk,
             "say": f"ATLAS + Zlarior on ONE account: ON for {nm} ({'Sim' if sim else 'REAL'}), conflict {rules['conflict']}, "
-                   f"ATLAS size x{rules['atlas_size_factor']['eval']:g} in the eval, x{rules['atlas_size_factor']['funded']:g} funded. "
-                   "The running bot picks it up at its next poll."}
+                   f"ATLAS size x{rules['atlas_size_factor']['eval']:g} in the eval, x{rules['atlas_size_factor']['funded']:g} funded"
+                   + (f" (now on for: {', '.join(names)})" if len(names) > 1 else "") + ". The running bot picks it up at its next poll."}
 
 
-def set_off(root: str | None = None, today: str | None = None) -> dict:
+def _rapid_name(nm: str, root: str | None = None):
+    """A Rapid EOD's Name (data/rapid.json / data/rapid2.json): its own ATLAS lane, never this combo. None = not a Rapid."""
+    for rel, lab in ((os.path.join("data", "rapid.json"), "the Rapid EOD"), (os.path.join("data", "rapid2.json"), "the 2nd Rapid EOD")):
+        j = _read(_path(rel, root))
+        if isinstance(j, dict) and str(j.get("account") or "").strip() == nm:
+            return lab
+    return None
+
+
+def set_off(root: str | None = None, today: str | None = None, account: str | None = None) -> dict:
+    """OFF for every account, or (account) for that one Name only (the others stay on)."""
     old = read_switch(root)
-    blk = {"on": False, "account": old.get("account") or "", "off_set": today or _dt.date.today().isoformat()}
+    day = today or _dt.date.today().isoformat()
+    nm = str(account or "").strip()
+    left = [a for a in (old.get("accounts") or []) if a != nm] if nm else []
+    if nm and left:
+        blk = {**{k: v for k, v in old.items() if k not in ("on", "account", "accounts")}, "on": True, "account": left[0],
+               "accounts": left, "off_set_by_account": {**(old.get("off_set_by_account") or {}), nm: day}}
+        p = _write_switch(blk, root)
+        return {"ok": True, "path": p, "say": f"ATLAS + Zlarior on ONE account: OFF for {nm} (still on for {', '.join(left)}; an "
+                                              "ATLAS trade open there is managed to its exit)"}
+    blk = {"on": False, "account": old.get("account") or "", "accounts": [], "off_set": day}
     p = _write_switch(blk, root)
-    return {"ok": True, "path": p, "say": "ATLAS + Zlarior on ONE account: OFF (an ATLAS trade open on the 50K is managed to its exit)"}
+    return {"ok": True, "path": p, "say": "ATLAS + Zlarior on ONE account: OFF (an ATLAS trade open on the account is managed to its exit)"}
 
 
 def status(root: str | None = None) -> dict:
     sw, rules = read_switch(root), load_rules(root)
-    return {"on": bool(sw.get("on")), "account": sw.get("account") or None, "set": sw.get("set"), "rules": rules,
-            "decide_yes": decide_yes(root), "label": LABEL}
+    return {"on": bool(sw.get("on")), "account": sw.get("account") or None, "accounts": sw.get("accounts") or [],
+            "set": sw.get("set"), "rules": rules, "decide_yes": decide_yes(root), "label": LABEL}
 
 
 OWNER_STEPS = (
@@ -453,6 +492,8 @@ OWNER_STEPS = (
     "never two positions on Sim101, never long on one account and short on another.",
     "3. Tap yes on the Decide card zlarior-atlas-50k, then: python -X utf8 -m engine.combo50k --on --account \"<your 50K Name>\" "
     "(the phrase again). Off any time: python -X utf8 -m engine.combo50k --off",
+    "4. The Builder 25K #2 too (engine/combo25.py): python -X utf8 -m engine.combo50k --on --account \"<your 25K #2 Name>\" "
+    "(the phrase again). Off for that one only: python -X utf8 -m engine.combo50k --off --account \"<your 25K #2 Name>\"",
 )
 
 
@@ -475,7 +516,7 @@ def main(argv=None) -> int:
         print(" " + (r.get("say") if r.get("ok") else "NOT switched on: " + str(r.get("error"))))
         return 0 if r.get("ok") else 1
     if a.off:
-        print(" " + set_off()["say"])
+        print(" " + set_off(account=a.account)["say"])
         return 0
     if a.steps:
         print("\n".join(OWNER_STEPS))

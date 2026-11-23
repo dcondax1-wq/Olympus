@@ -165,6 +165,7 @@ def bot_held(bot, router=None) -> set:
     ads = [getattr(bot, "adapter", None)] + [getattr(getattr(bot, a, None), "adapter", None)
                                              for a in ("acct_b", "acct_r", "acct_r2", "acct_c")]
     ads += [getattr(a, "adapter", None) for a in (getattr(router, "accounts", None) or [])]
+    ads += [getattr(x, "adapter", None) for x in (getattr(bot, "acct_x", None) or {}).values()]   # engine/combo25 (off = {})
     for ad in ads:
         acct = str(getattr(ad, "account", "") or "").strip().lower()
         if acct and _open_legs(ad):

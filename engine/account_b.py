@@ -1156,6 +1156,11 @@ class AccountB:
                 pv = ar.prov.get(int(ar.open_t)) or {}
                 if int(pv.get("dir") or 0) == -d:
                     return f"ATLAS on the Rapid EOD holds a {side(-d)} position"
+        for ar in (getattr(b, "acct_x", None) or {}).values():   # engine/combo25.py (off = {}): ATLAS on the 25K #2
+            if ar is not None and ar is not self and ar.open_t is not None:
+                pv = ar.prov.get(int(ar.open_t)) or {}
+                if int(pv.get("dir") or 0) == -d:
+                    return f"{ar.label} holds a {side(-d)} position"
         fl = getattr(b, "fleet", None)                 # engine/fleet.py (off = None): a Zlarior follower holds the other side
         if fl is not None:
             try:
