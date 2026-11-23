@@ -143,6 +143,11 @@
   (eval +$66 / +$149); London build-up sweeps x1.25 +$295 / +$14 but eval H1 -$4, 2-week pass 44.5 -> 41.2, flip p 0.15 /
   0.51 (nearest miss, re-tested nightly); 18:00 gap against x0.75 -$408 / -$188. 0 pass. Clock exits all lose (targets need
   hours); NY-open / news rules touch 0-7 trades in 2026.
+- **Order-flow round 2, LVN family + volume at price (2026-11-23, `orderflow-program-2026-11-23.md` round 2, `research/orderflow/of_lvn.py`):**
+  35 pre-registered stand-alones, Holm over all (5,000-draw placebo): LVN rejection on NQ / ES x London / AM / PM x prior day /
+  week / 20-day x 5m / 1m profiles (27) + all-window union lane, dPOC migration, single prints, poor-high/low magnet (1m + 5m).
+  0 pass (best NQ 5m D1 AM +$10.4k / -$1.4k / +$2.0k, 0.5/wk, Holm 0.04; union lane 1.3-1.7/wk loses 2021-25 -$17.6k).
+  LIT sweep into an HVN: -0.37R 2021-25 but +0.75R 2026 H1, so skip / x0.5 / LVN x1.25 all rejected. Only real ticks left (OF1-OF3).
 - **Order-flow program on bars (2026-11-23, `orderflow-program-2026-11-23.md`, `research/orderflow/of_program.py`, pre-registered):**
   6 tests, $500 / costs in: LVN rejection (stand-alone, PF 1.26 / 1.10 / 4.56, placebo p 0.004, 0.5-0.7/wk: H1 PF and count
   fail; moved to ticks as OF3), IB failed extension -> IB mid (-$36k 2021-25, + only in 2026), LIT skip on poor prior-day

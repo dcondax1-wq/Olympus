@@ -60,6 +60,9 @@ Common to all three designs:
 - **Pass:** PF ≥ 1.15 and net > 0 in each covered half, at least 0.5 trades a week (it is an add-on trade source, not a
   main strategy), and a coin-flip-direction placebo p < 0.10.
 
+> Note added after round 2 (of_lvn.py, same day): B1 does not survive a window split (AM / PM), other markets, finer or wider
+> profiles. OF3 stays exactly as registered above (no change after a look), but its prior is now low.
+
 ## What this does NOT test (needs DOM / market-by-order data, which we don't record)
 DOM pulls and spoofs, iceberg refills (CME MBO keeps the OrderID on a native iceberg refresh), and queue depth. LE_TickRec
 records Last trades plus the best bid and ask only.

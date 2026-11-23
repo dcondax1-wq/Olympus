@@ -94,8 +94,9 @@ AREAS["agency"].append("web_portal")      # day-a11y 2026-11-21: the CALLER PORT
 AREAS["agency"].append("site_quality")    # day-a11y 2026-11-22: the 150 concept sites on the call sheet (names, trade, call link, 44 px, photos), the premium top 20
 AREAS["trading"].append("panelfx")      # day-a11y 2026-11-20: the effects layer on Trading / Business / Planner (trading/panelfx.js)   # day-web-offers 2026-11-20: Agency Offers (agency/offers/): packages, proposal, terms, invoices + retainers, goal
 AREAS["pc"].append("obsidian_brain")    # night-obsidian 2026-11-20: ZEUS Brain, the generated Obsidian vault (tools/obsidian_brain.py, vault/); its own line
+AREAS["pc"].append("tickrec_cs")       # day-ofprogram 2026-11-23: LE_TickRec.cs backfill (mcs + fake history server) + autopilot
 AREAS["pc"].append("tickrec")          # day-orderflow 2026-11-23: read-only tick recorder (engine/tickrec.py, ninjatrader/LE_TickRec.cs, OFF)
-AREAS["pc"].append("tickrec_rt")       # red team 2026-11-23: repeated prints kept, incremental ingest + raw cleanup, contract roll, C# 5 compile vs the NT8 stub
+AREAS["pc"].append("tickrec_auto_rt")   # red team 2026-11-23: no autopilot start 01:40-16:05 ET, study stopped before 02:00, an unfinished study never counts
 AREAS["nq"].append("why_page")          # night-anatomy 2026-11-18: why we win / lose (tools/win_loss_anatomy.py, tools/web_public/why/); its own line
 AREAS["nq"].append("learn_night")       # night-learnloop 2026-11-19: ZEUS learned (engine/zeus_learn.py) + tools/learn_night.py + metals feed + speed; its own line
 AREAS["nq"].append("combo_50k")         # night-combolive 2026-11-19: ATLAS + Zlarior on ONE 50K (engine/combo50k.py, OFF) + its LiveBot parity replay

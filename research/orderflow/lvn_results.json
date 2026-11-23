@@ -1,0 +1,2668 @@
+{
+ "made": "2026-11-23T21:32:06+00:00",
+ "pre_registered": "docstring, committed before the first run",
+ "standalone": {
+  "LVN NQ 5m-profile D1 LDN": {
+   "2021-25": {
+    "n": 125,
+    "win%": 24.8,
+    "pf": 0.57,
+    "net$": -21004,
+    "maxDD$": 21004,
+    "per_wk": 0.57,
+    "$/mo": -418
+   },
+   "2026 H1": {
+    "n": 16,
+    "win%": 25.0,
+    "pf": 0.59,
+    "net$": -2468,
+    "maxDD$": 3541,
+    "per_wk": 0.61,
+    "$/mo": -410
+   },
+   "2026 H2": {
+    "n": 9,
+    "win%": 33.3,
+    "pf": 0.94,
+    "net$": -188,
+    "maxDD$": 1996,
+    "per_wk": 0.45,
+    "$/mo": -40
+   },
+   "placebo_p": 0.7896,
+   "add_on": {
+    "2021-25": {
+     "corr_LIT": 0.01,
+     "LIT$": 4738,
+     "LIT+X$": -16266,
+     "LIT+X maxDD$": 29619,
+     "LIT maxDD$": 20685,
+     "book LIT+ATLAS$": 24565,
+     "book LIT+ATLAS+X(250)$": 15924,
+     "book maxDD before/after": [
+      25478,
+      30361
+     ],
+     "book $/mo before/after": [
+      488,
+      317
+     ]
+    },
+    "2026 H1": {
+     "corr_LIT": 0.087,
+     "LIT$": 30033,
+     "LIT+X$": 27565,
+     "LIT+X maxDD$": 5129,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 57780,
+     "book maxDD before/after": [
+      2768,
+      2388
+     ],
+     "book $/mo before/after": [
+      9776,
+      9603
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": -0.015,
+     "LIT$": 8212,
+     "LIT+X$": 8024,
+     "LIT+X maxDD$": 2319,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 15568,
+     "book maxDD before/after": [
+      2214,
+      2720
+     ],
+     "book $/mo before/after": [
+      3362,
+      3358
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "LVN NQ 5m-profile D1 AM": {
+   "2021-25": {
+    "n": 141,
+    "win%": 40.4,
+    "pf": 1.25,
+    "net$": 10388,
+    "maxDD$": 6608,
+    "per_wk": 0.65,
+    "$/mo": 206
+   },
+   "2026 H1": {
+    "n": 12,
+    "win%": 25.0,
+    "pf": 0.66,
+    "net$": -1371,
+    "maxDD$": 2134,
+    "per_wk": 0.46,
+    "$/mo": -228
+   },
+   "2026 H2": {
+    "n": 10,
+    "win%": 50.0,
+    "pf": 1.88,
+    "net$": 2046,
+    "maxDD$": 1403,
+    "per_wk": 0.5,
+    "$/mo": 441
+   },
+   "placebo_p": 0.0012,
+   "add_on": {
+    "2021-25": {
+     "corr_LIT": -0.053,
+     "LIT$": 4738,
+     "LIT+X$": 15126,
+     "LIT+X maxDD$": 13772,
+     "LIT maxDD$": 20685,
+     "book LIT+ATLAS$": 24565,
+     "book LIT+ATLAS+X(250)$": 31335,
+     "book maxDD before/after": [
+      25478,
+      21085
+     ],
+     "book $/mo before/after": [
+      488,
+      623
+     ]
+    },
+    "2026 H1": {
+     "corr_LIT": 0.031,
+     "LIT$": 30033,
+     "LIT+X$": 28663,
+     "LIT+X maxDD$": 4074,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 58056,
+     "book maxDD before/after": [
+      2768,
+      3025
+     ],
+     "book $/mo before/after": [
+      9776,
+      9649
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": -0.034,
+     "LIT$": 8212,
+     "LIT+X$": 10258,
+     "LIT+X maxDD$": 1850,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 16827,
+     "book maxDD before/after": [
+      2214,
+      2466
+     ],
+     "book $/mo before/after": [
+      3362,
+      3630
+     ]
+    }
+   },
+   "holm_p": 0.042,
+   "verdict": "REJECTED"
+  },
+  "LVN NQ 5m-profile D1 PM": {
+   "2021-25": {
+    "n": 106,
+    "win%": 30.2,
+    "pf": 0.81,
+    "net$": -6956,
+    "maxDD$": 12546,
+    "per_wk": 0.48,
+    "$/mo": -138
+   },
+   "2026 H1": {
+    "n": 8,
+    "win%": 50.0,
+    "pf": 1.77,
+    "net$": 1329,
+    "maxDD$": 805,
+    "per_wk": 0.31,
+    "$/mo": 221
+   },
+   "2026 H2": {
+    "n": 7,
+    "win%": 42.9,
+    "pf": 1.44,
+    "net$": 874,
+    "maxDD$": 943,
+    "per_wk": 0.35,
+    "$/mo": 189
+   },
+   "placebo_p": 0.1644,
+   "add_on": {
+    "2021-25": {
+     "corr_LIT": 0.002,
+     "LIT$": 4738,
+     "LIT+X$": -2218,
+     "LIT+X maxDD$": 27510,
+     "LIT maxDD$": 20685,
+     "book LIT+ATLAS$": 24565,
+     "book LIT+ATLAS+X(250)$": 21442,
+     "book maxDD before/after": [
+      25478,
+      28982
+     ],
+     "book $/mo before/after": [
+      488,
+      426
+     ]
+    },
+    "2026 H1": {
+     "corr_LIT": -0.023,
+     "LIT$": 30033,
+     "LIT+X$": 31362,
+     "LIT+X maxDD$": 3559,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 59425,
+     "book maxDD before/after": [
+      2768,
+      3019
+     ],
+     "book $/mo before/after": [
+      9776,
+      9877
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": -0.051,
+     "LIT$": 8212,
+     "LIT+X$": 9086,
+     "LIT+X maxDD$": 2221,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 16077,
+     "book maxDD before/after": [
+      2214,
+      2214
+     ],
+     "book $/mo before/after": [
+      3362,
+      3468
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "LVN NQ 5m-profile W5 LDN": {
+   "2021-25": {
+    "n": 170,
+    "win%": 25.9,
+    "pf": 0.61,
+    "net$": -25476,
+    "maxDD$": 28458,
+    "per_wk": 0.78,
+    "$/mo": -506
+   },
+   "2026 H1": {
+    "n": 35,
+    "win%": 34.3,
+    "pf": 0.97,
+    "net$": -298,
+    "maxDD$": 3043,
+    "per_wk": 1.34,
+    "$/mo": -50
+   },
+   "2026 H2": {
+    "n": 30,
+    "win%": 33.3,
+    "pf": 0.94,
+    "net$": -653,
+    "maxDD$": 3040,
+    "per_wk": 1.49,
+    "$/mo": -141
+   },
+   "placebo_p": 0.4271,
+   "add_on": {
+    "2021-25": {
+     "corr_LIT": 0.011,
+     "LIT$": 4738,
+     "LIT+X$": -20738,
+     "LIT+X maxDD$": 35734,
+     "LIT maxDD$": 20685,
+     "book LIT+ATLAS$": 24565,
+     "book LIT+ATLAS+X(250)$": 13990,
+     "book maxDD before/after": [
+      25478,
+      32606
+     ],
+     "book $/mo before/after": [
+      488,
+      278
+     ]
+    },
+    "2026 H1": {
+     "corr_LIT": 0.049,
+     "LIT$": 30033,
+     "LIT+X$": 29735,
+     "LIT+X maxDD$": 4466,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 58987,
+     "book maxDD before/after": [
+      2768,
+      3020
+     ],
+     "book $/mo before/after": [
+      9776,
+      9804
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": -0.061,
+     "LIT$": 8212,
+     "LIT+X$": 7559,
+     "LIT+X maxDD$": 2549,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 15519,
+     "book maxDD before/after": [
+      2214,
+      2214
+     ],
+     "book $/mo before/after": [
+      3362,
+      3348
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "LVN NQ 5m-profile W5 AM": {
+   "2021-25": {
+    "n": 227,
+    "win%": 34.8,
+    "pf": 0.99,
+    "net$": -685,
+    "maxDD$": 15416,
+    "per_wk": 1.04,
+    "$/mo": -14
+   },
+   "2026 H1": {
+    "n": 41,
+    "win%": 36.6,
+    "pf": 1.11,
+    "net$": 1322,
+    "maxDD$": 2717,
+    "per_wk": 1.57,
+    "$/mo": 220
+   },
+   "2026 H2": {
+    "n": 29,
+    "win%": 31.0,
+    "pf": 0.83,
+    "net$": -1470,
+    "maxDD$": 5010,
+    "per_wk": 1.44,
+    "$/mo": -317
+   },
+   "placebo_p": 0.0314,
+   "add_on": {
+    "2021-25": {
+     "corr_LIT": 0.027,
+     "LIT$": 4738,
+     "LIT+X$": 4053,
+     "LIT+X maxDD$": 28712,
+     "LIT maxDD$": 20685,
+     "book LIT+ATLAS$": 24565,
+     "book LIT+ATLAS+X(250)$": 26045,
+     "book maxDD before/after": [
+      25478,
+      29696
+     ],
+     "book $/mo before/after": [
+      488,
+      518
+     ]
+    },
+    "2026 H1": {
+     "corr_LIT": -0.006,
+     "LIT$": 30033,
+     "LIT+X$": 31355,
+     "LIT+X maxDD$": 4066,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 59628,
+     "book maxDD before/after": [
+      2768,
+      2392
+     ],
+     "book $/mo before/after": [
+      9776,
+      9910
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": 0.102,
+     "LIT$": 8212,
+     "LIT+X$": 6742,
+     "LIT+X maxDD$": 3418,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 15213,
+     "book maxDD before/after": [
+      2214,
+      2637
+     ],
+     "book $/mo before/after": [
+      3362,
+      3282
+     ]
+    }
+   },
+   "holm_p": 0.9106,
+   "verdict": "REJECTED"
+  },
+  "LVN NQ 5m-profile W5 PM": {
+   "2021-25": {
+    "n": 181,
+    "win%": 30.9,
+    "pf": 0.82,
+    "net$": -11673,
+    "maxDD$": 14824,
+    "per_wk": 0.83,
+    "$/mo": -232
+   },
+   "2026 H1": {
+    "n": 32,
+    "win%": 34.4,
+    "pf": 1.02,
+    "net$": 155,
+    "maxDD$": 3615,
+    "per_wk": 1.22,
+    "$/mo": 26
+   },
+   "2026 H2": {
+    "n": 27,
+    "win%": 29.6,
+    "pf": 0.72,
+    "net$": -2635,
+    "maxDD$": 4852,
+    "per_wk": 1.34,
+    "$/mo": -568
+   },
+   "placebo_p": 0.1022,
+   "add_on": {
+    "2021-25": {
+     "corr_LIT": -0.038,
+     "LIT$": 4738,
+     "LIT+X$": -6934,
+     "LIT+X maxDD$": 17675,
+     "LIT maxDD$": 20685,
+     "book LIT+ATLAS$": 24565,
+     "book LIT+ATLAS+X(250)$": 20557,
+     "book maxDD before/after": [
+      25478,
+      22984
+     ],
+     "book $/mo before/after": [
+      488,
+      409
+     ]
+    },
+    "2026 H1": {
+     "corr_LIT": -0.089,
+     "LIT$": 30033,
+     "LIT+X$": 30188,
+     "LIT+X maxDD$": 3293,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 59005,
+     "book maxDD before/after": [
+      2768,
+      3020
+     ],
+     "book $/mo before/after": [
+      9776,
+      9807
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": 0.109,
+     "LIT$": 8212,
+     "LIT+X$": 5577,
+     "LIT+X maxDD$": 3541,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 14328,
+     "book maxDD before/after": [
+      2214,
+      2214
+     ],
+     "book $/mo before/after": [
+      3362,
+      3091
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "LVN NQ 5m-profile C20 LDN": {
+   "2021-25": {
+    "n": 201,
+    "win%": 35.8,
+    "pf": 0.98,
+    "net$": -1192,
+    "maxDD$": 15254,
+    "per_wk": 0.92,
+    "$/mo": -24
+   },
+   "2026 H1": {
+    "n": 25,
+    "win%": 44.0,
+    "pf": 1.43,
+    "net$": 3125,
+    "maxDD$": 1991,
+    "per_wk": 0.96,
+    "$/mo": 519
+   },
+   "2026 H2": {
+    "n": 11,
+    "win%": 45.5,
+    "pf": 1.54,
+    "net$": 1674,
+    "maxDD$": 1647,
+    "per_wk": 0.55,
+    "$/mo": 361
+   },
+   "placebo_p": 0.0056,
+   "add_on": {
+    "2021-25": {
+     "corr_LIT": -0.034,
+     "LIT$": 4738,
+     "LIT+X$": 3547,
+     "LIT+X maxDD$": 28867,
+     "LIT maxDD$": 20685,
+     "book LIT+ATLAS$": 24565,
+     "book LIT+ATLAS+X(250)$": 27688,
+     "book maxDD before/after": [
+      25478,
+      27672
+     ],
+     "book $/mo before/after": [
+      488,
+      550
+     ]
+    },
+    "2026 H1": {
+     "corr_LIT": 0.156,
+     "LIT$": 30033,
+     "LIT+X$": 33158,
+     "LIT+X maxDD$": 4371,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 60759,
+     "book maxDD before/after": [
+      2768,
+      3532
+     ],
+     "book $/mo before/after": [
+      9776,
+      10098
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": -0.061,
+     "LIT$": 8212,
+     "LIT+X$": 9885,
+     "LIT+X maxDD$": 1583,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 16562,
+     "book maxDD before/after": [
+      2214,
+      2214
+     ],
+     "book $/mo before/after": [
+      3362,
+      3572
+     ]
+    }
+   },
+   "holm_p": 0.1848,
+   "verdict": "REJECTED"
+  },
+  "LVN NQ 5m-profile C20 AM": {
+   "2021-25": {
+    "n": 262,
+    "win%": 32.4,
+    "pf": 0.91,
+    "net$": -7389,
+    "maxDD$": 19137,
+    "per_wk": 1.2,
+    "$/mo": -147
+   },
+   "2026 H1": {
+    "n": 31,
+    "win%": 22.6,
+    "pf": 0.56,
+    "net$": -4882,
+    "maxDD$": 6276,
+    "per_wk": 1.19,
+    "$/mo": -811
+   },
+   "2026 H2": {
+    "n": 12,
+    "win%": 16.7,
+    "pf": 0.41,
+    "net$": -2521,
+    "maxDD$": 2713,
+    "per_wk": 0.6,
+    "$/mo": -544
+   },
+   "placebo_p": 0.054,
+   "add_on": {
+    "2021-25": {
+     "corr_LIT": 0.033,
+     "LIT$": 4738,
+     "LIT+X$": -2651,
+     "LIT+X maxDD$": 31615,
+     "LIT maxDD$": 20685,
+     "book LIT+ATLAS$": 24565,
+     "book LIT+ATLAS+X(250)$": 22472,
+     "book maxDD before/after": [
+      25478,
+      30750
+     ],
+     "book $/mo before/after": [
+      488,
+      447
+     ]
+    },
+    "2026 H1": {
+     "corr_LIT": -0.022,
+     "LIT$": 30033,
+     "LIT+X$": 25151,
+     "LIT+X maxDD$": 4516,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 56283,
+     "book maxDD before/after": [
+      2768,
+      2564
+     ],
+     "book $/mo before/after": [
+      9776,
+      9354
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": -0.092,
+     "LIT$": 8212,
+     "LIT+X$": 5691,
+     "LIT+X maxDD$": 3095,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 14075,
+     "book maxDD before/after": [
+      2214,
+      2214
+     ],
+     "book $/mo before/after": [
+      3362,
+      3036
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "LVN NQ 5m-profile C20 PM": {
+   "2021-25": {
+    "n": 244,
+    "win%": 34.8,
+    "pf": 0.97,
+    "net$": -2659,
+    "maxDD$": 16193,
+    "per_wk": 1.12,
+    "$/mo": -53
+   },
+   "2026 H1": {
+    "n": 20,
+    "win%": 35.0,
+    "pf": 0.93,
+    "net$": -453,
+    "maxDD$": 1998,
+    "per_wk": 0.77,
+    "$/mo": -75
+   },
+   "2026 H2": {
+    "n": 11,
+    "win%": 45.5,
+    "pf": 1.41,
+    "net$": 1141,
+    "maxDD$": 1286,
+    "per_wk": 0.55,
+    "$/mo": 246
+   },
+   "placebo_p": 0.0084,
+   "add_on": {
+    "2021-25": {
+     "corr_LIT": -0.015,
+     "LIT$": 4738,
+     "LIT+X$": 2079,
+     "LIT+X maxDD$": 31837,
+     "LIT maxDD$": 20685,
+     "book LIT+ATLAS$": 24565,
+     "book LIT+ATLAS+X(250)$": 25733,
+     "book maxDD before/after": [
+      25478,
+      30102
+     ],
+     "book $/mo before/after": [
+      488,
+      512
+     ]
+    },
+    "2026 H1": {
+     "corr_LIT": -0.028,
+     "LIT$": 30033,
+     "LIT+X$": 29580,
+     "LIT+X maxDD$": 3779,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 58636,
+     "book maxDD before/after": [
+      2768,
+      3274
+     ],
+     "book $/mo before/after": [
+      9776,
+      9745
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": -0.118,
+     "LIT$": 8212,
+     "LIT+X$": 9353,
+     "LIT+X maxDD$": 2054,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 16142,
+     "book maxDD before/after": [
+      2214,
+      2214
+     ],
+     "book $/mo before/after": [
+      3362,
+      3482
+     ]
+    }
+   },
+   "holm_p": 0.2688,
+   "verdict": "REJECTED"
+  },
+  "LVN ES 5m-profile D1 LDN": {
+   "2021-25": {
+    "n": 7,
+    "win%": 14.3,
+    "pf": 0.23,
+    "net$": -2559,
+    "maxDD$": 2818,
+    "per_wk": 0.19,
+    "$/mo": -304
+   },
+   "2026 H1": {
+    "n": 9,
+    "win%": 33.3,
+    "pf": 0.68,
+    "net$": -1040,
+    "maxDD$": 2310,
+    "per_wk": 0.34,
+    "$/mo": -173
+   },
+   "2026 H2": {
+    "n": 4,
+    "win%": 75.0,
+    "pf": 5.91,
+    "net$": 2240,
+    "maxDD$": 456,
+    "per_wk": 0.26,
+    "$/mo": 637
+   },
+   "placebo_p": 0.4499,
+   "add_on": {
+    "2021-25": {
+     "corr_LIT": 0.008,
+     "LIT$": 4738,
+     "LIT+X$": 2179,
+     "LIT+X maxDD$": 20685,
+     "LIT maxDD$": 20685,
+     "book LIT+ATLAS$": 24565,
+     "book LIT+ATLAS+X(250)$": 23446,
+     "book maxDD before/after": [
+      25478,
+      25478
+     ],
+     "book $/mo before/after": [
+      2919,
+      2786
+     ]
+    },
+    "2026 H1": {
+     "corr_LIT": 0.081,
+     "LIT$": 30033,
+     "LIT+X$": 28993,
+     "LIT+X maxDD$": 3624,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 58740,
+     "book maxDD before/after": [
+      2768,
+      2787
+     ],
+     "book $/mo before/after": [
+      9776,
+      9763
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": -0.08,
+     "LIT$": 8212,
+     "LIT+X$": 10452,
+     "LIT+X maxDD$": 2197,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 16800,
+     "book maxDD before/after": [
+      2214,
+      2214
+     ],
+     "book $/mo before/after": [
+      4430,
+      4776
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "LVN ES 5m-profile D1 AM": {
+   "2021-25": {
+    "n": 12,
+    "win%": 8.3,
+    "pf": 0.16,
+    "net$": -4780,
+    "maxDD$": 5162,
+    "per_wk": 0.33,
+    "$/mo": -568
+   },
+   "2026 H1": {
+    "n": 12,
+    "win%": 16.7,
+    "pf": 0.36,
+    "net$": -3350,
+    "maxDD$": 4259,
+    "per_wk": 0.46,
+    "$/mo": -557
+   },
+   "2026 H2": {
+    "n": 7,
+    "win%": 28.6,
+    "pf": 0.57,
+    "net$": -1137,
+    "maxDD$": 2114,
+    "per_wk": 0.46,
+    "$/mo": -323
+   },
+   "placebo_p": 0.6225,
+   "add_on": {
+    "2021-25": {
+     "corr_LIT": -0.056,
+     "LIT$": 4738,
+     "LIT+X$": -42,
+     "LIT+X maxDD$": 20685,
+     "LIT maxDD$": 20685,
+     "book LIT+ATLAS$": 24565,
+     "book LIT+ATLAS+X(250)$": 22198,
+     "book maxDD before/after": [
+      25478,
+      25478
+     ],
+     "book $/mo before/after": [
+      2919,
+      2637
+     ]
+    },
+    "2026 H1": {
+     "corr_LIT": -0.054,
+     "LIT$": 30033,
+     "LIT+X$": 26683,
+     "LIT+X maxDD$": 3616,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 57240,
+     "book maxDD before/after": [
+      2768,
+      2768
+     ],
+     "book $/mo before/after": [
+      9776,
+      9513
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": 0.043,
+     "LIT$": 8212,
+     "LIT+X$": 7075,
+     "LIT+X maxDD$": 2821,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 15122,
+     "book maxDD before/after": [
+      2214,
+      2214
+     ],
+     "book $/mo before/after": [
+      4430,
+      4298
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "LVN ES 5m-profile D1 PM": {
+   "2021-25": {
+    "n": 12,
+    "win%": 41.7,
+    "pf": 1.14,
+    "net$": 517,
+    "maxDD$": 1540,
+    "per_wk": 0.33,
+    "$/mo": 61
+   },
+   "2026 H1": {
+    "n": 9,
+    "win%": 33.3,
+    "pf": 0.94,
+    "net$": -179,
+    "maxDD$": 1523,
+    "per_wk": 0.34,
+    "$/mo": -30
+   },
+   "2026 H2": {
+    "n": 4,
+    "win%": 50.0,
+    "pf": 2.03,
+    "net$": 940,
+    "maxDD$": 506,
+    "per_wk": 0.26,
+    "$/mo": 267
+   },
+   "placebo_p": 0.1006,
+   "add_on": {
+    "2021-25": {
+     "corr_LIT": 0.002,
+     "LIT$": 4738,
+     "LIT+X$": 5255,
+     "LIT+X maxDD$": 20685,
+     "LIT maxDD$": 20685,
+     "book LIT+ATLAS$": 24565,
+     "book LIT+ATLAS+X(250)$": 24956,
+     "book maxDD before/after": [
+      25478,
+      25478
+     ],
+     "book $/mo before/after": [
+      2919,
+      2965
+     ]
+    },
+    "2026 H1": {
+     "corr_LIT": -0.088,
+     "LIT$": 30033,
+     "LIT+X$": 29854,
+     "LIT+X maxDD$": 3287,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 58764,
+     "book maxDD before/after": [
+      2768,
+      2776
+     ],
+     "book $/mo before/after": [
+      9776,
+      9767
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": -0.065,
+     "LIT$": 8212,
+     "LIT+X$": 9152,
+     "LIT+X maxDD$": 2147,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 16013,
+     "book maxDD before/after": [
+      2214,
+      2214
+     ],
+     "book $/mo before/after": [
+      4430,
+      4552
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "LVN ES 5m-profile W5 LDN": {
+   "2021-25": {
+    "n": 16,
+    "win%": 25.0,
+    "pf": 0.56,
+    "net$": -2857,
+    "maxDD$": 4058,
+    "per_wk": 0.44,
+    "$/mo": -339
+   },
+   "2026 H1": {
+    "n": 22,
+    "win%": 18.2,
+    "pf": 0.38,
+    "net$": -5963,
+    "maxDD$": 6807,
+    "per_wk": 0.84,
+    "$/mo": -991
+   },
+   "2026 H2": {
+    "n": 10,
+    "win%": 30.0,
+    "pf": 0.78,
+    "net$": -814,
+    "maxDD$": 2015,
+    "per_wk": 0.65,
+    "$/mo": -231
+   },
+   "placebo_p": 0.8864,
+   "add_on": {
+    "2021-25": {
+     "corr_LIT": -0.005,
+     "LIT$": 4738,
+     "LIT+X$": 1881,
+     "LIT+X maxDD$": 20685,
+     "LIT maxDD$": 20685,
+     "book LIT+ATLAS$": 24565,
+     "book LIT+ATLAS+X(250)$": 23270,
+     "book maxDD before/after": [
+      25478,
+      25478
+     ],
+     "book $/mo before/after": [
+      2919,
+      2765
+     ]
+    },
+    "2026 H1": {
+     "corr_LIT": 0.003,
+     "LIT$": 30033,
+     "LIT+X$": 24070,
+     "LIT+X maxDD$": 3911,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 56016,
+     "book maxDD before/after": [
+      2768,
+      3308
+     ],
+     "book $/mo before/after": [
+      9776,
+      9310
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": -0.034,
+     "LIT$": 8212,
+     "LIT+X$": 7398,
+     "LIT+X maxDD$": 2297,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 15157,
+     "book maxDD before/after": [
+      2214,
+      2485
+     ],
+     "book $/mo before/after": [
+      4430,
+      4308
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "LVN ES 5m-profile W5 AM": {
+   "2021-25": {
+    "n": 21,
+    "win%": 33.3,
+    "pf": 0.9,
+    "net$": -736,
+    "maxDD$": 3835,
+    "per_wk": 0.57,
+    "$/mo": -87
+   },
+   "2026 H1": {
+    "n": 23,
+    "win%": 39.1,
+    "pf": 1.19,
+    "net$": 1319,
+    "maxDD$": 2568,
+    "per_wk": 0.88,
+    "$/mo": 219
+   },
+   "2026 H2": {
+    "n": 16,
+    "win%": 18.8,
+    "pf": 0.42,
+    "net$": -3902,
+    "maxDD$": 3902,
+    "per_wk": 1.05,
+    "$/mo": -1109
+   },
+   "placebo_p": 0.1934,
+   "add_on": {
+    "2021-25": {
+     "corr_LIT": 0.031,
+     "LIT$": 4738,
+     "LIT+X$": 4003,
+     "LIT+X maxDD$": 20685,
+     "LIT maxDD$": 20685,
+     "book LIT+ATLAS$": 24565,
+     "book LIT+ATLAS+X(250)$": 24422,
+     "book maxDD before/after": [
+      25478,
+      25478
+     ],
+     "book $/mo before/after": [
+      2919,
+      2902
+     ]
+    },
+    "2026 H1": {
+     "corr_LIT": -0.008,
+     "LIT$": 30033,
+     "LIT+X$": 31352,
+     "LIT+X maxDD$": 3347,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 59721,
+     "book maxDD before/after": [
+      2768,
+      3025
+     ],
+     "book $/mo before/after": [
+      9776,
+      9926
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": -0.026,
+     "LIT$": 8212,
+     "LIT+X$": 4309,
+     "LIT+X maxDD$": 3392,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 13709,
+     "book maxDD before/after": [
+      2214,
+      2696
+     ],
+     "book $/mo before/after": [
+      4430,
+      3897
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "LVN ES 5m-profile W5 PM": {
+   "2021-25": {
+    "n": 15,
+    "win%": 33.3,
+    "pf": 0.89,
+    "net$": -609,
+    "maxDD$": 2257,
+    "per_wk": 0.41,
+    "$/mo": -72
+   },
+   "2026 H1": {
+    "n": 21,
+    "win%": 28.6,
+    "pf": 0.71,
+    "net$": -2331,
+    "maxDD$": 3812,
+    "per_wk": 0.8,
+    "$/mo": -387
+   },
+   "2026 H2": {
+    "n": 15,
+    "win%": 46.7,
+    "pf": 1.17,
+    "net$": 750,
+    "maxDD$": 2331,
+    "per_wk": 0.98,
+    "$/mo": 213
+   },
+   "placebo_p": 0.2232,
+   "add_on": {
+    "2021-25": {
+     "corr_LIT": -0.065,
+     "LIT$": 4738,
+     "LIT+X$": 4129,
+     "LIT+X maxDD$": 20685,
+     "LIT maxDD$": 20685,
+     "book LIT+ATLAS$": 24565,
+     "book LIT+ATLAS+X(250)$": 24438,
+     "book maxDD before/after": [
+      25478,
+      25478
+     ],
+     "book $/mo before/after": [
+      2919,
+      2903
+     ]
+    },
+    "2026 H1": {
+     "corr_LIT": -0.022,
+     "LIT$": 30033,
+     "LIT+X$": 27702,
+     "LIT+X maxDD$": 3225,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 57899,
+     "book maxDD before/after": [
+      2768,
+      2912
+     ],
+     "book $/mo before/after": [
+      9776,
+      9623
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": -0.119,
+     "LIT$": 8212,
+     "LIT+X$": 8961,
+     "LIT+X maxDD$": 3366,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 16220,
+     "book maxDD before/after": [
+      2214,
+      2326
+     ],
+     "book $/mo before/after": [
+      4430,
+      4610
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "LVN ES 5m-profile C20 LDN": {
+   "2021-25": {
+    "n": 22,
+    "win%": 18.2,
+    "pf": 0.42,
+    "net$": -5215,
+    "maxDD$": 7416,
+    "per_wk": 0.6,
+    "$/mo": -620
+   },
+   "2026 H1": {
+    "n": 6,
+    "win%": 16.7,
+    "pf": 0.36,
+    "net$": -1753,
+    "maxDD$": 1753,
+    "per_wk": 0.23,
+    "$/mo": -291
+   },
+   "2026 H2": {
+    "n": 5,
+    "win%": 40.0,
+    "pf": 1.22,
+    "net$": 342,
+    "maxDD$": 1562,
+    "per_wk": 0.33,
+    "$/mo": 97
+   },
+   "placebo_p": 0.3485,
+   "add_on": {
+    "2021-25": {
+     "corr_LIT": 0.0,
+     "LIT$": 4738,
+     "LIT+X$": -477,
+     "LIT+X maxDD$": 20685,
+     "LIT maxDD$": 20685,
+     "book LIT+ATLAS$": 24565,
+     "book LIT+ATLAS+X(250)$": 21940,
+     "book maxDD before/after": [
+      25478,
+      25478
+     ],
+     "book $/mo before/after": [
+      2919,
+      2607
+     ]
+    },
+    "2026 H1": {
+     "corr_LIT": 0.04,
+     "LIT$": 30033,
+     "LIT+X$": 28280,
+     "LIT+X maxDD$": 3372,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 58000,
+     "book maxDD before/after": [
+      2768,
+      3034
+     ],
+     "book $/mo before/after": [
+      9776,
+      9640
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": 0.004,
+     "LIT$": 8212,
+     "LIT+X$": 8554,
+     "LIT+X maxDD$": 2291,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 15759,
+     "book maxDD before/after": [
+      2214,
+      2495
+     ],
+     "book $/mo before/after": [
+      4430,
+      4479
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "LVN ES 5m-profile C20 AM": {
+   "2021-25": {
+    "n": 26,
+    "win%": 26.9,
+    "pf": 0.68,
+    "net$": -3185,
+    "maxDD$": 5848,
+    "per_wk": 0.71,
+    "$/mo": -378
+   },
+   "2026 H1": {
+    "n": 11,
+    "win%": 45.5,
+    "pf": 1.28,
+    "net$": 836,
+    "maxDD$": 2006,
+    "per_wk": 0.42,
+    "$/mo": 139
+   },
+   "2026 H2": {
+    "n": 8,
+    "win%": 25.0,
+    "pf": 0.61,
+    "net$": -1216,
+    "maxDD$": 2587,
+    "per_wk": 0.52,
+    "$/mo": -346
+   },
+   "placebo_p": 0.2589,
+   "add_on": {
+    "2021-25": {
+     "corr_LIT": 0.005,
+     "LIT$": 4738,
+     "LIT+X$": 1553,
+     "LIT+X maxDD$": 20685,
+     "LIT maxDD$": 20685,
+     "book LIT+ATLAS$": 24565,
+     "book LIT+ATLAS+X(250)$": 23146,
+     "book maxDD before/after": [
+      25478,
+      25478
+     ],
+     "book $/mo before/after": [
+      2919,
+      2750
+     ]
+    },
+    "2026 H1": {
+     "corr_LIT": -0.084,
+     "LIT$": 30033,
+     "LIT+X$": 30869,
+     "LIT+X maxDD$": 3097,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 59307,
+     "book maxDD before/after": [
+      2768,
+      2388
+     ],
+     "book $/mo before/after": [
+      9776,
+      9857
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": 0.043,
+     "LIT$": 8212,
+     "LIT+X$": 6996,
+     "LIT+X maxDD$": 3194,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 15027,
+     "book maxDD before/after": [
+      2214,
+      2568
+     ],
+     "book $/mo before/after": [
+      4430,
+      4271
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "LVN ES 5m-profile C20 PM": {
+   "2021-25": {
+    "n": 18,
+    "win%": 27.8,
+    "pf": 0.68,
+    "net$": -2203,
+    "maxDD$": 3932,
+    "per_wk": 0.49,
+    "$/mo": -262
+   },
+   "2026 H1": {
+    "n": 8,
+    "win%": 25.0,
+    "pf": 0.59,
+    "net$": -1291,
+    "maxDD$": 2200,
+    "per_wk": 0.31,
+    "$/mo": -215
+   },
+   "2026 H2": {
+    "n": 9,
+    "win%": 22.2,
+    "pf": 0.48,
+    "net$": -2059,
+    "maxDD$": 2059,
+    "per_wk": 0.59,
+    "$/mo": -585
+   },
+   "placebo_p": 0.8196,
+   "add_on": {
+    "2021-25": {
+     "corr_LIT": 0.019,
+     "LIT$": 4738,
+     "LIT+X$": 2535,
+     "LIT+X maxDD$": 20685,
+     "LIT maxDD$": 20685,
+     "book LIT+ATLAS$": 24565,
+     "book LIT+ATLAS+X(250)$": 23670,
+     "book maxDD before/after": [
+      25478,
+      25478
+     ],
+     "book $/mo before/after": [
+      2919,
+      2812
+     ]
+    },
+    "2026 H1": {
+     "corr_LIT": 0.021,
+     "LIT$": 30033,
+     "LIT+X$": 28743,
+     "LIT+X maxDD$": 3097,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 58257,
+     "book maxDD before/after": [
+      2768,
+      2768
+     ],
+     "book $/mo before/after": [
+      9776,
+      9682
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": -0.015,
+     "LIT$": 8212,
+     "LIT+X$": 6153,
+     "LIT+X maxDD$": 2912,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 14710,
+     "book maxDD before/after": [
+      2214,
+      2341
+     ],
+     "book $/mo before/after": [
+      4430,
+      4181
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "LVN NQ 1m-profile D1 LDN": {
+   "2026 H1": {
+    "n": 21,
+    "win%": 38.1,
+    "pf": 1.14,
+    "net$": 928,
+    "maxDD$": 2546,
+    "per_wk": 0.8,
+    "$/mo": 154
+   },
+   "2026 H2": {
+    "n": 13,
+    "win%": 30.8,
+    "pf": 0.87,
+    "net$": -588,
+    "maxDD$": 1991,
+    "per_wk": 0.65,
+    "$/mo": -127
+   },
+   "placebo_p": 0.203,
+   "add_on": {
+    "2026 H1": {
+     "corr_LIT": 0.163,
+     "LIT$": 30033,
+     "LIT+X$": 30961,
+     "LIT+X maxDD$": 4440,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 59520,
+     "book maxDD before/after": [
+      2768,
+      2640
+     ],
+     "book $/mo before/after": [
+      9776,
+      9892
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": 0.107,
+     "LIT$": 8212,
+     "LIT+X$": 7624,
+     "LIT+X maxDD$": 2699,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 15314,
+     "book maxDD before/after": [
+      2214,
+      2720
+     ],
+     "book $/mo before/after": [
+      3362,
+      3303
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "LVN NQ 1m-profile D1 AM": {
+   "2026 H1": {
+    "n": 20,
+    "win%": 35.0,
+    "pf": 1.01,
+    "net$": 76,
+    "maxDD$": 2129,
+    "per_wk": 0.77,
+    "$/mo": 13
+   },
+   "2026 H2": {
+    "n": 13,
+    "win%": 30.8,
+    "pf": 0.88,
+    "net$": -481,
+    "maxDD$": 2454,
+    "per_wk": 0.65,
+    "$/mo": -104
+   },
+   "placebo_p": 0.1818,
+   "add_on": {
+    "2026 H1": {
+     "corr_LIT": 0.006,
+     "LIT$": 30033,
+     "LIT+X$": 30109,
+     "LIT+X maxDD$": 3929,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 59051,
+     "book maxDD before/after": [
+      2768,
+      3022
+     ],
+     "book $/mo before/after": [
+      9776,
+      9814
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": -0.024,
+     "LIT$": 8212,
+     "LIT+X$": 7731,
+     "LIT+X maxDD$": 2652,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 15323,
+     "book maxDD before/after": [
+      2214,
+      2466
+     ],
+     "book $/mo before/after": [
+      3362,
+      3305
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "LVN NQ 1m-profile D1 PM": {
+   "2026 H1": {
+    "n": 12,
+    "win%": 50.0,
+    "pf": 1.77,
+    "net$": 2117,
+    "maxDD$": 1297,
+    "per_wk": 0.46,
+    "$/mo": 352
+   },
+   "2026 H2": {
+    "n": 7,
+    "win%": 42.9,
+    "pf": 1.39,
+    "net$": 783,
+    "maxDD$": 1003,
+    "per_wk": 0.35,
+    "$/mo": 169
+   },
+   "placebo_p": 0.2206,
+   "add_on": {
+    "2026 H1": {
+     "corr_LIT": -0.023,
+     "LIT$": 30033,
+     "LIT+X$": 32150,
+     "LIT+X maxDD$": 3254,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 59918,
+     "book maxDD before/after": [
+      2768,
+      3019
+     ],
+     "book $/mo before/after": [
+      9776,
+      9959
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": -0.01,
+     "LIT$": 8212,
+     "LIT+X$": 8995,
+     "LIT+X maxDD$": 2221,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 16077,
+     "book maxDD before/after": [
+      2214,
+      2214
+     ],
+     "book $/mo before/after": [
+      3362,
+      3468
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "LVN NQ 1m-profile W5 LDN": {
+   "2026 H1": {
+    "n": 38,
+    "win%": 28.9,
+    "pf": 0.68,
+    "net$": -4418,
+    "maxDD$": 5775,
+    "per_wk": 1.45,
+    "$/mo": -734
+   },
+   "2026 H2": {
+    "n": 33,
+    "win%": 33.3,
+    "pf": 0.97,
+    "net$": -368,
+    "maxDD$": 5047,
+    "per_wk": 1.64,
+    "$/mo": -79
+   },
+   "placebo_p": 0.3273,
+   "add_on": {
+    "2026 H1": {
+     "corr_LIT": 0.009,
+     "LIT$": 30033,
+     "LIT+X$": 25615,
+     "LIT+X maxDD$": 3596,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 56976,
+     "book maxDD before/after": [
+      2768,
+      2844
+     ],
+     "book $/mo before/after": [
+      9776,
+      9470
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": -0.051,
+     "LIT$": 8212,
+     "LIT+X$": 7844,
+     "LIT+X maxDD$": 3454,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 15698,
+     "book maxDD before/after": [
+      2214,
+      2467
+     ],
+     "book $/mo before/after": [
+      3362,
+      3386
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "LVN NQ 1m-profile W5 AM": {
+   "2026 H1": {
+    "n": 46,
+    "win%": 32.6,
+    "pf": 0.94,
+    "net$": -842,
+    "maxDD$": 4575,
+    "per_wk": 1.76,
+    "$/mo": -140
+   },
+   "2026 H2": {
+    "n": 35,
+    "win%": 34.3,
+    "pf": 1.0,
+    "net$": -31,
+    "maxDD$": 5368,
+    "per_wk": 1.74,
+    "$/mo": -7
+   },
+   "placebo_p": 0.2637,
+   "add_on": {
+    "2026 H1": {
+     "corr_LIT": 0.087,
+     "LIT$": 30033,
+     "LIT+X$": 29191,
+     "LIT+X maxDD$": 4003,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 58374,
+     "book maxDD before/after": [
+      2768,
+      3143
+     ],
+     "book $/mo before/after": [
+      9776,
+      9702
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": 0.038,
+     "LIT$": 8212,
+     "LIT+X$": 8181,
+     "LIT+X maxDD$": 4705,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 15954,
+     "book maxDD before/after": [
+      2214,
+      2185
+     ],
+     "book $/mo before/after": [
+      3362,
+      3441
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "LVN NQ 1m-profile W5 PM": {
+   "2026 H1": {
+    "n": 38,
+    "win%": 39.5,
+    "pf": 1.29,
+    "net$": 3140,
+    "maxDD$": 3513,
+    "per_wk": 1.45,
+    "$/mo": 522
+   },
+   "2026 H2": {
+    "n": 28,
+    "win%": 28.6,
+    "pf": 0.75,
+    "net$": -2407,
+    "maxDD$": 3258,
+    "per_wk": 1.39,
+    "$/mo": -519
+   },
+   "placebo_p": 0.0908,
+   "add_on": {
+    "2026 H1": {
+     "corr_LIT": -0.107,
+     "LIT$": 30033,
+     "LIT+X$": 33173,
+     "LIT+X maxDD$": 3725,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 60511,
+     "book maxDD before/after": [
+      2768,
+      3143
+     ],
+     "book $/mo before/after": [
+      9776,
+      10057
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": -0.011,
+     "LIT$": 8212,
+     "LIT+X$": 5805,
+     "LIT+X maxDD$": 3901,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 14532,
+     "book maxDD before/after": [
+      2214,
+      2439
+     ],
+     "book $/mo before/after": [
+      3362,
+      3135
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "LVN NQ 1m-profile C20 LDN": {
+   "2026 H1": {
+    "n": 18,
+    "win%": 16.7,
+    "pf": 0.36,
+    "net$": -5005,
+    "maxDD$": 5005,
+    "per_wk": 0.69,
+    "$/mo": -832
+   },
+   "2026 H2": {
+    "n": 13,
+    "win%": 38.5,
+    "pf": 1.16,
+    "net$": 657,
+    "maxDD$": 2099,
+    "per_wk": 0.65,
+    "$/mo": 142
+   },
+   "placebo_p": 0.4805,
+   "add_on": {
+    "2026 H1": {
+     "corr_LIT": 0.016,
+     "LIT$": 30033,
+     "LIT+X$": 25028,
+     "LIT+X maxDD$": 4175,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 56499,
+     "book maxDD before/after": [
+      2768,
+      2768
+     ],
+     "book $/mo before/after": [
+      9776,
+      9390
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": -0.001,
+     "LIT$": 8212,
+     "LIT+X$": 8869,
+     "LIT+X maxDD$": 1782,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 16058,
+     "book maxDD before/after": [
+      2214,
+      2214
+     ],
+     "book $/mo before/after": [
+      3362,
+      3464
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "LVN NQ 1m-profile C20 AM": {
+   "2026 H1": {
+    "n": 22,
+    "win%": 9.1,
+    "pf": 0.17,
+    "net$": -7638,
+    "maxDD$": 7638,
+    "per_wk": 0.84,
+    "$/mo": -1270
+   },
+   "2026 H2": {
+    "n": 14,
+    "win%": 21.4,
+    "pf": 0.59,
+    "net$": -1770,
+    "maxDD$": 1770,
+    "per_wk": 0.7,
+    "$/mo": -382
+   },
+   "placebo_p": 0.7311,
+   "add_on": {
+    "2026 H1": {
+     "corr_LIT": 0.058,
+     "LIT$": 30033,
+     "LIT+X$": 22395,
+     "LIT+X maxDD$": 4499,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 54794,
+     "book maxDD before/after": [
+      2768,
+      2891
+     ],
+     "book $/mo before/after": [
+      9776,
+      9107
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": -0.044,
+     "LIT$": 8212,
+     "LIT+X$": 6442,
+     "LIT+X maxDD$": 2297,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 14479,
+     "book maxDD before/after": [
+      2214,
+      2214
+     ],
+     "book $/mo before/after": [
+      3362,
+      3123
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "LVN NQ 1m-profile C20 PM": {
+   "2026 H1": {
+    "n": 16,
+    "win%": 43.8,
+    "pf": 1.5,
+    "net$": 2174,
+    "maxDD$": 1449,
+    "per_wk": 0.61,
+    "$/mo": 361
+   },
+   "2026 H2": {
+    "n": 14,
+    "win%": 35.7,
+    "pf": 0.91,
+    "net$": -396,
+    "maxDD$": 1867,
+    "per_wk": 0.7,
+    "$/mo": -86
+   },
+   "placebo_p": 0.1462,
+   "add_on": {
+    "2026 H1": {
+     "corr_LIT": -0.047,
+     "LIT$": 30033,
+     "LIT+X$": 32207,
+     "LIT+X maxDD$": 3200,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 60040,
+     "book maxDD before/after": [
+      2768,
+      2895
+     ],
+     "book $/mo before/after": [
+      9776,
+      9979
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": 0.014,
+     "LIT$": 8212,
+     "LIT+X$": 7815,
+     "LIT+X maxDD$": 2723,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 15380,
+     "book maxDD before/after": [
+      2214,
+      2214
+     ],
+     "book $/mo before/after": [
+      3362,
+      3318
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "LVN union NQ 5m D1 LDN+AM+PM": {
+   "2021-25": {
+    "n": 372,
+    "win%": 32.3,
+    "pf": 0.86,
+    "net$": -17572,
+    "maxDD$": 23760,
+    "per_wk": 1.7,
+    "$/mo": -349
+   },
+   "2026 H1": {
+    "n": 36,
+    "win%": 30.6,
+    "pf": 0.79,
+    "net$": -2510,
+    "maxDD$": 5074,
+    "per_wk": 1.38,
+    "$/mo": -417
+   },
+   "2026 H2": {
+    "n": 26,
+    "win%": 42.3,
+    "pf": 1.37,
+    "net$": 2732,
+    "maxDD$": 1996,
+    "per_wk": 1.29,
+    "$/mo": 589
+   },
+   "placebo_p": 0.0268,
+   "add_on": {
+    "2021-25": {
+     "corr_LIT": -0.029,
+     "LIT$": 4738,
+     "LIT+X$": -12834,
+     "LIT+X maxDD$": 32074,
+     "LIT maxDD$": 20685,
+     "book LIT+ATLAS$": 24565,
+     "book LIT+ATLAS+X(250)$": 19571,
+     "book maxDD before/after": [
+      25478,
+      28974
+     ],
+     "book $/mo before/after": [
+      488,
+      389
+     ]
+    },
+    "2026 H1": {
+     "corr_LIT": 0.059,
+     "LIT$": 30033,
+     "LIT+X$": 27523,
+     "LIT+X maxDD$": 6567,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 57624,
+     "book maxDD before/after": [
+      2768,
+      2774
+     ],
+     "book $/mo before/after": [
+      9776,
+      9577
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": -0.052,
+     "LIT$": 8212,
+     "LIT+X$": 10944,
+     "LIT+X maxDD$": 2828,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 17299,
+     "book maxDD before/after": [
+      2214,
+      2973
+     ],
+     "book $/mo before/after": [
+      3362,
+      3732
+     ]
+    }
+   },
+   "holm_p": 0.804,
+   "verdict": "REJECTED"
+  },
+  "V1 dPOC migration (1m)": {
+   "2026 H1": {
+    "n": 11,
+    "win%": 36.4,
+    "pf": 0.71,
+    "net$": -421,
+    "maxDD$": 1444,
+    "per_wk": 0.42,
+    "$/mo": -70
+   },
+   "2026 H2": {
+    "n": 7,
+    "win%": 57.1,
+    "pf": 1.16,
+    "net$": 158,
+    "maxDD$": 982,
+    "per_wk": 0.35,
+    "$/mo": 34
+   },
+   "placebo_p": 0.1984,
+   "add_on": {
+    "2026 H1": {
+     "corr_LIT": 0.005,
+     "LIT$": 30033,
+     "LIT+X$": 29613,
+     "LIT+X maxDD$": 3878,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 58567,
+     "book maxDD before/after": [
+      2768,
+      2768
+     ],
+     "book $/mo before/after": [
+      9776,
+      9734
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": 0.049,
+     "LIT$": 8212,
+     "LIT+X$": 8370,
+     "LIT+X maxDD$": 2361,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 15711,
+     "book maxDD before/after": [
+      2214,
+      2214
+     ],
+     "book $/mo before/after": [
+      3362,
+      3389
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "V1 dPOC migration (5m)": {
+   "2021-25": {
+    "n": 133,
+    "win%": 60.9,
+    "pf": 1.67,
+    "net$": 9165,
+    "maxDD$": 1298,
+    "per_wk": 0.61,
+    "$/mo": 182
+   },
+   "2026 H1": {
+    "n": 13,
+    "win%": 53.8,
+    "pf": 1.99,
+    "net$": 971,
+    "maxDD$": 907,
+    "per_wk": 0.5,
+    "$/mo": 161
+   },
+   "2026 H2": {
+    "n": 9,
+    "win%": 44.4,
+    "pf": 0.76,
+    "net$": -443,
+    "maxDD$": 910,
+    "per_wk": 0.45,
+    "$/mo": -96
+   },
+   "placebo_p": 0.0428,
+   "add_on": {
+    "2021-25": {
+     "corr_LIT": -0.002,
+     "LIT$": 4738,
+     "LIT+X$": 13904,
+     "LIT+X maxDD$": 19984,
+     "LIT maxDD$": 20685,
+     "book LIT+ATLAS$": 24565,
+     "book LIT+ATLAS+X(250)$": 30988,
+     "book maxDD before/after": [
+      25478,
+      23272
+     ],
+     "book $/mo before/after": [
+      488,
+      616
+     ]
+    },
+    "2026 H1": {
+     "corr_LIT": -0.035,
+     "LIT$": 30033,
+     "LIT+X$": 31004,
+     "LIT+X maxDD$": 3878,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 59498,
+     "book maxDD before/after": [
+      2768,
+      2614
+     ],
+     "book $/mo before/after": [
+      9776,
+      9889
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": -0.021,
+     "LIT$": 8212,
+     "LIT+X$": 7769,
+     "LIT+X maxDD$": 1906,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 15389,
+     "book maxDD before/after": [
+      2214,
+      1933
+     ],
+     "book $/mo before/after": [
+      3362,
+      3320
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "V2 single prints (1m)": {
+   "2026 H1": {
+    "n": 86,
+    "win%": 34.9,
+    "pf": 0.95,
+    "net$": -1390,
+    "maxDD$": 7062,
+    "per_wk": 3.29,
+    "$/mo": -231
+   },
+   "2026 H2": {
+    "n": 74,
+    "win%": 36.5,
+    "pf": 1.01,
+    "net$": 337,
+    "maxDD$": 5632,
+    "per_wk": 3.67,
+    "$/mo": 73
+   },
+   "placebo_p": 0.0202,
+   "add_on": {
+    "2026 H1": {
+     "corr_LIT": 0.063,
+     "LIT$": 30033,
+     "LIT+X$": 28644,
+     "LIT+X maxDD$": 4489,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 59241,
+     "book maxDD before/after": [
+      2768,
+      3420
+     ],
+     "book $/mo before/after": [
+      9776,
+      9846
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": 0.058,
+     "LIT$": 8212,
+     "LIT+X$": 8549,
+     "LIT+X maxDD$": 4898,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 16803,
+     "book maxDD before/after": [
+      2214,
+      3292
+     ],
+     "book $/mo before/after": [
+      3362,
+      3625
+     ]
+    }
+   },
+   "holm_p": 0.6262,
+   "verdict": "REJECTED"
+  },
+  "V2 single prints (5m)": {
+   "2021-25": {
+    "n": 638,
+    "win%": 30.4,
+    "pf": 0.78,
+    "net$": -48736,
+    "maxDD$": 51330,
+    "per_wk": 2.92,
+    "$/mo": -969
+   },
+   "2026 H1": {
+    "n": 82,
+    "win%": 25.6,
+    "pf": 0.65,
+    "net$": -10396,
+    "maxDD$": 14894,
+    "per_wk": 3.14,
+    "$/mo": -1728
+   },
+   "2026 H2": {
+    "n": 65,
+    "win%": 40.0,
+    "pf": 1.23,
+    "net$": 4353,
+    "maxDD$": 2071,
+    "per_wk": 3.23,
+    "$/mo": 939
+   },
+   "placebo_p": 0.5791,
+   "add_on": {
+    "2021-25": {
+     "corr_LIT": -0.012,
+     "LIT$": 4738,
+     "LIT+X$": -43998,
+     "LIT+X maxDD$": 46845,
+     "LIT maxDD$": 20685,
+     "book LIT+ATLAS$": 24565,
+     "book LIT+ATLAS+X(250)$": 5726,
+     "book maxDD before/after": [
+      25478,
+      31569
+     ],
+     "book $/mo before/after": [
+      488,
+      114
+     ]
+    },
+    "2026 H1": {
+     "corr_LIT": -0.068,
+     "LIT$": 30033,
+     "LIT+X$": 19637,
+     "LIT+X maxDD$": 6917,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 53967,
+     "book maxDD before/after": [
+      2768,
+      3105
+     ],
+     "book $/mo before/after": [
+      9776,
+      8969
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": 0.005,
+     "LIT$": 8212,
+     "LIT+X$": 12565,
+     "LIT+X maxDD$": 2768,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 18673,
+     "book maxDD before/after": [
+      2214,
+      2473
+     ],
+     "book $/mo before/after": [
+      3362,
+      4028
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "V3 poor high/low magnet (1m)": {
+   "2026 H1": {
+    "n": 1,
+    "win%": 0.0,
+    "pf": 0.0,
+    "net$": -566,
+    "maxDD$": 566,
+    "per_wk": 0.04,
+    "$/mo": -94
+   },
+   "2026 H2": {
+    "n": 3,
+    "win%": 33.3,
+    "pf": 1.88,
+    "net$": 442,
+    "maxDD$": 504,
+    "per_wk": 0.15,
+    "$/mo": 95
+   },
+   "placebo_p": 0.2498,
+   "add_on": {
+    "2026 H1": {
+     "corr_LIT": 0.035,
+     "LIT$": 30033,
+     "LIT+X$": 29467,
+     "LIT+X maxDD$": 3097,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 58559,
+     "book maxDD before/after": [
+      2768,
+      2768
+     ],
+     "book $/mo before/after": [
+      9776,
+      9733
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": -0.01,
+     "LIT$": 8212,
+     "LIT+X$": 8654,
+     "LIT+X maxDD$": 1943,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 15868,
+     "book maxDD before/after": [
+      2214,
+      2214
+     ],
+     "book $/mo before/after": [
+      3362,
+      3423
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  },
+  "V3 poor high/low magnet (5m)": {
+   "2021-25": {
+    "n": 19,
+    "win%": 21.1,
+    "pf": 1.48,
+    "net$": 3360,
+    "maxDD$": 2900,
+    "per_wk": 0.09,
+    "$/mo": 67
+   },
+   "2026 H1": {
+    "n": 1,
+    "win%": 0.0,
+    "pf": 0.0,
+    "net$": -566,
+    "maxDD$": 566,
+    "per_wk": 0.04,
+    "$/mo": -94
+   },
+   "2026 H2": {
+    "n": 3,
+    "win%": 66.7,
+    "pf": 1.97,
+    "net$": 484,
+    "maxDD$": 499,
+    "per_wk": 0.15,
+    "$/mo": 104
+   },
+   "placebo_p": 0.3125,
+   "add_on": {
+    "2021-25": {
+     "corr_LIT": 0.0,
+     "LIT$": 4738,
+     "LIT+X$": 8098,
+     "LIT+X maxDD$": 14945,
+     "LIT maxDD$": 20685,
+     "book LIT+ATLAS$": 24565,
+     "book LIT+ATLAS+X(250)$": 27516,
+     "book maxDD before/after": [
+      25478,
+      22573
+     ],
+     "book $/mo before/after": [
+      488,
+      547
+     ]
+    },
+    "2026 H1": {
+     "corr_LIT": 0.035,
+     "LIT$": 30033,
+     "LIT+X$": 29467,
+     "LIT+X maxDD$": 3097,
+     "LIT maxDD$": 3097,
+     "book LIT+ATLAS$": 58818,
+     "book LIT+ATLAS+X(250)$": 58559,
+     "book maxDD before/after": [
+      2768,
+      2768
+     ],
+     "book $/mo before/after": [
+      9776,
+      9733
+     ]
+    },
+    "2026 H2": {
+     "corr_LIT": -0.011,
+     "LIT$": 8212,
+     "LIT+X$": 8696,
+     "LIT+X maxDD$": 1943,
+     "LIT maxDD$": 1741,
+     "book LIT+ATLAS$": 15586,
+     "book LIT+ATLAS+X(250)$": 15905,
+     "book maxDD before/after": [
+      2214,
+      2214
+     ],
+     "book $/mo before/after": [
+      3362,
+      3431
+     ]
+    }
+   },
+   "holm_p": 1.0,
+   "verdict": "REJECTED"
+  }
+ },
+ "tests_in_correction": 35,
+ "LIT confluence": {
+  "2021-25": {
+   "into LVN": {
+    "n": 19,
+    "avgR": 0.418,
+    "net$": 1432
+   },
+   "not LVN": {
+    "n": 514,
+    "avgR": 0.028,
+    "net$": 3306
+   },
+   "into HVN": {
+    "n": 74,
+    "avgR": -0.369,
+    "net$": -14504
+   },
+   "not HVN": {
+    "n": 459,
+    "avgR": 0.109,
+    "net$": 19243
+   },
+   "all LIT$": 4738,
+   "L1 skip HVN gain$": 14504,
+   "L2 x1.25 LVN gain$": 358,
+   "L3 x0.5 HVN gain$": 7252
+  },
+  "2026 H1": {
+   "into LVN": {
+    "n": 5,
+    "avgR": 2.191,
+    "net$": 2336
+   },
+   "not LVN": {
+    "n": 82,
+    "avgR": 0.482,
+    "net$": 27697
+   },
+   "into HVN": {
+    "n": 11,
+    "avgR": 0.748,
+    "net$": 6120
+   },
+   "not HVN": {
+    "n": 76,
+    "avgR": 0.556,
+    "net$": 23914
+   },
+   "all LIT$": 30033,
+   "L1 skip HVN gain$": -6120,
+   "L2 x1.25 LVN gain$": 584,
+   "L3 x0.5 HVN gain$": -3060
+  },
+  "2026 H2": {
+   "into LVN": {
+    "n": 0,
+    "avgR": null,
+    "net$": 0
+   },
+   "not LVN": {
+    "n": 42,
+    "avgR": 0.579,
+    "net$": 8212
+   },
+   "into HVN": {
+    "n": 5,
+    "avgR": -0.083,
+    "net$": 464
+   },
+   "not HVN": {
+    "n": 37,
+    "avgR": 0.668,
+    "net$": 7748
+   },
+   "all LIT$": 8212,
+   "L1 skip HVN gain$": -464,
+   "L2 x1.25 LVN gain$": 0,
+   "L3 x0.5 HVN gain$": -232
+  },
+  "L1 skip HVN verdict": "REJECTED",
+  "L2 x1.25 LVN verdict": "REJECTED",
+  "L3 x0.5 HVN verdict": "REJECTED"
+ }
+}
