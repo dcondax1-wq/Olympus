@@ -379,6 +379,8 @@ class LiveBot:
         self.acct_r2 = None              # the same on the 2nd Rapid (engine/rapid slot "rapid2", data/rapid2.json; None = off)
         self._acct_b_sig = None          # the account_b block it was built from (rebuilt when it changes and B is flat)
         self.acct_c = None               # engine/account_c.AccountC: BLITZ, the scalper, on its own account (None = off)
+        self.acct_rb = None              # engine/rapid_blitz.RapidBlitz: BLITZ on the Rapid EOD 25K EVAL (None = off / funded / 50K)
+        self.acct_rb2 = None             # the same on the 2nd Rapid (slot "rapid2")
         self._acct_c_sig = None          # the account_c block it was built from (rebuilt when it changes and C is flat)
         self._hedge_who = {}             # LIT entry_t -> whose opposite close it waits for ("BLITZ"; absent = account B)
         self.fleet = None                # engine/fleet.Fleet: copy trading to the follower accounts (None = off: no data/fleet.json)
@@ -720,7 +722,9 @@ class LiveBot:
         # take it); while the bot runs, a second process on the same account is refused
         for ad in [self.adapter, getattr(self.acct_b, "adapter", None), getattr(getattr(self, "acct_c", None), "adapter", None),
                    getattr(getattr(self, "acct_r", None), "adapter", None),
-                   getattr(getattr(self, "acct_r2", None), "adapter", None)] + \
+                   getattr(getattr(self, "acct_r2", None), "adapter", None),
+                   getattr(getattr(self, "acct_rb", None), "adapter", None),
+                   getattr(getattr(self, "acct_rb2", None), "adapter", None)] + \
                 [getattr(a, "adapter", None) for a in (getattr(self.accts, "accounts", None) or [])]:
             try:
                 if callable(getattr(ad, "release_lock", None)):
@@ -768,6 +772,8 @@ class LiveBot:
             ar.kill(self.cfg.get("sym", "NQ"))
         if getattr(self, "acct_c", None) is not None:   # and account C (engine/account_c.py, BLITZ)
             self.acct_c.kill(self.cfg.get("sym", "NQ"))
+        for rb in self._rapid_blitzes():                # and BLITZ on each Rapid EOD 25K eval (engine/rapid_blitz.py)
+            rb.kill(self.cfg.get("sym", "NQ"))
         if getattr(self, "fleet", None) is not None:    # and every fleet follower (engine/fleet.py)
             self.fleet.kill(self.cfg.get("sym", "NQ"))
         self.stop()
@@ -823,6 +829,10 @@ class LiveBot:
         if ac is not None and ac.open_t is not None:                       # account C (engine/account_c.py, BLITZ)
             r = ac.kill(sym)
             extras.append({"id": "account_c", "ok": bool(r.get("ok")), "error": r.get("error")})
+        for rb in self._rapid_blitzes():                                   # BLITZ on each Rapid EOD 25K eval
+            if rb.open_t is not None:
+                r = rb.kill(sym)
+                extras.append({"id": "rapid2_blitz" if rb.slot == "rapid2" else "rapid_blitz", "ok": bool(r.get("ok")), "error": r.get("error")})
         if getattr(self, "fleet", None) is not None:                       # the fleet's followers (engine/fleet.py)
             extras.extend(self.fleet.flatten_all(reason, sym))
         self._log("risk", f"{reason}: " + ("position closed" if pos else "no open position") +
@@ -906,6 +916,9 @@ class LiveBot:
                 ar.adapter_tick()                   # ATLAS on each Rapid EOD (never raises)
         if getattr(self, "acct_c", None) is not None and not self.kill:
             self.acct_c.adapter_tick()              # account C's adapter (never raises)
+        if not self.kill:
+            for rb in self._rapid_blitzes():
+                rb.adapter_tick()                   # BLITZ on each Rapid EOD 25K eval (never raises)
         if getattr(self, "fleet", None) is not None and not self.kill:
             self.fleet.adapter_tick()               # the fleet followers' adapters (engine/fleet.py, never raises)
         if self.kill or not getattr(ad, "loop_tick", False) or not callable(getattr(ad, "tick", None)):
@@ -1484,6 +1497,7 @@ class LiveBot:
             # work: its edge needs the entry at the next bar's open (research/writeups/blitz-25k.md: 1 minute late halves the
             # 2-week pass). ATLAS still goes first on the other side: its opposite entry closes C first (AccountB._c_yield).
             self._account_c_tick(df_full, df1, sym, now)
+            self._rapid_blitz_tick(df_full, df1, sym, now)        # BLITZ on a Rapid EOD 25K eval (OFF unless one runs)
             self._learn_es(sym, tf, now, secs, refresh=True)       # ES bars for the next polls' learning features
             self._brain_tick(res, lit_p, now, brain_keep)
             self._second_route_tick(df_full, df1, res, sym, now)   # routed second strategies (OFF by default): LIT routed first
@@ -1872,16 +1886,17 @@ class LiveBot:
             gb = self._guard_entry(ent, q, sym, now)
             if gb:
                 why = f"GUARD {gb}"
-        ac = getattr(self, "acct_c", None)
-        if not why and ac is not None:
-            # account C (BLITZ, OFF by default) holding the other side is closed at market first, as for LIT / ATLAS; its close
-            # not confirmed flat = this entry is not routed (MFFU: no long + short across your own accounts)
+        for ac in self._blitz_lanes():
+            if why:
+                break
+            # account C / BLITZ on a Rapid EOD (OFF by default) holding the other side is closed at market first, as for LIT /
+            # ATLAS; its close not confirmed flat = this entry is not routed (MFFU: no long + short across your own accounts)
             try:
                 if ac.yield_to(d, f"second strategy {nm}", sym, now, px=ent["entry"], entry_t=tb) is False:
-                    why = "no hedging: BLITZ's (account C) opposite close is not confirmed yet"
+                    why = f"no hedging: {ac.label}'s opposite close is not confirmed yet"
             except Exception as e:
                 if getattr(ac, "open_t", None) is not None:
-                    why = f"no hedging: account C check failed ({e.__class__.__name__}), fails closed"
+                    why = f"no hedging: {ac.label} check failed ({e.__class__.__name__}), fails closed"
         if why:
             self._log("risk", f"{head} NOT routed: {why}")
             return
@@ -2334,15 +2349,16 @@ class LiveBot:
             gb = self._guard_entry(ent, q, sym, now)
             if gb:
                 why = f"GUARD {gb}"
-        ac = getattr(self, "acct_c", None)
-        if not why and ac is not None:
-            # BLITZ (account C) holding the other side is closed at market first (LIT > ATLAS > BLITZ, as everywhere)
+        for ac in self._blitz_lanes():
+            if why:
+                break
+            # BLITZ (account C / a Rapid EOD's lane) holding the other side is closed at market first (LIT > ATLAS > BLITZ)
             try:
                 if ac.yield_to(d, L, sym, now, px=ent["entry"], entry_t=tb) is False:
-                    why = "no hedging: BLITZ's (account C) opposite close is not confirmed yet"
+                    why = f"no hedging: {ac.label}'s opposite close is not confirmed yet"
             except Exception as e:
                 if getattr(ac, "open_t", None) is not None:
-                    why = f"no hedging: account C check failed ({e.__class__.__name__}), fails closed"
+                    why = f"no hedging: {ac.label} check failed ({e.__class__.__name__}), fails closed"
         if why:
             self._log("risk", f"{head} NOT routed on the 50K: {why}")
             return
@@ -2896,12 +2912,33 @@ class LiveBot:
         """ATLAS's lanes on the Rapids that run (1st, then 2nd)."""
         return [x for x in (getattr(self, "acct_r", None), getattr(self, "acct_r2", None)) if x is not None]
 
+    def _rapid_blitzes(self) -> list:
+        """BLITZ's lanes on the Rapid EOD 25K evals that run (engine/rapid_blitz.py; 1st, then 2nd)."""
+        return [x for x in (getattr(self, "acct_rb", None), getattr(self, "acct_rb2", None)) if x is not None]
+
+    def _blitz_lanes(self) -> list:
+        """Every BLITZ that may hold a position: account C, then each Rapid's BLITZ lane."""
+        return [x for x in (getattr(self, "acct_c", None),) if x is not None] + self._rapid_blitzes()
+
     def _start_rapid(self):
-        """ATLAS's lane of each Rapid EOD (LIT's lanes are extra accounts, _start_accounts). Never raises."""
+        """ATLAS's lane of each Rapid EOD (LIT's lanes are extra accounts, _start_accounts), then BLITZ's lane on a Rapid EOD
+        25K eval (engine/rapid_blitz.py). Never raises."""
         self.acct_r = None
         self.acct_r2 = None
+        self.acct_rb = None
+        self.acct_rb2 = None
         self._start_rapid_slot("rapid", getattr(self, "_rapid_blk", None))
         self._start_rapid_slot("rapid2", getattr(self, "_rapid_blk2", None))
+        for slot, blk in (("rapid", getattr(self, "_rapid_blk", None)), ("rapid2", getattr(self, "_rapid_blk2", None))):
+            attr = "acct_rb2" if slot == "rapid2" else "acct_rb"
+            if not blk or getattr(self, "acct_r2" if slot == "rapid2" else "acct_r", None) is None:
+                continue                                 # no ATLAS lane = the Rapid did not start (its log says why)
+            try:
+                from . import rapid_blitz as _rb
+                setattr(self, attr, _rb.build(self, blk, slot=slot))
+            except Exception as e:
+                setattr(self, attr, None)
+                self._note_error(f"Rapid EOD BLITZ NOT started: {e.__class__.__name__}: {e}")
 
     def _start_rapid_slot(self, slot, blk):
         attr = "acct_r2" if slot == "rapid2" else "acct_r"
@@ -3064,19 +3101,41 @@ class LiveBot:
         except Exception as e:
             self._note_error(f"account C failed: {e.__class__.__name__}: {e}")
 
+    def _rapid_blitz_tick(self, df5, df1, sym, now):
+        """BLITZ's lane on each Rapid EOD 25K eval (engine/rapid_blitz.py), right after account C's poll. Never raises."""
+        rbs = self._rapid_blitzes()
+        if not rbs:
+            return
+        try:
+            d1 = df1
+            if d1 is None:
+                try:
+                    d1 = self._lit_1m(sym, now, int(df5["time"].min()))
+                except Exception:
+                    d1 = None
+            for rb in rbs:
+                rb.tick(d1, sym, now)
+        except Exception as e:
+            self._note_error(f"Rapid EOD BLITZ failed: {e.__class__.__name__}: {e}")
+
     def _hedge_clear_c(self, ent, sym, now) -> bool:
-        """Account C (BLITZ, engine/account_c.py) holds the direction opposite to this LIT entry: closed at market first; LIT
-        routes only once that close is CONFIRMED flat. C off / flat / same side: True at once (LIT never held back)."""
-        ac = getattr(self, "acct_c", None)
-        if ac is None:                                  # then the fleet's followers (engine/fleet.py): off = True at once
+        """Account C (BLITZ, engine/account_c.py) or BLITZ on a Rapid EOD (engine/rapid_blitz.py) holds the direction opposite
+        to this LIT entry: closed at market first; LIT routes only once that close is CONFIRMED flat. Off / flat / same side:
+        True at once (LIT never held back). The Rapid's own LIT lane closes its BLITZ on either side (one position there)."""
+        lanes = self._blitz_lanes()
+        if not lanes:                                   # then the fleet's followers (engine/fleet.py): off = True at once
             return True if getattr(self, "fleet", None) is None else self._hedge_clear_fleet(ent, sym, now)
         et_ = int(ent["entry_t"])
-        try:
-            ok = ac.yield_to(1 if int(ent.get("dir") or 1) == 1 else -1, "LIT", sym, now, px=ent.get("entry"), entry_t=et_) is not False
-        except Exception as e:
-            self._note_error(f"account C hedge close failed: {e.__class__.__name__}: {e}")
-            ok = getattr(ac, "open_t", None) is None
-        if ok:
+        waiting = None
+        for ac in lanes:                                # every BLITZ is asked in the same poll; LIT waits for all of them
+            try:
+                ok = ac.yield_to(1 if int(ent.get("dir") or 1) == 1 else -1, "LIT", sym, now, px=ent.get("entry"), entry_t=et_) is not False
+            except Exception as e:
+                self._note_error(f"{getattr(ac, 'label', 'BLITZ')} hedge close failed: {e.__class__.__name__}: {e}")
+                ok = getattr(ac, "open_t", None) is None
+            if not ok and waiting is None:
+                waiting = ac
+        if waiting is None:
             if self._hedge_who.get(et_) == "BLITZ":
                 self._log("risk", f"Account C's (BLITZ) close confirmed: LIT's entry at {_et(et_):%H:%M} ET is routed")
             # then the fleet's followers (engine/fleet.py): off = True at once
@@ -3084,9 +3143,12 @@ class LiveBot:
         first = et_ not in self._hedge_wait
         self._hedge_wait.setdefault(et_, int(now))
         self._hedge_who[et_] = "BLITZ"
+        self._hedge_blitz = getattr(self, "_hedge_blitz", {})
+        self._hedge_blitz[et_] = waiting
         if first:
+            who = "account C's (BLITZ)" if waiting is getattr(self, "acct_c", None) else f"{waiting.label}'s"
             self._log("risk", f"HEDGE WAIT: LIT {'LONG' if int(ent.get('dir') or 1) == 1 else 'SHORT'} at {_et(et_):%H:%M} ET is NOT "
-                              "routed until account C's (BLITZ) opposite position is confirmed flat (the close is re-sent; LIT gives "
+                              f"routed until {who} opposite position is confirmed flat (the close is re-sent; LIT gives "
                               "up at its entry deadline)")
         return False
 
@@ -3433,7 +3495,7 @@ class LiveBot:
             body = (f"LIT's entry at {_et(et_):%H:%M} ET was skipped: a fleet follower's opposite position was not confirmed flat "
                     "within the entry deadline. Check the follower accounts in NinjaTrader now (python -X utf8 -m engine.fleet --status).")
         if getattr(self, "_hedge_who", {}).get(et_) == "BLITZ":
-            ac = getattr(self, "acct_c", None)
+            ac = (getattr(self, "_hedge_blitz", None) or {}).get(et_) or getattr(self, "acct_c", None)
             title = "HEDGE BLOCKED: BLITZ close not confirmed"
             body = (f"LIT's entry at {_et(et_):%H:%M} ET was skipped: BLITZ's (account C) opposite position was not confirmed flat "
                     f"within the entry deadline. Check BLITZ's account {getattr(ac, 'name', None) or ''} in NinjaTrader now (it may "

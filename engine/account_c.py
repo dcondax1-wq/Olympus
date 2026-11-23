@@ -869,6 +869,21 @@ class AccountC:
                     return h
             except Exception:
                 pass
+        # BLITZ / ATLAS on the Rapid EOD and the other BLITZ (engine/rapid_blitz.py, owner YES 2026-11-23): another account
+        # holding the other side (the same account is RapidBlitz.same_account_busy's one-position rule)
+        for attr, who in (("acct_c", "BLITZ (account C)"), ("acct_rb", "BLITZ on the Rapid EOD"), ("acct_rb2", "BLITZ on the Rapid EOD #2"),
+                          ("acct_r", "ATLAS on the Rapid EOD"), ("acct_r2", "ATLAS on the Rapid EOD #2")):
+            o = getattr(b, attr, None)
+            if o is None or o is self or str(getattr(o, "name", "") or "").strip().lower() == str(self.name or "").strip().lower():
+                continue
+            try:
+                if o.open_t is not None and int(((o.prov or {}).get(int(o.open_t)) or {}).get("dir") or 0) == -d:
+                    return f"{who} {getattr(o, 'name', '') or ''} holds a {_side(-d)} position".replace("  ", " ")
+                for _, pv in o.closing_open():
+                    if int(pv.get("dir") or 0) == -d:
+                        return f"{who} is closing a {_side(-d)} position (not confirmed yet)"
+            except Exception:
+                return f"{who}: state unreadable (fails closed)"
         fl = getattr(b, "fleet", None)                 # engine/fleet.py (off = None): any follower holding the other side
         if fl is not None:
             try:
@@ -904,6 +919,10 @@ class AccountC:
         if self.flatten(et_, "HEDGE", sym, now, px=px):
             pv["final"] = True
         return self.open_t is None or int(self.open_t) != et_
+
+    def size_entry(self, risk, state, x=None) -> dict:
+        """Micros for one entry (module qty(); engine/rapid_blitz.RapidBlitz sizes its own way)."""
+        return qty(self.spec, risk, state, brk_n=(x or {}).get("brk_n"))
 
     # ---- the BLITZ engine
     def _engine(self):
@@ -1119,7 +1138,7 @@ class AccountC:
         sz = {"qty": 0, "reasons": []}
         if not why:
             try:
-                sz = qty(self.spec, risk, self.eval_state(now), brk_n=x.get("brk_n"))
+                sz = self.size_entry(risk, self.eval_state(now), x)
             except Exception as e:
                 sz = {"qty": 0, "reasons": [f"sizing failed ({e.__class__.__name__}: {e}): not traded"]}
             self.last_size = {"qty": sz["qty"], "reasons": [str(r)[:160] for r in sz["reasons"]][-4:], "t": int(now)}

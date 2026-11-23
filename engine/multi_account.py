@@ -570,28 +570,39 @@ class Account:
         bot = getattr(self.router, "bot", None)          # the 2nd Rapid's lane ("slot": "rapid2") shares only its own ATLAS
         return getattr(bot, "acct_r2" if self.spec.get("slot") == "rapid2" else "acct_r", None)
 
+    def sharers(self) -> list:
+        """Every other strategy on this SAME account: shared() + BLITZ's lane on the Rapid EOD 25K eval
+        (engine/rapid_blitz.py; LIT > ATLAS > BLITZ, one position on the account)."""
+        out = [x for x in (self.shared(),) if x is not None]
+        if self.spec.get("lane") == "rapid":
+            bot = getattr(self.router, "bot", None)
+            bz = getattr(bot, "acct_rb2" if self.spec.get("slot") == "rapid2" else "acct_rb", None)
+            if bz is not None and str(getattr(bz, "name", "") or "").strip() == str(self.spec.get("nt_account") or "").strip():
+                out.append(bz)
+        return out
+
     def _shared_holds(self) -> str | None:
         """Why the other strategy on this SAME account holds it now (a position, or a NinjaTrader bracket still open / pending /
         closing), else None. Unknown = held (a CLOSEPOSITION that may close the other bot's trade is never sent on a guess)."""
         try:
-            sh = self.shared()
-            if sh is None:
-                return None
-            nm = getattr(sh, "label", None) or "the other strategy on this account"
-            if getattr(sh, "open_t", None) is not None:
-                return f"{nm} holds a position here"
             from .ninjatrader import OPEN_STATUSES
-            for lg in list(getattr(getattr(sh, "adapter", None), "legs", None) or []):
-                if isinstance(lg, dict) and lg.get("status") in OPEN_STATUSES:
-                    return f"{nm}'s NinjaTrader bracket is {lg.get('status')}"
+            for sh in self.sharers():
+                nm = getattr(sh, "label", None) or "the other strategy on this account"
+                if getattr(sh, "open_t", None) is not None:
+                    return f"{nm} holds a position here"
+                for lg in list(getattr(getattr(sh, "adapter", None), "legs", None) or []):
+                    if isinstance(lg, dict) and lg.get("status") in OPEN_STATUSES:
+                        return f"{nm}'s NinjaTrader bracket is {lg.get('status')}"
             return None
         except Exception as e:  # noqa: BLE001
             return f"the other strategy's state is unknown ({e.__class__.__name__})"
 
     def all_closes(self) -> list:
         """This account's closes + the shared strategy's (one balance, one floor, one day P&L)."""
-        sh = self.shared()
-        return list(self.closes) + [list(c) for c in (getattr(sh, "closes", None) or [])]
+        out = list(self.closes)
+        for sh in self.sharers():
+            out += [list(c) for c in (getattr(sh, "closes", None) or [])]
+        return out
 
     def day_pnl(self, day: str) -> float:
         return round(sum(float(p) for d, _, p, *_ in self.all_closes() if d == day), 2)
@@ -999,16 +1010,19 @@ class Account:
                     else:
                         why = f"HEDGE BLOCKED: {held} and its close was not confirmed before LIT's entry deadline"
                         q = 0
-            if q and q != -1 and not why and self.shared() is not None:
-                # one account, two strategies (engine/rapid.py): LIT has priority. ATLAS holding a position here (either
-                # side) is closed at market FIRST; LIT routes only once that close is CONFIRMED flat, tried again on
-                # every poll until LIT's entry deadline (live.LIT_MAX_LATE_S after its fill bar opened), then skipped
-                ok = False
-                had = getattr(self.shared(), "open_t", None) is not None
-                try:
-                    ok = self.shared().yield_to_lit(1 if ent["dir"] == 1 else -1, sym, now, px=ent.get("entry"), any_side=True)
-                except Exception as e:
-                    self.log("error", f"ATLAS close on this account failed: {e.__class__.__name__}: {e}")
+            if q and q != -1 and not why and self.sharers():
+                # one account, two / three strategies (engine/rapid.py, engine/rapid_blitz.py): LIT has priority. ATLAS / BLITZ
+                # holding a position here (either side) is closed at market FIRST; LIT routes only once that close is
+                # CONFIRMED flat, tried again on every poll until LIT's entry deadline (live.LIT_MAX_LATE_S after its fill
+                # bar opened), then skipped
+                ok = True
+                had = any(getattr(x, "open_t", None) is not None for x in self.sharers())
+                for x in self.sharers():
+                    try:
+                        ok = bool(x.yield_to_lit(1 if ent["dir"] == 1 else -1, sym, now, px=ent.get("entry"), any_side=True)) and ok
+                    except Exception as e:
+                        ok = False
+                        self.log("error", f"{getattr(x, 'label', 'the other strategy')} close on this account failed: {e.__class__.__name__}: {e}")
                 if not ok:
                     from .live import LIT_MAX_LATE_S
                     if now - int(ent["entry_t"]) <= LIT_MAX_LATE_S:
@@ -1243,7 +1257,8 @@ class AccountRouter:
         mine = str(((acc.spec if acc is not None else {}) or {}).get("nt_account") or "").strip()
         same = acc.shared() if acc is not None else None
         for attr, who in (("acct_b", "ATLAS's 25K"), ("acct_r", "ATLAS on the Rapid EOD"), ("acct_r2", "ATLAS on the Rapid EOD #2"),
-                          ("acct_c", "BLITZ (account C)")):
+                          ("acct_c", "BLITZ (account C)"), ("acct_rb", "BLITZ on the Rapid EOD"),
+                          ("acct_rb2", "BLITZ on the Rapid EOD #2")):
             o = getattr(b, attr, None)
             if o is None or o is same or getattr(o, "open_t", None) is None:
                 continue

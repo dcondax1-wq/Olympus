@@ -1390,17 +1390,23 @@ class AccountB:
     def _c_yield(self, d, tb, sym, now, px=None):
         """Account C (BLITZ, engine/account_c.py; priority LIT > ATLAS > BLITZ): C holding the other side is closed at market
         FIRST; B's entry goes out only once that close is CONFIRMED flat. None = route (C off / flat / same side)."""
-        ac = getattr(self.bot, "acct_c", None)
-        if ac is None:
-            return self._fleet_yield(d, sym, now)
-        try:
-            if ac.yield_to(d, "ATLAS", sym, now, px=px, entry_t=tb) is not False:
-                return self._fleet_yield(d, sym, now)
-        except Exception as e:
-            self.log("error", f"account C hedge close failed: {e.__class__.__name__}: {e}")
-            if getattr(ac, "open_t", None) is None:
-                return self._fleet_yield(d, sym, now)
-        return "no hedging: BLITZ's (account C) opposite close is not confirmed yet"
+        mine = str(getattr(self, "name", "") or "").strip().lower()
+        for attr, who in (("acct_c", "account C"), ("acct_rb", "the Rapid EOD"), ("acct_rb2", "the Rapid EOD #2")):
+            ac = getattr(self.bot, attr, None)
+            if ac is None:
+                continue
+            same = bool(mine) and str(getattr(ac, "name", "") or "").strip().lower() == mine
+            try:
+                # BLITZ on THIS account (engine/rapid_blitz.py: ATLAS on the Rapid 25K eval): one position, ATLAS first, any side
+                ok = (ac.yield_to_lit(d, sym, now, px=px, any_side=True) if same else
+                      ac.yield_to(d, "ATLAS", sym, now, px=px, entry_t=tb)) is not False
+            except Exception as e:
+                self.log("error", f"BLITZ ({who}) hedge close failed: {e.__class__.__name__}: {e}")
+                ok = getattr(ac, "open_t", None) is None
+            if not ok:
+                return (f"one position per account: BLITZ's close on {who} is not confirmed yet" if same else
+                        f"no hedging: BLITZ's ({who}) opposite close is not confirmed yet")
+        return self._fleet_yield(d, sym, now)
 
     def _fleet_yield(self, d, sym, now):
         """The fleet (engine/fleet.py, off = None): ATLAS's / BLITZ's followers holding the other side are closed at market

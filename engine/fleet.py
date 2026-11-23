@@ -357,7 +357,7 @@ def lead_positions(bot) -> list:
                     out.append({"account": a.name, "sym": e.get("sym") or "NQ", "dir": 1 if e["side"] == "buy" else -1, "rank": 0})
         except Exception:
             continue
-    for key, rank in (("acct_b", 1), ("acct_c", 2)):
+    for key, rank in (("acct_b", 1), ("acct_c", 2), ("acct_rb", 2), ("acct_rb2", 2)):
         obj = getattr(bot, key, None)
         if obj is None:
             continue
@@ -382,7 +382,7 @@ def lead_positions(bot) -> list:
     # pending / closing there counts as that account's position, e.g. LIT's CLOSEPOSITION NinjaTrader has not confirmed
     # while the model (and _open_routed) already show flat (reviewer 2026-10-30)
     ads = [("Zlarior (LIT's account)", getattr(bot, "adapter", None), 0)]
-    for key, lab, rank in (("acct_b", "ATLAS", 1), ("acct_c", "BLITZ", 2)):
+    for key, lab, rank in (("acct_b", "ATLAS", 1), ("acct_c", "BLITZ", 2), ("acct_rb", "BLITZ", 2), ("acct_rb2", "BLITZ", 2)):
         obj = getattr(bot, key, None)
         if obj is not None:
             ads.append((f"{lab} {getattr(obj, 'name', '') or ''}".strip(), getattr(obj, "adapter", None), rank))

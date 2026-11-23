@@ -268,7 +268,9 @@ def rules_line(blk: dict) -> str:
     R = (_ma_presets().get(P["preset"]) or {}).get("rules") or {}
     tgt, mll, mq = float(P["target"]), float(R.get("mll") or 0.0), int(R.get("max_micros") or 0)
     return (f"{P['label']}: target +${tgt:,.0f}, floor ${mll:,.0f} below the best close, max {mq} micros, a winning day "
-            f"<= ${int(BEST_DAY * tgt * MARGIN):,} (30% rule), ATLAS <= ${float(P['atlas_usd']):,.0f} a trade")
+            f"<= ${int(BEST_DAY * tgt * MARGIN):,} (30% rule), ATLAS <= ${float(P['atlas_usd']):,.0f} a trade"
+            + (", BLITZ <= $300 a trade in the eval" if P["preset"] == "mffu_rapid_eod_25k" and blk.get("blitz") is not False
+               and str(blk.get("stage") or "eval") == "eval" else ""))
 
 
 def rules_more(blk: dict) -> str:
@@ -547,9 +549,16 @@ class RapidAtlas(AB.AccountB):
         return next((a for a in (getattr(ac, "accounts", None) or []) if a.spec.get("lane") == "rapid"
                      and slot_of(a.spec) == self.slot), None)
 
+    def blitz(self):
+        """BLITZ's lane on this Rapid (engine/rapid_blitz.py, the 25K eval only), or None."""
+        bz = getattr(self.bot, "acct_rb2" if self.slot == "rapid2" else "acct_rb", None)
+        return bz if bz is not None and getattr(bz, "name", None) == self.name else None
+
     def all_closes(self) -> list:
         ln = self.lane()
-        return list(self.closes) + [list(c) for c in (getattr(ln, "closes", None) or [])]
+        out = list(self.closes) + [list(c) for c in (getattr(ln, "closes", None) or [])]
+        bz = self.blitz()
+        return out + [list(c) for c in (getattr(bz, "closes", None) or [])]
 
     def day_pnl(self, day) -> float:
         return round(sum(float(p) for d, _, p, *_ in self.all_closes() if d == day), 2)
@@ -874,8 +883,18 @@ def main(argv=None) -> int:
     ap.add_argument("--status", action="store_true")
     ap.add_argument("--lit-bank", choices=("on", "off"), help="the 25K only: LIT takes 1 micro banked at the day's 30%% room")
     ap.add_argument("--slot", choices=("1", "2"), default="1", help="which Rapid: 1 = data/rapid.json (default), 2 = data/rapid2.json")
+    ap.add_argument("--blitz", choices=("on", "off"), help="the 25K EVAL only: BLITZ's lane on the account (engine/rapid_blitz.py; on by default)")
     a = ap.parse_args(argv)
     sp = slot_path("rapid2") if a.slot == "2" else None      # None = path(): slot 1 exactly as before
+    if a.blitz:
+        b = load(sp)
+        if not b.get("account") or plan_info(b)["preset"] != "mffu_rapid_eod_25k":
+            print("NOT set: --blitz is for the Rapid EOD 25K only (no 25K in data/rapid.json)")
+            return 1
+        b["blitz"] = a.blitz == "on"
+        save(b, sp)
+        print(f"Rapid EOD 25K: BLITZ lane {a.blitz.upper()} (eval only; from the next bot start)")
+        return 0
     if a.lit_bank:
         b = load(sp)
         if not b.get("account") or plan_info(b)["preset"] != "mffu_rapid_eod_25k":

@@ -163,7 +163,7 @@ def bot_held(bot, router=None) -> set:
     adapters (LIT, ATLAS account B, account C, the Rapid's ATLAS lane, every extra account) or a fleet follower's position."""
     out = set()
     ads = [getattr(bot, "adapter", None)] + [getattr(getattr(bot, a, None), "adapter", None)
-                                             for a in ("acct_b", "acct_r", "acct_r2", "acct_c")]
+                                             for a in ("acct_b", "acct_r", "acct_r2", "acct_c", "acct_rb", "acct_rb2")]
     ads += [getattr(a, "adapter", None) for a in (getattr(router, "accounts", None) or [])]
     for ad in ads:
         acct = str(getattr(ad, "account", "") or "").strip().lower()
