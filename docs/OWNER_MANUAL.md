@@ -3,6 +3,28 @@ Owner (2026-11-19): "It's getting confusing ... I need to know exactly what's ha
 Phone copy: **hub/manual.html** (works offline once opened; same facts as this file; tests.test_owner_manual keeps them equal).
 Numbers below are from the PC's report on Nov 20, 6:00 ET. Live numbers: the ZEUS page (hub/zeus.html) or the Board.
 
+## Your week (from Nov 23)
+
+| When | You do | It does |
+|---|---|---|
+| **Monday after 4 PM ET** (once a week) | At the PC: double-click **MONDAY_SETUP.bat** (arrives with the next update; until then TRADE_HOME -> 8). Say Yes to the administrator box. Type **I ACCEPT LIVE RISK** yourself. | Update, clock fix, START BOT (arms every account AND turns the 7-day keep-alive on), alert test |
+| **7:30 AM ET** (trading days) | Read one phone message | READY / NOT READY + the fix, one line per account ($, room, yesterday, to pass / payout), today's hours + news, the next money move, cards waiting |
+| **4:15 PM ET** (trading days) | Read one phone message | Today's $ per account, payouts ready, tomorrow's move |
+| **The phone buzzes** | Read it: each alert says the one thing to do | Trades (entry / exit with $), bot stopped, NOT READY / not armed, daily loss near, payout ready, 7-day deadline, MFFU rule changed |
+
+**TRADE_HOME menu** (double-click TRADE_HOME.bat on the PC): 1 Status · 2 Start bot (you type the phrase) · 3 Keep-alive ON ·
+k Keep-alive OFF · 4 Add an account · 5 Phone alerts · 6 Stop bot · 7 Update · 8 Sunday / daily routine · 9 Fix the clock ·
+10 Health check · 11 Phone link · 12 Backup · 13 PC care · 14 Free disk space · M More tools · T Test all alerts ·
+P I took a payout · R Contract roll · 0 Close.
+
+**What runs by itself:** the bot comes back after a crash, an update or a restart (it resumes the accounts you armed); the clock
+re-syncs when the bot is flat; phone alerts need no setup (the Olympus app + ntfy); the payout check after every close; the fleet
+manager's next move; the daily MFFU rule check; the brief and the evening summary.
+
+**What only you can do:** type the live phrase (I ACCEPT LIVE RISK); buy accounts on MFFU; request payouts in the MFFU dashboard
+(left menu Payouts), then TRADE_HOME -> P; answer the 2 Decide cards (the Rapid EOD 50K plan, fast entry). Claude never buys, arms
+or requests anything.
+
 ## 1. Who is who
 
 ### Accounts (all MFFU)

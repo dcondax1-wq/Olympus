@@ -2102,6 +2102,81 @@ The app folder `tools/web_public/<id>/` (index.html, jarvis.json, manifest, icon
    `tests.test_app_intro`, `tests.test_zenith_mode`, `tests.test_jarvis_hub`, then `python -X utf8 tests/run_gate.py --fast`.
 8. Update this section (the table row, the counts line) and CLAUDE.md's one OLYMPUS paragraph.
 
+## Night 2026-11-22/23 modules (alerts, payouts, fleet, rules; read before touching these areas)
+Where a module is still only on its night branch, the branch is named; it lands on pc with the lead. All of them are read-only
+towards orders: none places, sizes, arms or routes anything, and none requests a payout.
+
+### readiness (`engine/readiness.py`, day-ready / audit package B)
+- READY / NOT READY verdict (clock drift vs the guard's 5 s, NinjaTrader folder + connection, bar feed, accounts armed, kill switch,
+  halts, MFFU 7-day, disk, internet) at 17:30 / 01:15 / 08:45 ET, at bot start (+90 s) and when a NEW blocker appears.
+- Alert: at most one an hour, the same blocker never twice in 30 min; `send_alert` returns `none` when nothing reached a phone,
+  and `tick()` then rolls the de-dup back (the next tick sends it again). The clock fix text is the FIX_CLOCK.bat literal.
+- The status post carries `rd` (<= 200 bytes) -> the brief's line 1 and Trading Home's READY line. Tests: test_ready, test_ready_rt, test_package_b.
+
+### arm_report (`engine/arm_report.py`)
+- The loud end of every START: "ARMED: X" / "NOT ARMED: X: <reason> -> <fix>" + a "Not trading" banner; `data/arm_status.json` for
+  the phone glance. Finds the eval -> funded rename (MFFUEV... -> MFFUSF..., same digits); the owner types YES. Never arms or writes a name.
+
+### alert_map + send_critical (`engine/alert_map.py`, `engine/alert_bus.py`, night-notify)
+- `alert_map.EVENTS`: every critical event -> its senders -> its zero-setup channels -> its notify_settings type. test_alert_map fails
+  when a sender is renamed, a type is OFF, or a channel is not private. `python -X utf8 -m engine.alert_map` prints the table.
+- `alert_bus.send_critical(ev)`: Telegram / Discord first when set up (send()), else the private ntfy topic AND the Olympus app (Web
+  Push), de-dup by key across restarts; a soft notice goes to the first channel only. ALERTS_OFF = the old path exactly.
+- `send(wait=True)` returns `failed` when nothing delivered (callers compare with `sent`). `push.CRITICAL_KINDS` (clock, kill,
+  unprotected, eval_floor, freeze, feed_stale, ops_crit) + tag le-guard pass `pc_app_ok` and get a private-topic copy.
+- The private topic is made by tools/pc_report on its first real run (`ensure_topic`: random words + digits). Low-priority news ->
+  `digest_add`; on a CME trading day the 16:15 day summary carries it (`digest_peek`), on other days `digest_flush` sends one silent post.
+
+### payout_autopilot (`engine/payout_autopilot.py`, night-payout)
+- After MFFU's close (16:10 ET; half days at the halt), per funded account, ONE "Payout ready: <acct> can request $X now" with the
+  MFFU dashboard steps (help-center wording only: left menu Payouts; first time KYC + Riseworks). Builders: funded_life.track +
+  the owner's max-request plan. Rapid: rapid.payout_advice (daily, $500 min, $250 / $500 net since the last).
+- Never a Builder's 5th payout (fleet plan): funded_life.STOP_AFTER = 4 (status `stop`), one "do not take payout #5" alert, and
+  "#5 available: do NOT take it" once a cycle. A Rapid day at $6,000+ net = one warning ($10,000 = MFFU's live move).
+- `record()` (TRADE_HOME -> P) writes the account's own record + data/payout_ledger.json; money_goal.ledger_extra adds the Rapid
+  rows to the Money pipeline. Tests: test_payout_autopilot.
+
+### fleet_mgr (`engine/fleet_mgr.py`, night-fleetmgr)
+- Stages from account_cli.inventory + data/lifecycle.json + the payout trackers; one alert per change with the next money move.
+- Rules: a card's yes = "re-buy #k of 2", after 2 = stop the slot; card open = "decide card X first"; Builder / Rapid 25K = money_book's
+  same-night re-buy at the owner's price; 3 dead in a row = stop buying; MFFU caps (5 funded, plan caps); Builder payout 4 = close +
+  next move; a Rapid at $6,500 paid = live-move risk. Cards: decisions.json (done = yes; later / superseded / waiting are not open).
+- `tiny()` -> the status post's `fl` -> Trading Home's "Fleet" line (info only). Tests: test_fleet_mgr.
+
+### rules_watch (`tools/rules_watch.py`, night-rulewatch)
+- Weekdays after 17:05 ET, once a day (tools/pc_report): 46 MFFU rules read from the cited help pages (label -> value tables +
+  sentence patterns) vs research/lit/mffu_rules.json. ok / changed / missing (layout) / unreachable; only `changed` alerts (one per
+  rule and new value: "the bot still uses X until Claude updates it") + a board line. Never edits a rule. Fixtures:
+  tests/fixtures/mffu_pages (2026-11-23). On an alert: re-read the page, update mffu_rules.json + the code, run test_account_rules.
+
+### state_pulse (`engine/state_pulse.py`, night-truth / night-integrate)
+- A bot-state change (running, armed, an entry block, a trade) reaches the phone in seconds: a debounced (30 s) fresh heartbeat +
+  live.json + `pc_report --pulse` (core post only), at most 24 pulses a UTC day inside ntfy's 250 budget (the trade-alert reserve kept).
+
+### win_guard (`engine/win_guard.py` + `scripts/win_guard.ps1`, night-pcguard)
+- The Windows guard state (Update, power, NIC, the bot and NinjaTrader at sign-in) from data/win_guard.json, written in
+  FIX_CLOCK.bat's administrator window (undone by FIX_CLOCK_OFF.bat); shown on the Start page, readiness and TRADE_HOME.
+
+### task_audit (`tools/task_audit.py`, night-tasks)
+- Keeps exactly ONE 15-minute phone-report runner (OlympusPCReport from this folder). Deletes only tasks our scripts named; a
+  foreign task that runs pc_report is reported (TRADE_HOME line + the exact command), never touched.
+
+### monday / recovery (`engine/monday.py` + MONDAY_SETUP.bat, `engine/recovery.py`, night-zerotouch / night-integrate)
+- MONDAY_SETUP: update -> the clock fix once (UAC only for that part) -> START BOT (the owner's phrase arms every account AND gives
+  the 7-day keep-alive consent, engine/keepalive.start_consent) -> the alert test; safe to run twice; never runs elevated.
+- recovery: the "comes back by itself" matrix (auto-resume, the run_bot supervisor, keepawake, self_heal, keep-alive files) with
+  the one fix per row that does not.
+
+### clock heal (`engine/guards.py` clock_tick, night-clockauto = audit package C)
+- A clock drift blocks entries; the bot now re-syncs the clock itself when FLAT (never with a position open), re-probes after 20 s
+  (60 s after 2 bad probes), at most one sync per 300 s, and pushes "synced by itself" or the FIX_CLOCK.bat line.
+
+### Also tonight
+- Rapid EOD 50K onboarding (night-r50k): onboard.known_codes learns the owner's Name code; keepalive key `rapid2`; prices $97.20 / $165.
+  Sizing stays today's; the one-account-book change is a yes / no in research/handoff/2026-11-23/RAPID50K_SETTINGS.md.
+- The 07:30 brief + 16:15 summary (night-brief): tools/morning_brief.build (<= 8 lines), tools/pc_guard.day_summary + evening_extra.
+- Decide triage (night-decide): decisions.json statuses `superseded` (+ superseded_by) and `waiting` (+ waiting_on); test_decide checks them.
+
 ## Open work
 1. **Dashboard revamp: shipped 2026-10-17** (`web_next/`, served by default; `LE_UI=classic` serves the old `web/`).
    - `web_next/` overlays `web/`: server.py serves a file from `web_next/` if it exists, else from `web/`, so every page module
