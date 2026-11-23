@@ -148,7 +148,7 @@ Fixes to `engine/tickrec.py`. Tests: `tests/test_tickrec.py` 20/20 (18 before, 2
 
 ## Round 2 (same day): the LVN family pushed further, LVN/HVN as LIT confluence, and volume-at-price features
 
-The rules were pre-registered in `research/orderflow/of_lvn.py` and committed before the first run, giving 35 stand-alone
+The rules were pre-registered in `research/orderflow/of_lvn.py` and committed before the first run, giving 34 new stand-alone
 tests in all. Holm's correction covers every variant plus the B1 test from round 1, and the placebo uses 5,000 coin-flip
 draws. Results are in `research/orderflow/lvn_results.json`.
 
@@ -220,7 +220,7 @@ round 1's `vp_sweep_level5` (POC/VAH/VAL) result. The HVN skip would have been a
 
 ### What this means for the owner
 
-1. Bars can't carry an order-flow edge for NQ. 41 pre-registered bar tests over two rounds, 0 pass. LIT stays exactly as
+1. Bars can't carry an order-flow edge for NQ. 43 pre-registered bar tests over two rounds (6 + 34 stand-alones + 3 LIT rules), 0 pass. LIT stays exactly as
    it is.
 2. The only way left to test order flow is real ticks (OF1-OF3, `TICKS_HOWTO.md`). OF1 is the most promising: it targets
    the one thing every proxy agreed on.
