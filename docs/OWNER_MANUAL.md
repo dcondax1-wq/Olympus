@@ -163,6 +163,14 @@ python -X utf8 -m engine.accounts status
 
 ## 7. New this week (landed Nov 21)
 
+### N0. Fix the PC clock for good (once)
+- **What:** The bot refuses every new entry while the PC clock is more than 5 seconds off internet time (the guard is right: it polls 3 s after the minute). If Windows will not sync by itself, FIX_CLOCK.bat sets it up once: Windows Time service on Automatic, three time servers, a check every 15 minutes, a sync now, and a task named OlympusClock (runs as the system, every 15 minutes, at boot and at wake).
+- **When:** Once, or when Status / the Start page / the Board says the PC clock is off or "double-click FIX_CLOCK.bat once".
+1. On the PC: right-click **FIX_CLOCK.bat** > **Run as administrator** (a plain double-click only tells you to do this).
+2. Wait for the last line. Safe to run twice. Undo: right-click FIX_CLOCK_OFF.bat > Run as administrator.
+3. Any day after: TRADE_HOME.bat > **9 Fix the clock** (or Start page > Sync the clock) works without an administrator.
+- **You see:** BEFORE "the PC clock is 24.5 s behind internet time", AFTER "under 1 s", then "[OK] The clock matches internet time and OlympusClock keeps it that way." "[FIX]" = send Claude a photo of that window.
+
 Each: what it does, when to use it, what to tap or type, what you should see. Phone: manual > **New**.
 
 ### N1. Start the bot (and arm a new account like the Rapid)

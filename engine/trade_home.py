@@ -93,6 +93,20 @@ def _unseen_names():
         return {}
 
 
+def _clock_drift():
+    """Seconds the PC clock is behind (+) / ahead (-) of internet time, from the bot's own probe (logs/pc_health.json); None = unknown."""
+    try:
+        import time
+        from engine import self_heal as sh
+        return sh.clock_drift(ROOT, time.time())
+    except Exception:  # noqa: BLE001
+        return None
+
+
+CLOCK_FIX_SAY = "double-click FIX_CLOCK.bat once, right-click > Run as administrator"   # = engine/go.CLOCK_FIX_SAY (a test keeps them equal)
+CLOCK_MAX_S = 5.0                                                                       # = the bot's guard (engine/guards clock_max_s)
+
+
 def _ago(sec):
     if sec is None:
         return "unknown"
@@ -101,7 +115,7 @@ def _ago(sec):
 
 
 # ------------------------------------------------------------------------------------------------ 1. Status (one plain screen)
-def status_screen(now=None, bot=None, accounts=None, keepalive=None, alerts=None):
+def status_screen(now=None, bot=None, accounts=None, keepalive=None, alerts=None, clock=-1):
     """-> (lines, problems). Plain words, one line per fact; `problems` = [(menu number, what to do)] for the unchecked ones."""
     import time
     now = now if now is not None else time.time()
@@ -117,6 +131,13 @@ def status_screen(now=None, bot=None, accounts=None, keepalive=None, alerts=None
     age = (now - float(lp)) if lp else None
     L.append(f"  PC       : {'bot server answers' if answers else 'bot server NOT answering'}; last data {_ago(age)} ago")
     L.append(f"  Bot      : {'RUNNING' if run else 'NOT running'}")
+    dr = _clock_drift() if clock == -1 else clock          # clock=None: unknown
+    if dr is None:
+        L.append("  Clock    : not checked yet")
+    else:
+        L.append(f"  Clock    : {abs(dr):.1f} s {'behind' if dr > 0 else 'ahead of'} internet time" + (" (fine)" if abs(dr) <= CLOCK_MAX_S else " (new entries are BLOCKED)"))
+        if abs(dr) > CLOCK_MAX_S:
+            P.append(("9", f"The PC clock is off: choose 9 (Fix the clock). If it says it needs an administrator: {CLOCK_FIX_SAY}."))
     if not answers:
         P.append(("7", "The bot server is down: choose 7 (Update) to bring it back."))
     elif not run:
@@ -234,7 +255,7 @@ def run_bat(name, run=None):
 
 # result line after each action: re-read the one fact the action was for. `fx` = the readers (tests pass fakes).
 def _default_fx():
-    return {"bot": _bot_state, "keepalive": _keepalive_on, "alerts": _alert_channels}
+    return {"bot": _bot_state, "keepalive": _keepalive_on, "alerts": _alert_channels, "sync_clock": _sync_clock}
 
 
 def result_start(fx):
@@ -267,6 +288,24 @@ def result_update(fx):
         "[FIX] The server does not answer yet. Wait a minute, then choose 1."
 
 
+def _sync_clock():
+    from engine import go
+    return go.sync_clock()
+
+
+def clock_action(fx, out):
+    """9 Fix the clock: w32tm /resync, else the OlympusClock task (no administrator needed once FIX_CLOCK.bat set it up); no task =
+    the one plain sentence. It never starts FIX_CLOCK.bat itself (that needs a right-click > Run as administrator)."""
+    try:
+        r = fx["sync_clock"]() or {}
+    except Exception as e:  # noqa: BLE001
+        r = {"ok": False, "error": f"{e.__class__.__name__}"}
+    if r.get("ok"):
+        return "[OK] " + str(r.get("say") or "Clock sync started.") + " Choose 1 in a minute to see it."
+    out("  " + str(r.get("error") or "Windows did not sync the clock."))
+    return f"[FIX] {CLOCK_FIX_SAY[0].upper() + CLOCK_FIX_SAY[1:]}."
+
+
 # menu number -> (title, bat or None, result fn)
 ACTIONS = {
     "2": ("Start bot", "START_BOT.bat", result_start),
@@ -297,6 +336,7 @@ MENU = ("  ==== TRADING HOME ====",
         "   6  Stop bot",
         "   7  Update",
         "   8  Do my Sunday / daily routine (status, start, keep-alive, alert test)",
+        "   9  Fix the clock",
         "   0  Close")
 
 
@@ -323,6 +363,8 @@ def do_choice(ch, ask=input, out=say, run=None, fx=None, add_fn=None, unseen=Non
         return alerts_action(ask, run, fx, out)
     if ch == "8":
         return routine(ask, out, run, fx)
+    if ch == "9":
+        return clock_action(fx, out)
     return "[FIX] Type a number from the list."
 
 

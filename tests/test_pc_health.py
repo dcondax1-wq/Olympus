@@ -116,7 +116,7 @@ def t_lines():
     check(f"thresholds: {len(cases)} cases (CPU / RAM / disk / NinjaTrader / bot memory / OneDrive / clock / poll trend)", not bad, bad)
     t = {ln["key"]: ln["text"] for ln in H.lines({"nt": {"running": False, "market_open": True, "routes": True},
                                                    "clock": {"drift": 7.0, "max": 5.0}, "onedrive": {"files": ["data/live_state (1).json"]}})}
-    check("red lines say the one fix", "open it now" in t["nt"] and "Sync the clock" in t["clock"] and "tell Claude" in t["onedrive"], t)
+    check("red lines say the one fix", "open it now" in t["nt"] and "FIX_CLOCK.bat" in t["clock"] and "tell Claude" in t["onedrive"], t)
     check("missing facts = no line (skipped, never an error)", H.lines({}) == [])
 
 

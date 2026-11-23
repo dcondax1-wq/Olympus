@@ -446,12 +446,12 @@ def main():
             # the clock
             fake = lambda out, code: (lambda cmd, **k: SimpleNamespace(stdout=out, stderr="", returncode=code))  # noqa: E731
             r = G.sync_clock(run=fake("The following error occurred: Access is denied. (0x80070005)", 2147942405))
-            check("clock: w32tm refused (needs an administrator) -> the Windows Settings steps", not r["ok"]
-                  and "administrator" in r["error"] and "Sync now" in r["steps"], r)
+            check("clock: w32tm refused (needs an administrator), no task -> FIX_CLOCK.bat in plain words", not r["ok"]
+                  and "administrator" in r["error"] and "FIX_CLOCK.bat" in r["steps"], r)
             r = G.sync_clock(run=fake("Sending resync command to local computer\nThe command completed successfully.", 0))
             check("clock: w32tm /resync worked -> synced", r["ok"], r)
             r = G.sync_clock(run=fake("The following error occurred. The service has not been started. (0x80070426)", 2147943462))
-            check("clock: the time service is off -> the Windows Settings steps", not r["ok"] and "time service is off" in r["error"], r)
+            check("clock: the time service is off, no task -> FIX_CLOCK.bat", not r["ok"] and "time service is off" in r["error"], r)
             w.drift = 6.2
             S._clock(fresh=True)
             for _ in range(50):

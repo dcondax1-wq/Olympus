@@ -989,8 +989,9 @@ def status(state=None, connected=None, feed=None) -> dict:
 AUTO_WAIT_S = 20 * 60          # NinjaTrader log-in / live bars: the job waits this long, re-checking
 NT_EVERY_S, FEED_EVERY_S = 10, 15
 CLOCK_MAX_S = 5.0
-CLOCK_STEPS = ("On the PC: Windows Settings > Time & language > Date & time: turn on \"Set time automatically\", "
-               "then press \"Sync now\".")
+CLOCK_TASK = "OlympusClock"          # the Scheduled Task FIX_CLOCK.bat registers (SYSTEM, every 15 min + boot): runs w32tm /resync
+CLOCK_FIX_SAY = "double-click FIX_CLOCK.bat once, right-click > Run as administrator"   # the one plain sentence, everywhere
+CLOCK_STEPS = CLOCK_FIX_SAY[0].upper() + CLOCK_FIX_SAY[1:] + " (it sets Windows' time service and a task, so it never needs you again)."
 
 
 def resume_problem(cfg=None, optin=None, b=None, live=None, new=None) -> str | None:
@@ -1093,23 +1094,34 @@ def resume_now(start_fn, connected=None, live_state=None, env=None, state_fn=Non
 
 
 def sync_clock(run=None) -> dict:
-    """The Start page's "Sync the clock": `w32tm /resync` (Windows' own time service). It may need an administrator: then
-    the Windows Settings steps instead."""
+    """The Start page's "Sync the clock": 1. `w32tm /resync` (Windows' own time service). 2. Refused (needs an administrator, or
+    the time service is off): `schtasks /run /tn OlympusClock`, which works WITHOUT admin once FIX_CLOCK.bat registered the task
+    (it runs as SYSTEM). 3. No such task: say plainly to double-click FIX_CLOCK.bat once (right-click > Run as administrator)."""
     if os.name != "nt" and run is None:
         return {"ok": False, "error": "Only on the Windows PC.", "steps": CLOCK_STEPS}
     run = run or subprocess.run
-    try:
-        r = run(["w32tm", "/resync"], capture_output=True, text=True, timeout=40)
-        out, code = (r.stdout or "") + (r.stderr or ""), r.returncode
-    except Exception as e:
-        out, code = f"{e.__class__.__name__}: {e}", 1
+
+    def go_(cmd):
+        try:
+            r = run(cmd, capture_output=True, text=True, timeout=40)
+            return (r.stdout or "") + (r.stderr or ""), r.returncode
+        except Exception as e:
+            return f"{e.__class__.__name__}: {e}", 1
+    out, code = go_(["w32tm", "/resync"])
     low = out.lower()
     if code == 0 and "error" not in low and "denied" not in low and "not been started" not in low:
         return {"ok": True, "say": "Clock synced with internet time.", "out": out.strip()[-200:]}
     why = ("Windows asks for an administrator to sync the clock" if "denied" in low or "0x80070005" in low else
            "Windows' time service is off" if "not been started" in low or "0x80070426" in low else
            "Windows did not sync the clock")
-    return {"ok": False, "error": f"{why}. {CLOCK_STEPS}", "steps": CLOCK_STEPS, "out": out.strip()[-200:]}
+    o2, c2 = go_(["schtasks", "/run", "/tn", CLOCK_TASK])
+    l2 = o2.lower()
+    if c2 == 0 and "error" not in l2 and "denied" not in l2 and "cannot find" not in l2 and "does not exist" not in l2:
+        return {"ok": True, "say": f"Clock sync started by the {CLOCK_TASK} task (no administrator needed); it follows in a few seconds.",
+                "via": "task", "out": o2.strip()[-200:]}
+    gone = c2 != 0 or "cannot find" in l2 or "does not exist" in l2
+    return {"ok": False, "error": f"{why}, and the {CLOCK_TASK} task is not set up yet: {CLOCK_FIX_SAY}." if gone else
+            f"{why}: {CLOCK_FIX_SAY}.", "steps": CLOCK_STEPS, "out": (out.strip() + " | " + o2.strip())[-240:]}
 
 
 def _note(stage, say, need=None, retry_s=None):

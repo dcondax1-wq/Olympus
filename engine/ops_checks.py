@@ -160,7 +160,7 @@ ERRORS = [
      "Check the Wi-Fi / router. The bot catches up when it is back; NinjaTrader must reconnect too."),
     ("clock", r"CERTIFICATE_VERIFY_FAILED|certificate verify failed|certificate is not yet valid",
      "Secure connections fail: usually the PC clock is wrong.",
-     "Settings > Time & language > Date & time: 'Set time automatically' on, then 'Sync now'."),
+     "Double-click FIX_CLOCK.bat once, right-click > Run as administrator (it fixes the clock for good)."),
     ("disk", r"No space left|disk full|WinError 112|not enough space on the disk",
      "The disk is full.",
      "Empty the Recycle Bin and run Settings > System > Storage > Cleanup recommendations."),

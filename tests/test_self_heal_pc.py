@@ -343,7 +343,7 @@ def test_clock(tmp):
     r = SH.fix_clock(ctx(root, now, apply=True, sync_clock=lambda: {"ok": True}))
     check("g. 3.4 s behind: synced (w32tm, fake)", statuses(r) == ["fixed"] and "3.4 s behind" in r[0]["text"], r)
     r = SH.fix_clock(ctx(root, now, apply=True, sync_clock=lambda: {"ok": False, "error": "Windows asks for an administrator"}))
-    check("g. Windows refuses: needs you, the Settings steps", statuses(r) == ["need"] and "Sync now" in r[0]["step"], r)
+    check("g. Windows refuses: needs you, FIX_CLOCK.bat in plain words", statuses(r) == ["need"] and "FIX_CLOCK.bat" in r[0]["step"], r)
     r = SH.fix_clock(ctx(root, now, sync_clock=lambda: (_ for _ in ()).throw(AssertionError("dry run must not sync"))))
     check("g. dry run: would sync, nothing run", statuses(r) == ["would"], r)
     block(0.8)
