@@ -182,6 +182,10 @@ def build(f: dict, now) -> dict:
              "This week: " + ("; ".join(cl) if cl else "normal hours (no early close)")]
     if dn:
         lines.append(dn)
+    if f.get("pc_guard"):                  # night-pcguard 2026-11-23: Windows Update / sleep cannot stop a trade (engine/pc_guard)
+        lines.append(f["pc_guard"])
+        if not f["pc_guard"].startswith("Windows guard: on"):
+            problems.append("Windows guard is off")
     title = "Ready for Monday" if not problems else f"Before Monday: {problems[0]}"
     if len(problems) > 1:
         title += f" (+{len(problems) - 1})"
@@ -193,6 +197,12 @@ def build(f: dict, now) -> dict:
 def gather(bot, now, news_fn=None) -> dict:
     """The facts build() needs, each read on its own (a failing part = missing, never an exception)."""
     f: dict = {}
+    if os.name == "nt":                    # the PC guard only exists on the Windows PC (scripts/pc_guard.ps1)
+        try:
+            from . import pc_guard
+            f["pc_guard"] = pc_guard.line()
+        except Exception:
+            pass
     try:
         from . import pc_selftest
         f["version"] = (pc_selftest.version() or {}).get("sha")

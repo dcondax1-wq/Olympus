@@ -115,6 +115,17 @@ def _ago(sec):
 
 
 # ------------------------------------------------------------------------------------------------ 1. Status (one plain screen)
+def _guard_line():
+    """engine/pc_guard.line() on the Windows PC ("Windows guard: on / OFF / not set up"); "" elsewhere."""
+    if os.name != "nt":
+        return ""
+    try:
+        from . import pc_guard
+        return pc_guard.line()
+    except Exception:  # noqa: BLE001
+        return ""
+
+
 def _report_tasks():
     """tools/task_audit's last look (data/pc_report/tasks.json): {"report_tasks", "foreign"}; {} when never run."""
     try:
@@ -126,7 +137,7 @@ def _report_tasks():
         return {}
 
 
-def status_screen(now=None, bot=None, accounts=None, keepalive=None, alerts=None, clock=-1, tasks=None):
+def status_screen(now=None, bot=None, accounts=None, keepalive=None, alerts=None, clock=-1, tasks=None, guard=None):
     """-> (lines, problems). Plain words, one line per fact; `problems` = [(menu number, what to do)] for the unchecked ones."""
     import time
     now = now if now is not None else time.time()
@@ -173,6 +184,11 @@ def status_screen(now=None, bot=None, accounts=None, keepalive=None, alerts=None
     L.append(f"  Alerts   : {', '.join(chans) + (' (bus on)' if bus else ' (bus OFF)') if chans else 'no phone channel set up'}")
     if not chans or not bus:
         P.append(("5", "Phone alerts are not set up: choose 5."))
+    gl = _guard_line() if guard is None else guard
+    if gl:
+        L.append("  Guard    : " + gl.replace("Windows guard: ", "Windows guard "))
+        if not gl.startswith("Windows guard: on"):
+            P.append(("9", "The Windows guard is off: right-click FIX_CLOCK.bat > Run as administrator once (it also fixes the clock)."))
     tk = _report_tasks() if tasks is None else tasks
     if (tk.get("report_tasks") or 0) > 1 or tk.get("foreign"):
         L.append(f"  Reports  : {tk.get('report_tasks') or 2} Windows tasks send the 15-minute report (should be 1)")
