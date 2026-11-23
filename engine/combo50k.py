@@ -393,11 +393,8 @@ def _write_switch(block: dict, root: str | None = None) -> str:
     tmp = p + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(block, fh, indent=1)
-    try:
         from .fsutil import replace as _rep
         _rep(tmp, p)
-    except Exception:
-        os.replace(tmp, p)
     return p
 
 
