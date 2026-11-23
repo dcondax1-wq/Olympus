@@ -59,7 +59,7 @@ def main() -> int:
     tmp = tempfile.mkdtemp(prefix="rapid_arm_")
     names = ("CFG", "SECOND_PATH", "ALLOW_PATH", "ACCOUNTS_PATH", "ANCHOR_PATH", "JOB_FILE", "JOB_LOG", "_b", "env_has_live",
              "bot_running", "update", "migrate", "setup_missing", "feed_problem", "sims_passed", "server_up", "server_stale",
-             "env_newer_than_server", "verify_routes", "_http", "arm_b", "start_server", "stop_server", "checklist_lines",
+             "env_newer_than_server", "verify_routes", "_http", "arm_b", "start_server", "stop_server", "ready_lines",
              "time", "startup_shortcuts", "shortcut", "arm_problem")
     keep = {k: getattr(G, k) for k in names}
     keep_mod = (rapid.PATH, rapid.PATH2, rapid.arm, AR.OPTIN_PATH, AR.nt_connected, NT.main, AC.resume_optin)
@@ -97,7 +97,7 @@ def main() -> int:
         G.env_newer_than_server = lambda env=None, pid=None: False
         G.verify_routes = lambda *a, **k: []
         G.arm_b = lambda atlas, path=None, selftest=None: {"ok": True, "already": True}
-        G.checklist_lines = lambda: ([], 0)
+        G.ready_lines = lambda: ([], True)
         G.time = type("T", (), {"sleep": staticmethod(lambda s: None), "time": staticmethod(time.time)})
         G.startup_shortcuts = lambda: None
         G.shortcut = lambda: None

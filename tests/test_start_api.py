@@ -131,7 +131,7 @@ class World:
         G.startup_shortcuts = lambda: self.calls.append("startup")
         G.shortcut = lambda: None
         G._open = lambda: self.calls.append("open")
-        G.checklist_lines = lambda: (["  [OK] all"], 0)
+        G.ready_lines = lambda: (["  READY for the next window"], True)
         G.time.sleep = lambda s: None
         G.POPEN = lambda cmd, **k: self.popen.append((cmd, k))
         SE._selftest_ok = lambda timeout=600: (True, "selftest faked")

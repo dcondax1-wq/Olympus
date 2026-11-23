@@ -45,7 +45,7 @@ class World:
         G.sims_passed = lambda: dict(self.sims)
         G.stop_server = lambda: (self.calls.append("stop_server"), setattr(self, "server", False))
         G.start_server = lambda wait_s=120: (self.calls.append("start_server"), setattr(self, "server", True))[1] or True
-        G.checklist_lines = lambda: (["  [OK] all"], 0)
+        G.ready_lines = lambda: (["  READY for the next window"], True)
         G._open = lambda: self.calls.append("open")
         G.shortcut = lambda: None
         G.mixup = lambda lit, atlas, balances=None: None
@@ -360,7 +360,7 @@ def package_a():
                         env_has_live=lambda: True, server_up=lambda: True, server_stale=lambda: False,
                         env_newer_than_server=lambda: False, verify_routes=lambda lit, atlas: [],
                         soft_routes=lambda lit, atlas: ["ATLAS's 25K is not armed"], startup_shortcuts=lambda: None,
-                        checklist_lines=lambda: ([" [OK] all"], 0), shortcut=lambda: None, _open=lambda: None,
+                        ready_lines=lambda: (["  READY for the next window"], True), shortcut=lambda: None, _open=lambda: None,
                         bot_running=lambda: False)
             saved = {k: getattr(g, k) for k in fake}
             nt_main = NT.main

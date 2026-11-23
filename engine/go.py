@@ -14,7 +14,7 @@ It first pulls the newest main (bot stopped only). Each step is skipped when it 
   After the start: auto-resume on the 50K (same typed phrase) and Startup-folder shortcuts for NinjaTrader and the bot
   server, so from then on turning the PC on (and NinjaTrader connecting) brings the bot back by itself.
   6. account B armed (second_model.json account_b "armed": true) and the bot started on the 50K (ATLAS trades the 25K
-     through account_b), then the launch checklist
+     through account_b), then the ready check (engine/readiness: READY / NOT READY + the fix, once)
      printed and the dashboard opened
 
 The same steps are the dashboard's Start page (web_next/js/next/start.js, engine/start_api.py, local PC only): step_nt,
@@ -273,7 +273,7 @@ def _ps(script, *args):
 
 
 # night-faststart 2026-11-23 (owner: "running the bot takes too long"): START's waits look as soon as the thing can be ready
-# and then often; every limit is unchanged (server 120 s, stop 30 s, checklist 90 s, NinjaTrader / chart 15 min). Waiting
+# and then often; every limit is unchanged (server 120 s, stop 30 s, NinjaTrader / chart 15 min). Waiting
 # only: nothing here trades, arms or changes a setting. _sleep / _clock: tests count the seconds START sits waiting.
 def _sleep(s):           # looked up at call time: tests that set go.time.sleep keep working
     time.sleep(s)
@@ -285,8 +285,7 @@ def _clock():
 
 SERVER_EVERY_S = 0.5     # was 2 s: the first look came 2 s after the start, every look after it 2 s late at most
 STOP_EVERY_S = 0.5       # was 1 s
-CHECK_EVERY_S = 3        # the launch checklist: was a 10 s sleep BEFORE the first look, then every 10 s
-CHECK_MAX_S = 90         # unchanged: up to ~90 s for the startup reconcile
+READY_MAX_S = 20         # night-startcheck: ONE look at the readiness verdict after arming; never longer than this (no wait loop)
 NT_EVERY_S_CONSOLE = 2   # NinjaTrader's log-in: was 5 s
 FEED_EVERY_S_CONSOLE = 3 # the chart fix (live bars back): was 15 s
 
@@ -430,31 +429,34 @@ def startup_shortcuts():
     subprocess.run(["powershell", "-NoProfile", "-Command", ps], capture_output=True)
 
 
-def checklist_launch(max_s=None, every=None):
-    """START's launch checklist: look NOW, then every CHECK_EVERY_S until all green or CHECK_MAX_S (night-faststart: was
-    sleep 10 s first, then every 10 s, 9 looks). -> (lines, red). Read only."""
-    max_s = CHECK_MAX_S if max_s is None else max_s
-    every = CHECK_EVERY_S if every is None else every
-    t0 = _clock()
-    lines, red = checklist_lines()
-    while red != 0 and _clock() - t0 < max_s:
-        _sleep(every)
-        lines, red = checklist_lines()
-    return lines, red
+def ready_lines(max_s=None):
+    """START's line after arming (night-startcheck 2026-11-23): the SAME READY / NOT READY + fix the phone shows (engine/readiness
+    ready_verdict / headline), looked at ONCE. It replaced the launch checklist, which read the dashboard's launch endpoint as "items" / "good" while
+    the endpoint returns "checks" with pass / warn / fail (so it was always empty) and listed the old 2026-10-18 paper launch.
+    Non-blocking: the verdict runs in a thread for at most READY_MAX_S; slower = 'still checking' (the server's own verdict 90 s after
+    it starts reaches the phone anyway). -> (lines, ok) with ok True / False / None (not known). Read only: never arms or trades."""
+    max_s = READY_MAX_S if max_s is None else max_s
+    box: dict = {}
 
-
-def checklist_lines():
-    try:
-        r = _http("/api/dash/launch", timeout=10)
-    except Exception as e:
-        return [f"  (launch checklist not readable yet: {e.__class__.__name__})"], None
-    items = r.get("items") or (r.get("launch") or {}).get("items") or []
-    out, red = [], 0
-    for it in items:
-        ok = it.get("state") == "good"
-        red += 0 if ok else 1
-        out.append(f"  [{'OK' if ok else '..'}] {it.get('label')}: {it.get('detail')}")
-    return out, red
+    def run():
+        try:
+            from . import readiness as RD
+            v = RD.ready_verdict()
+            box["v"], box["head"] = v, RD.headline(v)
+        except Exception as e:  # noqa: BLE001
+            box["err"] = e.__class__.__name__
+    th = threading.Thread(target=run, name="start-ready", daemon=True)
+    th.start()
+    th.join(max_s)
+    if "head" not in box:
+        why = f"not readable: {box['err']}" if "err" in box else f"still checking after {max_s:.0f} s"
+        return [f"  (readiness {why}; the phone gets the verdict in about 2 minutes)"], None
+    v = box["v"]
+    out = [f"  {box['head']}"]
+    for bl in (v.get("blockers") or [])[:2]:
+        fix = bl.get("exact_fix") or ""
+        out.append(f"  - {bl.get('what')}" + (f" -> fix: {fix}" if fix else ""))
+    return out, bool(v.get("ready"))
 
 
 PULL = None              # tests: a fake engine.autoupdate.pull
@@ -854,7 +856,7 @@ def step_arm(cfg, phrase, dry=False, open_page=True, inp=None) -> int:
 def _step_arm(cfg, phrase, dry=False, open_page=True, inp=None) -> int:
     """4. only with the typed phrase: NINJATRADER_LIVE in .env.local.ps1, the server (re)started so it reads it, the 25K
     armed, the bot started on the 50K, the routes checked in the running bot (stopped when wrong), auto-resume on, the
-    Startup-folder shortcuts, then the launch checklist."""
+    Startup-folder shortcuts, then the ready check (once, no wait)."""
     from . import arm_report as AR
     z_lbl, a_lbl = "Zlarior 50K", "ATLAS 25K"
     if phrase != LIVE_PHRASE:
@@ -945,11 +947,12 @@ def _step_arm(cfg, phrase, dry=False, open_page=True, inp=None) -> int:
     except Exception:
         pass
     startup_shortcuts()
-    print("\n Launch checklist (the bot unlocks entries by itself once everything reconciles):")
-    lines, red = checklist_launch()
+    print("\n Ready check (the same READY / NOT READY your phone shows):")
+    lines, ok = ready_lines()
     print("\n".join(lines))
-    print("\n [OK] Running. Leave the PC on, plugged in, NinjaTrader open. First trades from 02:00 ET." if red == 0 else
-          "\n [..] Running; lines with .. are still settling or need the fix shown on the dashboard.")
+    print("\n [OK] Running. Leave the PC on, plugged in, NinjaTrader open. First trades from 02:00 ET." if ok else
+          "\n [..] Running; do the fix shown above (the phone says it too)." if ok is False else
+          "\n [OK] Running. Leave the PC on, plugged in, NinjaTrader open; the phone will say READY or the fix.")
     if open_page:
         _open()
     shortcut()
