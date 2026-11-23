@@ -1,0 +1,107 @@
+diff --git a/CLAUDE.md b/CLAUDE.md
+index 6ae7532b7..64246a07a 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -32,6 +32,6 @@ an area; the old long brief is its last section).
+ - Live strategy LIT: `engine/lit.py`, `engine/lit_live.py`, `STRATEGY.md`. PC bot: `server.py` + `engine/live.py` -> NinjaTrader
+   via `engine/ninjatrader.py`. ATLAS: `engine/second.py`, `engine/account_b.py`. Apps: `tools/web_public/<id>/` (map: `docs/OLYMPUS_MAP.md`).
+ - Home (owner 2026-11-20): **`dcondax1-wq/Olympus` branch `pc`** is the one main repo. Commit and push only there (`git push
+-  origin HEAD:pc`, or `python tools/ship.py`); the PC updates itself from it (`docs/AUTO_UPDATE.md`). Never use the old
++  https://github.com/dcondax1-wq/Olympus HEAD:pc`, or `python tools/ship.py`); the PC updates itself from it (`docs/AUTO_UPDATE.md`). Never use the old
+   `demetrades2000-coder/nq-liquidity-engine` repo or its `claude/clever-heisenberg-51zwcr` branch.
+ - Key checks: `python -X utf8 -m tests.test_lit_live` (live loop = backtest), `python -m engine.ninjatrader --selftest`.
+diff --git a/tools/build_web_dashboard.py b/tools/build_web_dashboard.py
+index 018e09111..e1f5b2c22 100644
+--- a/tools/build_web_dashboard.py
++++ b/tools/build_web_dashboard.py
+@@ -1340,7 +1340,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
+                                 capture_output=True, text=True, timeout=180)
+             r2 = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "money_publish.py"), "--site", out, "--src", mtmp, "--quiet"],
+                                 capture_output=True, text=True, timeout=60)
+-            print(f"  money: engine rc={r1.returncode}, publish rc={r2.returncode} -> money/*.json (sample data until the PC runs RUN_MONEY.bat)")
++            print(f"  money: engine rc={r1.returncode}, publish rc={r2.returncode} -> money/*.json (sample data until the PC runs tools/bat/RUN_MONEY.bat)")
+     except Exception as e:  # noqa: BLE001
+         print(f"  money: skipped ({e})")
+     # Jarvis brain v3: strategy facts + global search index (+ agents-now.json); NQ how-to copy; never fatal
+diff --git a/tools/ship.py b/tools/ship.py
+index 372fe3b1a..1acf5589d 100644
+--- a/tools/ship.py
++++ b/tools/ship.py
+@@ -76,6 +76,12 @@ def main(argv=None) -> int:
+     sh(sys.executable, "tools/model_versions.py", "--check")
+     if subprocess.run([sys.executable, "tools/win_paths.py"], cwd=ROOT).returncode != 0:   # even with --no-tests: a bad name
+         raise SystemExit("[STOP] a file name Windows refuses: the PC update would roll back. Nothing pushed")  # blocks every PC update
++    # LEAD_CHECKLIST A3 (2026-11-23): the Research Brain + Hub data follow LEDGER / write-ups / decisions; a stale file turns
++    # tests.test_brain_hub / test_research_hub2 red on the phone site. Order matters: the hub reads brain-data.json.
++    for tool in ("tools/build_brain_hub.py", "tools/build_research_hub.py"):
++        if subprocess.run([sys.executable, tool, "--check"], cwd=ROOT).returncode != 0:
++            subprocess.run([sys.executable, tool], cwd=ROOT)
++            raise SystemExit(f"[STOP] {tool} was stale: rebuilt it; commit the new data file and ship again. Nothing pushed")
+     if not a.no_tests and subprocess.run([sys.executable, "tests/smoke.py"], cwd=ROOT).returncode != 0:
+         raise SystemExit("[STOP] smoke check red: nothing pushed")
+     rem = home_remote()
+diff --git a/tools/web_public/business/index.html b/tools/web_public/business/index.html
+index 26ff5d885..4ff1c2628 100644
+--- a/tools/web_public/business/index.html
++++ b/tools/web_public/business/index.html
+@@ -28,7 +28,7 @@
+ <script src="../olympus/agora-ui.js?v=9" defer></script>
+ <script src="../olympus/gate-nav.js?v=g11" defer></script>
+ <link rel="prefetch" href="../olympus/sfx.js?v=s4" as="script"><!-- the sound engine (32 KB gzipped) is not in the deferred chain the page waits on: olympus.js loads it after the page has loaded (its sound bed) or on the first cue -->
+-<script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#c8a24a'); r.setProperty('--oly-accent-rgb', '200, 162, 74'); })();</script>
++<script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#f1c14b'); r.setProperty('--oly-accent-rgb', '200, 162, 74'); })();</script>
+ <link rel="stylesheet" href="business.css?v=6">
+ <link rel="stylesheet" href="dashkit.css?v=2fg"><!-- night-revamp-dash: the Money charts + live cards (dashkit.js) -->
+ <link rel="stylesheet" href="../olympus/shell.css?v=s6"><!-- day-arenas: the one design layer, loaded last -->
+diff --git a/tools/web_public/dionysus/index.html b/tools/web_public/dionysus/index.html
+index c111f5691..266dbcc6f 100644
+--- a/tools/web_public/dionysus/index.html
++++ b/tools/web_public/dionysus/index.html
+@@ -25,7 +25,7 @@
+ <script src="../olympus/intro-app.js?v=i12" defer></script>
+ <script src="../olympus/a11y.js" defer></script>
+ <script src="../olympus/agora-ui.js?v=9" defer></script>
+-<script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#9d59ee'); r.setProperty('--oly-accent-rgb', '157, 89, 238'); })();</script>
++<script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#b77a8a'); r.setProperty('--oly-accent-rgb', '157, 89, 238'); })();</script>
+ <link rel="stylesheet" href="dionysus.css?v=a8">
+ <link rel="stylesheet" href="../olympus/a11y.css?v=a3"><!-- with a11y.js: in the head so the text never jumps when it arrives (CLS) -->
+ </head>
+diff --git a/tools/web_public/nq/index.html b/tools/web_public/nq/index.html
+index fc21631d1..8b6160df5 100644
+--- a/tools/web_public/nq/index.html
++++ b/tools/web_public/nq/index.html
+@@ -40,7 +40,7 @@
+ <script src="../olympus/a11y.js" defer></script>
+ <script src="../olympus/agora-ui.js?v=9" defer></script>
+ <script src="../olympus/gate-nav.js?v=g11" defer></script><!-- the way back to the Gate + Go to (olympus/gate-nav.js) -->
+-<script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#f1c14b'); r.setProperty('--oly-accent-rgb', '241, 193, 75'); })();</script>
++<script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#c8a24a'); r.setProperty('--oly-accent-rgb', '241, 193, 75'); })();</script>
+ <link rel="stylesheet" href="nq.css?v=a8">
+ <link rel="stylesheet" href="../nqdeep.css?v=2" media="print" onload="this.media='all'"><!-- perf: the deep views (.nqd-*) are far below the first screen: not render-blocking -->
+ <link rel="stylesheet" href="nqdesk.css?v=11">
+diff --git a/tools/web_public/sw.js b/tools/web_public/sw.js
+index d19e30f10..e1074e491 100644
+--- a/tools/web_public/sw.js
++++ b/tools/web_public/sw.js
+@@ -91,7 +91,7 @@
+ // missioncore, goals, hub, more, extras, litkit, second, statuscore, procore, blitzcore, fleet, launch, hermes/cards).
+ // v107 (2026-11-17, owner: "each tab way better in words"): plainer $-first words in moneycore, moneynowcore, secondcore,
+ // second, liveview, live_panel, main.js subtitles. OTHER_APPS unchanged.
+-const CACHE = 'le-public-v208';
++const CACHE = 'le-public-v209';
+ const NAV_WAIT_MS = 3500;
+ let SLOW_UNTIL = 0;       // the site was just slow (the page waited NAV_WAIT_MS): data.json / home.json then wait 0.4 s, not 3.5 s
+ const COPY_CLIENTS = new Map();   // a page (client id) answered from the saved copy -> until when its data.json / home.json are too
+diff --git a/web_next/sw.js b/web_next/sw.js
+index 5ef28bbc9..2862969a9 100644
+--- a/web_next/sw.js
++++ b/web_next/sw.js
+@@ -2,7 +2,7 @@
+ // API calls are never cached (they are live state). Static files are network-first with a cache fallback.
+ // v28 (2026-10-30 night 3): Home's status bar + the Sunday open card (js/next/polish.js + statuscore.js), the sidebar in plain
+ // sections (Bots · Live · Money · Insight), Today · Brain · Trades · Results · Rules on every bot page, css/polish.css (motion).
+-const SHELL = 'le-shell-next-v60';  // v42 (2026-11-17): launcher l8 + apps-list l3 (the Trading app). // v40 (2026-11-16): moneynowcore 'Nothing armed' fix; v34 (2026-11-04): the OLYMPUS launcher (js/next/apps-list.js + launcher.js). was v33  // was   // v32 (2026-11-03 day): js/next/zenithcore.js (shared with the phone: glass cards with an edge light + a small tilt, jfx quality, Olympus themes through one token function; skins.js writes its accent through it); // v31 (2026-11-03): the Scorecard (js/next/pro.js + procore.js, sidebar Insight: Zenith score, expectancy $, eval pace, underwater vs the MFFU floor, playbook, what-if sizing, $ by tag); // v27 (2026-10-29 night): the BLITZ page after ATLAS in the sidebar (js/next/blitz.js + blitzcore.js: Today · Brain · Trades · Results · Rules · Go live), the Mind page + cards (mindcore.js, GET /api/next/mind), Trader's deck (deckcore.js: risk meter, next 24 h, eval odds, real P&L calendar, journal, notification center, since you last looked, Holodeck replays), Holodeck day links (js/next/holo.js), GET /api/next/blitz (server.py); v26 (2026-10-29): the Holodeck page (js/next/holo.js + holocore.js, css/holo.css, js/fx.js holo.js: the day in 3D, every fill exact, what every bot is thinking, replay; GET /api/next/holo, /api/next/holo/days), the 3D button on Live View; v25 (2026-10-29): deep space (css/space.css: the static CSS sky + glass; js/fx.js space.js: Earth, the eclipse, the Sun, stars, the bots' satellites, shooting stars; 3D on by default), Mission Control (js/next/mission.js + missioncore.js, css/mission.css), Live View structure layer (liveviewchart.js, liveview.css); v24 (2026-10-28 PM): the 3D / glass look on Home "Today · real accounts", Real results and AI Insights (realcore.js v2, real.js, depth.js, insight.js, insight.css?v=2); v23 (2026-10-28): Home "Today · real accounts" cards + Safety card, the Real results page (realcore.js, real.js, cc.js, routes.js), REAL next to every paper figure (boardcore.js v2, tradepics.js v2), engine/live_board.py "real"; v22 (2026-10-27): the Run / Stop switch at the top of every page (runswitch.js, start.css, app.js, botctl.js, start.js, cc.js); v21 (2026-10-26 PM): one "Start trading" button + Start page first when the bot is stopped (start.js, start.css, app.js); v20 (2026-10-26): Start & Accounts page (start.js, start.css); v19 (2026-10-25 PM): Goals page "Funded & payouts" cards (cc.js, engine/funded_life.py); v18 (2026-10-25 PM): "Zlarior" (the LIT bot's display name): sidebar Home · Zlarior · ATLAS · Results · All tools, bot pages with sections (routes.js BOTS); v17 (2026-10-25 PM): K3 icon + clean-up pass: six-item sidebar + Advanced, lean top bar with a ⋯ menu, calm Home, clean.css, 3D off by default; v15 (2026-10-25): Command center, grouped sidebar, cc.js / cc.css; v14 (2026-10-23): trade pictures (tradepics.js, pics.js); v13: ATLAS page + Today two-strategy cards and the Scaling plan; v12: scale / ATLAS; v11: Second strategies; v10: Bot Brain
++const SHELL = 'le-shell-next-v61';  // v61 (2026-11-23): start.js (startfix Re-arm line + last result, zerotouch keep-alive words, integration text); // v42 (2026-11-17): launcher l8 + apps-list l3 (the Trading app). // v40 (2026-11-16): moneynowcore 'Nothing armed' fix; v34 (2026-11-04): the OLYMPUS launcher (js/next/apps-list.js + launcher.js). was v33  // was   // v32 (2026-11-03 day): js/next/zenithcore.js (shared with the phone: glass cards with an edge light + a small tilt, jfx quality, Olympus themes through one token function; skins.js writes its accent through it); // v31 (2026-11-03): the Scorecard (js/next/pro.js + procore.js, sidebar Insight: Zenith score, expectancy $, eval pace, underwater vs the MFFU floor, playbook, what-if sizing, $ by tag); // v27 (2026-10-29 night): the BLITZ page after ATLAS in the sidebar (js/next/blitz.js + blitzcore.js: Today · Brain · Trades · Results · Rules · Go live), the Mind page + cards (mindcore.js, GET /api/next/mind), Trader's deck (deckcore.js: risk meter, next 24 h, eval odds, real P&L calendar, journal, notification center, since you last looked, Holodeck replays), Holodeck day links (js/next/holo.js), GET /api/next/blitz (server.py); v26 (2026-10-29): the Holodeck page (js/next/holo.js + holocore.js, css/holo.css, js/fx.js holo.js: the day in 3D, every fill exact, what every bot is thinking, replay; GET /api/next/holo, /api/next/holo/days), the 3D button on Live View; v25 (2026-10-29): deep space (css/space.css: the static CSS sky + glass; js/fx.js space.js: Earth, the eclipse, the Sun, stars, the bots' satellites, shooting stars; 3D on by default), Mission Control (js/next/mission.js + missioncore.js, css/mission.css), Live View structure layer (liveviewchart.js, liveview.css); v24 (2026-10-28 PM): the 3D / glass look on Home "Today · real accounts", Real results and AI Insights (realcore.js v2, real.js, depth.js, insight.js, insight.css?v=2); v23 (2026-10-28): Home "Today · real accounts" cards + Safety card, the Real results page (realcore.js, real.js, cc.js, routes.js), REAL next to every paper figure (boardcore.js v2, tradepics.js v2), engine/live_board.py "real"; v22 (2026-10-27): the Run / Stop switch at the top of every page (runswitch.js, start.css, app.js, botctl.js, start.js, cc.js); v21 (2026-10-26 PM): one "Start trading" button + Start page first when the bot is stopped (start.js, start.css, app.js); v20 (2026-10-26): Start & Accounts page (start.js, start.css); v19 (2026-10-25 PM): Goals page "Funded & payouts" cards (cc.js, engine/funded_life.py); v18 (2026-10-25 PM): "Zlarior" (the LIT bot's display name): sidebar Home · Zlarior · ATLAS · Results · All tools, bot pages with sections (routes.js BOTS); v17 (2026-10-25 PM): K3 icon + clean-up pass: six-item sidebar + Advanced, lean top bar with a ⋯ menu, calm Home, clean.css, 3D off by default; v15 (2026-10-25): Command center, grouped sidebar, cc.js / cc.css; v14 (2026-10-23): trade pictures (tradepics.js, pics.js); v13: ATLAS page + Today two-strategy cards and the Scaling plan; v12: scale / ATLAS; v11: Second strategies; v10: Bot Brain
+ const ASSETS = ['/', '/index.html', '/css/app.css', '/css/theme.css', '/css/skins.css', '/css/dash.css', '/css/next.css', '/css/hub.css', '/css/ops.css', '/css/cc.css', '/css/clean.css', '/css/start.css', '/manifest.webmanifest', '/icons/icon.svg?v=p111030'];
+ ASSETS.push('/css/insight.css?v=2');   // AI Insights page (js/next/insight.js; v2 = the 3D / glass look)
+ ASSETS.push('/css/liveview.css');   // Live View page (js/next/liveview.js)

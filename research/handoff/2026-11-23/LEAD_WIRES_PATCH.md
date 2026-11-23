@@ -1,0 +1,5 @@
+# lead_wires.patch (night-wirepatch 2026-11-23): `git apply research/handoff/2026-11-23/lead_wires.patch` on night-integrate (cb9e21db6); `git apply --check` is clean.
+Covers LEAD_CHECKLIST A1 (sw.js le-public-v208 -> v209), A2 (web_next/sw.js le-shell-next-v61), A3 (ship.py stops on a stale brain-data / hub-data and rebuilds them), B5 (build_web_dashboard RUN_MONEY -> tools/bat/RUN_MONEY.bat), B6 (CLAUDE.md push by URL), B17 (accents).
+B17: apps.js is the table (its 11-22 edit is the newest), so the 3 page pre-paints follow it: business #c8a24a -> #f1c14b, nq #f1c14b -> #c8a24a, dionysus #9d59ee -> #b77a8a; apps.js / olympus.js unchanged (test_agora_audit accents check now passes).
+Not in the patch: A4 (owner hands), A5 (MONDAY_SETUP placement: decision), A6 (engine/monday.py: only once night-pcguard is merged; pcguard is not in night-integrate).
+Smoke on the patched tree: 10/11 green (only tests.test_zenith_mode: no python playwright in the cloud); bat_menu 18/18, nq_page 51/51, dionysus_page 34/34, business_pages 32/32, site_sweep 4/4, site_checks + win_paths fine.
