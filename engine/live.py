@@ -297,6 +297,16 @@ def next_wake(now: float, offsets=(2.0, 32.0)) -> float:
     return m + 120.0
 
 
+def rapid_blitzes_of(bot) -> list:
+    """BLITZ's lanes on the Rapid EOD 25K evals of `bot` (engine/rapid_blitz.py; any bot-like object: getattr only)."""
+    return [x for x in (getattr(bot, "acct_rb", None), getattr(bot, "acct_rb2", None)) if x is not None]
+
+
+def blitz_lanes_of(bot) -> list:
+    """Every BLITZ of `bot` that may hold a position: account C, then each Rapid's BLITZ lane."""
+    return [x for x in (getattr(bot, "acct_c", None),) if x is not None] + rapid_blitzes_of(bot)
+
+
 class LiveBot:
     """Same Engine as the backtester, re-run on a rolling window every poll; decisions are a pure function of the bars.
 
@@ -772,7 +782,7 @@ class LiveBot:
             ar.kill(self.cfg.get("sym", "NQ"))
         if getattr(self, "acct_c", None) is not None:   # and account C (engine/account_c.py, BLITZ)
             self.acct_c.kill(self.cfg.get("sym", "NQ"))
-        for rb in self._rapid_blitzes():                # and BLITZ on each Rapid EOD 25K eval (engine/rapid_blitz.py)
+        for rb in rapid_blitzes_of(self):                # and BLITZ on each Rapid EOD 25K eval (engine/rapid_blitz.py)
             rb.kill(self.cfg.get("sym", "NQ"))
         if getattr(self, "fleet", None) is not None:    # and every fleet follower (engine/fleet.py)
             self.fleet.kill(self.cfg.get("sym", "NQ"))
@@ -829,7 +839,7 @@ class LiveBot:
         if ac is not None and ac.open_t is not None:                       # account C (engine/account_c.py, BLITZ)
             r = ac.kill(sym)
             extras.append({"id": "account_c", "ok": bool(r.get("ok")), "error": r.get("error")})
-        for rb in self._rapid_blitzes():                                   # BLITZ on each Rapid EOD 25K eval
+        for rb in rapid_blitzes_of(self):                                   # BLITZ on each Rapid EOD 25K eval
             if rb.open_t is not None:
                 r = rb.kill(sym)
                 extras.append({"id": "rapid2_blitz" if rb.slot == "rapid2" else "rapid_blitz", "ok": bool(r.get("ok")), "error": r.get("error")})
@@ -917,7 +927,7 @@ class LiveBot:
         if getattr(self, "acct_c", None) is not None and not self.kill:
             self.acct_c.adapter_tick()              # account C's adapter (never raises)
         if not self.kill:
-            for rb in self._rapid_blitzes():
+            for rb in rapid_blitzes_of(self):
                 rb.adapter_tick()                   # BLITZ on each Rapid EOD 25K eval (never raises)
         if getattr(self, "fleet", None) is not None and not self.kill:
             self.fleet.adapter_tick()               # the fleet followers' adapters (engine/fleet.py, never raises)
@@ -1886,7 +1896,7 @@ class LiveBot:
             gb = self._guard_entry(ent, q, sym, now)
             if gb:
                 why = f"GUARD {gb}"
-        for ac in self._blitz_lanes():
+        for ac in blitz_lanes_of(self):
             if why:
                 break
             # account C / BLITZ on a Rapid EOD (OFF by default) holding the other side is closed at market first, as for LIT /
@@ -2349,7 +2359,7 @@ class LiveBot:
             gb = self._guard_entry(ent, q, sym, now)
             if gb:
                 why = f"GUARD {gb}"
-        for ac in self._blitz_lanes():
+        for ac in blitz_lanes_of(self):
             if why:
                 break
             # BLITZ (account C / a Rapid EOD's lane) holding the other side is closed at market first (LIT > ATLAS > BLITZ)
@@ -2914,11 +2924,11 @@ class LiveBot:
 
     def _rapid_blitzes(self) -> list:
         """BLITZ's lanes on the Rapid EOD 25K evals that run (engine/rapid_blitz.py; 1st, then 2nd)."""
-        return [x for x in (getattr(self, "acct_rb", None), getattr(self, "acct_rb2", None)) if x is not None]
+        return rapid_blitzes_of(self)
 
     def _blitz_lanes(self) -> list:
         """Every BLITZ that may hold a position: account C, then each Rapid's BLITZ lane."""
-        return [x for x in (getattr(self, "acct_c", None),) if x is not None] + self._rapid_blitzes()
+        return blitz_lanes_of(self)
 
     def _start_rapid(self):
         """ATLAS's lane of each Rapid EOD (LIT's lanes are extra accounts, _start_accounts), then BLITZ's lane on a Rapid EOD
@@ -3103,7 +3113,7 @@ class LiveBot:
 
     def _rapid_blitz_tick(self, df5, df1, sym, now):
         """BLITZ's lane on each Rapid EOD 25K eval (engine/rapid_blitz.py), right after account C's poll. Never raises."""
-        rbs = self._rapid_blitzes()
+        rbs = rapid_blitzes_of(self)
         if not rbs:
             return
         try:
@@ -3122,7 +3132,7 @@ class LiveBot:
         """Account C (BLITZ, engine/account_c.py) or BLITZ on a Rapid EOD (engine/rapid_blitz.py) holds the direction opposite
         to this LIT entry: closed at market first; LIT routes only once that close is CONFIRMED flat. Off / flat / same side:
         True at once (LIT never held back). The Rapid's own LIT lane closes its BLITZ on either side (one position there)."""
-        lanes = self._blitz_lanes()
+        lanes = blitz_lanes_of(self)
         if not lanes:                                   # then the fleet's followers (engine/fleet.py): off = True at once
             return True if getattr(self, "fleet", None) is None else self._hedge_clear_fleet(ent, sym, now)
         et_ = int(ent["entry_t"])
