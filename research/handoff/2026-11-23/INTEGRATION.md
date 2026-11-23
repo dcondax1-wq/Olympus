@@ -42,8 +42,15 @@ Branch `night-integrate` only; nothing pushed to `pc`. No arming, no strategy / 
 | 26 | night-pcguard-rt (brings night-pcguard + night-tasks) | ffeda5c02 | FIX_CLOCK.bat, engine/trade_home.py, tools/pc_report.py |
 | 27 | night-tasks-rt | b12908fa0 | none (notes only) |
 
-Not merged (not on the lead's list and no -rt review yet): night-asks, night-blitzfills, night-decide, night-docs, night-faults,
-night-hermetic, night-roll, night-verify.
+### Round 4 (heads after 04:25 UTC)
+| # | Branch | Head | Conflicts |
+|---|---|---|---|
+| 28 | night-reds-rt (brings night-reds 3rd) | e019ca079 | tests/test_bat_menu.py (same ALLOW fix on both sides) |
+| 29 | night-roll-rt (brings night-roll) | 5069d0098 | engine/trade_home.py, tests/run_area.py, tests/test_ops.py |
+| 30 | night-verify-rt (brings night-verify) | 26ff54e39 | engine/trade_home.py, tests/run_area.py |
+
+Not merged (not on the lead's list and no -rt review yet): night-addacct, night-alertproof, night-asks, night-blitzfills, night-calls,
+night-decide, night-docs, night-faults, night-hermetic, night-leadwires, night-mondaysim, night-reds2, night-reds3, night-secps, night-wirepatch.
 
 ## Resolutions (both sides' intent kept, no safety check dropped)
 - **run_area.py (notify-rt, zerotouch):** append-only lines, both kept (`package_b` + `notify_rt`; `bat_menu`, `context_refresh`, `bat_shortcuts` + `zerotouch`), `if __name__` block kept last.
@@ -90,6 +97,13 @@ night-hermetic, night-roll, night-verify.
   root FIX_CLOCK_OFF.bat landed on tools/bat/FIX_CLOCK_OFF.bat via git's rename detection. Its old-place names in docs/OWNER_MANUAL, engine/win_guard,
   scripts/win_guard.ps1, tests/test_win_guard, tools/morning_brief (STATUS.bat), tools/pc_report (CONNECT_DAY.bat), tools/task_audit were repathed.
 - **brain-data.json (reds' rebuild):** now quotes LEDGER.md's old "GITHUB_SIGNIN.bat" line (history), so test_bat_menu ALLOWs that one generated file.
+
+- **engine/trade_home.py (roll + verify vs pcguard/tasks/cleanup/notify/payout):** every helper kept (`_guard_line`, `_report_tasks`,
+  `_roll_fact`, `_update_check`); `status_screen(..., tasks, guard, roll, upd)` takes all four; MENU = cleanup 10-14 + M, T, P, then roll's R;
+  do_choice keeps M / P / T and adds R. R runs **tools/bat/ROLL.bat** (night-roll called `ROLL.bat` at the top folder, where cleanup no
+  longer has it: R would have said "did not open"). Roll's / verify's owner lines that named ROLL.bat, ONE_TIME_SETUP.bat, CLEAN_PC.bat
+  by the old place (engine/readiness READY fix, trade_home, post_update_check) now say tools/bat/.
+- **tests/test_ops.py (roll vs reds):** reds' stricter clock check kept (it also wants "Run as administrator").
 
 ## Tests
 See the table in the final summary (sent to the lead). Script used for the moved-.bat lint: test_bat_menu d (all files, not only the first 25).
