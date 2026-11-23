@@ -1857,7 +1857,10 @@ def card(snap: dict, cfg: dict | None = None, last: dict | None = None) -> list:
     elif not cfg.get("topic"):
         rows.append(("NEXT", "NEXT", "Double-click BOTS_BACK.bat once to make your phone alert topic."))
     else:
-        rows.append(("NEXT", "NEXT", "nothing to do."))
+        if _d(cfg.get("tested")).get("topic") != cfg.get("topic"):     # red team 2026-11-23: an auto-made topic nobody subscribes to
+            rows.append(("NEXT", "NEXT", f"Phone: ntfy app -> + -> topic {cfg['topic']} -> Subscribe, then double-click TEST_ALERT.bat."))
+        else:
+            rows.append(("NEXT", "NEXT", "nothing to do."))
     return rows
 
 

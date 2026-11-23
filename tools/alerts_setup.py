@@ -162,8 +162,8 @@ def ensure_ntfy_topic() -> dict:
 
 def test(say=print, cfg=None, make_topic: bool = True, show_topic: bool = False) -> int:
     """Every channel on its own: one plain line each, OK or FAIL + what to do. 0 = at least one reached the phone."""
+    topic = ensure_ntfy_topic().get("topic") if make_topic else None     # first: the config below then holds a topic just made
     cfg = cfg if cfg is not None else AB.config()
-    topic = ensure_ntfy_topic().get("topic") if make_topic else None
     say(f"TEST ALERT: {AB.TEST_TITLE}")
     if AB.switched_off():
         say("Note: the alert bus is switched OFF (ALERTS_ON turns it back on); this test still tries every channel.")
@@ -172,12 +172,19 @@ def test(say=print, cfg=None, make_topic: bool = True, show_topic: bool = False)
     for ch, (rid, why) in res.items():
         if rid:
             good += 1
-            say(f"  OK    {AB.NAMES[ch]:<16} delivered (receipt {AB.redact(rid, cfg)})")
+            say(f"  OK    {AB.NAMES[ch]:<16} " + ("sent to your private topic (it shows only on a phone whose ntfy app subscribes to it)"
+                                                    if ch == "ntfy" else f"delivered (receipt {AB.redact(rid, cfg)})"))
         else:
             say(f"  FAIL  {AB.NAMES[ch]:<16} {AB.redact(plain(ch, why), cfg)}")
     if not cfg.get("telegram") and not cfg.get("discord"):
         say("  (Telegram / Discord not set up: optional. ntfy + the Olympus app need no setup.)")
     say(f"{good} of {len(res)} channels delivered." + ("" if good else " NOTHING reached your phone: do the steps below."))
+    if topic and show_topic and (res.get("ntfy") or (None, None))[0]:
+        try:                               # the 15-minute report's card stops asking to subscribe once a test went out
+            from tools import pc_report
+            pc_report.mark_tested(pc_report.load_cfg())
+        except Exception:
+            pass
     if topic and show_topic:               # TEST_ALERT.bat only: on the PC screen (never logged, never in a public post)
         say(f"Phone, 1 minute: ntfy app (App Store, free) -> + -> topic {topic} -> Subscribe. "
             "And/or: Olympus from the Home Screen -> tap 'Allow notifications'.")
