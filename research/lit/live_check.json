@@ -70,7 +70,7 @@
    "diff_usd": -318.0,
    "max_trade_usd": -17.0
   },
-  "seconds": 24
+  "seconds": 17
  },
  "intraday": {
   "trade_days": 120,
@@ -252,14 +252,14 @@
    "within_1_min": 119,
    "within_5_min": 120
   },
-  "seconds": 1017
+  "seconds": 763
  },
  "cache": {
   "polls": 100,
   "n_bad": 0,
   "bad": [],
   "hits": 78,
-  "seconds": 14
+  "seconds": 12
  },
  "bot": {
   "sessions": [
@@ -332,5 +332,5 @@
   ],
   "ok": true
  },
- "seconds": 1354
+ "seconds": 1091
 }
