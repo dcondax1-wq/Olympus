@@ -115,7 +115,18 @@ def _ago(sec):
 
 
 # ------------------------------------------------------------------------------------------------ 1. Status (one plain screen)
-def status_screen(now=None, bot=None, accounts=None, keepalive=None, alerts=None, clock=-1):
+def _report_tasks():
+    """tools/task_audit's last look (data/pc_report/tasks.json): {"report_tasks", "foreign"}; {} when never run."""
+    try:
+        import json
+        with open(os.path.join(ROOT, "data", "pc_report", "tasks.json"), encoding="utf-8") as fh:
+            d = json.load(fh)
+        return d if isinstance(d, dict) else {}
+    except Exception:  # noqa: BLE001
+        return {}
+
+
+def status_screen(now=None, bot=None, accounts=None, keepalive=None, alerts=None, clock=-1, tasks=None):
     """-> (lines, problems). Plain words, one line per fact; `problems` = [(menu number, what to do)] for the unchecked ones."""
     import time
     now = now if now is not None else time.time()
@@ -162,6 +173,10 @@ def status_screen(now=None, bot=None, accounts=None, keepalive=None, alerts=None
     L.append(f"  Alerts   : {', '.join(chans) + (' (bus on)' if bus else ' (bus OFF)') if chans else 'no phone channel set up'}")
     if not chans or not bus:
         P.append(("5", "Phone alerts are not set up: choose 5."))
+    tk = _report_tasks() if tasks is None else tasks
+    if (tk.get("report_tasks") or 0) > 1 or tk.get("foreign"):
+        L.append(f"  Reports  : {tk.get('report_tasks') or 2} Windows tasks send the 15-minute report (should be 1)")
+        P.append(("5", "Two tasks send the phone report: choose 5, then 3 (one report task)."))
     n_today = st.get("trades_today") if answers else None
     L.append(f"  Last trade: {('%s trade(s) today' % n_today) if n_today is not None else 'unknown (bot not answering)'}")
     L.append("")
@@ -317,7 +332,12 @@ ROUTINE = ("1", "2", "3", "t")      # status, start bot, keep-alive, alert test,
 
 
 def alerts_action(ask, run, fx, out):
-    c = (ask("  1 Set up Telegram / Discord (then it tests)   2 Send a test alert only   Enter = back: ") or "").strip()
+    c = (ask("  1 Set up Telegram / Discord (then it tests)   2 Send a test alert only   3 One report task   Enter = back: ") or "").strip()
+    if c == "3":                       # tools/task_audit --fix: our own extra report tasks removed (exact names), logged
+        rc = run([sys.executable, "-X", "utf8", "-m", "tools.task_audit", "--fix"]) if run else run_cmd(
+            [sys.executable, "-X", "utf8", "-m", "tools.task_audit", "--fix"])
+        return "[OK] Report tasks checked: see the lines above (logs\\task_cleanup.log)." if rc == 0 else \
+            "[FIX] The task check did not run. Send a photo of this window to Claude."
     if c == "1":
         run_bat("ALERTS_SETUP.bat", run)
         return result_alerts(fx)

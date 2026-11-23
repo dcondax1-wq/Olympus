@@ -13,6 +13,8 @@ What it does (a daemon thread of the bot server, started with the other watchers
   3. every 5 minutes: when the report's own last run (data/pc_report/last.json "t") is older than LATE_S or missing, it runs
      the report itself (`tools/pc_report.py --quiet`, a hidden below-normal child). pc_report's run lock means the task and
      the keeper never send twice; when the task works, the keeper never runs anything.
+  4. once per server start, on Windows: tools/task_audit.fix (night-tasks 2026-11-23: two schedulers posted the report
+     every 15 min, 122 s apart): exactly one task runs the report; pc_report itself skips a full run within 5 min of the last.
 Never arms, starts, stops or routes anything; never reads the private ntfy settings itself. Every failure is soft (one log line).
 Off: LE_REPORT_KEEPER=0, a dev / test server (LE_NO_AUTOSTART=1), the self-test's children (LE_SELFTEST_CHILD=1).
 Tests: tests/test_report_keeper.py.
@@ -69,6 +71,7 @@ class Keeper:
         self.log = log or (lambda t: print(t, flush=True))
         self.task_checked = False
         self.tested = False
+        self.cleaned = False
         self.last: dict = {}
         self._stop = threading.Event()
         self._thread = None
@@ -107,8 +110,23 @@ class Keeper:
         return rc == 0
 
     def run_report(self) -> bool:
-        rc, _ = self.run([_python(), "-X", "utf8", REPORT, "--quiet"], RUN_TIMEOUT_S)
+        rc, _ = self.run([_python(), "-X", "utf8", REPORT, "--by", "keeper", "--quiet"], RUN_TIMEOUT_S)
         return rc == 0
+
+    def clean_tasks(self) -> dict:
+        """Once per server start (the server restarts after every update): tools/task_audit.fix, ONE task runs the report
+        (our own extra report tasks removed by exact name, a foreign one only named in logs/task_cleanup.log). Soft."""
+        self.cleaned = True
+        if not self.windows:
+            return {"ok": False, "why": "not Windows"}
+        try:
+            from tools import task_audit
+            r = task_audit.fix(run=self.run, is_windows=True, python=_python())
+            for ln in r.get("lines") or []:
+                self.log(f"[report keeper] {ln}")
+            return r
+        except Exception as e:
+            return {"ok": False, "why": f"{e.__class__.__name__}"}
 
     # ------------------------------------------------------------------ one tick
     def tick(self, now=None) -> dict:
@@ -117,6 +135,8 @@ class Keeper:
         try:
             if not self.task_checked:
                 res["task"] = self.ensure_task()
+            if not self.cleaned:
+                res["tasks"] = (self.clean_tasks() or {}).get("report_tasks")
             if not self.tested:
                 res["topic"] = self.ensure_topic()
             age = self.report_age(now)
