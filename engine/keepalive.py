@@ -796,6 +796,11 @@ def lanes(bot) -> list:
         key = _rapid_key(sp, a) if sp.get("lane") == "rapid" else f"x:{getattr(a, 'id', None) or sp.get('id')}"
         out.append({"key": key, "kind": "extra", "obj": a, "adapter": getattr(a, "adapter", None), "trade": True,
                     "nt": str(sp.get("nt_account") or "") or None if sp.get("adapter") == "ninjatrader" else None})
+    for x in list((getattr(bot, "acct_x", None) or {}).values()):   # engine/combo25 (OFF = {}): ATLAS's lane on an extra Builder
+        if x is None or getattr(x, "problem", None):                 # account: the SAME target as that account (grouped by its
+            continue                                                 # Name), so its fills, legs and open trade count there too
+        out.append({"key": f"x:{getattr(x, 'acc_id', None) or '?'}", "kind": "acct", "obj": x, "adapter": getattr(x, "adapter", None),
+                    "trade": True, "nt": str(getattr(x, "name", "") or "") or None})
     c = getattr(bot, "acct_c", None)                    # BLITZ (paper / hidden): never a target, its side still counts
     if c is not None:
         out.append({"key": "blitz", "kind": "acct", "obj": c, "adapter": getattr(c, "adapter", None), "trade": False,

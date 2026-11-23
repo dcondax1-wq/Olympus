@@ -154,6 +154,8 @@ for _a in ("pc", "nq"):                   # wf-atlas-start 2026-11-20: ATLAS wit
 PARTS = {"olympus_kit": [("a", ["datacity", "mind", "tree"]), ("b", ["oracle", "odeon", "fates"]), ("c", ["hermes", "prometheus", "tyche"]),
                          ("power", ["power", "tiers"]), ("more", ["more"])]}
 PARTS["combo_50k"] = [("sep", ["--seg", "2026-09-02"]), ("oct", ["--seg", "2026-10-02", "--scenario"])]   # night-combolive: one eval segment each
+AREAS["nq"] += ["combo_25k", "combo25_rt"]   # day-combo25 2026-11-23 + red team: ATLAS + Zlarior on the 25K #2 (OFF), parity replay, switch writer, keep-alive lane
+PARTS["combo_25k"] = [("sep", ["--seg", "2026-09-02"]), ("oct", ["--seg", "2026-10-02"])]   # day-combo25: one eval segment each
 AREAS["fleet"].append("rapid_launch")       # day-rapid 2026-11-20: Rapid EOD 25K launch check (tools/money/rapid25_launch.py)
 for _a in ("fleet", "pc"):                  # fix-trade 2026-11-21: an added Rapid / account armed by Start trading's phrase (engine/go.py)
     if "rapid_arm" not in AREAS[_a]:

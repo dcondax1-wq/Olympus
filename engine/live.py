@@ -386,6 +386,9 @@ class LiveBot:
         # ATLAS + Zlarior on ONE account (engine/combo50k.py; OFF by default: no data/combo_50k.json = None = today's bot)
         self.combo = None                # the combo spec while ON (ATLAS also routed to this 50K, one position, one direction)
         self._combo_why = None           # why a switch that is on does not apply to this bot (logged once)
+        # the same on an extra Builder account (engine/combo25.py, the 25K #2; OFF = {}: no lane, today's bot)
+        self.acct_x = {}                 # extra account id -> engine/combo25.ComboAtlas (ATLAS's lane on that account)
+        self._combo_x_why = {}           # extra account id -> why its switch does not apply (logged once)
 
     # ------------------------------------------------------------------ plumbing
     def _log(self, kind, text, **kw):
@@ -699,6 +702,8 @@ class LiveBot:
         self.fleet, self._fleet_sig = None, None        # the fleet (engine/fleet.py, OFF by default: no block = nothing)
         self._fleet_build()                             # built here, not at the first poll: see _fleet_build
         self._combo_sync()                              # ATLAS + Zlarior on ONE 50K (engine/combo50k.py, OFF: no switch = None)
+        self.acct_x = {}
+        self._combo_x_sync()                            # the same on the 25K #2 (engine/combo25.py, OFF: not in the switch = {})
         self.running = True
         self.stop_flag.clear()
         if spawn:
@@ -721,7 +726,8 @@ class LiveBot:
         for ad in [self.adapter, getattr(self.acct_b, "adapter", None), getattr(getattr(self, "acct_c", None), "adapter", None),
                    getattr(getattr(self, "acct_r", None), "adapter", None),
                    getattr(getattr(self, "acct_r2", None), "adapter", None)] + \
-                [getattr(a, "adapter", None) for a in (getattr(self.accts, "accounts", None) or [])]:
+                [getattr(a, "adapter", None) for a in (getattr(self.accts, "accounts", None) or [])] + \
+                [getattr(x, "adapter", None) for x in (getattr(self, "acct_x", None) or {}).values()]:
             try:
                 if callable(getattr(ad, "release_lock", None)):
                     ad.release_lock()
@@ -817,7 +823,8 @@ class LiveBot:
         for ar in self._rapid_atlases():                                    # ATLAS on each Rapid EOD (engine/rapid.py)
             if ar.open_t is not None:
                 r = ar.kill(sym)
-                extras.append({"id": "rapid2_atlas" if getattr(ar, "slot", "rapid") == "rapid2" else "rapid_atlas",
+                sl = str(getattr(ar, "slot", "rapid") or "rapid")
+                extras.append({"id": "rapid2_atlas" if sl == "rapid2" else sl if sl.startswith("combo:") else "rapid_atlas",
                                "ok": bool(r.get("ok")), "error": r.get("error")})
         ac = getattr(self, "acct_c", None)
         if ac is not None and ac.open_t is not None:                       # account C (engine/account_c.py, BLITZ)
@@ -1462,7 +1469,8 @@ class LiveBot:
         self._eod_summary(res, sym, now)
         if model == "lit":
             self._combo_sync()                # the owner's combo switch (OFF: no file = nothing changes)
-            if self.combo is not None or self._combo_live():
+            self._combo_x_sync()              # the same on the 25K #2 (engine/combo25.py; OFF: no lane = nothing changes)
+            if self.combo is not None or self._combo_live() or self.acct_x:
                 self._combo_frames = (df_full, df1, int(now))   # _combo_refresh: ATLAS's trade on this poll's bars
         if model == "lit":                    # MFFU's 2% price-limit rule (engine/price_limit.py): one reading per poll, before
             try:                              # any account routes; only FUNDED accounts act on it (no entry, flatten)
@@ -2893,8 +2901,57 @@ class LiveBot:
             return None
 
     def _rapid_atlases(self) -> list:
-        """ATLAS's lanes on the Rapids that run (1st, then 2nd)."""
-        return [x for x in (getattr(self, "acct_r", None), getattr(self, "acct_r2", None)) if x is not None]
+        """ATLAS's lanes on the Rapids that run (1st, then 2nd), then ATLAS's combo lanes on the extra Builder accounts
+        (engine/combo25.py, OFF = none): every one shares its NinjaTrader account with a LIT lane (kill, flatten, adapter tick,
+        poll, LIT-first hedge close across accounts, the 50K combo's one-direction view)."""
+        return [x for x in (getattr(self, "acct_r", None), getattr(self, "acct_r2", None)) if x is not None] + \
+            [x for x in (getattr(self, "acct_x", None) or {}).values() if x is not None]
+
+    def _combo_x_sync(self):
+        """engine/combo25.py: the owner's combo switch for each extra Builder account (data/combo_50k.json "accounts"; the
+        harness: the account entry's "combo") -> self.acct_x. A lane with an ATLAS trade open stays until it is flat. Never
+        raises. OFF (no switch, no harness key) = acct_x stays {} and nothing else runs."""
+        try:
+            accs = list(getattr(self.accts, "accounts", None) or []) if self.accts is not None else []
+            if not accs and not self.acct_x:
+                return
+            from . import combo25
+            want = {}
+            for a in accs:
+                sp = combo25.spec_for(self, a)
+                why = (sp or {}).get("off_why")
+                if why and why != self._combo_x_why.get(a.id):
+                    self._log("warn", f"ATLAS + Zlarior on one account: {why}")
+                self._combo_x_why[a.id] = why
+                if sp and sp.get("on"):
+                    want[a.id] = (a, sp)
+            for aid in list(self.acct_x):
+                x = self.acct_x[aid]
+                sp = want.get(aid, (None, None))[1]
+                if sp is not None and sp == x.combo:
+                    continue
+                if x.open_t is not None or x.closing_open():
+                    continue                                  # its open trade is managed to its exit first
+                self.acct_x.pop(aid, None)
+                try:
+                    if callable(getattr(x.adapter, "release_lock", None)):
+                        x.adapter.release_lock()
+                except Exception:
+                    pass
+                self._log("system", f"{x.label}: OFF (Zlarior alone on that account again)")
+            for aid, (a, sp) in want.items():
+                if aid in self.acct_x:
+                    continue
+                x = combo25.build(self, a, sp)
+                if x is None:
+                    continue
+                self.acct_x[aid] = x
+                f = sp.get("atlas_size_factor") or {}
+                self._log("system", f"ATLAS + Zlarior on ONE account ON for {a.name} ({sp.get('src')}): one position at a time "
+                                    f"(conflict {sp['conflict']}), ATLAS size x{float(f.get('eval', 1.0)):g} in the eval / "
+                                    f"x{float(f.get('funded', 1.0)):g} funded" + (f": {x.problem}" if x.problem else ""))
+        except Exception as e:
+            self._note_error(f"combo switch (extra accounts) not applied: {e.__class__.__name__}: {e}")
 
     def _start_rapid(self):
         """ATLAS's lane of each Rapid EOD (LIT's lanes are extra accounts, _start_accounts). Never raises."""

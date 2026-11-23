@@ -485,6 +485,8 @@ def label_of(key: str, obj=None) -> str:
 def key_of(obj) -> str:
     """The lifecycle key of an account object: RapidAtlas / the rapid lane -> "rapid", AccountB -> "atlas", extra -> x:<id>."""
     spec = getattr(obj, "spec", None) or {}
+    if getattr(obj, "combo_lane", False) is True:      # engine/combo25: ATLAS's lane is the extra account's own key (one book)
+        return f"x:{getattr(obj, 'acc_id', None) or '?'}"
     if spec.get("lane") == "rapid" or callable(getattr(obj, "yield_to_lit", None)):
         # the 2nd Rapid (engine/rapid slot "rapid2") has its own key: one Rapid passing / failing never stands the other down
         return "rapid2" if (spec.get("slot") == "rapid2" or getattr(obj, "slot", None) == "rapid2") else "rapid"
