@@ -30,8 +30,20 @@ Branch `night-integrate` only; nothing pushed to `pc`. No arming, no strategy / 
 | 18 | night-r50k-rt | 8763055ca | tests/run_area.py (+ a semantic clash, below) |
 | 19 | night-rulewatch-rt | b0311df0b | none (already in via fleetmgr-rt) |
 
-Not merged (not on the lead's list and no -rt review yet): night-blitzfills, night-brief, night-decide, night-docs, night-hermetic,
-night-pcguard, night-roll, night-tasks.
+### Round 3 (heads after 04:00 UTC)
+| # | Branch | Head | Conflicts |
+|---|---|---|---|
+| 20 | night-cleanup-rt (3rd) | 74f430d6b | none |
+| 21 | night-payout-rt (2nd) | 6e7d8c0cb | none |
+| 22 | night-reds (2nd) | 38853e73e | none |
+| 23 | night-startfix-rt | 39b660f20 | none |
+| 24 | night-truth-rt | 40fe89303 | none |
+| 25 | night-brief-rt (brings night-brief) | aca9fee75 | none |
+| 26 | night-pcguard-rt (brings night-pcguard + night-tasks) | ffeda5c02 | FIX_CLOCK.bat, engine/trade_home.py, tools/pc_report.py |
+| 27 | night-tasks-rt | b12908fa0 | none (notes only) |
+
+Not merged (not on the lead's list and no -rt review yet): night-asks, night-blitzfills, night-decide, night-docs, night-faults,
+night-hermetic, night-roll, night-verify.
 
 ## Resolutions (both sides' intent kept, no safety check dropped)
 - **run_area.py (notify-rt, zerotouch):** append-only lines, both kept (`package_b` + `notify_rt`; `bat_menu`, `context_refresh`, `bat_shortcuts` + `zerotouch`), `if __name__` block kept last.
@@ -67,6 +79,17 @@ night-pcguard, night-roll, night-tasks.
   test still expected an EVREOD name with nothing learned to be "a choice". Kept startfix's rule (newer real-PC evidence; it arms nothing,
   the owner still taps and types the phrase). The test's "still a choice" case now uses a guess-only `MFFUEVRPD...` name, plus a new check
   that EVREOD at $50,000 = Rapid EOD 50K. test_rapid50k_onboard 27/27, test_onboard 38/38.
+
+- **tools/pc_report.py (pcguard/tasks vs notify/payout/fleetmgr/rulewatch/cleanup-rt):** night-tasks moved the soft after-run hooks into
+  `after_run(quiet)` (tests replace it so they never touch the PC's data/). The branches merged before it added 5 hooks inline
+  (alert digest, payout autopilot, fleet manager, MFFU rules watch, moved-.bat shortcut fixer). All 5 now sit INSIDE `after_run`
+  (same order, same try/except), and the main block calls `after_run(a.quiet)`. argparse: both sides' flags kept (`--pulse`, `--why`, `--by`, `--force`).
+- **engine/trade_home.py alerts menu (pcguard/tasks vs cleanup):** cleanup's 3 = Alerts bus ON, 4 = OFF kept; night-tasks' "One report task"
+  (tools.task_audit --fix) is now **5**; the status screen's to-do says "choose 5, then 5"; tests/test_task_audit follows (16/16).
+- **FIX_CLOCK.bat (pcguard vs cleanup):** pcguard's PC GUARD comment lines + cleanup's `tools\bat\FIX_CLOCK_OFF.bat` undo path. pcguard's edit of the
+  root FIX_CLOCK_OFF.bat landed on tools/bat/FIX_CLOCK_OFF.bat via git's rename detection. Its old-place names in docs/OWNER_MANUAL, engine/win_guard,
+  scripts/win_guard.ps1, tests/test_win_guard, tools/morning_brief (STATUS.bat), tools/pc_report (CONNECT_DAY.bat), tools/task_audit were repathed.
+- **brain-data.json (reds' rebuild):** now quotes LEDGER.md's old "GITHUB_SIGNIN.bat" line (history), so test_bat_menu ALLOWs that one generated file.
 
 ## Tests
 See the table in the final summary (sent to the lead). Script used for the moved-.bat lint: test_bat_menu d (all files, not only the first 25).
