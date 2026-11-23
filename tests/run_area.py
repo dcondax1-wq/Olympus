@@ -448,6 +448,7 @@ AREAS["pc"] += ["post_update_check"]   # night-verify 2026-11-23: the read-only 
 AREAS.setdefault("faults", [])
 AREAS["faults"] += [x for x in ("state_safe", "multi_account") if x not in AREAS["faults"]]   # night-statesafe 2026-11-23: a damaged state file never means a clean day
 AREAS["nq"].append("state_safe")
+AREAS["faults"].append("state_safe_rt"); AREAS["nq"].append("state_safe_rt")   # red team: .bak is a copy (no false pause), a real loss lock replaces a damaged-state pause
 
 if __name__ == "__main__":
     sys.exit(main())
