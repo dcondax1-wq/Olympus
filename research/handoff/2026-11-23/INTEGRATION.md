@@ -49,8 +49,17 @@ Branch `night-integrate` only; nothing pushed to `pc`. No arming, no strategy / 
 | 29 | night-roll-rt (brings night-roll) | 5069d0098 | engine/trade_home.py, tests/run_area.py, tests/test_ops.py |
 | 30 | night-verify-rt (brings night-verify) | 26ff54e39 | engine/trade_home.py, tests/run_area.py |
 
+### Round 5 (heads after 04:55 UTC)
+| # | Branch | Head | Conflicts |
+|---|---|---|---|
+| 31 | night-alertproof-rt (brings night-alertproof) | b513495b1 | none |
+| 32 | night-hermetic-rt (brings night-hermetic) | f354e5c37 | none |
+| 33 | night-k7proof-rt (brings night-k7proof) | 636d44b0d | none |
+| 34 | night-mondaysim-rt (brings night-mondaysim) | 1cb533b08 | tests/run_area.py |
+| 35 | night-rollback-rt (built on night-integrate 7bd71589e) | dcccbdd45 | tests/run_area.py |
+
 Not merged (not on the lead's list and no -rt review yet): night-addacct, night-alertproof, night-asks, night-blitzfills, night-calls,
-night-decide, night-docs, night-faults, night-hermetic, night-leadwires, night-mondaysim, night-reds2, night-reds3, night-secps, night-wirepatch.
+night-decide, night-docs, night-faults, night-leadwires, night-reds2, night-reds3, night-secps, night-wirepatch.
 
 ## Resolutions (both sides' intent kept, no safety check dropped)
 - **run_area.py (notify-rt, zerotouch):** append-only lines, both kept (`package_b` + `notify_rt`; `bat_menu`, `context_refresh`, `bat_shortcuts` + `zerotouch`), `if __name__` block kept last.
