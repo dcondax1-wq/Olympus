@@ -49,7 +49,7 @@ function panel(kind, d) {
   if (kind === 'arm') {
     return `<div class="st-panel st-arm"><p><b>Real money.</b> The bot will trade:</p>
       <div class="st-who"><span>Zlarior (LIT)</span><b>→ 50K ${esc(d.lit || '?')}</b><span>ATLAS</span><b>→ 25K ${esc(d.atlas || '?')}</b></div>
-      <p class="muted">Check both names against NinjaTrader's Accounts tab (50K about $49,700, 25K about $25,000). Typing the line also lets the bot come back by itself after a restart (PC on + NinjaTrader connected); the kill switch or STOP BOT turns that off.</p>
+      <p class="muted">Check both names against NinjaTrader's Accounts tab (50K about $49,700, 25K about $25,000). Typing the line also lets the bot come back by itself after a restart (PC on + NinjaTrader connected); the kill switch or STOP BOT turns that off. It also turns the MFFU 7-day keep-alive on for these accounts (one 1-MNQ trade only when an account would otherwise hit 7 days without a trade; off: tools/bat/KEEPALIVE_OFF.bat).</p>
       <label class="st-phrase">Type <b>${esc(d.phrase)}</b><input id="stPhrase" autocomplete="off" spellcheck="false" placeholder="${esc(d.phrase)}"></label>
       <div class="st-acts"><button type="button" class="btn primary" data-do="arm" id="stArmGo" disabled>Arm and start</button><button type="button" class="btn ghost sm" data-do="close">Cancel</button></div></div>`;
   }
@@ -93,7 +93,7 @@ function goCard(d) {
   const btn = runOk || d.running ? '' : `<button type="button" class="btn primary st-go" data-do="go" id="stGo" ${lock || (needPhrase && !P.phraseOk) ? 'disabled' : ''}
       ${lock ? `title="${esc(lock)}"` : ''}>${icon('play')}<span>${j.running && auto ? 'Working…' : label}</span></button>`;
   const phrase = needPhrase && d.local && !j.running ? `<div class="st-gophrase"><p><b>Real money, once.</b> Zlarior → 50K ${esc(d.lit || '?')} · ATLAS → 25K ${esc(d.atlas || '?')}.
-      Typing it also lets the bot come back by itself after a restart (the kill switch turns that off).</p>
+      Typing it also lets the bot come back by itself after a restart (the kill switch turns that off) and turns the MFFU 7-day keep-alive on for the accounts it arms (off: tools/bat/KEEPALIVE_OFF.bat).</p>
       <label class="st-phrase">Type <b>${esc(d.phrase)}</b><input id="stGoPhrase" autocomplete="off" spellcheck="false" placeholder="${esc(d.phrase)}"></label></div>` : '';
   const retry = P.retryAt && SS.get('auto') ? `<span class="st-retry" id="stRetry">Trying again in ${wait} s</span>
       <button type="button" class="btn ghost sm" data-do="autooff">Stop trying</button>` : '';

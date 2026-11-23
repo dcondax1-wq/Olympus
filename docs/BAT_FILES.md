@@ -13,6 +13,7 @@ timers changed. Only if you once typed the optional `schtasks ... RUN_MONEY.bat`
 | `ALERTS_SETUP.bat` | once: Telegram / Discord | menu 5 -> 1 |
 | `FIX_CLOCK.bat` | must be right-clicked > Run as administrator once (a menu cannot elevate) | menu 9 (sync); first time: right-click > Run as administrator |
 | `HEALTH_CHECK.bat` | one screen of green / yellow / red; UPDATE.bat and START_DASHBOARD.bat name it | menu 10 |
+| `MONDAY_SETUP.bat` | weekly: the ONE Monday double-click (update, clock, START with your phrase = keep-alive on, alert test; night-zerotouch) | - (routine 8 is the menu twin) |
 | `KEEPALIVE_ON.bat` | weekly: MFFU 7-day keep-alive (you type the phrase) | menu 3, routine 8 |
 | `SETUP_EVERYTHING.bat` | RECOVERY: run from inside a downloaded code zip (it looks for the bot folder from where it is); must be at the zip's top | menu M -> 11 |
 | `START_BOT.bat` | daily: start + arm (you type the phrase); the 'LE START' flow and docs point here | menu 2, routine 8 |

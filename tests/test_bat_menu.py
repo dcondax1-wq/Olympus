@@ -2,7 +2,7 @@
 
     python -X utf8 -m tests.test_bat_menu        # ~3 s, Linux, no .bat is run
 
-a. the top folder holds exactly the 12 kept .bat files (docs/BAT_FILES.md says why each one stays)
+a. the top folder holds exactly the 13 kept .bat files (docs/BAT_FILES.md says why each one stays)
 b. every menu number (main, 5 alerts, 8 routine, M more tools) opens a file that exists; every .bat (top + tools/bat) is reachable
 c. every moved .bat starts with the LE_HOME header and uses %~dp0 nowhere else (it works from tools\\bat\\ and as a loose copy)
 d. no tracked file names a moved .bat by its old top-folder path (history folders and the moved files' own sibling notes aside)
@@ -22,10 +22,11 @@ if ROOT not in sys.path:
 RESULTS = []
 
 KEEP = {"TRADE_HOME.bat", "START_BOT.bat", "STOP_BOT.bat", "UPDATE.bat", "FIX_CLOCK.bat", "KEEPALIVE_ON.bat", "ADD_ACCOUNT.bat",
-        "ALERTS_SETUP.bat", "HEALTH_CHECK.bat", "START_DASHBOARD.bat", "SETUP_EVERYTHING.bat", "UPDATE_FROM_ZIP.bat"}
+        "ALERTS_SETUP.bat", "HEALTH_CHECK.bat", "START_DASHBOARD.bat", "SETUP_EVERYTHING.bat", "UPDATE_FROM_ZIP.bat",
+        "MONDAY_SETUP.bat"}   # integration 2026-11-23: night-zerotouch's ONE weekly double-click stays on top (13 files)
 # reached without a menu number of their own: TRADE_HOME is the menu; 4 does ADD_ACCOUNT's steps in-process; FIX_CLOCK needs a
 # right-click > Run as administrator (9 syncs without it)
-NO_NUMBER = {"TRADE_HOME.bat", "ADD_ACCOUNT.bat", "FIX_CLOCK.bat"}
+NO_NUMBER = {"TRADE_HOME.bat", "ADD_ACCOUNT.bat", "FIX_CLOCK.bat", "MONDAY_SETUP.bat"}   # MONDAY_SETUP = routine 8's weekly twin, its own double-click
 HEADER = ('set "LE_HOME=%~dp0"\r\nif not exist "%~dp0engine\\" if exist "%~dp0..\\..\\engine\\" '
           'for %%I in ("%~dp0..\\..") do set "LE_HOME=%%~fI\\"\r\n')
 # deliberate bare names: the phone site's own download copies (tools/web_public/pc/X.bat), the BOT_MOVE folder's loose copy,
@@ -60,7 +61,7 @@ def menu_files():
 
 def part_a():
     top = sorted(f for f in os.listdir(ROOT) if f.lower().endswith(".bat"))
-    check("a. the top folder holds exactly the 12 kept .bat files", set(top) == KEEP, sorted(set(top) ^ KEEP))
+    check("a. the top folder holds exactly the 13 kept .bat files", set(top) == KEEP, sorted(set(top) ^ KEEP))
     check("a. 42 files live in tools/bat/", len(moved()) == 42, len(moved()))
 
 
