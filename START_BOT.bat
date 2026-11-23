@@ -8,14 +8,18 @@ cd /d "%~dp0"
 set "PY=python"
 if defined LE_PYTHON set "PY=%LE_PYTHON%"
 set "PYTHONIOENCODING=utf-8"
+rem exit code for TRADE_HOME / MONDAY_SETUP (night-startmsg): engine.go's own (0 started, 1 stopped), 9 = no Python
+set "RC=0"
 "%PY%" --version >nul 2>&1
 if errorlevel 1 goto :nopython
 "%PY%" -X utf8 -m engine.go %*
+set "RC=%errorlevel%"
 if errorlevel 1 echo  [FIX] START BOT stopped before the end: do the first [FIX] line above, then double-click START_BOT.bat again.
 goto :end
 :nopython
+set "RC=9"
 echo  [FIX] Python not found. Install Python 3.12 from python.org and tick "Add python.exe to PATH".
 :end
 echo.
 pause
-endlocal
+endlocal & exit /b %RC%

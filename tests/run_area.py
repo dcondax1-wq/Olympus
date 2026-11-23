@@ -445,6 +445,7 @@ AREAS["nq"] += ["roll_dec_audit", "nt_roll_guard", "dec_roll", "roll"]   # night
 AREAS["nq"].append("roll_rt")           # red team 2026-11-23: TRADE_HOME R reports what tools/bat/ROLL.bat found (exit 2 = not now)
 AREAS["pc"] += ["post_update_check"]   # night-verify 2026-11-23: the read-only check after an update restart, one phone message
 AREAS["pc"] += ["monday", "mondaysim_rt"]   # night-mondaysim 2026-11-23 + red team: UPDATE.bat exit 0/1/2 read right (MONDAY, TRADE_HOME 7), START always runs
+AREAS["pc"] += ["startmsg"]   # night-startmsg 2026-11-23: START BOT's exit codes + its [FIX] reason in TRADE_HOME 2 / 8 and MONDAY SETUP
 
 if __name__ == "__main__":
     sys.exit(main())

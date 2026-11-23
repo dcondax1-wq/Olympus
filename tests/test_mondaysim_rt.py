@@ -43,7 +43,7 @@ def main():
     check("2. exit 2 = 'Updated' + red lines (not 'did not open')", got[2].startswith("[OK] Updated") and "red lines" in got[2], got[2])
     check("2. exit 1 = '[FIX] The update did not go through'", got[1].startswith("[FIX] The update did not go through"), got[1])
     check("2. any other code = 'did not open'", "did not open" in got[5], got[5])
-    other = next((k for k, v in T.ACTIONS.items() if v[1] != "UPDATE.bat"), None)
+    other = next((k for k, v in T.ACTIONS.items() if v[1] not in ("UPDATE.bat", "START_BOT.bat")), None)   # START: its own codes (night-startmsg)
     if other:
         r = T.do_choice(other, out=lambda *a: None, run=lambda argv: 1, fx={**fx, **{k: (lambda *a, **kw: {}) for k in ("sync_clock",)}})
         check(f"2. another .bat ({T.ACTIONS[other][1]}) exit 1 still reads 'did not open'", "did not open" in str(r), r)
