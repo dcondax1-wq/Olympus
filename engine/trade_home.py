@@ -33,10 +33,9 @@ PLAN_MENU = (
     {"n": "5", "key": "atlasfunded", "label": "ATLAS funded 25K", "price": "no new buy", "who": "after MFFU's Upgrade"},
     {"n": "6", "key": "fundednext", "label": "FundedNext", "price": "OFF", "who": "needs your written yes",
      "off": "FundedNext is OFF. It needs your written yes first (it bans bots that use Telegram and our alerts use it). Nothing added."},
-    {"n": "7", "key": "lucidpro50k", "label": "Lucid 50K", "price": "OFF", "who": "needs Lucid's written yes",
-     "off": "Lucid is OFF. It needs Lucid's WRITTEN yes first: follow docs/LUCID_SETUP.md step 1. Nothing added."},
+    {"n": "7", "key": "lucidpro50k", "label": "LucidPro 50K eval", "price": "your price", "who": "Zlarior; HELD until Lucid's written OK"},
 )
-ENGINE_PLANS = ("builder50k", "builder25k", "rapideod25", "rapideod")   # the keys that go to engine.accounts add
+ENGINE_PLANS = ("builder50k", "builder25k", "rapideod25", "rapideod", "lucidpro50k")   # the keys that go to engine.accounts add
 
 NEXT_SENTENCE = ("Next: if the bot is running choose 6 (Stop bot) first, then choose 2 (Start bot) and type the live phrase "
                  "yourself when START BOT asks. Nothing trades until you do.")
@@ -215,64 +214,138 @@ def _mask(name):
 
 
 # ------------------------------------------------------------------------------------------------ 4. Add an account
-def plan_lines():
-    out = ["  ==== Add an account: pick the plan ===="]
+# night-addacct 2026-11-23 (owner: "adding accounts is painful"): Name FIRST (a number from what NinjaTrader shows, or paste),
+# then the plan with the one engine/onboard guessed from the Name + balance as the default (Enter = take it). At most 2 answers
+# inside the step (was 3: plan, Name, Y). The Name is never printed in full (private: ...1234). Lucid can be added: it stays
+# HELD, even at START, until Lucid's written OK is recorded (engine/account_cli.arm). Ends with ONE paper-check line.
+def plan_lines(default=None):
+    out = ["  ==== Which plan? (firm + size) ===="]
     for p in PLAN_MENU:
-        out.append(f"   {p['n']}  {p['label']:<20} {p['price']:<18} {p['who']}")
+        mark = "  <- looks like this one (Enter)" if p["n"] == default else ""
+        out.append(f"   {p['n']}  {p['label']:<20} {p['price']:<18} {p['who']}{mark}")
     return out
 
 
-def add_flow(ask=input, out=say, run=None, today=None, unseen=None, add_fn=None):
-    """Plan with price -> Name (tap a number from what NinjaTrader shows, or paste) -> ONE confirm -> added HELD.
-    Returns (ok, result line). Never arms, never asks for or passes the live phrase."""
+def guess_plan(name, balance=None, infer=None):
+    """(PLAN_MENU number or None, plain why) from engine/onboard.infer (MFFU Name codes + the NinjaTrader balance). A guess
+    onboard marks unsure, a passed old eval or an unknown Name = no default (the owner picks)."""
+    try:
+        if infer is None:
+            from engine import onboard
+            infer = lambda n, b: onboard.infer(n, b, known=onboard.known_codes())   # noqa: E731
+        i = infer(name, balance) or {}
+    except Exception:  # noqa: BLE001
+        return None, ""
+    if i.get("kind") == "passed_eval":
+        return None, "it looks like an eval that already PASSED (" + str(i.get("why") or "") + "): usually not for the bot"
+    if i.get("guess") or not i.get("plan"):
+        return None, ""
+    key = "atlasfunded" if (i.get("stage") == "funded" and i.get("plan") == "builder25k") else i["plan"]
+    if i.get("stage") == "funded" and key != "atlasfunded":
+        return None, "it looks FUNDED: pick the plan yourself (or use the Start page's Move button)"
+    hit = next((p for p in PLAN_MENU if p["key"] == key), None)
+    return (hit["n"], f"NinjaTrader's Name{' and balance' if balance is not None else ''} say {hit['label']}") if hit else (None, "")
+
+
+def _rules_of(key):
+    """The firm's rules the bot loads for this plan (engine/multi_account.PRESETS), or None."""
+    try:
+        from engine import account_cli as ac, multi_account as ma
+        preset = ac.PLANS["builder25k" if key == "atlasfunded" else key]["preset"]
+        return dict(ma.PRESETS[preset]["rules"])
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def paper_check(name, key, rows=None, rules=None):
+    """After an add: is the Name on the bot's list, HELD (not armed), with its firm's rules loaded? -> (ok, one line).
+    Read only, never arms; 'paper' = nothing is sent anywhere."""
+    if rows is None:
+        try:
+            from engine import account_cli as ac
+            rows = ac.inventory()
+        except Exception:  # noqa: BLE001
+            rows = []
+    plan = next((p for p in PLAN_MENU if p["key"] == key), {"label": key})
+    row = next((r for r in rows or [] if str(r.get("name") or "").strip() == str(name).strip()), None)
+    if row is None:
+        return False, (f"[FIX] The add said OK but {_mask(name)} is not on the bot's list. Nothing trades on it. "
+                       "Choose 1 (Status), then tell Claude.")
+    if row.get("armed") is True:
+        return False, f"[FIX] {_mask(name)} shows ARMED right after an add: choose 6 (Stop bot) and tell Claude."
+    r = _rules_of(key) if rules is None else rules
+    rl = ""
+    if r:
+        bits = [f"target +${r['target']:,.0f}" if r.get("target") else "", f"max loss ${r['mll']:,.0f}" if r.get("mll") else "",
+                f"daily loss ${r['dll']:,.0f}" if r.get("dll") else "", f"max {int(r['max_micros'])} micros" if r.get("max_micros") else ""]
+        rl = " Rules loaded: " + ", ".join(b for b in bits if b) + "."
+    else:
+        return False, f"[FIX] {_mask(name)} is on the list but its {plan['label']} rules did not load. Nothing trades on it: tell Claude."
+    lucid = (" Lucid stays HELD even at START until you record Lucid's written OK (docs/LUCID_SETUP.md)."
+             if key in ("lucidpro50k",) else "")
+    return True, (f"[OK] Added + paper-checked: {plan['label']} {_mask(name)} is on the bot's list, HELD (not armed).{rl}"
+                  f" The phone shows it after the next START.{lucid}")
+
+
+def add_flow(ask=input, out=say, run=None, today=None, unseen=None, add_fn=None, infer=None, check_fn=None):
+    """Name (a number from NinjaTrader's new accounts, or paste) -> plan (Enter = the guessed one) -> added HELD -> one
+    paper-check line. Returns (ok, result line). Never arms, never asks for or passes the live phrase."""
     run = run or run_cmd
-    for ln in plan_lines():
-        out(ln)
-    ch = (ask("  Type the number and press Enter (just Enter = back): ") or "").strip()
-    if not ch:
+    seen = _unseen_names() if unseen is None else unseen
+    names = list(seen)
+    if names:
+        out("  ==== Add an account: NinjaTrader shows these new accounts ====")
+        for i, n in enumerate(names, 1):
+            b = seen[n]
+            g, _w = guess_plan(n, b if isinstance(b, (int, float)) else None, infer)
+            lab = next((p["label"] for p in PLAN_MENU if p["n"] == g), "")
+            out(f"   {i}  {_mask(n)}" + (f"   ${float(b):,.0f}" if isinstance(b, (int, float)) else "") + (f"   looks like {lab}" if lab else ""))
+        raw = (ask("  Type its number, or paste the Name from NinjaTrader (Enter = back): ") or "").strip()
+        name = names[int(raw) - 1] if raw.isdigit() and 1 <= int(raw) <= len(names) else raw
+    else:
+        out("  ==== Add an account ====")
+        raw = (ask("  Copy the account Name from NinjaTrader (Accounts tab), paste it, press Enter (Enter = back): ") or "").strip()
+        name = raw
+    name = name.strip('"').strip()
+    if not name:
         return False, "[OK] Nothing added."
+    bal = seen.get(name) if isinstance(seen.get(name), (int, float)) else None
+    default, why = guess_plan(name, bal, infer)
+    for ln in plan_lines(default):
+        out(ln)
+    if why:
+        out("  " + ("Looks like: " if default else "Note: ") + why + ".")
+    out(f"  Account {_mask(name)} is added HELD: NOT armed, nothing trades on it.")
+    q = "  Type the plan number" + (" (just Enter = the one marked)" if default else "") + ", or Q = cancel: "
+    ch = (ask(q) or "").strip()
+    if ch.lower() == "q" or (not ch and not default):
+        return False, "[OK] Cancelled. Nothing added."
+    ch = ch or default
     plan = next((p for p in PLAN_MENU if p["n"] == ch), None)
     if plan is None:
         return False, "[FIX] Type one number from the list. Nothing added."
     if plan.get("off"):
         return False, "[FIX] " + plan["off"]
-    seen = _unseen_names() if unseen is None else unseen
-    names = list(seen)
-    if names:
-        out("  NinjaTrader shows these accounts that are not added yet:")
-        for i, n in enumerate(names, 1):
-            b = seen[n]
-            out(f"   {i}  {n}" + (f"   ${float(b):,.0f}" if isinstance(b, (int, float)) else ""))
-        raw = (ask("  Type its number, or paste the Name (Enter = back): ") or "").strip()
-        name = names[int(raw) - 1] if raw.isdigit() and 1 <= int(raw) <= len(names) else raw
-    else:
-        raw = (ask("  Copy the account Name from NinjaTrader (Accounts tab), paste it, press Enter: ") or "").strip()
-        name = raw
-    name = name.strip('"').strip()
-    if not name:
-        return False, "[OK] Nothing added."
-    out(f"  You are adding: {plan['label']} ({plan['price']}), Name {name}.")
-    out("  It is added HELD: it is NOT armed and nothing trades on it.")
-    if (ask("  Type Y and press Enter to add it (anything else = cancel): ") or "").strip().lower() != "y":
-        return False, "[OK] Cancelled. Nothing added."
+    check = check_fn or paper_check
     if plan["key"] == "atlasfunded":
         day = today or _dt.date.today().isoformat()
         rc = run([sys.executable, "-X", "utf8", "-m", "engine.lit25", "--funded", name, "--start", day])
         if rc != 0:
             return False, "[FIX] NOT ADDED. Read the lines above: nothing changed. Copy the Name again and retry."
-        return True, "[OK] Added HELD. " + NEXT_SENTENCE
-    if add_fn is not None:
-        r = add_fn(plan["key"], name)
+    else:                                    # the same code as `engine.accounts add` / ADD_ACCOUNT.bat, in this window
+        if add_fn is None:
+            from engine import account_cli as _ac
+            add_fn = _ac.add
+        r = add_fn(plan["key"], name) or {}
+        hide = lambda s: str(s).replace(name, _mask(name))   # noqa: E731  - the Name stays private on screen
         if not r.get("ok"):
-            return False, "[FIX] NOT ADDED: " + str(r.get("error")) + " Nothing changed."
+            return False, "[FIX] NOT ADDED: " + hide(r.get("error")) + " Nothing changed."
         for ln in [r.get("say")] + [f"- {n}" for n in (r.get("notes") or [])]:
             if ln:
-                out("  " + ln)
-        return True, "[OK] Added HELD. " + NEXT_SENTENCE
-    rc = run([sys.executable, "-X", "utf8", "-m", "engine.accounts", "add", "--plan", plan["key"], "--name", name])
-    if rc != 0:
-        return False, "[FIX] NOT ADDED. Read the lines above: nothing changed. Copy the Name again and retry."
-    return True, "[OK] Added HELD. " + NEXT_SENTENCE
+                out("  " + hide(ln))
+    ok, line = check(name, plan["key"])
+    out("  " + line)
+    return ok, ("[OK] Added HELD. " if ok else "[FIX] Added HELD, but the check above is not green. ") + NEXT_SENTENCE
 
 
 # ------------------------------------------------------------------------------------------------ running the existing .bat files
@@ -594,6 +667,10 @@ def main(argv=None):
         return 0 if not p else 1
     if a[0] == "add":
         ok, line = add_flow()
+        say("  " + line)
+        return 0 if ok else 1
+    if a[0] == "check" and len(a) >= 3:      # ADD_ACCOUNT.bat after a good add: check <plan key> <Name>
+        ok, line = paper_check(" ".join(a[2:]), a[1])
         say("  " + line)
         return 0 if ok else 1
     try:

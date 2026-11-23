@@ -215,9 +215,9 @@ def ready_checks(tmp):
 def bat_checks():
     """ADD_ACCOUNT.bat: every add line goes to :done only when the add worked (exit 0), else to :notadded (no restart)."""
     bat = open(os.path.join(ROOT, "ADD_ACCOUNT.bat"), encoding="utf-8").read()
-    adds = [ln for ln in bat.splitlines() if ln.startswith('if "%CH%"==')]
-    check("h. ADD_ACCOUNT.bat: all 5 options go to Done only on success (&& goto :done || goto :notadded)",
-          len(adds) == 5 and all("&& goto :done || goto :notadded" in ln and "& goto :done" not in ln.replace("&& goto :done", "")
+    adds = [ln for ln in bat.splitlines() if ln.startswith('if "%CH%"==') and " -m engine." in ln]   # the add lines (not the set "PK=" ones)
+    check("h. ADD_ACCOUNT.bat: all 6 options go to Done only on success (&& goto :done || goto :notadded)",
+          len(adds) == 6 and all("&& goto :done || goto :notadded" in ln and "& goto :done" not in ln.replace("&& goto :done", "")
                                  for ln in adds), adds)
     nb = bat[bat.find("\n:notadded"):bat.find("\n:done")]           # the label lines, not the gotos
     check("h. ADD_ACCOUNT.bat: a refused add says [NOT ADDED], nothing changed, no restart (not 'Done ... START BOT')",
