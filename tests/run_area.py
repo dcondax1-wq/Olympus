@@ -157,13 +157,17 @@ SLOW.add("lit_live")   # night-reds 2026-11-22: the whole replay (9,923 intraday
 AREAS["agency"].append("web_audit")         # day-web-audit 2026-11-20: tools/site_audit.py (prospect phone audit -> agency/audit/)
 
 
+# Retired suites (lead 2026-11-23): never run by an area, always NAMED with the reason (never a silent skip)
+RETIRED = {"live_dryrun": "the retired 'engine' model (live_model.json runs LIT): LIT's live loop = backtest is tests.test_lit_live"}
+
+
 def suites_for(area: str) -> list:
     names = []
     for a in (AREAS if area == "all" else [area]):
         for n in AREAS[a]:
             if n not in names:
                 names.append(n)
-    out = [n for n in names if os.path.isfile(os.path.join(ROOT, "tests", f"test_{n}.py"))]
+    out = [n for n in names if os.path.isfile(os.path.join(ROOT, "tests", f"test_{n}.py")) and n not in RETIRED]
     if area == "all":
         out.sort(key=lambda n: (n in SLOW,))                     # stable: the fast ones first, the slow browser ones last
     return out
@@ -372,8 +376,13 @@ def main(argv=None) -> int:
     if a.list or not a.area:
         for k in list(AREAS) + ["all"]:
             print(f"{k:8} {', '.join(suites_for(k))}")
+        for n, why in RETIRED.items():
+            print(f"RETIRED  {n}: {why}")
         return 0
     names = suites_for(a.area)
+    for n, why in RETIRED.items():
+        if a.only and n in a.only or a.area == "all":
+            print(f"RETIRED {n}: {why} (python -X utf8 -m tests.test_{n} still runs it by hand)", flush=True)
     if a.only:
         keys = [k.strip() for k in a.only.split(",") if k.strip()]
         names = [n for n in names if any(k in n for k in keys)]

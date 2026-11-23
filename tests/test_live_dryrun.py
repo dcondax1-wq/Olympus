@@ -672,6 +672,8 @@ def test_restart(rp: Replay, ref_trades, start_t):
 # ------------------------------------------------------------------------------------------------ main
 def main():
     t_all = time.perf_counter()
+    print("RETIRED (lead 2026-11-23): this replays the retired 'engine' model; the live bot runs LIT, whose live loop = backtest "
+          "check is tests.test_lit_live. tests/run_area.py no longer runs this suite; by hand it still runs in full.")
     # This harness replays the Liquidity Engine (engine/model.py) through the live loop and compares it with Engine
     # backtests. Since 2026-10-18 live_model.json runs LIT (tests/test_lit_live.py checks that one), so the bot here is
     # pinned to the engine's lock (live_model.json while it says "engine", else live_model_engine.json).
