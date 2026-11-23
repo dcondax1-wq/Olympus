@@ -270,6 +270,12 @@ def glance_checks(REF):
     from engine import brain_glance as G, live_publish as lp
     from tests.test_live_publish import hb_payload, account_c_block
     from tools import pc_report as R
+    # 2026-11-22: the heartbeat's route.account_b (engine/account_b.info) has no "armed" key; a LIVE + enabled account B passed
+    # the adapter's live gate (armed + phrase + NINJATRADER_LIVE + allowlist) = armed. The phone showed "NOT armed" before.
+    check("6. ATLAS armed on the phone = a LIVE account B whose live gate passed (enabled); SIM / PAPER / gate refused / explicit false = not",
+          G._ab_armed({"kind": "LIVE", "enabled": True}) is True and G._ab_armed({"kind": "LIVE", "enabled": False}) is False
+          and G._ab_armed({"kind": "SIM", "enabled": True}) is False and G._ab_armed({"kind": "PAPER", "enabled": True}) is False
+          and G._ab_armed({"armed": False, "kind": "LIVE", "enabled": True}) is False and G._ab_armed({}) is False)
     t_arm, b_arm = None, None
     for tr in [t for t in REF if t["day"] == "2026-10-13"][:1]:
         for t in range(int(tr["entry_t"]) - 3 * 3600, int(tr["entry_t"]) + 1, 300):

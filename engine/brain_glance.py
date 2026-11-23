@@ -235,7 +235,7 @@ def atlas(hb: dict, card: dict | None) -> dict:
                 logs.append((tm or 0, [hm, _t(f"{short}: {x['text']}", 120)]))
     logs.sort(key=lambda z: -z[0])
     out = {"id": "atlas", "name": "ATLAS", "what": "EMA · MACD · S/R · " + str(c.get("plan") or "MFFU Builder 25K"),
-           "on": bool(hb.get("running")) and bool(ab.get("enabled", bool(ab))), "armed": bool(ab.get("armed")),
+           "on": bool(hb.get("running")) and bool(ab.get("enabled", bool(ab))), "armed": _ab_armed(ab),
            "mode": ab.get("label") or (str(ab.get("kind") or "").upper() or None),
            "wait": _t(c.get("waiting"), 170) or None, "why": _t(" · ".join(why), 220) or None,
            "lv": _sec_levels(S, keys, _price(hb)), "arm": arm[:2], "pos": _pos(c.get("position")), "day": _usd(c.get("today_pnl")),
@@ -254,6 +254,16 @@ def _nar(who) -> str | None:
         return arm_report.glance_reason(who)
     except Exception:  # noqa: BLE001
         return None
+
+
+def _ab_armed(ab) -> bool:
+    """ATLAS's armed flag for the phone. account_b.info() (the heartbeat's route.account_b) carries no "armed" key: for a
+    REAL account "enabled" already means the adapter's live gate passed (armed + the typed phrase + NINJATRADER_LIVE +
+    the allowlist: engine/ninjatrader._live_gate), so a LIVE + enabled account B is armed. Before 2026-11-22 this read
+    ab.get("armed") and always showed "NOT armed" on the phone while ATLAS was trading live."""
+    if "armed" in ab:
+        return bool(ab.get("armed"))
+    return str(ab.get("kind") or "").upper() == "LIVE" and bool(ab.get("enabled"))
 
 
 def _dll_used(c) -> int | None:
