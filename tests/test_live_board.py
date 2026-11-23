@@ -110,7 +110,7 @@ def hb_fixture(now=NOW):
                 "open": None, "routed": [], "day_pnl": 0, "entries_today": 0, "locked": None, "size": None}}},
         "live_pub": {"at": now - 21, "ok": True, "fails": 0, "error": None},
         "crit": [{"id": "clock:2026-10-26", "kind": "clock", "title": "Clock drift: entries blocked",
-                  "body": "PC clock 5.0 s ahead of internet time (max 5 s). Windows: Settings > Time > Sync now."}],
+                  "body": "PC clock 5.0 s ahead of internet time (max 5 s). Could not sync: double-click FIX_CLOCK.bat once, right-click > Run as administrator."}],
     }
 
 
@@ -169,8 +169,8 @@ def board_checks():
     check("b. ATLAS: no sizing exposed -> the rule in words (no number made up)", A["micros"]["qty"] is None and "$600 daily loss" in A["micros"]["what"], A["micros"])
     # c. blocks
     bl = B["blocks"]
-    check("c. clock drift blocks both accounts once (brain guard + crit de-duplicated), fix = Sync now",
-          len(bl) == 1 and bl[0]["kind"] == "clock" and "Sync now" in bl[0]["fix"] and bl[0]["scope"] == "both", bl)
+    check("c. clock drift blocks both accounts once (brain guard + crit de-duplicated), fix = FIX_CLOCK.bat",
+          len(bl) == 1 and bl[0]["kind"] == "clock" and "FIX_CLOCK.bat" in bl[0]["fix"] and bl[0]["scope"] == "both", bl)
     check("c. lines: the block first, then the slow poll warning; board level bad", B["lines"][0]["kind"] == "clock"
           and any(x["kind"] == "poll" and x["level"] == "warn" for x in B["lines"]) and B["level"] == "bad", B["lines"])
     hb2 = hb_fixture()
@@ -201,7 +201,7 @@ def board_checks():
     H = {x["key"]: x for x in B["health"]["items"]}
     check("e. health: poll 29.4 s -> amber (warn, not red), poll_warn", H["poll_ms"]["warn"] is True and H["poll_ms"]["ok"] is None
           and B["health"]["poll_warn"] is True and H["poll_ms"]["value"] == "29.4 s", H["poll_ms"])
-    check("e. health: clock red while the guard blocks (5.0 s at a 5 s max)", H["clock"]["ok"] is False and "Sync now" in H["clock"]["fix"], H["clock"])
+    check("e. health: clock red while the guard blocks (5.0 s at a 5 s max)", H["clock"]["ok"] is False and "FIX_CLOCK.bat" in H["clock"]["fix"], H["clock"])
     check("e. health: an error 21 min old is grey (not red), with its text", H["error"]["ok"] is None and "TypeError" in H["error"]["detail"], H["error"])
     check("e. health: feed 1m / 5m green with the bar close as t", H["age_1m_s"]["ok"] is True and H["age_1m_s"]["t"] == NOW - 110 + 60
           and H["age_5m_s"]["t"] == NOW - 350 + 300, (H["age_1m_s"], H["age_5m_s"]))
@@ -383,7 +383,7 @@ const B = JSON.parse(require('fs').readFileSync(process.argv[2], 'utf8'));
 const h = window.BoardUI.page(B, {});
 const m = window.BoardUI.home(B, {});
 const c = window.BoardUI.csv(B.trades);
-const out = { len: h.length, right: h.includes('Right now'), map: h.includes('bd-ladder'), now: h.includes('Price now'), fix: h.includes('Sync now'),
+const out = { len: h.length, right: h.includes('Right now'), map: h.includes('bd-ladder'), now: h.includes('Price now'), fix: h.includes('FIX_CLOCK.bat'),
   poll: h.includes('Poll time'), odds: h.includes('pass in 2 weeks'), tl: h.includes('Export CSV'), cd: h.includes('data-bd-open="'),
   home: m.includes('bd-homecut') && m.includes('Open the live board'), csvh: c.split('\n')[0], csvn: c.split('\n').length,
   wt: window.BoardUI.windowText(Date.now() / 1000 + 3700, Date.now() / 1000 + 9000).t, err: window.BoardUI.page({ error: 'x' }, {}).includes('x') };

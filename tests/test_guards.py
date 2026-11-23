@@ -488,6 +488,87 @@ def stale_data():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def clock_sync():
+    """Night audit 2026-11-22, package C: a confirmed clock block syncs the clock itself (Windows, flat, once per 300 s)."""
+    def wait(key):
+        for _ in range(200):
+            if not guards._CLOCK.get(key):
+                return
+            time.sleep(0.01)
+    tmp = tempfile.mkdtemp()
+    now = [time.time()]
+    try:
+        b = make_bot(tmp, now)
+        b.clock = time.time
+        b.health = {}
+        c = {**guards.DEFAULTS}
+        calls, flat, answer = [], [None], [{"ok": True, "say": "Clock synced with internet time."}]
+
+        def fake_sync():
+            calls.append(1)
+            time.sleep(0.2)
+            return answer[0]
+        probe = [25.0]
+        guards._CLOCK.update({"drift": None, "bad": 0, "t": 0.0, "ok_t": 0.0, "running": False, "probe": lambda: probe[0],
+                              "sync": fake_sync, "flat": lambda: flat[0], "win": True, "sync_t": 0.0, "syncing": False})
+        T = 1e12
+        guards.clock_tick(b, c, now_real=T); wait("running")
+        n0 = guards._CLOCK.get("done", 0)
+        guards.clock_tick(b, c, now_real=T + 19); wait("running")
+        check("C1. one +25 s probe: bad 1, not blocked yet, no re-probe before 20 s", guards._CLOCK["bad"] == 1
+              and not guards.clock_problem(b, c) and guards._CLOCK.get("done", 0) == n0, dict(guards._CLOCK))
+        guards.clock_tick(b, c, now_real=T + 20); wait("running")
+        p = guards.clock_problem(b, c)
+        check("C2. 20 s confirming probe: bad 2, entries blocked", guards._CLOCK["bad"] == 2 and p and "25.0 s behind" in p, p)
+        n1 = guards._CLOCK.get("done", 0)
+        guards.clock_tick(b, c, now_real=T + 20 + 59); wait("running")
+        n2 = guards._CLOCK.get("done", 0)
+        guards.clock_tick(b, c, now_real=T + 20 + 60); wait("running")
+        check("C3. bad >= 2: re-probes every 60 s (not 900 s)", n2 == n1 and guards._CLOCK.get("done", 0) == n1 + 1,
+              (n1, n2, guards._CLOCK.get("done")))
+        day = guards.trading_day(int(time.time()))
+        flat[0] = "an open NinjaTrader bracket (ninjatrader_state.json)"
+        guards.clock_heal(b, p, day, now_real=T + 100); wait("syncing")
+        check("C4. a position open: never a sync; the plain push names FIX_CLOCK.bat (no 'Sync now')", not calls and len(b.pushes) == 1
+              and "FIX_CLOCK.bat" in json.dumps(b.pushes[-1]) and "Sync now" not in json.dumps(b.pushes[-1]), b.pushes)
+        flat[0] = None
+        b._clock_pushed = None
+        t0 = time.time()
+        guards.clock_heal(b, p, day, now_real=T + 200)
+        quick = time.time() - t0 < 0.1
+        guards.clock_heal(b, p, day, now_real=T + 201)          # while syncing: no second thread, no push yet
+        n_push = len(b.pushes)
+        wait("syncing")
+        check("C5. flat: one sync attempt in a thread (the guard tick does not wait), the push after the result: 'synced by itself'",
+              quick and len(calls) == 1 and n_push == 1 and len(b.pushes) == 2 and "synced by itself" in json.dumps(b.pushes[-1])
+              and "25 s off" in json.dumps(b.pushes[-1]), (quick, calls, b.pushes))
+        check("C6. after the sync: probe due now, bad 1 (block lifted pending the confirming probe)",
+              guards._CLOCK["t"] == 0.0 and guards._CLOCK["bad"] == 1 and not guards.clock_problem(b, c), dict(guards._CLOCK))
+        probe[0] = 0.4
+        guards.clock_tick(b, c, now_real=T + 230); wait("running")
+        check("C7. the confirming probe finds the clock right: bad 0, no block", guards._CLOCK["bad"] == 0 and not guards.clock_problem(b, c))
+        guards._CLOCK.update({"bad": 2, "drift": 25.0, "ok_t": time.time()})
+        answer[0] = {"ok": False, "error": "Windows asks for an administrator"}
+        guards.clock_heal(b, p, day, now_real=T + 200 + 299); wait("syncing")
+        check("C8. no second sync attempt within 300 s", len(calls) == 1, calls)
+        b._clock_pushed = None
+        guards.clock_heal(b, p, day, now_real=T + 200 + 300); wait("syncing")
+        check("C9. 300 s later a 2nd attempt; it fails -> push 'could not sync: double-click FIX_CLOCK.bat once, right-click > Run as administrator'",
+              len(calls) == 2 and "could not sync: double-click FIX_CLOCK.bat once, right-click > Run as administrator" in json.dumps(b.pushes[-1]),
+              b.pushes[-1])
+        guards._CLOCK.update({"win": False, "sync_t": 0.0})
+        guards.clock_heal(b, p, day, now_real=T + 5000); wait("syncing")
+        check("C10. not on Windows: never a sync", len(calls) == 2, calls)
+    finally:
+        guards._CLOCK.update({"drift": None, "bad": 0, "t": 0.0, "ok_t": 0.0, "probe": None, "running": False,
+                              "sync": None, "flat": None, "win": None, "sync_t": 0.0, "syncing": False})
+        shutil.rmtree(tmp, ignore_errors=True)
+    src = open(os.path.join(os.path.dirname(os.path.abspath(guards.__file__)), "guards.py"), encoding="utf-8").read()
+    lb = open(os.path.join(os.path.dirname(os.path.abspath(guards.__file__)), "live_board.py"), encoding="utf-8").read()
+    check("C11. no 'Sync now' left in guards.py / live_board.py; the 5 s threshold untouched",
+          "Sync now" not in src and "Sync now" not in lb and guards.DEFAULTS.get("clock_max_s") == 5.0, guards.DEFAULTS.get("clock_max_s"))
+
+
 def main():
     quick = "--quick" in sys.argv
     os.environ.pop("LE_LIVE_MODEL", None)
@@ -497,6 +578,7 @@ def main():
     bot_route()
     reconcile()
     stale_data()
+    clock_sync()
     ok = sum(RES)
     print(f"\nguards test: {'PASS' if ok == len(RES) else 'FAIL'} ({ok}/{len(RES)})")
     return ok == len(RES)

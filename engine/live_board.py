@@ -55,7 +55,7 @@ PLANS = {"lit": {"start": 50000.0, "target": 3000.0, "mll": 2000.0, "dll": 1000.
 
 # one-line fixes for the guards that block new entries (what the owner does, in plain words)
 FIX = {
-    "clock": "Windows: Settings > Time & language > Date & time > Sync now",
+    "clock": "The bot syncs the clock itself when flat; if it stays, double-click FIX_CLOCK.bat once, right-click > Run as administrator",
     "feed": "NinjaTrader: right-click the MNQ 5-minute chart > Reload NinjaScript (or re-add LE_BarFeed)",
     "nt": "NinjaTrader Control Center > Connections: connect your login",
     "startup": "Wait one poll; if it stays, the Runbook (section 2) has the fix for each reason",
