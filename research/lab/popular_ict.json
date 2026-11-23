@@ -1,0 +1,399 @@
+{
+ "meta": {
+  "built": "2026-11-23",
+  "spec": "research/writeups/specs/popular-ict-2026-11-23.md",
+  "writeup": "research/writeups/popular-ict-2026-11-23.md",
+  "tool": "tools/popular_ict.py",
+  "data": "data/NQ_5m.csv (TradingView CME NQ1!, 5m, back-adjusted)",
+  "spans": {
+   "2026H1": [
+    "2026-01-01",
+    "2026-06-30"
+   ],
+   "2026H2": [
+    "2026-07-01",
+    "2026-10-31"
+   ],
+   "2021-25": [
+    "2021-11-08",
+    "2025-12-31"
+   ]
+  },
+  "lit_compare_end": "2026-10-16 (LIT replay end; strategy spans run to the data end 2026-10-31 for H2)",
+  "sizing": "LIT rule: $800 up to a 20-pt stop then 800x20/stop, floor micros, max 40, <1 = skip; 2R target",
+  "costs": "$1.90/micro RT + 1 tick slip on market/stop entries and stop/EOD exits",
+  "paper_only": true
+ },
+ "strategies": [
+  {
+   "id": "po3_amd",
+   "name": "Power of 3 / AMD",
+   "family": "false move / reversal",
+   "spans": {
+    "2026H1": {
+     "tpw": 0.12,
+     "win": 33.3,
+     "pf": 0.75,
+     "usd_mo": -14,
+     "maxdd": -342
+    },
+    "2026H2": {
+     "tpw": 0.11,
+     "win": 50.0,
+     "pf": 3.16,
+     "usd_mo": 79,
+     "maxdd": -152
+    },
+    "2021-25": {
+     "tpw": 0.17,
+     "win": 44.4,
+     "pf": 1.02,
+     "usd_mo": 2,
+     "maxdd": -1352
+    }
+   },
+   "corr_lit": {
+    "2026H1": 0.25,
+    "2026H2": 0.02,
+    "2021-25": -0.0
+   },
+   "p_holm": 1.0,
+   "tested_before": "partly - ICT_REPORT 2026-10-16 as a LIT filter / gate / size (noise, slightly negative); never standalone",
+   "verdict": "reject - loses in 2026H1",
+   "rank": 1
+  },
+  {
+   "id": "judas_swing",
+   "name": "Judas Swing (London, midnight open)",
+   "family": "false move / reversal",
+   "spans": {
+    "2026H1": {
+     "tpw": 1.33,
+     "win": 35.3,
+     "pf": 0.98,
+     "usd_mo": -26,
+     "maxdd": -2939
+    },
+    "2026H2": {
+     "tpw": 0.85,
+     "win": 46.7,
+     "pf": 1.36,
+     "usd_mo": 223,
+     "maxdd": -1107
+    },
+    "2021-25": {
+     "tpw": 2.17,
+     "win": 36.3,
+     "pf": 0.99,
+     "usd_mo": -22,
+     "maxdd": -12765
+    }
+   },
+   "corr_lit": {
+    "2026H1": 0.38,
+    "2026H2": 0.13,
+    "2021-25": 0.04
+   },
+   "p_holm": 1.0,
+   "tested_before": "no - only named as a concept in the LIT report coverage notes",
+   "verdict": "reject - loses in 2026H1, 2021-25",
+   "rank": 2
+  },
+  {
+   "id": "london_breakout",
+   "name": "London breakout (19:00-02:00 box)",
+   "family": "breakout",
+   "spans": {
+    "2026H1": {
+     "tpw": 0.51,
+     "win": 23.1,
+     "pf": 0.72,
+     "usd_mo": -79,
+     "maxdd": -1298
+    },
+    "2026H2": {
+     "tpw": 0.11,
+     "win": 50.0,
+     "pf": 1.95,
+     "usd_mo": 41,
+     "maxdd": -179
+    },
+    "2021-25": {
+     "tpw": 3.02,
+     "win": 35.5,
+     "pf": 1.04,
+     "usd_mo": 98,
+     "maxdd": -15626
+    }
+   },
+   "corr_lit": {
+    "2026H1": 0.25,
+    "2026H2": -0.06,
+    "2021-25": -0.05
+   },
+   "p_holm": 1.0,
+   "tested_before": "partly - DAPHNE tree London 02:00-05:00 break roots (RTH entries); not the 02:00 OCO box",
+   "verdict": "reject - loses in 2026H1",
+   "rank": 3
+  },
+  {
+   "id": "turtle_soup",
+   "name": "Turtle Soup (20-day false breakout)",
+   "family": "false breakout",
+   "spans": {
+    "2026H1": {
+     "tpw": 0.12,
+     "win": 0.0,
+     "pf": 0.0,
+     "usd_mo": -217,
+     "maxdd": -1321
+    },
+    "2026H2": {
+     "tpw": 0.06,
+     "win": 100.0,
+     "pf": 99.0,
+     "usd_mo": 311,
+     "maxdd": 0
+    },
+    "2021-25": {
+     "tpw": 0.23,
+     "win": 42.0,
+     "pf": 1.48,
+     "usd_mo": 139,
+     "maxdd": -4566
+    }
+   },
+   "corr_lit": {
+    "2026H1": 0.03,
+    "2026H2": -0.11,
+    "2021-25": -0.02
+   },
+   "p_holm": 1.0,
+   "tested_before": "partly - ICT_REPORT 2026-10-16 as a LIT trap feature (-0.17R shadows); never standalone",
+   "verdict": "reject - loses in 2026H1",
+   "rank": 4
+  },
+  {
+   "id": "ict2022",
+   "name": "2022 ICT model (sweep + MSS + FVG)",
+   "family": "sweep + MSS + FVG",
+   "spans": {
+    "2026H1": {
+     "tpw": 2.07,
+     "win": 37.7,
+     "pf": 1.12,
+     "usd_mo": 333,
+     "maxdd": -6326
+    },
+    "2026H2": {
+     "tpw": 2.39,
+     "win": 31.0,
+     "pf": 1.26,
+     "usd_mo": 505,
+     "maxdd": -2399
+    },
+    "2021-25": {
+     "tpw": 2.64,
+     "win": 34.8,
+     "pf": 0.94,
+     "usd_mo": -274,
+     "maxdd": -26149
+    }
+   },
+   "corr_lit": {
+    "2026H1": -0.06,
+    "2026H2": -0.06,
+    "2021-25": 0.02
+   },
+   "p_holm": 1.0,
+   "tested_before": "yes - 'Published models as taught' (TESTED_AND_REJECTED): PF ~1",
+   "verdict": "reject - loses in 2021-25",
+   "rank": 5
+  },
+  {
+   "id": "ny_open_fvg",
+   "name": "NY open FVG retrace (09:30-10:00)",
+   "family": "FVG / time window",
+   "spans": {
+    "2026H1": {
+     "tpw": 1.8,
+     "win": 26.1,
+     "pf": 0.68,
+     "usd_mo": -568,
+     "maxdd": -5533
+    },
+    "2026H2": {
+     "tpw": 1.65,
+     "win": 27.6,
+     "pf": 0.66,
+     "usd_mo": -534,
+     "maxdd": -2812
+    },
+    "2021-25": {
+     "tpw": 2.43,
+     "win": 33.1,
+     "pf": 0.89,
+     "usd_mo": -350,
+     "maxdd": -22966
+    }
+   },
+   "corr_lit": {
+    "2026H1": 0.14,
+    "2026H2": 0.1,
+    "2021-25": -0.0
+   },
+   "p_holm": 1.0,
+   "tested_before": "partly - Mech/IFVG and the opening-drive tests; not the first-FVG 09:30-10:00 rule",
+   "verdict": "reject - loses in 2026H1, 2026H2, 2021-25",
+   "rank": 6
+  },
+  {
+   "id": "silver_bullet",
+   "name": "Silver Bullet (10-11 ET FVG)",
+   "family": "FVG / time window",
+   "spans": {
+    "2026H1": {
+     "tpw": 2.34,
+     "win": 23.3,
+     "pf": 0.47,
+     "usd_mo": -1029,
+     "maxdd": -7464
+    },
+    "2026H2": {
+     "tpw": 1.99,
+     "win": 31.4,
+     "pf": 0.8,
+     "usd_mo": -332,
+     "maxdd": -3807
+    },
+    "2021-25": {
+     "tpw": 2.96,
+     "win": 38.2,
+     "pf": 1.03,
+     "usd_mo": 88,
+     "maxdd": -15908
+    }
+   },
+   "corr_lit": {
+    "2026H1": 0.11,
+    "2026H2": -0.01,
+    "2021-25": 0.01
+   },
+   "p_holm": 1.0,
+   "tested_before": "yes - 'Published models as taught' (TESTED_AND_REJECTED): 0.2-1.5 trades/wk, PF ~1",
+   "verdict": "reject - loses in 2026H1, 2026H2",
+   "rank": 7
+  },
+  {
+   "id": "unicorn",
+   "name": "Unicorn (breaker + FVG)",
+   "family": "sweep + MSS + FVG",
+   "spans": {
+    "2026H1": {
+     "tpw": 2.03,
+     "win": 25.0,
+     "pf": 0.66,
+     "usd_mo": -1057,
+     "maxdd": -7941
+    },
+    "2026H2": {
+     "tpw": 1.76,
+     "win": 45.2,
+     "pf": 1.31,
+     "usd_mo": 618,
+     "maxdd": -2583
+    },
+    "2021-25": {
+     "tpw": 2.09,
+     "win": 31.8,
+     "pf": 0.82,
+     "usd_mo": -704,
+     "maxdd": -45441
+    }
+   },
+   "corr_lit": {
+    "2026H1": 0.04,
+    "2026H2": 0.09,
+    "2021-25": -0.04
+   },
+   "p_holm": 1.0,
+   "tested_before": "no - only named as a concept in the LIT report coverage notes",
+   "verdict": "reject - loses in 2026H1, 2021-25",
+   "rank": 8
+  },
+  {
+   "id": "pdhl_sweep",
+   "name": "Previous-day high/low sweep and reversal",
+   "family": "liquidity sweep / reversal",
+   "spans": {
+    "2026H1": {
+     "tpw": 1.64,
+     "win": 26.2,
+     "pf": 0.34,
+     "usd_mo": -1750,
+     "maxdd": -10949
+    },
+    "2026H2": {
+     "tpw": 1.31,
+     "win": 30.4,
+     "pf": 0.89,
+     "usd_mo": -188,
+     "maxdd": -4057
+    },
+    "2021-25": {
+     "tpw": 2.28,
+     "win": 35.8,
+     "pf": 0.89,
+     "usd_mo": -325,
+     "maxdd": -34466
+    }
+   },
+   "corr_lit": {
+    "2026H1": 0.0,
+    "2026H2": -0.02,
+    "2021-25": 0.02
+   },
+   "p_holm": 1.0,
+   "tested_before": "partly - E2 2026-11-13 (PDH/PDL sweep + climax volume) and the DAPHNE tree roots (fade 09:50-15:00)",
+   "verdict": "reject - loses in 2026H1, 2026H2, 2021-25",
+   "rank": 9
+  },
+  {
+   "id": "asia_sweep",
+   "name": "Asian range sweep and reversal",
+   "family": "liquidity sweep / reversal",
+   "spans": {
+    "2026H1": {
+     "tpw": 4.3,
+     "win": 22.7,
+     "pf": 0.54,
+     "usd_mo": -3994,
+     "maxdd": -24345
+    },
+    "2026H2": {
+     "tpw": 4.26,
+     "win": 33.3,
+     "pf": 0.84,
+     "usd_mo": -1175,
+     "maxdd": -9292
+    },
+    "2021-25": {
+     "tpw": 4.16,
+     "win": 32.1,
+     "pf": 0.82,
+     "usd_mo": -1279,
+     "maxdd": -75859
+    }
+   },
+   "corr_lit": {
+    "2026H1": 0.06,
+    "2026H2": 0.11,
+    "2021-25": -0.05
+   },
+   "p_holm": 1.0,
+   "tested_before": "partly - DAPHNE tree roots (Asia fade, RTH entries only); not the 00:00-11:00 version",
+   "verdict": "reject - loses in 2026H1, 2026H2, 2021-25",
+   "rank": 10
+  }
+ ]
+}

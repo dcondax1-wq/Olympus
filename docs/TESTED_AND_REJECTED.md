@@ -305,3 +305,9 @@
   a VIX jump; ATLAS x1.25 after Zlarior was stopped on the other side, x0.5 on a two-way day: all 8 rejected (best: old level +$138 /
   +$125 a month at the LIT size but eval path Jul-Oct -$34). The loop re-checks them on new bars.
 
+- **Popular ICT/SMC strategies as taught (2026-11-23, `popular-ict-2026-11-23.md`, `tools/popular_ict.py`,
+  `research/lab/popular_ict.json`, rules pre-registered in `research/writeups/specs/popular-ict-2026-11-23.md`):** Silver Bullet,
+  Judas Swing, Asia sweep, London breakout, PDH/PDL sweep, NY open FVG, PO3/AMD, ICT 2022, Turtle Soup, Unicorn; 5m, stop 1 tick
+  beyond the swing, 2R, LIT sizing, costs in. 0 of 10 pass (PF > 1 in all three spans and Holm p < 0.05; best raw p 0.17, all
+  Holm 1.0); 9 of 10 lose 2026 H1. Only ICT 2022 adds $ to LIT in both 2026 halves (+$369 / +$681 a month on a Rapid 50K, ~5
+  trades/wk) but DD $2.2k -> $4.8k, H1 eval fails 1.6% -> 34%, loses 2021-25. Corr LIT -0.06..+0.38. Nothing adopted.
