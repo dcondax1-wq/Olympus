@@ -1010,7 +1010,9 @@ def _stood_down(bot, g, now) -> str | None:
                     return f"account {s}"
             elif ln["kind"] == "extra":
                 lk = getattr(o, "lock", None)
-                if lk and lk.get("day") == today:
+                # on purpose: a damaged-state pause (engine/state_safe) never blocks the keep-alive: its 1 MNQ protects the account
+                # from MFFU's inactivity closure, worth more than the tiny risk (lead 2026-11-23)
+                if lk and lk.get("day") == today and not lk.get("state_damaged"):
                     return f"locked out today: {lk.get('reason')}"
         except Exception as e:  # noqa: BLE001
             return f"status unreadable ({e.__class__.__name__})"
@@ -1620,6 +1622,8 @@ def _system_block(bot, g, now) -> str | None:
             return f"your pause blocks the keep-alive ({p})"
     except Exception as e:  # noqa: BLE001
         return f"the pause check failed ({e.__class__.__name__})"
+    # on purpose: LIT's damaged-state pause (LiveBot._state_block_day, engine/state_safe) is NOT checked here: the keep-alive's 1 MNQ
+    # protects the account from MFFU's inactivity closure, worth more than the tiny risk (lead 2026-11-23)
     nd = getattr(bot, "_no_entries_day", None)
     if nd is not None and nd == today:
         return "you flattened remotely today: no new entries today (the keep-alive too)"
@@ -1656,7 +1660,8 @@ def _system_block(bot, g, now) -> str | None:
                 why = o.startup_block(now) if callable(getattr(o, "startup_block", None)) else None
                 why = why or (o.life_block(now) if callable(getattr(o, "life_block", None)) else None)
                 lk = getattr(o, "lock", None)
-                if not why and isinstance(lk, dict) and lk.get("day") == today:
+                # on purpose: a damaged-state pause (engine/state_safe) never blocks the keep-alive (its 1 MNQ keeps the account open)
+                if not why and isinstance(lk, dict) and lk.get("day") == today and not lk.get("state_damaged"):
                     why = f"locked out today: {lk.get('reason')}"
                 if not why and callable(getattr(o, "disabled_reason", None)):
                     dis = o.disabled_reason()

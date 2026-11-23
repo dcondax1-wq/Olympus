@@ -287,8 +287,81 @@ def part_d():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+# ------------------------------------------------------------------------------------------------ f + g (job J)
+EXTRA = {"id": "fund", "name": "Paper funded", "adapter": "paper", "preset": "mffu_builder_50k", "mode": "funded",
+         "funded": {"start": "2026-10-01", "payouts": {}}}
+
+
+def part_f():
+    """the extra accounts (engine/multi_account: data/live_state_accounts.json): the same fallback."""
+    import copy
+    from engine import multi_account as MA
+    MA.ADAPTER_FACTORY = None
+    tmp = tempfile.mkdtemp()
+    try:
+        ap = os.path.join(tmp, "live_state_accounts.json")
+
+        def start(t=T):
+            b = LiveBot()
+            b.clock = Clock(t)
+            b.state_path = os.path.join(tmp, "live_state.json")
+            r = b.start({**CFG, "accounts": [copy.deepcopy(EXTRA)], "accounts_parallel": False}, spawn=False)
+            assert r.get("ok"), r
+            return b, next(a for a in b.accts.accounts if a.id == "fund")
+
+        def ab(day, lock=None, closes=None):
+            return {"v": 1, "saved_at": T - 600, "day": day, "accounts": {"fund": {"id": "fund", "nt_account": "", "day": day,
+                    "ledger": [], "closes": closes or [[day, 1, -450.0]], "seen": [], "open_t": None, "open_qty": None,
+                    "blocked": [], "flattened": [], "provisional": {}, "lock": lock}}}
+        b, a = start()
+        b.accts.save()
+        b.accts.save()
+        check("f. extras: a save after a clean start keeps the previous good copy (live_state_accounts.json.bak)",
+              os.path.exists(ap + ".bak") and json.load(open(ap + ".bak"))["day"] == DAY)
+        write(ap + ".bak", ab(DAY, lock={"day": DAY, "reason": "soft daily loss", "t": T - 600}))
+        damage(ap)
+        PUSHED.clear()
+        b, a = start()
+        check("f. extras: unreadable file + today's .bak -> today's lock-out and closes come back, no pause, no message",
+              a.lock and a.lock["reason"] == "soft daily loss" and a.closes == [[DAY, 1, -450.0]] and not PUSHED, (a.lock, a.closes))
+        write(ap + ".bak", ab("2026-10-20", closes=[["2026-10-20", 1, 300.0]]))
+        damage(ap)
+        b, a = start()
+        why = a.entry_block(T + 600) if callable(getattr(a, "entry_block", None)) else None
+        check("f. extras: only yesterday's .bak -> its closes + every extra account locked out TODAY (no new entry) + one message",
+              a.lock and a.lock["day"] == DAY and a.lock.get("state_damaged") and "damaged" in a.lock["reason"]
+              and a.closes == [["2026-10-20", 1, 300.0]] and len(PUSHED) == 1 and "live_state_accounts.json" in PUSHED[0]["body"],
+              (a.lock, a.closes, PUSHED))
+        b.accts.save()
+        b2, a2 = start(T + 1200)
+        check("f. extras: the lock-out outlives a restart the same day (no second message)", a2.lock and a2.lock.get("state_damaged")
+              and len(PUSHED) == 1, a2.lock)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+def part_g():
+    """on purpose: a damaged-state pause never blocks the keep-alive (its 1 MNQ keeps the account from MFFU's inactivity close)."""
+    from engine import keepalive as KA
+
+    class O:
+        def __init__(self, lock):
+            self.lock = lock
+    g = lambda lk: {"key": "x:fund", "lanes": [{"kind": "extra", "obj": O(lk)}]}   # noqa: E731
+    b = LiveBot()
+    b.clock = Clock(T)
+    dmg = KA._stood_down(b, g({"day": DAY, "reason": "the state file was damaged today", "state_damaged": True}), T)
+    normal = KA._stood_down(b, g({"day": DAY, "reason": "soft daily loss"}), T)
+    check("g. keep-alive: an extra account's damaged-state pause does NOT stand it down; a real lock-out still does",
+          dmg is None and normal and "soft daily loss" in normal, (dmg, normal))
+    src = open(os.path.join(ROOT, "engine", "keepalive.py"), encoding="utf-8").read()
+    check("g. keep-alive: the ATLAS lane skips a state_damaged lock and LIT's _state_block_day is not read (on purpose, commented)",
+          src.count('not lk.get("state_damaged")') == 2 and "_state_block_day" not in src.replace(
+              "LiveBot._state_block_day, engine/state_safe) is NOT checked here", ""))
+
+
 def main() -> int:
-    for f in (part_a, part_b, part_c, part_c_rebuild, part_d):
+    for f in (part_a, part_b, part_c, part_c_rebuild, part_d, part_f, part_g):
         try:
             f()
         except Exception as e:  # noqa: BLE001

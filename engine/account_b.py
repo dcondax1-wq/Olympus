@@ -1942,7 +1942,7 @@ class AccountB:
         elif b is not None:
             self._state_good = True
         if pause:
-            self.lock = {"day": today, "reason": pause}
+            self.lock = {"day": today, "reason": pause, "state_damaged": True}
         if not isinstance(b, dict) or b.get("account") != self.name:
             return                         # another account's file: start clean (the old one stays on disk)
         self.closes = [list(c) for c in (b.get("closes") or []) if isinstance(c, (list, tuple)) and len(c) >= 3]
@@ -1955,7 +1955,7 @@ class AccountB:
         lk = b.get("lock")
         self.lock = lk if lk and lk.get("day") == trading_day(self.clock()) else None
         if pause:
-            self.lock = {"day": today, "reason": pause}      # the older backup's day: today's pause wins
+            self.lock = {"day": today, "reason": pause, "state_damaged": True}      # the older backup's day: today's pause wins
         if self.open_t is not None:
             pv = self.prov.get(int(self.open_t)) or {}
             self.log("system", f"restored: open {pv.get('short') or pv.get('key')} {'LONG' if pv.get('dir') == 1 else 'SHORT'} "

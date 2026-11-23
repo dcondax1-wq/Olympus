@@ -270,8 +270,16 @@ def tracker_checks(tmp):
     check("d. +$2,100 over 4 days: balance $27,100, floor locked at $25,100, buffer reached, best day 29%, PAYOUT READY $1,000 "
           "($800 to you)", ev["balance"] == 27100 and ev["floor"] == 25100 and t["buffer_reached"] and t["status"] == "ready"
           and t["max_request"] == 1000 and t["to_you"] == 800 and abs(t["best_day_pct"] - 600 / 21) < 0.1 and t["eligible"], (ev, t))
-    B._lifecycle(now)
-    B._lifecycle(now)
+    old_pa = os.environ.get("LE_PAYOUT_AUTOPILOT")
+    os.environ["LE_PAYOUT_AUTOPILOT"] = "0"      # the bot's own push (with the autopilot on, engine/payout_autopilot sends the one alert)
+    try:
+        B._lifecycle(now)
+        B._lifecycle(now)
+    finally:
+        if old_pa is None:
+            os.environ.pop("LE_PAYOUT_AUTOPILOT", None)
+        else:
+            os.environ["LE_PAYOUT_AUTOPILOT"] = old_pa
     P = [p for p in fb.pushed]
     check("d. ONE 'PAYOUT READY: request $1,000' push with the account_b record line; the bot never requests it",
           len(P) == 1 and P[0]["title"] == "PAYOUT READY: request $1,000"
