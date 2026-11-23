@@ -159,7 +159,13 @@ def track(day_pnl: dict, payouts: dict | None = None, plan: str | dict | None = 
     # fleet plan 2026-11-22 (research/writeups/fleet-plan-2026-11-22.md): take payouts 1-4, NEVER the 5th (MFFU moves you to live
     # and every sim account sleeps): after the 4th the tracker never says "ready" again (engine/payout_autopilot warns instead)
     stop4 = n_pay >= STOP_AFTER and not graduated
-    ready = eligible and above >= P["ask_above"] and not stop4   # the owner's plan: ask once the max sits above the buffer
+    # night-payfirst 2026-11-23 (owner: "take it sooner, one payout small so we can immediately buy more accounts"): a plan with
+    # first_at_min asks its FIRST payout on the first day MFFU allows one (>= the minimum above the buffer, 2 traded days, 48 h,
+    # best day <= 50%: eligible keeps every rule), for what MFFU allows that day ($250 at $1,350 on a 25K, at most the max);
+    # from the second payout on, the normal plan (the full max). Sizing and strategy unchanged.
+    first_min = bool(P.get("first_at_min")) and n_pay == 0
+    ask_above = float(P["pay_min"]) if first_min else float(P["ask_above"])
+    ready = eligible and above >= ask_above and not stop4   # the owner's plan: ask once the max sits above the buffer
     # trade M more days (consistency + the 2-day minimum), at a typical day that does not beat the best day
     typ = [v for d, v in cyc.items() if v > 0 and d != best_day]
     per = min(best, sum(typ) / len(typ)) if typ else float(P["typical_day"])
@@ -167,14 +173,15 @@ def track(day_pnl: dict, payouts: dict | None = None, plan: str | dict | None = 
     m_cons = int(math.ceil(need_profit / per)) if need_profit > 0 else 0
     m_days = max(0, int(P["cycle_days"]) - len(cyc))
     more_days = max(m_cons, m_days)
-    to_ask = round(max(0.0, P["buffer"] + P["ask_above"] - bal), 2)
-    goal = P["buffer"] + P["ask_above"]
+    to_ask = round(max(0.0, P["buffer"] + ask_above - bal), 2)
+    goal = P["buffer"] + ask_above
     out = {"v": VERSION, "name": name or P["label"], "plan": P.get("key"), "label": P["label"], "start": start, "today": today,
            "balance": round(P["start"] + bal, 2), "profit": round(bal, 2), "floor": round(P["start"] + floor, 2), "room": room,
            "locked": floor >= P["lock"] - 1e-9, "mll_after_payout": round(P["start"] + P["lock"], 2),
            "buffer": P["buffer"], "buffer_balance": round(P["start"] + P["buffer"], 2), "above_buffer": above,
            "ask_at_balance": round(P["start"] + goal, 2), "to_ask": to_ask,
-           "ask_amount": min(P["pay_max"], P["ask_above"]), "ask_goal": round(goal, 2),   # MFFU's $0 view: $1,000 at $2,100 (25K)
+           "ask_amount": min(P["pay_max"], ask_above), "ask_goal": round(goal, 2),   # MFFU's $0 view: $1,000 at $2,100 (25K)
+           "first_at_min": first_min,                     # night-payfirst: this payout is the small first one
            "buffer_frac": round(max(0.0, min(1.0, bal / goal)) if goal else 0.0, 4),
            "cycle_start": (_add_days(last, 1) if last else (start or first_trade)), "cycle_profit": cprof, "cycle_days": len(cyc),
            "cycle_days_need": int(P["cycle_days"]), "best_day": best, "best_day_on": best_day, "best_day_pct": best_pct,

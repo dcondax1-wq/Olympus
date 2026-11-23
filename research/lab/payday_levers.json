@@ -1,6 +1,6 @@
 {
  "v": 1,
- "date": "2026-11-20",
+ "date": "2026-11-23",
  "kind": "payday_lever",
  "bot": "money",
  "about": "Payday plan levers (8) and loss cuts (2), pre-registered in research/lab/payday_design_2026-11-20.md; judged on the first payout date AND the chance of losing the account",
@@ -15,80 +15,79 @@
    "title": "ATLAS funded 25K at 40% of the room a trade (today 60%)",
    "status": "rejected",
    "why": [
-    "H2: paid by Jan 15 66.2% -> 58.4% (needs +1 pt)",
-    "H2: median first payout +5 trading days",
-    "H1: paid by Jan 15 83.9% -> 80.7% (needs +1 pt)",
-    "H1: median first payout +3 trading days",
-    "H2: $26 a month less"
+    "H2: paid by Jan 15 83.1% -> 80.8% (needs +1 pt)",
+    "H2: median first payout +2 trading days",
+    "H1: paid by Jan 15 91.9% -> 92% (needs +1 pt)",
+    "H1: median first payout +1 trading days"
    ],
    "accounts": {
     "A25": {
      "H2": {
       "today": {
-       "first_pay_med": "2027-01-04",
-       "first_pay_k_med": 29.0,
-       "p_by_dec31": 49.9,
-       "p_by_jan15": 66.2,
-       "p_lost_before_pay": 7.8,
-       "lost_6m": 10.2,
-       "cash_m": 523
+       "first_pay_med": "2026-12-17",
+       "first_pay_k_med": 18.0,
+       "p_by_dec31": 71.1,
+       "p_by_jan15": 83.1,
+       "p_lost_before_pay": 4.8,
+       "lost_6m": 9.3,
+       "cash_m": 542
       },
       "with": {
-       "first_pay_med": "2027-01-11",
-       "first_pay_k_med": 34.0,
-       "p_by_dec31": 39.2,
-       "p_by_jan15": 58.4,
-       "p_lost_before_pay": 4.6,
-       "lost_6m": 5.8,
-       "cash_m": 497
+       "first_pay_med": "2026-12-21",
+       "first_pay_k_med": 20.0,
+       "p_by_dec31": 67.1,
+       "p_by_jan15": 80.8,
+       "p_lost_before_pay": 2.2,
+       "lost_6m": 3.9,
+       "cash_m": 518
       }
      },
      "H1": {
       "today": {
-       "first_pay_med": "2026-12-18",
-       "first_pay_k_med": 20.0,
-       "p_by_dec31": 69.1,
-       "p_by_jan15": 83.9,
-       "p_lost_before_pay": 7.7,
-       "lost_6m": 12.5,
-       "cash_m": 700
+       "first_pay_med": "2026-12-10",
+       "first_pay_k_med": 13.0,
+       "p_by_dec31": 83.4,
+       "p_by_jan15": 91.9,
+       "p_lost_before_pay": 5.5,
+       "lost_6m": 10.5,
+       "cash_m": 721
       },
       "with": {
-       "first_pay_med": "2026-12-23",
-       "first_pay_k_med": 23.0,
-       "p_by_dec31": 64.7,
-       "p_by_jan15": 80.7,
-       "p_lost_before_pay": 5.5,
-       "lost_6m": 7.5,
-       "cash_m": 675
+       "first_pay_med": "2026-12-11",
+       "first_pay_k_med": 14.0,
+       "p_by_dec31": 81.9,
+       "p_by_jan15": 92.0,
+       "p_lost_before_pay": 3.7,
+       "lost_6m": 7.1,
+       "cash_m": 694
       }
      },
      "REF": {
       "today": {
-       "first_pay_med": null,
-       "first_pay_k_med": null,
-       "p_by_dec31": 14.8,
-       "p_by_jan15": 19.7,
-       "p_lost_before_pay": 81.4,
-       "lost_6m": 94.6,
-       "cash_m": 28
+       "first_pay_med": "2027-04-28",
+       "first_pay_k_med": 110.5,
+       "p_by_dec31": 27.0,
+       "p_by_jan15": 32.1,
+       "p_lost_before_pay": 67.9,
+       "lost_6m": 92.8,
+       "cash_m": 48
       },
       "with": {
-       "first_pay_med": null,
-       "first_pay_k_med": null,
-       "p_by_dec31": 11.5,
-       "p_by_jan15": 16.3,
-       "p_lost_before_pay": 80.0,
-       "lost_6m": 92.5,
-       "cash_m": 28
+       "first_pay_med": "2027-05-17",
+       "first_pay_k_med": 123.5,
+       "p_by_dec31": 26.3,
+       "p_by_jan15": 31.1,
+       "p_lost_before_pay": 66.1,
+       "lost_6m": 89.5,
+       "cash_m": 47
       }
      }
     }
    },
    "d_per_month": {
-    "H2": -26,
-    "H1": -25,
-    "REF": 0
+    "H2": -24,
+    "H1": -27,
+    "REF": -1
    },
    "gate": "both 2026 halves: paid by Jan 15 +1 pt and median first payout not later; lost before it pays <= +0.5 pt, lost in 6 months <= +1 pt; 2021-25 lost before it pays <= +2 pts; Jul-Oct $ a month >= -$25",
    "source": "tools/money/payday_plan.py, research/writeups/payday-plan-2026-11-20.md"
@@ -101,145 +100,145 @@
    "title": "Ask at $1,000 above the buffer instead of $750 (ATLAS 25K, and the 25K #2 once funded)",
    "status": "rejected",
    "why": [
-    "H2: paid by Jan 15 66.2% -> 63.3% (needs +1 pt)",
-    "H2: median first payout +2 trading days",
-    "H1: paid by Jan 15 83.9% -> 80.3% (needs +1 pt)",
-    "H1: median first payout +2 trading days",
-    "H2: paid by Jan 15 31.4% -> 27.9% (needs +1 pt)",
-    "H2: median first payout +5 trading days",
-    "H1: paid by Jan 15 34.3% -> 31% (needs +1 pt)",
-    "H1: median first payout +1 trading days"
+    "H2: paid by Jan 15 83.1% -> 76.6% (needs +1 pt)",
+    "H2: median first payout +4 trading days",
+    "H2: lost before it pays 4.8% -> 5.4%",
+    "H1: paid by Jan 15 91.9% -> 86.9% (needs +1 pt)",
+    "H1: median first payout +4 trading days",
+    "2021-25: lost before it pays 67.9% -> 72.9%",
+    "H2: paid by Jan 15 26.8% -> 26.8% (needs +1 pt)",
+    "H1: paid by Jan 15 30% -> 30% (needs +1 pt)"
    ],
    "accounts": {
     "A25": {
      "H2": {
       "today": {
-       "first_pay_med": "2027-01-04",
-       "first_pay_k_med": 29.0,
-       "p_by_dec31": 49.9,
-       "p_by_jan15": 66.2,
-       "p_lost_before_pay": 7.8,
-       "lost_6m": 10.2,
-       "cash_m": 523
+       "first_pay_med": "2026-12-17",
+       "first_pay_k_med": 18.0,
+       "p_by_dec31": 71.1,
+       "p_by_jan15": 83.1,
+       "p_lost_before_pay": 4.8,
+       "lost_6m": 9.3,
+       "cash_m": 542
       },
       "with": {
-       "first_pay_med": "2027-01-06",
-       "first_pay_k_med": 31.0,
-       "p_by_dec31": 45.0,
-       "p_by_jan15": 63.3,
-       "p_lost_before_pay": 7.9,
-       "lost_6m": 9.8,
-       "cash_m": 519
+       "first_pay_med": "2026-12-23",
+       "first_pay_k_med": 22.0,
+       "p_by_dec31": 61.2,
+       "p_by_jan15": 76.6,
+       "p_lost_before_pay": 5.4,
+       "lost_6m": 8.7,
+       "cash_m": 551
       }
      },
      "H1": {
       "today": {
-       "first_pay_med": "2026-12-18",
-       "first_pay_k_med": 20.0,
-       "p_by_dec31": 69.1,
-       "p_by_jan15": 83.9,
-       "p_lost_before_pay": 7.7,
-       "lost_6m": 12.5,
-       "cash_m": 700
+       "first_pay_med": "2026-12-10",
+       "first_pay_k_med": 13.0,
+       "p_by_dec31": 83.4,
+       "p_by_jan15": 91.9,
+       "p_lost_before_pay": 5.5,
+       "lost_6m": 10.5,
+       "cash_m": 721
       },
       "with": {
-       "first_pay_med": "2026-12-22",
-       "first_pay_k_med": 22.0,
-       "p_by_dec31": 65.5,
-       "p_by_jan15": 80.3,
-       "p_lost_before_pay": 7.7,
-       "lost_6m": 11.0,
-       "cash_m": 694
+       "first_pay_med": "2026-12-16",
+       "first_pay_k_med": 17.0,
+       "p_by_dec31": 75.6,
+       "p_by_jan15": 86.9,
+       "p_lost_before_pay": 5.8,
+       "lost_6m": 10.3,
+       "cash_m": 724
       }
      },
      "REF": {
       "today": {
-       "first_pay_med": null,
-       "first_pay_k_med": null,
-       "p_by_dec31": 14.8,
-       "p_by_jan15": 19.7,
-       "p_lost_before_pay": 81.4,
-       "lost_6m": 94.6,
-       "cash_m": 28
+       "first_pay_med": "2027-04-28",
+       "first_pay_k_med": 110.5,
+       "p_by_dec31": 27.0,
+       "p_by_jan15": 32.1,
+       "p_lost_before_pay": 67.9,
+       "lost_6m": 92.8,
+       "cash_m": 48
       },
       "with": {
        "first_pay_med": null,
        "first_pay_k_med": null,
-       "p_by_dec31": 12.4,
-       "p_by_jan15": 17.4,
-       "p_lost_before_pay": 82.7,
-       "lost_6m": 94.1,
-       "cash_m": 24
+       "p_by_dec31": 21.3,
+       "p_by_jan15": 25.5,
+       "p_lost_before_pay": 72.9,
+       "lost_6m": 92.3,
+       "cash_m": 45
       }
      }
     },
     "N25": {
      "H2": {
       "today": {
-       "first_pay_med": "2027-02-09",
-       "first_pay_k_med": 55.0,
-       "p_by_dec31": 18.7,
-       "p_by_jan15": 31.4,
-       "p_lost_before_pay": 24.3,
-       "lost_6m": 17.3,
-       "cash_m": 326
+       "first_pay_med": "2027-02-17",
+       "first_pay_k_med": 60.0,
+       "p_by_dec31": 14.1,
+       "p_by_jan15": 26.8,
+       "p_lost_before_pay": 24.2,
+       "lost_6m": 17.2,
+       "cash_m": 321
       },
       "with": {
-       "first_pay_med": "2027-02-16",
+       "first_pay_med": "2027-02-17",
        "first_pay_k_med": 60.0,
-       "p_by_dec31": 15.5,
-       "p_by_jan15": 27.9,
-       "p_lost_before_pay": 24.3,
-       "lost_6m": 17.3,
+       "p_by_dec31": 14.1,
+       "p_by_jan15": 26.8,
+       "p_lost_before_pay": 24.2,
+       "lost_6m": 17.2,
        "cash_m": 321
       }
      },
      "H1": {
       "today": {
-       "first_pay_med": "2027-02-03",
-       "first_pay_k_med": 51.0,
-       "p_by_dec31": 19.8,
-       "p_by_jan15": 34.3,
-       "p_lost_before_pay": 16.3,
-       "lost_6m": 14.4,
-       "cash_m": 369
+       "first_pay_med": "2027-02-05",
+       "first_pay_k_med": 52.0,
+       "p_by_dec31": 15.8,
+       "p_by_jan15": 30.0,
+       "p_lost_before_pay": 16.2,
+       "lost_6m": 14.0,
+       "cash_m": 364
       },
       "with": {
-       "first_pay_med": "2027-02-04",
+       "first_pay_med": "2027-02-05",
        "first_pay_k_med": 52.0,
-       "p_by_dec31": 17.2,
-       "p_by_jan15": 31.0,
-       "p_lost_before_pay": 16.3,
-       "lost_6m": 14.1,
-       "cash_m": 363
+       "p_by_dec31": 15.8,
+       "p_by_jan15": 30.0,
+       "p_lost_before_pay": 16.2,
+       "lost_6m": 14.0,
+       "cash_m": 364
       }
      },
      "REF": {
       "today": {
        "first_pay_med": null,
        "first_pay_k_med": null,
-       "p_by_dec31": 0.4,
-       "p_by_jan15": 1.3,
-       "p_lost_before_pay": 89.1,
-       "lost_6m": 30.4,
-       "cash_m": -5
+       "p_by_dec31": 0.2,
+       "p_by_jan15": 0.9,
+       "p_lost_before_pay": 89.4,
+       "lost_6m": 29.8,
+       "cash_m": -7
       },
       "with": {
        "first_pay_med": null,
        "first_pay_k_med": null,
        "p_by_dec31": 0.2,
        "p_by_jan15": 0.9,
-       "p_lost_before_pay": 89.3,
-       "lost_6m": 29.9,
+       "p_lost_before_pay": 89.4,
+       "lost_6m": 29.8,
        "cash_m": -7
       }
      }
     }
    },
    "d_per_month": {
-    "H2": -9,
-    "H1": -12,
-    "REF": -6
+    "H2": 9,
+    "H1": 3,
+    "REF": -3
    },
    "gate": "both 2026 halves: paid by Jan 15 +1 pt and median first payout not later; lost before it pays <= +0.5 pt, lost in 6 months <= +1 pt; 2021-25 lost before it pays <= +2 pts; Jul-Oct $ a month >= -$25",
    "source": "tools/money/payday_plan.py, research/writeups/payday-plan-2026-11-20.md"
@@ -252,77 +251,78 @@
    "title": "ATLAS funded 25K: risk only what reaches the next $1,000 request line (never above today's 60%)",
    "status": "rejected",
    "why": [
-    "H1: paid by Jan 15 83.9% -> 84.2% (needs +1 pt)",
-    "H2: $91 a month less"
+    "H2: paid by Jan 15 83.1% -> 83.4% (needs +1 pt)",
+    "H1: paid by Jan 15 91.9% -> 91.9% (needs +1 pt)",
+    "H2: $92 a month less"
    ],
    "accounts": {
     "A25": {
      "H2": {
       "today": {
-       "first_pay_med": "2027-01-04",
-       "first_pay_k_med": 29.0,
-       "p_by_dec31": 49.9,
-       "p_by_jan15": 66.2,
-       "p_lost_before_pay": 7.8,
-       "lost_6m": 10.2,
-       "cash_m": 523
+       "first_pay_med": "2026-12-17",
+       "first_pay_k_med": 18.0,
+       "p_by_dec31": 71.1,
+       "p_by_jan15": 83.1,
+       "p_lost_before_pay": 4.8,
+       "lost_6m": 9.3,
+       "cash_m": 542
       },
       "with": {
-       "first_pay_med": "2026-12-31",
-       "first_pay_k_med": 28.0,
-       "p_by_dec31": 51.0,
-       "p_by_jan15": 67.8,
-       "p_lost_before_pay": 7.7,
-       "lost_6m": 10.7,
-       "cash_m": 432
+       "first_pay_med": "2026-12-16",
+       "first_pay_k_med": 17.5,
+       "p_by_dec31": 71.5,
+       "p_by_jan15": 83.4,
+       "p_lost_before_pay": 4.7,
+       "lost_6m": 8.4,
+       "cash_m": 450
       }
      },
      "H1": {
       "today": {
-       "first_pay_med": "2026-12-18",
-       "first_pay_k_med": 20.0,
-       "p_by_dec31": 69.1,
-       "p_by_jan15": 83.9,
-       "p_lost_before_pay": 7.7,
-       "lost_6m": 12.5,
-       "cash_m": 700
+       "first_pay_med": "2026-12-10",
+       "first_pay_k_med": 13.0,
+       "p_by_dec31": 83.4,
+       "p_by_jan15": 91.9,
+       "p_lost_before_pay": 5.5,
+       "lost_6m": 10.5,
+       "cash_m": 721
       },
       "with": {
-       "first_pay_med": "2026-12-18",
-       "first_pay_k_med": 20.0,
-       "p_by_dec31": 69.7,
-       "p_by_jan15": 84.2,
-       "p_lost_before_pay": 7.7,
-       "lost_6m": 11.4,
-       "cash_m": 630
+       "first_pay_med": "2026-12-10",
+       "first_pay_k_med": 13.0,
+       "p_by_dec31": 83.3,
+       "p_by_jan15": 91.9,
+       "p_lost_before_pay": 5.5,
+       "lost_6m": 9.4,
+       "cash_m": 643
       }
      },
      "REF": {
       "today": {
-       "first_pay_med": null,
-       "first_pay_k_med": null,
-       "p_by_dec31": 14.8,
-       "p_by_jan15": 19.7,
-       "p_lost_before_pay": 81.4,
-       "lost_6m": 94.6,
-       "cash_m": 28
+       "first_pay_med": "2027-04-28",
+       "first_pay_k_med": 110.5,
+       "p_by_dec31": 27.0,
+       "p_by_jan15": 32.1,
+       "p_lost_before_pay": 67.9,
+       "lost_6m": 92.8,
+       "cash_m": 48
       },
       "with": {
-       "first_pay_med": null,
-       "first_pay_k_med": null,
-       "p_by_dec31": 15.9,
-       "p_by_jan15": 21.5,
-       "p_lost_before_pay": 78.8,
-       "lost_6m": 91.1,
-       "cash_m": 27
+       "first_pay_med": "2027-04-23",
+       "first_pay_k_med": 107.0,
+       "p_by_dec31": 28.0,
+       "p_by_jan15": 33.3,
+       "p_lost_before_pay": 66.6,
+       "lost_6m": 86.3,
+       "cash_m": 45
       }
      }
     }
    },
    "d_per_month": {
-    "H2": -91,
-    "H1": -70,
-    "REF": -1
+    "H2": -92,
+    "H1": -78,
+    "REF": -3
    },
    "gate": "both 2026 halves: paid by Jan 15 +1 pt and median first payout not later; lost before it pays <= +0.5 pt, lost in 6 months <= +1 pt; 2021-25 lost before it pays <= +2 pts; Jul-Oct $ a month >= -$25",
    "source": "tools/money/payday_plan.py, research/writeups/payday-plan-2026-11-20.md"
@@ -335,78 +335,78 @@
    "title": "25K #2 eval: 40% of the room (your rule) with a $300 cap a trade",
    "status": "rejected",
    "why": [
-    "H2: paid by Jan 15 31.4% -> 26.2% (needs +1 pt)",
-    "H2: median first payout +5 trading days",
-    "H1: paid by Jan 15 34.3% -> 31.3% (needs +1 pt)",
-    "H1: median first payout +2 trading days"
+    "H2: paid by Jan 15 26.8% -> 21.8% (needs +1 pt)",
+    "H2: median first payout +4 trading days",
+    "H1: paid by Jan 15 30% -> 26.7% (needs +1 pt)",
+    "H1: median first payout +4 trading days"
    ],
    "accounts": {
     "N25": {
      "H2": {
       "today": {
-       "first_pay_med": "2027-02-09",
-       "first_pay_k_med": 55.0,
-       "p_by_dec31": 18.7,
-       "p_by_jan15": 31.4,
-       "p_lost_before_pay": 24.3,
-       "lost_6m": 17.3,
-       "cash_m": 326
+       "first_pay_med": "2027-02-17",
+       "first_pay_k_med": 60.0,
+       "p_by_dec31": 14.1,
+       "p_by_jan15": 26.8,
+       "p_lost_before_pay": 24.2,
+       "lost_6m": 17.2,
+       "cash_m": 321
       },
       "with": {
-       "first_pay_med": "2027-02-16",
-       "first_pay_k_med": 60.0,
-       "p_by_dec31": 12.8,
-       "p_by_jan15": 26.2,
-       "p_lost_before_pay": 23.7,
-       "lost_6m": 16.3,
-       "cash_m": 310
+       "first_pay_med": "2027-02-23",
+       "first_pay_k_med": 64.0,
+       "p_by_dec31": 9.5,
+       "p_by_jan15": 21.8,
+       "p_lost_before_pay": 23.9,
+       "lost_6m": 16.0,
+       "cash_m": 304
       }
      },
      "H1": {
       "today": {
-       "first_pay_med": "2027-02-03",
-       "first_pay_k_med": 51.0,
-       "p_by_dec31": 19.8,
-       "p_by_jan15": 34.3,
-       "p_lost_before_pay": 16.3,
-       "lost_6m": 14.4,
-       "cash_m": 369
+       "first_pay_med": "2027-02-05",
+       "first_pay_k_med": 52.0,
+       "p_by_dec31": 15.8,
+       "p_by_jan15": 30.0,
+       "p_lost_before_pay": 16.2,
+       "lost_6m": 14.0,
+       "cash_m": 364
       },
       "with": {
-       "first_pay_med": "2027-02-05",
-       "first_pay_k_med": 53.0,
-       "p_by_dec31": 17.2,
-       "p_by_jan15": 31.3,
-       "p_lost_before_pay": 16.5,
-       "lost_6m": 14.5,
-       "cash_m": 363
+       "first_pay_med": "2027-02-11",
+       "first_pay_k_med": 56.0,
+       "p_by_dec31": 13.0,
+       "p_by_jan15": 26.7,
+       "p_lost_before_pay": 16.6,
+       "lost_6m": 13.9,
+       "cash_m": 356
       }
      },
      "REF": {
       "today": {
        "first_pay_med": null,
        "first_pay_k_med": null,
-       "p_by_dec31": 0.4,
-       "p_by_jan15": 1.3,
-       "p_lost_before_pay": 89.1,
-       "lost_6m": 30.4,
-       "cash_m": -5
+       "p_by_dec31": 0.2,
+       "p_by_jan15": 0.9,
+       "p_lost_before_pay": 89.4,
+       "lost_6m": 29.8,
+       "cash_m": -7
       },
       "with": {
        "first_pay_med": null,
        "first_pay_k_med": null,
-       "p_by_dec31": 0.2,
-       "p_by_jan15": 0.6,
-       "p_lost_before_pay": 89.0,
-       "lost_6m": 26.7,
-       "cash_m": -5
+       "p_by_dec31": 0.1,
+       "p_by_jan15": 0.4,
+       "p_lost_before_pay": 89.3,
+       "lost_6m": 26.1,
+       "cash_m": -7
       }
      }
     }
    },
    "d_per_month": {
-    "H2": -16,
-    "H1": -6,
+    "H2": -17,
+    "H1": -8,
     "REF": 0
    },
    "gate": "both 2026 halves: paid by Jan 15 +1 pt and median first payout not later; lost before it pays <= +0.5 pt, lost in 6 months <= +1 pt; 2021-25 lost before it pays <= +2 pts; Jul-Oct $ a month >= -$25",
@@ -420,9 +420,9 @@
    "title": "Rapid 25K: ATLAS lane $150 a trade (today $250)",
    "status": "rejected",
    "why": [
-    "H2: paid by Jan 15 22.9% -> 14.2% (needs +1 pt)",
+    "H2: paid by Jan 15 21.6% -> 12.8% (needs +1 pt)",
     "H2: median first payout +6 trading days",
-    "H1: paid by Jan 15 26.8% -> 19.4% (needs +1 pt)",
+    "H1: paid by Jan 15 25.7% -> 18.2% (needs +1 pt)",
     "H1: median first payout +3 trading days",
     "H2: $198 a month less"
    ],
@@ -430,19 +430,19 @@
     "R25": {
      "H2": {
       "today": {
-       "first_pay_med": "2027-02-10",
+       "first_pay_med": "2027-02-11",
        "first_pay_k_med": 56.0,
-       "p_by_dec31": 7.6,
-       "p_by_jan15": 22.9,
+       "p_by_dec31": 6.4,
+       "p_by_jan15": 21.6,
        "p_lost_before_pay": 18.4,
        "lost_6m": 28.9,
        "cash_m": 1032
       },
       "with": {
-       "first_pay_med": "2027-02-18",
+       "first_pay_med": "2027-02-19",
        "first_pay_k_med": 62.0,
-       "p_by_dec31": 3.6,
-       "p_by_jan15": 14.2,
+       "p_by_dec31": 2.6,
+       "p_by_jan15": 12.8,
        "p_lost_before_pay": 18.1,
        "lost_6m": 25.6,
        "cash_m": 834
@@ -450,19 +450,19 @@
      },
      "H1": {
       "today": {
-       "first_pay_med": "2027-02-02",
+       "first_pay_med": "2027-02-03",
        "first_pay_k_med": 50.0,
-       "p_by_dec31": 9.2,
-       "p_by_jan15": 26.8,
+       "p_by_dec31": 7.5,
+       "p_by_jan15": 25.7,
        "p_lost_before_pay": 8.4,
        "lost_6m": 21.3,
        "cash_m": 2338
       },
       "with": {
-       "first_pay_med": "2027-02-05",
+       "first_pay_med": "2027-02-08",
        "first_pay_k_med": 53.0,
-       "p_by_dec31": 5.0,
-       "p_by_jan15": 19.4,
+       "p_by_dec31": 4.1,
+       "p_by_jan15": 18.2,
        "p_lost_before_pay": 5.8,
        "lost_6m": 7.8,
        "cash_m": 1816
@@ -508,6 +508,7 @@
    "why": [
     "H2: lost before it pays 18.4% -> 20.2%",
     "H2: lost in 6 months 28.9% -> 36.8%",
+    "H1: paid by Jan 15 25.7% -> 26.4% (needs +1 pt)",
     "H1: lost before it pays 8.4% -> 9.8%",
     "H1: lost in 6 months 21.3% -> 29.1%"
    ],
@@ -515,19 +516,19 @@
     "R25": {
      "H2": {
       "today": {
-       "first_pay_med": "2027-02-10",
+       "first_pay_med": "2027-02-11",
        "first_pay_k_med": 56.0,
-       "p_by_dec31": 7.6,
-       "p_by_jan15": 22.9,
+       "p_by_dec31": 6.4,
+       "p_by_jan15": 21.6,
        "p_lost_before_pay": 18.4,
        "lost_6m": 28.9,
        "cash_m": 1032
       },
       "with": {
-       "first_pay_med": "2027-02-09",
+       "first_pay_med": "2027-02-10",
        "first_pay_k_med": 55.0,
-       "p_by_dec31": 8.9,
-       "p_by_jan15": 26.0,
+       "p_by_dec31": 7.4,
+       "p_by_jan15": 25.0,
        "p_lost_before_pay": 20.2,
        "lost_6m": 36.8,
        "cash_m": 1187
@@ -535,19 +536,19 @@
      },
      "H1": {
       "today": {
-       "first_pay_med": "2027-02-02",
+       "first_pay_med": "2027-02-03",
        "first_pay_k_med": 50.0,
-       "p_by_dec31": 9.2,
-       "p_by_jan15": 26.8,
+       "p_by_dec31": 7.5,
+       "p_by_jan15": 25.7,
        "p_lost_before_pay": 8.4,
        "lost_6m": 21.3,
        "cash_m": 2338
       },
       "with": {
-       "first_pay_med": "2027-02-01",
+       "first_pay_med": "2027-02-02",
        "first_pay_k_med": 49.0,
-       "p_by_dec31": 9.4,
-       "p_by_jan15": 28.0,
+       "p_by_dec31": 7.7,
+       "p_by_jan15": 26.4,
        "p_lost_before_pay": 9.8,
        "lost_6m": 29.1,
        "cash_m": 2686
@@ -599,19 +600,19 @@
     "R25": {
      "H2": {
       "today": {
-       "first_pay_med": "2027-02-10",
+       "first_pay_med": "2027-02-11",
        "first_pay_k_med": 56.0,
-       "p_by_dec31": 7.6,
-       "p_by_jan15": 22.9,
+       "p_by_dec31": 6.4,
+       "p_by_jan15": 21.6,
        "p_lost_before_pay": 18.4,
        "lost_6m": 28.9,
        "cash_m": 1032
       },
       "with": {
-       "first_pay_med": "2027-02-01",
+       "first_pay_med": "2027-02-02",
        "first_pay_k_med": 49.0,
-       "p_by_dec31": 11.3,
-       "p_by_jan15": 31.3,
+       "p_by_dec31": 9.4,
+       "p_by_jan15": 29.8,
        "p_lost_before_pay": 19.8,
        "lost_6m": 31.9,
        "cash_m": 1121
@@ -619,19 +620,19 @@
      },
      "H1": {
       "today": {
-       "first_pay_med": "2027-02-02",
+       "first_pay_med": "2027-02-03",
        "first_pay_k_med": 50.0,
-       "p_by_dec31": 9.2,
-       "p_by_jan15": 26.8,
+       "p_by_dec31": 7.5,
+       "p_by_jan15": 25.7,
        "p_lost_before_pay": 8.4,
        "lost_6m": 21.3,
        "cash_m": 2338
       },
       "with": {
-       "first_pay_med": "2027-01-29",
+       "first_pay_med": "2027-02-01",
        "first_pay_k_med": 48.0,
-       "p_by_dec31": 14.8,
-       "p_by_jan15": 33.4,
+       "p_by_dec31": 12.6,
+       "p_by_jan15": 32.4,
        "p_lost_before_pay": 11.6,
        "lost_6m": 21.6,
        "cash_m": 2340
@@ -651,7 +652,7 @@
        "first_pay_med": null,
        "first_pay_k_med": null,
        "p_by_dec31": 0.8,
-       "p_by_jan15": 2.1,
+       "p_by_jan15": 1.9,
        "p_lost_before_pay": 92.5,
        "lost_6m": 32.8,
        "cash_m": 12
@@ -675,76 +676,76 @@
    "title": "ATLAS on Zlarior's 50K NOW at 50% in the eval (vs after the pass)",
    "status": "rejected",
    "why": [
-    "H1: lost in 6 months 8.3% -> 9.7%"
+    "H1: lost in 6 months 7.2% -> 8.8%"
    ],
    "accounts": {
     "Z50": {
      "H2": {
       "today": {
-       "first_pay_med": "2027-02-02",
+       "first_pay_med": "2027-02-03",
        "first_pay_k_med": 50.0,
-       "p_by_dec31": 19.7,
-       "p_by_jan15": 35.7,
-       "p_lost_before_pay": 40.7,
-       "lost_6m": 20.0,
-       "cash_m": 1258
+       "p_by_dec31": 16.2,
+       "p_by_jan15": 32.7,
+       "p_lost_before_pay": 41.0,
+       "lost_6m": 18.7,
+       "cash_m": 1254
       },
       "with": {
-       "first_pay_med": "2027-01-21",
-       "first_pay_k_med": 42.0,
-       "p_by_dec31": 23.5,
-       "p_by_jan15": 43.0,
-       "p_lost_before_pay": 38.2,
-       "lost_6m": 20.2,
-       "cash_m": 1369
+       "first_pay_med": "2027-01-25",
+       "first_pay_k_med": 43.5,
+       "p_by_dec31": 20.5,
+       "p_by_jan15": 39.2,
+       "p_lost_before_pay": 38.3,
+       "lost_6m": 18.8,
+       "cash_m": 1358
       }
      },
      "H1": {
       "today": {
-       "first_pay_med": "2027-01-13",
-       "first_pay_k_med": 36.0,
-       "p_by_dec31": 33.2,
-       "p_by_jan15": 53.5,
-       "p_lost_before_pay": 26.0,
-       "lost_6m": 8.3,
-       "cash_m": 2258
+       "first_pay_med": "2027-01-15",
+       "first_pay_k_med": 37.0,
+       "p_by_dec31": 29.5,
+       "p_by_jan15": 50.8,
+       "p_lost_before_pay": 27.7,
+       "lost_6m": 7.2,
+       "cash_m": 2239
       },
       "with": {
-       "first_pay_med": "2027-01-12",
-       "first_pay_k_med": 35.0,
-       "p_by_dec31": 34.0,
-       "p_by_jan15": 59.3,
+       "first_pay_med": "2027-01-13",
+       "first_pay_k_med": 35.5,
+       "p_by_dec31": 28.8,
+       "p_by_jan15": 55.5,
        "p_lost_before_pay": 8.0,
-       "lost_6m": 9.7,
-       "cash_m": 2380
+       "lost_6m": 8.8,
+       "cash_m": 2370
       }
      },
      "REF": {
       "today": {
        "first_pay_med": null,
        "first_pay_k_med": null,
-       "p_by_dec31": 0.8,
-       "p_by_jan15": 1.7,
-       "p_lost_before_pay": 97.2,
-       "lost_6m": 48.2,
-       "cash_m": 18
+       "p_by_dec31": 0.5,
+       "p_by_jan15": 1.0,
+       "p_lost_before_pay": 97.0,
+       "lost_6m": 45.7,
+       "cash_m": 27
       },
       "with": {
        "first_pay_med": null,
        "first_pay_k_med": null,
-       "p_by_dec31": 1.0,
-       "p_by_jan15": 2.0,
+       "p_by_dec31": 0.3,
+       "p_by_jan15": 0.8,
        "p_lost_before_pay": 97.0,
-       "lost_6m": 62.8,
+       "lost_6m": 61.3,
        "cash_m": 25
       }
      }
     }
    },
    "d_per_month": {
-    "H2": 111,
-    "H1": 122,
-    "REF": 7
+    "H2": 104,
+    "H1": 131,
+    "REF": -2
    },
    "gate": "both 2026 halves: paid by Jan 15 +1 pt and median first payout not later; lost before it pays <= +0.5 pt, lost in 6 months <= +1 pt; 2021-25 lost before it pays <= +2 pts; Jul-Oct $ a month >= -$25",
    "source": "tools/money/payday_plan.py, research/writeups/payday-plan-2026-11-20.md"

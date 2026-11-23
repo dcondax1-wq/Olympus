@@ -12,7 +12,7 @@
 // day-archive 2026-11-21 (QA: Board LCP / CLS / KB up): NO static imports. The numbers (truth.js, pc_feed.js) load after load + idle,
 // the effects kit (nqfx.js + three.js) only when the card scrolls into view; the card keeps a fixed size from the first paint.
 let T = null;
-const libs = () => Promise.all([import('./truth.js'), import('../pc_feed.js?v=n7')]).then(([t]) => { T = t; return t; });
+const libs = () => Promise.all([import('./truth.js'), import('../pc_feed.js?v=n8')]).then(([t]) => { T = t; return t; });
 
 const later = (fn) => { const run = () => { try { fn(); } catch (_) { /* the page still works */ } }; if (typeof requestIdleCallback === 'function') requestIdleCallback(run, { timeout: 1500 }); else setTimeout(run, 80); };
 const afterLoad = () => new Promise((ok) => { if (document.readyState === 'complete') later(ok); else addEventListener('load', () => later(ok), { once: true }); });
