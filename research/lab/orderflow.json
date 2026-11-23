@@ -1,0 +1,152 @@
+{
+ "kind": "orderflow_program",
+ "date": "2026-11-23",
+ "branch": "day-ofprogram",
+ "writeup": "research/writeups/orderflow-program-2026-11-23.md",
+ "status": "0 of 6 bar tests pass; 3 tick designs pre-registered (research/orderflow/PREREG_ticks.md); LIT unchanged",
+ "pre_registered": true,
+ "costs": "$500 risk, $1.40/micro RT, 0.25 pt slippage",
+ "spans": [
+  "2021-25",
+  "2026 H1",
+  "2026 H2"
+ ],
+ "bar_tests": {
+  "B1 LVN rejection": {
+   "2021-25": {
+    "n": 155,
+    "win%": 40.6,
+    "pf": 1.26,
+    "net$": 11556,
+    "maxDD$": 7121,
+    "per_wk": 0.71,
+    "$/mo": 230
+   },
+   "2026 H1": {
+    "n": 12,
+    "win%": 33.3,
+    "pf": 1.1,
+    "net$": 326,
+    "maxDD$": 2491,
+    "per_wk": 0.46,
+    "$/mo": 54
+   },
+   "2026 H2": {
+    "n": 10,
+    "win%": 70.0,
+    "pf": 4.56,
+    "net$": 4990,
+    "maxDD$": 989,
+    "per_wk": 0.5,
+    "$/mo": 1076
+   },
+   "placebo_p": 0.004,
+   "corr_LIT_daily": {
+    "2021-25": -0.061,
+    "2026 H1": -0.023,
+    "2026 H2": -0.095
+   },
+   "verdict": "REJECTED"
+  },
+  "B2 IB failed extension": {
+   "2021-25": {
+    "n": 590,
+    "win%": 23.2,
+    "pf": 0.84,
+    "net$": -36471,
+    "maxDD$": 49514,
+    "per_wk": 2.7,
+    "$/mo": -725
+   },
+   "2026 H1": {
+    "n": 72,
+    "win%": 30.6,
+    "pf": 1.8,
+    "net$": 19679,
+    "maxDD$": 7450,
+    "per_wk": 2.75,
+    "$/mo": 3271
+   },
+   "2026 H2": {
+    "n": 53,
+    "win%": 26.4,
+    "pf": 1.2,
+    "net$": 3739,
+    "maxDD$": 6028,
+    "per_wk": 2.63,
+    "$/mo": 807
+   },
+   "placebo_p": 0.026,
+   "corr_LIT_daily": {
+    "2021-25": -0.027,
+    "2026 H1": -0.035,
+    "2026 H2": -0.002
+   },
+   "verdict": "REJECTED"
+  },
+  "B3 poor high/low LIT skip": {
+   "2021-25": -273,
+   "2026 H1": 0,
+   "2026 H2": 0,
+   "verdict": "REJECTED",
+   "trades_tagged": 4,
+   "next_RTH_revisit_rate": {
+    "poor": {
+     "revisited%": 50.0,
+     "n": 32
+    },
+    "not_poor": {
+     "revisited%": 37.0,
+     "n": 1994
+    }
+   }
+  },
+  "B4 S1' BVC-5m divergence (take div only)": {
+   "2021-25": 4395,
+   "2026 H1": -30597,
+   "2026 H2": -7343,
+   "verdict": "REJECTED"
+  },
+  "B4 S4' BVC-5m confirmation (skip refuted)": {
+   "2021-25": 273,
+   "2026 H1": -15068,
+   "2026 H2": -3748,
+   "verdict": "REJECTED"
+  },
+  "B4 S1' BVC-1m divergence (take div only)": {
+   "2026 H1": -28708,
+   "2026 H2": -4324,
+   "verdict": "REJECTED"
+  },
+  "B4 S4' BVC-1m confirmation (skip refuted)": {
+   "2026 H1": -21629,
+   "2026 H2": -4749,
+   "verdict": "REJECTED"
+  },
+  "B4 1m coverage": "129 of 129 2026 LIT trades have >= 10 1m bars in the S1 window",
+  "B5 sweep relvol >= 1 (skip thin sweeps)": {
+   "2021-25": -2515,
+   "2026 H1": 123,
+   "2026 H2": -6086,
+   "verdict": "REJECTED"
+  },
+  "B6 1m absorption print at sweep (take absorbed only)": {
+   "2026 H1": -23723,
+   "2026 H2": -9711,
+   "verdict": "REJECTED"
+  }
+ },
+ "addon_values": "gain$ vs all-LIT per span (all LIT = +4738 / +30033 / +8212)",
+ "tick_designs": {
+  "OF1": "sweep absorption: skip LIT trades not absorbed at the extreme",
+  "OF2": "skip LIT trades with block prints against",
+  "OF3": "LVN rejection on tick profile + delta (stand-alone)"
+ },
+ "tick_trigger": "python research/orderflow/of_study.py at >= 60 tick days",
+ "fixes": [
+  "NT8 export is UTC: importer default tz America/New_York -> UTC",
+  "identical same-stamp trades no longer dropped",
+  "streaming import 2M lines/chunk"
+ ],
+ "live_changed": false
+}
