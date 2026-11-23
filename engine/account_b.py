@@ -1104,7 +1104,7 @@ class AccountB:
         today = trading_day(now)
         pnl = self.day_pnl(today)
         lim = float(self.rules["dll"])
-        if pnl <= -lim and not (self.lock and self.lock.get("day") == today):
+        if pnl <= -lim and not (self.lock and self.lock.get("day") == today and not self.lock.get("state_damaged")):
             self.lock = {"day": today, "reason": f"soft daily loss: today ${pnl:,.0f} (limit ${lim:,.0f})"}
             self.log("risk", f"DAILY LOSS LOCK-OUT: {self.lock['reason']}: no new entry on account B today (LIT is not affected)")
             self._push_text(f"{self.label}: locked out today", self.lock["reason"], f"acctb:lock:{today}")

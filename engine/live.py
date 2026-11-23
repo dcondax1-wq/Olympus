@@ -1197,6 +1197,10 @@ class LiveBot:
         if got["damaged"]:
             # night-statesafe 2026-11-23: never a clean day (that dropped the kill flag and today's daily loss)
             nm = os.path.basename(self.state_path)
+            if s is not None and not _ss.bak_complete(s, today, trading_day, getattr(self.adapter, "audit_path", None),
+                                                      getattr(self.adapter, "account", None)):
+                self._log("warn", f"{got['why']}: today's backup {nm}.bak misses an order sent after it: not used")
+                s = None             # red team 2026-11-23: an order after the .bak = its P&L / daily loss would be missing
             if s is not None:
                 self._log("warn", f"{got['why']}: restored from today's backup {nm}.bak")
             else:
