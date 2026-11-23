@@ -71,7 +71,7 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-64 entries from docs/TESTED_AND_REJECTED.md, newest first.
+65 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
 - **Edge hunt lane B, cross-asset triggers** · [[edge-b-cross-2026-11-22|Edge hunt lane B]]
 - **Edge hunt lane D: small meta-labeled SIZE + re-entry on LIT** · [[Zlarior (LIT)]] · [[edge-d-meta-2026-11-22|Edge hunt lane D]], [[meta-labeling|Meta-labeling]]
@@ -92,6 +92,7 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 - **Zlarior's two live evals together** · [[Zlarior (LIT)]], [[ATLAS]] · [[lit-ideas-2026-11-18b|Zlarior ideas night 2]]
 - **ATLAS funded 25K protective rules** · [[ATLAS]] · [[atlas-health-2026-11-18|ATLAS health]]
 - **ZEUS Lab LIT ideas** · [[Zlarior (LIT)]] · [[zeus-lab-lit-ideas-2026-11-18|ZEUS Lab]]
+- **Order-flow round 2, LVN family + volume at price** · [[orderflow-program-2026-11-23|Order-flow program]]
 - **Order-flow program on bars** · [[Zlarior (LIT)]] · [[orderflow-program-2026-11-23|Order-flow program]]
 - **ATLAS new members** · [[ATLAS]] · [[atlas-members-2026-11-18|ATLAS new members]]
 - **New-strategy hunt** · [[new-strategy-hunt-2026-11-17|New-strategy hunt]]
