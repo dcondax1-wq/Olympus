@@ -76,7 +76,7 @@ def part_a():
     bots = ["engine/live.py", "engine/lit_live.py", "engine/lit.py", "engine/ninjatrader.py", "engine/second.py", "engine/account_b.py",
             "engine/autoupdate.py", "engine/generated_files.py", "engine/notify.py", "engine/kalshi_live.py", "engine/kalshi_clock.py",
             "server.py", "live_model.json", "live_model_lit.json", "second_model.json", "accounts/zlarior.json", "scripts/clean_pc.ps1",
-            "CLEAN_PC.bat", "tools/web_public/pc/STATUS.bat"]
+            "tools/bat/CLEAN_PC.bat", "tools/web_public/pc/STATUS.bat"]
     near = ["engine/live_site.py", "engine/litx.py", "engine/kalshi/x.py", "tools/server.py", "research/live_model.json", "accounts/a/b.json",
             "scripts/x.sh", "tools/web_public/pc/clean_storage.ps1", "engine/notify_test.py", "second_model.json.bak", "docs/x.bat.md"]
     check("a. every BOT FILE pattern matches (engine files, kalshi_*, server.py, the models, accounts, scripts/*.ps1, any .bat)",

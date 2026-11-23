@@ -1,5 +1,5 @@
 <#
-ONE_TIME_SETUP (double-click ONE_TIME_SETUP.bat in the bot folder): the last visit to the Surface. After it the Surface
+ONE_TIME_SETUP (double-click tools\bat\ONE_TIME_SETUP.bat in the bot folder): the last visit to the Surface. After it the Surface
 stays awake, comes back by itself after a restart, updates itself, starts the bot and NinjaTrader at logon, and the phone
 app shouts when it goes offline. Steps, each with a green [OK] or a red [FIX] line:
 
@@ -18,7 +18,7 @@ app shouts when it goes offline. Steps, each with a green [OK] or a red [FIX] li
   h. the health check (python -m engine.ops_checks)
   i. what is left for your hands: Chrome Remote Desktop (free) and automatic sign-in (Microsoft's free Autologon)
 
-  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\one_time_setup.ps1           (ONE_TIME_SETUP.bat runs this)
+  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\one_time_setup.ps1           (tools\bat\ONE_TIME_SETUP.bat runs this)
   powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\one_time_setup.ps1 -DryRun   (show the plan, change nothing)
 The elevated part (b, c and the logon tasks of d) is this same script started again with -AdminPart through a UAC prompt;
 it writes its green / red lines to logs\one_time_setup_admin.txt for the first window to show. Docs: docs\ONE_TIME_SETUP.md.

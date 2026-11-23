@@ -22,7 +22,7 @@ PRIVACY. The addresses (each one is a secret: anyone with it can read that calen
 (--list shows the host). No password is ever asked or stored: the subscription address is all a read-only feed needs.
 Nothing here writes to a calendar, trades or sends anything anywhere: it only GETs the addresses you gave.
 
-  python tools/calendar_sync.py --setup              asks for the addresses, work or not, your city and your pay (CONNECT_DAY.bat)
+  python tools/calendar_sync.py --setup              asks for the addresses, work or not, your city and your pay (tools/bat/CONNECT_DAY.bat)
   python tools/calendar_sync.py --add "<address>" [--work] [--name Work]
   python tools/calendar_sync.py --list | --remove <name> | --city "Columbus, OH" (or "39.96,-83.00") | --wage 18.50 | --wage-week 720
   python tools/calendar_sync.py                      sync now and print today's card
@@ -797,7 +797,7 @@ def maybe_run(now_s: float | None = None, work_dir: str | None = None, cfg_path:
 
 # ------------------------------------------------------------------------------------------------ the owner's one-time setup
 def setup(ask=input, say=print, cfg_path: str | None = None, geocode=None) -> dict:
-    """CONNECT_DAY.bat: paste each calendar address (Enter on an empty line ends), work or not, the city, the pay."""
+    """tools/bat/CONNECT_DAY.bat: paste each calendar address (Enter on an empty line ends), work or not, the city, the pay."""
     p = cfg_path or config_path()
     cfg = load_config(p)
     say("Connect your day. Nothing here can change your calendars: these addresses are read-only.")
@@ -905,7 +905,7 @@ def main(argv=None) -> int:
         return 0
     if a.setup or changed or not (a.list or a.show):
         out = sync(a.now, cfg_path=p, work_dir=work_dir, offline=a.offline)
-        print(card_text(out) if out else "  nothing to sync yet: add a calendar first (CONNECT_DAY.bat)")
+        print(card_text(out) if out else "  nothing to sync yet: add a calendar first (tools/bat/CONNECT_DAY.bat)")
     return 0
 
 

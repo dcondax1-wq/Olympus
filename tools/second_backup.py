@@ -1,7 +1,7 @@
 """Second backup (owner 2026-11-13, GitHub suspended): a git mirror on a free second host (Codeberg or GitLab) and the weekly
 code zip (tools/make_backup.py) in a synced folder (OneDrive / iCloud / Google Drive / Dropbox). docs/DISASTER_RECOVERY.md.
 
-  python tools/second_backup.py --setup      once (BACKUP_SETUP.bat): paste the mirror repo URL, type the token (hidden),
+  python tools/second_backup.py --setup      once (tools/bat/BACKUP_SETUP.bat): paste the mirror repo URL, type the token (hidden),
                                              pick the synced folder. Saved in %USERPROFILE%\\.olympus\\backup.json (outside the
                                              repo, file mode 600 where it applies). The token is never printed or logged.
   python tools/second_backup.py --weekly     the weekly run (Task Scheduler "OlympusWeeklyBackup", scripts/backup_task.ps1):
@@ -228,16 +228,16 @@ def push(root: str, cfg: dict, refs=None, timeout=PUSH_TIMEOUT_S) -> tuple:
     try:
         r = git(["push", "--porcelain", u, *specs], cwd=root, env=env, timeout=timeout, check=False)
     except subprocess.TimeoutExpired:
-        return False, f"the push took longer than {timeout // 60} minutes (slow internet?): it tries again next week, or run BACKUP_SETUP.bat"
+        return False, f"the push took longer than {timeout // 60} minutes (slow internet?): it tries again next week, or run tools/bat/BACKUP_SETUP.bat"
     out = redact((r.stderr or "") + (r.stdout or ""), cfg.get("token"), cfg.get("user") or "oauth2")
     if r.returncode == 0:
         n = len([ln for ln in out.splitlines() if re.match(r"^[ +*=!-]\t", ln) and not ln.startswith("=")])
         return True, f"mirror up to date ({n} branch / tag update{'s' if n != 1 else ''})"
     low = out.lower()
     if "403" in low or "401" in low or "authentication" in low or "could not read username" in low or "denied" in low:
-        return False, "the mirror refused the token (wrong, expired, or without write access): make a new one and run BACKUP_SETUP.bat"
+        return False, "the mirror refused the token (wrong, expired, or without write access): make a new one and run tools/bat/BACKUP_SETUP.bat"
     if "not found" in low or "404" in low or "does not appear to be a git repository" in low:
-        return False, "the mirror repository was not found: create it (empty, private) first, then run BACKUP_SETUP.bat"
+        return False, "the mirror repository was not found: create it (empty, private) first, then run tools/bat/BACKUP_SETUP.bat"
     if "could not resolve host" in low or "unable to access" in low:
         return False, "no internet to the mirror host right now: it tries again next week"
     return False, "git push failed: " + " ".join(out.split())[-200:]
@@ -358,9 +358,9 @@ def weekly(root: str = ROOT, env=None, http=None, dry=False, mirror_only=False, 
     if not mirror_only:
         d = cfg.get("backup_dir")
         if not d:
-            rows.append(("SKIP", "ZIP", "no synced folder set: double-click BACKUP_SETUP.bat"))
+            rows.append(("SKIP", "ZIP", "no synced folder set: double-click tools/bat/BACKUP_SETUP.bat"))
         elif not os.path.isdir(os.path.dirname(os.path.abspath(d)) or d):
-            rows.append(("FIX", "ZIP", f"the synced folder is gone ({d}): double-click BACKUP_SETUP.bat"))
+            rows.append(("FIX", "ZIP", f"the synced folder is gone ({d}): double-click tools/bat/BACKUP_SETUP.bat"))
             bad.append("zip")
         else:
             try:
@@ -371,14 +371,14 @@ def weekly(root: str = ROOT, env=None, http=None, dry=False, mirror_only=False, 
                 rows.append(("FIX", "ZIP", f"zip failed: {str(e)[:160]}"))
                 bad.append("zip")
     if not cfg.get("url"):
-        rows.append(("SKIP", "MIRROR", "no mirror set: double-click BACKUP_SETUP.bat"))
+        rows.append(("SKIP", "MIRROR", "no mirror set: double-click tools/bat/BACKUP_SETUP.bat"))
     else:
         vis, why = ("private", "") if cfg.get("host") == "local" else visibility(cfg, http)
         if vis == "public":
             rows.append(("FIX", "MIRROR", f"{why}: make it private on {cfg.get('host')} (Settings > Visibility); nothing pushed"))
             bad.append("mirror")
         elif vis in ("missing", "denied"):
-            rows.append(("FIX", "MIRROR", why + "; then double-click BACKUP_SETUP.bat"))
+            rows.append(("FIX", "MIRROR", why + "; then double-click tools/bat/BACKUP_SETUP.bat"))
             bad.append("mirror")
         else:
             ok, msg = push(root, cfg)
@@ -397,7 +397,7 @@ def weekly(root: str = ROOT, env=None, http=None, dry=False, mirror_only=False, 
         pass
     summary = "; ".join(f"{label.lower()}: {text}" for kind, label, text in rows if kind != "SKIP")[:500]
     if bad:
-        notify("Weekly backup: something to fix", summary + " Double-click BACKUP_SETUP.bat on the PC.", "high", http)
+        notify("Weekly backup: something to fix", summary + " Double-click tools/bat/BACKUP_SETUP.bat on the PC.", "high", http)
     else:
         notify("Weekly backup OK", summary, "low", http)
     return 1 if bad else 0

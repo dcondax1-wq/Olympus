@@ -9,7 +9,7 @@
                 closed, stale book, cross, per-market, capital, cash, open orders, day stop, stop room, rate, day orders, taker
                 band, flatten not held, a broken view) and a good order passes
   d. arming     OFF by default; the futures phrase / a wrong phrase / LE_KALSHI_LIVE=0 refused; the exact phrase arms (the phrase
-                is never stored); a plan change / a new executor version / a forged record = OFF; KALSHI_LIVE.bat (--go): plan, limits,
+                is never stored); a plan change / a new executor version / a forged record = OFF; tools/bat/KALSHI_LIVE.bat (--go): plan, limits,
                 key check, dry run, then only the typed phrase arms + starts the loop; a plan changed under his eyes is refused
   e. loop       quotes (post-only, GTC, expiring <= 20 min, olyk- ids, V2 body), kept when nothing moved, re-quoted when the book
                 moves, renewed before expiry; fills + settlement -> day P&L = the fake's own (real-model) accounting; a restart
@@ -20,7 +20,7 @@
                 no key id in any push; ASCII titles
   h. dry run    public prices only: what it would place, zero writes, no key, no state; .bat / .ps1 static checks
   i. card+phone the <= 200-byte card (idle when no loop runs); phone presses do nothing while OFF; a ZEUS Safety press reaches Kalshi
-                when ON; maybe_run; KALSHI_STOP.bat (--stop) cancels everything itself when no loop runs, says 'OFF already' when never on
+                when ON; maybe_run; tools/bat/KALSHI_STOP.bat (--stop) cancels everything itself when no loop runs, says 'OFF already' when never on
   j. wiring     run_area kalshi lists this suite; .gitignore; the Kalshi page says "PAUSED: ready to go live when you type the phrase"
 
   python -X utf8 -m tests.test_kalshi_live
@@ -638,7 +638,7 @@ def part_arming(tmp):
         return rc, "\n".join(said), spawned
     wg = World(tmp, "go_wrong")
     rc, txt, sp = go(wg, "I ACCEPT LIVE RISK")
-    check("d8. KALSHI_LIVE.bat (--go): it shows the plan, the limits, the key check and the dry run, then a WRONG phrase arms nothing and "
+    check("d8. tools/bat/KALSHI_LIVE.bat (--go): it shows the plan, the limits, the key check and the dry run, then a WRONG phrase arms nothing and "
           "starts nothing", rc == 1 and not sp and not KL.arm_state(state_dir=wg.sd)[0] and "Limits (checked before every order)" in txt
           and "The key works" in txt and "would rest" in txt and "Nothing is armed" in txt and not wg.fake.posts(), txt[-400:])
     wg = World(tmp, "go_right")
@@ -654,7 +654,7 @@ def part_arming(tmp):
         crashed = False
     except Exception:  # noqa: BLE001
         rc, crashed = None, True
-    check("d10. no key on the PC: one [FIX] (KALSHI_KEY_SETUP.bat), nothing armed, no crash", rc == 1 and not crashed
+    check("d10. no key on the PC: one [FIX] (tools/bat/KALSHI_KEY_SETUP.bat), nothing armed, no crash", rc == 1 and not crashed
           and not KL.arm_state(state_dir=wg.sd)[0], rc)
     wg = World(tmp, "go_changed")
 
@@ -962,17 +962,17 @@ def part_dry(tmp):
           and not any(c[0] != "GET" or c[1].startswith("/portfolio") for c in w.fake.calls) and not os.path.exists(w.sd)
           and os.path.exists(real) == existed, [c[:2] for c in w.fake.calls if c[0] != "GET"])
     bats = {}
-    for name in ("KALSHI_KEY_SETUP.bat", "KALSHI_LIVE.bat", "KALSHI_STOP.bat"):
+    for name in ("tools/bat/KALSHI_KEY_SETUP.bat", "tools/bat/KALSHI_LIVE.bat", "tools/bat/KALSHI_STOP.bat"):
         raw = open(os.path.join(ROOT, name), "rb").read()
         bats[name] = (b"\n" not in raw.replace(b"\r\n", b"") and raw.endswith(b"\r\n") and all(b < 128 for b in raw), raw.decode("ascii", "replace"))
     check("h3. the three .bat files: CRLF, ASCII", all(v[0] for v in bats.values()), {k: v[0] for k, v in bats.items()})
-    live, stop, key = bats["KALSHI_LIVE.bat"][1], bats["KALSHI_STOP.bat"][1], bats["KALSHI_KEY_SETUP.bat"][1]
+    live, stop, key = bats["tools/bat/KALSHI_LIVE.bat"][1], bats["tools/bat/KALSHI_STOP.bat"][1], bats["tools/bat/KALSHI_KEY_SETUP.bat"][1]
     code = lambda t: "\n".join(ln for ln in t.splitlines() if not ln.lower().startswith("rem"))  # noqa: E731
-    check("h4. KALSHI_LIVE.bat runs --go (the owner types the phrase himself); no .bat passes a phrase, arms or names the key",
+    check("h4. tools/bat/KALSHI_LIVE.bat runs --go (the owner types the phrase himself); no .bat passes a phrase, arms or names the key",
           "-m engine.kalshi_live --go" in live and not any(x in code(b) for b in (live, stop, key) for x in ("--phrase", "--arm", "ACCEPT", "KALSHI_KEY_ID", ".pem")),
           code(live))
-    check("h5. KALSHI_STOP.bat asks Y first, then --stop; KALSHI_KEY_SETUP.bat runs scripts\\kalshi_key_setup.ps1 and pauses",
-          "set /p" in stop and "--stop" in stop and re.search(r'powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\\kalshi_key_setup\.ps1".*& pause', key))
+    check("h5. tools/bat/KALSHI_STOP.bat asks Y first, then --stop; tools/bat/KALSHI_KEY_SETUP.bat runs scripts\\kalshi_key_setup.ps1 and pauses",
+          "set /p" in stop and "--stop" in stop and re.search(r'powershell -NoProfile -ExecutionPolicy Bypass -File "%LE_HOME%scripts\\kalshi_key_setup\.ps1".*& pause', key))
     ps = open(os.path.join(ROOT, "scripts", "kalshi_key_setup.ps1"), encoding="ascii").read()
     lines_ = [ln for ln in ps.splitlines() if ln.strip() and not ln.strip().startswith("#")]
     body = "\n".join(lines_[lines_.index("#>") + 1:] if "#>" in lines_ else lines_)
@@ -1044,7 +1044,7 @@ def part_card(tmp, w_loop):
 
 # ================================================================================================ j. wiring
 def part_cli(tmp):
-    """KALSHI_STOP.bat (--stop) when the loop is not running: it cancels everything itself with the key, OFF, kill switch."""
+    """tools/bat/KALSHI_STOP.bat (--stop) when the loop is not running: it cancels everything itself with the key, OFF, kill switch."""
     w = World(tmp, "cli_stop", candidates=False)
     w.arm()
     w.ex().cycle()
@@ -1062,7 +1062,7 @@ def part_cli(tmp):
         said = buf.getvalue()
     finally:
         KL.api_from_key, KL._default_poster = old_api, old_post
-    check("i7. KALSHI_STOP.bat with no loop running: every resting order cancelled by the command itself, the kill switch file, OFF",
+    check("i7. tools/bat/KALSHI_STOP.bat with no loop running: every resting order cancelled by the command itself, the kill switch file, OFF",
           rc == 0 and had == 6 and not w.fake.orders and os.path.exists(KL.paths(w.sd)["kill"]) and not KL.arm_state(state_dir=w.sd)[0]
           and "cancelled" in said, (rc, said, len(w.fake.orders)))
     fresh = os.path.join(tmp, "cli_never")
@@ -1071,7 +1071,7 @@ def part_cli(tmp):
     buf = io.StringIO()
     with contextlib.redirect_stdout(buf):
         rc = KL.main(["--stop", "--state-dir", fresh])
-    check("i8. KALSHI_STOP.bat on a PC where Kalshi was never on: 'OFF already', nothing written", rc == 0 and "OFF already" in buf.getvalue()
+    check("i8. tools/bat/KALSHI_STOP.bat on a PC where Kalshi was never on: 'OFF already', nothing written", rc == 0 and "OFF already" in buf.getvalue()
           and not os.path.exists(fresh), buf.getvalue())
 
 

@@ -427,7 +427,7 @@ def main(argv=None) -> int:
         set_on(bool(a.on))
     on = is_on()
     print(f"ZEUS phone safety: {'ON' if on else 'OFF'}. Phone page: https://<this-pc>.<tailnet>.ts.net/safety/ "
-          f"(LIVE_LINK.bat prints the address). Buttons: pause, resume, flatten, kill. It can never start or arm.")
+          f"(tools/bat/LIVE_LINK.bat prints the address). Buttons: pause, resume, flatten, kill. It can never start or arm.")
     if not on:
         print(f"Turn on: {HOW_ON}")
     return 0

@@ -1,4 +1,4 @@
-"""THE WEBSITE MACHINE, one command for the day's batch (RUN_AGENCY.bat runs this):
+"""THE WEBSITE MACHINE, one command for the day's batch (tools/bat/RUN_AGENCY.bat runs this):
 
     python -m agency.run                                   your city / trades / prices from agency/config.json
     python -m agency.run --city "Fort Collins, CO"         another city for one run

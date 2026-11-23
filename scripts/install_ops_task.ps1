@@ -6,7 +6,7 @@ Sunday evening week report push, internet / NinjaTrader drop + recovery pushes, 
 passed / failed push, contract roll reminder, nightly backup (backups\, 14 days) + log rotation (logs\).
 Log: logs\ops-YYYYMMDD.log. Turn the phone pushes off without removing the task: set LE_OPS_PUSH=0 for the user.
 
-  powershell -ExecutionPolicy Bypass -File .\scripts\install_ops_task.ps1          (SETUP_SHORTCUTS.bat runs this)
+  powershell -ExecutionPolicy Bypass -File .\scripts\install_ops_task.ps1          (tools\bat\SETUP_SHORTCUTS.bat runs this)
   powershell -ExecutionPolicy Bypass -File .\scripts\install_ops_task.ps1 -DryRun
   powershell -ExecutionPolicy Bypass -File .\scripts\install_ops_task.ps1 -Remove
 #>

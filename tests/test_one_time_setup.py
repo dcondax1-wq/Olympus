@@ -1,4 +1,4 @@
-"""ONE_TIME_SETUP.bat + scripts/one_time_setup.ps1 (the owner's last visit to the Surface), static checks like
+"""tools/bat/ONE_TIME_SETUP.bat + scripts/one_time_setup.ps1 (the owner's last visit to the Surface), static checks like
 tests/test_ops.py (PowerShell can't run here: the files are parsed and grepped): every step a-i is present and in order,
 the script elevates itself with a UAC prompt for the power / Windows Update / logon-task part only, the confirm phrase is
 read hidden (SecureString), never written, echoed or logged, and Enter falls back to Sim101; the live switch is never
@@ -35,12 +35,12 @@ def code_only(ps: str) -> str:
 
 
 def main() -> int:
-    files = ["ONE_TIME_SETUP.bat", "scripts/one_time_setup.ps1", "docs/ONE_TIME_SETUP.md"]
+    files = ["tools/bat/ONE_TIME_SETUP.bat", "scripts/one_time_setup.ps1", "docs/ONE_TIME_SETUP.md"]
     missing = [f for f in files if not os.path.exists(os.path.join(ROOT, f))]
-    check("files exist: ONE_TIME_SETUP.bat, scripts/one_time_setup.ps1, docs/ONE_TIME_SETUP.md", not missing, missing)
+    check("files exist: tools/bat/ONE_TIME_SETUP.bat, scripts/one_time_setup.ps1, docs/ONE_TIME_SETUP.md", not missing, missing)
     if missing:
         return 1
-    bat, ps, doc = read("ONE_TIME_SETUP.bat"), read("scripts/one_time_setup.ps1"), read("docs/ONE_TIME_SETUP.md")
+    bat, ps, doc = read("tools/bat/ONE_TIME_SETUP.bat"), read("scripts/one_time_setup.ps1"), read("docs/ONE_TIME_SETUP.md")
     code = code_only(ps)
 
     # ------------------------------------------------------------------ the .bat (same rules as tests/test_ops.py)
@@ -51,7 +51,7 @@ def main() -> int:
         probs.append(f"goto without label {gotos - labels}")
     if not bat.lstrip().lower().startswith("@echo off"):
         probs.append("no @echo off")
-    if 'cd /d "%~dp0"' not in bat:
+    if 'cd /d "%LE_HOME%"' not in bat:
         probs.append("does not cd to its folder")
     for ln in bat.splitlines():
         t = ln.strip()
@@ -64,7 +64,7 @@ def main() -> int:
             probs.append(f"contains {bad}")
     check("bat: @echo off, cd to its folder, labels, balanced quotes, nothing live in it", not probs, probs)
     check("bat: runs scripts\\one_time_setup.ps1 with -ExecutionPolicy Bypass and pauses at the end",
-          '-ExecutionPolicy Bypass -File "%~dp0scripts\\one_time_setup.ps1"' in bat and "\npause" in bat.replace("\r", ""))
+          '-ExecutionPolicy Bypass -File "%LE_HOME%scripts\\one_time_setup.ps1"' in bat and "\npause" in bat.replace("\r", ""))
     check(".gitattributes keeps .bat files CRLF", "*.bat text eol=crlf" in read(".gitattributes"))
 
     # ------------------------------------------------------------------ the .ps1: balanced, param block, -DryRun
@@ -148,7 +148,7 @@ def main() -> int:
           and "Winlogon" not in ps)
 
     # ------------------------------------------------------------------ docs
-    check("docs: the one-liner does git pull and runs ONE_TIME_SETUP.bat", re.search(r"git pull --ff-only origin main; \.\\ONE_TIME_SETUP\.bat", doc)
+    check("docs: the one-liner does git pull and runs tools/bat/ONE_TIME_SETUP.bat", re.search(r"git pull --ff-only origin main; \.\\ONE_TIME_SETUP\.bat", doc)
           and "Get-ScheduledTask LiquidityEngine" in doc)
     check("docs: UAC Yes, hidden phrase, Enter = Sim101, NinjaTrader 3 clicks, Autologon, Chrome Remote Desktop",
           all(x in doc for x in ("Yes", "hidden", "Sim101", "Connect on startup", "Autologon", "remotedesktop.google.com")))

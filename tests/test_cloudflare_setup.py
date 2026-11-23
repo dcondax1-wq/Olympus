@@ -1,4 +1,4 @@
-"""CLOUDFLARE_SETUP.bat + scripts/cloudflare_setup.ps1: the one double-click move of the phone site to Cloudflare Pages
+"""tools/bat/CLOUDFLARE_SETUP.bat + scripts/cloudflare_setup.ps1: the one double-click move of the phone site to Cloudflare Pages
 (docs/HOSTING.md). Static only (no Windows, no pwsh, no network):
 
   1. bat       CRLF, ASCII, runs scripts\\cloudflare_setup.ps1 and pauses; never names the key variable, no setx, no redirect
@@ -8,7 +8,7 @@
   3. steps     Node check / winget install, --setup cloudflare --cf-project olympus-dash then --force --strict, the address,
                "Add it to your home screen", every exit 1 through the [FIX] helper or the trap
   4. ps51      ASCII, no PowerShell 7-only syntax (??, ?., &&, ||, ternary, -AsPlainText)
-  5. docs      docs/HOSTING.md and the help page say "Double-click CLOUDFLARE_SETUP.bat"; the 3-step token creation stays
+  5. docs      docs/HOSTING.md and the help page say "Double-click tools/bat/CLOUDFLARE_SETUP.bat"; the 3-step token creation stays
   6. url       tools/pc_publish.cf_prod_url: <project>.pages.dev, or the suffixed subdomain Cloudflare gave
 
   python -X utf8 -m tests.test_cloudflare_setup
@@ -24,7 +24,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 RES: list = []
 
-BAT = os.path.join(ROOT, "CLOUDFLARE_SETUP.bat")
+BAT = os.path.join(ROOT, "tools/bat/CLOUDFLARE_SETUP.bat")
 PS1 = os.path.join(ROOT, "scripts", "cloudflare_setup.ps1")
 SECRET_VARS = ("$CfKey", "$OldKey", "$sec", "$bstr", "$env:CLOUDFLARE_API_TOKEN")
 PRINTERS = re.compile(r"(?i)\b(Write-Host|Write-Output|Write-Verbose|Write-Debug|Write-Warning|Write-Information|Write-Error|echo|Out-Host"
@@ -62,11 +62,11 @@ def strip_strings(ln: str) -> str:
 
 def part_bat():
     raw = open(BAT, "rb").read()
-    check("1a. CLOUDFLARE_SETUP.bat: CRLF line endings, ASCII", b"\n" not in raw.replace(b"\r\n", b"") and raw.endswith(b"\r\n")
+    check("1a. tools/bat/CLOUDFLARE_SETUP.bat: CRLF line endings, ASCII", b"\n" not in raw.replace(b"\r\n", b"") and raw.endswith(b"\r\n")
           and all(b < 128 for b in raw))
     txt = raw.decode("ascii")
     check("1b. runs scripts\\cloudflare_setup.ps1 (5.1 powershell, -ExecutionPolicy Bypass) and pauses on the same line",
-          re.search(r'powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\\cloudflare_setup\.ps1".*& pause', txt) is not None)
+          re.search(r'powershell -NoProfile -ExecutionPolicy Bypass -File "%LE_HOME%scripts\\cloudflare_setup\.ps1".*& pause', txt) is not None)
     check("1c. the .bat never names or expands the key variable, no setx (a command line shows in the process list)",
           "CLOUDFLARE_API_TOKEN" not in txt and "setx" not in txt.lower())
     reds = [m.group(0) for m in re.finditer(r"\d?>>?\s*\S+", txt) if not re.match(r"\d?>>?\s*nul\b", m.group(0), re.I)
@@ -144,15 +144,15 @@ def part_ps51(text, lines):
 def part_docs():
     host = open(os.path.join(ROOT, "docs", "HOSTING.md"), encoding="utf-8").read()
     sec = host.split("## Move to Cloudflare Pages", 1)[-1].split("\nHow it works", 1)[0]
-    check("5a. docs/HOSTING.md: 'Double-click CLOUDFLARE_SETUP.bat', the token creation kept, no env-variable dialog / winget step left",
-          "Double-click CLOUDFLARE_SETUP.bat" in sec and "Custom token" in sec and "Cloudflare Pages* / *Edit" in sec
+    check("5a. docs/HOSTING.md: 'Double-click tools/bat/CLOUDFLARE_SETUP.bat', the token creation kept, no env-variable dialog / winget step left",
+          "Double-click tools/bat/CLOUDFLARE_SETUP.bat" in sec and "Custom token" in sec and "Cloudflare Pages* / *Edit" in sec
           and "rundll32" not in sec and "Never paste the key" in sec)
     hp = os.path.join(ROOT, "tools", "web_public", "hub", "help.json")
     if os.path.isfile(hp):
         it = {i["id"]: i for i in json.load(open(hp, encoding="utf-8"))["items"]}.get("cloudflare") or {}
         st = " ".join(it.get("steps") or [])
-        check("5b. the help page entry: Double-click CLOUDFLARE_SETUP.bat, the copy line is in docs/HOSTING.md",
-              "CLOUDFLARE_SETUP.bat" in st and it.get("copy", "\0") in host and "olympus-dash.pages.dev" in st and "Never paste the key" in st)
+        check("5b. the help page entry: Double-click tools/bat/CLOUDFLARE_SETUP.bat, the copy line is in docs/HOSTING.md",
+              "tools/bat/CLOUDFLARE_SETUP.bat" in st and it.get("copy", "\0") in host and "olympus-dash.pages.dev" in st and "Never paste the key" in st)
 
 
 def part_url():

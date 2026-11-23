@@ -1,4 +1,4 @@
-"""PC DOCTOR (double-click PC_DOCTOR.bat): why the phone hears nothing from the PC, link by link, with the one fix each.
+"""PC DOCTOR (double-click tools/bat/PC_DOCTOR.bat): why the phone hears nothing from the PC, link by link, with the one fix each.
 
 Owner 2026-11-17: the PC has not reported (heartbeat branch, ntfy) since 2026-11-07 while the bot page shows LIVE ARMED.
 It only LOOKS (reads files, asks the local bot server, Task Scheduler and ntfy.sh's health page): it never starts, stops, arms
@@ -15,7 +15,7 @@ The links, in the order the report travels (the first red one is "the most likel
    6 TOPIC     your private alert topic exists (%USERPROFILE%\\.olympus\\ntfy.json) and had its test push (never shown here)
    7 NTFY      ntfy.sh answers from this PC; the site's public status channel got something in the last 3 hours
    8 UPDATE    auto-update from the backup repo is connected (engine/autoupdate.py --source-status); this folder's git
-               setting credential.interactive=never (BOTS_BACK.bat) used to block the one-time sign-in window
+               setting credential.interactive=never (tools/bat/BOTS_BACK.bat) used to block the one-time sign-in window
    9 HEAL      (night-selfheal 2026-11-20) the self-heal's last run (engine/self_heal.py, hourly from the report task): what it
                fixed by itself this week and what it could NOT fix. Only shown once it ran on this PC.
 
@@ -277,7 +277,7 @@ def check_update(root, env, git=git_cfg):
     ci = git("credential.interactive", root)
     if code == 0:
         return _c("update", "UPDATE", "OK", words)
-    note = (" This folder has credential.interactive=never (set by BOTS_BACK.bat), which kept the sign-in window from opening "
+    note = (" This folder has credential.interactive=never (set by tools/bat/BOTS_BACK.bat), which kept the sign-in window from opening "
             "on older code; this version opens it anyway." if ci == "never" else "")
     return _c("update", "UPDATE", "SKIP", f"{words} This PC does not get new code by itself, so fixes (like the report keeper "
                                           "that re-installs the report task) never reach it." + note,
@@ -352,7 +352,7 @@ def card_text(r: dict) -> str:
 
 
 def github_free(env=None) -> str:
-    """The owner's one switch: GitHub-free mode on (the marker BOTS_BACK.bat / PUBLISH_NQ.bat make). Applies at the next start."""
+    """The owner's one switch: GitHub-free mode on (the marker tools/bat/BOTS_BACK.bat / tools/bat/PUBLISH_NQ.bat make). Applies at the next start."""
     from engine import nogithub
     d = nogithub.olympus_dir(env)
     os.makedirs(d, exist_ok=True)

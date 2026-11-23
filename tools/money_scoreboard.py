@@ -701,7 +701,7 @@ def build(inputs: dict, now: float, include_ledger: bool = True) -> dict:
                 f"{len(second)} strategies, {money(sum(x['usd'] for x in second), True)} on paper" if second else "No second strategies in the accounts file."),
         _source("machines", "Money machines (estimates)", "estimate", ("sample" if machines and machines["status"] == "sample" else "ok") if machines else "missing",
                 to_s(mi.get("asof")), now, inputs.get("machines_file"),
-                ("SAMPLE numbers (the PC has not run RUN_MONEY.bat)" if machines["status"] == "sample" else f"estimates only, about {money(machines['usd_month'])} a month (not cash)") if machines else "No money/index.json."),
+                ("SAMPLE numbers (the PC has not run tools/bat/RUN_MONEY.bat)" if machines["status"] == "sample" else f"estimates only, about {money(machines['usd_month'])} a month (not cash)") if machines else "No money/index.json."),
         _source("plan", "Plutus plan (estimate)", "estimate", "ok" if plan else "missing", None, None, "plutus/plans.json" if plans else None,
                 plan["text"] if plan else "No plan estimate."),
     ]

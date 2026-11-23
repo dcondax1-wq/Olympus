@@ -61,7 +61,7 @@ import(process.argv[2]).then((C) => {
   o.deals = [dsoon.tone, dsoon.title, dsoon.say.includes('about $18, an estimate'), dnorm.tone, dnorm.title, dgone.needs, dweak.needs, dsamp.needs, dsoon.stream];
   const feeds = C.buildCards({ home: calmHome, money: { streams: [stream('chrysos', 'stale', 700), stream('mercury', 'ok', 10)] }, kalshi: { running: true, t: (NOW - 50 * H) / 1000 } }, NOW);
   const f0 = by(feeds, 'feeds'), nohome = C.buildCards({ money: calmMoney }, NOW), nomoney = C.buildCards({ home: calmHome }, NOW), oldHome = C.buildCards({ home: Object.assign({ t: (NOW - 60 * H) / 1000 }, calmHome), money: calmMoney }, NOW);
-  o.feeds = [f0.tone, f0.title, f0.say.includes('RUN_MONEY.bat'), by(nohome, 'feeds').title, by(nohome, 'bots').title, by(nomoney, 'feeds').title, by(oldHome, 'feeds').title];
+  o.feeds = [f0.tone, f0.title, f0.say.includes('tools/bat/RUN_MONEY.bat'), by(nohome, 'feeds').title, by(nohome, 'bots').title, by(nomoney, 'feeds').title, by(oldHome, 'feeds').title];
   const al = C.buildCards({ home: calmHome, money: calmMoney, alerts: { alerts: [{ text: 'Feed stalled', level: 'bad' }, { text: 'x' }, null, { text: '' }] } }, NOW), al2 = C.buildCards({ home: calmHome, money: calmMoney, alerts: [{ text: 'One' }] }, NOW);
   o.alerts = [by(al, 'alerts').tone, by(al, 'alerts').title, by(al2, 'alerts').tone, by(al2, 'alerts').title];
   const mix = C.buildCards({ home: { accounts: [acct('Atlas', 200, 1000)] }, money: { streams: [stream('mercury', 'ok', 10, [{ title: 'Sale', usd: 5, score: 80, risk: 'low' }])] }, alerts: { alerts: [{ text: 'A' }] } }, NOW);
@@ -98,7 +98,7 @@ def test_rules():
           o["deals"] == ["warn", "Deal ends in 20 h: Sale on the 50K", True, "info", "Deal found: Sale on the 50K", False, False, False, "mercury"], o["deals"])
     check("b. the optional item date `expires`: a date alone means the end of that day (UTC); 81 h away = a plain deal (info), 33 h away = 'Deal ends in 33 h' (warn), after it = gone; a high-score item from another stream (Chrysos) is not a deal; junk dates -> none",
           o["dates"] == ["info", "warn", "Deal ends in 33 h: Sale on the 50K", False, False, True, None, None, True], o["dates"])
-    check("b. feeds: old money (Chrysos) and an old Kalshi file are named with the RUN_MONEY.bat step; no home.json -> 'account numbers' missing and a bots card saying so; no money -> 'money data'; a 60 h old home.json is old",
+    check("b. feeds: old money (Chrysos) and an old Kalshi file are named with the tools/bat/RUN_MONEY.bat step; no home.json -> 'account numbers' missing and a bots card saying so; no money -> 'money data'; a 60 h old home.json is old",
           o["feeds"][0] == "warn" and "money: chrysos" in o["feeds"][1] and "Kalshi (2 days old)" in o["feeds"][1] and o["feeds"][2] and o["feeds"][3] == "Old or missing: account numbers" and o["feeds"][4] == "Account numbers are missing" and o["feeds"][5] == "Old or missing: money data" and "account numbers (3 days old)" in o["feeds"][6], o["feeds"])
     check("b. alerts: junk rows are dropped; a bad one makes the card bad; a plain list also works", o["alerts"] == ["bad", "2 alerts: Feed stalled", "warn", "1 alert: One"], o["alerts"])
     check("b. order: bad first, then warn, then info (the cards that need you come before the calm ones)", o["order"][0].startswith("bad") and o["order"][1] == "drawdown", o["order"])

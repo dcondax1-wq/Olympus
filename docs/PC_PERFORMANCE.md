@@ -2,30 +2,30 @@
 
 **The short answer:** the Surface's 4 GB memory is soldered to the board and can't be upgraded. Cleaning helps, but
 NinjaTrader plus the bot will always fill 4 GB. The best fix for the money is a **used Lenovo ThinkCentre M720q Tiny
-(i5-9500T, 16 GB, SSD), about $250** as the bot's own computer (details below). Until then, `CLEAN_PC.bat` keeps
+(i5-9500T, 16 GB, SSD), about $250** as the bot's own computer (details below). Until then, `tools/bat/CLEAN_PC.bat` keeps
 the Surface as light as it can be.
 
-**Low memory now (2026-11-03):** double-click **`BOT_LITE.bat`**: the bot drops from ~690 MB to ~180 MB and trades the
+**Low memory now (2026-11-03):** double-click **`tools/bat/BOT_LITE.bat`**: the bot drops from ~690 MB to ~180 MB and trades the
 same. PC-off options and costs: `docs/PC_OFF_PLAN.md`.
 
 ## Surface (the bot PC): 3 steps
-1. After 4:05 PM ET (or on the weekend), double-click **`CLEAN_PC.bat`** in the bot folder. Click **Yes** once when
+1. After 4:05 PM ET (or on the weekend), double-click **`tools/bat/CLEAN_PC.bat`** in the bot folder. Click **Yes** once when
    Windows asks. It cleans, then runs the **v2 deep tune** (below) and prints a **health score** before and after.
 2. Restart the Surface after 4:05 PM ET (the bot comes back by itself).
 3. Do what its **NinjaTrader check** lines say (yellow lines). The bot's MNQ chart with LE_BarFeed stays at **30 days**.
 
-Something feels wrong after the tune? Double-click **`UNDO_PC_TUNE.bat`** and click **Yes**: every deep-tune change goes
+Something feels wrong after the tune? Double-click **`tools/bat/UNDO_PC_TUNE.bat`** and click **Yes**: every deep-tune change goes
 back to exactly what it was (safe any time, also while the bot trades). Keep the Surface plugged in and on its kickstand.
 
 ## Main PC: 3 steps
-1. After step 1 on the Surface, a **`PC_KIT`** folder (with the deep tune and `UNDO_PC_TUNE.bat`) appears in your OneDrive (or on the Surface's Desktop if it has
+1. After step 1 on the Surface, a **`PC_KIT`** folder (with the deep tune and `tools/bat/UNDO_PC_TUNE.bat`) appears in your OneDrive (or on the Surface's Desktop if it has
    no OneDrive: copy it to a USB stick). Open it on the main PC.
-2. Double-click **`CLEAN_PC.bat`** in it. Click **Yes** once.
-3. Send Claude the **`PC_REPORT-<name>.txt`** it writes next to CLEAN_PC.bat (a photo is fine). It shows what the main PC
+2. Double-click **`tools/bat/CLEAN_PC.bat`** in it. Click **Yes** once.
+3. Send Claude the **`PC_REPORT-<name>.txt`** it writes next to tools/bat/CLEAN_PC.bat (a photo is fine). It shows what the main PC
    is and whether it can run the bot.
 
 ## Disk full? CLEAN_STORAGE (both computers, 2026-11-04)
-One double-click, same on the Surface and the main PC: **`CLEAN_STORAGE.bat`** (in the bot folder; or download it alone from
+One double-click, same on the Surface and the main PC: **`tools/bat/CLEAN_STORAGE.bat`** (in the bot folder; or download it alone from
 the site page `.../nq-dashboard/pc/`, section "Clean storage": it then fetches `pc/clean_storage.ps1` itself).
 1. It prints a plain table of what it would free (a size per category) and asks **Y**.
 2. It clears only safe things: temp files (older than 1 day), browser caches (never passwords or sign-ins), thumbnail and
@@ -47,15 +47,15 @@ the site page `.../nq-dashboard/pc/`, section "Clean storage": it then fetches `
   (the bot's bars), `incoming` / `outgoing` (orders), and anything outside its allow-list (a wrong `TEMP` variable cannot widen it).
 - **If the bot or NinjaTrader is running** it says so and skips their folders, Windows.old and the archive move; only temp
   files (3 days old then), caches and Windows junk are cleaned. For the full clean: when the bot is flat, STOP BOT, close
-  NinjaTrader, double-click CLEAN_STORAGE.bat again.
-- `CLEAN_STORAGE.bat -DryRun` (or `clean_pc.ps1 -Storage -DryRun`) only prints the table. `-KeepDays 30` keeps the bot's
+  NinjaTrader, double-click tools/bat/CLEAN_STORAGE.bat again.
+- `tools/bat/CLEAN_STORAGE.bat -DryRun` (or `clean_pc.ps1 -Storage -DryRun`) only prints the table. `-KeepDays 30` keeps the bot's
   logs longer. OneDrive: it prints the "Free up space" (Files On-Demand) hint and warns not to use it on the NinjaTrader 8 folder.
 - The PC health line **Storage** (free GB on the bot's drive + bot folder + NinjaTrader folder size; amber < 15 GB, red
-  < 2 GB, fix "Run CLEAN_STORAGE.bat") rides the normal heartbeat (`pc_health.storage`) and shows on Jarvis' System view.
+  < 2 GB, fix "Run tools/bat/CLEAN_STORAGE.bat") rides the normal heartbeat (`pc_health.storage`) and shows on Jarvis' System view.
 - Test: `python -X utf8 -m tests.test_clean_storage`.
 
 ## PC_CARE: one icon that looks after THIS PC (both computers, 2026-11-04)
-`PC_CARE.bat` (runs `scripts\pc_care.ps1`; downloaded alone it fetches the script from the site's `pc/` page, like CLEAN_STORAGE).
+`tools/bat/PC_CARE.bat` (runs `scripts\pc_care.ps1`; downloaded alone it fetches the script from the site's `pc/` page, like CLEAN_STORAGE).
 It finds the role by itself (**bot folder here = MAIN PC**; no bot folder and a Surface, or a small laptop with 8 GB or less = **SURFACE**;
 `-Role main|surface` forces it), prints a plain table (what it is now / what it will be), asks **Y**, and ends with one line:
 `BOT PC HEALTHY: YES` (or `NO, look at: ...`). Windows asks once (click Yes) for the power plan; the startup / background / effects
@@ -77,9 +77,9 @@ parts run in your own account.
   PC does not have is reported ("this PC does not have that setting") and skipped.
 - **Undo:** every change is written to an undo file BEFORE it is made (`%LOCALAPPDATA%\LiquidityEngine\pc_care_user.json` for your account,
   `%ProgramData%\LiquidityEngine\pc_care_state.json` for the Windows part; the first before-value is kept, so running it twice loses
-  nothing). `UNDO_PC_TUNE.bat` undoes PC_CARE first (a copy of the script sits next to the account undo file), then the deep tune; a step that
+  nothing). `tools/bat/UNDO_PC_TUNE.bat` undoes PC_CARE first (a copy of the script sits next to the account undo file), then the deep tune; a step that
   cannot be undone is said in plain words and stays in the file for the next try. If the old power plan is gone it falls back to Balanced.
-- `PC_CARE.bat -DryRun` prints the table and changes nothing (no undo file, no health file); `-CheckOnly` runs only the health check.
+- `tools/bat/PC_CARE.bat -DryRun` prints the table and changes nothing (no undo file, no health file); `-CheckOnly` runs only the health check.
 - The last result is `logs\pc_care.json` (no bot folder: `%LOCALAPPDATA%\LiquidityEngine\pc_care.json`). The bot's PC health block shows it as the
   **PC care** line (`engine/pc_health.py`, display only: green when ok, amber when it found something or is older than 45 days, never red, no
   push; no line if PC_CARE was never run) and Jarvis / Argus show it in the System view (amber ones first).
@@ -109,9 +109,9 @@ parts run in your own account.
 
 ## v2 deep tune: every change, why, and how it is undone
 
-`CLEAN_PC.bat` runs `scripts\pc_tune.ps1` in its Administrator part, only outside trading hours (weekdays 01:15-16:05 ET it
+`tools/bat/CLEAN_PC.bat` runs `scripts\pc_tune.ps1` in its Administrator part, only outside trading hours (weekdays 01:15-16:05 ET it
 waits; on the main PC only while NinjaTrader is open). **Before each change it writes the old value** to
-`C:\ProgramData\LiquidityEngine\pc_tune_state.json`; **`UNDO_PC_TUNE.bat`** reads that file and puts every value back,
+`C:\ProgramData\LiquidityEngine\pc_tune_state.json`; **`tools/bat/UNDO_PC_TUNE.bat`** reads that file and puts every value back,
 then archives it. Running the tune twice keeps the first old values. NinjaTrader and python are never closed, NinjaTrader's
 files are never changed, nothing is downloaded.
 
@@ -142,7 +142,7 @@ files are never changed, nothing is downloaded.
 
 **Obsidian is protected (2026-11-03):** it is the owner's notes vault and Jarvis syncs it with the Obsidian Git plugin.
 CLEAN_PC never closes it, never switches it off at sign-in, the keeper never lowers it, and if an older CLEAN_PC run
-had switched its sign-in entry off, every CLEAN_PC run (and `UNDO_PC_TUNE.bat`) switches it back on.
+had switched its sign-in entry off, every CLEAN_PC run (and `tools/bat/UNDO_PC_TUNE.bat`) switches it back on.
 
 The NinjaTrader check also prints, read-only: untick Tools > Options > Market data > "Show Tick Replay"; once a month after
 4:05 PM ET, Tools > Database Management > Repair DB (never "Reset DB"); pause OneDrive syncing while trading (don't switch
@@ -178,9 +178,9 @@ Surface out-of-warranty ~$450 (mspoweruser.com, onmsft.com, Microsoft's per-coun
 third-party screen $299 (onehourdevicerepair.com); monitors (walmart.com, productchart.com); coolers (neweggbusiness.com,
 homedepot.com); heat and red-line glitches (Microsoft Q&A / Tech Community). Prices change: check the listing before buying.
 
-## STATUS.bat and the safety review (2026-11-04)
+## tools/bat/STATUS.bat and the safety review (2026-11-04)
 
-- **STATUS.bat** (repo root, also `<site>/pc/STATUS.bat`; script `scripts/pc_status.ps1` / `pc/pc_status.ps1`): a six line health card
+- **tools/bat/STATUS.bat** (repo root, also `<site>/pc/STATUS.bat`; script `scripts/pc_status.ps1` / `pc/pc_status.ps1`): a six line health card
   for THIS PC, read-only, no Administrator: DISK (free space), RAM, BOT (running / armed / heartbeat age from the published `home.json`
   `live.pc`), NINJA (process), BARS (age of the last 1-minute bar from the same heartbeat), POWER (active plan). Ends with ONE
   `NEXT:` sentence (the first red line, else the first yellow, else "nothing to do"). The Surface (not the bot PC) shows its own disk,

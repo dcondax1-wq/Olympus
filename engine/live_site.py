@@ -1,18 +1,18 @@
 """LIVE SITE: the whole phone site, live, from the PC's own bot server (owner 2026-11-12: "I want everything connected. I want an
 actual dashboard"). docs/LIVE_DASHBOARD.md. server.py installs it (install(app, live=LIVEPUB.payload)) before its static mount.
 
-The phone reaches the server privately through Tailscale (LIVE_LINK.bat: `tailscale serve` turns https://<pc>.<tailnet>.ts.net/
+The phone reaches the server privately through Tailscale (tools/bat/LIVE_LINK.bat: `tailscale serve` turns https://<pc>.<tailnet>.ts.net/
 into a proxy to http://127.0.0.1:8766, inside the owner's tailnet only, never Funnel). Through that one link:
 
   /                      a request that came through the link (proxy headers) is sent to the Gate: /site/gate/
-  /site/...              the built site (tools/pc_publish.py / PUBLISH_NQ.bat or LIVE_LINK's build task, every 15 min): the Gate,
+  /site/...              the built site (tools/pc_publish.py / tools/bat/PUBLISH_NQ.bat or LIVE_LINK's build task, every 15 min): the Gate,
                          the root dashboard, every OLYMPUS app. Newest of data/pc_publish/site and data/live_site/site (LE_SITE_DIR
                          overrides), a missing file falls back to tools/web_public (the same public files, unbuilt).
   /site/home.json        the built home.json with the bot's live numbers laid over it (overlay_home: the Python twin of
                          tools/web_public/pc_feed.js overlayHome), so every app that reads home.json is live, not 15 min old
   /site/kalshi.json      the Kalshi feed fresh from the owner's setting (publish.json "kalshi_file" or "kalshi_feed_url", the same
                          keys tools/pc_publish.add_kalshi reads), else the site's copy, else 404 (the page says so)
-  /site/money/<id>.json  the money machines' newest output (money_out/, RUN_MONEY.bat) instead of the build's sample copy
+  /site/money/<id>.json  the money machines' newest output (money_out/, tools/bat/RUN_MONEY.bat) instead of the build's sample copy
   /site/day/day.json     your day from your own calendars (tools/calendar_sync.py -> data/day/day.json, docs/CONNECT_DAY.md):
                          PRIVATE, so it lives only in data/day/ and only this route serves it (never a site folder, never
                          PUBLISH_NQ / Netlify / GitHub Pages); 404 with a plain reason until a calendar is connected
@@ -797,7 +797,7 @@ def r_site(rel: str, request: Request):
         home = read_json(os.path.join(built, "home.json")) if built else None
         lv = _live()
         if home is None and lv is None:
-            return _J({"ok": False, "error": "no home.json yet: the site is built every 15 minutes (LIVE_LINK.bat sets it up)"}, 404)
+            return _J({"ok": False, "error": "no home.json yet: the site is built every 15 minutes (tools/bat/LIVE_LINK.bat sets it up)"}, 404)
         out = overlay_home(home if _obj(home) else {}, lv) if lv is not None else home
         return _J(out, headers={"X-Olympus-Source": "built+live" if (home is not None and lv is not None) else ("live" if lv is not None else "built")})
     if rel == "kalshi.json":
@@ -824,7 +824,7 @@ def r_site(rel: str, request: Request):
         if p:
             return FileResponse(p, media_type="application/json", headers={"Cache-Control": "no-store", "X-Olympus-Source": "calendar_sync"})
         if name in DAY_FILES:
-            return _J({"ok": False, "error": "no calendar connected on this PC yet (CONNECT_DAY.bat, docs/CONNECT_DAY.md)"}, 404)
+            return _J({"ok": False, "error": "no calendar connected on this PC yet (tools/bat/CONNECT_DAY.bat, docs/CONNECT_DAY.md)"}, 404)
         return _J({"ok": False, "error": "not found"}, 404)
     if rel.startswith("me/"):
         name = rel[len("me/"):]

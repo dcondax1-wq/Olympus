@@ -1,4 +1,4 @@
-"""ALERTS_SETUP.bat / TEST_ALERT.bat / ALERTS_OFF.bat / ALERTS_ON.bat (engine/alert_bus.py). Stdlib only.
+"""ALERTS_SETUP.bat / tools/bat/TEST_ALERT.bat / tools/bat/ALERTS_OFF.bat / tools/bat/ALERTS_ON.bat (engine/alert_bus.py). Stdlib only.
 
   python -X utf8 tools/alerts_setup.py setup     asks 1 Telegram, 2 Discord, 3 both; the token / webhook is pasted HIDDEN (getpass)
   python -X utf8 tools/alerts_setup.py test      a fake "TEST: Zlarior 50K LONG opened ..." through EVERY channel, with receipts
@@ -162,7 +162,7 @@ def switch(on: bool, say=print, env=None) -> int:
     else:
         os.makedirs(os.path.dirname(p), exist_ok=True)
         with open(p, "w", encoding="utf-8") as fh:
-            fh.write("alert bus off: the old ntfy + Web Push path runs exactly as before. ALERTS_ON.bat removes this file.\n")
+            fh.write("alert bus off: the old ntfy + Web Push path runs exactly as before. tools/bat/ALERTS_ON.bat removes this file.\n")
         say("Alert bus OFF: alerts take the old path (ntfy private topic + the Olympus app), exactly as before.")
     return 0
 

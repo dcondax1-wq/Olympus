@@ -1,7 +1,7 @@
 """KALSHI LIVE executor (night-klive 2026-11-19; owner: "Kalshi, take our best shot and send it live").
 
 OFF by default. It trades real money ONLY after the owner types the phrase  I ACCEPT KALSHI LIVE RISK  at the PC
-(KALSHI_LIVE.bat), and it switches itself OFF again after ANY stop (daily loss stop, kill switch, phone FLATTEN / KILL, plan
+(tools/bat/KALSHI_LIVE.bat), and it switches itself OFF again after ANY stop (daily loss stop, kill switch, phone FLATTEN / KILL, plan
 change, a new executor version, Kalshi refusing the key or our orders, Kalshi not answering for 15 minutes). Claude never
 arms it, never types the phrase, never places an order: every test runs on a fake Kalshi.
 
@@ -33,14 +33,14 @@ daily stop in a day = stop.
 
 Phone: the ZEUS Safety page (engine/phone_safety.py) presses reach Kalshi too: PAUSE (our quotes cancelled, no new orders
 until the next 4 PM ET), RESUME (lifts it, never arms), FLATTEN (cancel ALL resting orders + sell what Kalshi holds at the best
-price, reduce-only immediate-or-cancel, then OFF), KILL (the same + the kill switch file). KALSHI_STOP.bat = cancel all + OFF
+price, reduce-only immediate-or-cancel, then OFF), KILL (the same + the kill switch file). tools/bat/KALSHI_STOP.bat = cancel all + OFF
 (positions are kept: they settle by themselves).
 
 Alerts: few (ntfy allows ~250 a day per IP and the PC's status posts use ~210): fills batched (at most one push an hour,
 6 a day), one day summary, armed once, stops at once (always). At most 10 non-stop pushes per ET day. Private topic only
 (engine/notify.alert_cfg), no ids, no key.
 
-Key (never in the repo, never printed): %USERPROFILE%\\.olympus\\kalshi\\kalshi_key.pem + key_id.txt (KALSHI_KEY_SETUP.bat
+Key (never in the repo, never printed): %USERPROFILE%\\.olympus\\kalshi\\kalshi_key.pem + key_id.txt (tools/bat/KALSHI_KEY_SETUP.bat
 moves the downloaded key there and locks it to the Windows user), or the user variables KALSHI_KEY_FILE / KALSHI_KEY_ID.
 RSA-PSS or Ed25519 signing as docs.kalshi.com says (timestamp ms + METHOD + /trade-api/v2/path, no query).
 
@@ -51,8 +51,8 @@ LE_KALSHI_LIVE=0 forces it OFF everywhere.
   python -X utf8 -m engine.kalshi_live                 status in plain words
   python -X utf8 -m engine.kalshi_live --dry-run       what it would place now, from public prices (no key, nothing sent)
   python -X utf8 -m engine.kalshi_live --check-key     one signed read (balance): is the key right?
-  python -X utf8 -m engine.kalshi_live --go            KALSHI_LIVE.bat: plan + key + dry run, YOU type the phrase, then it runs
-  python -X utf8 -m engine.kalshi_live --stop          KALSHI_STOP.bat: cancel every resting order, OFF
+  python -X utf8 -m engine.kalshi_live --go            tools/bat/KALSHI_LIVE.bat: plan + key + dry run, YOU type the phrase, then it runs
+  python -X utf8 -m engine.kalshi_live --stop          tools/bat/KALSHI_STOP.bat: cancel every resting order, OFF
   python -X utf8 -m engine.kalshi_live --pause | --resume | --flatten
 PC 15-minute report hook (lead): maybe_run() restarts the loop after a PC restart only while armed; read_card() = the card.
 Tests: python -X utf8 -m tests.test_kalshi_live
@@ -314,12 +314,12 @@ def inside_repo(path) -> bool:
 def load_key(path):
     """The private key (RSA PKCS#1 / PKCS#8 or Ed25519 PEM). Raises KalshiError in plain words; never shows the key."""
     if inside_repo(path):
-        raise KalshiError("the Kalshi key file is inside the bot folder: double-click KALSHI_KEY_SETUP.bat to move it out", code="key_in_repo")
+        raise KalshiError("the Kalshi key file is inside the bot folder: double-click tools/bat/KALSHI_KEY_SETUP.bat to move it out", code="key_in_repo")
     try:
         with open(path, "rb") as fh:
             data = fh.read()
     except OSError:
-        raise KalshiError("no Kalshi key on this PC: double-click KALSHI_KEY_SETUP.bat", code="no_key") from None
+        raise KalshiError("no Kalshi key on this PC: double-click tools/bat/KALSHI_KEY_SETUP.bat", code="no_key") from None
     try:
         from cryptography.hazmat.primitives import serialization
     except Exception:  # noqa: BLE001
@@ -441,7 +441,7 @@ class Api:
         if not allowed(method, path):
             raise KalshiError(f"refused: {method} {path} is not a call this executor may make", code="refused")
         if auth and not self.has_key:
-            raise KalshiError("no Kalshi key on this PC: double-click KALSHI_KEY_SETUP.bat", code="no_key")
+            raise KalshiError("no Kalshi key on this PC: double-click tools/bat/KALSHI_KEY_SETUP.bat", code="no_key")
         full = API_PATH + path
         q = {k: v for k, v in (params or {}).items() if v is not None}
         qs = ("?" + urllib.parse.urlencode(q)) if q else ""
@@ -508,7 +508,7 @@ def api_from_key(env=None, http=None, base=None, **kw) -> Api:
     e = os.environ if env is None else env
     kf = key_files(env)
     if not kf["key_id"]:
-        raise KalshiError("no Kalshi key id on this PC: double-click KALSHI_KEY_SETUP.bat", code="no_key")
+        raise KalshiError("no Kalshi key id on this PC: double-click tools/bat/KALSHI_KEY_SETUP.bat", code="no_key")
     key = load_key(kf["key_file"])
     return Api(base=base or e.get("KALSHI_API_BASE") or API_BASE, key_id=kf["key_id"], key=key, http=http,
                secrets_=(kf["key_file"], os.path.basename(kf["key_file"]), kf["dir"]), **kw)
@@ -822,7 +822,7 @@ def arm_state(state_dir=None, sha=None, env=None, P=None) -> tuple:
 
 
 def arm(phrase, state_dir=None, plan_path=None, cand_dir=None, env=None, now=None, expect_sha=None) -> tuple:
-    """The OWNER's step (KALSHI_LIVE.bat): only with the exact phrase. Clears the kill switch and any old stop. -> (ok, words)."""
+    """The OWNER's step (tools/bat/KALSHI_LIVE.bat): only with the exact phrase. Clears the kill switch and any old stop. -> (ok, words)."""
     now = time.time() if now is None else now
     P = paths(state_dir)
     if off_by_env(env):
@@ -842,7 +842,7 @@ def arm(phrase, state_dir=None, plan_path=None, cand_dir=None, env=None, now=Non
         why = "; ".join((A["problems"] + A["clock_problems"])[:3]) or "no plan file (research/lab/kalshi_live_plan.json) and no candidate"
         return False, "not armed: " + why
     if expect_sha is not None and A["sha"] != expect_sha:
-        return False, "not armed: the plan changed while you were reading it: double-click KALSHI_LIVE.bat again"
+        return False, "not armed: the plan changed while you were reading it: double-click tools/bat/KALSHI_LIVE.bat again"
     st0 = load_state(P)
     if st0.get("day") == et_day(now) and _f(st0.get("day_pnl"), 0.0) <= -A["caps"]["daily_loss_stop_usd"] + 1e-9:
         return False, "not armed: today's loss stop is already reached (ET day): try again tomorrow"
@@ -1352,7 +1352,7 @@ class Executor:
         held = [t for t, x in (v.get("pos") or {}).items() if abs(_f(x, 0)) >= 1] if f is None else []
         if held:
             parts.append(f"Holding {len(held)} market(s): they settle by themselves.")
-        parts.append("OFF now: to restart, double-click KALSHI_LIVE.bat and type the phrase.")
+        parts.append("OFF now: to restart, double-click tools/bat/KALSHI_LIVE.bat and type the phrase.")
         self.push("stop", f"Kalshi STOPPED: {why}"[:110], " ".join(p for p in parts if p), priority="high", tags="warning", now=now)
         self._log({"t": int(now), "ev": "stopped", "why": why, "scope": scope, "flatten": bool(flatten), "kill": bool(kill)})
 
@@ -1942,7 +1942,7 @@ def run_loop(state_dir=None, env=None, api=None, max_cycles=None, sleep=time.sle
 
 
 def spawn(state_dir=None) -> int:
-    """The detached, low-priority loop with no window (it outlives KALSHI_LIVE.bat and the 15-minute task)."""
+    """The detached, low-priority loop with no window (it outlives tools/bat/KALSHI_LIVE.bat and the 15-minute task)."""
     import subprocess
     P = paths(state_dir)
     os.makedirs(P["dir"], exist_ok=True)
@@ -2069,7 +2069,7 @@ def status_lines(state_dir=None, env=None, now=None) -> list:
     live, why = arm_state(P=P, sha=A["sha"], env=env)
     kf = key_files(env)
     key = "found (outside the bot folder)" if os.path.isfile(kf["key_file"]) and kf["key_id"] and not inside_repo(kf["key_file"]) \
-        else "NOT set up yet: double-click KALSHI_KEY_SETUP.bat"
+        else "NOT set up yet: double-click tools/bat/KALSHI_KEY_SETUP.bat"
     c = card(P, now=now)
     lines = [f"KALSHI LIVE: {'LIVE' if live else 'OFF'} - {why}", f"Key: {key}",
              f"Loop: {'running' if loop_alive(P, now) else 'not running'}"]
@@ -2078,13 +2078,13 @@ def status_lines(state_dir=None, env=None, now=None) -> list:
     lines += describe(A) if (A["plan"] or A["cands"]) else ["No plan yet (research/lab/kalshi_live_plan.json)."]
     lines += [f"[FIX] plan: {p}" for p in A["problems"][:4]]
     if not live:
-        lines.append(f"To go live: double-click KALSHI_LIVE.bat and type  {PHRASE}")
+        lines.append(f"To go live: double-click tools/bat/KALSHI_LIVE.bat and type  {PHRASE}")
     return lines
 
 
 def go(state_dir=None, env=None, input_fn=input, say=print, spawn_fn=None, api=None, dry_api=None, plan_path=None, cand_dir=None,
        poster=None, alert_cfg=None, now=None) -> int:
-    """KALSHI_LIVE.bat: plan + key + dry run, then YOU type the phrase, then the loop starts in the background."""
+    """tools/bat/KALSHI_LIVE.bat: plan + key + dry run, then YOU type the phrase, then the loop starts in the background."""
     say("\n KALSHI LIVE: real money, small. Nothing is sent until you type the phrase.\n")
     if off_by_env(env):
         say(" [FIX] LE_KALSHI_LIVE=0 switches Kalshi off on this PC. Nothing armed.")
@@ -2092,7 +2092,7 @@ def go(state_dir=None, env=None, input_fn=input, say=print, spawn_fn=None, api=N
     P = paths(state_dir)
     A = load_all(plan_path, cand_dir, state_dir)
     if arm_state(P=P, sha=A["sha"], env=env)[0] and (loop_alive(P, now) or not A["maker_runnable"]):
-        say(" [OK] Kalshi is already LIVE and running: nothing to do. Stop: KALSHI_STOP.bat or the phone's ZEUS Safety page.")
+        say(" [OK] Kalshi is already LIVE and running: nothing to do. Stop: tools/bat/KALSHI_STOP.bat or the phone's ZEUS Safety page.")
         return 0
     say(" 1/4 What it trades")
     for ln in (describe(A) if (A["plan"] or A["cands"]) else ["No plan yet (research/lab/kalshi_live_plan.json)."]):
@@ -2140,19 +2140,19 @@ def go(state_dir=None, env=None, input_fn=input, say=print, spawn_fn=None, api=N
     ex = Executor(api, state_dir=state_dir, plan_path=plan_path, cand_dir=cand_dir, env=env, poster=poster, alert_cfg=alert_cfg,
                   clock=(lambda: now) if now is not None else time.time)
     ex.push("armed", f"Kalshi LIVE armed | cap {money(A['caps']['capital_cap_usd'])} | stop -{money(A['caps']['daily_loss_stop_usd'])}/day",
-            "Pause or flatten: the phone's ZEUS Safety page. Stop: KALSHI_STOP.bat on the PC. Fills come batched, then one day summary.",
+            "Pause or flatten: the phone's ZEUS Safety page. Stop: tools/bat/KALSHI_STOP.bat on the PC. Fills come batched, then one day summary.",
             priority="default", tags="rocket")
     save_state(P, ex.st)
     pid = (spawn_fn or spawn)(state_dir) if A["maker_runnable"] else clock_spawn or "already running"
     say(f"\n [OK] Kalshi LIVE is on (loop {pid}). Pushes: each bet, each result, the day's summary, any stop.")
-    say("      Pause / flatten from the phone: the ZEUS Safety page. Stop here: double-click KALSHI_STOP.bat.")
+    say("      Pause / flatten from the phone: the ZEUS Safety page. Stop here: double-click tools/bat/KALSHI_STOP.bat.")
     return 0
 
 
 def key_fix(e) -> str:
     s = str(e)
     if getattr(e, "status", None) == 401 or "401" in s:
-        return "Kalshi refused the key: make a new API key on kalshi.com, then double-click KALSHI_KEY_SETUP.bat again."
+        return "Kalshi refused the key: make a new API key on kalshi.com, then double-click tools/bat/KALSHI_KEY_SETUP.bat again."
     if getattr(e, "code", "") in ("no_key", "bad_key", "key_in_repo", "no_crypto"):
         return s[:200]
     return "Kalshi could not be reached (" + s[:120] + "): check the internet, then try again."

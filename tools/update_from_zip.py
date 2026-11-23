@@ -2,7 +2,7 @@
 """Update the bot folder from a code zip, without GitHub (owner 2026-11-11: the account is gone, `git pull` no longer works).
 
 The zip is the output of tools/make_backup.py (OLYMPUS_BACKUP_<date>_<commit>.zip + its .sha256.txt). The owner downloads both to
-the PC and double-clicks UPDATE_FROM_ZIP.bat; UNDO_UPDATE.bat puts the old files back.
+the PC and double-clicks UPDATE_FROM_ZIP.bat; tools/bat/UNDO_UPDATE.bat puts the old files back.
 
     python tools/update_from_zip.py                      newest OLYMPUS_BACKUP_*.zip in the bot folder, Downloads or Desktop
     python tools/update_from_zip.py C:\\path\\code.zip      this zip
@@ -75,7 +75,7 @@ EXIT_OK, EXIT_FAIL, EXIT_NOTHING, EXIT_BADZIP, EXIT_RUNNING, EXIT_MARKET = 0, 1,
 EXIT_DUE, EXIT_OLDER = 10, 13                                        # --check only
 EXIT_CONNECTED = 14                                                  # the folder updates itself from the backup repo
 SOURCE_FILE, AUTOUPDATE_STATE = "update_source.json", os.path.join("data", "autoupdate.json")      # engine/autoupdate.py's files
-NEXT_WORDS = "next double-click SETUP_EVERYTHING.bat (or GO_LIVE_EVAL.bat to go live)."
+NEXT_WORDS = "next double-click SETUP_EVERYTHING.bat (or tools/bat/GO_LIVE_EVAL.bat to go live)."
 
 
 def say(tag: str, text: str) -> None:
@@ -705,11 +705,11 @@ def update(a) -> int:
     pip_words = ""
     if req and a.pip:
         r = subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-r", os.path.join(folder, "requirements.txt")], capture_output=True, text=True)
-        pip_words = " Packages installed." if r.returncode == 0 else " Packages did NOT install: run ONE_TIME_SETUP.bat."
+        pip_words = " Packages installed." if r.returncode == 0 else " Packages did NOT install: run tools/bat/ONE_TIME_SETUP.bat."
     elif req:
-        pip_words = " requirements.txt changed: run ONE_TIME_SETUP.bat once."
+        pip_words = " requirements.txt changed: run tools/bat/ONE_TIME_SETUP.bat once."
     six([line1, line2, ("Changed", line3_words), ("Kept", "; ".join(kept_words)),
-         ("Backup", f"{os.path.join(BACKUP_REL, stamp)}  ({len(man['replaced'])} old files saved; UNDO_UPDATE.bat puts them back)"),
+         ("Backup", f"{os.path.join(BACKUP_REL, stamp)}  ({len(man['replaced'])} old files saved; tools/bat/UNDO_UPDATE.bat puts them back)"),
          ("Next", "done. The bot was NOT started: " + (a.next or NEXT_WORDS) + pip_words)])
     return EXIT_OK
 
@@ -737,7 +737,7 @@ def undo(a) -> int:
         return EXIT_NOTHING
     if not a.force and bot_running(a.port):
         say("STOP", f"The bot is running (its server answers on port {a.port}). Nothing was changed.")
-        say("FIX", "Double-click STOP_BOT.bat first, then run UNDO_UPDATE.bat again.")
+        say("FIX", "Double-click STOP_BOT.bat first, then run tools/bat/UNDO_UPDATE.bat again.")
         return EXIT_RUNNING
     bdir = os.path.join(broot, pick)
     models_back = [r for r in man.get("replaced", []) if isinstance(r, str) and is_model(r)]      # the update gave them the new values
@@ -755,7 +755,7 @@ def undo(a) -> int:
     six([("Undo", f"the update of {pick} ({man.get('zip')})"), ("Folder", folder), ("Changed", f"{n_back} files put back, {n_gone - sum(1 for x in left if 'kept' in x)} new files removed"),
          ("Kept", (f"could not undo: {short(left)}" if left else f"your local-only files were not touched; {short(models_back)} back to the values before the update" if models_back
                    else "your local-only files and live_model*.json were not touched")), ("Backup", f"{os.path.join(BACKUP_REL, pick)} (kept)"),
-         ("Next", "done. The bot was NOT started: start it yourself with GO_LIVE_EVAL.bat when you are ready.")])
+         ("Next", "done. The bot was NOT started: start it yourself with tools/bat/GO_LIVE_EVAL.bat when you are ready.")])
     return EXIT_FAIL if any("kept" not in x for x in left) else EXIT_OK
 
 

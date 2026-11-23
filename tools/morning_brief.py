@@ -369,9 +369,9 @@ def pc_text(snap: dict) -> tuple:
     if needs:
         return "PC: " + COND_WORD[next(c for c in COND_WORD if c in cond)][0], needs
     if age is None:
-        return "PC: no bot report", ["check the PC: STATUS.bat"]
+        return "PC: no bot report", ["check the PC: tools/bat/STATUS.bat"]
     if age > HB_FRESH_S:
-        return f"PC: last report {int(age) // 60} min old", ["check the PC: STATUS.bat"]
+        return f"PC: last report {int(age) // 60} min old", ["check the PC: tools/bat/STATUS.bat"]
     return "PC ok", []
 
 
@@ -387,9 +387,9 @@ def roll_needs(snap: dict, now: int) -> list:
     for m in ms:
         k = str(m.get("key") or "")
         if k.startswith("roll:late:"):
-            out.append("contract roll late: ROLL.bat")
+            out.append("contract roll late: tools/bat/ROLL.bat")
         elif k.startswith("roll:soon:") and m.get("priority") == "high":
-            out.append("contract roll tonight: ROLL.bat after 16:00")
+            out.append("contract roll tonight: tools/bat/ROLL.bat after 16:00")
     return out
 
 

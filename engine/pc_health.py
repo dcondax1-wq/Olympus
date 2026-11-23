@@ -18,9 +18,9 @@ Lines (each green / amber / red with a plain text; a line this PC cannot measure
   poll      the bot's poll time: 15-minute median and its trend vs the hour before (bot.health["poll_ms"])
   storage   (2026-11-04, display only) free GB on the bot's drive + the bot folder's and NinjaTrader 8 folder's size, a
             capped folder walk at most every 6 h and never in the first 5 min; amber < 15 GB, red < 2 GB, the fix is
-            "Run CLEAN_STORAGE.bat" (scripts/clean_storage.ps1). The block also carries it as `storage`
+            "Run tools/bat/CLEAN_STORAGE.bat" (scripts/clean_storage.ps1). The block also carries it as `storage`
             {free_gb, bot_gb, nt_gb}. On the phone (live_publish.pc_health_summary) it replaces the plain Disk line.
-  pc_care   (2026-11-04, display only) the last PC_CARE.bat run (scripts/pc_care.ps1 writes logs/pc_care.json: role, level, the
+  pc_care   (2026-11-04, display only) the last tools/bat/PC_CARE.bat run (scripts/pc_care.ps1 writes logs/pc_care.json: role, level, the
             one-line "BOT PC HEALTHY: YES ..."); green when ok, amber when it found something or the check is over 45 days
             old; never red (no push); no line when PC_CARE was never run.
 A red line (two samples in a row) pushes once per issue per ET day (kind pc_health: on / silent / off in the app).
@@ -228,13 +228,13 @@ def lines(f: dict) -> list:
             if st.get(k) is not None:
                 parts.append(f"{label} {float(st[k]):.1f}{'+' if st.get(k + '_capped') else ''} GB")
         out.append(_line("storage", lv, f"{fr:.1f} GB free" + (f" (folders: {', '.join(parts)})" if parts else "")
-                         + (": Run CLEAN_STORAGE.bat" if lv != GREEN else ""), round(fr, 1)))
-    pc = f.get("pc_care")                       # 2026-11-04, display only: the last PC_CARE.bat run (scripts/pc_care.ps1 writes logs/pc_care.json)
+                         + (": Run tools/bat/CLEAN_STORAGE.bat" if lv != GREEN else ""), round(fr, 1)))
+    pc = f.get("pc_care")                       # 2026-11-04, display only: the last tools/bat/PC_CARE.bat run (scripts/pc_care.ps1 writes logs/pc_care.json)
     if isinstance(pc, dict) and pc.get("text"):
         age = pc.get("age_days")
         stale = isinstance(age, (int, float)) and age > T["care_stale_days"]
         ln = _line("pc_care", GREEN if pc.get("level") == "ok" and not stale else AMBER,
-                   str(pc["text"])[:110] + (f" (checked {age:.0f} days ago: run PC_CARE.bat)" if stale else ""))
+                   str(pc["text"])[:110] + (f" (checked {age:.0f} days ago: run tools/bat/PC_CARE.bat)" if stale else ""))
         ln["label"] = "PC care"                 # amber at most, never red: no push comes from this line
         out.append(ln)
     nt = f.get("nt")
@@ -389,7 +389,7 @@ class Sampler:
             return None
 
     def _care(self, now) -> dict | None:
-        """{level, text, age_days}: the last PC_CARE.bat run (logs/pc_care.json, a few hundred bytes), re-read at most every 10 min.
+        """{level, text, age_days}: the last tools/bat/PC_CARE.bat run (logs/pc_care.json, a few hundred bytes), re-read at most every 10 min.
         None when it was never run (no line). Never raises."""
         try:
             if now - self._care_c[0] >= 600:

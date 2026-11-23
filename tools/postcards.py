@@ -5,7 +5,7 @@ to a business, and its QR code opens the business's own concept site. The AI ass
 our AI assistant answers." PARKED: the owner chose cold calling by a real person (2026-11-20); this stays OFF.
 
   python tools/postcards.py samples [--out DIR]   3 sample cards (front + back PNG, and one PDF of all six sides): no key, nothing sent
-  python tools/postcards.py setup                 POSTCARD_SETUP.bat: the provider's API key (typed hidden) -> %USERPROFILE%\\.olympus\\
+  python tools/postcards.py setup                 tools/bat/POSTCARD_SETUP.bat: the provider's API key (typed hidden) -> %USERPROFILE%\\.olympus\\
                                                   postcards.json, the return address (a P.O. box: OWNER STEP), then the phrase gate:
                                                   SEND POSTCARDS = live; anything else = TEST mode (the provider's test key: nothing printed,
                                                   nothing mailed, nothing charged)
@@ -17,7 +17,7 @@ business's own built concept site), chains skipped. A day-10 card goes to anyone
 Provider: Lob (https://docs.lob.com, 4x6 First-Class $0.909 a card on the free Developer plan, 11/2026; test keys are free).
 Never again: the list the email autopilot keeps (agency_never.json + its opt-outs) is the same list here. Every card carries the sender,
 the return address and a way to say "no more mail". The art is a clean agency brand (not the OLYMPUS look). Stdlib + Pillow + segno
-(QR, free, made on this PC); POSTCARD_SETUP.bat installs both. Tests: tests/test_postcards.py (a fake provider, never the network).
+(QR, free, made on this PC); tools/bat/POSTCARD_SETUP.bat installs both. Tests: tests/test_postcards.py (a fake provider, never the network).
 """
 from __future__ import annotations
 
@@ -407,7 +407,7 @@ def run_once(cfg: dict, state: dict, leads: list, sites: dict, now=None, send=No
         res["errors"].append("setup incomplete: " + ", ".join(probs))
         return res
     if cfg["mode"] == "live" and state.get("phrase") != PHRASE:
-        res["errors"].append("live needs the phrase SEND POSTCARDS (POSTCARD_SETUP.bat)")
+        res["errors"].append("live needs the phrase SEND POSTCARDS (tools/bat/POSTCARD_SETUP.bat)")
         return res
     e = et_now(now)
     day, week = e.strftime("%Y-%m-%d"), e.strftime("%G-W%V")
@@ -614,7 +614,7 @@ def cmd_setup(ask=input, secret=getpass.getpass, out=print) -> int:
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description="Personalised postcards (OFF until POSTCARD_SETUP.bat; live only after SEND POSTCARDS)")
+    ap = argparse.ArgumentParser(description="Personalised postcards (OFF until tools/bat/POSTCARD_SETUP.bat; live only after SEND POSTCARDS)")
     ap.add_argument("cmd", choices=["samples", "setup", "run", "stop", "status", "results"])
     ap.add_argument("--out", default=os.path.join(ROOT, "scratch", "postcards"))
     a = ap.parse_args(argv)

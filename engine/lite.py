@@ -2,7 +2,7 @@
 history the strategy reads. Trading decisions are unchanged (tests/test_lite.py replays LiveBot sessions with and
 without LITE: the same orders, exits, $ and state).
 
-Switch (NOT live_model*.json): data/lite.json {"on": true} (written by BOT_LITE.bat; gitignored), or the env LE_LITE=1
+Switch (NOT live_model*.json): data/lite.json {"on": true} (written by tools/bat/BOT_LITE.bat; gitignored), or the env LE_LITE=1
 (LE_LITE=0 forces it off whatever the file says). Read once when server.py starts: a change needs a server restart.
 
 What LITE turns off (all read-only: none of them decides, sizes or routes a trade):
@@ -147,7 +147,7 @@ def install(bot, cfg: dict | None = None) -> dict:
 
 
 def write(on: bool, path: str | None = None, hist_days: int | None = None) -> dict:
-    """BOT_LITE.bat: data/lite.json on / off (keeps hist_days)."""
+    """tools/bat/BOT_LITE.bat: data/lite.json on / off (keeps hist_days)."""
     p = path or LITE_PATH
     cur = settings(p, env={})
     cur.pop("why", None)

@@ -119,6 +119,37 @@ def _finish(sym: str, df: pd.DataFrame, out_dir: str = HERE, check: bool = True)
     return src
 
 
+def build_daily(sym: str, out_dir: str = HERE) -> int:
+    """<SYM>_1d.csv from <SYM>_1h.csv for the CME days newer than its last bar (night-cleanup 2026-11-22: the PC's bars only
+    ever rebuilt 1m / 5m / 15m / 1h, so NQ_1d / ES_1d stopped at the Oct 16 TradingView export). A day = 18:00 ET the evening
+    before -> 17:00 ET, stamped that day 00:00 UTC (TradingView's own daily stamp; checked equal to the export on its last 60
+    days, OHLC and volume). Only finished days: one with its 16:00 ET hour or a later day on file. Append-only. -> days added."""
+    h_path, d_path = os.path.join(out_dir, f"{sym}_1h.csv"), os.path.join(out_dir, f"{sym}_1d.csv")
+    if not (os.path.exists(h_path) and os.path.exists(d_path)):
+        return 0
+    d = pd.read_csv(d_path)
+    last = int(d["time"].max()) if len(d) else 0
+    h = pd.read_csv(h_path)
+    et = pd.to_datetime(h["time"], unit="s", utc=True).dt.tz_convert("America/New_York")
+    h = h.assign(day=(et + pd.Timedelta(hours=6)).dt.normalize().dt.tz_localize(None), hr=et.dt.hour)
+    h = h[h["day"] > pd.Timestamp(last, unit="s")]
+    if not len(h):
+        return 0
+    days = sorted(h["day"].unique())
+    done = [x for i, x in enumerate(days) if i < len(days) - 1 or (h.loc[h["day"] == x, "hr"] == 16).any()]
+    h = h[h["day"].isin(done)]
+    if not len(h):
+        return 0
+    g = h.sort_values("time").groupby("day")
+    out = pd.DataFrame({"time": ((g["day"].first() - pd.Timestamp("1970-01-01")) // pd.Timedelta(seconds=1)).astype("int64"),
+                        "open": g["open"].first(), "high": g["high"].max(), "low": g["low"].min(), "close": g["close"].last(),
+                        "volume": g["volume"].sum()})
+    if (out["volume"].round() == out["volume"]).all():
+        out["volume"] = out["volume"].round().astype("int64")
+    pd.concat([d, out], ignore_index=True).to_csv(d_path, index=False)
+    return len(out)
+
+
 def _epoch(series):
     return (series - pd.Timestamp("1970-01-01", tz="UTC")) // pd.Timedelta(seconds=1)
 

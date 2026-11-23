@@ -3,7 +3,7 @@
 calendars (tools/calendar_sync.py calls gather() every 15 minutes; each feed is asked at most once an hour). No key, no account.
 
   weather    api.weather.gov (the US National Weather Service, free, no key): the forecast for your city and its active alerts.
-             Your city is set once (CONNECT_DAY.bat or --city): "39.96,-83.00", or a name like "Columbus, OH" that is looked up ONCE
+             Your city is set once (tools/bat/CONNECT_DAY.bat or --city): "39.96,-83.00", or a name like "Columbus, OH" that is looked up ONCE
              with Open-Meteo's free geocoder (no key) and saved as numbers; after that only the numbers go to weather.gov.
   headlines  the official RSS feeds of the Federal Reserve (press releases) and the BLS (CPI, jobs, PPI releases), filtered to what
              moves NQ (FOMC, rates, CPI, jobs, PPI, GDP, retail sales, PCE). "rss": [...] in calendars.json replaces the list ([] = off).

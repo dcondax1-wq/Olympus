@@ -1,6 +1,6 @@
 """LIVE LINK: the real, always-current dashboard on the owner's iPhone through Tailscale (docs/LIVE_DASHBOARD.md, owner 2026-11-12:
 "I want everything connected. I want an actual dashboard"). engine/live_site.py (server.py serves the whole site at /site/ with the
-bot's live numbers, read-only over the link), LIVE_LINK.bat + scripts/live_link.ps1 (+ UNDO_LIVE_LINK.bat), the Gate's live card.
+bot's live numbers, read-only over the link), tools/bat/LIVE_LINK.bat + scripts/live_link.ps1 (+ tools/bat/UNDO_LIVE_LINK.bat), the Gate's live card.
 
 Never the real network, never the real Tailscale: a fake `tailscale` (a shell script with a state file) answers the PowerShell
 script; Windows-only steps (open a page, Task Scheduler, clipboard, a background build) go to the test log LE_LL_T_LOG. Temp folders.
@@ -369,7 +369,7 @@ def feeds():
             with open(os.path.join(s.money, "mercury_state.json"), "w") as fh:
                 fh.write("{}")
             r = c.get("/site/money/index.json")
-            check("4. RUN_MONEY.bat's money_out/index.json is served live", r.json() == {"kind": "real"} and r.headers.get("x-olympus-source") == "money_out", r.text)
+            check("4. tools/bat/RUN_MONEY.bat's money_out/index.json is served live", r.json() == {"kind": "real"} and r.headers.get("x-olympus-source") == "money_out", r.text)
             check("4. a scanner's state file is never served from money_out", c.get("/site/money/mercury_state.json").status_code == 404)
             check("4. /api/site/status: money from money_out, Kalshi from the site", c.get("/api/site/status").json()["money"] == "money_out")
         finally:
@@ -429,8 +429,8 @@ def server_wiring():
 
 # ============================================================================================== 6 static
 def static():
-    for name, script, extra in (("LIVE_LINK.bat", b'scripts\\live_link.ps1" %* & echo. & pause & exit /b', b":old"),
-                                ("UNDO_LIVE_LINK.bat", b'scripts\\live_link.ps1" -Remove & echo. & pause & exit /b', b"")):
+    for name, script, extra in (("tools/bat/LIVE_LINK.bat", b'scripts\\live_link.ps1" %* & echo. & pause & exit /b', b":old"),
+                                ("tools/bat/UNDO_LIVE_LINK.bat", b'scripts\\live_link.ps1" -Remove & echo. & pause & exit /b', b"")):
         b = rb(name)
         check(f"6. {name}: CRLF line endings, ASCII", b"\n" not in b.replace(b"\r\n", b"") and b.endswith(b"\r\n") and all(c < 128 for c in b))
         check(f"6. {name}: runs scripts\\live_link.ps1 with -ExecutionPolicy Bypass and pauses", script in b and b"-ExecutionPolicy Bypass" in b, b[-300:])
@@ -652,7 +652,7 @@ def pwsh_runs(pwsh):
         # server down / old code
         b.clear()
         rc, out = b.run(pwsh, ping="0")
-        check("7. bot server down: the link is still made, the card says BOTS_BACK.bat starts it", rc == 0 and "does not answer" in out and "BOTS_BACK.bat" in out, out)
+        check("7. bot server down: the link is still made, the card says tools/bat/BOTS_BACK.bat starts it", rc == 0 and "does not answer" in out and "tools/bat/BOTS_BACK.bat" in out, out)
         rc, out = b.run(pwsh, ping="old")
         check("7. bot server on old code: restart it once when flat (STOP_BOT, then BOTS_BACK)", rc == 0 and "older code" in out, out)
         # Kalshi address

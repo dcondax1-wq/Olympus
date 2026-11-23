@@ -38,7 +38,7 @@ removes ids, emails and names (docs/PRIVACY.md).
 1. **Get the key (phone or PC):** dash.cloudflare.com, sign up free > your picture > **Profile** > **API Tokens** >
    **Create Token** > **Custom token** > Permissions: *Account* / *Cloudflare Pages* / *Edit* > **Continue** > **Create**.
    Copy the key. Also copy your **Account ID** (Workers & Pages page, right side). Never paste the key in a chat or the repo.
-2. **On the PC:** Double-click CLOUDFLARE_SETUP.bat (bot folder). It installs Node.js if missing, asks you to paste the key
+2. **On the PC:** Double-click tools/bat/CLOUDFLARE_SETUP.bat (bot folder). It installs Node.js if missing, asks you to paste the key
    (you only see `*`) and the Account ID, saves both in Windows (user variables, never a file), switches the publisher to
    Cloudflare and publishes once. Any problem shows one `[FIX]` line; if the first publish fails, Netlify keeps updating.
 3. **Phone:** it prints the address, normally **https://olympus-dash.pages.dev** (Cloudflare adds a suffix if the name is

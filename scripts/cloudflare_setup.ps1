@@ -1,5 +1,5 @@
 <#
-CLOUDFLARE SETUP (double-click CLOUDFLARE_SETUP.bat). Moves the phone site from Netlify to Cloudflare Pages in one go
+CLOUDFLARE SETUP (double-click tools\bat\CLOUDFLARE_SETUP.bat). Moves the phone site from Netlify to Cloudflare Pages in one go
 (docs\HOSTING.md): 1. Node.js LTS (checked, installed with winget if missing), 2. asks for the Cloudflare API token (masked)
 and the Account ID, 3. saves both as Windows USER variables CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID (never shown, never
 written to a file), 4. tools\pc_publish.py --setup cloudflare --cf-project olympus-dash, then one --force publish, 5. prints the
@@ -61,7 +61,7 @@ if (-not $Python) {
     }
 }
 if (-not $Python -or -not (Test-Path -LiteralPath $Python)) {
-    Stop-WithFix 'Python not found: install Python 3.12 (tick "Add python.exe to PATH"), then double-click CLOUDFLARE_SETUP.bat again.'
+    Stop-WithFix 'Python not found: install Python 3.12 (tick "Add python.exe to PATH"), then double-click tools\bat\CLOUDFLARE_SETUP.bat again.'
 }
 if (-not (Test-Path -LiteralPath $Script)) { Stop-WithFix "tools\pc_publish.py is missing in ${Root}: send a photo of this window to Claude." }
 
@@ -82,14 +82,14 @@ $npx = Get-Command npx -ErrorAction SilentlyContinue
 if (-not $npx) {
     $wg = Get-Command winget -ErrorAction SilentlyContinue
     if (-not $wg) {
-        Stop-WithFix 'Node.js is missing and winget is not on this PC: install the LTS from nodejs.org (big green button), then double-click CLOUDFLARE_SETUP.bat again.'
+        Stop-WithFix 'Node.js is missing and winget is not on this PC: install the LTS from nodejs.org (big green button), then double-click tools\bat\CLOUDFLARE_SETUP.bat again.'
     }
     Write-Host '      Installing Node.js LTS (free, about 1 minute; click Yes if Windows asks)...'
     & winget install --id OpenJS.NodeJS.LTS -e --silent --accept-source-agreements --accept-package-agreements
     Update-PathNow
     $npx = Get-Command npx -ErrorAction SilentlyContinue
     if (-not $npx) {
-        Stop-WithFix 'Node.js did not install: restart the PC, then double-click CLOUDFLARE_SETUP.bat again (or install the LTS from nodejs.org).'
+        Stop-WithFix 'Node.js did not install: restart the PC, then double-click tools\bat\CLOUDFLARE_SETUP.bat again (or install the LTS from nodejs.org).'
     }
 }
 $nodeV = ''
@@ -109,9 +109,9 @@ try { $CfKey = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr) } final
 $CfKey = ([string]$CfKey).Trim()
 if ($CfKey -match '^bearer\s+') { $CfKey = ($CfKey -replace '^bearer\s+', '').Trim() }
 if (-not $CfKey -and $OldKey) { $CfKey = $OldKey }
-if (-not $CfKey) { Stop-WithFix 'No token was pasted: copy it on Cloudflare (Create Token > Create), then double-click CLOUDFLARE_SETUP.bat again. Nothing was saved.' }
+if (-not $CfKey) { Stop-WithFix 'No token was pasted: copy it on Cloudflare (Create Token > Create), then double-click tools\bat\CLOUDFLARE_SETUP.bat again. Nothing was saved.' }
 if ($CfKey -match '\s' -or $CfKey.Length -lt 20) {
-    Stop-WithFix 'That is not a Cloudflare API token (it is one long word, about 40 letters and digits): copy it again, then double-click CLOUDFLARE_SETUP.bat again. Nothing was saved.'
+    Stop-WithFix 'That is not a Cloudflare API token (it is one long word, about 40 letters and digits): copy it again, then double-click tools\bat\CLOUDFLARE_SETUP.bat again. Nothing was saved.'
 }
 
 if ($OldAcct) { Write-Host '      An Account ID is already saved: just press Enter to keep it.' }
@@ -119,7 +119,7 @@ Write-Host '      Paste the Account ID (32 letters and digits; Cloudflare > Work
 $CfAcct = ([string](Read-Host '      Account ID')).Trim()
 if (-not $CfAcct -and $OldAcct) { $CfAcct = $OldAcct }
 if ($CfAcct -notmatch '^[0-9a-fA-F]{32}$') {
-    Stop-WithFix 'That is not the Account ID (it is 32 letters a-f and digits): copy it from Workers & Pages (right side), then double-click CLOUDFLARE_SETUP.bat again. Nothing was saved.'
+    Stop-WithFix 'That is not the Account ID (it is 32 letters a-f and digits): copy it from Workers & Pages (right side), then double-click tools\bat\CLOUDFLARE_SETUP.bat again. Nothing was saved.'
 }
 Write-Host ''
 
@@ -129,7 +129,7 @@ try {
     [Environment]::SetEnvironmentVariable('CLOUDFLARE_API_TOKEN', $CfKey, 'User')
     [Environment]::SetEnvironmentVariable('CLOUDFLARE_ACCOUNT_ID', $CfAcct, 'User')
 } catch {
-    Stop-WithFix 'Windows would not save the settings: restart the PC, then double-click CLOUDFLARE_SETUP.bat again.'
+    Stop-WithFix 'Windows would not save the settings: restart the PC, then double-click tools\bat\CLOUDFLARE_SETUP.bat again.'
 }
 $env:CLOUDFLARE_API_TOKEN = $CfKey
 $env:CLOUDFLARE_ACCOUNT_ID = $CfAcct
@@ -158,11 +158,11 @@ if ($rc2 -ne 0) {
     $kept = ' Nothing else changed: your old site keeps updating.'
     $prob = ($out2 | Where-Object { $_ -match 'PUBLISH 6/6 problem:' } | Select-Object -First 1)
     $prob = [string]$prob
-    if ($prob -match 'refused the key') { Stop-WithFix ('Cloudflare refused the key: make a new token (Custom token > Account / Cloudflare Pages / Edit), then double-click CLOUDFLARE_SETUP.bat again.' + $kept) }
-    if ($prob -match 'account id') { Stop-WithFix ('Cloudflare needs the Account ID: double-click CLOUDFLARE_SETUP.bat again and paste it.' + $kept) }
-    if ($prob -match 'npx|Node') { Stop-WithFix ('Node.js is not ready: restart the PC, then double-click CLOUDFLARE_SETUP.bat again.' + $kept) }
-    if ($prob -match 'still running') { Stop-WithFix ('Another publish was running: wait 2 minutes, then double-click CLOUDFLARE_SETUP.bat again.' + $kept) }
-    if ($prob -match 'in time|reach|connect|network') { Stop-WithFix ('Cloudflare could not be reached: check the internet, then double-click CLOUDFLARE_SETUP.bat again.' + $kept) }
+    if ($prob -match 'refused the key') { Stop-WithFix ('Cloudflare refused the key: make a new token (Custom token > Account / Cloudflare Pages / Edit), then double-click tools\bat\CLOUDFLARE_SETUP.bat again.' + $kept) }
+    if ($prob -match 'account id') { Stop-WithFix ('Cloudflare needs the Account ID: double-click tools\bat\CLOUDFLARE_SETUP.bat again and paste it.' + $kept) }
+    if ($prob -match 'npx|Node') { Stop-WithFix ('Node.js is not ready: restart the PC, then double-click tools\bat\CLOUDFLARE_SETUP.bat again.' + $kept) }
+    if ($prob -match 'still running') { Stop-WithFix ('Another publish was running: wait 2 minutes, then double-click tools\bat\CLOUDFLARE_SETUP.bat again.' + $kept) }
+    if ($prob -match 'in time|reach|connect|network') { Stop-WithFix ('Cloudflare could not be reached: check the internet, then double-click tools\bat\CLOUDFLARE_SETUP.bat again.' + $kept) }
     Stop-WithFix ('The first Cloudflare publish failed (see the PUBLISH lines above): take a photo of this window and send it to Claude.' + $kept)
 }
 if (Test-Path -LiteralPath $PubBak) { Remove-Item -LiteralPath $PubBak -Force -ErrorAction SilentlyContinue }
@@ -175,5 +175,5 @@ Write-Host '  Add it to your home screen: open it in Safari on the iPhone > Shar
 $task = $null
 try { $task = Get-ScheduledTask -TaskName 'OlympusPublishNQ' -ErrorAction SilentlyContinue } catch { }
 if ($task) { Write-Host '  It updates by itself every 15 minutes (the PUBLISH NQ task).' }
-else { Write-Host '  To keep it updating every 15 minutes: double-click PUBLISH_NQ.bat once.' }
+else { Write-Host '  To keep it updating every 15 minutes: double-click tools\bat\PUBLISH_NQ.bat once.' }
 exit 0

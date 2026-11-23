@@ -1,9 +1,9 @@
 <#
-AGENCY MAIL task (EMAIL_SETUP.bat installs it, EMAIL_STOP.bat removes it; agency\autopilot\run.py).
+AGENCY MAIL task (tools\bat\EMAIL_SETUP.bat installs it, tools\bat\EMAIL_STOP.bat removes it; agency\autopilot\run.py).
 
   default   installs (or replaces) the Windows task "OlympusAgencyMail" (email + postcards): every 30 minutes while you are signed in it runs
             "python -m agency.autopilot run" with pythonw (no window), at most one at a time. The autopilot itself only sends
-            Mon-Fri 9:00-16:00 ET, max 20 new businesses a day, and nothing at all unless EMAIL_SETUP.bat saved the phrase SEND EMAILS
+            Mon-Fri 9:00-16:00 ET, max 20 new businesses a day, and nothing at all unless tools\bat\EMAIL_SETUP.bat saved the phrase SEND EMAILS
             (else DRY RUN: your own test address only).
   -Remove   deletes the task. Nothing else.
   -DryRun   says what it would do, changes nothing.
@@ -63,7 +63,7 @@ try {
         -ExecutionTimeLimit (New-TimeSpan -Minutes 20) -MultipleInstances IgnoreNew
     $principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -RunLevel Limited
     $task = New-ScheduledTask -Action $action -Trigger @($daily) -Settings $settings -Principal $principal `
-        -Description "OLYMPUS: the Website Factory email autopilot (OFF until EMAIL_SETUP.bat + SEND EMAILS). Installed by EMAIL_SETUP.bat from $Root"
+        -Description "OLYMPUS: the Website Factory email autopilot (OFF until tools\bat\EMAIL_SETUP.bat + SEND EMAILS). Installed by tools\bat\EMAIL_SETUP.bat from $Root"
     if (Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue) { Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false }
     Register-ScheduledTask -TaskName $TaskName -InputObject $task | Out-Null
     Write-Host "  [OK] email task ${TaskName}: every 30 minutes (it only sends Mon-Fri 9-16 ET)"

@@ -25,7 +25,7 @@ More:
 - **"Another copy of the bot is already running"**: **LE STOP BOT**, wait 10 s, **LE START**.
 - **No phone notices at all**: open the Liquidity app from the Home Screen, Settings > notifications **on**
   (`docs/NOTIFICATIONS.md`). The PC links itself on the next cloud run (heartbeat on).
-- **No 01:40 notice**: the helper task is missing or the PC was asleep. Double-click `SETUP_SHORTCUTS.bat` once (it adds the
+- **No 01:40 notice**: the helper task is missing or the PC was asleep. Double-click `tools/bat/SETUP_SHORTCUTS.bat` once (it adds the
   task `LiquidityEngineOps`); its log is `logs\ops-YYYYMMDD.log`.
 - **Contract roll** (Dec 2026: MNQ 12-26 -> MNQ 03-27 on Thu Dec 10): on Wed Dec 9 after 16:00 ET change the LE_BarFeed
   chart's instrument to **MNQ 03-27**, Data Series > Days to load **30**, OK, then HEALTH CHECK. Orders switch by themselves.

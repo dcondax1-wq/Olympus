@@ -1,4 +1,4 @@
-"""THE AGENCY DAY, end to end, in one double-click (AGENCY_DAY.bat runs this; team BIZ, 2026-11-15):
+"""THE AGENCY DAY, end to end, in one double-click (tools/bat/AGENCY_DAY.bat runs this; team BIZ, 2026-11-15):
 
     python -m agency.day                         leads in your city -> 3 demo sites + pitch kits -> the call list -> the Business page
     python -m agency.day --city "Boise, ID"      another city for one run

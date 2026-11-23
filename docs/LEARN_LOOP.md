@@ -10,7 +10,7 @@ Owner: "an Olympian AI that constantly learns and improves everything", without 
 | How hard it works the PC | Low priority, one CPU thread, about 1 minute a night (it stops itself within an hour). |
 | What it can change | Nothing. It never touches `live_model.json`, `live_model_lit.json`, `second_model.json`, `data/account_b.json` (it checks them before and after). |
 | Your phone | Quiet, unless an idea passes every test: "Candidate: X, +$Y/month in both halves - review". |
-| Your part | Nothing. It starts by itself from the PC report task you already have (BOTS_BACK.bat). |
+| Your part | Nothing. It starts by itself from the PC report task you already have (tools/bat/BOTS_BACK.bat). |
 
 When a candidate comes: tell Claude **"review the learn candidates"**. Claude re-tests it in the run library and nothing changes until you say yes.
 

@@ -22,7 +22,7 @@ ONE window, in order, each one checked first and skipped when it is already done
                 Skipped when %USERPROFILE%\.olympus\netlify.json has a key and a site id and the PUBLISH_NQ task is there. Else
                 ONE hidden prompt for the Netlify key (Enter skips; how to make one in two lines), tools\pc_publish.py --setup
                 netlify --site-name finds the site with it (the key only on its stdin: never shown, logged, stored here or put
-                on a command line), then scripts\publish_nq.ps1 (the PUBLISH_NQ.bat task, reused as is) sets up the 15-minute
+                on a command line), then scripts\publish_nq.ps1 (the tools\bat\PUBLISH_NQ.bat task, reused as is) sets up the 15-minute
                 task and publishes once. Only the lite set leaves the PC, never a private file (pc_publish.deploy_set). A key
                 already saved with the task missing: only the task. Every problem is one [SKIP] line, never a stop.
   2 PHONE LINK  the private Tailscale link to the dashboard (scripts\live_link.ps1); skipped when "tailscale serve" already points
@@ -359,7 +359,7 @@ function Stop-Bot {
     return (-not (Port-Open $Port))
 }
 function Start-Server {
-    # the bot server again, hidden, as BOTS_BACK.bat starts it (scripts\run_bot.ps1); the bot itself stays stopped (Stop-Bot cleared its
+    # the bot server again, hidden, as tools\bat\BOTS_BACK.bat starts it (scripts\run_bot.ps1); the bot itself stays stopped (Stop-Bot cleared its
     # auto-start record). The phone link (step 2) shows the dashboard only while the server runs.
     $rb = JP $script:Root 'scripts\run_bot.ps1'
     if (-not (TLog "START SERVER $rb")) {
@@ -380,7 +380,7 @@ function Start-Server {
 }
 
 function GitHub-Free {
-    # engine\nogithub.py: LE_NO_GITHUB=1 or the file %USERPROFILE%\.olympus\no_github (BOTS_BACK.bat / PUBLISH_NQ.bat make it)
+    # engine\nogithub.py: LE_NO_GITHUB=1 or the file %USERPROFILE%\.olympus\no_github (tools\bat\BOTS_BACK.bat / tools\bat\PUBLISH_NQ.bat make it)
     if ($env:LE_NO_GITHUB) { return ($env:LE_NO_GITHUB -eq '1') }
     $h = $env:OLYMPUS_HOME
     if (-not $h) { $h = J2 (Home-Dir) '.olympus' }
@@ -423,7 +423,7 @@ function Netlify-Saved {
     } catch { return $false }
 }
 function Site-Ready {
-    # this code can do it: tools\pc_publish.py knows --site-name and scripts\publish_nq.ps1 (the PUBLISH_NQ.bat task) is there
+    # this code can do it: tools\pc_publish.py knows --site-name and scripts\publish_nq.ps1 (the tools\bat\PUBLISH_NQ.bat task) is there
     $pp = JP $script:Root 'tools\pc_publish.py'
     if (-not (Test-Path -LiteralPath $pp) -or -not (Test-Path -LiteralPath (JP $script:Root 'scripts\publish_nq.ps1'))) { return $false }
     try { return [bool](Select-String -LiteralPath $pp -SimpleMatch -Pattern 'site-name' -Quiet) } catch { return $false }
@@ -595,7 +595,7 @@ Write-Host "   Bot folder:  $Root"
 Write-Host ("   New York:    {0}" -f (Et-Words (Et-Now)))
 $script:Py = Find-Python
 if (-not $script:Py) {
-    Fix 'Python was not found on this PC' 'Double-click ONE_TIME_SETUP.bat in the bot folder once, then double-click SETUP_EVERYTHING.bat again'
+    Fix 'Python was not found on this PC' 'Double-click tools\bat\ONE_TIME_SETUP.bat in the bot folder once, then double-click SETUP_EVERYTHING.bat again'
     Done 1
 }
 $py = $script:Py
@@ -843,12 +843,12 @@ if ($script:ServerDown) { Start-Server; $script:ServerDown = $false }
 
 # ================================================================================================ 1c the dashboard site updates itself
 # optional: the Netlify key once (ONE hidden prompt), then tools\pc_publish.py --setup netlify --site-name finds the site with it, and
-# the PUBLISH_NQ.bat task (scripts\publish_nq.ps1, reused as is) puts the lite, private-free site there by itself. Never a stop.
+# the tools\bat\PUBLISH_NQ.bat task (scripts\publish_nq.ps1, reused as is) puts the lite, private-free site there by itself. Never a stop.
 Header 'STEP 1c of 3' 'Your dashboard site updates itself'
 $pubTool = JP $Root 'tools\pc_publish.py'
 $pubTask = JP $Root 'scripts\publish_nq.ps1'
 if ($env:LE_SE_QUICK -eq '1') {
-    # QUICK_ARM.bat (owner 2026-11-15, "make it easier"): no question here; SETUP_EVERYTHING.bat later adds the key
+    # tools\bat\QUICK_ARM.bat (owner 2026-11-15, "make it easier"): no question here; SETUP_EVERYTHING.bat later adds the key
     Say 'SKIP' 'Quick mode: the dashboard key is for later (double-click SETUP_EVERYTHING.bat any evening).'
     $script:S1c = 'skipped: quick mode'
 } elseif (-not (Site-Ready)) {
@@ -891,13 +891,13 @@ if ($env:LE_SE_QUICK -eq '1') {
     }
     if ($saved) {
         Write-Host ''
-        Write-Host '   ----- the publish task of PUBLISH_NQ.bat: every 15 minutes, at most one Netlify upload a day; the first one now -----' -ForegroundColor Cyan
+        Write-Host '   ----- the publish task of tools\bat\PUBLISH_NQ.bat: every 15 minutes, at most one Netlify upload a day; the first one now -----' -ForegroundColor Cyan
         & $script:PsExe -NoProfile -ExecutionPolicy Bypass -File $pubTask -Python $py
         if ($LASTEXITCODE -eq 0) {
             Say 'OK' "Your dashboard site updates itself now: $NetlifySite.netlify.app gets this PC's newest numbers (at most once a day)."
             $script:S1c = 'on: the dashboard site updates itself'
         } else {
-            Say 'SKIP' 'The publish task was not set up (the lines above say why): double-click PUBLISH_NQ.bat once, or SETUP_EVERYTHING.bat again.'
+            Say 'SKIP' 'The publish task was not set up (the lines above say why): double-click tools\bat\PUBLISH_NQ.bat once, or SETUP_EVERYTHING.bat again.'
             $script:S1c = 'not on yet: the publish task was not set up'
         }
     }

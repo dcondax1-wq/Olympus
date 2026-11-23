@@ -28,7 +28,7 @@ import. **Dates** fills the "next important date" tile and never lets a birthday
 registration). **Streaks** turns the watch data into motivation with zero typing.
 
 ## Connect your money
-Already built: the 3 steps of `docs/CONNECT_MONEY.md` (a bank CSV in `%USERPROFILE%\.olympus\money_inbox\`, then `RUN_MONEY.bat`).
+Already built: the 3 steps of `docs/CONNECT_MONEY.md` (a bank CSV in `%USERPROFILE%\.olympus\money_inbox\`, then `tools/bat/RUN_MONEY.bat`).
 The Money area and the "Money left this month" tile read the same summary. **Money left this month** = your usual money in (the average of
 the last 3 full months, or this month's if it is bigger) minus what you spent so far this month minus the recurring charges still due before it ends.
 
@@ -67,11 +67,11 @@ The fields the PC accepts (anything else is refused with a plain reason): `date`
 `workouts` (a short text or a list of `{type, min, kcal, km}`).
 
 ## Connect Home & WiFi
-1. Nothing to type: the PC report (the task `BOTS_BACK.bat` set up) checks every 15 minutes once the PC has this update.
+1. Nothing to type: the PC report (the task `tools/bat/BOTS_BACK.bat` set up) checks every 15 minutes once the PC has this update.
 2. Optional, to name a device: `python tools\me_home.py --devices`, then `python tools\me_home.py --name 3f2a91="Mom's iPad"` (the id from the list).
 
 ## Connect dates, car and freedom
-1. A date: `python tools\me_life.py --date "Mom's birthday=03-14"` (every year; a one-off is `--date "Passport renewal=2027-05-01"`). Calendars connected with `CONNECT_DAY.bat` count too.
+1. A date: `python tools\me_life.py --date "Mom's birthday=03-14"` (every year; a one-off is `--date "Passport renewal=2027-05-01"`). Calendars connected with `tools/bat/CONNECT_DAY.bat` count too.
 2. The car: `python tools\me_life.py --car-miles 48210 --car-date registration=2027-03-31` (after an oil change: `--car-oil-done`).
 3. Freedom: `python tools\me_life.py --paycheck 3200 --agency 800` (else the paycheck comes from your calendar wage or the bank's paychecks, the agency's MRR from the agency billing kit, `python -m agency.billing summary`).
 

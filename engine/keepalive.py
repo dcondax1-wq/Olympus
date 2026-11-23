@@ -94,7 +94,7 @@ Config: data/keepalive.json (gitignored; the start cfg's "keepalive" block in te
   python -X utf8 -m engine.keepalive --on lit --yes              the OWNER's yes (live orders): Claude never runs it
   python -X utf8 -m engine.keepalive --off lit
   python -X utf8 -m engine.keepalive --on all --yes              every known account at once (KEEPALIVE_ON.bat: the owner
-                                                                 types KEEP ALIVE ON); --off all = KEEPALIVE_OFF.bat
+                                                                 types KEEP ALIVE ON); --off all = tools/bat/KEEPALIVE_OFF.bat
   python -X utf8 -m engine.keepalive --skip lit                  no keep-alive on lit today
   python -X utf8 -m engine.keepalive --traded lit [yyyy-mm-dd]   you traded it by hand (default today, the ET date; never a
                                                                  future day or more than 7 days back): prints the new deadline
@@ -1890,7 +1890,7 @@ def main(argv=None) -> int:
     if a.on and a.off:
         print("NOT changed: use --on or --off, not both.")
         return 2
-    if "all" in (a.on, a.off):        # KEEPALIVE_ON.bat / KEEPALIVE_OFF.bat: every known account in one go (owner 2026-11-20)
+    if "all" in (a.on, a.off):        # KEEPALIVE_ON.bat / tools/bat/KEEPALIVE_OFF.bat: every known account in one go (owner 2026-11-20)
         C = load_config(None)
         # --off all also clears keys only the config still names (an account removed since), so OFF means every account
         keys = sorted(set(known_keys()) | (set(C.get("accounts") or {}) if a.off else set()))

@@ -13,7 +13,7 @@ $d = (Get-ScheduledTask LiquidityEngine -EA 0).Actions.WorkingDirectory; if (-no
 
 Already in the bot folder? The short one: `git checkout main; git pull --ff-only origin main; .\ONE_TIME_SETUP.bat`
 
-Next time, just double-click `ONE_TIME_SETUP.bat` in the bot folder.
+Next time, just double-click `tools/bat/ONE_TIME_SETUP.bat` in the bot folder.
 
 ## 2. What it does (green [OK] / red [FIX] lines)
 

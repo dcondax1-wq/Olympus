@@ -327,6 +327,13 @@ def import_bars(out_dir: str = OUT, data_dir: str = DATA, days: list | None = No
             with contextlib.redirect_stdout(io.StringIO()):                  # rewritten file keeps every old line as it was
                 IF._finish(sym, add, data_dir, check=True)
             lines.append(f"{sym} {tf}: +{len(add)} bars to {pd.to_datetime(int(add['time'].max()), unit='s', utc=True):%Y-%m-%d %H:%M} UTC")
+        if not dry:                         # night-cleanup 2026-11-22: the daily file too (it stopped at the Oct 16 export)
+            try:
+                n1d = IF.build_daily(sym, data_dir)
+                if n1d:
+                    lines.append(f"{sym} 1d: +{n1d} day(s) from the 1h bars")
+            except Exception as e:  # noqa: BLE001
+                lines.append(f"{sym} 1d: not built ({e.__class__.__name__}: {e})")
     return lines
 
 
@@ -588,6 +595,7 @@ def main(argv=None) -> int:
     ap.add_argument("--data", default=DATA)
     ap.add_argument("--queue", default=QUEUE)
     ap.add_argument("--no-import", action="store_true")
+    ap.add_argument("--no-context", action="store_true", help="skip the CBOE vol / GEX / VIX refresh (tools/context_refresh.py)")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--force", action="store_true", help="re-copy every day folder")
     ap.add_argument("--review", action="store_true")
@@ -624,6 +632,15 @@ def main(argv=None) -> int:
             print("  " + ln)
         for ln in import_metals(a.out, os.path.join(a.data, "metals"), dry=a.dry_run):
             print("  " + ln)
+        if not a.no_context and os.path.abspath(a.data) == os.path.abspath(DATA):
+            # night-cleanup 2026-11-22: the CBOE vol / GEX / VIX / VXN daily files never came from the PC (its data/ stays
+            # there); CBOE and SqueezeMetrics answer from the cloud, so they are refreshed here (tools/context_refresh.py)
+            try:
+                import context_refresh as CR
+            except ImportError:
+                from tools import context_refresh as CR
+            for ln in CR.run(a.data, dry=a.dry_run):
+                print("  " + ln)
     n = 0 if a.dry_run else queue_proposals(a.out, a.queue)
     print(f"research queue: +{n} proposal(s) -> {os.path.relpath(a.queue, ROOT)}")
     if a.review:

@@ -236,7 +236,7 @@ def cloud_notices(pc: dict | None, now=None) -> list:
 # ---------------------------------------------------------------------------------- the countdown (PC report, ntfy)
 WARN_FROM_DAYS = 3                      # Thu Dec 10 roll -> one push a day on Mon Dec 7, Tue Dec 8, Wed Dec 9
 DONE_DAYS = 4                           # "roll done" is said once, within 4 days after the roll day
-ROLL_BAT = "ROLL.bat"
+ROLL_BAT = "tools/bat/ROLL.bat"
 
 
 def countdown(st: dict | None, now=None) -> list:

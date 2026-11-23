@@ -1,4 +1,4 @@
-"""CLEAN_PC.bat + scripts/clean_pc.ps1 (the PC cleaner for the Surface and, standalone, the owner's main PC).
+"""tools/bat/CLEAN_PC.bat + scripts/clean_pc.ps1 (the PC cleaner for the Surface and, standalone, the owner's main PC).
 
 1. Static, always: the .bat has CRLF line endings and runs scripts\\clean_pc.ps1; the .ps1 is ASCII (Windows PowerShell
    5.1 reads a BOM-less file as ANSI); the lists never close or switch off NinjaTrader, python, Edge, OneDrive, Git, Claude.
@@ -12,7 +12,7 @@
      also under Set-StrictMode -Version 2. Every run must end with exit 0, no PowerShell error, nothing changed
      (no HARNESS-CHANGE line, an old Temp file still there).
 
-3. The v2 deep tune (scripts/pc_tune.ps1, scripts/pc_keeper.ps1, UNDO_PC_TUNE.bat), with pwsh:
+3. The v2 deep tune (scripts/pc_tune.ps1, scripts/pc_keeper.ps1, tools/bat/UNDO_PC_TUNE.bat), with pwsh:
    - rules, AST-loaded (tests/win_harness/pc_tune_rules.ps1): never a security / update / network service, Defender
      excludes only data folders, the PC kind and heat cap, SysMain / page file by RAM, the guard, the keeper never lowers
      NinjaTrader or python, the health score;
@@ -39,10 +39,10 @@ import time
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HARN = os.path.join(ROOT, "tests", "win_harness")
 PS1 = os.path.join(ROOT, "scripts", "clean_pc.ps1")
-BAT = os.path.join(ROOT, "CLEAN_PC.bat")
+BAT = os.path.join(ROOT, "tools/bat/CLEAN_PC.bat")
 TUNE = os.path.join(ROOT, "scripts", "pc_tune.ps1")
 KEEPER = os.path.join(ROOT, "scripts", "pc_keeper.ps1")
-UNDO_BAT = os.path.join(ROOT, "UNDO_PC_TUNE.bat")
+UNDO_BAT = os.path.join(ROOT, "tools/bat/UNDO_PC_TUNE.bat")
 ADMIN_EXPR = ("([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole("
               "[Security.Principal.WindowsBuiltInRole]::Administrator)")
 RES: list[bool] = []
@@ -67,8 +67,8 @@ def ps_list(code: str, var: str) -> list[str]:
 # ============================================================================================== static
 def static():
     bat = open(BAT, "rb").read()
-    check("CLEAN_PC.bat: CRLF line endings", b"\n" not in bat.replace(b"\r\n", b"") and bat.endswith(b"\r\n"))
-    check("CLEAN_PC.bat: runs scripts\\clean_pc.ps1 and pauses on the same line",
+    check("tools/bat/CLEAN_PC.bat: CRLF line endings", b"\n" not in bat.replace(b"\r\n", b"") and bat.endswith(b"\r\n"))
+    check("tools/bat/CLEAN_PC.bat: runs scripts\\clean_pc.ps1 and pauses on the same line",
           re.search(rb"powershell .*scripts\\clean_pc\.ps1\".*& pause", bat) is not None)
     raw = open(PS1, "rb").read()
     try:
@@ -95,9 +95,9 @@ def static():
     check("clean_pc.ps1: -Undo switch hands over to pc_tune.ps1 -Undo", re.search(r"\[switch\]\$Undo", code)
           and re.search(r"& \$tune -Undo", code))
     ub = open(UNDO_BAT, "rb").read()
-    check("UNDO_PC_TUNE.bat: CRLF line endings, ASCII", b"\n" not in ub.replace(b"\r\n", b"") and ub.endswith(b"\r\n")
+    check("tools/bat/UNDO_PC_TUNE.bat: CRLF line endings, ASCII", b"\n" not in ub.replace(b"\r\n", b"") and ub.endswith(b"\r\n")
           and all(c < 128 for c in ub))
-    check("UNDO_PC_TUNE.bat: runs scripts\\clean_pc.ps1 -Undo (Obsidian back on + the tune's undo), pauses on the same line",
+    check("tools/bat/UNDO_PC_TUNE.bat: runs scripts\\clean_pc.ps1 -Undo (Obsidian back on + the tune's undo), pauses on the same line",
           re.search(rb"powershell .*-ExecutionPolicy Bypass .*scripts\\clean_pc\.ps1\" -Undo & echo\. & pause", ub) is not None
           and b"/dev/" not in ub)
     for f in (TUNE, KEEPER):
@@ -165,8 +165,8 @@ class Box:
         self.root = os.path.join(self.dir, "LiquidityEngine" if bot else "PC_KIT")
         os.makedirs(os.path.join(self.root, "scripts"))
         shutil.copy(PS1, os.path.join(self.root, "scripts", "clean_pc.ps1"))
-        shutil.copy(BAT, os.path.join(self.root, "CLEAN_PC.bat"))
-        shutil.copy(UNDO_BAT, os.path.join(self.root, "UNDO_PC_TUNE.bat"))
+        shutil.copy(BAT, os.path.join(self.root, "tools/bat/CLEAN_PC.bat"))
+        shutil.copy(UNDO_BAT, os.path.join(self.root, "tools/bat/UNDO_PC_TUNE.bat"))
         shutil.copy(KEEPER, os.path.join(self.root, "scripts", "pc_keeper.ps1"))
         # the Administrator test is a static .NET call no stub can replace: it reads LE_T_ELEVATED here
         src = open(TUNE, encoding="utf-8").read().replace(ADMIN_EXPR, "($env:LE_T_ELEVATED -eq '1')")
@@ -263,10 +263,10 @@ def runs(pwsh: str, strict: bool):
         out, err = bot.run(pwsh, [], sat, strict)
         check(f"bot PC real run (stubbed): exit 0, no PowerShell error{tag}", "EXIT=0" in out and not err.strip(), err[-1200:] or out[-600:])
         kitd = os.path.join(bot.dir, "OneDrive", "PC_KIT")
-        check(f"bot PC real run: PC_KIT in OneDrive (CLEAN_PC.bat + scripts/clean_pc.ps1){tag}",
-              os.path.exists(os.path.join(kitd, "CLEAN_PC.bat")) and os.path.exists(os.path.join(kitd, "scripts", "clean_pc.ps1")), out[-800:])
-        check(f"bot PC real run: PC_KIT also has the deep tune (pc_tune.ps1, pc_keeper.ps1, UNDO_PC_TUNE.bat){tag}",
-              all(os.path.exists(os.path.join(kitd, *x)) for x in (("scripts", "pc_tune.ps1"), ("scripts", "pc_keeper.ps1"), ("UNDO_PC_TUNE.bat",))))
+        check(f"bot PC real run: PC_KIT in OneDrive (tools/bat/CLEAN_PC.bat + scripts/clean_pc.ps1){tag}",
+              os.path.exists(os.path.join(kitd, "tools/bat/CLEAN_PC.bat")) and os.path.exists(os.path.join(kitd, "scripts", "clean_pc.ps1")), out[-800:])
+        check(f"bot PC real run: PC_KIT also has the deep tune (pc_tune.ps1, pc_keeper.ps1, tools/bat/UNDO_PC_TUNE.bat){tag}",
+              all(os.path.exists(os.path.join(kitd, *x)) for x in (("scripts", "pc_tune.ps1"), ("scripts", "pc_keeper.ps1"), ("tools/bat/UNDO_PC_TUNE.bat",))))
         bk = [n for n in os.listdir(os.path.join(bot.root, "logs")) if n.startswith("nt_workspaces")]
         check(f"bot PC real run: workspaces backed up{tag}", bk and os.path.exists(os.path.join(bot.root, "logs", bk[0], "Main.xml")))
         check(f"bot PC real run: NinjaTrader's workspace unchanged{tag}", open(ws).read() == WORKSPACE)

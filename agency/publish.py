@@ -120,7 +120,7 @@ def main(argv=None):
     args = ap.parse_args(argv)
     if args.fixture:
         cfg = CFG.load(CFG.EXAMPLE)
-        d = crm_data(fixture_doc(), cfg, ["x1", "x3"], demo=True, note="EXAMPLE leads, not real: invented businesses in an invented town. Run the website machine (RUN_AGENCY.bat) for your own city.")
+        d = crm_data(fixture_doc(), cfg, ["x1", "x3"], demo=True, note="EXAMPLE leads, not real: invented businesses in an invented town. Run the website machine (tools/bat/RUN_AGENCY.bat) for your own city.")
         p = write(d, args.out, "fixture.json", card=False)
         print(f"Agency DEMO fixture: {p}")
         return 0

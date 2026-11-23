@@ -1,9 +1,9 @@
-"""PC_CARE.bat + scripts/pc_care.ps1 (owner 2026-11-04: both PCs looked after from one icon; the Surface overheats, has a dark screen and
+"""tools/bat/PC_CARE.bat + scripts/pc_care.ps1 (owner 2026-11-04: both PCs looked after from one icon; the Surface overheats, has a dark screen and
 little memory; the main PC runs the bot and NinjaTrader 8 around the clock).
 
 1. Static, always: the .bat (CRLF, ASCII, local script first, site download when it is alone), the site copies in tools/web_public/pc/
    identical to the repo files, the script is ASCII, switches, no PowerShell-7 syntax, nothing is closed / downloaded / deleted, no
-   machine-wide (HKLM) write, UNDO_PC_TUNE.bat undoes it, the bot-health `pc_care` line (engine/pc_health + the phone summary).
+   machine-wide (HKLM) write, tools/bat/UNDO_PC_TUNE.bat undoes it, the bot-health `pc_care` line (engine/pc_health + the phone summary).
 2. With pwsh (PowerShell 7 on Linux; LE_PWSH=<path> or pwsh on PATH, else skipped): a token-level 5.1 lint, then the real script runs
    against a FAKE WINDOWS (tests/win_harness/pc_care_stubs.ps1 on top of pc_tune_world.ps1: registry, services, power plans with AC and
    DC values, scheduled tasks, CIM health facts, a UAC that really runs the elevated child). The changes really land in a JSON world, so:
@@ -38,8 +38,8 @@ import time
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HARN = os.path.join(ROOT, "tests", "win_harness")
 PS1 = os.path.join(ROOT, "scripts", "pc_care.ps1")
-BAT = os.path.join(ROOT, "PC_CARE.bat")
-UNDO_BAT = os.path.join(ROOT, "UNDO_PC_TUNE.bat")
+BAT = os.path.join(ROOT, "tools/bat/PC_CARE.bat")
+UNDO_BAT = os.path.join(ROOT, "tools/bat/UNDO_PC_TUNE.bat")
 WEB = os.path.join(ROOT, "tools", "web_public", "pc")
 STUBS = os.path.join(HARN, "pc_care_stubs.ps1")
 RES: list[bool] = []
@@ -69,16 +69,16 @@ def rb(path):
 # ============================================================================================== static
 def static():
     bat = rb(BAT)
-    check("PC_CARE.bat: CRLF line endings, ASCII", b"\n" not in bat.replace(b"\r\n", b"") and bat.endswith(b"\r\n") and all(c < 128 for c in bat))
-    check("PC_CARE.bat: runs scripts\\pc_care.ps1 first and pauses on the same line",
-          re.search(rb'if exist "%~dp0scripts\\pc_care\.ps1" goto :local', bat)
-          and re.search(rb'-ExecutionPolicy Bypass -File "%~dp0scripts\\pc_care\.ps1" %\* & echo\. & pause & exit /b', bat) is not None)
-    check("PC_CARE.bat: alone (downloaded from the site) it fetches pc/pc_care.ps1 with -UseBasicParsing and runs it",
+    check("tools/bat/PC_CARE.bat: CRLF line endings, ASCII", b"\n" not in bat.replace(b"\r\n", b"") and bat.endswith(b"\r\n") and all(c < 128 for c in bat))
+    check("tools/bat/PC_CARE.bat: runs scripts\\pc_care.ps1 first and pauses on the same line",
+          re.search(rb'if exist "%LE_HOME%scripts\\pc_care\.ps1" goto :local', bat)
+          and re.search(rb'-ExecutionPolicy Bypass -File "%LE_HOME%scripts\\pc_care\.ps1" %\* & echo\. & pause & exit /b', bat) is not None)
+    check("tools/bat/PC_CARE.bat: alone (downloaded from the site) it fetches pc/pc_care.ps1 with -UseBasicParsing and runs it",
           b"https://dcondax1-wq.github.io/pc/pc_care.ps1" in bat and b"-UseBasicParsing" in bat and bat.count(b"-ExecutionPolicy Bypass") == 3)
-    check("site copy tools/web_public/pc/PC_CARE.bat is the same file as PC_CARE.bat", os.path.exists(os.path.join(WEB, "PC_CARE.bat")) and rb(os.path.join(WEB, "PC_CARE.bat")) == bat)
+    check("site copy tools/web_public/pc/PC_CARE.bat is the same file as tools/bat/PC_CARE.bat", os.path.exists(os.path.join(WEB, "PC_CARE.bat")) and rb(os.path.join(WEB, "PC_CARE.bat")) == bat)
     check("site copy tools/web_public/pc/pc_care.ps1 is the same file as scripts/pc_care.ps1", os.path.exists(os.path.join(WEB, "pc_care.ps1")) and rb(os.path.join(WEB, "pc_care.ps1")) == rb(PS1))
     page = open(os.path.join(WEB, "index.html"), encoding="utf-8").read()
-    check("the pc/ page has the PC_CARE download button next to the storage one (href PC_CARE.bat, download), with a plain explanation",
+    check("the pc/ page has the PC_CARE download button next to the storage one (href tools/bat/PC_CARE.bat, download), with a plain explanation",
           'href="PC_CARE.bat" download' in page and 'href="CLEAN_STORAGE.bat" download' in page and 'id="care"' in page and "UNDO_PC_TUNE.bat" in page)
     raw = rb(PS1)
     try:
@@ -107,7 +107,7 @@ def static():
         check(f"startup apps: '{must}' is on the never-offer list", must in keep, keep[:200])
     check("startup apps are switched with the Task Manager switch (StartupApproved\\Run), the Run entry itself is never deleted", "StartupApproved\\Run" in body and not re.search(r"Remove-ItemProperty[^\n]*Run\b", body))
     ub = rb(UNDO_BAT)
-    check("UNDO_PC_TUNE.bat: undoes PC Care first (scripts\\pc_care.ps1 -Undo, else the copy in %LOCALAPPDATA%\\LiquidityEngine), then the deep tune; CRLF, ASCII",
+    check("tools/bat/UNDO_PC_TUNE.bat: undoes PC Care first (scripts\\pc_care.ps1 -Undo, else the copy in %LOCALAPPDATA%\\LiquidityEngine), then the deep tune; CRLF, ASCII",
           b"\n" not in ub.replace(b"\r\n", b"") and all(c < 128 for c in ub) and ub.index(b"pc_care.ps1") < ub.index(b"clean_pc.ps1")
           and b'scripts\\pc_care.ps1" -Undo & goto :tune' in ub and b"%LOCALAPPDATA%\\LiquidityEngine\\pc_care.ps1" in ub and b"\r\n:tune\r\n" in ub
           and re.search(rb"powershell .*-ExecutionPolicy Bypass .*scripts\\clean_pc\.ps1\" -Undo & echo\. & pause", ub) is not None)
@@ -127,7 +127,7 @@ def health():
     ls = H.lines({"pc_care": {"level": "bad", "text": "x", "age_days": 1.0}})
     check("health: even a 'bad' PC Care result is only amber", lv(ls, "pc_care") == "amber")
     ls = H.lines({"pc_care": {"level": "ok", "text": "BOT PC HEALTHY: YES", "age_days": 60.0}})
-    check("health: older than 45 days = amber with 'run PC_CARE.bat'", lv(ls, "pc_care") == "amber" and "run PC_CARE.bat" in tx(ls, "pc_care"), ls)
+    check("health: older than 45 days = amber with 'run tools/bat/PC_CARE.bat'", lv(ls, "pc_care") == "amber" and "run tools/bat/PC_CARE.bat" in tx(ls, "pc_care"), ls)
     check("health: no pc_care facts = no line (the old block is unchanged)", lv(H.lines({"disk_free_gb": 40}), "pc_care") is None and H.lines({}) == [])
     b = {"t": 1, "level": "red", "lines": [{"key": "disk", "label": "Disk space", "level": "red", "text": "1.2 GB free"}, {"key": "pc_care", "label": "PC care", "level": "amber", "text": "x"}]}
     n = H.red_notices(b, b, {}, time.time()) if os.environ.get("LE_PC_HEALTH_PUSH") != "0" else [1]
@@ -321,7 +321,7 @@ def runs(pwsh, strict: bool):
         cj = b.care_json()
         check(f"main PC: logs\\pc_care.json written: role main, a text, t, level (NinjaTrader not running in market hours -> warn){tag}", cj and cj["role"] == "main" and cj["v"] == 1 and cj["text"].startswith("BOT PC HEALTHY")
               and cj["level"] in ("ok", "warn") and abs(cj["t"] - time.time()) < 600 and cj["ran"] == "care", cj)
-        check(f"main PC: undo files exist (account + Windows part), and a copy of the script sits next to the account undo file for UNDO_PC_TUNE.bat{tag}",
+        check(f"main PC: undo files exist (account + Windows part), and a copy of the script sits next to the account undo file for tools/bat/UNDO_PC_TUNE.bat{tag}",
               len(b.state_files()) == 2 and os.path.exists(os.path.join(b.dir, "LocalAppData", "LiquidityEngine", "pc_care.ps1")), b.state_files())
         # the same run again: nothing new, the first before-values are kept; undo = EXACTLY the old world
         out2, err2 = b.run(pwsh, [], strict=strict, et="2026-11-02 10:00", port=sock.getsockname()[1])
@@ -503,18 +503,18 @@ def runs(pwsh, strict: bool):
         b.cleanup()
 
 
-# ============================================================================================== STATUS.bat + the one-sentence failure rule (job 2026-11-04)
+# ============================================================================================== tools/bat/STATUS.bat + the one-sentence failure rule (job 2026-11-04)
 STATUS_PS1 = os.path.join(ROOT, "scripts", "pc_status.ps1")
-STATUS_BAT = os.path.join(ROOT, "STATUS.bat")
+STATUS_BAT = os.path.join(ROOT, "tools/bat/STATUS.bat")
 TRAP_SENTENCE = "Something unexpected stopped this: take a photo of this window and send it to Claude"
 TRACE_RX = re.compile(r"CategoryInfo|FullyQualifiedErrorId|ScriptStackTrace|StackTrace|\bAt line:|\bAt /|PositionMessage")
 
 
 def status_static():
     bat = rb(STATUS_BAT)
-    check("STATUS.bat: CRLF, ASCII, local scripts\\pc_status.ps1 first (pauses on the same line), alone it fetches pc/pc_status.ps1",
-          b"\n" not in bat.replace(b"\r\n", b"") and all(c < 128 for c in bat) and re.search(rb'if exist "%~dp0scripts\\pc_status\.ps1" goto :local', bat)
-          and re.search(rb'-File "%~dp0scripts\\pc_status\.ps1" %\* & echo\. & pause & exit /b', bat) and b"nq-dashboard/pc/pc_status.ps1" in bat and b"-UseBasicParsing" in bat)
+    check("tools/bat/STATUS.bat: CRLF, ASCII, local scripts\\pc_status.ps1 first (pauses on the same line), alone it fetches pc/pc_status.ps1",
+          b"\n" not in bat.replace(b"\r\n", b"") and all(c < 128 for c in bat) and re.search(rb'if exist "%LE_HOME%scripts\\pc_status\.ps1" goto :local', bat)
+          and re.search(rb'-File "%LE_HOME%scripts\\pc_status\.ps1" %\* & echo\. & pause & exit /b', bat) and b"nq-dashboard/pc/pc_status.ps1" in bat and b"-UseBasicParsing" in bat)
     check("STATUS: the site copies (pc/STATUS.bat, pc/pc_status.ps1) are identical to the repo files", rb(os.path.join(WEB, "STATUS.bat")) == bat and rb(os.path.join(WEB, "pc_status.ps1")) == rb(STATUS_PS1))
     src = rb(STATUS_PS1).decode("ascii", "replace")
     code = re.sub(r"(?s)<#.*?#>", "", src)
@@ -568,9 +568,9 @@ def status_runs(pwsh):
               "running, armed on SIM (Sim101), heartbeat 1 min ago" in r.stdout and "last 1-minute bar 1 min old" in r.stdout or ("last 1-minute bar 80 s old" in r.stdout and "plan: PC Care" in r.stdout), r.stdout)
         r = run(STATUS_PS1, dict(good, LE_T_FREE_GB="6", LE_T_RAM="0.4,8", LE_T_NT="0", LE_T_PLAN="Balanced", LE_STATUS_HOME_FILE=home(running=False, bar=700)))
         k = kinds(r.stdout)
-        check("STATUS with everything wrong: DISK, RAM, BOT, NINJA, BARS red [FIX], POWER [SKIP]; ONE 'NEXT:' sentence, the first red one (the disk: CLEAN_STORAGE.bat)",
+        check("STATUS with everything wrong: DISK, RAM, BOT, NINJA, BARS red [FIX], POWER [SKIP]; ONE 'NEXT:' sentence, the first red one (the disk: tools/bat/CLEAN_STORAGE.bat)",
               [k.get(x) for x in ("DISK", "RAM", "BOT", "NINJA", "BARS", "POWER")] == ["FIX"] * 5 + ["SKIP"] and r.stdout.count("NEXT:") == 1
-              and "CLEAN_STORAGE.bat" in r.stdout.split("NEXT:")[1] and r.returncode == 0, r.stdout)
+              and "tools/bat/CLEAN_STORAGE.bat" in r.stdout.split("NEXT:")[1] and r.returncode == 0, r.stdout)
         r = run(STATUS_PS1, dict(good, LE_T_NT="0", LE_STATUS_HOME_FILE=home(age=3000)))
         check("STATUS: no heartbeat for 50 minutes in market hours is [FIX] with what to check; the bars are 'unknown', not guessed",
               re.search(r"\[FIX\] BOT\s+no heartbeat for 50 min", r.stdout) and re.search(r"\[\.\.\] BARS\s+unknown", r.stdout) and "bot PC (MAINPC)" in r.stdout, r.stdout)

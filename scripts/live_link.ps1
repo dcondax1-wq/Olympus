@@ -1,5 +1,5 @@
 <#
-LIVE LINK (double-click LIVE_LINK.bat). Owner 2026-11-12: "I want everything connected. I want an actual dashboard." The real,
+LIVE LINK (double-click tools\bat\LIVE_LINK.bat). Owner 2026-11-12: "I want everything connected. I want an actual dashboard." The real,
 always-current dashboard on the iPhone, free: the PC's own bot server (http://127.0.0.1:8766) reached privately through
 Tailscale (free personal plan). docs\LIVE_DASHBOARD.md.
 
@@ -16,7 +16,7 @@ Tailscale (free personal plan). docs\LIVE_DASHBOARD.md.
   then the link to open on the iPhone (also on the clipboard and in %USERPROFILE%\.olympus\live_link.json)
 
   -KalshiUrl https://...   also show the Kalshi bot's feed from that address (publish.json "kalshi_feed_url", outside the repo)
-  -DryRun    say what it would do, change nothing          -Remove   undo 3 and 5 (UNDO_LIVE_LINK.bat); Tailscale stays installed
+  -DryRun    say what it would do, change nothing          -Remove   undo 3 and 5 (tools\bat\UNDO_LIVE_LINK.bat); Tailscale stays installed
 It never starts, stops, arms or routes a bot, never places an order, never touches live_model*.json, engine\ or NinjaTrader.
 Tests: tests\test_live_link.py (pwsh with a fake tailscale; LE_LL_T_LOG / LE_LL_T_PING / LE_LL_T_TASKS stand in for Windows-only steps).
 #>
@@ -202,7 +202,7 @@ if ($Remove) {
 Write-Host '  1/5 Tailscale app'
 if (-not $script:Ts) {
     Line 'FIX' 'Tailscale is not installed. Its download page opens now: install it (free), sign in,'
-    Line 'FIX' 'then double-click LIVE_LINK.bat again. Nothing else was changed.'
+    Line 'FIX' 'then double-click tools\bat\LIVE_LINK.bat again. Nothing else was changed.'
     Open-Url $DownloadUrl
     exit 1
 }
@@ -239,7 +239,7 @@ if ($state -ne 'Running') {
     }
     if ($proc) { try { if (-not $proc.HasExited) { $proc.Kill() } } catch { } }
     if ($state -ne 'Running') {
-        Line 'FIX' 'Tailscale is not signed in yet. Open Tailscale from the Start menu, sign in, then double-click LIVE_LINK.bat again.'
+        Line 'FIX' 'Tailscale is not signed in yet. Open Tailscale from the Start menu, sign in, then double-click tools\bat\LIVE_LINK.bat again.'
         exit 1
     }
 }
@@ -247,7 +247,7 @@ $dns = Dns-Of $st
 $who = [string](P (P (P $st 'User') ([string](P (P $st 'Self') 'UserID'))) 'LoginName')
 if ($who) { Line 'OK' "signed in as $who and connected" } else { Line 'OK' 'signed in and connected' }
 if (-not $dns) {
-    Line 'FIX' 'MagicDNS is off in your tailnet. Its page opens: turn MagicDNS on, then double-click LIVE_LINK.bat again.'
+    Line 'FIX' 'MagicDNS is off in your tailnet. Its page opens: turn MagicDNS on, then double-click tools\bat\LIVE_LINK.bat again.'
     Open-Url $DnsAdmin
     exit 1
 }
@@ -272,7 +272,7 @@ if ($px -and (Our-Proxy $px) -and -not $fun) {
     $sc = TS-Json @('serve', 'status', '--json')
     $px = Serve-Proxy $sc $dns
     if (-not ($px -and (Our-Proxy $px))) {
-        Line 'FIX' 'The private link did not switch on. If a page opened, click Enable HTTPS there, then double-click LIVE_LINK.bat again.'
+        Line 'FIX' 'The private link did not switch on. If a page opened, click Enable HTTPS there, then double-click tools\bat\LIVE_LINK.bat again.'
         exit 1
     }
     if (Funnel-On $sc $dns) {
@@ -291,17 +291,17 @@ if ($others.Count) { Line 'SKIP' ("Funnel is on for {0} (not this link; the bot 
 Write-Host '  4/5 bot server'
 $ping = Get-Url "$Target/api/health/ping"
 if ($ping[0] -ne 200) {
-    Line 'SKIP' "the bot server does not answer at $Target right now. BOTS_BACK.bat starts it; the link works as soon as it runs."
+    Line 'SKIP' "the bot server does not answer at $Target right now. tools\bat\BOTS_BACK.bat starts it; the link works as soon as it runs."
 } else {
     $ss = Get-Url "$Target/api/site/status"
     if ($ss[0] -eq 200) { Line 'OK' 'answers and serves the phone site (read only over the link)' }
-    else { Line 'SKIP' 'answers, but runs older code without the phone site: restart it once when flat (STOP_BOT.bat, then BOTS_BACK.bat)' }
+    else { Line 'SKIP' 'answers, but runs older code without the phone site: restart it once when flat (STOP_BOT.bat, then tools\bat\BOTS_BACK.bat)' }
 }
 
 # ------------------------------------------------------------------------------------------------ 5 a fresh site
 Write-Host '  5/5 fresh site every 15 minutes'
 if (Task-Exists $PublishTask) {
-    Line 'OK' "rebuilt by $PublishTask (PUBLISH_NQ.bat) every 15 minutes"
+    Line 'OK' "rebuilt by $PublishTask (tools\bat\PUBLISH_NQ.bat) every 15 minutes"
 } else {
     $py = Find-Python
     if (-not $py -or -not (Test-Path -LiteralPath $py)) {
@@ -360,13 +360,13 @@ if ($KalshiUrl) {
     if (-not $kf -and (Test-Path -LiteralPath (J2 (J2 $Home1 'kalshi_feed') 'kalshi.json'))) { $kf = 'kalshi_feed\kalshi.json' }
     if ($kf) { Line 'OK' "Kalshi: shown from $kf" }
     elseif ($ku) { Line 'OK' "Kalshi: shown from $ku" }
-    else { Line 'SKIP' 'Kalshi: not shown until the VM publishes its feed (then: LIVE_LINK.bat -KalshiUrl <its https address>)' }
+    else { Line 'SKIP' 'Kalshi: not shown until the VM publishes its feed (then: tools\bat\LIVE_LINK.bat -KalshiUrl <its https address>)' }
 }
 
 # ------------------------------------------------------------------------------------------------ the link
 $url = "https://$dns/"
 try {
-    $rec = New-Object PSObject -Property @{ url = $url; port = $Port; t = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds(); made_by = 'LIVE_LINK.bat' }
+    $rec = New-Object PSObject -Property @{ url = $url; port = $Port; t = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds(); made_by = 'tools\bat\LIVE_LINK.bat' }
     Write-Utf8 $LinkFile ($rec | ConvertTo-Json)
 } catch { }
 if (-not (TLog "CLIP $url")) { try { Set-Clipboard -Value $url } catch { } }
@@ -377,5 +377,5 @@ Write-Host "      $url" -ForegroundColor Green
 Write-Host ''
 Write-Host '  On the iPhone: Tailscale app on and signed in (same account), open that address in Safari,'
 Write-Host '  then Share > Add to Home Screen. It is on this PC''s clipboard too. Read only: nothing there can trade.'
-Write-Host '  Undo: UNDO_LIVE_LINK.bat'
+Write-Host '  Undo: tools\bat\UNDO_LIVE_LINK.bat'
 exit 0

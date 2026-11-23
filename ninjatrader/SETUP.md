@@ -6,7 +6,7 @@ The `LE_Feed` add-on feeds the bot with **no chart and no workspace**: it starts
 files as the chart, and re-subscribes by itself when the bars go stale (the overnight "Connection lost to the Historical
 Data Server" problem). After this, your routine is only: turn the PC on.
 
-1. Double-click **NO_CHART_MODE.bat** in the bot folder (it copies `LE_Feed.cs` into `Documents\NinjaTrader 8\bin\Custom\AddOns\`),
+1. Double-click **tools/bat/NO_CHART_MODE.bat** in the bot folder (it copies `LE_Feed.cs` into `Documents\NinjaTrader 8\bin\Custom\AddOns\`),
    then in NinjaTrader: Control Center > New > NinjaScript Editor > press **F5** (the bottom must say it compiled).
 2. Control Center > Connections > Configure > your MFFU connection > tick **Connect on startup** > OK.
 3. Close the MNQ chart (or keep it: it then writes nothing, so there are never two writers).

@@ -4,7 +4,7 @@ window). Small and quick: NinjaTrader (and on the bot PC the bot's python) get A
 first; heavy background apps get BelowNormal; when memory is 85%+ used it asks Windows to trim the memory of idle
 background apps (their pages move to the standby list and come back if the app needs them). It never closes anything,
 never touches NinjaTrader's or the bot's memory, never uses High or Realtime priority. Log: pc_keeper.log next to it
-(the last 300 lines). Removed by UNDO_PC_TUNE.bat.
+(the last 300 lines). Removed by tools\bat\UNDO_PC_TUNE.bat.
 
   powershell -NoProfile -ExecutionPolicy Bypass -File pc_keeper.ps1 [-Bot] [-DryRun]
 #>

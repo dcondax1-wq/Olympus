@@ -104,7 +104,7 @@ App `mercury` (`tools/web_public/mercury/`, reads `../money/mercury.json`, falls
 
 # Wiring MINT, the money machine hub (2026-11-10)
 
-App `mint` in `tools/web_public/mint/` (reads `../money/index.json`, falls back to `fixture.json`). Engine `tools/money_engine.py` (writes `money_out/<id>.json` + `index.json`), runner `RUN_MONEY.bat`, workflow `.github/workflows/money-engine.yml` (schedule / dispatch only, artifact `money-out`). Tests `tests/test_mint_page.py`, `tests/test_money_engine.py`. Not touched: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`.
+App `mint` in `tools/web_public/mint/` (reads `../money/index.json`, falls back to `fixture.json`). Engine `tools/money_engine.py` (writes `money_out/<id>.json` + `index.json`), runner `tools/bat/RUN_MONEY.bat`, workflow `.github/workflows/money-engine.yml` (schedule / dispatch only, artifact `money-out`). Tests `tests/test_mint_page.py`, `tests/test_money_engine.py`. Not touched: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`.
 
 1. `jarvis/apps.js` BUILT_INS: `app('mint', 'Mint', 'money', '#c8a24a', 'The money machine: five streams, one honest estimate', { glyph: 'M' }),`
 2. `olympus/olympus.js` APPS: `mint: ['Mint', 'M', '#c8a24a'],` AMBIENT: `mint: 'coins',`
@@ -529,7 +529,7 @@ The row is already in `tools/new_apps.json` (group trading, accent `#c8a24a`, gl
 - New root file `tools/web_public/zenith_nq.js` (the build copies every root file; `sw.js` precaches only SHELL, so nothing to add there).
 
 ## PC update kit (no wiring in the site)
-- New owner files: `UPDATE_FROM_ZIP.bat`, `UNDO_UPDATE.bat`, `tools/update_from_zip.py`. Add both `.bat` names to `BATS` in `tests/test_win_scripts.py` (the agent did not edit that shared test; `tests/test_update_from_zip.py` lints them with the same `lint_bat`) and, if wanted, to `scripts/make_shortcuts.ps1`.
+- New owner files: `UPDATE_FROM_ZIP.bat`, `tools/bat/UNDO_UPDATE.bat`, `tools/update_from_zip.py`. Add both `.bat` names to `BATS` in `tests/test_win_scripts.py` (the agent did not edit that shared test; `tests/test_update_from_zip.py` lints them with the same `lint_bat`) and, if wanted, to `scripts/make_shortcuts.ps1`.
 - `docs/CLAUDE_REFERENCE.md` "Infrastructure" and "PC tools" should get one line each (update from zip; `UPDATE.bat` / `engine.autoupdate` need GitHub and no longer work).
 
 ## The six rows (what `wire_new_apps.py --apply` writes for NQ)
@@ -684,7 +684,7 @@ No new app. Wiring the lead does:
 # Wiring AGENCY, the website machine's CRM (team B1, 2026-11-14)
 
 App `agency` in `tools/web_public/agency/` (index.html, agency.css, agency.js, agencycore.js, leads.json, fixture.json, jarvis.json, manifest, icon.svg). It reads only
-its own `./my_leads.json` (the owner's batch, written on his PC by `RUN_AGENCY.bat`, gitignored) or the committed `./leads.json` (the Fort Collins, CO demo batch, marked "sample city") and falls back to
+its own `./my_leads.json` (the owner's batch, written on his PC by `tools/bat/RUN_AGENCY.bat`, gitignored) or the committed `./leads.json` (the Fort Collins, CO demo batch, marked "sample city") and falls back to
 `fixture.json` (DEMO, invented businesses). The owner's stages / notes / prices stay in `localStorage['agency.crm.v1']`. Test `python -X utf8 -m tests.test_agency`
 (`--fast` = no browser). The machine itself is `agency/` (docs/AGENCY.md). Not touched: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, the `olympus.js` APPS table,
 `intro-app.js`, `transitions.js`, `olympus/gate-catalog.js`. The entry is in `tools/new_apps.json`, so steps 1-4 and 6 are `python tools/wire_new_apps.py --dry-run` / `--apply`.

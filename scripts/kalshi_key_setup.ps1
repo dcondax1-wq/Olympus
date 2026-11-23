@@ -1,12 +1,12 @@
 <#
-KALSHI KEY SETUP (double-click KALSHI_KEY_SETUP.bat). Saves the owner's Kalshi API key OUTSIDE the bot folder, once:
+KALSHI KEY SETUP (double-click tools\bat\KALSHI_KEY_SETUP.bat). Saves the owner's Kalshi API key OUTSIDE the bot folder, once:
   1. finds the key file Kalshi just downloaded (Downloads / Desktop / OneDrive / iCloud Drive, so a key made on the iPhone and saved
      to iCloud Drive works too: the newest small .txt / .pem / .key that holds a private key), MOVES it to %USERPROFILE%\.olympus\kalshi\kalshi_key.pem (OLYMPUS_HOME\kalshi when set) and locks that folder
      to this Windows user (icacls); the downloaded copy is gone after the move
   2. asks for the Key ID Kalshi shows next to the key (pasted, hidden as you paste) and saves it in the same folder (key_id.txt)
   3. one signed READ (the balance) with python -m engine.kalshi_live --check-key: [OK] or one [FIX] line
 It never shows the key, never puts it on a command line, never writes it inside the bot folder, never arms anything and never
-places an order. Going live is a separate step: KALSHI_LIVE.bat, where YOU type the phrase. Safe to run again (Enter keeps
+places an order. Going live is a separate step: tools\bat\KALSHI_LIVE.bat, where YOU type the phrase. Safe to run again (Enter keeps
 the saved Key ID; no new download keeps the saved key).
   -DryRun   says what it would do, changes nothing.
 Tests: tests\test_kalshi_live.py part h (static: the key is never printed, never on a command line, never in the repo).
@@ -52,7 +52,7 @@ if (-not $Python) {
     }
 }
 if (-not $Python -or -not (Test-Path -LiteralPath $Python)) {
-    Stop-WithFix 'Python not found: install Python 3.12 (tick "Add python.exe to PATH"), then double-click KALSHI_KEY_SETUP.bat again.'
+    Stop-WithFix 'Python not found: install Python 3.12 (tick "Add python.exe to PATH"), then double-click tools\bat\KALSHI_KEY_SETUP.bat again.'
 }
 if (-not (Test-Path -LiteralPath (Join-Path (Join-Path $Root 'engine') 'kalshi_live.py'))) {
     Stop-WithFix 'This bot folder has old code (engine\kalshi_live.py is missing): update it first (UPDATE.bat), then try again.'
@@ -82,7 +82,7 @@ $haveOld = Test-Path -LiteralPath $KeyFile
 $pick = $null
 if ($found.Count) { $pick = ($found | Sort-Object LastWriteTime | Select-Object -Last 1) }
 if (-not $pick -and -not $haveOld) {
-    Stop-WithFix 'No Kalshi key file found in Downloads or on the Desktop. On this PC open kalshi.com > your account > Profile Settings > API Keys > Create New API Key; it downloads a .txt file. Then double-click KALSHI_KEY_SETUP.bat again. Nothing was saved.'
+    Stop-WithFix 'No Kalshi key file found in Downloads or on the Desktop. On this PC open kalshi.com > your account > Profile Settings > API Keys > Create New API Key; it downloads a .txt file. Then double-click tools\bat\KALSHI_KEY_SETUP.bat again. Nothing was saved.'
 }
 if ($DryRun) {
     Write-Host 'DRY RUN - nothing changed. Would:'
@@ -95,13 +95,13 @@ if ($DryRun) {
 try {
     New-Item -ItemType Directory -Force -Path $KeyDir | Out-Null
 } catch {
-    Stop-WithFix "Windows would not make the folder ${KeyDir}: restart the PC, then double-click KALSHI_KEY_SETUP.bat again."
+    Stop-WithFix "Windows would not make the folder ${KeyDir}: restart the PC, then double-click tools\bat\KALSHI_KEY_SETUP.bat again."
 }
 if ($pick) {
     try {
         Move-Item -LiteralPath $pick.FullName -Destination $KeyFile -Force
     } catch {
-        Stop-WithFix 'Windows would not move the key file (is it open in another window?): close it, then double-click KALSHI_KEY_SETUP.bat again.'
+        Stop-WithFix 'Windows would not move the key file (is it open in another window?): close it, then double-click tools\bat\KALSHI_KEY_SETUP.bat again.'
     }
     Write-Host "  [OK] Key file $($pick.Name) moved out of Downloads into your private folder (it is not in the bot folder)."
     if ($found.Count -gt 1) { Write-Host "       ($($found.Count - 1) older key file(s) left where they were: delete them by hand.)" }
@@ -125,12 +125,12 @@ try { $kid = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr) } finally
 $kid = ([string]$kid).Trim()
 if (-not $kid -and $oldId) { $kid = $oldId }
 if ($kid -notmatch '^[0-9A-Za-z-]{16,80}$') {
-    Stop-WithFix 'That is not a Kalshi Key ID (letters, digits and dashes, shown next to the key on kalshi.com): copy it again, then double-click KALSHI_KEY_SETUP.bat again. The key file stays saved.'
+    Stop-WithFix 'That is not a Kalshi Key ID (letters, digits and dashes, shown next to the key on kalshi.com): copy it again, then double-click tools\bat\KALSHI_KEY_SETUP.bat again. The key file stays saved.'
 }
 try {
     [IO.File]::WriteAllText($IdFile, $kid)
 } catch {
-    Stop-WithFix 'Windows would not save the Key ID: restart the PC, then double-click KALSHI_KEY_SETUP.bat again.'
+    Stop-WithFix 'Windows would not save the Key ID: restart the PC, then double-click tools\bat\KALSHI_KEY_SETUP.bat again.'
 }
 $kid = $null
 Write-Host '  [OK] Saved in your private folder (never shown, never in the bot folder).'
@@ -142,9 +142,9 @@ $out = @(& $Python -X utf8 -m engine.kalshi_live --check-key 2>&1 | ForEach-Obje
 $rc = $LASTEXITCODE
 $out | Where-Object { $_ -match '\[(OK|FIX)\]' } | ForEach-Object { Write-Host "      $_" }
 if ($rc -ne 0) {
-    Stop-WithFix 'Kalshi did not accept the key (see the line above). Make a new key on kalshi.com (API Keys > Create New API Key), then double-click KALSHI_KEY_SETUP.bat again.'
+    Stop-WithFix 'Kalshi did not accept the key (see the line above). Make a new key on kalshi.com (API Keys > Create New API Key), then double-click tools\bat\KALSHI_KEY_SETUP.bat again.'
 }
 Write-Host ''
 Write-Host '  DONE. Kalshi stays OFF (paused) until you go live yourself:' -ForegroundColor Green
-Write-Host '  double-click KALSHI_LIVE.bat and type the phrase it shows. Stop any time: KALSHI_STOP.bat or the phone''s ZEUS Safety page.'
+Write-Host '  double-click tools\bat\KALSHI_LIVE.bat and type the phrase it shows. Stop any time: tools\bat\KALSHI_STOP.bat or the phone''s ZEUS Safety page.'
 exit 0

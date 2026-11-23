@@ -11,7 +11,7 @@ Market ticker = SERIES-YYMONDDHHMM-MM of the window's close, e.g. KXGOLD15M-26NO
 PAPER (always on, public data, no key): at every window's +20 s it records ticker, side, best ask, contracts, cost; after the
 settle the result and $ (fee in). Ledger data/kalshi_live/clock_paper.json. One phone push a day (the day summary).
 LIVE (OFF by default): the SAME code path, then one real order per leg, only when the owner armed it with the typed phrase
-(engine/kalshi_live.PHRASE, at the PC: KALSHI_LIVE.bat; on the phone: the private Tailscale page
+(engine/kalshi_live.PHRASE, at the PC: tools/bat/KALSHI_LIVE.bat; on the phone: the private Tailscale page
 https://<pc>.<tailnet>.ts.net:8444/kalshi-live/, engine/kalshi_web.py + engine/phone_link.py; :443 is the owner's old Jarvis app). The order: limit at the best ask, good till +40 s after the open (then Kalshi cancels the rest), never a
 market order. Checked in code before EVERY order (check_order): armed, kill switch, phone pause, the window's 10-35 s slot, ask
 <= the price cap (70c), contracts x price <= $15, at most 6 bets a day, one bet per market, today's worst case (settled $ - every
@@ -23,7 +23,7 @@ summary, any stop at once (about 5 a day, inside ntfy's budget).
 Clock: the PC's clock is checked against Kalshi's own (the HTTP Date header) every 30 min; entries and signatures use the
 corrected time. It never touches the futures bot, NinjaTrader or server.py's trading.
 
-  python -X utf8 -m engine.kalshi_live --clock-loop     the loop (the PC starts it: KALSHI_LIVE.bat, the phone page, maybe_run)
+  python -X utf8 -m engine.kalshi_live --clock-loop     the loop (the PC starts it: tools/bat/KALSHI_LIVE.bat, the phone page, maybe_run)
   python -X utf8 -m engine.kalshi_live --clock-report   the paper + live results per leg, in plain words
 Tests: python -X utf8 -m tests.test_kalshi_clock
 """
@@ -728,7 +728,7 @@ class ClockLoop:
         if live or not self.st.get("stop_pushed_for") == why:
             self.st["stop_pushed_for"] = why
             self.push("stop", f"Kalshi K8 STOPPED: {why}"[:110], "Live clock bets are OFF (paper keeps recording). Open bets settle by "
-                      "themselves within 15 minutes. To restart: the phone page (your PC link :8444/kalshi-live/) or KALSHI_LIVE.bat, type the phrase.",
+                      "themselves within 15 minutes. To restart: the phone page (your PC link :8444/kalshi-live/) or tools/bat/KALSHI_LIVE.bat, type the phrase.",
                       priority="high", tags="warning")
 
     def controls(self):

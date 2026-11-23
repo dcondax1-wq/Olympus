@@ -491,7 +491,7 @@ def test_node():
     t = o["today"]
     check("k. today(): ok, the day's sentence, the shift, the lunch break check", t["state"] == "ok" and t["text"] == "You work 9-5 today: the bot trades alone; check on your break 12:15."
           and t["work"] == [{"start": "09:00", "end": "17:00", "mins": 480}] and t["checkAt"] == "12:15", t)
-    check("k. no file (the public site): 'missing' and how to connect, nothing invented", o["missing"]["state"] == "missing" and "CONNECT_DAY.bat" in o["missing"]["text"] and not o["missing"]["work"])
+    check("k. no file (the public site): 'missing' and how to connect, nothing invented", o["missing"]["state"] == "missing" and "tools/bat/CONNECT_DAY.bat" in o["missing"]["text"] and not o["missing"]["work"])
     check("k. a file 40 h old is 'old' (the PC may be off); 2 h old says its age", o["old"] == "old" and o["late"]["state"] == "late" and "2 h ago" in o["late"]["note"], (o["old"], o["late"].get("note")))
     rw = o["rows"]
     check("k. copilot rows: 01:45 the sentence, 10:45 'at work until 5 pm; check at 12:15', 16:05 hours today + the week line, none without a file",

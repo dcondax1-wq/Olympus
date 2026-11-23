@@ -80,7 +80,7 @@ def test_page():
             p.wait_for_function("window.OIKOS_HOUSEHOLD && window.OIKOS_HOUSEHOLD.ready()", timeout=60000)
             c = p.evaluate(CARD)
             check("c. without the file (the public site): 'Not connected' and how to connect; Oikos still shows its DEMO; no console error",
-                  not c["hidden"] and c["state"] == "off" and c["pill"] == "Not connected" and "RUN_MONEY.bat" in c["lines"] and p.evaluate("() => !document.querySelector('#demo').hidden") and not errs, (c, errs[:2]))
+                  not c["hidden"] and c["state"] == "off" and c["pill"] == "Not connected" and "tools/bat/RUN_MONEY.bat" in c["lines"] and p.evaluate("() => !document.querySelector('#demo').hidden") and not errs, (c, errs[:2]))
             ctx.close()
             ctx, p, errs, seen, off = AK.page(br, origin)
             AK.open_app(p, origin, "oikos", f"?demo=1&today={T.TODAY}")

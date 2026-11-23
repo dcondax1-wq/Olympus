@@ -298,7 +298,7 @@ def test_server(tmp):
     write(os.path.join(root, "data", "autostart.json"), '{"mode": "live"}')
     check("e. should run and answers: nothing", SH.fix_server(ctx(root, now, ping=lambda: True)) == [])
     r = SH.fix_server(ctx(root, now, ping=lambda: False))
-    check("e. should run, no answer: needs you, step BOTS_BACK.bat, nothing started", statuses(r) == ["need"] and "BOTS_BACK" in r[0]["step"], r)
+    check("e. should run, no answer: needs you, step tools/bat/BOTS_BACK.bat, nothing started", statuses(r) == ["need"] and "BOTS_BACK" in r[0]["step"], r)
     seen = {"board": [], "push": []}
     a = SH.alert(ctx(root, now, apply=True), r[0], board=lambda *x: seen["board"].append(x) or True, push=lambda m: seen["push"].append(m) or True)
     check("e. its alert: one board event, no phone push (the report already pushes 'bot down')", a == {"board": True, "push": False}
@@ -419,7 +419,7 @@ def test_clean(tmp):
     its, cl = SH.fix_disk(ctx(root, TUE, nt=nt, temp=temp), {"clean_t": TUE - 7 * 3600}, disk_free=5.0)
     check("h. disk low (5 GB): the clean runs at once, even in trading hours", cl is not None)
     its, cl = SH.fix_disk(ctx(root, TUE, apply=True, nt=nt, temp=temp), {"clean_t": TUE - 7 * 3600}, disk_free=1.0)
-    check("h. still under 2 GB after it: needs you (CLEAN_STORAGE.bat)", any(i["status"] == "need" and "CLEAN_STORAGE" in i["step"] for i in its), its)
+    check("h. still under 2 GB after it: needs you (tools/bat/CLEAN_STORAGE.bat)", any(i["status"] == "need" and "CLEAN_STORAGE" in i["step"] for i in its), its)
     its, cl = SH.fix_disk(ctx(root, TUE, nt=nt, temp=temp), {"clean_t": TUE - 3600}, disk_free=1.0)
     check("h. under 2 GB, cleaned an hour ago: needs you, no second clean", cl is None and statuses(its) == ["need"], its)
     check("h. never(): data/, live_model*, .env, notes, connect-*, keep-* are off limits", all(SH.never(x) for x in (

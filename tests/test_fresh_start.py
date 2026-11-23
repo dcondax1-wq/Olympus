@@ -1,5 +1,5 @@
 """Fresh start on a new PC with no state pack (owner 2026-11-04): scripts/move_bot.ps1 -Fresh, the site launcher
-tools/web_public/pc/FRESH_START.ps1, FRESH_START.bat and `python -m engine.eval_life --anchor-from-site`.
+tools/web_public/pc/FRESH_START.ps1, tools/bat/FRESH_START.bat and `python -m engine.eval_life --anchor-from-site`.
 
     python -X utf8 -m tests.test_fresh_start
 
@@ -52,7 +52,7 @@ def static():
     check("move_bot.ps1: 6-minute rule and -Force override", "$BeatFreshS = 360" in ps and "if ($Force)" in ps)
     check("move_bot.ps1: reads the published heartbeat (live.pc.host / t)", "live.pc.t" in ps and "live.pc.host" in ps and "dcondax1-wq.github.io/home.json" in ps)
     check("move_bot.ps1: eval numbers step and NO_CHART_MODE, then ONE_TIME_SETUP",
-          ps.index("--anchor-from-site") < ps.index("no_chart_mode.ps1") < ps.index("ONE_TIME_SETUP.bat", ps.index("no_chart_mode.ps1")))
+          ps.index("--anchor-from-site") < ps.index("no_chart_mode.ps1") < ps.index("tools\\bat\\ONE_TIME_SETUP.bat", ps.index("no_chart_mode.ps1")))
     new = ps[ps.index("# ================================================================== new PC: set up"):]
     check("-NewPC text: LE_Feed no-chart mode, not the 5-minute LE_BarFeed chart", "NO_CHART_MODE" in new and "5-minute chart" not in new)
     fresh = ps[ps.index("if ($Fresh) {"):ps.index("# ================================================================== new PC: set up")]
@@ -70,8 +70,8 @@ def static():
         except UnicodeDecodeError:
             ok = raw.startswith(b"\xef\xbb\xbf")
         check(f"{f}: ASCII (or BOM)", ok)
-    bat = open(os.path.join(ROOT, "FRESH_START.bat"), "rb").read()
-    check("FRESH_START.bat: CRLF, runs the one line", b"\n" not in bat.replace(b"\r\n", b"") and b"irm https://dcondax1-wq.github.io/pc/FRESH_START.ps1 | iex" in bat)
+    bat = open(os.path.join(ROOT, "tools/bat/FRESH_START.bat"), "rb").read()
+    check("tools/bat/FRESH_START.bat: CRLF, runs the one line", b"\n" not in bat.replace(b"\r\n", b"") and b"irm https://dcondax1-wq.github.io/pc/FRESH_START.ps1 | iex" in bat)
     b = read("tools/build_web_dashboard.py")
     check("build: copies pc/ and move_bot.ps1 to the site", 'os.path.join(WEB, "pc")' in b and '"move_bot.ps1"' in b)
     sw = read("tools/web_public/sw.js")

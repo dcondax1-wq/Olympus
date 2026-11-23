@@ -167,7 +167,7 @@ def static():
           "'   The key: app.netlify.com > your picture > User settings > Applications > New access token > Generate > copy.'" in st1c
           and st1c.find("The key: app.netlify.com") < st1c.find("Ask-Secret"), st1c[:500])
     sched = [ln for ln in code if re.search(r"Register-ScheduledTask|New-ScheduledTask|schtasks", ln, re.I)]
-    check("1c: the publish task is the PUBLISH_NQ.bat one (scripts\\publish_nq.ps1 reused as is), never a second copy of it here",
+    check("1c: the publish task is the tools/bat/PUBLISH_NQ.bat one (scripts\\publish_nq.ps1 reused as is), never a second copy of it here",
           "$pubTask = JP $Root 'scripts\\publish_nq.ps1'" in st1c and "& $script:PsExe -NoProfile -ExecutionPolicy Bypass -File $pubTask -Python $py" in st1c and not sched, sched)
     check("1c: never a stop (no Done / exit in it); skipped when the key is saved and the task is there; each setup answer has its line (0 3 4 5 other)",
           "Done " not in st1c and not re.search(r"\bexit\b", st1c) and "(Netlify-Saved) -and (Task-Exists 'OlympusPublishNQ')" in st1c
@@ -197,8 +197,8 @@ def static():
     check("tests/run_area.py: setup_everything is in the pc area", "setup_everything" in run_area.AREAS["pc"], run_area.AREAS["pc"])
     upd = rb("tools/update_from_zip.py").decode("utf-8")
     from tools import update_from_zip as U
-    check("UPDATE_FROM_ZIP's final line points to SETUP_EVERYTHING.bat / GO_LIVE_EVAL.bat, no longer START_BOT.bat",
-          "SETUP_EVERYTHING.bat" in U.NEXT_WORDS and "GO_LIVE_EVAL.bat" in U.NEXT_WORDS and "START_BOT.bat when you are ready" not in upd, U.NEXT_WORDS)
+    check("UPDATE_FROM_ZIP's final line points to SETUP_EVERYTHING.bat / tools/bat/GO_LIVE_EVAL.bat, no longer START_BOT.bat",
+          "SETUP_EVERYTHING.bat" in U.NEXT_WORDS and "tools/bat/GO_LIVE_EVAL.bat" in U.NEXT_WORDS and "START_BOT.bat when you are ready" not in upd, U.NEXT_WORDS)
 
 
 # ============================================================================================== 2 update_from_zip --check
@@ -358,14 +358,14 @@ if (Test-Path -LiteralPath $mf) { $mode = (Get-Content -LiteralPath $mf -TotalCo
 if ($mode -eq 'failonce') { Set-Content -LiteralPath $mf -Value 'ok'; $mode = 'fail' }
 if ($mode -eq 'fail') {
     Write-Host '  [FIX] Tailscale is not installed. Its download page opens now: install it (free), sign in,' -ForegroundColor Red
-    Write-Host '  [FIX] then double-click LIVE_LINK.bat again. Nothing else was changed.' -ForegroundColor Red
+    Write-Host '  [FIX] then double-click tools/bat/LIVE_LINK.bat again. Nothing else was changed.' -ForegroundColor Red
     exit 1
 }
 Copy-Item -LiteralPath (Join-Path $env:FAKE_TS_DIR 'serve_on.json') -Destination (Join-Path $env:FAKE_TS_DIR 'serve.json') -Force
 New-Item -ItemType Directory -Force -Path $env:OLYMPUS_HOME | Out-Null
-Set-Content -LiteralPath (Join-Path $env:OLYMPUS_HOME 'live_link.json') -Value ('{"url": "https://' + $env:SE_T_DNS + '/", "made_by": "LIVE_LINK.bat"}')
+Set-Content -LiteralPath (Join-Path $env:OLYMPUS_HOME 'live_link.json') -Value ('{"url": "https://' + $env:SE_T_DNS + '/", "made_by": "tools/bat/LIVE_LINK.bat"}')
 Write-Host ('  [OK] on: https://' + $env:SE_T_DNS + '/ -> http://127.0.0.1 (tailnet only, Funnel off)') -ForegroundColor Green
-Write-Host '  [SKIP] the bot server does not answer right now. BOTS_BACK.bat starts it; the link works as soon as it runs.' -ForegroundColor Yellow
+Write-Host '  [SKIP] the bot server does not answer right now. tools/bat/BOTS_BACK.bat starts it; the link works as soon as it runs.' -ForegroundColor Yellow
 Write-Host '  YOUR LIVE DASHBOARD (only your own devices signed in to Tailscale can open it):' -ForegroundColor Cyan
 Write-Host ('      https://' + $env:SE_T_DNS + '/ FAKE-CARD-LINE') -ForegroundColor Green
 exit 0
@@ -690,7 +690,7 @@ def flows(pwsh):
               len([c for c in calls if c.startswith("live_link.ps1")]) == 1 and f"-Port {b.fake.port}" in calls[1] and f"-Python {b.py}" in calls[1]
               and f"-Tailscale {b.ts}" in calls[1], calls)
         check("first run: live_link's lines in this window's words: 'Step 3 below starts it', its own card replaced by the big box",
-              "Step 3 below starts it" in out and "BOTS_BACK.bat starts it" not in out and "FAKE-CARD-LINE" not in out, out[-3000:])
+              "Step 3 below starts it" in out and "tools/bat/BOTS_BACK.bat starts it" not in out and "FAKE-CARD-LINE" not in out, out[-3000:])
         check("first run: the link shown big (the boxed YOUR PHONE DASHBOARD LINK) and put on the clipboard; the iPhone steps",
               "YOUR PHONE DASHBOARD LINK" in out and URL in out and f"CLIP {URL}" in win and "Add to Home Screen" in out, (win, out[-2500:]))
         check("first run: the pause screen asks the owner's question (Saturday: 'not Sunday 6 PM yet'); no answer = nothing armed, no bots_back / engine.go",
@@ -904,8 +904,8 @@ def flows(pwsh):
         b.ll_mode("fail")
         rc, out = b.run(pwsh, stdin="LATER\n")
         calls = b.lines(b.calls)
-        check("the link fails: live_link's FIX in this window's words ('press Enter in this window'), never 'double-click LIVE_LINK.bat'",
-              "then press Enter in this window to try again" in out and "LIVE_LINK.bat again" not in out
+        check("the link fails: live_link's FIX in this window's words ('press Enter in this window'), never 'double-click tools/bat/LIVE_LINK.bat'",
+              "then press Enter in this window to try again" in out and "tools/bat/LIVE_LINK.bat again" not in out
               and "The phone link is not on yet (the red line above says why)" in out, out[-2000:])
         check("... LATER: step 2 left for later, the window goes on to step 3, the summary says it is not done",
               rc == 0 and len([c for c in calls if c.startswith("live_link")]) == 1 and "STEP 3 of 3" in out
@@ -1156,7 +1156,7 @@ def site_flows(pwsh):
               and order(out, "STEP 1b of 3", "STEP 1c of 3", "Paste your Netlify key", "STEP 2 of 3"), (pp, out[-2500:]))
         check("1c first run: then the PUBLISH_NQ task (scripts\\publish_nq.ps1 -Python <python>, reused as is), '[OK] Your dashboard site updates itself now', the summary says on",
               pub_calls(b) == [f"publish_nq.ps1 -Python {b.py}"] and "[OK] Your dashboard site updates itself now: moonlit-scone-08afe5.netlify.app" in out
-              and re.search(r"1c Dashboard\s+on: the dashboard site updates itself", out) and order(out, "Netlify key saved", "the publish task of PUBLISH_NQ.bat"), (b.lines(b.calls), out[-1500:]))
+              and re.search(r"1c Dashboard\s+on: the dashboard site updates itself", out) and order(out, "Netlify key saved", "the publish task of tools/bat/PUBLISH_NQ.bat"), (b.lines(b.calls), out[-1500:]))
         logs = b.lines(b.pylog) + b.lines(b.calls) + b.lines(b.winlog) + b.lines(b.aulog)
         check("1c: the key is NOWHERE: not on screen, not in any command line (python / child-script logs), not in any file of the whole PC folder",
               KEY not in out and not [ln for ln in logs if KEY in ln] and not text_anywhere(b.dir, KEY), text_anywhere(b.dir, KEY))
@@ -1190,7 +1190,7 @@ def site_flows(pwsh):
                   and re.search(r"1c Dashboard\s+" + re.escape(summ), out), out[-1500:])
         b.clear()
         rc, out = b.run(pwsh, stdin=KEY + "\n", tasks="OlympusLiveSite", extra_env={**with_key, "FAKE_PUB_RC": "1"})
-        check("1c: the key saved but the task could not be set up: one SKIP line (PUBLISH_NQ.bat once), the window goes on",
+        check("1c: the key saved but the task could not be set up: one SKIP line (tools/bat/PUBLISH_NQ.bat once), the window goes on",
               rc == 0 and "[SKIP] The publish task was not set up" in out and "STEP 3 of 3" in out
               and re.search(r"1c Dashboard\s+not on yet: the publish task was not set up", out), out[-1500:])
     finally:

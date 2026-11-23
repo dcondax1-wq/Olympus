@@ -54,7 +54,7 @@ import(process.argv[2]).then((C) => {
   o.todo = [t.length, t.map((x) => x.kind).join(), t[0].title, t.every((x) => x.stream !== 'arbiter'), ts.length, ts[0].kind];
   const staleSet = five('ok'); staleSet[1] = C.normStream('mercury', row('mercury', 'stale', 60, 700), NOW);
   const t2 = C.todo(staleSet, 3);
-  o.stale = [t2.length, t2[0].kind, t2[0].title, t2[0].why.includes('RUN_MONEY.bat')];
+  o.stale = [t2.length, t2[0].kind, t2[0].title, t2[0].why.includes('tools/bat/RUN_MONEY.bat')];
   const lowfirst = C.todo(C.IDS.map((id) => C.normStream(id, row(id, 'ok', 10, 1, id === 'chrysos' ? [{ title: 'risky', detail: '', usd: 0, score: 60, risk: 'high' }, { title: 'safe', detail: '', usd: 0, score: 60, risk: 'low' }, { title: 'weak', detail: '', usd: 0, score: 20, risk: 'low' }] : []), NOW)), 3);
   o.order = [lowfirst.map((x) => x.title).join()];
   const p = C.pillars(five('ok'));
@@ -97,7 +97,7 @@ def test_maths():
     check("b. five examples: flagged all-example, tone info, 'not real finds'; no streams at all: no number, a plain sentence, never NaN", o["combine"][8:11] == [True, "info", "These are example numbers, not real finds."] and o["combine"][11] == 0 and o["combine"][12].startswith("No estimate yet") and o["combine"][13] is False, o["combine"])
     check("b. always five streams in the fixed order, even from a one-stream index (the other four say 'none')", o["five"] == [",".join(IDS), "none,none,none,ok,none"], o["five"])
     check("b. what to do today is at most 3, draws tasks from every stream, and is never empty (an honest 'nothing to do today')", o["todo"][0] == 3 and o["todo"][4] >= 1 and o["todo"][5] in ("task", "none"), o["todo"])
-    check("b. old data comes first: 'Refresh Mercury', with the RUN_MONEY.bat step, then the best two tasks", o["stale"] == [3, "refresh", "Refresh Mercury", True], o["stale"])
+    check("b. old data comes first: 'Refresh Mercury', with the tools/bat/RUN_MONEY.bat step, then the best two tasks", o["stale"] == [3, "refresh", "Refresh Mercury", True], o["stale"])
     check("b. a NEGATIVE low end is worded honestly: 'a loss of $42 a month to $2,235 a month', 'Worst case: you could lose about $42 a month.', never $-42; a positive worst case reads 'Worst case: about $77 a month.'",
           o["neg"][0] == "a loss of $42 a month to $2,235 a month" and o["neg"][1] == "$0 to $510 a month" and o["neg"][2] == "Worst case: you could lose about $42 a month." and o["neg"][3] == "Worst case: about $77 a month." and o["neg"][4] == "no worst case yet" and o["neg"][11] == "-$42" and o["neg"][12] in ("-$0", "$0"), o["neg"])
     check("b. the combined sentence with a negative low end: the worst case is said as a loss, the best case follows, no '$-' anywhere; the low end keeps its sign (-$42 + $5 = -$37)",

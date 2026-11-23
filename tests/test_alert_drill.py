@@ -2,7 +2,7 @@
 (no network, temp files). Three set-ups:
   telegram   ALERTS_SETUP done (Telegram) + the private ntfy topic: engine/alert_bus, Telegram first, dual events on 2 channels
   ntfy       no Telegram / Discord yet (today's PC): the old path (private ntfy + the Olympus app)
-  off        Telegram set up but ALERTS_OFF.bat: the old path exactly, Telegram never called
+  off        Telegram set up but tools/bat/ALERTS_OFF.bat: the old path exactly, Telegram never called
 Events (producer -> what reaches the phone):
   1 trade entry        push._pc_send(fill)                         'Zlarior 50K LONG opened, 4 MNQ @ 21,034.25 ... risk $178'
   2 exit with $        push._pc_send(outcome)                      'closed LONG +$312 (+1.6R, target)'

@@ -20,7 +20,7 @@ Pictures (`docs/shots/agency/`): `templates-8-looks-390.png` (the 8 looks on rea
 on an iPhone the serif headings use Iowan Old Style / Didot and the garage look DIN Condensed.
 
 ## Your 3 steps
-1. Double-click **`RUN_AGENCY.bat`**. The first time Notepad opens your settings file: put in your agency name, your name, phone,
+1. Double-click **`tools/bat/RUN_AGENCY.bat`**. The first time Notepad opens your settings file: put in your agency name, your name, phone,
    email, postal address and your city, save, and double-click it again. Each run makes today's leads, 3 demo sites and their pitches.
 2. Drag each `site` folder it shows onto **app.netlify.com/drop** (free account), press **Publish** (new Netlify projects start
    private), and rename it to the name in its pitch (`<business>-demo.netlify.app`).
@@ -29,7 +29,7 @@ on an iPhone the serif headings use Iowan Old Style / Didot and the garage look 
 ## The daily routine (about 1 hour)
 | When | What |
 |---|---|
-| Morning, 5 min, PC | `RUN_AGENCY.bat`: new leads, 3 demo sites, their pitches. Drop the 3 folders on Netlify. |
+| Morning, 5 min, PC | `tools/bat/RUN_AGENCY.bat`: new leads, 3 demo sites, their pitches. Drop the 3 folders on Netlify. |
 | 10:00-12:00 or 14:00-16:00, 30-45 min, phone | Agency page > Call today. Before each call search the name on Google (10 seconds: the map data can miss a website). Dial, read the opener, ask to send the link. |
 | After each call, 10 s | Tap the stage: Contacted, Call back (pick the day), Won, Lost, or Do not contact. Notes go on the card. |
 | They said "send it" | Card > The email > Copy (or Open in Mail once your settings are real), put their address in, press send. |
@@ -38,7 +38,7 @@ on an iPhone the serif headings use Iowan Old Style / Didot and the garage look 
 | Sunday, 5 min | Agency page > Your notes > Export (keep the file, and save it as `agency/crm_export.json` on the PC) and look at the plan: calls this week, clients this month. |
 
 ## Prices (owner-editable: `packages` in agency/config.json, the ONE source since 2026-11-15)
-The pitch, storefront, Agency page, money math and the billing kit's proposal / agreement / invoice all read these prices through `agency.config.prices()` (`agency/billing/packages.json` holds only the wording). The whole day in one double-click: `AGENCY_DAY.bat` (`docs/BUSINESS.md`).
+The pitch, storefront, Agency page, money math and the billing kit's proposal / agreement / invoice all read these prices through `agency.config.prices()` (`agency/billing/packages.json` holds only the wording). The whole day in one double-click: `tools/bat/AGENCY_DAY.bat` (`docs/BUSINESS.md`).
 
 | Package | To start | Each month | What they get |
 |---|---|---|---|
@@ -119,7 +119,7 @@ Re-checked 2026-11-17: Starter sits at the bottom of the one-page freelancer ran
 | Self-check | `agency/sitecheck.py` | `python -m agency.sitecheck <site folder>` |
 | Pitch kit (one-pager, email, phone opener, `short.txt` = walk-in / DM / follow-up) | `agency/pitch.py`, `agency/templates/pitch/` | `python -m agency.pitch --leads FILE --id ID` |
 | Money | `agency/pricing.json` (research + funnel guesses), `agency/money.py` | `python -m agency.money` |
-| The day's batch | `agency/run.py`, `RUN_AGENCY.bat` | `python -m agency.run` |
+| The day's batch | `agency/run.py`, `tools/bat/RUN_AGENCY.bat` | `python -m agency.run` |
 | Agency page | `tools/web_public/agency/` (reads `my_leads.json` = your batch, gitignored, then the committed sample `leads.json`, then `fixture.json` = DEMO; notes in `localStorage['agency.crm.v1']`); data by `agency/publish.py` (`--fixture` rebuilds the DEMO) | wiring: docs/NEW_APPS_WIRING.md "Wiring AGENCY" |
 | Demo batch | `agency/demo/fort-collins/` (leads, all_leads.csv, 3 sites + zips + pitch kits, run.json) | screenshots `docs/shots/agency/` |
 | Tests | `tests/test_agency.py` (lead scoring, every template's HTML, no hotlinks, the self-check, pitch text, the money math, the CRM page) | `python -X utf8 -m tests.test_agency` (`--fast` = no browser) |

@@ -6,7 +6,7 @@
  b. the plain sentence is the same everywhere (go, self_heal, trade_home, pc_health, alerts_plus) and the old 'will not sync' is gone.
  c. self_heal.fix_clock: through the task = fixed; no task = need + the sentence; the doctor line says it too; no live phrase anywhere.
  d. TRADE_HOME: Status shows the clock, 9 Fix the clock = the same chain, never starts a .bat or types a phrase.
- e. FIX_CLOCK.bat / FIX_CLOCK_OFF.bat / scripts/fix_clock.ps1: ASCII, CRLF, admin check, every setting the owner asked for.
+ e. FIX_CLOCK.bat / tools/bat/FIX_CLOCK_OFF.bat / scripts/fix_clock.ps1: ASCII, CRLF, admin check, every setting the owner asked for.
 """
 from __future__ import annotations
 
@@ -134,10 +134,10 @@ def main():
     # e. the scripts
     def raw(p):
         return open(os.path.join(ROOT, p), "rb").read()
-    for p in ("FIX_CLOCK.bat", "FIX_CLOCK_OFF.bat", "scripts/fix_clock.ps1"):
+    for p in ("FIX_CLOCK.bat", "tools/bat/FIX_CLOCK_OFF.bat", "scripts/fix_clock.ps1"):
         b = raw(p)
         check(f"e1. {p}: ASCII only, CRLF everywhere", all(c < 128 for c in b) and b.count(b"\r\n") == b.count(b"\n") and len(b) > 200, p)
-    for p in ("FIX_CLOCK.bat", "FIX_CLOCK_OFF.bat"):
+    for p in ("FIX_CLOCK.bat", "tools/bat/FIX_CLOCK_OFF.bat"):
         t = raw(p).decode()
         check(f"e2. {p}: detects non-admin and says it in plain words (never silent)",
               "net.exe\" session" in t and 'right-click' in t and "Run as administrator" in t and t.count("pause") == 1, p)
@@ -151,7 +151,7 @@ def main():
     check("e4. the ps1 uses no PowerShell-7-only syntax (&&, ?:, ??, -Parallel)", not any(x in t for x in (" && ", " ? ", " ?? ", "-Parallel")), "")
     check("e5. the bot's own clock never compensates: no 'time set' / Set-Date / w32tm /config of the bot side",
           "Set-Date" not in t and "set-date" not in t.lower(), "")
-    check("e6. FIX_CLOCK_OFF calls the ps1 with -Off", "fix_clock.ps1\" -Off" in raw("FIX_CLOCK_OFF.bat").decode(), "")
+    check("e6. FIX_CLOCK_OFF calls the ps1 with -Off", "fix_clock.ps1\" -Off" in raw("tools/bat/FIX_CLOCK_OFF.bat").decode(), "")
     # f. red team (2026-11-23): no privilege escalation, a sane step cap, -Off restores, full paths only
     import re as _re
     act = _re.search(r"New-ScheduledTaskAction -Execute (\S+) -Argument '([^']*)'", t)
@@ -174,7 +174,7 @@ def main():
           all(x in off for x in ("'time.windows.com,0x9'", "604800", "54000", "Unregister-ScheduledTask")) and "Stop-Service" not in t, "")
     check("f7. no failure path stops or disables Windows Time", "Stop-Service" not in t and "start= disabled" not in t
           and "Set-Service -Name w32time -StartupType Disabled" not in t, "")
-    for p in ("FIX_CLOCK.bat", "FIX_CLOCK_OFF.bat"):
+    for p in ("FIX_CLOCK.bat", "tools/bat/FIX_CLOCK_OFF.bat"):
         b_ = raw(p).decode()
         lines = [ln.strip() for ln in b_.splitlines() if ln.strip() and not ln.strip().lower().startswith(("rem", "echo", ":", "@echo"))]
         bare = [ln for ln in lines if _re.match(r"(?i)(powershell|net|where|w32tm|schtasks|sc)(\.exe)?\b", ln)]
@@ -182,7 +182,7 @@ def main():
               not bare and "%SystemRoot%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" in b_
               and '"%SystemRoot%\\System32\\net.exe" session' in b_ and '"%PS%" -NoProfile' in b_, bare)
     check("f9. non-admin: both .bat stop at the admin check before PowerShell runs",
-          all(raw(p).decode().index("goto :noadmin") < raw(p).decode().index('"%PS%" -NoProfile') for p in ("FIX_CLOCK.bat", "FIX_CLOCK_OFF.bat")), "")
+          all(raw(p).decode().index("goto :noadmin") < raw(p).decode().index('"%PS%" -NoProfile') for p in ("FIX_CLOCK.bat", "tools/bat/FIX_CLOCK_OFF.bat")), "")
     check("f10. the ps1 exits before any change when not admin", t.index("Test-Admin") < t.index("Set-ItemProperty")
           and _re.search(r"if \(-not \(Test-Admin\)\)[^}]*exit 1", t, _re.S), "")
     ok = all(RES)

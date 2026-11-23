@@ -10,12 +10,12 @@ So the PC sends **email only**, as its own scheduled task, with hard limits. The
 
 ## Owner: turn it on (once, on the PC)
 1. Make a FREE business Gmail and turn on 2-Step Verification. Then create an **app password**: Google account > Security > App passwords.
-2. Double-click **EMAIL_SETUP.bat** and answer: the Gmail address, the app password (hidden), your name, your business, your phone, your postal address (a PO box is fine; the law needs it in every email), your own test address, and an optional booking link and payment link. The payment link comes from your own free payment account: that is your step.
+2. Double-click **tools/bat/EMAIL_SETUP.bat** and answer: the Gmail address, the app password (hidden), your name, your business, your phone, your postal address (a PO box is fine; the law needs it in every email), your own test address, and an optional booking link and payment link. The payment link comes from your own free payment account: that is your step.
 3. The phrase gate:
    - Type `SEND EMAILS` to email businesses for real.
    - Anything else gives a **DRY RUN**: 3 sample emails a day, to your test address only.
 4. It sends one test email to your test address and installs the task **OlympusAgencyMail**, which runs every 30 minutes.
-5. **EMAIL_STOP.bat** turns everything off and removes the task. The settings and the never-again list stay.
+5. **tools/bat/EMAIL_STOP.bat** turns everything off and removes the task. The settings and the never-again list stay.
 
 Everything stays in `%USERPROFILE%\.olympus\`:
 - `agency_mail.json`: the settings and the app password. Never in the repo, never printed.

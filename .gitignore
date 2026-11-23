@@ -179,7 +179,7 @@ data/fleet.json.tmp
 data/live_state_fleet*.json
 data/live_state_fleet*.json.tmp
 
-# CLEAN_PC.bat writes what the PC is (local only)
+# tools/bat/CLEAN_PC.bat writes what the PC is (local only)
 PC_REPORT-*.txt
 data/pantheon_cache/
 
@@ -228,7 +228,7 @@ tools/web_public/agency/my_leads.json
 /dash/
 /site/
 data/live_site/
-# Apple Health / the card tracker (team ME1), Sibyl's local paper memory (RUN_MONEY.bat), a money inbox or calendar list saved here
+# Apple Health / the card tracker (team ME1), Sibyl's local paper memory (tools/bat/RUN_MONEY.bat), a money inbox or calendar list saved here
 data/health/
 data/cards/
 money_keep/
@@ -279,7 +279,7 @@ data/nt_export/
 # Kalshi K1 paper on the PC (tools/kalshi_paper.py maybe_run): ledger, public summary, run token, log
 data/kalshi_k1/
 # Kalshi LIVE executor on the PC (engine/kalshi_live.py): arm record (proof hash, never the phrase), state, commands, KILL, log,
-# public card, lock. The owner's Kalshi key is never here: it lives in %USERPROFILE%\.olympus\kalshi\ (KALSHI_KEY_SETUP.bat)
+# public card, lock. The owner's Kalshi key is never here: it lives in %USERPROFILE%\.olympus\kalshi\ (tools/bat/KALSHI_KEY_SETUP.bat)
 data/kalshi_live/
 data/gh_publish/
 

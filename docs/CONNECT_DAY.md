@@ -4,8 +4,8 @@ Your calendars, work shifts, weather and the market news in the Planner and Jarv
 "You work 9-5 today: the bot trades alone; check at lunch 12:30."
 
 ## Your 3 steps
-1. **On the PC** double-click `CONNECT_DAY.bat` in the bot folder. Paste each calendar's private link (where to find it: the table below), then type your city and your pay an hour when it asks.
-2. **On the iPhone** open your PC link (the one `LIVE_LINK.bat` gave you, docs/LIVE_DASHBOARD.md) and tap the Planner or Jarvis: "Your work day" is on Today, and the 01:45 / 10:45 / 16:05 cards have a Work line.
+1. **On the PC** double-click `tools/bat/CONNECT_DAY.bat` in the bot folder. Paste each calendar's private link (where to find it: the table below), then type your city and your pay an hour when it asks.
+2. **On the iPhone** open your PC link (the one `tools/bat/LIVE_LINK.bat` gave you, docs/LIVE_DASHBOARD.md) and tap the Planner or Jarvis: "Your work day" is on Today, and the 01:45 / 10:45 / 16:05 cards have a Work line.
 3. **Optional:** make the two iPhone Shortcuts below ("Add to my day", "What's my day").
 
 | What | Result |
@@ -60,7 +60,7 @@ The Planner adds each item once, to Today's tasks (a note goes to Notes with the
 - **PC off = no fresh day.** The phone shows the last file with its age; after 36 hours it says the PC may be off.
 - **Read only.** Change a shift in your own calendar or shift app; the Planner never writes to a calendar.
 - **Google and Outlook links refresh on their side** every few minutes to a few hours: a shift changed a minute ago may show later.
-- **Shift titles vary by app.** A shift app's link is work automatically; on a personal calendar only titles like "Work", "Shift ..." count. `CONNECT_DAY.bat` asks "Is this your WORK schedule?" for each link.
+- **Shift titles vary by app.** A shift app's link is work automatically; on a personal calendar only titles like "Work", "Shift ..." count. `tools/bat/CONNECT_DAY.bat` asks "Is this your WORK schedule?" for each link.
 - **Rare repeat rules** (by week number, by hour, by year-day) show their first time only; the counts are in day.json (`skipped_rules`).
 - **Weather is US only** (api.weather.gov). The pay line uses your typed wage until the money team's import (Ledger income tagged paycheck, or `POST /inbox/money` with `type: paycheck`) has paychecks.
 - **"The bot trades alone"** is about the eval / Sim account it runs today. A live account needs you present (MFFU); the sentence says so when the board shows a funded account, and the bot never arms live by itself.

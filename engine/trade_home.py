@@ -1,4 +1,4 @@
-"""TRADING HOME: one numbered menu for the owner's daily PC steps (TRADE_HOME.bat -> scripts/trade_home.ps1 -> this file).
+"""TRADING HOME: the ONE front door (every owner .bat is a number here or under M); one numbered menu for the owner's daily PC steps (TRADE_HOME.bat -> scripts/trade_home.ps1 -> this file).
 
 Owner 2026-11-22: "make the whole process for trading easier, adding accounts, whatever it is". Not a coder, too many .bat files.
 
@@ -245,9 +245,14 @@ def run_cmd(argv):
         return 1
 
 
+def bat_path(name):
+    """'START_BOT.bat' or 'tools/bat/PC_CARE.bat' -> the full path with this OS's separators (cmd.exe wants backslashes)."""
+    return os.path.join(ROOT, *str(name).replace("\\", "/").split("/"))
+
+
 def run_bat(name, run=None):
     run = run or run_cmd
-    path = os.path.join(ROOT, name)
+    path = bat_path(name)
     if not os.path.exists(path):
         return 1
     return run(["cmd", "/c", path])
@@ -306,24 +311,98 @@ def clock_action(fx, out):
     return f"[FIX] {CLOCK_FIX_SAY[0].upper() + CLOCK_FIX_SAY[1:]}."
 
 
+def result_ran(fx):
+    return "[OK] Done. Read the lines in that window; choose 1 to see the status."
+
+
 # menu number -> (title, bat or None, result fn)
 ACTIONS = {
     "2": ("Start bot", "START_BOT.bat", result_start),
     "3": ("Keep-alive on", "KEEPALIVE_ON.bat", result_keepalive),
     "6": ("Stop bot", "STOP_BOT.bat", result_stop),
     "7": ("Update", "UPDATE.bat", result_update),
+    "10": ("Health check", "HEALTH_CHECK.bat", result_ran),
+    "11": ("Phone link (live dashboard on the iPhone)", "tools/bat/LIVE_LINK.bat", result_ran),
+    "12": ("Backup (second copy of the code + weekly zip)", "tools/bat/BACKUP_SETUP.bat", result_ran),
+    "13": ("PC care (power plan, startup apps, health line)", "tools/bat/PC_CARE.bat", result_ran),
+    "14": ("Free disk space", "tools/bat/CLEAN_STORAGE.bat", result_ran),
 }
+
+# M = More tools: EVERY other button, so the owner never hunts in the folder (docs/BAT_FILES.md is the same list).
+# (number, title, file). Files under tools/bat/ moved there 2026-11-22; tests/test_bat_menu.py checks each one exists.
+MORE_TOOLS = (
+    ("1", "PC status card (six lines)", "tools/bat/STATUS.bat"),
+    ("2", "PC doctor (why the phone hears nothing)", "tools/bat/PC_DOCTOR.bat"),
+    ("3", "Keep-alive OFF (you type the phrase)", "tools/bat/KEEPALIVE_OFF.bat"),
+    ("4", "Alerts bus ON", "tools/bat/ALERTS_ON.bat"),
+    ("5", "Alerts bus OFF", "tools/bat/ALERTS_OFF.bat"),
+    ("6", "Send a test alert", "tools/bat/TEST_ALERT.bat"),
+    ("7", "Bots back without GitHub (phone reports)", "tools/bat/BOTS_BACK.bat"),
+    ("8", "Undo bots back", "tools/bat/UNDO_BOTS_BACK.bat"),
+    ("9", "Go live on the eval (you type the phrase)", "tools/bat/GO_LIVE_EVAL.bat"),
+    ("10", "Quick arm (setup everything, no questions; you type the phrase)", "tools/bat/QUICK_ARM.bat"),
+    ("11", "Setup everything (zip / first setup)", "SETUP_EVERYTHING.bat"),
+    ("12", "Update from a code zip (no GitHub)", "UPDATE_FROM_ZIP.bat"),
+    ("13", "Undo the last zip update", "tools/bat/UNDO_UPDATE.bat"),
+    ("14", "GitHub sign-in (private backup)", "tools/bat/GITHUB_SIGNIN.bat"),
+    ("15", "Contract roll (quarterly)", "tools/bat/ROLL.bat"),
+    ("16", "Undo phone link", "tools/bat/UNDO_LIVE_LINK.bat"),
+    ("17", "Publish NQ reports without GitHub", "tools/bat/PUBLISH_NQ.bat"),
+    ("18", "Undo publish NQ", "tools/bat/UNDO_PUBLISH_NQ.bat"),
+    ("19", "Clean PC (deep tune)", "tools/bat/CLEAN_PC.bat"),
+    ("20", "Undo PC tune", "tools/bat/UNDO_PC_TUNE.bat"),
+    ("21", "Clock fix: undo (right-click > Run as administrator)", "tools/bat/FIX_CLOCK_OFF.bat"),
+    ("22", "Bot lite (little memory)", "tools/bat/BOT_LITE.bat"),
+    ("23", "No chart mode (NinjaTrader feed add-on)", "tools/bat/NO_CHART_MODE.bat"),
+    ("24", "Desktop icons (LE START, LE STOP BOT)", "tools/bat/SETUP_SHORTCUTS.bat"),
+    ("25", "Open the dashboard (LE START)", "START_DASHBOARD.bat"),
+    ("26", "One time setup (new PC)", "tools/bat/ONE_TIME_SETUP.bat"),
+    ("27", "Fresh start on the main PC", "tools/bat/FRESH_START.bat"),
+    ("28", "Move the bot to another PC", "tools/bat/MOVE_BOT.bat"),
+    ("29", "Cloudflare setup (phone site)", "tools/bat/CLOUDFLARE_SETUP.bat"),
+    ("30", "Money engine (bank CSVs, paper)", "tools/bat/RUN_MONEY.bat"),
+    ("31", "Money inbox for the iPhone Shortcut", "tools/bat/MONEY_INBOX.bat"),
+    ("32", "Connect your calendars", "tools/bat/CONNECT_DAY.bat"),
+    ("33", "Kalshi key setup", "tools/bat/KALSHI_KEY_SETUP.bat"),
+    ("34", "Kalshi live (real money, small)", "tools/bat/KALSHI_LIVE.bat"),
+    ("35", "Kalshi stop (kill switch)", "tools/bat/KALSHI_STOP.bat"),
+    ("36", "Agency day", "tools/bat/AGENCY_DAY.bat"),
+    ("37", "Agency website machine", "tools/bat/RUN_AGENCY.bat"),
+    ("38", "Email autopilot setup", "tools/bat/EMAIL_SETUP.bat"),
+    ("39", "Email autopilot stop", "tools/bat/EMAIL_STOP.bat"),
+    ("40", "Postcards setup", "tools/bat/POSTCARD_SETUP.bat"),
+    ("41", "Postcards stop", "tools/bat/POSTCARD_STOP.bat"),
+)
+
+
+def more_tools(ask, run, out):
+    out("  ==== More tools (every other button) ====")
+    for n, title, _f in MORE_TOOLS:
+        out(f"   {n:>2}  {title}")
+    c = (ask("  Type a number and press Enter (Enter = back): ") or "").strip()
+    if not c:
+        return "[OK] Nothing changed."
+    hit = next((x for x in MORE_TOOLS if x[0] == c), None)
+    if hit is None:
+        return "[FIX] Type one number from the More tools list."
+    out(f"  {hit[1]}: it opens its own window. Type any phrase it asks for yourself, then press a key to come back here.")
+    rc = run_bat(hit[2], run)
+    return result_ran(None) if rc == 0 else f"[FIX] {hit[2]} did not open. Tell Claude."
 ROUTINE = ("1", "2", "3", "t")      # status, start bot, keep-alive, alert test, IN THIS ORDER
 
 
 def alerts_action(ask, run, fx, out):
-    c = (ask("  1 Set up Telegram / Discord (then it tests)   2 Send a test alert only   Enter = back: ") or "").strip()
+    c = (ask("  1 Set up Telegram / Discord (then it tests)   2 Send a test alert only   3 Alerts bus ON   4 Alerts bus OFF"
+             "   Enter = back: ") or "").strip()
     if c == "1":
         run_bat("ALERTS_SETUP.bat", run)
         return result_alerts(fx)
     if c == "2":
-        rc = run_bat("TEST_ALERT.bat", run)
+        rc = run_bat("tools/bat/TEST_ALERT.bat", run)
         return "[OK] Test sent: check your phone buzzed." if rc == 0 else "[FIX] The test did not run. Choose 5, then 1."
+    if c in ("3", "4"):
+        run_bat("tools/bat/ALERTS_ON.bat" if c == "3" else "tools/bat/ALERTS_OFF.bat", run)
+        return result_alerts(fx)
     return "[OK] Nothing changed."
 
 
@@ -337,6 +416,12 @@ MENU = ("  ==== TRADING HOME ====",
         "   7  Update",
         "   8  Do my Sunday / daily routine (status, start, keep-alive, alert test)",
         "   9  Fix the clock",
+        "  10  Health check (green / yellow / red, each with its fix)",
+        "  11  Phone link (live dashboard on the iPhone)",
+        "  12  Backup (second copy of the code)",
+        "  13  PC care",
+        "  14  Free disk space",
+        "   M  More tools (every other button: undo steps, Kalshi, agency, money, setup)",
         "   0  Close")
 
 
@@ -365,13 +450,15 @@ def do_choice(ch, ask=input, out=say, run=None, fx=None, add_fn=None, unseen=Non
         return routine(ask, out, run, fx)
     if ch == "9":
         return clock_action(fx, out)
+    if ch.lower() == "m":
+        return more_tools(ask, run, out)
     return "[FIX] Type a number from the list."
 
 
 def routine(ask, out, run, fx):
     """Status, then Start bot, then Keep-alive, then the alert test, IN ORDER; pauses before each so the owner types each
     phrase himself in that step's own window. Enter = go on, S = skip that step, Q = stop the routine."""
-    steps = (("Status", None), ("Start bot", "START_BOT.bat"), ("Keep-alive ON", "KEEPALIVE_ON.bat"), ("Alert test", "TEST_ALERT.bat"))
+    steps = (("Status", None), ("Start bot", "START_BOT.bat"), ("Keep-alive ON", "KEEPALIVE_ON.bat"), ("Alert test", "tools/bat/TEST_ALERT.bat"))
     done = []
     for i, (title, bat) in enumerate(steps, 1):
         a = (ask(f"  Step {i} of 4: {title}. Press Enter to go (S = skip, Q = stop here): ") or "").strip().lower()

@@ -156,7 +156,7 @@ def no_stop(bot, now, folder=None, state_dir=None) -> str | None:
         if not out:
             return None
         return ("The bot is stopped and " + "; ".join(out[:3]) + " has NO stop or target at the broker (the PC restarted between "
-                "the entry and its bracket). Start the bot (GO_LIVE_EVAL.bat: it places the stop at once) or close the trade in "
+                "the entry and its bracket). Start the bot (tools/bat/GO_LIVE_EVAL.bat: it places the stop at once) or close the trade in "
                 "NinjaTrader now.")
     except Exception:
         return None
@@ -222,7 +222,7 @@ def evaluate(bot, now, server_started_at=None, autostart=None, run_seen=None) ->
                 and now - float(server_started_at) >= START_GRACE_S:
             out["bot_stopped"] = ("The bot is stopped in the entry hours, although it was running and nobody pressed Stop: it "
                                   "cannot take a trade (a restart that did not resume, or NinjaTrader not connected). On the "
-                                  "PC: GO_LIVE_EVAL.bat (you type the phrase).")
+                                  "PC: tools/bat/GO_LIVE_EVAL.bat (you type the phrase).")
         return out
     cfg = getattr(bot, "cfg", None) or {}
     if str(cfg.get("adapter") or "paper") == "paper" or not in_hours(now):
@@ -249,7 +249,7 @@ def evaluate(bot, now, server_started_at=None, autostart=None, run_seen=None) ->
         out["bot_down"] = (("The bot's poll thread stopped" if dead else f"No good poll for {_span(age)}")
                            + " while it is on in the entry hours: it cannot take a trade."
                            + (f" Last error: {err}." if err else "")
-                           + " Open the PC: if it stays, STOP BOT, then GO_LIVE_EVAL.bat (you type the phrase).")
+                           + " Open the PC: if it stays, STOP BOT, then tools/bat/GO_LIVE_EVAL.bat (you type the phrase).")
         return out
     fb = h.get("feed_block")
     last1 = h.get("last_1m_bar_t")

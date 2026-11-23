@@ -1,6 +1,6 @@
 <#
 PC_TUNE v2 "deep tune" (2026-11-03, owner: "a deeper code for both of my computers ... really improve performance to run
-trading and business stuff"). CLEAN_PC.bat runs it in its Administrator part (outside trading hours); UNDO_PC_TUNE.bat puts
+trading and business stuff"). tools\bat\CLEAN_PC.bat runs it in its Administrator part (outside trading hours); tools\bat\UNDO_PC_TUNE.bat puts
 everything back. Every change is written to a state file BEFORE it is made, with the value it had, so -Undo restores
 exactly what was there: %ProgramData%\LiquidityEngine\pc_tune_state.json. The log says what changed and why.
 NinjaTrader and python are never closed, NinjaTrader's files are never changed, nothing is downloaded.
@@ -41,7 +41,7 @@ What it changes (each one undone by -Undo):
 
   powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\pc_tune.ps1 -DryRun     (the plan, changes nothing)
   powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\pc_tune.ps1             (apply; asks for Administrator)
-  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\pc_tune.ps1 -Undo       (UNDO_PC_TUNE.bat runs this)
+  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\pc_tune.ps1 -Undo       (tools\bat\UNDO_PC_TUNE.bat runs this)
 #>
 param(
     [switch]$DryRun,
@@ -266,7 +266,7 @@ function Invoke-Tune {
     $mhz = $MaxMHz; if ($mhz -lt 0) { $mhz = Get-AutoMHz $tk }
     $role = 'bot PC'; if ($Standalone) { $role = 'main PC (business mode)' }
     Head "DEEP TUNE v2: $tk, $role, $($f.RamGB) GB$(if ($DryRun) { ' - DRY RUN: the plan, nothing changed' })"
-    Say '..' "Undo file: $StateFile (UNDO_PC_TUNE.bat puts every change below back)"
+    Say '..' "Undo file: $StateFile (tools\bat\UNDO_PC_TUNE.bat puts every change below back)"
     Load-State
 
     # 1. power plan
@@ -283,7 +283,7 @@ function Invoke-Tune {
             $made = $false
             foreach ($b in $bases) { $r = Run-Powercfg @('/duplicatescheme', $b, $PlanGuid); if ($r.Code -eq 0) { $made = $true; Say 'OK' "Plan made from $(if ($b -eq $BaseBalanced) { 'Balanced' } elseif ($b -eq $BaseHigh) { 'High performance' } else { 'Ultimate performance' })"; break } }
             if (-not $made) { Say 'SKIP' 'Power plan: Windows did not make a copy (nothing changed)'; $ok = $false }
-            else { [void](Run-Powercfg @('/changename', $PlanGuid, $PlanName, 'Liquidity Engine: 24/5 trading. Undo: UNDO_PC_TUNE.bat')) }
+            else { [void](Run-Powercfg @('/changename', $PlanGuid, $PlanName, 'Liquidity Engine: 24/5 trading. Undo: tools\bat\UNDO_PC_TUNE.bat')) }
         } else {
             Add-Change 'power|plan' 'power' @{ Target = $PlanGuid; Before = $active; Existed = $true }
         }
@@ -407,7 +407,7 @@ function Invoke-Tune {
         Tune-Reg $cr 'BackgroundModeEnabled' 0 'DWord' 'Chrome stops running in the background after its last window closes'
         Tune-Reg $cr 'HighEfficiencyModeEnabled' 1 'DWord' 'Chrome Memory Saver on (frees memory from tabs you are not using)'
     } else { Say '..' 'Chrome not installed: nothing to change' }
-    Say '..' 'Edge / Chrome may now say "managed by your organization": that is these settings (UNDO_PC_TUNE.bat removes them).'
+    Say '..' 'Edge / Chrome may now say "managed by your organization": that is these settings (tools\bat\UNDO_PC_TUNE.bat removes them).'
     try {
         foreach ($t in @(Get-ScheduledTask -TaskPath '\Microsoft\Office\' -ErrorAction Stop | Where-Object { "$(P $_ 'TaskName')" -like 'Office Startup Boost*' -and "$(P $_ 'State')" -ne 'Disabled' })) {
             $tn = "$(P $t 'TaskName')"
@@ -474,7 +474,7 @@ function Install-Helpers([string]$TuneKind) {
         $existed = [bool](Get-ScheduledTask -TaskName $KeeperTask -ErrorAction SilentlyContinue)
         Add-Change "task|$KeeperTask" 'task' @{ Target = $KeeperTask; Existed = $existed }
         if ($existed) { Unregister-ScheduledTask -TaskName $KeeperTask -Confirm:$false -ErrorAction SilentlyContinue }
-        $desc = 'Liquidity Engine: NinjaTrader / the bot first, background apps last. Never closes anything. Undo: UNDO_PC_TUNE.bat'
+        $desc = 'Liquidity Engine: NinjaTrader / the bot first, background apps last. Never closes anything. Undo: tools\bat\UNDO_PC_TUNE.bat'
         try {       # S4U: runs as you with no window at all
             $pr = New-ScheduledTaskPrincipal -UserId $user -LogonType S4U -RunLevel Limited
             Register-ScheduledTask -TaskName $KeeperTask -InputObject (New-ScheduledTask -Action $act -Trigger @($daily, $logon) -Settings $set -Principal $pr -Description $desc) -ErrorAction Stop | Out-Null
@@ -492,7 +492,7 @@ function Install-Helpers([string]$TuneKind) {
         $existed = [bool](Get-ScheduledTask -TaskName $CareTask -ErrorAction SilentlyContinue)
         Add-Change "task|$CareTask" 'task' @{ Target = $CareTask; Existed = $existed }
         if ($existed) { Unregister-ScheduledTask -TaskName $CareTask -Confirm:$false -ErrorAction SilentlyContinue }
-        Register-ScheduledTask -TaskName $CareTask -InputObject (New-ScheduledTask -Action $act -Trigger $tr -Settings $set -Principal $pr -Description 'Liquidity Engine weekly care (Sunday). Never weekdays 01:15-16:05 ET while trading. Undo: UNDO_PC_TUNE.bat') -ErrorAction Stop | Out-Null
+        Register-ScheduledTask -TaskName $CareTask -InputObject (New-ScheduledTask -Action $act -Trigger $tr -Settings $set -Principal $pr -Description 'Liquidity Engine weekly care (Sunday). Never weekdays 01:15-16:05 ET while trading. Undo: tools\bat\UNDO_PC_TUNE.bat') -ErrorAction Stop | Out-Null
         Say 'OK' "${CareTask}: Sundays 11:00 (Windows temp, component store, Defender quick scan, low priority)"
     } catch { Say 'SKIP' "$CareTask not added: $($_.Exception.Message)" }
 }
@@ -555,7 +555,7 @@ function Invoke-Undo {
         return 0
     }
     Save-State
-    Say 'FIX' "$($left.Count) change(s) could not be undone (above); they stay in $StateFile. Run UNDO_PC_TUNE.bat again, or send this window to Claude."
+    Say 'FIX' "$($left.Count) change(s) could not be undone (above); they stay in $StateFile. Run tools\bat\UNDO_PC_TUNE.bat again, or send this window to Claude."
     return 1
 }
 
@@ -592,7 +592,7 @@ if ($Maintenance) { exit (Invoke-Maintenance) }
 
 if (-not $Undo -and -not (Deep-Allowed)) {
     Head 'DEEP TUNE'
-    Say 'SKIP' 'Trading hours (weekdays 01:15-16:05 ET): the deep tune waits so it never slows the bot. Run CLEAN_PC.bat after 4:05 PM ET.'
+    Say 'SKIP' 'Trading hours (weekdays 01:15-16:05 ET): the deep tune waits so it never slows the bot. Run tools\bat\CLEAN_PC.bat after 4:05 PM ET.'
     exit 0
 }
 if (-not $DryRun -and -not $isAdmin) {

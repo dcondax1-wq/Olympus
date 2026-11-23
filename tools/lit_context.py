@@ -15,9 +15,9 @@ Two views, costs in:
 Context (all known before the session: the reading of the last CBOE / SqueezeMetrics close BEFORE the trading day):
   data/GEX_1d.csv       SqueezeMetrics SPX gamma exposure (gex), dark-pool index (dix), SPX close (price)
   data/VIX_1d.csv       CBOE VIX close (also in the repo's live feed)
-  data/CBOE_vol_1d.csv  CBOE VIX9D, VIX3M, VIX1D, VVIX, SKEW closes (2015 - 2026-09-17; cdn.cboe.com is unreachable from this
-                        cloud session, so these are the CBOE History files from a public GitHub mirror, checked equal to
-                        data/VXN_1d.csv on all 1,234 overlapping VXN days; days after 2026-09-17 have no reading -> no tilt)
+  data/CBOE_vol_1d.csv  CBOE VIX9D, VIX3M, VIX1D, VVIX, SKEW closes (2015 on; tools/context_refresh.py keeps it current from cdn-api.cboe.com; the part up to
+                        2026-09-17 came from a public GitHub mirror of the CBOE History files, checked equal to
+                        data/VXN_1d.csv on all 1,234 overlapping VXN days)
 Not testable: CBOE put/call ratios (the free daily file stops 2019-10-04), real vanna / VEX (no free history: proxies only),
 NYSE TICK / DXY / 10Y (no futures-grade file in data/; no Yahoo).
 

@@ -129,7 +129,7 @@ def main():
               and not h.get("nt_down") and not h.get("nt_down_1m") and not h.get("entries_blocked") and not h.get("stale"),
               f"err={err} yahoo={undo.calls} last5={last5} h={ {k: h.get(k) for k in ('nt_down', 'nt_down_1m', 'stale', 'entries_blocked', 'last_1m_bar_t')} }")
         check("VIX / VXN refresh goes to CBOE, not Yahoo",
-              any("cdn.cboe.com" in u and "VIX_History" in u for u in net.urls[n_url:]), net.urls[n_url:])
+              any(("cdn-api.cboe.com" in u or "cdn.cboe.com" in u) and "VIX_History" in u for u in net.urls[n_url:]), net.urls[n_url:])
         check("history: the TradingView file ends 10-14, NinjaTrader's starts 10-12 18:00: overlap, no gap noted",
               not any((h.get("hist_gap") or {}).values()), h.get("hist_gap"))
 

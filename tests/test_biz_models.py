@@ -8,7 +8,7 @@
      the local state is counts only, the 7-day plan
   e. the listing kit: all 5 catalog products, every cover on disk, the doc is up to date, zip names = the product builders'
   c. Chromium (skipped with --static): DEMO, the PC's own file, ticks kept, taps, no sideways scroll
-  f. agency.day on the committed demo batch (no network): the call list, TODAY.txt (prices, demo sites, rules), AGENCY_DAY.bat
+  f. agency.day on the committed demo batch (no network): the call list, TODAY.txt (prices, demo sites, rules), tools/bat/AGENCY_DAY.bat
     python -X utf8 -m tests.test_biz_models
 Read only for the repo: writes go to temp folders. No network, no browser.
 """
@@ -150,7 +150,7 @@ def test_publish():
     check("d. the PC's own file: progress is counts and flags only (no names, phones or emails), real $ only from the billing ledger",
           all(isinstance(v, (int, float, bool)) or v is None for v in real["progress"].values()) and not real["sample"] and real["total"]["real_usd_month"] >= 0, real["progress"])
     check("d. next steps follow the progress: with the example settings the agency asks for the settings first",
-          real["models"][0]["next"].startswith("Double-click AGENCY_DAY.bat and fill in"), real["models"][0]["next"])
+          real["models"][0]["next"].startswith("Double-click tools/bat/AGENCY_DAY.bat and fill in"), real["models"][0]["next"])
     card = BP.card(d)
     check("d. the Jarvis card follows the contract", not AK.jarvis_problems(card), AK.jarvis_problems(card))
     out = os.path.join(TMP, "b.json")
@@ -198,10 +198,10 @@ def test_day():
     check("f. the call list keeps the leads (nothing dialled, nothing sent)", cl["kind"] == "call_list" and len(cl["leads"]) > 0)
     src = AK.read(os.path.join(ROOT, "agency", "day.py"))
     check("f. agency.day sends nothing: no smtp / requests / urllib / webbrowser / twilio in its code", not re.search(r"smtplib|import requests|urllib\.request|webbrowser|twilio", src))
-    raw = open(os.path.join(ROOT, "AGENCY_DAY.bat"), "rb").read()
+    raw = open(os.path.join(ROOT, "tools/bat/AGENCY_DAY.bat"), "rb").read()
     txt = raw.decode("ascii")
     labels = set(re.findall(r"(?m)^:(\w+)", txt))
-    check("f. AGENCY_DAY.bat: CRLF, ASCII, every goto label exists, first run copies the example settings and opens Notepad, then runs agency.day",
+    check("f. tools/bat/AGENCY_DAY.bat: CRLF, ASCII, every goto label exists, first run copies the example settings and opens Notepad, then runs agency.day",
           b"\r\n" in raw and b"\n" not in raw.replace(b"\r\n", b"") and set(re.findall(r"goto :(\w+)", txt)) <= labels
           and 'copy /y "agency\\config.example.json" "agency\\config.json"' in txt and "python -X utf8 -m agency.day %*" in txt and not re.search(r"curl|Invoke-WebRequest|powershell", txt, re.I))
 

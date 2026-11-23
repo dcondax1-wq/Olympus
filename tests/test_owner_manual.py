@@ -101,7 +101,7 @@ def part_a(page, doc, p):
             bad.append(c)
     check("a. every copy line is a real engine module with that flag", not bad, bad)
     bats = sorted(set(re.findall(r"\b([A-Z_]{3,})\.bat\b", page + doc)))
-    nob = [b for b in bats if not os.path.exists(os.path.join(ROOT, b + ".bat"))]
+    nob = [b for b in bats if not any(os.path.exists(os.path.join(ROOT, *d, b + ".bat")) for d in ((), ("tools", "bat")))]
     check(f"a. every .bat named exists ({len(bats)})", bats and not nob, nob)
     acc = json.loads(rd(os.path.join(WEB, "business", "accounts.json")))
     names = [a["name"] for a in acc["accounts"]]
@@ -120,7 +120,7 @@ def part_a(page, doc, p):
     said = {   # text the owner reads in the manual -> the file that prints / shows it
         "(LIT + ATLAS): ": "engine/go.py", "Arm and start trading": "web_next/js/next/start.js", "Entry blocked": "engine/guards.py",
         "Left alone (your hand-trade window).": "engine/guards.py", "HEDGE BLOCKED: ATLAS close not confirmed": "engine/live.py",
-        "KEEP ALIVE ON": "KEEPALIVE_ON.bat", "[OK] Keep-alive is ON.": "KEEPALIVE_ON.bat", "[OK] Keep-alive is OFF on every account.": "KEEPALIVE_OFF.bat",
+        "KEEP ALIVE ON": "KEEPALIVE_ON.bat", "[OK] Keep-alive is ON.": "KEEPALIVE_ON.bat", "[OK] Keep-alive is OFF on every account.": "tools/bat/KEEPALIVE_OFF.bat",
         "did not go through": "engine/keepalive.py", "Connected: test delivered": "engine/alerts_box.py", "Olympus alerts are ON": "engine/alerts_box.py",
         "TEST: Zlarior 50K LONG opened": "engine/alert_bus.py", "PAYOUT READY: request": "engine/funded_life.py",
         "WAIT: this is payout": "engine/funded_life.py", "Ask Claude before you request it.": "engine/funded_life.py",
@@ -128,7 +128,7 @@ def part_a(page, doc, p):
     wrong = [f"{t} ({f})" for t, f in said.items() if t not in rd(os.path.join(ROOT, f)) or t not in page or t not in doc]
     check(f"a. New this week: {len(said)} quoted screen texts are the code's own and in both the page and the doc", not wrong, wrong)
     nfacts = ["$2,100", "$4,100", "$1,000", "$2,000", "-$2.40", "-$22.90", "15:33-15:48 ET", ":8444/alerts/", "5 of 5", "23:00-07:00 ET",
-              "START_BOT.bat", "ALERTS_SETUP.bat", "TEST_ALERT.bat", "ALERTS_OFF.bat"]
+              "START_BOT.bat", "ALERTS_SETUP.bat", "tools/bat/TEST_ALERT.bat", "tools/bat/ALERTS_OFF.bat"]
     nmiss = [f for f in nfacts if not (f in page and f in doc)]
     kp = rd(os.path.join(ROOT, "engine", "funded_life.py"))
     check("a. New this week: payout line $1,000 at $2,100 (25K) / $2,000 at $4,100 (50K), keep-alive cost and window, alerts page, in both",
@@ -142,7 +142,7 @@ def part_a(page, doc, p):
     check("a. kill switch as coded: /api/live/kill turns auto-resume off; phone KILL also reaches Kalshi", "@app.post(\"/api/live/kill\")" in srv
           and "_ar.disable(\"kill switch\")" in srv and "kalshi_live.phone_press" in ps and 'PREFIX = "/safety"' in ps)
     check("a. add-account page + Kalshi stop exist", 'PREFIX = "/add-account"' in rd(os.path.join(ROOT, "engine", "account_box.py"))
-          and "engine.kalshi_live --stop" in rd(os.path.join(ROOT, "KALSHI_STOP.bat")))
+          and "engine.kalshi_live --stop" in rd(os.path.join(ROOT, "tools/bat/KALSHI_STOP.bat")))
     words = ["Room", "Drawdown", "Floor", "To pass", "Eval / funded", "DLL", "EOD", "Limit 0", "R", "PF", "Win %", "Twin", "Edge check",
              "Circuit breaker", "Sweep", "Stop / target", "MNQ", "Flat", "Armed", "Paper", "PC SILENT", "Kill switch", "Decide card", "ZEUS Lab"]
     gl = page.split('id="words"', 1)[-1]

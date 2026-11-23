@@ -25,9 +25,9 @@ Entries, exits and "bot stopped" ALSO go to the next channel that gives a receip
 Setup (the owner, once): ALERTS_SETUP.bat -> tools/alerts_setup.py -> %USERPROFILE%\\.olympus\\alerts.json (never the repo):
   {"telegram": {"token": "...", "chat_id": 123}, "discord": {"webhook": "https://discord.com/api/webhooks/..."}}
 Cloud (the PC-silent monitor): repo secrets LE_TG_TOKEN + LE_TG_CHAT and / or LE_DISCORD_WEBHOOK (env) instead of the file.
-Off switch: the file %USERPROFILE%\\.olympus\\alert_bus_off (ALERTS_OFF.bat) or LE_ALERT_BUS=0 -> every call site takes its
+Off switch: the file %USERPROFILE%\\.olympus\\alert_bus_off (tools/bat/ALERTS_OFF.bat) or LE_ALERT_BUS=0 -> every call site takes its
 old path exactly (ntfy + Web Push). Also off when neither Telegram nor Discord is set up (nothing changes before setup).
-Test: TEST_ALERT.bat (tools/alerts_setup.py --test). Tests: python -X utf8 -m tests.test_alert_bus
+Test: tools/bat/TEST_ALERT.bat (tools/alerts_setup.py --test). Tests: python -X utf8 -m tests.test_alert_bus
 """
 from __future__ import annotations
 
@@ -686,7 +686,7 @@ TEST_BODY = "stop 21,574.00, risk $228. This is a test from TEST_ALERT: no trade
 
 
 def test_all(cfg: dict | None = None) -> dict:
-    """TEST_ALERT.bat: one fake entry through EVERY configured channel (no fallback: each on its own). {channel: (receipt, why)}."""
+    """tools/bat/TEST_ALERT.bat: one fake entry through EVERY configured channel (no fallback: each on its own). {channel: (receipt, why)}."""
     cfg = cfg if cfg is not None else config()
     ev = {"kind": "test", "key": "", "title": TEST_TITLE, "body": TEST_BODY}
     out = {}

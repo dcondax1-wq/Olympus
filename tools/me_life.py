@@ -46,8 +46,8 @@ HORIZON = 60
 CAR_DEFAULT_MPM = 1000.0       # miles a month when there is only one reading (about the US average)
 OIL_SOON_MI, OIL_SOON_D = 300, 7
 CONNECT = {
-    "freedom": "Import your bank exports (RUN_MONEY.bat) or type your pay on the PC: python tools\\me_life.py --paycheck 3200",
-    "dates": "On the PC: python tools\\me_life.py --date \"Mom's birthday=03-14\" (calendars connected with CONNECT_DAY.bat count too)",
+    "freedom": "Import your bank exports (tools/bat/RUN_MONEY.bat) or type your pay on the PC: python tools\\me_life.py --paycheck 3200",
+    "dates": "On the PC: python tools\\me_life.py --date \"Mom's birthday=03-14\" (calendars connected with tools/bat/CONNECT_DAY.bat count too)",
     "car": "On the PC: python tools\\me_life.py --car-miles 48210 --car-date registration=2027-03-31",
     "streaks": "Counted for you once the Apple Watch days arrive (the 'Health to PC' Shortcut)",
 }

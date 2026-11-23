@@ -181,7 +181,7 @@ def check_key(env=None) -> tuple:
         rec.update(ok=True, balance=round(bal, 2))
         said = f"Key OK · balance {KL.money(bal)}"
     except KL.KalshiError as e:
-        said = KL.key_fix(e).replace(", then double-click KALSHI_KEY_SETUP.bat again", ", then paste it here again")
+        said = KL.key_fix(e).replace(", then double-click tools/bat/KALSHI_KEY_SETUP.bat again", ", then paste it here again")
         rec["why"] = said[:160]
     KL._jwrite(os.path.join(_P()["dir"], "key_check.json"), rec)
     return rec["ok"], said

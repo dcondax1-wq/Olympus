@@ -253,7 +253,7 @@ def main():
             check("no live bars: stops before the Sim test, never started",
                   rc == 1 and "feed" in w.calls and not any(isinstance(c, str) and c.startswith("--sim") for c in w.calls)
                   and not any(isinstance(c, tuple) and c[0] == "start" for c in w.calls), w.calls)
-        # GitHub-free mode (BOTS_BACK.bat marker / LE_NO_GITHUB=1): START BOT never fetches from GitHub (2026-11-14 drill)
+        # GitHub-free mode (tools/bat/BOTS_BACK.bat marker / LE_NO_GITHUB=1): START BOT never fetches from GitHub (2026-11-14 drill)
         pulls = []
         G.PULL = lambda: (pulls.append(1), {"status": "up_to_date", "say": "x"})[1]
         old_ng = os.environ.get("LE_NO_GITHUB")

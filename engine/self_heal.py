@@ -24,7 +24,7 @@ the bot server, never on a trade: it never starts, stops, arms or routes the bot
   pid          logs/supervisor.pid naming a process that is gone or not   deleted (STOP_BOT would wait for, then stop, that pid)
                PowerShell (a crash / restart)
   server       the bot server does not answer while data/autostart.json   nothing automatic (the supervisor run_bot.ps1 restarts a
-               says the bot should run                                      crashed server itself): board event, the step BOTS_BACK.bat;
+               says the bot should run                                      crashed server itself): board event, the step tools/bat/BOTS_BACK.bat;
                                                                             the 15-minute report already pushes "bot down"
   pip          a package of requirements.txt is not installed             pip install of the missing ones only, outside 01:50-16:00 ET
                                                                             on a weekday and with no trade open
@@ -33,7 +33,7 @@ the bot server, never on a trade: it never starts, stops, arms or routes the bot
                worker precaching an old ?v, launcher copies drifting,       Claude's): named in the HEAL line and the log
                a bot-like tracked file off engine/generated_files' list
 
-Weekly clean (the PC side of tools/disk_clean.py; CLEAN_STORAGE.bat stays the big manual one): only files that rebuild or are
+Weekly clean (the PC side of tools/disk_clean.py; tools/bat/CLEAN_STORAGE.bat stays the big manual one): only files that rebuild or are
 rotation output, by age: dated logs (a YYYYMMDD / YYYY-MM-DD name) and logs/*.gz after 30 days (the order audit
 ninjatrader_oif*.gz: 365), OLYMPUS_BACKUP_*.zip code zips after 14 days (the newest 2 stay), backups/le-*.zip after 14 days (the
 newest 3 stay), reports/tmp after 7 days, research/runs/_cache after 14 days, __pycache__ files of a deleted .py or of another
@@ -725,7 +725,7 @@ def fix_server(ctx) -> list:
         return []
     return [item("server", "server", "need", "the bot server does not answer while it should run (data/autostart.json is there); "
                  "the supervisor restarts a crashed server by itself, this one stayed down",
-                 "double-click BOTS_BACK.bat (a real account is never armed by it: you type the live phrase yourself)")]
+                 "double-click tools/bat/BOTS_BACK.bat (a real account is never armed by it: you type the live phrase yourself)")]
 
 
 # ------------------------------------------------------------------------------------------------ 6. Python packages
@@ -1035,7 +1035,7 @@ def fix_disk(ctx, state: dict, force_clean=False, disk_free=None) -> tuple:
     if not due:
         if low and free < DISK_RED_GB:
             return [item("disk", "disk", "need", f"only {free:.1f} GB free on the bot's drive (the clean ran {((ctx.now - last) / 3600):.0f} h ago)",
-                         "double-click CLEAN_STORAGE.bat (dry run first; it also clears Windows' own junk)")], None
+                         "double-click tools/bat/CLEAN_STORAGE.bat (dry run first; it also clears Windows' own junk)")], None
         return [], None
     res = clean(ctx)
     res["sizes"] = sizes(ctx)
@@ -1048,7 +1048,7 @@ def fix_disk(ctx, state: dict, force_clean=False, disk_free=None) -> tuple:
                           freed=res["bytes"]))
     if after is not None and after < DISK_RED_GB:
         items.append(item("disk", "disk", "need", f"only {after:.1f} GB free on the bot's drive after the clean",
-                          "double-click CLEAN_STORAGE.bat (dry run first; it also clears Windows' own junk)"))
+                          "double-click tools/bat/CLEAN_STORAGE.bat (dry run first; it also clears Windows' own junk)"))
     return items, res
 
 

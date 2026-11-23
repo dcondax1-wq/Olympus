@@ -733,7 +733,7 @@ ADDON_NOT_STARTED = ("LE_Feed is installed but has not started (no le_feed_statu
 
 
 def addon_installed(folder: str | None = None) -> bool:
-    """bin\\Custom\\AddOns\\LE_Feed.cs is in the NinjaTrader folder (NO_CHART_MODE.bat copied it)."""
+    """bin\\Custom\\AddOns\\LE_Feed.cs is in the NinjaTrader folder (tools/bat/NO_CHART_MODE.bat copied it)."""
     try:
         return os.path.isfile(os.path.join(folder or default_folder(), "bin", "Custom", "AddOns", "LE_Feed.cs"))
     except Exception:

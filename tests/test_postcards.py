@@ -10,7 +10,7 @@ c. the gate + the limits: OFF by default; TEST mode = 3 a day with a test_ key; 
 d. the provider call: Lob's form (4x6, First Class, marketing, to / from, front / back PNG), the key only in the Basic auth header
 e. no secret: the key is in postcards.json only (not the state, not an error, not the printed output, not the repo)
 g. the code (FR-27) on both sides, the batch order (trades, health, salons, auto, food; chains skipped), the day-10 card, the results table
-f. the Windows side: POSTCARD_SETUP.bat (installs Pillow + segno, setup -> samples -> the task), POSTCARD_STOP.bat, CRLF
+f. the Windows side: tools/bat/POSTCARD_SETUP.bat (installs Pillow + segno, setup -> samples -> the task), tools/bat/POSTCARD_STOP.bat, CRLF
 """
 from __future__ import annotations
 
@@ -202,13 +202,13 @@ def main():
         check("e. no Lob key in the repo (only this test's made-up ones)", set(tracked) <= {"tests/test_postcards.py"}, tracked)
 
         # ---------------------------------------------------------------- f. the Windows side
-        bs, bt = open(os.path.join(ROOT, "POSTCARD_SETUP.bat"), "rb").read(), open(os.path.join(ROOT, "POSTCARD_STOP.bat"), "rb").read()
+        bs, bt = open(os.path.join(ROOT, "tools/bat/POSTCARD_SETUP.bat"), "rb").read(), open(os.path.join(ROOT, "tools/bat/POSTCARD_STOP.bat"), "rb").read()
         check("f. both .bat files use CRLF", all(b"\n" not in x.replace(b"\r\n", b"") for x in (bs, bt)))
         s = bs.decode()
-        check("f. POSTCARD_SETUP.bat: installs Pillow + segno, setup -> samples -> the task -> status (stops when setup fails)",
+        check("f. tools/bat/POSTCARD_SETUP.bat: installs Pillow + segno, setup -> samples -> the task -> status (stops when setup fails)",
               "pip install --user --quiet segno pillow" in s and s.index("postcards.py setup") < s.index("postcards.py samples") < s.index("agency_mail_task.ps1") < s.index("postcards.py status")
               and "if errorlevel 1 goto :end" in s)
-        check("f. POSTCARD_STOP.bat: OFF", "postcards.py stop" in bt.decode())
+        check("f. tools/bat/POSTCARD_STOP.bat: OFF", "postcards.py stop" in bt.decode())
         # ---------------------------------------------------------------- g. codes, the batch order, the day-10 card, the results table
         H = os.environ["OLYMPUS_HOME"]
         for f_ in ("agency_mail_state.json", "agency_never.json"):

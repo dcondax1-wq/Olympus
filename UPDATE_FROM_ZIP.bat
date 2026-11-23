@@ -4,7 +4,7 @@ rem takes the newest OLYMPUS_BACKUP_*.zip from this folder, Downloads or Desktop
 rem .sha256.txt next to it), saves the files it will replace in backups\update_from_zip\ and updates the bot folder.
 rem It REFUSES while the bot is running and asks first while the market is open. It never overwrites your local-only
 rem files (alerts, TradingView, autostart, bot state, memory, .env, NinjaTrader bars, logs) and keeps a live_model*.json
-rem you changed. It never starts, stops or arms the bot and never touches NinjaTrader or an order. Undo: UNDO_UPDATE.bat
+rem you changed. It never starts, stops or arms the bot and never touches NinjaTrader or an order. Undo: tools\bat\UNDO_UPDATE.bat
 rem docs\NQ_BOT_BACK.md step 1. The work is done by tools\update_from_zip.py.
 setlocal EnableExtensions
 rem cmd.exe reads a running .bat line by line from its byte offset, and the update below can rewrite this very file:
@@ -65,7 +65,7 @@ echo        or drag the zip onto UPDATE_FROM_ZIP.bat. Nothing was changed.
 goto :end
 
 :nopython
-echo  [FIX] Python not found. Double-click ONE_TIME_SETUP.bat first. Nothing was changed.
+echo  [FIX] Python not found. Double-click tools\bat\ONE_TIME_SETUP.bat first. Nothing was changed.
 
 :end
 echo.

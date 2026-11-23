@@ -2,7 +2,7 @@
 error translation, the phone notices (pre-session, day / week summary, internet / NinjaTrader drop + recovery, MFFU
 inactivity, eval passed / failed, contract roll), sending each once, nightly backup + log rotation, the update guard,
 the heartbeat's "ops" block + logs/heartbeat_last.json, push.pc_send_now, the cloud README row, and static checks of
-UPDATE.bat / START_DASHBOARD.bat / HEALTH_CHECK.bat / STOP_BOT.bat / SETUP_SHORTCUTS.bat and their PowerShell scripts
+UPDATE.bat / START_DASHBOARD.bat / HEALTH_CHECK.bat / STOP_BOT.bat / tools/bat/SETUP_SHORTCUTS.bat and their PowerShell scripts
 (PowerShell can't run here: they are parsed and grepped). No network, nothing written under data/ or logs/.
 
   python -X utf8 -m tests.test_ops
@@ -460,7 +460,7 @@ def main() -> int:
         def read(rel):
             with open(os.path.join(ROOT, rel), encoding="utf-8") as fh:
                 return fh.read()
-        bats = ["UPDATE.bat", "START_DASHBOARD.bat", "HEALTH_CHECK.bat", "STOP_BOT.bat", "SETUP_SHORTCUTS.bat"]
+        bats = ["UPDATE.bat", "START_DASHBOARD.bat", "HEALTH_CHECK.bat", "STOP_BOT.bat", "tools/bat/SETUP_SHORTCUTS.bat"]
         ps1 = ["scripts/make_shortcuts.ps1", "scripts/install_ops_task.ps1"]
         missing = [b for b in bats + ps1 + ["scripts/ops_tick.py", "docs/DAILY_CHECKLIST.md", "docs/TROUBLESHOOTING.md"]
                    if not os.path.exists(os.path.join(ROOT, b))]
@@ -474,7 +474,7 @@ def main() -> int:
                 probs.append(f"{b}: goto without label {gotos - labels}")
             if not s.lstrip().lower().startswith("@echo off"):
                 probs.append(f"{b}: no @echo off")
-            if 'cd /d "%~dp0"' not in s:
+            if 'cd /d "%~dp0"' not in s and 'cd /d "%LE_HOME%"' not in s:
                 probs.append(f"{b}: does not cd to its folder")
             for ln in s.splitlines():
                 t = ln.strip()

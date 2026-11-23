@@ -42,7 +42,7 @@ QUIET = (8, 21)                 # reminders between 08:00 and 21:00 New York
 KEEP_SENT_DAYS = 120
 STALE_BANK_DAYS = 10
 CONNECT = {
-    "money": "On the PC: put a bank or card CSV in %USERPROFILE%\\.olympus\\money_inbox\\ and double-click RUN_MONEY.bat (docs/CONNECT_MONEY.md)",
+    "money": "On the PC: put a bank or card CSV in %USERPROFILE%\\.olympus\\money_inbox\\ and double-click tools/bat/RUN_MONEY.bat (docs/CONNECT_MONEY.md)",
     "cards": me_cards.CONNECT,
     "health": me_health.CONNECT,
     "home": me_home.CONNECT,

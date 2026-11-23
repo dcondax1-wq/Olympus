@@ -2,7 +2,7 @@
 
 The owner wants zero hands-on outreach. AI phone calls are out (FCC: an AI voice is a robocall under the TCPA; Maryland's law bans cold
 automated calls without signed consent), so the PC sends EMAIL only, to businesses with a PUBLIC business email, within hard limits:
-  * OFF until the owner types SEND EMAILS in EMAIL_SETUP.bat ("live"); "dry" sends every message to the owner's own test address only.
+  * OFF until the owner types SEND EMAILS in tools/bat/EMAIL_SETUP.bat ("live"); "dry" sends every message to the owner's own test address only.
   * at most CAP_NEW (20) new businesses a day (warm-up), follow-ups on day 3 and day 7 only, nothing after a reply, Mon-Fri 9:00-16:00 ET.
   * a suppression list: an opt-out reply, a bounce or "stop" = never again (address and, for a bounce, the address only).
   * every message: the sender's real name and business, the postal address and a one-line way to say no (CAN-SPAM); refused otherwise.

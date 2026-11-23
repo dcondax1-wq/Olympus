@@ -1,4 +1,6 @@
 @echo off
+set "LE_HOME=%~dp0"
+if not exist "%~dp0engine\" if exist "%~dp0..\..\engine\" for %%I in ("%~dp0..\..") do set "LE_HOME=%%~fI\"
 rem Liquidity Engine: CLEAN STORAGE (double-click). Frees disk space on this PC (Surface or main PC): it shows a plain table of
 rem what it would free, asks Y, then clears ONLY safe things: temp files, browser caches, Windows Update download cache,
 rem crash reports, old logs, NinjaTrader's own old log and trace files, the bot's old logs, backups, old code zips and
@@ -12,14 +14,14 @@ rem Works from the bot folder, or downloaded alone (then it fetches the script f
 rem docs\PC_PERFORMANCE.md
 setlocal EnableExtensions
 title Liquidity Engine - CLEAN STORAGE
-cd /d "%~dp0"
+cd /d "%LE_HOME%"
 where powershell >nul 2>&1
 if errorlevel 1 goto :nops
-if exist "%~dp0scripts\clean_storage.ps1" goto :local
+if exist "%LE_HOME%scripts\clean_storage.ps1" goto :local
 goto :web
 
 :local
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\clean_storage.ps1" %* & echo. & pause & exit /b
+powershell -NoProfile -ExecutionPolicy Bypass -File "%LE_HOME%scripts\clean_storage.ps1" %* & echo. & pause & exit /b
 
 :web
 powershell -NoProfile -ExecutionPolicy Bypass -Command "$t = Join-Path $env:TEMP 'le_clean_storage.ps1'; try { Invoke-WebRequest -Uri 'https://dcondax1-wq.github.io/pc/clean_storage.ps1' -OutFile $t -UseBasicParsing -TimeoutSec 60 } catch { Write-Host '  [FIX] Could not download the cleaner. Check the internet and double-click again, or send Claude a photo of this window.'; exit 1 }; & powershell -NoProfile -ExecutionPolicy Bypass -File $t" & echo. & pause & exit /b

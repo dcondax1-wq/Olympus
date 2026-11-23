@@ -26,9 +26,10 @@ DATA = os.path.join(ROOT, "data")
 ET = ZoneInfo("America/New_York")
 STALE_SESSIONS = 3
 SKIP = re.compile(r"^(tv_|_)")
-WHY = {"ES": "ES research bars: the PC has no ES / MES feed (LEAD_WIRES: add it to engine/ninjatrader.feed_instruments)",
-       "VIX": "CBOE daily close (engine/news.py refresh on the PC)", "VXN": "CBOE daily close (engine/news.py refresh on the PC)",
-       "1d": "daily bars: tools/data_pull.py builds 5m / 15m / 1h only"}
+WHY = {"ES": "ES research bars come from the PC's ES / MES feed: run python tools/data_pull.py --latest (the PC must be on)",
+       "VIX": "CBOE daily close: run python tools/context_refresh.py", "VXN": "CBOE daily close: run python tools/context_refresh.py",
+       "CBOE": "CBOE vol closes: run python tools/context_refresh.py", "GEX": "SqueezeMetrics GEX: run python tools/context_refresh.py",
+       "1d": "daily bars: python tools/data_pull.py --latest rebuilds them from the 1h bars (import_futures.build_daily)"}
 
 
 def _last_line(path: str) -> str | None:

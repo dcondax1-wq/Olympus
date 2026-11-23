@@ -59,7 +59,7 @@ def routes(ntfy_cfg=None) -> dict:
     w = out["warn"]
     if out["bus"]:
         w.append("Telegram / Discord are set up (ALERTS_SETUP.bat): trades and alerts go there first, ntfy and the Olympus app are "
-                 "the fallbacks. TEST_ALERT.bat tests them.")
+                 "the fallbacks. tools/bat/TEST_ALERT.bat tests them.")
     if not out["phones"] and not out["ntfy"] and not out["bus"]:
         w.append("NO ROUTE: this PC has no Olympus phone and no private ntfy alert topic, so trade alerts reach nobody. Fix: on the "
                  "iPhone open Olympus from the Home Screen and tap Allow notifications; and on the PC run "

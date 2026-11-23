@@ -523,7 +523,7 @@ def test_home():
     check("f. a new device: the first scan only records what is there; a new one later = one push (vendor, never its MAC or IP), and only once",
           len(evd) == 1 and evd[0]["title"] == "New device on your Wi-Fi" and "Espressif" in evd[0]["body"] and "24:0a" not in evd[0]["body"] and "192.168" not in evd[0]["body"] and not evd2, evd)
     st, evp = HM.update(st, NOW, pc={"disk_free_pct": 4.0, "disk_free_gb": 19.0})
-    check("f. the disk almost full (< 10% free): one push a day, the fix in plain words", len(evp) == 1 and "CLEAN_STORAGE.bat" in evp[0]["body"] and evp[0]["key"] == f"home:disk:{TODAY}", evp)
+    check("f. the disk almost full (< 10% free): one push a day, the fix in plain words", len(evp) == 1 and "tools/bat/CLEAN_STORAGE.bat" in evp[0]["body"] and evp[0]["key"] == f"home:disk:{TODAY}", evp)
     st["seeded_t"] = NOW - 7200
     doc = HM.build(st, NOW, {"names": {"a0:b1:c2:d3:e4:f5": "Router upstairs"}, "ignore": []})
     blob = json.dumps(doc)
@@ -712,8 +712,8 @@ def test_node():
           [t["id"] for t in V["tiles"]] == ["money", "health", "home", "date"] and V["tiles"][0]["src"] == "Bank exports" and V["tiles"][0]["age"] == "4 d ago"
           and V["tiles"][2]["age"] == "just now" and len(V["areas"]) == 8 and V["connected"] == 8 and V["has"] and not V["banner"] and len(V["areas"][0]["cards"]) == 4, V["tiles"])
     check("i. me.js view() without the file (the public site): the banner says to open it through the PC's link; every tile 'Not connected' + how; every area its connect line",
-          not N["has"] and "LIVE_LINK.bat" in N["banner"] and all(t["empty"] and t["connect"] for t in N["tiles"]) and all(a["state"] == "empty" and a["connect"] for a in N["areas"])
-          and N["tiles"][0]["connect"] == "A bank CSV + RUN_MONEY.bat on the PC" and N["areas"][0]["connect"] == me_hub.CONNECT["money"], (N["tiles"][0], N["areas"][0]))
+          not N["has"] and "tools/bat/LIVE_LINK.bat" in N["banner"] and all(t["empty"] and t["connect"] for t in N["tiles"]) and all(a["state"] == "empty" and a["connect"] for a in N["areas"])
+          and N["tiles"][0]["connect"] == "A bank CSV + tools/bat/RUN_MONEY.bat on the PC" and N["areas"][0]["connect"] == me_hub.CONNECT["money"], (N["tiles"][0], N["areas"][0]))
     check("i. a broken file = the same as none; junk is cut and cleaned (markup removed, 120 characters, an unknown level dropped, a bar kept within 0-100%)",
           not B["has"] and J["tiles"][0]["value"] == "b x /b" and len(J["tiles"][0]["sub"]) == 120 and J["tiles"][0]["lvl"] == "" and J["areas"][0]["cards"][0]["rows"][0]["pct"] == 100, J["tiles"][0])
     check("i. the connect lines on the phone are the PC's own words (me.js CONNECT == tools/me_hub.py CONNECT)", O["connect"] == me_hub.CONNECT,
@@ -811,7 +811,7 @@ def test_page():
             open_me(p, origin2)
             r = p.evaluate(STATE)
             check("j. without the file (the public site): the banner says to open it through the PC's link, every tile 'Not connected' + its one-line how, every area its connect line",
-                  "LIVE_LINK.bat" in r["status"] and all(t["text"][1] == "Not connected" and t["text"][3] == "How to connect" and len(t["text"]) == 4 for t in r["tiles"])
+                  "tools/bat/LIVE_LINK.bat" in r["status"] and all(t["text"][1] == "Not connected" and t["text"][3] == "How to connect" and len(t["text"]) == 4 for t in r["tiles"])
                   and len(r["empties"]) == 8 and r["empties"][1].startswith("On the PC: python tools\\me_cards.py --add") and not errs, (r["status"], r["tiles"][0], errs[:2]))
             AK.shot(p, "me-hub-empty")
             check("j. without data: taps >= 44 px, no sideways scroll", not AK.taps(p) and AK.no_sideways(p), AK.taps(p)[:3])

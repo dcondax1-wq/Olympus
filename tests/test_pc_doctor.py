@@ -1,4 +1,4 @@
-"""PC DOCTOR (tools/pc_doctor.py, PC_DOCTOR.bat): each link of the PC -> phone report, the most likely cause, the next step.
+"""PC DOCTOR (tools/pc_doctor.py, tools/bat/PC_DOCTOR.bat): each link of the PC -> phone report, the most likely cause, the next step.
 
     python -X utf8 -m tests.test_pc_doctor        (~2 s; temp folders, fake http / task / git: never the real network)
 """
