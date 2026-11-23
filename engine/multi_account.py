@@ -261,6 +261,8 @@ def normalize(spec: dict, primary: dict | None = None, seen_ids=(), seen_names=(
         out["lane"] = str(s.get("lane"))     # "rapid": LIT's lane of the Rapid EOD (engine/rapid.py: ATLAS shares the account)
     if s.get("slot") == "rapid2" and out.get("lane") == "rapid":
         out["slot"] = "rapid2"               # the 2nd Rapid (engine/rapid.py, data/rapid2.json): its own ATLAS / lifecycle key
+    if s.get("combo"):
+        out["combo"] = s.get("combo")        # engine/combo25 test harnesses only (the real bot reads the owner's switch, never this)
     if s.get("lit_bank") is True and out.get("lane") == "rapid":
         out["lit_bank"] = True               # the Rapid 25K's "bank at the room" option (engine/rapid.lit_bank; OFF by default)
     pre = PRESETS.get(out["preset"])
