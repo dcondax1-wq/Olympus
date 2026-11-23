@@ -688,7 +688,8 @@ def main():
     part_a()
     part_b()
     part_b2()
-    if os.environ.get("KC_NO_BROWSER") != "1":
+    from tests import pw_skip
+    if os.environ.get("KC_NO_BROWSER") != "1" and not pw_skip.missing("the browser part"):   # night-reds2: clean skip without it
         run_browser()
     print(f"\n{sum(RES)}/{len(RES)} passed")
     return 0 if all(RES) else 1

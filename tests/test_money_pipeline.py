@@ -121,11 +121,10 @@ def node_core():
 
 
 def browser():
-    try:
-        from playwright.sync_api import sync_playwright
-    except ImportError:
-        check("c. playwright", False)
+    from tests import pw_skip
+    if pw_skip.missing("c. (the browser part)"):            # night-reds2: the module missing = a printed SKIP, not a FAIL
         return
+    from playwright.sync_api import sync_playwright
     import http.server
     import threading
     import functools

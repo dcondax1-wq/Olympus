@@ -91,11 +91,10 @@ class _Quiet(http.server.SimpleHTTPRequestHandler):
 
 
 def browser():
-    try:
-        from playwright.sync_api import sync_playwright
-    except Exception as e:  # noqa: BLE001
-        check("b. playwright", False, e)
+    from tests import pw_skip
+    if pw_skip.missing("b. (the browser part)"):            # night-reds2: the module missing = a printed SKIP, not a FAIL
         return
+    from playwright.sync_api import sync_playwright
     srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(_Quiet, directory=os.path.dirname(WEB)))
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     url = f"http://127.0.0.1:{srv.server_address[1]}/cities/brain.html"
