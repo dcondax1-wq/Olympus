@@ -277,6 +277,7 @@ MAX_SHOWN = 5
 CLOCK_MAX_S = 5.0                 # engine/guards DEFAULTS clock_max_s (read live in clock_max())
 SAME_BLOCKER_S = 30 * 60          # never the same blocker twice within 30 min
 REPEAT_S = 60 * 60                # a NOT READY alert repeats at most once an hour
+MIN_GAP_S = 10 * 60               # and never two loud alerts within 10 min, whatever changed
 RD_MAX_BYTES = 200                # the status post's "rd" block
 STALE_VERDICT_S = 3 * 3600        # a verdict file older than this is not posted (the phone says "unknown")
 SLOTS = (("1730", 17 * 60 + 30, (6, 0, 1, 2, 3)), ("0115", 75, (0, 1, 2, 3, 4)), ("0845", 8 * 60 + 45, (0, 1, 2, 3, 4)))
@@ -324,6 +325,20 @@ def window_label(now) -> str:
     return "02:00"
 
 
+def proven_drift(net: dict) -> float | None:
+    """engine/guards.clock_probe's math (red team 2026-11-23): the Date header is whole seconds and the round trip adds doubt,
+    so only the part of the drift the probe can prove counts. The guard blocks on this number, so READY uses it too."""
+    try:
+        d = net.get("drift_s")
+        if d is None:
+            return None
+        h = max(0.0, float(net.get("unc_s") or 1.0) - 1.0)
+        lo, hi = float(d) - h, float(d) + 1.0 + h
+        return lo if lo > 0 else hi if hi < 0 else 0.0
+    except Exception:
+        return None
+
+
 def _b(level, what, why, fix, owner=True, key=None) -> dict:
     return {"key": key or what.lower()[:40], "level": level, "what": what, "why_plain_words": why, "exact_fix": fix,
             "needs_owner_at_pc": bool(owner)}
@@ -342,6 +357,7 @@ def evaluate(f: dict, now) -> dict:
 
 def _evaluate(f: dict, now) -> dict:
     hb = _dd(f.get("hb"))
+    paper_only = False
     by = {c.get("key"): c for c in _ll(f.get("checks")) if isinstance(c, dict)}
     out = []
     if f.get("closed"):                      # a full CME closure day (holiday): nothing to trade, nothing to nag about
@@ -387,13 +403,23 @@ def _evaluate(f: dict, now) -> dict:
     # 5 each account armed / held / locked, the kill switch
     try:
         from .preflight import arms
-        for nm, ok, txt in arms(hb) if hb else []:
-            if not ok and "off" not in txt:
+        rows = list(arms(hb)) if hb else []
+        live_any = any(str(txt).upper().startswith("LIVE") for _, _, txt in rows)
+        if rows and not live_any:
+            paper_only = True              # red team 2026-11-23: a Sim / paper-only day is no reason to wake the owner
+        for nm, ok, txt in rows:
+            if ok or "off" in txt:
+                continue
+            if "DISABLED" in txt or str(txt).upper().startswith("LIVE"):
                 dis = "DISABLED" in txt
                 out.append(_b(NOT_READY, f"{nm} is not armed" if not dis else f"{nm} orders are disabled",
                               f"{nm}: {txt}. It will not place a trade until you arm it.",
                               f"On the PC: double-click TRADE_HOME.bat, press 2 (Start bot) and type your arm phrase yourself "
                               f"(Claude never types it).", True, "arm:" + nm.lower()[:20]))
+            elif live_any:                 # Sim while another account is LIVE: worth a look, not a NOT READY
+                out.append(_b(WARN, f"{nm} is on Sim", f"{nm}: {txt}. It trades Sim, not the real account.",
+                              "Only if you meant it to trade for real: TRADE_HOME.bat > 2 and arm it yourself.", True,
+                              "sim:" + nm.lower()[:20]))
     except Exception:
         pass
     h = _dd(hb.get("health"))
@@ -409,10 +435,13 @@ def _evaluate(f: dict, now) -> dict:
     for r in _ll(f.get("k7")):
         if not isinstance(r, dict):
             continue
-        left = r.get("left")
-        if left is not None and left <= 2 and r.get("on") is not True:
+        left, ses = r.get("left"), r.get("ses")
+        ses = ses if isinstance(ses, (int, float)) else None
+        if left is not None and (left <= 2 or (ses is not None and ses <= 2)) and r.get("on") is not True:
             nm = str(r.get("nm") or "An account")[:24]
-            out.append(_b(NOT_READY if left <= 1 else WARN, f"{nm}: MFFU 7-day deadline in {max(0, int(left))} day(s)",
+            hard = left <= 1 or (ses is not None and ses <= 1)       # clock7's own red: 1 day or 1 session left
+            out.append(_b(NOT_READY if hard else WARN, f"{nm}: MFFU 7-day deadline in {max(0, int(left))} day(s)"
+                          + (f", {int(ses)} session(s) to trade" if ses is not None else ""),
                           "MFFU closes an account with no filled trade in 7 days; the keep-alive is off.",
                           "On the PC: double-click TRADE_HOME.bat, press 3, type KEEP ALIVE ON yourself (or let the bot take a trade).",
                           True, "k7:" + nm.lower()[:16]))
@@ -433,7 +462,10 @@ def _evaluate(f: dict, now) -> dict:
     if c and c.get("level") == "bad":
         out.append(_b(NOT_READY, "PC has no internet", "No site answered; prices, pushes and the clock check fail.",
                       "Check the Wi-Fi / router. NinjaTrader must reconnect too.", True, "internet"))
-    return _pack(out, now)
+    v = _pack(out, now)
+    if paper_only:
+        v["paper_only"] = True
+    return v
 
 
 def _pack(bl: list, now) -> dict:
@@ -456,7 +488,7 @@ def gather_facts(now=None, ctx=None, checks=None) -> dict:
         except Exception:
             pass
         f["checks"], f["hb"] = checks, ctx.get("hb") or {}
-        f["drift_s"] = _dd(ctx.get("net")).get("drift_s") if _dd(ctx.get("net")).get("up") else None
+        f["drift_s"] = proven_drift(_dd(ctx.get("net"))) if _dd(ctx.get("net")).get("up") else None
         try:
             f["disk_free_gb"] = shutil.disk_usage(ROOT).free / 1e9
         except Exception:
@@ -537,7 +569,7 @@ def read_last(path: str = LAST_PATH, now=None, max_age: int = STALE_VERDICT_S) -
 def _write(path: str, obj: dict) -> None:
     try:
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        tmp = path + ".tmp"
+        tmp = f"{path}.{os.getpid()}.tmp"
         with open(tmp, "w", encoding="utf-8") as fh:
             json.dump(obj, fh, separators=(",", ":"))
         os.replace(tmp, path)
@@ -584,13 +616,18 @@ def plan_alert(v: dict, st: dict, now, slot: str | None, reason: str = "") -> di
         if slot == "1730" and v.get("level") == READY:
             return {"key": f"ready:ok:{_et(now).date().isoformat()}", "title": headline(v), "body": "PC, NinjaTrader, bars and accounts look good.", "quiet": True}
         return None
+    if v.get("paper_only"):
+        return None
     if not active_period(now) and not slot:
+        return None
+    if now - float(st.get("last_alert", 0)) < MIN_GAP_S:
         return None
     bl = [b for b in _ll(v.get("blockers")) if b["level"] == NOT_READY]
     fresh = [b for b in bl if now - float(sent.get(b["key"], 0)) >= SAME_BLOCKER_S]
     if not fresh:
         return None
-    new = [b for b in bl if b["key"] not in _dd(st.get("last_keys"))]      # appeared since the last check
+    new = [b for b in bl if b["key"] not in _dd(st.get("last_keys"))       # appeared since the last check, and not told
+           and now - float(sent.get(b["key"], 0)) >= REPEAT_S]               # within the hour (a flapping blocker is not new)
     if now - float(st.get("last_alert", 0)) < REPEAT_S and not new:
         return None
     top = fresh[0]
@@ -650,6 +687,9 @@ def tick(now=None, ctx=None, checks=None, reason: str = "", sender=None, facts=N
 def start_after_boot(delay_s: float = 90.0) -> None:
     """server.py: once, 90 s after the bot server starts (so ATLAS has had its chance to arm), a verdict + a NOT READY alert."""
     import threading
+    if os.environ.get("LE_PC_WATCH") == "0" or os.environ.get("LE_NO_AUTOSTART") == "1" or os.environ.get("LE_SELFTEST_CHILD") == "1" \
+            or os.environ.get("LE_READY") == "0":
+        return                             # red team 2026-11-23: a dev / test server or the self-test's sealed child never alerts
 
     def run():
         time.sleep(delay_s)
