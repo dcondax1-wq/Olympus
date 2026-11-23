@@ -276,7 +276,8 @@ def save(res, path=None) -> None:
         os.makedirs(os.path.dirname(p), exist_ok=True)
         with open(p + ".tmp", "w", encoding="utf-8") as fh:
             json.dump(res, fh, indent=1)
-        os.replace(p + ".tmp", p)
+        from . import fsutil as _fsutil      # integration 2026-11-23: land-fixes' Windows / OneDrive-safe replace (test_selfheal rule)
+        _fsutil.replace(p + ".tmp", p)
     except Exception:
         pass
 

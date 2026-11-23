@@ -80,7 +80,7 @@ night-decide, night-docs, night-faults, night-hermetic, night-leadwires, night-m
   `tools/bat/KEEPALIVE_OFF.bat` path.
 - **trading_home_core.js (fleetmgr-rt vs startfix/truth):** HEAD's account lines (`accounts: acctRows`) AND fleetmgr's info-only Fleet line; one
   return with both. node --check OK; site_checks fine (the page loads it without a ?v= tag).
-- **payout_autopilot.py `_write` (night-payout) and fleet_mgr.py state save (night-fleetmgr) vs land-fixes:** bare `os.replace` -> `fsutil.replace`
+- **payout_autopilot.py `_write` (night-payout), fleet_mgr.py state save (night-fleetmgr) and post_update_check.save (night-verify) vs land-fixes:** bare `os.replace` -> `fsutil.replace`
   (land-fixes' Windows / OneDrive lock rule; test_selfheal red otherwise).
 - **EVREOD semantic clash (startfix vs r50k):** night-startfix made `EVREOD` MFFU's confirmed Rapid EOD prefix (seen on the owner's PC); r50k's
   test still expected an EVREOD name with nothing learned to be "a choice". Kept startfix's rule (newer real-PC evidence; it arms nothing,
