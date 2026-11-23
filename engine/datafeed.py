@@ -703,7 +703,8 @@ def extract(blob: bytes, out_dir: str) -> list:
             os.makedirs(os.path.dirname(fp), exist_ok=True)
             with open(fp + ".tmp", "wb") as fh:
                 fh.write(b)
-            os.replace(fp + ".tmp", fp)
+            from . import fsutil as _fsutil
+            _fsutil.replace(fp + ".tmp", fp)
         out.append((day, partial))
     return out
 

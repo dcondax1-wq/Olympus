@@ -1130,7 +1130,8 @@ def spawn(state_dir=None) -> int:
     os.makedirs(P["dir"], exist_ok=True)
     try:                                                     # keep the loop's own output small (data map: clock_loop.log)
         if os.path.getsize(P["clock_out"]) > 1_000_000:
-            os.replace(P["clock_out"], P["clock_out"] + ".1")
+            from engine import fsutil as _fsutil
+            _fsutil.replace(P["clock_out"], P["clock_out"] + ".1")
     except OSError:
         pass
     out = open(P["clock_out"], "a", encoding="utf-8")

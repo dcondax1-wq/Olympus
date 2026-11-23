@@ -1,0 +1,317 @@
+[
+ {
+  "area": "run",
+  "title": "If ATLAS's 25K fails to arm, the check after the start stops the whole bot, Zlarior's 50K included (the Re-arm loop)",
+  "why": "Confirmed in the code. In _step_arm, a failed resolve_atlas (it always fails when inp=None and a funded rename is waiting) or a failed arm_b only adds a NOT ARMED row and carries on. The bot then starts, and verify_routes (go.py:206-207) adds \"ATLAS's 25K is not armed\". step_arm (go.py:868-871) and resume_now (go.py:1325-1332) then call --stop. The step_auto opt-in path stops the bot again and sets retry_s=60, so the same failure repeats every minute. resume_problem (go.py:1255-1256) asks for the phrase again while ATLAS is unarmed. An unarmed ATLAS cannot send orders anyway (_live_gate refuses a cfg that is not armed), so stopping Zlarior protects nothing. Note that tests/test_arm_rt.py:236-239 and tests/test_go.py:244 lock in the current stop-on-unarmed behaviour, so they need updating with the fix.",
+  "fix": "engine/go.py: give verify_routes a soft=True return (or a second list). Hard (stop): bot not running, Zlarior on the wrong Name, adapter not ninjatrader, the 25K listed as an extra, ATLAS plan not builder25k, or ATLAS armed on a Name that is not the saved 25K. Soft (keep running, one NOT ARMED ATLAS row with _atlas_fix): ATLAS not armed, or b.account empty or not the saved 25K while armed is not True. Use only the hard list in step_arm, resume_now and the step_auto opt-in path (go.py ~1490, which also stops the retry_s=60 loop). In resume_problem, return None for the unarmed-ATLAS case and have step_auto print 'Running Zlarior; ATLAS NOT armed: <why>'. Update tests/test_arm_rt.py:236-239 and add a test_go case where soft passes.",
+  "files": [
+   "/home/user/wt-web/engine/go.py"
+  ],
+  "effort": "S",
+  "zone": "bot-code",
+  "value": "Zlarior's 50K keeps trading whenever ATLAS has an account problem, and the phrase / stop / phrase loop ends.",
+  "owner_pain": "He types the phrase, the bot starts and is stopped again, and neither account trades.",
+  "evidence": "engine/go.py:205-208 verify_routes adds \"ATLAS's 25K is not armed\" / 'ATLAS is on X, not the 25K'. engine/go.py:868-872 step_arm: any problem -> ninjatrader.main(['--stop']) and every account NOT ARMED. engine/go.py:1325-1332 resume_now does the same stop. engine/go.py:1255-1257 resume_problem asks for the phrase again while ATLAS is unarmed. engine/go.py:632-636 resolve_atlas with inp=None (every Start page / job run) always returns 'needs your YES', so ATLAS stays unarmed."
+ },
+ {
+  "area": "run",
+  "title": "A clock drift blocks every entry, the bot only pushes 'Settings > Time > Sync now', and it waits 15 minutes before checking again",
+  "why": "Confirmed. guards.clock_tick re-probes only after 20 s when bad==1, and every clock_every_s (900 s) once bad>=2 (guards.py:328). clock_problem blocks entries while bad>=2. The push at guards.py:848-852 only gives a manual Windows instruction and makes no sync attempt. self_heal fix_clock runs at most every 55 min (EVERY_S) and is in GATED (self_heal.py:619), so it never runs while a trade may be open. The _CLOCK['t']=0 reset only happens from the Start page button (start_api.py:280-283). Worst case is roughly an hour or more of blocked entries with no one at the PC.",
+  "fix": "engine/guards.py, in the guard tick next to line 848: when p is set, the platform is Windows, no position is open (bot flat; the same no-trade-open rule self_heal uses), and _CLOCK.get('sync_t',0) is older than 300 s, set _CLOCK['sync_t']=now and run go.sync_clock() in a daemon thread. Inside that thread, on success set _CLOCK['t']=0.0 and _CLOCK['bad']=1 so a 20 s confirming probe follows. Send the push after the sync result ('synced by itself' / 'could not sync: run FIX_CLOCK.bat as administrator'), not before. In clock_tick use every = 20 if bad==1 else 60 if bad>=2 else clock_every_s. No change is needed in go.py (only import sync_clock lazily). Add a guards test with a fake sync and probe.",
+  "files": [
+   "/home/user/wt-web/engine/guards.py",
+   "/home/user/wt-web/engine/go.py"
+  ],
+  "effort": "S",
+  "zone": "bot-code",
+  "value": "Tonight's 25 s drift fixes itself in about a minute instead of blocking every entry until the owner happens to look.",
+  "owner_pain": "Entries are blocked without him knowing, and the fix is a manual Windows click he has to do from his phone.",
+  "evidence": "engine/guards.py:328 every = 20.0 if _CLOCK['bad'] == 1 else 900 (bad >= 2 re-probes every 15 min). engine/guards.py:848-852 the push 'Clock drift: entries blocked ... Windows: Settings > Time > Sync now.' with no sync attempt. engine/self_heal.py:71 EVERY_S = 55*60 (the hourly run). engine/go.py:1338 sync_clock exists. engine/start_api.py:283 shows the 'probe again' reset (_CLOCK['t']=0.0) exists but only runs on the manual button."
+ },
+ {
+  "area": "run",
+  "title": "PC self-test 'Launch checklist' fails on the real PC: the test expects exactly 12 lines, but the PC has BLITZ and a Rapid",
+  "why": "Confirmed. wiring_checks (tests/test_launch_checklist.py:205-211) builds a real Heartbeat whose launch_check.facts calls rapid_fact(bot), which reads the real data/rapid.json (rapid.PATH is None, so it uses ROOT/data/rapid.json; pc_selftest.child_env does not redirect data/), and blitz_fact on the real root. checklist() adds one item per configured Rapid slot and one for BLITZ (launch_check.py:318-350). STATE.md shows a Rapid EOD 25K was added on the PC (11-21: 'check Rapid EOD 25K ... armed'), so the PC payload has at least 13 items and '== 12' fails. Whether BLITZ is configured there is not confirmed, but the Rapid alone is enough.",
+  "fix": "tests/test_launch_checklist.py wiring_checks: set rapid.PATH = os.path.join(tmp, 'rapid.json') (rapid2 follows PATH's folder) and point launch_check's c_root / second_path at a temp folder for the Heartbeat, so the test never reads the PC's files. As a safety net also assert the 12 base keys are a subset of {i['key'] for i in items} instead of len == 12. No change needed in engine/launch_check.py.",
+  "files": [
+   "/home/user/wt-web/tests/test_launch_checklist.py",
+   "/home/user/wt-web/engine/launch_check.py"
+  ],
+  "effort": "S",
+  "zone": "tests",
+  "value": "The Sunday 15:30 self-test stops sending a false red push, so a real red stands out again.",
+  "owner_pain": "A red self-test push every week that means nothing, so he learns to ignore it.",
+  "evidence": "tests/test_launch_checklist.py:210 len(pl['launch'].get('items') or []) == 12. engine/launch_check.py:318-329 (blitz item when c.get('configured')) and 332-350 (for rk in ('rapid','rapid2'): an item each). Here: 68 passed, 0 failed, with no rapid/blitz files."
+ },
+ {
+  "area": "run",
+  "title": "The Start page offers 'New account ... pick one' for the Rapid EOD the bot already trades (role_of and the Accounts list skip the Rapid slots)",
+  "why": "Confirmed. go.role_of (go.py:1069-1085) checks LIT, ATLAS, BLITZ and the accounts.json extras, but not data/rapid.json or rapid2.json. new_accounts.candidates (new_accounts.py:186) skips only role_of / dismissed / retired / finished Names. A fresh Rapid sits near $25,000, so it is not 'finished'. The onboard 'used' set is written only by new_accounts.use, never by the Rapid add path. onboard.status therefore lists the Rapid Name as fresh_eval with an 'add:rapideod25' 'Zlarior + ATLAS' button (onboard.py:124-126). account_cli.inventory already reads both Rapid slots (account_cli.py:182-190), so the data is available.",
+  "fix": "engine/go.py role_of, before the extras loop: try: from . import rapid; for sl in ('rapid','rapid2'): blk = rapid.read() if sl=='rapid' else rapid.read(rapid.slot_path('rapid2')); if blk and str(blk.get('account') or '').strip()==name: return 'the Rapid EOD account' + (' #2' if sl=='rapid2' else ''); except Exception: pass. That alone removes the false prompt (new_accounts and the arm_report funded-twin lookup both use role_of). Optional: add the Rapid rows to go.accounts() the same way inventory() does. No change needed in new_accounts.py or account_cli.py.",
+  "files": [
+   "/home/user/wt-web/engine/go.py",
+   "/home/user/wt-web/engine/new_accounts.py",
+   "/home/user/wt-web/engine/account_cli.py"
+  ],
+  "effort": "S",
+  "zone": "bot-code",
+  "value": "No false 'new account' prompt, no chance of routing the same account twice, and the Rapid shows on the Accounts list.",
+  "owner_pain": "A confusing prompt about an account that is already trading, and a tap on it could double the size on that account.",
+  "evidence": "engine/go.py:1069-1085 role_of has no rapid branch. engine/new_accounts.py:186 `if ... role_of(n) ...: continue`. engine/account_cli.py:182-190 inventory() does read rapid.json and rapid2.json, so the data is available. engine/go.py:1552-1603 accounts() builds rows for main / b / extras / c only."
+ },
+ {
+  "area": "accounts",
+  "title": "Eval -> funded switch (go.to_funded main/extra branch, onboard 'Move Zlarior here (funded)') writes an untagged row that START never arms or reports",
+  "why": "Confirmed. go.py:1771 calls eval_life.to_funded, which calls multi_account.main --add/--set (eval_life.py:386-391). The new row is {id, enabled, armed False, ...} with no 'cli' (multi_account.py:1641). account_cli.arm (account_cli.py:497) only arms rows where isinstance(r.get('cli'), dict). go.py:991 and 1275 skip role extra rows without cli, so no NOT ARMED line appears. onboard.do 'move' calls go.to_funded for any eval that is not ATLAS's (onboard.py:304). account_cli._add_lit(funded=True) does tag cli, so arming at the phrase is the intended design, and this path just misses it. When Zlarior's 50K passes, the funded 50K stays armed:false and nothing warns.",
+  "fix": "engine/go.py to_funded (the eval_life branch, after rc==0): load ma.load_file(_accounts_path()), find the row whose nt_account == funded_name, set row.setdefault('cli', {'by': account_cli.TAG, 'plan': plan, 'bots': 'lit', 'added': session_day()}) and ma.save_file. Look the row up by nt_account, not by ident, because eval_life picks the id itself (mffu50k_funded / the 25K default). Change the 'Not armed: it joins at the next start' text so it stays true. The go.add_account extra branch is fixed by finding 4. Test: go.to_funded(lit, 'MFFUSF...', day) then account_cli.arm(LIVE_PHRASE) returns 'Added accounts armed: ...'.",
+  "files": []
+ },
+ {
+  "area": "accounts",
+  "title": "go.role_of ignores data/rapid.json / rapid2.json: ghost 'New account ... Pick one' and Rapid's Name can be given to ATLAS/extra",
+  "why": "Confirmed. role_of (go.py:1069-1085) checks start_bot lit/atlas, account_b, account_c and the extras only. new_accounts.candidates (new_accounts.py:186) drops a Name only when role_of is set, so the configured Rapid Name is offered as new on the Start page and pushed by notices() (new_accounts.py:284-297). parse_name gives every RP* code guess=True (onboard.py:61-62), so it lands in kind 'unknown' ('Pick one'). add_account, to_funded and set_names all use role_of (or _extras only) as the 'already used' guard. live.py:2830 refuses to start the Rapid when its Name is ATLAS's.",
+  "fix": "engine/go.py role_of, before `return None`: try: from . import rapid; for sl in rapid.SLOTS: blk = rapid.read(rapid.slot_path(sl)); if blk and str(blk.get('account') or '').strip() == name: return 'the Rapid EOD' + (' #2' if sl == 'rapid2' else ''); except Exception: pass. Use rapid directly, not account_cli.inventory(): inventory calls go helpers and would be circular and slower. In set_names, also refuse when role_of(n) is a Rapid. Change the push text in new_accounts.notices to 'Open the Start page and tap the right button'.",
+  "files": []
+ },
+ {
+  "area": "accounts",
+  "title": "Start page Accounts panel (go.accounts) has no Rapid rows; go.remove_account cannot remove the Rapid",
+  "why": "Confirmed. go.accounts() appends rows only for main, b, extras and c (go.py:1552-1600). start.js has 0 'rapid' hits. remove_account handles lit, atlas, b, extras and BLITZ, and otherwise returns 'No account ... here'. account_cli.inventory() is the only list that has rapid and rapid2. The owner cannot see, fund or remove the Rapid from the Start page.",
+  "fix": "engine/go.py accounts(): after the extras, for sl in rapid.SLOTS read the block and append {'name': blk['account'], 'id': sl, 'bot': 'Zlarior + ATLAS', 'role': 'rapid', 'plan': ..., 'plan_label': rapid.plan_info(blk)['label'], stage/funded from blk['stage'], money via the same _money helper}. engine/go.py remove_account: before the 'No account' return, when the name equals a Rapid block's account, return account_cli.remove(name) (bot stopped). start.js needs only role 'rapid' handled like 'extra', or it renders as-is. The lead wires the screen.",
+  "files": []
+ },
+ {
+  "area": "accounts",
+  "title": "Start page 'Accounts > Add' (go.add_account extra branch) bypasses account_cli.add checks and writes an untagged row",
+  "why": "Confirmed. start_api.py:340-343 posts straight to go.add_account. Its extra branch (go.py:1652-1663) checks only slot_problem and role_of. It skips name_problem, limit_problem (MFFU caps) and _unseen_note, has no Rapid/Lucid plans, builds the id from the raw Name, and calls ma.main --add with no cli tag. That row is never armed at START (same root cause as finding 1).",
+  "fix": "engine/go.py add_account: in the final branch (strategy 'zlarior', lit already set), replace the ma.main block with `if bot_running(): refuse; from . import account_cli; r = account_cli.add(plan, name, start=start); return {'ok': bool(r.get('ok')), 'say': r.get('say'), 'error': r.get('error'), 'lines': r.get('notes') or []}`. There is no recursion: account_cli._add_lit calls go.add_account only when no main account exists, and _add_atlas calls it only with strategy 'atlas'. Leave the first-50K and ATLAS branches as they are.",
+  "files": []
+ },
+ {
+  "area": "accounts",
+  "title": "START prints ARMED for the Rapid / added accounts even when NinjaTrader no longer lists the Name (EV->SF rename)",
+  "why": "Confirmed from the code. rapid.arm (rapid.py:331-343) sets armed:true on whatever Name the block holds. _step_arm adds AR.row(label, rr.get('ok')) (go.py:822-828). account_cli.arm does the same for the extras and rapid2. resolve_atlas (go.py:590+) has a presence check against nt_account_names(), but only for ATLAS. A renamed Rapid or 25K #2 would show green while its Name has no account behind it.",
+  "fix": "engine/go.py _step_arm: compute nt = nt_account_names() once. For the Rapid row and for each Name in 'Added accounts armed' (these are labels, so map them back through account_cli.inventory() names), if nt and the Name is not in nt and the Name is not a Sim account, emit AR.row(lbl, False, f'{name} is not in NinjaTrader\\'s account list', 'Start page > new account > Move ... here (funded)'). Add the single arm_report.find_funded_candidates(name, nt, role_of) match when there is exactly one. Print a warning only: never auto-switch, never disarm the file.",
+  "files": []
+ },
+ {
+  "area": "accounts",
+  "title": "Funded Rapid tap ignores which eval passed, and RP codes are always a guess, so a funded Rapid gets 'Pick one'",
+  "why": "Confirmed. onboard.offers builds act f'funded:{plan}' for the Rapid with 'from' set but unused (onboard.py:131-133). do() calls account_cli.add(arg, name, start=start, funded=True) with no from_eval (onboard.py:280-281). With two same-plan Rapid evals, _add_rapid refuses with a console '--from' command (account_cli.py:388-400). parse_name keeps guess=True for every RP* code (onboard.py:61-62), and infer gives kind 'unknown' before the funded branch (onboard.py:105-106), so the one-tap move button never shows for MFFUSFRPD... names.",
+  "fix": "(a) engine/onboard.py offers: act f'funded:{plan}:{e[\"name\"]}'. In do(): kind, _, arg = act.partition(':'); arg, _, frm = arg.partition(':'); call account_cli.add(arg, name, start=start, funded=True, from_eval=frm or None). (b) engine/onboard.py parse_name: when the code starts with RP, set guess=False if any block in rapid.SLOTS has arm_report.parts(blk['account'])[1] equal to arm_report.parts(name)[1] (same family letters). Wrap it in try/except and keep the guess when nothing matches.",
+  "files": []
+ },
+ {
+  "area": "data",
+  "title": "Zlarior (and Rapid) show ARMED on the phone when the live gate refused them",
+  "why": "Confirmed. engine/ninjatrader.py:995 sets self.disabled = self._live_gate(), and the gate refuses on a missing phrase, no NINJATRADER_LIVE=1 or the allowlist. engine/accounts.py:806 still reports armed = cfg.get('armed'), with enabled/disabled as separate fields. brain_glance.lit():156 copies acc['armed']. The nar text is only added when armed is False, so it never shows. braincore.js:217 then paints 'armed, live'. rapid():334 has the same flaw: hrow.armed is a.spec.get('armed') (multi_account.py:1479) while hrow.enabled already includes ad.disabled.",
+  "fix": "engine/brain_glance.py only. Leave accounts.py alone, because other readers want the config flag. In lit(), armed = bool(acc.get('armed')) and acc.get('enabled') is not False and not acc.get('disabled'). The live_lock check is not needed, since the gate's disabled text already covers it. When acc.get('armed') is set but the result is False, set out['nar'] = 'NOT armed: ' + str(acc['disabled'])[:90], falling back to _nar('Zlarior') when there is no disabled text. In rapid(), armed = bool(hrow.get('armed')) and bool(hrow.get('enabled')) and not hrow.get('disabled'). No braincore.js change is needed. Add a unit test in tests/ for build() with armed=True and disabled set: lit armed must come out False and nar must name the reason.",
+  "files": [
+   "engine/brain_glance.py",
+   "engine/accounts.py",
+   "tools/web_public/nq/braincore.js"
+  ],
+  "effort": "S",
+  "zone": "bot-code",
+  "value": "Stops a repeat of tonight's ATLAS confusion in reverse: the phone says 'armed, live' while the 50K takes no trades because the phrase was not typed / NINJATRADER_LIVE missing / allowlist failed.",
+  "owner_pain": "The phone says 'armed, live' while no orders can go out, so a whole session is lost without him knowing.",
+  "evidence": "engine/brain_glance.py:162 \"armed\": bool(acc.get(\"armed\")); engine/accounts.py:806 \"armed\": bool(cfg.get(\"armed\")) next to \"enabled\": disabled is None; engine/ninjatrader.py:1016-1024 (the gate returns refusal reasons that set disabled); engine/multi_account.py:1479; engine/brain_glance.py:330 \"armed\": bool(hrow.get(\"armed\")); tools/web_public/nq/braincore.js:217 g.armed ? 'armed, live'. Checked: build({'health':{'account':{'label':'LIVE','armed':True,'enabled':False,'disabled':'...confirm phrase missing'}},'running':True}) gives lit armed=True."
+ },
+ {
+  "area": "data",
+  "title": "The Brain page's armed / on / room / today block can be 44 minutes old",
+  "why": "Confirmed. pc_report.split (:819-821) pops pc.glance out of the core and into the ext. ext_hash (:916) leaves out 'glance' and 'glog'. The ext is posted only when its hash changes or EXT_EVERY_S = 2640 s has passed (:2087). CARD_KEYS and the core pc block (:630) have no armed or on field. braincore.js:189 reads armed and on only from pc.glance, so a flip from NOT armed to armed can take up to 44 min to reach the phone.",
+  "fix": "tools/pc_report.py: in split(), after popping g, set core['ar'] = {b['id']: [int(bool(b.get('on'))), int(bool(b.get('armed')))] for b in g.get('bots', []) if b.get('id')} and add 'ar' to CORE_KEYS. In ext_hash, add the glance's [[b.id, b.on, b.armed, b.nar]] to keep (and only those fields, because the full glance changes every run and would send the ext every run). tools/web_public/nq/braincore.js brain(): when lite.ar[bot] exists, on and armed come from it instead of from g. Check that pc_feed.js keeps the 'ar' key from the core (it merges the core keys, so it should). Apply after the finding-1 fix so 'ar' carries the corrected armed value.",
+  "files": [
+   "tools/pc_report.py",
+   "tools/web_public/nq/braincore.js"
+  ],
+  "effort": "S",
+  "zone": "pc-scripts",
+  "value": "After START or a disarm the phone shows the right armed state within 15 min, not 44. This is likely part of tonight's 'Re-arm looped': he re-armed, the phone kept saying NOT armed, so he re-armed again.",
+  "owner_pain": "He re-arms again and again because the phone has not caught up yet.",
+  "evidence": "tools/pc_report.py:819-821 (glance popped from core into the ext); tools/pc_report.py:916 keep = ... if k not in (\"glance\", \"glog\"); tools/pc_report.py:71 EXT_EVERY_S = 2640; tools/pc_report.py:2087 due = h != ext_h or age >= EXT_EVERY_S; tools/pc_report.py:87-89 CARD_KEYS has no armed/on; tools/web_public/nq/braincore.js:189,217 read armed and on only from pc.glance."
+ },
+ {
+  "area": "data",
+  "title": "Trading Home 'Every account armed' skips ATLAS and treats a real-account badge as armed",
+  "why": "Confirmed. trading_home_core.js:106 treats an account as armed when badge === 'LIVE'. The badge comes from the account name (accounts.py:131-137, 468), not from the arm state. live_model.json accounts holds only mffu50k_eval, and build_accounts has no ATLAS/account_b row, which is why pc_report._chart_accounts (:1176-1180) falls back to board.atlas. pc_report.full (:648-652) drops enabled and locked even though accounts.py:553 sets them on the extra-account rows. The test at tests/test_trading_home.py:185 uses a made-up 'atlas' row that the real post never carries.",
+  "fix": "(1) tools/pc_report.py full(): add 'enabled': a.get('enabled'), 'locked': a.get('locked') to each accts row (and 'armed' if a row carries it). (2) tools/web_public/nq/trading_home_core.js realAccounts(): when no row matches /atlas|acct_b/ and lite.board.atlas has a balance, add a synthetic row {id:'atlas', name:'ATLAS', plan, kind: stage/status funded ? 'funded' : 'eval', badge, eval:{balance, room, floor, to_target}}. (3) Armed check: held when a.enabled === false, or a.locked, or the badge is not 'LIVE', or the matching lite.ar entry (finding 2) says armed 0. (4) tests/test_trading_home.py: use a row shaped like the real post plus a board.atlas-only case. engine/accounts.py does not need to change.",
+  "files": [
+   "tools/web_public/nq/trading_home_core.js",
+   "tools/pc_report.py",
+   "engine/accounts.py",
+   "tests/test_trading_home.py"
+  ],
+  "effort": "S",
+  "zone": "site",
+  "value": "The one-glance checklist would stop saying '2 account(s) armed' while ATLAS (the funded account that makes money) is held, or while a real account is disarmed.",
+  "owner_pain": "He trusts a green check that is wrong and finds out only after a missed session.",
+  "evidence": "tools/web_public/nq/trading_home_core.js:106-108 held = accts.filter(badge !== 'LIVE'); engine/accounts.py:131-137 + 468 (badge LIVE = not is_sim(name)); engine/accounts.py has no 'atlas'/'account_b'; tools/pc_report.py:1176-1180 (ATLAS taken from the board card because no account row is ATLAS's); tools/pc_report.py:650-652 account rows kept without enabled/locked; engine/accounts.py:553 sec.update(enabled=..., locked=...). tests/test_trading_home.py:185 uses a fake accounts row with id 'atlas' that the real post never has."
+ },
+ {
+  "area": "data",
+  "title": "Public post is built from the 5-minute heartbeat file, not the bot's 15-second live.json (the 5-10 min lag)",
+  "why": "Mostly confirmed. gather() (pc_report.py:455-486) builds snap['live'] from read_heartbeat (files only), and those files are rewritten every 300 s outside a fast stage. out['t'] = hb_t (:627). server_up already reaches 127.0.0.1, and engine/live_site.py:746 serves /api/site/live.json from the running bot (not a private route). The real gain is at most about 5 min per post, not 5-10.",
+  "fix": "tools/pc_report.py gather(): when snap['server'] is True, call (http or default_http)('GET', f'http://127.0.0.1:{port}/api/site/live.json', None, None, 4). Use the result only if the status is 200, the JSON has kind == 'le-live', and num(t) > hb_t. Then set snap['live'] to it and snap['live_t'] to its t, and make full() stamp out['t'] = snap.get('live_t') or snap.get('hb_t'). Do NOT overwrite snap['hb_t'] or snap['hb_age']: they drive HB_STALE_S, bar_age and conditions() and must stay the heartbeat's own age. On any failure, keep the current path. engine/live_site.py needs no change. Add a test with a fake http that returns a newer live.json.",
+  "files": [
+   "tools/pc_report.py",
+   "engine/live_site.py"
+  ],
+  "effort": "M",
+  "zone": "pc-scripts",
+  "value": "Takes up to 5 minutes off every phone number (position, today's $, room) without any extra ntfy posts.",
+  "owner_pain": "He sees an old position or $ on the phone and has to walk to the PC to check.",
+  "evidence": "tools/pc_report.py:378-392 read_heartbeat (files only); tools/pc_report.py:458-486 snap['live'] = live_publish.build(hb, now=hb_t or now ...); tools/pc_report.py:629 out 't': snap.get('hb_t'); tools/pc_report.py:367 server_up already calls 127.0.0.1:{port}; engine/live_site.py:26-27 'GET /api/site/live.json ... at most 15 s old'; engine/heartbeat.py:894-900 (300 s unless a setup is armed); engine/live_publish.py:60 FAST_S = 60."
+ },
+ {
+  "area": "data",
+  "title": "Zlarior 25K #2 (b25k_2) has no Brain glance row: its armed / on / room / today are invisible on the phone Brain page",
+  "why": "Confirmed. brain_glance.build (:349-352) loops only over ('rapid', 'rapid2'). b25k_2 is a real extra account: nq.js:291 maps fresh25 to b25k_2, and it appears in readiness, keepalive and board_events. So it gets no on/armed/day/room block. The phone side matters too: braincore.brain() only looks up glance rows by bot id 'lit'/'atlas', and its accounts list for fresh25 has no armed field. So the backend fix alone will not show anything on the Brain page.",
+  "fix": "engine/brain_glance.py: generalize rapid(hb, rid) to extra(hb, rid). Loop over the ids in acct.accounts plus health.accounts, skipping blitz/pc_blitz/acct_c. Use the name from row['name'] and what = 'LIT \u00b7 ' + plan, with the Rapid wording only when the id starts with 'rapid'. Use the finding-1 armed rule. fit() trims these rows when space is short. tools/web_public/nq/braincore.js: for each account in mine, look up the glance row (glance.bots where id == 'b25k_2' for fresh25, and 'rapid' for rapid1, using the EQ_IDS map in nq.js) and add armed/on to the accounts[] entries. braincore.js is not on the helper do-not-edit list.",
+  "files": [
+   "engine/brain_glance.py",
+   "tools/web_public/nq/braincore.js"
+  ],
+  "effort": "S",
+  "zone": "bot-code",
+  "value": "A paid eval ($63) that trades LIT gets the same on/armed/today/room line as the other accounts.",
+  "owner_pain": "He cannot tell from the phone whether the second eval is trading at all.",
+  "evidence": "engine/brain_glance.py:349-352 for rid in (\"rapid\", \"rapid2\"); checked: build() with acct.accounts=[{'id':'b25k_2'}] and health.accounts=[{'id':'b25k_2','armed':True,'enabled':True}] returns only ['lit','atlas']. tools/web_public/nq/braincore.js:192 mine filter has 'fresh25' but no glance."
+ },
+ {
+  "area": "data",
+  "title": "ATLAS funded balance shown as $25,401 (NinjaTrader terms) on the Business Accounts page and in board.py read",
+  "why": "Confirmed. business/accounts.js:79 prints usd(live.balance) unchanged for funded accounts. board.py lite_live (:119-123) copies card.balance, and board_events (:516-517) sets to_pass to None for anything that is not in eval. So board.py read prints $25,401 with a blank to-pass. pc_feed.js mffuView already handles the shift and is loaded on accounts.html (:77).",
+  "fix": "tools/web_public/business/accounts.js card(): when live.stage === 'funded' and window.PC_FEED, set v = PC_FEED.mffuView({kind:'funded', plan:a.plan, balance:live.balance, room:live.room, floor:live.floor}). Show ['Balance (MFFU, from $0)', usd(v.balance)] and, if v.goal exists, ['To the max payout', usd(v.goal.need)], falling back to the raw balance when v is null. tools/board.py: convert only when printing (:248). For stage funded with balance > start/2 (start = 25,000 or 50,000 from the plan), print balance - start and, in the to-pass column, 'payout +$X' using buffer + max (25K: 1,100 + 1,000; 50K: 2,100 + 2,000) minus the MFFU balance. Do NOT store the shifted balance in lite_live or the board rows: floor and room stay in NT terms there and are read back at :173. engine/board_events.py does not need to change.",
+  "files": [
+   "tools/web_public/business/accounts.js",
+   "tools/board.py",
+   "engine/board_events.py"
+  ],
+  "effort": "S",
+  "zone": "site",
+  "value": "Follows the owner rule (MFFU shows funded accounts from $0) on the pages he and every Claude session read first. It also shows the $ to the payout instead of a blank 'to pass'.",
+  "owner_pain": "Two different balances for the same account; he has to check MFFU by hand.",
+  "evidence": "tools/web_public/business/accounts.js:79 rows.push(['Balance', usd(live.balance)]); tools/web_public/business/mffumodel.js:60 balance: num(c.balance); tools/board.py:119-123 out[k] = {'balance': c.get('balance') ...}; engine/board_events.py:516-517 to_pass None when stage != eval; engine/account_b.py:970-981 funded balance = start + prof; CLAUDE.md 'ATLAS funded \"$401\", not $25,401'; tools/web_public/pc_feed.js:427-445 mffuView."
+ },
+ {
+  "area": "clean",
+  "title": "land-fixes breaks the PC self-test 'ops' (test_ops still expects 'Sync now'), so the PC update gate holds back the clock fix",
+  "why": "Confirmed in code. The diff olympus/pc..land-fixes changes the ERRORS 'clock' fix in engine/ops_checks.py:163 from '...Sync now' to 'Double-click FIX_CLOCK.bat ...'. check_clock uses FIX['clock'] (ops_checks.py:504). tests/test_ops.py:159-161 still asserts \"Sync now\" in the fix. Suite 'ops' is in engine/pc_selftest.py:90. regressions() (pc_selftest.py:208-213) counts a check that passed before and fails now as a regression, and autoupdate.SELFTEST then rolls the update back ('Update held back').",
+  "fix": "tests/test_ops.py:159-161: rename the label to \"... 90 s FIX with 'FIX_CLOCK.bat'\" and change the last term to `\"FIX_CLOCK.bat\" in oc.check_clock(oc.internet(probe=probe(-90)))[\"fix\"]`. Run `python -X utf8 -m tests.test_ops` before land-fixes ships.",
+  "files": []
+ },
+ {
+  "area": "clean",
+  "title": "Launch-checklist wiring check hard-codes 12 items but reads the PC's real data/rapid.json, rapid2.json (and account_c.json)",
+  "why": "tests/test_launch_checklist.py:210 asserts exactly 12 items. launch_check.facts() calls rapid_fact(bot) and rapid_fact(bot, slot='rapid2') (:159-165). rapid.path() falls back to ROOT/data/rapid.json because PATH and PATH2 are None (rapid.py:94-107). checklist() appends one item per configured slot (:332-350). pc_selftest.child_env seals only the board, inbox, NT folder and tmp, not data/. On a PC with a Rapid set up, the count is 13-14. The same is true of the 'blitz' item when data/account_c.json exists (blitz_fact with c_root=None, :156, items :323-329). I could not see the PC's files, but the logic is real.",
+  "fix": "Use the count-tolerant assertion, which covers all three optional items. In tests/test_launch_checklist.py:210: `fx = pl['launch'].get('facts') or {}; n = 12 + sum(1 for k in ('c','rapid','rapid2') if fx.get(k))` and then `len(items) == n`. Alternatively, point rapid.PATH and rapid.PATH2 at tmp files inside a try/finally, but that leaves the blitz item unsealed.",
+  "files": []
+ },
+ {
+  "area": "clean",
+  "title": "14 PC self-test suites are in no run_area area, so cloud landings never run them",
+  "why": "Mapping each pc_selftest.SUITES argv module to its run_area name (run_area runs tests.test_<name>, run_area.py:165,207) gives these with no area: test_start_api, test_launch_checklist, test_nt_outgoing, test_nt_exec_audit, test_selfheal, test_ops, test_run_switch, test_new_accounts, test_go, test_nt_roll_guard, test_broker_balance, test_eval_fix, test_fsutil, test_account_rename. This is how the ops regression above got past ship.py.",
+  "fix": "tests/run_area.py, after the other AREAS appends: `AREAS[\"pc\"] += [\"start_api\", \"launch_checklist\", \"nt_outgoing\", \"nt_exec_audit\", \"selfheal\", \"ops\", \"run_switch\", \"new_accounts\", \"go\", \"nt_roll_guard\", \"broker_balance\", \"eval_fix\", \"fsutil\", \"account_rename\"]`. The names must be test-module stems, not the SUITES keys. Optionally add a check that every tests.test_* in pc_selftest.SUITES is in some area.",
+  "files": []
+ },
+ {
+  "area": "clean",
+  "title": "The 'entries blocked' clock push, the READY verdict and the live board still say 'Sync now'",
+  "why": "Confirmed: guards.py:852 ('Windows: Settings > Time > Sync now.'), readiness.py:380 and live_board.py:58 still carry the old Windows steps. Meanwhile ops_checks and self-heal (test_clockfix.py:104 asserts there is no 'Sync now') moved to FIX_CLOCK.bat, which exists at the repo root. The push that fires when entries are blocked gives the step that already failed.",
+  "fix": "Put the literal string 'Double-click FIX_CLOCK.bat once, right-click > Run as administrator' into guards.py:852, readiness.py:380 and live_board.py:58. A literal is safer than importing ops_checks into guards, which risks an import cycle. Update the expectations in tests/test_ready.py:66 (183/185 use a fake 'Sync now' payload and can stay), tests/test_live_board.py:113,172-173,204 and the :386 page check to 'FIX_CLOCK.bat'. Run test_ready, test_live_board, test_guards and test_ops.",
+  "files": []
+ },
+ {
+  "area": "clean",
+  "title": "Stale-data board notes for GEX_1d / CBOE_vol_1d are cloud-copy artefacts with no reason given; gamma.py writes the download non-atomically",
+  "why": "Data tails: GEX 2026-10-16, CBOE_vol 2026-09-17. Both files are tracked in git. land_branch.DROPPINGS puts GEX_1d back to the committed copy after smoke. No writer for CBOE_vol_1d exists in engine/ (only readers in tools), while generated_files.py:30 credits it to news.py. The data_health.WHY lookup at line 118 (not 175) gives None for GEX and CBOE, so those stale notes carry no reason. engine/gamma.py:31 writes the raw download straight over the CSV with no check. NQ/ES 1d already have a WHY, so that part is not new. Impact is lower (cosmetic notes, plus an edge-case corruption on the PC), but it is real.",
+  "fix": "tools/data_health.py:29: add WHY 'GEX': 'PC-local daily refresh (engine/gamma.py); the repo copy is reset on landings' and 'CBOE': 'one-off research pull (tools/lit_context.py), no refresher'. engine/generated_files.py:30: move CBOE_vol_1d out of the news.py comment. engine/gamma.py:29-33: write to path+'.tmp', keep it only if raw starts with b'date', then os.replace (or fsutil.replace). Skip the broader INFO-instead-of-STALE change for now.",
+  "files": []
+ },
+ {
+  "area": "clean",
+  "title": "CLAUDE.md tells sessions to `git push origin HEAD:pc`, but here origin is the forbidden old repo",
+  "why": "`git remote -v` in /home/user/wt-web shows origin = demetrades2000-coder/nq-liquidity-engine and olympus = dcondax1-wq/olympus. CLAUDE.md's Home line gives `git push origin HEAD:pc` with no qualifier. docs/AUTO_UPDATE.md:26 at least says 'from a clone of dcondax1-wq/Olympus'. tools/ship.py:6-20 already picks the remote by URL.",
+  "fix": "CLAUDE.md 'Where things are': replace '(`git push origin HEAD:pc`, or `python tools/ship.py`)' with '(only `python tools/ship.py`: it finds the dcondax1-wq/Olympus remote by URL; on older checkouts it is named olympus, and origin may be the old repo)'. Apply the same wording at docs/AUTO_UPDATE.md:26. Only the lead edits CLAUDE.md.",
+  "files": []
+ },
+ {
+  "area": "notify",
+  "title": "Every critical PC alarm (Entry blocked, clock drift, kill switch, no-stop mismatch, room < $400) is dropped before it reaches any phone",
+  "why": "Confirmed. push.pc_app_ok (engine/push.py:1136-1150) passes only test/report and real-account fill/outcome. Everything else needs LE_PUSH_EXTRA=1, and no .bat or ps1 sets it (grep finds it only in the code). guards._notify (guards.py:165-169) sends text_payload kind 'ops' tag 'le-guard'. In _pc_send's non-trade branch (push.py:1296-1305) the only extra route is the hedge-risk instant_problem, so _app() skips 'ops'. The bus (_bus_send, 1398-1417) handles only fill/outcome and hedge risk. alerts_plus.pc_send (290-293) calls n.mark() and returns when pc_app_ok is False, so the 10-minute critical repeats are marked sent and never delivered. The crit kinds it builds all exist: alerts_plus.py:414-434 (feed_stale, unprotected, kill, eval_floor) and ai_watch.py:579 (freeze). ops_checks.send keeps the key when the result is 'skipped' (1458-1462), so it never retries. The only part of the claim that does not hold: hedge risk already goes through notify.instant_problem, so 'hedge' is not a dropped kind.",
+  "fix": "engine/push.py: add CRITICAL_KINDS = ('clock','kill','unprotected','eval_floor','freeze','feed_stale','ops_crit'), and in pc_app_ok return True when kind is in CRITICAL_KINDS or p.get('tag') == 'le-guard'. guards.py sets that tag after text_payload, and pc_app_ok sees the same dict. That alone puts them back on Web Push, the route the owner already has. Then in _pc_send's non-trade branch (and in pc_send_now) also call notify.instant_problem({'key': p['key'], 'code': p['kind'], 'title': p['title'], 'body': p['body']}) for those, so the bus or ntfy gets them as well. Leave 'update' out: botctl's 'update' rows are routine auto-update logs and would be noise. Do not add 'hedge': it is kind 'risk' and is already handled. Rate limits are unchanged (alerts_plus caps repeats at 6, guard keys are one per entry). Test: tests/test_push (or the notify area), checking that pc_app_ok is True for a guard payload and a kill crit payload and False for an 'armed' payload.",
+  "files": [
+   "/home/user/wt-web/engine/push.py",
+   "/home/user/wt-web/engine/guards.py",
+   "/home/user/wt-web/engine/alerts_plus.py",
+   "/home/user/wt-web/engine/ops_checks.py"
+  ],
+  "effort": "M",
+  "zone": "bot-code",
+  "value": "A blocked LIT entry is a lost winner (the bot does not chase after 90 s). Tonight's 25-second clock drift would have buzzed the phone at the first blocked entry instead of costing the session.",
+  "owner_pain": "He found out about the clock block and the unarmed ATLAS by looking, not from a buzz.",
+  "evidence": "engine/push.py:1136-1150 (pc_app_ok: anything other than test/report/fill/outcome needs LE_PUSH_EXTRA=1, and no .bat or ps1 sets it). engine/guards.py:165-169 (_notify -> text_payload kind 'ops' -> bot._push_send -> pc_notify -> _pc_send -> _app() skipped). engine/guards.py:565 ('Entry blocked'). engine/push.py:1405-1417 (_bus_send only handles fill/outcome/hedge). engine/alerts_plus.py:290-293 (crit pushes: 'if not push.pc_app_ok(p): n.mark(payload); return'). engine/ops_checks.py:1458 (pre-session 'Fix before 02:00 ET', eval result: pc_send_now -> skipped, and send() keeps the key because 'skipped' is set). I ran it: for k in clock,kill,unprotected,eval_floor,hedge,ops,feed_stale: pc_send_now -> {'sent': 0, 'skipped': 'not for the phone (LE_PUSH_EXTRA=1 sends it)'}."
+ },
+ {
+  "area": "notify",
+  "title": "New readiness guard (staged): NOT READY alerts reach nobody unless Telegram/Discord is set up, and are then marked as told",
+  "why": "Confirmed. readiness.send_alert (engine/readiness.py:645-663) falls back to push.pc_send_now(OC._payload('ready', ...)), which is not a kind pc_app_ok passes. pc_send_now returns {'skipped': ...} and the result is ignored, yet the function returns 'push'. plan_alert (633-643) writes sent[b.key] and last_alert before delivery, so the same blocker stays quiet for 30-60 minutes (SAME_BLOCKER_S / REPEAT_S). alert_bus.send with wait=True (alert_bus.py:656-658) runs run() and returns 'sent' whatever r['ok'] says.",
+  "fix": "engine/readiness.py send_alert: replace the pc_send_now fallback with r1 = notify.instant_problem({'key': a['key'], 'code': 'ready', 'title': a['title'], 'body': a['body'], 'soft': bool(a.get('quiet'))}) plus r2 = push.pc_send_now(push.report_payload({...kind 'problems'...})), which is kind 'report' and so passes pc_app_ok. Return 'push' only if r1 == 'sent' or r2.get('sent'), else 'none'. In tick(), when via == 'none', restore the previous st['sent'] entries and st['last_alert'], so the next 5-minute tick retries. engine/alert_bus.py send(): under wait=True, return 'sent' if r.get('ok') else 'failed'. Check every caller that compares against 'sent' (notify.instant_problem treats anything but 'queued'/'sent' as a failure, which is the behaviour we want).",
+  "files": [
+   "/home/user/wt-web/engine/readiness.py",
+   "/home/user/wt-web/engine/alert_bus.py"
+  ],
+  "effort": "S",
+  "zone": "bot-code",
+  "value": "This is the guard built for exactly tonight's two failures (clock drift, ATLAS unarmed). Without it, the 01:15 ET and 08:45 ET checks are silent on a default PC.",
+  "owner_pain": "He has to open the phone and read the board to learn that an account is not armed.",
+  "evidence": "engine/readiness.py:645-663 (fallback is pc_send_now with ops_checks._payload kind 'ops'). engine/readiness.py:633-643 (plan_alert marks sent and last_alert before delivery). engine/alert_bus.py:656-658 (send(wait=True) runs run() and returns 'sent' regardless of r['ok']). python: push.pc_app_ok(OC._payload('ready','NOT READY','x','ready:no:1',1)) -> False."
+ },
+ {
+  "area": "notify",
+  "title": "A clock-drift block is labelled 'Held back by a rule' and arrives with no sound at night",
+  "why": "Confirmed. live.py:3190 logs 'NOT routed: GUARD {gb}', and guards.clock_problem (guards.py:340-348) returns 'PC clock X s behind/ahead of internet time (max N s)'. rule_hold (fill_audit.py:841-851) finds 'GUARD' in RULE_HOLDS, and no LOUD_HOLDS word appears in that text ('behind' is not 'late'). So _missed_problem marks it soft, titled 'Held back by a rule \u00b7 Zlarior', at low priority in quiet hours. Because of finding 1, this soft notice is the only instant route for a clock-blocked entry.",
+  "fix": "engine/fill_audit.py:842: add 'PC clock' to LOUD_HOLDS. The text says 'behind internet time' / 'ahead of internet time', so 'internet time' is a safe second token; avoid bare 'clock'. Add one case to tests/test_fill_audit: rule_hold('The backtest took it, the PC bot did not: Entry at 02:05 ET NOT routed: GUARD PC clock 24.5 s behind internet time (max 5 s)') is False, and _missed_problem's title starts with 'MISSED TRADE'.",
+  "files": [
+   "/home/user/wt-web/engine/fill_audit.py"
+  ],
+  "effort": "S",
+  "zone": "bot-code",
+  "value": "Turns a silent overnight loss of every LIT entry into a ringing 'MISSED TRADE: PC clock' with FIX_CLOCK.bat in the text.",
+  "owner_pain": "He sleeps through it and finds the missed trades in the morning.",
+  "evidence": "engine/fill_audit.py:840-850 (RULE_HOLDS includes 'GUARD'; LOUD_HOLDS has no clock word). engine/live.py:3190 ('NOT routed: GUARD {gb}'). engine/guards.py:348 (reason text 'PC clock ... behind internet time'). python: fill_audit._missed_problem({... 'NOT routed: GUARD PC clock 24.5 s behind internet time (max 5 s)'}) -> title 'Held back by a rule \u00b7 Zlarior', soft True."
+ },
+ {
+  "area": "notify",
+  "title": "Without Telegram, the 2-minute fast alarm (bot down, bot stopped, feed stale, open at the half-day halt, no stop) has no Web Push fallback",
+  "why": "Confirmed. In notify.instant_problem's non-bus path (notify.py:964-970), when there is no topic it returns 'no private alert topic on this PC', and when ntfy refuses it returns 'ntfy did not take it'. Neither tries the Olympus app. fast_alarm sends through notify.instant_problem (fast_alarm.py:307), and so does keepalive._alert for problems (keepalive.py:1164-1166). alert_check.py:67-68 already treats 'Only the Olympus app' as a normal setup, so on that setup these alarms wait for the 15-minute report.",
+  "fix": "engine/notify.py instant_problem, old path: when there is no topic or the ntfy post fails, call push.pc_send_now(push.report_payload({'key': key, 'title': m['title'], 'body': m['body'], 'priority': m['priority'], 'kind': 'problems', 't': now or time.time()})) with m = problem_message(...). If it returns sent > 0, call _record_problem(p, key, path, now, count=False) and return 'sent (app)', so the report's problem_dup skips its copy. Watch for an import cycle (push imports notify lazily, so import push inside the function). keepalive needs no change, because it already calls instant_problem. Confirm report_payload accepts a 'problems' kind field; if not, set the payload's notify_type the way the 15-minute report does.",
+  "files": [
+   "/home/user/wt-web/engine/notify.py",
+   "/home/user/wt-web/engine/keepalive.py"
+  ],
+  "effort": "S",
+  "zone": "bot-code",
+  "value": "Bot-down and halt-open alarms reach the phone in about 2 minutes on the setup the owner already has, instead of about 15.",
+  "owner_pain": "There is no second app to install or topic to follow for the alarms that protect the account.",
+  "evidence": "engine/notify.py:964-970 (old path: alert_cfg topic or return; _post to ntfy only). engine/fast_alarm.py:270-276 (send -> notify.instant_problem). engine/fast_alarm.py:56-58 (HALT_WARN_MIN 10). engine/keepalive.py:1164-1166. engine/alert_check.py:63-70 (it already knows 'Only the Olympus app' is a common setup)."
+ },
+ {
+  "area": "notify",
+  "title": "The cloud 'PC silent' alarm goes to the public status topic that no phone follows unless the owner adds repo secrets by hand",
+  "why": "The problem holds. pc_silent_check.dest (tools/pc_silent_check.py:90-100) falls back to the public status-feed topic when LE_NTFY_TOPIC is unset, and _bus (237-249) needs the LE_TG_* repo secrets. Neither alerts_setup.py, alerts_box.py nor alert_check.py has any 'gh secret' or secrets-API code. The proposed fix rests on a wrong premise, though: GITHUB_SIGNIN.bat runs 'python -m engine.autoupdate --signin' (the git credential manager), not the gh CLI, so 'gh auth status' will normally fail on the PC. The GitHub secrets REST API also needs a libsodium sealed box (PyNaCl), which the repo does not use.",
+  "fix": "Smallest workable change: tools/alerts_setup.py, after a successful Telegram test, call shutil.which('gh'). If gh is present and 'gh auth status' passes, pipe the value on stdin to 'gh secret set LE_TG_TOKEN --repo dcondax1-wq/Olympus' and the same for LE_TG_CHAT, without printing it. Otherwise print one plain line: 'Cloud PC-silent alarm not connected: on GitHub, Settings > Secrets > Actions, add LE_TG_TOKEN and LE_TG_CHAT'. Put that step in STATE 'Waiting on the owner'. Add a warn line in engine/alert_check.py when the cloud has no private route; the PC cannot read secrets, so read the absence from the cloud's dash pc_silent.json 'private' flag if it is published, else skip it. Effort M-L. Do not add PyNaCl (no new dependencies without need).",
+  "files": [
+   "/home/user/wt-web/tools/alerts_setup.py",
+   "/home/user/wt-web/tools/pc_silent_check.py",
+   "/home/user/wt-web/engine/alert_check.py"
+  ],
+  "effort": "M",
+  "zone": "pc-scripts",
+  "value": "One setup step covers both the PC alerts and the 'PC went silent' alarm. A dead PC during the 02:00-15:30 ET window costs every trade of the day.",
+  "owner_pain": "Otherwise he has to set GitHub repo secrets from an iPhone.",
+  "evidence": "tools/pc_silent_check.py:13-14, 90-100 (dest(): no LE_NTFY_TOPIC -> feed['topic'], private False). .github/workflows/cloud-monitor.yml:163-166 and pc-watch.yml (secrets only). tools/web_public/status_feed.json (the public topic 'olympus-nq-status-...'). tools/alerts_setup.py and engine/alerts_box.py: no 'gh secret' call (grep). STATE.md:155 ('owner: enable Actions + LE_NTFY_TOPIC secret' still pending)."
+ }
+]
