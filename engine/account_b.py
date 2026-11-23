@@ -170,7 +170,11 @@ def read_local(path: str | None = None) -> tuple:
             return False, None
         ab = c.get("account_b")
         return True, (ab if isinstance(ab, dict) and ab else None)
-    except Exception:
+    except FileNotFoundError:
+        return False, None
+    except Exception as e:                       # night-faults: same fallback, but said out loud (ATLAS may be off)
+        from .fault_note import corrupt
+        corrupt(local_path(path), e, "ATLAS's account falls back to second_model.json (usually off) until it is fixed")
         return False, None
 
 
@@ -1916,7 +1920,12 @@ class AccountB:
         try:
             with open(self.state_path, encoding="utf-8") as fh:
                 b = json.load(fh)
-        except Exception:
+        except FileNotFoundError:
+            return
+        except Exception as e:                   # night-faults: starts clean as before (the adapter keeps the bracket), logged
+            self.log("warn", f"state file unreadable ({e.__class__.__name__}): starting clean; NinjaTrader's position is reconciled")
+            from .fault_note import corrupt
+            corrupt(self.state_path, e, "ATLAS restarts with a clean day ledger (its open bracket is still in NinjaTrader)")
             return
         if not isinstance(b, dict) or b.get("account") != self.name:
             return                         # another account's file: start clean (the old one stays on disk)
