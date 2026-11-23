@@ -71,6 +71,8 @@ def hb(now, label="LIVE", trades=(), days=None, start="2026-10-13", kill=False, 
 
 
 def main() -> int:
+    from engine import push as _push       # red team 2026-11-23 (night-hermetic scan): the PC push key is made on first use; never in
+    _push.PC_KEY_PATH = os.path.join(tempfile.mkdtemp(prefix="le_pushkey_"), "push_pc_key.json")   # the real data/ from a test
     tmp = tempfile.mkdtemp(prefix="le_ops_")
     old_env = {k: os.environ.get(k) for k in ("LE_OPS_PUSH",)}
     old_log_dir = oc.LOG_DIR
