@@ -163,7 +163,8 @@ def browser():
     t = o.get("today") or []
     check("b. Today strip: every bot's steps in time order", len(t) == 7 and [x.split()[0] for x in t] == sorted(x.split()[0] for x in t) and "ema" in " ".join(t) and "lit" in " ".join(t), t)
     lab = o.get("lab") or {}
-    check("b. Strategy Lab lobe: sample banner, best add-on card, strategy list", lab.get("sample") is True and "Best add-on to LIT" in lab.get("best", "") and lab.get("rows", 0) >= 10, lab)
+    fixture = json.load(open(os.path.join(PUB, "cities", "lab-data.json")))["fixture"]
+    check("b. Strategy Lab lobe: SAMPLE banner only with the fixture, best add-on card, strategy list", lab.get("sample") is fixture and "Best add-on to LIT" in lab.get("best", "") and lab.get("rows", 0) >= 10, lab)
     nu = o.get("neuron") or {}
     check("b. a lab strategy: 3 rule lines + its span numbers", nu.get("rules") == 3 and nu.get("spans", 0) >= 1 and nu.get("sel") == "true", nu)
     check("b. one neuron per tested strategy in the 3D", o.get("neurons", 0) == json.load(open(os.path.join(PUB, "cities", "lab-data.json")))["n"], o.get("neurons"))

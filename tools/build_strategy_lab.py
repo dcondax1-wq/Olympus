@@ -24,6 +24,13 @@ OUT = os.path.join(ROOT, "tools", "web_public", "cities", "lab-data.json")
 POPULAR = [os.path.join(ROOT, "research", "lab", "popular_ict.json"), os.path.join(ROOT, "research", "lab", "popular_classic.json")]
 FIXTURE = os.path.join(ROOT, "tools", "strategy_lab_fixture.json")
 LEADER = os.path.join(ROOT, "research", "lab", "LEADERBOARD.md")
+# where each popular file's rules live (the files carry numbers, not rules): the ICT pre-registered spec ("N. id - rules") and the
+# classic tool's docstring ("NN key  rules"); first 3 sentences shown
+RULE_SRC = {"popular_ict.json": os.path.join(ROOT, "research", "writeups", "specs", "popular-ict-2026-11-23.md"),
+            "popular_classic.json": os.path.join(ROOT, "tools", "popular_classic.py")}
+# the nearest misses as the write-ups name them (a note only: the verdict stays the file's)
+WATCH = {"popc_crabel": "Paper lead only: the one classic strategy positive in all 3 spans, but Jul-Oct PF 1.07 and ES loses Jul-Oct (popular-classic-2026-11-23).",
+         "ict2022": "Paper watch: the only ICT model that adds $ to LIT in both 2026 halves, but it loses 2021-25 and lifts H1 eval fails 1.6% -> 34% (popular-ict-2026-11-23)."}
 EDGE = os.path.join(ROOT, "tools", "web_public", "edge.json")
 VERDICTS = ("live", "paper", "promising", "rejected")
 # months in each Strategy Lab span (protocol: dev 2026-01-02..06-30, confirm 07-01..10-16, ytd = both)
@@ -47,7 +54,8 @@ def _num(v):
 
 
 def _txt(v, n=200):
-    return re.sub(r"[<>]", "", str(v if v is not None else ""))[:n].strip()
+    t = str(v if v is not None else "").replace("->", "→").replace(">=", "≥").replace("<=", "≤").replace(">", "above").replace("<", "below")
+    return t[:n].strip()
 
 
 def verdict(v) -> str:
@@ -63,11 +71,15 @@ def verdict(v) -> str:
     return "rejected" if not s else "promising"
 
 
+SPAN_NAME = {"2026h1": "2026 H1", "h1": "2026 H1", "2026h2": "2026 H2", "h2": "2026 H2"}
+
+
 def span(k, d) -> dict | None:
     if not isinstance(d, dict):
         return None
     g = lambda *ks: next((_num(d.get(x)) for x in ks if _num(d.get(x)) is not None), None)  # noqa: E731
-    out = {"k": _txt(k or d.get("k") or d.get("span") or d.get("period") or "span", 24), "tpw": g("tpw", "trades_wk", "per_week"),
+    k = str(k or d.get("k") or d.get("span") or d.get("period") or "span")
+    out = {"k": _txt(SPAN_NAME.get(k.lower().replace(" ", ""), k), 24), "tpw": g("tpw", "trades_wk", "per_week"),
            "win": g("win", "win_pct", "wr"), "pf": g("pf"), "usd_mo": g("usd_mo", "usd_month", "per_month"), "maxdd": g("maxdd", "max_dd", "mdd")}
     if out["maxdd"] is not None:
         out["maxdd"] = -abs(out["maxdd"])
@@ -92,6 +104,46 @@ def rules(r) -> list:
     return [_txt(x, 160) for x in lines if _txt(x)][:3]
 
 
+def _three(text) -> list:
+    """one rule paragraph -> at most 3 short lines (sentence / clause boundaries, kept in order)"""
+    parts = [x.strip() for x in re.split(r"(?<=[.;])\s+", re.sub(r"\s+", " ", text)) if x.strip()]   # keeps its own . and ;
+    if len(parts) <= 3:
+        return [_txt(x, 240) for x in parts]
+    k = -(-len(parts) // 3)
+    return [_txt(" ".join(parts[i:i + k]), 240) for i in range(0, len(parts), k)][:3]
+
+
+def rule_texts() -> dict:
+    """{id: [<= 3 lines]} from the ICT spec and the classic tool's docstring"""
+    out = {}
+    try:
+        cur = None
+        for line in open(RULE_SRC["popular_ict.json"], encoding="utf-8").read().split("The ten", 1)[1].splitlines():
+            m = re.match(r"^\s*\d{1,2}\.\s+([a-z0-9_]+)\s+-\s+(.*)", line)
+            if m:
+                cur = m.group(1); out[cur] = m.group(2)
+            elif cur and line.startswith("   ") and line.strip():
+                out[cur] += " " + line.strip()
+            elif not line.strip():
+                cur = None
+    except (OSError, IndexError):
+        pass
+    try:
+        doc = open(RULE_SRC["popular_classic.json"], encoding="utf-8").read().split('"""', 2)[1]
+        cur = None
+        for line in doc.splitlines():
+            m = re.match(r"^\s*\d{1,2}\s+([a-z0-9_]+)\s+([A-Z0-9].*)", line)
+            if m:
+                cur = "popc_" + m.group(1); out[cur] = m.group(2)
+            elif cur and re.match(r"^\s{10,}\S", line):
+                out[cur] += " " + line.strip()
+            else:
+                cur = None
+    except (OSError, IndexError):
+        pass
+    return {k: _three(v) for k, v in out.items()}
+
+
 def row(r, src) -> dict | None:
     if not isinstance(r, dict):
         return None
@@ -99,8 +151,13 @@ def row(r, src) -> dict | None:
     rid = re.sub(r"[^a-z0-9_]+", "_", str(r.get("id") or name).lower()).strip("_")[:60]
     if not rid:
         return None
-    return {"id": rid, "name": name, "family": _txt(r.get("family") or "other", 30), "verdict": verdict(r.get("verdict")),
-            "rules": rules(r), "spans": spans(r.get("spans")), "src": src}
+    out = {"id": rid, "name": name, "family": _txt(r.get("family") or "other", 40), "verdict": verdict(r.get("verdict")),
+           "rules": rules(r), "spans": spans(r.get("spans")), "src": src}
+    if r.get("why") or (isinstance(r.get("verdict"), str) and " - " in r["verdict"]):
+        out["why"] = _txt(r.get("why") or r["verdict"].split(" - ", 1)[1], 160)
+    if rid in WATCH:
+        out["watch"] = WATCH[rid]
+    return out
 
 
 def _load(p):
@@ -119,10 +176,15 @@ def popular() -> tuple[list, bool]:
             continue
         found = True
         items = d if isinstance(d, list) else (d.get("strategies") or d.get("rows") or d.get("items") or []) if isinstance(d, dict) else []
-        fam = "ICT" if "ict" in os.path.basename(p) else "classic"
+        fam = "ICT" if "ict" in os.path.basename(p) else "Classic"
+        txt = rule_texts()
         for r in items:
-            x = row({**r, "family": r.get("family") or fam} if isinstance(r, dict) else r, os.path.basename(p))
+            if not isinstance(r, dict):
+                continue
+            x = row({**r, "family": f"{fam} · {str(r.get('family')).replace('_', ' ')}" if r.get("family") else fam}, os.path.basename(p))
             if x:
+                if not x["rules"] and txt.get(x["id"]):
+                    x["rules"] = txt[x["id"]]
                 rows.append(x)
     if found:
         return rows, False
@@ -190,6 +252,12 @@ def best_addon(rows) -> dict:
             worst = min(x["usd_mo"] for x in s)
             if best is None or worst > best["worst_usd_mo"]:
                 best = {"id": r["id"], "name": r["name"], "worst_usd_mo": worst, "src": r["src"]}
+    if not best and real:
+        pop = [r for r in rows if r["src"].startswith("popular_")]
+        near = sorted([r for r in pop if r["spans"] and all((x["usd_mo"] or 0) > 0 for x in r["spans"])], key=lambda r: -min(x["usd_mo"] for x in r["spans"]))
+        names = [r["name"] for r in near] + [r["name"] for r in pop if r.get("watch") and r not in near]
+        why = (f"None passed: 0 of {len(pop)} popular strategies are positive with PF >= 1.3 in every span."
+               + (f" Nearest misses (paper watch at most): {', '.join(names[:3])}." if names else ""))
     if best:
         best["why"] = (f"Every span positive with PF >= 1.3; the worst span still makes ${best['worst_usd_mo']:,.0f}/month. "
                        "Next: the combo test with LIT (overlap, 2-4 trades a week together) before any paper run.")

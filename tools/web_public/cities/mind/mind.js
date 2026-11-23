@@ -164,7 +164,7 @@ function labBody(body) {
   if (!rows.length) { body.append(el('p', { class: 'muted', text: 'The Strategy Lab data did not load.' })); return; }
   body.append(el('div', { class: 'state' }, el('b', { class: 'live', text: `${rows.length} strategies` }), document.createTextNode(` · ${c.live} live · ${c.paper} paper · ${c.promising} promising · ${c.rejected} rejected`)));
   const b = S.lab.best_addon || {};
-  body.append(el('div', { class: 'best', id: 'bestAddon' }, el('b', { text: 'Best add-on to LIT' }), el('div', { text: b.name || 'None yet' }), el('p', { class: 'muted', text: b.why || '' })));
+  body.append(el('div', { class: 'best', id: 'bestAddon' }, el('b', { text: 'Best add-on to LIT' }), el('div', { text: b.name || (/^None passed/.test(b.why || '') ? 'None passed' : 'None yet') }), el('p', { class: 'muted', text: b.why || '' })));
   body.append(el('h3', { text: 'Every strategy' }));
   const list = el('div', { class: 'trades', id: 'labList' });
   for (const r of rows.slice(0, S.showAll ? rows.length : 14)) {
@@ -184,6 +184,8 @@ function neuronBody(body, rid) {
   if (!r) { body.append(el('h2', { text: 'Strategy Lab' }), el('p', { class: 'muted', text: 'This strategy is not in the lab file any more.' })); return; }
   body.append(el('h2', { text: r.name }), el('div', { class: 'muted' }, el('span', { class: 'tag v-' + r.verdict, text: M.VERDICT_WORD[r.verdict] || r.verdict }), document.createTextNode(` ${r.family} · ${r.src}`)));
   if (r.src === 'fixture') sampleBanner(body);
+  if (r.watch) body.append(el('div', { class: 'watch', id: 'labWatch', text: r.watch }));
+  else if (r.why) body.append(el('div', { class: 'state', id: 'labWhy' }, el('b', { class: 'waiting', text: 'Why: ' }), document.createTextNode(r.why)));
   body.append(el('h3', { text: 'Rules' }));
   const ol = el('ol', { class: 'rules', id: 'labRules' }); (r.rules || []).slice(0, 3).forEach((t) => ol.append(el('li', { text: t }))); body.append(ol);
   body.append(el('h3', { text: 'The numbers' }));

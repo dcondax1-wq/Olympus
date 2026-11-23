@@ -126,3 +126,4 @@ body.sheet-open .today { display: none; }
 .spans th { text-align: right; color: var(--mut); font-weight: 600; padding: 4px; border-bottom: 1px solid var(--line); }
 .spans td { text-align: right; padding: 6px 4px; border-bottom: 1px solid #241d33; }
 .spans th:first-child, .spans td:first-child { text-align: left; }
+.watch { margin: 10px 0 0; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--mint); color: var(--mint); font-size: 12.5px; background: rgba(119,219,137,.07); }

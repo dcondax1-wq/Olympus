@@ -48,3 +48,14 @@ every step, 5 ATLAS S/R timeline, 6 the 2D fallback).
    With more lines in `glog` (e.g. LOG_N 8 -> 24 in engine/brain_glance.py), the owner would see the whole day, not just the last 8 steps.
 10. Tests: `tests/test_strategy_lab.py` (20: builder, popular-file shapes, best add-on rule, hub tab in Chromium: sort, filter, rows) added to
     `run_area cities`; `tests.test_mind_brain` now 66.
+
+## Round 4 (popular files landed, 2026-11-23)
+
+11. **day-mind now contains `day-pop-ict` and `day-pop-classic`** (popular_ict.json / popular_classic.json + their tools, writeups,
+    TESTED_AND_REJECTED entries, and the classic branch's one STATE.md line). Conflicts: TESTED_AND_REJECTED.md (both sides kept: the newer pc entries + the ICT
+    and classic bullets) and research/writeups/INDEX.md (regenerated with tools/writeups_index.py, 251 write-ups). Regenerated
+    after the merge: cities/hub-data.json (build_research_hub.py) and cities/brain-data.json (build_brain_hub.py, 115 neurons).
+12. lab-data.json: fixture off, 98 strategies (2 live, 10 promising LIT variants, 86 rejected incl. all 26 popular). The popular files
+    carry numbers, not rules, so the builder reads each strategy's rules from the ICT pre-registered spec and the classic tool's
+    docstring (first 3 sentences). Best add-on = "None passed" (0 of 26 positive with PF >= 1.3 in every span). Nearest misses named
+    from the write-ups as watch notes, verdict unchanged: Crabel stretch (paper lead only) and the 2022 ICT model (paper watch).

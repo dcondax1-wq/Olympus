@@ -36,7 +36,7 @@
     const d = S.data;
     if (d.fixture) box.append(el('div', { class: 'lsample', id: 'hubSample', text: 'SAMPLE rows: the popular-strategy files (ICT + classic) have not landed yet. Rows named SAMPLE are placeholders, not results. LIT, ATLAS and the Strategy Lab (LIT variant) rows are real.' }));
     const b = d.best_addon || {};
-    box.append(el('div', { class: 'lbest', id: 'hubBest' }, el('b', { text: 'Best add-on to LIT' }), el('div', { class: 'nm', text: b.name || 'None yet' }), el('p', { text: b.why || '' })));
+    box.append(el('div', { class: 'lbest', id: 'hubBest' }, el('b', { text: 'Best add-on to LIT' }), el('div', { class: 'nm', text: b.name || (/^None passed/.test(b.why || '') ? 'None passed' : 'None yet') }), el('p', { text: b.why || '' })));
     const counts = { live: 0, paper: 0, promising: 0, rejected: 0 }; d.rows.forEach((r) => { if (r.verdict in counts) counts[r.verdict] += 1; });
     const chips = el('div', { class: 'chips', role: 'group', 'aria-label': 'Verdict' });
     [['', `All ${d.rows.length}`], ['live', `Live ${counts.live}`], ['promising', `Promising ${counts.promising + counts.paper}`], ['rejected', `Rejected ${counts.rejected}`]].forEach(([v, t]) =>
@@ -61,6 +61,7 @@
       body.append(tr);
       if (S.open === r.id) {
         const det = el('td', { colspan: 4, class: 'ldet' });
+        if (r.watch) det.append(el('p', { class: 'lwatch', text: r.watch })); else if (r.why) det.append(el('p', { class: 'lwhy', text: 'Why: ' + r.why }));
         const ol = el('ol'); (r.rules || []).slice(0, 3).forEach((t) => ol.append(el('li', { text: t }))); det.append(ol);
         const st = el('table', { class: 'lspan' }), h = el('tr'); ['Span', '/wk', 'Win', 'PF', '$/mo', 'Max DD'].forEach((x) => h.append(el('th', { text: x }))); st.append(h);
         (r.spans || []).forEach((x) => { const rr = el('tr'); [x.k, fmt(x.tpw, 1), x.win == null ? '-' : fmt(x.win, 0) + '%', fmt(x.pf, 2), usd(x.usd_mo), usd(x.maxdd)].forEach((v) => rr.append(el('td', { text: v }))); st.append(rr); });

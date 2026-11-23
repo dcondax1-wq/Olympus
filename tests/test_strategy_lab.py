@@ -45,6 +45,14 @@ def data():
     check("d. no popular files: the SAMPLE fixture fills and says so", popular_present or (d["fixture"] is True and fx and all(x["name"].startswith("SAMPLE") for x in fx)), d["fixture"])
     check("d. the best add-on is never a SAMPLE row or a LIT variant", not d["best_addon"].get("id") or d["best_addon"].get("src", "").startswith("popular_"), d["best_addon"])
     check("d. every row: id, name, verdict, <= 3 rule lines, <= 3 spans", all(x["id"] and x["name"] and x["verdict"] in B.VERDICTS and len(x["rules"]) <= 3 and len(x["spans"]) <= 3 for x in d["rows"]))
+    pop = [x for x in d["rows"] if x["src"].startswith("popular_")]
+    if pop:
+        check("d. popular files in: no SAMPLE rows, every popular strategy has its rules (spec / tool docstring) and 3 spans",
+              not fx and d["fixture"] is False and all(1 <= len(x["rules"]) <= 3 and len(x["spans"]) == 3 for x in pop), [x["id"] for x in pop if not x["rules"]])
+        check("d. rule text keeps its arrows / comparisons (no '<' / '>' left, no mangled '- long')", all("<" not in t and ">" not in t and " - long" not in t for x in pop for t in x["rules"]))
+        check("d. best add-on is honest: an id only when one passes every span, else 'None passed' with the nearest misses",
+              (d["best_addon"].get("id") and d["best_addon"]["src"].startswith("popular_")) or d["best_addon"]["why"].startswith("None passed"), d["best_addon"])
+        check("d. the write-ups' nearest misses carry a watch note (verdict stays the file's)", all(ids[k].get("watch") and ids[k]["verdict"] == "rejected" for k in ("popc_crabel", "ict2022") if k in ids))
     check("d. lab-data.json small, no secrets", os.path.getsize(B.OUT) < 200_000 and not any(k in open(B.OUT, encoding="utf-8").read().lower() for k in ("api_key", "token\"", "password")))
     # the popular files landing: a temp folder with both shapes
     with tempfile.TemporaryDirectory() as td:
@@ -64,7 +72,7 @@ def data():
             B.POPULAR = old
         ids2 = {x["id"]: x for x in d2["rows"]}
         check("d. popular files replace the fixture (both shapes)", d2["fixture"] is False and not any(x["src"] == "fixture" for x in d2["rows"]) and {"silver_bullet", "judas", "orb", "vwap"} <= set(ids2), sorted(ids2)[:8])
-        check("d. family + verdict + spans normalise", ids2["silver_bullet"]["family"] == "ICT" and ids2["orb"]["family"] == "classic" and ids2["silver_bullet"]["verdict"] == "promising"
+        check("d. family + verdict + spans normalise", ids2["silver_bullet"]["family"] == "ICT" and ids2["orb"]["family"] == "Classic" and ids2["silver_bullet"]["verdict"] == "promising"
               and len(ids2["silver_bullet"]["spans"]) == 3 and ids2["silver_bullet"]["spans"][1]["maxdd"] == -1400 and ids2["silver_bullet"]["spans"][0]["maxdd"] == -1500
               and len(ids2["orb"]["spans"]) == 1 and len(ids2["vwap"]["rules"]) == 3 and len(ids2["silver_bullet"]["rules"]) == 3, (ids2["silver_bullet"], ids2["orb"]["spans"]))
         check("d. best add-on = the separate strategy positive with PF >= 1.3 in every span (worst span decides)",
@@ -141,7 +149,8 @@ def browser():
     check("b. sort by PF and by trades a week", desc(o["pf"]) and desc(o["tpw"]), (o["pf"][:5], o["tpw"][:5]))
     check("b. verdict chip filters", isinstance(o.get("rej"), int) and o["rej"] > 0, o.get("rej"))
     check("b. a row opens its rules + spans", (o.get("det") or {}).get("rules", 0) >= 1 and (o.get("det") or {}).get("spans", 0) >= 1, o.get("det"))
-    check("b. best add-on card + SAMPLE banner (fixture)", "Best add-on to LIT" in o.get("best", "") and o.get("sample") is True, (o.get("best"), o.get("sample")))
+    fixture = json.load(open(os.path.join(PUB, "cities", "lab-data.json")))["fixture"]
+    check("b. best add-on card; SAMPLE banner only with the fixture", "Best add-on to LIT" in o.get("best", "") and o.get("sample") is fixture, (o.get("best"), o.get("sample")))
     check("b. no sideways scroll at 390", o.get("sideways") is False)
     check("b. back to the Research tab", o.get("back") == [True, False], o.get("back"))
 
