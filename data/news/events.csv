@@ -220,6 +220,13 @@ date,time_et,event,impact,source
 2026-11-12,08:30,Unemployment Claims,medium,dol.gov
 2026-11-13,08:30,PPI (producer inflation),high,bls.gov
 2026-11-18,14:00,FOMC minutes (Oct meeting),high,"federalreserve.gov FOMC calendar (fetched 2026-11-17; 3 weeks after the meeting, derived)"
+2026-11-24,10:00,CB Consumer Confidence (Nov),high,"conference-board.org (fetched 2026-11-23: next release Tue Nov 24, 10 AM ET)"
+2026-11-25,08:30,GDP Q3 second estimate,high,"bea.gov release schedule (fetched 2026-11-23)"
+2026-11-25,08:30,Personal Income & Outlays / Core PCE (Oct),high,"bea.gov release schedule (fetched 2026-11-23)"
+2026-11-25,08:30,Durable Goods Orders (Oct),medium,"census.gov economic indicators calendar 2026 (fetched 2026-11-23)"
+2026-11-25,08:30,Unemployment Claims (Thanksgiving week: Wednesday),medium,"dol.gov (holiday week: released the day before Thanksgiving)"
+2026-11-25,10:00,New Home Sales (Oct),medium,"census.gov economic indicators calendar 2026 (fetched 2026-11-23)"
+2026-11-27,08:30,Advance Economic Indicators (Oct),low,"census.gov economic indicators calendar 2026 (fetched 2026-11-23)"
 2026-12-04,08:30,Non-Farm Payrolls (jobs report),high,bls.gov release schedule (fetched 2026-11-17)
 2026-12-09,14:00,FOMC rate decision + projections,high,federalreserve.gov FOMC calendar (fetched 2026-11-17)
 2026-12-09,14:30,FOMC press conference,high,federalreserve.gov FOMC calendar (fetched 2026-11-17)

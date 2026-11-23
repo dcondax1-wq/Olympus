@@ -449,6 +449,7 @@ AREAS["agency"].append("trade_scripts")   # day-caller2 2026-11-22: per-trade ca
 AREAS["money"].append("money_pipeline")     # day-a11y 2026-11-22: the MONEY PIPELINE (business/pipeline.html + agency/pipeline.py) + the Corvette fund
 AREAS["pc"] += ["clockfix"]        # 2026-11-22: FIX_CLOCK.bat + OlympusClock task + the schtasks fallback (engine/go.sync_clock, self_heal.fix_clock)
 AREAS["nq"] += ["live_vs_bt"]   # night-livevsbt 2026-11-23: daily live vs backtest drift check (read-only), one phone line + one brief line
+AREAS["nq"] += ["news_week"]   # night-newsweek 2026-11-23: Thanksgiving week calendar + exact blackout windows
 AREAS["pc"] += ["bat_menu", "context_refresh"]   # night-cleanup 2026-11-22: TRADE_HOME = the one front door (tools/bat/), CBOE / GEX / 1d refresh
 AREAS["pc"].append("bat_shortcuts")     # red team 2026-11-23: a shortcut to a moved .bat follows it to tools/bat (once a day, the 15-minute report)
 AREAS["pc"] += ["zerotouch"]      # night-zerotouch 2026-11-22: START phrase = keep-alive consent, MONDAY_SETUP.bat, recovery matrix, NinjaTrader reopen
