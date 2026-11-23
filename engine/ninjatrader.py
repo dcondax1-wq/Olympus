@@ -1279,6 +1279,11 @@ class NinjaTraderAdapter:
                 self._log("warn", f"NinjaTrader order file name {name} already in incoming (another writer?): new name")
             except OSError as e:
                 err = e
+                if self.write_mode == "move":   # night-faults: the unpublished copy never stays in le_outbox
+                    try:
+                        os.remove(os.path.join(self.folder, "le_outbox", name))
+                    except OSError:
+                        pass
                 time.sleep(0.2 * (attempt + 1))
         msg = f"could not write the order file ({err.__class__.__name__}: {err})"
         self.last_error = msg
@@ -2594,7 +2599,16 @@ class NinjaTraderAdapter:
             from .fsutil import replace as _replace
             _replace(tmp, self.state_path)            # retried: Windows refuses a replace while a reader has it open
         except Exception as e:
-            self.last_error = f"state save failed: {e}"
+            # night-faults 2026-11-23: a failed save (disk full, a lock) was only last_error: silent. The write-ahead record is
+            # what a restart restores the open bracket from, so the owner hears it (one alert per 30 min; logged every time)
+            msg = f"state save failed ({e.__class__.__name__}: {e}): free disk space (CLEAN_STORAGE.bat); a restart now could lose track of an open bracket"
+            now = float(self.clock())
+            if now - float(getattr(self, "_save_alert_t", 0) or 0) >= 1800:
+                self._save_alert_t = now
+                self._risk(msg, alert=True)
+            else:
+                self.last_error = msg
+                self._log("error", "NinjaTrader " + msg)
 
     def _restore(self):
         try:
@@ -2768,7 +2782,11 @@ class NinjaTraderBars:
             part = pd.read_csv(io.BytesIO(body), header=None, names=cols, usecols=range(6), on_bad_lines="skip", dtype=str,
                                engine="python") if body.strip() else pd.DataFrame(columns=cols, dtype=str)
         except Exception:
-            return None
+            # night-faults 2026-11-23: a short / junk line FIRST in the chunk (a torn write, an add-on restart) made pandas
+            # infer < 6 columns and raise: the whole feed read as "unreadable" until the next full read (up to 15 min, new
+            # entries blocked). Line by line instead: a line with 6+ fields is kept, anything else dropped (as on_bad_lines).
+            rows = [ln.split(",")[:6] for ln in body.decode("utf-8", "replace").splitlines() if ln.count(",") >= 5]
+            part = pd.DataFrame(rows, columns=cols, dtype=str) if rows else pd.DataFrame(columns=cols, dtype=str)
         for c in cols:
             part[c] = pd.to_numeric(part[c], errors="coerce")
         part = part.dropna(subset=["time", "open", "high", "low", "close"])          # header row, junk line

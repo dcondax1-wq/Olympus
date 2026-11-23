@@ -157,7 +157,11 @@ def load(p: str | None = None) -> dict:
         with open(path(p), encoding="utf-8") as fh:
             d = json.load(fh)
         return d if isinstance(d, dict) else {}
-    except Exception:
+    except FileNotFoundError:
+        return {}
+    except Exception as e:                       # night-faults: still {} (off, never armed), but said out loud
+        from .fault_note import corrupt
+        corrupt(path(p), e, "the Rapid EOD account does not trade until it is fixed")
         return {}
 
 

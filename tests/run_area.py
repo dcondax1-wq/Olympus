@@ -109,6 +109,7 @@ AREAS["kalshi"].append("kalshi_k8_day")  # day-kalshi 2026-11-20: Monday rehears
 AREAS["kalshi"] += ["dionysus_page", "dionysus_merge"]  # day-kalshi 2026-11-20: Dionysus absorbs Kalshi City + Sibyl as plain cards (node Playwright); its own line
 AREAS["nq"].append("live_gap_proposal")  # night-litmore 2026-11-19: live vs backtest gap + the fill_audit "no record" proposal (tools/live_gap_proposal.py); its own line
 AREAS["nq"] += ["nq_live_reliability", "fast_entry"]   # night-nqlive 2026-11-20: missed-trade alarms + audit fixes, poll-on-tick (OFF); own line
+AREAS["nq"] += ["faults"]; AREAS["pc"] += ["faults"]   # night-faults 2026-11-23: fault injection (feed file, order file, state files, lanes, disk, internet)
 AREAS["pc"] += ["nq_live_reliability", "account_b_min_room"]   # the same suite (fast alarm, autoupdate flat, datafeed gaps) + ATLAS min_room CLI
 AREAS["nq"].append("fill_cost")          # night-atlasfills 2026-11-20: "real slippage so far" per bot (tools/fill_cost.py + learn_night card)
 # night-webpush 2026-11-19: Olympus phone notifications from the PC (engine/push.py: own key, relay intake, phone first / ntfy backup;

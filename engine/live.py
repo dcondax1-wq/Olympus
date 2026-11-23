@@ -390,9 +390,19 @@ class LiveBot:
         self.log.appendleft({"t": int(self.clock()), "type": kind, "text": text, **kw})
 
     def _alert(self, text, kind):
-        """alerts.send never raises by contract, but a bug there must never stop order routing."""
+        """alerts.send never raises by contract, but a bug there must never stop order routing. night-faults 2026-11-23: with
+        Telegram / Discord chat alerts on, alerts.send posts synchronously (10 s timeout a channel): an entry alert sits BEFORE
+        _route_signals, so a hung internet delayed the order up to 20 s. Chat on = the post runs in a daemon thread."""
         try:
             from . import alerts
+            if alerts.chat_on():
+                def go():
+                    try:
+                        alerts.send(text, kind)
+                    except Exception:
+                        pass
+                threading.Thread(target=go, name="chat-alert", daemon=True).start()
+                return {"queued": True}
             return alerts.send(text, kind)
         except Exception as e:
             self._note_error(f"alert failed: {e}")
@@ -413,12 +423,29 @@ class LiveBot:
             if hit and hit[0] == (st_.st_mtime_ns, st_.st_size):
                 df = hit[1]                              # the export only changes when the owner refreshes it
             else:
-                df = pd.read_csv(path)
+                try:
+                    df = pd.read_csv(path)
+                    if not {"time", "open", "high", "low", "close", "volume"} <= set(df.columns):
+                        raise ValueError(f"missing columns ({', '.join(map(str, df.columns))[:80]})")
+                except Exception as e:
+                    # night-faults 2026-11-23: the history export rewritten / torn while the bot runs failed EVERY poll (no
+                    # routing at all). The last good copy read this session is used (the same bars the decisions had), the
+                    # owner is told; with no good copy yet it raises as before (the fast alarm then says the bot is down).
+                    if hit:
+                        self._nt_note(f"hist:{sym}:{tf}", "error", f"{os.path.basename(path)} unreadable ({e.__class__.__name__}: "
+                                      f"{str(e)[:80]}): the last good copy is used until it is fixed", every_s=3600)
+                        df = hit[1]
+                        return self._hist_tail(df, sym, tf)
+                    raise
                 # same hygiene as engine.data.load(): weekend/maintenance junk bars never reach the live engine either
                 df = df[~((df["high"] == df["low"]) & (df["volume"] <= 0))]
                 if self.no_yahoo:
                     df = pcbars.tidy(df)
                     self._hist_cache = {**getattr(self, "_hist_cache", {}), path: ((st_.st_mtime_ns, st_.st_size), df)}
+        return self._hist_tail(df, sym, tf)
+
+    def _hist_tail(self, df, sym, tf):
+        """_read_hist's last steps (the keep-days cut, the NinjaTrader archive merge), shared by the fallback above."""
         try:                                             # redteam 2026-11-21: a string ("0"), NaN or tiny value never empties or
             keep = float(self.cfg.get("hist_keep_days", HIST_KEEP_DAYS) or 0)     # shortens the window; a bad time never raises
         except (TypeError, ValueError):
@@ -1178,7 +1205,29 @@ class LiveBot:
             from .fsutil import replace as _replace
             _replace(tmp, self.state_path)            # retried: Windows refuses a replace while a reader has it open
         except Exception as e:
-            self.health["last_error"] = f"state save failed: {e}"
+            # night-faults 2026-11-23: was silent (health only). Logged every time; the real bot also pushes the private
+            # problem topic once per 30 min (disk full: a restart would lose today's ledger, kill flag and alert keys)
+            self._note_error(f"state save failed: {e.__class__.__name__}: {e}")
+            now = int(self.clock())
+            if self.state_path == STATE_PATH and now - int(getattr(self, "_save_alert_t", 0) or 0) >= 1800:
+                self._save_alert_t = now
+                self._problem_bg({"key": f"state_save:{now // 1800}", "code": "bot_down", "title": "Bot cannot save its state",
+                                  "body": f"{e.__class__.__name__}: {str(e)[:120]}. Trading goes on; free disk space "
+                                          "(CLEAN_STORAGE.bat) so a restart keeps today's trades."})
+
+    def _problem_bg(self, p):
+        """One private problem push (engine/notify.instant_problem) in a daemon thread: the internet being down never blocks
+        the poll. Never raises."""
+        def go():
+            try:
+                from . import notify as _nt
+                _nt.instant_problem(p)
+            except Exception:
+                pass
+        try:
+            threading.Thread(target=go, name="problem-push", daemon=True).start()
+        except Exception:
+            pass
 
     def _restore(self, clear_kill=False):
         """Pick up today's ledger / kill flag / alert de-dup keys after a server restart. Older files are ignored."""
@@ -1189,6 +1238,9 @@ class LiveBot:
                 s = json.load(f)
         except Exception as e:
             self._log("warn", f"live_state.json unreadable ({e}) - starting clean")
+            if self.state_path == STATE_PATH:     # night-faults: the real bot also tells the owner (one push a day)
+                from .fault_note import corrupt
+                corrupt(self.state_path, e, "the bot started with a clean day (today's ledger, kill flag and alert keys are gone)")
             return
         today = trading_day(self.clock())
         try:                         # engine/keepalive: the saved ledger's CONFIRMED fill days outlive an earlier day's ledger

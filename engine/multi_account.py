@@ -216,7 +216,11 @@ def load_file(path: str = ACCOUNTS_PATH) -> list:
     try:
         with open(path, encoding="utf-8") as fh:
             d = json.load(fh)
-    except Exception:
+    except FileNotFoundError:
+        return []
+    except Exception as e:                       # night-faults: still [] (never armed), but said out loud
+        from .fault_note import corrupt
+        corrupt(path, e, "the added accounts do not trade until it is fixed")
         return []
     rows = d.get("accounts") if isinstance(d, dict) else d
     return [r for r in rows if isinstance(r, dict)] if isinstance(rows, list) else []
