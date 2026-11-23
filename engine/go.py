@@ -305,11 +305,15 @@ def start_server(wait_s=120) -> bool:
 
 def stop_server():
     subprocess.run(_ps(STOP_BOT, "-KeepAutostart"), cwd=ROOT)
-    t0 = _clock()
-    while _clock() - t0 < 30:
+    # red team 2026-11-23: the limit counts the 30 s of WAITING, as before (30 x 1 s sleeps + each look's own time, up to
+    # 3 s on a server that still holds the port but no longer answers). A 30 s wall clock would give such a server
+    # 30 s instead of up to 2 min, and START would say "did not stop" sooner
+    slept = 0.0
+    while slept < 30:
         if not server_up():
             return True
         _sleep(STOP_EVERY_S)
+        slept += STOP_EVERY_S
     return False
 
 

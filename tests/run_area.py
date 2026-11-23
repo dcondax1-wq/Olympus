@@ -442,6 +442,7 @@ AREAS["pc"] += ["zerotouch"]      # night-zerotouch 2026-11-22: START phrase = k
 AREAS["pc"].append("zerotouch_rt")      # red team 2026-11-23: an old explicit keep-alive OFF sticks, NinjaTrader reopen back-off, no-console start
 
 AREAS["pc"].append("faststart")   # night-faststart 2026-11-23: START BOT looks sooner and more often (same limits), on a fake clock
+AREAS["pc"].append("faststart_rt")   # red team 2026-11-23: stop_server keeps its old limit on a slow-answering server; checklist only after the bot start
 
 if __name__ == "__main__":
     sys.exit(main())
