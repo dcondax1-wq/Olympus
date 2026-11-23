@@ -82,6 +82,11 @@
   (eval +$66 / +$149); London build-up sweeps x1.25 +$295 / +$14 but eval H1 -$4, 2-week pass 44.5 -> 41.2, flip p 0.15 /
   0.51 (nearest miss, re-tested nightly); 18:00 gap against x0.75 -$408 / -$188. 0 pass. Clock exits all lose (targets need
   hours); NY-open / news rules touch 0-7 trades in 2026.
+- **Order-flow program on bars (2026-11-23, `orderflow-program-2026-11-23.md`, `research/orderflow/of_program.py`, pre-registered):**
+  6 tests, $500 / costs in: LVN rejection (stand-alone, PF 1.26 / 1.10 / 4.56, placebo p 0.004, 0.5-0.7/wk: H1 PF and count
+  fail; moved to ticks as OF3), IB failed extension -> IB mid (-$36k 2021-25, + only in 2026), LIT skip on poor prior-day
+  highs/lows (4 trades), BVC delta divergence / confirmation on 5m and 1m (cost LIT -$15k to -$31k in 2026 H1: "refuted"
+  trades are LIT's best), skip thin sweeps, 1m absorption print. 0 pass. Real-tick versions pre-registered (PREREG_ticks.md).
 - **ATLAS new members (2026-11-18, `atlas-members-2026-11-18.md`, `tools/atlas_plus.py`, `research/second/atlas_plus.json`):** 29
   pre-declared versions, 5m NQ RTH, stop 1 tick beyond structure, 2R or VIX-band target, $250 a trade, costs in: VWAP pullback
   with trend (8; all lose Jul-Oct), opening-drive continuation on a 1m trigger (8; 2021-25 = 5m proxy), prior-day value-area

@@ -86,6 +86,8 @@ trades made +$14,013 while the rest lost −$9,907, a gap too large to dismiss b
 
 ## 6. Owner steps: download NinjaTrader's free historical NQ ticks
 
+> **Superseded 2026-11-23 (day-ofprogram):** use `TICKS_HOWTO.md`. NT8 exports are in **UTC**, so do NOT pass your PC time zone as `--tz` (steps 4-5 below were wrong); the importer now defaults to UTC and `python -m engine.tickrec import` reads the whole export folder.
+
 NinjaTrader's historical data server (the same one LE_Feed pulls bars from) serves tick history to a connected NinjaTrader 8
 at no cost. How far back it goes is set by NinjaTrader. Ask for 12 months; any month that comes back empty is not on the
 server.

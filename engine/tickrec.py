@@ -25,7 +25,8 @@ nothing that can trade (no engine.ninjatrader, engine.live, engine.tradovate). I
   python -m engine.tickrec disable
   python -m engine.tickrec ingest                      le_ticks CSVs -> data/ticks (idempotent, de-duplicated)
   python -m engine.tickrec run [--every 60]            ingest in a loop (only while enabled)
-  python -m engine.tickrec import FILE --root NQ [--tz America/New_York]
+  python -m engine.tickrec import [FILE.txt | FOLDER]   NT8 tick export(s) -> data/ticks (UTC stamps; default folder
+                                                       Documents\\NinjaTrader 8\\le_ticks\\export)
   python -m engine.tickrec selftest
 """
 from __future__ import annotations
@@ -135,13 +136,8 @@ def classify(price, bid, ask) -> np.ndarray:
     side[okq & (p <= b) & (side == 0)] = -1
     if len(p):
         dp = np.diff(p, prepend=p[0])
-        tick = np.sign(dp).astype(np.int8)
-        last = 0
-        for i in range(len(p)):           # tick rule with carry-forward on zero ticks
-            if tick[i] != 0:
-                last = tick[i]
-            if side[i] == 0:
-                side[i] = last
+        tick = pd.Series(np.sign(dp)).replace(0, np.nan).ffill().fillna(0).values.astype(np.int8)  # tick rule, zero ticks carry
+        side = np.where(side == 0, tick, side).astype(np.int8)
     return side
 
 
@@ -175,7 +171,7 @@ def write_days(df: pd.DataFrame, tick_dir: str | None = None) -> list[str]:
     for day, part in df.groupby(et_day.values):
         old = read_day(day)
         both = pd.concat([old, part[COLS]], ignore_index=True) if old is not None else part[COLS]
-        both = both.drop_duplicates(subset=["t_ns", "root", "price", "size", "bid", "ask"]).sort_values(["root", "t_ns"], kind="stable")
+        both = _dedup(old, part[COLS])
         both = both.reset_index(drop=True)
         if pq:
             p = _day_path(day, ".parquet")
@@ -186,6 +182,15 @@ def write_days(df: pd.DataFrame, tick_dir: str | None = None) -> list[str]:
         os.replace(p + ".tmp", p)
         out.append(p)
     return out
+
+
+def _dedup(old: pd.DataFrame | None, new: pd.DataFrame) -> pd.DataFrame:
+    """Union that keeps legit repeats: NQ prints many identical trades in one time stamp. A row that appears k times in the
+    old file and m times in the new data is kept max(k, m) times, so re-importing a file adds nothing and loses nothing."""
+    key = ["t_ns", "root", "price", "size", "bid", "ask"]
+    fr = [x.assign(_k=x.groupby(key, sort=False).cumcount()) for x in (old, new) if x is not None and len(x)]
+    both = pd.concat(fr, ignore_index=True).drop_duplicates(subset=key + ["_k"]).drop(columns="_k")
+    return both.sort_values(["root", "t_ns"], kind="stable")
 
 
 def read_day(day: str) -> pd.DataFrame | None:
@@ -241,35 +246,78 @@ def ingest(nd: str | None = None) -> dict:
     return {"ok": True, "files": len(files), "rows": rows, "written": sorted(written)}
 
 
-def parse_nt_export(path: str, root: str, tz: str = "America/New_York") -> pd.DataFrame:
-    """NinjaTrader 8 Historical Data > Export, data type Tick, one line per trade:
-         yyyyMMdd HHmmss fffffff;last;bid;ask;volume     (NT8, with the quote)
-         yyyyMMdd HHmmss;last;volume                     (older format, no quote -> tick rule only)
-    The time stamps are in the time zone NinjaTrader was set to (Tools > Options > General); pass it with --tz."""
-    ts, px, bd, ak, vol = [], [], [], [], []
-    with open(path, encoding="utf-8", errors="replace") as f:
-        for ln in f:
-            s = ln.strip().split(";")
-            if len(s) not in (3, 5):
-                continue
-            try:
-                tparts = s[0].split(" ")
-                frac = int(tparts[2]) if len(tparts) > 2 else 0          # 100 ns units
-                base = dt.datetime.strptime(tparts[0] + tparts[1], "%Y%m%d%H%M%S")
-                if len(s) == 5:
-                    p, b, a, v = float(s[1]), float(s[2]), float(s[3]), int(float(s[4]))
-                else:
-                    p, b, a, v = float(s[1]), 0.0, 0.0, int(float(s[2]))
-            except (ValueError, IndexError):
-                continue
-            ts.append((base, frac)); px.append(p); bd.append(b); ak.append(a); vol.append(v)
-    if not px:
+def _parse_chunk(c: pd.DataFrame, root: str, tz: str) -> pd.DataFrame:
+    """One chunk of an NT8 export read with 5 string columns (3-field lines leave columns 3-4 empty)."""
+    t0 = c[0].astype(str).str.strip()
+    base = pd.to_datetime(t0.str[:15], format="%Y%m%d %H%M%S", errors="coerce")
+    frac = pd.to_numeric(t0.str[16:23].str.ljust(7, "0").where(t0.str.len() > 16, "0"), errors="coerce").fillna(0)
+    five = c[4].notna()
+    num = lambda k: pd.to_numeric(c[k], errors="coerce")  # noqa: E731
+    price = num(1)
+    bid = num(2).where(five, 0.0)
+    ask = num(3).where(five, 0.0)
+    vol = num(4).where(five, num(2))
+    ok = base.notna() & price.notna() & vol.notna() & (price > 0) & (vol > 0) & bid.notna() & ask.notna()
+    if not ok.any():
         return pd.DataFrame(columns=COLS)
-    loc = pd.to_datetime([b for b, _ in ts]).tz_localize(ZoneInfo(tz), ambiguous="NaT", nonexistent="shift_forward")
-    ns = loc.tz_convert("UTC").as_unit("ns").asi8 + np.array([fr * 100 for _, fr in ts], np.int64)
+    loc = pd.DatetimeIndex(base[ok]).tz_localize(ZoneInfo(tz), ambiguous="NaT", nonexistent="shift_forward")
     keep = ~pd.isna(loc)
-    df = frame(ns[keep], root.upper(), np.array(px)[keep], np.array(vol)[keep], np.array(bd)[keep], np.array(ak)[keep])
-    return df
+    ns = loc[keep].tz_convert("UTC").as_unit("ns").asi8 + (frac[ok].values[keep].astype(np.int64) * 100)
+    return frame(ns, root.upper(), price[ok].values[keep], vol[ok].values[keep].astype(np.int64),
+                 bid[ok].values[keep], ask[ok].values[keep])
+
+
+def _chunks(path: str, root: str, tz: str, rows: int = 2_000_000):
+    rd = pd.read_csv(path, sep=";", header=None, names=range(5), dtype=str, chunksize=rows, on_bad_lines="skip",
+                     engine="c", skip_blank_lines=True, encoding_errors="replace")
+    for c in rd:
+        yield _parse_chunk(c, root, tz)
+
+
+def parse_nt_export(path: str, root: str, tz: str = "UTC") -> pd.DataFrame:
+    """NinjaTrader 8 Historical Data > Export, Interval Tick, one line per trade:
+         yyyyMMdd HHmmss fffffff;last;bid;ask;volume     (NT8 Tick Replay layout, with the quote -> quote rule)
+         yyyyMMdd HHmmss[ fffffff];last;volume           (no quote -> tick rule only)
+    NT8 always EXPORTS in UTC (help guide 'Exporting'), so the default tz is UTC. Only pass --tz for a file that came from
+    somewhere else. Whole file in memory: fine for tests and small files; `import_file` streams big ones."""
+    parts = list(_chunks(path, root, tz))
+    df = pd.concat(parts, ignore_index=True) if parts else pd.DataFrame(columns=COLS)
+    return df.sort_values("t_ns", kind="stable").reset_index(drop=True) if len(df) else df
+
+
+def root_from_name(path: str) -> str:
+    """'NQ 12-25.Last.txt' -> 'NQ' (NT's default export name)."""
+    r = os.path.basename(path).replace("_", " ").split(" ")[0].split(".")[0].upper()
+    return r if r in ROOTS_OK else "NQ"
+
+
+def import_file(path: str, root: str | None = None, tz: str = "UTC") -> dict:
+    """Stream a (multi-GB) NT8 tick export into data/ticks, 2M lines at a time. Re-importing the same file adds nothing."""
+    root = (root or root_from_name(path)).upper()
+    rows, quoted, days, mins = 0, 0, set(), np.zeros(1440)
+    first = last = None
+    for df in _chunks(path, root, tz):
+        if df.empty:
+            continue
+        rows += len(df)
+        quoted += int((df.bid > 0).sum())
+        et = pd.to_datetime(df.t_ns, utc=True).dt.tz_convert(ET)
+        np.add.at(mins, (et.dt.hour * 60 + et.dt.minute).values, df["size"].values)
+        first = first if first is not None else et.iloc[0]
+        last = et.iloc[-1]
+        days.update(os.path.basename(p).split(".")[0] for p in write_days(df))
+    top = int(mins.argmax()) if rows else 0
+    good = rows and (570 <= top <= 575 or 510 <= top <= 515)
+    return {"file": os.path.basename(path), "root": root, "rows": rows, "days": len(days),
+            "first_et": str(first)[:19] if first is not None else None, "last_et": str(last)[:19] if last is not None else None,
+            "tz_check": ("OK" if good else "CHECK --tz:") + " busiest minute %02d:%02d ET" % (top // 60, top % 60) if rows else "no rows",
+            "with_bid_ask%": round(100.0 * quoted / rows, 1) if rows else 0.0,
+            "tick_days_total": len(days_available())}
+
+
+def default_export_dir() -> str | None:
+    nd = nt_dir()
+    return os.path.join(nd, REC_DIR, "export") if nd else None
 
 
 def tz_check(df: pd.DataFrame) -> str:
@@ -321,7 +369,7 @@ def selftest() -> bool:
         exp = os.path.join(tmp, "nt.txt")
         with open(exp, "w") as f:
             f.write("20261120 093000 0000000;21000.25;21000;21000.25;3\n20261120 093000 5000000;21000;21000;21000.25;2\nbad\n")
-        df = parse_nt_export(exp, "NQ")
+        df = parse_nt_export(exp, "NQ", "America/New_York")
         assert len(df) == 2 and list(df.side) == [1, -1]
         assert pd.Timestamp(int(df.t_ns.iloc[0]), tz="UTC").tz_convert(ET).strftime("%H:%M") == "09:30"
         write_days(df); write_days(df)
@@ -337,9 +385,9 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="python -m engine.tickrec", description="read-only NQ/ES tick recorder")
     ap.add_argument("cmd", choices=["status", "enable", "disable", "ingest", "run", "import", "selftest"])
     ap.add_argument("file", nargs="?")
-    ap.add_argument("--root", default="NQ")
+    ap.add_argument("--root", default=None, help="default: from the file name (NQ 12-25.Last.txt -> NQ)")
     ap.add_argument("--roots", default="NQ,ES")
-    ap.add_argument("--tz", default="America/New_York")
+    ap.add_argument("--tz", default="UTC", help="NT8 exports are UTC; change only for other sources")
     ap.add_argument("--every", type=int, default=60)
     a = ap.parse_args(argv)
     if a.cmd == "status":
@@ -357,12 +405,13 @@ def main(argv=None) -> int:
             print(json.dumps(ingest()))
             time.sleep(max(10, a.every))
     elif a.cmd == "import":
-        if not a.file:
-            ap.error("import needs the exported .txt file")
-        df = parse_nt_export(a.file, a.root, a.tz)
-        print(tz_check(df))
-        w = write_days(df)
-        print("rows %d -> %d day files in %s" % (len(df), len(w), TICK_DIR))
+        src = a.file or default_export_dir()
+        if not src or not os.path.exists(src):
+            ap.error("no file: pass the exported .txt (or a folder of them); default folder %s" % default_export_dir())
+        files = sorted(glob.glob(os.path.join(src, "*.txt"))) if os.path.isdir(src) else [src]
+        for fp in files:
+            print(json.dumps(import_file(fp, a.root, a.tz)))
+        print("done: %d tick days on disk (the study needs 60): python research/orderflow/of_study.py" % len(days_available()))
     elif a.cmd == "selftest":
         return 0 if selftest() else 1
     return 0

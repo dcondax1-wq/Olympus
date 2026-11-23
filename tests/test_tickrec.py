@@ -57,12 +57,19 @@ def main() -> int:
             f.write("20261120 093000 0000000;21000.25;21000;21000.25;3\n"
                     "20261120 093000 1000000;21000;21000;21000.25;2\n"
                     "garbage line\n20261120 093001;21000.5;4\n")
-        df = T.parse_nt_export(ex, "NQ")
+        df = T.parse_nt_export(ex, "NQ", "America/New_York")
         ok(len(df) == 3 and list(df.side) == [1, -1, 1], "export parse %s" % list(df.side))
         ok(int(df.t_ns.iloc[1] - df.t_ns.iloc[0]) == 100_000_000, "sub-second stamp")
         T.write_days(df); T.write_days(df)
         ok(len(T.read_day("2026-11-20")) == 3, "re-import is de-duplicated")
         ok(T.tz_check(df).startswith("OK"), "tz check " + T.tz_check(df))
+        # NT8 exports are UTC: 14:30 UTC = 09:30 ET (Nov), default tz, same-stamp repeats kept, streaming import idempotent
+        ux = os.path.join(tmp, "NQ 03-27.Last.txt")
+        with open(ux, "w") as f:
+            f.write("20261123 143000 0000000;21000.25;21000;21000.25;1\n" * 3 + "20261123 143000 0010000;21000;21000;21000.25;2\n")
+        r1 = T.import_file(ux); r2 = T.import_file(ux)
+        ok(r1["root"] == "NQ" and r1["rows"] == 4 and r1["tz_check"].startswith("OK"), "UTC import %s" % r1)
+        ok(len(T.read_day("2026-11-23")) == 4, "identical same-stamp trades kept, re-import adds nothing")
         # c
         rd = os.path.join(nd, "le_ticks")
         with open(os.path.join(rd, "ES_2026-11-20.csv"), "w") as f:

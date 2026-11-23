@@ -92,7 +92,7 @@ def load():
 def span_weeks(M):
     out = {}
     for nm, a, b in SPANS:
-        ds = sorted({d for d in M.dates if a <= d <= b})
+        ds = sorted({str(d) for d in set(M.dates.tolist()) if a <= str(d) <= b})
         out[nm] = max(1.0, (pd.Timestamp(ds[-1]) - pd.Timestamp(ds[0])).days / 7) if ds else None
     return out
 

@@ -269,6 +269,190 @@ def stacked_continuation(bars, sis):
                       weeks(nm, alld)) for nm, _, _ in SPANS}
 
 
+# ================================================================================================ PRE-REGISTERED tick designs
+# research/orderflow/PREREG_ticks.md (2026-11-23, branch day-ofprogram). Fixed before any tick exists; run once 60+ days are on
+# disk; no tuning after the first look. Spans = whatever the ticks cover inside 2026 H1 / H2 (2021-25 has no ticks).
+OF_ZONE_TICKS, OF_ABS_SHARE, OF_BLOCK_PCT, OF_BLOCK_DAYS = 8, 0.20, 99.5, 5
+
+
+def _bars_from_ticks(x):
+    from engine import tickrec
+    fp = tickrec.footprint(x, 5)
+    ix = pd.DatetimeIndex(fp.index)
+    ix = ix.tz_localize("UTC") if ix.tz is None else ix
+    fp.index = ix
+    t = ix.tz_convert(ET)
+    return fp.assign(day=t.strftime("%Y-%m-%d"), mod=t.hour * 60 + t.minute, time=[int(k.timestamp()) for k in fp.index])
+
+
+def _gain_report(rows, keep, spans_seen):
+    res, ok = {}, True
+    for nm, _, _ in SPANS:
+        R = [r for r in rows if span_of(r["day"]) == nm]
+        if nm not in spans_seen or not R:
+            continue
+        w = weeks(nm, [r["day"] for r in rows])
+        K = [r for r, k in zip(rows, keep) if k and span_of(r["day"]) == nm]
+        S = [r for r, k in zip(rows, keep) if not k and span_of(r["day"]) == nm]
+        base = stats([r["pnl"] for r in R], None, w)
+        kept = stats([r["pnl"] for r in K], None, w)
+        res[nm] = {"all LIT": base, "kept": kept, "skipped": stats([r["pnl"] for r in S], None, w),
+                   "gain$": kept.get("net$", 0) - base.get("net$", 0)}
+        ok = ok and res[nm]["gain$"] > 0 and kept.get("n", 0) >= 0.5 * base.get("n", 0)
+    res["verdict"] = "PASS" if (ok and len(res) >= 2) else "REJECTED"
+    return res
+
+
+def prereg(days):
+    """OF1 sweep absorption, OF2 block prints, OF3 tick-profile LVN rejection. Returns a dict for results.json."""
+    from engine import tickrec
+    from tools import lit_losses as L
+    M, C, B1, B5 = L.base()
+    T = L.run()
+    dayset = set(days)
+    cache = {}
+
+    def ticks(d):
+        if d not in cache:
+            x = tickrec.read_day(d)
+            cache[d] = None if x is None else x[x.root == "NQ"].sort_values("t_ns", kind="stable").reset_index(drop=True)
+        return cache[d]
+    # block threshold per day: 99.5th pct of trade size over the 5 tick days before it
+    sizes = {}
+    for d in days:
+        x = ticks(d)
+        if x is not None and len(x):
+            sizes[d] = x["size"].values
+    block = {}
+    for i, d in enumerate(days):
+        prev = [sizes[p] for p in days[max(0, i - OF_BLOCK_DAYS):i] if p in sizes]
+        if len(prev) >= 3:
+            block[d] = float(np.percentile(np.concatenate(prev), OF_BLOCK_PCT))
+    rows, k1, k2 = [], [], []
+    for t in T:
+        te, tn = int(M.t[t["ext_i"]]), int(M.t[t["entry_i"]])
+        ed = pd.Timestamp(te, unit="s", tz="UTC").tz_convert(ET).strftime("%Y-%m-%d")
+        if ed not in dayset:
+            continue
+        x = ticks(ed)
+        if x is None or x.empty:
+            continue
+        ns = x.t_ns.values
+        a, b = np.searchsorted(ns, te * 10**9), np.searchsorted(ns, (te + 300) * 10**9)
+        if b - a < 20:
+            continue
+        bar = x.iloc[a:b]
+        d = t["dir"]
+        ext = bar.price.min() if d == 1 else bar.price.max()
+        z = bar[(bar.price - ext).abs() <= OF_ZONE_TICKS * TICK]
+        vz, dz = float(z["size"].sum()), float((z["size"] * z.side).sum())
+        absorbed = vz > 0 and dz * d < 0 and abs(dz) >= OF_ABS_SHARE * vz          # OF1
+        c = np.searchsorted(ns, tn * 10**9)
+        w = x.iloc[a:max(a, c)]
+        th = block.get(ed)
+        sb = float((w["size"] * w.side)[w["size"] >= th].sum()) if th else 0.0
+        against = sb * d < 0                                                     # OF2: blocks against the trade
+        rows.append({"day": t["day"], "pnl": t["pnl"]})
+        k1.append(absorbed); k2.append(not against)
+    seen = {span_of(r["day"]) for r in rows}
+    out = {"OF1 sweep absorption (skip not-absorbed)": _gain_report(rows, k1, seen),
+           "OF2 block prints (skip blocks against)": _gain_report(rows, k2, seen),
+           "OF_LIT_trades_with_ticks": len(rows)}
+    # OF3: B1 LVN rejection with a real tick-volume profile; A = + touch-bar delta with the trade, B = no delta filter
+    import importlib.util as _iu
+    _sp = _iu.spec_from_file_location("of_program", os.path.join(os.path.dirname(os.path.abspath(__file__)), "of_program.py"))
+    P = _iu.module_from_spec(_sp); _sp.loader.exec_module(P)
+    sig = {"A": [], "B": []}
+    prev_prof = None
+    for d in days:
+        x = ticks(d)
+        if x is None or x.empty:
+            prev_prof = None
+            continue
+        bb = _bars_from_ticks(x)
+        rth = bb[(bb["mod"] >= 570) & (bb["mod"] < 960) & (bb.day == d)].reset_index(drop=True)
+        if len(rth) < 60:
+            prev_prof = None
+            continue
+        if prev_prof:
+            for k in range(1, len(rth)):
+                if not (600 <= rth.at[k, "mod"] < 900):
+                    continue
+                hi, lo, cl, pc = rth.at[k, "high"], rth.at[k, "low"], rth.at[k, "close"], rth.at[k - 1, "close"]
+                rg = hi - lo
+                hit = 0
+                for lv in prev_prof:
+                    if rg > 0 and lo <= lv <= hi:
+                        if pc > lv and cl > lv and cl >= lo + rg / 2:
+                            hit = 1
+                        elif pc < lv and cl < lv and cl <= lo + rg / 2:
+                            hit = -1
+                        if hit:
+                            break
+                if hit:
+                    pnl = _sim_df(rth, k, hit)
+                    flip = _sim_df(rth, k, -hit)
+                    if pnl is not None:
+                        sig["B"].append((d, pnl, flip))
+                        if rth.at[k, "delta"] * hit > 0:
+                            sig["A"].append((d, pnl, flip))
+                    break
+        r_ = x.assign(mod=lambda q: (pd.to_datetime(q.t_ns, utc=True).dt.tz_convert(ET).dt.hour * 60 +
+                                      pd.to_datetime(q.t_ns, utc=True).dt.tz_convert(ET).dt.minute))
+        r_ = r_[(r_["mod"] >= 570) & (r_["mod"] < 960)]
+        if len(r_):
+            lo0 = np.floor(r_.price.min() / 2.0) * 2.0
+            bins = np.floor((r_.price.values - lo0) / 2.0).astype(int)
+            vol = np.bincount(bins, weights=r_["size"].values.astype(float))
+            sm = np.convolve(vol, np.ones(3) / 3, mode="same")
+            prices = lo0 + 2.0 * np.arange(len(sm)) + 1.0
+            prev_prof = P.lvns(prices, sm, int(np.argmax(sm)))
+        else:
+            prev_prof = None
+    rng = np.random.default_rng(20261123)
+    for v in ("A", "B"):
+        S = sig[v]
+        res = {}
+        for nm, _, _ in SPANS:
+            R = [s for s in S if span_of(s[0]) == nm]
+            if R:
+                res[nm] = stats([s[1] for s in R], None, weeks(nm, days))
+        act = np.array([s[1] for s in S]) if S else np.zeros(0)
+        flp = np.array([s[2] if s[2] is not None else 0.0 for s in S]) if S else np.zeros(0)
+        dr = [np.where(rng.random(len(S)) < 0.5, act, flp).sum() for _ in range(500)] if S else [0]
+        res["placebo_p"] = round(float((np.array(dr) >= act.sum()).mean()), 3) if S else None
+        spans_ok = [res[nm] for nm, _, _ in SPANS if nm in res]
+        ok = len(spans_ok) >= 2 and all((x.get("pf") or 0) >= 1.15 and x.get("net$", 0) > 0 and (x.get("per_wk") or 0) >= 0.5
+                                        for x in spans_ok) and (res["placebo_p"] or 1) < 0.10
+        res["verdict"] = ("PASS" if ok else "REJECTED") if v == "A" else "info (variant B, not gated)"
+        out["OF3%s LVN rejection, tick profile%s" % (v, " + delta with trade" if v == "A" else "")] = res
+    return out
+
+
+def _sim_df(b, k, d, rr=2.0):
+    if k + 1 >= len(b):
+        return None
+    entry = b.at[k + 1, "open"] + SLIP * d
+    stop = (b.at[k, "low"] - TICK) if d == 1 else (b.at[k, "high"] + TICK)
+    risk = (entry - stop) * d
+    q = int(min(40, 500 // (risk * PV))) if risk > 0 else 0
+    if q < 1:
+        return None
+    tgt = entry + rr * risk * d
+    px, last = None, k + 1
+    for j in range(k + 1, len(b)):
+        if b.at[j, "mod"] > 955:
+            break
+        last = j
+        if (d == 1 and b.at[j, "low"] <= stop) or (d == -1 and b.at[j, "high"] >= stop):
+            px = stop - SLIP * d; break
+        if (d == 1 and b.at[j, "high"] >= tgt) or (d == -1 and b.at[j, "low"] <= tgt):
+            px = tgt; break
+    if px is None:
+        px = b.at[last, "close"] - SLIP * d
+    return (px - entry) * d * PV * q - COMM * q
+
+
 def main():
     from engine import tickrec
     have = tickrec.days_available()
@@ -279,6 +463,7 @@ def main():
     bars = pd.read_csv(os.path.join(ROOT, "data", "NQ_5m.csv"))
     if out["mode"] == "REAL":
         out.update(real_mode(have))
+        out["PRE-REGISTERED (PREREG_ticks.md)"] = prereg(have)
     else:
         def pd_bar(M, a, b):
             a = max(0, a)
