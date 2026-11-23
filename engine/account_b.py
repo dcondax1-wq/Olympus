@@ -1910,16 +1910,39 @@ class AccountB:
             with open(tmp, "w", encoding="utf-8") as fh:
                 json.dump(b, fh, default=str)
             from .fsutil import replace as _replace
+            from . import state_safe as _ss
+            _ss.rotate(self.state_path, getattr(self, "_state_good", False))   # night-statesafe: previous good copy -> .bak
             _replace(tmp, self.state_path)            # retried: Windows refuses a replace while a reader has it open
+            self._state_good = True
         except Exception as e:
             self.log("warn", f"state save failed: {e.__class__.__name__}: {e}")
 
     def _load(self):
+        # night-statesafe 2026-11-23: an unreadable state file never means a clean day (that dropped today's lock-out and the
+        # day's closes, so the daily-loss stop could be passed): today's .bak, else the older .bak's history + NO NEW ENTRY today
+        from . import state_safe as _ss
+        today = trading_day(self.clock())
         try:
-            with open(self.state_path, encoding="utf-8") as fh:
-                b = json.load(fh)
+            got = _ss.load(self.state_path, lambda x: trading_day(int(x.get("saved_at") or 0)), today)
         except Exception:
             return
+        b = got["blob"]
+        pause = None
+        if got["damaged"]:
+            nm = os.path.basename(self.state_path)
+            if b is not None:
+                self.log("warn", f"{got['why']}: restored from today's backup {nm}.bak")
+            else:
+                pause = f"the state file was damaged today ({got['why']}): no new entry until the next trading day"
+                self.log("risk", f"{got['why']}: today's numbers cannot be rebuilt: NO NEW ENTRY on {self.label} today "
+                                 "(exits and brackets untouched)")
+                _ss.alert(nm, today, self.real_bot())
+                ob = got.get("old_bak")
+                b = ob if isinstance(ob, dict) and ob.get("account") == self.name else None
+        elif b is not None:
+            self._state_good = True
+        if pause:
+            self.lock = {"day": today, "reason": pause}
         if not isinstance(b, dict) or b.get("account") != self.name:
             return                         # another account's file: start clean (the old one stays on disk)
         self.closes = [list(c) for c in (b.get("closes") or []) if isinstance(c, (list, tuple)) and len(c) >= 3]
@@ -1931,6 +1954,8 @@ class AccountB:
         self.held = dict(b.get("held") or {}) if isinstance(b.get("held"), dict) else {}
         lk = b.get("lock")
         self.lock = lk if lk and lk.get("day") == trading_day(self.clock()) else None
+        if pause:
+            self.lock = {"day": today, "reason": pause}      # the older backup's day: today's pause wins
         if self.open_t is not None:
             pv = self.prov.get(int(self.open_t)) or {}
             self.log("system", f"restored: open {pv.get('short') or pv.get('key')} {'LONG' if pv.get('dir') == 1 else 'SHORT'} "

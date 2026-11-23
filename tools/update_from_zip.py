@@ -64,7 +64,7 @@ BACKUP_REL = os.path.join("backups", "update_from_zip")
 KEEP_BACKUPS = 5
 MARKERS = ("engine/lit.py", "live_model.json", "server.py")          # a zip / folder without these is not this project
 # local-only: never written, whatever the zip holds (the owner's keys, switches, state and history)
-HARD_LOCAL = ("data/alerts.json", "data/tv.json", "data/tv_device.json", "data/autostart.json", "data/live_state.json", "data/live_state*.json",
+HARD_LOCAL = ("data/alerts.json", "data/tv.json", "data/tv_device.json", "data/autostart.json", "data/live_state.json", "data/live_state*.json", "data/live_state*.json.bak",
               "data/memory.db", "data/memory.db-*", ".env", ".env.*", "*.env", "data/nt_bars/", "logs/", "backups/", ".git/", "data/pc_publish/",
               "data/account_b.json", "data/account_c.json", "data/fleet.json", "data/eval_anchor.json", "data/push.json", "netlify.json", ".olympus/")
 KEEP_IF_CHANGED = ("live_model*.json",)                              # root level: the owner's own values win
