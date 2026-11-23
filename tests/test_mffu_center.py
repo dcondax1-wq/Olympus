@@ -175,7 +175,7 @@ CENTER = """
       today: a.today.map((x) => [x.side, x.qty, x.usd, x.exit, x.open]), recent: a.recent.length, last: a.last_trade,
       rules: Object.fromEntries(a.rules.map((x) => [x.key, [x.state, x.text]])),
       payout: a.payout && { text: a.payout.text, checks: Object.fromEntries(a.payout.checks.map((x) => [x.key, [x.state, x.text]])), status: a.payout.status, req: a.payout.request_today },
-      stats: a.stats && { n: a.stats.n, pf: a.stats.pf, ct: a.stats.ct } })) });
+      stats: a.stats && { n: a.stats.n, pf: a.stats.pf, ct: a.stats.ct }, armed: a.armed, running: a.running })) });
   const out = { base: pick(run(lite0)) };
   const mod = (f) => { const l = JSON.parse(JSON.stringify(lite0)); f(l); return l; };
   out.dll = pick(run(mod((l) => { l.board.lit.today_pnl = -560; l.board.lit.dll_used = 560; l.accounts[0].eval.today = -560; l.accounts[0].eval.dll_used = 560; })));
@@ -276,6 +276,10 @@ def part_c():
 
 
 def part_c2(r):
+    B = r.get("base") or {}
+    check("c. night-seedata: every live account says armed (the PC's badge LIVE) and the bot running; no PC feed = unknown (null), never 'armed'",
+          [(x.get("armed"), x.get("running")) for x in B.get("accts") or []] == [(True, True)] * 3
+          and all(x.get("armed") is None for x in (r.get("none") or {}).get("accts") or []), [(x.get("armed"), x.get("running")) for x in B.get("accts") or []])
     tw = r.get("twice") or {}
     check("c. the 50K's ledger row a few cents off its board card (seen twice): still ONE Zlarior 50K card, 3 cards in all",
           [x["key"] for x in tw.get("accts") or []] == ["zlarior", "atlas", "fresh25"], [x["key"] for x in tw.get("accts") or []])
@@ -359,12 +363,42 @@ def part_d():
         srv.shutdown()
 
 
+def part_e():
+    """night-seedata 2026-11-23: the FIRST SCREEN at 390x844 (no scrolling) holds what a trader needs: each account's balance, today $,
+    $ to pass / to the payout, max-loss room $, armed, and the next payout $ + date. Node's playwright (tests/first_screen.mjs)."""
+    probe = subprocess.run(["node", "-e", "require('playwright')"], capture_output=True, text=True, timeout=60)
+    if probe.returncode != 0:
+        print("  (node playwright not installed: first-screen part skipped)")
+        return
+    import tempfile
+    core, exts = fixture()
+    at = dt.datetime.fromtimestamp(NOW, dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    with tempfile.TemporaryDirectory() as td:
+        fp = os.path.join(td, "feed.ndjson")
+        with open(fp, "w", encoding="utf-8") as f:
+            f.write(ndjson(core, exts))
+        p = subprocess.run(["node", os.path.join(ROOT, "tests", "first_screen.mjs"), WEB, fp, at, "business/mffu.html"], capture_output=True, text=True, timeout=180)
+    try:
+        o = json.loads(p.stdout)["business/mffu.html"]
+    except Exception:
+        check("e. first screen ran", False, (p.stdout[-300:], p.stderr[-300:]))
+        return
+    t = o.get("first", "")
+    check("e. 390x844 first screen, no scroll: Zlarior 50K $49,192.78 · today $0.00 · $3,807 to pass · room $1,025 · armed",
+          "$49,192.78 · today $0.00" in t and "$3,807 to pass · room $1,025 · armed" in t, t[:700])
+    check("e. first screen: ATLAS funded the MFFU way $73.20 · today +$186.00 · $1,277 to the payout · room $1,073 · armed; the 25K #2 $1,500 to pass",
+          "$73.20 · today +$186.00" in t and "$1,277 to the payout · room $1,073 · armed" in t and "$1,500 to pass · room $1,000 · armed" in t, t[:900])
+    check("e. first screen: the next payout $ and date (payday.json: an estimate, said as one)",
+          re.search(r"Next payout: \S.* about \$[\d,]+ to you, most likely [A-Z][a-z]{2} \d{1,2} \(an estimate", t) is not None and not o.get("errs"), (t[-300:], o.get("errs")))
+
+
 def main():
     part_a()
     part_b()
     part_c()
     if "--static" not in sys.argv:
         part_d()
+        part_e()
     return AK.finish()
 
 

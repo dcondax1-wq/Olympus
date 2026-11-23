@@ -84,13 +84,13 @@ import(process.argv[2]).then((C) => {
   o.status = [st(3 * M, true), st(20 * M, true), st(20 * M + 1, true), st(36 * H, true), st(36 * H + 1, true), st(3 * M, false), C.status(null, true, T).code, C.status(T + 120, true, T).code, st(4 * D, true)];
   // fresh
   const f = C.build(home(3 * M), NOW);
-  o.fresh = { headline: f.headline, banner: f.banner, lit: f.columns.map((c) => c.lit), labels: f.bots.map((b) => b.status.label), dd: f.bots.map((b) => b.ddLine), today: f.bots.map((b) => b.todayText), day: f.bots.map((b) => b.dayLabel),
+  o.fresh = { headline: f.headline, todayLine: f.todayLine, todaySum: f.todaySum, banner: f.banner, lit: f.columns.map((c) => c.lit), labels: f.bots.map((b) => b.status.label), dd: f.bots.map((b) => b.ddLine), today: f.bots.map((b) => b.todayText), day: f.bots.map((b) => b.dayLabel),
     prog: f.bots.map((b) => b.progLine), line: f.bots[0].status.line, plan: f.plan, tight: f.tight.key, paper: f.bots.map((b) => b.paper), frac: f.bots.map((b) => Math.round(b.roomFrac * 100)) };
   o.trades = f.trades.map((t) => [t.name, t.member, t.dayLabel, t.side, t.text, t.rule, t.src, t.sign]);
   // waiting (5 hours) and stale (4 days)
   const w = C.build(home(5 * H), NOW), s = C.build(home(4 * D + 3 * H), NOW);
   o.wait = { banner: w.banner, labels: w.bots.map((b) => b.status.label), lit: w.columns.map((c) => c.lit), line: w.bots[0].status.line, plan: w.plan.note };
-  o.stale = { banner: s.banner, labels: s.bots.map((b) => b.status.label), lit: s.columns.map((c) => c.lit), headline: s.headline, day: s.bots[1].dayLabel, today: s.bots[1].todayText, dd: s.bots[0].ddLine, line: s.bots[0].status.line };
+  o.stale = { todayLine: s.todayLine, banner: s.banner, labels: s.bots.map((b) => b.status.label), lit: s.columns.map((c) => c.lit), headline: s.headline, day: s.bots[1].dayLabel, today: s.bots[1].todayText, dd: s.bots[0].ddLine, line: s.bots[0].status.line };
   // one bot newer than the others: only its flame burns
   const mixed = home(2 * D); mixed.live.pc.blitz.t = T - 5 * M;
   const mx = C.build(mixed, NOW); o.mixed = [mx.columns.map((c) => c.lit), mx.bots.map((b) => b.status.code), mx.banner && mx.banner.title, mx.burning];
@@ -141,6 +141,8 @@ def test_rules():
           s[0] == ["running", "ok", "Running", True] and s[1][0] == "running" and s[2] == ["waiting", "warn", "Waiting for the PC", False] and s[3][0] == "waiting" and s[4] == ["stale", "bad", "Stale", False]
           and s[5] == ["stopped", "warn", "Stopped on the PC", True] and s[6] == "none" and s[7] == "running" and s[8][0] == "stale", s)
     f = o["fresh"]
+    check("b. night-seedata: the first line says today's $ across the real accounts (paper bots left out); none while the report is old",
+          f.get("todayLine", "").startswith("Today ") and f["todayLine"].endswith(" on the real accounts.") and o["stale"].get("todayLine") == "", (f.get("todayLine"), f.get("todaySum"), o["stale"].get("todayLine")))
     check("b. fresh report: no banner, three flames, 'Running' x3, the headline counts them", f["banner"] is None and f["lit"] == [True, True, True] and f["labels"] == ["Running"] * 3 and f["headline"] == "3 of 3 bots reported in the last 20 minutes." and f["line"] == "Reported 3 minutes ago.", f)
     check("b. 'Drawdown left $X of $max loss' for each bot, with the share left", f["dd"] == ["Drawdown left $1,145 of $2,000 max loss", "Drawdown left $822 of $1,000 max loss", "Drawdown left $607 of $1,000 max loss"] and f["frac"] == [57, 82, 61] and f["tight"] == "lit", (f["dd"], f["frac"], f["tight"]))
     check("b. the CME trading day (18:00 ET starts the next): 17:59 ET is still Nov 18, 18:00 ET is Nov 19; a 23:30 stop-out and a 00:40 report are one day, its own R (no ~), 'Today'",
