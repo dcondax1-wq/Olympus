@@ -248,6 +248,15 @@ def child_env(tmp: str, base: dict | None = None) -> dict:
                 "LE_BOARD_DIR": os.path.join(tmp, "board"), "LE_INBOX_DIR": os.path.join(tmp, "inbox"),   # never the real board
                 "LE_HEARTBEAT": "0", "LE_NO_AUTOSTART": "1", "LE_PREWARM": "0", "PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1",
                 "GIT_TERMINAL_PROMPT": "0", "GCM_INTERACTIVE": "never"})
+    # night-hermetic 2026-11-23: the write guard (tests/write_guard/sitecustomize.py) in every Python process of the suite: a write to
+    # the bot's LIVE files (data/, logs/, cache/, live_model*.json, second_model.json, ~/.olympus ...) is refused (PermissionError),
+    # so a test can never change live state on the owner's PC; the suite fails loudly instead. Its HOME / USERPROFILE point at the
+    # temp folder too (the private ntfy / push settings in ~/.olympus are never read or written by a test).
+    guard = os.path.join(ROOT, "tests", "write_guard")
+    env["PYTHONPATH"] = guard + (os.pathsep + env["PYTHONPATH"] if env.get("PYTHONPATH") else "")
+    home = os.path.join(tmp, "home")
+    os.makedirs(home, exist_ok=True)
+    env.update({"LE_WRITE_GUARD": "raise", "LE_WRITE_GUARD_ROOT": ROOT, "HOME": home, "USERPROFILE": home, "OLYMPUS_HOME": os.path.join(home, ".olympus")})
     return env
 
 
