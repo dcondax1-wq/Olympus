@@ -171,7 +171,7 @@ def part_f():
     check("f. the CBOE URL is the new host in engine/news.py and tools/pantheon/sources.py",
           "cdn-api.cboe.com" in news.CBOE_URL and "cdn-api.cboe.com" in sources.CBOE)
     g = open(os.path.join(ROOT, "engine", "gamma.py"), encoding="utf-8").read()
-    check("f. engine/gamma.refresh_history writes only a real DIX.csv", 'startswith(b"date,price,dix,gex")' in g and "os.replace(tmp, path)" in g)
+    check("f. engine/gamma.refresh_history writes only a real DIX.csv", 'startswith(b"date,price,dix,gex")' in g and "_fs_replace(tmp, path)" in g)
 
 
 def main():
