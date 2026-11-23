@@ -1215,6 +1215,16 @@ def file_log(text: str):
 def notify(title: str, body: str, key: str, sync: bool = False):
     """Phone push (kind 'pc': it reaches the Olympus app only with LE_PUSH_EXTRA=1, engine/push.pc_app_ok; by default it does not)
     + the bot's chat alert. sync=True when no server keeps the process alive."""
+    try:                                         # night-notify 2026-11-22: a failed / rolled-back update reaches the phone with
+        from . import alert_bus as AB            # ZERO setup (Telegram / Discord first when set up, else ntfy + the Olympus app);
+        r = AB.send_critical({"kind": "problem", "key": key, "title": title, "body": body, "notify_type": "problems",
+                              "report": True}, wait=sync)       # kind 'pc' below alone reached no phone without LE_PUSH_EXTRA=1
+        if r in ("sent", "queued", "dup"):
+            title = None
+    except Exception:
+        pass
+    if title is None:                            # already on the phone: the copies below would be the same alert twice
+        return
     try:
         from . import push
         p = push.text_payload("PC", "pc", title, body, key=key, url="#/accounts")
@@ -1240,6 +1250,14 @@ def notify_sync(title: str, body: str, key: str):
 
 
 def alert_for(res: dict, sync=False):
+    if res.get("status") == "updated" and not res.get("alert"):
+        try:                                     # low priority: the daily digest, no buzz (engine/alert_bus.digest_add)
+            from . import alert_bus as AB
+            AB.digest_add("Update applied", f"{str(res.get('old') or '')[:7]} -> {str(res.get('new') or '')[:7]}",
+                          key=f"auto:updated:{str(res.get('new') or '')[:10]}")
+        except Exception:
+            pass
+        return
     if not res.get("alert"):
         return
     st = res.get("status")
@@ -1249,6 +1267,13 @@ def alert_for(res: dict, sync=False):
         title = f"Update held back: {res['held']}"[:120]
         body = (f"Still on {str(res.get('old') or '')[:7]}; {str(res.get('new') or '')[:7]} is not used until a newer main "
                 f"comes. {body}")[:300]
+    if st not in ("failed", "rolled_back"):      # "update skipped" (local edits, not a fast-forward): the daily digest, no buzz
+        try:
+            from . import alert_bus as AB
+            AB.digest_add(title, body, key=f"auto:update:{st}:{_et(res['t']).date().isoformat()}")
+            return
+        except Exception:
+            pass
     notify(title, body, key=f"auto:update:{st}:{res['t']}", sync=sync)
 
 

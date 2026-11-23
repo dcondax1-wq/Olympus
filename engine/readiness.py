@@ -643,16 +643,23 @@ def plan_alert(v: dict, st: dict, now, slot: str | None, reason: str = "") -> di
 
 def send_alert(a: dict, sender=None) -> str:
     """Telegram / Discord first (engine/alert_bus), ntfy / Web Push as its fallbacks; with the bus off the old ops path
-    (push.pc_send_now). Returns 'bus' | 'push' | 'none'. Never raises."""
+    (push.pc_send_now). Returns 'bus' | 'zero' (ntfy + the app, no setup) | 'push' | 'none'. Never raises."""
     try:
         if sender is not None:
             sender(a)
             return "sender"
         from . import alert_bus as AB
+        ev = {"kind": "problem", "key": a["key"], "title": a["title"], "body": a["body"], "notify_type": "problems",
+              "report": True, "soft": bool(a.get("quiet"))}
         if AB.active():
-            r = AB.send({"kind": "problem", "key": a["key"], "title": a["title"], "body": a["body"], "notify_type": "problems",
-                         "report": True, "soft": bool(a.get("quiet"))}, wait=True)
+            r = AB.send(ev, wait=True)
             return "bus" if r in ("sent", "queued") else "none"
+        # night-notify 2026-11-22: with NO Telegram / Discord the old path below is kind "ready", which engine/push.pc_app_ok drops
+        # (LE_PUSH_EXTRA only): "Zlarior is not armed" / "PC clock 7 s behind" reached NO phone. Now: the private ntfy topic AND
+        # the Olympus app (alert_bus.send_critical, the no-secret channels)
+        r = AB.send_critical(ev, wait=True)
+        if r in ("sent", "queued", "dup"):
+            return "zero"
         from . import ops_checks as OC
         from . import push
         push.pc_send_now(OC._payload("ready", a["title"], a["body"], a["key"], time.time()))

@@ -306,6 +306,7 @@ tools/web_public/icon_options/
 data/agency_mail/
 data/agency_pipeline/
 # engine/alert_bus.py: keys sent + the failure log (redacted), machine-local
+data/alert_digest.json
 data/alert_bus_sent.json
 data/alert_bus.jsonl
 data/alert_bus_sent.json.*.tmp

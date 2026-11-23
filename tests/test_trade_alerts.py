@@ -914,12 +914,15 @@ def part_m(b: Box):
     from engine import autoupdate as AU
     calls = []
     saved, saved_send = P._pc_send, AL.send
+    from engine import alert_bus as AB
+    saved_crit = AB.send_critical
     P._pc_send = lambda p, *a, **k: calls.append((p.get("kind"), a, k)) or {}
     AL.send = lambda *a, **k: {}
+    AB.send_critical = lambda *a, **k: "off"      # night-notify: the zero-setup path first; "off" = this old path, as tested here
     try:
         AU.notify("Bot update FAILED", "test", key=f"auto:update:test:{T0}", sync=True)
     finally:
-        P._pc_send, AL.send = saved, saved_send
+        P._pc_send, AL.send, AB.send_critical = saved, saved_send, saved_crit
     check("m. the sync update notice uses the real sender (no stray True as the sender)", calls == [("pc", (), {})], calls)
 
 

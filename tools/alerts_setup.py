@@ -133,8 +133,37 @@ def setup(ask_choice=input, ask=getpass.getpass, say=print, env=None, wait=wait_
     return 1
 
 
-def test(say=print, cfg=None) -> int:
+def plain(ch: str, why: str) -> str:
+    """One channel's FAIL reason in plain words + what to do (TEST_ALERT, the TRADE_HOME menu)."""
+    w = str(why or "")
+    if ch == "ntfy" and "no private ntfy topic" in w:
+        return "no private topic yet (the 15-minute report makes it; run TEST_ALERT again in 15 minutes)"
+    if ch == "ntfy" and "rate limit" in w:
+        return "ntfy's daily limit is used up today (it resets at 8 PM ET); the Olympus app still works"
+    if ch == "webpush" and any(x in w for x in ("no phone", "not configured")):
+        return "no phone has tapped 'Allow notifications' in the Olympus app yet (open Olympus from the Home Screen, tap it)"
+    if ch == "webpush" and "self-test" in w:
+        return "skipped inside the PC self-test"
+    if ch in ("telegram", "discord") and ("401" in w or "404" in w):
+        return f"{AB.NAMES[ch]} refused the saved key: run ALERTS_SETUP again"
+    if "nothing" in w or "Error" in w or "timeout" in w.lower():
+        return "no answer (is the PC online?)"
+    return w or "failed"
+
+
+def ensure_ntfy_topic() -> dict:
+    """The private ntfy topic, made now when the PC has none (tools/pc_report.ensure_topic). {} when it cannot. Never raises."""
+    try:
+        from tools import pc_report
+        return pc_report.ensure_topic()
+    except Exception:
+        return {}
+
+
+def test(say=print, cfg=None, make_topic: bool = True, show_topic: bool = False) -> int:
+    """Every channel on its own: one plain line each, OK or FAIL + what to do. 0 = at least one reached the phone."""
     cfg = cfg if cfg is not None else AB.config()
+    topic = ensure_ntfy_topic().get("topic") if make_topic else None
     say(f"TEST ALERT: {AB.TEST_TITLE}")
     if AB.switched_off():
         say("Note: the alert bus is switched OFF (ALERTS_ON turns it back on); this test still tries every channel.")
@@ -143,12 +172,15 @@ def test(say=print, cfg=None) -> int:
     for ch, (rid, why) in res.items():
         if rid:
             good += 1
-            say(f"  OK    {AB.NAMES[ch]:<16} receipt {AB.redact(rid, cfg)}")
+            say(f"  OK    {AB.NAMES[ch]:<16} delivered (receipt {AB.redact(rid, cfg)})")
         else:
-            say(f"  FAIL  {AB.NAMES[ch]:<16} {AB.redact(why, cfg)}")
+            say(f"  FAIL  {AB.NAMES[ch]:<16} {AB.redact(plain(ch, why), cfg)}")
     if not cfg.get("telegram") and not cfg.get("discord"):
-        say("  (no Telegram / Discord yet: run ALERTS_SETUP)")
-    say(f"{good} of {len(res)} channels delivered.")
+        say("  (Telegram / Discord not set up: optional. ntfy + the Olympus app need no setup.)")
+    say(f"{good} of {len(res)} channels delivered." + ("" if good else " NOTHING reached your phone: do the steps below."))
+    if topic and show_topic:               # TEST_ALERT.bat only: on the PC screen (never logged, never in a public post)
+        say(f"Phone, 1 minute: ntfy app (App Store, free) -> + -> topic {topic} -> Subscribe. "
+            "And/or: Olympus from the Home Screen -> tap 'Allow notifications'.")
     return 0 if good else 1
 
 
@@ -183,7 +215,7 @@ def main(argv=None) -> int:
             test()
         return r
     if cmd == "test":
-        return test()
+        return test(show_topic=True)
     if cmd in ("off", "on"):
         return switch(cmd == "on")
     return status()

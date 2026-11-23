@@ -337,6 +337,7 @@ MENU = ("  ==== TRADING HOME ====",
         "   7  Update",
         "   8  Do my Sunday / daily routine (status, start, keep-alive, alert test)",
         "   9  Fix the clock",
+        "   T  Test all alerts      (OK / FAIL per channel, plain words)",
         "   0  Close")
 
 
@@ -365,6 +366,10 @@ def do_choice(ch, ask=input, out=say, run=None, fx=None, add_fn=None, unseen=Non
         return routine(ask, out, run, fx)
     if ch == "9":
         return clock_action(fx, out)
+    if ch.lower() == "t":
+        out("  Test all alerts: its window lists each channel OK or FAIL. Press a key there to come back here.")
+        rc = run_bat("TEST_ALERT.bat", run)
+        return "[OK] Test sent: check your phone buzzed." if rc == 0 else "[FIX] Nothing reached your phone: do the steps in that window."
     return "[FIX] Type a number from the list."
 
 

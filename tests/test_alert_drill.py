@@ -163,9 +163,16 @@ def chans(got):
     return [g[0] for g in got]
 
 
-def expect(b, name, got, words, dual=False, trade=False):
-    """The channel order per set-up, once per channel, and the words."""
+def expect(b, name, got, words, dual=False, trade=False, both=False):
+    """The channel order per set-up, once per channel, and the words. both (night-notify 2026-11-22): a critical problem with no
+    Telegram / Discord reaches ntfy AND the Olympus app (engine/alert_bus.send_critical), ntfy first; ALERTS_OFF = the old path."""
     c = chans(got)
+    if both and b.mode == "ntfy":
+        ok_ch = bool(c) and c[0] == "ntfy" and set(c) == {"app", "ntfy"} and len(c) == 2
+        check(f"[{b.mode}] {name}: arrives (ntfy first) AND on the Olympus app, once per channel", ok_ch, c)
+        miss = [w for w in words if not all(w in g[1] for g in got)]
+        check(f"[{b.mode}] {name}: the words {words}", got and not miss, (miss, [g[1] for g in got]))
+        return
     if b.mode == "telegram":
         want_first = "telegram"
         ok_ch = c and c[0] == "telegram" and (len(c) == 2 if dual else len(c) == 1) and len(set(c)) == len(c)
@@ -201,12 +208,12 @@ def drill(mode):
         mp = FA._missed_problem({"key": f"exec:miss:{int(t) + 60}", "title": "Missed trade",
                                  "body": "LIT's model took LONG 4 MNQ at 10:32 ET; the bot did not route it (guards: clock)."})
         got = run(b, lambda: N.instant_problem(mp, now=t + 60))
-        expect(b, "4 missed trade", got, ["MISSED TRADE", "did not route"])
+        expect(b, "4 missed trade", got, ["MISSED TRADE", "did not route"], both=True)
         # 5 bot stopped in market hours
         from engine import fast_alarm as F
         got = run(b, lambda: F.FastAlarm(clock=lambda: t)._start("bot_stopped", "The bot is not running in the entry hours "
                                                                  "(autostart says it was). START BOT on the PC.", t + 120))
-        expect(b, "5 bot stopped", got, ["Bot stopped", "START BOT"], dual=True)
+        expect(b, "5 bot stopped", got, ["Bot stopped", "START BOT"], dual=True, both=True)
         # 6 PC silent (the cloud monitor)
         got = run(b, lambda: pc_silent(b, t + 3000))
         cs = chans(got)
@@ -234,7 +241,7 @@ def drill(mode):
         hp = P.text_payload("PC", "risk", "HEDGE BLOCKED: ATLAS close not confirmed", "LIT's entry at 10:31 ET was skipped: "
                             "account B's opposite position was not confirmed flat.", key=f"hedge_blocked:{int(t)}", t=int(t))
         got = run(b, lambda: P._pc_send(hp))
-        expect(b, "9 hedge blocked", got, ["HEDGE BLOCKED", "skipped"], dual=True)
+        expect(b, "9 hedge blocked", got, ["HEDGE BLOCKED", "skipped"], dual=True, both=True)
         # 10 price-limit block (a funded account flattened by MFFU's 2% rule)
         got = run(b, lambda: P._pc_send(outcome(t + 7200, -64.0, "PRICE LIMIT", R=-0.3, key_sfx="pl")))
         expect(b, "10 price-limit block", got, ["-$64", "price-limit"], dual=True, trade=True)
@@ -248,7 +255,7 @@ def drill(mode):
         kf = {"key": "ka:refused:lit:2026-11-17", "code": "keepalive", "title": "Keep-alive on Zlarior 50K did not go through",
               "body": "your pause blocks it. Place 1 MNQ by hand on this account before 16:05 ET (in and out, about -$2.40)."}
         got = run(b, lambda: N.instant_problem(kf, now=t))
-        expect(b, "11 keep-alive failed", got, ["did not go through", "by hand", "16:05"])
+        expect(b, "11 keep-alive failed", got, ["did not go through", "by hand", "16:05"], both=True)
         ko = outcome(t + 400, -2.5, "TIME", key_sfx="ka")
         ko.update(title="Keep-alive on Zlarior 50K: LONG closed", body="-$2.50 (expected about -$2.40, at most -$23). "
                   "MFFU's 7-day clock restarts today.", dup_of=None)

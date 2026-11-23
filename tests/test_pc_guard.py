@@ -292,8 +292,8 @@ def reporter():
         b.cleanup()
     kept = [m["key"] for m in _N.apply([{"key": "guard:dd:c:x:50"}, {"key": "guard:dll:c:d"}, {"key": "guard:day:2026-11-16"}],
                                        at(2026, 11, 16, 16, 20), _N.merge({}))]
-    check("owner's 'important only' defaults: of those three only the day summary is pushed (room low is OFF)",
-          kept == ["guard:day:2026-11-16"], kept)
+    check("defaults: drawdown 50%, daily loss near and the day summary are all pushed (room low ON since night-notify 2026-11-22)",
+          kept == ["guard:dd:c:x:50", "guard:dll:c:d", "guard:day:2026-11-16"], kept)
 
 
 def static():
