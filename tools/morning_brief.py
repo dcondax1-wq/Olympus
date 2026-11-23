@@ -1,4 +1,6 @@
-"""MORNING BRIEF (2026-11-18; night-brief 2026-11-23: the ONE daily phone message, at most 8 lines, build()):
+"""MORNING BRIEF (2026-11-18; night-brief 2026-11-23; night-briefv2 2026-11-23: the PUSHED message is build() = the day in
+5 lines, money first: Yesterday $ per account + total / Room to max loss (LOW under $500) / Keep-alive act days today / News +
+the T1 blackout / Bot READY + armed. The detailed version below is build_full(), the PC's dry look):
   READY / NOT READY + the first blocker's fix (engine/readiness via the "rd" block; a PC problem / an old report = NOT READY)
   one line per account: armed, $, room, yesterday's $ (the previous CME session), $ to pass / to payout / payout READY $, the MFFU
   7-day deadline when 3 days or fewer are left
@@ -548,9 +550,9 @@ def cards_waiting(path: str | None = None) -> int:
         return 0
 
 
-def build(snap: dict, now: int | None = None, plan_doc=None, events=None, root: str | None = None, fleet: str | None = None,
-          waiting: int | None = None) -> dict:
-    """{"title", "body", "lines" (<= MAX_LINES), "day"}: line 1 READY / NOT READY (+ the fix), one line per account (armed, $,
+def build_full(snap: dict, now: int | None = None, plan_doc=None, events=None, root: str | None = None, fleet: str | None = None,
+               waiting: int | None = None, lvb: str | None = None) -> dict:
+    """The detailed brief (night-brief, up to 8 lines; the PC's dry look and TRADE_HOME): {"title", "body", "lines" (<= MAX_LINES), "day"}: line 1 READY / NOT READY (+ the fix), one line per account (armed, $,
     room, yesterday $, $ to pass / to payout / payout READY, the MFFU 7-day deadline when <= 3 days), Today (hours, news, the T1
     ban, an early close), the next money move (engine/fleet_mgr), then edge + needs you + decide cards waiting. Never raises on
     a bad snapshot (a part that fails says so)."""
@@ -581,7 +583,13 @@ def build(snap: dict, now: int | None = None, plan_doc=None, events=None, root: 
     pay = payday_line(rs) if fresh else ""
     if pay:
         needs = [n for n in needs if not str(n).startswith("request the ")]
-    keep = MAX_LINES - 4 - (1 if pay else 0)         # READY + Today + Next + Needs (+ the payout line)
+    if lvb is None:                                  # night-livevsbt: live vs backtest, from the last daily check (read only)
+        try:
+            from engine import live_vs_bt as _lvb
+            lvb = _lvb.last_line(now)
+        except Exception:  # noqa: BLE001
+            lvb = ""
+    keep = MAX_LINES - 4 - (1 if pay else 0) - (1 if lvb else 0)   # READY + Today + Next + Needs (+ payout, + live vs backtest)
     if len(acc) > keep:
         acc = acc[:keep - 1] + [f"+{len(acc) - keep + 1} more accounts: TRADE_HOME -> 1 (Status)"]
     try:
@@ -594,10 +602,134 @@ def build(snap: dict, now: int | None = None, plan_doc=None, events=None, root: 
     needs += roll_needs(snap, now)
     nd = ", ".join(needs[:2]) + (f" (+{len(needs) - 2} more)" if len(needs) > 2 else "") if needs else "none"
     nw = cards_waiting() if waiting is None else int(waiting)
-    lines = [rl] + ([pay] if pay else []) + acc + [today] + ([f"Next money move: {mv}"] if mv else []) + \
+    lines = [rl] + ([pay] if pay else []) + acc + ([lvb] if lvb else []) + [today] + ([f"Next money move: {mv}"] if mv else []) + \
             [f"Edge {edge_text(snap)} · Needs you: {nd}" + (f" · Decide cards waiting: {nw}" if nw else "")]
     title = f"ZEUS - {e:%a %b} {e.day} - {word}" + (" - REQUEST PAYOUT TODAY" if pay else "")
     lines = [ln[:400] for ln in lines[:MAX_LINES]]       # red team 2: the body = the 8 lines, under the 4,096 B push limit
+    return {"title": title, "body": "\n".join(lines)[:3900], "lines": lines, "day": e.date().isoformat(), "needs": len(needs)}
+
+
+# ------------------------------------------------------------------------------------------------ the 5-line brief (night-briefv2)
+FIVE = 5
+LOW_ROOM = 500.0                      # "near max loss": room to MFFU's floor under this (about one full LIT stop-out at eval size)
+
+
+def _ka_today(r: dict, now: int):
+    """(act today?, on?, window text) for one account from its card's keep-alive block (last fill / hand day) or its quiet days,
+    through engine/keepalive.plan (the same act day the bot uses). (False, ..) when unknown. Never raises."""
+    try:
+        from engine import keepalive as KA
+        src = _d(r.get("_src"))
+        kb = _d(src.get("keepalive"))
+        last = kb.get("last")
+        q = _f(src.get("quiet_days"))
+        if not last and q is not None:
+            last = (_et(now).date() - dt.timedelta(days=int(q))).isoformat()
+        if not last:
+            return False, bool(kb.get("on")), ""
+        P = KA.plan(last, now)
+        today = _et(now).date().isoformat()
+        act = str(P.get("act_day") or "") == today or bool(P.get("late"))
+        w = KA.window(_et(now).date())
+        return act, bool(kb.get("on")), (f"{_hm(w[0])}-{_hm(w[1])}" if w else "")
+    except Exception:  # noqa: BLE001
+        return False, False, ""
+
+
+def _room(r: dict):
+    src = _d(r.get("_src"))
+    room = _f(src.get("room"))
+    return _f(_d(src.get("eval")).get("room")) if room is None else room
+
+
+def build(snap: dict, now: int | None = None, plan_doc=None, events=None, root: str | None = None, fleet: str | None = None,
+          waiting: int | None = None, lvb: dict | None = None) -> dict:
+    """THE pushed brief (night-briefv2 2026-11-23, owner: the day in 5 lines, money first). Same sources as build_full:
+      1 Yesterday: $ per account (the previous CME session) and the total
+      2 Room to max loss: every account's room in $, the ones under LOW_ROOM first and marked LOW
+      3 Keep-alive today: the accounts whose 7-day act day is today (ON: the window; OFF: trade 1 MNQ by hand), else none due
+      4 News: today's big news + the T1 blackout (Rapid funded, flat -2/+2 min) + an early close, else none
+      5 Bot: READY / NOT READY (+ the fix), armed / NOT armed per account
+      (+ line 1 ends with " · live vs bt: LIT -$8 ok" from engine/live_vs_bt; a 6th line only when that check flags a bot)
+    {"title", "body", "lines" (5, or 6 with a live-vs-backtest flag), "day", "needs"}. Never raises on a bad snapshot."""
+    now = int(now if now is not None else snap.get("t"))
+    e = _et(now)
+    pc, needs = pc_text(snap)
+    try:
+        rs = rows(snap, now, plan_doc, events)
+    except Exception as x:  # noqa: BLE001
+        rs = []
+        needs.append(f"accounts not readable ({x.__class__.__name__})")
+    age = snap.get("hb_age")
+    fresh = age is not None and age <= HB_FRESH_S
+    old = "" if fresh or age is None else f" (numbers {int(age) // 3600} h {int(age) % 3600 // 60} min old)"
+    labs = [label(r) for r in rs]
+    # 1 money
+    t0, t1 = prev_session(now)
+    try:
+        yd = day_pnl(snap, now, rs, plan_doc, t0, t1)
+    except Exception:  # noqa: BLE001
+        yd = {}
+    parts, tot = [], 0.0
+    for r, lb in zip(rs, labs):
+        v = yd.get(r.get("key"))
+        usd = float(v[1]) if v else 0.0
+        tot += usd
+        parts.append(f"{lb} {signed(usd)}")
+    l1 = ("Yesterday: " + " · ".join(parts) + f" · total {signed(tot)}") if parts else "Yesterday: no account numbers in the last report"
+    # 2 room
+    rooms = []
+    for r, lb in zip(rs, labs):
+        st = str(r.get("stage") or "eval")
+        rm = _room(r)
+        if r.get("locked"):
+            rooms.append((-1, f"{lb} LOCKED by MFFU"))
+        elif rm is not None and st in ("eval", "funded"):
+            rooms.append((rm, f"{lb} {money(rm)}" + (" LOW" if rm < LOW_ROOM else "")))
+    rooms.sort(key=lambda x: x[0])
+    low = [t for v, t in rooms if v < LOW_ROOM]
+    l2 = ("Room to max loss: " + " · ".join(t for _, t in rooms)) if rooms else "Room to max loss: not in the last report"
+    if low:
+        needs.append(f"near max loss: {low[0]}")
+    # 3 keep-alive
+    ka = []
+    for r, lb in zip(rs, labs):
+        act, on, win = _ka_today(r, now)
+        if act:
+            ka.append(f"{lb} {'(keep-alive trades ' + win + ' ET)' if on else '(keep-alive OFF: 1 MNQ by hand before 16:05 ET)'}")
+            if not on:
+                needs.append(f"{lb}: 1 MNQ by hand today")
+    l3 = ("Keep-alive today: " + " · ".join(ka)) if ka else "Keep-alive today: no account is due"
+    # 4 news
+    nw = [x for x in (news_today(now, root), news_bans(now), early_note(now)) if x]
+    l4 = ("News: " + " · ".join(nw)) if nw else "News: no big release today"
+    # 5 bot
+    rl, word = ready_line(snap, pc, needs)
+    arm, notarm = [], []
+    for r, lb in zip(rs, labs):
+        badge = str(_d(r.get("_src")).get("badge") or "").upper()
+        (arm if badge == "LIVE" else notarm).append(lb if badge in ("LIVE", "") else f"{lb} ({badge.lower()})")
+    l5 = f"Bot: {rl}" + (f" · armed: {', '.join(arm)}" if arm else "") + (f" · NOT armed: {', '.join(notarm)}" if notarm else "")
+    # night-livevsbt: live vs backtest (engine/live_vs_bt's last daily check, read only) on line 1; a 6th line only when it flags
+    if lvb is None:
+        try:
+            from engine import live_vs_bt as _lvb
+            lvb = _lvb.last(now) or {}
+        except Exception:  # noqa: BLE001
+            lvb = {}
+    bots = {k: v for k, v in (_d(lvb).get("bots") or {}).items() if isinstance(v, dict) and v.get("n")}
+    if bots:
+        l1 += " · live vs bt: " + ", ".join(f"{k} {'+' if v['gap'] >= 0 else '-'}{money(abs(v['gap']))} {'FLAG' if v.get('flag') else 'ok'}"
+                                            for k, v in bots.items())
+    flagged = [v["line"] for v in bots.values() if v.get("flag")]
+    six = [" · ".join(flagged)] if flagged else []
+    if flagged:
+        needs.append("live drifts from the backtest")
+    # integration 2026-11-23: night-payday's line ("REQUEST PAYOUT TODAY: ATLAS 25K $1,000 - ...") rides the 5-line brief too, first
+    # (money in hand first), until the owner records the payout (TRADE_HOME -> P); the title says it, as in build_full
+    pay = payday_line(rs) if fresh else ""
+    lines = [ln[:400] for ln in (*([pay] if pay else []), l1 + old, l2 + old, l3, l4, l5, *six)]
+    title = f"ZEUS - {e:%a %b} {e.day} - {word}" + (f" - {signed(tot)} yesterday" if parts else "") + (" - REQUEST PAYOUT TODAY" if pay else "")
     return {"title": title, "body": "\n".join(lines)[:3900], "lines": lines, "day": e.date().isoformat(), "needs": len(needs)}
 
 
@@ -635,3 +767,5 @@ if __name__ == "__main__":                       # a dry look on the PC: python 
     s = R.gather(int(time.time()))
     s["cond"] = R.conditions(s)
     print("\n".join(build(s)["lines"]))
+    print("--- detailed ---")
+    print("\n".join(build_full(s)["lines"]))
