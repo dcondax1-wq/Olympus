@@ -224,7 +224,9 @@ def hb_field(path: str | None = None, env=None, now=None) -> dict:
     if last.get("cmd"):
         line = f"remote: last cmd {last['cmd']} {last.get('status') or 'done'} at {_hm(last.get('t') or 0)} ET"
     out = {"on": enabled(env), "via": control_source(ROOT, env)["label"], "last": line, "status": last.get("status"), "t": last.get("t"),
-           "pending_stop": bool(d.get("pending_stop")), "error": (d.get("fetch") or {}).get("error")}
+           "pending_stop": bool(d.get("pending_stop")), "error": (d.get("fetch") or {}).get("error"),
+           # day-notifyfix: which command, where its phone notice went, and the control commit the PC last read (the cloud's proof)
+           "id": str(last.get("id") or "")[:64] or None, "notice": last.get("notice"), "seen": d.get("seen")}
     out.update(_extras(os.path.dirname(path or DONE_PATH), now))
     return out
 
@@ -260,13 +262,45 @@ def _extras(folder: str, now=None) -> dict:
 
 
 # ---------------------------------------------------------------------- the controller
-def default_notify(title: str, body: str, key: str):
-    """Phone push (kind 'pc', always pushed: engine/autoupdate.notify) + the bot's chat alert."""
+def default_notify(title: str, body: str, key: str, on_done=None) -> str:
+    """The phone notice of a remote command. day-notifyfix 2026-11-23 (the owner's 'status' at 17:35 ET reached no phone, and
+    the cloud could not even see why): the owner ASKED for this answer, so it goes through EVERY channel the PC has (Telegram,
+    Discord, the private ntfy topic AND the Olympus app; need = all), it is never dropped by a notify_settings type switch or
+    the bus being off (kind "remote": no notify_type), and on_done gets the per-channel receipt (recorded in remote_done.json
+    "last.notice" and posted in the public status feed's "rc" block). Falls back to engine/autoupdate.notify (old path) when
+    no channel exists. Returns the bus result."""
+    r = "bad"
+    try:
+        from . import alert_bus as AB
+        ev = {"kind": "remote", "key": key, "title": title, "body": body, "need": 9, "report": True}
+        r = AB.send_critical(ev, on_done=on_done)      # bus on: every channel; else the private ntfy topic + the Olympus app
+    except Exception:
+        r = "bad"
+    if r in ("sent", "queued", "dup"):
+        return r
     try:
         from . import autoupdate
         autoupdate.notify(title, body, key=key)
     except Exception:
         pass
+    if on_done:
+        try:
+            on_done({"ok": False, "receipts": {}, "failed": {"bus": r}})
+        except Exception:
+            pass
+    return r
+
+
+def notice_line(res: dict) -> str:
+    """'ntfy ok, the Olympus app ok' / 'ntfy FAILED (no private ntfy topic)': where a remote answer went. No ids, no topics."""
+    try:
+        from .alert_bus import NAMES
+    except Exception:
+        NAMES = {}
+    res = res if isinstance(res, dict) else {}
+    parts = [f"{NAMES.get(c, c)} ok" for c in (res.get("receipts") or {})]
+    parts += [f"{NAMES.get(c, c)} FAILED ({str(w)[:40]})" for c, w in (res.get("failed") or {}).items()]
+    return (", ".join(parts) or "no channel")[:200]
 
 
 def bot_status_text(bot) -> str:
@@ -356,7 +390,23 @@ class RemoteControl:
         if cmd in HANDSOFF_CMDS and status == "done" and not re.search(r"already stopped|never started", str(msg)):
             from . import handsoff
             handsoff.record(cmd, "phone", str(msg)[:160], now=now, path=self.handsoff_path)
-        self.notify(title or f"Remote {cmd}: {status}", str(msg)[:500], f"remote:{cid}:{status}")
+        t, b, k = title or f"Remote {cmd}: {status}", str(msg)[:500], f"remote:{cid}:{status}"
+        if self.notify is default_notify:
+            self.notify(t, b, k, on_done=lambda res, _c=cid: self._noticed(_c, res))
+        else:
+            self.notify(t, b, k)
+
+    def _noticed(self, cid: str, res: dict):
+        """Where the phone notice of command cid went (alert_bus result), kept in remote_done.json "last.notice". Never raises."""
+        try:
+            d = load_done(self.done_path)
+            last = d.get("last") or {}
+            if last.get("id") == cid:
+                last["notice"] = {"ok": bool((res or {}).get("ok")), "line": notice_line(res), "t": int(self.clock())}
+                d["last"] = last
+                save_done(d, self.done_path)
+        except Exception:
+            pass
 
     # ---- the commands
     def run_cmd(self, c: dict, d: dict, now: float) -> tuple:
@@ -527,8 +577,10 @@ class RemoteControl:
                     self._err_at = time.time()
                     self.log(f"[remote] {f['error']}")
                 return out
-            if d.get("fetch"):
+            seen = {"commit": str(f.get("commit") or "")[:10], "t": int(now)}
+            if d.get("fetch") or (d.get("seen") or {}).get("commit") != seen["commit"]:
                 d.pop("fetch", None)
+                d["seen"] = seen                      # written only when the control commit changes (not every minute)
                 save_done(d, self.done_path)
             for c in parse(f["text"]):
                 d = load_done(self.done_path)

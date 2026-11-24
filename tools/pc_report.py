@@ -70,7 +70,7 @@ EXT_KIND = "le-live-ext"
 EXT_PARTS = 2                    # at most 2 ext posts a run (ntfy.sh free: a few hundred messages a day per IP)
 EXT_EVERY_S = 2640               # the ext goes every 3rd 15-minute run (44 min), or at once when its news changed (ext_hash). Was every 2nd (29 min) until
                                  # 2026-11-20: 96 core + 96 ext + 24 chart posts a day left no room under ntfy's 250 for the other programs and the alerts
-EXT_ORDER = ("rd", "fl", "brd", "life", "mf", "k7", "board_trades", "at", "fq", "zl", "learn", "lab", "glance", "kalshi_rewards", "kalshi_k1", "kalshi_live", "ap")   # "at": engine/feed_trades
+EXT_ORDER = ("rc", "rd", "fl", "brd", "life", "mf", "k7", "board_trades", "at", "fq", "zl", "learn", "lab", "glance", "kalshi_rewards", "kalshi_k1", "kalshi_live", "ap")   # "at": engine/feed_trades
 EXT_LAST = ("glog",)   # red-team 2026-11-21: the Brain's long thought stream takes only the room every other block left (cut 5/3, then out)
 # "zl": ZEUS learned, the nightly line (engine/zeus_learn.read_tiny, <= 220 bytes) -> the ZEUS page's "ZEUS learned" card
 CORE_KEYS = ("eh", "v", "kind", "lite", "src", "t", "every_s", "host", "model_state", "price", "day_pnl", "pc_verdict", "pc", "reporter",
@@ -706,6 +706,9 @@ def full(snap: dict) -> dict:
             out["glog"] = gl
     except Exception:  # noqa: BLE001
         pass
+    rc = rc_block(hb.get("remote"))
+    if rc:
+        out["rc"] = rc
     life = _life(hb.get("life"))
     if life:
         out["life"] = life
@@ -767,6 +770,21 @@ def full(snap: dict) -> dict:
             out[k] = snap[k]
     if snap.get("pulse"):                          # a state-change post (engine/state_pulse.py): when, so readers know it is one
         out["pulse"] = int(snap["pulse"])
+    return {k: v for k, v in out.items() if v is not None}
+
+
+def rc_block(r) -> dict | None:
+    """The phone remote control, cut for the public topic (day-notifyfix 2026-11-23: a 'status' reached no phone and the cloud
+    could not see whether the PC even read it): on, last command + id + status + time, where its phone notice went (channel
+    names and ok / FAILED only), the control commit the PC last read, the fetch error. No topic, no token, no URL. <= ~300 bytes."""
+    r = _d(r)
+    if not r:
+        return None
+    n = _d(r.get("notice"))
+    out = {"on": bool(r.get("on")), "id": str(r.get("id") or "")[:64] or None, "last": str(r.get("last") or "")[:80] or None,
+           "st": r.get("status"), "t": r.get("t"), "seen": str(_d(r.get("seen")).get("commit") or "")[:10] or None,
+           "seen_t": _d(r.get("seen")).get("t"), "err": str(r.get("error") or "")[:80] or None,
+           "n": ({"ok": bool(n.get("ok")), "line": str(n.get("line") or "")[:160], "t": n.get("t")} if n else None)}
     return {k: v for k, v in out.items() if v is not None}
 
 
