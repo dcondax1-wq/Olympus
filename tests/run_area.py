@@ -506,6 +506,7 @@ AREAS["nq"].append("chaos_live"); AREAS["pc"].append("chaos_live")   # day-zeroe
 AREAS["pc"].append("live_guard_rt")   # red team 2026-11-24: an account the owner disabled never gets MISSED TRADE / NOT READY
 
 AREAS["nq"].append("ledgerfix"); AREAS["pc"].append("ledgerfix")   # day-ledgerfix 2026-11-24: no order for an un-routed model entry of an ended session / a flat broker; no row before an account's eval start (+ repair); armed record
+AREAS["nq"].append("ledgerfix_rt"); AREAS["pc"].append("ledgerfix_rt")   # red team 2026-11-24: a future eval_start never drops a held position's exit or today's real closes
 
 if __name__ == "__main__":
     sys.exit(main())
