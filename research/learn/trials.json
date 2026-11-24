@@ -1,0 +1,106 @@
+{
+ "v": 1,
+ "kind": "market-learn-trials",
+ "note": "Every candidate fix ever registered (pre-registered BEFORE its test). Count = the Bonferroni divisor. A key here is never tried again.",
+ "count": 1,
+ "trials": [
+  {
+   "key": "blitz|half|pd_room=far",
+   "pillar": "blitz",
+   "kind": "half",
+   "bucket": "pd_room=far",
+   "find_z": -1.46,
+   "find_n": 207,
+   "registered": "2026-11-24",
+   "n_at_registration": 1,
+   "status": "rejected",
+   "plan": "hold-out odd ISO weeks + each full span; Bonferroni 0.05 / running count",
+   "tested": "2026-11-24",
+   "result": {
+    "passed": false,
+    "why": [
+     "hold-out weeks -$633",
+     "2021-25 net -$1,112",
+     "2021-25 PF 1.06 -> 1.05"
+    ],
+    "hold": {
+     "n": 1218,
+     "k": 215,
+     "gain_usd": -633,
+     "z": -0.04,
+     "p": 0.51437
+    },
+    "bar": 0.05,
+    "spans": {
+     "H1": {
+      "before": {
+       "n": 220,
+       "win": 55.5,
+       "avg_r": 0.148,
+       "pf": 1.63,
+       "usd": 5513,
+       "tpw": 9.57,
+       "usd_mo": 1041,
+       "maxdd": -1314
+      },
+      "after": {
+       "n": 220,
+       "win": 55.5,
+       "avg_r": 0.154,
+       "pf": 1.7,
+       "usd": 5601,
+       "tpw": 9.57,
+       "usd_mo": 1058,
+       "maxdd": -1242
+      }
+     },
+     "H2": {
+      "before": {
+       "n": 176,
+       "win": 53.4,
+       "avg_r": 0.129,
+       "pf": 1.41,
+       "usd": 3375,
+       "tpw": 9.62,
+       "usd_mo": 802,
+       "maxdd": -1254
+      },
+      "after": {
+       "n": 176,
+       "win": 53.4,
+       "avg_r": 0.153,
+       "pf": 1.57,
+       "usd": 4034,
+       "tpw": 9.62,
+       "usd_mo": 959,
+       "maxdd": -1189
+      }
+     },
+     "2021-25": {
+      "before": {
+       "n": 1869,
+       "win": 50.3,
+       "avg_r": 0.016,
+       "pf": 1.06,
+       "usd": 4570,
+       "tpw": 8.79,
+       "usd_mo": 93,
+       "maxdd": -4783
+      },
+      "after": {
+       "n": 1869,
+       "win": 50.3,
+       "avg_r": 0.013,
+       "pf": 1.05,
+       "usd": 3458,
+       "tpw": 8.79,
+       "usd_mo": 71,
+       "maxdd": -5217
+      }
+     }
+    },
+    "caveat": "trade-list test: a full backtest re-run is the yes step"
+   }
+  }
+ ]
+}

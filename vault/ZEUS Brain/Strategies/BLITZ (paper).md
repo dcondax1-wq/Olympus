@@ -61,6 +61,9 @@ _No trades in the published trade list._
 
 ## Tested and rejected
 
+> [!failure]- Market Learn weekly trial #1
+> BLITZ half size when the prior-day level sits 4R+ ahead (picked on even ISO weeks, find z -1.46): hold-out odd weeks -$633 (p 0.51), 2021-25 net -$1,112, PF 1.06 -> 1.05. Rejected; trials.json keeps it so it is never re-tried. Seed (4,184 backtest trades, 3 pillars): strong lessons LIT 0 / ATLAS 1 / BLITZ 2 vs 0.5 / 0.5 / 1.3 by chance (p 1.0 / 0.34 / 0.31) - no context bucket beats chance.
+
 > [!failure]- BLITZ review
 > 8 pre-declared EXIT ideas on today's BLITZ (account C, $150, costs in): out at minute 10 / 15 if in a loss and never +0.5R, out at minute 10 if never +0.25R (H1 pick: +$22 Jan-Jun, -$292/mo Jul-Oct, 2-week fails 21.7 -> 40.6%), out on a 1m close back inside the noise band (from entry / from minute 10), breakeven at +0.5R, the minute-15 cut / band exit with a 45-minute hold (+$144-162 Jul-Oct, -$240 Jan-Jun). 0 pass; every one LOWERS the win rate (35-53% vs 57%): non-starters (not +0.5R by minute 10) still end near 0R in 2026. Today's BLITZ: +$963 / +$667 / +$73 a month, own 25K slot +$286 / +$52 / -$39.
 > Write-ups: [[blitz-review-2026-11-18|BLITZ review]]
