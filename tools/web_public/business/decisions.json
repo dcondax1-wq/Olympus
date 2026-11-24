@@ -1,21 +1,21 @@
 {
  "v": 1,
  "kind": "olympus-decisions",
- "updated": "2026-11-23",
+ "updated": "2026-11-19",
  "note": "The Decide card (business/decide.js on the Board + ZEUS pages). Claude keeps this list. A tap only posts an owner note (POST /inbox/board on the PC link); Claude applies it next session by the CLAUDE.md rules, then sets status to yes / no / later / done. Nothing here changes a live setting.",
  "items": [
   {
    "id": "payout-ping-1000",
    "question": "Funded 25K: ask for the full $1,000 payout (at balance $27,100) instead of pinging you at $750?",
    "why": "The bot pings you when $750 sits above the $1,100 buffer; waiting for the full $1,000 (balance $27,100) means fewer, bigger requests.",
-   "impact": "-$9 a month in a Jul-Oct-like market (-$11 Jan-Jun-like, -$6 2021-25-like); first payout about 2 trading days later. At real fills on ATLAS's 25K (10 ticks a side): about the same money (+$8 a month Jan-Jun-like, -$1 Jul-Oct-like), lost in 6 months 21.7% -> 20.7% (17.6% -> 16.0%), first payout 2-3 trading days later; with room 40% it adds almost nothing (14.0% -> 13.1%).",
+   "impact": "-$9 a month in a Jul-Oct-like market (-$11 Jan-Jun-like, -$6 2021-25-like); first payout about 2 trading days later.",
    "impact_usd": -9,
    "options": [
     "yes",
     "no",
     "later"
    ],
-   "status": "no",
+   "status": "open",
    "source": "research/writeups/payout-policy-funded25-2026-11-17.md",
    "applies": "engine/funded_life builder25k ask_above 750 -> 1000 (push line only)",
    "added": "2026-11-17",
@@ -27,9 +27,8 @@
    },
    "risk": "25K #2 no payout in 6 months 16.9% -> 18.5%; in a 2021-25-like market it costs $6 a month",
    "recommend": "no",
-   "recommend_why": "Keep the $750 ping: waiting for $1,000 pays the same or a little less and each payout comes 2-5 trading days later. At real fills it is a little safer on ATLAS's 25K, but room 40% does that job much better; on the 25K #2 it still costs about $5 a month.",
-   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)",
-   "answered": "2026-11-20 ~08:00 ET in chat (\"Yes to whatever you think it should be ... make sure your choice is good\"): Claude's pick from the data"
+   "recommend_why": "Keep the $750 ping: waiting for $1,000 pays a little less and each payout comes about 2 trading days later.",
+   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)"
   },
   {
    "id": "zlarior-funded25",
@@ -42,7 +41,7 @@
     "no",
     "later"
    ],
-   "status": "no",
+   "status": "open",
    "source": "research/writeups/funded25-lit-atlas-2026-11-17.md",
    "applies": "python -X utf8 -m engine.lit25 --funded \"<Name>\" --start <day> (added DISARMED; you arm it)",
    "added": "2026-11-17",
@@ -55,39 +54,33 @@
    "risk": "ATLAS 25K no payout in 6 months 1.4% -> 0.7%; ATLAS 25K funded account lost 10.2% -> 26.3%; in a 2021-25-like market it costs $26 a month",
    "recommend": "no",
    "recommend_why": "More money, but more risk: ATLAS 25K: the funded account is lost 26 in 100 times instead of 10. Not worth it now.",
-   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)",
-   "answered": "2026-11-20 ~08:00 ET in chat (\"Yes to whatever you think it should be ... make sure your choice is good\"): Claude's pick from the data"
+   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)"
   },
   {
    "id": "rapid25-lit-bank",
    "question": "Rapid 25K: Zlarior trades 1 micro and takes profit at the day's room (instead of skipping most trades)?",
-   "why": "MFFU closes a Rapid that goes 7 days without a trade, and the 30% best-day guard makes the Rapid 25K skip most trades: the red team's replay of Nov 6-19 traded it on 1 day in 10. With this lane on, the same days traded on 4. In the simulation 56% / 44% of evals (Jan-Jun / Jul-Oct-like) hit 5 trading days without a trade as built; 22% / 9% with it.",
-   "impact": "With MFFU's 7-day inactivity close counted: +$164 a month in a Jul-Oct-like market (+$363 Jan-Jun-like, +$4 2021-25-like); the eval passes in 71% / 90% of runs instead of 41% / 54%; first payout about 3 weeks sooner (Feb 5-9 vs Feb 24-26).",
-   "impact_usd": 164,
+   "why": "Today the 30% best-day guard skips 60-65% of Zlarior's trades there. Banking at the room passes and pays sooner, but fails a little more.",
+   "impact": "+$83 a month in a Jul-Oct-like market (+$10 Jan-Jun-like, +$7 2021-25-like); first payout about 5 trading days sooner.",
+   "impact_usd": 83,
    "options": [
     "yes",
     "no",
     "later"
    ],
-   "status": "superseded",
-   "source": "research/writeups/rapid25-pass-2026-11-21.md",
+   "status": "open",
+   "source": "research/writeups/rapid25-lit-lane-2026-11-18.md",
    "applies": "python -X utf8 -m engine.rapid --lit-bank on (built OFF)",
    "added": "2026-11-18",
-   "usd_month": 164,
+   "usd_month": 83,
    "usd_month_by": {
-    "jan_jun": 363,
-    "jul_oct": 164,
-    "y2021_25": 4
+    "jan_jun": 10,
+    "jul_oct": 83,
+    "y2021_25": 7
    },
-   "risk": "Trades more: without the inactivity close it fails the eval a bit more often (0.5% -> 3.1% Jan-Jun-like, 2.0% -> 2.7% Jul-Oct-like) and loses a funded Rapid a bit more often (27% -> 29%, 38% -> 39%). In Nov 6-19 its 3 extra trades (1 micro each) lost $288 in a cold week.",
+   "risk": "Rapid 25K no payout in 6 months 10.4% -> 7.9%; Rapid 25K funded account lost 28.3% -> 32.2%; Rapid 25K eval fails in 3 months 0.1% -> 0.6%; Rapid 25K eval passes in about 21 trading days instead of 25",
    "recommend": "yes",
-   "recommend_why": "Turn it on: as built the Rapid 25K hardly trades and risks MFFU's 7-day inactivity close; this lane passes much more often and sooner for slightly more eval risk. The pre-set test (which did not model the inactivity close) said no; with the close counted it wins in both 2026 halves.",
-   "valued": "2026-11-21 tools/money/rapid25_pass.py posthoc (ATLAS 10 ticks a side, LIT unchanged, MFFU's 7-day inactivity close = 5 idle trading days in the eval; 1,000 paths; $ a month after fees and MFFU's split, before the 30% tax pot; design research/second/rapid25_pass_design.md)",
-   "answered": "2026-11-20 ~08:00 ET in chat (\"Yes to whatever you think it should be ... make sure your choice is good\"): Claude's pick from the data | reopened 2026-11-21: new evidence (MFFU's inactivity close), recommendation changed to yes",
-   "checked": "research/writeups/skeptic-atlas-streak-2026-11-20.md",
-   "superseded_by": "research/writeups/rapid25-slot-2026-11-22.md",
-   "closed_note": "Retired by tonight's Rapid 25K slot study: the 1-micro bank lane stays NO (at real fills about +$24 / +$101 a month, but the eval fail rate rises 0.5% -> 3.1%). Nothing changes; the lane stays OFF.",
-   "triage": "2026-11-23"
+   "recommend_why": "More money in both 2026 halves without a real jump in risk.",
+   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)"
   },
   {
    "id": "atlas-on-50k-funded",
@@ -119,90 +112,54 @@
   {
    "id": "atlas-on-rapid",
    "question": "Rapid EOD: ATLAS trades it next to Zlarior from day one?",
-   "why": "On the Rapid 25K the 30% best-day rule skips most of Zlarior's trades. Launch check 2026-11-20 at real fills: LIT alone passes the eval in only 25-42% of runs within 60 trading days, ATLAS alone 49-64%, both together 81-86% (median 26-33 days).",
-   "impact": "At real fills (ATLAS 10 ticks a side): +$609 a month in a Jul-Oct-like market (+$1,662 Jan-Jun-like, -$28 2021-25-like); first payout about Feb 18 with ATLAS, while without it half the runs see no payout in 6 months. At backtest fills it was +$817 a month (+$2,084 Jan-Jun-like, +$7 2021-25-like).",
-   "impact_usd": 609,
+   "why": "On the Rapid 25K the 30% best-day rule skips most of Zlarior's trades: alone it passes in about 42 trading days, with ATLAS about 25.",
+   "impact": "+$817 a month in a Jul-Oct-like market (+$2,084 Jan-Jun-like, +$7 2021-25-like); first payout about 39 trading days sooner.",
+   "impact_usd": 817,
    "options": [
     "yes",
     "no",
     "later"
    ],
-   "status": "yes",
+   "status": "open",
    "source": "research/writeups/stack-one-account-2026-11-16.md",
    "applies": "Rapid preset already built LIT + ATLAS ($250 on the 25K, $500 on a 50K); a no turns ATLAS off there",
    "added": "2026-11-16",
-   "usd_month": 609,
+   "usd_month": 817,
    "usd_month_by": {
-    "jan_jun": 1662,
-    "jul_oct": 609,
-    "y2021_25": -28
+    "jan_jun": 2084,
+    "jul_oct": 817,
+    "y2021_25": 7
    },
-   "risk": "At real fills: a funded Rapid lost in 6 months 38.0% with ATLAS vs 14.1% without (Jul-Oct-like; 27.2% vs 5.6% Jan-Jun-like), but without ATLAS half the runs never get paid; no payout in 6 months 15.1% vs 50.0%. A $150 ATLAS lane is safer (28.8% lost) but pays $93-366 a month less. Launch check (same paths): ATLAS alone makes $707 / $141 a month, below both together, so no ATLAS-only option. With both, 12% / 26% of runs lose the first Rapid before any payout (re-buy $97.20).",
+   "risk": "Rapid 25K no payout in 6 months 50.1% -> 10.4%; Rapid 25K funded account lost 14.1% -> 28.3%; Rapid 25K eval passes in about 25 trading days instead of 42",
    "recommend": "yes",
-   "recommend_why": "Keep ATLAS on the Rapid (it is already built that way): even at real fills it adds about $600 a month in a Jul-Oct-like market, and without it the 30% rule skips most of Zlarior's trades and half of the runs see no payout in 6 months.",
-   "valued": "2026-11-20 tools/atlas_risk.py (real fills: ATLAS 10 ticks a side, LIT unchanged; the Rapid 25K as built, keep $500, 1,000 paths; $ a month after fees and MFFU's split, before the 30% tax pot)",
-   "answered": "2026-11-20 ~08:00 ET in chat (\"Yes to whatever you think it should be ... make sure your choice is good\"): Claude's pick from the data",
-   "next": "already the built default: the Rapid trades LIT + ATLAS once added",
-   "checked": "research/writeups/skeptic-atlas-streak-2026-11-20.md"
+   "recommend_why": "Keep ATLAS on the Rapid (it is already built that way): without it the 30% rule skips most of Zlarior's trades and half of the runs see no payout in 6 months.",
+   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)"
   },
   {
    "id": "keep-1000-rapid",
    "question": "Rapid funded payouts: always leave $1,000 above the buffer in each Rapid?",
    "why": "Leaving more in the Rapid after each payout gives the bot more room, so fewer funded accounts get stuck; each payout is smaller and comes later.",
-   "impact": "About $0 on its own: -$18 a month in a Jul-Oct-like market (+$49 Jan-Jun-like, -$2 2021-25-like); first payout about 1-2 weeks later.",
-   "impact_usd": -18,
+   "impact": "-$20 a month in a Jul-Oct-like market (+$56 Jan-Jun-like, -$3 2021-25-like); first payout about 4 trading days later.",
+   "impact_usd": -20,
    "options": [
     "yes",
     "no",
     "later"
    ],
-   "status": "superseded",
-   "source": "research/writeups/rapid-funded-refit-2026-11-21.md",
+   "status": "open",
+   "source": "research/writeups/rapid-levers-2026-11-16.md",
    "applies": "Rapid funded payout rule: the 25K keeps $500 above the buffer today (a yes raises it to $1,000); the 50K preset keeps $1,000 already",
    "added": "2026-11-16",
-   "usd_month": -18,
+   "usd_month": -20,
    "usd_month_by": {
-    "jan_jun": 49,
-    "jul_oct": -18,
-    "y2021_25": -2
+    "jan_jun": 56,
+    "jul_oct": -20,
+    "y2021_25": -3
    },
-   "risk": "Safer: a funded Rapid 25K lost in 6 months 24.0% -> 14.2% (Jan-Jun-like), 34.5% -> 24.8% (Jul-Oct-like): about 10 fewer lost Rapids in 100.",
-   "recommend": "yes",
-   "recommend_why": "Yes, best together with rapid-funded-refit (a bigger winner cap): the $1,000 kept in pays for the bigger cap's extra risk. On its own it costs about nothing and loses 10 fewer funded Rapids in 100.",
-   "valued": "2026-11-21 tools/money/rapid_funded_refit.py (ATLAS 10 ticks a side + sized on a 10-tick stop, 1,000 paths, Rapid eval as built; $ a month after fees and MFFU's split, before the 30% tax pot; design research/second/rapid_funded_refit_design.md)",
-   "answered": "2026-11-20 ~08:00 ET in chat (\"Yes to whatever you think it should be ... make sure your choice is good\"): Claude's pick from the data | reopened 2026-11-21: re-valued at real fills with the funded refit",
-   "superseded_by": "rapid-funded-refit",
-   "closed_note": "Merged into rapid-funded-refit: the same knob (the Rapid's cushion above the buffer, 25K $500 -> $1,000), decided together with the winner cap.",
-   "triage": "2026-11-23"
-  },
-  {
-   "id": "rapid-funded-refit",
-   "question": "Rapid funded: let a winner pay up to $2,000 on the 25K ($4,000 on a 50K) and keep $1,000 ($2,000) in the account?",
-   "why": "The Rapid funded presets copied the Builder's winner cap ($1,000 / $2,000), made for the Builder's 50% consistency and $2,000 payout cap. MFFU's Rapid EOD funded has neither. A bigger cap pays more; keeping more in the account stops it losing more.",
-   "impact": "Rapid 25K: +$314 a month in a Jul-Oct-like market (+$541 Jan-Jun-like, -$1 2021-25-like). A Rapid 50K (once bought): +$647 / +$1,460 / +$4.",
-   "impact_usd": 314,
-   "options": [
-    "yes",
-    "no",
-    "later"
-   ],
-   "status": "waiting",
-   "source": "research/writeups/rapid-funded-refit-2026-11-21.md",
-   "applies": "engine/multi_account presets mffu_rapid_eod_25k / _50k sizing.funded max_win (1,000 -> 2,000 / 2,000 -> 4,000) + engine/rapid.PLANS cushion (500 -> 1,000 / 1,000 -> 2,000); funded stage only, after a Sim check",
-   "added": "2026-11-21",
-   "usd_month": 314,
-   "usd_month_by": {
-    "jan_jun": 541,
-    "jul_oct": 314,
-    "y2021_25": -1
-   },
-   "risk": "Funded Rapid 25K lost in 6 months 24.0% -> 18.3% (Jan-Jun-like), 34.5% -> 31.8% (Jul-Oct-like); 50K 19.4% -> 15.3% / 22.7% -> 21.6%. The 50K stays at $4,000 (not $7,500): its biggest day stays near $7,200, far from MFFU's $10,000 day that would move it to live and pause every sim account. The cap alone (without keeping more in) loses more accounts.",
-   "recommend": "yes",
-   "recommend_why": "More money in both 2026 halves and fewer lost accounts; ~$0 in 2021-25-like markets. Needs both halves: the bigger cap and the bigger amount kept in.",
-   "valued": "2026-11-21 tools/money/rapid_funded_refit.py (ATLAS 10 ticks a side + sized on a 10-tick stop, 1,000 paths, Rapid eval as built; $ a month after fees and MFFU's split, before the 30% tax pot; design research/second/rapid_funded_refit_design.md)",
-   "waiting_on": "the Rapid EOD 25K passing its eval (median about Jan 4): the change is for the funded stage only, nothing to decide while it is an eval. It comes back as a live card the day the Rapid is funded.",
-   "closed_note": "Waiting on the Rapid EOD 25K passing its eval (median about Jan 4): the change is for the funded stage only, nothing to decide while it is an eval. It comes back as a live card the day the Rapid is funded.",
-   "triage": "2026-11-23"
+   "risk": "Rapid 25K no payout in 6 months 10.4% -> 11.5%; Rapid 25K funded account lost 28.3% -> 19.7%; in a 2021-25-like market it costs $3 a month",
+   "recommend": "no",
+   "recommend_why": "Keep $500 on the Rapid 25K (as built): payouts come sooner for about the same money. $1,000 is the safer choice (fewer accounts lost), so a yes is fine if you prefer safety. A Rapid 50K keeps $1,000 already.",
+   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)"
   },
   {
    "id": "ask-mffu-parallel",
@@ -215,7 +172,7 @@
     "no",
     "later"
    ],
-   "status": "yes",
+   "status": "open",
    "source": "research/writeups/mffu-rules-audit-2026-11-17.md",
    "applies": "Claude drafts the message to MFFU support; you send it",
    "added": "2026-11-17",
@@ -229,9 +186,7 @@
    "recommend": "yes",
    "recommend_why": "Free, and it protects every future payout: send the message (Claude drafts it). Buy the fresh 50K only when your budget round allows ($91.80).",
    "unlocks": true,
-   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)",
-   "answered": "2026-11-20 ~08:00 ET in chat (\"Yes to whatever you think it should be ... make sure your choice is good\"): Claude's pick from the data",
-   "next": "Claude drafts the message; the owner sends it"
+   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)"
   },
   {
    "id": "cloud-alerts",
@@ -244,7 +199,7 @@
     "no",
     "later"
    ],
-   "status": "yes",
+   "status": "open",
    "source": "tools/pc_silent_check.py, docs/BOTS_BACK.md",
    "usd_month": 0,
    "usd_month_by": {
@@ -255,37 +210,33 @@
    "risk": "None: free GitHub minutes on the backup repo; it only reads the PC's report.",
    "recommend": "yes",
    "recommend_why": "Free, and a silent PC is the biggest threat to the funded accounts (7 days without a trade wipes a funded account's profit).",
-   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)",
-   "answered": "2026-11-20 ~08:00 ET in chat (\"Yes to whatever you think it should be ... make sure your choice is good\"): Claude's pick from the data",
-   "next": "Claude builds a small PC-silent cloud check; the owner enables Actions + one secret"
+   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)"
   },
   {
    "id": "atlas-funded-room-40",
    "question": "ATLAS's funded 25K: risk 40% of the room a trade instead of 60% (safer, but the first payout comes later)?",
    "why": "The bot stops ATLAS for good once the funded room is under $100. Smaller trades make that rarer, but each win is smaller, so payouts come later.",
-   "impact": "At real fills (10 ticks a side): +$24 a month in a Jan-Jun-like market ($503 -> $527), -$9 Jul-Oct-like ($402 -> $393), -$3 2021-25-like; first payout 3-8 trading days later (Dec 29 instead of Dec 23 Jan-Jun-like; Jan 19 instead of Jan 7 Jul-Oct-like). At backtest fills it was -$26 a month, 5 trading days later.",
-   "impact_usd": -9,
+   "impact": "-$26 a month in a Jul-Oct-like market (-$25 Jan-Jun-like, $0 2021-25-like); first payout about 5 trading days later.",
+   "impact_usd": -26,
    "options": [
     "yes",
     "no",
     "later"
    ],
-   "status": "yes",
+   "status": "open",
    "source": "research/writeups/atlas-health-2026-11-18.md",
    "applies": "ATLAS's funded sizing 60% -> 40% of the room (engine/account_b funded preset; Claude changes it only after your yes, Sim check first)",
    "added": "2026-11-19",
-   "usd_month": -9,
+   "usd_month": -26,
    "usd_month_by": {
-    "jan_jun": 24,
-    "jul_oct": -9,
-    "y2021_25": -3
+    "jan_jun": -25,
+    "jul_oct": -26,
+    "y2021_25": 0
    },
-   "risk": "At real fills the funded 25K is lost in 6 months 14.0% of the time instead of 21.7% (Jul-Oct-like), 11.0% instead of 17.6% (Jan-Jun-like); 2021-25-like 98% either way. Backtest fills: 10.2% -> 5.8%.",
-   "recommend": "yes",
-   "recommend_why": "At real fills (ATLAS's entries fill about 10 ticks late) 60% of the room is too big for $887: 40% loses the account about a third less often (1 in 7 instead of 1 in 5) for about the same money. It passed the pre-registered bar at 6 and 10 ticks; the cost is a first payout about 3-8 trading days later.",
-   "valued": "2026-11-20 tools/atlas_risk.py (real fills: ATLAS 10 ticks a side; 1,000 week-block paths from today's $887 room, MFFU Builder 25K funded rules; $ a month = payouts to you after MFFU's split, before the 30% tax pot)",
-   "answered": "2026-11-20 ~08:00 ET in chat (\"Yes to whatever you think it should be ... make sure your choice is good\"): Claude's pick from the data",
-   "next": "live after a code review + tests this weekend (Sunday 18:00 ET session)"
+   "risk": "ATLAS 25K funded account lost 10.2% -> 5.8%",
+   "recommend": "no",
+   "recommend_why": "Your choice: keep 60% for the faster first payout (fastest money), or say yes for safety: the funded 25K gets stuck 6 in 100 times instead of 10 in 100 within 6 months, for about $26 a month less.",
+   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)"
   },
   {
    "id": "drop-lucid-account4",
@@ -298,7 +249,7 @@
     "no",
     "later"
    ],
-   "status": "yes",
+   "status": "open",
    "source": "docs/ACCOUNT_4.md",
    "applies": "Claude swaps the Business page's account #4 line (business/businesscore.js ACCOUNT4 + its Python twin, tests.test_money_door) for the Money plan's next buys; nothing live changes",
    "added": "2026-11-19",
@@ -311,8 +262,7 @@
    "risk": "None: words on a page; no account, order or setting changes.",
    "recommend": "yes",
    "recommend_why": "Yes: it only fixes the page. Your MFFU path already has the better next buys, and a LucidPro account would also need its own rules set up and checked first.",
-   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)",
-   "answered": "2026-11-20 ~08:00 ET in chat (\"Yes to whatever you think it should be ... make sure your choice is good\"): Claude's pick from the data"
+   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)"
   },
   {
    "id": "zlarior-atlas-50k",
@@ -325,7 +275,7 @@
     "no",
     "later"
    ],
-   "status": "later",
+   "status": "open",
    "source": "research/writeups/one-account-combo-final-2026-11-19.md",
    "applies": "the lead builds research/lab/combo_50k.json on Zlarior's 50K: ATLAS added, one position (first in keeps it), ATLAS at 50% of its own size in the eval and 100% once funded; Sim test first; a yes replaces the funded-only card atlas-on-50k-funded",
    "added": "2026-11-19",
@@ -338,16 +288,14 @@
    "risk": "likely, not sure: 1 Jul-Oct-like stretch in 7 gives $0 or less (no ATLAS size or eval guard fixes that), and without ATLAS's 5 best Jul-Oct days the gain is about $0; evals dying in 2 weeks 0.5% -> 4.4% (Jul-Oct), 7% (2021-25-like); 2022-like $141 a month less than Zlarior alone",
    "recommend": "yes",
    "recommend_why": "The pre-registered winner: beats Zlarior alone in Jan-Jun and Jul-Oct by more than the noise, about even in 2021-25, 2-week eval fails under 5%, still ahead with worse fills. Sim first; re-check on Nov-Dec days.",
-   "valued": "2026-11-19 tools/money/combo_account.py final (12 pre-registered rule sets, 2,000 day- and week-block runs x 6 months, MFFU move to live after payout 5; $ a month to you after fees and MFFU's cut, before the 30% tax pot)",
-   "answered": "2026-11-20 ~08:00 ET in chat (\"Yes to whatever you think it should be ... make sure your choice is good\"): Claude's pick from the data",
-   "next": "later: turn it on the day the 50K passes (today $1,025 room; adding ATLAS mid-eval raises the early-blow odds)"
+   "valued": "2026-11-19 tools/money/combo_account.py final (12 pre-registered rule sets, 2,000 day- and week-block runs x 6 months, MFFU move to live after payout 5; $ a month to you after fees and MFFU's cut, before the 30% tax pot)"
   },
   {
    "id": "atlas-funded-keep-trading",
    "question": "ATLAS's funded 25K: keep trading 1 micro when the room drops under $100, instead of stopping for good?",
    "why": "Today the bot gives the funded account up at $100 of room. Small 1-micro trades that still fit can climb back: about 1 in 5 such accounts recover in a 2026-like market.",
-   "impact": "+$3 a month in a Jul-Oct-like market (+$10 Jan-Jun-like, +$4 2021-25-like); chance of losing the account in 6 months 10.5% -> 9.5% (9.8% -> 7.7% Jan-Jun-like); first payout unchanged. At real fills (10 ticks a side): +$6 a month Jul-Oct-like (+$14 Jan-Jun-like, +$1 2021-25-like); chance of losing the account 23.5% -> 21.7% (20.3% -> 17.6% Jan-Jun-like); first payout unchanged.",
-   "impact_usd": 6,
+   "impact": "+$3 a month in a Jul-Oct-like market (+$10 Jan-Jun-like, +$4 2021-25-like); chance of losing the account in 6 months 10.5% -> 9.5% (9.8% -> 7.7% Jan-Jun-like); first payout unchanged.",
+   "impact_usd": 3,
    "options": [
     "yes",
     "no",
@@ -357,348 +305,18 @@
    "source": "research/writeups/atlas-more-money-2026-11-19.md",
    "applies": "data/account_b.json \"min_room\": 0 (built key: the funded stuck line $100 -> none; Claude changes it only after your yes)",
    "added": "2026-11-19",
-   "usd_month": 6,
+   "usd_month": 3,
    "usd_month_by": {
-    "jan_jun": 14,
-    "jul_oct": 6,
-    "y2021_25": 1
+    "jan_jun": 10,
+    "jul_oct": 3,
+    "y2021_25": 4
    },
    "risk": "None found: a 1-micro trade only goes on when its full stop-out fits the room; a stranded account still holds one of the 2 funded 25K places until you close it",
    "recommend": "yes",
-   "recommend_why": "It only keeps alive an account the bot would abandon: at real fills it never loses an account the old $100 stop would keep (0 of 1,000 test paths) and saves about 2-3 in 100. Small money, no downside.",
-   "valued": "2026-11-20 tools/atlas_risk.py (real fills: ATLAS 10 ticks a side; 1,000 week-block paths from today's $887 room, MFFU Builder 25K funded rules; $ a month = payouts to you after MFFU's split, before the 30% tax pot)",
+   "recommend_why": "It never pays less on any of the 600 test paths; it only keeps alive an account the bot would abandon. Small money, no downside.",
+   "valued": "2026-11-19 tools/atlas_more.py (600 week-block paths from today's account, MFFU Builder 25K funded rules, costs in)",
    "answered": "2026-11-19 ~20:00 ET in chat (\"Yes\")",
    "closed_note": "Owner YES. To apply: data/account_b.json on the PC \"min_room\": 0 (no CLI yet: next chat adds `python -m engine.account_b --min-room 0` and gives the owner the one line at the PC)."
-  },
-  {
-   "id": "kalshi-stake-ladder",
-   "question": "Kalshi K8: start at $8 a bet (not $15) and step up with the cash: $10 from $67, $15 from $100?",
-   "why": "$15 a bet on $55 means 3 losses in a row (the test had a streak of 8) leave too little to bet. Betting about 15% of the cash keeps the pot alive while it grows.",
-   "impact": "Chance the $55 is wiped out in the first 4 weeks: 7.9% -> 0.2% as tested, 24.8% -> 3.3% if the edge is half as good; median after 4 weeks $467 -> $430 (-$37) if the edge holds.",
-   "impact_usd": -37,
-   "options": [
-    "yes",
-    "no",
-    "later"
-   ],
-   "status": "done",
-   "source": "research/writeups/money-ideas-2026-11-20.md",
-   "applies": "the K8 page's own bet pick ($5 / $8 / $10 / $15): pick $8 Monday, move up by the ladder (no code change); an automatic ladder in engine/kalshi_clock.py only after your yes",
-   "added": "2026-11-20",
-   "usd_month": -37,
-   "usd_month_by": {
-    "held_out_oct_nov": -37,
-    "train_aug_sep": -43,
-    "half_edge": -36
-   },
-   "risk": "If the edge is real you grow a bit slower in week 1-2 (about $37 less after 4 weeks); if it fades you lose $10-20 instead of the whole $55",
-   "recommend": "yes",
-   "recommend_why": "Same money within 8% when it works, about 25-40x less chance of being wiped out before it can work. The pot is too small for $15 bets.",
-   "valued": "2026-11-20 tools/money/kalshi_bankroll.py (the 105 held-out + 128 earlier K8 bets of the 3 live legs, whole days resampled, 20,000 paths of 20 trading days, fees and real prices in)",
-   "closed_note": "Replaced the same night by the K8 bot's own sizing (night-kalshi8, engine/kalshi_clock.py BANKROLL): each bet = 4.5% of the cash ($2.50 at $55, grows by itself as the cash grows), with stops at 15% a day, 25% a week and 35% from the peak. An $8 bet would trip the day stop after one loss, so the bot itself would refuse a second $8 bet."
-  },
-  {
-   "id": "atlas-funded-streak-1micro",
-   "question": "ATLAS's funded 25K: after 2 losing trades in a row, trade 1 micro until the next win?",
-   "why": "A losing streak is what drains the $887 room and closes the account. Shrinking to 1 micro during a streak keeps most of the money and loses the account far less often.",
-   "impact": "At real fills (10 ticks a side), from today's account: -$22 a month in a Jan-Jun-like market ($503 -> $481), +$6 Jul-Oct-like ($402 -> $408), -$1 2021-25-like; first payout about a week later (Dec 30 instead of Dec 23 Jan-Jun-like; Jan 12 instead of Jan 7 Jul-Oct-like). With room 40% also on: $478 / $394 a month.",
-   "impact_usd": -22,
-   "options": [
-    "yes",
-    "no",
-    "later"
-   ],
-   "status": "yes",
-   "source": "research/writeups/atlas-edge-2026-11-20.md",
-   "applies": "ATLAS's funded sizing: after 2 losing ATLAS trades in a row, 1 micro until a winner (engine/account_b funded preset; Claude builds it only after your yes, Sim check first)",
-   "added": "2026-11-20",
-   "usd_month": -22,
-   "usd_month_by": {
-    "jan_jun": -22,
-    "jul_oct": 6,
-    "y2021_25": -1
-   },
-   "risk": "At real fills the funded 25K is lost in 6 months 12.2% of the time instead of 17.6% (Jan-Jun-like) and 10.9% instead of 21.7% (Jul-Oct-like). With room 40% too: 10.1% and 7.7% (room 40% alone: 11.0% and 14.0%). 2021-25-like: 96% either way. Independent check (2026-11-20, research/writeups/skeptic-atlas-streak-2026-11-20.md): the safety holds on 3 path seeds and in every 2021-25 year, but it costs more when market days are shuffled one by one: Jul-Oct-like $372 -> $319 a month (-$53), lost 23.5% -> 18.5%. On top of room 40%: Jul-Oct-like lost 14.0% -> 7.7% for $0, Jan-Jun-like 11.0% -> 10.1% for -$49 a month.",
-   "recommend": "yes",
-   "recommend_why": "It is the only one of 15 tested changes that passed, and an independent re-check confirms it makes losing the account less likely in every test. But it is weaker than first said: in a Jan-Jun-like market a plain smaller size (room 40%) is as safe and pays more, so its real value is in a Jul-Oct-like market, where losing trades come in bunches: there, with room 40%, it nearly halves the chance of losing the account (14% -> 8%) at the same money. Say yes if keeping the account matters more to you than about $25-50 a month; tap room 40% first.",
-   "answered": "2026-11-20 ~08:00 ET in chat (\"Yes to whatever you think it should be ... make sure your choice is good\"): Claude's pick from the data",
-   "next": "live after a code review + tests this weekend, together with room 40%",
-   "checked": "research/writeups/skeptic-atlas-streak-2026-11-20.md"
-  },
-  {
-   "id": "rapid-atlas-size-10t",
-   "question": "Rapid 25K: size ATLAS for its real fills (assume a 10-tick worse stop)?",
-   "why": "ATLAS's real fills are ~10 ticks worse than its backtest, so a full stop costs up to a third more than planned and can push the day past MFFU's $500 pause.",
-   "impact": "-$31 a month in a Jul-Oct-like market (-$141 Jan-Jun-like, +$4 2021-25-like); fewer Rapids lost; same first payout date.",
-   "impact_usd": -31,
-   "options": [
-    "yes",
-    "no",
-    "later"
-   ],
-   "status": "yes",
-   "source": "research/writeups/rapid-launch-2026-11-20.md",
-   "applies": "engine/rapid.py: ATLAS's Rapid lane sizes on stop + 10 ticks; LIT unchanged (Claude applies the patch only after your yes, Sim check first)",
-   "added": "2026-11-20",
-   "usd_month": -31,
-   "usd_month_by": {
-    "jan_jun": -141,
-    "jul_oct": -31,
-    "y2021_25": 4
-   },
-   "risk": "Funded Rapid lost in 6 months 27.2% -> 24.0% (Jan-Jun-like), 38.0% -> 34.5% (Jul-Oct-like); days over MFFU's $500 pause 1.1 per 100 -> 0; eval pass unchanged.",
-   "recommend": "yes",
-   "recommend_why": "Safer for a small cost: about 3-4 fewer Rapids lost per 100 for $31-141 a month.",
-   "valued": "2026-11-20 ATLAS 10 ticks a side, 1,000 paths (rapid-launch-2026-11-20.md)",
-   "answered": "2026-11-20 ~08:00 ET in chat (\"Yes to whatever you think it should be ... make sure your choice is good\"): Claude's pick from the data",
-   "next": "live after a code review + tests this weekend (Rapid lane only)"
-  },
-  {
-   "id": "copilot-test",
-   "question": "Big idea: run a free 30-day test of a 'Prop Slot Planner' page for other prop traders (faceless brand, no name), plus 1 short video a day?",
-   "why": "Bot income depends on the market (about $0 in a 2021-25-like market). The one thing no prop tool sells yet is our planner: which account to buy next, when, and what you keep after tax.",
-   "impact": "Bear $0, base ~$600/mo by month 6, bull ~$3,900/mo by month 12; 3-6 of your hours a week (the videos). Kill it if there are under 300 visits, 30 emails or 3 pre-orders in 30 days; go at 10+ pre-orders.",
-   "impact_usd": 600,
-   "options": [
-    "yes",
-    "no",
-    "later"
-   ],
-   "status": "later",
-   "source": "research/writeups/huge-idea-2026-11-20.md",
-   "applies": "Claude builds the free page + waitlist on a separate faceless site (no MFFU logos, rules math only, never signals); you post the videos. Nothing goes public before your yes.",
-   "added": "2026-11-20",
-   "usd_month": 600,
-   "risk": "Crowded market (TradeZella gives prop tracking away free; trackers sell for $15-50/mo). Costs only your time; $0 cash.",
-   "recommend": "later",
-   "recommend_why": "Website clients are the surer non-trading money ($2,500/mo at 10 clients). Start this test in January if the website outreach is running and you enjoy making videos.",
-   "closed_note": "Not now: tonight's focus is the trading fleet; revisit after the first payout lands.",
-   "triage": "2026-11-23"
-  },
-  {
-   "id": "fast-entry",
-   "question": "Fast entry: send Zlarior's and ATLAS's orders on the minute's first trade instead of waiting 2 seconds?",
-   "why": "Every real entry so far filled worse than the backtest (ATLAS 10-16 ticks, Zlarior 4) because price runs in the 2.7 s before the order arrives; 2.0 s of that is a built-in wait. Fast entry cuts it to ~0.85 s. Same trades, same sizes, only sooner.",
-   "impact": "$0 to ~$160 a month (central ~$100: ATLAS ~5 ticks and Zlarior ~1 tick better per entry); not provable from 1-minute bars, so it is a 2-week test that the fills will settle.",
-   "impact_usd": 100,
-   "options": [
-    "yes",
-    "no",
-    "later"
-   ],
-   "status": "open",
-   "source": "research/writeups/nq-speed-fills-2026-11-20.md",
-   "applies": "On the PC, once: python -X utf8 -m engine.fast_entry --on (off again: --off). No code change; the bot picks it up within 30 s.",
-   "added": "2026-11-20",
-   "usd_month": 100,
-   "usd_month_by": {
-    "jump_low": 0,
-    "sqrt_central": 103,
-    "linear_high": 161
-   },
-   "risk": "No trade decision changes (replay: same ledger ON vs OFF). A minute that spikes and snaps back can make an early fill a few $ worse; expected cost if it does not help: ~$0, a few $ a trade either way.",
-   "recommend": "yes",
-   "recommend_why": "Free to try and undo; the only way to measure it. Check ATLAS's next ~8 fills: if they are not clearly better than 10-16 ticks, switch it off.",
-   "valued": "2026-11-20 4 real fills, research/speed/fast_entry_value.py (jump / sqrt / linear price paths)",
-   "triage": "2026-11-23",
-   "live_rank": 2
-  },
-  {
-   "id": "buy-rapid50-now",
-   "question": "Buy the 5th funded slot (Rapid EOD 50K, $165 with CLUB) now from your pocket, instead of waiting for ATLAS's first payout (about Jan 13)?",
-   "why": "MFFU allows 5 funded accounts; you hold 4. The Rapid EOD 50K is the biggest earner in the plan, and every week it waits is a week it is not passing its eval.",
-   "options": [
-    "yes",
-    "no",
-    "later"
-   ],
-   "status": "superseded",
-   "source": "research/writeups/fleet-90day-2026-11-21.md",
-   "applies": "You buy it (Claude never buys); then ADD_ACCOUNT -> Rapid EOD 50K goes in Rapid slot 2 (multi-Rapid, landed on pc, OFF until added + your phrase; Sim check first). $165 is $15 over your $150 a round.",
-   "added": "2026-11-21",
-   "recommend": "yes",
-   "usd_month": 554,
-   "impact_usd": 554,
-   "usd_month_by": {
-    "jul_oct": 554,
-    "half_edge": 164,
-    "y2021_25": -80
-   },
-   "impact": "After MFFU's cut, fees and the 30% tax pot: +$554 a month to Jun 30 in a Jul-Oct-like market (+$164 if the edge halves, -$80 2021-25-like); Dec-Feb in total +$2,673 / +$514 / -$225.",
-   "risk": "Accounts lost by June: +0.08 / +0.64 / +0.34 (Jul-Oct / half edge / 2021-25-like). In a 2021-25-like market it costs $639 by June.",
-   "recommend_why": "+$2,673 Dec-Feb and +$4,435 by June in a Jul-Oct-like market for $165.00; still +$514 Dec-Feb if the edge halves; the 2021-25-like market costs $639 by June.",
-   "valued": "2026-11-21 tools/money/fleet_90day.py (whole fleet, 1,000 paths a market, real fills; $ after MFFU's split, fees and the 30% tax pot)",
-   "superseded_by": "plan-rapid50k-max2-rebuys",
-   "closed_note": "Merged into plan-rapid50k-max2-rebuys: the same purchase (Rapid EOD 50K, $165 CLUB), now with the 2-re-buy hard stop. Answer that card.",
-   "triage": "2026-11-23"
-  },
-  {
-   "id": "refill-25k-with-rapid50",
-   "question": "When a Builder 25K dies (ATLAS's funded 25K lost, or the 25K #2 eval fails), put a Rapid EOD 50K ($165) in that slot instead of a new $63 Builder 25K?",
-   "why": "A Builder 25K slot earns a few hundred a month; a Rapid EOD 50K slot earns several times that. MFFU allows 3 Rapid EOD 50Ks, so the swap fits the caps.",
-   "options": [
-    "yes",
-    "no",
-    "later"
-   ],
-   "status": "superseded",
-   "source": "research/writeups/fleet-90day-2026-11-21.md",
-   "applies": "A buying rule for the night an account dies (money_book.dead_eval would say the Rapid EOD 50K); you buy, Claude adds it OFF; at most 3 Rapid EOD 50Ks in all.",
-   "added": "2026-11-21",
-   "recommend": "yes",
-   "usd_month": 249,
-   "impact_usd": 249,
-   "usd_month_by": {
-    "jul_oct": 249,
-    "half_edge": 126,
-    "y2021_25": -72
-   },
-   "impact": "After MFFU's cut, fees and the 30% tax pot: +$249 a month to Jun 30 in a Jul-Oct-like market (+$126 if the edge halves, -$72 2021-25-like); Dec-Feb in total +$43 / +$12 / -$173.",
-   "risk": "Accounts lost by June: +0.02 / +0.19 / -0.98 (Jul-Oct / half edge / 2021-25-like). In a 2021-25-like market it costs $573 by June.",
-   "recommend_why": "+$43 Dec-Feb and +$1,993 by June in a Jul-Oct-like market for $165.00; still +$12 Dec-Feb if the edge halves; the 2021-25-like market costs $573 by June.",
-   "valued": "2026-11-21 tools/money/fleet_90day.py (whole fleet, 1,000 paths a market, real fills; $ after MFFU's split, fees and the 30% tax pot)",
-   "superseded_by": "plan-rapid50k-max2-rebuys",
-   "closed_note": "Merged into plan-rapid50k-max2-rebuys: the fleet plan (research/writeups/fleet-plan-2026-11-22.md) already makes the Rapid EOD 50K the buy for any open slot; the fleet manager (engine/fleet_mgr) offers it the night a Builder 25K dies.",
-   "triage": "2026-11-23"
-  },
-  {
-   "id": "second-50k-eval-now",
-   "question": "Buy a 2nd Builder 50K eval now ($91.80) next to Zlarior's, running the same LIT signal (only the first to pass becomes the funded 50K)?",
-   "why": "MFFU's public pages allow parallel evals (10 at once; the funded caps apply on the pass), so you don't need the written yes. Two tries at the 50K = it is funded sooner.",
-   "options": [
-    "yes",
-    "no",
-    "later"
-   ],
-   "status": "superseded",
-   "source": "research/writeups/fleet-90day-2026-11-21.md",
-   "applies": "You buy it; ADD_ACCOUNT -> Builder 50K eval, LIT alone (same as Zlarior's), added OFF + your phrase. If one passes, the other is dropped (MFFU funds one Builder 50K).",
-   "added": "2026-11-21",
-   "recommend": "yes",
-   "usd_month": 63,
-   "impact_usd": 63,
-   "usd_month_by": {
-    "jul_oct": 63,
-    "half_edge": 8,
-    "y2021_25": -5
-   },
-   "impact": "After MFFU's cut, fees and the 30% tax pot: +$63 a month to Jun 30 in a Jul-Oct-like market (+$8 if the edge halves, -$5 2021-25-like); Dec-Feb in total +$479 / +$115 / +$32.",
-   "risk": "Accounts lost by June: +0.01 / +0.10 / +0.08 (Jul-Oct / half edge / 2021-25-like). In a 2021-25-like market it costs $39 by June.",
-   "recommend_why": "+$479 Dec-Feb and +$507 by June in a Jul-Oct-like market for $91.80; still +$115 Dec-Feb if the edge halves; the 2021-25-like market costs $39 by June.",
-   "valued": "2026-11-21 tools/money/fleet_90day.py (whole fleet, 1,000 paths a market, real fills; $ after MFFU's split, fees and the 30% tax pot)",
-   "superseded_by": "plan-rapid50k-max2-rebuys",
-   "closed_note": "Replaced by plan-rapid50k-max2-rebuys: the same open slot is worth about $2,282 a month as a Rapid EOD 50K vs about $63 as a 2nd Builder 50K eval (fleet plan 2026-11-22), and MFFU funds only one Builder 50K.",
-   "triage": "2026-11-23"
-  },
-  {
-   "id": "kalshi-k8-gold-only",
-   "question": "Kalshi K8 live from Monday: bet only the 2 gold windows (drop silver 4:45 PM) to make the bot switching itself off rarer?",
-   "why": "The newest week (Nov 16-20) was the worst of 16 (6 of 15 won). Gold-only trips the stops about 4x less often, but silver also made money in the history (74% won, +$0.92 a bet).",
-   "impact": "About -$4 a week: +$12.23 -> +$8.02 a week as in the history (+$6.17 -> +$3.97 if the edge is 10 points weaker); after 4 weeks $103 -> $88 on average.",
-   "impact_usd": -4,
-   "options": [
-    "yes",
-    "no",
-    "later"
-   ],
-   "status": "later",
-   "source": "research/writeups/kalshi-k8-live-2026-11-21.md",
-   "applies": "research/lab/kalshi_clock.json live_legs without silver_1700_up (silver stays on paper); you type the phrase again after the change",
-   "added": "2026-11-21",
-   "usd_month": -17,
-   "risk": "Bot switches itself off within 4 weeks 4% -> 1% (planning case 17% -> 7%); within 12 weeks 14% -> 3%; no run of either setting falls below $30.",
-   "recommend": "no",
-   "recommend_why": "Keep all 3 legs: the edge has not weakened (no price creep, every leg positive), and 3 legs make about 50% more. The stops already cap a bad week at -$13.75. Say yes if a calm start matters more than ~$4 a week.",
-   "valued": "2026-11-21 research/kalshi_k8_live/edge.py (236 real bets of the 3 live legs Aug 3-Nov 20, exact fees, the $2.50 fill price; 20,000 runs from $55 with every stop and the real calendar)",
-   "closed_note": "Claude's advice is no (about -$17 a month); nothing changes unless you ask for it.",
-   "triage": "2026-11-23"
-  },
-  {
-   "id": "plan-rapid50k-max2-rebuys",
-   "question": "Rapid EOD 50K ($165): buy it with a hard stop of at most 2 re-buys (3 evals in all, max $495 at risk)?",
-   "why": "Best plan in the ranking: daily payouts, 90%, no payout cap. MFFU's own pages (2026-11-22) say the '5 payouts then live' rule is Builder only; a Rapid goes live only at $10,000 in one day or by MFFU's choice.",
-   "impact": "About +$2,282 a month in a Jul-Oct-like market (+$5,001 Jan-Jun-like) over 6 months from one account; first payout ~9 weeks after the buy (median). Same purchase as card buy-rapid50-now, plus the re-buy stop.",
-   "impact_usd": 2282,
-   "options": [
-    "yes",
-    "no",
-    "later"
-   ],
-   "status": "open",
-   "source": "research/writeups/plan-ranking-2026-11-22.md",
-   "applies": "YES = you buy one Rapid EOD 50K on MFFU (CLUB $165); the PC's Start page shows it as 'New Rapid EOD 50K eval: Zlarior + ATLAS?' -> one tap (added NOT armed, Rapid slot 2) -> START BOT + you type the phrase. Today's approved sizing (LIT eval two_week, ATLAS $500 lane). If it fails or dies: re-buy at most twice, then that slot stops (engine/fleet_mgr counts it). Claude never buys or arms.",
-   "added": "2026-11-22",
-   "usd_month": 2282,
-   "usd_month_by": {
-    "jan_jun": 5001,
-    "jul_oct": 2282,
-    "y2021_25": -52
-   },
-   "risk": "In a 2021-25-like market it loses about $311 in 6 months (95% of runs lose money; worst case $495 = 3 evals). Funded account lost within 6 months ~36% of the time (then a re-buy). Any live move at MFFU (a Builder's 5th payout too) pauses ALL sim accounts incl. this one.",
-   "recommend": "yes",
-   "recommend_why": "Highest money per account by far and MFFU confirms no payout cap on Rapid; the 2-re-buy stop caps the bad-market loss at $495.",
-   "valued": "2026-11-22 research/plans/rebuy2.py (LIT + ATLAS on one account, ATLAS at 10 ticks a side, the plan's own eval + payout rules, at most 2 re-buys, 1,000 paths a market, 6 months; $ after the firm's split and every fee, before tax)",
-   "triage": "2026-11-23",
-   "live_rank": 1
-  },
-  {
-   "id": "plan-fundednext50k-max2-rebuys",
-   "question": "FundedNext Rapid Daily 50K (~$150 with code RAPID): add one, with at most 2 re-buys (max $450 at risk)?",
-   "why": "Second best in the ranking and a different firm (MFFU limits: 5 sim funded, and a live move pauses every MFFU sim account). FundedNext allows copying the same strategy across firms under your name.",
-   "impact": "About +$1,546 a month in a Jul-Oct-like market (+$1,679 Jan-Jun-like) over 6 months; first payout ~5 weeks after the buy (median); payouts max $1,200 each, 5 per account.",
-   "impact_usd": 1546,
-   "options": [
-    "yes",
-    "no",
-    "later"
-   ],
-   "status": "waiting",
-   "source": "research/writeups/plan-ranking-2026-11-22.md",
-   "applies": "Buy one FundedNext Rapid Daily 50K; Claude adds it as an extra account (LIT + ATLAS $500 lane) paper-checked on Sim first; re-buy at most twice",
-   "added": "2026-11-22",
-   "usd_month": 1546,
-   "usd_month_by": {
-    "jan_jun": 1679,
-    "jul_oct": 1546,
-    "y2021_25": -28
-   },
-   "risk": "In a 2021-25-like market it loses about $169 in 6 months (89% of runs lose money; worst $450). Funded lost within 6 months ~34%. Price is a code price (unconfirmed); the 15th payout on the profile triggers FundedNext's live review. Same bots as MFFU: bad weeks hit every account together.",
-   "recommend": "yes",
-   "recommend_why": "Spreads the money across a second firm so an MFFU live move or account cap does not stop everything; small, capped risk ($450 at most).",
-   "valued": "2026-11-22 research/plans/rebuy2.py (LIT + ATLAS on one account, ATLAS at 10 ticks a side, the plan's own eval + payout rules, at most 2 re-buys, 1,000 paths a market, 6 months; $ after the firm's split and every fee, before tax)",
-   "waiting_on": "FundedNext's written answer: its FAQ says 'Using an EA that incorporates third-party applications such as Telegram or WhatsApp is strictly prohibited', and the bot's phone alerts (Telegram / ntfy / the Olympus app) are exactly that. Decide only after FundedNext says in writing that the alerts are OK (or Claude builds a FundedNext-only no-alert mode).",
-   "closed_note": "Waiting on FundedNext's written answer: its FAQ says 'Using an EA that incorporates third-party applications such as Telegram or WhatsApp is strictly prohibited', and the bot's phone alerts (Telegram / ntfy / the Olympus app) are exactly that. Decide only after FundedNext says in writing that the alerts are OK (or Claude builds a FundedNext-only no-alert mode).",
-   "triage": "2026-11-23"
-  },
-  {
-   "id": "lucid-3-at-500-budget",
-   "question": "LucidPro 50K: add up to 3 on top of the Rapid EOD 50K + FundedNext 50K plan, and raise the monthly eval budget from $300 to $500?",
-   "why": "Same bots (LIT) on more accounts at a third firm, outside MFFU's caps and live-move risk. Paper test (fleet v2, 75 fleets x 3 spans x 1,000 paths): beats the $300 plan in both 2026 halves, also if the Lucid price is $50 higher.",
-   "impact": "vs the $300 plan, 6 months: about +$1,786 a month (Jan-Jun-like) / +$2,215 a month (Jul-Oct-like); $70k about 1.5 months sooner in Jul-Oct-like (6.9 vs 8.4 months). About half is just the extra $200 a month of budget; the 3 Lucid accounts add +$5.9k / +$9.4k over 6 months on top of a $500 plan with none.",
-   "impact_usd": 2215,
-   "options": [
-    "yes",
-    "no",
-    "later"
-   ],
-   "status": "waiting",
-   "source": "research/writeups/fleet-v2-2026-11-22.md",
-   "applies": "Only AFTER Lucid's written yes (docs/LUCID_SETUP.md step 1): buy 1 LucidPro 50K (DLL on), then up to 2 more as the budget allows; LIT only; budget $500 a month total. Claude adds them paper-checked first; the owner types the live phrase.",
-   "added": "2026-11-22",
-   "usd_month": 2215,
-   "usd_month_by": {
-    "jan_jun": 1786,
-    "jul_oct": 2215,
-    "y2021_25": -112
-   },
-   "risk": "UNVERIFIED: the Lucid price ($126 assumed), NinjaTrader support, and Lucid's OK for the same bot at other firms. 3+ Lucid accounts dying in the same 2 weeks: ~19% of runs in 2026-like markets (~29% in 2021-25-like), mostly copies bought the same week. In a 2021-25-like market the plan loses about $1,456 in 6 months (0.50x its fees; $672 more than the $300 plan, almost all of it the larger budget). Worst 10% of runs barely improves.",
-   "recommend": "later",
-   "recommend_why": "Do not buy before Lucid answers in writing and NinjaTrader support is confirmed; then yes. Stagger the buys one a week (not tested).",
-   "valued": "2026-11-22 research/fleet/fleet2.py (LIT only on Lucid, assumed $126 price, 1,000 paths a market, 6 months; $ after the firm's split and every fee, before tax; every account on the same market path)",
-   "waiting_on": "Lucid's written OK for an automated NinjaTrader bot (docs/LUCID_SETUP.md step 1) and the Lucid red team; the price ($126) is unverified too.",
-   "closed_note": "Waiting on Lucid's written OK for an automated NinjaTrader bot (docs/LUCID_SETUP.md step 1) and the Lucid red team; the price ($126) is unverified too.",
-   "triage": "2026-11-23"
   }
- ],
- "triage_note": "2026-11-23 triage (research/handoff/2026-11-23/DECISIONS.md): 2 live decisions; 5 merged / retired (status superseded, superseded_by points to the card or study that replaced them), 3 waiting on an outside answer or an account stage, 2 later. Nothing deleted, nothing live changed."
+ ]
 }
