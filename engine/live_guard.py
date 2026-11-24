@@ -369,6 +369,44 @@ def arm_payload(rows: list, now) -> dict | None:
             "body": "\n".join(lines)[:600], **({} if bad else {"soft": True, "tags": "white_check_mark"})}
 
 
+ARM_PATH = os.path.join(ROOT, "logs", "arm_daily.json")       # gitignored: {"last": {...}, "days": {day: {slot: rows}}}
+ARM_KEEP_DAYS = 30
+ARM_TINY_MAX_AGE_S = 36 * 3600
+
+
+def save_arm(rows: list, now, path: str | None = None) -> None:
+    """Keep the armed / routed rows of this check: logs/arm_daily.json (last ARM_KEEP_DAYS days, account ids masked by
+    arm_rows). Never raises."""
+    try:
+        path = path or ARM_PATH
+        d = _read_json(path, {})
+        e = _et(now)
+        day, slot = trading_day(now), f"{e:%H:%M}"
+        rec = {"t": int(now), "day": day, "slot": slot,
+               "rows": [{k: r.get(k) for k in ("label", "account", "armed", "routed", "why")} for r in rows][:12]}
+        days = {k: v for k, v in (d.get("days") or {}).items() if isinstance(v, dict)}
+        days.setdefault(day, {})[slot] = rec["rows"]
+        keep = sorted(days)[-ARM_KEEP_DAYS:]
+        _write_json(path, {"last": rec, "days": {k: days[k] for k in keep}})
+    except Exception:
+        pass
+
+
+def arm_tiny(path: str | None = None, now=None) -> dict | None:
+    """The PC feed's "arm" block (tools/pc_report.py ext): {"t", "d", "s", "a": [[label, ..last4, armed 1/0, routed 1/0, why<=60]]}
+    of the last check, or None when there is none / it is older than 36 h. ~300 bytes. Never raises."""
+    try:
+        last = (_read_json(path or ARM_PATH, {}) or {}).get("last") or {}
+        now = time.time() if now is None else float(now)
+        if not last.get("t") or now - float(last["t"]) > ARM_TINY_MAX_AGE_S:
+            return None
+        return {"t": int(last["t"]), "d": last.get("day"), "s": last.get("slot"),
+                "a": [[str(r.get("label") or "")[:24], str(r.get("account") or "")[:8], 1 if r.get("armed") else 0,
+                       1 if r.get("routed") else 0, str(r.get("why") or "")[:60]] for r in (last.get("rows") or [])[:8]]}
+    except Exception:
+        return None
+
+
 def arm_due(now, done: set) -> str | None:
     """The slot name ("01:55" / "09:00") whose check is due now (weekday, CME open, not done today), else None."""
     e = _et(now)
@@ -437,11 +475,13 @@ def _write_json(path, obj):
 class LiveGuard:
     """step() every watchdog check (30 s). send(payload) -> str (tests); default engine/notify.instant_problem."""
 
-    def __init__(self, send=None, clock=time.time, state_path: str | None = None, au_path: str | None = None):
+    def __init__(self, send=None, clock=time.time, state_path: str | None = None, au_path: str | None = None,
+                 arm_path: str | None = None):
         self._send = send
         self.clock = clock
         self.state_path = state_path or STATE_PATH
         self.au_path = au_path
+        self.arm_path = arm_path
         self.sent: set = set()
         self.arm_done: set = set()
         self._miss_t = 0.0
@@ -486,7 +526,9 @@ class LiveGuard:
                         real = False
                 self.arm_done.add(slot)
                 if real:
-                    p = arm_payload(arm_rows(bot, now), now)
+                    rows = arm_rows(bot, now)
+                    save_arm(rows, now, path=self.arm_path)          # day-ledgerfix: kept per day (logs/) + the PC feed's "arm"
+                    p = arm_payload(rows, now)
                     if p:
                         self._push(p, done)
             st = _read_json(self.state_path, {})

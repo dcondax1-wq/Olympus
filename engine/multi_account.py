@@ -1075,9 +1075,12 @@ class Account:
         # that ended before this account joined is skipped; an exit of an entry this account never routed books $0 (as
         # LiveBot does since 2026-10-26: "a missed 08:37 BE trade booked +$0.10 on the 50K").
         start_x = max(int(start or 0), int(getattr(self, "added_t", 0) or 0))
+        es = str(self.spec.get("eval_start") or "")
         for tr in res["trades"]:
             if tr["exit_t"] < start - secs or tr["exit_t"] < start_x - secs or ("exit", tr["entry_t"]) in self.seen:
                 continue
+            if es and trading_day(tr["entry_t"]) < es:
+                continue       # day-ledgerfix: a trade before this account's eval started is never its row (25K #2, Nov 16 -$129.40)
             self.seen.add(("exit", tr["entry_t"]))
             if tr["entry_t"] in self.blocked:
                 continue
@@ -1095,6 +1098,13 @@ class Account:
                 self.log("risk", f"exit {tr['exit_reason']} for the entry at {_et(tr['entry_t']):%H:%M} ET this account never routed: "
                                  f"no flatten ({held}; it would close that trade)")
                 continue
+            if not routed:
+                from .live import unrouted_exit_skip     # day-ledgerfix: an entry of an ended session / a flat broker: no order
+                skip = unrouted_exit_skip(self.adapter, tr["entry_t"], now)
+                if skip:
+                    self.log("risk", f"exit {tr['exit_reason']} for the entry at {_et(tr['entry_t']):%H:%M} ET this account never routed: "
+                                     f"no flatten ({skip})")
+                    continue
             qty = tr["qty"]
             if self.open_t == tr["entry_t"]:
                 self.open_t = None
@@ -1176,6 +1186,14 @@ class Account:
         if not b or b.get("nt_account") != self.spec.get("nt_account"):
             return
         self.closes = [list(c) for c in (b.get("closes") or []) if isinstance(c, (list, tuple)) and len(c) >= 3]
+        es = str(self.spec.get("eval_start") or "")
+        if es:                       # day-ledgerfix one-time repair: a close of a trade from before this account's eval started was
+            bad = [c for c in self.closes if len(c) > 3 and c[3] is not None and trading_day(int(c[3])) < es]
+            # (a close of a trade before this eval began is never this eval's: the old hot-add bug copied the main account's)
+            if bad:
+                self.closes = [c for c in self.closes if c not in bad]
+                self.log("risk", "removed " + ", ".join(f"{_et(int(c[3])):%b %d %H:%M} ET {float(c[2]):+.2f}" for c in bad[:3])
+                         + f" from this account's book: the trade came before its eval started ({es}); it was never its trade")
         try:                         # engine/keepalive: the saved ledger's CONFIRMED fill days outlive an earlier day's ledger
             from . import keepalive as _ka
             self._ka_seed = _ka.seed_days(b.get("ledger") or [])
