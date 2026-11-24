@@ -74,7 +74,7 @@ def part_a():
           j["v"] == 1 and j["name"] == "Settings" and j["status"]["level"] in ("ok", "warn", "bad", "off") and len(j["kpis"]) == 3 and len(j["lines"]) <= 3 and isinstance(j["t"], int)
           and re.fullmatch(r"#[0-9a-f]{6}", j["theme"]) and os.path.getsize(os.path.join(PAGE, "jarvis.json")) < 8192 and not re.search(r"[<>]", json.dumps(j)), j)
     check("a. Reading and quality: the kit's a11y layer is loaded (a11y.js defer + a11y.css), Big text is a data-oly-a11y='big-text' toggle, the quality levels are explained, the storage list has a Clear-all button",
-          'src="../olympus/a11y.js?v=a4" defer' in html and 'href="../olympus/a11y.css?v=a3"' in html and 'data-oly-a11y="big-text"' in html and 'data-oly-a11y="more-contrast"' in html
+          'src="../olympus/a11y.js?v=a5" defer' in html and 'href="../olympus/a11y.css?v=a3"' in html and 'data-oly-a11y="big-text"' in html and 'data-oly-a11y="more-contrast"' in html
           and 'id="fxLevels"' in html and 'id="fxWhy"' in html and 'id="clearAll"' in html and 'id="stWhat"' in html and os.path.isfile(os.path.join(WEB, "olympus", "a11y.js")))
     check("a. haptics: olympus/sfx.js honours the 'olympus.haptics' = off switch", "olympus.haptics" in rd(WEB, "olympus", "sfx.js"))
 
