@@ -45,6 +45,12 @@ from zoneinfo import ZoneInfo
 import numpy as np
 import pandas as pd
 
+
+def _fsutil_replace(src, dst):
+    """os.replace with the Windows PermissionError retries (engine/fsutil.replace; test_selfheal bans a bare os.replace)."""
+    from engine import fsutil
+    return fsutil.replace(src, dst)
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TICK_DIR = os.path.join(ROOT, "data", "ticks")
 CFG_PATH = os.path.join(ROOT, "data", "tickrec.json")
@@ -197,7 +203,7 @@ def write_days(df: pd.DataFrame, tick_dir: str | None = None, replace_root: bool
         else:
             p = _day_path(day, ".csv.gz")
             both.to_csv(p + ".tmp", index=False, compression="gzip")
-        os.replace(p + ".tmp", p)
+        _fsutil_replace(p + ".tmp", p)
         out.append(p)
     return out
 
@@ -422,7 +428,7 @@ def nq_days() -> list[str]:
             os.makedirs(TICK_DIR, exist_ok=True)
             with open(cp + ".tmp", "w", encoding="utf-8") as fh:
                 json.dump(cache, fh)
-            os.replace(cp + ".tmp", cp)
+            _fsutil_replace(cp + ".tmp", cp)
         except Exception:
             pass
     return out
@@ -734,7 +740,7 @@ def write_tiny(path: str | None = None, now: float | None = None) -> bool:
         os.makedirs(os.path.dirname(p), exist_ok=True)
         with open(p + ".tmp", "w", encoding="utf-8") as fh:
             json.dump(t, fh, separators=(",", ":"))
-        os.replace(p + ".tmp", p)
+        _fsutil_replace(p + ".tmp", p)
         return True
     except Exception:
         return False

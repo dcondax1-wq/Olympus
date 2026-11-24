@@ -33,6 +33,12 @@ import sys
 import numpy as np
 import pandas as pd
 
+
+def _fs_replace(src, dst):
+    """engine/fsutil.replace: os.replace with Windows lock retries (test_selfheal)."""
+    from engine import fsutil
+    return fsutil.replace(src, dst)
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TICK = 0.25
 HIST_MAX = 200
@@ -166,7 +172,7 @@ def write_day(day: str, out_root: str = OUT_DEFAULT, x: pd.DataFrame | None = No
             p = os.path.join(d, nm)
             with open(p + ".tmp", "wb") as fh:
                 fh.write(b)
-            os.replace(p + ".tmp", p)
+            _fs_replace(p + ".tmp", p)
         return {"day": day, "ok": True, "bytes": sum(len(b) for b in files.values())}
     except Exception as e:                                                 # never raise into a caller (nightly task)
         return {"day": day, "ok": False, "why": f"{e.__class__.__name__}: {str(e)[:120]}"}
