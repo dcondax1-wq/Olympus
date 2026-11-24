@@ -21,6 +21,9 @@ Steps (each soft and its own process with a time limit: one failing never stops 
   6 decide   the PC's proposals -> tools/web_public/business/decisions.json (new ids only, status open, the existing schema:
              a "yes" = Claude TESTS it under CLAUDE.md "Strategy changes"; nothing live changes without proof + another yes)
   + hub      tools/research_hub.py: the Research Hub (Clio's owner view) -> tools/web_public/clio/hub.json
+  + blitz    research/blitz/learn.py night: tag each new BLITZ trade's loss reason -> research/blitz/lessons.jsonl; on Sunday (ET) the
+             weekly re-test of the top 1-2 lesson-driven fixes (3 spans + fresh data, the multiple tests counted) -> a Decide card +
+             one phone line only when a fix passes; never a live change
   + brain    tools/obsidian_brain.py: rebuild the ZEUS Brain vault (vault/: new days, trades, research, lessons, links); --skip brain
   7 report   before / after -> research/learn/night_cloud.json (gitignored) + the printed table
 Research only: never trades, never touches live_model*.json (hashed before / after, a change is reported loudly).
@@ -50,8 +53,8 @@ WHY = os.path.join(ROOT, "tools", "web_public", "why", "why.json")
 LAB = os.path.join(ROOT, "tools", "web_public", "business", "lab.json")
 REPORT = os.path.join(ROOT, "research", "learn", "night_cloud.json")
 PROTECTED = ("live_model.json", "live_model_lit.json", "live_model_engine.json", "second_model.json", "data/account_b.json")
-STEPS = ("pull", "edge", "costs", "anatomy", "lab", "learned", "decide", "hub")
-LIMIT_S = {"pull": 1500, "edge": 1200, "costs": 900, "anatomy": 2400, "lab": 2400}
+STEPS = ("pull", "edge", "costs", "anatomy", "lab", "learned", "decide", "hub", "blitz")
+LIMIT_S = {"pull": 1500, "edge": 1200, "costs": 900, "anatomy": 2400, "lab": 2400, "blitz": 3600}
 CARD_MAX_BYTES = 6000
 DECIDE_MAX_NEW = 3                       # proposals added per night at most (the owner's card stays short)
 _ID = re.compile(r"[a-z0-9][a-z0-9_-]{1,39}")
@@ -174,6 +177,8 @@ def plan(a) -> list:
             out.append((s, []))
     if "hub" not in skip:                  # day-litedge 2026-11-21: the Research Hub (Clio) after the Decide cards: tools/research_hub.py
         out.append(("hub", [["tools/research_hub.py"]]))   # -> tools/web_public/clio/hub.json (read only on every source)
+    if "blitz" not in skip:                # day-blitz150 2026-11-24 (owner: BLITZ "should learn from mistakes"): tag the new BLITZ trades
+        out.append(("blitz", [["research/blitz/learn.py", "night"]]))   # -> research/blitz/lessons.jsonl; Sunday ET the re-test
     return out
 
 

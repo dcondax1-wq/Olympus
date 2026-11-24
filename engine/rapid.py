@@ -74,6 +74,12 @@ PLANS = {
 }
 
 
+def _blitz_usd() -> float:
+    """BLITZ's per-trade $ on the Rapid EOD 25K eval (engine/rapid_blitz.BLITZ_USD; lazy: rapid_blitz imports this module)."""
+    from . import rapid_blitz as _RB
+    return float(_RB.BLITZ_USD)
+
+
 def plan_info(x=None) -> dict:
     """The plan numbers of a block / spec / preset name ("plan" or "preset"); anything unknown = the 50K (as before)."""
     k = x.get("preset") or x.get("plan") if isinstance(x, dict) else x
@@ -269,7 +275,7 @@ def rules_line(blk: dict) -> str:
     tgt, mll, mq = float(P["target"]), float(R.get("mll") or 0.0), int(R.get("max_micros") or 0)
     return (f"{P['label']}: target +${tgt:,.0f}, floor ${mll:,.0f} below the best close, max {mq} micros, a winning day "
             f"<= ${int(BEST_DAY * tgt * MARGIN):,} (30% rule), ATLAS <= ${float(P['atlas_usd']):,.0f} a trade"
-            + (", BLITZ <= $300 a trade in the eval" if P["preset"] == "mffu_rapid_eod_25k" and blk.get("blitz") is True
+            + (f", BLITZ <= ${_blitz_usd():,.0f} a trade in the eval" if P["preset"] == "mffu_rapid_eod_25k" and blk.get("blitz") is True
                and str(blk.get("stage") or "eval") == "eval" else ""))
 
 
