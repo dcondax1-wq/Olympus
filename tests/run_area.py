@@ -491,6 +491,7 @@ AREAS["faults"].append("state_safe_rt"); AREAS["nq"].append("state_safe_rt")   #
 AREAS["nq"].append("accounts_screen"); AREAS["pc"].append("accounts_screen")   # day-accounts 2026-11-23: nq/accounts.html (one card per account + 7-day clock) + the new Rapid's keep-alive end to end + cloud K7 fixes
 
 AREAS["nq"].append("chaos_live"); AREAS["pc"].append("chaos_live")   # day-zeroerr 2026-11-24: failure map chaos harness (engine/live_guard + fast_alarm stop_missing)
+AREAS["pc"].append("live_guard_rt")   # red team 2026-11-24: an account the owner disabled never gets MISSED TRADE / NOT READY
 
 if __name__ == "__main__":
     sys.exit(main())

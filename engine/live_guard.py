@@ -174,8 +174,16 @@ def _paper(acct) -> bool:
     return str(sp.get("adapter") or "") == "paper"
 
 
+def _owner_off(acct) -> bool:
+    """The owner switched this account off himself ("enabled": false in the account entry): never a miss, never NOT READY."""
+    sp = getattr(acct, "spec", None) or {}
+    return sp.get("enabled") is False or str(getattr(acct, "problem", None) or "") == "disabled in the config"
+
+
 def lit_followers(bot) -> list:
-    return [a for a in list(getattr(getattr(bot, "accts", None), "accounts", None) or []) if not _paper(a)]
+    # red team 2026-11-24: an account the owner disabled in the config is not a follower (it pushed a MISSED TRADE for every
+    # LIT entry, and NOT READY at 01:55 and 09:00 every day)
+    return [a for a in list(getattr(getattr(bot, "accts", None), "accounts", None) or []) if not _paper(a) and not _owner_off(a)]
 
 
 def atlas_accounts(bot) -> list:
