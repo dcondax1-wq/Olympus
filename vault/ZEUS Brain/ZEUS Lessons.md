@@ -71,8 +71,9 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-71 entries from docs/TESTED_AND_REJECTED.md, newest first.
+72 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
+- **Dead hours per pillar** · [[Zlarior (LIT)]], [[ATLAS]] · [[dead-hours-2026-11-24|Dead hours per pillar]]
 - **LIT high-VIX downtrend** · [[Zlarior (LIT)]] · [[lit-vix-downtrend-2026-11-24|LIT in high-VIX falling markets]]
 - **Walk-forward portfolio of every stored run + 24-hour coverage** · [[Zlarior (LIT)]], [[ATLAS]] · [[portfolio-2026-11-24|24-hour coverage + a walk-forward portfolio of everything built]]
 - **Market structure: expansion / retracement** · [[structure-2026-11-24|Market structure]]

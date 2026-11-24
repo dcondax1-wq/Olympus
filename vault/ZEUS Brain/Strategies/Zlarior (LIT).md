@@ -81,6 +81,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 ## Tested and rejected
 
+> [!failure]- Dead hours per pillar
+> worst 1-3 half-hour window per book picked on 2021-24 only (PF < 0.8, 20+ trades), tested on 2025 / Jan-Jun / Jul-Oct 2026 + placebo. LIT 02:00-03:00 (-$7.6k in 2021-24) loses $10.1k / $5.2k in 2026 if skipped; ATLAS EMA 05:30-07:00 Jul-Oct -$856; MACD 02:30-03:00 Jan-Jun -$201 (p 0.057); S/R 11:00-12:00 +$1,009 / +$268 / +$15 but p 0.25; BLITZ none. 0 pass: the coverage map's bad hours are in-sample.
+> Write-ups: [[dead-hours-2026-11-24|Dead hours per pillar]]
+
 > [!failure]- LIT high-VIX downtrend
 > after 0 real winners in 7 live-window twin trades (NQ 31k -> 25k). V1 longs off / V2 all off when prior VIX > 25 and the 20-day trend is down: both lose in 2021-25 (+$1,265 -> -$646 / -$5,698) and Jan-Jun (-$1.2k / -$3.1k; eval -$3.1k / -$7.5k), 0 trades in Jul-Oct, placebo p 0.65 / 0.83. VIX 25+ is LIT's best band (PF 2.5 / 22.7); the live losers came at VIX 17-21. 7+ trades without a +0.5R winner: 25 runs in 2021-25, 4 in Jan-Jun 2026 (longest 12) = variance. Watch only: VIX 20-25 + downtrend (2021-25 PF 0.01, n28; Jan-Jun PF 5.9, n5).
 > Write-ups: [[lit-vix-downtrend-2026-11-24|LIT in high-VIX falling markets]]
