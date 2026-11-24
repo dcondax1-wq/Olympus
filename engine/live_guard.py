@@ -226,6 +226,8 @@ def missed(bot, now) -> list:
         return out
     if str(((getattr(bot, "cfg", None) or {}).get("adapter")) or "paper") == "paper":
         return out
+    if getattr(bot, "kill", False):
+        return out                                         # the kill switch: no account trades today, on purpose
     lits = lit_signals(bot, now)
     for a in lit_followers(bot):
         added = int(getattr(a, "added_t", 0) or 0)
@@ -253,8 +255,8 @@ def missed(bot, now) -> list:
         took = {int(r["entry_t"]) for r in getattr(a, "ledger", None) or []
                 if r.get("side") in ("buy", "sell") and r.get("entry_t") is not None}
         for t, k in ats:
-            if keys and k not in keys:
-                continue
+            if k not in keys:
+                continue                                   # not one of this account's members (no keys = it trades none)
             if t in took and _routed(a, t) is True:
                 continue
             if str(t) in (getattr(a, "held", None) or {}):

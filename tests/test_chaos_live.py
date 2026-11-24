@@ -384,6 +384,8 @@ def t_safe(tmp):
     except AssertionError as e:
         ok, ms = e, None
     check("no detector touches an order method (missed / armed / fast alarm)", ok is True, ok)
+    check("kill switch engaged: the guard says nothing (no account trades on purpose)",
+          not LG.missed(types.SimpleNamespace(**{**vars(bot), "kill": True}), et_ + 130))
     check("paper bot: the guard says nothing", not LG.missed(types.SimpleNamespace(**{**vars(bot), "cfg": {"adapter": "paper"}}), et_ + 130))
 
 
