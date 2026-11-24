@@ -93,7 +93,7 @@
     "no",
     "later"
    ],
-   "status": "open",
+   "status": "done",
    "source": "research/writeups/stack-one-account-2026-11-16.md",
    "applies": "add the ATLAS $500 lane to the 50K's funded account once MFFU funds it (lead wires, Sim first)",
    "added": "2026-11-16",
@@ -106,7 +106,8 @@
    "risk": "Zlarior 50K no payout in 6 months 9.5% -> 4.2%",
    "recommend": "yes",
    "recommend_why": "More money in both 2026 halves without a real jump in risk.",
-   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)"
+   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)",
+   "closed_note": "Replaced by zlarior-atlas-50k (2026-11-19): same question, newer proof (ATLAS at half size in the eval, full size once funded)."
   },
   {
    "id": "atlas-on-rapid",
@@ -265,29 +266,55 @@
   },
   {
    "id": "zlarior-atlas-50k",
-   "question": "Zlarior's Builder 50K: ATLAS trades it too, from the eval on (one position at a time: the first bot in keeps the account)?",
-   "why": "Two bots on one 50K pass the eval in about a week instead of two and the funded account pays sooner; it beat Zlarior alone in Jan-Jun, Jul-Oct and 2021-25, and with ATLAS's edge set to zero it would not.",
-   "impact": "+$572 a month in a Jul-Oct-like market (runs: +$2 to +$1,067), +$1,060 Jan-Jun-like (+$503 to +$1,601), +$51 2021-25-like (-$122 to +$472); after the extra eval fees.",
-   "impact_usd": 572,
+   "question": "Zlarior's Builder 50K: ATLAS trades it too (one position at a time, first bot in keeps it; ATLAS at half its size until the eval passes, full size once funded)?",
+   "why": "Best of 12 rule sets fixed before testing: it keeps most of the extra money and halves the evals that die in 2 weeks (9% -> 4% Jul-Oct); it beat Zlarior alone in Jan-Jun, Jul-Oct and 2021-25, with MFFU's move to live after payout 5 counted.",
+   "impact": "+$696 a month in a Jul-Oct-like market (+$392 if the live account after payout 5 is worth nothing), +$1,649 Jan-Jun-like (+$466), +$26 2021-25-like; 2022-like -$141; after the extra eval fees.",
+   "impact_usd": 696,
    "options": [
     "yes",
     "no",
     "later"
    ],
    "status": "open",
-   "source": "research/writeups/one-account-combo-2026-11-19.md",
-   "applies": "the lead adds ATLAS (its own live size) to Zlarior's 50K with a one-position first-in rule, then Sim-tests it; a yes replaces the funded-only card atlas-on-50k-funded",
+   "source": "research/writeups/one-account-combo-final-2026-11-19.md",
+   "applies": "the lead builds research/lab/combo_50k.json on Zlarior's 50K: ATLAS added, one position (first in keeps it), ATLAS at 50% of its own size in the eval and 100% once funded; Sim test first; a yes replaces the funded-only card atlas-on-50k-funded",
    "added": "2026-11-19",
-   "usd_month": 572,
+   "usd_month": 696,
    "usd_month_by": {
-    "jan_jun": 1060,
-    "jul_oct": 572,
-    "y2021_25": 51
+    "jan_jun": 1649,
+    "jul_oct": 696,
+    "y2021_25": 26
    },
-   "risk": "evals that fail inside 2 weeks 0.1% -> 2-4% (2026-like), 0.5% -> 34% (2021-25-like); 60-day fails 9-13% unchanged in 2026; in 2021-25 behind Zlarior alone in 65% of runs and in 2022 by $113 a month",
+   "risk": "likely, not sure: 1 Jul-Oct-like stretch in 7 gives $0 or less (no ATLAS size or eval guard fixes that), and without ATLAS's 5 best Jul-Oct days the gain is about $0; evals dying in 2 weeks 0.5% -> 4.4% (Jul-Oct), 7% (2021-25-like); 2022-like $141 a month less than Zlarior alone",
    "recommend": "yes",
-   "recommend_why": "The only combo that beat today's setup in all three periods with the two bots you run; the gain comes from ATLAS's edge (placebo), not from more trades. Sim first.",
-   "valued": "2026-11-19 tools/money/combo_account.py (2,000 whole-day runs x 6 months, same runs for every row; $ a month to you after fees and MFFU's cut, before the 30% tax pot)"
+   "recommend_why": "The pre-registered winner: beats Zlarior alone in Jan-Jun and Jul-Oct by more than the noise, about even in 2021-25, 2-week eval fails under 5%, still ahead with worse fills. Sim first; re-check on Nov-Dec days.",
+   "valued": "2026-11-19 tools/money/combo_account.py final (12 pre-registered rule sets, 2,000 day- and week-block runs x 6 months, MFFU move to live after payout 5; $ a month to you after fees and MFFU's cut, before the 30% tax pot)"
+  },
+  {
+   "id": "atlas-funded-keep-trading",
+   "question": "ATLAS's funded 25K: keep trading 1 micro when the room drops under $100, instead of stopping for good?",
+   "why": "Today the bot gives the funded account up at $100 of room. Small 1-micro trades that still fit can climb back: about 1 in 5 such accounts recover in a 2026-like market.",
+   "impact": "+$3 a month in a Jul-Oct-like market (+$10 Jan-Jun-like, +$4 2021-25-like); chance of losing the account in 6 months 10.5% -> 9.5% (9.8% -> 7.7% Jan-Jun-like); first payout unchanged.",
+   "impact_usd": 3,
+   "options": [
+    "yes",
+    "no",
+    "later"
+   ],
+   "status": "open",
+   "source": "research/writeups/atlas-more-money-2026-11-19.md",
+   "applies": "data/account_b.json \"min_room\": 0 (built key: the funded stuck line $100 -> none; Claude changes it only after your yes)",
+   "added": "2026-11-19",
+   "usd_month": 3,
+   "usd_month_by": {
+    "jan_jun": 10,
+    "jul_oct": 3,
+    "y2021_25": 4
+   },
+   "risk": "None found: a 1-micro trade only goes on when its full stop-out fits the room; a stranded account still holds one of the 2 funded 25K places until you close it",
+   "recommend": "yes",
+   "recommend_why": "It never pays less on any of the 600 test paths; it only keeps alive an account the bot would abandon. Small money, no downside.",
+   "valued": "2026-11-19 tools/atlas_more.py (600 week-block paths from today's account, MFFU Builder 25K funded rules, costs in)"
   }
  ]
 }
