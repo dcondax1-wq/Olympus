@@ -21,7 +21,8 @@ import re
 import sys
 import time
 
-VERSION = 2                  # v2 (day-nqdash3 2026-11-21, the NQ Brain page): px, chk, blk (LIT); lobes, dll, dll_used, lv distances (ATLAS)
+VERSION = 2                  # v2 (+ atr, ax on the LIT row: day-brain-feed 2026-11-24, additive)
+#                              v2 (day-nqdash3 2026-11-21, the NQ Brain page): px, chk, blk (LIT); lobes, dll, dll_used, lv distances (ATLAS)
 MAX_BYTES = 1700
 USD_PT = 2.0                 # MNQ: $2 a point a micro
 ARMED_ST = ("armed", "tapped", "entering")
@@ -161,11 +162,31 @@ def lit(hb: dict, card: dict | None) -> dict:
            "pos": _pos(c.get("position") or br.get("trade")), "day": _usd(_f(c.get("today_pnl"), _f(br.get("day_pnl")))),
            "room": _usd(c.get("room")), "mll": _usd(c.get("mll")), "log": _log(br.get("log")), "at": br.get("at"),
            "px": _f(br.get("price")), "chk": _lit_checks(br), "blk": [_t(x, 60) for x in _l(_d(br.get("guards")).get("blocking"))[:2]]}
+    try:                                         # lead wire 4 (War Room, day-brain-feed): the 5m ATR + [limit, stop, target] of the
+        a = _f(br.get("atr"))                    # setup that is armed / in its trade (None when nothing is armed). Read-only, small.
+        if a is not None:
+            out["atr"] = round(a, 2)
+        ax = _lit_ax(br)
+        if ax:
+            out["ax"] = ax
+    except Exception:  # noqa: BLE001
+        pass
     if not out["armed"] and acc.get("disabled"):
         out["nar"] = "NOT armed: " + str(acc["disabled"])[:90]      # the live gate's own reason first
     elif not out["armed"] and _nar("Zlarior"):
         out["nar"] = _nar("Zlarior")             # the phone says why, not just a flag (small additive field)
     return out
+
+
+def _lit_ax(br) -> list | None:
+    """[limit, stop, target] of the newest armed / tapped / entering setup, else of the open trade's filled setup; None otherwise."""
+    S = [s for s in _l(br.get("setups")) if isinstance(s, dict)]
+    pick = next((s for s in reversed(S) if s.get("status") in ARMED_ST), None)
+    if pick is None and br.get("trade"):
+        pick = next((s for s in reversed(S) if s.get("status") == "filled"), None)
+    pl = _d(_d(pick).get("plan"))
+    ax = [_f(pl.get(k)) for k in ("limit", "stop", "target")]
+    return [None if v is None else round(v, 2) for v in ax] if any(v is not None for v in ax) else None
 
 
 def _gate_armed(acc) -> bool:
@@ -424,7 +445,7 @@ def fit(g: dict, max_bytes: int = MAX_BYTES) -> dict:
         for b in g.get("bots") or []:
             b.pop("what", None)
             b.pop("why", None)
-            for k in ("lobes", "chk", "blk", "lv", "arm"):
+            for k in ("lobes", "chk", "blk", "lv", "arm", "atr"):
                 b.pop(k, None)
             if isinstance(b.get("pos"), dict):
                 b["pos"] = {k: v for k, v in b["pos"].items() if k in ("side", "qty", "risk_usd", "tgt_usd", "now_usd")}
