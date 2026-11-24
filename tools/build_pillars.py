@@ -29,6 +29,9 @@ SRC = {
     "blitz": "research/writeups/blitz-review-2026-11-18.md",
     "of": "research/lab/orderflow.json",
 }
+INSIGHTS = "research/learn/insights.json"        # "What the market taught us" (session day-marketlearn); until it lands: the SAMPLE fixture
+INSIGHTS_FIXTURE = "tools/insights_fixture.json"
+PILLAR_ALIAS = {"lit": "lit", "zlarior": "lit", "atlas": "atlas", "blitz": "blitz", "of": "of", "orderflow": "of", "order_flow": "of", "order flow": "of"}
 STUDY_DAYS = 60                     # engine/tickrec.STUDY_DAYS: the order-flow study runs at 60 NQ tick days
 
 
@@ -148,6 +151,35 @@ def research_pillars() -> dict:
     return out
 
 
+def lessons() -> tuple[dict, bool, str]:
+    """{pillar: [{d, text, src}] newest first, <= 5 each}, sample?, source. Accepts {pillars: {id: [..]}}, {insights: [..]}, [..];
+    a row's words in text / lesson / insight / title, its pillar in pillar / bot / strategy (lit, zlarior, atlas, blitz, orderflow)."""
+    d, src, sample = _load(INSIGHTS), INSIGHTS, False
+    if d is None:
+        d, src, sample = _load(INSIGHTS_FIXTURE) or {}, INSIGHTS_FIXTURE, True
+    rows = []
+    if isinstance(d, dict) and isinstance(d.get("pillars"), dict):
+        for k, v in d["pillars"].items():
+            for r in v if isinstance(v, list) else []:
+                if isinstance(r, dict):
+                    rows.append({**r, "pillar": k})
+                elif isinstance(r, str):
+                    rows.append({"pillar": k, "text": r})
+    else:
+        items = d if isinstance(d, list) else (d.get("insights") or d.get("rows") or d.get("items") or []) if isinstance(d, dict) else []
+        rows = [r for r in items if isinstance(r, dict)]
+    out = {"lit": [], "atlas": [], "blitz": [], "of": []}
+    for r in rows:
+        pid = PILLAR_ALIAS.get(str(r.get("pillar") or r.get("bot") or r.get("strategy") or "").strip().lower())
+        text = str(r.get("text") or r.get("lesson") or r.get("insight") or r.get("title") or "").strip()
+        if pid and text:
+            out[pid].append({"d": str(r.get("date") or r.get("d") or "")[:10], "text": re.sub(r"[<>]", "", text)[:240],
+                             "src": str(r.get("source") or r.get("src") or r.get("evidence") or "")[:120]})
+    for k in out:
+        out[k] = sorted(out[k], key=lambda x: x["d"], reverse=True)[:5]
+    return out, sample, src
+
+
 def build() -> dict:
     R = research_pillars()
     lit = R.get("lit", {}).get("spans") or lit_spans()
@@ -220,7 +252,10 @@ def build() -> dict:
             p["spans_note"], p["readiness"] = r["spans_note"], r["readiness"]
             if r["readiness"] and r["readiness"].get("days_needed"):
                 p["study_days"] = int(_n(r["readiness"]["days_needed"]) or STUDY_DAYS)
-    return {"v": 1, "title": "The Four Pillars", "said": "Orderflow and BLITZ alongside LIT and ATLAS are gonna make us. Those are our 4 pillars.",
+    L, lsample, lsrc = lessons()
+    for p in pillars:
+        p["lessons"] = L.get(p["id"], [])
+    return {"v": 1, "lessons_sample": lsample, "lessons_src": lsrc, "title": "The Four Pillars", "said": "Orderflow and BLITZ alongside LIT and ATLAS are gonna make us. Those are our 4 pillars.",
             "said_when": "2026-11-23 23:00 ET", "pillars": pillars, "sources": SRC}
 
 

@@ -62,7 +62,7 @@ def static():
     r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "build_pillars.py"), "--check"], capture_output=True, text=True, timeout=60)
     check("a. pillars-data.json is fresh (build_pillars --check)", r.returncode == 0, r.stdout + r.stderr)
     nq = read("nq", "index.html")
-    check("a. NQ page: a Pillars link in the header + the strip + its module", 'href="../pillars/"' in nq.split("</header>")[0] and 'id="pillarsStrip"' in nq and "../pillars/strip.js" in nq)
+    check("a. NQ page: a Pillars link in the header + the Four Pillars hero (#pillarsStrip) + its module (pillars/hero.js, day-pillars2)", 'href="../pillars/"' in nq.split("</header>")[0] and 'id="pillarsStrip"' in nq and "../pillars/hero.js" in nq)
     check("a. Strategy Brain: a Pillars link in its header", 'href="../../pillars/"' in read("cities", "mind", "index.html").split("</header>")[0])
     hub = read("cities", "hub.html")
     check("a. Research Hub: a Pillars row on both tabs + hub-pillars.js", 'id="resPil"' in hub and 'id="labPil"' in hub and "hub-pillars.js" in hub)
