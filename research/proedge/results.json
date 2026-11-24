@@ -1,0 +1,1444 @@
+{
+ "design": "research/proedge/DESIGN.md @ 64639bf64",
+ "idea1": {
+  "pick_k": 0.5,
+  "all": {
+   "0.25": {
+    "name": "1 EOD rebalance k=0.25",
+    "spans": {
+     "2021-25": {
+      "trades": 543,
+      "per_week": 2.63,
+      "pf": 0.81,
+      "win_pct": 38.3,
+      "net": -25276,
+      "per_month": -515,
+      "max_dd": -27161
+     },
+     "2026H1": {
+      "trades": 59,
+      "per_week": 2.4,
+      "pf": 1.2,
+      "win_pct": 44.1,
+      "net": 3030,
+      "per_month": 517,
+      "max_dd": -5981
+     },
+     "2026H2": {
+      "trades": 32,
+      "per_week": 1.86,
+      "pf": 0.34,
+      "win_pct": 28.1,
+      "net": -6480,
+      "per_month": -1582,
+      "max_dd": -6546
+     }
+    }
+   },
+   "0.5": {
+    "name": "1 EOD rebalance k=0.5",
+    "spans": {
+     "2021-25": {
+      "trades": 291,
+      "per_week": 1.41,
+      "pf": 0.67,
+      "win_pct": 36.4,
+      "net": -21892,
+      "per_month": -446,
+      "max_dd": -27456
+     },
+     "2026H1": {
+      "trades": 34,
+      "per_week": 1.38,
+      "pf": 1.59,
+      "win_pct": 50.0,
+      "net": 4335,
+      "per_month": 740,
+      "max_dd": -4094
+     },
+     "2026H2": {
+      "trades": 15,
+      "per_week": 0.87,
+      "pf": 0.16,
+      "win_pct": 20.0,
+      "net": -4230,
+      "per_month": -1033,
+      "max_dd": -4230
+     }
+    }
+   },
+   "0.75": {
+    "name": "1 EOD rebalance k=0.75",
+    "spans": {
+     "2021-25": {
+      "trades": 123,
+      "per_week": 0.6,
+      "pf": 0.43,
+      "win_pct": 30.9,
+      "net": -17652,
+      "per_month": -360,
+      "max_dd": -19666
+     },
+     "2026H1": {
+      "trades": 9,
+      "per_week": 0.37,
+      "pf": 1.29,
+      "win_pct": 44.4,
+      "net": 693,
+      "per_month": 118,
+      "max_dd": -2386
+     },
+     "2026H2": {
+      "trades": 5,
+      "per_week": 0.29,
+      "pf": 0.0,
+      "win_pct": 0.0,
+      "net": -2531,
+      "per_month": -618,
+      "max_dd": -2531
+     }
+    }
+   }
+  },
+  "pick": {
+   "name": "1 EOD rebalance k=0.5 [pick]",
+   "spans": {
+    "2021-25": {
+     "trades": 291,
+     "per_week": 1.41,
+     "pf": 0.67,
+     "win_pct": 36.4,
+     "net": -21892,
+     "per_month": -446,
+     "max_dd": -27456,
+     "eval_50K": {
+      "pass": 1.9,
+      "fail": 13.0,
+      "days": 10
+     },
+     "eval_25K": {
+      "pass": 1.9,
+      "fail": 13.1,
+      "days": 10
+     },
+     "eval_Rapid25K": {
+      "pass": 0.0,
+      "fail": 13.1,
+      "days": null
+     },
+     "placebo_p": 0.912
+    },
+    "2026H1": {
+     "trades": 34,
+     "per_week": 1.38,
+     "pf": 1.59,
+     "win_pct": 50.0,
+     "net": 4335,
+     "per_month": 740,
+     "max_dd": -4094,
+     "eval_50K": {
+      "pass": 10.6,
+      "fail": 6.5,
+      "days": 13
+     },
+     "eval_25K": {
+      "pass": 10.6,
+      "fail": 7.3,
+      "days": 13
+     },
+     "eval_Rapid25K": {
+      "pass": 0.0,
+      "fail": 7.3,
+      "days": null
+     },
+     "placebo_p": 0.213
+    },
+    "2026H2": {
+     "trades": 15,
+     "per_week": 0.87,
+     "pf": 0.16,
+     "win_pct": 20.0,
+     "net": -4230,
+     "per_month": -1033,
+     "max_dd": -4230,
+     "eval_50K": {
+      "pass": 0.0,
+      "fail": 9.3,
+      "days": null
+     },
+     "eval_25K": {
+      "pass": 0.0,
+      "fail": 9.3,
+      "days": null
+     },
+     "eval_Rapid25K": {
+      "pass": 0.0,
+      "fail": 9.3,
+      "days": null
+     },
+     "placebo_p": 0.842
+    }
+   }
+  }
+ },
+ "idea2": {
+  "2a GEX<0": {
+   "short_gamma": {
+    "name": "2 2a GEX<0",
+    "spans": {
+     "2021-25": {
+      "trades": 37,
+      "per_week": 0.18,
+      "pf": 1.17,
+      "win_pct": 45.9,
+      "net": 931,
+      "per_month": 19,
+      "max_dd": -1988,
+      "eval_50K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "days": null
+      },
+      "eval_25K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "days": null
+      },
+      "eval_Rapid25K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "days": null
+      },
+      "placebo_p": 0.369
+     },
+     "2026H1": {
+      "trades": 2,
+      "per_week": 0.08,
+      "pf": null,
+      "win_pct": 100.0,
+      "net": 97,
+      "per_month": 17,
+      "max_dd": 0,
+      "eval_50K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "days": null
+      },
+      "eval_25K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "days": null
+      },
+      "eval_Rapid25K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "days": null
+      },
+      "placebo_p": null
+     },
+     "2026H2": {
+      "trades": 0,
+      "per_week": 0.0,
+      "pf": null,
+      "win_pct": null,
+      "net": 0,
+      "per_month": 0,
+      "max_dd": 0,
+      "eval_50K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "days": null
+      },
+      "eval_25K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "days": null
+      },
+      "eval_Rapid25K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "days": null
+      },
+      "placebo_p": null
+     }
+    }
+   },
+   "complement_logonly": {
+    "2021-25": {
+     "trades": 254,
+     "per_week": 1.23,
+     "pf": 0.63,
+     "win_pct": 35.0,
+     "net": -22823,
+     "per_month": -465,
+     "max_dd": -28372
+    },
+    "2026H1": {
+     "trades": 32,
+     "per_week": 1.3,
+     "pf": 1.58,
+     "win_pct": 46.9,
+     "net": 4238,
+     "per_month": 724,
+     "max_dd": -4094
+    },
+    "2026H2": {
+     "trades": 15,
+     "per_week": 0.87,
+     "pf": 0.16,
+     "win_pct": 20.0,
+     "net": -4230,
+     "per_month": -1033,
+     "max_dd": -4230
+    }
+   }
+  },
+  "2b GEX<250d median": {
+   "short_gamma": {
+    "name": "2 2b GEX<250d median",
+    "spans": {
+     "2021-25": {
+      "trades": 120,
+      "per_week": 0.58,
+      "pf": 0.66,
+      "win_pct": 39.2,
+      "net": -9062,
+      "per_month": -185,
+      "max_dd": -13283,
+      "eval_50K": {
+       "pass": 1.9,
+       "fail": 1.8,
+       "days": 10
+      },
+      "eval_25K": {
+       "pass": 1.9,
+       "fail": 1.8,
+       "days": 10
+      },
+      "eval_Rapid25K": {
+       "pass": 0.0,
+       "fail": 1.8,
+       "days": null
+      },
+      "placebo_p": 0.806
+     },
+     "2026H1": {
+      "trades": 23,
+      "per_week": 0.93,
+      "pf": 2.36,
+      "win_pct": 52.2,
+      "net": 5358,
+      "per_month": 915,
+      "max_dd": -1929,
+      "eval_50K": {
+       "pass": 10.6,
+       "fail": 0.0,
+       "days": 13
+      },
+      "eval_25K": {
+       "pass": 10.6,
+       "fail": 0.0,
+       "days": 13
+      },
+      "eval_Rapid25K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "days": null
+      },
+      "placebo_p": 0.095
+     },
+     "2026H2": {
+      "trades": 4,
+      "per_week": 0.23,
+      "pf": 0.0,
+      "win_pct": 0.0,
+      "net": -2163,
+      "per_month": -528,
+      "max_dd": -2163,
+      "eval_50K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "days": null
+      },
+      "eval_25K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "days": null
+      },
+      "eval_Rapid25K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "days": null
+      },
+      "placebo_p": 0.923
+     }
+    }
+   },
+   "complement_logonly": {
+    "2021-25": {
+     "trades": 171,
+     "per_week": 0.83,
+     "pf": 0.68,
+     "win_pct": 34.5,
+     "net": -12830,
+     "per_month": -261,
+     "max_dd": -16980
+    },
+    "2026H1": {
+     "trades": 11,
+     "per_week": 0.45,
+     "pf": 0.7,
+     "win_pct": 45.5,
+     "net": -1023,
+     "per_month": -175,
+     "max_dd": -2173
+    },
+    "2026H2": {
+     "trades": 11,
+     "per_week": 0.64,
+     "pf": 0.28,
+     "win_pct": 27.3,
+     "net": -2067,
+     "per_month": -505,
+     "max_dd": -2067
+    }
+   }
+  },
+  "2c VXN>60d median": {
+   "short_gamma": {
+    "name": "2 2c VXN>60d median",
+    "spans": {
+     "2021-25": {
+      "trades": 130,
+      "per_week": 0.63,
+      "pf": 0.51,
+      "win_pct": 34.6,
+      "net": -15035,
+      "per_month": -306,
+      "max_dd": -15434,
+      "eval_50K": {
+       "pass": 0.0,
+       "fail": 4.9,
+       "days": null
+      },
+      "eval_25K": {
+       "pass": 0.0,
+       "fail": 4.9,
+       "days": null
+      },
+      "eval_Rapid25K": {
+       "pass": 0.0,
+       "fail": 4.9,
+       "days": null
+      },
+      "placebo_p": 0.93
+     },
+     "2026H1": {
+      "trades": 18,
+      "per_week": 0.73,
+      "pf": 2.04,
+      "win_pct": 50.0,
+      "net": 3553,
+      "per_month": 607,
+      "max_dd": -1439,
+      "eval_50K": {
+       "pass": 10.6,
+       "fail": 0.0,
+       "days": 13
+      },
+      "eval_25K": {
+       "pass": 10.6,
+       "fail": 0.0,
+       "days": 13
+      },
+      "eval_Rapid25K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "days": null
+      },
+      "placebo_p": 0.173
+     },
+     "2026H2": {
+      "trades": 4,
+      "per_week": 0.23,
+      "pf": 0.0,
+      "win_pct": 0.0,
+      "net": -2059,
+      "per_month": -503,
+      "max_dd": -2059,
+      "eval_50K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "days": null
+      },
+      "eval_25K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "days": null
+      },
+      "eval_Rapid25K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "days": null
+      },
+      "placebo_p": 0.89
+     }
+    }
+   },
+   "complement_logonly": {
+    "2021-25": {
+     "trades": 161,
+     "per_week": 0.78,
+     "pf": 0.81,
+     "win_pct": 37.9,
+     "net": -6858,
+     "per_month": -140,
+     "max_dd": -14652
+    },
+    "2026H1": {
+     "trades": 16,
+     "per_week": 0.65,
+     "pf": 1.2,
+     "win_pct": 50.0,
+     "net": 782,
+     "per_month": 133,
+     "max_dd": -2706
+    },
+    "2026H2": {
+     "trades": 11,
+     "per_week": 0.64,
+     "pf": 0.27,
+     "win_pct": 27.3,
+     "net": -2171,
+     "per_month": -530,
+     "max_dd": -2171
+    }
+   }
+  }
+ },
+ "idea3": {
+  "corr_ON_vs_rest_of_day": {
+   "2021-25": -0.044,
+   "2026H1": 0.09,
+   "2026H2": 0.101
+  },
+  "pick": {
+   "name": "3 overnight fade k=0.75 [pick]",
+   "spans": {
+    "2021-25": {
+     "trades": 38,
+     "per_week": 0.18,
+     "pf": 0.63,
+     "win_pct": 15.8,
+     "net": -7015,
+     "per_month": -143,
+     "max_dd": -7387,
+     "eval_50K": {
+      "pass": 3.4,
+      "fail": 1.0,
+      "days": 9
+     },
+     "eval_25K": {
+      "pass": 3.4,
+      "fail": 1.0,
+      "days": 9
+     },
+     "eval_Rapid25K": {
+      "pass": 0.0,
+      "fail": 1.0,
+      "days": null
+     },
+     "placebo_p": 0.781
+    },
+    "2026H1": {
+     "trades": 5,
+     "per_week": 0.2,
+     "pf": 0.11,
+     "win_pct": 20.0,
+     "net": -2887,
+     "per_month": -493,
+     "max_dd": -2887,
+     "eval_50K": {
+      "pass": 0.0,
+      "fail": 4.9,
+      "days": null
+     },
+     "eval_25K": {
+      "pass": 0.0,
+      "fail": 4.9,
+      "days": null
+     },
+     "eval_Rapid25K": {
+      "pass": 0.0,
+      "fail": 4.9,
+      "days": null
+     },
+     "placebo_p": 1.0
+    },
+    "2026H2": {
+     "trades": 6,
+     "per_week": 0.35,
+     "pf": 0.56,
+     "win_pct": 33.3,
+     "net": -961,
+     "per_month": -235,
+     "max_dd": -1898,
+     "eval_50K": {
+      "pass": 0.0,
+      "fail": 0.0,
+      "days": null
+     },
+     "eval_25K": {
+      "pass": 0.0,
+      "fail": 0.0,
+      "days": null
+     },
+     "eval_Rapid25K": {
+      "pass": 0.0,
+      "fail": 0.0,
+      "days": null
+     },
+     "placebo_p": 0.61
+    }
+   }
+  },
+  "all": {
+   "0.25/follow": {
+    "name": "3 overnight follow k=0.25",
+    "spans": {
+     "2021-25": {
+      "trades": 332,
+      "per_week": 1.61,
+      "pf": 0.84,
+      "win_pct": 21.7,
+      "net": -22089,
+      "per_month": -450,
+      "max_dd": -35153
+     },
+     "2026H1": {
+      "trades": 30,
+      "per_week": 1.22,
+      "pf": 0.15,
+      "win_pct": 16.7,
+      "net": -12468,
+      "per_month": -2129,
+      "max_dd": -12468
+     },
+     "2026H2": {
+      "trades": 23,
+      "per_week": 1.34,
+      "pf": 1.18,
+      "win_pct": 8.7,
+      "net": 1821,
+      "per_month": 445,
+      "max_dd": -10193
+     }
+    }
+   },
+   "0.25/fade": {
+    "name": "3 overnight fade k=0.25",
+    "spans": {
+     "2021-25": {
+      "trades": 342,
+      "per_week": 1.66,
+      "pf": 0.61,
+      "win_pct": 22.2,
+      "net": -59190,
+      "per_month": -1206,
+      "max_dd": -62777
+     },
+     "2026H1": {
+      "trades": 38,
+      "per_week": 1.54,
+      "pf": 0.19,
+      "win_pct": 13.2,
+      "net": -15327,
+      "per_month": -2617,
+      "max_dd": -16036
+     },
+     "2026H2": {
+      "trades": 24,
+      "per_week": 1.4,
+      "pf": 0.97,
+      "win_pct": 20.8,
+      "net": -353,
+      "per_month": -86,
+      "max_dd": -5672
+     }
+    }
+   },
+   "0.5/follow": {
+    "name": "3 overnight follow k=0.5",
+    "spans": {
+     "2021-25": {
+      "trades": 119,
+      "per_week": 0.58,
+      "pf": 0.73,
+      "win_pct": 22.7,
+      "net": -12530,
+      "per_month": -255,
+      "max_dd": -18241
+     },
+     "2026H1": {
+      "trades": 15,
+      "per_week": 0.61,
+      "pf": 0.09,
+      "win_pct": 13.3,
+      "net": -7187,
+      "per_month": -1227,
+      "max_dd": -7187
+     },
+     "2026H2": {
+      "trades": 11,
+      "per_week": 0.64,
+      "pf": 2.75,
+      "win_pct": 18.2,
+      "net": 7743,
+      "per_month": 1891,
+      "max_dd": -4272
+     }
+    }
+   },
+   "0.5/fade": {
+    "name": "3 overnight fade k=0.5",
+    "spans": {
+     "2021-25": {
+      "trades": 126,
+      "per_week": 0.61,
+      "pf": 0.76,
+      "win_pct": 19.8,
+      "net": -13913,
+      "per_month": -283,
+      "max_dd": -17677
+     },
+     "2026H1": {
+      "trades": 14,
+      "per_week": 0.57,
+      "pf": 0.16,
+      "win_pct": 14.3,
+      "net": -5791,
+      "per_month": -989,
+      "max_dd": -6500
+     },
+     "2026H2": {
+      "trades": 13,
+      "per_week": 0.76,
+      "pf": 0.29,
+      "win_pct": 23.1,
+      "net": -4009,
+      "per_month": -979,
+      "max_dd": -4946
+     }
+    }
+   },
+   "0.75/follow": {
+    "name": "3 overnight follow k=0.75",
+    "spans": {
+     "2021-25": {
+      "trades": 39,
+      "per_week": 0.19,
+      "pf": 0.55,
+      "win_pct": 28.2,
+      "net": -6218,
+      "per_month": -127,
+      "max_dd": -6438
+     },
+     "2026H1": {
+      "trades": 4,
+      "per_week": 0.16,
+      "pf": 0.0,
+      "win_pct": 0.0,
+      "net": -3320,
+      "per_month": -567,
+      "max_dd": -3320
+     },
+     "2026H2": {
+      "trades": 5,
+      "per_week": 0.29,
+      "pf": 0.07,
+      "win_pct": 20.0,
+      "net": -2169,
+      "per_month": -530,
+      "max_dd": -2169
+     }
+    }
+   },
+   "0.75/fade": {
+    "name": "3 overnight fade k=0.75",
+    "spans": {
+     "2021-25": {
+      "trades": 38,
+      "per_week": 0.18,
+      "pf": 0.63,
+      "win_pct": 15.8,
+      "net": -7015,
+      "per_month": -143,
+      "max_dd": -7387
+     },
+     "2026H1": {
+      "trades": 5,
+      "per_week": 0.2,
+      "pf": 0.11,
+      "win_pct": 20.0,
+      "net": -2887,
+      "per_month": -493,
+      "max_dd": -2887
+     },
+     "2026H2": {
+      "trades": 6,
+      "per_week": 0.35,
+      "pf": 0.56,
+      "win_pct": 33.3,
+      "net": -961,
+      "per_month": -235,
+      "max_dd": -1898
+     }
+    }
+   }
+  }
+ },
+ "idea4": {
+  "pick_x": 2.0,
+  "rows": {
+   "LIT as is": {
+    "name": "4 LIT baseline",
+    "spans": {
+     "2021-25": {
+      "trades": 511,
+      "per_week": 2.44,
+      "pf": 1.01,
+      "win_pct": 53.8,
+      "net": 1265,
+      "per_month": 25,
+      "max_dd": -19426,
+      "eval_50K": {
+       "pass": 16.6,
+       "fail": 22.4,
+       "days": 12
+      },
+      "eval_25K": {
+       "pass": 16.6,
+       "fail": 22.6,
+       "days": 12
+      },
+      "eval_Rapid25K": {
+       "pass": 0.0,
+       "fail": 22.6,
+       "days": null
+      }
+     },
+     "2026H1": {
+      "trades": 80,
+      "per_week": 3.15,
+      "pf": 4.98,
+      "win_pct": 58.8,
+      "net": 33901,
+      "per_month": 5606,
+      "max_dd": -2196,
+      "eval_50K": {
+       "pass": 68.5,
+       "fail": 0.8,
+       "days": 10
+      },
+      "eval_25K": {
+       "pass": 68.5,
+       "fail": 0.8,
+       "days": 10
+      },
+      "eval_Rapid25K": {
+       "pass": 0.0,
+       "fail": 0.8,
+       "days": null
+      }
+     },
+     "2026H2": {
+      "trades": 40,
+      "per_week": 2.63,
+      "pf": 2.91,
+      "win_pct": 50.0,
+      "net": 9919,
+      "per_month": 2741,
+      "max_dd": -1396,
+      "eval_50K": {
+       "pass": 48.7,
+       "fail": 0.0,
+       "days": 11
+      },
+      "eval_25K": {
+       "pass": 48.7,
+       "fail": 0.0,
+       "days": 11
+      },
+      "eval_Rapid25K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "days": null
+      }
+     }
+    }
+   },
+   "1.5": {
+    "name": "4 LIT skip opp-15m-body>=1.5ATR",
+    "spans": {
+     "2021-25": {
+      "trades": 476,
+      "per_week": 2.28,
+      "pf": 1.02,
+      "win_pct": 54.2,
+      "net": 2124,
+      "per_month": 43,
+      "max_dd": -17301,
+      "eval_50K": {
+       "pass": 16.8,
+       "fail": 19.6,
+       "days": 12
+      },
+      "eval_25K": {
+       "pass": 16.8,
+       "fail": 19.6,
+       "days": 12
+      },
+      "eval_Rapid25K": {
+       "pass": 0.0,
+       "fail": 19.6,
+       "days": null
+      },
+      "skipped": 35,
+      "skipped_net": -859,
+      "skip_placebo_p": 0.44,
+      "delta_per_month": 18
+     },
+     "2026H1": {
+      "trades": 72,
+      "per_week": 2.83,
+      "pf": 4.29,
+      "win_pct": 58.3,
+      "net": 26425,
+      "per_month": 4370,
+      "max_dd": -2353,
+      "eval_50K": {
+       "pass": 54.3,
+       "fail": 2.4,
+       "days": 10
+      },
+      "eval_25K": {
+       "pass": 54.3,
+       "fail": 2.4,
+       "days": 10
+      },
+      "eval_Rapid25K": {
+       "pass": 0.0,
+       "fail": 2.4,
+       "days": null
+      },
+      "skipped": 8,
+      "skipped_net": 7476,
+      "skip_placebo_p": 0.872,
+      "delta_per_month": -1236
+     },
+     "2026H2": {
+      "trades": 37,
+      "per_week": 2.43,
+      "pf": 2.8,
+      "win_pct": 48.6,
+      "net": 8511,
+      "per_month": 2352,
+      "max_dd": -1396,
+      "eval_50K": {
+       "pass": 36.8,
+       "fail": 0.0,
+       "days": 10
+      },
+      "eval_25K": {
+       "pass": 36.8,
+       "fail": 0.0,
+       "days": 10
+      },
+      "eval_Rapid25K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "days": null
+      },
+      "skipped": 3,
+      "skipped_net": 1408,
+      "skip_placebo_p": 0.743,
+      "delta_per_month": -389
+     }
+    }
+   },
+   "2.0": {
+    "name": "4 LIT skip opp-15m-body>=2.0ATR",
+    "spans": {
+     "2021-25": {
+      "trades": 497,
+      "per_week": 2.38,
+      "pf": 0.98,
+      "win_pct": 53.9,
+      "net": -2236,
+      "per_month": -45,
+      "max_dd": -20966,
+      "eval_50K": {
+       "pass": 16.2,
+       "fail": 21.3,
+       "days": 12
+      },
+      "eval_25K": {
+       "pass": 16.2,
+       "fail": 21.5,
+       "days": 12
+      },
+      "eval_Rapid25K": {
+       "pass": 0.0,
+       "fail": 21.5,
+       "days": null
+      },
+      "skipped": 14,
+      "skipped_net": 3501,
+      "skip_placebo_p": 0.884,
+      "delta_per_month": -70
+     },
+     "2026H1": {
+      "trades": 79,
+      "per_week": 3.11,
+      "pf": 5.07,
+      "win_pct": 59.5,
+      "net": 34057,
+      "per_month": 5631,
+      "max_dd": -2196,
+      "eval_50K": {
+       "pass": 68.5,
+       "fail": 0.8,
+       "days": 10
+      },
+      "eval_25K": {
+       "pass": 68.5,
+       "fail": 0.8,
+       "days": 10
+      },
+      "eval_Rapid25K": {
+       "pass": 0.0,
+       "fail": 0.8,
+       "days": null
+      },
+      "skipped": 1,
+      "skipped_net": -156,
+      "skip_placebo_p": 0.265,
+      "delta_per_month": 25
+     },
+     "2026H2": {
+      "trades": 40,
+      "per_week": 2.63,
+      "pf": 2.91,
+      "win_pct": 50.0,
+      "net": 9919,
+      "per_month": 2741,
+      "max_dd": -1396,
+      "eval_50K": {
+       "pass": 48.7,
+       "fail": 0.0,
+       "days": 11
+      },
+      "eval_25K": {
+       "pass": 48.7,
+       "fail": 0.0,
+       "days": 11
+      },
+      "eval_Rapid25K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "days": null
+      },
+      "skipped": 0,
+      "skipped_net": 0,
+      "skip_placebo_p": 1.0,
+      "delta_per_month": 0
+     }
+    }
+   },
+   "2.5": {
+    "name": "4 LIT skip opp-15m-body>=2.5ATR",
+    "spans": {
+     "2021-25": {
+      "trades": 505,
+      "per_week": 2.42,
+      "pf": 0.96,
+      "win_pct": 53.7,
+      "net": -3765,
+      "per_month": -76,
+      "max_dd": -21427,
+      "eval_50K": {
+       "pass": 16.2,
+       "fail": 22.2,
+       "days": 12
+      },
+      "eval_25K": {
+       "pass": 16.2,
+       "fail": 22.4,
+       "days": 12
+      },
+      "eval_Rapid25K": {
+       "pass": 0.0,
+       "fail": 22.4,
+       "days": null
+      },
+      "skipped": 6,
+      "skipped_net": 5030,
+      "skip_placebo_p": 0.978,
+      "delta_per_month": -101
+     },
+     "2026H1": {
+      "trades": 80,
+      "per_week": 3.15,
+      "pf": 4.98,
+      "win_pct": 58.8,
+      "net": 33901,
+      "per_month": 5606,
+      "max_dd": -2196,
+      "eval_50K": {
+       "pass": 68.5,
+       "fail": 0.8,
+       "days": 10
+      },
+      "eval_25K": {
+       "pass": 68.5,
+       "fail": 0.8,
+       "days": 10
+      },
+      "eval_Rapid25K": {
+       "pass": 0.0,
+       "fail": 0.8,
+       "days": null
+      },
+      "skipped": 0,
+      "skipped_net": 0,
+      "skip_placebo_p": 1.0,
+      "delta_per_month": 0
+     },
+     "2026H2": {
+      "trades": 40,
+      "per_week": 2.63,
+      "pf": 2.91,
+      "win_pct": 50.0,
+      "net": 9919,
+      "per_month": 2741,
+      "max_dd": -1396,
+      "eval_50K": {
+       "pass": 48.7,
+       "fail": 0.0,
+       "days": 11
+      },
+      "eval_25K": {
+       "pass": 48.7,
+       "fail": 0.0,
+       "days": 11
+      },
+      "eval_Rapid25K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "days": null
+      },
+      "skipped": 0,
+      "skipped_net": 0,
+      "skip_placebo_p": 1.0,
+      "delta_per_month": 0
+     }
+    }
+   }
+  },
+  "feature_coverage": 631,
+  "n_trades": 631
+ },
+ "idea5": {
+  "pick_W": 96,
+  "rows": {
+   "48": {
+    "name": "5 NQ/ES z>2.5 W=48",
+    "spans": {
+     "2025-04+": {
+      "trades": 270,
+      "per_week": 7.58,
+      "pf": 0.63,
+      "win_pct": 42.6,
+      "net": -52520,
+      "per_month": -6196,
+      "max_dd": -55111,
+      "eval_50K": {
+       "pass": 11.8,
+       "fail": 88.2,
+       "days": 4
+      },
+      "eval_25K": {
+       "pass": 11.8,
+       "fail": 88.2,
+       "days": 4
+      },
+      "eval_Rapid25K": {
+       "pass": 1.1,
+       "fail": 98.9,
+       "days": 6
+      },
+      "placebo_p": 0.692,
+      "gross_net": -8279
+     },
+     "2026H1": {
+      "trades": 169,
+      "per_week": 6.87,
+      "pf": 0.67,
+      "win_pct": 45.0,
+      "net": -34654,
+      "per_month": -5917,
+      "max_dd": -36293,
+      "eval_50K": {
+       "pass": 25.2,
+       "fail": 74.8,
+       "days": 4
+      },
+      "eval_25K": {
+       "pass": 25.2,
+       "fail": 74.8,
+       "days": 4
+      },
+      "eval_Rapid25K": {
+       "pass": 2.4,
+       "fail": 93.5,
+       "days": 19
+      },
+      "placebo_p": 0.801,
+      "gross_net": -14856
+     },
+     "2026H2": {
+      "trades": 102,
+      "per_week": 5.93,
+      "pf": 1.07,
+      "win_pct": 51.0,
+      "net": 2694,
+      "per_month": 658,
+      "max_dd": -10675,
+      "eval_50K": {
+       "pass": 43.0,
+       "fail": 57.0,
+       "days": 6
+      },
+      "eval_25K": {
+       "pass": 43.0,
+       "fail": 57.0,
+       "days": 6
+      },
+      "eval_Rapid25K": {
+       "pass": 14.0,
+       "fail": 76.7,
+       "days": 14
+      },
+      "placebo_p": 0.116,
+      "gross_net": 11053
+     }
+    }
+   },
+   "96": {
+    "name": "5 NQ/ES z>2.5 W=96",
+    "spans": {
+     "2025-04+": {
+      "trades": 283,
+      "per_week": 7.95,
+      "pf": 0.65,
+      "win_pct": 38.5,
+      "net": -45960,
+      "per_month": -5422,
+      "max_dd": -47990,
+      "eval_50K": {
+       "pass": 19.1,
+       "fail": 80.3,
+       "days": 5
+      },
+      "eval_25K": {
+       "pass": 19.1,
+       "fail": 80.3,
+       "days": 5
+      },
+      "eval_Rapid25K": {
+       "pass": 0.6,
+       "fail": 93.8,
+       "days": 15
+      },
+      "placebo_p": 0.551,
+      "gross_net": -1546
+     },
+     "2026H1": {
+      "trades": 174,
+      "per_week": 7.07,
+      "pf": 0.79,
+      "win_pct": 43.7,
+      "net": -15958,
+      "per_month": -2725,
+      "max_dd": -17288,
+      "eval_50K": {
+       "pass": 11.4,
+       "fail": 88.6,
+       "days": 4
+      },
+      "eval_25K": {
+       "pass": 11.4,
+       "fail": 88.6,
+       "days": 4
+      },
+      "eval_Rapid25K": {
+       "pass": 0.0,
+       "fail": 97.6,
+       "days": null
+      },
+      "placebo_p": 0.479,
+      "gross_net": 878
+     },
+     "2026H2": {
+      "trades": 92,
+      "per_week": 5.35,
+      "pf": 0.92,
+      "win_pct": 44.6,
+      "net": -2147,
+      "per_month": -524,
+      "max_dd": -8348,
+      "eval_50K": {
+       "pass": 15.1,
+       "fail": 84.9,
+       "days": 8
+      },
+      "eval_25K": {
+       "pass": 15.1,
+       "fail": 84.9,
+       "days": 8
+      },
+      "eval_Rapid25K": {
+       "pass": 8.1,
+       "fail": 88.4,
+       "days": 8
+      },
+      "placebo_p": 0.319,
+      "gross_net": 3051
+     }
+    }
+   }
+  }
+ },
+ "variants_logged": [
+  {
+   "name": "1 EOD rebalance k=0.25",
+   "2021-25": -25276,
+   "2026H1": 3030,
+   "2026H2": -6480
+  },
+  {
+   "name": "1 EOD rebalance k=0.5",
+   "2021-25": -21892,
+   "2026H1": 4335,
+   "2026H2": -4230
+  },
+  {
+   "name": "1 EOD rebalance k=0.75",
+   "2021-25": -17652,
+   "2026H1": 693,
+   "2026H2": -2531
+  },
+  {
+   "name": "1 EOD rebalance k=0.5 [pick]",
+   "2021-25": -21892,
+   "2026H1": 4335,
+   "2026H2": -4230
+  },
+  {
+   "name": "2 2a GEX<0",
+   "2021-25": 931,
+   "2026H1": 97,
+   "2026H2": 0
+  },
+  {
+   "name": "2 2b GEX<250d median",
+   "2021-25": -9062,
+   "2026H1": 5358,
+   "2026H2": -2163
+  },
+  {
+   "name": "2 2c VXN>60d median",
+   "2021-25": -15035,
+   "2026H1": 3553,
+   "2026H2": -2059
+  },
+  {
+   "name": "3 overnight follow k=0.25",
+   "2021-25": -22089,
+   "2026H1": -12468,
+   "2026H2": 1821
+  },
+  {
+   "name": "3 overnight fade k=0.25",
+   "2021-25": -59190,
+   "2026H1": -15327,
+   "2026H2": -353
+  },
+  {
+   "name": "3 overnight follow k=0.5",
+   "2021-25": -12530,
+   "2026H1": -7187,
+   "2026H2": 7743
+  },
+  {
+   "name": "3 overnight fade k=0.5",
+   "2021-25": -13913,
+   "2026H1": -5791,
+   "2026H2": -4009
+  },
+  {
+   "name": "3 overnight follow k=0.75",
+   "2021-25": -6218,
+   "2026H1": -3320,
+   "2026H2": -2169
+  },
+  {
+   "name": "3 overnight fade k=0.75",
+   "2021-25": -7015,
+   "2026H1": -2887,
+   "2026H2": -961
+  },
+  {
+   "name": "3 overnight fade k=0.75 [pick]",
+   "2021-25": -7015,
+   "2026H1": -2887,
+   "2026H2": -961
+  },
+  {
+   "name": "4 LIT baseline",
+   "2021-25": 1265,
+   "2026H1": 33901,
+   "2026H2": 9919
+  },
+  {
+   "name": "4 LIT skip opp-15m-body>=1.5ATR",
+   "2021-25": 2124,
+   "2026H1": 26425,
+   "2026H2": 8511
+  },
+  {
+   "name": "4 LIT skip opp-15m-body>=2.0ATR",
+   "2021-25": -2236,
+   "2026H1": 34057,
+   "2026H2": 9919
+  },
+  {
+   "name": "4 LIT skip opp-15m-body>=2.5ATR",
+   "2021-25": -3765,
+   "2026H1": 33901,
+   "2026H2": 9919
+  },
+  {
+   "name": "5 NQ/ES z>2.5 W=48",
+   "2025-04+": -52520,
+   "2026H1": -34654,
+   "2026H2": 2694
+  },
+  {
+   "name": "5 NQ/ES z>2.5 W=96",
+   "2025-04+": -45960,
+   "2026H1": -15958,
+   "2026H2": -2147
+  }
+ ]
+}
