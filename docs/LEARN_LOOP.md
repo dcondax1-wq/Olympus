@@ -52,6 +52,23 @@ Files: `engine/zeus_learn.py` (PC), `tools/learn_night.py` (cloud), `logs/learn/
 bars around 04:45-05:45 and 15:45-17:15 ET when NinjaTrader has those charts (-> `data/metals/` in the cloud), next to NQ / ES.
 Tests: `python -X utf8 -m tests.test_learn_night`.
 
+## BLITZ learns from its mistakes (day-blitz150 2026-11-24): research + reporting only
+
+Owner: BLITZ "shouldn't be set and tuned, it should learn from mistakes". `research/blitz/learn.py` (its doc has the exact rules),
+run in the cloud by `tools/learn_night.py` step `blitz`, after the PC's days are pulled:
+- **Every night:** each new closed BLITZ trade (paper on account C, sim / live on the Rapid) gets one row in
+  `research/blitz/lessons.jsonl` with its reasons: stopped_at_sweep, wide_stop, chased, news, overlap_lit, after_loss, late_day,
+  best_day_cap, other. Winners get the same tags, so a tag's NET R is honest.
+- **Sunday (ET), once a week:** the tags are ranked by net R (last 8 weeks); the top 1-2 that have a testable entry rule
+  (no_news, lit_gap30, one_loss_day, no_late, no_wide) are re-tested: the 3 spans on the Rapid EOD 25K eval book (both 2026
+  halves +$25 a month with fail at most +0.5 pt, 2021-25 not worse than -$25 / +1 pt) AND fresh paper / live trades closed after
+  the fix was first picked (>= 30, the removed trades lost R, bootstrap p <= 0.05 / k with k = every BLITZ fix test ever run,
+  `research/blitz/tests.jsonl`).
+- **Only when a fix passes both:** one Decide card "BLITZ learned X: +$Y/mo, fails Z%" and one phone line. A yes = Claude builds
+  it as a normal BLITZ change with proof. Nothing live ever changes by itself (the live files are hashed before / after).
+- `python -X utf8 research/blitz/learn.py status` shows the lessons by tag, the candidates and the test count.
+  Tests: `python -X utf8 -m tests.test_blitz_learn`.
+
 ## Commands (PC or cloud, from the repo folder)
 - `python -X utf8 -m engine.learn_loop status`: the queue and each verdict.
 - `python -X utf8 -m engine.learn_loop run --force`: one night now (still skips while a trade is open). `--max 8` runs the whole queue.
