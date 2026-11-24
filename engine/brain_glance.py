@@ -428,6 +428,11 @@ def size(o) -> int:
 
 def fit(g: dict, max_bytes: int = MAX_BYTES) -> dict:
     """Cut the least needed parts first: log lines, then levels, then the trigger texts, until it fits."""
+    if size(g) > max_bytes:              # red team 2026-11-24: the War Room's additive atr / ax go FIRST (the Brain page's ATLAS levels
+        for b in g.get("bots") or []:    # and logs were cut to make room for them: test_brain 51/52)
+            b.pop("ax", None)
+            b.pop("atr", None)
+        g["trimmed"] = True
     steps = [("log", 2), ("lv", 4), ("log", 1), ("lv", 2), ("arm", 1), ("blk", 1), ("log", 0), ("lv", 0), ("blk", 0)]
     for key, n in steps:
         if size(g) <= max_bytes:
