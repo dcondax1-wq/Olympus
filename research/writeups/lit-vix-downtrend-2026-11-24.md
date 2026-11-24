@@ -34,7 +34,7 @@ Trades: the live LIT rules 2021-10 .. 2026-10-16 (run lit_live, 631) + the twin 
 
 One thing to WATCH, not a rule: **VIX 20-25 with a 20-day downtrend** is LIT's weakest corner in 2021-25 (28 trades, PF 0.01,
 -$6,208), but in Jan-Jun 2026 it made +$2,884 (5 trades, PF 5.9) and Jul-Oct has 1 trade. It flips sign between spans, so the
-CLAUDE.md bar says no. Also: longs in a 20-day downtrend lost in 2021-25 (PF 0.55) and Jul-Oct (PF 1.5, +$494, n6) but won in Jan-Jun.
+CLAUDE.md bar says no. Also: longs in a 20-day downtrend lost in 2021-25 (PF 0.55) but made money in both 2026 halves (Jan-Jun PF 1.8, Jul-Oct PF 1.5, n 5 / 6).
 Already tested nearby: the setup-grade warnings (daily trend vs SMA20 against, VIX >= 25 or +20%) in TESTED_AND_REJECTED.
 
 ## ATLAS funded at 1 micro on Nov 20 (livegap cause #2): BY DESIGN
