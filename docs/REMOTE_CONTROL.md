@@ -26,6 +26,17 @@ before). GitHub-free mode (`engine/nogithub.py`) turns the remote off only when 
 A command expires **15 minutes** after you made it. If the PC was off, the old command is ignored (you get a notice
 saying so) and nothing happens later by surprise.
 
+## One tap: the PC Control page (day-zerotouch2, 2026-11-24)
+
+`/pc/control.html` on the phone site: a live checklist (PC on, NinjaTrader connected, each account armed + comes back by
+itself, keep-alive, update installed / waiting with the version, auto-park, tick recorder days, BLITZ, clock), the four
+pillars (LIT, ATLAS, BLITZ, Order Flow) and five big buttons: **Status, Update now, Restart, Pause entries today, Resume**.
+A tap opens GitHub's NEW-file page with the command already filled in (`control/inbox/<id>.json`, branch `control`): tap
+**Commit changes** and the PC runs it within ~60 s (`engine/remote_ctl.read_inbox`; same rules: a fresh id, 15 minutes,
+each id once; an inbox file older than 1 hour is skipped silently, only the newest 12 are read). The top card says the ONE
+thing, if any, that needs you AT the PC (`engine/pc_checklist.need`). Arming real money is never a button: START at the PC.
+The page shares the backup-repo box with the Remote page (saved on the phone only).
+
 ## The commands
 
 | cmd | what the PC does | when |
@@ -34,7 +45,7 @@ saying so) and nothing happens later by surprise.
 | `stop` | stop the bot once it is flat (an open trade or an armed LIT setup finishes first). `"now": true` closes the position first, then stops. | any time |
 | `flatten` | close the open position now. The bot keeps running and trades again from the next trading day (no new entry today). | any time |
 | `status` | push a fresh heartbeat and send a phone notice: running / stopped, account, position, LIT stage, feed age, version. | any time |
-| `update` | **Update now**: the auto-update now (`engine/autoupdate.py`: the update source only = the backup's `pc` branch, fast-forward only, self-tests, roll back on failure), then a restart when it updated. Does not need the daily auto-update to be switched on. A real-account bot without auto-resume stays stopped after the restart until you start it. | flat, nothing pending, outside 01:50-16:00 ET on a weekday, server run by `run_bot.ps1` |
+| `update` | **Update now** (a hand edit of a file the update rewrites is parked with git stash first, engine/self_heal.park_local): the auto-update now (`engine/autoupdate.py`: the update source only = the backup's `pc` branch, fast-forward only, self-tests, roll back on failure), then a restart when it updated. Does not need the daily auto-update to be switched on. A real-account bot without auto-resume stays stopped after the restart until you start it. | flat, nothing pending, outside 01:50-16:00 ET on a weekday, server run by `run_bot.ps1` |
 | `restart` | restart the server (exit 75; `run_bot.ps1` starts it again). The eval comes back only with auto-resume on; a Sim bot resumes by itself. | flat, nothing pending, server run by `run_bot.ps1`; while the bot runs also outside 01:50-16:00 ET on a weekday |
 | `start` | start on a **Sim** account (`"account": "Sim101"`) or paper. A real account is always refused. | bot stopped |
 | `pause` | no NEW entries until `"until"`: `"HH:MM"` (New York), `"tomorrow"` (00:00 ET tonight) or `"YYYY-MM-DD"` (max 14 days). Open trades keep stop / target. | always |

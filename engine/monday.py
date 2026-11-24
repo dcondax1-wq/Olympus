@@ -108,6 +108,46 @@ class Real:
         from . import recovery
         return recovery.lines()
 
+    def nt_boot(self) -> tuple:
+        """(Startup shortcut present True/False/None, 'Connect on startup' True/False/None, Windows auto-sign-in True/False/None)."""
+        sc = al = None
+        try:
+            sys.path.insert(0, os.path.join(ROOT, "tools"))
+            import pc_always_on as PA
+            sc = bool(PA.startup_shortcut_present()) if os.name == "nt" else None
+            if os.name == "nt":
+                v = PA.reg_value(r"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", "AutoAdminLogon")
+                al = None if v is None else str(v).strip() == "1"
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            from . import pc_checklist, self_heal
+            ac = pc_checklist.nt_autoconnect(self_heal.nt_folder())
+        except Exception:  # noqa: BLE001
+            ac = None
+        return sc, ac, al
+
+
+def boot_lines(sc, ac, al) -> list:
+    """MONDAY_SETUP's 'boot to trading' lines (day-zerotouch2): NinjaTrader opens at sign-in + connects by itself; Windows
+    auto-sign-in is the owner's own choice (documented, never switched on by a script)."""
+    out = []
+    if sc is False:
+        out.append("[FIX] NinjaTrader does not open at sign-in yet: START BOT makes the Startup shortcut (run MONDAY_SETUP again)")
+    elif sc:
+        out.append("[OK] NinjaTrader opens by itself when Windows signs in (Startup shortcut)")
+    if ac is True:
+        out.append("[OK] NinjaTrader connects by itself ('Connect on startup' is on)")
+    elif ac is False:
+        out.append("[FIX] NinjaTrader: Connections > Configure > your MFFU connection > tick 'Connect on startup' > OK (once)")
+    else:
+        out.append("[..] NinjaTrader 'Connect on startup': not readable here. Once: Connections > Configure > your MFFU connection > "
+                   "tick 'Connect on startup' > OK (then a reboot needs no click)")
+    if al is not True:
+        out.append("[..] Windows auto-sign-in is YOUR choice (docs/PC_ALWAYS_ON.md, netplwiz): without it, after a reboot the PC waits "
+                   "at the sign-in screen until you sign in; then everything else starts by itself")
+    return out
+
 
 def run(pc=None, out=print) -> dict:
     """The four steps in order, one line each, then the recovery list. Returns {"steps": [(name, ok, line)], "order": [...]}."""
@@ -182,9 +222,14 @@ def run(pc=None, out=print) -> dict:
         rec = pc.recovery() or []
     except Exception:
         rec = []
-    if rec:
+    try:                                               # day-zerotouch2: boot to trading (NinjaTrader start + connect, sign-in)
+        boot = boot_lines(*pc.nt_boot()) if hasattr(pc, "nt_boot") else []
+    except Exception:  # noqa: BLE001
+        boot = []
+    res["boot"] = boot
+    if rec or boot:
         out(" What comes back by itself:")
-        for ln in rec:
+        for ln in rec + boot:
             out("   " + ln)
     return res
 

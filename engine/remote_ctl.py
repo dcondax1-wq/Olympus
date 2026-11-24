@@ -65,6 +65,13 @@ FUTURE_S = 5 * 60
 EVERY_S = 60.0
 KEEP_IDS = 300
 MAX_FILE = 16 * 1024
+# day-zerotouch2 (owner 2026-11-24: "from my phone in under 30 seconds"): the phone's PC page (tools/web_public/pc/) opens GitHub's
+# NEW-file page with the command already filled in (control/inbox/<id>.json): one tap on Commit, no copy / paste / select-all. The
+# same rules hold for each inbox file (fresh id, 15-minute ts, each id once). Only the newest INBOX_MAX names are read; an inbox
+# command older than INBOX_QUIET_S is skipped silently (old files stay on the branch: no notice storm after the PC was off).
+INBOX_DIR = "control/inbox/"
+INBOX_MAX = 12
+INBOX_QUIET_S = 3600
 COMMANDS = ("kill", "stop", "flatten", "update", "restart", "status", "start", "pause", "resume_entries", "present")
 HANDSOFF_CMDS = ("kill", "stop", "flatten", "pause")
 ID_RE = re.compile(r"^[A-Za-z0-9._:\-]{1,64}$")
@@ -132,9 +139,28 @@ def fetch(cwd: str = ROOT, remote: str = "origin", branch: str = BRANCH, timeout
             return {"ok": False, "error": f"no {CMD_FILE} on the control branch", "commit": c.stdout.strip()[:10]}
         if len(s.stdout) > MAX_FILE:
             return {"ok": False, "error": f"{CMD_FILE} is larger than {MAX_FILE // 1024} KB: ignored"}
-        return {"ok": True, "text": s.stdout.decode("utf-8", errors="replace"), "commit": c.stdout.strip()[:10]}
+        return {"ok": True, "text": s.stdout.decode("utf-8", errors="replace"), "commit": c.stdout.strip()[:10],
+                "inbox": read_inbox(cwd)}
     except Exception as e:
         return {"ok": False, "error": f"{e.__class__.__name__}: {e}"}
+
+
+def read_inbox(cwd: str = ROOT, ref: str = LOCAL_REF) -> list:
+    """The newest INBOX_MAX files of control/inbox/ at the fetched control commit -> [text]. [] when there is none. Never raises."""
+    try:
+        ls = subprocess.run(["git", "ls-tree", "--name-only", f"{ref}:{INBOX_DIR.rstrip('/')}"], cwd=cwd, capture_output=True,
+                            text=True, timeout=30)
+        if ls.returncode:
+            return []
+        names = sorted(n.strip() for n in ls.stdout.splitlines() if n.strip().endswith(".json"))
+        out = []
+        for n in names[-INBOX_MAX:]:
+            r = subprocess.run(["git", "show", f"{ref}:{INBOX_DIR}{n}"], cwd=cwd, capture_output=True, timeout=30)
+            if r.returncode == 0 and len(r.stdout) <= MAX_FILE:
+                out.append(r.stdout.decode("utf-8", errors="replace"))
+        return out
+    except Exception:  # noqa: BLE001
+        return []
 
 
 def parse(text: str) -> list:
@@ -523,7 +549,7 @@ class RemoteControl:
         sh = au.Shell(log=au.file_log)
         au.file_log("remote update (owner, control branch)")
         # the owner asked for it: the opt-in toggle is not needed, every other rule stays (LE_AUTOUPDATE=0 still blocks it)
-        res = au.run_update(sh, "manual", now, None, state={**state, "enabled": True})
+        res = au.run_update(sh, "manual", now, None, state={**state, "enabled": True}, park=True)   # a blocking hand edit is parked
         au.record(res)
         return res
 
@@ -582,13 +608,17 @@ class RemoteControl:
                 d.pop("fetch", None)
                 d["seen"] = seen                      # written only when the control commit changes (not every minute)
                 save_done(d, self.done_path)
-            for c in parse(f["text"]):
+            inbox = [(c, True) for t in f.get("inbox") or [] for c in parse(t)[:1]]     # one command per inbox file
+            for c, from_inbox in [(c, False) for c in parse(f["text"])] + inbox:
                 d = load_done(self.done_path)
                 done = d.get("done") or {}
                 why = screen(c, now, done)
                 cid, cmd = c.get("id"), str(c.get("cmd") or "").strip().lower()
                 if why in ("blank", "duplicate"):
                     continue
+                ts = parse_ts(c.get("ts"))
+                if from_inbox and why and (ts is None or now - ts > INBOX_QUIET_S):
+                    continue                          # an old one-tap file left on the branch: silent
                 if why:
                     if isinstance(cid, str) and ID_RE.match(cid):
                         self._finish(d, cid, cmd or "?", "ignored", why, now, title=f"Remote {cmd or 'command'} ignored")

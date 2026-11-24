@@ -69,3 +69,15 @@ History (measured 2026-11-20): the pack holds 266 MB for today's files and **394
 pictures 204 MB, old docs/shots 81 MB, old web builds 46 MB, old research/lab 20 MB). History is never rewritten; the PC can
 drop its own copy of it with a shallow clone (`git fetch --depth=200 olympus pc`, then `git gc --prune=now`; the auto-update
 deepens by itself when it needs more). Never automatic: the lead decides, then one line for the owner.
+
+
+## Auto-park (day-zerotouch2, 2026-11-24: the PC's update was stuck from 21:30 on one hand-edited file)
+
+A local edit of a tracked file the update rewrites no longer blocks the update: `engine/self_heal.park_local` runs
+`git stash push -m "auto-park <date> <files>" -- <only those files>`, writes `logs/self_heal/parked.jsonl` + `parked.json`, puts
+`pk` in the feed's sh block, sends ONE phone line ("Parked a local edit to X so the update could install; nothing lost: git
+stash list") and the update goes on. It runs inside the server's own daily / hourly update and the phone's Update now
+(`engine/autoupdate.run_update` park=True, after its window + flat checks), and in self-heal's hourly run. Never parked (they
+still alert "needs you"): second_model.json, live_model*.json, data/, journals and everything `never()` protects. Never weekdays
+01:50-16:00 ET, never with a trade open. A manual UPDATE.bat / START pull does not park. Get an edit back: `git stash list`,
+`git stash show -p stash@{0}`, `git stash pop`. Tests: tests/test_zerotouch2.py a.

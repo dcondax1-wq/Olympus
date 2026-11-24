@@ -430,7 +430,7 @@ def from_main(sh, path: str, old: str, new: str) -> str | None:
 
 
 def fast_forward(sh, branch: str = BRANCH, log=None, skip_sha: str | None = None, src: dict | None = None,
-                 crash_sha: str | None = None) -> dict:
+                 crash_sha: str | None = None, park: bool = False, now=None) -> dict:
     """Move the checkout to origin/<branch> (fast-forward only), the one way every update runs: the auto-update, the
     phone's "update", UPDATE.bat and START BOT (`python -m engine.autoupdate --pull`), the dashboard's Start page.
     Before the dirty check: ATLAS's account block an older version wrote into second_model.json goes to
@@ -503,6 +503,23 @@ def fast_forward(sh, branch: str = BRANCH, log=None, skip_sha: str | None = None
     # in a file the update rewrites still blocks (and second_model.json, whose block could not be moved). Unknown diff = old rule.
     blocking = [p for p in other if p not in known and (changed is None or p in changed or p == TRACKED_LOCAL)]
     kept_local = [p for p in other if p not in known and p not in blocking]
+    if blocking and park:
+        # day-zerotouch2 (owner 2026-11-24, the PC stuck from 21:30 on one hand-edited file): the automatic update PARKS a hand
+        # edit of a file it rewrites (engine/self_heal.park_local: git stash of only those files, a record, one phone line) and goes
+        # on. second_model.json, live_model*.json, data/ and the protected files are never parked: they still block + alert.
+        # Only run_update passes park=True, after its window (never 01:50-16:00 ET on a weekday) and flat checks.
+        try:
+            from . import self_heal
+            pk = self_heal.park_local(getattr(sh, "cwd", ROOT) or ROOT, sh.git, [p for p in blocking if p != TRACKED_LOCAL],
+                                      now=now, log=log, via="the auto-update")
+            if pk.get("parked"):
+                res["parked"] = pk["parked"]
+                res["stash"] = pk.get("stash")
+                blocking = [p for p in blocking if p not in pk["parked"]]
+            elif pk.get("why"):
+                log(f"auto-park not done: {pk['why']}")
+        except Exception as e:  # noqa: BLE001
+            log(f"auto-park skipped ({e.__class__.__name__})")
     if blocking:
         return done("skipped", "local changes in tracked files (not touched): " + ", ".join(blocking[:4]), alert=True)
     changed = changed or []
@@ -1085,7 +1102,8 @@ def selftest_step(sh, old: str | None, args=None, timeout: float = SELFTEST_TIME
 
 
 def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = None, state: dict | None = None,
-               tests=TESTS, branch: str = BRANCH, env=None, all_hours: bool = False, selftest: bool | None = None) -> dict:
+               tests=TESTS, branch: str = BRANCH, env=None, all_hours: bool = False, selftest: bool | None = None,
+               park: bool | None = None) -> dict:
     """One check. Returns {"status", "reason", "old", "new", "restart", "alert"}; status: off | skipped | up_to_date |
     updated | rolled_back | failed. `flat` = flat_reason (None = flat). Pure apart from `sh`. selftest: run the PC
     self-test after `tests` (selftest_step; a regression holds the update back: rolled back, "held" = the check).
@@ -1108,9 +1126,14 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
     if flat:
         return done("skipped", f"not flat: {flat}")
     res["checked"] = True
-    ff = fast_forward(sh, branch, skip_sha=state.get("bad_sha"), crash_sha=state.get("crash_sha"))
+    # park (day-zerotouch2): the server's own checks (daily / hourly) and the phone's "Update now" park a blocking hand edit
+    if park is None:
+        park = mode in ("daily", "hourly")
+    ff = fast_forward(sh, branch, skip_sha=state.get("bad_sha"), crash_sha=state.get("crash_sha"), park=bool(park), now=now)
     old, new, changed = ff.get("old"), ff.get("new"), ff.get("changed") or []
     res.update(old=old, new=new)
+    if ff.get("parked"):
+        res["parked"] = ff["parked"]
     if ff["status"] != "updated":
         return done(ff["status"], ff["reason"], alert=ff.get("alert", False))
 

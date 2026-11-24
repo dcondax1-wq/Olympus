@@ -114,7 +114,7 @@ def main() -> int:
         sh = FakeShell(); sh.branch = "claude/test"
         r = au.run_update(sh, "start", EVENING, None, state=ON, env={})
         check("update: not on main -> skipped with an alert", r["status"] == "skipped" and r["alert"] and "not on branch main" in r["reason"])
-        sh = FakeShell(); sh.dirty = " M engine/live.py\n"
+        sh = FakeShell(changed="engine/live.py\nengine/x.py"); sh.dirty = " M engine/live.py\n"   # day-updfix: the update must touch it
         r = au.run_update(sh, "start", EVENING, None, state=ON, env={})
         check("update: dirty tree (an edit that is not main's) -> skipped + alert, no merge / reset / checkout (a fetch is "
               "read-only: it tells a hand edit from a file checked out from main)",
@@ -259,7 +259,7 @@ def main() -> int:
                   au.restart_safe_reason(flat_bot) is None
                   and au.restart_safe_reason(SimpleNamespace(running=True, cfg={"adapter": "ninjatrader", "nt_account": "Sim101"}), {}) is None
                   and au.restart_safe_reason(SimpleNamespace(running=False, cfg={"adapter": "ninjatrader", "nt_account": ACCT}), {}) is None)
-            sh6 = FakeShell(); sh6.dirty = " M engine/live.py\n"
+            sh6 = FakeShell(changed="engine/live.py\nengine/x.py"); sh6.dirty = " M engine/live.py\n"   # (the fake refuses git stash: still blocked)
             sp6 = os.path.join(tmp, "au6.json")
             au.save_state(dict(ON), sp6)
             r = au.DailyUpdater(flat_bot, exit_fn=ex3.append, clock=lambda: EVENING, state_path=sp6).check_once(sh=sh6, optin={})
@@ -320,7 +320,7 @@ def main() -> int:
         check("update: only the bot-made files the update changes are reset, before the merge",
               r["status"] == "updated" and co == [("git", "checkout", "HEAD", "--", "data/GEX_1d.csv")]
               and sh.calls.index(co[0]) < next(i for i, c in enumerate(sh.calls) if c[:2] == ("git", "merge")), sh.calls)
-        sh = FakeShell(); sh.dirty = " M cache/dash/5y_NQ.json\n M engine/live.py\n"
+        sh = FakeShell(changed="engine/live.py\nengine/x.py"); sh.dirty = " M cache/dash/5y_NQ.json\n M engine/live.py\n"
         r = au.run_update(sh, "start", EVENING, None, state=ON, env={})
         check("update: a hand edit next to bot-made files still blocks (reason names only the hand edit)",
               r["status"] == "skipped" and "engine/live.py" in r["reason"] and "cache/dash" not in r["reason"]

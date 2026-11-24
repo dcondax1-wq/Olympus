@@ -959,6 +959,7 @@ def _step_arm(cfg, phrase, dry=False, open_page=True, inp=None) -> int:
             print(f"     {ln}")
     except Exception:
         pass
+    print(f"\n {autoresume_line()}")       # day-zerotouch2: ONE clear line: which accounts come back armed by themselves
     startup_shortcuts()
     print("\n Ready check (the same READY / NOT READY your phone shows):")
     lines, ok = ready_lines()
@@ -1004,6 +1005,43 @@ def armed_accounts(main_on=True) -> list:
     except Exception:
         pass
     return out
+
+
+def autoresume_rows(main_on=True, rec=None, armed=None) -> tuple:
+    """(on, off) labels of the armed real accounts: on = comes back ARMED by itself after a reboot / Windows update / crash
+    (engine/autoresume: the 50K's own opt-in; ATLAS's 25K and the Rapid slots are lanes of the 50K's bot and come back with it,
+    their own files say armed; an engine.accounts row needs its own extra proof). Never raises."""
+    on, off = [], []
+    try:
+        from . import autoresume
+        from .ninjatrader import is_sim
+        rec = autoresume.load(autoresume.OPTIN_PATH) if rec is None else rec
+        main_ok = autoresume.valid(rec)
+        for key, lbl, name in (armed_accounts(main_on) if armed is None else armed):
+            if is_sim(name):
+                continue
+            if key == "lit":
+                ok = main_ok and rec.get("account") == name
+            elif key in ("atlas", "rapid", "rapid2"):
+                ok = main_ok
+            else:
+                ok = autoresume.extra_ok(rec, name)
+            (on if ok else off).append(lbl.split(" ..")[0])
+    except Exception:  # noqa: BLE001
+        pass
+    return on, off
+
+
+def autoresume_line(main_on=True, rec=None, armed=None) -> str:
+    """START's one line after the phrase (day-zerotouch2, owner 2026-11-24: "boot to trading, no clicks")."""
+    on, off = autoresume_rows(main_on, rec, armed)
+    if not on and not off:
+        return "[..] Auto-resume: no armed real account yet (START BOT + the phrase turns it on for each one it arms)."
+    txt = (f"[OK] Auto-resume ON for {', '.join(on)}: after a reboot, a Windows update or a crash they come back ARMED with no "
+           "clicks (STOP BOT or the kill switch turns it off)." if on else "")
+    if off:
+        txt += (" " if txt else "") + f"[FIX] Auto-resume NOT on for {', '.join(off)}: START BOT again and type the phrase."
+    return txt
 
 
 def _ka_path() -> str:
