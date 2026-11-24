@@ -496,12 +496,20 @@ def fast_forward(sh, branch: str = BRANCH, log=None, skip_sha: str | None = None
         k = from_main(sh, p, old, new)
         if k:
             known[p] = k
-    blocking = [p for p in other if p not in known]
+    c, changed = sh.git("diff", "--name-only", "--no-renames", old, new)   # a moved engine/x.py lists engine/x.py too (restart)
+    changed = [ln.strip() for ln in changed.splitlines() if ln.strip()] if c == 0 else None
+    # day-updfix 2026-11-23: a local change in a file the update does NOT touch never blocks a fast-forward (git merge --ff-only
+    # and every rollback here, reset --keep, leave it exactly as it is), so it is kept and the update goes on. Only a local change
+    # in a file the update rewrites still blocks (and second_model.json, whose block could not be moved). Unknown diff = old rule.
+    blocking = [p for p in other if p not in known and (changed is None or p in changed or p == TRACKED_LOCAL)]
+    kept_local = [p for p in other if p not in known and p not in blocking]
     if blocking:
         return done("skipped", "local changes in tracked files (not touched): " + ", ".join(blocking[:4]), alert=True)
-    c, changed = sh.git("diff", "--name-only", "--no-renames", old, new)   # a moved engine/x.py lists engine/x.py too (restart)
-    changed = changed.split() if c == 0 else []
+    changed = changed or []
     res["changed"] = changed
+    if kept_local:
+        res["kept_local"] = kept_local[:20]
+        log(f"kept {len(kept_local)} local change(s) the update does not touch: {', '.join(kept_local[:6])}")
     hit = [p for p in gen_dirty if p in changed]        # bot-made files the update replaces: back to HEAD, else the ff fails
     if hit:
         c, out = generated_files.discard(sh.git, hit)

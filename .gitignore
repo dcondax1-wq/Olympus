@@ -332,3 +332,6 @@ data/live_state*.json.bak.tmp
 # day-orderflow 2026-11-23: tick recorder output (big, per-PC) and its on/off switch
 data/ticks/
 data/tickrec.json
+data/orderflow_auto.json
+data/orderflow_note.json
+data/orderflow_*.json.tmp

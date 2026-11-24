@@ -173,8 +173,12 @@ def test_update(tmp):
     c3 = ctx(pc2, now, apply=True)
     r = SH.fix_update(c3)
     by = {i["key"]: i for i in r}
-    check("b. a hand edit of README.md: never touched, named (needs you)", "README.md" in by.get("update_blocked", {}).get("paths", [])
+    # day-updfix 2026-11-23: the update does not touch README.md, so the hand edit no longer blocks (autoupdate keeps it)
+    check("b. a hand edit of a file the update does not touch (README.md): kept, never touched, NOT reported",
+          "README.md" not in by.get("update_blocked", {}).get("paths", [])
           and open(os.path.join(pc2, "README.md")).read() == "my own edit\n", r)
+    check("b. the blocked line names the file first (the feed cuts board lines at 90 characters)",
+          by.get("update_blocked", {}).get("text", "").startswith("update held back by data/lit_journal.jsonl"), r)
     check("b. the trade journal the update named: never reset, named instead (its PC lines kept)",
           "data/lit_journal.jsonl" in by.get("update_blocked", {}).get("paths", [])
           and open(os.path.join(pc2, "data", "lit_journal.jsonl")).read() == '{"j":1}\n{"pc":1}\n', r)
@@ -249,6 +253,46 @@ def test_update_gates(tmp):
           and open(os.path.join(pc2, "data", "board", "shared.jsonl")).read() == '{"mine":1}\n', ff)
     check("b2. ... the reason keeps git's full error (it names the file)", "data/board/shared.jsonl" in ff["reason"]
           and "untracked" in ff["reason"].lower(), ff["reason"])
+
+
+# ------------------------------------------------------------------------------------------------ b3. day-updfix 2026-11-23
+def test_updfix(tmp):
+    """The PC posted 'update held back by a local change it may not touch: ' every 15 min (the name fell off the feed's 90-character
+    board line, and the once-a-day alert repeated because state.json was never written on Windows)."""
+    from engine import autoupdate as AU
+    src = {"remote": "origin", "url": None, "branch": "main", "account": None, "label": "origin/main"}
+    up, pc = repo_pair(tmp, "uf")
+    write(os.path.join(pc, "README.md"), "my own edit\n")               # the update does not touch README.md
+    logs = []
+    ff = AU.fast_forward(AU.Shell(cwd=pc, log=logs.append), "main", src=src)
+    check("b3. a local change in a file the update does not touch: the update goes on, the change is kept",
+          ff["status"] == "updated" and open(os.path.join(pc, "README.md")).read() == "my own edit\n"
+          and open(os.path.join(pc, "engine", "a.py")).read() == "A = 2\n" and "README.md" in (ff.get("kept_local") or []), (ff, logs[-3:]))
+    up2, pc2 = repo_pair(tmp, "uf2")
+    write(os.path.join(pc2, "engine", "a.py"), "A = 99\n")               # the update rewrites engine/a.py
+    ff = AU.fast_forward(AU.Shell(cwd=pc2, log=lambda t: None), "main", src=src)
+    check("b3. a local change in a file the update rewrites still blocks, named, untouched",
+          ff["status"] == "skipped" and "engine/a.py" in ff["reason"] and open(os.path.join(pc2, "engine", "a.py")).read() == "A = 99\n", ff)
+    r = {i["key"]: i for i in SH.fix_update(ctx(pc2, time.time()))}
+    check("b3. self-heal names engine/a.py FIRST in its line", r.get("update_blocked", {}).get("text", "").startswith("update held back by engine/a.py"), r)
+    # the Windows rename: the temp file must be closed (complete on disk) before fsutil.replace renames it
+    from engine import fsutil
+    seen = []
+    old = fsutil.replace
+
+    def strict(a, b, *k, **kw):
+        seen.append(open(a, encoding="utf-8").read())                  # Windows refuses an open file; here: its bytes must be all there
+        return old(a, b)
+    fsutil.replace = strict
+    try:
+        p = os.path.join(tmp, "uf_state", "state.json")
+        SH._write_json(p, {"sent": {"update_blocked": 1}, "pad": "x" * 100})
+    finally:
+        fsutil.replace = old
+    check("b3. _write_json renames a CLOSED, complete file (state.json is written on Windows: the alert stays once a day)",
+          seen and json.loads(seen[0]).get("sent") == {"update_blocked": 1} and json.load(open(p)).get("pad"), seen)
+    st = {"t": 1, "need": ["update_blocked"], "blk": ["engine/a.py"], "hist": []}
+    check("b3. the public 'sh' line carries the blocking file names", SH.tiny(st, 1).get("blk") == ["engine/a.py"], SH.tiny(st, 1))
 
 
 # ------------------------------------------------------------------------------------------------ c. NinjaTrader order files
@@ -528,7 +572,7 @@ def test_wiring(tmp):
 def main() -> int:
     tmp = tempfile.mkdtemp(prefix="lesh_")
     try:
-        for fn in (test_locks, test_update, test_update_gates, test_oif, test_pid, test_server, test_pip, test_clock, test_clean, test_heal, test_wiring):
+        for fn in (test_locks, test_update, test_update_gates, test_updfix, test_oif, test_pid, test_server, test_pip, test_clock, test_clean, test_heal, test_wiring):
             try:
                 fn(tmp)
             except Exception as e:  # noqa: BLE001

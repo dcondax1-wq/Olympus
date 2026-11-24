@@ -128,8 +128,11 @@ def _write_json(path, obj):
         tmp = path + ".tmp"
         with open(tmp, "w", encoding="utf-8") as fh:
             json.dump(obj, fh, separators=(",", ":"), default=str)
-            from .fsutil import replace as _rep          # retried on a Windows / OneDrive lock
-            _rep(tmp, path)
+        # day-updfix 2026-11-23: the rename AFTER the file is closed. Inside the `with` Windows refuses to rename a file still open
+        # for writing (PermissionError, swallowed here): state.json / tiny.json were never written, so the once-a-day alert
+        # went out on every 15-minute run and the hourly gate never held (the same bug engine/combo50k._write_switch had)
+        from .fsutil import replace as _rep              # retried on a Windows / OneDrive lock
+        _rep(tmp, path)
     except Exception:
         pass
 
@@ -559,17 +562,26 @@ def fix_update(ctx, untracked: str = "apply", generated: bool = True, new: str |
         from .autoupdate import TRACKED_LOCAL
     except Exception:
         TRACKED_LOCAL = "second_model.json"
+    c, upd = ctx.git("diff", "--name-only", "--no-renames", head, new)
+    upd = {ln.strip() for ln in upd.splitlines() if ln.strip()} if c == 0 else None
     for rel in other:
+        if not rel:
+            continue
         if rel == TRACKED_LOCAL:
             continue                                      # the auto-update moves ATLAS's block out of it itself
+        if upd is not None and rel not in upd:
+            continue                                      # day-updfix: the update does not touch it, so it never blocks (autoupdate keeps it)
         c, mine = ctx.git("hash-object", "--", rel)
         c2, theirs = ctx.git("rev-parse", f"{new}:{rel}")
         if c == 0 and c2 == 0 and _sha(mine) and _sha(mine) == _sha(theirs):
             continue                                      # already the new version (checked out by hand): the update takes it
         need.append(rel)
+    need = [p for p in need if p]
     if need:
+        # day-updfix: the file names FIRST (the public feed cuts a board line at 90 characters: the names used to fall off the end)
         out.append(item("update", "update_blocked", "need",
-                        f"the auto-update is held back by a local change it may not touch: {', '.join(need[:3])}",
+                        f"update held back by {', '.join(need[:3])}{' +' + str(len(need) - 3) if len(need) > 3 else ''}: "
+                        "a local change it may not touch",
                         "send Claude this line: 'update blocked by " + ", ".join(need[:2]) + "' (keep or drop the change)", need))
     return out
 
@@ -1184,6 +1196,7 @@ def tiny(state: dict, now) -> dict:
             + (" (" + ", ".join(f"{k} {v:.2f}" for k, v in big) + ")" if big else "")
             + (f" · last clean freed {float(state.get('freed') or 0):.2f} GB" if state.get("clean_t") else ""))
     return {"t": int(state.get("t") or now), "ok": not need, "fixed": fixed, "need": need,
+            **({"blk": list(state.get("blk") or [])[:3]} if state.get("blk") and "update_blocked" in need else {}),
             "free": round(free) if isinstance(free, (int, float)) else None, "bot": sz.get("bot"), "big": [[k, v] for k, v in big],
             "freed": round(float(state.get("freed") or 0) / 1, 2) if state.get("clean_t") else None, "line": line[:240]}
 
@@ -1274,6 +1287,7 @@ def heal(ctx, force_clean: bool = False, board=None, push=None, disk_free=None) 
     state["sent"] = {k: v for k, v in sent.items() if ctx.now - float(v) < 7 * 86400}
     state["t"] = int(ctx.now)
     state["need"] = [i["key"] for i in res["need"]]
+    state["blk"] = [str(x)[:60] for i in res["need"] if i.get("key") == "update_blocked" for x in (i.get("paths") or [])][:3]
     state["last"] = [{k: i[k] for k in ("fault", "status", "text")} for i in res["items"]][:12]
     state["hist"] = ([h for h in state.get("hist") or [] if isinstance(h, dict)] + [{"t": int(ctx.now), "fixed": len(res["fixed"]),
                                                                                          "need": len(res["need"])}])[-KEEP_HIST:]
