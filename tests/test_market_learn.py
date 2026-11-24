@@ -9,6 +9,9 @@ temp folders; never the network, never a live file.
      planted real edge passes and a noise bucket is rejected, half vs skip
   d. outputs: insights shape (4 pillars, ORDER FLOW knows nothing), the summary words, a Decide proposal fits learn_night's schema,
      lessons.jsonl.gz round trip, the weekly run in a temp folder leaves the live files' hashes as they were
+  e. the visible brain (day-brain-research 2026-11-24): STRUCTURE lens buckets, the zigzag is causal, structure_tags fills
+     st_* from the study's tag rule, the dated journal (new / unchanged / status change / faded), confidence 0-100,
+     brain_state shape (BRAIN_FEED.md), the nightly light mode writes only journal + brain_state into its --out folder
     python -X utf8 -m tests.test_market_learn
 """
 from __future__ import annotations
@@ -159,8 +162,62 @@ def part_d():
     ok(M.hashes() == M.hashes(), "d the live files hashed (the weekly run fails if one changes)")
 
 
+def part_e():
+    ok(M.st_used_of(0.4) == "quiet" and M.st_used_of(0.6) == "half" and M.st_used_of(1.0) == "full" and M.st_used_of(1.2) == "stretched"
+       and M.st_pos_of(0.1) == "extreme" and M.st_pos_of(0.9) == "chase" and M.st_pos_of(None) is None, "e structure buckets")
+    ok(M.st_swing_of("with the last swing", 0.3) == "with_shallow" and M.st_swing_of("against x", 0.85) == "against_deep"
+       and M.st_swing_of("with", 1.2) == "with_broken" and M.st_swing_of(None, 0.3) is None, "e swing buckets")
+    ok(set(M.STRUCT_FACTS) <= set(M.FACTS) and "st_pos=extreme" not in M.bucket_words("st_pos=extreme"), "e the lens is a fact + has words")
+    sys.path.insert(0, M.STRUCT_DIR)
+    import bars as BR
+    import numpy as np
+    px = np.array([0, 5, 10, 6, 3, 8, 14, 20, 15, 9, 12], float)
+    piv = BR.zigzag(px + 0.5, px - 0.5, np.full(len(px), 4.0))
+    ok(piv[1][:3] == (2, 10.5, 1) and piv[1][3] == 3 and piv[3][:2] == (7, 20.5) and all(q[3] > q[0] for q in piv), "e zigzag pivots, known only at confirmation")
+
+    class FakeStudy:
+        @staticmethod
+        def tag_trades(X, rows):
+            return [{**r, "used": 0.6, "pos": 0.1, "phase": "against the last swing", "depth": 0.6, "early_disp": True,
+                     "compression": False} for r in rows]
+    old = M._study
+    M._study = lambda: FakeStudy
+    try:
+        R = M.structure_tags([{"pillar": "lit", "entry_t": 5, "dir": 1}, {"pillar": "lit", "entry_t": 6, "dir": 1, "st_pos": "low"}], X={})
+    finally:
+        M._study = old
+    ok(R[0]["st_used"] == "half" and R[0]["st_pos"] == "extreme" and R[0]["st_swing"] == "against_mid" and R[0]["st_disp"] == "yes"
+       and R[0]["st_comp"] == "no" and R[1]["st_pos"] == "low", "e structure_tags fills st_* and keeps rows already tagged")
+    o1 = {"key": "lesson|lit|x", "pillar": "lit", "noticed": "a", "evidence": {"n": 9}, "status": "watching"}
+    J, add = M.update_journal([], [o1], today="2026-11-24")
+    ok(len(J) == 1 and add and J[0]["date"] == "2026-11-24" and J[0]["status"] in M.STATUSES, "e journal: a new key = a dated entry")
+    J, add = M.update_journal(J, [{**o1, "evidence": {"n": 12}}], today="2026-11-25")
+    ok(len(J) == 1 and not add and J[0]["evidence"]["n"] == 12 and J[0]["checked"] == "2026-11-25", "e same status: evidence refreshed, no new line")
+    J, add = M.update_journal(J, [{**o1, "status": "confirmed"}], today="2026-11-26")
+    ok(len(J) == 2 and add[0]["was"] == "watching" and add[0]["date"] == "2026-11-26", "e status change -> a new dated entry with 'was'")
+    J, add = M.update_journal(J, [], today="2026-11-27")
+    ok(add and add[0]["status"] == "rejected" and "FADED" in add[0]["noticed"], "e a lesson that faded -> rejected")
+    ok(M.confidence({}, []) == 0 and 0 <= M.confidence({"trades": 10, "data": {"H1": {"n": 80}, "H2": {"n": 40, "pf": 3}}}, []) <= 100,
+       "e confidence 0-100 (0 with no trades)")
+    rows = fake_rows(n=1500, seed=2) + fake_rows("atlas", n=1500, seed=4)
+    with tempfile.TemporaryDirectory() as td:
+        before = M.hashes()
+        res = M.nightly(ROOT, out_dir=td, rows=rows, trials={"count": 0, "trials": []}, with_bars=False, today="2026-11-24")
+        ok(sorted(os.listdir(td)) == ["brain_state.json", "journal.json"] and M.hashes() == before,
+           "e nightly writes only journal + brain_state (its --out folder), live files untouched")
+        S = M._read_json(os.path.join(td, "brain_state.json"))
+        Jj = M._read_json(os.path.join(td, "journal.json"))
+        keys = {"name", "confidence", "lessons", "watching", "rejected", "needs_owner_yes", "last_learned", "testing_next", "market_read"}
+        ok(S["kind"] == "brain-state" and set(S["pillars"]) == set(M.JOURNAL_PILLARS)
+           and all(keys <= set(x) for x in S["pillars"].values()) and "market" in S, "e brain_state shape (BRAIN_FEED.md)")
+        ok(isinstance(Jj, list) and all({"date", "pillar", "noticed", "evidence", "status"} <= set(e) and e["status"] in M.STATUSES
+                                        for e in Jj), "e journal entry shape + statuses")
+        ok(S["pillars"]["orderflow"]["confidence"] == 0 and "waiting" in S["pillars"]["orderflow"]["testing_next"],
+           "e ORDER FLOW: confidence 0, waiting for trades")
+
+
 def main():
-    for f in (part_a, part_b, part_c, part_d):
+    for f in (part_a, part_b, part_c, part_d, part_e):
         f()
     print(f"{'ALL OK' if not FAILS else str(len(FAILS)) + ' FAILED'}")
     return 1 if FAILS else 0

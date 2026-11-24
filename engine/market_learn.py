@@ -65,9 +65,18 @@ PILLARS = ("lit", "atlas", "blitz", "orderflow")
 NAME = {"lit": "LIT (Zlarior)", "atlas": "ATLAS", "blitz": "BLITZ", "orderflow": "ORDER FLOW"}
 SPANS = ("H1", "H2", "2021-25")
 SPAN_WORD = {"H1": "Jan-Jun 2026", "H2": "Jul-Oct 2026", "2021-25": "2021-25", "live": "live / paper"}
-FACTS = ("regime", "vix_band", "session", "dow", "on_rng", "news_day", "pd_room", "prior_day", "big_fri", "d1", "h1")
+# STRUCTURE lens (day-brain-research 2026-11-24, research/structure/study.py tag rules, causal = bars closed before the entry):
+#   st_used  the day's range so far in daily ATR: quiet < 0.5 <= half < 0.8 <= full < 1.1 <= stretched
+#   st_pos   where the entry sits in the day's range so far, on the trade's side: extreme 0-20% (long near the low) / low 20-50 /
+#            high 50-80 / chase 80-100
+#   st_swing with / against the last confirmed swing (zigzag 0.3 ATR) + how deep price has come back into it:
+#            shallow < 0.5 <= mid < 0.79 <= deep < 1.0 <= broken
+#   st_disp  a 5m displacement candle in the trade's direction in the 30 min before the entry (yes / no)
+#   st_comp  compression day: prior inside day / NR7 / prior range < 0.7 ATR (yes / no)
+STRUCT_FACTS = ("st_used", "st_pos", "st_swing", "st_disp", "st_comp")
+FACTS = ("regime", "vix_band", "session", "dow", "on_rng", "news_day", "pd_room", "prior_day", "big_fri", "d1", "h1") + STRUCT_FACTS
 PAIRS = (("regime", "vix_band"), ("regime", "prior_day"), ("regime", "session"), ("vix_band", "session"),
-         ("vix_band", "prior_day"), ("regime", "on_rng"), ("vix_band", "dow"), ("prior_day", "dow"))
+         ("vix_band", "prior_day"), ("regime", "on_rng"), ("vix_band", "dow"), ("prior_day", "dow"), ("st_swing", "st_used"))
 CAUSES = ("news", "wick", "turned", "never")
 CAUSE_WORD = {"news": "news hit it", "wick": "shaken out, then it went our way", "turned": "worked first, then turned",
               "never": "never worked", None: "no path data"}
@@ -610,7 +619,16 @@ def bucket_words(b: str) -> str:
          "pd_room=blocked": "the prior-day level under 1R ahead", "pd_room=through": "already past the prior-day level",
          "pd_room=near": "the prior-day level 1-4R ahead", "pd_room=far": "the prior-day level 4R+ ahead",
          "d1=against": "against the daily trend", "d1=with": "with the daily trend",
-         "h1=against": "against the 1h trend", "h1=with": "with the 1h trend"}
+         "h1=against": "against the 1h trend", "h1=with": "with the 1h trend",
+         "st_used=quiet": "the day's range under half an ATR so far", "st_used=half": "the day half used (0.5-0.8 ATR)",
+         "st_used=full": "the day's ATR about used (0.8-1.1)", "st_used=stretched": "the day already stretched (1.1+ ATR)",
+         "st_pos=extreme": "entries at the day's extreme on our side (start of a move)", "st_pos=low": "entries 20-50% into the day's range",
+         "st_pos=high": "entries 50-80% into the day's range", "st_pos=chase": "chasing (80-100% of the day's range)",
+         "st_disp=yes": "a displacement our way in the 30 min before (late)", "st_disp=no": "no displacement our way just before",
+         "st_comp=yes": "compression days (inside / NR7 / quiet day before)", "st_comp=no": "non-compression days"}
+    for w in ("with", "against"):
+        for k, t in (("shallow", "under 0.5"), ("mid", "0.5-0.79"), ("deep", "0.79-1.0"), ("broken", "past 1.0, swing broken")):
+            W[f"st_swing={w}_{k}"] = f"{'buying the pullback of' if w == 'with' else 'fading'} the last swing, retrace {t}"
     out = []
     for part in b.split(" & "):
         f, v = part.split("=", 1)
@@ -817,6 +835,398 @@ def phone_line(new: list, K: dict) -> str:
         return (f"Market Learn: {len(ok)} fix{'es' if len(ok) > 1 else ''} passed - "
                 + "; ".join(f"{NAME[t['pillar']]} {t['kind']} {bucket_words(t['bucket'])}" for t in ok) + ". On the Decide card.")
     return f"Market Learn: {len(new)} fix{'es' if len(new) != 1 else ''} tested, 0 passed. Nothing to decide; lessons updated."
+
+
+# ================================================================================================ STRUCTURE lens + the visible brain
+# (day-brain-research 2026-11-24, owner: "a system that is continuously learning and I can clearly tell".)
+# Two plain files feed the Brain app (shape: research/learn/BRAIN_FEED.md):
+#   research/learn/journal.json      dated list of what each pillar noticed, with its evidence and status
+#   research/learn/brain_state.json  per pillar: confidence, lessons, last learned, what it tests next, the market read now
+JOURNAL = os.path.join(OUT, "journal.json")
+BRAIN = os.path.join(OUT, "brain_state.json")
+STRUCT_DIR = os.path.join(ROOT, "research", "structure")
+JOURNAL_PILLARS = PILLARS + ("market",)
+STATUSES = ("watching", "confirmed", "rejected", "adopted-needs-owner-yes")
+JOURNAL_MAX = 400
+
+
+def _study():
+    if STRUCT_DIR not in sys.path:
+        sys.path.insert(0, STRUCT_DIR)
+    import study  # noqa: PLC0415  (research/structure/study.py: the bars, the zigzag and the tag rules)
+    return study
+
+
+_SX = {}
+
+
+def struct_context():
+    """The 5m futures bars + swings (research/structure/study.context, ~10 s, cached). None if the bars cannot be read."""
+    if "X" not in _SX:
+        try:
+            _SX["X"] = _study().context()
+        except Exception:  # noqa: BLE001
+            _SX["X"] = None
+    return _SX["X"]
+
+
+def st_used_of(x):
+    return None if x is None else "quiet" if x < 0.5 else "half" if x < 0.8 else "full" if x < 1.1 else "stretched"
+
+
+def st_pos_of(x):
+    return None if x is None else "extreme" if x < 0.2 else "low" if x < 0.5 else "high" if x < 0.8 else "chase"
+
+
+def st_swing_of(phase, depth):
+    if not phase or depth is None:
+        return None
+    w = "with" if str(phase).startswith("with") else "against"
+    return f"{w}_{'shallow' if depth < 0.5 else 'mid' if depth < 0.79 else 'deep' if depth < 1.0 else 'broken'}"
+
+
+def structure_tags(rows: list, X=None) -> list:
+    """Adds st_* (the STRUCTURE lens) to every row that has entry_t + dir and no st_* yet. Rows are changed in place."""
+    need = [r for r in rows if "st_pos" not in r and r.get("entry_t") is not None and r.get("dir") in (1, -1)]
+    if not need:
+        return rows
+    X = X if X is not None else struct_context()
+    if X is None:
+        return rows
+    T = _study().tag_trades(X, [{**r, "usd": r.get("usd") or 0, "r": r.get("r") or 0} for r in need])
+    by = {(t["pillar"], int(t["entry_t"]), int(t["dir"])): t for t in T}
+    for r in need:
+        t = by.get((r["pillar"], int(r["entry_t"]), int(r["dir"])))
+        if t is None:
+            r.update(st_used=None, st_pos=None, st_swing=None, st_disp=None, st_comp=None)
+            continue
+        r.update(st_used=st_used_of(t["used"]), st_pos=st_pos_of(t["pos"]), st_swing=st_swing_of(t["phase"], t["depth"]),
+                 st_disp="yes" if t["early_disp"] else "no", st_comp="yes" if t["compression"] else "no")
+    return rows
+
+
+def _atlas(root: str = ROOT) -> dict:
+    return _read_json(os.path.join(root, "research", "structure", "STRUCTURE_ATLAS.json"), {}) or {}
+
+
+def structure_read(X=None, atlas: dict | None = None) -> dict | None:
+    """Where the market is NOW in structure: the newest session's range used, where price sits in it, the last confirmed
+    swing and how deep price has come back into it, plus the history odds for that spot (STRUCTURE_ATLAS)."""
+    X = X if X is not None else struct_context()
+    if X is None:
+        return None
+    atlas = atlas if atlas is not None else _atlas()
+    j = len(X["c"]) - 1
+    A = float(X["atr_d"][j])
+    a0 = int(X["s0"][j])
+    hi, lo, p = float(X["h"][a0:j + 1].max()), float(X["l"][a0:j + 1].min()), float(X["c"][j])
+    piv = [q for q in X["piv"] if q[3] <= j]
+    out = {"session": str(X["day"][j]), "bar_et": str(X["df"]["et"].iloc[j])[:16], "price": p, "atr": round(A, 1),
+           "range_used_atr": round((hi - lo) / A, 2), "pos_in_range_pct": round(100 * (p - lo) / (hi - lo)) if hi > lo else 50,
+           "day_high": hi, "day_low": lo}
+    if len(piv) >= 2:
+        (i_a, p_a, k_a, _), (i_b, p_b, k_b, _) = piv[-2], piv[-1]
+        d = 1 if k_a == -1 else -1
+        a = abs(p_b - p_a)
+        depth = abs(p - p_b) / a if a else 0.0
+        word = "up" if d > 0 else "down"
+        moved = (p - p_b) * -d                                      # the current move away from the last pivot
+        if moved / A >= 0.75:
+            phase = f"expanding {'down' if d > 0 else 'up'} ({moved / A:.2f} ATR off the last swing point)"
+        elif depth < 0.382:
+            phase = f"shallow pullback of the {word} leg ({depth:.2f})"
+        elif depth < 0.79:
+            phase = f"retracing the {word} leg ({depth:.2f})"
+        elif depth < 1.0:
+            phase = f"deep retrace of the {word} leg ({depth:.2f}), near its start"
+        else:
+            phase = f"the {word} leg is fully retraced ({depth:.2f}): reversal"
+        odds = None
+        C = (atlas.get("C_expansion_legs") or {})
+        b = next((e for e in (0.236, 0.382, 0.5, 0.618, 0.705, 0.79, 1.0) if depth < e), None)
+        if a / A >= 0.75 and b is not None:
+            cells_ = [((C.get(sp) or {}).get("retrace_depth_buckets") or {}).get(f"<{b}") for sp in ("2021-25", "H1", "H2")]
+            cells_ = [c for c in cells_ if c and c.get("continued_pct") is not None]
+            if cells_:
+                n = sum(c["n"] for c in cells_)
+                odds = round(sum(c["continued_pct"] * c["n"] for c in cells_) / n, 1)
+        out.update(last_swing={"dir": word, "size_atr": round(a / A, 2), "expansion": bool(a / A >= 0.75),
+                               "from": float(p_a), "to": float(p_b)}, retrace_depth=round(depth, 3), phase=phase,
+                   continuation_odds_pct=odds,
+                   continuation_note=(f"history: when an expansion leg was retraced this deep, the next leg made a new "
+                                      f"{word} extreme {odds}% of the time" if odds is not None else None))
+    D = X["D"]
+    if len(D):
+        last = D.iloc[-1]
+        out["today_flags"] = {"inside_day": bool(last["high"] <= D["high"].iloc[-2] and last["low"] >= D["low"].iloc[-2])
+                              if len(D) > 1 else None, "range_x_atr": round(float(last["ratio"]), 2)}
+    return out
+
+
+# ------------------------------------------------------------------------------------------------ journal
+def journal_doc(path: str = JOURNAL) -> list:
+    d = _read_json(path, [])
+    return d if isinstance(d, list) else []
+
+
+def _ev(n=None, usd_=None, avg_r=None, **kw):
+    e = {"n": n, "usd": None if usd_ is None else round(float(usd_))}
+    if avg_r is not None:
+        e["avg_r"] = avg_r
+    e.update({k: v for k, v in kw.items() if v is not None})
+    return e
+
+
+def lesson_observations(rows: list, lens_only: bool = False) -> list:
+    """Per pillar, the lessons worth showing: same side in all 3 spans and |z| >= PICK_Z (watching) or >= STRONG_Z
+    (confirmed). The STRUCTURE lens first (up to 4), then the strongest other ones (up to 3)."""
+    out = []
+    for p in PILLARS:
+        P = [r for r in rows if r.get("pillar") == p]
+        if not P:
+            continue
+        L = [x for x in lessons_of(P) if x["sign"] != 0 and abs(x["z"]) >= PICK_Z]
+        L.sort(key=lambda x: -abs(x["z"]))
+        st = [x for x in L if "st_" in x["bucket"]][:4]
+        ot = [] if lens_only else [x for x in L if "st_" not in x["bucket"]][:3]
+        for x in st + ot:
+            s = x["spans"]
+            out.append({"key": f"lesson|{p}|{x['bucket']}", "pillar": p, "lens": "structure" if "st_" in x["bucket"] else "context",
+                        "noticed": (f"{NAME[p]} {'does worse' if x['sign'] < 0 else 'does better'} when: {bucket_words(x['bucket'])}. "
+                                    f"avg R {s['H1']['avg_r']} / {s['H2']['avg_r']} / {s['2021-25']['avg_r']} (Jan-Jun / Jul-Oct / "
+                                    f"2021-25) vs its own average"),
+                        "evidence": _ev(x["n"], x["usd_vs_avg"], z=x["z"]),
+                        "status": "confirmed" if abs(x["z"]) >= STRONG_Z else "watching"})
+    return out
+
+
+def trial_observations(trials: dict) -> list:
+    out = []
+    for t in (trials or {}).get("trials", []):
+        res = t.get("result") or {}
+        st = {"registered": "watching", "passed": "adopted-needs-owner-yes", "rejected": "rejected"}.get(t.get("status"), "watching")
+        hold = res.get("hold") or {}
+        out.append({"key": f"trial|{t['key']}", "pillar": t["pillar"], "lens": "fix test",
+                    "noticed": (f"tried: {t['kind']} {NAME[t['pillar']]} trades in {bucket_words(t['bucket'])}"
+                                + (f" -> {'; '.join(res.get('why') or [])}" if res.get("why") else
+                                   " -> held on the hold-out weeks and in all 3 spans: on the Decide card" if st.startswith("adopted") else
+                                   " (pre-registered, test pending)")),
+                    "evidence": _ev(hold.get("n"), hold.get("gain_usd"), p=hold.get("p")), "status": st,
+                    "date": t.get("tested") or t.get("registered")})
+    return out
+
+
+VARIANT_PILLAR = {"S": "market", "F1": "lit", "F2": "lit", "F3": "lit", "F4": "atlas", "F5": "blitz"}
+
+
+def variant_observations(root: str = ROOT) -> list:
+    """The pre-registered structure variants (research/structure/variants.json): each a dated tested idea."""
+    V = _read_json(os.path.join(root, "research", "structure", "variants.json"), {}) or {}
+    out = []
+    for name, o in (V.get("variants") or {}).items():
+        tag = name.split()[0]
+        p = VARIANT_PILLAR.get(tag, VARIANT_PILLAR.get(tag[:1], "market"))
+        S = o.get("stats") or {}
+        h2 = S.get("H2") or {}
+        out.append({"key": f"variant|{name}", "pillar": p, "lens": "structure test",
+                    "noticed": f"tested the idea '{name}': {'passed every gate' if o.get('verdict') == 'PASS' else 'failed'}"
+                               + (f" ({'; '.join(o.get('why')[:2])})" if o.get("why") else ""),
+                    "evidence": _ev(h2.get("n"), h2.get("net"), pf_h2=h2.get("pf")),
+                    "status": "adopted-needs-owner-yes" if o.get("verdict") == "PASS" else "rejected", "date": V.get("made")})
+    return out
+
+
+def market_observations(atlas: dict | None = None) -> list:
+    """Base rates from STRUCTURE_ATLAS.json that the market itself teaches (pillar 'market'): confirmed when the same in all
+    three spans (2021-25, Jan-Jun 2026, Jul 2026-now), else watching."""
+    A = atlas if atlas is not None else _atlas()
+    if not A:
+        return []
+    out = []
+    sp3 = ("2021-25", "H1", "H2")
+    d = A.get("A_daily") or {}
+    for k, words in (("small_overnight", "a small overnight range (< 0.35 ATR)"), ("big_overnight", "a big overnight range (0.6+ ATR)"),
+                     ("big_day_before", "the day after a big day (1.5+ ATR)"), ("quiet_day_before", "the day after a quiet day"),
+                     ("nr7_before", "the day after an NR7"), ("inside_day_before", "the day after an inside day")):
+        L = [(d.get(sp) or {}).get("after", {}).get(k) for sp in sp3]
+        if not all(L):
+            continue
+        lifts = [x["lift_vs_base"] for x in L]
+        side = all(v > 1 for v in lifts) - all(v < 1 for v in lifts)
+        out.append({"key": f"market|after|{k}", "pillar": "market", "lens": "expansion",
+                    "noticed": (f"{words}: an expansion day (1.5+ ATR) {', '.join(str(x['next_expansion_pct']) + '%' for x in L)} of the "
+                                f"time (2021-25 / Jan-Jun / Jul-now) vs {', '.join(str(d[sp]['expansion_day_pct']) + '%' for sp in sp3)} "
+                                f"normally" + (" - MORE expansion" if side > 0 else " - LESS expansion" if side < 0 else " - mixed")),
+                    "evidence": _ev(sum(x["n"] for x in L), None, lift=lifts), "status": "confirmed" if side else "watching"})
+    C = A.get("C_expansion_legs") or {}
+    if all(sp in C for sp in sp3):
+        sh = [C[sp]["retrace_depth_buckets"].get("<0.5", {}).get("continued_pct") for sp in sp3]
+        dp = [C[sp]["retrace_depth_buckets"].get("<1.0", {}).get("continued_pct") for sp in sp3]
+        if all(v is not None for v in sh + dp):
+            out.append({"key": "market|retrace|shallow_vs_deep", "pillar": "market", "lens": "retracement",
+                        "noticed": (f"after an expansion leg, a 0.382-0.5 pullback led to a new extreme {', '.join(f'{v}%' for v in sh)} "
+                                    f"of the time; a 0.79-1.0 pullback only {', '.join(f'{v}%' for v in dp)} (2021-25 / Jan-Jun / Jul-now)"),
+                        "evidence": _ev(sum(C[sp]["expansion_legs"] for sp in sp3), None),
+                        "status": "confirmed" if all(a > b for a, b in zip(sh, dp)) else "watching"})
+        mm = [C[sp]["next_leg_vs_expansion_pct (measured move, when the retrace held)"][">=1.0x"] for sp in sp3]
+        out.append({"key": "market|measured_move", "pillar": "market", "lens": "expansion",
+                    "noticed": f"a full measured move (next leg >= the expansion leg) is rare: {', '.join(f'{v}%' for v in mm)} of legs",
+                    "evidence": _ev(sum(C[sp]["expansion_legs"] for sp in sp3), None),
+                    "status": "confirmed" if all(v < 20 for v in mm) else "watching"})
+    F = A.get("C_fib_limit_trades (stop beyond leg start, no costs)") or {}
+    if all(sp in F for sp in sp3):
+        ar = [F[sp]["extreme"]["0.618"]["avg_r"] for sp in sp3]
+        out.append({"key": "market|fib_no_free_edge", "pillar": "market", "lens": "retracement",
+                    "noticed": (f"a limit at the 0.618 of an expansion leg, stop beyond its start, target the extreme averages "
+                                f"{', '.join(str(v) for v in ar)} R before costs: fib levels alone are not an edge"),
+                    "evidence": _ev(sum(F[sp]["extreme"]["0.618"]["fills"] for sp in sp3), None),
+                    "status": "confirmed" if all(abs(v) < 0.15 for v in ar) else "watching"})
+    B = A.get("B_displacement_5m") or {}
+    if all(sp in B for sp in sp3):
+        f = [B[sp]["fvg_filled_same_session_pct"] for sp in sp3]
+        out.append({"key": "market|fvg_fill", "pillar": "market", "lens": "retracement",
+                    "noticed": f"a 5m displacement's FVG gets filled the same session {', '.join(f'{v}%' for v in f)} of the time",
+                    "evidence": _ev(sum(B[sp]["candles"] for sp in sp3), None), "status": "confirmed" if all(v >= 70 for v in f) else "watching"})
+    R = A.get("A_back_to_rth_open") or {}
+    if all(sp in R for sp in sp3):
+        b = [R[sp]["first_hour_drive_0.5atr"]["back_to_open_pct"] for sp in sp3]
+        out.append({"key": "market|back_to_open", "pillar": "market", "lens": "expansion",
+                    "noticed": f"when the first RTH hour drives 0.5+ ATR from the 09:30 open, price comes back to the open only "
+                               f"{', '.join(f'{v}%' for v in b)} of the time",
+                    "evidence": _ev(sum(R[sp]["first_hour_drive_0.5atr"]["n"] for sp in sp3), None),
+                    "status": "confirmed" if all(v < 40 for v in b) else "watching"})
+    return out
+
+
+def update_journal(J: list, obs: list, today: str | None = None, max_n: int = JOURNAL_MAX) -> tuple:
+    """Merge today's observations into the dated journal. A NEW key -> a new dated entry; a key whose status CHANGED -> a new
+    dated entry with 'was'; a lesson that is no longer the same side in all 3 spans -> 'rejected' (faded). Same status ->
+    the latest entry's evidence is refreshed in place (no new line). Returns (journal, the entries added today)."""
+    today = today or dt.date.today().isoformat()
+    latest = {}
+    for e in J:
+        latest[e["key"]] = e
+    added = []
+    seen = set()
+    for o in obs:
+        seen.add(o["key"])
+        last = latest.get(o["key"])
+        e = {"date": o.get("date") or today, "pillar": o["pillar"], "lens": o.get("lens"), "noticed": o["noticed"],
+             "evidence": o.get("evidence") or {}, "status": o["status"], "key": o["key"]}
+        if last is None:
+            J.append(e); added.append(e)
+        elif last["status"] != o["status"]:
+            e["date"] = today
+            e["was"] = last["status"]
+            J.append(e); added.append(e)
+        else:
+            last["evidence"], last["noticed"] = e["evidence"], e["noticed"]
+            last["checked"] = today
+    for k, last in latest.items():
+        if k.startswith("lesson|") and k not in seen and last["status"] in ("watching", "confirmed"):
+            e = {**last, "date": today, "was": last["status"], "status": "rejected",
+                 "noticed": last["noticed"] + " - FADED: no longer the same in all 3 spans"}
+            e.pop("checked", None)
+            J.append(e); added.append(e)
+    J.sort(key=lambda e: (e["date"], e["pillar"], e["key"]))
+    if len(J) > max_n:
+        J[:] = J[-max_n:]
+    return J, added
+
+
+def current_status(J: list) -> dict:
+    """key -> the latest entry."""
+    out = {}
+    for e in J:
+        out[e["key"]] = e
+    return out
+
+
+# ------------------------------------------------------------------------------------------------ brain state
+def confidence(x: dict, mine: list) -> int:
+    """0-100, plain rule (BRAIN_FEED.md): 30 x sample (2026 trades / 100, max 1) + 40 x edge still holding (Jul-Oct PF:
+    1.0 -> 0, 2.0+ -> full) + 30 x learning quality (confirmed / everything it has judged: confirmed + rejected)."""
+    if not x or not x.get("trades"):
+        return 0
+    data = x.get("data") or {}
+    n26 = sum(((data.get(sp) or {}).get("n") or 0) for sp in ("H1", "H2"))
+    pf = (data.get("H2") or {}).get("pf") or 0
+    c = sum(1 for e in mine if e["status"] in ("confirmed", "adopted-needs-owner-yes"))
+    judged = c + sum(1 for e in mine if e["status"] == "rejected")
+    q = c / judged if judged else 0.5
+    return int(round(30 * min(1.0, n26 / 100) + 40 * max(0.0, min(1.0, pf - 1.0)) + 30 * q))
+
+
+def brain_state(K: dict, J: list, rows: list, trials: dict | None = None, sread: dict | None = None, today: str | None = None) -> dict:
+    today = today or dt.date.today().isoformat()
+    cur = current_status(J)
+    tried = {t["key"] for t in (trials or {}).get("trials", [])}
+    base = K.get("current") or {}
+    mkt = {"regime": base.get("regime"), "regime_er5": base.get("er5"), "vix": base.get("vix"), "vix_band": base.get("vix_band"),
+           "prior_day": base.get("prior_day"), "as_of": base.get("data_to")}
+    if sread:
+        mkt.update({k: sread.get(k) for k in ("session", "bar_et", "price", "range_used_atr", "pos_in_range_pct", "phase",
+                                              "retrace_depth", "continuation_odds_pct", "continuation_note", "last_swing")})
+        mkt["words"] = (f"{(base.get('regime') or '?')} regime, {base.get('vix_band') or 'VIX ?'}; "
+                        f"{sread.get('phase') or 'no swing yet'}; price {sread.get('pos_in_range_pct')}% up today's range, "
+                        f"{sread.get('range_used_atr')} ATR used")
+    out = {"v": 1, "kind": "brain-state", "built": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
+           "paper_only": True, "market": mkt, "pillars": {}}
+    for p in JOURNAL_PILLARS:
+        mine = [e for e in cur.values() if e["pillar"] == p]
+        hist = sorted([e for e in J if e["pillar"] == p], key=lambda e: e["date"])
+        x = (K.get("pillars") or {}).get(p) or {}
+        nxt = None
+        if p in PILLARS and x.get("trades"):
+            c = pick(p, rows, tried, max_n=1)
+            if c:
+                nxt = f"next fix to test (pre-registered on the weekly run): {c[0]['kind']} trades in {bucket_words(c[0]['bucket'])}"
+        if nxt is None:
+            w = sorted([e for e in mine if e["status"] == "watching"], key=lambda e: -abs((e.get("evidence") or {}).get("z") or 0))
+            nxt = (f"watching: {w[0]['noticed']}" if w else
+                   "waiting for its first trades (no data to learn from yet)" if p == "orderflow" else "nothing queued")
+        read = None
+        if p in PILLARS and x.get("read"):
+            r = x["read"]
+            read = f"in {bucket_words(r['bucket'])} it has {r['n']} past trades, avg R {r['avg_r']} vs {r['base_avg_r']} overall"
+        if p == "market":
+            conf = int(round(100 * sum(1 for e in mine if e["status"] == "confirmed") / len(mine))) if mine else 0
+        else:
+            conf = confidence(x, mine)
+        out["pillars"][p] = {
+            "name": NAME.get(p, "MARKET (shared)"), "confidence": conf,
+            "lessons": sum(1 for e in mine if e["status"] == "confirmed"),
+            "watching": sum(1 for e in mine if e["status"] == "watching"),
+            "rejected": sum(1 for e in mine if e["status"] == "rejected"),
+            "needs_owner_yes": sum(1 for e in mine if e["status"] == "adopted-needs-owner-yes"),
+            "last_learned": ({"date": hist[-1]["date"], "what": hist[-1]["noticed"], "status": hist[-1]["status"]} if hist else None),
+            "testing_next": nxt, "market_read": read or mkt.get("words"),
+            "trades": x.get("trades", 0) if p in PILLARS else None}
+    return out
+
+
+def nightly(root: str = ROOT, out_dir: str | None = None, rows: list | None = None, trials: dict | None = None,
+            with_bars: bool = True, draws: int = 0, today: str | None = None, live_rows: list | None = None) -> dict:
+    """The light refresh (< 2 min, no numba, no backtest): lessons from the stored rows (+ new live rows), the STRUCTURE lens,
+    the market read now -> journal.json + brain_state.json. Never touches trials / lessons.jsonl.gz / a live file."""
+    out_dir = out_dir or OUT
+    rows = load_lessons() if rows is None else rows
+    rows = merge(rows, live_rows or [])
+    X = struct_context() if with_bars else None
+    if X is not None:
+        structure_tags(rows, X)
+    trials = trials_doc() if trials is None else trials
+    book = daily_book(root)
+    K = build(rows, root=root, draws=draws, trials=trials, book=book)
+    sread = structure_read(X) if X is not None else None
+    obs = lesson_observations(rows) + trial_observations(trials) + variant_observations(root) + market_observations()
+    jpath = os.path.join(out_dir, "journal.json")
+    J, added = update_journal(journal_doc(jpath), obs, today=today)
+    S = brain_state(K, J, rows, trials, sread, today=today)
+    S["added_today"] = len(added)
+    _write_json(jpath, J)
+    _write_json(os.path.join(out_dir, "brain_state.json"), S)
+    return {"journal": J, "added": added, "brain": S}
 
 
 def main(argv=None) -> int:

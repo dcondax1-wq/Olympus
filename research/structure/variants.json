@@ -1,0 +1,590 @@
+{
+ "made": "2026-11-24",
+ "design": "research/structure/DESIGN.md",
+ "variants": {
+  "S1 expansion pullback 0.5 -> extreme": {
+   "stats": {
+    "H1": {
+     "n": 37,
+     "tpw": 1.45,
+     "win": 48.6,
+     "pf": 0.68,
+     "net": -2459,
+     "per_month": -403,
+     "dd": -4294,
+     "eval_p10": 0.0,
+     "eval_f10": 7.6,
+     "eval_p40": 0.0,
+     "eval_days_med": null
+    },
+    "H2": {
+     "n": 31,
+     "tpw": 1.5,
+     "win": 61.3,
+     "pf": 1.11,
+     "net": 531,
+     "per_month": 108,
+     "dd": -1469,
+     "eval_p10": 0.0,
+     "eval_f10": 0.0,
+     "eval_p40": 0.0,
+     "eval_days_med": null
+    },
+    "2021-25": {
+     "n": 316,
+     "tpw": 1.47,
+     "win": 48.1,
+     "pf": 0.88,
+     "net": -5799,
+     "per_month": -114,
+     "dd": -7209,
+     "eval_p10": 0.0,
+     "eval_f10": 0.0,
+     "eval_p40": 0.0,
+     "eval_days_med": null
+    }
+   },
+   "verdict": "FAIL",
+   "why": [
+    "H1: PF 0.68 net $-2,459",
+    "2021-25: PF 0.88 net $-5,799",
+    "H1: 2-week eval pass 0.0% <= fail 7.6%",
+    "H2: 2-week eval pass 0.0% <= fail 0.0%"
+   ]
+  },
+  "S2 deep pullback 0.79 -> 1.272": {
+   "stats": {
+    "H1": {
+     "n": 15,
+     "tpw": 0.59,
+     "win": 26.7,
+     "pf": 0.75,
+     "net": -1162,
+     "per_month": -191,
+     "dd": -2403,
+     "eval_p10": 0.0,
+     "eval_f10": 0.0,
+     "eval_p40": 0.0,
+     "eval_days_med": null
+    },
+    "H2": {
+     "n": 10,
+     "tpw": 0.49,
+     "win": 50.0,
+     "pf": 1.75,
+     "net": 1441,
+     "per_month": 294,
+     "dd": -696,
+     "eval_p10": 0.0,
+     "eval_f10": 0.0,
+     "eval_p40": 0.0,
+     "eval_days_med": null
+    },
+    "2021-25": {
+     "n": 154,
+     "tpw": 0.72,
+     "win": 31.8,
+     "pf": 0.9,
+     "net": -4590,
+     "per_month": -90,
+     "dd": -12200,
+     "eval_p10": 1.2,
+     "eval_f10": 0.4,
+     "eval_p40": 8.9,
+     "eval_days_med": 26.5
+    }
+   },
+   "verdict": "FAIL",
+   "why": [
+    "H1: PF 0.75 net $-1,162",
+    "H1: 0.59 trades/week",
+    "H2: 0.49 trades/week",
+    "2021-25: PF 0.9 net $-4,590",
+    "2021-25: 0.72 trades/week",
+    "H1: 2-week eval pass 0.0% <= fail 0.0%",
+    "H2: 2-week eval pass 0.0% <= fail 0.0%"
+   ]
+  },
+  "S3 expansion follows expansion (first 5m displacement)": {
+   "stats": {
+    "H1": {
+     "n": 65,
+     "tpw": 2.54,
+     "win": 35.4,
+     "pf": 0.99,
+     "net": -142,
+     "per_month": -23,
+     "dd": -3907,
+     "eval_p10": 4.2,
+     "eval_f10": 21.8,
+     "eval_p40": 7.9,
+     "eval_days_med": 8.0
+    },
+    "H2": {
+     "n": 55,
+     "tpw": 2.67,
+     "win": 34.5,
+     "pf": 1.01,
+     "net": 156,
+     "per_month": 32,
+     "dd": -2873,
+     "eval_p10": 5.3,
+     "eval_f10": 10.6,
+     "eval_p40": 7.8,
+     "eval_days_med": 7.0
+    },
+    "2021-25": {
+     "n": 349,
+     "tpw": 1.63,
+     "win": 34.7,
+     "pf": 0.98,
+     "net": -1806,
+     "per_month": -35,
+     "dd": -12871,
+     "eval_p10": 0.9,
+     "eval_f10": 7.5,
+     "eval_p40": 17.7,
+     "eval_days_med": 25.0
+    }
+   },
+   "verdict": "FAIL",
+   "why": [
+    "H1: PF 0.99 net $-142",
+    "H2: PF 1.01 net $156",
+    "2021-25: PF 0.98 net $-1,806",
+    "H1: 2-week eval pass 4.2% <= fail 21.8%",
+    "H2: 2-week eval pass 5.3% <= fail 10.6%"
+   ]
+  },
+  "F1 LIT skip late chase": {
+   "hit": {
+    "H1": 14,
+    "H2": 4,
+    "2021-25": 122
+   },
+   "stats": {
+    "H1": {
+     "n": 66,
+     "tpw": 2.58,
+     "win": 57.6,
+     "pf": 5.6,
+     "net": 32460,
+     "per_month": 5325,
+     "dd": -1969,
+     "avg_r": 0.946
+    },
+    "H2": {
+     "n": 36,
+     "tpw": 2.31,
+     "win": 47.2,
+     "pf": 2.96,
+     "net": 9373,
+     "per_month": 2523,
+     "dd": -1396,
+     "avg_r": 0.756
+    },
+    "2021-25": {
+     "n": 389,
+     "tpw": 1.81,
+     "win": 56.0,
+     "pf": 1.17,
+     "net": 12782,
+     "per_month": 250,
+     "dd": -13173,
+     "avg_r": 0.068
+    }
+   },
+   "eval50": {
+    "H1": {
+     "n": 65,
+     "net": 29737,
+     "p10": 44.5,
+     "f10": 0.0,
+     "pass_med": 10.0
+    },
+    "H2": {
+     "n": 36,
+     "net": 11706,
+     "p10": 37.7,
+     "f10": 0.0,
+     "pass_med": 14.0
+    }
+   },
+   "placebo_p_H2": 0.461,
+   "verdict": "FAIL",
+   "why": [
+    "H1 net $32,460 vs live $33,901",
+    "H1 50K eval path $29,737 vs $33,663",
+    "H2 net $9,373 vs live $9,919",
+    "H2 50K eval path $11,706 vs $11,735",
+    "H2 placebo p 0.461 (bar 0.0063)"
+   ]
+  },
+  "F2 LIT skip mid-retrace fade": {
+   "hit": {
+    "H1": 6,
+    "H2": 0,
+    "2021-25": 49
+   },
+   "stats": {
+    "H1": {
+     "n": 74,
+     "tpw": 2.89,
+     "win": 60.8,
+     "pf": 5.66,
+     "net": 34929,
+     "per_month": 5731,
+     "dd": -2196,
+     "avg_r": 0.933
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 2.91,
+     "net": 9919,
+     "per_month": 2670,
+     "dd": -1396,
+     "avg_r": 0.769
+    },
+    "2021-25": {
+     "n": 462,
+     "tpw": 2.15,
+     "win": 54.3,
+     "pf": 1.04,
+     "net": 3488,
+     "per_month": 68,
+     "dd": -18871,
+     "avg_r": 0.034
+    }
+   },
+   "eval50": {
+    "H1": {
+     "n": 72,
+     "net": 35185,
+     "p10": 50.4,
+     "f10": 0.0,
+     "pass_med": 9.0
+    },
+    "H2": {
+     "n": 40,
+     "net": 11735,
+     "p10": 39.1,
+     "f10": 0.0,
+     "pass_med": 12.0
+    }
+   },
+   "placebo_p_H2": null,
+   "verdict": "FAIL",
+   "why": [
+    "H2 net $9,919 vs live $9,919",
+    "H2 50K eval path $11,735 vs $11,735",
+    "H2 placebo p None (bar 0.0063)"
+   ]
+  },
+  "F3 LIT x1.5 at the day's extreme": {
+   "hit": {
+    "H1": 31,
+    "H2": 10,
+    "2021-25": 73
+   },
+   "stats": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 6.02,
+     "net": 47214,
+     "per_month": 7746,
+     "dd": -2309,
+     "avg_r": 1.092
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 2.8,
+     "net": 10438,
+     "per_month": 2810,
+     "dd": -1408,
+     "avg_r": 0.791
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.03,
+     "net": 3336,
+     "per_month": 65,
+     "dd": -18072,
+     "avg_r": 0.026
+    }
+   },
+   "eval50": {
+    "H1": {
+     "n": 78,
+     "net": 39120,
+     "p10": 45.4,
+     "f10": 0.0,
+     "pass_med": 10.0
+    },
+    "H2": {
+     "n": 40,
+     "net": 12186,
+     "p10": 39.1,
+     "f10": 0.0,
+     "pass_med": 12.0
+    }
+   },
+   "placebo_p_H2": 0.653,
+   "verdict": "FAIL",
+   "why": [
+    "H2 placebo p 0.653 (bar 0.0063)"
+   ]
+  },
+  "F4 ATLAS skip middle of the range": {
+   "skipped": {
+    "H1": 28.0,
+    "H2": 15.0,
+    "2021-25": 333.0
+   },
+   "base": {
+    "H1": {
+     "n": 112,
+     "tpw": 4.38,
+     "win": 54.5,
+     "pf": 3.02,
+     "net": 25737,
+     "per_month": 4223,
+     "dd": -1533,
+     "eval_p10": 34.5,
+     "eval_f10": 0.0,
+     "eval_p40": 100.0,
+     "eval_days_med": 13.0
+    },
+    "H2": {
+     "n": 51,
+     "tpw": 2.48,
+     "win": 56.9,
+     "pf": 2.73,
+     "net": 8228,
+     "per_month": 1678,
+     "dd": -1224,
+     "eval_p10": 7.4,
+     "eval_f10": 0.0,
+     "eval_p40": 46.9,
+     "eval_days_med": 14.0
+    },
+    "2021-25": {
+     "n": 1114,
+     "tpw": 5.2,
+     "win": 37.2,
+     "pf": 1.09,
+     "net": 15493,
+     "per_month": 303,
+     "dd": -12430,
+     "eval_p10": 8.6,
+     "eval_f10": 6.3,
+     "eval_p40": 31.7,
+     "eval_days_med": 17.0
+    }
+   },
+   "stats": {
+    "H1": {
+     "n": 84,
+     "tpw": 3.28,
+     "win": 53.6,
+     "pf": 3.0,
+     "net": 19550,
+     "per_month": 3207,
+     "dd": -1665,
+     "eval_p10": 21.0,
+     "eval_f10": 0.0,
+     "eval_p40": 100.0,
+     "eval_days_med": 16.0
+    },
+    "H2": {
+     "n": 36,
+     "tpw": 1.75,
+     "win": 52.8,
+     "pf": 2.65,
+     "net": 5956,
+     "per_month": 1214,
+     "dd": -1239,
+     "eval_p10": 3.2,
+     "eval_f10": 0.0,
+     "eval_p40": 28.1,
+     "eval_days_med": 13.5
+    },
+    "2021-25": {
+     "n": 781,
+     "tpw": 3.64,
+     "win": 37.0,
+     "pf": 1.2,
+     "net": 24251,
+     "per_month": 475,
+     "dd": -8544,
+     "eval_p10": 5.1,
+     "eval_f10": 2.8,
+     "eval_p40": 32.7,
+     "eval_days_med": 24.0
+    }
+   },
+   "placebo_p": 0.0435,
+   "verdict": "FAIL",
+   "why": [
+    "H1 net $19,550 vs $25,737",
+    "H1 PF 3.0 vs 3.02",
+    "H2 net $5,956 vs $8,228",
+    "H2 PF 2.65 vs 2.73",
+    "placebo p 0.0435 (bar 0.0063)"
+   ]
+  },
+  "F5 BLITZ skip half-used day": {
+   "skipped": {
+    "H1": 49.0,
+    "H2": 45.0,
+    "2021-25": 386.0
+   },
+   "base": {
+    "H1": {
+     "n": 220,
+     "tpw": 8.59,
+     "win": 55.5,
+     "pf": 1.63,
+     "net": 5513,
+     "per_month": 904,
+     "dd": -1314,
+     "eval_p10": 0.0,
+     "eval_f10": 0.0,
+     "eval_p40": 7.9,
+     "eval_days_med": 26.0
+    },
+    "H2": {
+     "n": 176,
+     "tpw": 8.54,
+     "win": 53.4,
+     "pf": 1.41,
+     "net": 3375,
+     "per_month": 688,
+     "dd": -1254,
+     "eval_p10": 0.0,
+     "eval_f10": 0.0,
+     "eval_p40": 0.0,
+     "eval_days_med": null
+    },
+    "2021-25": {
+     "n": 1869,
+     "tpw": 8.72,
+     "win": 50.3,
+     "pf": 1.06,
+     "net": 4570,
+     "per_month": 90,
+     "dd": -4783,
+     "eval_p10": 0.0,
+     "eval_f10": 0.0,
+     "eval_p40": 0.0,
+     "eval_days_med": null
+    }
+   },
+   "stats": {
+    "H1": {
+     "n": 171,
+     "tpw": 6.68,
+     "win": 55.6,
+     "pf": 1.64,
+     "net": 4513,
+     "per_month": 740,
+     "dd": -931,
+     "eval_p10": 0.0,
+     "eval_f10": 0.0,
+     "eval_p40": 0.0,
+     "eval_days_med": null
+    },
+    "H2": {
+     "n": 131,
+     "tpw": 6.36,
+     "win": 58.0,
+     "pf": 1.69,
+     "net": 4172,
+     "per_month": 851,
+     "dd": -924,
+     "eval_p10": 0.0,
+     "eval_f10": 0.0,
+     "eval_p40": 3.1,
+     "eval_days_med": 39.5
+    },
+    "2021-25": {
+     "n": 1483,
+     "tpw": 6.92,
+     "win": 51.1,
+     "pf": 1.1,
+     "net": 6480,
+     "per_month": 127,
+     "dd": -3887,
+     "eval_p10": 0.0,
+     "eval_f10": 0.0,
+     "eval_p40": 0.0,
+     "eval_days_med": null
+    }
+   },
+   "placebo_p": 0.0295,
+   "verdict": "FAIL",
+   "why": [
+    "H1 net $4,513 vs $5,513",
+    "placebo p 0.0295 (bar 0.0063)"
+   ]
+  }
+ },
+ "lit_base": {
+  "stats": {
+   "H1": {
+    "n": 80,
+    "tpw": 3.12,
+    "win": 58.8,
+    "pf": 4.98,
+    "net": 33901,
+    "per_month": 5562,
+    "dd": -2196,
+    "avg_r": 0.825
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "win": 50.0,
+    "pf": 2.91,
+    "net": 9919,
+    "per_month": 2670,
+    "dd": -1396,
+    "avg_r": 0.769
+   },
+   "2021-25": {
+    "n": 511,
+    "tpw": 2.38,
+    "win": 53.8,
+    "pf": 1.01,
+    "net": 1265,
+    "per_month": 25,
+    "dd": -19426,
+    "avg_r": 0.017
+   }
+  },
+  "eval50": {
+   "H1": {
+    "n": 78,
+    "net": 33663,
+    "p10": 44.5,
+    "f10": 0.0,
+    "pass_med": 11.0
+   },
+   "H2": {
+    "n": 40,
+    "net": 11735,
+    "p10": 39.1,
+    "f10": 0.0,
+    "pass_med": 12.0
+   }
+  }
+ },
+ "passed": []
+}

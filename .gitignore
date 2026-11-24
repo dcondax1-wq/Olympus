@@ -260,6 +260,10 @@ research/learn/*
 !research/learn/insights.json
 !research/learn/trials.json
 !research/learn/WHAT_WE_KNOW.md
+# the visible brain (day-brain-research 2026-11-24): cloud nightly / weekly writes these; the PC runs --nightly --out logs/learning
+!research/learn/journal.json
+!research/learn/brain_state.json
+!research/learn/BRAIN_FEED.md
 research/lab/zeus_lab/out/
 tools/web_public/business/lab_pc.json
 

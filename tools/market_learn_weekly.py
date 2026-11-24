@@ -6,7 +6,10 @@ Research only: hashes the live files before and after and fails loudly if one ch
     python -X utf8 tools/market_learn_weekly.py               # the weekly run: rebuild, add live/paper, lessons, <= 2 fixes a pillar
     python -X utf8 tools/market_learn_weekly.py --no-rebuild  # reuse research/learn/seed_trades (fast)
     python -X utf8 tools/market_learn_weekly.py --no-decide   # test, but put nothing on the Decide card
-Outputs: research/learn/lessons.jsonl.gz, knowledge.json, insights.json, trials.json, WHAT_WE_KNOW.md, weekly/<date>.json.
+    python -X utf8 tools/market_learn_weekly.py --nightly     # LIGHT (< 2 min, no numba, no backtest): journal + brain state only
+    python -X utf8 tools/market_learn_weekly.py --nightly --out logs/learning   # the PC: write outside the git tree
+Outputs: research/learn/lessons.jsonl.gz, knowledge.json, insights.json, trials.json, WHAT_WE_KNOW.md, weekly/<date>.json,
+journal.json + brain_state.json (the Brain app feed, shape in research/learn/BRAIN_FEED.md; every run, weekly and nightly).
 Tests: python -X utf8 -m tests.test_market_learn
 """
 from __future__ import annotations
@@ -62,6 +65,7 @@ def run(a, say=print, root: str = ROOT) -> dict:
     old_live = [r for r in M.load_lessons() if r.get("span") == "live"]
     rows = M.merge(rows, old_live)
     rows = M.merge(rows, live(book, say=say))
+    M.structure_tags(rows)                              # the STRUCTURE lens (st_* tags), stored with the rows
     M.save_lessons(rows)
     doc = M.trials_doc()
     new = []
@@ -85,10 +89,13 @@ def run(a, say=print, root: str = ROOT) -> dict:
     rep = {"day": dt.date.today().isoformat(), "seed": bool(a.seed), "rows": len(rows),
            "trials": [{k: t.get(k) for k in ("key", "status")} | {"why": (t.get("result") or {}).get("why")} for t in new],
            "decide_added": added, "phone_line": I["phone_line"]}
+    br = M.nightly(root, out_dir=a.out, rows=rows, trials=doc, draws=0)
+    rep["journal_added"] = len(br["added"])
     M._write_json(os.path.join(M.OUT, "weekly", f"{rep['day']}{'-seed' if a.seed else ''}.json"), rep)
     after = M.hashes(root)
     if after != before:
         raise SystemExit(f"A LIVE FILE CHANGED during the run: {[k for k in before if before[k] != after[k]]}")
+    brain_words(br, say)
     for p in M.PILLARS:
         say(f"== {M.NAME[p]}")
         for s in M.knows_words(K, p):
@@ -102,13 +109,46 @@ def run(a, say=print, root: str = ROOT) -> dict:
     return rep
 
 
+def brain_words(br: dict, say=print) -> None:
+    S = br["brain"]
+    say(f"MARKET NOW: {(S.get('market') or {}).get('words')}")
+    for p, x in S["pillars"].items():
+        say(f"  {x['name']}: confidence {x['confidence']}/100, {x['lessons']} confirmed, {x['watching']} watching, "
+            f"{x['rejected']} rejected | next: {x['testing_next']}")
+    for e in br["added"][:12]:
+        say(f"  + {e['date']} [{e['status']}] {e['pillar']}: {e['noticed']}")
+    say(f"journal: {len(br['journal'])} entries, {len(br['added'])} new or changed today")
+
+
+def nightly(a, say=print, root: str = ROOT) -> dict:
+    """Light mode: no backtest rebuild, no candidate tests, no numba; the stored rows + this week's live rows + the bars."""
+    import time
+    t0 = time.time()
+    before = M.hashes(root)
+    rows = M.load_lessons()
+    if not rows:
+        raise SystemExit("no research/learn/lessons.jsonl.gz yet: run the weekly seed first (tools/market_learn_weekly.py --seed)")
+    book = M.daily_book(root)
+    br = M.nightly(root, out_dir=a.out, rows=rows, live_rows=live(book, say=say))
+    if M.hashes(root) != before:
+        raise SystemExit("A LIVE FILE CHANGED during the nightly run")
+    brain_words(br, say)
+    say(f"nightly done in {time.time() - t0:.0f} s -> {os.path.relpath(a.out or M.OUT, root)}")
+    return br
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--seed", action="store_true", help="lessons + insights only, no candidate fixes")
     ap.add_argument("--no-rebuild", action="store_true")
     ap.add_argument("--no-decide", action="store_true")
     ap.add_argument("--draws", type=int, default=M.CHANCE_DRAWS)
-    run(ap.parse_args(argv))
+    ap.add_argument("--nightly", action="store_true", help="light: journal + brain state only (< 2 min, no numba)")
+    ap.add_argument("--out", default=None, help="folder for journal.json + brain_state.json (default research/learn)")
+    a = ap.parse_args(argv)
+    if a.out:
+        a.out = os.path.join(ROOT, a.out) if not os.path.isabs(a.out) else a.out
+    nightly(a) if a.nightly else run(a)
     return 0
 
 
