@@ -14,6 +14,12 @@ Owner wants SHORT replies ("be simple and to the point. You send too much info."
 docs/BOARD.md). 2. Read this file. 3. Answer owner notes with `python tools/board.py note "..." --answers all`.
 Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7; bot checks green: lit_live --quick OK, NT selftest OK, ATLAS 47/47).
 
+- Zero-touch 2 (day-zerotouch2 2026-11-24, research/handoff/2026-11-24/zerotouch2/): a hand edit that blocks the update is now PARKED
+  (git stash of only those files, one phone line, the update installs); strategy/account files + data/ never parked (alert). START
+  prints "Auto-resume ON for ...". MONDAY_SETUP prints NinjaTrader start/connect + auto-sign-in (owner's choice). New phone page
+  pc/control.html: checklist + Status / Update now / Restart / Pause today / Resume (one Commit tap via control/inbox/). PC post
+  carries ck (checklist) + p4 (LIT/ATLAS/BLITZ/Order Flow states). Lead wires: LEAD_WIRES.md there.
+
 ## Live now
 | What (checked 2026-11-19 18:37 ET, board.py read) | State |
 |---|---|
