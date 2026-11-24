@@ -72,6 +72,7 @@ MAX_FILE = 16 * 1024
 INBOX_DIR = "control/inbox/"
 INBOX_MAX = 12
 INBOX_QUIET_S = 3600
+TS_IN_NAME = re.compile(r"(?:^|[-_.])(\d{10})(?:[-_.]|$)")     # the epoch seconds in an inbox file name (pccore.build ids)
 COMMANDS = ("kill", "stop", "flatten", "update", "restart", "status", "start", "pause", "resume_entries", "present")
 HANDSOFF_CMDS = ("kill", "stop", "flatten", "pause")
 ID_RE = re.compile(r"^[A-Za-z0-9._:\-]{1,64}$")
@@ -152,7 +153,13 @@ def read_inbox(cwd: str = ROOT, ref: str = LOCAL_REF) -> list:
                             text=True, timeout=30)
         if ls.returncode:
             return []
-        names = sorted(n.strip() for n in ls.stdout.splitlines() if n.strip().endswith(".json"))
+        # red team 2026-11-24: newest by the time IN the name (the phone's ids are <cmd>-<ts>-<rnd>), never by the name itself:
+        # sorted by name, a pile of old status-* / update-* files sorted after every new pause-* / restart-* / resume_* file, so
+        # once 12 of them were on the branch a new Pause tap was never read
+        def _ts(n):
+            m = TS_IN_NAME.search(n)
+            return (int(m.group(1)) if m else 0, n)
+        names = sorted((n.strip() for n in ls.stdout.splitlines() if n.strip().endswith(".json")), key=_ts)
         out = []
         for n in names[-INBOX_MAX:]:
             r = subprocess.run(["git", "show", f"{ref}:{INBOX_DIR}{n}"], cwd=cwd, capture_output=True, timeout=30)

@@ -606,7 +606,11 @@ def fix_update(ctx, untracked: str = "apply", generated: bool = True, new: str |
 # data/) nor anything self_heal.never() protects: those still alert (needs you). Never while a trade may be open, never weekdays
 # 01:50-16:00 ET (the auto-update's own rules hold too: engine/autoupdate.run_update only calls it with park=True after its
 # window + flat checks).
-PARK_NEVER = ("second_model.json", "live_model*.json", "data/*", "*journal*")
+# red team 2026-11-24: + the rule files the running bot reads (engine/autoupdate.RESTART_DATA: MFFU / firm rules), the combo rule
+# values (engine/combo50k RULES_REL) and the owner's Decide answers (engine/combo50k.decide_yes reads them): an owner's local
+# edit there changes what the bot does, so it blocks + alerts instead of silently going to the stash
+PARK_NEVER = ("second_model.json", "live_model*.json", "data/*", "*journal*", "research/lit/mffu_rules.json",
+              "research/props/firm_rules.json", "research/lab/combo_50k.json", "tools/web_public/business/decisions.json")
 PARKED_JSON = "parked.json"
 PARKED_LOG = "parked.jsonl"
 
