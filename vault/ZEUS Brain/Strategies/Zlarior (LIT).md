@@ -81,6 +81,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 ## Tested and rejected
 
+> [!failure]- Personal futures account vs MFFU
+> LIT + ATLAS, fixed-fractional, $1.24 RT, whole micros. $25k at 0.5%: +$49 / +$103 / +$3,001 / +$1,078 a month (2021-25 / 2025 / Jan-Jun / Jul-Oct), DD -24%; at 1%: +$243 / +$357 / +$10,922 / +$3,652, DD -50% (-$24k, 40 months); 2% = -83%. MFFU 50K slot: -$98 / -$78 / +$1,202 / +$1,228. LIT needs ~$14.4k (1% risk) for 90% of its 1-micro stops. Research only, owner's call.
+> Write-ups: [[ownacct-2026-11-24|A personal futures account vs the MFFU prop path]]
+
 > [!failure]- Bad-case plan
 > in a 2025-like / 2021-25 market every MFFU plan loses ($-236 to -$591 per slot per 6 months, pass 6-21% vs break-even 30-119%). Early-warning rule (LIT 20-trade avg R < Jan-Jun 10th pct) fails: ON 89% of 2021-25 with a HIGHER pass rate there, fires 49% of Jul-Oct. BLITZ $150 on the Rapid: better in 3 of 4 markets, -$15 in 2021-25 = stays paper. ATLAS funded at $150 beats $250 in all 4 markets (lead, not adopted: needs the account_b replay + owner yes).
 > Write-ups: [[badcase-2026-11-24|The BAD case]]

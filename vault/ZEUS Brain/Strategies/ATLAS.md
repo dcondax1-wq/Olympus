@@ -63,6 +63,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 ## Tested and rejected
 
+> [!failure]- Personal futures account vs MFFU
+> LIT + ATLAS, fixed-fractional, $1.24 RT, whole micros. $25k at 0.5%: +$49 / +$103 / +$3,001 / +$1,078 a month (2021-25 / 2025 / Jan-Jun / Jul-Oct), DD -24%; at 1%: +$243 / +$357 / +$10,922 / +$3,652, DD -50% (-$24k, 40 months); 2% = -83%. MFFU 50K slot: -$98 / -$78 / +$1,202 / +$1,228. LIT needs ~$14.4k (1% risk) for 90% of its 1-micro stops. Research only, owner's call.
+> Write-ups: [[ownacct-2026-11-24|A personal futures account vs the MFFU prop path]]
+
 > [!failure]- ATLAS funded 25K at ~$150 a trade, live sizing path
 > cap $150 / funded_room_pct 0.15 vs today's preset on engine/account_b.qty: owner $ 6 months 2021-25 $268 / $290 vs $283; 2025 $399 / $472 vs $382; Jan-Jun $2,815 / $2,916 vs $2,963; Jul-Oct $2,239 / $2,403 vs $2,746; first payout 7-15 sessions later. Fails (the badcase research-lane hint did not survive the real best-day guard). Keep today's preset.
 > Write-ups: [[atlas-funded-150-2026-11-24|ATLAS funded 25K at ~$150 a trade, on the LIVE sizing code]]
