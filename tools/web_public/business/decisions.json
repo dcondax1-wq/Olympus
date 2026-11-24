@@ -1,7 +1,7 @@
 {
  "v": 1,
  "kind": "olympus-decisions",
- "updated": "2026-11-22",
+ "updated": "2026-11-21",
  "note": "The Decide card (business/decide.js on the Board + ZEUS pages). Claude keeps this list. A tap only posts an owner note (POST /inbox/board on the PC link); Claude applies it next session by the CLAUDE.md rules, then sets status to yes / no / later / done. Nothing here changes a live setting.",
  "items": [
   {
@@ -588,58 +588,6 @@
    "recommend": "no",
    "recommend_why": "Keep all 3 legs: the edge has not weakened (no price creep, every leg positive), and 3 legs make about 50% more. The stops already cap a bad week at -$13.75. Say yes if a calm start matters more than ~$4 a week.",
    "valued": "2026-11-21 research/kalshi_k8_live/edge.py (236 real bets of the 3 live legs Aug 3-Nov 20, exact fees, the $2.50 fill price; 20,000 runs from $55 with every stop and the real calendar)"
-  },
-  {
-   "id": "plan-rapid50k-max2-rebuys",
-   "question": "Rapid EOD 50K ($165): buy it with a hard stop of at most 2 re-buys (3 evals in all, max $495 at risk)?",
-   "why": "Best plan in the ranking: daily payouts, 90%, no payout cap. MFFU's own pages (2026-11-22) say the '5 payouts then live' rule is Builder only; a Rapid goes live only at $10,000 in one day or by MFFU's choice.",
-   "impact": "About +$2,282 a month in a Jul-Oct-like market (+$5,001 Jan-Jun-like) over 6 months from one account; first payout ~9 weeks after the buy (median). Same purchase as card buy-rapid50-now, plus the re-buy stop.",
-   "impact_usd": 2282,
-   "options": [
-    "yes",
-    "no",
-    "later"
-   ],
-   "status": "open",
-   "source": "research/writeups/plan-ranking-2026-11-22.md",
-   "applies": "Buy the Rapid EOD 50K (CLUB $165); if it fails or dies, re-buy at most twice, then stop that slot (Claude adds the counter to the money book)",
-   "added": "2026-11-22",
-   "usd_month": 2282,
-   "usd_month_by": {
-    "jan_jun": 5001,
-    "jul_oct": 2282,
-    "y2021_25": -52
-   },
-   "risk": "In a 2021-25-like market it loses about $311 in 6 months (95% of runs lose money; worst case $495 = 3 evals). Funded account lost within 6 months ~36% of the time (then a re-buy). Any live move at MFFU (a Builder's 5th payout too) pauses ALL sim accounts incl. this one.",
-   "recommend": "yes",
-   "recommend_why": "Highest money per account by far and MFFU confirms no payout cap on Rapid; the 2-re-buy stop caps the bad-market loss at $495.",
-   "valued": "2026-11-22 research/plans/rebuy2.py (LIT + ATLAS on one account, ATLAS at 10 ticks a side, the plan's own eval + payout rules, at most 2 re-buys, 1,000 paths a market, 6 months; $ after the firm's split and every fee, before tax)"
-  },
-  {
-   "id": "plan-fundednext50k-max2-rebuys",
-   "question": "FundedNext Rapid Daily 50K (~$150 with code RAPID): add one, with at most 2 re-buys (max $450 at risk)?",
-   "why": "Second best in the ranking and a different firm (MFFU limits: 5 sim funded, and a live move pauses every MFFU sim account). FundedNext allows copying the same strategy across firms under your name.",
-   "impact": "About +$1,546 a month in a Jul-Oct-like market (+$1,679 Jan-Jun-like) over 6 months; first payout ~5 weeks after the buy (median); payouts max $1,200 each, 5 per account.",
-   "impact_usd": 1546,
-   "options": [
-    "yes",
-    "no",
-    "later"
-   ],
-   "status": "open",
-   "source": "research/writeups/plan-ranking-2026-11-22.md",
-   "applies": "Buy one FundedNext Rapid Daily 50K; Claude adds it as an extra account (LIT + ATLAS $500 lane) paper-checked on Sim first; re-buy at most twice",
-   "added": "2026-11-22",
-   "usd_month": 1546,
-   "usd_month_by": {
-    "jan_jun": 1679,
-    "jul_oct": 1546,
-    "y2021_25": -28
-   },
-   "risk": "In a 2021-25-like market it loses about $169 in 6 months (89% of runs lose money; worst $450). Funded lost within 6 months ~34%. Price is a code price (unconfirmed); the 15th payout on the profile triggers FundedNext's live review. Same bots as MFFU: bad weeks hit every account together.",
-   "recommend": "yes",
-   "recommend_why": "Spreads the money across a second firm so an MFFU live move or account cap does not stop everything; small, capped risk ($450 at most).",
-   "valued": "2026-11-22 research/plans/rebuy2.py (LIT + ATLAS on one account, ATLAS at 10 ticks a side, the plan's own eval + payout rules, at most 2 re-buys, 1,000 paths a market, 6 months; $ after the firm's split and every fee, before tax)"
   }
  ]
 }
