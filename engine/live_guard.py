@@ -33,7 +33,7 @@ from zoneinfo import ZoneInfo
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ET = ZoneInfo("America/New_York")
-STATE_PATH = os.path.join(ROOT, "data", "live_guard.json")      # gitignored (data/)
+STATE_PATH = os.path.join(ROOT, "logs", "live_guard.json")      # gitignored (logs/): the stuck-update clock
 MISS_AFTER_S = 120                 # a signal this old and not on the account = missed (LIT is not chased after 90 s)
 MISS_MAX_AGE_S = 6 * 3600          # never push about a signal older than this (a restart re-reading the day)
 MISS_EVERY_S = 60
@@ -484,7 +484,7 @@ class LiveGuard:
             st = _read_json(self.state_path, {})
             au = _read_json(self.au_path or os.path.join(ROOT, "data", "autoupdate.json"), {})
             new, p = update_stuck(st.get("upd"), au, now)
-            if new != st.get("upd"):
+            if new != (st.get("upd") or {}):
                 st["upd"] = new
                 _write_json(self.state_path, st)
             if p:
