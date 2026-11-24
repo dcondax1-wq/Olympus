@@ -93,7 +93,7 @@
     "no",
     "later"
    ],
-   "status": "done",
+   "status": "open",
    "source": "research/writeups/stack-one-account-2026-11-16.md",
    "applies": "add the ATLAS $500 lane to the 50K's funded account once MFFU funds it (lead wires, Sim first)",
    "added": "2026-11-16",
@@ -106,8 +106,7 @@
    "risk": "Zlarior 50K no payout in 6 months 9.5% -> 4.2%",
    "recommend": "yes",
    "recommend_why": "More money in both 2026 halves without a real jump in risk.",
-   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)",
-   "closed_note": "Replaced by zlarior-atlas-50k (2026-11-19): same question, newer proof (ATLAS at half size in the eval, full size once funded)."
+   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)"
   },
   {
    "id": "atlas-on-rapid",
@@ -289,32 +288,6 @@
    "recommend": "yes",
    "recommend_why": "The pre-registered winner: beats Zlarior alone in Jan-Jun and Jul-Oct by more than the noise, about even in 2021-25, 2-week eval fails under 5%, still ahead with worse fills. Sim first; re-check on Nov-Dec days.",
    "valued": "2026-11-19 tools/money/combo_account.py final (12 pre-registered rule sets, 2,000 day- and week-block runs x 6 months, MFFU move to live after payout 5; $ a month to you after fees and MFFU's cut, before the 30% tax pot)"
-  },
-  {
-   "id": "atlas-funded-keep-trading",
-   "question": "ATLAS's funded 25K: keep trading 1 micro when the room drops under $100, instead of stopping for good?",
-   "why": "Today the bot gives the funded account up at $100 of room. Small 1-micro trades that still fit can climb back: about 1 in 5 such accounts recover in a 2026-like market.",
-   "impact": "+$3 a month in a Jul-Oct-like market (+$10 Jan-Jun-like, +$4 2021-25-like); chance of losing the account in 6 months 10.5% -> 9.5% (9.8% -> 7.7% Jan-Jun-like); first payout unchanged.",
-   "impact_usd": 3,
-   "options": [
-    "yes",
-    "no",
-    "later"
-   ],
-   "status": "open",
-   "source": "research/writeups/atlas-more-money-2026-11-19.md",
-   "applies": "data/account_b.json \"min_room\": 0 (built key: the funded stuck line $100 -> none; Claude changes it only after your yes)",
-   "added": "2026-11-19",
-   "usd_month": 3,
-   "usd_month_by": {
-    "jan_jun": 10,
-    "jul_oct": 3,
-    "y2021_25": 4
-   },
-   "risk": "None found: a 1-micro trade only goes on when its full stop-out fits the room; a stranded account still holds one of the 2 funded 25K places until you close it",
-   "recommend": "yes",
-   "recommend_why": "It never pays less on any of the 600 test paths; it only keeps alive an account the bot would abandon. Small money, no downside.",
-   "valued": "2026-11-19 tools/atlas_more.py (600 week-block paths from today's account, MFFU Builder 25K funded rules, costs in)"
   }
  ]
 }
