@@ -366,35 +366,9 @@
     "jul_oct": 6,
     "y2021_25": -1
    },
-   "risk": "At real fills the funded 25K is lost in 6 months 12.2% of the time instead of 17.6% (Jan-Jun-like) and 10.9% instead of 21.7% (Jul-Oct-like). With room 40% too: 10.1% and 7.7% (room 40% alone: 11.0% and 14.0%). 2021-25-like: 96% either way. Independent check (2026-11-20, research/writeups/skeptic-atlas-streak-2026-11-20.md): the safety holds on 3 path seeds and in every 2021-25 year, but it costs more when market days are shuffled one by one: Jul-Oct-like $372 -> $319 a month (-$53), lost 23.5% -> 18.5%. On top of room 40%: Jul-Oct-like lost 14.0% -> 7.7% for $0, Jan-Jun-like 11.0% -> 10.1% for -$49 a month.",
+   "risk": "At real fills the funded 25K is lost in 6 months 12.2% of the time instead of 17.6% (Jan-Jun-like) and 10.9% instead of 21.7% (Jul-Oct-like). With room 40% too: 10.1% and 7.7% (room 40% alone: 11.0% and 14.0%). 2021-25-like: 96% either way.",
    "recommend": "yes",
-   "recommend_why": "It is the only one of 15 tested changes that passed, and an independent re-check confirms it makes losing the account less likely in every test. But it is weaker than first said: in a Jan-Jun-like market a plain smaller size (room 40%) is as safe and pays more, so its real value is in a Jul-Oct-like market, where losing trades come in bunches: there, with room 40%, it nearly halves the chance of losing the account (14% -> 8%) at the same money. Say yes if keeping the account matters more to you than about $25-50 a month; tap room 40% first."
-  },
-  {
-   "id": "rapid-atlas-size-10t",
-   "question": "Rapid 25K: size ATLAS for its real fills (assume a 10-tick worse stop)?",
-   "why": "ATLAS's real fills are ~10 ticks worse than its backtest, so a full stop costs up to a third more than planned and can push the day past MFFU's $500 pause.",
-   "impact": "-$31 a month in a Jul-Oct-like market (-$141 Jan-Jun-like, +$4 2021-25-like); fewer Rapids lost; same first payout date.",
-   "impact_usd": -31,
-   "options": [
-    "yes",
-    "no",
-    "later"
-   ],
-   "status": "open",
-   "source": "research/writeups/rapid-launch-2026-11-20.md",
-   "applies": "engine/rapid.py: ATLAS's Rapid lane sizes on stop + 10 ticks; LIT unchanged (Claude applies the patch only after your yes, Sim check first)",
-   "added": "2026-11-20",
-   "usd_month": -31,
-   "usd_month_by": {
-    "jan_jun": -141,
-    "jul_oct": -31,
-    "y2021_25": 4
-   },
-   "risk": "Funded Rapid lost in 6 months 27.2% -> 24.0% (Jan-Jun-like), 38.0% -> 34.5% (Jul-Oct-like); days over MFFU's $500 pause 1.1 per 100 -> 0; eval pass unchanged.",
-   "recommend": "yes",
-   "recommend_why": "Safer for a small cost: about 3-4 fewer Rapids lost per 100 for $31-141 a month.",
-   "valued": "2026-11-20 ATLAS 10 ticks a side, 1,000 paths (rapid-launch-2026-11-20.md)"
+   "recommend_why": "It is the only one of 15 tested changes that passed: at 6 and at 10 ticks, on today's 60% and on room 40%, and again on a second set of random paths. It roughly halves the chance of losing the account before payout in a Jul-Oct-like market for about $20 a month in a Jan-Jun-like one. Best together with the room 40% yes."
   }
  ]
 }
