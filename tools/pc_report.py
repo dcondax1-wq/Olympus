@@ -70,11 +70,12 @@ EXT_KIND = "le-live-ext"
 EXT_PARTS = 2                    # at most 2 ext posts a run (ntfy.sh free: a few hundred messages a day per IP)
 EXT_EVERY_S = 2640               # the ext goes every 3rd 15-minute run (44 min), or at once when its news changed (ext_hash). Was every 2nd (29 min) until
                                  # 2026-11-20: 96 core + 96 ext + 24 chart posts a day left no room under ntfy's 250 for the other programs and the alerts
-EXT_ORDER = ("rc", "rd", "fl", "brd", "life", "mf", "k7", "board_trades", "at", "fq", "zl", "learn", "lab", "glance", "kalshi_rewards", "kalshi_k1", "kalshi_live", "ap")   # "at": engine/feed_trades
+EXT_ORDER = ("rc", "ck", "rd", "fl", "brd", "life", "mf", "k7", "board_trades", "at", "fq", "zl", "learn", "lab", "glance", "kalshi_rewards", "kalshi_k1", "kalshi_live", "ap")   # "at": engine/feed_trades
 EXT_LAST = ("glog",)   # red-team 2026-11-21: the Brain's long thought stream takes only the room every other block left (cut 5/3, then out)
 # "zl": ZEUS learned, the nightly line (engine/zeus_learn.read_tiny, <= 220 bytes) -> the ZEUS page's "ZEUS learned" card
 CORE_KEYS = ("eh", "v", "kind", "lite", "src", "t", "every_s", "host", "model_state", "price", "day_pnl", "pc_verdict", "pc", "reporter",
-             "board", "accounts", "trimmed", "wp", "ar", "pulse")   # wp: the phone app's push set-up (engine/push.app_block: public keys, ~230 bytes)
+             "board", "accounts", "trimmed", "wp", "ar", "pulse", "p4")   # wp: the phone app's push set-up (engine/push.app_block: public keys, ~230 bytes)
+# p4 (day-zerotouch2): the four pillars' states [LIT, ATLAS, BLITZ, Order Flow] in the CORE (~40 bytes: the phone always knows what runs)
 # ar: {glance bot id: [on, armed]} in the CORE (split(): the glance itself rides the ext, up to 44 min old); pulse: the time of a state-change post (engine/state_pulse.py)
 BRD_BYTES = 1200
 HB_STALE_S = 900                 # the bot beats every 5 min: older than 15 min = the bot is not reporting
@@ -581,6 +582,13 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
         snap["fl"] = _fm.read_tiny()
     except Exception:
         snap["fl"] = None
+    snap["ck_local"] = None                 # day-zerotouch2: the phone's PC checklist, this PC's own part (engine/pc_checklist.local)
+    if os.path.normcase(os.path.realpath(root)) == os.path.normcase(os.path.realpath(ROOT)):   # a test's fake root never reads the real PC
+        try:
+            from engine import pc_checklist as _pcc
+            snap["ck_local"] = _pcc.local(root, now)
+        except Exception:  # noqa: BLE001
+            snap["ck_local"] = None
     try:                                    # READY / NOT READY (engine/readiness, day-ready 2026-11-22): the last verdict, <= 200 bytes, plain words, no ids
         from engine import readiness as _rd
         snap["rd"] = _rd.rd(_rd.read_last(os.path.join(root, "data", "ready_last.json"), now=now))
@@ -715,6 +723,17 @@ def full(snap: dict) -> dict:
         out["life"] = life
     if isinstance(snap.get("sh"), dict):     # self-heal's one line (engine/self_heal.read_tiny): rides an ext post, after EXT_ORDER
         out["sh"] = snap["sh"]
+    if isinstance(snap.get("tr"), dict):     # the order-flow tick count (engine/tickrec.tiny): gathered since day-pillars but never posted
+        out["tr"] = {k: snap["tr"].get(k) for k in ("on", "d", "of", "bf", "o", "l")}
+    try:                                     # day-zerotouch2: the phone's PC checklist + one line per pillar (engine/pc_checklist)
+        from engine import pc_checklist as _pcc
+        ck = _pcc.block(snap.get("ck_local"), glance=pc.get("glance"), blitz=L.get("blitz") or bd.get("blitz"), tr=snap.get("tr"),
+                        sh=snap.get("sh"), nt_running=snap.get("nt"), server=snap.get("server"),
+                        running=pc.get("running") if pc else None)
+        out["ck"] = ck
+        out["p4"] = [p[1] for p in ck.get("pl") or []]
+    except Exception:  # noqa: BLE001
+        pass
     try:                                           # the MFFU-style account page (engine/mffu_view.py: start, days, trades, best day, equity)
         from engine import mffu_view
         mf = mffu_view.compact(L)
@@ -973,6 +992,8 @@ def _news_of(k, v):
     if k == "board_trades" and isinstance(v, list):
         return [({x: y for x, y in t.items() if x not in LIVE_KEYS} if isinstance(t, dict) and (t.get("open") is True or str(t.get("exit") or "").upper() == "OPEN") else t)
                 for t in v]
+    if k == "ck" and isinstance(v, dict) and isinstance(v.get("clk"), list):
+        v = {**v, "clk": v["clk"][:1]}                       # the clock's drift moves every run: only ok / not ok is news
     if isinstance(v, dict):
         drop = CLOCK_KEYS | (ACCRUAL_KEYS.get(k) or set())
         return {a: b for a, b in v.items() if a not in drop}

@@ -577,13 +577,144 @@ def fix_update(ctx, untracked: str = "apply", generated: bool = True, new: str |
             continue                                      # already the new version (checked out by hand): the update takes it
         need.append(rel)
     need = [p for p in need if p]
+    hand = [p for p in need if p in other and parkable(p)]          # day-zerotouch2: a hand edit the update rewrites is parked
+    if hand and ctx.apply:
+        pk = park_local(ctx.root, ctx.git, hand, now=ctx.now, log=ctx.say, via="self-heal (hourly)",
+                        flat=trade_open(ctx) or "")
+        if pk["parked"]:
+            out.append(item("update", "update_parked", "fixed", pk["line"], paths=pk["parked"]))
+            need = [p for p in need if p not in pk["parked"]]
+    elif hand:
+        out.append(item("update", "update_parked", "would", f"would park the local edit to {', '.join(hand[:3])} (git stash) so the "
+                        "update can install", paths=hand))
+        need = [p for p in need if p not in hand]
     if need:
         # day-updfix: the file names FIRST (the public feed cuts a board line at 90 characters: the names used to fall off the end)
         out.append(item("update", "update_blocked", "need",
                         f"update held back by {', '.join(need[:3])}{' +' + str(len(need) - 3) if len(need) > 3 else ''}: "
                         "a local change it may not touch",
-                        "send Claude this line: 'update blocked by " + ", ".join(need[:2]) + "' (keep or drop the change)", need))
+                        "send Claude this line: 'update blocked by " + ", ".join(need[:2]) + "' (strategy / account files are never parked: "
+                        "keep or drop the change)", need))
     return out
+
+
+# ------------------------------------------------------------------------------------------------ 2b. auto-park (day-zerotouch2)
+# Owner 2026-11-24 (the PC's update was held back from 21:30 by one locally edited tracked file): "never stuck again". A local edit
+# of a tracked file the update rewrites is PARKED: `git stash push -m "auto-park <date> <files>" -- <only those files>` (nothing is
+# lost: git stash list / git stash show -p / git stash pop), one record in logs/self_heal/parked.jsonl + parked.json, the feed's sh
+# block ("pk"), ONE phone line, and the update goes on. Never for the strategy / account files (second_model.json, live_model*.json,
+# data/) nor anything self_heal.never() protects: those still alert (needs you). Never while a trade may be open, never weekdays
+# 01:50-16:00 ET (the auto-update's own rules hold too: engine/autoupdate.run_update only calls it with park=True after its
+# window + flat checks).
+# red team 2026-11-24: + the rule files the running bot reads (engine/autoupdate.RESTART_DATA: MFFU / firm rules), the combo rule
+# values (engine/combo50k RULES_REL) and the owner's Decide answers (engine/combo50k.decide_yes reads them): an owner's local
+# edit there changes what the bot does, so it blocks + alerts instead of silently going to the stash
+PARK_NEVER = ("second_model.json", "live_model*.json", "data/*", "*journal*", "research/lit/mffu_rules.json",
+              "research/props/firm_rules.json", "research/lab/combo_50k.json", "tools/web_public/business/decisions.json")
+PARKED_JSON = "parked.json"
+PARKED_LOG = "parked.jsonl"
+
+
+def parkable(rel: str) -> bool:
+    r = str(rel or "").replace("\\", "/").strip()
+    return bool(r) and not never(r) and not any(fnmatch.fnmatchcase(r, g) for g in PARK_NEVER)
+
+
+def _board(kind, who, text, meta):
+    from . import board_events
+    return board_events.emit(kind, who, text, meta)
+
+
+def park_line(files) -> str:
+    f = list(files or [])
+    return (f"Parked a local edit to {', '.join(f[:2])}{' +' + str(len(f) - 2) if len(f) > 2 else ''} so the update could install; "
+            "nothing lost: git stash list")
+
+
+def read_parked(root: str = ROOT) -> dict:
+    d = _read_json(os.path.join(root, LOG_DIR_REL, PARKED_JSON), {}) or {}
+    return d if isinstance(d, dict) else {}
+
+
+def park_local(root: str, git, rels, now=None, log=None, via: str = "self-heal", push=None, board=None, flat=None) -> dict:
+    """Park the local edits of these tracked files (only those) with git stash so the update can fast-forward. Returns
+    {"parked": [...], "kept": [files it may never park: they still block + alert], "stash": sha | None, "line", "why"}.
+    flat: why a trade may be open (None = flat; default engine/autoupdate.files_flat_reason). Never raises."""
+    now = time.time() if now is None else float(now)
+    log = log or SAY_OFF
+    rels = [str(r).replace("\\", "/") for r in (rels or []) if r]
+    out = {"parked": [], "kept": [r for r in rels if not parkable(r)], "stash": None, "line": "", "why": ""}
+    ok = [r for r in rels if parkable(r)]
+    if not ok:
+        return out
+    try:
+        if in_trading(now):
+            out["why"] = "trading hours (never 01:50-16:00 ET on a weekday)"
+            return out
+        if flat is None:                                # every bot's files: LIT's live_state + each NinjaTrader state file
+            import types
+            flat = trade_open(types.SimpleNamespace(flat=None, root=root, now=now))
+        busy = flat
+        if busy:
+            out["why"] = f"a trade may be open: {busy}"
+            return out
+        day = _et(now).strftime("%Y-%m-%d %H:%M")
+        msg = f"auto-park {day} {' '.join(ok[:6])}" + (f" +{len(ok) - 6}" if len(ok) > 6 else "")
+        c, o = git("stash", "push", "-m", msg, "--", *ok, timeout=120)
+        if c != 0:
+            out["why"] = f"git stash refused: {str(o).strip()[-160:]}"
+            log(f"auto-park: {out['why']}")
+            return out
+        c, st = git("status", "--porcelain", "--untracked-files=no", "--", *ok)
+        left = [ln[3:].strip() for ln in (st or "").splitlines() if ln.strip()] if c == 0 else ok
+        parked = [r for r in ok if r not in left]
+        c, sha = git("rev-parse", "-q", "--verify", "refs/stash")
+        out.update(parked=parked, stash=_sha(sha) if c == 0 else None, line=park_line(parked) if parked else "")
+        out["kept"] += [r for r in ok if r in left]
+        if not parked:
+            out["why"] = "git stash left the files as they were"
+            return out
+        log(f"auto-park ({via}): {msg} -> {str(out['stash'] or '?')[:10]}")
+        home = os.path.join(root, LOG_DIR_REL)
+        rec = {"t": int(now), "files": parked[:20], "stash": out["stash"], "msg": msg, "via": via}
+        try:
+            os.makedirs(home, exist_ok=True)
+            with open(os.path.join(home, PARKED_LOG), "a", encoding="utf-8") as fh:
+                fh.write(json.dumps(rec) + "\n")
+        except OSError:
+            pass
+        pk = read_parked(root)
+        hist = [h for h in pk.get("hist") or [] if isinstance(h, dict) and now - float(h.get("t") or 0) <= 30 * 86400]
+        _write_json(os.path.join(home, PARKED_JSON), {"last": rec, "hist": (hist + [{"t": int(now), "n": len(parked)}])[-50:]})
+        tp = os.path.join(home, "tiny.json")
+        ti = _read_json(tp, None)
+        if isinstance(ti, dict):                        # the feed's sh block shows it at the next 15-minute report
+            ti["pk"] = park_tiny(root, now)
+            _write_json(tp, ti)
+        try:
+            (board or _board)("self_heal", "pc", out["line"][:290], {"fault": "update", "key": "update_parked"})
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            m = {"key": f"heal:parked:{int(now)}", "kind": "pc_health", "title": "PC self-heal: update unblocked", "body": out["line"][:500],
+                 "priority": "default", "tags": "package", "t": int(now)}
+            out["push"] = bool((push or _push)(m))
+        except Exception:  # noqa: BLE001
+            out["push"] = False
+        return out
+    except Exception as e:  # noqa: BLE001
+        out["why"] = f"{e.__class__.__name__}: {str(e)[:120]}"
+        return out
+
+
+def park_tiny(root: str, now) -> dict | None:
+    """{"n": parks in the last 7 days, "f": the last parked files (<= 2, 40 chars), "t": when} or None."""
+    pk = read_parked(root)
+    last = pk.get("last") or {}
+    if not last.get("t"):
+        return None
+    n = sum(1 for h in pk.get("hist") or [] if isinstance(h, dict) and now - float(h.get("t") or 0) <= 7 * 86400)
+    return {"n": n, "f": [str(x)[:40] for x in (last.get("files") or [])[:2]], "t": int(last["t"])}
 
 
 def restore_untracked(ctx, new: str | None = None) -> list:
@@ -1197,6 +1328,7 @@ def tiny(state: dict, now) -> dict:
             + (f" · last clean freed {float(state.get('freed') or 0):.2f} GB" if state.get("clean_t") else ""))
     return {"t": int(state.get("t") or now), "ok": not need, "fixed": fixed, "need": need,
             **({"blk": list(state.get("blk") or [])[:3]} if state.get("blk") and "update_blocked" in need else {}),
+            **({"pk": state["pk"]} if isinstance(state.get("pk"), dict) else {}),
             "free": round(free) if isinstance(free, (int, float)) else None, "bot": sz.get("bot"), "big": [[k, v] for k, v in big],
             "freed": round(float(state.get("freed") or 0) / 1, 2) if state.get("clean_t") else None, "line": line[:240]}
 
@@ -1295,6 +1427,7 @@ def heal(ctx, force_clean: bool = False, board=None, push=None, disk_free=None) 
         state["clean_t"] = int(ctx.now)
         state["freed"] = res["clean"]["bytes"] / GB
         state["sizes"] = res["clean"].get("sizes") or state.get("sizes")
+    state["pk"] = park_tiny(ctx.root, ctx.now)          # day-zerotouch2: the last auto-park (the feed's sh block)
     f = free_gb(ctx.root) if disk_free is None else disk_free
     state["free"] = round(f, 1) if f is not None else None
     _write_json(sp, state)

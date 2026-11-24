@@ -274,7 +274,10 @@ def test_updfix(tmp):
     check("b3. a local change in a file the update rewrites still blocks, named, untouched",
           ff["status"] == "skipped" and "engine/a.py" in ff["reason"] and open(os.path.join(pc2, "engine", "a.py")).read() == "A = 99\n", ff)
     r = {i["key"]: i for i in SH.fix_update(ctx(pc2, time.time()))}
-    check("b3. self-heal names engine/a.py FIRST in its line", r.get("update_blocked", {}).get("text", "").startswith("update held back by engine/a.py"), r)
+    # day-zerotouch2: a hand edit of a code file is PARKED (git stash) now; the dry run says so and names the file first
+    check("b3. self-heal (dry run) would park engine/a.py, named in its line", r.get("update_parked", {}).get("status") == "would"
+          and "engine/a.py" in r["update_parked"].get("text", "") and "update_blocked" not in r, r)
+    # (a never-parked file still blocks + is named first: tests/test_zerotouch2.py a)
     # the Windows rename: the temp file must be closed (complete on disk) before fsutil.replace renames it
     from engine import fsutil
     seen = []
