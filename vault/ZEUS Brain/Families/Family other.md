@@ -7,8 +7,8 @@ type: "family"
 
 # Research family: other
 
-> [!abstract] 112 write-ups
-> adopt-candidate 16, finding 14, info 17, promising 14, rejected 36, research 15
+> [!abstract] 113 write-ups
+> adopt-candidate 16, finding 14, info 17, promising 14, rejected 36, research 16
 
 | Date | Write-up | Verdict |
 |---|---|---|
@@ -17,6 +17,7 @@ type: "family"
 | 2026-11-24 | [[livegap-2026-11-24\|Live vs backtest]] | research |
 | 2026-11-24 | [[lit-vix-downtrend-2026-11-24\|LIT in high-VIX falling markets]] | research |
 | 2026-11-24 | [[dead-hours-2026-11-24\|Dead hours per pillar]] | research |
+| 2026-11-24 | [[badcase-2026-11-24\|The BAD case]] | research |
 | 2026-11-23 | [[popular-ict-2026-11-23\|Popular ICT / SMC strategies on CME NQ, run exactly as taught]] | rejected |
 | 2026-11-23 | [[popular-classic-2026-11-23\|Popular classic NQ / ES strategies, as the textbook states them]] | research |
 | 2026-11-23 | [[payday-check-2026-11-23\|Payday check]] | research |

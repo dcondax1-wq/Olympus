@@ -81,6 +81,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 ## Tested and rejected
 
+> [!failure]- Bad-case plan
+> in a 2025-like / 2021-25 market every MFFU plan loses ($-236 to -$591 per slot per 6 months, pass 6-21% vs break-even 30-119%). Early-warning rule (LIT 20-trade avg R < Jan-Jun 10th pct) fails: ON 89% of 2021-25 with a HIGHER pass rate there, fires 49% of Jul-Oct. BLITZ $150 on the Rapid: better in 3 of 4 markets, -$15 in 2021-25 = stays paper. ATLAS funded at $150 beats $250 in all 4 markets (lead, not adopted: needs the account_b replay + owner yes).
+> Write-ups: [[badcase-2026-11-24|The BAD case]]
+
 > [!failure]- Dead hours per pillar
 > worst 1-3 half-hour window per book picked on 2021-24 only (PF < 0.8, 20+ trades), tested on 2025 / Jan-Jun / Jul-Oct 2026 + placebo. LIT 02:00-03:00 (-$7.6k in 2021-24) loses $10.1k / $5.2k in 2026 if skipped; ATLAS EMA 05:30-07:00 Jul-Oct -$856; MACD 02:30-03:00 Jan-Jun -$201 (p 0.057); S/R 11:00-12:00 +$1,009 / +$268 / +$15 but p 0.25; BLITZ none. 0 pass: the coverage map's bad hours are in-sample.
 > Write-ups: [[dead-hours-2026-11-24|Dead hours per pillar]]
