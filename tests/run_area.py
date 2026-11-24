@@ -379,6 +379,7 @@ AREAS["cities"].append("pillars")         # day-pillars 2026-11-24: the FOUR PIL
 AREAS["nq"].append("pillars")             # day-pillars 2026-11-24: the NQ page strip + header link
 AREAS["nq"].append("brain_app")           # day-brain-app 2026-11-24: THE BRAIN (brain/: 6 regions, next trade, 3D chart, thinking, learning, today $)
 AREAS["pc"].append("tickrec_tiny")        # day-pillars 2026-11-24: engine.tickrec.tiny / write_tiny (the order-flow pillar line)
+AREAS["pc"].append("ofready")             # day-ofready 2026-11-24: engine/ofsum.py day summaries + research/orderflow/of_battery.py (synthetic only)
 AREAS["cities"].append("research_hub2")   # night-hub2 2026-11-22: the Research Hub (cities/hub.html, data tools/build_research_hub.py); its own line
 AREAS["cities"].append("strategy_lab")    # day-mind 2026-11-23: Strategy Lab data (tools/build_strategy_lab.py) + the Research Hub tab
 AREAS["olympus"].append("brain3d")       # day-arenas 2026-11-21: the bot brain in 3D (olympus/brain3d.js + brain3d-scene.js, brain3d-lab.html); its own line

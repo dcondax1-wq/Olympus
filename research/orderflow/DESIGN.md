@@ -60,3 +60,9 @@ bar's own volume and CLV. They show whether real ticks add anything over what wa
 
 Counted variants: OF1, OF2, OF3A, OF4 = 1 each; OF5 = 2, OF6 = 2 -> **8 scored variants**. Any PASS is a candidate only:
 3 months of forward-recorded days that agree, then the normal LIT/ATLAS change process and the owner's yes. Nothing is armed.
+
+## Note added 2026-11-24 (same day, before any data; transport only, no rule changed)
+The trade-level `NQ_prints.csv.gz` file is dropped: the PC now computes OF2's frozen block threshold itself (99.5th pct of size
+over the 5 previous tick days, >= 3 needed) and ships per-bar signed block volume `bth` (plus fixed b10/b20/b50) in
+`NQ_bars5m.csv.gz`, with `block_th` in the meta. OF2's window (sweep-extreme bar open -> entry, both on the 5m grid) is whole
+bars, so the result is identical (selftest: parity with `of_study.prereg` on raw ticks). No trade-level tape leaves the PC.
