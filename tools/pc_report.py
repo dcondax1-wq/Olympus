@@ -725,6 +725,7 @@ def full(snap: dict) -> dict:
         out["sh"] = snap["sh"]
     if isinstance(snap.get("tr"), dict):     # the order-flow tick count (engine/tickrec.tiny): gathered since day-pillars but never posted
         out["tr"] = {k: snap["tr"].get(k) for k in ("on", "d", "of", "bf", "o", "l")}
+        out["tr"].update({k: snap["tr"][k] for k in ("h", "e") if snap["tr"].get(k) is not None})   # day-ofready: tick-day holes, bf_errors
     try:                                     # day-zerotouch2: the phone's PC checklist + one line per pillar (engine/pc_checklist)
         from engine import pc_checklist as _pcc
         ck = _pcc.block(snap.get("ck_local"), glance=pc.get("glance"), blitz=L.get("blitz") or bd.get("blitz"), tr=snap.get("tr"),

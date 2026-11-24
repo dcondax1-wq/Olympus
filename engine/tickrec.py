@@ -489,13 +489,14 @@ def autopilot(now: dt.datetime | None = None, study=None, nd: str | None = None)
         runs = auto.get("runs") or []
         st = recorder_status(nd)
         write_tiny()                                   # the Four Pillars line (days so far) for the status post, after each ingest
+        of_sum = build_summaries()                     # day-ofready: per-day order-flow summaries for the cloud (never raises)
         want = None
         if len(days) >= STUDY_DAYS and not runs:
             want = "first look"
         elif runs and len(runs) < 2 and st.get("backfill") == "done" and len(days) >= runs[-1]["days"] + 20:
             want = "final look (backfill done)"
         out = {"ran": False, "ingest": {k: ing.get(k) for k in ("ok", "files", "rows")}, "nq_days": len(days),
-               "backfill": st.get("backfill"), "oldest": st.get("oldest")}
+               "backfill": st.get("backfill"), "oldest": st.get("oldest"), "of_summaries": of_sum}
         if not want:
             out["why"] = "waiting: %d of %d NQ tick days" % (len(days), STUDY_DAYS) if len(days) < STUDY_DAYS else "already ran"
             return out
@@ -523,6 +524,43 @@ def autopilot(now: dt.datetime | None = None, study=None, nd: str | None = None)
             os.remove(lock)
         except Exception:
             pass
+
+
+OF_BUDGET_S = 600            # day-ofready: at most this long per autopilot kick building summaries (a year's backfill = a few kicks)
+
+
+def build_summaries(budget_s: float = OF_BUDGET_S, out_root: str | None = None) -> dict:
+    """engine/ofsum.write_day for every NQ tick day without its summary (logs/datapipe/days/<day>/of/, what engine/datafeed sends
+    the cloud). Oldest first (OF2's block threshold reads the days before), stops after budget_s, picks up on the next kick.
+    Read-only towards ticks and the bot; NEVER raises (a broken summary can never block the recorder, the study or a trade)."""
+    try:
+        from . import ofsum
+        root = out_root or ofsum.OUT_DEFAULT
+        t0, made, failed, left = time.time(), 0, 0, 0
+        for d in nq_days():
+            if all(os.path.exists(os.path.join(root, d, "of", nm)) for nm in ofsum.NAMES):
+                continue
+            if time.time() - t0 > budget_s:
+                left += 1
+                continue
+            r = ofsum.write_day(d, root)
+            made += 1 if r.get("ok") else 0
+            failed += 0 if r.get("ok") else 1
+        return {"made": made, "failed": failed, "left": left}
+    except Exception as e:  # noqa: BLE001
+        return {"error": f"{e.__class__.__name__}: {str(e)[:80]}"}
+
+
+CME_CLOSED = {"2025-11-27", "2025-12-25", "2026-01-01", "2026-04-03", "2026-11-26", "2026-12-25", "2027-01-01"}   # no Globex session
+
+
+def holes(days: list) -> int:
+    """Weekdays between the oldest and newest NQ tick day with no tick file (CME full closures excluded): the backfill's gaps."""
+    if not days:
+        return 0
+    have = set(days)
+    rng_ = pd.bdate_range(days[0], days[-1])
+    return int(sum(1 for d in rng_ if d.strftime("%Y-%m-%d") not in have and d.strftime("%Y-%m-%d") not in CME_CLOSED))
 
 
 def _run_study(timeout: float = 6 * 3600) -> dict:
@@ -663,15 +701,21 @@ def status() -> dict:
 def tiny(now: float | None = None) -> dict | None:
     """The order-flow pillar's line for the PC's status post (Four Pillars page, day-pillars 2026-11-24; < 120 bytes, never raises):
     {"on": recorder enabled, "d": NQ tick days on disk, "of": STUDY_DAYS, "bf": backfill state, "o": oldest day the backfill
-    reached, "l": newest tick day, "t": when}. None when the recorder was never set up (no config, no days) so nothing is sent."""
+    reached, "l": newest tick day, "h": weekdays missing between the oldest and newest tick day (day-ofready), "e": the
+    recorder's bf_errors count, "t": when}. None when the recorder was never set up (no config, no days) so nothing is sent."""
     try:
         days = nq_days()
         on = is_enabled()
         if not on and not days:
             return None
         st = recorder_status() or {}
+        try:
+            err = int(str(st.get("bf_errors") or "").strip()) if str(st.get("bf_errors") or "").strip() else None
+        except ValueError:
+            err = None
         out = {"on": bool(on), "d": len(days), "of": STUDY_DAYS, "bf": str(st.get("backfill") or "")[:12] or None,
                "o": str(st.get("oldest") or (days[0] if days else ""))[:10] or None, "l": (days[-1] if days else None),
+               "h": holes(days) if days else None, "e": err,
                "t": int(now if now is not None else time.time())}
         return {k: v for k, v in out.items() if v is not None}
     except Exception:
