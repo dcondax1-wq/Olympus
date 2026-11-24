@@ -172,7 +172,7 @@ def test_static():
     check("a. the home: the Me tile (after Bots, Money and Today since night A 2026-11-16, a plain link to hub/?h=me), its line from the private me/me.json, its size ('8 areas') and the search finds page hubs",
           gate_html.index('data-hub="today"') < gate_html.index('class="g-hub" data-hub="me" data-to="hub/index.html?h=me"') < gate_html.index('data-hub="plan"')
           and "getJSON(base + 'me/me.json')" in gate_js and "H.size || plural(H.count, 'app')" in gate_js and "C.findHubs ? C.findHubs(q) : []" in gate_js and "ME: X.ME" in gate_js)
-    check("a. gate-nav: Go to shows a hub's size (the Me hub: its areas, not '0 apps') and loads the catalog ?v=me1", "h.size || (h.count + ' apps')" in nav and "gate-catalog.js?v=nv13" in nav)
+    check("a. gate-nav: Go to shows a hub's size (the Me hub: its areas, not '0 apps') and loads the catalog ?v=me1", "h.size || (h.count + ' apps')" in nav and "gate-catalog.js?v=nv14" in nav)
     pr = AK.read(os.path.join(ROOT, "tools", "pc_report.py"))
     # night-tasks 2026-11-23 moved the soft hooks out of main() into after_run(), which main() calls only on a real run
     # (night-reds3: the same three guarantees, checked where the code now lives)

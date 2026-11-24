@@ -139,7 +139,7 @@ def reach(P, o):
     check("c. Home links every arena's page (so every live app is <= 2 taps from Home)", want <= arena_links, sorted(want - arena_links))
     a11y = text("olympus/a11y.js")
     check("c. a11y.js loads the breadcrumb (gate-nav.js) on every page that has neither it nor the AGORA shell; never on Home, in a frame or on the public pages",
-          "gate-nav.js?v=g12" in a11y and "agency\\/(demos|audit|showcase|factory|portal|f)" in a11y and "data-ag-nonav" in a11y and "window.top !== window" in a11y)
+          "gate-nav.js?v=g13" in a11y and "agency\\/(demos|audit|showcase|factory|portal|f)" in a11y and "data-ag-nonav" in a11y and "window.top !== window" in a11y)
     lost = []
     for p in P:
         if PUBLIC.match(p) or p == "gate/index.html":

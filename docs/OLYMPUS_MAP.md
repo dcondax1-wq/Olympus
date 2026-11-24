@@ -25,7 +25,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 
 | Arena | Front page (the Home tile) | Live apps | Its page |
 |---|---|---|---|
-| **NQ Bot** | Bots right now (`nq/`) | 24 | `hub/arena.html?a=nq` |
+| **NQ Bot** | Bots right now (`nq/`) | 26 | `hub/arena.html?a=nq` |
 | **Jarvis** | Jarvis (`jarvis/`) | 4 | `hub/arena.html?a=jarvis` |
 | **Websites** | Website business (`agency/`) | 1 | `hub/arena.html?a=agency` |
 | **Data City** | Cities and Hellas (`cities/`) | 8 | `hub/arena.html?a=data` |
@@ -125,9 +125,11 @@ Retired apps are not on Home, in search or in A to Z. Their old links open the r
 | Oracle (`oracle`) | NQ Bot | trading | The market radar, live | bundled fixture / its own files | `tests.test_oracle_page` |
 | Pantheon (`pantheon`) | NQ Bot | trading | The data gods: rates, liquidity, fear | `jarvis.json`, `pantheon.json`, `fixture.json` | `tests.test_pantheon` |
 | Pheme (`pheme`) (retired) | NQ Bot | trading | The word on the street: releases, and NQ's | `fixture.json`, `stats.json` | `tests.test_pheme_page` |
+| Four Pillars (`pillars`) | NQ Bot | trading | LIT, ATLAS, BLITZ, ORDER FLOW: status, accounts, edge | `pillars-data.json`, `../home.json`, `../business/accounts.json`, `../business/payday.json`, `../odeon/trades.json` | `tests.test_pillars` |
 | Pnyx (`pnyx`) | NQ Bot | money | Prop-firm rules and risk calculator: stop to micros | `fixture.json`, `../home.json`, `../ledger/rules.json` | `tests.test_pnyx_page` |
 | Pythia (`pythia`) | NQ Bot | trading | The risk calendar: the next 14 days, and | `fixture.json`, `events.json`, `../home.json` | `tests.test_pythia_page` |
 | Trading (`trading`) | NQ Bot | trading | Every trade: today, calendar, stats, payout rules | `../status_feed.json`, `../why/why.json`, `../odeon/trades.json`, `../home.json`, `fixture.json`, ... | `tests.test_trading_page` |
+| War Room (`warroom`) | NQ Bot | trading | Every NQ bot, every step, live: what it | bundled fixture / its own files | `tests.test_warroom` |
 | Why (`why`) | NQ Bot | trading | Why our trades win and lose, per bot | `why.json` | `tests.test_why_page` |
 | Zenith (`zenith`) | NQ Bot | trading | NQ bots · Zlarior · ATLAS | data.json, home.json, live.json (the bot feeds) | `tests.test_zenith_mode` |
 | Bridge (`bridge`) (retired) | Jarvis | trading | Link ChatGPT: 3 steps, live job status | `status.json`, `jobs.json`, `deliveries.json` | `tests.test_bridge_page` |
@@ -178,10 +180,9 @@ Retired apps are not on Home, in search or in A to Z. Their old links open the r
 | Tyche (`tyche`) | Kalshi | kalshi | The Kalshi bets as a 3D fortune wheel | bundled fixture / its own files | `tests.test_tyche_page` |
 | Atlas (`atlas`) | Everything else | life | A fast map of every Olympus dashboard | bundled fixture / its own files | `tests.test_atlas_armed` |
 | Agora Gallery (`gallery`) (retired) | Everything else | life | Every 3D shape of the Agora on a | `fixture.json` | covered by `tests.test_olympus_kit` |
-| Four Pillars (`pillars`) | Everything else | trading | LIT, ATLAS, BLITZ, ORDER FLOW: status, accounts, edge | `pillars-data.json`, `../home.json`, `../business/accounts.json`, `../business/payday.json`, `../odeon/trades.json` | `tests.test_pillars` |
 | Settings (`settings`) | Everything else | life | Look, voice, storage and the tour | bundled fixture / its own files | `tests.test_settings_page` |
 
-78 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
+79 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
 
 ## Where the organizing code lives
 
