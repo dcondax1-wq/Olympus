@@ -71,8 +71,9 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-68 entries from docs/TESTED_AND_REJECTED.md, newest first.
+69 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
+- **Market structure: expansion / retracement** · [[structure-2026-11-24|Market structure]]
 - **Stops x targets x TIME** · [[Zlarior (LIT)]] · [[stops-targets-time-2026-11-24|"Stops x targets x TIME]]
 - **Market Learn weekly trial #1** · [[BLITZ (paper)]]
 - **Edge hunt lane B, cross-asset triggers** · [[edge-b-cross-2026-11-22|Edge hunt lane B]]
