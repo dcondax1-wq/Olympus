@@ -1,0 +1,960 @@
+{
+ "made": "2026-11-24",
+ "design": "research/litvix/DESIGN.md",
+ "n": 638,
+ "last_day": "2026-11-16",
+ "tables": {
+  "2021-25": {
+   "all": {
+    "n": 511,
+    "win": 53.8,
+    "pf": 1.01,
+    "net": 1265,
+    "avg": 2,
+    "per_month_in_bucket": 25,
+    "longest_no_win": 10
+   },
+   "band": {
+    "VIX <15": {
+     "n": 129,
+     "win": 51.2,
+     "pf": 0.92,
+     "net": -2467,
+     "avg": -19,
+     "per_month_in_bucket": -80,
+     "longest_no_win": 7
+    },
+    "VIX 15-20": {
+     "n": 211,
+     "win": 54.0,
+     "pf": 0.91,
+     "net": -4006,
+     "avg": -19,
+     "per_month_in_bucket": -81,
+     "longest_no_win": 5
+    },
+    "VIX 20-25": {
+     "n": 101,
+     "win": 47.5,
+     "pf": 0.9,
+     "net": -1852,
+     "avg": -18,
+     "per_month_in_bucket": -39,
+     "longest_no_win": 6
+    },
+    "VIX 25+": {
+     "n": 70,
+     "win": 67.1,
+     "pf": 2.5,
+     "net": 9590,
+     "avg": 137,
+     "per_month_in_bucket": 206,
+     "longest_no_win": 4
+    }
+   },
+   "band_x_trend": {
+    "VIX 20-25 | down": {
+     "n": 28,
+     "win": 35.7,
+     "pf": 0.01,
+     "net": -6208,
+     "avg": -222,
+     "per_month_in_bucket": -131,
+     "longest_no_win": 9
+    },
+    "VIX 20-25 | flat": {
+     "n": 40,
+     "win": 47.5,
+     "pf": 1.19,
+     "net": 1437,
+     "avg": 36,
+     "per_month_in_bucket": 30,
+     "longest_no_win": 5
+    },
+    "VIX 20-25 | up": {
+     "n": 33,
+     "win": 57.6,
+     "pf": 1.53,
+     "net": 2919,
+     "avg": 88,
+     "per_month_in_bucket": 77,
+     "longest_no_win": 3
+    },
+    "VIX 25+ | down": {
+     "n": 49,
+     "win": 69.4,
+     "pf": 2.66,
+     "net": 6544,
+     "avg": 134,
+     "per_month_in_bucket": 162,
+     "longest_no_win": 3
+    },
+    "VIX 25+ | flat": {
+     "n": 20,
+     "win": 65.0,
+     "pf": 2.62,
+     "net": 3403,
+     "avg": 170,
+     "per_month_in_bucket": 73,
+     "longest_no_win": 3
+    },
+    "VIX 25+ | up": {
+     "n": 1,
+     "win": 0.0,
+     "pf": 0.0,
+     "net": -358,
+     "avg": -358,
+     "per_month_in_bucket": -358,
+     "longest_no_win": 1
+    }
+   },
+   "trend_x_dir": {
+    "down | long": {
+     "n": 62,
+     "win": 53.2,
+     "pf": 0.55,
+     "net": -3828,
+     "avg": -62,
+     "per_month_in_bucket": -80,
+     "longest_no_win": 5
+    },
+    "down | short": {
+     "n": 45,
+     "win": 57.8,
+     "pf": 0.88,
+     "net": -834,
+     "avg": -19,
+     "per_month_in_bucket": -21,
+     "longest_no_win": 5
+    },
+    "flat | long": {
+     "n": 115,
+     "win": 56.5,
+     "pf": 0.99,
+     "net": -306,
+     "avg": -3,
+     "per_month_in_bucket": -6,
+     "longest_no_win": 7
+    },
+    "flat | short": {
+     "n": 121,
+     "win": 47.9,
+     "pf": 1.08,
+     "net": 2075,
+     "avg": 17,
+     "per_month_in_bucket": 43,
+     "longest_no_win": 8
+    },
+    "up | long": {
+     "n": 65,
+     "win": 53.8,
+     "pf": 1.2,
+     "net": 2706,
+     "avg": 42,
+     "per_month_in_bucket": 55,
+     "longest_no_win": 3
+    },
+    "up | short": {
+     "n": 99,
+     "win": 56.6,
+     "pf": 1.13,
+     "net": 2568,
+     "avg": 26,
+     "per_month_in_bucket": 54,
+     "longest_no_win": 5
+    }
+   },
+   "vix25_down_x_dir": {
+    "long": {
+     "n": 24,
+     "win": 62.5,
+     "pf": 1.74,
+     "net": 1911,
+     "avg": 80,
+     "per_month_in_bucket": 182,
+     "longest_no_win": 1
+    },
+    "short": {
+     "n": 25,
+     "win": 76.0,
+     "pf": 4.43,
+     "net": 4633,
+     "avg": 185,
+     "per_month_in_bucket": 120,
+     "longest_no_win": 2
+    }
+   }
+  },
+  "H1": {
+   "all": {
+    "n": 80,
+    "win": 58.8,
+    "pf": 4.98,
+    "net": 33901,
+    "avg": 424,
+    "per_month_in_bucket": 5923,
+    "longest_no_win": 7
+   },
+   "band": {
+    "VIX <15": {
+     "n": 5,
+     "win": 80.0,
+     "pf": 46.71,
+     "net": 9819,
+     "avg": 1964,
+     "per_month_in_bucket": 9819,
+     "longest_no_win": 1
+    },
+    "VIX 15-20": {
+     "n": 55,
+     "win": 52.7,
+     "pf": 2.84,
+     "net": 12954,
+     "avg": 236,
+     "per_month_in_bucket": 2358,
+     "longest_no_win": 6
+    },
+    "VIX 20-25": {
+     "n": 14,
+     "win": 71.4,
+     "pf": 7.63,
+     "net": 7063,
+     "avg": 504,
+     "per_month_in_bucket": 1556,
+     "longest_no_win": 2
+    },
+    "VIX 25+": {
+     "n": 6,
+     "win": 66.7,
+     "pf": 22.7,
+     "net": 4065,
+     "avg": 677,
+     "per_month_in_bucket": 4065,
+     "longest_no_win": 1
+    }
+   },
+   "band_x_trend": {
+    "VIX 20-25 | down": {
+     "n": 5,
+     "win": 60.0,
+     "pf": 5.92,
+     "net": 2884,
+     "avg": 577,
+     "per_month_in_bucket": 1654,
+     "longest_no_win": 2
+    },
+    "VIX 20-25 | flat": {
+     "n": 9,
+     "win": 77.8,
+     "pf": 9.72,
+     "net": 4179,
+     "avg": 464,
+     "per_month_in_bucket": 921,
+     "longest_no_win": 1
+    },
+    "VIX 20-25 | up": {
+     "n": 0
+    },
+    "VIX 25+ | down": {
+     "n": 4,
+     "win": 75.0,
+     "pf": 57.74,
+     "net": 3087,
+     "avg": 772,
+     "per_month_in_bucket": 3087,
+     "longest_no_win": 1
+    },
+    "VIX 25+ | flat": {
+     "n": 2,
+     "win": 50.0,
+     "pf": 8.36,
+     "net": 978,
+     "avg": 489,
+     "per_month_in_bucket": 978,
+     "longest_no_win": 1
+    },
+    "VIX 25+ | up": {
+     "n": 0
+    }
+   },
+   "trend_x_dir": {
+    "down | long": {
+     "n": 5,
+     "win": 40.0,
+     "pf": 1.8,
+     "net": 549,
+     "avg": 110,
+     "per_month_in_bucket": 428,
+     "longest_no_win": 2
+    },
+    "down | short": {
+     "n": 6,
+     "win": 66.7,
+     "pf": 6.64,
+     "net": 4565,
+     "avg": 761,
+     "per_month_in_bucket": 2953,
+     "longest_no_win": 1
+    },
+    "flat | long": {
+     "n": 17,
+     "win": 47.1,
+     "pf": 3.79,
+     "net": 5145,
+     "avg": 303,
+     "per_month_in_bucket": 920,
+     "longest_no_win": 6
+    },
+    "flat | short": {
+     "n": 19,
+     "win": 63.2,
+     "pf": 5.97,
+     "net": 9950,
+     "avg": 524,
+     "per_month_in_bucket": 1738,
+     "longest_no_win": 3
+    },
+    "up | long": {
+     "n": 17,
+     "win": 70.6,
+     "pf": 11.15,
+     "net": 12526,
+     "avg": 737,
+     "per_month_in_bucket": 7616,
+     "longest_no_win": 3
+    },
+    "up | short": {
+     "n": 16,
+     "win": 56.2,
+     "pf": 1.6,
+     "net": 1165,
+     "avg": 73,
+     "per_month_in_bucket": 600,
+     "longest_no_win": 3
+    }
+   },
+   "vix25_down_x_dir": {
+    "long": {
+     "n": 1,
+     "win": 100.0,
+     "pf": null,
+     "net": 1236,
+     "avg": 1236,
+     "per_month_in_bucket": 1236,
+     "longest_no_win": 0
+    },
+    "short": {
+     "n": 3,
+     "win": 66.7,
+     "pf": 35.02,
+     "net": 1850,
+     "avg": 617,
+     "per_month_in_bucket": 1850,
+     "longest_no_win": 1
+    }
+   }
+  },
+  "H2": {
+   "all": {
+    "n": 47,
+    "win": 46.8,
+    "pf": 2.49,
+    "net": 9060,
+    "avg": 193,
+    "per_month_in_bucket": 2010,
+    "longest_no_win": 4
+   },
+   "band": {
+    "VIX <15": {
+     "n": 9,
+     "win": 55.6,
+     "pf": 2.15,
+     "net": 1347,
+     "avg": 150,
+     "per_month_in_bucket": 890,
+     "longest_no_win": 2
+    },
+    "VIX 15-20": {
+     "n": 37,
+     "win": 43.2,
+     "pf": 2.56,
+     "net": 7685,
+     "avg": 208,
+     "per_month_in_bucket": 1705,
+     "longest_no_win": 5
+    },
+    "VIX 20-25": {
+     "n": 1,
+     "win": 100.0,
+     "pf": null,
+     "net": 28,
+     "avg": 28,
+     "per_month_in_bucket": 28,
+     "longest_no_win": 0
+    },
+    "VIX 25+": {
+     "n": 0
+    }
+   },
+   "band_x_trend": {
+    "VIX 20-25 | down": {
+     "n": 1,
+     "win": 100.0,
+     "pf": null,
+     "net": 28,
+     "avg": 28,
+     "per_month_in_bucket": 28,
+     "longest_no_win": 0
+    },
+    "VIX 20-25 | flat": {
+     "n": 0
+    },
+    "VIX 20-25 | up": {
+     "n": 0
+    },
+    "VIX 25+ | down": {
+     "n": 0
+    },
+    "VIX 25+ | flat": {
+     "n": 0
+    },
+    "VIX 25+ | up": {
+     "n": 0
+    }
+   },
+   "trend_x_dir": {
+    "down | long": {
+     "n": 6,
+     "win": 50.0,
+     "pf": 1.5,
+     "net": 494,
+     "avg": 82,
+     "per_month_in_bucket": 126,
+     "longest_no_win": 2
+    },
+    "down | short": {
+     "n": 5,
+     "win": 40.0,
+     "pf": 0.01,
+     "net": -378,
+     "avg": -76,
+     "per_month_in_bucket": -88,
+     "longest_no_win": 2
+    },
+    "flat | long": {
+     "n": 5,
+     "win": 0.0,
+     "pf": 0.0,
+     "net": -1191,
+     "avg": -238,
+     "per_month_in_bucket": -525,
+     "longest_no_win": 5
+    },
+    "flat | short": {
+     "n": 15,
+     "win": 40.0,
+     "pf": 1.2,
+     "net": 484,
+     "avg": 32,
+     "per_month_in_bucket": 125,
+     "longest_no_win": 2
+    },
+    "up | long": {
+     "n": 8,
+     "win": 75.0,
+     "pf": 10.2,
+     "net": 2693,
+     "avg": 337,
+     "per_month_in_bucket": 1516,
+     "longest_no_win": 1
+    },
+    "up | short": {
+     "n": 8,
+     "win": 62.5,
+     "pf": 10.03,
+     "net": 6958,
+     "avg": 870,
+     "per_month_in_bucket": 6958,
+     "longest_no_win": 3
+    }
+   },
+   "vix25_down_x_dir": {
+    "long": {
+     "n": 0
+    },
+    "short": {
+     "n": 0
+    }
+   }
+  },
+  "all": {
+   "all": {
+    "n": 638,
+    "win": 53.9,
+    "pf": 1.39,
+    "net": 44226,
+    "avg": 69,
+    "per_month_in_bucket": 733,
+    "longest_no_win": 10
+   },
+   "band": {
+    "VIX <15": {
+     "n": 143,
+     "win": 52.4,
+     "pf": 1.27,
+     "net": 8700,
+     "avg": 61,
+     "per_month_in_bucket": 218,
+     "longest_no_win": 7
+    },
+    "VIX 15-20": {
+     "n": 303,
+     "win": 52.5,
+     "pf": 1.3,
+     "net": 16633,
+     "avg": 55,
+     "per_month_in_bucket": 276,
+     "longest_no_win": 6
+    },
+    "VIX 20-25": {
+     "n": 116,
+     "win": 50.9,
+     "pf": 1.26,
+     "net": 5238,
+     "avg": 45,
+     "per_month_in_bucket": 89,
+     "longest_no_win": 6
+    },
+    "VIX 25+": {
+     "n": 76,
+     "win": 67.1,
+     "pf": 3.07,
+     "net": 13655,
+     "avg": 180,
+     "per_month_in_bucket": 262,
+     "longest_no_win": 4
+    }
+   },
+   "band_x_trend": {
+    "VIX 20-25 | down": {
+     "n": 34,
+     "win": 41.2,
+     "pf": 0.52,
+     "net": -3296,
+     "avg": -97,
+     "per_month_in_bucket": -56,
+     "longest_no_win": 9
+    },
+    "VIX 20-25 | flat": {
+     "n": 49,
+     "win": 53.1,
+     "pf": 1.7,
+     "net": 5616,
+     "avg": 115,
+     "per_month_in_bucket": 103,
+     "longest_no_win": 5
+    },
+    "VIX 20-25 | up": {
+     "n": 33,
+     "win": 57.6,
+     "pf": 1.53,
+     "net": 2919,
+     "avg": 88,
+     "per_month_in_bucket": 77,
+     "longest_no_win": 3
+    },
+    "VIX 25+ | down": {
+     "n": 53,
+     "win": 69.8,
+     "pf": 3.41,
+     "net": 9631,
+     "avg": 182,
+     "per_month_in_bucket": 186,
+     "longest_no_win": 3
+    },
+    "VIX 25+ | flat": {
+     "n": 22,
+     "win": 63.6,
+     "pf": 2.97,
+     "net": 4381,
+     "avg": 199,
+     "per_month_in_bucket": 85,
+     "longest_no_win": 4
+    },
+    "VIX 25+ | up": {
+     "n": 1,
+     "win": 0.0,
+     "pf": 0.0,
+     "net": -358,
+     "avg": -358,
+     "per_month_in_bucket": -358,
+     "longest_no_win": 1
+    }
+   },
+   "trend_x_dir": {
+    "down | long": {
+     "n": 73,
+     "win": 52.1,
+     "pf": 0.73,
+     "net": -2784,
+     "avg": -38,
+     "per_month_in_bucket": -47,
+     "longest_no_win": 5
+    },
+    "down | short": {
+     "n": 56,
+     "win": 57.1,
+     "pf": 1.4,
+     "net": 3353,
+     "avg": 60,
+     "per_month_in_bucket": 57,
+     "longest_no_win": 5
+    },
+    "flat | long": {
+     "n": 137,
+     "win": 53.3,
+     "pf": 1.14,
+     "net": 3648,
+     "avg": 27,
+     "per_month_in_bucket": 63,
+     "longest_no_win": 7
+    },
+    "flat | short": {
+     "n": 155,
+     "win": 49.0,
+     "pf": 1.4,
+     "net": 12509,
+     "avg": 81,
+     "per_month_in_bucket": 212,
+     "longest_no_win": 8
+    },
+    "up | long": {
+     "n": 90,
+     "win": 58.9,
+     "pf": 2.19,
+     "net": 17925,
+     "avg": 199,
+     "per_month_in_bucket": 305,
+     "longest_no_win": 3
+    },
+    "up | short": {
+     "n": 123,
+     "win": 56.9,
+     "pf": 1.48,
+     "net": 10691,
+     "avg": 87,
+     "per_month_in_bucket": 182,
+     "longest_no_win": 5
+    }
+   },
+   "vix25_down_x_dir": {
+    "long": {
+     "n": 25,
+     "win": 64.0,
+     "pf": 2.21,
+     "net": 3147,
+     "avg": 126,
+     "per_month_in_bucket": 61,
+     "longest_no_win": 1
+    },
+    "short": {
+     "n": 28,
+     "win": 75.0,
+     "pf": 5.61,
+     "net": 6484,
+     "avg": 232,
+     "per_month_in_bucket": 129,
+     "longest_no_win": 2
+    }
+   }
+  }
+ },
+ "live_window": {
+  "n": 7,
+  "win": 28.6,
+  "pf": 0.03,
+  "net": -858,
+  "avg": -123,
+  "per_month_in_bucket": -858,
+  "longest_no_win": 3
+ },
+ "live_window_tags": [
+  {
+   "day": "2026-10-26",
+   "dir": -1,
+   "band": "VIX 15-20",
+   "vix": 19.45,
+   "trend": "down",
+   "pnl": 0.6,
+   "exit": "BE"
+  },
+  {
+   "day": "2026-10-27",
+   "dir": -1,
+   "band": "VIX 15-20",
+   "vix": 18.39,
+   "trend": "down",
+   "pnl": -137.4,
+   "exit": "STOP"
+  },
+  {
+   "day": "2026-10-28",
+   "dir": -1,
+   "band": "VIX 15-20",
+   "vix": 17.52,
+   "trend": "flat",
+   "pnl": -347.6,
+   "exit": "STOP"
+  },
+  {
+   "day": "2026-11-03",
+   "dir": 1,
+   "band": "VIX 20-25",
+   "vix": 21.15,
+   "trend": "down",
+   "pnl": 27.6,
+   "exit": "EOD"
+  },
+  {
+   "day": "2026-11-10",
+   "dir": 1,
+   "band": "VIX 15-20",
+   "vix": 19.92,
+   "trend": "down",
+   "pnl": -230.8,
+   "exit": "STOP"
+  },
+  {
+   "day": "2026-11-11",
+   "dir": -1,
+   "band": "VIX 15-20",
+   "vix": 19.46,
+   "trend": "down",
+   "pnl": -41.9,
+   "exit": "CUT_T15"
+  },
+  {
+   "day": "2026-11-16",
+   "dir": 1,
+   "band": "VIX 15-20",
+   "vix": 19.3,
+   "trend": "down",
+   "pnl": -128.9,
+   "exit": "STOP"
+  }
+ ],
+ "streaks": {
+  "runs_7plus": 3,
+  "longest": 10,
+  "runs_by_len": {
+   "1": 78,
+   "2": 29,
+   "3": 15,
+   "4": 10,
+   "5": 4,
+   "6": 4,
+   "7": 2,
+   "10": 1
+  },
+  "win_rate_2021-25": 53.8,
+  "p_7_straight_no_win_2021-25": 0.45,
+  "win_rate_H1": 58.8,
+  "p_7_straight_no_win_H1": 0.2,
+  "win_rate_H2": 50.0,
+  "p_7_straight_no_win_H2": 0.78,
+  "p_a_7_run_in_a_year_of_trades_at_2026_rates": 19.5,
+  "year_of_trades": 125
+ },
+ "base": {
+  "spans": {
+   "H1": {
+    "n": 80,
+    "tpw": 3.12,
+    "win": 58.8,
+    "pf": 4.98,
+    "net": 33901,
+    "per_month": 5562,
+    "dd": -2196,
+    "avg_r": 0.825
+   },
+   "H2": {
+    "n": 47,
+    "tpw": 3.01,
+    "win": 46.8,
+    "pf": 2.49,
+    "net": 9060,
+    "per_month": 2439,
+    "dd": -1396,
+    "avg_r": 0.566
+   },
+   "2021-25": {
+    "n": 511,
+    "tpw": 2.38,
+    "win": 53.8,
+    "pf": 1.01,
+    "net": 1265,
+    "per_month": 25,
+    "dd": -19426,
+    "avg_r": 0.017
+   }
+  },
+  "eval50": {
+   "H1": {
+    "n": 78,
+    "net": 33663,
+    "p10": 44.5,
+    "f10": 0.0,
+    "pass_med": 11.0
+   },
+   "H2": {
+    "n": 40,
+    "net": 11735,
+    "p10": 39.1,
+    "f10": 0.0,
+    "pass_med": 12.0
+   }
+  }
+ },
+ "V1 longs off when VIX > 25 and 20-day trend down": {
+  "skipped": {
+   "2021-25": 24,
+   "H1": 1,
+   "H2": 0
+  },
+  "skipped_usd": {
+   "2021-25": 1911,
+   "H1": 1236,
+   "H2": 0
+  },
+  "spans": {
+   "H1": {
+    "n": 79,
+    "tpw": 3.09,
+    "win": 58.2,
+    "pf": 4.83,
+    "net": 32665,
+    "per_month": 5359,
+    "dd": -2196,
+    "avg_r": 0.764
+   },
+   "H2": {
+    "n": 47,
+    "tpw": 3.01,
+    "win": 46.8,
+    "pf": 2.49,
+    "net": 9060,
+    "per_month": 2439,
+    "dd": -1396,
+    "avg_r": 0.566
+   },
+   "2021-25": {
+    "n": 487,
+    "tpw": 2.27,
+    "win": 53.4,
+    "pf": 0.99,
+    "net": -646,
+    "per_month": -13,
+    "dd": -19426,
+    "avg_r": 0.012
+   }
+  },
+  "eval50": {
+   "H1": {
+    "n": 77,
+    "net": 30575,
+    "p10": 44.5,
+    "f10": 0.0,
+    "pass_med": 10.0
+   },
+   "H2": {
+    "n": 40,
+    "net": 11735,
+    "p10": 39.1,
+    "f10": 0.0,
+    "pass_med": 12.0
+   }
+  },
+  "placebo_p": 0.6545,
+  "verdict": "FAIL (variance, not a rule)",
+  "why": [
+   "H1 net $32,665 vs $33,901",
+   "H1 PF 4.83 vs 4.98",
+   "H2 net $9,060 vs $9,060",
+   "2021-25 net $-646 vs $1,265",
+   "2021-25 PF 0.99 vs 1.01",
+   "H1 50K eval $30,575 vs $33,663",
+   "placebo p 0.6545 (bar 0.025)"
+  ]
+ },
+ "V2 all LIT off when VIX > 25 and 20-day trend down": {
+  "skipped": {
+   "2021-25": 49,
+   "H1": 4,
+   "H2": 0
+  },
+  "skipped_usd": {
+   "2021-25": 6544,
+   "H1": 3087,
+   "H2": 0
+  },
+  "spans": {
+   "H1": {
+    "n": 76,
+    "tpw": 2.97,
+    "win": 57.9,
+    "pf": 4.64,
+    "net": 30814,
+    "per_month": 5055,
+    "dd": -2196,
+    "avg_r": 0.68
+   },
+   "H2": {
+    "n": 47,
+    "tpw": 3.01,
+    "win": 46.8,
+    "pf": 2.49,
+    "net": 9060,
+    "per_month": 2439,
+    "dd": -1396,
+    "avg_r": 0.566
+   },
+   "2021-25": {
+    "n": 462,
+    "tpw": 2.15,
+    "win": 52.2,
+    "pf": 0.94,
+    "net": -5698,
+    "per_month": -112,
+    "dd": -19566,
+    "avg_r": -0.018
+   }
+  },
+  "eval50": {
+   "H1": {
+    "n": 74,
+    "net": 26200,
+    "p10": 38.7,
+    "f10": 0.0,
+    "pass_med": 12.0
+   },
+   "H2": {
+    "n": 40,
+    "net": 11735,
+    "p10": 39.1,
+    "f10": 0.0,
+    "pass_med": 12.0
+   }
+  },
+  "placebo_p": 0.8265,
+  "verdict": "FAIL (variance, not a rule)",
+  "why": [
+   "H1 net $30,814 vs $33,901",
+   "H1 PF 4.64 vs 4.98",
+   "H2 net $9,060 vs $9,060",
+   "2021-25 net $-5,698 vs $1,265",
+   "2021-25 PF 0.94 vs 1.01",
+   "H1 50K eval $26,200 vs $33,663",
+   "placebo p 0.8265 (bar 0.025)"
+  ]
+ }
+}
