@@ -1,53 +1,44 @@
 {
  "v": 1,
- "built": "2026-11-19T23:40:36+00:00",
+ "built": "2026-11-19T06:42:44+00:00",
  "today": "2026-11-19",
  "what": "Edge health: a WARNING light for LIT, not a trading switch. Paper research; changes no bot.",
  "freshness": {
   "rows": {
-   "data/NQ_1m.csv (TradingView)": "2026-11-19 16:59 ET",
-   "data/NQ_5m.csv (TradingView)": "2026-11-19 16:55 ET",
+   "data/NQ_1m.csv (TradingView)": "2026-10-16 15:59 ET",
+   "data/NQ_5m.csv (TradingView)": "2026-10-16 15:55 ET",
    "data/ES_5m.csv (TradingView)": "2026-10-16 15:55 ET",
    "PC NinjaTrader bars 1m (heartbeat)": "2026-11-06 16:59 ET",
    "PC NinjaTrader bars 5m (heartbeat)": "2026-11-06 16:55 ET",
    "VIX (data/VIX_1d.csv)": "2026-10-16",
    "VIX (with CBOE)": "2026-10-16"
   },
-  "export_end": "2026-11-19",
-  "bars_end": "2026-11-19",
+  "export_end": "2026-10-16",
+  "bars_end": "2026-11-06",
   "today": "2026-11-19",
-  "sessions_missing": 0
+  "sessions_missing": 8
  },
  "basis_shift": {
   "5m": 0.0,
   "1m": 0.0
  },
- "sessions_after_export": 24,
+ "sessions_after_export": 15,
  "fresh_days_1m": {
-  "2026-10-19": true,
-  "2026-10-20": true,
-  "2026-10-21": true,
-  "2026-10-22": true,
-  "2026-10-23": true,
-  "2026-10-26": true,
-  "2026-10-27": true,
-  "2026-10-28": true,
-  "2026-10-29": true,
-  "2026-10-30": true,
-  "2026-11-02": true,
-  "2026-11-03": true,
+  "2026-10-19": false,
+  "2026-10-20": false,
+  "2026-10-21": false,
+  "2026-10-22": false,
+  "2026-10-23": false,
+  "2026-10-26": false,
+  "2026-10-27": false,
+  "2026-10-28": false,
+  "2026-10-29": false,
+  "2026-10-30": false,
+  "2026-11-02": false,
+  "2026-11-03": false,
   "2026-11-04": true,
   "2026-11-05": true,
-  "2026-11-06": true,
-  "2026-11-09": true,
-  "2026-11-10": true,
-  "2026-11-11": true,
-  "2026-11-12": true,
-  "2026-11-13": true,
-  "2026-11-16": true,
-  "2026-11-17": true,
-  "2026-11-18": true,
-  "2026-11-19": true
+  "2026-11-06": true
  },
  "fresh_trades": [
   {
@@ -56,55 +47,23 @@
    "r": 0.004,
    "pnl": 0.6,
    "qty": 1,
-   "risk_pts": 68.5
+   "risk_pts": 78.0
   },
   {
    "day": "2026-10-27",
    "exit": "STOP",
    "r": -1.014,
-   "pnl": -137.4,
+   "pnl": -140.9,
    "qty": 1,
-   "risk_pts": 67.75
+   "risk_pts": 69.5
   },
   {
-   "day": "2026-10-28",
-   "exit": "STOP",
-   "r": -1.022,
-   "pnl": -347.6,
-   "qty": 4,
-   "risk_pts": 42.5
-  },
-  {
-   "day": "2026-11-03",
-   "exit": "EOD",
-   "r": 0.203,
-   "pnl": 27.6,
+   "day": "2026-10-29",
+   "exit": "BE",
+   "r": 0.004,
+   "pnl": 0.6,
    "qty": 1,
-   "risk_pts": 68.0
-  },
-  {
-   "day": "2026-11-10",
-   "exit": "STOP",
-   "r": -1.017,
-   "pnl": -230.8,
-   "qty": 2,
-   "risk_pts": 56.75
-  },
-  {
-   "day": "2026-11-11",
-   "exit": "CUT_T15",
-   "r": -0.315,
-   "pnl": -41.9,
-   "qty": 1,
-   "risk_pts": 66.5
-  },
-  {
-   "day": "2026-11-16",
-   "exit": "STOP",
-   "r": -1.015,
-   "pnl": -128.9,
-   "qty": 1,
-   "risk_pts": 63.5
+   "risk_pts": 76.75
   }
  ],
  "pc_backtest_fresh": [
@@ -131,18 +90,18 @@
  ],
  "lit": {
   "run": "lit_live settings (live_model.json lit), engine/lit.run_x",
-  "last_day": "2026-11-19",
+  "last_day": "2026-11-06",
   "windows": {
    "20": {
     "now": {
-     "n": 7,
-     "tpw": 1.75,
-     "win": 28.6,
-     "pf": 0.03,
-     "pf_r": 0.05,
-     "usd_month": -901,
-     "r_sum": -4.18,
-     "r_avg": -0.597
+     "n": 5,
+     "tpw": 1.25,
+     "win": 80.0,
+     "pf": 26.61,
+     "pf_r": 9.17,
+     "usd_month": 3789,
+     "r_sum": 8.28,
+     "r_avg": 1.656
     },
     "dist": {
      "tpw": {
@@ -159,10 +118,10 @@
        "n": 128
       },
       "2026 H2": {
-       "p10": 1.5,
+       "p10": 1.75,
        "median": 2.25,
        "p90": 3.25,
-       "n": 102
+       "n": 93
       }
      },
      "win": {
@@ -182,7 +141,7 @@
        "p10": 33.3,
        "median": 50.0,
        "p90": 66.7,
-       "n": 102
+       "n": 93
       }
      },
      "pf": {
@@ -199,10 +158,10 @@
        "n": 128
       },
       "2026 H2": {
-       "p10": 0.04,
+       "p10": 0.81,
        "median": 2.05,
-       "p90": 6.94,
-       "n": 102
+       "p90": 7.99,
+       "n": 93
       }
      },
      "pf_r": {
@@ -219,10 +178,10 @@
        "n": 128
       },
       "2026 H2": {
-       "p10": 0.06,
-       "median": 2.23,
-       "p90": 5.48,
-       "n": 102
+       "p10": 0.3,
+       "median": 2.29,
+       "p90": 5.99,
+       "n": 93
       }
      },
      "usd_month": {
@@ -239,10 +198,10 @@
        "n": 128
       },
       "2026 H2": {
-       "p10": -797.5,
-       "median": 1067.0,
-       "p90": 6967.3,
-       "n": 102
+       "p10": -240.0,
+       "median": 1708.0,
+       "p90": 7041.0,
+       "n": 93
       }
      },
      "r_avg": {
@@ -259,32 +218,32 @@
        "n": 128
       },
       "2026 H2": {
-       "p10": -0.53,
-       "median": 0.51,
-       "p90": 1.44,
-       "n": 102
+       "p10": -0.38,
+       "median": 0.61,
+       "p90": 1.64,
+       "n": 93
       }
      }
     },
     "now_rank_in_2026": {
-     "pf": 1,
-     "usd_month": 2
+     "pf": 98,
+     "usd_month": 37
     },
     "now_rank_in_2021_25": {
-     "pf": 15,
-     "usd_month": 37
+     "pf": 97,
+     "usd_month": 95
     }
    },
    "40": {
     "now": {
-     "n": 17,
-     "tpw": 2.12,
-     "win": 52.9,
-     "pf": 4.62,
+     "n": 20,
+     "tpw": 2.5,
+     "win": 55.0,
+     "pf": 3.84,
      "pf_r": 3.16,
-     "usd_month": 3147,
-     "r_sum": 14.91,
-     "r_avg": 0.877
+     "usd_month": 3440,
+     "r_sum": 18.69,
+     "r_avg": 0.934
     },
     "dist": {
      "tpw": {
@@ -304,7 +263,7 @@
        "p10": 1.88,
        "median": 2.5,
        "p90": 3.0,
-       "n": 102
+       "n": 93
       }
      },
      "win": {
@@ -321,10 +280,10 @@
        "n": 128
       },
       "2026 H2": {
-       "p10": 42.9,
-       "median": 52.9,
-       "p90": 60.0,
-       "n": 102
+       "p10": 42.26,
+       "median": 54.2,
+       "p90": 60.72,
+       "n": 93
       }
      },
      "pf": {
@@ -341,10 +300,10 @@
        "n": 128
       },
       "2026 H2": {
-       "p10": 1.36,
-       "median": 3.13,
+       "p10": 1.34,
+       "median": 2.85,
        "p90": 4.8,
-       "n": 102
+       "n": 93
       }
      },
      "pf_r": {
@@ -362,9 +321,9 @@
       },
       "2026 H2": {
        "p10": 1.04,
-       "median": 2.62,
-       "p90": 3.48,
-       "n": 102
+       "median": 2.39,
+       "p90": 3.72,
+       "n": 93
       }
      },
      "usd_month": {
@@ -382,9 +341,9 @@
       },
       "2026 H2": {
        "p10": 404.0,
-       "median": 2243.0,
-       "p90": 3988.0,
-       "n": 102
+       "median": 1864.0,
+       "p90": 4424.4,
+       "n": 93
       }
      },
      "r_avg": {
@@ -402,31 +361,31 @@
       },
       "2026 H2": {
        "p10": 0.02,
-       "median": 0.57,
-       "p90": 1.04,
-       "n": 102
+       "median": 0.54,
+       "p90": 1.12,
+       "n": 93
       }
      }
     },
     "now_rank_in_2026": {
-     "pf": 70,
-     "usd_month": 12
+     "pf": 45,
+     "usd_month": 18
     },
     "now_rank_in_2021_25": {
-     "pf": 96,
-     "usd_month": 99
+     "pf": 95,
+     "usd_month": 100
     }
    },
    "60": {
     "now": {
-     "n": 30,
-     "tpw": 2.5,
-     "win": 50.0,
-     "pf": 3.13,
-     "pf_r": 2.7,
-     "usd_month": 2697,
-     "r_sum": 23.26,
-     "r_avg": 0.775
+     "n": 29,
+     "tpw": 2.42,
+     "win": 58.6,
+     "pf": 4.34,
+     "pf_r": 3.73,
+     "usd_month": 3545,
+     "r_sum": 30.92,
+     "r_avg": 1.066
     },
     "dist": {
      "tpw": {
@@ -444,9 +403,9 @@
       },
       "2026 H2": {
        "p10": 2.08,
-       "median": 2.58,
-       "p90": 2.92,
-       "n": 102
+       "median": 2.5,
+       "p90": 2.98,
+       "n": 93
       }
      },
      "win": {
@@ -463,10 +422,10 @@
        "n": 128
       },
       "2026 H2": {
-       "p10": 46.2,
+       "p10": 45.88,
        "median": 53.1,
-       "p90": 59.3,
-       "n": 102
+       "p90": 59.86,
+       "n": 93
       }
      },
      "pf": {
@@ -483,10 +442,10 @@
        "n": 128
       },
       "2026 H2": {
-       "p10": 1.64,
-       "median": 3.08,
-       "p90": 3.89,
-       "n": 102
+       "p10": 1.61,
+       "median": 2.89,
+       "p90": 3.9,
+       "n": 93
       }
      },
      "pf_r": {
@@ -503,10 +462,10 @@
        "n": 128
       },
       "2026 H2": {
-       "p10": 1.43,
-       "median": 2.47,
-       "p90": 3.07,
-       "n": 102
+       "p10": 1.41,
+       "median": 2.38,
+       "p90": 3.06,
+       "n": 93
       }
      },
      "usd_month": {
@@ -523,10 +482,10 @@
        "n": 128
       },
       "2026 H2": {
-       "p10": 822.0,
-       "median": 2462.0,
-       "p90": 3391.0,
-       "n": 102
+       "p10": 809.2,
+       "median": 2386.0,
+       "p90": 3426.0,
+       "n": 93
       }
      },
      "r_avg": {
@@ -543,20 +502,20 @@
        "n": 128
       },
       "2026 H2": {
-       "p10": 0.22,
-       "median": 0.54,
-       "p90": 0.9,
-       "n": 102
+       "p10": 0.21,
+       "median": 0.52,
+       "p90": 0.87,
+       "n": 93
       }
      }
     },
     "now_rank_in_2026": {
-     "pf": 19,
-     "usd_month": 2
+     "pf": 55,
+     "usd_month": 7
     },
     "now_rank_in_2021_25": {
-     "pf": 94,
-     "usd_month": 99
+     "pf": 99,
+     "usd_month": 100
     }
    }
   },
@@ -1091,9 +1050,9 @@
    "sessions": 40
   },
   "now": {
-   "day": "2026-11-19",
+   "day": "2026-11-06",
    "light": "GREEN",
-   "r_week": 1.86
+   "r_week": 2.34
   },
   "rates": {
    "2021-25": {
@@ -1109,14 +1068,14 @@
     "n": 128
    },
    "2026 H2": {
-    "GREEN": 58.8,
-    "AMBER": 33.3,
-    "RED": 7.8,
-    "n": 102
+    "GREEN": 54.8,
+    "AMBER": 36.6,
+    "RED": 8.6,
+    "n": 93
    }
   },
-  "false_alarm_h2_red_pct": 7.8,
-  "h2_not_green_pct": 41.1,
+  "false_alarm_h2_red_pct": 8.6,
+  "h2_not_green_pct": 45.2,
   "red_runs": {
    "2021-25": {
     "stretches": 23,
@@ -1163,14 +1122,14 @@
    },
    "2026 H2": {
     "GREEN": {
-     "avg_r_next": 0.654,
-     "usd_month_next": 2130,
-     "days": 21
+     "avg_r_next": 0.668,
+     "usd_month_next": 2126,
+     "days": 20
     },
     "AMBER": {
-     "avg_r_next": 0.78,
-     "usd_month_next": 2771,
-     "days": 33
+     "avg_r_next": 0.73,
+     "usd_month_next": 2545,
+     "days": 25
     },
     "RED": {
      "avg_r_next": 1.145,
@@ -2248,87 +2207,42 @@
    {
     "day": "2026-10-28",
     "light": "GREEN",
-    "r_week": 2.64
+    "r_week": 2.77
    },
    {
     "day": "2026-10-29",
     "light": "GREEN",
-    "r_week": 2.64
+    "r_week": 2.77
    },
    {
     "day": "2026-10-30",
     "light": "GREEN",
-    "r_week": 2.77
+    "r_week": 2.9
    },
    {
     "day": "2026-11-02",
     "light": "GREEN",
-    "r_week": 2.73
+    "r_week": 2.85
    },
    {
     "day": "2026-11-03",
     "light": "GREEN",
-    "r_week": 2.75
+    "r_week": 2.85
    },
    {
     "day": "2026-11-04",
     "light": "GREEN",
-    "r_week": 2.23
+    "r_week": 2.34
    },
    {
     "day": "2026-11-05",
     "light": "GREEN",
-    "r_week": 2.23
+    "r_week": 2.34
    },
    {
     "day": "2026-11-06",
     "light": "GREEN",
-    "r_week": 2.23
-   },
-   {
-    "day": "2026-11-09",
-    "light": "GREEN",
-    "r_week": 2.36
-   },
-   {
-    "day": "2026-11-10",
-    "light": "GREEN",
-    "r_week": 2.36
-   },
-   {
-    "day": "2026-11-11",
-    "light": "GREEN",
-    "r_week": 2.45
-   },
-   {
-    "day": "2026-11-12",
-    "light": "GREEN",
-    "r_week": 2.45
-   },
-   {
-    "day": "2026-11-13",
-    "light": "GREEN",
-    "r_week": 2.45
-   },
-   {
-    "day": "2026-11-16",
-    "light": "GREEN",
-    "r_week": 2.45
-   },
-   {
-    "day": "2026-11-17",
-    "light": "GREEN",
-    "r_week": 2.45
-   },
-   {
-    "day": "2026-11-18",
-    "light": "GREEN",
-    "r_week": 1.74
-   },
-   {
-    "day": "2026-11-19",
-    "light": "GREEN",
-    "r_week": 1.86
+    "r_week": 2.34
    }
   ]
  },
@@ -2393,7 +2307,7 @@
     "GREEN": 100.0,
     "AMBER": 0.0,
     "RED": 0.0,
-    "n": 100
+    "n": 91
    }
   },
   "forward_by_light": {
@@ -2423,9 +2337,9 @@
    },
    "2026 H2": {
     "GREEN": {
-     "avg_r_next": 0.802,
-     "usd_month_next": 2809,
-     "days": 60
+     "avg_r_next": 0.787,
+     "usd_month_next": 2713,
+     "days": 51
     }
    }
   },
@@ -2503,22 +2417,22 @@
     "reclaim": 0.393
    },
    "2026 H2": {
-    "vix": 16.972,
-    "rth_rng": 1.435,
-    "on_share": 0.69,
-    "er": 0.123,
-    "reclaim": 0.356
+    "vix": 16.674,
+    "rth_rng": 1.337,
+    "on_share": 0.7,
+    "er": 0.122,
+    "reclaim": 0.375
    }
   },
   "now_values": {
-   "vix": 18.253,
-   "rth_rng": 1.6608,
-   "on_share": 0.657,
-   "er": 0.1228,
-   "reclaim": 0.2857
+   "vix": 17.3142,
+   "rth_rng": 1.3885,
+   "on_share": 0.678,
+   "er": 0.1351,
+   "reclaim": 0.3611
   },
   "now": {
-   "day": "2026-11-19",
+   "day": "2026-11-06",
    "light": "GREEN",
    "like_2026": 1,
    "of": 1
@@ -2527,18 +2441,18 @@
  },
  "card": {
   "light": "GREEN",
-  "line": "Edge health: GREEN · last 40 sessions PF 4.62 vs 2026 H1 3.91 · data to Nov 19",
-  "data_to": "2026-11-19",
-  "sessions_missing": 0,
-  "pf40": 4.62,
-  "usd_month40": 3147,
-  "tpw40": 2.12,
-  "r_week40": 1.86,
+  "line": "Edge health: GREEN · last 40 sessions PF 3.84 vs 2026 H1 3.91 · data to Nov 6",
+  "data_to": "2026-11-06",
+  "sessions_missing": 8,
+  "pf40": 3.84,
+  "usd_month40": 3440,
+  "tpw40": 2.5,
+  "r_week40": 2.34,
   "pf40_2026_h1": 3.91,
   "pf40_2021_25": 1.1,
-  "false_alarm_h2_pct": 7.8,
+  "false_alarm_h2_pct": 8.6,
   "market_features_used": false,
-  "export": "TradingView CME_MINI:NQ1! 1-minute chart (all hours, B-ADJ off), Export chart data from Nov 19 to today, save in data/tv_exports/, then: python data/import_futures.py csv NQ data/tv_exports/<file>.csv (5m and ES1! 5m the same way). Or start the PC bot: its heartbeat pushes the NinjaTrader bars.",
+  "export": "TradingView CME_MINI:NQ1! 1-minute chart (all hours, B-ADJ off), Export chart data from Oct 16 to today, save in data/tv_exports/, then: python data/import_futures.py csv NQ data/tv_exports/<file>.csv (5m and ES1! 5m the same way). Or start the PC bot: its heartbeat pushes the NinjaTrader bars.",
   "note": "A warning, not a switch: the bots trade the same either way. GREEN = LIT's last 40 sessions look like 2026, RED = like 2021-25 (about $0). Past weeks do not forecast the next ones; it says what the market has been.",
   "atlas": {
    "light": "AMBER",
@@ -2552,10 +2466,10 @@
   }
  },
  "tiny": {
-  "d": "2026-11-19",
+  "d": "2026-11-06",
   "z": [
    "G",
-   4.6,
+   3.8,
    3.9
   ],
   "a": [
@@ -2564,6 +2478,6 @@
    2.8,
    "2026-10-16"
   ],
-  "t": 1795131636
+  "t": 1795070564
  }
 }
