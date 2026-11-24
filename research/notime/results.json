@@ -1,0 +1,1042 @@
+{
+ "made": "2026-11-24",
+ "design": "research/notime/DESIGN.md",
+ "LIT": {
+  "today (02:00-15:30)": {
+   "2021-25": {
+    "tpw": 2.38,
+    "trades": 510,
+    "pf": 1.01,
+    "net": 1275,
+    "per_month": 25,
+    "max_dd": -20462,
+    "evals": {
+     "Builder 50K": {
+      "pass": 21.8,
+      "fail": 56.0
+     },
+     "Builder 25K": {
+      "pass": 21.7,
+      "fail": 55.3
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 58.6
+     }
+    }
+   },
+   "Jan-Jun 2026": {
+    "tpw": 3.12,
+    "trades": 80,
+    "pf": 4.44,
+    "net": 32773,
+    "per_month": 5377,
+    "max_dd": -2315,
+    "evals": {
+     "Builder 50K": {
+      "pass": 92.3,
+      "fail": 7.7
+     },
+     "Builder 25K": {
+      "pass": 92.3,
+      "fail": 7.7
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 9.0
+     }
+    }
+   },
+   "Jul-Oct 2026": {
+    "tpw": 2.56,
+    "trades": 40,
+    "pf": 2.46,
+    "net": 8962,
+    "per_month": 2413,
+    "max_dd": -1466,
+    "evals": {
+     "Builder 50K": {
+      "pass": 68.0,
+      "fail": 0.0
+     },
+     "Builder 25K": {
+      "pass": 68.0,
+      "fail": 0.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 0.0
+     }
+    }
+   }
+  },
+  "no window (18:00-15:30, whole day)": {
+   "2021-25": {
+    "tpw": 2.99,
+    "trades": 640,
+    "pf": 0.93,
+    "net": -10511,
+    "per_month": -206,
+    "max_dd": -19501,
+    "evals": {
+     "Builder 50K": {
+      "pass": 14.5,
+      "fail": 78.5
+     },
+     "Builder 25K": {
+      "pass": 14.5,
+      "fail": 78.1
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 83.2
+     }
+    }
+   },
+   "Jan-Jun 2026": {
+    "tpw": 3.71,
+    "trades": 95,
+    "pf": 3.26,
+    "net": 27310,
+    "per_month": 4480,
+    "max_dd": -3533,
+    "evals": {
+     "Builder 50K": {
+      "pass": 76.4,
+      "fail": 22.5
+     },
+     "Builder 25K": {
+      "pass": 76.4,
+      "fail": 22.5
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 22.5
+     }
+    }
+   },
+   "Jul-Oct 2026": {
+    "tpw": 3.21,
+    "trades": 50,
+    "pf": 2.0,
+    "net": 9644,
+    "per_month": 2597,
+    "max_dd": -1793,
+    "evals": {
+     "Builder 50K": {
+      "pass": 88.4,
+      "fail": 2.9
+     },
+     "Builder 25K": {
+      "pass": 88.4,
+      "fail": 2.9
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 5.1
+     }
+    }
+   }
+  },
+  "late (02:00-15:50)": {
+   "2021-25": {
+    "tpw": 2.41,
+    "trades": 516,
+    "pf": 1.01,
+    "net": 1087,
+    "per_month": 21,
+    "max_dd": -20462,
+    "evals": {
+     "Builder 50K": {
+      "pass": 21.6,
+      "fail": 56.0
+     },
+     "Builder 25K": {
+      "pass": 21.7,
+      "fail": 55.3
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 58.6
+     }
+    }
+   },
+   "Jan-Jun 2026": {
+    "tpw": 3.12,
+    "trades": 80,
+    "pf": 4.44,
+    "net": 32773,
+    "per_month": 5377,
+    "max_dd": -2315,
+    "evals": {
+     "Builder 50K": {
+      "pass": 92.3,
+      "fail": 7.7
+     },
+     "Builder 25K": {
+      "pass": 92.3,
+      "fail": 7.7
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 9.0
+     }
+    }
+   },
+   "Jul-Oct 2026": {
+    "tpw": 2.69,
+    "trades": 42,
+    "pf": 2.45,
+    "net": 8963,
+    "per_month": 2413,
+    "max_dd": -1466,
+    "evals": {
+     "Builder 50K": {
+      "pass": 68.0,
+      "fail": 0.0
+     },
+     "Builder 25K": {
+      "pass": 68.0,
+      "fail": 0.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 0.0
+     }
+    }
+   }
+  }
+ },
+ "LIT_verdict": "the window ADDS money (today wins 2 of 3 spans, total $43,010 vs $26,443)",
+ "ATLAS EMA": {
+  "today": {
+   "2021-25": {
+    "tpw": 2.55,
+    "trades": 547,
+    "pf": 1.09,
+    "net": 12377,
+    "per_month": 242,
+    "max_dd": -21478,
+    "evals": {
+     "Builder 50K": {
+      "pass": 28.4,
+      "fail": 68.5
+     },
+     "Builder 25K": {
+      "pass": 28.4,
+      "fail": 68.5
+     },
+     "Rapid EOD 25K": {
+      "pass": 2.0,
+      "fail": 72.4
+     }
+    }
+   },
+   "Jan-Jun 2026": {
+    "tpw": 2.34,
+    "trades": 60,
+    "pf": 2.72,
+    "net": 19867,
+    "per_month": 3259,
+    "max_dd": -3367,
+    "evals": {
+     "Builder 50K": {
+      "pass": 81.9,
+      "fail": 18.1
+     },
+     "Builder 25K": {
+      "pass": 81.9,
+      "fail": 18.1
+     },
+     "Rapid EOD 25K": {
+      "pass": 19.1,
+      "fail": 23.6
+     }
+    }
+   },
+   "Jul-Oct 2026": {
+    "tpw": 1.67,
+    "trades": 26,
+    "pf": 3.1,
+    "net": 8136,
+    "per_month": 2190,
+    "max_dd": -1492,
+    "evals": {
+     "Builder 50K": {
+      "pass": 64.1,
+      "fail": 0.0
+     },
+     "Builder 25K": {
+      "pass": 64.1,
+      "fail": 0.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 0.0
+     }
+    }
+   }
+  },
+  "day (02:00-15:30)": {
+   "2021-25": {
+    "tpw": 3.09,
+    "trades": 662,
+    "pf": 0.99,
+    "net": -1048,
+    "per_month": -21,
+    "max_dd": -21069,
+    "evals": {
+     "Builder 50K": {
+      "pass": 30.7,
+      "fail": 69.3
+     },
+     "Builder 25K": {
+      "pass": 30.2,
+      "fail": 69.8
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.5,
+      "fail": 78.9
+     }
+    }
+   },
+   "Jan-Jun 2026": {
+    "tpw": 2.73,
+    "trades": 70,
+    "pf": 2.54,
+    "net": 23644,
+    "per_month": 3879,
+    "max_dd": -5274,
+    "evals": {
+     "Builder 50K": {
+      "pass": 72.4,
+      "fail": 27.6
+     },
+     "Builder 25K": {
+      "pass": 72.4,
+      "fail": 27.6
+     },
+     "Rapid EOD 25K": {
+      "pass": 39.4,
+      "fail": 34.0
+     }
+    }
+   },
+   "Jul-Oct 2026": {
+    "tpw": 2.31,
+    "trades": 36,
+    "pf": 0.69,
+    "net": -2469,
+    "per_month": -665,
+    "max_dd": -4237,
+    "evals": {
+     "Builder 50K": {
+      "pass": 13.3,
+      "fail": 68.3
+     },
+     "Builder 25K": {
+      "pass": 13.3,
+      "fail": 68.3
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 68.3
+     }
+    }
+   }
+  },
+  "any time (00:00-15:55)": {
+   "2021-25": {
+    "tpw": 3.83,
+    "trades": 822,
+    "pf": 0.98,
+    "net": -4277,
+    "per_month": -84,
+    "max_dd": -30987,
+    "evals": {
+     "Builder 50K": {
+      "pass": 32.5,
+      "fail": 67.4
+     },
+     "Builder 25K": {
+      "pass": 32.5,
+      "fail": 67.4
+     },
+     "Rapid EOD 25K": {
+      "pass": 2.6,
+      "fail": 79.9
+     }
+    }
+   },
+   "Jan-Jun 2026": {
+    "tpw": 3.44,
+    "trades": 88,
+    "pf": 1.86,
+    "net": 16838,
+    "per_month": 2762,
+    "max_dd": -6236,
+    "evals": {
+     "Builder 50K": {
+      "pass": 56.0,
+      "fail": 44.0
+     },
+     "Builder 25K": {
+      "pass": 56.0,
+      "fail": 44.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 10.3,
+      "fail": 55.7
+     }
+    }
+   },
+   "Jul-Oct 2026": {
+    "tpw": 2.95,
+    "trades": 46,
+    "pf": 0.67,
+    "net": -3629,
+    "per_month": -977,
+    "max_dd": -5604,
+    "evals": {
+     "Builder 50K": {
+      "pass": 8.3,
+      "fail": 91.7
+     },
+     "Builder 25K": {
+      "pass": 8.3,
+      "fail": 91.7
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 100.0
+     }
+    }
+   }
+  }
+ },
+ "ATLAS EMA_verdict": "the window ADDS money (today wins 3 of 3 spans, total $40,380 vs $8,932)",
+ "ATLAS EMA_verdict_day": "the window ADDS money (today wins 2 of 3 spans, total $40,380 vs $20,127)",
+ "ATLAS MACD": {
+  "today": {
+   "2021-25": {
+    "tpw": 1.56,
+    "trades": 335,
+    "pf": 1.18,
+    "net": 21425,
+    "per_month": 420,
+    "max_dd": -22630,
+    "evals": {
+     "Builder 50K": {
+      "pass": 35.0,
+      "fail": 57.2
+     },
+     "Builder 25K": {
+      "pass": 35.0,
+      "fail": 57.2
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.9,
+      "fail": 61.8
+     }
+    }
+   },
+   "Jan-Jun 2026": {
+    "tpw": 1.13,
+    "trades": 29,
+    "pf": 3.78,
+    "net": 22090,
+    "per_month": 3624,
+    "max_dd": -2527,
+    "evals": {
+     "Builder 50K": {
+      "pass": 88.2,
+      "fail": 5.9
+     },
+     "Builder 25K": {
+      "pass": 88.2,
+      "fail": 5.9
+     },
+     "Rapid EOD 25K": {
+      "pass": 23.6,
+      "fail": 7.9
+     }
+    }
+   },
+   "Jul-Oct 2026": {
+    "tpw": 0.96,
+    "trades": 15,
+    "pf": 1.75,
+    "net": 2569,
+    "per_month": 692,
+    "max_dd": -1717,
+    "evals": {
+     "Builder 50K": {
+      "pass": 0.0,
+      "fail": 0.0
+     },
+     "Builder 25K": {
+      "pass": 0.0,
+      "fail": 0.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 0.0
+     }
+    }
+   }
+  },
+  "day (02:00-15:30)": {
+   "2021-25": {
+    "tpw": 2.96,
+    "trades": 634,
+    "pf": 1.01,
+    "net": 2070,
+    "per_month": 41,
+    "max_dd": -45639,
+    "evals": {
+     "Builder 50K": {
+      "pass": 30.4,
+      "fail": 69.6
+     },
+     "Builder 25K": {
+      "pass": 29.7,
+      "fail": 70.3
+     },
+     "Rapid EOD 25K": {
+      "pass": 2.3,
+      "fail": 78.7
+     }
+    }
+   },
+   "Jan-Jun 2026": {
+    "tpw": 2.77,
+    "trades": 71,
+    "pf": 1.73,
+    "net": 16829,
+    "per_month": 2761,
+    "max_dd": -6418,
+    "evals": {
+     "Builder 50K": {
+      "pass": 57.1,
+      "fail": 42.9
+     },
+     "Builder 25K": {
+      "pass": 57.1,
+      "fail": 42.9
+     },
+     "Rapid EOD 25K": {
+      "pass": 16.2,
+      "fail": 62.6
+     }
+    }
+   },
+   "Jul-Oct 2026": {
+    "tpw": 2.44,
+    "trades": 38,
+    "pf": 0.88,
+    "net": -1451,
+    "per_month": -391,
+    "max_dd": -5719,
+    "evals": {
+     "Builder 50K": {
+      "pass": 15.9,
+      "fail": 84.1
+     },
+     "Builder 25K": {
+      "pass": 15.9,
+      "fail": 84.1
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 95.5
+     }
+    }
+   }
+  },
+  "any time (00:00-15:55)": {
+   "2021-25": {
+    "tpw": 3.65,
+    "trades": 783,
+    "pf": 0.98,
+    "net": -4059,
+    "per_month": -80,
+    "max_dd": -41789,
+    "evals": {
+     "Builder 50K": {
+      "pass": 29.2,
+      "fail": 70.8
+     },
+     "Builder 25K": {
+      "pass": 28.9,
+      "fail": 71.1
+     },
+     "Rapid EOD 25K": {
+      "pass": 1.8,
+      "fail": 83.0
+     }
+    }
+   },
+   "Jan-Jun 2026": {
+    "tpw": 3.52,
+    "trades": 90,
+    "pf": 1.39,
+    "net": 8194,
+    "per_month": 1344,
+    "max_dd": -6552,
+    "evals": {
+     "Builder 50K": {
+      "pass": 48.2,
+      "fail": 51.8
+     },
+     "Builder 25K": {
+      "pass": 48.2,
+      "fail": 51.8
+     },
+     "Rapid EOD 25K": {
+      "pass": 11.8,
+      "fail": 66.7
+     }
+    }
+   },
+   "Jul-Oct 2026": {
+    "tpw": 3.78,
+    "trades": 59,
+    "pf": 0.61,
+    "net": -4544,
+    "per_month": -1223,
+    "max_dd": -6506,
+    "evals": {
+     "Builder 50K": {
+      "pass": 0.0,
+      "fail": 100.0
+     },
+     "Builder 25K": {
+      "pass": 0.0,
+      "fail": 100.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 100.0
+     }
+    }
+   }
+  }
+ },
+ "ATLAS MACD_verdict": "the window ADDS money (today wins 3 of 3 spans, total $46,084 vs $-409)",
+ "ATLAS MACD_verdict_day": "the window ADDS money (today wins 3 of 3 spans, total $46,084 vs $17,448)",
+ "ATLAS S/R": {
+  "today": {
+   "2021-25": {
+    "tpw": 1.52,
+    "trades": 326,
+    "pf": 1.09,
+    "net": 8903,
+    "per_month": 174,
+    "max_dd": -7473,
+    "evals": {
+     "Builder 50K": {
+      "pass": 14.8,
+      "fail": 39.5
+     },
+     "Builder 25K": {
+      "pass": 14.8,
+      "fail": 39.5
+     },
+     "Rapid EOD 25K": {
+      "pass": 12.7,
+      "fail": 39.6
+     }
+    }
+   },
+   "Jan-Jun 2026": {
+    "tpw": 1.13,
+    "trades": 29,
+    "pf": 3.72,
+    "net": 12213,
+    "per_month": 2004,
+    "max_dd": -971,
+    "evals": {
+     "Builder 50K": {
+      "pass": 65.2,
+      "fail": 0.0
+     },
+     "Builder 25K": {
+      "pass": 65.2,
+      "fail": 0.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 65.2,
+      "fail": 0.0
+     }
+    }
+   },
+   "Jul-Oct 2026": {
+    "tpw": 1.03,
+    "trades": 16,
+    "pf": 1.89,
+    "net": 2914,
+    "per_month": 784,
+    "max_dd": -2773,
+    "evals": {
+     "Builder 50K": {
+      "pass": 22.0,
+      "fail": 40.0
+     },
+     "Builder 25K": {
+      "pass": 22.0,
+      "fail": 48.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 22.0,
+      "fail": 48.0
+     }
+    }
+   }
+  },
+  "day (02:00-15:30)": {
+   "2021-25": {
+    "tpw": 2.68,
+    "trades": 574,
+    "pf": 1.05,
+    "net": 8635,
+    "per_month": 169,
+    "max_dd": -11351,
+    "evals": {
+     "Builder 50K": {
+      "pass": 24.0,
+      "fail": 67.6
+     },
+     "Builder 25K": {
+      "pass": 23.4,
+      "fail": 68.4
+     },
+     "Rapid EOD 25K": {
+      "pass": 21.0,
+      "fail": 69.8
+     }
+    }
+   },
+   "Jan-Jun 2026": {
+    "tpw": 2.11,
+    "trades": 54,
+    "pf": 1.77,
+    "net": 10116,
+    "per_month": 1660,
+    "max_dd": -2472,
+    "evals": {
+     "Builder 50K": {
+      "pass": 75.0,
+      "fail": 24.0
+     },
+     "Builder 25K": {
+      "pass": 75.0,
+      "fail": 24.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 71.4,
+      "fail": 24.5
+     }
+    }
+   },
+   "Jul-Oct 2026": {
+    "tpw": 2.5,
+    "trades": 39,
+    "pf": 1.22,
+    "net": 2256,
+    "per_month": 608,
+    "max_dd": -3799,
+    "evals": {
+     "Builder 50K": {
+      "pass": 31.2,
+      "fail": 59.4
+     },
+     "Builder 25K": {
+      "pass": 31.2,
+      "fail": 59.4
+     },
+     "Rapid EOD 25K": {
+      "pass": 31.2,
+      "fail": 59.4
+     }
+    }
+   }
+  },
+  "any time (00:00-15:55)": {
+   "2021-25": {
+    "tpw": 2.9,
+    "trades": 621,
+    "pf": 1.01,
+    "net": 1102,
+    "per_month": 22,
+    "max_dd": -13693,
+    "evals": {
+     "Builder 50K": {
+      "pass": 19.3,
+      "fail": 70.8
+     },
+     "Builder 25K": {
+      "pass": 18.5,
+      "fail": 71.8
+     },
+     "Rapid EOD 25K": {
+      "pass": 16.2,
+      "fail": 73.5
+     }
+    }
+   },
+   "Jan-Jun 2026": {
+    "tpw": 2.58,
+    "trades": 66,
+    "pf": 1.41,
+    "net": 7357,
+    "per_month": 1207,
+    "max_dd": -4636,
+    "evals": {
+     "Builder 50K": {
+      "pass": 65.2,
+      "fail": 27.2
+     },
+     "Builder 25K": {
+      "pass": 65.2,
+      "fail": 27.2
+     },
+     "Rapid EOD 25K": {
+      "pass": 65.2,
+      "fail": 27.2
+     }
+    }
+   },
+   "Jul-Oct 2026": {
+    "tpw": 2.95,
+    "trades": 46,
+    "pf": 1.26,
+    "net": 3144,
+    "per_month": 846,
+    "max_dd": -5205,
+    "evals": {
+     "Builder 50K": {
+      "pass": 29.6,
+      "fail": 70.4
+     },
+     "Builder 25K": {
+      "pass": 29.6,
+      "fail": 70.4
+     },
+     "Rapid EOD 25K": {
+      "pass": 29.6,
+      "fail": 70.4
+     }
+    }
+   }
+  }
+ },
+ "ATLAS S/R_verdict": "the window ADDS money (today wins 2 of 3 spans, total $24,030 vs $11,603)",
+ "ATLAS S/R_verdict_day": "the window ADDS money (today wins 3 of 3 spans, total $24,030 vs $21,007)",
+ "ATLAS (3 members, one position)": {
+  "today": {
+   "2021-25": {
+    "tpw": 5.02,
+    "trades": 1076,
+    "pf": 1.15,
+    "net": 44066,
+    "per_month": 863,
+    "max_dd": -25831,
+    "evals": {
+     "Builder 50K": {
+      "pass": 33.4,
+      "fail": 66.6
+     },
+     "Builder 25K": {
+      "pass": 33.0,
+      "fail": 67.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 2.2,
+      "fail": 77.3
+     }
+    }
+   },
+   "Jan-Jun 2026": {
+    "tpw": 4.26,
+    "trades": 109,
+    "pf": 4.01,
+    "net": 49081,
+    "per_month": 8052,
+    "max_dd": -2385,
+    "evals": {
+     "Builder 50K": {
+      "pass": 94.1,
+      "fail": 5.9
+     },
+     "Builder 25K": {
+      "pass": 94.1,
+      "fail": 5.9
+     },
+     "Rapid EOD 25K": {
+      "pass": 88.2,
+      "fail": 6.4
+     }
+    }
+   },
+   "Jul-Oct 2026": {
+    "tpw": 3.21,
+    "trades": 50,
+    "pf": 2.59,
+    "net": 12105,
+    "per_month": 3259,
+    "max_dd": -2831,
+    "evals": {
+     "Builder 50K": {
+      "pass": 89.7,
+      "fail": 10.3
+     },
+     "Builder 25K": {
+      "pass": 89.7,
+      "fail": 10.3
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 17.9
+     }
+    }
+   }
+  },
+  "day (02:00-15:30)": {
+   "2021-25": {
+    "tpw": 7.58,
+    "trades": 1626,
+    "pf": 1.06,
+    "net": 23350,
+    "per_month": 457,
+    "max_dd": -42421,
+    "evals": {
+     "Builder 50K": {
+      "pass": 30.0,
+      "fail": 70.0
+     },
+     "Builder 25K": {
+      "pass": 29.6,
+      "fail": 70.4
+     },
+     "Rapid EOD 25K": {
+      "pass": 4.7,
+      "fail": 84.3
+     }
+    }
+   },
+   "Jan-Jun 2026": {
+    "tpw": 6.72,
+    "trades": 172,
+    "pf": 2.3,
+    "net": 43695,
+    "per_month": 7169,
+    "max_dd": -4326,
+    "evals": {
+     "Builder 50K": {
+      "pass": 64.7,
+      "fail": 35.3
+     },
+     "Builder 25K": {
+      "pass": 64.7,
+      "fail": 35.3
+     },
+     "Rapid EOD 25K": {
+      "pass": 59.6,
+      "fail": 39.4
+     }
+    }
+   },
+   "Jul-Oct 2026": {
+    "tpw": 6.41,
+    "trades": 100,
+    "pf": 0.88,
+    "net": -2904,
+    "per_month": -782,
+    "max_dd": -8348,
+    "evals": {
+     "Builder 50K": {
+      "pass": 18.2,
+      "fail": 81.8
+     },
+     "Builder 25K": {
+      "pass": 18.2,
+      "fail": 81.8
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 100.0
+     }
+    }
+   }
+  },
+  "any time (00:00-15:55)": {
+   "2021-25": {
+    "tpw": 9.15,
+    "trades": 1961,
+    "pf": 1.02,
+    "net": 9290,
+    "per_month": 182,
+    "max_dd": -60403,
+    "evals": {
+     "Builder 50K": {
+      "pass": 29.3,
+      "fail": 70.7
+     },
+     "Builder 25K": {
+      "pass": 28.9,
+      "fail": 71.1
+     },
+     "Rapid EOD 25K": {
+      "pass": 5.8,
+      "fail": 86.1
+     }
+    }
+   },
+   "Jan-Jun 2026": {
+    "tpw": 8.48,
+    "trades": 217,
+    "pf": 1.51,
+    "net": 21261,
+    "per_month": 3488,
+    "max_dd": -7350,
+    "evals": {
+     "Builder 50K": {
+      "pass": 47.2,
+      "fail": 52.8
+     },
+     "Builder 25K": {
+      "pass": 43.9,
+      "fail": 56.1
+     },
+     "Rapid EOD 25K": {
+      "pass": 22.1,
+      "fail": 62.8
+     }
+    }
+   },
+   "Jul-Oct 2026": {
+    "tpw": 8.85,
+    "trades": 138,
+    "pf": 0.78,
+    "net": -5661,
+    "per_month": -1524,
+    "max_dd": -10762,
+    "evals": {
+     "Builder 50K": {
+      "pass": 16.9,
+      "fail": 83.1
+     },
+     "Builder 25K": {
+      "pass": 16.9,
+      "fail": 83.1
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 100.0
+     }
+    }
+   }
+  }
+ },
+ "ATLAS_verdict": "the window ADDS money (today wins 3 of 3 spans, total $105,252 vs $24,890)"
+}
