@@ -1,5 +1,5 @@
 """BLITZ on the Rapid EOD 25K EVAL (owner YES 2026-11-23 ~16:35 ET, "Yes add it"): a 3rd lane on the Rapid's ONE NinjaTrader
-account, next to LIT's lane (engine/multi_account, lane "rapid") and ATLAS's lane (engine/rapid.RapidAtlas). EVAL ONLY: no new
+account, next to LIT's lane (engine/multi_account, lane "rapid") and ATLAS's lane (engine/rapid.RapidAtlas). OFF until the owner types the live phrase at `--blitz on`. EVAL ONLY: no new
 BLITZ entry once the Rapid is funded (stage "funded" in data/rapid.json), on a Rapid EOD 50K, or with "blitz": false.
 
 Research (research/writeups/prop-economics-2026-11-23.md, research/propecon/; picked on 2026 Jan-Jun, checked Jul-Oct and
@@ -25,7 +25,8 @@ with its own order-file tag "acctrb_" (2nd Rapid: "acctrb2_") and state file liv
   * NO HEDGE ACROSS ACCOUNTS: AccountC.opposite (LIT's 50K, account B, the extra accounts, hand trades, the fleet) + account C
     and the other Rapid's lanes; every other account's entry closes this lane first when it holds the other side.
 
-    python -X utf8 -m engine.rapid --blitz off      (on = the default on a Rapid EOD 25K eval)
+    python -X utf8 -m engine.rapid --blitz on       (OFF by default; asks for the live phrase, typed by the owner)
+    python -X utf8 -m engine.rapid --blitz off
 """
 from __future__ import annotations
 
@@ -43,8 +44,11 @@ def wanted(blk: dict | None) -> tuple:
     """(True, "") when the Rapid block gets the BLITZ lane, else (False, why)."""
     if not blk:
         return False, "no Rapid"
-    if blk.get("blitz") is False:
-        return False, "switched off (data/rapid.json \"blitz\": false)"
+    if blk.get("blitz") is not True:
+        # red team 2026-11-23: OFF unless the owner switched it on with his own typed phrase (python -X utf8 -m engine.rapid
+        # --blitz on). Before, it was ON by default and took the Rapid's existing "armed": the next restart after landing
+        # (the auto-update restarts the bot) would have traded BLITZ with real money without the owner typing anything
+        return False, "off (python -X utf8 -m engine.rapid --blitz on, with the live phrase, turns it on)"
     P = RP.plan_info(blk)
     if P["preset"] not in ELIGIBLE:
         return False, f"{P['label']}: BLITZ runs on the Rapid EOD 25K eval only"

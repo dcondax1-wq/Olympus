@@ -871,10 +871,14 @@ class AccountC:
                 pass
         # BLITZ / ATLAS on the Rapid EOD and the other BLITZ (engine/rapid_blitz.py, owner YES 2026-11-23): another account
         # holding the other side (the same account is RapidBlitz.same_account_busy's one-position rule)
-        for attr, who in (("acct_c", "BLITZ (account C)"), ("acct_rb", "BLITZ on the Rapid EOD"), ("acct_rb2", "BLITZ on the Rapid EOD #2"),
-                          ("acct_r", "ATLAS on the Rapid EOD"), ("acct_r2", "ATLAS on the Rapid EOD #2")):
-            o = getattr(b, attr, None)
-            if o is None or o is self or str(getattr(o, "name", "") or "").strip().lower() == str(self.name or "").strip().lower():
+        rows = [(getattr(b, attr, None), who) for attr, who in
+                (("acct_c", "BLITZ (account C)"), ("acct_rb", "BLITZ on the Rapid EOD"), ("acct_rb2", "BLITZ on the Rapid EOD #2"),
+                 ("acct_r", "ATLAS on the Rapid EOD"), ("acct_r2", "ATLAS on the Rapid EOD #2"))]
+        # red team 2026-11-23: ATLAS's combo lanes on the extra Builder accounts (engine/combo25.py, day-combo25: LiveBot.acct_x;
+        # absent / {} = nothing) are another account's ATLAS too, once both branches are on pc
+        rows += [(o, getattr(o, "label", "ATLAS on an extra account")) for o in (getattr(b, "acct_x", None) or {}).values()]
+        for o, who in rows:
+            if o is None or o is self or str(getattr(o, "name", "") or "").strip().lower() == str(getattr(self, "name", "") or "").strip().lower():
                 continue
             try:
                 if o.open_t is not None and int(((o.prov or {}).get(int(o.open_t)) or {}).get("dir") or 0) == -d:

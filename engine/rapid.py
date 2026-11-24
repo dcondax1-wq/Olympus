@@ -269,7 +269,7 @@ def rules_line(blk: dict) -> str:
     tgt, mll, mq = float(P["target"]), float(R.get("mll") or 0.0), int(R.get("max_micros") or 0)
     return (f"{P['label']}: target +${tgt:,.0f}, floor ${mll:,.0f} below the best close, max {mq} micros, a winning day "
             f"<= ${int(BEST_DAY * tgt * MARGIN):,} (30% rule), ATLAS <= ${float(P['atlas_usd']):,.0f} a trade"
-            + (", BLITZ <= $300 a trade in the eval" if P["preset"] == "mffu_rapid_eod_25k" and blk.get("blitz") is not False
+            + (", BLITZ <= $300 a trade in the eval" if P["preset"] == "mffu_rapid_eod_25k" and blk.get("blitz") is True
                and str(blk.get("stage") or "eval") == "eval" else ""))
 
 
@@ -883,7 +883,7 @@ def main(argv=None) -> int:
     ap.add_argument("--status", action="store_true")
     ap.add_argument("--lit-bank", choices=("on", "off"), help="the 25K only: LIT takes 1 micro banked at the day's 30%% room")
     ap.add_argument("--slot", choices=("1", "2"), default="1", help="which Rapid: 1 = data/rapid.json (default), 2 = data/rapid2.json")
-    ap.add_argument("--blitz", choices=("on", "off"), help="the 25K EVAL only: BLITZ's lane on the account (engine/rapid_blitz.py; on by default)")
+    ap.add_argument("--blitz", choices=("on", "off"), help="the 25K EVAL only: BLITZ's lane on the account (engine/rapid_blitz.py; OFF by default, on = the live phrase)")
     a = ap.parse_args(argv)
     sp = slot_path("rapid2") if a.slot == "2" else None      # None = path(): slot 1 exactly as before
     if a.blitz:
@@ -891,6 +891,16 @@ def main(argv=None) -> int:
         if not b.get("account") or plan_info(b)["preset"] != "mffu_rapid_eod_25k":
             print("NOT set: --blitz is for the Rapid EOD 25K only (no 25K in data/rapid.json)")
             return 1
+        if a.blitz == "on":                       # red team 2026-11-23: a new live strategy = the owner's own typed phrase
+            from .go import LIVE_PHRASE, typed_phrase
+            print(f" BLITZ will ALSO trade the Rapid EOD 25K eval {b.get('account')} (real money when the Rapid is armed).")
+            try:
+                ph = input(" Type  I ACCEPT LIVE RISK  then Enter (anything else stops here, nothing switched on): ")
+            except EOFError:
+                ph = ""
+            if typed_phrase(ph) != LIVE_PHRASE:
+                print("NOT switched on: the live phrase was not typed")
+                return 1
         b["blitz"] = a.blitz == "on"
         save(b, sp)
         print(f"Rapid EOD 25K: BLITZ lane {a.blitz.upper()} (eval only; from the next bot start)")

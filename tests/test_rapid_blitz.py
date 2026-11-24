@@ -28,7 +28,7 @@ from engine import multi_account as MA, rapid, rapid_blitz as RB  # noqa: E402
 from tests.test_rapid import Clock, T0, DAY, check, make_bot, lane, RESULTS, ts  # noqa: E402
 
 BLK25 = {"v": 1, "account": "Sim-RapidBlitz25", "plan": "mffu_rapid_eod_25k", "stage": "eval", "eval_start": DAY, "armed": False,
-         "payouts": {}}
+         "payouts": {}, "blitz": True}      # red team 2026-11-23: the lane needs the owner's --blitz on (OFF by default)
 
 
 def open_blitz(rb, tb, d=1, q=2, entry=25020.0, stop=25000.0):
@@ -45,7 +45,9 @@ def main() -> int:
     try:
         # ---- a. who gets it
         ok, _ = RB.wanted(BLK25)
-        check("a. Rapid EOD 25K eval: BLITZ lane ON by default", ok)
+        check("a. Rapid EOD 25K eval switched on (\"blitz\": true): BLITZ lane", ok)
+        check("a. red team: no \"blitz\" key = OFF (a new live strategy needs the owner's phrase)",
+              not RB.wanted({k: v for k, v in BLK25.items() if k != "blitz"})[0])
         check("a. Rapid EOD 50K: no BLITZ lane", not RB.wanted({**BLK25, "plan": "mffu_rapid_eod_50k"})[0])
         check("a. funded Rapid 25K: no BLITZ lane (eval only)", not RB.wanted({**BLK25, "stage": "funded"})[0])
         check("a. \"blitz\": false: no BLITZ lane", not RB.wanted({**BLK25, "blitz": False})[0])
@@ -54,8 +56,17 @@ def main() -> int:
         rapid.save(dict(BLK25), p)
         rc = rapid.main(["--blitz", "off"])
         off_ok = rc == 0 and rapid.load(p).get("blitz") is False
-        rapid.main(["--blitz", "on"])
-        check("a. CLI: engine.rapid --blitz off / on writes the switch", off_ok and rapid.load(p).get("blitz") is True)
+        import builtins
+        real_input = builtins.input
+        try:
+            builtins.input = lambda *a: "yes"
+            no_phrase = rapid.main(["--blitz", "on"]) == 1 and rapid.load(p).get("blitz") is False
+            builtins.input = lambda *a: "I ACCEPT LIVE RISK"
+            rapid.main(["--blitz", "on"])
+        finally:
+            builtins.input = real_input
+        check("a. CLI: --blitz on without the typed phrase is refused (stays off)", no_phrase)
+        check("a. CLI: engine.rapid --blitz off / on (with the phrase) writes the switch", off_ok and rapid.load(p).get("blitz") is True)
         rapid.save({**BLK25, "plan": "mffu_rapid_eod_50k"}, p)
         check("a. CLI: --blitz refused on a 50K", rapid.main(["--blitz", "on"]) == 1)
         check("a. rules line names the BLITZ lane on the 25K eval only",

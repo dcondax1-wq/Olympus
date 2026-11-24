@@ -796,6 +796,11 @@ def lanes(bot) -> list:
         key = _rapid_key(sp, a) if sp.get("lane") == "rapid" else f"x:{getattr(a, 'id', None) or sp.get('id')}"
         out.append({"key": key, "kind": "extra", "obj": a, "adapter": getattr(a, "adapter", None), "trade": True,
                     "nt": str(sp.get("nt_account") or "") or None if sp.get("adapter") == "ninjatrader" else None})
+    for attr, key in (("acct_rb", "rapid"), ("acct_rb2", "rapid2")):   # BLITZ on a Rapid EOD 25K eval (engine/rapid_blitz.py):
+        o = getattr(bot, attr, None)                                   # the SAME target as that Rapid (grouped by its Name), so
+        if o is not None and not getattr(o, "problem", None):          # its fills, legs and open trade count there (red team)
+            out.append({"key": key, "kind": "acct", "obj": o, "adapter": getattr(o, "adapter", None), "trade": True,
+                        "nt": str(getattr(o, "name", "") or "") or None})
     c = getattr(bot, "acct_c", None)                    # BLITZ (paper / hidden): never a target, its side still counts
     if c is not None:
         out.append({"key": "blitz", "kind": "acct", "obj": c, "adapter": getattr(c, "adapter", None), "trade": False,
