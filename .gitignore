@@ -341,3 +341,5 @@ data/tickrec.json
 data/orderflow_auto.json
 data/orderflow_note.json
 data/orderflow_*.json.tmp
+data/pending_switches.json
+data/lanes/

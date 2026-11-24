@@ -73,7 +73,11 @@ INBOX_DIR = "control/inbox/"
 INBOX_MAX = 12
 INBOX_QUIET_S = 3600
 TS_IN_NAME = re.compile(r"(?:^|[-_.])(\d{10})(?:[-_.]|$)")     # the epoch seconds in an inbox file name (pccore.build ids)
-COMMANDS = ("kill", "stop", "flatten", "update", "restart", "status", "start", "pause", "resume_entries", "present")
+COMMANDS = ("kill", "stop", "flatten", "update", "restart", "status", "start", "pause", "resume_entries", "present",
+            "add_account", "switch")
+# day-zerotouch2: add_account = engine/account_cli.add (TRADE_HOME 4's own path): the account is added HELD (never armed; it joins the
+# next START + phrase). switch = engine/pending_switch.request: only QUEUES a switch for the next START's phrase. Neither arms.
+ADD_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9 ._-]{2,59}$")
 HANDSOFF_CMDS = ("kill", "stop", "flatten", "pause")
 ID_RE = re.compile(r"^[A-Za-z0-9._:\-]{1,64}$")
 
@@ -480,6 +484,10 @@ class RemoteControl:
             return self._start(c)
         if cmd in ("pause", "resume_entries", "present"):
             return self._owner(cmd, c, now)
+        if cmd == "add_account":
+            return self._add_account(c)
+        if cmd == "switch":
+            return self._switch(c, now)
         if cmd in ("update", "restart"):
             return self._gated(cmd, now)
         return "refused", "unknown command"
@@ -502,6 +510,49 @@ class RemoteControl:
                                "you at the PC). Remote start works on Sim accounts only.")
         r = self._hook("start", body)
         return ("done", f"started on {acct}") if r.get("ok") else ("failed", f"start failed: {r.get('error')}")
+
+    def _add_account(self, c: dict) -> tuple:
+        """{"cmd": "add_account", "plan": "builder25k", "name": "<NinjaTrader Name>", "funded": false, "bots": "lit"}: every field
+        checked, idempotent (a Name already added = done, nothing changed), added HELD (account_cli.add never arms)."""
+        from . import account_cli as AC
+        plan = str(c.get("plan") or "").strip().lower()
+        name = str(c.get("name") or "").strip()
+        bots = c.get("bots")
+        funded = c.get("funded", False)
+        if plan not in AC.PLANS:
+            return "refused", f"plan must be one of {', '.join(AC.PLANS)}"
+        if not ADD_NAME_RE.match(name):
+            return "refused", "name: the account Name exactly as NinjaTrader's Accounts tab shows it (3-60 letters, digits, space . _ -)"
+        if not isinstance(funded, bool):
+            return "refused", "funded must be true or false"
+        if bots is not None and (not isinstance(bots, str) or bots.strip().lower() not in AC.PLANS[plan]["ok"]):
+            return "refused", f"bots for {AC.PLANS[plan]['label']}: {', '.join(AC.PLANS[plan]['ok'])}"
+        short = ".." + name[-4:]
+        try:
+            rows = AC.inventory()
+        except Exception:  # noqa: BLE001
+            rows = []
+        if any(r.get("name") == name for r in rows):
+            return "done", f"[OK] {short} is already added (nothing changed); arm it at the PC with START + the phrase"
+        fn = self.hooks.get("add_account") or (lambda **kw: AC.add(**kw))
+        try:
+            r = fn(plan=plan, name=name, bots=bots.strip().lower() if isinstance(bots, str) else None, funded=funded)
+        except Exception as e:  # noqa: BLE001
+            r = {"ok": False, "error": f"{e.__class__.__name__}: {e}"}
+        if not r.get("ok"):
+            return "refused", f"not added: {str(r.get('error'))[:200]}"
+        return "done", (f"[OK] added {short} ({AC.PLANS[plan]['label']}{' funded' if funded else ''}), held: arm it at the PC "
+                        "with START + the phrase (it joins the next START by itself)")
+
+    def _switch(self, c: dict, now: float) -> tuple:
+        from . import pending_switch
+        try:
+            from .go import _ps_path
+            path = self.hooks.get("ps_path") or _ps_path()
+        except Exception:  # noqa: BLE001
+            path = None
+        r = pending_switch.request(str(c.get("key") or ""), via="phone", cid=str(c.get("id")), path=path, now=now)
+        return ("done", r["say"]) if r.get("ok") else ("refused", r.get("error") or "not queued")
 
     def _owner(self, cmd: str, c: dict, now: float) -> tuple:
         """pause / resume_entries / present: files only (engine/entry_pause.py, engine/presence.py); no order is sent."""

@@ -119,6 +119,15 @@ def test_park(tmp):
               and SH.park_tiny(pc, EVENING + 60) == {"n": 1, "f": ["engine/a.py"], "t": int(EVENING)}
               and SH.tiny({"t": 1, "pk": SH.park_tiny(pc, EVENING)}, EVENING).get("pk", {}).get("n") == 1, rec)
 
+        # a rollback after a park puts the hand edit back (red team day-zerotouch2)
+        up, pc = pair(tmp, "a1r")
+        write(os.path.join(pc, "engine", "a.py"), "A = 99  # my hand edit\n")
+        r = AU.run_update(AU.Shell(cwd=pc, log=lambda t: None), "hourly", EVENING, None, state={"enabled": True},
+                          tests=(["-c", "import sys; sys.exit(1)"],), env={"LE_AUTOUPDATE_LOCAL_OK": "1"})
+        check("a. a rollback after a park: old code AND the hand edit are back, the stash is empty, the alert says so",
+              r["status"] == "rolled_back" and read(os.path.join(pc, "engine", "a.py")) == "A = 99  # my hand edit\n"
+              and not g(pc, "stash", "list") and "parked edit is back" in r["reason"], r)
+
         # never parked: strategy / account files and data/
         pushes.clear()
         up, pc = pair(tmp, "a2")
@@ -332,10 +341,103 @@ console.log(JSON.stringify({ rows: m.rows.map((r) => [r.k, r.st, r.text]), need:
           and "dcondax" not in html + css + read(os.path.join(ROOT, "tools", "web_public", "pc", "pc.js")) + read(os.path.join(ROOT, "tools", "web_public", "pc", "pccore.js")))
 
 
+def test_add_switch(tmp):
+    from engine import remote_ctl as rc, pending_switch as PS, account_cli as AC
+    sys.path.insert(0, os.path.join(ROOT, "tests"))
+    import test_remote_ctl as T
+    ps = os.path.join(tmp, "ps.json")
+    added = []
+    keep_inv = AC.inventory
+    AC.inventory = lambda: [{"name": "MFFU00011111", "role": "extra", "id": "x1"}]
+    try:
+        hooks, calls = T.recorder()
+        hooks["add_account"] = lambda **kw: added.append(kw) or {"ok": True, "say": "added"}
+        hooks["ps_path"] = ps
+        ctl = rc.RemoteControl(T.FakeBot(), hooks=hooks, cwd=tmp, done_path=os.path.join(tmp, "done.json"), notify=lambda *a: None,
+                               log=lambda t: None, env={"LE_REMOTE": "1"})
+        now = time.time()
+
+        def run(c):
+            return ctl.run_cmd({"id": "x", "ts": now, **c}, {}, now)
+        st, msg = run({"cmd": "add_account", "plan": "builder25k", "name": "MFFU00022222", "funded": False})
+        check("f. add_account: the same account_cli.add as TRADE_HOME 4, HELD; the phone line names ..2222 and START + phrase",
+              st == "done" and added == [{"plan": "builder25k", "name": "MFFU00022222", "bots": None, "funded": False}]
+              and msg.startswith("[OK] added ..2222 (Builder 25K), held: arm it at the PC with START + the phrase"), (st, msg, added))
+        st, msg = run({"cmd": "add_account", "plan": "builder25k", "name": "MFFU00011111"})
+        check("f. add_account is idempotent: a Name already added = done, nothing called", st == "done" and "already added" in msg and len(added) == 1, msg)
+        bad = [run({"cmd": "add_account", "plan": "x", "name": "MFFU1"}), run({"cmd": "add_account", "plan": "builder25k", "name": "a;b"}),
+               run({"cmd": "add_account", "plan": "builder25k", "name": "MFFU00033333", "funded": "yes"}),
+               run({"cmd": "add_account", "plan": "builder50k", "name": "MFFU00033333", "bots": "atlas"})]
+        check("f. add_account checks every field (plan, name, funded, bots): refused, nothing added", all(b[0] == "refused" for b in bad) and len(added) == 1, bad)
+        check("f. add_account never arms: remote_ctl calls only account_cli.add (which never arms)",
+              "arm(" not in open(os.path.join(ROOT, "engine", "remote_ctl.py")).read().split("def _add_account")[1].split("def _switch")[0])
+        st, msg = run({"cmd": "switch", "key": "combo_on"})
+        st2, msg2 = run({"cmd": "switch", "key": "combo_on"})
+        st3, _ = run({"cmd": "switch", "key": "arm_everything"})
+        check("f. switch only QUEUES (once), unknown keys refused", st == "done" and "queued" in msg and "already queued" in msg2
+              and st3 == "refused" and [x["key"] for x in PS.load(ps)] == ["combo_on"], (msg, msg2))
+        check("f. START's FIRST line names the queued switch", PS.first_line(ps).startswith("[..] Your phone asked to switch on: ATLAS on Zlarior's 50K"))
+        seen = []
+        out = PS.apply_all("no", ps, apply_one=lambda k, p: seen.append(k) or {"ok": True})
+        check("f. a START without the phrase applies nothing and keeps the queue", out == [] and not seen and PS.load(ps))
+        from engine.go import LIVE_PHRASE
+        out = PS.apply_all(LIVE_PHRASE, ps, apply_one=lambda k, p: seen.append((k, p == LIVE_PHRASE)) or {"ok": True, "say": "on"})
+        check("f. the ONE phrase applies every queued switch through its own setter (with the phrase), then the queue is empty",
+              seen == [("combo_on", True)] and out[0].startswith("[OK] Switched on from your phone's request") and PS.load(ps) == [], (out, seen))
+        g_src = open(os.path.join(ROOT, "engine", "go.py")).read()
+        check("f. START: queue shown before the phrase, applied after keep-alive (same phrase)",
+              g_src.index("pending_first_line()") < g_src.index('phrase = typed_phrase(ask(" Type  I ACCEPT LIVE RISK  then Enter')
+              and "for ln in pending_apply(phrase):" in g_src)
+    finally:
+        AC.inventory = keep_inv
+
+
+def test_scaffold(tmp):
+    sys.path.insert(0, os.path.join(ROOT, "tools"))
+    import new_strategy as NS
+    root = os.path.join(tmp, "ns")
+    os.makedirs(root)
+    r = NS.make("vwap_fade", "VWAP fade test lane", root=root)
+    check("g. scaffold writes the lane, proof, Decide card and test", r["ok"] and len(r["files"]) == 4
+          and all(os.path.isfile(os.path.join(root, *p.split("/"))) for p in r["files"]), r)
+    check("g. ... refuses an id that exists, and a bad id", not NS.make("vwap_fade", "x", root=root)["ok"] and not NS.make("Bad-Id", "x", root=root)["ok"])
+    # load the generated lane from the temp folder and drive its switch
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("lane_tmp", os.path.join(root, "engine", "lanes", "vwap_fade.py"))
+    L = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(L)
+    from engine.go import LIVE_PHRASE
+    sw, pr = os.path.join(tmp, "sw.json"), os.path.join(tmp, "pr.json")
+    a = not L.is_on(sw) and not L.set_on(LIVE_PHRASE, sw, pr)["ok"]
+    json.dump({"passed": True}, open(pr, "w"))
+    b = not L.set_on("yes", sw, pr)["ok"] and L.set_on(LIVE_PHRASE, sw, pr)["ok"] and L.is_on(sw)
+    check("g. the lane: OFF by default; on only with a passed PROOF.json AND the typed phrase", a and b)
+    spec2 = importlib.util.spec_from_file_location("proof_tmp", os.path.join(root, "research", "lanes", "vwap_fade", "proof.py"))
+    P = importlib.util.module_from_spec(spec2)
+    spec2.loader.exec_module(P)
+    good = {k: {"net": 100, "pf": 1.3, "tpw": 3} for k in ("h1_2026", "h2_2026", "y2021_25")}
+    check("g. the proof passes only when every bar holds (one half negative = NOT passed; the stub = NOT passed)",
+          P.verdict(good)["passed"] and not P.verdict({**good, "h2_2026": {"net": -5, "pf": 0.9, "tpw": 3}})["passed"] and not P.verdict(P.run())["passed"])
+    from engine import lanes
+    check("g. engine/lanes registry: only valid ids, nothing in the real repo yet", all(lanes.ID_OK.match(i) for i in lanes.ids()) and lanes.load("../x") is None)
+    js = r"""
+const C = require(process.argv[2]);
+console.log(JSON.stringify({ a: C.buildAdd('builder25k', ' MFFU00022222 ', false, 1795000000, 'ab'), b: C.buildAdd('x', 'MFFU1', false, 1),
+  c: C.buildSwitch('combo_on', 1795000000, 'cd'), d: C.buildSwitch('arm', 1) }));
+"""
+    p = os.path.join(tmp, "pc_add.js")
+    write(p, js)
+    o = json.loads(subprocess.run(["node", p, os.path.join(ROOT, "tools", "web_public", "pc", "pccore.js")], capture_output=True, text=True, timeout=60).stdout)
+    from engine import remote_ctl as rc
+    check("g. the page builds add_account / switch exactly as the PC checks them",
+          o["a"] == {"id": "add_account-1795000000-ab", "ts": 1795000000, "cmd": "add_account", "plan": "builder25k", "name": "MFFU00022222", "funded": False}
+          and o["b"].get("error") and o["c"]["key"] == "combo_on" and o["d"].get("error") and rc.screen(o["a"], 1795000010, {}) is None, o)
+
+
 def main() -> int:
     tmp = tempfile.mkdtemp(prefix="le_zt2_")
     try:
-        for fn in (test_park, test_inbox, test_checklist, test_boot, test_page):
+        for fn in (test_park, test_inbox, test_checklist, test_boot, test_page, test_add_switch, test_scaffold):
             try:
                 fn(tmp)
             except Exception as e:  # noqa: BLE001
