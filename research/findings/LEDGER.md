@@ -52,3 +52,4 @@ WATCH (not actionable yet), REFUTED (checked, not real). Already-known ideas: re
 
 - 2026-11-24 12:31 ET finder round SKIPPED (landing/red-team in flight: day-zeroerr, day-brain-feed-rt lands 16:03). Board: PC fresh, 4 accounts no change, no trade today. Studies today (structure, livegap, litvix, portfolio, dead hours) all landed, 0 strategy changes.
 - 2026-11-24 15:33 ET finder round SKIPPED (after-hours landing 16:03 of day-brain-feed-rt + day-zeroerr-rt + day-proedge-rt, remote update 16:08). Board: PC fresh, 4 accounts unchanged, no trade today ($0).
+- 2026-11-24 18:31 ET finder round SKIPPED (landing day-zeroerr-rt ledgerfix in flight). k7: keep-alive ON for all 4 (act Thu 11-26). PC blocked by research/orderflow/results.json (owner line in STATE).

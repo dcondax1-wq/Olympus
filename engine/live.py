@@ -196,9 +196,15 @@ def unrouted_exit_skip(adapter, entry_t, now) -> str | None:
         pf = getattr(adapter, "positions", None)
         if callable(pf):
             ps = (pf() or {}).get("positions")
+            try:                                  # red team 2026-11-24: ANY open leg of ours (unprotected / pending / closing too) blocks the skip
+                from engine.ninjatrader import OPEN_STATUSES as _OPEN
+            except Exception:  # noqa: BLE001
+                return None
+            open_leg = any(isinstance(lg, dict) and lg.get("status") in _OPEN for lg in (getattr(adapter, "legs", None) or []))
             hob = getattr(adapter, "has_open_bracket", None)
+            open_leg = open_leg or bool(callable(hob) and hob())
             if isinstance(ps, list) and ps and all(str((p or {}).get("side") or "").upper() == "FLAT" for p in ps) \
-                    and not (callable(hob) and hob()):
+                    and not open_leg:
                 return "NinjaTrader shows the account flat: nothing to flatten"
     except Exception:
         return None
