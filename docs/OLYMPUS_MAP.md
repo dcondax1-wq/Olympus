@@ -120,7 +120,7 @@ Retired apps are not on Home, in search or in A to Z. Their old links open the r
 | Labyrinth (`labyrinth`) | NQ Bot | trading | The risk maze: size your eval | `../odeon/trades.json`, `../home.json`, `fixture.json` | `tests.test_labyrinth_page` |
 | Moirai (`moirai`) | NQ Bot | trading | The three fates: pass, bust and time of | `fixture.json`, `../ledger/rules.json` | `tests.test_moirai_page` |
 | Nemesis (`nemesis`) | NQ Bot | trading | The fallen trades: what went wrong | `../odeon/trades.json`, `../home.json`, `fixture.json` | `tests.test_nemesis_page` |
-| NQ (`nq`) | NQ Bot | trading | The NQ bots, right now: status, drawdown left | `../odeon/trades.json`, `../home.json`, `fixture.json`, `howto.json`, `news_week.json`, ... | `tests.test_nq_page` |
+| NQ (`nq`) | NQ Bot | trading | The NQ bots, right now: status, drawdown left | `../home.json`, `../business/accounts.json`, `../business/payday.json`, `../odeon/trades.json`, `fixture.json`, ... | `tests.test_nq_page` |
 | Odeon (`odeon`) | NQ Bot | trading | Every trade, replayed in 3D | `trades.json` | `tests.test_odeon_page` |
 | Oracle (`oracle`) | NQ Bot | trading | The market radar, live | bundled fixture / its own files | `tests.test_oracle_page` |
 | Pantheon (`pantheon`) | NQ Bot | trading | The data gods: rates, liquidity, fear | `jarvis.json`, `pantheon.json`, `fixture.json` | `tests.test_pantheon` |
@@ -142,7 +142,7 @@ Retired apps are not on Home, in search or in A to Z. Their old links open the r
 | Websites (`agency`) | Websites | web | Website business HQ: next step, leads, audits, 3D | `fixture.json`, `my_leads.json`, `leads.json`, `callrules.json`, `callscript.json`, ... | `tests.test_agency` |
 | Archive (`archive`) | Data City | data | The library of everything we ever tested, searchable | `fixture.json`, `index.json` | `tests.test_archive_page` |
 | Athena (`athena`) | Data City | data | The library: strategy, rules, quiz | `jarvis.json`, `library.json`, `drills.json` | `tests.test_athena_page` |
-| Data City (`cities`) | Data City | data | The 3D city of everything: every app, every | `brain-data.json`, `hub-data.json` (Research Hub, `tools/build_research_hub.py`), `fixture.json` | `tests.test_cities_page`, `tests.test_research_hub2` |
+| Data City (`cities`) | Data City | data | The 3D city of everything: every app, every | `brain-data.json`, `lab-data.json`, `hub-data.json`, `fixture.json` | `tests.test_cities_page` |
 | Clio (`clio`) | Data City | data | The research library: every study in plain words | `fixture.json`, `../writeups/index.json`, `hub.json`, `../data.json` | `tests.test_clio_page` |
 | Colosseum (`colosseum`) | Data City | data | Where strategies fight: seven rounds on real stored | `extra.json`, `fixture.json`, `../archive/index.json`, `../home.json` | `tests.test_colosseum_page` |
 | Data City (`datacity`) (retired) | Data City | data | Every combo tested, as a city | `fixture.json`, `city.json`, `jarvis.json`, `../data.json`, `../pantheon/pantheon.json` | `tests.test_datacity` |
@@ -178,9 +178,10 @@ Retired apps are not on Home, in search or in A to Z. Their old links open the r
 | Tyche (`tyche`) | Kalshi | kalshi | The Kalshi bets as a 3D fortune wheel | bundled fixture / its own files | `tests.test_tyche_page` |
 | Atlas (`atlas`) | Everything else | life | A fast map of every Olympus dashboard | bundled fixture / its own files | `tests.test_atlas_armed` |
 | Agora Gallery (`gallery`) (retired) | Everything else | life | Every 3D shape of the Agora on a | `fixture.json` | covered by `tests.test_olympus_kit` |
+| Four Pillars (`pillars`) | Everything else | trading | LIT, ATLAS, BLITZ, ORDER FLOW: status, accounts, edge | `pillars-data.json`, `../home.json`, `../business/accounts.json`, `../business/payday.json`, `../odeon/trades.json` | `tests.test_pillars` |
 | Settings (`settings`) | Everything else | life | Look, voice, storage and the tour | bundled fixture / its own files | `tests.test_settings_page` |
 
-77 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
+78 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
 
 ## Where the organizing code lives
 

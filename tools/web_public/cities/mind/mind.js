@@ -1,7 +1,7 @@
 // Strategy Brain page (cities/mind/index.html). Reads odeon/trades.json (the trade ledger + replays), cities/brain-data.json (the
 // research findings), home.json and the PC's status post (pc_feed.js). Built with createElement / textContent and SVG nodes only
 // (no innerHTML of data). Read only: no arm / start / stop / order anywhere.
-import * as M from './mindcore.js?v=m1';
+import * as M from './mindcore.js?v=m5';
 import * as P from '../../pillars/pillarscore.js?v=p1';
 
 const $ = (id) => document.getElementById(id);
@@ -308,7 +308,7 @@ async function startScene() {
   const q = location.search, flat = () => { $('flat').hidden = false; drawFlat(); document.documentElement.dataset.mode = '2d'; };
   if (/[?&]lite=2d/.test(q)) return flat();
   try {
-    const Sc = await import('./mind-scene.js?v=m1');
+    const Sc = await import('./mind-scene.js?v=m2');
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, low = Sc.isLowPower(window);
     // the lobe names over the 3D, kept apart (M.placeLabels): selected first, then the strategies, then the research lobes
     const tips = M.LOBES.map((L) => { const d = el('div', { class: 'tip' + (L.pillar ? ' st pil' : L.kind === 'strategy' ? ' st' : ''), 'aria-hidden': 'true', 'data-tip': L.id, text: L.name }); document.body.append(d); return { L, d, w: 0, h: 0 }; });

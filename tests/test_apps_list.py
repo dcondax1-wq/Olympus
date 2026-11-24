@@ -78,7 +78,7 @@ def test_static():
     missing_dir = [x["id"] for x in rows if x["path"] and x["id"] not in EXTERNAL and not os.path.isfile(os.path.join(WEB, x["path"], "index.html"))]
     # "pillars" (day-pillars 2026-11-24): until the lead adds its BUILT_INS row (research/handoff/2026-11-24/pillars/LEAD_WIRES.md 1), then drop it here
     check("a. every app folder under tools/web_public has a row, and every row has its folder with an index.html (the Planner is published by its own build; a new app = one row in BUILT_INS, then rebuild)",
-          not missing_dir and not [f for f in missing_row if f not in ("pc", "atlascity", "gate", "hub", "pillars")], (missing_row, missing_dir))
+          not missing_dir and not [f for f in missing_row if f not in ("pc", "atlascity", "gate", "hub")], (missing_row, missing_dir))
     nolive = [x["id"] for x in rows if x["live"] and not os.path.isfile(os.path.join(WEB, x["path"], "jarvis.json"))]
     check("a. every app marked live has its jarvis.json (the status dot reads it)", not nolive, nolive)
 
@@ -86,11 +86,11 @@ def test_static():
     doors_static(ids)
     ph, pc = read(WEB, "index.html"), read(NEXT, "index.html")
     check("b. the phone dashboard has ONE tag, launcher.js (deferred); the list is loaded by the launcher, async, so a slow site never holds Zenith back",
-          '<script src="launcher.js?v=l24" defer></script>' in ph and "apps-list" not in ph and "olympus/apps-list.js?v=l11" in read(WEB, "launcher.js"))
-    check("b. the PC dashboard has ONE tag, js/next/launcher.js (the list comes from js/next/apps-list.js, in the worker's ASSETS)", '<script src="/js/next/launcher.js?v=l24" defer></script>' in pc and "apps-list" not in pc and "/js/next/apps-list.js?v=l11" in read(NEXT, "js", "next", "launcher.js"))
+          '<script src="launcher.js?v=l25" defer></script>' in ph and "apps-list" not in ph and "olympus/apps-list.js?v=l12" in read(WEB, "launcher.js"))
+    check("b. the PC dashboard has ONE tag, js/next/launcher.js (the list comes from js/next/apps-list.js, in the worker's ASSETS)", '<script src="/js/next/launcher.js?v=l25" defer></script>' in pc and "apps-list" not in pc and "/js/next/apps-list.js?v=l12" in read(NEXT, "js", "next", "launcher.js"))
     sw = read(NEXT, "sw.js")
     v = re.search(r"const SHELL = 'le-shell-next-v(\d+)'", sw)
-    check("b. the PC worker caches both files and its version is bumped (v34 or later)", "'/js/next/apps-list.js?v=l11'" in sw and "'/js/next/launcher.js?v=l24'" in sw and v and int(v.group(1)) >= 34)
+    check("b. the PC worker caches both files and its version is bumped (v34 or later)", "'/js/next/apps-list.js?v=l12'" in sw and "'/js/next/launcher.js?v=l25'" in sw and v and int(v.group(1)) >= 34)
     check("b. the root worker is untouched by the launcher (it fetches versioned files at run time; olympus/ is skipped on purpose)", "launcher" not in read(WEB, "sw.js") and "apps-list" not in read(WEB, "sw.js"))
     js = read(WEB, "launcher.js")
     check("b. launcher.js: read-only (no POST, no orders), every storage call in try, Safari 16 safe (no lookbehind, ?., ??, .at())",
@@ -138,7 +138,7 @@ console.log(JSON.stringify({ doors: D.DOORS.map((d) => ({ id: d.id, title: d.tit
         check(f"d. {name} is the four doors (same ids, same app lists as olympus/doors.js)", got == want, got)
     lj = read(WEB, "launcher.js")
     check("d. the launcher loads doors.js with the list (async; olympus/doors.js on the phone, /js/next/doors.js on the PC) and groups by it",
-          "'olympus/doors.js?v=d12'" in lj and "'/js/next/doors.js?v=d12'" in lj and "D.DOORS.map" in lj and "OLYMPUS_DOORS" in lj)
+          "'olympus/doors.js?v=d13'" in lj and "'/js/next/doors.js?v=d13'" in lj and "D.DOORS.map" in lj and "OLYMPUS_DOORS" in lj)
 
 
 # ------------------------------------------------------------------ c. browser

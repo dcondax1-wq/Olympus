@@ -540,6 +540,7 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
         snap["risk_error"] = f"{e.__class__.__name__}: {str(e)[:120]}"
     # the order-flow study's one result line (engine/tickrec autopilot writes data/orderflow_note.json; plain JSON, no import)
     snap["research"] = [x for x in [read_json(os.path.join(root, "data", "orderflow_note.json"), None)] if isinstance(x, dict) and x.get("key")]
+    snap["tr"] = read_json(os.path.join(root, "data", "tickrec_tiny.json"), None)   # day-pillars 2026-11-24: the order-flow tick count (engine/tickrec.write_tiny; plain JSON, no import)
     try:                                    # the Kalshi rewards PAPER card (tools/kalshi_rewards_paper.py public summary, < 1 KB)
         from engine import live_publish as _lpk
         snap["kalshi_rewards"] = _lpk.kalshi_rewards_card(now, os.path.join(root, "data", "kalshi_rewards", "summary.json"))
