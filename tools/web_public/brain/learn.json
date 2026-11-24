@@ -1,0 +1,198 @@
+{
+ "v": 1,
+ "kind": "brain-learn",
+ "built_from": "2026-11-24 11:49 UTC",
+ "sources": [
+  "research/learn/insights.json"
+ ],
+ "journal_landed": false,
+ "state_landed": false,
+ "paper_only": true,
+ "note": "What each brain learned. Research only: nothing here changes a live rule.",
+ "current": {
+  "for": "2026-11-21",
+  "data_to": "2026-11-20",
+  "regime": "trend",
+  "er5": 0.962,
+  "prior_day": "big",
+  "vix": 35.89,
+  "vix_day": "2026-11-20",
+  "vix_band": "VIX 25+"
+ },
+ "line": "Market Learn: 1 fix tested, 0 passed. Nothing to decide; lessons updated.",
+ "journal": [
+  {
+   "date": "2026-11-24",
+   "pillar": "lit",
+   "text": "LIT (Zlarior) does worse when: VIX 15-20. Avg R 0.489 / 0.738 / -0.023 (Jan-Jun / Jul-Oct / 2021-25, 297 trades), -$13,997 vs a normal trade, z -0.86 (weak)",
+   "n": null,
+   "usd": null,
+   "status": "found"
+  },
+  {
+   "date": "2026-11-24",
+   "pillar": "lit",
+   "text": "LIT (Zlarior) does worse when: London late 05-08. Avg R 0.701 / 0.425 / -0.044 (Jan-Jun / Jul-Oct / 2021-25, 164 trades), -$1,016 vs a normal trade, z -0.64 (weak)",
+   "n": null,
+   "usd": null,
+   "status": "found"
+  },
+  {
+   "date": "2026-11-24",
+   "pillar": "lit",
+   "text": "LIT (Zlarior) does worse when: range weeks (choppy 5 days) + VIX 15-20. Avg R 0.816 / 0.131 / -0.045 (Jan-Jun / Jul-Oct / 2021-25, 74 trades), -$6,066 vs a normal trade, z -0.64 (weak)",
+   "n": null,
+   "usd": null,
+   "status": "found"
+  },
+  {
+   "date": "2026-11-24",
+   "pillar": "lit",
+   "text": "LIT (Zlarior) does best when: trending weeks + London 02-05. Avg R 0.902 / 2.094 / 0.054 (Jan-Jun / Jul-Oct / 2021-25, 119 trades), +$10,320 vs a normal trade, z 0.84 (weak)",
+   "n": null,
+   "usd": null,
+   "status": "found"
+  },
+  {
+   "date": "2026-11-24",
+   "pillar": "atlas",
+   "text": "ATLAS does worse when: Tuesdays. Avg R 0.248 / 0.593 / 0.002 (Jan-Jun / Jul-Oct / 2021-25, 290 trades), -$7,171 vs a normal trade, z -0.81 (weak)",
+   "n": null,
+   "usd": null,
+   "status": "found"
+  },
+  {
+   "date": "2026-11-24",
+   "pillar": "atlas",
+   "text": "ATLAS does worse when: NY AM 09:30-11:30. Avg R 0.771 / 0.634 / 0.044 (Jan-Jun / Jul-Oct / 2021-25, 412 trades), -$2,053 vs a normal trade, z -0.2 (weak)",
+   "n": null,
+   "usd": null,
+   "status": "found"
+  },
+  {
+   "date": "2026-11-24",
+   "pillar": "atlas",
+   "text": "ATLAS does best when: VIX 15-20 + London 02-05. Avg R 1.698 / 0.95 / 0.439 (Jan-Jun / Jul-Oct / 2021-25, 266 trades), +$29,694 vs a normal trade, z 3.4",
+   "n": null,
+   "usd": null,
+   "status": "found"
+  },
+  {
+   "date": "2026-11-24",
+   "pillar": "blitz",
+   "text": "BLITZ loses when: trending weeks + NY AM 09:30-11:30. Avg R -0.082 / -0.271 / -0.095 (Jan-Jun / Jul-Oct / 2021-25, 159 trades), -$4,611 vs a normal trade, z -2.19",
+   "n": null,
+   "usd": null,
+   "status": "found"
+  },
+  {
+   "date": "2026-11-24",
+   "pillar": "blitz",
+   "text": "BLITZ loses when: after a big day + Tuesdays. Avg R -0.017 / -0.238 / -0.115 (Jan-Jun / Jul-Oct / 2021-25, 123 trades), -$2,449 vs a normal trade, z -2.04",
+   "n": null,
+   "usd": null,
+   "status": "found"
+  },
+  {
+   "date": "2026-11-24",
+   "pillar": "blitz",
+   "text": "BLITZ does worse when: Tuesdays. Avg R 0.059 / 0.016 / -0.042 (Jan-Jun / Jul-Oct / 2021-25, 413 trades), -$3,809 vs a normal trade, z -1.53 (weak)",
+   "n": null,
+   "usd": null,
+   "status": "found"
+  },
+  {
+   "date": "2026-11-24",
+   "pillar": "blitz",
+   "text": "BLITZ does best when: with the daily trend. Avg R 0.169 / 0.22 / 0.042 (Jan-Jun / Jul-Oct / 2021-25, 1189 trades), +$3,633 vs a normal trade, z 1.21 (weak)",
+   "n": null,
+   "usd": null,
+   "status": "found"
+  },
+  {
+   "date": "2026-11-24",
+   "pillar": "blitz",
+   "text": "Tested a fix: half pd_room=far -> rejected (hold-out weeks -$633; 2021-25 net -$1,112; 2021-25 PF 1.06 → 1.05)",
+   "n": null,
+   "usd": null,
+   "status": "rejected"
+  },
+  {
+   "date": "2026-11-24",
+   "pillar": "learn",
+   "text": "ATLAS and BLITZ both do worse in Tuesdays (z ATLAS -0.81, BLITZ -1.53)",
+   "n": null,
+   "usd": null,
+   "status": "found"
+  },
+  {
+   "date": "2026-11-24",
+   "pillar": "learn",
+   "text": "LIT (Zlarior) and BLITZ both do better in a big overnight range (z LIT (Zlarior) 0.59, BLITZ 0.84)",
+   "n": null,
+   "usd": null,
+   "status": "found"
+  },
+  {
+   "date": "2026-11-24",
+   "pillar": "learn",
+   "text": "LIT (Zlarior) + ATLAS: 439 days both traded, both lost on 126 (123.7 if unrelated), daily $ correlation 0.297",
+   "n": null,
+   "usd": null,
+   "status": "found"
+  },
+  {
+   "date": "2026-11-24",
+   "pillar": "learn",
+   "text": "LIT (Zlarior) + BLITZ: 297 days both traded, both lost on 76 (73.3 if unrelated), daily $ correlation 0.006",
+   "n": null,
+   "usd": null,
+   "status": "found"
+  },
+  {
+   "date": "2026-11-24",
+   "pillar": "learn",
+   "text": "ATLAS + BLITZ: 406 days both traded, both lost on 128 (129.6 if unrelated), daily $ correlation 0.004",
+   "n": null,
+   "usd": null,
+   "status": "found"
+  }
+ ],
+ "state": {
+  "lit": {
+   "confidence": null,
+   "lessons": 4,
+   "last_learned": "2026-11-24",
+   "testing_next": [],
+   "market_read": "trending weeks + VIX 25+: 25 past trades, avg R 0.495 vs 0.166 overall"
+  },
+  "atlas": {
+   "confidence": null,
+   "lessons": 3,
+   "last_learned": "2026-11-24",
+   "testing_next": [],
+   "market_read": "trending weeks + VIX 25+: 52 past trades, avg R 0.085 vs 0.153 overall"
+  },
+  "blitz": {
+   "confidence": null,
+   "lessons": 4,
+   "last_learned": "2026-11-24",
+   "testing_next": [],
+   "market_read": "trending weeks + VIX 25+: 185 past trades, avg R 0.153 vs 0.037 overall"
+  },
+  "of": {
+   "confidence": null,
+   "lessons": 0,
+   "last_learned": "2026-11-24",
+   "testing_next": [],
+   "market_read": null
+  },
+  "learn": {
+   "confidence": null,
+   "lessons": 5,
+   "last_learned": "2026-11-24",
+   "testing_next": [],
+   "market_read": "Market read for 2026-11-21: trend week, VIX 25+, prior day big"
+  }
+ }
+}
