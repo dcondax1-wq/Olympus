@@ -12,6 +12,11 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
   pc/control.html: checklist + Status / Update now / Restart / Pause today / Resume (one Commit tap via control/inbox/). PC post
   carries ck (checklist) + p4 (LIT/ATLAS/BLITZ/Order Flow states). Lead wires: LEAD_WIRES.md there.
 
+## Focus rule (2026-11-24, from the brutal review; owner: "figure out a solution to all of these problems")
+- Reliability before looks: no NEW Olympus apps until 0 missed trades for 2 weeks (fixes / data on existing pages only).
+- Plan money for the bad case (2025-like: 50K pass ~32% / fail ~60%): day-badcase study. Edge proof stays strict (60+ ideas rejected 2026-11-24).
+- Zero-touch first: day-unstick (remote update without the owner), day-zeroerr (failure map + FAILOVER.md), zerotouch2 auto-park.
+
 ## Live now
 | What (checked 2026-11-19 18:37 ET, board.py read) | State |
 |---|---|
