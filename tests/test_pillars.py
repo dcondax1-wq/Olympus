@@ -216,8 +216,8 @@ def browser(post, now):
     check("b. no fatal", "fatal" not in o, o.get("fatal"))
     errs = [e for k in ("errors", "flatErrors", "nqErrors", "brainErrors", "hubErrors") for e in (o.get(k) or [])]
     check("b. no page error on the 4 pages", not errs, errs[:4])
-    check("b. Pillars: the 3D colonnade mounts (r160, 4 columns, few draw calls)", str(o.get("mode", "")).startswith("3d") and (o.get("stats") or {}).get("cols") == 4
-          and (o.get("stats") or {}).get("three") == "160" and 0 < (o.get("stats") or {}).get("calls", 99) <= 8, (o.get("mode"), o.get("stats")))
+    check("b. Pillars: the 3D temple mounts (r160, 4 columns, <= 24 draw calls in the scene pass)", str(o.get("mode", "")).startswith("3d") and (o.get("stats") or {}).get("cols") == 4
+          and (o.get("stats") or {}).get("three") == "160" and 0 < (o.get("stats") or {}).get("calls", 99) <= 24, (o.get("mode"), o.get("stats")))
     check("b. Pillars: 4 tabs with a status word each, the names over the columns", [t.split(":")[0] for t in o.get("tabs", [])] == ["lit", "atlas", "blitz", "of"] and len(o.get("tips", [])) == 4
           and "OFF" in o["tabs"][2] and "COLLECTING" in o["tabs"][3], (o.get("tabs"), o.get("tips")))
     L = o.get("lit") or {}

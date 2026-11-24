@@ -52,7 +52,7 @@ def static():
         check(f"a. {k}: hero.js comes by a dynamic import after load, never an eager <script src>", "hero.js?v=" in h and not re.search(r'<script[^>]+src="[^"]*pillars/hero\.js', h))
     check("a. Home: the hero is a band inside the header (the 6 dashboards stay on the first screen)", re.search(r'<header class="g-head">.*class="phero band".*</header>', pages["gate"], re.S) is not None)
     check("a. Zenith: hero.css loads without blocking the first paint; NQ: hero.js brings it (its frame waits hidden until styled)",
-          'hero.css?v=h5" media="print" onload=' in pages["zenith"] and "hero.css" not in pages["nq"] and 'data-toast="0" aria-label="The Four Pillars" hidden>' in pages["nq"])
+          'hero.css?v=c1" media="print" onload=' in pages["zenith"] and "hero.css" not in pages["nq"] and 'data-toast="0" aria-label="The Four Pillars" hidden>' in pages["nq"])
     check("a. NQ: no toast there (data-toast=0)", 'data-toast="0"' in pages["nq"])
     js = {f: read("pillars", f) for f in ("hero.js", "nightfx.js", "livefx.js", "hero.css")}
     code = re.sub(r"/\*.*?\*/|(?<![:'\"])//[^\n]*", "", "\n".join(js.values()), flags=re.S)
