@@ -489,7 +489,9 @@ def autopilot(now: dt.datetime | None = None, study=None, nd: str | None = None)
         runs = auto.get("runs") or []
         st = recorder_status(nd)
         write_tiny()                                   # the Four Pillars line (days so far) for the status post, after each ingest
-        of_sum = build_summaries()                     # day-ofready: per-day order-flow summaries for the cloud (never raises)
+        # day-ofready: per-day order-flow summaries for the cloud (never raises). Red team 2026-11-24: the budget also ends 15 min
+        # before the bot's 02:00 ET (a kick at 01:39 ET with a 10-min budget plus the ingest ran up to 01:50+)
+        of_sum = build_summaries(budget_s=max(0.0, min(OF_BUDGET_S, seconds_left(et) - 900)))
         want = None
         if len(days) >= STUDY_DAYS and not runs:
             want = "first look"
