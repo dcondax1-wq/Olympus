@@ -132,6 +132,13 @@ export function pillar(p, ctx) {
   };
 }
 
+/** the bare four pillars (no numbers): what the NQ strip needs for its chips, so the NQ page fetches no extra data file */
+export const PILLAR_BASE = [
+  { id: 'lit', name: 'LIT', alias: 'Zlarior', color: '#f1c14b', bot: 'lit', state: 'live', status: 'On the PC bot' },
+  { id: 'atlas', name: 'ATLAS', alias: 'EMA · MACD · S/R', color: '#77db89', bot: 'atlas', state: 'live', status: 'On the PC bot' },
+  { id: 'blitz', name: 'BLITZ', alias: 'the scalper', color: '#9d59ee', bot: 'blitz', state: 'off', status: 'Paper, hidden; built and OFF' },
+  { id: 'of', name: 'ORDER FLOW', alias: 'ticks', color: '#5fd0c9', bot: null, state: 'notready', status: 'Not ready', study_days: 60 },
+];
 /** the four pillars in the owner's order: LIT, ATLAS, BLITZ, ORDER FLOW */
 export function build(data, ctx) {
   const ps = arr(isObj(data) ? data.pillars : null).filter(isObj);

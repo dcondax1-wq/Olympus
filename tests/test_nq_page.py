@@ -239,8 +239,17 @@ def test_page():
             check("c. DEMO (the fixture): the chip, no banner, two flames in the 2D picture (BLITZ hidden), 'Running' x2, two 'Drawdown left ... of ... max loss' lines, two bars per bot",
                   d["demo"] and not d["banner"] and d["flames"] == 2 and d["legend"] == ["1", "1"] and d["pills"] == ["Running"] * 2 and d["scene"] == "2d" and d["bars"] == 4
                   and d["dd"] == ["Drawdown left $1,420 of $2,000 max loss", "Drawdown left $840 of $1,000 max loss"], d)
-            bz = p.evaluate("() => document.body.innerText.includes('BLITZ')")
-            check("c. DEMO: the word BLITZ is nowhere on the page (the hidden bot is never shown, the example too)", not bz, bz)
+            # day-pillars 2026-11-24: the owner made BLITZ one of the FOUR PILLARS (2026-11-23 23:00 ET). It may appear ONLY as its pillar chip in
+            # the Four Pillars strip, as "built · OFF" with no number; never anywhere else and never with live BLITZ data while hidden_bots holds it.
+            try:
+                p.wait_for_function("() => document.querySelectorAll('#pillarsStrip .pc').length === 4", timeout=8000)
+            except Exception:  # noqa: BLE001
+                pass
+            bz = p.evaluate("""() => { const strip = document.getElementById('pillarsStrip'); const chip = strip && strip.querySelector('.pc[data-p="blitz"]');
+                const clone = document.body.cloneNode(true); const s2 = clone.querySelector('#pillarsStrip'); if (s2) s2.remove();
+                return { outside: clone.innerText.includes('BLITZ') || clone.textContent.includes('BLITZ'), chip: chip ? chip.textContent : null }; }""")
+            check("c. DEMO: BLITZ only as its pillar chip ('built · OFF', no $ or number), nowhere else on the page (hidden_bots still holds its data)",
+                  not bz["outside"] and bz["chip"] is not None and "built · OFF" in bz["chip"] and not re.search(r"[$\d]", bz["chip"]), bz)
             check("c. DEMO: today's P&L in $ with R, the eval progress, ten trades each with $ (R) and its closing rule, the plan sentence, the three backtest facts under 'Backtest, not a promise'",
                   d["kv"][0] == demo_today() and d["kv"][1].startswith("$2,580 to go to the $3,000 target") and d["dt"][0] == "Today" and len(d["trades"]) == 10 and all(re.search(r"\$[\d,]+ \(~?[+-]?\d+\.\dR\)", x) for x in d["trades"])
                   and len(d["rules"]) == 10 and all(d["rules"]) and "02:00 and 15:30 ET" in d["plan"] and "flat by 15:55 ET" in d["plan"] and d["facts"][0] == "PF 2.91, +$9,919, about $2,670 a month" and len(d["facts"]) == 3

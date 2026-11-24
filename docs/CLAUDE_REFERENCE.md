@@ -292,6 +292,11 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   pages ask `window.OLY_HIDDEN.has('blitz')` (defined at the top of main.js, jarvis/data.js + brain.js, web_next routes.js; the other apps read localStorage oly.hiddenBots or home.json's hidden_bots); no tab, cards, orbit,
   feed tab, Start card; `#/blitz` says "hidden, still on paper". Pushes: BLITZ paper / Sim silent (`blitz.push_on`, narrator,
   `AccountC._send`); the Sunday readiness push drops its line. Real money is never hidden (account C armed -> shown).
+  **Four Pillars exception (owner 2026-11-23 23:00 ET: "Orderflow and BLITZ alongside LIT and ATLAS ... our 4 pillars"):** BLITZ is
+  NAMED as a pillar: the Four Pillars page (`tools/web_public/pillars/`), its NQ strip chip ("built · OFF"), the Strategy Brain's
+  BLITZ lobe and the Research Hub's Pillars filter. They show only research numbers and rules (research/lab/pillars.json,
+  engine/blitz.py), never live BLITZ data while `hidden_bots` holds it. tests: test_nq_page (BLITZ only as the chip, no number),
+  test_pillars, test_hidden_bots. Showing live BLITZ data is still the owner's switch (`hidden_bots: []`).
   Test `python -X utf8 -m tests.test_hidden_bots`.
 - **BLITZ, the scalper (strategy 3) PAPER SHADOW (2026-10-28, `engine/blitz.py`, `research/writeups/scalp-na-mffu.md`):**
   the noise-area 1m scalp + the prior-day range filter (`prng>=0.8`: trade a day only if yesterday's 09:30-16:00 range >=
