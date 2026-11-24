@@ -1,5 +1,5 @@
 {
-  "_help": "Phone alerts (engine/notify.py, docs/NOTIFICATIONS.md). true = on, false = off. Times are New York (ET). In quiet hours ordinary alerts arrive WITHOUT sound (summaries and milestones wait for the end); the kinds in ring_in_quiet_hours still ring. Owner 2026-11-18 \"important only\": trade results, pass / fail / locked / payout ready (account_status), PC silent, the daily summary. Problems (bot down / FEED STALE / NinjaTrader closed) stay ON as emergencies (lead 2026-11-18). Set a type to true to get it back (problems = bot down / FEED STALE / NinjaTrader closed).",
+  "_help": "Phone alerts (engine/notify.py, docs/NOTIFICATIONS.md). true = on, false = off. Times are New York (ET). In quiet hours ordinary alerts arrive WITHOUT sound (summaries and milestones wait for the end); the kinds in ring_in_quiet_hours still ring. Owner 2026-11-18 \"important only\": trade results, pass / fail / locked / payout ready (account_status), PC silent, the daily summary. Set a type to true to get it back (problems = bot down / FEED STALE / NinjaTrader closed).",
   "alerts": {
     "trade_opened": false,
     "trade_closed": true,
@@ -8,7 +8,7 @@
     "room_low": false,
     "daily_summary": true,
     "pc_silent": true,
-    "problems": true,
+    "problems": false,
     "other": false
   },
   "quiet_hours": {
