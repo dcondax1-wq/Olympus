@@ -1,6 +1,6 @@
 {
  "v": 1,
- "built": 1793316694,
+ "built": 1793316490,
  "similar": {
   "lit": {
    "fit": "2026 H1",
@@ -40,7 +40,7 @@
    "valid": false,
    "note": "does NOT predict out of sample on H2: shown as context only",
    "reverse": {
-    "fit": "2021-25 (2025: fit 2021-24)",
+    "fit": "2021-25",
     "spans": {
      "2026 H1": {
       "n": 80,
@@ -69,24 +69,8 @@
       "win_real": 0.5,
       "win_pred": 0.553,
       "avg_r_real": 0.744
-     },
-     "2025 (fit 2021-24)": {
-      "n": 114,
-      "spearman": 0.039,
-      "spread_r": 0.123,
-      "top_r": 0.121,
-      "bot_r": -0.002,
-      "p_perm": 0.337,
-      "auc_win": 0.563,
-      "brier": 0.2487,
-      "brier_base": 0.2464,
-      "win_real": 0.588,
-      "win_pred": 0.534,
-      "avg_r_real": 0.007
      }
-    },
-    "passes": false,
-    "note": "does NOT predict out of sample on 2026 H2 and 2025 (fit 2021-24): shown as context only"
+    }
    }
   },
   "atlas": {
@@ -127,7 +111,7 @@
    "valid": false,
    "note": "does NOT predict out of sample on H2 and 2021-25: shown as context only",
    "reverse": {
-    "fit": "2021-25 (2025: fit 2021-24)",
+    "fit": "2021-25",
     "spans": {
      "2026 H1": {
       "n": 101,
@@ -156,24 +140,8 @@
       "win_real": 0.556,
       "win_pred": 0.353,
       "avg_r_real": 0.631
-     },
-     "2025 (fit 2021-24)": {
-      "n": 220,
-      "spearman": -0.048,
-      "spread_r": -0.008,
-      "top_r": 0.233,
-      "bot_r": 0.241,
-      "p_perm": 0.499,
-      "auc_win": 0.588,
-      "brier": 0.2417,
-      "brier_base": 0.2374,
-      "win_real": 0.386,
-      "win_pred": 0.358,
-      "avg_r_real": 0.094
      }
-    },
-    "passes": false,
-    "note": "does NOT predict out of sample on 2025 (fit 2021-24): shown as context only"
+    }
    }
   },
   "blitz": {
@@ -200,10 +168,8 @@
    "valid": false,
    "note": "does NOT predict out of sample on H2: shown as context only",
    "reverse": {
-    "fit": "2021-25 (2025: fit 2021-24)",
-    "spans": {},
-    "passes": false,
-    "note": "no 5-year history"
+    "fit": "2021-25",
+    "spans": {}
    }
   }
  },
