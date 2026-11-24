@@ -54,7 +54,7 @@ const out = {};
     await p.evaluate(() => document.getElementById('tlwrap').scrollIntoView());
     if (SHOTS) { await p.waitForTimeout(300); await p.screenshot({ path: SHOTS + '/5_atlas_sr_timeline.png' }); }
     await p.evaluate(() => document.getElementById('lobes').scrollLeft = 9999);
-    await p.click('button.lobe[data-lobe="r_lit"]'); await p.waitForTimeout(500);
+    await p.click('button.lobe[data-lobe="r_money"]'); await p.waitForTimeout(500);
     out.finds = await p.evaluate(() => document.querySelectorAll('#body .find').length);
     await p.click('button.lobe[data-lobe="lab"]'); await p.waitForTimeout(700);
     out.lab = await p.evaluate(() => ({ sample: !!document.getElementById('labSample'), best: (document.getElementById('bestAddon') || {}).textContent || '', rows: document.querySelectorAll('#labList .tr').length }));
@@ -70,7 +70,7 @@ const out = {};
     // a tap on the canvas at a lobe's projected spot opens that lobe
     const pr = await p.evaluate(() => window.__mind && window.__mind.project('sr'));
     const cr = await p.evaluate(() => { const r = document.getElementById('c').getBoundingClientRect(); return { x: r.left, y: r.top }; });
-    if (pr) { await p.mouse.click(cr.x + pr.x, cr.y + pr.y); await p.waitForTimeout(500); out.canvasPick = await p.evaluate(() => document.querySelector('#body h2') && document.querySelector('#body h2').textContent); }
+    if (pr) { await p.evaluate(() => { document.getElementById('body').replaceChildren(); }); await p.mouse.click(cr.x + pr.x, cr.y + pr.y); await p.waitForTimeout(500); out.canvasPick = await p.evaluate(() => document.querySelector('#body h2') && document.querySelector('#body h2').textContent); }
     out.errors = errs; await ctx.close();
     const lp = await page('?lite=1');
     out.lowMode = await lp.p.evaluate(() => document.documentElement.dataset.mode); out.lowStats = await lp.p.evaluate(() => window.__mind && window.__mind.stats());

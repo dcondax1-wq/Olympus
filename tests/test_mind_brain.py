@@ -52,7 +52,9 @@ def static():
     check("a. no innerHTML", "innerHTML" not in code)
     check("a. no secrets", not re.search(r"(api[_-]?key|token|secret|password)\s*[:=]\s*['\"][^'\"]{6,}", allsrc, re.I))
     check("a. no account ids (MFFU / NinjaTrader ids, ntfy topic)", not re.search(r"\b(MFFU|FFN|APEX|TPT|SIM)[A-Z]*-?\d{4,}|\bntfy\.sh/[a-z0-9_-]{6,}", allsrc, re.I))
-    check("a. BLITZ is not a lobe", "BLITZ" not in src["mindcore.js"].split("export const LOBES")[1].split("];")[0])
+    lobes = src["mindcore.js"].split("export const LOBES")[1].split("];")[0]
+    check("a. BLITZ is a pillar lobe that says it is switched OFF (owner 2026-11-23: the 4 pillars); no live BLITZ data is read",
+          re.search(r"id: 'blitz', kind: 'pillar'.*switched OFF", lobes) is not None and "glance" not in lobes)
     check("a. low power + reduced motion + hidden tab rules", all(k in src["mind-scene.js"] for k in ["isLowPower", "cfg.reduce", "visibilitychange", "ST.low"]) and "prefers-reduced-motion" in src["mind.js"])
     check("a. 2D fallback", "?lite=2d" in src["mindcore.js"] + src["mind.js"] or "lite=2d" in src["mind.js"])
     check("a. pc_feed.js wired", "../../pc_feed.js" in src["index.html"] and "status_feed.json" in src["mind.js"])
@@ -76,7 +78,9 @@ const L = M.placeLabels([{ id: 'a', x: 100, y: 100, w: 80, h: 14, pri: 1 }, { id
   { id: 'd', x: 101, y: 100, w: 80, h: 14, pri: 0 }, { id: 'e', x: 100, y: 99, w: 80, h: 14, pri: 0 }], { w: 400, h: 300 });
 o.labels = L; o.labelsTop = L.find((q) => q.id === 'b');
 const lab = JSON.parse(fs.readFileSync('%(lab)s'));
-o.neu = M.labNeurons(lab); o.labN = lab.n; o.colors = Object.fromEntries(o.neu.map((q) => [q.verdict, q.color]));
+const bd = JSON.parse(fs.readFileSync('%(data)s')), pd = JSON.parse(fs.readFileSync('%(pdata)s'));
+o.neu = [...M.labNeurons(lab), ...M.pillarNeurons(bd, lab, pd)]; o.labN = lab.n; o.colors = Object.fromEntries(o.neu.map((q) => [q.verdict, q.color]));
+o.byPillar = o.neu.reduce((a, q) => { a[q.pillar || 'lab'] = (a[q.pillar || 'lab'] || 0) + 1; return a; }, {});
 o.labOrder = M.labRows(lab).map((r) => r.verdict);
 o.today = M.today({ bots: [{ id: 'lit', log: [['10:12', 'b'], ['02:00', 'a']] }, { id: 'atlas', log: [['09:41', 'EMA: x'], ['04:20', 'MACD: y']] }, { id: 'blitz', log: [['01:00', 'z']] }] },
   { glog: { lit: [['10:12', 'b'], ['09:58', 'c'], ['02:00', 'a']] } }).map((x) => x.hm + ' ' + x.lobe);
@@ -91,7 +95,7 @@ def node():
         r = subprocess.run(["node", "--check", os.path.join(WEB, f)], capture_output=True, text=True, timeout=30)
         check(f"n. node parses {f}", r.returncode == 0, r.stderr)
     code = NODE_CORE % {"core": os.path.join(WEB, "mindcore.js").replace("\\", "/"), "trades": os.path.join(PUB, "odeon", "trades.json").replace("\\", "/"),
-                        "data": os.path.join(PUB, "cities", "brain-data.json").replace("\\", "/"), "lab": os.path.join(PUB, "cities", "lab-data.json").replace("\\", "/")}
+                        "data": os.path.join(PUB, "cities", "brain-data.json").replace("\\", "/"), "lab": os.path.join(PUB, "cities", "lab-data.json").replace("\\", "/"), "pdata": os.path.join(PUB, "pillars", "pillars-data.json").replace("\\", "/")}
     r = subprocess.run(["node", "--input-type=module", "-e", code], capture_output=True, text=True, timeout=60)
     try:
         o = json.loads(r.stdout.strip().splitlines()[-1])
@@ -113,7 +117,7 @@ def node():
     ov = sum(1 for i, a in enumerate(shown) for b in shown[i + 1:] if a["x"] < b["x"] + 82 and b["x"] < a["x"] + 82 and a["y"] < b["y"] + 16 and b["y"] < a["y"] + 16)
     check("n. labels: overlapping lobes get moved or hidden, never drawn on top of each other", ov == 0 and len(shown) >= 2 and any(not q["show"] for q in o["labels"]), o["labels"])
     check("n. labels: the higher priority keeps the spot above its lobe", o["labelsTop"]["show"] and o["labelsTop"]["y"] < 100, o["labelsTop"])
-    check("n. lab: one neuron per strategy, gold live / mint promising / dim violet rejected", len(o["neu"]) == o["labN"] and o["colors"].get("live") == "#f1c14b" and o["colors"].get("promising") == "#77db89" and o["colors"].get("rejected") == "#8a6bbd", o["colors"])
+    check("n. neurons: every lab strategy (live ones are the pillars themselves) + each pillar's research; gold adopted / mint promising / dim violet rejected", len([q for q in o["neu"] if q["id"].startswith("lab:")]) == o["labN"] - 2 and all(o["byPillar"].get(k, 0) > 0 for k in ("lit", "atlas", "blitz", "of")) and o["colors"].get("adopted") == "#f1c14b" and o["colors"].get("promising") == "#77db89" and o["colors"].get("rejected") == "#8a6bbd", o["colors"])
     check("n. lab: live first, rejected last", o["labOrder"][0] == "live" and o["labOrder"][-1] == "rejected", o["labOrder"][:3])
     check("n. today: glog wins, time order, ATLAS lines go to their lobe, BLITZ never shown", o["today"] == ["02:00 lit", "04:20 macd", "09:41 ema", "09:58 lit", "10:12 lit"] and o["todayNone"] == 0, o["today"])
     check("n. live: in trade = the target step", o["inTrade"] == 5, o["inTrade"])
@@ -145,7 +149,7 @@ def browser():
         check("b. browser run", False, (r.stderr or r.stdout or str(e))[:600])
         return
     check("b. no fatal", "fatal" not in o, o.get("fatal"))
-    check("b. 3D mounts (three r160)", str(o.get("mode", "")).startswith("3d") and (o.get("stats") or {}).get("lobes") == 11 and (o.get("stats") or {}).get("three") == "160", (o.get("mode"), o.get("stats")))
+    check("b. 3D mounts (three r160)", str(o.get("mode", "")).startswith("3d") and (o.get("stats") or {}).get("lobes") == 12 and (o.get("stats") or {}).get("three") == "160", (o.get("mode"), o.get("stats")))
     check("b. draw calls small", 0 < (o.get("stats") or {}).get("calls", 99) <= 8, o.get("stats"))
     check("b. no page error", not o.get("errors") and not o.get("flatErrors"), (o.get("errors"), o.get("flatErrors")))
     check("b. no sideways scroll at 390", o.get("sideways") is False)
@@ -167,9 +171,10 @@ def browser():
     check("b. Strategy Lab lobe: SAMPLE banner only with the fixture, best add-on card, strategy list", lab.get("sample") is fixture and "Best add-on to LIT" in lab.get("best", "") and lab.get("rows", 0) >= 10, lab)
     nu = o.get("neuron") or {}
     check("b. a lab strategy: 3 rule lines + its span numbers", nu.get("rules") == 3 and nu.get("spans", 0) >= 1 and nu.get("sel") == "true", nu)
-    check("b. one neuron per tested strategy in the 3D", o.get("neurons", 0) == json.load(open(os.path.join(PUB, "cities", "lab-data.json")))["n"], o.get("neurons"))
+    labd = json.load(open(os.path.join(PUB, "cities", "lab-data.json")))
+    check("b. a neuron for every tested strategy (Strategy Lab + the LIT variants around LIT) and the pillars' research", o.get("neurons", 0) >= labd["n"] - 2, (o.get("neurons"), labd["n"]))
     check("b. close hides the sheet", o.get("closed") == "true")
-    check("b. a canvas tap picks a lobe", bool(o.get("canvasPick")), o.get("canvasPick"))
+    check("b. a canvas tap picks THAT lobe (S/R; an old sheet title does not count)", o.get("canvasPick") == "ATLAS S/R", o.get("canvasPick"))
     check("b. 2D fallback works", o.get("flatMode") == "2d" and o.get("flatPick") == "ATLAS MACD", (o.get("flatMode"), o.get("flatPick")))
 
 

@@ -357,6 +357,7 @@ def ingest(nd: str | None = None) -> dict:
 # ------------------------------------------------------------------------------------------------------------ autopilot
 AUTO_PATH = os.path.join(ROOT, "data", "orderflow_auto.json")       # what the autopilot did (runs of the study)
 NOTE_PATH = os.path.join(ROOT, "data", "orderflow_note.json")       # the one phone line tools/pc_report.py pushes once
+TINY_PATH = os.path.join(ROOT, "data", "tickrec_tiny.json")       # the order-flow pillar line pc_report reads as plain JSON (no import)
 STUDY_DAYS = 60
 
 
@@ -487,6 +488,7 @@ def autopilot(now: dt.datetime | None = None, study=None, nd: str | None = None)
             auto = {"runs": []}
         runs = auto.get("runs") or []
         st = recorder_status(nd)
+        write_tiny()                                   # the Four Pillars line (days so far) for the status post, after each ingest
         want = None
         if len(days) >= STUDY_DAYS and not runs:
             want = "first look"
@@ -656,6 +658,40 @@ def status() -> dict:
             "days": len(days_available()), "first": (days_available() or [None])[0], "last": (days_available() or [None])[-1],
             "recorder_flag": bool(nd and os.path.exists(os.path.join(nd, REC_DIR, "enabled.txt"))),
             "recorder": recorder_status(nd) if nd else {}}
+
+
+def tiny(now: float | None = None) -> dict | None:
+    """The order-flow pillar's line for the PC's status post (Four Pillars page, day-pillars 2026-11-24; < 120 bytes, never raises):
+    {"on": recorder enabled, "d": NQ tick days on disk, "of": STUDY_DAYS, "bf": backfill state, "o": oldest day the backfill
+    reached, "l": newest tick day, "t": when}. None when the recorder was never set up (no config, no days) so nothing is sent."""
+    try:
+        days = nq_days()
+        on = is_enabled()
+        if not on and not days:
+            return None
+        st = recorder_status() or {}
+        out = {"on": bool(on), "d": len(days), "of": STUDY_DAYS, "bf": str(st.get("backfill") or "")[:12] or None,
+               "o": str(st.get("oldest") or (days[0] if days else ""))[:10] or None, "l": (days[-1] if days else None),
+               "t": int(now if now is not None else time.time())}
+        return {k: v for k, v in out.items() if v is not None}
+    except Exception:
+        return None
+
+
+def write_tiny(path: str | None = None, now: float | None = None) -> bool:
+    """Write tiny() to data/tickrec_tiny.json (tools/pc_report.py reads it as plain JSON: nothing imports this module). Never raises."""
+    try:
+        t = tiny(now)
+        if t is None:
+            return False
+        p = path or os.path.join(os.path.dirname(NOTE_PATH), os.path.basename(TINY_PATH))   # next to the note: a test that moves NOTE_PATH moves this too
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        with open(p + ".tmp", "w", encoding="utf-8") as fh:
+            json.dump(t, fh, separators=(",", ":"))
+        os.replace(p + ".tmp", p)
+        return True
+    except Exception:
+        return False
 
 
 def selftest() -> bool:
