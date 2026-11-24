@@ -71,7 +71,7 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-65 entries from docs/TESTED_AND_REJECTED.md, newest first.
+66 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
 - **Edge hunt lane B, cross-asset triggers** · [[edge-b-cross-2026-11-22|Edge hunt lane B]]
 - **Edge hunt lane D: small meta-labeled SIZE + re-entry on LIT** · [[Zlarior (LIT)]] · [[edge-d-meta-2026-11-22|Edge hunt lane D]], [[meta-labeling|Meta-labeling]]
@@ -138,6 +138,7 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 - **One-account combined book** · [[Zlarior (LIT)]], [[ATLAS]], [[BLITZ (paper)]] · [[one-account-book-2026-11-22|One account, combined book]]
 - **2026-11-22 Lucid accounts on a $300 a month fleet** · [[Zlarior (LIT)]], [[Rapid lanes]] · [[fleet-v2-2026-11-22|Fleet v2]]
 - **Popular ICT/SMC strategies as taught** · [[Zlarior (LIT)]] · [[popular-ict-2026-11-23|Popular ICT / SMC strategies on CME NQ, run exactly as taught]]
+- **2026-11-24 BLITZ on the Rapid EOD 25K eval ...** · [[BLITZ (paper)]], [[Rapid lanes]] · [[four-pillars-2026-11-23|The four pillars]]
 
 ## Rejected in the write-ups
 

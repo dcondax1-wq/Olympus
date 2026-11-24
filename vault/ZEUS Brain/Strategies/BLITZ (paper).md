@@ -81,11 +81,16 @@ _No trades in the published trade list._
 > 13 books x 4 MFFU accounts (+ today = 53) on rank.py at real fills: first-come, LIT-priority 50% day budget, ATLAS NY-only / London-only / strict windows, ATLAS x0.5 eval, LIT eval then both funded, LIT x0.75 / x0.5, + BLITZ $300, ATLAS lane x2. Pick (Jan-Jun, eval fail <= LIT + 2 pts): Rapid EOD 50K LIT + ATLAS, LIT x0.5 in the eval $4,918 / $2,204 / -$88 a month vs today's 2 accounts $981 / $857 / -$62; paired 2021-25 -$156 (SE $32), 2022 -$781, Jul-Oct without ATLAS's 5 best days +$114 (SE $136): fails the 2021-25 bar, no card. Every mixing trick makes less than plain first-come in Jul-Oct (-$60 to -$1,352/mo); the gain is the Rapid 50K account (open card plan-rapid50k-max2-rebuys). ...
 > Write-ups: [[one-account-book-2026-11-22|One account, combined book]]
 
+> [!failure]- 2026-11-24 BLITZ on the Rapid EOD 25K eval ...
+> 2026-11-24 BLITZ on the Rapid EOD 25K eval (research/writeups/four-pillars-2026-11-23.md, research/pillars/DESIGN.md pre-registered, 2,000 eval paths, real fills): the BUILT $300 lane fails the eval 0.5% -> 3.1% Jan-Jun (fails the +1 point bar). REJECTED: V2 no BLITZ from a LIT entry to 30 min after its exit (3.3%; LIT is done before 11:00, removes 2 of 207 trades), V3 half size once the day is at 50% of the best-day cap (3.2%), V4 one BLITZ loser and done (1.3% but lower pass than V5). PICK (paper, owner yes/no): V5 BLITZ at $150: fail 1.2 / 2.5 / 79.8%, pass 83.0 / 91.2 / 13.0%, slot +$45 / +$91 / -$1 a month vs today; noise-sized gain.
+> Write-ups: [[four-pillars-2026-11-23|The four pillars]]
+
 
 ## Write-ups
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-23 (night, run 2026-11-24 early ET) | [[four-pillars-2026-11-23\|The four pillars]] | research |
 | 2026-11-22 | [[one-account-book-2026-11-22\|One account, combined book]] | research |
 | 2026-11-19 | [[one-account-combo-2026-11-19\|ONE account, several bots]] | research |
 | 2026-11-18 | [[win-loss-anatomy-2026-11-18\|Why we win, why we lose]] | finding |

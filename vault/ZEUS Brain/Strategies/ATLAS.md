@@ -154,6 +154,7 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-23 (night, run 2026-11-24 early ET) | [[four-pillars-2026-11-23\|The four pillars]] | research |
 | 2026-11-22 | [[rapid25-slot-2026-11-22\|Rapid 25K slot]] | rejected |
 | 2026-11-22 | [[plan-ranking-2026-11-22\|Plan ranking]] | research |
 | 2026-11-22 | [[one-account-book-2026-11-22\|One account, combined book]] | research |
@@ -193,9 +194,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-10-31 | [[atlas-funded-one-a-day-2026-10-31\|ATLAS funded 25K]] | rejected |
 | 2026-10-30 | [[discretion-score-2026-10-30\|Discretion score for ATLAS and BLITZ]] | rejected |
 | 2026-10-30 | [[blitz-edge-2026-10-30b\|BLITZ edge, rounds 2-4]] | rejected |
-| 2026-10-30 | [[atlas-windows-entries-2026-10-30\|ATLAS per-member trading windows and limit entries]] | rejected |
 
-... and 25 older (see the families).
+... and 26 older (see the families).
 
 ## Links
 

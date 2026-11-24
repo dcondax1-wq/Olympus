@@ -196,6 +196,7 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-23 (night, run 2026-11-24 early ET) | [[four-pillars-2026-11-23\|The four pillars]] | research |
 | 2026-11-22 | [[rapid25-slot-2026-11-22\|Rapid 25K slot]] | rejected |
 | 2026-11-22 | [[plan-ranking-2026-11-22\|Plan ranking]] | research |
 | 2026-11-22 | [[one-account-book-2026-11-22\|One account, combined book]] | research |
@@ -235,9 +236,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-11-04 | [[2026-11-04_second_strategies_night\|Second strategies night]] | research |
 | 2026-11-04 | [[2026-11-04_lit_ideas_round3\|LIT ideas round 3]] | research |
 | 2026-11-04 | [[2026-11-04_lit_ideas_round2\|LIT ideas round 2]] | research |
-| 2026-11-04 | [[2026-11-04_lit_ideas_night\|LIT ideas night]] | rejected |
 
-... and 74 older (see the families).
+... and 75 older (see the families).
 
 ## Links
 

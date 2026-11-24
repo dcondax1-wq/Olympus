@@ -7,11 +7,12 @@ type: "family"
 
 # Research family: money
 
-> [!abstract] 18 write-ups
-> finding 1, info 4, rejected 2, research 11
+> [!abstract] 19 write-ups
+> finding 1, info 4, rejected 2, research 12
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-23 (night, run 2026-11-24 early ET) | [[four-pillars-2026-11-23\|The four pillars]] | research |
 | 2026-11-22 | [[rapid25-slot-2026-11-22\|Rapid 25K slot]] | rejected |
 | 2026-11-22 | [[rank-rent-pay-per-job-2026-11-22\|Rank-and-rent and pay-per-booked-job for Maryland trades]] | research |
 | 2026-11-22 | [[plan-ranking-2026-11-22\|Plan ranking]] | research |
