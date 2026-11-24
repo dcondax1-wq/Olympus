@@ -23,7 +23,7 @@ _No backtest trade on these days._
 
 ## Releases (newest first)
 
-- 2026-11-24 10:00 ET · CB Consumer Confidence (Nov)
+- [[Day 2026-11-24|2026-11-24]] 10:00 ET · CB Consumer Confidence (Nov)
 - [[Day 2026-10-27|2026-10-27]] 10:00 ET · CB Consumer Confidence
 
 [[ZEUS News]] · [[Lesson news hit]] · [[Lesson news soon]] · [[ZEUS Home]]

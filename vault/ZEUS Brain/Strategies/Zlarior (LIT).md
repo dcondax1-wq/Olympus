@@ -81,6 +81,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 ## Tested and rejected
 
+> [!failure]- Stops x targets x TIME
+> 19 pre-registered variants on the live LIT trades, risk-matched $ + 3 MFFU evals, Bonferroni p < 0.0026. Tighter stops (1m CISD candle 7 pts, 1m entry swing 14-17, 3m FVG 15-22) x live price / 2R / 3R: every one loses Jul-Oct ($8.3k-$14.0k under live); 40-58% stopped, 28-41% of those were live winners (wicked out); the 1m swing's Jan-Jun +$75k is the size rule risking more $ (same $: +$8.8k / -$8.3k / 2021-25 -$23.0k). Targets 15m / 1h liquidity, opposing session high, 1h FVG, fixed 1.5 / 2 / 3R: hit up to 2x as often, all lose Jan-Jun $8-25k (1h FVG H2 +$235, p 0.50; 3R 2021-25 +$19k but both 2026 halves lose). TIME: winners +0.5R median 10 min, target median 180 min; N = 26 min from ...
+> Write-ups: [[stops-targets-time-2026-11-24|"Stops x targets x TIME]]
+
 > [!failure]- Edge hunt lane D: small meta-labeled SIZE + re-entry on LIT
 > 31 pre-registered versions. 16 walk-forward size rules (logistic / depth-2 tree x 7 or 13 facts known at the fill x 0.5 / 1.5, 0.75 / 1.25, down-only 0.5, up-only 1.5; monthly refit, purged + embargoed, MFFU caps on the eval path): all 12 that cut size lose 2026 H1 (-$1.6k..-$15.7k) and pass fewer 2-week evals (6.7-37% vs 44.5%); the 4 up-only ones are leverage (a flat x1.25 with no model makes more in H1); the only one through the money gate (tree 13 facts, up-only 1.5: +$5.7k / +$3.2k / +$0.5k, eval +$3.1k / +$0.2k) is chance (shuffled multipliers beat it 29% / 45%, shuffled labels 23% / 15%, in-sample H1 +$12.4k vs +$5.7k), funded +$15-18 a month with more account loss (1.7 -> 1.9%, 3.0 ...
 > Write-ups: [[edge-d-meta-2026-11-22|Edge hunt lane D]], [[meta-labeling|Meta-labeling]]

@@ -71,8 +71,9 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-67 entries from docs/TESTED_AND_REJECTED.md, newest first.
+68 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
+- **Stops x targets x TIME** · [[Zlarior (LIT)]] · [[stops-targets-time-2026-11-24|"Stops x targets x TIME]]
 - **Market Learn weekly trial #1** · [[BLITZ (paper)]]
 - **Edge hunt lane B, cross-asset triggers** · [[edge-b-cross-2026-11-22|Edge hunt lane B]]
 - **Edge hunt lane D: small meta-labeled SIZE + re-entry on LIT** · [[Zlarior (LIT)]] · [[edge-d-meta-2026-11-22|Edge hunt lane D]], [[meta-labeling|Meta-labeling]]
@@ -143,6 +144,7 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected in the write-ups
 
+- 2026-11-24 [[stops-targets-time-2026-11-24|"Stops x targets x TIME]] ([[Family stops|stops]])
 - 2026-11-23 [[popular-ict-2026-11-23|Popular ICT / SMC strategies on CME NQ, run exactly as taught]] ([[Family other|other]])
 - 2026-11-23 [[orderflow-program-2026-11-23|Order-flow program]] ([[Family research|research]])
 - 2026-11-23 [[orderflow-2026-11-23|Order flow]] ([[Family research|research]])
