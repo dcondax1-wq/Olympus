@@ -162,6 +162,7 @@ PARTS["combo_25k"] = [("sep", ["--seg", "2026-09-02"]), ("oct", ["--seg", "2026-
 AREAS["fleet"].append("rapid_launch")       # day-rapid 2026-11-20: Rapid EOD 25K launch check (tools/money/rapid25_launch.py)
 AREAS["fleet"] += ["rapid_blitz", "rapid_blitz_rt"]     # day-rapidsize 2026-11-23 + red team: BLITZ on the Rapid EOD 25K eval (OFF until --blitz on + phrase)
 AREAS["nq"].append("blitz_learn")      # day-blitz150 2026-11-24: BLITZ learns from its mistakes (research/blitz/learn.py; research + reporting only)
+AREAS["nq"].append("blitz_learn_rt")   # red team 2026-11-23: a BLITZ fix needs >= 10 removed fresh trades (no pass on 3)
 for _a in ("fleet", "pc"):                  # fix-trade 2026-11-21: an added Rapid / account armed by Start trading's phrase (engine/go.py)
     if "rapid_arm" not in AREAS[_a]:
         AREAS[_a].append("rapid_arm")

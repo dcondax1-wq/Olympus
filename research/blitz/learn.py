@@ -29,7 +29,7 @@ Runs in the cloud as tools/learn_night.py step "blitz" (after the PC's day folde
         the fix, costs in, 2,000 eval / 1,000 six-month paths. PASS = both 2026 halves +$25 a month or more with eval fail% at most
         +0.5 pt, and 2021-25 not worse than -$25 a month / +1.0 pt fail;
      b. FRESH, UNTOUCHED data: only paper / live BLITZ trades closed AFTER the fix was first picked (its "fresh_from" day; the
-        data that picked it never counts). PASS = at least 30 fresh trades, the trades the fix would have removed lost R in
+        data that picked it never counts). PASS = at least 30 fresh trades, at least 10 of them removed by the fix, the trades it removed lost R in
         total, and a bootstrap p (removed trades' mean R >= 0) <= 0.05 / k, where k = every BLITZ fix test ever run
         (research/blitz/tests.jsonl, this one included): the multiple tests are counted, so more tries need stronger proof.
    Fewer than 30 fresh trades = "waiting for fresh data", never a pass. Every test is logged (tests.jsonl), passed or not.
@@ -71,6 +71,8 @@ LATE_H = 15
 BEST_DAY_GUIDE = 0.3 * 1500 * 0.95            # engine/rapid.best_day_cap on the Rapid EOD 25K
 WINDOW_DAYS, MIN_LESSONS, MIN_TAG_N, TOP = 56, 20, 8, 2
 FRESH_MIN, ALPHA, BOOT = 30, 0.05, 4000
+REMOVED_MIN = 10       # red team 2026-11-23: the fix must remove at least this many fresh trades. A bootstrap of 2-3 losers is all
+                       # negative in every resample, so p = 1 / (BOOT + 1) "passed" a fix on almost no evidence
 GAIN_MO, FAIL_PT, REF_MO, REF_FAIL = 25.0, 0.5, 25.0, 1.0
 RETRY_DAYS = 28                                # a rejected fix waits 4 weeks before it is picked again (it still counts in k)
 
@@ -408,6 +410,9 @@ def fresh_test(cid: str, lessons: list, fresh_from: str, k: int, lit=None, news=
     rem = [float(r["r"]) for r in fr if r["entry_t"] not in keep]
     if not rem:
         return {"n": n, "removed": 0, "pass": False, "why": "the fix removes no fresh trade"}
+    if len(rem) < REMOVED_MIN:
+        return {"n": n, "removed": len(rem), "removed_r": round(sum(rem), 2), "pass": False,
+                "why": f"waiting for fresh data: the fix removed {len(rem)} of the {REMOVED_MIN} fresh trades it needs"}
     mean = sum(rem) / len(rem)
     rng = random.Random(seed)
     hits = sum(1 for _ in range(BOOT) if sum(rng.choice(rem) for _ in rem) / len(rem) >= 0)
@@ -518,7 +523,7 @@ def weekly(today: str, lessons_path: str = LESSONS, tests_path: str = TESTS, sta
             rows.append({"v": 1, "day": today, "cid": cid, "k": k, "spans_pass": sp_ok, "fresh_pass": fr["pass"], "pass": ok,
                          "fresh_n": fr["n"], "fix": ev[cid], "base": base})
             c.update(last_test=today, tests=int(c.get("tests") or 0) + 1,
-                     status="passed" if ok else ("waiting" if sp_ok and fr["n"] < FRESH_MIN else "rejected"))
+                     status="passed" if ok else ("waiting" if sp_ok and str(fr.get("why") or "").startswith("waiting") else "rejected"))
             if ok:
                 cd = decide_card(cid, base, ev[cid], fr, today, decisions)
                 rep["cards"].append(cd)
