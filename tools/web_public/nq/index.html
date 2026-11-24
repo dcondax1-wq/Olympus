@@ -14,11 +14,7 @@
 <link rel="icon" href="icon.svg">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<!-- NQ (OLYMPUS, AGORA look, 2026-11-11): "the NQ bots, right now", one page built for trust. Per bot (Zlarior / LIT 50K, ATLAS 25K, BLITZ 25K): running / waiting for the PC / stale with the exact age,
-     "Drawdown left $X of $max loss", the day's P&L in $ with R, the eval progress; the last 10 trades with the rule that closed each; the plan in one sentence; the backtest facts with their dates
-     ("backtest, not a promise"); a big honest banner when the PC is silent and the five steps that bring reporting back (howto.json = docs/NQ_BOT_BACK.md, bundled by tools/nq_howto_build.py).
-     Read only, paper only: it reads ../home.json, howto.json and fixture.json (DEMO, never blank) and sends nothing. Text only through textContent / createElementNS.
-     nqcore.js = the pure rules (node-tested); nq.js = the page; nqscene.js = the optional 3D columns (a separate module, so a device without WebGL keeps the 2D columns). -->
+<!-- NQ (OLYMPUS, 2026-11-11): "the NQ bots, right now", one page built for trust. Full notes: docs/OLYMPUS_MAP.md (nq). -->
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <!-- perf 2026-11-20 (largest paint 6.9 s = the chart's line, at the end of page -> nqchart.js -> status_feed.json -> the PC's chart post):
      the page's data files and the chart post start here at once; nq.js / nqchart.js take them (window.NQ_EARLY, each used once) -->
@@ -54,7 +50,7 @@
 <main id="app">
   <header class="top">
     <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">NQ</h1><p class="sub">Are the bots on, and how much $ each account can still lose before it fails.</p></div></div>
-    <div class="tags"><a class="btn brainlink" href="../pillars/" aria-label="Open the four pillars: LIT, ATLAS, BLITZ, ORDER FLOW">Pillars</a><a class="btn brainlink" href="accounts.html" aria-label="Open every account on one screen">Accounts</a><a class="btn brainlink" href="brain.html" aria-label="Open the bots' brains">Brain</a><span id="demo" class="tag demo" hidden>DEMO</span><span id="lite" class="tag" hidden>LITE</span></div>
+    <div class="tags"><a class="btn primary brainlink" href="../warroom/" aria-label="Open the War Room: every bot, every step, live">War Room</a><a class="btn brainlink" href="../pillars/" aria-label="Open the four pillars: LIT, ATLAS, BLITZ, ORDER FLOW">Pillars</a><a class="btn brainlink" href="accounts.html" aria-label="Open every account on one screen">Accounts</a><a class="btn brainlink" href="brain.html" aria-label="Open the bots' brains">Brain</a><span id="demo" class="tag demo" hidden>DEMO</span><span id="lite" class="tag" hidden>LITE</span></div>
   </header>
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
   <p id="src" class="note" data-truth="source"></p>

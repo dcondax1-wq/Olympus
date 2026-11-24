@@ -697,6 +697,24 @@
     "kind": "tiles",
     "ms": 800
    }
+  },
+  {
+   "id": "warroom",
+   "name": "War Room",
+   "group": "trading",
+   "accent": "#f1c14b",
+   "description": "Every NQ bot, every step, live: what it waits for and how close a trade is",
+   "glyph": "⚔",
+   "ambient": "chimes",
+   "flavour": [
+    "columns",
+    "Every bot, every step, live",
+    "tick"
+   ],
+   "transition": {
+    "kind": "columns",
+    "ms": 800
+   }
   }
  ],
  "pending": [],
