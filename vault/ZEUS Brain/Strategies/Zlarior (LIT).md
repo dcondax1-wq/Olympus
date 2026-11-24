@@ -216,6 +216,7 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-24 | [[proedge-2026-11-24\|Pro / institutional edges]] | rejected |
 | 2026-11-24 | [[lit-vix-downtrend-2026-11-24\|LIT in high-VIX falling markets]] | research |
 | 2026-11-23 (night, run 2026-11-24 early ET) | [[four-pillars-2026-11-23\|The four pillars]] | research |
 | 2026-11-22 | [[rapid25-slot-2026-11-22\|Rapid 25K slot]] | rejected |
@@ -255,9 +256,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-11-13 | [[eval-guard-2026-11-13\|Eval guard]] | research |
 | 2026-11-13 | [[es-and-sessions-2026-11-13\|Same edge, more markets]] | rejected |
 | 2026-11-04 | [[2026-11-04_second_strategies_night\|Second strategies night]] | research |
-| 2026-11-04 | [[2026-11-04_lit_ideas_round3\|LIT ideas round 3]] | research |
 
-... and 76 older (see the families).
+... and 77 older (see the families).
 
 ## Links
 
