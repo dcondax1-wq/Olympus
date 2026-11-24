@@ -1,0 +1,313 @@
+{
+ "design": "research/pillars/RAPID_TARGETS_DESIGN.md",
+ "plan": "mffu_rapid_eod_25k",
+ "n_eval": 2000,
+ "n_slot": 1000,
+ "rows": {
+  "V0 today LIT+ATLAS (band)": {
+   "info": {
+    "check_mismatch": 0
+   },
+   "H1": {
+    "eval": {
+     "pass": 80.5,
+     "fail": 0.5,
+     "med_days": 33.0
+    },
+    "slot": {
+     "owner_6m": 11428,
+     "fees_6m": 126.9,
+     "net_6m": 11301,
+     "net_p10": 1358,
+     "net_p50": 11319,
+     "per_dollar": 90.02,
+     "no_pay": 7.4,
+     "evals": 1.31,
+     "lost": 0.28,
+     "p_lost": 27.2,
+     "pays": 10.54,
+     "first_pay_med": 53.0,
+     "per_month": 1884
+    },
+    "fixed_eval_book": {
+     "trades": 184,
+     "tpw": 7.19,
+     "win": 46.2,
+     "pf": 2.81,
+     "net": 30337,
+     "per_month": 4977,
+     "max_dd": -1397,
+     "win_days_pw": 1.99
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 85.5,
+     "fail": 2.0,
+     "med_days": 26.0
+    },
+    "slot": {
+     "owner_6m": 4945,
+     "fees_6m": 144.0,
+     "net_6m": 4801,
+     "net_p10": -194,
+     "net_p50": 4628,
+     "per_dollar": 34.35,
+     "no_pay": 15.1,
+     "evals": 1.48,
+     "lost": 0.43,
+     "p_lost": 38.0,
+     "pays": 6.88,
+     "first_pay_med": 56.0,
+     "per_month": 800
+    },
+    "fixed_eval_book": {
+     "trades": 86,
+     "tpw": 5.51,
+     "win": 43.0,
+     "pf": 2.48,
+     "net": 10966,
+     "per_month": 2952,
+     "max_dd": -1160,
+     "win_days_pw": 1.99
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 7.5,
+     "fail": 77.0,
+     "med_days": 29.0
+    },
+    "slot": {
+     "owner_6m": 68,
+     "fees_6m": 367.6,
+     "net_6m": -300,
+     "net_p10": -486,
+     "net_p50": -389,
+     "per_dollar": 0.18,
+     "no_pay": 96.9,
+     "evals": 3.78,
+     "lost": 0.2,
+     "p_lost": 18.8,
+     "pays": 0.07,
+     "first_pay_med": 67.0,
+     "per_month": -50
+    },
+    "fixed_eval_book": {
+     "trades": 1505,
+     "tpw": 6.99,
+     "win": 31.0,
+     "pf": 0.87,
+     "net": -27300,
+     "per_month": -532,
+     "max_dd": -41028,
+     "win_days_pw": 1.28
+    }
+   }
+  },
+  "T15 LIT 1.5R in the eval": {
+   "info": {
+    "lit_swapped": 631
+   },
+   "H1": {
+    "eval": {
+     "pass": 73.4,
+     "fail": 7.2,
+     "med_days": 20.0
+    },
+    "slot": {
+     "owner_6m": 11922,
+     "fees_6m": 142.4,
+     "net_6m": 11780,
+     "net_p10": -97,
+     "net_p50": 12408,
+     "per_dollar": 83.73,
+     "no_pay": 10.9,
+     "evals": 1.47,
+     "lost": 0.3,
+     "p_lost": 27.8,
+     "pays": 11.07,
+     "first_pay_med": 43.0,
+     "per_month": 1963
+    },
+    "fixed_eval_book": {
+     "trades": 184,
+     "tpw": 7.19,
+     "win": 46.2,
+     "pf": 2.24,
+     "net": 20716,
+     "per_month": 3399,
+     "max_dd": -1403,
+     "win_days_pw": 2.19
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 74.0,
+     "fail": 7.2,
+     "med_days": 18.0
+    },
+    "slot": {
+     "owner_6m": 4774,
+     "fees_6m": 157.2,
+     "net_6m": 4617,
+     "net_p10": -194,
+     "net_p50": 4106,
+     "per_dollar": 30.38,
+     "no_pay": 23.4,
+     "evals": 1.62,
+     "lost": 0.4,
+     "p_lost": 35.9,
+     "pays": 6.64,
+     "first_pay_med": 50.0,
+     "per_month": 770
+    },
+    "fixed_eval_book": {
+     "trades": 86,
+     "tpw": 5.51,
+     "win": 43.0,
+     "pf": 1.89,
+     "net": 6594,
+     "per_month": 1775,
+     "max_dd": -850,
+     "win_days_pw": 1.99
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 13.2,
+     "fail": 81.0,
+     "med_days": 19.0
+    },
+    "slot": {
+     "owner_6m": 143,
+     "fees_6m": 451.0,
+     "net_6m": -308,
+     "net_p10": -583,
+     "net_p50": -486,
+     "per_dollar": 0.32,
+     "no_pay": 92.7,
+     "evals": 4.64,
+     "lost": 0.42,
+     "p_lost": 37.1,
+     "pays": 0.15,
+     "first_pay_med": 70.0,
+     "per_month": -51
+    },
+    "fixed_eval_book": {
+     "trades": 1505,
+     "tpw": 6.99,
+     "win": 31.0,
+     "pf": 0.87,
+     "net": -26869,
+     "per_month": -524,
+     "max_dd": -41875,
+     "win_days_pw": 1.45
+    }
+   },
+   "verdict": "rejected"
+  },
+  "T20 LIT 2R in the eval": {
+   "info": {
+    "lit_swapped": 631
+   },
+   "H1": {
+    "eval": {
+     "pass": 73.1,
+     "fail": 5.2,
+     "med_days": 26.0
+    },
+    "slot": {
+     "owner_6m": 11251,
+     "fees_6m": 140.4,
+     "net_6m": 11111,
+     "net_p10": -194,
+     "net_p50": 11271,
+     "per_dollar": 80.16,
+     "no_pay": 11.8,
+     "evals": 1.44,
+     "lost": 0.3,
+     "p_lost": 27.5,
+     "pays": 10.42,
+     "first_pay_med": 48.0,
+     "per_month": 1852
+    },
+    "fixed_eval_book": {
+     "trades": 184,
+     "tpw": 7.19,
+     "win": 46.2,
+     "pf": 2.28,
+     "net": 21412,
+     "per_month": 3513,
+     "max_dd": -1397,
+     "win_days_pw": 2.11
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 82.7,
+     "fail": 4.2,
+     "med_days": 21.0
+    },
+    "slot": {
+     "owner_6m": 5149,
+     "fees_6m": 147.6,
+     "net_6m": 5001,
+     "net_p10": -194,
+     "net_p50": 4792,
+     "per_dollar": 34.87,
+     "no_pay": 17.7,
+     "evals": 1.52,
+     "lost": 0.41,
+     "p_lost": 36.1,
+     "pays": 7.17,
+     "first_pay_med": 51.0,
+     "per_month": 834
+    },
+    "fixed_eval_book": {
+     "trades": 86,
+     "tpw": 5.51,
+     "win": 43.0,
+     "pf": 1.99,
+     "net": 7329,
+     "per_month": 1973,
+     "max_dd": -771,
+     "win_days_pw": 2.12
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 12.9,
+     "fail": 80.7,
+     "med_days": 22.0
+    },
+    "slot": {
+     "owner_6m": 139,
+     "fees_6m": 421.8,
+     "net_6m": -283,
+     "net_p10": -583,
+     "net_p50": -389,
+     "per_dollar": 0.33,
+     "no_pay": 93.0,
+     "evals": 4.34,
+     "lost": 0.41,
+     "p_lost": 36.7,
+     "pays": 0.14,
+     "first_pay_med": 67.5,
+     "per_month": -47
+    },
+    "fixed_eval_book": {
+     "trades": 1505,
+     "tpw": 6.99,
+     "win": 31.0,
+     "pf": 0.88,
+     "net": -24269,
+     "per_month": -473,
+     "max_dd": -40159,
+     "win_days_pw": 1.42
+    }
+   },
+   "verdict": "rejected"
+  }
+ }
+}

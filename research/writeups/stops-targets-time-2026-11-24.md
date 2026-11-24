@@ -3,7 +3,7 @@ title: "Stops x targets x TIME: smaller stops and take-profits from other timefr
 family: stops
 date: 2026-11-24
 status: rejected
-summary: "19 pre-registered variants on the exact live LIT trades (631, 120 in 2026, 1m fills). Tighter stops from the 1m CISD candle, the 1m entry swing and the 3m FVG cut the stop from ~44-52 pts to 7-22 pts, but at the same dollars at risk every one loses money in Jul-Oct ($8.3k-$14.0k less than live): 40-58% of trades get stopped and 28-41% of those stop-outs were live WINNERS (wicked out). Structure targets (15m / 1h liquidity, session highs, 1h FVG) and fixed 1.5 / 2 / 3R hit the target up to 2x as often but cut the big runners: all lose Jan-Jun by $8-25k. Time rules (N = 26 min, from Jan-Jun only) lose both halves. 0 pass; nothing changes. One lead: on the Rapid EOD 25K (30% best-day rule) a small fixed target passes evals where the band target cannot."
+summary: "19 pre-registered variants on the exact live LIT trades (631, 120 in 2026, 1m fills). Tighter stops from the 1m CISD candle, the 1m entry swing and the 3m FVG cut the stop from ~44-52 pts to 7-22 pts, but at the same dollars at risk every one loses money in Jul-Oct ($8.3k-$14.0k less than live): 40-58% of trades get stopped and 28-41% of those stop-outs were live WINNERS (wicked out). Structure targets (15m / 1h liquidity, session highs, 1h FVG) and fixed 1.5 / 2 / 3R hit the target up to 2x as often but cut the big runners: all lose Jan-Jun by $8-25k. Time rules (N = 26 min, from Jan-Jun only) lose both halves. 0 pass; nothing changes. Rapid EOD 25K follow-up (LIT+ATLAS pillars engine): an eval-only 1.5R / 2R LIT target passes faster (median 20-26 vs 33 sessions Jan-Jun) but less often (73% vs 80.5%) with more fails (5-7% vs 0.5%): rejected too."
 runs: tools/stops_targets_time.py (research/lab/stops_targets.json, research/lit/stops_time.json)
 ---
 
@@ -28,9 +28,9 @@ runs: tools/stops_targets_time.py (research/lab/stops_targets.json, research/lit
   26 min loses money in BOTH halves ($1.2k to $8.5k less than live) and in 2021-25: slow starters still win often enough in
   Jul-Oct (no +0.5R after 30 min: 12% hit the target, avg +0.19R; Jan-Jun 10%, -0.10R).
 - **0 of 19 pass. Nothing changes.** The hard rule "stop 1 tick beyond the sweep extreme" stays. No proposal to the owner.
-- **One lead (not a pass):** on the **Rapid EOD 25K** (best day <= 30%, our day-win cap $427) the band target never passes in
-  40 sessions in this model (0%), while a fixed 1.5R target passes 42% (Jan-Jun) / 8% (Jul-Oct) / 19% (2021-25). That is a
-  question for the Rapid lane's own pre-registered test, not a LIT change.
+- **Rapid EOD 25K follow-up (done, rejected):** my first Rapid number (band 0% pass) came from a crude LIT-only model; the
+  full pillars engine (LIT + ATLAS, real fills, 30% best-day guard) says the band passes ~80-85%. There, a fixed 1.5R / 2R
+  LIT target in the eval passes FASTER but LESS often and fails more. See the last section.
 
 ## What was tested (pre-registered before the run, 19 counted)
 
@@ -111,8 +111,9 @@ way), so "target hit %" and "full stop %" are the honest columns. Trades/week ar
 | C3 time-BE: after 26 min in profit -> breakeven | 35.3/0.0 | 36.2/0.0 | 8.4/0.7 | 91.0 / 87.2 / 20.5 | 36.1 / 34.8 | 66.7/0.0 | 0.0 / 0.0 / 0.0 | 12.0 / 15.0 |
 
 Builder 50K $91.80 (+$3,000, $2,000 trailing), Builder 25K $63 (+$1,500, $1,000 trailing, 20 micros), Rapid EOD 25K $97.20
-(+$1,500, best day <= 30%, 4 days, our $500 soft day stop and $427 day-win cap, 20 micros: an approximation of the bot's own
-caps). 2-wk = pass / fail within 10 sessions; 40-s = within 40 sessions.
+(+$1,500, best day <= 30%, 4 days, our $500 soft day stop and $427 day-win cap, 20 micros). **The Rapid column here is WRONG
+for money decisions:** LIT alone, a 40-session limit and 1 micro forced even when one band win breaks the 30% cap. Use the
+follow-up section below (the pillars engine). 2-wk = pass / fail within 10 sessions; 40-s = within 40 sessions.
 
 ## How often a tight stop gets wicked out
 
@@ -158,7 +159,35 @@ Neither shows a clock rule worth a new test.
   15-minute check.
 - **Why bigger is right for LIT:** the sweep extreme is the real invalidation; anything inside it is noise that LIT's winners
   routinely trade through before running ~3 hours to the band.
-- **Lead for later (Rapid lane only):** a pre-registered Rapid EOD 25K test of small fixed targets (1.5R / 2R) against the 30%
-  best-day rule. Not adopted; not a LIT change.
+- **Rapid EOD 25K eval target:** tested below, rejected. No lead left from this study.
 
 Paper only. Nothing live changed; `live_model*.json` untouched. Re-run: `python -X utf8 tools/stops_targets_time.py all` (~1 min).
+
+## Follow-up: the Rapid EOD 25K eval target, done properly (2026-11-24, lead's request)
+
+**Which model is right.** The pillars / combo engine (`research/pillars/blitz_rapid.py` -> `research/onebook/book.py` ->
+`research/plans/rank.py`; same family as `tools/money/combo_account.py`) is right: it runs what the account really trades
+(LIT + ATLAS lanes on one Rapid 25K), real fills, the 30% best-day guard that sizes each winner so the day stays under
+30% x $1,500 x 0.95, 4 days, 60-session evals on 2,000 paths, then the funded account. My first table was LIT alone, cut at
+40 sessions, and forced 1 micro even when one band win alone broke the 30% cap, so it could almost never pass: that 0% was a
+model artefact, not the account. The pillars baseline reproduces exactly here (check: 0 of 631 LIT trades differ).
+
+**Pre-registered** (`research/pillars/RAPID_TARGETS_DESIGN.md`, written before the run, 2 variants): in the EVAL only, LIT
+exits at a fixed 1.5R (T15) or 2R (T20) target; same stop, BE at +1R, 15-min check; funded keeps the VIX band; ATLAS
+unchanged. Gate: H1 and H2 eval pass up with fail <= +1 point, H1 and H2 $/month not lower, 2021-25 not worse than -$100.
+
+| Variant (Rapid EOD 25K, LIT + ATLAS) | Jan-Jun pass / fail / median sessions / $/mo | Jul-Oct | 2021-25 | verdict |
+|---|---|---|---|---|
+| **Today: VIX band** | 80.5% / 0.5% / 33 / $1,884 | 85.5% / 2.0% / 26 / $800 | 7.5% / 77.0% / 29 / -$50 | baseline |
+| T15: 1.5R in the eval | 73.4% / 7.2% / 20 / $1,963 | 74.0% / 7.2% / 18 / $770 | 13.2% / 81.0% / 19 / -$51 | rejected |
+| T20: 2R in the eval | 73.1% / 5.2% / 26 / $1,852 | 82.7% / 4.2% / 21 / $834 | 12.9% / 80.7% / 22 / -$47 | rejected |
+
+($/month = the 6-month slot, eval fee + funded payouts to the owner, 1,000 paths. 2021-25 fails for every version: the
+2021-25 LIT/ATLAS book loses money on this account.)
+
+**What it means:** a small target makes each winning day small, so the 30% rule is easy and passes come ~10 sessions sooner.
+But more trades stop out before the small wins add up, so ~7 in 100 evals now FAIL (vs 0.5-2) and fewer pass in the end. One
+failed Rapid eval costs $97.20; the faster pass does not pay for it (Jan-Jun +$79/mo for 1.5R, but Jul-Oct -$30/mo, and 2R is
+worse in Jan-Jun). **Rejected. The band stays on the Rapid eval too.**
+
+Re-run: `python -X utf8 research/pillars/rapid_targets.py` (~35 s) -> `research/pillars/rapid_targets.json`.
