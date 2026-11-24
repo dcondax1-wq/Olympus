@@ -210,32 +210,6 @@
    "recommend": "yes",
    "recommend_why": "Free, and a silent PC is the biggest threat to the funded accounts (7 days without a trade wipes a funded account's profit).",
    "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)"
-  },
-  {
-   "id": "atlas-funded-room-40",
-   "question": "ATLAS's funded 25K: risk 40% of the room a trade instead of 60% (safer, but the first payout comes later)?",
-   "why": "The bot stops ATLAS for good once the funded room is under $100. Smaller trades make that rarer, but each win is smaller, so payouts come later.",
-   "impact": "-$26 a month in a Jul-Oct-like market (-$25 Jan-Jun-like, $0 2021-25-like); first payout about 5 trading days later.",
-   "impact_usd": -26,
-   "options": [
-    "yes",
-    "no",
-    "later"
-   ],
-   "status": "open",
-   "source": "research/writeups/atlas-health-2026-11-18.md",
-   "applies": "ATLAS's funded sizing 60% -> 40% of the room (engine/account_b funded preset; Claude changes it only after your yes, Sim check first)",
-   "added": "2026-11-19",
-   "usd_month": -26,
-   "usd_month_by": {
-    "jan_jun": -25,
-    "jul_oct": -26,
-    "y2021_25": 0
-   },
-   "risk": "ATLAS 25K funded account lost 10.2% -> 5.8%",
-   "recommend": "no",
-   "recommend_why": "Your choice: keep 60% for the faster first payout (fastest money), or say yes for safety: the funded 25K gets stuck 6 in 100 times instead of 10 in 100 within 6 months, for about $26 a month less.",
-   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)"
   }
  ]
 }
