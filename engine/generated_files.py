@@ -36,6 +36,7 @@ GENERATED = (
     "data/confluence_registry.json", "research/CONFLUENCE_LOG.md",  # server.py learning cycle (engine.confluence_search)
     "research/lit/live_check.json", "research/lit/live_timing.json",  # tests the ops checks run
     "research/lit/live_exit_route.json", "research/lit/rehearsal.json",
+    "research/orderflow/results.json",  # tickrec autopilot runs of_study on the PC (2026-11-24: this held the auto-update back from 11-23)
     "tools/web_hub_snapshot.json",        # tools/build_web_dashboard.py
     "tools/web_public/business/week.json",   # tools/weekly_review.py (Friday ops task: ZEUS this week)
     "tools/web_public/business/dash.json",
