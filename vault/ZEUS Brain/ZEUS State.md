@@ -29,6 +29,11 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
 - "It can be paper till we study more": BLITZ stays PAPER (do not prompt the --blitz on switch).
 - "I'll hold the 4 accounts we have currently": Rapid EOD 25K, ATLAS Builder 25K funded, Zlarior 50K, Zlarior 25K #2 (ATLAS combo). No new evals bought (badcase: 2025-like markets make every eval -EV).
 
+## PC update BLOCKED (2026-11-24, root cause found)
+- The PC's auto-update is held back by `research/orderflow/results.json` (written by tickrec autopilot's of_study, timestamped: cannot be matched from the cloud; remote 'update' refused 16:11 + 17:07 via Telegram). Version-cycle chain (pc 72640c35a) tried, no match. Now in engine/generated_files (e9e8f432b) so it never blocks again once installed.
+- ONE owner/anyone-at-PC line (bot folder, cmd): `git stash push -m "owner park" -- research/orderflow/results.json && UPDATE.bat` (then START_BOT.bat + phrase if not armed). Installs brain feed, zeroerr alarms, OF data path, fsutil fixes.
+- Pending red team #4: origin/day-zeroerr bc17172e (unrouted-exit skip + eval_start ledger repair + arm_daily) - land after the PC is unblocked.
+
 ## Live now
 | What (checked 2026-11-19 18:37 ET, board.py read) | State |
 |---|---|
