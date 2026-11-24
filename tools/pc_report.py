@@ -737,6 +737,13 @@ def full(snap: dict) -> dict:
         out["life"] = life
     if isinstance(snap.get("sh"), dict):     # self-heal's one line (engine/self_heal.read_tiny): rides an ext post, after EXT_ORDER
         out["sh"] = snap["sh"]
+    try:                                     # day-ledgerfix: the last 01:55 / 09:00 ET armed + routed check (engine/live_guard.arm_tiny)
+        from engine import live_guard as _lg
+        arm = _lg.arm_tiny()
+        if arm:
+            out["arm"] = arm
+    except Exception:  # noqa: BLE001
+        pass
     if isinstance(snap.get("tr"), dict):     # the order-flow tick count (engine/tickrec.tiny): gathered since day-pillars but never posted
         out["tr"] = {k: snap["tr"].get(k) for k in ("on", "d", "of", "bf", "o", "l")}
         out["tr"].update({k: snap["tr"][k] for k in ("h", "e") if snap["tr"].get(k) is not None})   # day-ofready: tick-day holes, bf_errors
