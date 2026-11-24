@@ -1,0 +1,193 @@
+{
+ "v": 1,
+ "kind": "market-learn-insights",
+ "built": "2026-11-24 11:49 UTC",
+ "paper_only": true,
+ "note": "What the market taught us. Research only: nothing here changes a live rule. A fix that passes goes to the Decide card.",
+ "current": {
+  "for": "2026-11-21",
+  "data_to": "2026-11-20",
+  "regime": "trend",
+  "er5": 0.962,
+  "prior_day": "big",
+  "vix": 35.89,
+  "vix_day": "2026-11-20",
+  "vix_band": "VIX 25+"
+ },
+ "pillars": {
+  "lit": {
+   "name": "LIT (Zlarior)",
+   "trades": 631,
+   "live_trades": 0,
+   "lessons": [
+    "LIT (Zlarior) does worse when: VIX 15-20. Avg R 0.489 / 0.738 / -0.023 (Jan-Jun / Jul-Oct / 2021-25, 297 trades), -$13,997 vs a normal trade, z -0.86 (weak)",
+    "LIT (Zlarior) does worse when: London late 05-08. Avg R 0.701 / 0.425 / -0.044 (Jan-Jun / Jul-Oct / 2021-25, 164 trades), -$1,016 vs a normal trade, z -0.64 (weak)",
+    "LIT (Zlarior) does worse when: range weeks (choppy 5 days) + VIX 15-20. Avg R 0.816 / 0.131 / -0.045 (Jan-Jun / Jul-Oct / 2021-25, 74 trades), -$6,066 vs a normal trade, z -0.64 (weak)",
+    "LIT (Zlarior) does best when: trending weeks + London 02-05. Avg R 0.902 / 2.094 / 0.054 (Jan-Jun / Jul-Oct / 2021-25, 119 trades), +$10,320 vs a normal trade, z 0.84 (weak)"
+   ],
+   "chance": "0 strong lessons vs 0.5 by chance (p 1.0)",
+   "losses": {
+    "H1": {
+     "losses": 33,
+     "lost_usd": 8524,
+     "share": {
+      "news": 5.7,
+      "wick": 0.0,
+      "turned": 33.5,
+      "never": 60.8,
+      "unknown": 0.0
+     }
+    },
+    "H2": {
+     "losses": 20,
+     "lost_usd": 5202,
+     "share": {
+      "news": 0.0,
+      "wick": 4.3,
+      "turned": 31.0,
+      "never": 64.6,
+      "unknown": 0.0
+     }
+    },
+    "2021-25": {
+     "losses": 236,
+     "lost_usd": 98882,
+     "share": {
+      "news": 1.2,
+      "wick": 4.4,
+      "turned": 27.3,
+      "never": 67.1,
+      "unknown": 0.0
+     }
+    }
+   },
+   "read": "trending weeks + VIX 25+: 25 past trades, avg R 0.495 vs 0.166 overall",
+   "last_fix": null
+  },
+  "atlas": {
+   "name": "ATLAS",
+   "trades": 1288,
+   "live_trades": 0,
+   "lessons": [
+    "ATLAS does worse when: Tuesdays. Avg R 0.248 / 0.593 / 0.002 (Jan-Jun / Jul-Oct / 2021-25, 290 trades), -$7,171 vs a normal trade, z -0.81 (weak)",
+    "ATLAS does worse when: NY AM 09:30-11:30. Avg R 0.771 / 0.634 / 0.044 (Jan-Jun / Jul-Oct / 2021-25, 412 trades), -$2,053 vs a normal trade, z -0.2 (weak)",
+    "ATLAS does best when: VIX 15-20 + London 02-05. Avg R 1.698 / 0.95 / 0.439 (Jan-Jun / Jul-Oct / 2021-25, 266 trades), +$29,694 vs a normal trade, z 3.4"
+   ],
+   "chance": "1 strong lessons vs 0.5 by chance (p 0.337)",
+   "losses": {
+    "H1": {
+     "losses": 51,
+     "lost_usd": 12724,
+     "share": {
+      "news": 2.1,
+      "wick": 7.0,
+      "turned": 30.7,
+      "never": 60.3,
+      "unknown": 0.0
+     }
+    },
+    "H2": {
+     "losses": 22,
+     "lost_usd": 4746,
+     "share": {
+      "news": 0.0,
+      "wick": 0.0,
+      "turned": 49.9,
+      "never": 50.1,
+      "unknown": 0.0
+     }
+    },
+    "2021-25": {
+     "losses": 707,
+     "lost_usd": 171071,
+     "share": {
+      "news": 0.6,
+      "wick": 7.0,
+      "turned": 36.4,
+      "never": 56.0,
+      "unknown": 0.0
+     }
+    }
+   },
+   "read": "trending weeks + VIX 25+: 52 past trades, avg R 0.085 vs 0.153 overall",
+   "last_fix": null
+  },
+  "blitz": {
+   "name": "BLITZ",
+   "trades": 2265,
+   "live_trades": 0,
+   "lessons": [
+    "BLITZ loses when: trending weeks + NY AM 09:30-11:30. Avg R -0.082 / -0.271 / -0.095 (Jan-Jun / Jul-Oct / 2021-25, 159 trades), -$4,611 vs a normal trade, z -2.19",
+    "BLITZ loses when: after a big day + Tuesdays. Avg R -0.017 / -0.238 / -0.115 (Jan-Jun / Jul-Oct / 2021-25, 123 trades), -$2,449 vs a normal trade, z -2.04",
+    "BLITZ does worse when: Tuesdays. Avg R 0.059 / 0.016 / -0.042 (Jan-Jun / Jul-Oct / 2021-25, 413 trades), -$3,809 vs a normal trade, z -1.53 (weak)",
+    "BLITZ does best when: with the daily trend. Avg R 0.169 / 0.22 / 0.042 (Jan-Jun / Jul-Oct / 2021-25, 1189 trades), +$3,633 vs a normal trade, z 1.21 (weak)"
+   ],
+   "chance": "2 strong lessons vs 1.3 by chance (p 0.307)",
+   "losses": {
+    "H1": {
+     "losses": 98,
+     "lost_usd": 8815,
+     "share": {
+      "news": 0.0,
+      "wick": 10.6,
+      "turned": 18.8,
+      "never": 70.6,
+      "unknown": 0.0
+     }
+    },
+    "H2": {
+     "losses": 82,
+     "lost_usd": 8295,
+     "share": {
+      "news": 2.1,
+      "wick": 5.5,
+      "turned": 20.7,
+      "never": 71.7,
+      "unknown": 0.0
+     }
+    },
+    "2021-25": {
+     "losses": 929,
+     "lost_usd": 81497,
+     "share": {
+      "news": 0.7,
+      "wick": 16.2,
+      "turned": 16.1,
+      "never": 67.0,
+      "unknown": 0.0
+     }
+    }
+   },
+   "read": "trending weeks + VIX 25+: 185 past trades, avg R 0.153 vs 0.037 overall",
+   "last_fix": {
+    "key": "blitz|half|pd_room=far",
+    "kind": "half",
+    "bucket": "pd_room=far",
+    "status": "rejected",
+    "registered": "2026-11-24",
+    "tested": "2026-11-24",
+    "why": [
+     "hold-out weeks -$633",
+     "2021-25 net -$1,112",
+     "2021-25 PF 1.06 -> 1.05"
+    ]
+   }
+  },
+  "orderflow": {
+   "name": "ORDER FLOW",
+   "lessons": [],
+   "read": null,
+   "last_fix": null,
+   "knows": "nothing yet: no trades to learn from",
+   "prior": "No tick data yet, so no OF numbers. Bar-proxy prior for OF3 (LVN rejection, stand-alone): 2021-25 155 trades PF 1.26 +$11,556 (0.71 a week, about $230 a month); 2026 H1 12 trades PF 1.10 +$326; H2 10 trades PF 4.56 +$4,990. 43 pre-registered bar tests, 0 pass."
+  }
+ },
+ "shared": [
+  "ATLAS and BLITZ both do worse in Tuesdays (z ATLAS -0.81, BLITZ -1.53)",
+  "LIT (Zlarior) and BLITZ both do better in a big overnight range (z LIT (Zlarior) 0.59, BLITZ 0.84)",
+  "LIT (Zlarior) + ATLAS: 439 days both traded, both lost on 126 (123.7 if unrelated), daily $ correlation 0.297",
+  "LIT (Zlarior) + BLITZ: 297 days both traded, both lost on 76 (73.3 if unrelated), daily $ correlation 0.006",
+  "ATLAS + BLITZ: 406 days both traded, both lost on 128 (129.6 if unrelated), daily $ correlation 0.004"
+ ],
+ "phone_line": "Market Learn: 1 fix tested, 0 passed. Nothing to decide; lessons updated."
+}
