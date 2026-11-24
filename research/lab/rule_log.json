@@ -522,7 +522,7 @@
   },
   {
    "sha": "12b878fe9d",
-   "who": "owner",
+   "who": "Demetri Condax",
    "when": "2026-10-17T07:17:37-04:00",
    "why": "Every trade needs a real liquidity draw; SMC reads recorded; real-level target mode tested",
    "files": {
@@ -534,7 +534,7 @@
   },
   {
    "sha": "e069d52c01",
-   "who": "owner",
+   "who": "Demetri Condax",
    "when": "2026-10-17T07:03:48-04:00",
    "why": "De-risk wide stops; stop-size and ATM tests; backtest export with trade reports",
    "files": {
@@ -547,7 +547,7 @@
   },
   {
    "sha": "9b915872f2",
-   "who": "owner",
+   "who": "Demetri Condax",
    "when": "2026-10-17T06:34:47-04:00",
    "why": "Eval mode: $650 risk, every setup, half size in cold streaks",
    "files": {
@@ -561,7 +561,7 @@
   },
   {
    "sha": "5317c5b09d",
-   "who": "owner",
+   "who": "Demetri Condax",
    "when": "2026-10-17T05:59:38-04:00",
    "why": "Lock in the owner's pick: original Liquidity Engine + cold-streak filter",
    "files": {
@@ -575,7 +575,7 @@
   },
   {
    "sha": "11a263fe83",
-   "who": "owner",
+   "who": "Demetri Condax",
    "when": "2026-10-16T23:57:39-04:00",
    "why": "Add cold-streak equity filter: trade only while the last 15 signals are net positive",
    "files": {
@@ -588,7 +588,7 @@
   },
   {
    "sha": "aa4d18094f",
-   "who": "owner",
+   "who": "Demetri Condax",
    "when": "2026-10-16T23:36:55-04:00",
    "why": "Switch live pick back to the original Liquidity Engine (1 trade/day, fixed risk) per owner",
    "files": {
@@ -606,7 +606,7 @@
   },
   {
    "sha": "d007e5921b",
-   "who": "owner",
+   "who": "Demetri Condax",
    "when": "2026-10-16T23:21:29-04:00",
    "why": "Final 2026 strategy: person-style draws, partial+BE, FOMC skip; full research suite",
    "files": {
@@ -624,7 +624,7 @@
   },
   {
    "sha": "2d48c3f0bb",
-   "who": "owner",
+   "who": "Demetri Condax",
    "when": "2026-10-16T18:05:20-04:00",
    "why": "Bot switched to the 2026 pick: Liquidity Engine straight rules (1 trade/day, fixed risk)",
    "files": {
@@ -639,7 +639,7 @@
   },
   {
    "sha": "127852704a",
-   "who": "owner",
+   "who": "Demetri Condax",
    "when": "2026-10-16T17:44:20-04:00",
    "why": "Futures-only TradingView data through 10-16 close; strategy lab + live strategy plug-in",
    "files": {
