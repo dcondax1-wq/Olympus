@@ -1,0 +1,317 @@
+{
+ "made": "2026-11-24",
+ "design": "research/portfolio/DESIGN.md",
+ "pool": 1983,
+ "candidates": 508,
+ "pick": {
+  "members": [
+   {
+    "run": "datacity_holdout_portfolio",
+    "scale": 0.33208845643749435,
+    "corr_lit": -0.034,
+    "corr_atlas": -0.03,
+    "pf_pick": 1.86,
+    "family": "other",
+    "notes": "tools/datacity (research only, never routed)"
+   },
+   {
+    "run": "strategytree_top5",
+    "scale": 0.6102108682793544,
+    "corr_lit": -0.016,
+    "corr_atlas": -0.006,
+    "pf_pick": 1.8,
+    "family": "other",
+    "notes": "Train <= 2024-12-31 (so 2021-24 is in-sample), test 2025-26. Sized at $282 risk a trade."
+   },
+   {
+    "run": "sh_book",
+    "scale": 0.3182757052955492,
+    "corr_lit": 0.004,
+    "corr_atlas": 0.053,
+    "pf_pick": 1.43,
+    "family": "other",
+    "notes": "tools/stophunt.py final / book; engine/stophunt.py; costs $1.90/micro + 1 tick; $500 risk a trade"
+   },
+   {
+    "run": "retail_sa_sr_sr_limit_best",
+    "scale": 0.26845404699829056,
+    "corr_lit": 0.064,
+    "corr_atlas": 0.017,
+    "pf_pick": 1.85,
+    "family": "other",
+    "notes": "tools/retail_standalone.py; research/retail/picks.json"
+   },
+   {
+    "run": "div_na_paper",
+    "scale": 0.15846119285029125,
+    "corr_lit": -0.058,
+    "corr_atlas": -0.01,
+    "pf_pick": 1.33,
+    "family": "other",
+    "notes": "tools/div_search.py (research/second/div_search.json); entries at the next 5m open + 1 tick, stop fills -1 tick, $1.90 a micro; the run-library eval columns are"
+   },
+   {
+    "run": "sh_trend_idm",
+    "scale": 0.5256830277491825,
+    "corr_lit": -0.026,
+    "corr_atlas": 0.075,
+    "pf_pick": 1.61,
+    "family": "other",
+    "notes": "tools/stophunt.py final / book; engine/stophunt.py; costs $1.90/micro + 1 tick; $500 risk a trade"
+   }
+  ],
+  "trace": [
+   {
+    "step": 0,
+    "sharpe_pick": 0.0656
+   },
+   {
+    "step": 1,
+    "add": "datacity_holdout_portfolio",
+    "sharpe_pick": 0.1105
+   },
+   {
+    "step": 2,
+    "add": "strategytree_top5",
+    "sharpe_pick": 0.1341
+   },
+   {
+    "step": 3,
+    "add": "sh_book",
+    "sharpe_pick": 0.1539
+   },
+   {
+    "step": 4,
+    "add": "retail_sa_sr_sr_limit_best",
+    "sharpe_pick": 0.1679
+   },
+   {
+    "step": 5,
+    "add": "div_na_paper",
+    "sharpe_pick": 0.1806
+   },
+   {
+    "step": 6,
+    "add": "sh_trend_idm",
+    "sharpe_pick": 0.1918
+   }
+  ],
+  "frozen_before_holdouts": true
+ },
+ "spans": {
+  "PICK": {
+   "core LIT+ATLAS": {
+    "sessions": 942,
+    "trades": 1341,
+    "tpw": 7.12,
+    "pf": 1.17,
+    "net": 27653,
+    "per_month": 616,
+    "max_dd": -34012,
+    "evals": {
+     "Builder 50K": {
+      "pass10": 15.6,
+      "fail10": 27.2,
+      "pass40": 31.1,
+      "fail40": 65.0,
+      "days_med": 11.0
+     },
+     "Builder 25K": {
+      "pass10": 16.3,
+      "fail10": 27.8,
+      "pass40": 31.8,
+      "fail40": 63.5,
+      "days_med": 11.0
+     },
+     "Rapid EOD 25K": {
+      "pass10": 0.2,
+      "fail10": 27.2,
+      "pass40": 0.8,
+      "fail40": 72.2,
+      "days_med": 32.0
+     }
+    }
+   },
+   "portfolio": {
+    "sessions": 942,
+    "trades": 4512,
+    "tpw": 23.95,
+    "pf": 1.24,
+    "net": 58446,
+    "per_month": 1303,
+    "max_dd": -28976,
+    "evals": {
+     "Builder 50K": {
+      "pass10": 22.5,
+      "fail10": 46.9,
+      "pass40": 33.1,
+      "fail40": 66.9,
+      "days_med": 8.0
+     },
+     "Builder 25K": {
+      "pass10": 24.4,
+      "fail10": 46.5,
+      "pass40": 37.0,
+      "fail40": 63.0,
+      "days_med": 9.0
+     },
+     "Rapid EOD 25K": {
+      "pass10": 1.4,
+      "fail10": 47.5,
+      "pass40": 11.6,
+      "fail40": 73.5,
+      "days_med": 21.0
+     }
+    }
+   },
+   "add_ons_tpw": 16.83,
+   "corr_add_ons_vs_core": -0.007
+  },
+  "2025": {
+   "core LIT+ATLAS": {
+    "sessions": 258,
+    "trades": 334,
+    "tpw": 6.47,
+    "pf": 1.13,
+    "net": 4480,
+    "per_month": 365,
+    "max_dd": -7550,
+    "evals": {
+     "Builder 50K": {
+      "pass10": 14.5,
+      "fail10": 14.1,
+      "pass40": 32.4,
+      "fail40": 60.3,
+      "days_med": 10.0
+     },
+     "Builder 25K": {
+      "pass10": 14.5,
+      "fail10": 15.7,
+      "pass40": 38.4,
+      "fail40": 54.3,
+      "days_med": 12.0
+     },
+     "Rapid EOD 25K": {
+      "pass10": 0.0,
+      "fail10": 14.1,
+      "pass40": 0.0,
+      "fail40": 64.8,
+      "days_med": null
+     }
+    }
+   },
+   "portfolio": {
+    "sessions": 258,
+    "trades": 1131,
+    "tpw": 21.92,
+    "pf": 1.09,
+    "net": 5453,
+    "per_month": 444,
+    "max_dd": -10568,
+    "evals": {
+     "Builder 50K": {
+      "pass10": 19.3,
+      "fail10": 44.6,
+      "pass40": 34.7,
+      "fail40": 60.7,
+      "days_med": 8.0
+     },
+     "Builder 25K": {
+      "pass10": 19.7,
+      "fail10": 38.6,
+      "pass40": 38.8,
+      "fail40": 56.6,
+      "days_med": 9.0
+     },
+     "Rapid EOD 25K": {
+      "pass10": 0.0,
+      "fail10": 45.4,
+      "pass40": 3.7,
+      "fail40": 78.1,
+      "days_med": 28.0
+     }
+    }
+   },
+   "add_ons_tpw": 15.45,
+   "corr_add_ons_vs_core": -0.015
+  },
+  "2026 Jul-Oct": {
+   "core LIT+ATLAS": {
+    "sessions": 78,
+    "trades": 85,
+    "tpw": 5.45,
+    "pf": 3.36,
+    "net": 16311,
+    "per_month": 4391,
+    "max_dd": -1493,
+    "evals": {
+     "Builder 50K": {
+      "pass10": 24.6,
+      "fail10": 0.0,
+      "pass40": 100.0,
+      "fail40": 0.0,
+      "days_med": 17.0
+     },
+     "Builder 25K": {
+      "pass10": 24.6,
+      "fail10": 0.0,
+      "pass40": 100.0,
+      "fail40": 0.0,
+      "days_med": 17.0
+     },
+     "Rapid EOD 25K": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 69.2,
+      "fail40": 0.0,
+      "days_med": 33.0
+     }
+    }
+   },
+   "portfolio": {
+    "sessions": 78,
+    "trades": 314,
+    "tpw": 20.13,
+    "pf": 2.49,
+    "net": 19324,
+    "per_month": 5203,
+    "max_dd": -2329,
+    "evals": {
+     "Builder 50K": {
+      "pass10": 47.8,
+      "fail10": 24.6,
+      "pass40": 64.1,
+      "fail40": 35.9,
+      "days_med": 8.0
+     },
+     "Builder 25K": {
+      "pass10": 53.6,
+      "fail10": 23.2,
+      "pass40": 66.7,
+      "fail40": 33.3,
+      "days_med": 7.0
+     },
+     "Rapid EOD 25K": {
+      "pass10": 0.0,
+      "fail10": 26.1,
+      "pass40": 51.3,
+      "fail40": 38.5,
+      "days_med": 21.0
+     }
+    }
+   },
+   "add_ons_tpw": 14.68,
+   "corr_add_ons_vs_core": -0.051
+  }
+ },
+ "verdict": "FAIL: no portfolio beats today on both hold-outs",
+ "why": [
+  "2025: PF 1.09 vs 1.13",
+  "2025: max DD $-10,568 vs $-7,550",
+  "2025: add-ons 15.45 trades/week",
+  "2026 Jul-Oct: PF 2.49 vs 3.36",
+  "2026 Jul-Oct: max DD $-2,329 vs $-1,493",
+  "2026 Jul-Oct: 50K pass/fail 64.1/35.9 vs 100.0/0.0",
+  "2026 Jul-Oct: add-ons 14.68 trades/week"
+ ]
+}

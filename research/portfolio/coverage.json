@@ -1,0 +1,4799 @@
+{
+ "made": "2026-11-24",
+ "source": "research/learn/lessons.jsonl.gz (LIT / ATLAS / BLITZ backtests, 2021-25 + 2026, costs in)",
+ "open_slots": 220,
+ "covered_slots": 140,
+ "empty_slots": 80,
+ "covered_pct": 63.6,
+ "atlas_members_slots": {
+  "atlas/MACD": [
+   "02:00",
+   "02:30",
+   "03:00",
+   "03:30",
+   "04:00",
+   "04:30",
+   "09:30",
+   "10:00",
+   "10:30"
+  ],
+  "atlas/S/R": [
+   "09:30",
+   "10:00",
+   "10:30",
+   "11:00",
+   "11:30"
+  ],
+  "atlas/EMA": [
+   "03:00",
+   "03:30",
+   "04:00",
+   "04:30",
+   "05:00",
+   "05:30",
+   "06:00",
+   "06:30",
+   "07:00",
+   "07:30",
+   "08:00",
+   "08:30",
+   "09:00"
+  ],
+  "blitz/BLITZ": [
+   "11:00",
+   "11:30",
+   "12:00",
+   "12:30",
+   "13:00",
+   "13:30",
+   "14:00",
+   "14:30",
+   "15:00",
+   "15:30"
+  ],
+  "lit/LIT": [
+   "02:00",
+   "02:30",
+   "03:00",
+   "03:30",
+   "04:00",
+   "04:30",
+   "05:00",
+   "05:30",
+   "06:00",
+   "06:30",
+   "07:00",
+   "07:30",
+   "08:00",
+   "08:30",
+   "09:00",
+   "09:30",
+   "10:00",
+   "10:30",
+   "11:00",
+   "11:30",
+   "12:00",
+   "12:30",
+   "13:00",
+   "13:30",
+   "14:00",
+   "14:30",
+   "15:00",
+   "15:30"
+  ]
+ },
+ "by_time_of_day": {
+  "00:00": {
+   "open_slots": 5,
+   "covered": 0,
+   "usd": 0,
+   "n": 0
+  },
+  "00:30": {
+   "open_slots": 5,
+   "covered": 0,
+   "usd": 0,
+   "n": 0
+  },
+  "01:00": {
+   "open_slots": 5,
+   "covered": 0,
+   "usd": 0,
+   "n": 0
+  },
+  "01:30": {
+   "open_slots": 5,
+   "covered": 0,
+   "usd": 0,
+   "n": 0
+  },
+  "02:00": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": 7071,
+   "n": 96
+  },
+  "02:30": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": -400,
+   "n": 69
+  },
+  "03:00": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": 23796,
+   "n": 263
+  },
+  "03:30": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": 31057,
+   "n": 176
+  },
+  "04:00": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": 10749,
+   "n": 154
+  },
+  "04:30": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": 8404,
+   "n": 106
+  },
+  "05:00": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": -3411,
+   "n": 57
+  },
+  "05:30": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": -3568,
+   "n": 64
+  },
+  "06:00": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": 2452,
+   "n": 68
+  },
+  "06:30": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": -6769,
+   "n": 51
+  },
+  "07:00": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": 5481,
+   "n": 55
+  },
+  "07:30": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": 3312,
+   "n": 57
+  },
+  "08:00": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": 1421,
+   "n": 62
+  },
+  "08:30": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": 107,
+   "n": 52
+  },
+  "09:00": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": 968,
+   "n": 42
+  },
+  "09:30": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": 4882,
+   "n": 196
+  },
+  "10:00": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": 9113,
+   "n": 146
+  },
+  "10:30": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": 2529,
+   "n": 80
+  },
+  "11:00": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": -5083,
+   "n": 414
+  },
+  "11:30": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": 884,
+   "n": 166
+  },
+  "12:00": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": -780,
+   "n": 296
+  },
+  "12:30": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": 1888,
+   "n": 177
+  },
+  "13:00": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": 644,
+   "n": 259
+  },
+  "13:30": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": 2632,
+   "n": 205
+  },
+  "14:00": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": 4537,
+   "n": 232
+  },
+  "14:30": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": 155,
+   "n": 206
+  },
+  "15:00": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": 6950,
+   "n": 248
+  },
+  "15:30": {
+   "open_slots": 5,
+   "covered": 5,
+   "usd": -1353,
+   "n": 187
+  },
+  "18:00": {
+   "open_slots": 5,
+   "covered": 0,
+   "usd": 0,
+   "n": 0
+  },
+  "18:30": {
+   "open_slots": 5,
+   "covered": 0,
+   "usd": 0,
+   "n": 0
+  },
+  "19:00": {
+   "open_slots": 5,
+   "covered": 0,
+   "usd": 0,
+   "n": 0
+  },
+  "19:30": {
+   "open_slots": 5,
+   "covered": 0,
+   "usd": 0,
+   "n": 0
+  },
+  "20:00": {
+   "open_slots": 5,
+   "covered": 0,
+   "usd": 0,
+   "n": 0
+  },
+  "20:30": {
+   "open_slots": 5,
+   "covered": 0,
+   "usd": 0,
+   "n": 0
+  },
+  "21:00": {
+   "open_slots": 5,
+   "covered": 0,
+   "usd": 0,
+   "n": 0
+  },
+  "21:30": {
+   "open_slots": 5,
+   "covered": 0,
+   "usd": 0,
+   "n": 0
+  },
+  "22:00": {
+   "open_slots": 5,
+   "covered": 0,
+   "usd": 0,
+   "n": 0
+  },
+  "22:30": {
+   "open_slots": 5,
+   "covered": 0,
+   "usd": 0,
+   "n": 0
+  },
+  "23:00": {
+   "open_slots": 5,
+   "covered": 0,
+   "usd": 0,
+   "n": 0
+  },
+  "23:30": {
+   "open_slots": 5,
+   "covered": 0,
+   "usd": 0,
+   "n": 0
+  }
+ },
+ "grid": [
+  {
+   "day": "Sun",
+   "slot": "00:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "00:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "01:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "01:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "02:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "02:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "03:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "03:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "04:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "04:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "05:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "05:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "06:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "06:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "07:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "07:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "08:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "08:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "09:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "09:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "10:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "10:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "11:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "11:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "12:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "12:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "13:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "13:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "14:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "14:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "15:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "15:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "16:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "16:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "17:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "17:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Sun",
+   "slot": "18:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Sun",
+   "slot": "18:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Sun",
+   "slot": "19:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Sun",
+   "slot": "19:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Sun",
+   "slot": "20:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Sun",
+   "slot": "20:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Sun",
+   "slot": "21:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Sun",
+   "slot": "21:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Sun",
+   "slot": "22:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Sun",
+   "slot": "22:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Sun",
+   "slot": "23:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Sun",
+   "slot": "23:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Mon",
+   "slot": "00:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Mon",
+   "slot": "00:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Mon",
+   "slot": "01:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Mon",
+   "slot": "01:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Mon",
+   "slot": "02:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 5,
+     "usd": -188,
+     "n26": 5,
+     "usd26": -188
+    },
+    "atlas": {
+     "n": 13,
+     "usd": 1538,
+     "n26": 2,
+     "usd26": 3989
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "02:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 6,
+     "usd": 171,
+     "n26": 1,
+     "usd26": 1460
+    },
+    "atlas": {
+     "n": 6,
+     "usd": -1156,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "03:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 7,
+     "usd": 865,
+     "n26": 1,
+     "usd26": -137
+    },
+    "atlas": {
+     "n": 10,
+     "usd": 12,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "03:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 11,
+     "usd": 541,
+     "n26": 0,
+     "usd26": 0
+    },
+    "atlas": {
+     "n": 10,
+     "usd": 1333,
+     "n26": 3,
+     "usd26": 1355
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "04:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 8,
+     "usd": -415,
+     "n26": 1,
+     "usd26": 1
+    },
+    "atlas": {
+     "n": 8,
+     "usd": 1797,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "04:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 4,
+     "usd": -1597,
+     "n26": 2,
+     "usd26": -352
+    },
+    "atlas": {
+     "n": 5,
+     "usd": -1078,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "05:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 5,
+     "usd": -534,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "05:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 8,
+     "usd": -947,
+     "n26": 1,
+     "usd26": 1
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "06:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 10,
+     "usd": 1246,
+     "n26": 2,
+     "usd26": 898
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "06:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 3,
+     "usd": 1242,
+     "n26": 1,
+     "usd26": 1236
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "07:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 4,
+     "usd": 1883,
+     "n26": 1,
+     "usd26": -354
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "07:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 1,
+     "usd": -544,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "08:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 5,
+     "usd": 969,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "08:30",
+   "mffu": "open; 08:30 / 14:00 = main US news times (Rapid FUNDED: flat +-2 min)",
+   "pillars": {
+    "lit": {
+     "n": 5,
+     "usd": 736,
+     "n26": 3,
+     "usd26": 1077
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "09:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 7,
+     "usd": 22,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "09:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 8,
+     "usd": -594,
+     "n26": 1,
+     "usd26": 177
+    },
+    "atlas": {
+     "n": 43,
+     "usd": 4665,
+     "n26": 5,
+     "usd26": 1139
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "10:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 3,
+     "usd": -314,
+     "n26": 0,
+     "usd26": 0
+    },
+    "atlas": {
+     "n": 22,
+     "usd": 1060,
+     "n26": 4,
+     "usd26": 394
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "10:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 2,
+     "usd": -608,
+     "n26": 1,
+     "usd26": -73
+    },
+    "atlas": {
+     "n": 18,
+     "usd": 196,
+     "n26": 4,
+     "usd26": 328
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "11:00",
+   "mffu": "open",
+   "pillars": {
+    "atlas": {
+     "n": 6,
+     "usd": -828,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 68,
+     "usd": -1397,
+     "n26": 16,
+     "usd26": -56
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "11:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 1,
+     "usd": 960,
+     "n26": 0,
+     "usd26": 0
+    },
+    "atlas": {
+     "n": 6,
+     "usd": -716,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 26,
+     "usd": 34,
+     "n26": 7,
+     "usd26": -71
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "12:00",
+   "mffu": "open",
+   "pillars": {
+    "blitz": {
+     "n": 47,
+     "usd": 1196,
+     "n26": 11,
+     "usd26": 598
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "12:30",
+   "mffu": "open",
+   "pillars": {
+    "blitz": {
+     "n": 24,
+     "usd": -752,
+     "n26": 7,
+     "usd26": -144
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "13:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 1,
+     "usd": 79,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 45,
+     "usd": 1573,
+     "n26": 10,
+     "usd26": 584
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "13:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 1,
+     "usd": -135,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 21,
+     "usd": 43,
+     "n26": 4,
+     "usd26": -74
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "14:00",
+   "mffu": "open; 08:30 / 14:00 = main US news times (Rapid FUNDED: flat +-2 min)",
+   "pillars": {
+    "lit": {
+     "n": 1,
+     "usd": 1,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 43,
+     "usd": 1279,
+     "n26": 11,
+     "usd26": 621
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "14:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 1,
+     "usd": 1,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 25,
+     "usd": -579,
+     "n26": 7,
+     "usd26": 132
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "15:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 3,
+     "usd": -402,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 46,
+     "usd": 801,
+     "n26": 11,
+     "usd26": 668
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "15:30",
+   "mffu": "bot flat 15:55; LIT entries end 15:30",
+   "pillars": {
+    "lit": {
+     "n": 1,
+     "usd": 212,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 25,
+     "usd": -30,
+     "n26": 5,
+     "usd26": -516
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Mon",
+   "slot": "16:00",
+   "mffu": "no new trades (bot flat 15:55, MFFU auto-close 16:10)",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Mon",
+   "slot": "16:30",
+   "mffu": "no new trades (bot flat 15:55, MFFU auto-close 16:10)",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Mon",
+   "slot": "17:00",
+   "mffu": "closed (17:00-18:00 CME halt)",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Mon",
+   "slot": "17:30",
+   "mffu": "closed (17:00-18:00 CME halt)",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Mon",
+   "slot": "18:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Mon",
+   "slot": "18:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Mon",
+   "slot": "19:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Mon",
+   "slot": "19:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Mon",
+   "slot": "20:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Mon",
+   "slot": "20:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Mon",
+   "slot": "21:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Mon",
+   "slot": "21:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Mon",
+   "slot": "22:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Mon",
+   "slot": "22:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Mon",
+   "slot": "23:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Mon",
+   "slot": "23:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Tue",
+   "slot": "00:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Tue",
+   "slot": "00:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Tue",
+   "slot": "01:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Tue",
+   "slot": "01:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Tue",
+   "slot": "02:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 11,
+     "usd": 2367,
+     "n26": 6,
+     "usd26": 4021
+    },
+    "atlas": {
+     "n": 11,
+     "usd": 749,
+     "n26": 1,
+     "usd26": 593
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "02:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 7,
+     "usd": -184,
+     "n26": 2,
+     "usd26": 1106
+    },
+    "atlas": {
+     "n": 8,
+     "usd": -1678,
+     "n26": 1,
+     "usd26": -260
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "03:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 12,
+     "usd": -5001,
+     "n26": 1,
+     "usd26": -449
+    },
+    "atlas": {
+     "n": 57,
+     "usd": -2231,
+     "n26": 7,
+     "usd26": 54
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "03:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 16,
+     "usd": 11038,
+     "n26": 3,
+     "usd26": 3487
+    },
+    "atlas": {
+     "n": 23,
+     "usd": -1255,
+     "n26": 3,
+     "usd26": -257
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "04:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 9,
+     "usd": 392,
+     "n26": 1,
+     "usd26": 1543
+    },
+    "atlas": {
+     "n": 21,
+     "usd": 4508,
+     "n26": 2,
+     "usd26": -382
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "04:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 12,
+     "usd": 5204,
+     "n26": 3,
+     "usd26": -371
+    },
+    "atlas": {
+     "n": 19,
+     "usd": 2007,
+     "n26": 4,
+     "usd26": -868
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "05:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 7,
+     "usd": -1388,
+     "n26": 2,
+     "usd26": -290
+    },
+    "atlas": {
+     "n": 7,
+     "usd": 65,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "05:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 5,
+     "usd": -1731,
+     "n26": 0,
+     "usd26": 0
+    },
+    "atlas": {
+     "n": 8,
+     "usd": -230,
+     "n26": 2,
+     "usd26": 1121
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "06:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 9,
+     "usd": 2525,
+     "n26": 3,
+     "usd26": 2898
+    },
+    "atlas": {
+     "n": 3,
+     "usd": -550,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "06:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 7,
+     "usd": 841,
+     "n26": 0,
+     "usd26": 0
+    },
+    "atlas": {
+     "n": 6,
+     "usd": -1344,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "07:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 5,
+     "usd": -2027,
+     "n26": 2,
+     "usd26": -343
+    },
+    "atlas": {
+     "n": 9,
+     "usd": -1047,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "07:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 5,
+     "usd": 4744,
+     "n26": 0,
+     "usd26": 0
+    },
+    "atlas": {
+     "n": 11,
+     "usd": -286,
+     "n26": 4,
+     "usd26": 144
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "08:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 10,
+     "usd": 1410,
+     "n26": 0,
+     "usd26": 0
+    },
+    "atlas": {
+     "n": 7,
+     "usd": -1062,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "08:30",
+   "mffu": "open; 08:30 / 14:00 = main US news times (Rapid FUNDED: flat +-2 min)",
+   "pillars": {
+    "lit": {
+     "n": 9,
+     "usd": -471,
+     "n26": 2,
+     "usd26": -440
+    },
+    "atlas": {
+     "n": 2,
+     "usd": 2,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "09:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 3,
+     "usd": 805,
+     "n26": 0,
+     "usd26": 0
+    },
+    "atlas": {
+     "n": 2,
+     "usd": -258,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "09:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 2,
+     "usd": 137,
+     "n26": 0,
+     "usd26": 0
+    },
+    "atlas": {
+     "n": 37,
+     "usd": 2986,
+     "n26": 2,
+     "usd26": 241
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "10:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 4,
+     "usd": -16,
+     "n26": 1,
+     "usd26": 1
+    },
+    "atlas": {
+     "n": 34,
+     "usd": 5184,
+     "n26": 8,
+     "usd26": 3210
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "10:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 1,
+     "usd": -139,
+     "n26": 0,
+     "usd26": 0
+    },
+    "atlas": {
+     "n": 15,
+     "usd": 17,
+     "n26": 2,
+     "usd26": 242
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "11:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 1,
+     "usd": 34,
+     "n26": 0,
+     "usd26": 0
+    },
+    "atlas": {
+     "n": 4,
+     "usd": -1033,
+     "n26": 1,
+     "usd26": -254
+    },
+    "blitz": {
+     "n": 66,
+     "usd": 46,
+     "n26": 13,
+     "usd26": 702
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "11:30",
+   "mffu": "open",
+   "pillars": {
+    "atlas": {
+     "n": 6,
+     "usd": -831,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 27,
+     "usd": -6,
+     "n26": 6,
+     "usd26": 81
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "12:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 2,
+     "usd": -115,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 51,
+     "usd": 523,
+     "n26": 9,
+     "usd26": 252
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "12:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 3,
+     "usd": -476,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 36,
+     "usd": 561,
+     "n26": 6,
+     "usd26": 318
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "13:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 1,
+     "usd": 0,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 46,
+     "usd": -1595,
+     "n26": 9,
+     "usd26": -334
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "13:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 2,
+     "usd": -26,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 42,
+     "usd": -87,
+     "n26": 6,
+     "usd26": -352
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "14:00",
+   "mffu": "open; 08:30 / 14:00 = main US news times (Rapid FUNDED: flat +-2 min)",
+   "pillars": {
+    "lit": {
+     "n": 1,
+     "usd": 1,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 34,
+     "usd": 70,
+     "n26": 9,
+     "usd26": -105
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "14:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 4,
+     "usd": -54,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 40,
+     "usd": -3,
+     "n26": 5,
+     "usd26": -81
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "15:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 1,
+     "usd": -199,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 39,
+     "usd": 685,
+     "n26": 8,
+     "usd26": 190
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "15:30",
+   "mffu": "bot flat 15:55; LIT entries end 15:30",
+   "pillars": {
+    "blitz": {
+     "n": 32,
+     "usd": -1469,
+     "n26": 5,
+     "usd26": -547
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Tue",
+   "slot": "16:00",
+   "mffu": "no new trades (bot flat 15:55, MFFU auto-close 16:10)",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Tue",
+   "slot": "16:30",
+   "mffu": "no new trades (bot flat 15:55, MFFU auto-close 16:10)",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Tue",
+   "slot": "17:00",
+   "mffu": "closed (17:00-18:00 CME halt)",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Tue",
+   "slot": "17:30",
+   "mffu": "closed (17:00-18:00 CME halt)",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Tue",
+   "slot": "18:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Tue",
+   "slot": "18:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Tue",
+   "slot": "19:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Tue",
+   "slot": "19:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Tue",
+   "slot": "20:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Tue",
+   "slot": "20:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Tue",
+   "slot": "21:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Tue",
+   "slot": "21:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Tue",
+   "slot": "22:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Tue",
+   "slot": "22:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Tue",
+   "slot": "23:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Tue",
+   "slot": "23:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Wed",
+   "slot": "00:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Wed",
+   "slot": "00:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Wed",
+   "slot": "01:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Wed",
+   "slot": "01:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Wed",
+   "slot": "02:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 7,
+     "usd": -1383,
+     "n26": 2,
+     "usd26": -552
+    },
+    "atlas": {
+     "n": 15,
+     "usd": 2772,
+     "n26": 2,
+     "usd26": -521
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "02:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 10,
+     "usd": -1150,
+     "n26": 5,
+     "usd26": 1082
+    },
+    "atlas": {
+     "n": 6,
+     "usd": 1387,
+     "n26": 2,
+     "usd26": 196
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "03:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 16,
+     "usd": 5733,
+     "n26": 3,
+     "usd26": 2289
+    },
+    "atlas": {
+     "n": 43,
+     "usd": 12926,
+     "n26": 10,
+     "usd26": 5088
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "03:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 12,
+     "usd": -1343,
+     "n26": 1,
+     "usd26": -140
+    },
+    "atlas": {
+     "n": 26,
+     "usd": 7113,
+     "n26": 4,
+     "usd26": -775
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "04:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 8,
+     "usd": 2889,
+     "n26": 1,
+     "usd26": -106
+    },
+    "atlas": {
+     "n": 23,
+     "usd": 2116,
+     "n26": 3,
+     "usd26": 1740
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "04:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 8,
+     "usd": 4789,
+     "n26": 4,
+     "usd26": 4106
+    },
+    "atlas": {
+     "n": 14,
+     "usd": 449,
+     "n26": 3,
+     "usd26": -258
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "05:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 3,
+     "usd": 585,
+     "n26": 1,
+     "usd26": 579
+    },
+    "atlas": {
+     "n": 7,
+     "usd": -1079,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "05:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 4,
+     "usd": 1336,
+     "n26": 1,
+     "usd26": -149
+    },
+    "atlas": {
+     "n": 7,
+     "usd": -811,
+     "n26": 1,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "06:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 8,
+     "usd": 1219,
+     "n26": 2,
+     "usd26": -739
+    },
+    "atlas": {
+     "n": 12,
+     "usd": 131,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "06:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 7,
+     "usd": -2400,
+     "n26": 0,
+     "usd26": 0
+    },
+    "atlas": {
+     "n": 9,
+     "usd": -1259,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "07:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 3,
+     "usd": 5135,
+     "n26": 2,
+     "usd26": 5132
+    },
+    "atlas": {
+     "n": 6,
+     "usd": 1205,
+     "n26": 1,
+     "usd26": -257
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "07:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 4,
+     "usd": 3798,
+     "n26": 1,
+     "usd26": -499
+    },
+    "atlas": {
+     "n": 9,
+     "usd": -1580,
+     "n26": 1,
+     "usd26": -260
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "08:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 11,
+     "usd": 594,
+     "n26": 2,
+     "usd26": 3
+    },
+    "atlas": {
+     "n": 3,
+     "usd": -547,
+     "n26": 1,
+     "usd26": -265
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "08:30",
+   "mffu": "open; 08:30 / 14:00 = main US news times (Rapid FUNDED: flat +-2 min)",
+   "pillars": {
+    "lit": {
+     "n": 7,
+     "usd": -183,
+     "n26": 1,
+     "usd26": -156
+    },
+    "atlas": {
+     "n": 5,
+     "usd": 313,
+     "n26": 2,
+     "usd26": 1
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "09:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 3,
+     "usd": -619,
+     "n26": 1,
+     "usd26": 1
+    },
+    "atlas": {
+     "n": 5,
+     "usd": -790,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "09:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 6,
+     "usd": 1896,
+     "n26": 0,
+     "usd26": 0
+    },
+    "atlas": {
+     "n": 32,
+     "usd": -821,
+     "n26": 3,
+     "usd26": 887
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "10:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 8,
+     "usd": 98,
+     "n26": 1,
+     "usd26": 359
+    },
+    "atlas": {
+     "n": 30,
+     "usd": 4620,
+     "n26": 3,
+     "usd26": 62
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "10:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 1,
+     "usd": 2,
+     "n26": 0,
+     "usd26": 0
+    },
+    "atlas": {
+     "n": 11,
+     "usd": -669,
+     "n26": 2,
+     "usd26": -515
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "11:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 1,
+     "usd": 1,
+     "n26": 0,
+     "usd26": 0
+    },
+    "atlas": {
+     "n": 7,
+     "usd": -1072,
+     "n26": 1,
+     "usd26": -255
+    },
+    "blitz": {
+     "n": 62,
+     "usd": 913,
+     "n26": 12,
+     "usd26": -20
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "11:30",
+   "mffu": "open",
+   "pillars": {
+    "atlas": {
+     "n": 2,
+     "usd": 234,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 24,
+     "usd": -197,
+     "n26": 3,
+     "usd26": -12
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "12:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 1,
+     "usd": -364,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 59,
+     "usd": -838,
+     "n26": 12,
+     "usd26": -37
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "12:30",
+   "mffu": "open",
+   "pillars": {
+    "blitz": {
+     "n": 30,
+     "usd": -306,
+     "n26": 4,
+     "usd26": -223
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "13:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 4,
+     "usd": -33,
+     "n26": 1,
+     "usd26": 309
+    },
+    "blitz": {
+     "n": 39,
+     "usd": 481,
+     "n26": 6,
+     "usd26": -62
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "13:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 2,
+     "usd": 1110,
+     "n26": 2,
+     "usd26": 1110
+    },
+    "blitz": {
+     "n": 30,
+     "usd": -537,
+     "n26": 4,
+     "usd26": -281
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "14:00",
+   "mffu": "open; 08:30 / 14:00 = main US news times (Rapid FUNDED: flat +-2 min)",
+   "pillars": {
+    "blitz": {
+     "n": 44,
+     "usd": 1163,
+     "n26": 5,
+     "usd26": -344
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "14:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 3,
+     "usd": 198,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 33,
+     "usd": -251,
+     "n26": 6,
+     "usd26": 273
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "15:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 4,
+     "usd": 410,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 53,
+     "usd": 3963,
+     "n26": 8,
+     "usd26": 310
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "15:30",
+   "mffu": "bot flat 15:55; LIT entries end 15:30",
+   "pillars": {
+    "lit": {
+     "n": 1,
+     "usd": -711,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 34,
+     "usd": 947,
+     "n26": 9,
+     "usd26": 1050
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Wed",
+   "slot": "16:00",
+   "mffu": "no new trades (bot flat 15:55, MFFU auto-close 16:10)",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Wed",
+   "slot": "16:30",
+   "mffu": "no new trades (bot flat 15:55, MFFU auto-close 16:10)",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Wed",
+   "slot": "17:00",
+   "mffu": "closed (17:00-18:00 CME halt)",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Wed",
+   "slot": "17:30",
+   "mffu": "closed (17:00-18:00 CME halt)",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Wed",
+   "slot": "18:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Wed",
+   "slot": "18:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Wed",
+   "slot": "19:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Wed",
+   "slot": "19:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Wed",
+   "slot": "20:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Wed",
+   "slot": "20:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Wed",
+   "slot": "21:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Wed",
+   "slot": "21:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Wed",
+   "slot": "22:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Wed",
+   "slot": "22:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Wed",
+   "slot": "23:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Wed",
+   "slot": "23:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Thu",
+   "slot": "00:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Thu",
+   "slot": "00:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Thu",
+   "slot": "01:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Thu",
+   "slot": "01:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Thu",
+   "slot": "02:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 2,
+     "usd": 2556,
+     "n26": 1,
+     "usd26": 2552
+    },
+    "atlas": {
+     "n": 11,
+     "usd": 1557,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "02:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 5,
+     "usd": -1047,
+     "n26": 1,
+     "usd26": -246
+    },
+    "atlas": {
+     "n": 4,
+     "usd": -338,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "03:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 13,
+     "usd": 334,
+     "n26": 3,
+     "usd26": -158
+    },
+    "atlas": {
+     "n": 48,
+     "usd": 630,
+     "n26": 4,
+     "usd26": 1220
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "03:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 14,
+     "usd": -1701,
+     "n26": 2,
+     "usd26": 1783
+    },
+    "atlas": {
+     "n": 31,
+     "usd": 8917,
+     "n26": 4,
+     "usd26": 5192
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "04:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 10,
+     "usd": -1230,
+     "n26": 1,
+     "usd26": 1
+    },
+    "atlas": {
+     "n": 25,
+     "usd": 1854,
+     "n26": 2,
+     "usd26": -254
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "04:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 5,
+     "usd": 28,
+     "n26": 1,
+     "usd26": 2
+    },
+    "atlas": {
+     "n": 10,
+     "usd": -1281,
+     "n26": 2,
+     "usd26": -280
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "05:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 5,
+     "usd": -117,
+     "n26": 1,
+     "usd26": -135
+    },
+    "atlas": {
+     "n": 13,
+     "usd": 883,
+     "n26": 3,
+     "usd26": -415
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "05:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 4,
+     "usd": -1083,
+     "n26": 2,
+     "usd26": -658
+    },
+    "atlas": {
+     "n": 10,
+     "usd": -1418,
+     "n26": 2,
+     "usd26": -257
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "06:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 5,
+     "usd": 441,
+     "n26": 1,
+     "usd26": -225
+    },
+    "atlas": {
+     "n": 11,
+     "usd": -432,
+     "n26": 3,
+     "usd26": -527
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "06:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 5,
+     "usd": -1730,
+     "n26": 0,
+     "usd26": 0
+    },
+    "atlas": {
+     "n": 5,
+     "usd": -1097,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "07:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 8,
+     "usd": -1979,
+     "n26": 2,
+     "usd26": -449
+    },
+    "atlas": {
+     "n": 10,
+     "usd": 1805,
+     "n26": 3,
+     "usd26": 1203
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "07:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 7,
+     "usd": -594,
+     "n26": 1,
+     "usd26": -140
+    },
+    "atlas": {
+     "n": 5,
+     "usd": -517,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "08:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 4,
+     "usd": -933,
+     "n26": 1,
+     "usd26": 1
+    },
+    "atlas": {
+     "n": 6,
+     "usd": -798,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "08:30",
+   "mffu": "open; 08:30 / 14:00 = main US news times (Rapid FUNDED: flat +-2 min)",
+   "pillars": {
+    "lit": {
+     "n": 7,
+     "usd": -1112,
+     "n26": 1,
+     "usd26": -419
+    },
+    "atlas": {
+     "n": 5,
+     "usd": -525,
+     "n26": 1,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "09:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 5,
+     "usd": 1874,
+     "n26": 1,
+     "usd26": 2118
+    },
+    "atlas": {
+     "n": 6,
+     "usd": 1221,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "09:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 3,
+     "usd": -126,
+     "n26": 0,
+     "usd26": 0
+    },
+    "atlas": {
+     "n": 31,
+     "usd": -333,
+     "n26": 2,
+     "usd26": 984
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "10:00",
+   "mffu": "open",
+   "pillars": {
+    "atlas": {
+     "n": 19,
+     "usd": -1499,
+     "n26": 1,
+     "usd26": 496
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "10:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 1,
+     "usd": -142,
+     "n26": 0,
+     "usd26": 0
+    },
+    "atlas": {
+     "n": 17,
+     "usd": 3430,
+     "n26": 3,
+     "usd26": 733
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "11:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 1,
+     "usd": -342,
+     "n26": 0,
+     "usd26": 0
+    },
+    "atlas": {
+     "n": 12,
+     "usd": 359,
+     "n26": 3,
+     "usd26": -15
+    },
+    "blitz": {
+     "n": 90,
+     "usd": -528,
+     "n26": 13,
+     "usd26": -209
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "11:30",
+   "mffu": "open",
+   "pillars": {
+    "atlas": {
+     "n": 5,
+     "usd": -1160,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 24,
+     "usd": 401,
+     "n26": 4,
+     "usd26": -77
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "12:00",
+   "mffu": "open",
+   "pillars": {
+    "blitz": {
+     "n": 71,
+     "usd": -1707,
+     "n26": 10,
+     "usd26": -570
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "12:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 1,
+     "usd": -14,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 39,
+     "usd": 1358,
+     "n26": 5,
+     "usd26": 844
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "13:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 1,
+     "usd": -44,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 59,
+     "usd": -189,
+     "n26": 10,
+     "usd26": 357
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "13:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 2,
+     "usd": 218,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 49,
+     "usd": 3185,
+     "n26": 7,
+     "usd26": 193
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "14:00",
+   "mffu": "open; 08:30 / 14:00 = main US news times (Rapid FUNDED: flat +-2 min)",
+   "pillars": {
+    "blitz": {
+     "n": 49,
+     "usd": -200,
+     "n26": 10,
+     "usd26": -180
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "14:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 1,
+     "usd": -24,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 52,
+     "usd": 981,
+     "n26": 6,
+     "usd26": 423
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "15:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 1,
+     "usd": 64,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 50,
+     "usd": 1485,
+     "n26": 10,
+     "usd26": 1266
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "15:30",
+   "mffu": "bot flat 15:55; LIT entries end 15:30",
+   "pillars": {
+    "blitz": {
+     "n": 45,
+     "usd": 607,
+     "n26": 8,
+     "usd26": -89
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Thu",
+   "slot": "16:00",
+   "mffu": "no new trades (bot flat 15:55, MFFU auto-close 16:10)",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Thu",
+   "slot": "16:30",
+   "mffu": "no new trades (bot flat 15:55, MFFU auto-close 16:10)",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Thu",
+   "slot": "17:00",
+   "mffu": "closed (17:00-18:00 CME halt)",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Thu",
+   "slot": "17:30",
+   "mffu": "closed (17:00-18:00 CME halt)",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Thu",
+   "slot": "18:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Thu",
+   "slot": "18:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Thu",
+   "slot": "19:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Thu",
+   "slot": "19:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Thu",
+   "slot": "20:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Thu",
+   "slot": "20:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Thu",
+   "slot": "21:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Thu",
+   "slot": "21:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Thu",
+   "slot": "22:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Thu",
+   "slot": "22:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Thu",
+   "slot": "23:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Thu",
+   "slot": "23:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Fri",
+   "slot": "00:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Fri",
+   "slot": "00:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Fri",
+   "slot": "01:00",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Fri",
+   "slot": "01:30",
+   "mffu": "open",
+   "pillars": {},
+   "can_trade": [],
+   "status": "EMPTY (open, no live strategy has traded it)"
+  },
+  {
+   "day": "Fri",
+   "slot": "02:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 5,
+     "usd": -1352,
+     "n26": 2,
+     "usd26": -121
+    },
+    "atlas": {
+     "n": 16,
+     "usd": -1545,
+     "n26": 4,
+     "usd26": -889
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "02:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 7,
+     "usd": 5486,
+     "n26": 1,
+     "usd26": 6226
+    },
+    "atlas": {
+     "n": 10,
+     "usd": -1891,
+     "n26": 1,
+     "usd26": -122
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "03:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 11,
+     "usd": 1897,
+     "n26": 3,
+     "usd26": 520
+    },
+    "atlas": {
+     "n": 46,
+     "usd": 8631,
+     "n26": 4,
+     "usd26": 4842
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "03:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 10,
+     "usd": 397,
+     "n26": 3,
+     "usd26": 606
+    },
+    "atlas": {
+     "n": 23,
+     "usd": 6017,
+     "n26": 4,
+     "usd26": 3701
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "04:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 11,
+     "usd": -671,
+     "n26": 3,
+     "usd26": -353
+    },
+    "atlas": {
+     "n": 31,
+     "usd": -491,
+     "n26": 5,
+     "usd26": -546
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "04:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 4,
+     "usd": -449,
+     "n26": 1,
+     "usd26": 3
+    },
+    "atlas": {
+     "n": 25,
+     "usd": 332,
+     "n26": 7,
+     "usd26": 1174
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "05:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 5,
+     "usd": -1039,
+     "n26": 2,
+     "usd26": -101
+    },
+    "atlas": {
+     "n": 5,
+     "usd": -787,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "05:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 5,
+     "usd": 3277,
+     "n26": 3,
+     "usd26": 3267
+    },
+    "atlas": {
+     "n": 13,
+     "usd": -1961,
+     "n26": 1,
+     "usd26": 1
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "06:00",
+   "mffu": "open",
+   "pillars": {
+    "atlas": {
+     "n": 10,
+     "usd": -2128,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "06:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 5,
+     "usd": -238,
+     "n26": 0,
+     "usd26": 0
+    },
+    "atlas": {
+     "n": 4,
+     "usd": -784,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "07:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 5,
+     "usd": -531,
+     "n26": 0,
+     "usd26": 0
+    },
+    "atlas": {
+     "n": 5,
+     "usd": 1037,
+     "n26": 1,
+     "usd26": 932
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "07:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 12,
+     "usd": -1227,
+     "n26": 0,
+     "usd26": 0
+    },
+    "atlas": {
+     "n": 3,
+     "usd": -482,
+     "n26": 1,
+     "usd26": -258
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "08:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 6,
+     "usd": 1663,
+     "n26": 1,
+     "usd26": -482
+    },
+    "atlas": {
+     "n": 10,
+     "usd": 125,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "08:30",
+   "mffu": "open; 08:30 / 14:00 = main US news times (Rapid FUNDED: flat +-2 min)",
+   "pillars": {
+    "lit": {
+     "n": 5,
+     "usd": 2110,
+     "n26": 2,
+     "usd26": 1882
+    },
+    "atlas": {
+     "n": 7,
+     "usd": -763,
+     "n26": 1,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "09:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 8,
+     "usd": -496,
+     "n26": 0,
+     "usd26": 0
+    },
+    "atlas": {
+     "n": 3,
+     "usd": -791,
+     "n26": 0,
+     "usd26": 0
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "09:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 8,
+     "usd": -228,
+     "n26": 0,
+     "usd26": 0
+    },
+    "atlas": {
+     "n": 26,
+     "usd": -2700,
+     "n26": 2,
+     "usd26": 874
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "10:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 2,
+     "usd": -99,
+     "n26": 1,
+     "usd26": -133
+    },
+    "atlas": {
+     "n": 24,
+     "usd": 79,
+     "n26": 1,
+     "usd26": 497
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "10:30",
+   "mffu": "open",
+   "pillars": {
+    "atlas": {
+     "n": 14,
+     "usd": 442,
+     "n26": 2,
+     "usd26": -219
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "11:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 1,
+     "usd": 2,
+     "n26": 1,
+     "usd26": 2
+    },
+    "atlas": {
+     "n": 10,
+     "usd": -1216,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 85,
+     "usd": -22,
+     "n26": 13,
+     "usd26": 1078
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "11:30",
+   "mffu": "open",
+   "pillars": {
+    "atlas": {
+     "n": 10,
+     "usd": 1572,
+     "n26": 2,
+     "usd26": 241
+    },
+    "blitz": {
+     "n": 35,
+     "usd": 593,
+     "n26": 4,
+     "usd26": 27
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "ATLAS",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "12:00",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 2,
+     "usd": 805,
+     "n26": 1,
+     "usd26": 939
+    },
+    "blitz": {
+     "n": 63,
+     "usd": -280,
+     "n26": 10,
+     "usd26": -15
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "12:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 1,
+     "usd": 817,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 43,
+     "usd": 700,
+     "n26": 7,
+     "usd26": 265
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "13:00",
+   "mffu": "open",
+   "pillars": {
+    "blitz": {
+     "n": 63,
+     "usd": 372,
+     "n26": 9,
+     "usd26": 561
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "13:30",
+   "mffu": "open",
+   "pillars": {
+    "lit": {
+     "n": 2,
+     "usd": 380,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 54,
+     "usd": -1519,
+     "n26": 7,
+     "usd26": -9
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "14:00",
+   "mffu": "open; 08:30 / 14:00 = main US news times (Rapid FUNDED: flat +-2 min)",
+   "pillars": {
+    "lit": {
+     "n": 2,
+     "usd": 97,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 58,
+     "usd": 2126,
+     "n26": 5,
+     "usd26": 1021
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "14:30",
+   "mffu": "open",
+   "pillars": {
+    "blitz": {
+     "n": 47,
+     "usd": -114,
+     "n26": 8,
+     "usd26": 137
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "15:00",
+   "mffu": "open",
+   "pillars": {
+    "blitz": {
+     "n": 51,
+     "usd": 143,
+     "n26": 7,
+     "usd26": 846
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "15:30",
+   "mffu": "bot flat 15:55; LIT entries end 15:30",
+   "pillars": {
+    "lit": {
+     "n": 2,
+     "usd": -741,
+     "n26": 0,
+     "usd26": 0
+    },
+    "blitz": {
+     "n": 47,
+     "usd": -168,
+     "n26": 9,
+     "usd26": 499
+    }
+   },
+   "can_trade": [
+    "LIT",
+    "BLITZ"
+   ],
+   "status": "covered"
+  },
+  {
+   "day": "Fri",
+   "slot": "16:00",
+   "mffu": "no new trades (bot flat 15:55, MFFU auto-close 16:10)",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Fri",
+   "slot": "16:30",
+   "mffu": "no new trades (bot flat 15:55, MFFU auto-close 16:10)",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Fri",
+   "slot": "17:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Fri",
+   "slot": "17:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Fri",
+   "slot": "18:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Fri",
+   "slot": "18:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Fri",
+   "slot": "19:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Fri",
+   "slot": "19:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Fri",
+   "slot": "20:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Fri",
+   "slot": "20:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Fri",
+   "slot": "21:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Fri",
+   "slot": "21:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Fri",
+   "slot": "22:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Fri",
+   "slot": "22:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Fri",
+   "slot": "23:00",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  },
+  {
+   "day": "Fri",
+   "slot": "23:30",
+   "mffu": "closed",
+   "pillars": {},
+   "can_trade": [],
+   "status": "closed"
+  }
+ ]
+}
