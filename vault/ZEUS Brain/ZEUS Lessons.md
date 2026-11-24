@@ -71,8 +71,9 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-69 entries from docs/TESTED_AND_REJECTED.md, newest first.
+70 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
+- **LIT high-VIX downtrend** · [[Zlarior (LIT)]] · [[lit-vix-downtrend-2026-11-24|LIT in high-VIX falling markets]]
 - **Market structure: expansion / retracement** · [[structure-2026-11-24|Market structure]]
 - **Stops x targets x TIME** · [[Zlarior (LIT)]] · [[stops-targets-time-2026-11-24|"Stops x targets x TIME]]
 - **Market Learn weekly trial #1** · [[BLITZ (paper)]]

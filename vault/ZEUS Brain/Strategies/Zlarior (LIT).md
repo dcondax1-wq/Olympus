@@ -81,6 +81,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 ## Tested and rejected
 
+> [!failure]- LIT high-VIX downtrend
+> after 0 real winners in 7 live-window twin trades (NQ 31k -> 25k). V1 longs off / V2 all off when prior VIX > 25 and the 20-day trend is down: both lose in 2021-25 (+$1,265 -> -$646 / -$5,698) and Jan-Jun (-$1.2k / -$3.1k; eval -$3.1k / -$7.5k), 0 trades in Jul-Oct, placebo p 0.65 / 0.83. VIX 25+ is LIT's best band (PF 2.5 / 22.7); the live losers came at VIX 17-21. 7+ trades without a +0.5R winner: 25 runs in 2021-25, 4 in Jan-Jun 2026 (longest 12) = variance. Watch only: VIX 20-25 + downtrend (2021-25 PF 0.01, n28; Jan-Jun PF 5.9, n5).
+> Write-ups: [[lit-vix-downtrend-2026-11-24|LIT in high-VIX falling markets]]
+
 > [!failure]- Stops x targets x TIME
 > 19 pre-registered variants on the live LIT trades, risk-matched $ + 3 MFFU evals, Bonferroni p < 0.0026. Tighter stops (1m CISD candle 7 pts, 1m entry swing 14-17, 3m FVG 15-22) x live price / 2R / 3R: every one loses Jul-Oct ($8.3k-$14.0k under live); 40-58% stopped, 28-41% of those were live winners (wicked out); the 1m swing's Jan-Jun +$75k is the size rule risking more $ (same $: +$8.8k / -$8.3k / 2021-25 -$23.0k). Targets 15m / 1h liquidity, opposing session high, 1h FVG, fixed 1.5 / 2 / 3R: hit up to 2x as often, all lose Jan-Jun $8-25k (1h FVG H2 +$235, p 0.50; 3R 2021-25 +$19k but both 2026 halves lose). TIME: winners +0.5R median 10 min, target median 180 min; N = 26 min from ...
 > Write-ups: [[stops-targets-time-2026-11-24|"Stops x targets x TIME]]
@@ -200,6 +204,7 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-24 | [[lit-vix-downtrend-2026-11-24\|LIT in high-VIX falling markets]] | research |
 | 2026-11-23 (night, run 2026-11-24 early ET) | [[four-pillars-2026-11-23\|The four pillars]] | research |
 | 2026-11-22 | [[rapid25-slot-2026-11-22\|Rapid 25K slot]] | rejected |
 | 2026-11-22 | [[plan-ranking-2026-11-22\|Plan ranking]] | research |
@@ -239,9 +244,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-11-13 | [[es-and-sessions-2026-11-13\|Same edge, more markets]] | rejected |
 | 2026-11-04 | [[2026-11-04_second_strategies_night\|Second strategies night]] | research |
 | 2026-11-04 | [[2026-11-04_lit_ideas_round3\|LIT ideas round 3]] | research |
-| 2026-11-04 | [[2026-11-04_lit_ideas_round2\|LIT ideas round 2]] | research |
 
-... and 75 older (see the families).
+... and 76 older (see the families).
 
 ## Links
 

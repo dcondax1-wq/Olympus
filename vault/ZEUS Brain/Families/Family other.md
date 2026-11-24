@@ -7,13 +7,14 @@ type: "family"
 
 # Research family: other
 
-> [!abstract] 109 write-ups
-> adopt-candidate 16, finding 14, info 17, promising 14, rejected 36, research 12
+> [!abstract] 110 write-ups
+> adopt-candidate 16, finding 14, info 17, promising 14, rejected 36, research 13
 
 | Date | Write-up | Verdict |
 |---|---|---|
 | 2026-11-24 | [[structure-2026-11-24\|Market structure]] | research |
 | 2026-11-24 | [[livegap-2026-11-24\|Live vs backtest]] | research |
+| 2026-11-24 | [[lit-vix-downtrend-2026-11-24\|LIT in high-VIX falling markets]] | research |
 | 2026-11-23 | [[popular-ict-2026-11-23\|Popular ICT / SMC strategies on CME NQ, run exactly as taught]] | rejected |
 | 2026-11-23 | [[popular-classic-2026-11-23\|Popular classic NQ / ES strategies, as the textbook states them]] | research |
 | 2026-11-23 | [[payday-check-2026-11-23\|Payday check]] | research |
