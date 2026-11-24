@@ -12,8 +12,9 @@ days pass it sooner. Rapid 25K eval, 2,000 paths x 60 sessions, BLITZ trades ove
 What runs: engine/account_c.AccountC's code (BLITZ's live Engine on the closed 1m bars, its exits, trailing stop, 6 trades a
 day, -3R day stop, the performance contract, the early-close and 15:55 flats, never-placed handling) on the Rapid's account,
 with its own order-file tag "acctrb_" (2nd Rapid: "acctrb2_") and state file live_state_acctrb*.json. What differs from C:
-  * SIZE = the validated research lane (tools/money/stack_one_account.stack_q, z BLITZ {"usd": 300, "f": 0.3}):
-    $ = min($300, 30% of the account's room, the $500 soft day left), micros = $ / one full stop-out of 1 micro
+  * SIZE = the validated research lane (tools/money/stack_one_account.stack_q, z BLITZ {"usd": 150, "f": 0.3}; owner YES
+    2026-11-24 for research/pillars/blitz_rapid.py "V5 BLITZ $150": eval fail 1.2% vs 3.1% at $300 on Jan-Jun):
+    $ = min($150, 30% of the account's room, the $500 soft day left), micros = $ / one full stop-out of 1 micro
     ((stop + 1 tick) x $2 + $1.90), at most the plan's 20 micros; then the 30% best-day cap (engine/rapid.best_day_cap: a
     2R winner keeps the day <= 30% x $1,500 x 0.95 = $427 incl. today's closed $ of all three lanes).
   * ONE BOOK: balance, EOD trailing floor, room, today's $, the soft day lock and the pass check are the SUM of the three
@@ -35,7 +36,7 @@ import os
 from . import account_c as AC
 from . import rapid as RP
 
-BLITZ_USD, BLITZ_F = 300.0, 0.3          # research z BLITZ {"usd": 300, "f": 0.3} (research/propecon/unit.py book_name)
+BLITZ_USD, BLITZ_F = 150.0, 0.3          # research V5 z BLITZ {"usd": 150, "f": 0.3} (research/pillars/blitz_rapid.py; owner YES 2026-11-24)
 SLIP = 0.25                              # stack_q: one full stop-out = (stop + 1 tick) x $2 + $1.90
 ELIGIBLE = ("mffu_rapid_eod_25k",)       # owner: the Rapid EOD 25K EVAL only
 

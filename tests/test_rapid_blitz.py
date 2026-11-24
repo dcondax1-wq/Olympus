@@ -4,7 +4,7 @@
 
   a. who gets it: the Rapid EOD 25K in eval only (not the 50K, not funded, not with "blitz": false); the CLI switch
   b. the paper LiveBot builds it on the Rapid's account (own tag acctrb_ / state file), the 50K and no-Rapid bots do not
-  c. size = the validated research lane: min($300, 30% of the room, the $500 day left) / one stop-out, then the 30% best day
+  c. size = the validated research lane (V5, owner YES 2026-11-24): min($150, 30% of the room, the $500 day left) / one stop-out, then the 30% best day
   d. ONE book: LIT's lane, ATLAS and BLITZ read each other's closes (room, day $, the soft day lock)
   e. one position on the account (LIT > ATLAS > BLITZ): BLITZ waits while a higher lane holds / enters; LIT's lane and
      ATLAS entering close BLITZ first (any side) and route only when it is flat
@@ -70,7 +70,7 @@ def main() -> int:
         rapid.save({**BLK25, "plan": "mffu_rapid_eod_50k"}, p)
         check("a. CLI: --blitz refused on a 50K", rapid.main(["--blitz", "on"]) == 1)
         check("a. rules line names the BLITZ lane on the 25K eval only",
-              "BLITZ <= $300" in rapid.rules_line(BLK25) and "BLITZ" not in rapid.rules_line({**BLK25, "stage": "funded"}))
+              "BLITZ <= $150" in rapid.rules_line(BLK25) and "BLITZ" not in rapid.rules_line({**BLK25, "stage": "funded"}))
         rapid.PATH = None
 
         # ---- b. the bot builds it
@@ -94,13 +94,16 @@ def main() -> int:
         # ---- c. size
         st = rb.eval_state(T0)
         s1 = rb.size_entry(40.0, st)
-        # $300 = min($300, 30% x $1,000, $500); one stop-out (40 + 0.25) x 2 + 1.90 = $82.40 -> 3; 2R winner $158.10 a micro,
-        # best day 0.3 x 1,500 x 0.95 = $427.50 -> 2
-        check("c. room $1,000, 40-pt stop: $300 / $82.40 = 3 micros, the 30% best day -> 2", s1["qty"] == 2, s1)
+        # $150 = min($150, 30% x $1,000, $500); one stop-out (40 + 0.25) x 2 + 1.90 = $82.40 -> 1; 2R winner $158.10 a micro,
+        # best day 0.3 x 1,500 x 0.95 = $427.50 -> still 1
+        check("c. the lane's $ is $150 (research V5)", RB.BLITZ_USD == 150.0 and RB.BLITZ_F == 0.3, (RB.BLITZ_USD, RB.BLITZ_F))
+        check("c. room $1,000, 40-pt stop: $150 / $82.40 = 1 micro", s1["qty"] == 1, s1)
         s2 = rb.size_entry(10.0, st)
-        check("c. 10-pt stop: $300 / $22.40 = 13 -> best day $427.50 / $38.10 = 11", s2["qty"] == 11, s2)
+        check("c. 10-pt stop: $150 / $22.40 = 6 (the best day allows 11)", s2["qty"] == 6, s2)
+        s2b = rb.size_entry(80.0, st)
+        check("c. 80-pt stop: one stop-out $162.40 > $150: 0", s2b["qty"] == 0, s2b)
         s3 = rb.size_entry(200.0, st)
-        check("c. 200-pt stop: one stop-out $402.40 > $300: 0 (never 1 micro over the lane's $)", s3["qty"] == 0, s3)
+        check("c. 200-pt stop: one stop-out $402.40 > $150: 0 (never 1 micro over the lane's $)", s3["qty"] == 0, s3)
         ln = lane(b)
         with ln.mx:
             ln.closes.append([DAY, T0 - 600, 300.0, T0 - 1800, None])
