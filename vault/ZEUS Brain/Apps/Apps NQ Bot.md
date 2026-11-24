@@ -15,6 +15,7 @@ door: "NQ Bot"
 | Ares (`ares`) | trading | The war room: GO, WAIT or HALT | `../data.json`, `jarvis.json`, `rules.json`, `../home.json` | `tests.test_ares_page` |
 | Argus (`argus`) | trading | The hundred eyes: what to fix | bundled fixture / its own files | `tests.test_argus_page` |
 | Board (`board`) | trading | What the bot, you and Claude know: accounts | `board.json`, `../business/accounts.json`, `fixture.json`, `../nq/fixture.json` | `tests.test_board` |
+| The Brain (`brain`) | trading | Every bot as one 3D brain: next trade | `fixture.json` | `tests.test_brain` |
 | Chronos (`chronos`) (retired) | trading | Time and the session clock | `../odeon/trades.json`, `fixture.json` | `tests.test_chronos_page` |
 | Delphi (`delphi`) (retired) | trading | The oracle's briefing: plan, target, go / no-go | `fixture.json`, `../home.json`, `../ledger/rules.json` | `tests.test_delphi_page` |
 | Demeter (`demeter`) | trading | Account health: drawdown dials, payout rules | `fixture.json`, `../home.json`, `../ledger/rules.json`, `../plutus/roadmap.json` | `tests.test_demeter_page` |

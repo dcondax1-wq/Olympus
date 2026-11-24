@@ -7,7 +7,7 @@ type: "apps"
 
 # ZEUS Apps (Olympus + Jarvis)
 
-> [!info] 79 apps behind 7 doors
+> [!info] 80 apps behind 7 doors
 > **How Olympus is organized (2026-11-21, owner: "more organized").** One structure, everywhere:
 
 1. **Home** (`gate/`, where the Olympus app opens) shows **the 6 main dashboards** in the owner's order (2026-11-22): **NQ Bot** (ZEUS: accounts, trades, brain), **Jarvis**, **Websites** (agency, factory, caller portal), **Data City** (+ the Research hub), **Money** (My MFFU Accounts, payouts, Decide, taxes), **Kalshi**. Each tile opens its dashboard and has at most 2 short links. Everything else is one tap away under **More** (never the landing page: nothing remembers it). Under More, "All apps in ..." opens each arena's page `hub/arena.html?a=<arena>`: every live app grouped by job, so ...
@@ -16,7 +16,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 
 ## Doors
 
-- [[Apps NQ Bot|NQ Bot]]: 30 apps
+- [[Apps NQ Bot|NQ Bot]]: 31 apps
 - [[Apps Jarvis|Jarvis]]: 9 apps
 - [[Apps Websites|Websites]]: 1 apps
 - [[Apps Data City|Data City]]: 13 apps
