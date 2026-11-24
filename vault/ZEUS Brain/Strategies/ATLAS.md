@@ -63,6 +63,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 ## Tested and rejected
 
+> [!failure]- ATLAS funded 25K at ~$150 a trade, live sizing path
+> cap $150 / funded_room_pct 0.15 vs today's preset on engine/account_b.qty: owner $ 6 months 2021-25 $268 / $290 vs $283; 2025 $399 / $472 vs $382; Jan-Jun $2,815 / $2,916 vs $2,963; Jul-Oct $2,239 / $2,403 vs $2,746; first payout 7-15 sessions later. Fails (the badcase research-lane hint did not survive the real best-day guard). Keep today's preset.
+> Write-ups: [[atlas-funded-150-2026-11-24|ATLAS funded 25K at ~$150 a trade, on the LIVE sizing code]]
+
 > [!failure]- Time windows removed
 > LIT entries 18:00-15:30 (whole day) vs 02:00-15:30: -$10,511 / +$27,310 / +$9,644 vs +$1,275 / +$32,773 / +$8,962 (2021-25 / Jan-Jun / Jul-Oct). ATLAS members at any time 00:00-15:55 (live code, month-by-month replay): EMA -$4.3k / +$16.8k / -$3.6k vs +$12.4k / +$19.9k / +$8.1k; MACD -$4.1k / +$8.2k / -$4.5k vs +$21.4k / +$22.1k / +$2.6k; S/R +$1.1k / +$7.4k / +$3.1k vs +$8.9k / +$12.2k / +$2.9k; book 50K Jul-Oct pass 90 -> 17%. The windows ADD money: keep them.
 > Write-ups: [[notime-2026-11-24|Do the time windows add money?]]
@@ -166,6 +170,7 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-24 | [[atlas-funded-150-2026-11-24\|ATLAS funded 25K at ~$150 a trade, on the LIVE sizing code]] | research |
 | 2026-11-23 (night, run 2026-11-24 early ET) | [[four-pillars-2026-11-23\|The four pillars]] | research |
 | 2026-11-22 | [[rapid25-slot-2026-11-22\|Rapid 25K slot]] | rejected |
 | 2026-11-22 | [[plan-ranking-2026-11-22\|Plan ranking]] | research |
@@ -205,9 +210,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-11-03 | [[2026-11-03-fates\|FATES]] | info |
 | 2026-10-31 | [[atlas-funded-one-a-day-2026-10-31\|ATLAS funded 25K]] | rejected |
 | 2026-10-30 | [[discretion-score-2026-10-30\|Discretion score for ATLAS and BLITZ]] | rejected |
-| 2026-10-30 | [[blitz-edge-2026-10-30b\|BLITZ edge, rounds 2-4]] | rejected |
 
-... and 26 older (see the families).
+... and 27 older (see the families).
 
 ## Links
 
