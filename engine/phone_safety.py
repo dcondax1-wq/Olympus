@@ -258,6 +258,8 @@ def status_view(bot, env=None, now=None, state_path: str | None = None, log_path
         for name in ("acct_b", "acct_r", "acct_r2"):
             a = getattr(bot, name, None)
             n += a is not None and getattr(a, "open_t", None) is not None
+        for a in (getattr(bot, "acct_x", None) or {}).values():        # engine/combo25 (off = {})
+            n += getattr(a, "open_t", None) is not None
     except Exception:  # noqa: BLE001
         pass
     out["others_open"] = int(n)

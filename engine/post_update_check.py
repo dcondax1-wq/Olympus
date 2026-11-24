@@ -1,5 +1,7 @@
 """POST-UPDATE CHECK (night-verify 2026-11-23): right after the PC updated itself and the bot server restarted, check that each
-new piece is alive on THIS machine and send ONE phone message: "Update verified: N/N OK" or "Update: <piece> needs you -> <fix>".
+new piece is alive on THIS machine and send ONE phone message: "Update installed, alerts OK" (all green; day-notify 2026-11-23:
+at most one a day, through alert_bus.send_critical with its delivery receipt in logs/post_update.json) or "Update: <piece> needs
+you -> <fix>". The summary line for TRADE_HOME / UPDATE.bat stays "Update verified: N/N OK".
 
 READ-ONLY: it never writes a trading file, never arms, never starts / stops anything, never sends a test alert. Each check runs
 in its own daemon thread with a time box; the whole run is capped at BUDGET_S (25 s) and never raises. A piece that is not on
@@ -291,16 +293,85 @@ def last(path=None) -> dict | None:
         return None
 
 
-def send(res, sha=None, poster=None) -> str:
-    """ONE private phone message (engine/notify.instant_problem, key = the update's sha: once per update). Never raises."""
+OK_TITLE = "Update installed, alerts OK"      # day-notify 2026-11-23: the owner sees ONE push that proves the update AND the alerts
+SENT_PATH = os.path.join(ROOT, "logs", "post_update_sent.json")   # {"ok_day": "<ET day>"}: one OK push a day; later ones -> digest
+CH_NAMES = {"telegram": "Telegram", "discord": "Discord", "ntfy": "ntfy", "webpush": "the Olympus app"}
+
+
+def _et_day(t) -> str:
     try:
-        p = {"key": f"post_update:{sha or res.get('t')}", "code": "update", "title": res["message"][:90],
-             "body": "\n".join(f"{r['name']}: {r['fix'] or r['text']}" for r in res["rows"] if r["status"] == FIX)[:450]
-             or "Every new piece checked on this PC.", "back": bool(res.get("ok"))}
+        from zoneinfo import ZoneInfo
+        import datetime as _dt
+        return _dt.datetime.fromtimestamp(float(t), ZoneInfo("America/New_York")).date().isoformat()
+    except Exception:
+        return time.strftime("%Y-%m-%d", time.gmtime(float(t)))
+
+
+def _ok_day(path) -> str:
+    try:
+        with open(path, encoding="utf-8") as fh:
+            return str((json.load(fh) or {}).get("ok_day") or "")
+    except Exception:
+        return ""
+
+
+def phone_text(res, sha=None) -> tuple:
+    """(title, body) of the one phone message. All green = "Update installed, alerts OK" (this push IS the alert proof)."""
+    v = str(sha or res.get("sha") or "")[:7]
+    if res.get("ok"):
+        body = (f"Version {v} is running on your PC" if v else "The new version is running on your PC") + \
+               f": {res.get('n_ok')}/{res.get('n')} checks OK. You got this message, so phone alerts work. Nothing to do."
+        return OK_TITLE, body
+    body = "\n".join(f"{r['name']}: {r['fix'] or r['text']}" for r in res["rows"] if r["status"] == FIX)[:450]
+    return res["message"][:90], body or "Every new piece checked on this PC."
+
+
+def send(res, sha=None, poster=None, bus=None, now=None, sent_path=None) -> str:
+    """ONE private phone message, key = the update's sha (once per update). All green: at most ONE "Update installed, alerts OK"
+    push per ET day (a 2nd update the same day goes to the daily digest, no buzz); a FIX message always goes. Delivered through
+    engine/alert_bus.send_critical (Telegram / Discord when set up, else the private ntfy topic AND the Olympus app) and WAITS
+    for the receipts: res["receipts"] = the channels that took it (logs/post_update.json). ALERTS_OFF / no channel = the old
+    notify.instant_problem path. Never raises."""
+    try:
+        t = time.time() if now is None else float(now)
+        sp = sent_path or SENT_PATH
+        title, body = phone_text(res, sha)
+        key = f"post_update:{sha or res.get('t')}"
+        day = _et_day(t)
+        if res.get("ok") and _ok_day(sp) == day:
+            try:
+                AB = bus
+                if AB is None:
+                    from . import alert_bus as AB
+                AB.digest_add("Update installed", f"{str(sha or '')[:7]}, {res.get('n_ok')}/{res.get('n')} OK", key=key)
+            except Exception:
+                pass
+            return "digest (one OK push a day)"
+        p = {"key": key, "code": "update", "title": title, "body": body, "back": bool(res.get("ok"))}
         if poster is not None:
-            return poster(p) or "sent"
-        from . import notify
-        return notify.instant_problem(p)
+            r = poster(p) or "sent"
+        else:
+            if bus is None:
+                from . import alert_bus as bus
+            box = {}
+            r = bus.send_critical({"kind": "problem", "key": key, "title": title, "body": body, "notify_type": "problems",
+                                   "report": True}, on_done=box.update, wait=True)
+            if r in ("sent", "failed"):
+                res["receipts"] = sorted((box.get("receipts") or {}).keys())
+                r = ("sent via " + " + ".join(CH_NAMES.get(c, c) for c in res["receipts"])) if r == "sent" else "not delivered (no channel answered)"
+            elif r == "dup":
+                r = "already sent"
+            else:                                         # "off" (ALERTS_OFF / no channel) / "bad": the old path, exactly
+                from . import notify
+                r = notify.instant_problem(p)
+        if res.get("ok") and str(r).startswith("sent"):
+            try:
+                os.makedirs(os.path.dirname(sp), exist_ok=True)
+                with open(sp, "w", encoding="utf-8") as fh:
+                    json.dump({"ok_day": day, "sha": str(sha or "")[:12], "t": int(t)}, fh)
+            except Exception:
+                pass
+        return r
     except Exception as e:  # noqa: BLE001
         return f"not sent ({e.__class__.__name__})"
 

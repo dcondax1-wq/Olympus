@@ -1,0 +1,1224 @@
+{
+ "kind": "orderflow_program",
+ "date": "2026-11-23",
+ "branch": "day-ofprogram",
+ "writeup": "research/writeups/orderflow-program-2026-11-23.md",
+ "status": "round 1: 0/6 bar tests; round 2: 0/35 stand-alone + 0/3 LIT rules; 3 tick designs pre-registered; LIT unchanged",
+ "pre_registered": true,
+ "costs": "$500 risk, $1.40/micro RT, 0.25 pt slippage",
+ "spans": [
+  "2021-25",
+  "2026 H1",
+  "2026 H2"
+ ],
+ "bar_tests": {
+  "B1 LVN rejection": {
+   "2021-25": {
+    "n": 155,
+    "win%": 40.6,
+    "pf": 1.26,
+    "net$": 11556,
+    "maxDD$": 7121,
+    "per_wk": 0.71,
+    "$/mo": 230
+   },
+   "2026 H1": {
+    "n": 12,
+    "win%": 33.3,
+    "pf": 1.1,
+    "net$": 326,
+    "maxDD$": 2491,
+    "per_wk": 0.46,
+    "$/mo": 54
+   },
+   "2026 H2": {
+    "n": 10,
+    "win%": 70.0,
+    "pf": 4.56,
+    "net$": 4990,
+    "maxDD$": 989,
+    "per_wk": 0.5,
+    "$/mo": 1076
+   },
+   "placebo_p": 0.004,
+   "corr_LIT_daily": {
+    "2021-25": -0.061,
+    "2026 H1": -0.023,
+    "2026 H2": -0.095
+   },
+   "verdict": "REJECTED"
+  },
+  "B2 IB failed extension": {
+   "2021-25": {
+    "n": 590,
+    "win%": 23.2,
+    "pf": 0.84,
+    "net$": -36471,
+    "maxDD$": 49514,
+    "per_wk": 2.7,
+    "$/mo": -725
+   },
+   "2026 H1": {
+    "n": 72,
+    "win%": 30.6,
+    "pf": 1.8,
+    "net$": 19679,
+    "maxDD$": 7450,
+    "per_wk": 2.75,
+    "$/mo": 3271
+   },
+   "2026 H2": {
+    "n": 53,
+    "win%": 26.4,
+    "pf": 1.2,
+    "net$": 3739,
+    "maxDD$": 6028,
+    "per_wk": 2.63,
+    "$/mo": 807
+   },
+   "placebo_p": 0.026,
+   "corr_LIT_daily": {
+    "2021-25": -0.027,
+    "2026 H1": -0.035,
+    "2026 H2": -0.002
+   },
+   "verdict": "REJECTED"
+  },
+  "B3 poor high/low LIT skip": {
+   "2021-25": -273,
+   "2026 H1": 0,
+   "2026 H2": 0,
+   "verdict": "REJECTED",
+   "trades_tagged": 4,
+   "next_RTH_revisit_rate": {
+    "poor": {
+     "revisited%": 50.0,
+     "n": 32
+    },
+    "not_poor": {
+     "revisited%": 37.0,
+     "n": 1994
+    }
+   }
+  },
+  "B4 S1' BVC-5m divergence (take div only)": {
+   "2021-25": 4395,
+   "2026 H1": -30597,
+   "2026 H2": -7343,
+   "verdict": "REJECTED"
+  },
+  "B4 S4' BVC-5m confirmation (skip refuted)": {
+   "2021-25": 273,
+   "2026 H1": -15068,
+   "2026 H2": -3748,
+   "verdict": "REJECTED"
+  },
+  "B4 S1' BVC-1m divergence (take div only)": {
+   "2026 H1": -28708,
+   "2026 H2": -4324,
+   "verdict": "REJECTED"
+  },
+  "B4 S4' BVC-1m confirmation (skip refuted)": {
+   "2026 H1": -21629,
+   "2026 H2": -4749,
+   "verdict": "REJECTED"
+  },
+  "B4 1m coverage": "129 of 129 2026 LIT trades have >= 10 1m bars in the S1 window",
+  "B5 sweep relvol >= 1 (skip thin sweeps)": {
+   "2021-25": -2515,
+   "2026 H1": 123,
+   "2026 H2": -6086,
+   "verdict": "REJECTED"
+  },
+  "B6 1m absorption print at sweep (take absorbed only)": {
+   "2026 H1": -23723,
+   "2026 H2": -9711,
+   "verdict": "REJECTED"
+  }
+ },
+ "addon_values": "gain$ vs all-LIT per span (all LIT = +4738 / +30033 / +8212)",
+ "tick_designs": {
+  "OF1": "sweep absorption: skip LIT trades not absorbed at the extreme",
+  "OF2": "skip LIT trades with block prints against",
+  "OF3": "LVN rejection on tick profile + delta (stand-alone)"
+ },
+ "tick_trigger": "python research/orderflow/of_study.py at >= 60 tick days",
+ "fixes": [
+  "NT8 export is UTC: importer default tz America/New_York -> UTC",
+  "identical same-stamp trades no longer dropped",
+  "streaming import 2M lines/chunk"
+ ],
+ "live_changed": false,
+ "round2": {
+  "script": "research/orderflow/of_lvn.py",
+  "results": "research/orderflow/lvn_results.json",
+  "tests_in_correction": 35,
+  "pass": [],
+  "standalone": {
+   "LVN NQ 5m-profile D1 LDN": {
+    "2021-25": {
+     "n": 125,
+     "win%": 24.8,
+     "pf": 0.57,
+     "net$": -21004,
+     "maxDD$": 21004,
+     "per_wk": 0.57,
+     "$/mo": -418
+    },
+    "2026 H1": {
+     "n": 16,
+     "win%": 25.0,
+     "pf": 0.59,
+     "net$": -2468,
+     "maxDD$": 3541,
+     "per_wk": 0.61,
+     "$/mo": -410
+    },
+    "2026 H2": {
+     "n": 9,
+     "win%": 33.3,
+     "pf": 0.94,
+     "net$": -188,
+     "maxDD$": 1996,
+     "per_wk": 0.45,
+     "$/mo": -40
+    },
+    "placebo_p": 0.7896,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "LVN NQ 5m-profile D1 AM": {
+    "2021-25": {
+     "n": 141,
+     "win%": 40.4,
+     "pf": 1.25,
+     "net$": 10388,
+     "maxDD$": 6608,
+     "per_wk": 0.65,
+     "$/mo": 206
+    },
+    "2026 H1": {
+     "n": 12,
+     "win%": 25.0,
+     "pf": 0.66,
+     "net$": -1371,
+     "maxDD$": 2134,
+     "per_wk": 0.46,
+     "$/mo": -228
+    },
+    "2026 H2": {
+     "n": 10,
+     "win%": 50.0,
+     "pf": 1.88,
+     "net$": 2046,
+     "maxDD$": 1403,
+     "per_wk": 0.5,
+     "$/mo": 441
+    },
+    "placebo_p": 0.0012,
+    "holm_p": 0.042,
+    "verdict": "REJECTED"
+   },
+   "LVN NQ 5m-profile D1 PM": {
+    "2021-25": {
+     "n": 106,
+     "win%": 30.2,
+     "pf": 0.81,
+     "net$": -6956,
+     "maxDD$": 12546,
+     "per_wk": 0.48,
+     "$/mo": -138
+    },
+    "2026 H1": {
+     "n": 8,
+     "win%": 50.0,
+     "pf": 1.77,
+     "net$": 1329,
+     "maxDD$": 805,
+     "per_wk": 0.31,
+     "$/mo": 221
+    },
+    "2026 H2": {
+     "n": 7,
+     "win%": 42.9,
+     "pf": 1.44,
+     "net$": 874,
+     "maxDD$": 943,
+     "per_wk": 0.35,
+     "$/mo": 189
+    },
+    "placebo_p": 0.1644,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "LVN NQ 5m-profile W5 LDN": {
+    "2021-25": {
+     "n": 170,
+     "win%": 25.9,
+     "pf": 0.61,
+     "net$": -25476,
+     "maxDD$": 28458,
+     "per_wk": 0.78,
+     "$/mo": -506
+    },
+    "2026 H1": {
+     "n": 35,
+     "win%": 34.3,
+     "pf": 0.97,
+     "net$": -298,
+     "maxDD$": 3043,
+     "per_wk": 1.34,
+     "$/mo": -50
+    },
+    "2026 H2": {
+     "n": 30,
+     "win%": 33.3,
+     "pf": 0.94,
+     "net$": -653,
+     "maxDD$": 3040,
+     "per_wk": 1.49,
+     "$/mo": -141
+    },
+    "placebo_p": 0.4271,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "LVN NQ 5m-profile W5 AM": {
+    "2021-25": {
+     "n": 227,
+     "win%": 34.8,
+     "pf": 0.99,
+     "net$": -685,
+     "maxDD$": 15416,
+     "per_wk": 1.04,
+     "$/mo": -14
+    },
+    "2026 H1": {
+     "n": 41,
+     "win%": 36.6,
+     "pf": 1.11,
+     "net$": 1322,
+     "maxDD$": 2717,
+     "per_wk": 1.57,
+     "$/mo": 220
+    },
+    "2026 H2": {
+     "n": 29,
+     "win%": 31.0,
+     "pf": 0.83,
+     "net$": -1470,
+     "maxDD$": 5010,
+     "per_wk": 1.44,
+     "$/mo": -317
+    },
+    "placebo_p": 0.0314,
+    "holm_p": 0.9106,
+    "verdict": "REJECTED"
+   },
+   "LVN NQ 5m-profile W5 PM": {
+    "2021-25": {
+     "n": 181,
+     "win%": 30.9,
+     "pf": 0.82,
+     "net$": -11673,
+     "maxDD$": 14824,
+     "per_wk": 0.83,
+     "$/mo": -232
+    },
+    "2026 H1": {
+     "n": 32,
+     "win%": 34.4,
+     "pf": 1.02,
+     "net$": 155,
+     "maxDD$": 3615,
+     "per_wk": 1.22,
+     "$/mo": 26
+    },
+    "2026 H2": {
+     "n": 27,
+     "win%": 29.6,
+     "pf": 0.72,
+     "net$": -2635,
+     "maxDD$": 4852,
+     "per_wk": 1.34,
+     "$/mo": -568
+    },
+    "placebo_p": 0.1022,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "LVN NQ 5m-profile C20 LDN": {
+    "2021-25": {
+     "n": 201,
+     "win%": 35.8,
+     "pf": 0.98,
+     "net$": -1192,
+     "maxDD$": 15254,
+     "per_wk": 0.92,
+     "$/mo": -24
+    },
+    "2026 H1": {
+     "n": 25,
+     "win%": 44.0,
+     "pf": 1.43,
+     "net$": 3125,
+     "maxDD$": 1991,
+     "per_wk": 0.96,
+     "$/mo": 519
+    },
+    "2026 H2": {
+     "n": 11,
+     "win%": 45.5,
+     "pf": 1.54,
+     "net$": 1674,
+     "maxDD$": 1647,
+     "per_wk": 0.55,
+     "$/mo": 361
+    },
+    "placebo_p": 0.0056,
+    "holm_p": 0.1848,
+    "verdict": "REJECTED"
+   },
+   "LVN NQ 5m-profile C20 AM": {
+    "2021-25": {
+     "n": 262,
+     "win%": 32.4,
+     "pf": 0.91,
+     "net$": -7389,
+     "maxDD$": 19137,
+     "per_wk": 1.2,
+     "$/mo": -147
+    },
+    "2026 H1": {
+     "n": 31,
+     "win%": 22.6,
+     "pf": 0.56,
+     "net$": -4882,
+     "maxDD$": 6276,
+     "per_wk": 1.19,
+     "$/mo": -811
+    },
+    "2026 H2": {
+     "n": 12,
+     "win%": 16.7,
+     "pf": 0.41,
+     "net$": -2521,
+     "maxDD$": 2713,
+     "per_wk": 0.6,
+     "$/mo": -544
+    },
+    "placebo_p": 0.054,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "LVN NQ 5m-profile C20 PM": {
+    "2021-25": {
+     "n": 244,
+     "win%": 34.8,
+     "pf": 0.97,
+     "net$": -2659,
+     "maxDD$": 16193,
+     "per_wk": 1.12,
+     "$/mo": -53
+    },
+    "2026 H1": {
+     "n": 20,
+     "win%": 35.0,
+     "pf": 0.93,
+     "net$": -453,
+     "maxDD$": 1998,
+     "per_wk": 0.77,
+     "$/mo": -75
+    },
+    "2026 H2": {
+     "n": 11,
+     "win%": 45.5,
+     "pf": 1.41,
+     "net$": 1141,
+     "maxDD$": 1286,
+     "per_wk": 0.55,
+     "$/mo": 246
+    },
+    "placebo_p": 0.0084,
+    "holm_p": 0.2688,
+    "verdict": "REJECTED"
+   },
+   "LVN ES 5m-profile D1 LDN": {
+    "2021-25": {
+     "n": 7,
+     "win%": 14.3,
+     "pf": 0.23,
+     "net$": -2559,
+     "maxDD$": 2818,
+     "per_wk": 0.19,
+     "$/mo": -304
+    },
+    "2026 H1": {
+     "n": 9,
+     "win%": 33.3,
+     "pf": 0.68,
+     "net$": -1040,
+     "maxDD$": 2310,
+     "per_wk": 0.34,
+     "$/mo": -173
+    },
+    "2026 H2": {
+     "n": 4,
+     "win%": 75.0,
+     "pf": 5.91,
+     "net$": 2240,
+     "maxDD$": 456,
+     "per_wk": 0.26,
+     "$/mo": 637
+    },
+    "placebo_p": 0.4499,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "LVN ES 5m-profile D1 AM": {
+    "2021-25": {
+     "n": 12,
+     "win%": 8.3,
+     "pf": 0.16,
+     "net$": -4780,
+     "maxDD$": 5162,
+     "per_wk": 0.33,
+     "$/mo": -568
+    },
+    "2026 H1": {
+     "n": 12,
+     "win%": 16.7,
+     "pf": 0.36,
+     "net$": -3350,
+     "maxDD$": 4259,
+     "per_wk": 0.46,
+     "$/mo": -557
+    },
+    "2026 H2": {
+     "n": 7,
+     "win%": 28.6,
+     "pf": 0.57,
+     "net$": -1137,
+     "maxDD$": 2114,
+     "per_wk": 0.46,
+     "$/mo": -323
+    },
+    "placebo_p": 0.6225,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "LVN ES 5m-profile D1 PM": {
+    "2021-25": {
+     "n": 12,
+     "win%": 41.7,
+     "pf": 1.14,
+     "net$": 517,
+     "maxDD$": 1540,
+     "per_wk": 0.33,
+     "$/mo": 61
+    },
+    "2026 H1": {
+     "n": 9,
+     "win%": 33.3,
+     "pf": 0.94,
+     "net$": -179,
+     "maxDD$": 1523,
+     "per_wk": 0.34,
+     "$/mo": -30
+    },
+    "2026 H2": {
+     "n": 4,
+     "win%": 50.0,
+     "pf": 2.03,
+     "net$": 940,
+     "maxDD$": 506,
+     "per_wk": 0.26,
+     "$/mo": 267
+    },
+    "placebo_p": 0.1006,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "LVN ES 5m-profile W5 LDN": {
+    "2021-25": {
+     "n": 16,
+     "win%": 25.0,
+     "pf": 0.56,
+     "net$": -2857,
+     "maxDD$": 4058,
+     "per_wk": 0.44,
+     "$/mo": -339
+    },
+    "2026 H1": {
+     "n": 22,
+     "win%": 18.2,
+     "pf": 0.38,
+     "net$": -5963,
+     "maxDD$": 6807,
+     "per_wk": 0.84,
+     "$/mo": -991
+    },
+    "2026 H2": {
+     "n": 10,
+     "win%": 30.0,
+     "pf": 0.78,
+     "net$": -814,
+     "maxDD$": 2015,
+     "per_wk": 0.65,
+     "$/mo": -231
+    },
+    "placebo_p": 0.8864,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "LVN ES 5m-profile W5 AM": {
+    "2021-25": {
+     "n": 21,
+     "win%": 33.3,
+     "pf": 0.9,
+     "net$": -736,
+     "maxDD$": 3835,
+     "per_wk": 0.57,
+     "$/mo": -87
+    },
+    "2026 H1": {
+     "n": 23,
+     "win%": 39.1,
+     "pf": 1.19,
+     "net$": 1319,
+     "maxDD$": 2568,
+     "per_wk": 0.88,
+     "$/mo": 219
+    },
+    "2026 H2": {
+     "n": 16,
+     "win%": 18.8,
+     "pf": 0.42,
+     "net$": -3902,
+     "maxDD$": 3902,
+     "per_wk": 1.05,
+     "$/mo": -1109
+    },
+    "placebo_p": 0.1934,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "LVN ES 5m-profile W5 PM": {
+    "2021-25": {
+     "n": 15,
+     "win%": 33.3,
+     "pf": 0.89,
+     "net$": -609,
+     "maxDD$": 2257,
+     "per_wk": 0.41,
+     "$/mo": -72
+    },
+    "2026 H1": {
+     "n": 21,
+     "win%": 28.6,
+     "pf": 0.71,
+     "net$": -2331,
+     "maxDD$": 3812,
+     "per_wk": 0.8,
+     "$/mo": -387
+    },
+    "2026 H2": {
+     "n": 15,
+     "win%": 46.7,
+     "pf": 1.17,
+     "net$": 750,
+     "maxDD$": 2331,
+     "per_wk": 0.98,
+     "$/mo": 213
+    },
+    "placebo_p": 0.2232,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "LVN ES 5m-profile C20 LDN": {
+    "2021-25": {
+     "n": 22,
+     "win%": 18.2,
+     "pf": 0.42,
+     "net$": -5215,
+     "maxDD$": 7416,
+     "per_wk": 0.6,
+     "$/mo": -620
+    },
+    "2026 H1": {
+     "n": 6,
+     "win%": 16.7,
+     "pf": 0.36,
+     "net$": -1753,
+     "maxDD$": 1753,
+     "per_wk": 0.23,
+     "$/mo": -291
+    },
+    "2026 H2": {
+     "n": 5,
+     "win%": 40.0,
+     "pf": 1.22,
+     "net$": 342,
+     "maxDD$": 1562,
+     "per_wk": 0.33,
+     "$/mo": 97
+    },
+    "placebo_p": 0.3485,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "LVN ES 5m-profile C20 AM": {
+    "2021-25": {
+     "n": 26,
+     "win%": 26.9,
+     "pf": 0.68,
+     "net$": -3185,
+     "maxDD$": 5848,
+     "per_wk": 0.71,
+     "$/mo": -378
+    },
+    "2026 H1": {
+     "n": 11,
+     "win%": 45.5,
+     "pf": 1.28,
+     "net$": 836,
+     "maxDD$": 2006,
+     "per_wk": 0.42,
+     "$/mo": 139
+    },
+    "2026 H2": {
+     "n": 8,
+     "win%": 25.0,
+     "pf": 0.61,
+     "net$": -1216,
+     "maxDD$": 2587,
+     "per_wk": 0.52,
+     "$/mo": -346
+    },
+    "placebo_p": 0.2589,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "LVN ES 5m-profile C20 PM": {
+    "2021-25": {
+     "n": 18,
+     "win%": 27.8,
+     "pf": 0.68,
+     "net$": -2203,
+     "maxDD$": 3932,
+     "per_wk": 0.49,
+     "$/mo": -262
+    },
+    "2026 H1": {
+     "n": 8,
+     "win%": 25.0,
+     "pf": 0.59,
+     "net$": -1291,
+     "maxDD$": 2200,
+     "per_wk": 0.31,
+     "$/mo": -215
+    },
+    "2026 H2": {
+     "n": 9,
+     "win%": 22.2,
+     "pf": 0.48,
+     "net$": -2059,
+     "maxDD$": 2059,
+     "per_wk": 0.59,
+     "$/mo": -585
+    },
+    "placebo_p": 0.8196,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "LVN NQ 1m-profile D1 LDN": {
+    "2026 H1": {
+     "n": 21,
+     "win%": 38.1,
+     "pf": 1.14,
+     "net$": 928,
+     "maxDD$": 2546,
+     "per_wk": 0.8,
+     "$/mo": 154
+    },
+    "2026 H2": {
+     "n": 13,
+     "win%": 30.8,
+     "pf": 0.87,
+     "net$": -588,
+     "maxDD$": 1991,
+     "per_wk": 0.65,
+     "$/mo": -127
+    },
+    "placebo_p": 0.203,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "LVN NQ 1m-profile D1 AM": {
+    "2026 H1": {
+     "n": 20,
+     "win%": 35.0,
+     "pf": 1.01,
+     "net$": 76,
+     "maxDD$": 2129,
+     "per_wk": 0.77,
+     "$/mo": 13
+    },
+    "2026 H2": {
+     "n": 13,
+     "win%": 30.8,
+     "pf": 0.88,
+     "net$": -481,
+     "maxDD$": 2454,
+     "per_wk": 0.65,
+     "$/mo": -104
+    },
+    "placebo_p": 0.1818,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "LVN NQ 1m-profile D1 PM": {
+    "2026 H1": {
+     "n": 12,
+     "win%": 50.0,
+     "pf": 1.77,
+     "net$": 2117,
+     "maxDD$": 1297,
+     "per_wk": 0.46,
+     "$/mo": 352
+    },
+    "2026 H2": {
+     "n": 7,
+     "win%": 42.9,
+     "pf": 1.39,
+     "net$": 783,
+     "maxDD$": 1003,
+     "per_wk": 0.35,
+     "$/mo": 169
+    },
+    "placebo_p": 0.2206,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "LVN NQ 1m-profile W5 LDN": {
+    "2026 H1": {
+     "n": 38,
+     "win%": 28.9,
+     "pf": 0.68,
+     "net$": -4418,
+     "maxDD$": 5775,
+     "per_wk": 1.45,
+     "$/mo": -734
+    },
+    "2026 H2": {
+     "n": 33,
+     "win%": 33.3,
+     "pf": 0.97,
+     "net$": -368,
+     "maxDD$": 5047,
+     "per_wk": 1.64,
+     "$/mo": -79
+    },
+    "placebo_p": 0.3273,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "LVN NQ 1m-profile W5 AM": {
+    "2026 H1": {
+     "n": 46,
+     "win%": 32.6,
+     "pf": 0.94,
+     "net$": -842,
+     "maxDD$": 4575,
+     "per_wk": 1.76,
+     "$/mo": -140
+    },
+    "2026 H2": {
+     "n": 35,
+     "win%": 34.3,
+     "pf": 1.0,
+     "net$": -31,
+     "maxDD$": 5368,
+     "per_wk": 1.74,
+     "$/mo": -7
+    },
+    "placebo_p": 0.2637,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "LVN NQ 1m-profile W5 PM": {
+    "2026 H1": {
+     "n": 38,
+     "win%": 39.5,
+     "pf": 1.29,
+     "net$": 3140,
+     "maxDD$": 3513,
+     "per_wk": 1.45,
+     "$/mo": 522
+    },
+    "2026 H2": {
+     "n": 28,
+     "win%": 28.6,
+     "pf": 0.75,
+     "net$": -2407,
+     "maxDD$": 3258,
+     "per_wk": 1.39,
+     "$/mo": -519
+    },
+    "placebo_p": 0.0908,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "LVN NQ 1m-profile C20 LDN": {
+    "2026 H1": {
+     "n": 18,
+     "win%": 16.7,
+     "pf": 0.36,
+     "net$": -5005,
+     "maxDD$": 5005,
+     "per_wk": 0.69,
+     "$/mo": -832
+    },
+    "2026 H2": {
+     "n": 13,
+     "win%": 38.5,
+     "pf": 1.16,
+     "net$": 657,
+     "maxDD$": 2099,
+     "per_wk": 0.65,
+     "$/mo": 142
+    },
+    "placebo_p": 0.4805,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "LVN NQ 1m-profile C20 AM": {
+    "2026 H1": {
+     "n": 22,
+     "win%": 9.1,
+     "pf": 0.17,
+     "net$": -7638,
+     "maxDD$": 7638,
+     "per_wk": 0.84,
+     "$/mo": -1270
+    },
+    "2026 H2": {
+     "n": 14,
+     "win%": 21.4,
+     "pf": 0.59,
+     "net$": -1770,
+     "maxDD$": 1770,
+     "per_wk": 0.7,
+     "$/mo": -382
+    },
+    "placebo_p": 0.7311,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "LVN NQ 1m-profile C20 PM": {
+    "2026 H1": {
+     "n": 16,
+     "win%": 43.8,
+     "pf": 1.5,
+     "net$": 2174,
+     "maxDD$": 1449,
+     "per_wk": 0.61,
+     "$/mo": 361
+    },
+    "2026 H2": {
+     "n": 14,
+     "win%": 35.7,
+     "pf": 0.91,
+     "net$": -396,
+     "maxDD$": 1867,
+     "per_wk": 0.7,
+     "$/mo": -86
+    },
+    "placebo_p": 0.1462,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "LVN union NQ 5m D1 LDN+AM+PM": {
+    "2021-25": {
+     "n": 372,
+     "win%": 32.3,
+     "pf": 0.86,
+     "net$": -17572,
+     "maxDD$": 23760,
+     "per_wk": 1.7,
+     "$/mo": -349
+    },
+    "2026 H1": {
+     "n": 36,
+     "win%": 30.6,
+     "pf": 0.79,
+     "net$": -2510,
+     "maxDD$": 5074,
+     "per_wk": 1.38,
+     "$/mo": -417
+    },
+    "2026 H2": {
+     "n": 26,
+     "win%": 42.3,
+     "pf": 1.37,
+     "net$": 2732,
+     "maxDD$": 1996,
+     "per_wk": 1.29,
+     "$/mo": 589
+    },
+    "placebo_p": 0.0268,
+    "holm_p": 0.804,
+    "verdict": "REJECTED"
+   },
+   "V1 dPOC migration (1m)": {
+    "2026 H1": {
+     "n": 11,
+     "win%": 36.4,
+     "pf": 0.71,
+     "net$": -421,
+     "maxDD$": 1444,
+     "per_wk": 0.42,
+     "$/mo": -70
+    },
+    "2026 H2": {
+     "n": 7,
+     "win%": 57.1,
+     "pf": 1.16,
+     "net$": 158,
+     "maxDD$": 982,
+     "per_wk": 0.35,
+     "$/mo": 34
+    },
+    "placebo_p": 0.1984,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "V1 dPOC migration (5m)": {
+    "2021-25": {
+     "n": 133,
+     "win%": 60.9,
+     "pf": 1.67,
+     "net$": 9165,
+     "maxDD$": 1298,
+     "per_wk": 0.61,
+     "$/mo": 182
+    },
+    "2026 H1": {
+     "n": 13,
+     "win%": 53.8,
+     "pf": 1.99,
+     "net$": 971,
+     "maxDD$": 907,
+     "per_wk": 0.5,
+     "$/mo": 161
+    },
+    "2026 H2": {
+     "n": 9,
+     "win%": 44.4,
+     "pf": 0.76,
+     "net$": -443,
+     "maxDD$": 910,
+     "per_wk": 0.45,
+     "$/mo": -96
+    },
+    "placebo_p": 0.0428,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "V2 single prints (1m)": {
+    "2026 H1": {
+     "n": 86,
+     "win%": 34.9,
+     "pf": 0.95,
+     "net$": -1390,
+     "maxDD$": 7062,
+     "per_wk": 3.29,
+     "$/mo": -231
+    },
+    "2026 H2": {
+     "n": 74,
+     "win%": 36.5,
+     "pf": 1.01,
+     "net$": 337,
+     "maxDD$": 5632,
+     "per_wk": 3.67,
+     "$/mo": 73
+    },
+    "placebo_p": 0.0202,
+    "holm_p": 0.6262,
+    "verdict": "REJECTED"
+   },
+   "V2 single prints (5m)": {
+    "2021-25": {
+     "n": 638,
+     "win%": 30.4,
+     "pf": 0.78,
+     "net$": -48736,
+     "maxDD$": 51330,
+     "per_wk": 2.92,
+     "$/mo": -969
+    },
+    "2026 H1": {
+     "n": 82,
+     "win%": 25.6,
+     "pf": 0.65,
+     "net$": -10396,
+     "maxDD$": 14894,
+     "per_wk": 3.14,
+     "$/mo": -1728
+    },
+    "2026 H2": {
+     "n": 65,
+     "win%": 40.0,
+     "pf": 1.23,
+     "net$": 4353,
+     "maxDD$": 2071,
+     "per_wk": 3.23,
+     "$/mo": 939
+    },
+    "placebo_p": 0.5791,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "V3 poor high/low magnet (1m)": {
+    "2026 H1": {
+     "n": 1,
+     "win%": 0.0,
+     "pf": 0.0,
+     "net$": -566,
+     "maxDD$": 566,
+     "per_wk": 0.04,
+     "$/mo": -94
+    },
+    "2026 H2": {
+     "n": 3,
+     "win%": 33.3,
+     "pf": 1.88,
+     "net$": 442,
+     "maxDD$": 504,
+     "per_wk": 0.15,
+     "$/mo": 95
+    },
+    "placebo_p": 0.2498,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   },
+   "V3 poor high/low magnet (5m)": {
+    "2021-25": {
+     "n": 19,
+     "win%": 21.1,
+     "pf": 1.48,
+     "net$": 3360,
+     "maxDD$": 2900,
+     "per_wk": 0.09,
+     "$/mo": 67
+    },
+    "2026 H1": {
+     "n": 1,
+     "win%": 0.0,
+     "pf": 0.0,
+     "net$": -566,
+     "maxDD$": 566,
+     "per_wk": 0.04,
+     "$/mo": -94
+    },
+    "2026 H2": {
+     "n": 3,
+     "win%": 66.7,
+     "pf": 1.97,
+     "net$": 484,
+     "maxDD$": 499,
+     "per_wk": 0.15,
+     "$/mo": 104
+    },
+    "placebo_p": 0.3125,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   }
+  },
+  "lit_confluence": {
+   "2021-25": {
+    "into LVN": {
+     "n": 19,
+     "avgR": 0.418,
+     "net$": 1432
+    },
+    "not LVN": {
+     "n": 514,
+     "avgR": 0.028,
+     "net$": 3306
+    },
+    "into HVN": {
+     "n": 74,
+     "avgR": -0.369,
+     "net$": -14504
+    },
+    "not HVN": {
+     "n": 459,
+     "avgR": 0.109,
+     "net$": 19243
+    },
+    "all LIT$": 4738,
+    "L1 skip HVN gain$": 14504,
+    "L2 x1.25 LVN gain$": 358,
+    "L3 x0.5 HVN gain$": 7252
+   },
+   "2026 H1": {
+    "into LVN": {
+     "n": 5,
+     "avgR": 2.191,
+     "net$": 2336
+    },
+    "not LVN": {
+     "n": 82,
+     "avgR": 0.482,
+     "net$": 27697
+    },
+    "into HVN": {
+     "n": 11,
+     "avgR": 0.748,
+     "net$": 6120
+    },
+    "not HVN": {
+     "n": 76,
+     "avgR": 0.556,
+     "net$": 23914
+    },
+    "all LIT$": 30033,
+    "L1 skip HVN gain$": -6120,
+    "L2 x1.25 LVN gain$": 584,
+    "L3 x0.5 HVN gain$": -3060
+   },
+   "2026 H2": {
+    "into LVN": {
+     "n": 0,
+     "avgR": null,
+     "net$": 0
+    },
+    "not LVN": {
+     "n": 42,
+     "avgR": 0.579,
+     "net$": 8212
+    },
+    "into HVN": {
+     "n": 5,
+     "avgR": -0.083,
+     "net$": 464
+    },
+    "not HVN": {
+     "n": 37,
+     "avgR": 0.668,
+     "net$": 7748
+    },
+    "all LIT$": 8212,
+    "L1 skip HVN gain$": -464,
+    "L2 x1.25 LVN gain$": 0,
+    "L3 x0.5 HVN gain$": -232
+   },
+   "L1 skip HVN verdict": "REJECTED",
+   "L2 x1.25 LVN verdict": "REJECTED",
+   "L3 x0.5 HVN verdict": "REJECTED"
+  },
+  "status": "0 of 35 stand-alone + 0 of 3 LIT confluence rules pass; LIT unchanged"
+ }
+}

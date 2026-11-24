@@ -212,7 +212,7 @@
                       // the PC's tracker sends ft (first funded trade, when known) and the row's lt (last traded day): night-truth 2026-11-22,
                       // the coach's 7-day countdown read only accounts.json's told.last_trade (null) while the PC sent lt
                       first_trade: (f && f.ft) || told.first_trade || null, last_trade: (mf && mf.lt) || told.last_trade || null, payouts_n: f && num(f.pn) != null ? num(f.pn) : num(told.payouts_n),
-                      eligible_from: f && f.ef ? f.ef : null, room: room.v };
+                      eligible_from: f && f.ef ? f.ef : null, room: room.v, first_at_min: !!(f && f.fm) };   // night-payfirst: fm = the small first payout
       try { const c = ctx.coach.coach(state, pk, ctx.today); out.payout = { c, src: f ? 'PC payout tracker' : 'PLAN (what you told Claude)', t: f ? mfT : null }; } catch (e) { out.payout = null; }
     }
     out.trades = { n: mf && mf.n != null ? mf.n : null, w: mf && mf.w != null ? mf.w : null, win_pct: mf && mf.n ? Math.round(100 * mf.w / mf.n) : null,

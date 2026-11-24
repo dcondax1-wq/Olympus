@@ -112,6 +112,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 > 10 pre-declared single versions on the live LIT trades (LIT size + two_week eval path room 0.4, costs in), $/month vs today H1 / H2: time stop 60 min without +1R -$695 / -$945; out at 09:29 if not at BE -$317 / +$33 (5 + 2 trades); BE at 09:29 if +0.5R $0 / $0; out 2 min before CPI / jobs / PPI / FOMC if not at BE +$64 / $0 (1 trade); BE before news if +0.5R $0; after BE out when 60 min without a new best -$1,516 / -$457; BE only on a 1m close at +1R -$326 / $0; NR7 day after x1.25 -$24 / -$11 (eval +$66 / +$149); London build-up sweeps x1.25 +$295 / +$14 but eval H1 -$4, 2-week pass 44.5 -> 41.2, flip p 0.15 / 0.51 (nearest miss, re-tested nightly); 18:00 gap against x0.75 -$408 / -$188. ...
 > Write-ups: [[zeus-lab-lit-ideas-2026-11-18|ZEUS Lab]]
 
+> [!failure]- Order-flow program on bars
+> 6 tests, $500 / costs in: LVN rejection (stand-alone, PF 1.26 / 1.10 / 4.56, placebo p 0.004, 0.5-0.7/wk: H1 PF and count fail; moved to ticks as OF3), IB failed extension -> IB mid (-$36k 2021-25, + only in 2026), LIT skip on poor prior-day highs/lows (4 trades), BVC delta divergence / confirmation on 5m and 1m (cost LIT -$15k to -$31k in 2026 H1: "refuted" trades are LIT's best), skip thin sweeps, 1m absorption print. 0 pass. Real-tick versions pre-registered (PREREG_ticks.md).
+> Write-ups: [[orderflow-program-2026-11-23|Order-flow program]]
+
 > [!failure]- Market-regime warning features
 > VIX, RTH range %, overnight share, trend efficiency, sweep reclaim (40-session means) as a 2026-vs-2021-25 light: only overnight share separates (BA 0.94) and it is a yearly drift that calls 2022 (LIT's good year) bad and precedes a worse LIT in 2021-25. Kept: the light from LIT's own last 40 sessions (warning only).
 > Write-ups: [[edge-health-2026-11-17|Edge health, 2026-11-17]]
@@ -182,6 +186,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 > [!failure]- 2026-11-22 Lucid accounts on a $300 a month fleet
 > REJECTED as a way to speed up at $300: adding 1/2/3/5 LucidPro 50K (LIT only, assumed $126) to the Rapid EOD 50K + FundedNext 50K plan out of the SAME $300 budget leaves Jan-Jun-like unchanged (+$264 +- $324 with 2, -$53 +- $370 with 3) and only helps Jul-Oct-like (+$4.7k to +$5.6k over 6 months); buying Lucid FIRST (5 accounts) loses $16.3k Jan-Jun-like and halves the worst 10% ($27.2k -> $16.3k), because the Lucid copies displace the bigger accounts. It works only with a larger budget ($500: 3 Lucid = Decide card lucid-3-at-500-budget). 75 fleets tried.
 > Write-ups: [[fleet-v2-2026-11-22|Fleet v2]]
+
+> [!failure]- Popular ICT/SMC strategies as taught
+> Silver Bullet, Judas Swing, Asia sweep, London breakout, PDH/PDL sweep, NY open FVG, PO3/AMD, ICT 2022, Turtle Soup, Unicorn; 5m, stop 1 tick beyond the swing, 2R, LIT sizing, costs in. 0 of 10 pass (PF > 1 in all three spans and Holm p < 0.05; best raw p 0.17, all Holm 1.0); 9 of 10 lose 2026 H1. Only ICT 2022 adds $ to LIT in both 2026 halves (+$369 / +$681 a month on a Rapid 50K, ~5 trades/wk) but DD $2.2k -> $4.8k, H1 eval fails 1.6% -> 34%, loses 2021-25. Corr LIT -0.06..+0.38. Nothing adopted.
+> Write-ups: [[popular-ict-2026-11-23|Popular ICT / SMC strategies on CME NQ, run exactly as taught]]
 
 
 ## Write-ups

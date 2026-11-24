@@ -26,7 +26,7 @@ confirm". Wording: the phone push, the 16:15 summary, the morning brief (its own
 ## Per account (as of 2026-11-23)
 | Account | Now | MFFU's earliest legal request | Plan's request | $ to you | Most likely (10% chance by) |
 |---|---|---|---|---|---|
-| ATLAS 25K funded | +$401 MFFU profit, 2 traded days, 48 h done | the first close at >= $1,350 profit with the best day <= 50% (MFFU would pay $250 = $200 to you) | $1,000 at $2,100 profit ($1,699 more) | $800 | Dec 23 (Dec 4) |
+| ATLAS 25K funded | +$401 MFFU profit, 2 traded days, 48 h done | the first close at >= $1,350 profit with the best day <= 50% (MFFU would pay $250 = $200 to you) | **owner 2026-11-23 (night-payfirst): the FIRST payout at that legal minimum** ($949 more), for what MFFU allows that day; then $1,000 at $2,100 | median $747 (10%: $306; $200 when it lands right at $1,350) | **Dec 17** (Dec 1); was Dec 23 at $800 on the old plan |
 | Zlarior Builder 50K eval | $3,786 to pass | after the pass: 48 h + 2 days, $2,600 profit (min $500) | $2,000 at $4,100 | $1,600 | Feb 16 (Dec 31) |
 | Zlarior Builder 25K #2 eval | $1,476 to pass | after the pass: 48 h + 2 days, $1,350 | $1,000 at $2,100 | $800 | Feb 17 (Dec 28) |
 | Rapid EOD 25K eval | $1,500 to pass, 4 days, best day <= 30% | after the pass: day 2 funded, $1,600 profit ($500) | from $2,100 profit ($500+) | ~$690 avg | Feb 11 (Jan 6) |

@@ -174,7 +174,8 @@ def _funded(t) -> dict | None:
     pt = _i(t.get("paid_to_you"))
     out = {"cp": _i(t.get("cycle_profit")), "bd": _i(t.get("best_day")), "cd": _i(t.get("cycle_days")), "ef": _day(t.get("eligible_from")),
            "pn": _i(t.get("payouts_n")), "mr": _i(t.get("max_request")), "st": st if st and re.fullmatch(r"[a-z_]+", st) else None,
-           "ft": _day(t.get("first_trade")), "pt": pt if pt else None}
+           "ft": _day(t.get("first_trade")), "pt": pt if pt else None,
+           "fm": 1 if t.get("first_at_min") else None}            # night-payfirst: this payout is the small first one (ATLAS)
     return {k: v for k, v in out.items() if v is not None} or None
 
 

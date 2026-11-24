@@ -641,6 +641,9 @@ def digest(paths):
 
 def main():
     quick = "--quick" in sys.argv
+    # night-payfirst 2026-11-23: these parts check ATLAS's funded PLUMBING on the normal plan ($1,000 at $2,100); the owner's
+    # first-payout-at-the-minimum rule (AB.ATLAS_FIRST_AT_MIN) has its own suite, tests/test_payfirst.py
+    AB.ATLAS_FIRST_AT_MIN = False
     real = [os.path.join(ROOT, x) for x in ("second_model.json", "live_model.json", "live_model_lit.json", os.path.join("data", "account_b.json"),
                                              os.path.join("data", "nt_accounts_allow.json"), os.path.join("data", "accounts.json"),
                                              os.path.join("data", "start_bot.json"), os.path.join("data", "live_state_acctb.json"))]

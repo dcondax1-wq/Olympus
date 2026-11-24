@@ -167,6 +167,8 @@ data/ninjatrader_state_acctr.json
 data/ninjatrader_state_rapid.json
 data/live_state_acctc*.json
 data/live_state_acctc*.json.tmp
+data/live_state_acct*x.json
+data/live_state_acct*x.json.tmp
 data/account_c_sim.json
 data/account_c_sim.json.tmp
 # 2026-10-29: new MFFU account Names seen / dismissed, the autopilot tap log, the PC's last good push config
@@ -327,3 +329,6 @@ data/bat_shortcuts.json
 # night-statesafe 2026-11-23: the previous good copy of each bot state file (engine/state_safe.rotate)
 data/live_state*.json.bak
 data/live_state*.json.bak.tmp
+# day-orderflow 2026-11-23: tick recorder output (big, per-PC) and its on/off switch
+data/ticks/
+data/tickrec.json

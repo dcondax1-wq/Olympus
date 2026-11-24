@@ -268,8 +268,12 @@ def extra_flat_reason(bot) -> str | None:
     open NinjaTrader bracket there also keeps an update / restart away (before, only LIT's own position and legs were checked,
     so an hourly update could restart the server under an open ATLAS trade). Never raises; None = flat."""
     try:
-        for nm, lab in (("acct_b", "ATLAS"), ("acct_c", "account C"), ("acct_r", "the Rapid lane"), ("acct_r2", "the 2nd Rapid lane")):
-            a = getattr(bot, nm, None)
+        rows = [(getattr(bot, nm, None), lab) for nm, lab in (("acct_b", "ATLAS"), ("acct_c", "account C"), ("acct_r", "the Rapid lane"),
+                                                              ("acct_r2", "the 2nd Rapid lane"),
+                                                              ("acct_rb", "BLITZ on the Rapid EOD"),
+                                                              ("acct_rb2", "BLITZ on the Rapid EOD #2"))]
+        rows += [(x, getattr(x, "label", "ATLAS's combo lane")) for x in (getattr(bot, "acct_x", None) or {}).values()]  # engine/combo25
+        for a, lab in rows:
             if a is None:
                 continue
             pos = a.position() if callable(getattr(a, "position", None)) else None

@@ -27,7 +27,7 @@ stage: "eval"
 ## Plan
 
 - **bots**: Zlarior + ATLAS on one account (never two trades at once; ATLAS <= $250 a trade)
-- **payout**: funded ~Dec 31, 1st payout ~Feb 10 (~$690 to you; 9 in 10 runs not before Jan 5, and more than 1 in 10 get none by mid-May) - payday plan 2026-11-20, middle case
+- **payout**: funded ~Jan 4, 1st payout ~Feb 11 (~$690 to you; 9 in 10 runs not before Jan 6, and more than 1 in 10 get none by mid-May) - payday plan 2026-11-23, middle case
 - **usd_month**: ~$1,000
 - **cost**: $97.20 (CLUB)
 

@@ -923,7 +923,7 @@ class AccountB:
         now = int(now if now is not None else self.clock())
         today = trading_day(now)
         F = self.spec["funded"]
-        P = FL.plan_of(self.spec["plan"])
+        P = atlas_plan(self.spec["plan"])
         t = FL.track(self.funded_days(today), dict(F.get("payouts") or {}), P, today=today, start=F.get("start"), name=self.label,
                      prior=float(F.get("prior") or 0.0))
         t["buffer_reached"] = bool(t["balance"] >= t["buffer_balance"] - 1e-9)
@@ -1156,6 +1156,11 @@ class AccountB:
                 pv = ar.prov.get(int(ar.open_t)) or {}
                 if int(pv.get("dir") or 0) == -d:
                     return f"ATLAS on the Rapid EOD holds a {side(-d)} position"
+        for ar in (getattr(b, "acct_x", None) or {}).values():   # engine/combo25.py (off = {}): ATLAS on the 25K #2
+            if ar is not None and ar is not self and ar.open_t is not None:
+                pv = ar.prov.get(int(ar.open_t)) or {}
+                if int(pv.get("dir") or 0) == -d:
+                    return f"{ar.label} holds a {side(-d)} position"
         fl = getattr(b, "fleet", None)                 # engine/fleet.py (off = None): a Zlarior follower holds the other side
         if fl is not None:
             try:
@@ -2016,7 +2021,7 @@ TRACKER_KEYS = ("name", "plan", "label", "status", "text", "start", "today", "ba
                 "cycle_days", "cycle_days_need", "best_day", "best_day_on", "best_day_pct", "cons_limit_pct", "cons_ok",
                 "cons_need_profit", "cons_frac", "more_days", "first_trade", "eligible_from", "eligible", "ready", "max_request",
                 "request_min", "request_max", "to_you", "split", "payouts_n", "payouts_max", "paid_gross", "paid_to_you",
-                "graduated", "lost", "why", "payouts", "eval_account", "record_cmd", "ask_amount", "ask_goal", "stop4")
+                "graduated", "lost", "why", "payouts", "eval_account", "record_cmd", "ask_amount", "ask_goal", "stop4", "first_at_min")
 
 
 def _autopilot_on() -> bool:
@@ -2026,6 +2031,17 @@ def _autopilot_on() -> bool:
         return PA.active()
     except Exception:
         return False
+
+
+# night-payfirst 2026-11-23 (owner: "take it sooner, one payout small so we can immediately buy more accounts"): ATLAS's FIRST funded
+# payout is asked on the first day MFFU allows one (engine/funded_life first_at_min), then the normal plan ($1,000 at $2,100).
+ATLAS_FIRST_AT_MIN = True
+
+
+def atlas_plan(plan_key) -> dict:
+    """ATLAS's payout plan: the funded_life plan + the owner's first-payout-at-the-minimum choice."""
+    from . import funded_life as FL
+    return dict(FL.plan_of(plan_key), first_at_min=ATLAS_FIRST_AT_MIN)
 
 
 def compact_tracker(t: dict | None) -> dict | None:
@@ -2260,7 +2276,7 @@ def funded_status(path: str | None = None, state_path: str | None = None, today:
                     days[str(c[0])] = round(days.get(str(c[0]), 0.0) + float(c[2]), 2)
     except Exception:
         pass
-    t = FL.track(days, F["payouts"], FL.plan_of(spec["plan"]), today=today, start=F["start"], name=spec["label"], prior=F["prior"])
+    t = FL.track(days, F["payouts"], atlas_plan(spec["plan"]), today=today, start=F["start"], name=spec["label"], prior=F["prior"])
     t["record_cmd"] = PAYOUT_CMD
     return {"ok": True, "account": spec["account"], "eval_account": F.get("eval_account"), "tracker": compact_tracker(t)}
 

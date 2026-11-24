@@ -94,6 +94,9 @@ AREAS["agency"].append("web_portal")      # day-a11y 2026-11-21: the CALLER PORT
 AREAS["agency"].append("site_quality")    # day-a11y 2026-11-22: the 150 concept sites on the call sheet (names, trade, call link, 44 px, photos), the premium top 20
 AREAS["trading"].append("panelfx")      # day-a11y 2026-11-20: the effects layer on Trading / Business / Planner (trading/panelfx.js)   # day-web-offers 2026-11-20: Agency Offers (agency/offers/): packages, proposal, terms, invoices + retainers, goal
 AREAS["pc"].append("obsidian_brain")    # night-obsidian 2026-11-20: ZEUS Brain, the generated Obsidian vault (tools/obsidian_brain.py, vault/); its own line
+AREAS["pc"].append("tickrec_cs")       # day-ofprogram 2026-11-23: LE_TickRec.cs backfill (mcs + fake history server) + autopilot
+AREAS["pc"].append("tickrec")          # day-orderflow 2026-11-23: read-only tick recorder (engine/tickrec.py, ninjatrader/LE_TickRec.cs, OFF)
+AREAS["pc"].append("tickrec_auto_rt")   # red team 2026-11-23: no autopilot start 01:40-16:05 ET, study stopped before 02:00, an unfinished study never counts
 AREAS["nq"].append("why_page")          # night-anatomy 2026-11-18: why we win / lose (tools/win_loss_anatomy.py, tools/web_public/why/); its own line
 AREAS["nq"].append("learn_night")       # night-learnloop 2026-11-19: ZEUS learned (engine/zeus_learn.py) + tools/learn_night.py + metals feed + speed; its own line
 AREAS["nq"].append("combo_50k")         # night-combolive 2026-11-19: ATLAS + Zlarior on ONE 50K (engine/combo50k.py, OFF) + its LiveBot parity replay
@@ -154,6 +157,8 @@ for _a in ("pc", "nq"):                   # wf-atlas-start 2026-11-20: ATLAS wit
 PARTS = {"olympus_kit": [("a", ["datacity", "mind", "tree"]), ("b", ["oracle", "odeon", "fates"]), ("c", ["hermes", "prometheus", "tyche"]),
                          ("power", ["power", "tiers"]), ("more", ["more"])]}
 PARTS["combo_50k"] = [("sep", ["--seg", "2026-09-02"]), ("oct", ["--seg", "2026-10-02", "--scenario"])]   # night-combolive: one eval segment each
+AREAS["nq"] += ["combo_25k", "combo25_rt"]   # day-combo25 2026-11-23 + red team: ATLAS + Zlarior on the 25K #2 (OFF), parity replay, switch writer, keep-alive lane
+PARTS["combo_25k"] = [("sep", ["--seg", "2026-09-02"]), ("oct", ["--seg", "2026-10-02"])]   # day-combo25: one eval segment each
 AREAS["fleet"].append("rapid_launch")       # day-rapid 2026-11-20: Rapid EOD 25K launch check (tools/money/rapid25_launch.py)
 AREAS["fleet"] += ["rapid_blitz", "rapid_blitz_rt"]     # day-rapidsize 2026-11-23 + red team: BLITZ on the Rapid EOD 25K eval (OFF until --blitz on + phrase)
 for _a in ("fleet", "pc"):                  # fix-trade 2026-11-21: an added Rapid / account armed by Start trading's phrase (engine/go.py)
@@ -342,6 +347,7 @@ AREAS["pc"].append("alert_map")         # night-notify 2026-11-22: every critica
 AREAS["pc"].append("alert_proof")       # night-alertproof 2026-11-23: every critical alert reaches the phone with zero setup, once per channel
 AREAS["pc"].append("alertproof_rt")     # red team 2026-11-23: the readiness 'told' de-dupe never swallows a new clock episode
 AREAS["pc"].append("payout_autopilot")   # night-payout 2026-11-22: payout ready after the close, the Builder #5 guard, the Rapid $10k day, TRADE_HOME P
+AREAS["pc"].append("payfirst")           # night-payfirst 2026-11-23: ATLAS's first payout at MFFU's minimum (owner), then the normal plan
 AREAS["pc"].append("payout_rt")         # red team 2026-11-23: the #5 guard per funded account, the count per account, #4 checks MFFU
 AREAS["pc"].append("rapid50k_onboard")   # night-r50k 2026-11-23: buy the Rapid EOD 50K -> one tap, slot rapid2, keep-alive key rapid2, $165
 AREAS["pc"].append("rules_watch")         # night-rulewatch 2026-11-23: MFFU help pages vs mffu_rules.json, daily, alert on a real change
@@ -365,7 +371,9 @@ AREAS["agency"].append("web_showcase")   # day-web 2026-11-20: the owner's agenc
 AREAS["zenith"].append("zenith_settle")  # day-arenas 2026-11-20: Home start-up without jumps (zenith_settle.js, home.json first, the NQ strip slot)
 AREAS["olympus"].append("dashfx")        # day-arenas 2026-11-20: the dashboard FX layer (olympus/dashfx.js + dashfx.css, dashfx-lab.html); its own line
 AREAS["cities"].append("brain_hub")       # day-brain4 2026-11-22: the giant research brain (cities/brain.html); its own line
+AREAS["cities"].append("mind_brain")      # day-mind 2026-11-23: the 3D Strategy Brain (cities/mind/: a lobe per strategy, step chains, trade timelines)
 AREAS["cities"].append("research_hub2")   # night-hub2 2026-11-22: the Research Hub (cities/hub.html, data tools/build_research_hub.py); its own line
+AREAS["cities"].append("strategy_lab")    # day-mind 2026-11-23: Strategy Lab data (tools/build_strategy_lab.py) + the Research Hub tab
 AREAS["olympus"].append("brain3d")       # day-arenas 2026-11-21: the bot brain in 3D (olympus/brain3d.js + brain3d-scene.js, brain3d-lab.html); its own line
 
 AREAS["agency"].append("site_factory")   # day-cities3 2026-11-21: Website Factory (tools/site_factory.py -> agency/f/<id>/ + agency/factory/)
@@ -474,11 +482,15 @@ AREAS["pc_care"] = ["pc_care", "bat_menu", "fresh_start"]   # night-secps 2026-1
 AREAS["pc"] += ["startmsg"]   # night-startmsg 2026-11-23: START BOT's exit codes + its [FIX] reason in TRADE_HOME 2 / 8 and MONDAY SETUP
 AREAS["nq"] += ["tgweek"]   # night-tgweek 2026-11-23: Thanksgiving week (calendar, update windows, 'half day, closes 13:15' wording)
 AREAS["pc"] += ["k7cloud"]   # night-k7cloud 2026-11-23: the cloud warns 'PC looks off: <account> must trade by <date>' (tools/pc_silent_check.k7_step)
+AREAS["pc"] += ["alert_test"]   # day-notify 2026-11-23: the cloud "Send me a test alert" (tools/alert_test.py) + its read-back receipt; fakes only
 
 AREAS.setdefault("faults", [])
 AREAS["faults"] += [x for x in ("state_safe", "multi_account") if x not in AREAS["faults"]]   # night-statesafe 2026-11-23: a damaged state file never means a clean day
 AREAS["nq"].append("state_safe")
 AREAS["faults"].append("state_safe_rt"); AREAS["nq"].append("state_safe_rt")   # red team: .bak is a copy (no false pause), a real loss lock replaces a damaged-state pause
 
+AREAS["nq"].append("accounts_screen"); AREAS["pc"].append("accounts_screen")   # day-accounts 2026-11-23: nq/accounts.html (one card per account + 7-day clock) + the new Rapid's keep-alive end to end + cloud K7 fixes
+
+AREAS["pc"].append("remote_notice")     # day-notifyfix 2026-11-23: a remote command's phone notice goes through every channel; its receipt rides the feed ("rc")
 if __name__ == "__main__":
     sys.exit(main())

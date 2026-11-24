@@ -592,7 +592,7 @@ def atlas_now(pc: dict, now: int, second: dict | None = None) -> dict:
                                                  "ask_at_balance", "to_ask", "buffer_frac", "cycle_profit", "cycle_days",
                                                  "cycle_days_need", "best_day", "best_day_pct", "cons_limit_pct", "cons_ok",
                                                  "more_days", "eligible_from", "eligible", "ready", "max_request", "to_you",
-                                                 "payouts_n", "payouts_max", "paid_to_you", "lost", "graduated")}
+                                                 "payouts_n", "payouts_max", "paid_to_you", "lost", "graduated", "first_at_min", "ask_goal")}
         out["funded"]["text"] = _clean(fd.get("text"), 240)
         out["funded"]["why"] = [_clean(w, 140) for w in _l(fd.get("why"))][:4]
         out["eval_account"] = ab.get("eval_account")

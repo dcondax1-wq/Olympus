@@ -27,7 +27,7 @@ stage: "eval"
 ## Plan
 
 - **bots**: Zlarior (LIT) at 40% of room
-- **payout**: funded ~Dec 9, 1st payout ~Feb 9 (~$800 to you; 9 in 10 runs not before Dec 22, and more than 1 in 10 get none by mid-May) - payday plan 2026-11-20, middle case
+- **payout**: funded ~Dec 10, 1st payout ~Feb 17 (~$800 to you; 9 in 10 runs not before Dec 28, and more than 1 in 10 get none by mid-May) - payday plan 2026-11-23, middle case
 - **usd_month**: $456
 - **cost**: paid
 

@@ -116,9 +116,11 @@ def coach(state: dict | None, plan: str = "builder25k", today: str | None = None
     o["need_more"] = r2(max(money_need, o["cons_need"] if (cprof > 0 and not o["cons_ok"]) else 0.0))
     o["eligible"] = not w
     o["request_today"] = r2(min(P["pay_max"], above)) if o["eligible"] else 0
-    o["plan_line"] = r2(P["buffer"] + P["pay_max"])
-    o["plan_ready"] = o["eligible"] and above >= P["pay_max"] - 1e-9
-    o["plan_wait"] = r2(P["pay_max"] - above) if (o["eligible"] and not o["plan_ready"]) else 0
+    o["first_at_min"] = bool(s.get("first_at_min")) and n_pay == 0        # night-payfirst: ATLAS's first payout at the minimum
+    ask_at = P["pay_min"] if o["first_at_min"] else P["pay_max"]
+    o["plan_line"] = r2(P["buffer"] + ask_at)
+    o["plan_ready"] = o["eligible"] and above >= ask_at - 1e-9
+    o["plan_wait"] = r2(ask_at - above) if (o["eligible"] and not o["plan_ready"]) else 0
     o["status"] = ("lost" if o["lost"] else "graduated" if o["graduated"] else "ready" if o["plan_ready"] else
                    "allowed" if o["eligible"] else "not_yet")
     req = o["request_today"]
@@ -168,7 +170,7 @@ def from_tracker(f: dict | None, last_trade: str | None = None, start: float | N
     return {"balance": bal, "cycle_start_balance": r2(bal - cp) if bal is not None and cp is not None else None,
             "best_day": _num(f.get("best_day")), "cycle_days": _num(f.get("cycle_days")), "first_trade": f.get("first_trade"),
             "last_trade": f.get("last_trade") or last_trade, "payouts_n": _num(f.get("payouts_n")), "room": 0.0 if f.get("lost") else _num(f.get("room")),
-            "eligible_from": f.get("eligible_from")}
+            "eligible_from": f.get("eligible_from"), "first_at_min": bool(f.get("first_at_min"))}
 
 
 def lines(c: dict) -> list:

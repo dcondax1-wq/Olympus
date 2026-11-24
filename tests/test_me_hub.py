@@ -163,7 +163,7 @@ def test_static():
           and all(sel.strip().startswith(("@", "html", ".me-", "}")) or not sel.strip() for sel in re.findall(r"(?m)^([^{}\n]+)\{", re.sub(r"/\*.*?\*/", "", css, flags=re.S))))
     check("a. the hub page loads me.css after hub.css and me.js (deferred) before hub.js; a Me chip in the plain hub list",
           hub_html.index('href="hub.css?v=h6"') < hub_html.index('href="me.css?v=m2"') < hub_html.index("</head>")
-          and hub_html.index('<script src="me.js?v=m2" defer></script>') < hub_html.index('<script src="hub.js?v=h5" defer></script>') and 'data-hub="me" href="index.html?h=me"' in hub_html)
+          and hub_html.index('<script src="me.js?v=m3" defer></script>') < hub_html.index('<script src="hub.js?v=h5" defer></script>') and 'data-hub="me" href="index.html?h=me"' in hub_html)
     check("a. hub.js hands a PAGE hub (page: 'me') to OLYMPUS_ME_PAGE.mount (no tabs), with the Me icon",
           "if (H.page)" in hub_js and "MP.mount(panel, { base: base, now: nowS, hub: H, done:" in hub_js and "me: ['M20 6.5" in hub_js)
     check("a. the catalog: the hub 'me' (Me, its question, page 'me', 8 areas, no apps, legacy life for old themes), findHubs; the hub-status line meOf",

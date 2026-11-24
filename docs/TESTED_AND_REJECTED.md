@@ -54,6 +54,12 @@
   -$580 / -$226 a month, funded 25K first payout Jan 4 -> Jan 13) and Zlarior stands down after a closed ATLAS loss
   (-$1,733 / -$297 / -$212 a month): both rejected. Anatomy: no bucket loses in both 2026 halves except ATLAS VIX < 15
   (already rejected 2026-11-18).
+- **Popular classic strategies (2026-11-23, `popular-classic-2026-11-23.md`, `tools/popular_classic.py`, `research/lab/popular_classic.json`):**
+  16 textbook versions fixed before the run (ORB 30, VWAP 2SD reversion, VWAP trend pullback, Connors RSI(2) 5m / 15m, Donchian 20/10,
+  NR7-ID, Bollinger squeeze, gap fill, IB breakout, IB fade, 9/21 EMA pullback, Keltner breakout, Crabel stretch, last-30-min momentum,
+  Turnaround Tuesday), NQ 5m RTH, $400 a trade MNQ, costs + slippage. 0 pass (Holm over 16 on 2021-25: best Crabel 0.95). Only Crabel
+  is positive in H1 / H2 / 2021-25 ($603 / $147 / $406 a month, H2 PF 1.07, ES H2 loses); Keltner / IB break / ORB win H1, lose H2; IB fade
+  wins 2026, loses 2021-25 (DD -$41.8k). Corr LIT / ATLAS within +/-0.3. As Rapid EOD add-ons all lower 2026 pass-in-40. Nothing adopted.
 - **Zlarior more money, 2 pre-registered batches (2026-11-19, `lit-more-money-2026-11-19.md`, `tools/lit_more_money.py`,
   `research/lit/more_money.json`, designs `research/lit/more_money_design_batch1/2.md`, Lab rows `research/lab/lit_more_money.json`):**
   9 single versions, LIT $/month H1 / H2 / 2021-25 vs today $5,562 / $2,670 / $25: ES (MES) LIT filler on days NQ has not
@@ -137,6 +143,16 @@
   (eval +$66 / +$149); London build-up sweeps x1.25 +$295 / +$14 but eval H1 -$4, 2-week pass 44.5 -> 41.2, flip p 0.15 /
   0.51 (nearest miss, re-tested nightly); 18:00 gap against x0.75 -$408 / -$188. 0 pass. Clock exits all lose (targets need
   hours); NY-open / news rules touch 0-7 trades in 2026.
+- **Order-flow round 2, LVN family + volume at price (2026-11-23, `orderflow-program-2026-11-23.md` round 2, `research/orderflow/of_lvn.py`):**
+  35 pre-registered stand-alones, Holm over all (5,000-draw placebo): LVN rejection on NQ / ES x London / AM / PM x prior day /
+  week / 20-day x 5m / 1m profiles (27) + all-window union lane, dPOC migration, single prints, poor-high/low magnet (1m + 5m).
+  0 pass (best NQ 5m D1 AM +$10.4k / -$1.4k / +$2.0k, 0.5/wk, Holm 0.04; union lane 1.3-1.7/wk loses 2021-25 -$17.6k).
+  LIT sweep into an HVN: -0.37R 2021-25 but +0.75R 2026 H1, so skip / x0.5 / LVN x1.25 all rejected. Only real ticks left (OF1-OF3).
+- **Order-flow program on bars (2026-11-23, `orderflow-program-2026-11-23.md`, `research/orderflow/of_program.py`, pre-registered):**
+  6 tests, $500 / costs in: LVN rejection (stand-alone, PF 1.26 / 1.10 / 4.56, placebo p 0.004, 0.5-0.7/wk: H1 PF and count
+  fail; moved to ticks as OF3), IB failed extension -> IB mid (-$36k 2021-25, + only in 2026), LIT skip on poor prior-day
+  highs/lows (4 trades), BVC delta divergence / confirmation on 5m and 1m (cost LIT -$15k to -$31k in 2026 H1: "refuted"
+  trades are LIT's best), skip thin sweeps, 1m absorption print. 0 pass. Real-tick versions pre-registered (PREREG_ticks.md).
 - **ATLAS new members (2026-11-18, `atlas-members-2026-11-18.md`, `tools/atlas_plus.py`, `research/second/atlas_plus.json`):** 29
   pre-declared versions, 5m NQ RTH, stop 1 tick beyond structure, 2R or VIX-band target, $250 a trade, costs in: VWAP pullback
   with trend (8; all lose Jul-Oct), opening-drive continuation on a 1m trigger (8; 2021-25 = 5m proxy), prior-day value-area
@@ -400,3 +416,9 @@
   (open card plan-rapid50k-max2-rebuys). Paper lead: Builder 50K with ATLAS NY members only beats today's 2 accounts in all 3 periods (post-hoc, 2022 -$286).
 
 - **2026-11-22 Lucid accounts on a $300 a month fleet (fleet v2, research/writeups/fleet-v2-2026-11-22.md).** REJECTED as a way to speed up at $300: adding 1/2/3/5 LucidPro 50K (LIT only, assumed $126) to the Rapid EOD 50K + FundedNext 50K plan out of the SAME $300 budget leaves Jan-Jun-like unchanged (+$264 +- $324 with 2, -$53 +- $370 with 3) and only helps Jul-Oct-like (+$4.7k to +$5.6k over 6 months); buying Lucid FIRST (5 accounts) loses $16.3k Jan-Jun-like and halves the worst 10% ($27.2k -> $16.3k), because the Lucid copies displace the bigger accounts. It works only with a larger budget ($500: 3 Lucid = Decide card lucid-3-at-500-budget). 75 fleets tried.
+- **Popular ICT/SMC strategies as taught (2026-11-23, `popular-ict-2026-11-23.md`, `tools/popular_ict.py`,
+  `research/lab/popular_ict.json`, rules pre-registered in `research/writeups/specs/popular-ict-2026-11-23.md`):** Silver Bullet,
+  Judas Swing, Asia sweep, London breakout, PDH/PDL sweep, NY open FVG, PO3/AMD, ICT 2022, Turtle Soup, Unicorn; 5m, stop 1 tick
+  beyond the swing, 2R, LIT sizing, costs in. 0 of 10 pass (PF > 1 in all three spans and Holm p < 0.05; best raw p 0.17, all
+  Holm 1.0); 9 of 10 lose 2026 H1. Only ICT 2022 adds $ to LIT in both 2026 halves (+$369 / +$681 a month on a Rapid 50K, ~5
+  trades/wk) but DD $2.2k -> $4.8k, H1 eval fails 1.6% -> 34%, loses 2021-25. Corr LIT -0.06..+0.38. Nothing adopted.

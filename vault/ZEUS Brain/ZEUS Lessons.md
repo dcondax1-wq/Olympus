@@ -71,7 +71,7 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-61 entries from docs/TESTED_AND_REJECTED.md, newest first.
+65 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
 - **Edge hunt lane B, cross-asset triggers** · [[edge-b-cross-2026-11-22|Edge hunt lane B]]
 - **Edge hunt lane D: small meta-labeled SIZE + re-entry on LIT** · [[Zlarior (LIT)]] · [[edge-d-meta-2026-11-22|Edge hunt lane D]], [[meta-labeling|Meta-labeling]]
@@ -82,6 +82,7 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 - **ATLAS edge at real fills** · [[ATLAS]] · [[atlas-edge-2026-11-20|ATLAS edge at real fills]]
 - **ATLAS real-fill fixes** · [[ATLAS]] · [[atlas-fills-2026-11-20|ATLAS real fills]]
 - **Payday levers + cross-bot loss cuts** · [[ATLAS]] · [[payday-plan-2026-11-20|Payday plan]]
+- **Popular classic strategies** · [[popular-classic-2026-11-23|Popular classic NQ / ES strategies, as the textbook states them]]
 - **Zlarior more money, 2 pre-registered batches** · [[Zlarior (LIT)]] · [[lit-more-money-2026-11-19|Zlarior]]
 - **ATLAS more money** · [[ATLAS]] · [[atlas-more-money-2026-11-19|ATLAS more money]]
 - **BLITZ review** · [[BLITZ (paper)]] · [[blitz-review-2026-11-18|BLITZ review]]
@@ -91,6 +92,8 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 - **Zlarior's two live evals together** · [[Zlarior (LIT)]], [[ATLAS]] · [[lit-ideas-2026-11-18b|Zlarior ideas night 2]]
 - **ATLAS funded 25K protective rules** · [[ATLAS]] · [[atlas-health-2026-11-18|ATLAS health]]
 - **ZEUS Lab LIT ideas** · [[Zlarior (LIT)]] · [[zeus-lab-lit-ideas-2026-11-18|ZEUS Lab]]
+- **Order-flow round 2, LVN family + volume at price** · [[orderflow-program-2026-11-23|Order-flow program]]
+- **Order-flow program on bars** · [[Zlarior (LIT)]] · [[orderflow-program-2026-11-23|Order-flow program]]
 - **ATLAS new members** · [[ATLAS]] · [[atlas-members-2026-11-18|ATLAS new members]]
 - **New-strategy hunt** · [[new-strategy-hunt-2026-11-17|New-strategy hunt]]
 - **Market-regime warning features** · [[Zlarior (LIT)]] · [[edge-health-2026-11-17|Edge health, 2026-11-17]]
@@ -134,9 +137,13 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 - **Rapid 25K slot** · [[Zlarior (LIT)]], [[ATLAS]], [[Rapid lanes]] · [[rapid25-slot-2026-11-22|Rapid 25K slot]]
 - **One-account combined book** · [[Zlarior (LIT)]], [[ATLAS]], [[BLITZ (paper)]] · [[one-account-book-2026-11-22|One account, combined book]]
 - **2026-11-22 Lucid accounts on a $300 a month fleet** · [[Zlarior (LIT)]], [[Rapid lanes]] · [[fleet-v2-2026-11-22|Fleet v2]]
+- **Popular ICT/SMC strategies as taught** · [[Zlarior (LIT)]] · [[popular-ict-2026-11-23|Popular ICT / SMC strategies on CME NQ, run exactly as taught]]
 
 ## Rejected in the write-ups
 
+- 2026-11-23 [[popular-ict-2026-11-23|Popular ICT / SMC strategies on CME NQ, run exactly as taught]] ([[Family other|other]])
+- 2026-11-23 [[orderflow-program-2026-11-23|Order-flow program]] ([[Family research|research]])
+- 2026-11-23 [[orderflow-2026-11-23|Order flow]] ([[Family research|research]])
 - 2026-11-22 [[regime-guard-2026-11-22|Regime guard round 3]] ([[Family risk|risk]])
 - 2026-11-22 [[rapid25-slot-2026-11-22|Rapid 25K slot]] ([[Family money|money]])
 - 2026-11-22 [[fleet-v2-2026-11-22|Fleet v2]] ([[Family money|money]])

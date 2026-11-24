@@ -55,6 +55,12 @@ type: "decisions"
 > Added 2026-11-19 · id `drop-lucid-account4`
 > Card: [[Decide drop-lucid-account4|open the card note]]
 
+> [!success]- Zlarior's Builder 50K: ATLAS trades it too (one position at a time, first bot in keeps it; ATLAS at half its size until the eval passes, full size once funded)?
+> **Why:** Best of 12 rule sets fixed before testing: it keeps most of the extra money and halves the evals that die in 2 weeks (9% -> 4% Jul-Oct); it beat Zlarior alone in Jan-Jun, Jul-Oct and 2021-25, with MFFU's move to live after payout 5 counted.
+> **Impact:** +$696 a month in a Jul-Oct-like market (+$392 if the live account after payout 5 is worth nothing), +$1,649 Jan-Jun-like (+$466), +$26 2021-25-like; 2022-like -$141; after the extra eval fees.
+> Added 2026-11-19 · write-up [[one-account-combo-final-2026-11-19|One account, Zlarior + ATLAS on the Builder 50K]] · id `zlarior-atlas-50k`
+> Card: [[Decide zlarior-atlas-50k|open the card note]]
+
 > [!success]- ATLAS's funded 25K: keep trading 1 micro when the room drops under $100, instead of stopping for good?
 > **Why:** Today the bot gives the funded account up at $100 of room. Small 1-micro trades that still fit can climb back: about 1 in 5 such accounts recover in a 2026-like market.
 > **Impact:** +$3 a month in a Jul-Oct-like market (+$10 Jan-Jun-like, +$4 2021-25-like); chance of losing the account in 6 months 10.5% -> 9.5% (9.8% -> 7.7% Jan-Jun-like); first payout unchanged. At real fills (10 ticks a side): +$6 a month Jul-Oct-like (+$14 Jan-Jun-like, +$1 2021-25-like); chance of losing the account 23.5% -> 21.7% (20.3% -> 17.6% Jan-Jun-like); first payout unchanged.
@@ -88,12 +94,6 @@ type: "decisions"
 > Card: [[Decide zlarior-funded25|open the card note]]
 
 ## Later
-
-> [!note]- Zlarior's Builder 50K: ATLAS trades it too (one position at a time, first bot in keeps it; ATLAS at half its size until the eval passes, full size once funded)?
-> **Why:** Best of 12 rule sets fixed before testing: it keeps most of the extra money and halves the evals that die in 2 weeks (9% -> 4% Jul-Oct); it beat Zlarior alone in Jan-Jun, Jul-Oct and 2021-25, with MFFU's move to live after payout 5 counted.
-> **Impact:** +$696 a month in a Jul-Oct-like market (+$392 if the live account after payout 5 is worth nothing), +$1,649 Jan-Jun-like (+$466), +$26 2021-25-like; 2022-like -$141; after the extra eval fees.
-> Added 2026-11-19 · write-up [[one-account-combo-final-2026-11-19|One account, Zlarior + ATLAS on the Builder 50K]] · id `zlarior-atlas-50k`
-> Card: [[Decide zlarior-atlas-50k|open the card note]]
 
 > [!note]- Big idea: run a free 30-day test of a 'Prop Slot Planner' page for other prop traders (faceless brand, no name), plus 1 short video a day?
 > **Why:** Bot income depends on the market (about $0 in a 2021-25-like market). The one thing no prop tool sells yet is our planner: which account to buy next, when, and what you keep after tax.

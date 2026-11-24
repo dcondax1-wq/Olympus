@@ -55,8 +55,11 @@
       var f = cards.filter(function (c) { return c.kind === 'funded'; })[0];
       if (f) {
         var ask = num(f.toAsk);
-        out.money = ask != null ? { text: ask <= 0 ? 'Payout ready: ask MFFU' : 'Payout: ' + money(Math.max(0, PAYOUT_GOAL - ask)) + ' of ' + money(PAYOUT_GOAL), cls: ask <= 0 ? 'up' : '' }
-          : { text: 'Payout goal ' + money(PAYOUT_GOAL) };
+        // night-payfirst 2026-11-23: progress to the PLAN's line (f.goal / f.toGoal from gate.js: ATLAS's first payout at MFFU's minimum,
+        // $1,350; later $2,100); without it the old $2,100 line
+        var G = num(f.goal) != null ? num(f.goal) : PAYOUT_GOAL, left = num(f.toGoal) != null ? num(f.toGoal) : ask;
+        out.money = ask != null ? { text: ask <= 0 ? 'Payout ready: ask MFFU' : 'Payout: ' + money(Math.max(0, G - left)) + ' of ' + money(G), cls: ask <= 0 ? 'up' : '' }
+          : { text: 'Payout goal ' + money(G) };
         var when = nextPay(payday);
         if (when && out.money.cls !== 'up') out.money.text += ' · ~' + when;
       }

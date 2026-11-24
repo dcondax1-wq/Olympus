@@ -1013,6 +1013,869 @@
     }
    ]
   },
+  "copy_profiles": {
+   "v": 1,
+   "title": "One signal, many accounts: firm account limits, the owner's own per-account limits, and placeholder firms (engine/copy_accounts.py); firms filled 2026-11-14 (team A4)",
+   "built": "2026-11-14",
+   "how_to_read": "Same value format as research/props/firm_rules.json: {\"v\": value, \"verified\": bool, \"src\": [...], \"date\": \"yyyy-mm-dd\", \"n\": note}. v null = unknown (never guessed); v \"none\" = the rule does not exist. The plan rules of the firms the bot can trade (MFFU Builder 25K / 50K and the rest) stay in firm_rules.json (built by tools/build_firm_rules.py); this file adds (1) how many accounts a person may hold at each firm, (2) PLACEHOLDER firms and plans whose values are still to be filled from the firm research (research/writeups/millionaire-plan-2026-11-13.md, team M1), and (3) the documentation of every field. A placeholder plan with dd_amount null NEVER trades: the rule engine assumes no room until the max loss is known.",
+   "fields": {
+    "plan (eval / funded block)": {
+     "start": "$ start balance of the account",
+     "target": "$ profit target of the eval (passed when reached and the min days / best-day rule are met)",
+     "dd_type": "max-loss floor type: eod (follows the best CLOSING balance), intraday (follows the best balance incl. open profit; strictest), static (never moves)",
+     "dd_amount": "$ max loss (distance from the high-water mark to the floor); null = the account never trades",
+     "lock": "$ above start where the trailing floor stops moving (e.g. 100 = the floor locks at start + $100); null = never locks (strictest reading)",
+     "dll": "$ daily loss limit; \"none\" = no daily limit",
+     "dll_type": "soft (trading pauses for the rest of the day) | hard (the account fails)",
+     "max_micros": "most micros (MNQ) open at once; minis count 10 micros",
+     "max_minis": "most minis open at once (used when max_micros is unknown)",
+     "consistency": "eval best-day rule as a share of the target (0.4 = no day above 40% of the target); \"none\" = no rule",
+     "min_days": "trading days needed to pass",
+     "news": "{\"flat_min_before\": n, \"flat_min_after\": n} around Tier-1 releases, or \"none\"",
+     "max_active": "funded block only: how many funded accounts of THIS plan one person may hold (enforced by the fleet)",
+     "max_micros_by_profit": "[[profit_from, micros], ...]: the firm's contract scaling (LucidFlex funded, Bulenox Option 2): the most micros at the account's profit at the last close (balance - start); absent = the flat max_micros (engine/firms.max_micros_at)"
+    },
+    "plan (payout block)": {
+     "buffer": "$ profit above start before any payout",
+     "min": "$ smallest payout",
+     "max": "$ biggest payout",
+     "split": "share the trader keeps (0.8 = 80%)",
+     "consistency": "funded best day as a share of the payout cycle's profit (not a breach: trade more days)",
+     "min_days": "traded days a payout cycle",
+     "max_payouts": "payouts before the account moves on (live / closed)",
+     "max_after_first": "$ biggest payout from the second payout on (LucidPro 50K $2,500); absent = max for every payout",
+     "cycle_min": "$ profit the payout cycle must make before a request (LucidPro / FundedNext $500); absent = not checked",
+     "share": "a request <= this share of the cycle's profit (LucidFlex 0.5); \"none\" = no share cap",
+     "win_days": "profitable days a payout cycle needs (LucidFlex 5); \"none\" = no count",
+     "win_day_min": "$ a day must make to count as profitable for win_days (LucidFlex 50K $150)"
+    },
+    "firm": {
+     "bots": "allowed | own | semi_only | prohibited | api_only (a fully automated bot on NinjaTrader needs allowed / own)",
+     "copy_trading": "allowed | own_accounts | prohibited (copying between your OWN accounts at this firm)",
+     "hedging": "banned_all_accounts = never long and short on one underlying across your accounts (the bot's rule for every firm)",
+     "flat_by": "HH:MM ET the firm flattens (no new entry 5 minutes before)",
+     "ninjatrader": "true = the firm offers NinjaTrader for this bot",
+     "accounts.max_funded_total": "funded accounts one person may hold at this firm across all its plans (enforced when known; the smaller reading when sources conflict)",
+     "accounts.max_eval_active": "evals one person may run at once (information only today)",
+     "inactivity_days": "calendar days without a trade after which the firm deletes / breaches the account (Lucid, FundedNext 30): the account's status warns 7 days before",
+     "hold": "a reason string = the bot takes NO new entry at this firm (engine/firms.check blocks) until the owner clears it per account with rules {\"hold\": \"none\"} (where the firm's own text needs a written yes first: FundedNext, Bulenox)",
+     "payout_guard": "OFF by default. true (per account: rules {\"payout_guard\": true}) = a funded copy's winner is capped so the day stays inside the payout best-day rule (Lucid 40% of the cycle): the day may pay at most max(share x the cycle's goal, share/(1-share) x the cycle's earlier profit); soft, never below 1 micro (a big day only delays a payout)"
+    },
+    "own (per account in data/fleet.json, the owner's own limits; they only ever TIGHTEN the firm's)": {
+     "day_stop_usd": "own stop for the day: no new copy on this account once today's loss (closed + open) reaches it; the size also fits it",
+     "week_stop_usd": "own stop for the week (Monday to Friday)",
+     "max_micros": "own contract cap (never above the firm's)",
+     "max_risk_usd": "own most $ at risk a trade (a full stop-out incl. 2 ticks of slippage and costs)"
+    },
+    "per account switches (data/fleet.json)": {
+     "killed": "this account's kill switch: flattened at the next poll, no new entry (--kill <id>, --unkill <id>)",
+     "stop_day": "yyyy-mm-dd: no new entry on this account that session (--stop-today <id>); it resumes by itself the next session",
+     "armed / armed_for": "a real (non-Sim) account trades only when the owner typed I ACCEPT LIVE RISK for THAT account Name (--arm <id>), the phrase was typed at the bot's start and NINJATRADER_LIVE=1",
+     "held_funded (top level)": "{plan id: n} funded accounts of a plan the owner already holds OUTSIDE the fleet (the leads' own accounts), counted against the firm's limit"
+    }
+   },
+   "accounts": {
+    "mffu": {
+     "max_funded_total": {
+      "v": 5,
+      "verified": true,
+      "date": "2026-11-16",
+      "src": [
+       "https://help.myfundedfutures.com/en/articles/11802636-traders-evaluation-simplified"
+      ],
+      "n": "up to 5 active sim-funded accounts at once while you hold only 25K / 50K sizes (any mix); 3 in all once any 100K / 150K is held. Per plan on top: 1 funded Builder 50K, 2 funded Builder 25K (max_active)"
+     },
+     "max_eval_active": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-16",
+      "n": "third-party pages say 10 open evaluations; not found on MFFU's own pages"
+     }
+    },
+    "lucid": {
+     "max_funded_total": {
+      "v": 5,
+      "verified": true,
+      "date": "2026-11-14",
+      "src": [
+       "https://support.lucidtrading.com/en/articles/11404617-maximum-number-of-accounts"
+      ],
+      "n": "up to 5 active funded accounts per household across every Lucid product (3 LucidDirect = 2 LucidPro), up to 10 active evals, at most 10 eval + funded together"
+     },
+     "max_eval_active": {
+      "v": 10,
+      "verified": true,
+      "date": "2026-11-14",
+      "src": [
+       "https://support.lucidtrading.com/en/articles/11404617-maximum-number-of-accounts"
+      ],
+      "n": "10 active evals per household (information only); eval + funded together at most 10"
+     }
+    },
+    "fundednext": {
+     "max_funded_total": {
+      "v": 5,
+      "verified": true,
+      "date": "2026-11-14",
+      "src": [
+       "https://helpfutures.fundednext.com/en/articles/17225812-how-many-accounts-can-i-hold-with-fundednext-futures-and-what-is-the-maximum-allocation-available"
+      ],
+      "n": "5 active FundedNext accounts per user / household (same address or IP), at most 10 issued a calendar month"
+     },
+     "max_eval_active": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-14",
+      "src": [
+       "https://helpfutures.fundednext.com/en/articles/17225812-how-many-accounts-can-i-hold-with-fundednext-futures-and-what-is-the-maximum-allocation-available"
+      ],
+      "n": "challenges: a combined allocation of up to $750,000 at a time (no count)"
+     }
+    },
+    "topstep": {
+     "max_funded_total": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-13",
+      "n": "not researched (no NinjaTrader for new sign-ups)"
+     },
+     "max_eval_active": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-13"
+     }
+    },
+    "apex": {
+     "max_funded_total": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-13",
+      "n": "not researched (bans automated trading)"
+     },
+     "max_eval_active": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-13"
+     }
+    },
+    "tpt": {
+     "max_funded_total": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-13",
+      "n": "not researched"
+     },
+     "max_eval_active": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-13"
+     }
+    },
+    "alpha": {
+     "max_funded_total": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-13",
+      "n": "not researched (semi-automated only)"
+     },
+     "max_eval_active": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-13"
+     }
+    },
+    "tradeify": {
+     "max_funded_total": {
+      "v": 5,
+      "verified": false,
+      "date": "2026-11-13",
+      "src": [
+       "research/props/firms.json tradeify.account_caps"
+      ],
+      "n": "5 sim-funded (unconfirmed)"
+     },
+     "max_eval_active": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-13"
+     }
+    },
+    "bulenox": {
+     "max_funded_total": {
+      "v": 3,
+      "verified": false,
+      "date": "2026-11-14",
+      "src": [
+       "https://bulenox.com/accounts-pricing",
+       "https://bulenox.com/ru/help/"
+      ],
+      "n": "up to 5 Master-level accounts at once (English pricing page, 2026-11-14); an older Russian help page says 3: the smaller reading is used"
+     },
+     "max_eval_active": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-14",
+      "src": [
+       "https://bulenox.com/faq"
+      ],
+      "n": "Qualification accounts: unlimited (FAQ)"
+     }
+    }
+   },
+   "firms": {
+    "tradeify": {
+     "name": "Tradeify (placeholder; ruled out for this bot: the same bot at another firm is against Tradeify's policy)",
+     "bots": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-13",
+      "src": [
+       "research/props/firms.json tradeify.bots"
+      ],
+      "n": "own bot only with proof; 'using it across multiple firms is against Tradeify's policy' (unconfirmed): ruled out while the bot trades MFFU"
+     },
+     "copy_trading": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-13",
+      "src": [
+       "research/props/firms.json tradeify.copy_trading"
+      ],
+      "n": "the same bot at another firm: not allowed (per research)"
+     },
+     "hedging": {
+      "v": "banned_all_accounts",
+      "verified": false,
+      "date": "2026-11-13",
+      "n": "the bot's own rule for every firm"
+     },
+     "flat_by": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-13"
+     },
+     "ninjatrader": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-13"
+     },
+     "plans": [
+      "tradeify_growth_50k"
+     ]
+    },
+    "bulenox": {
+     "name": "Bulenox",
+     "bots": {
+      "v": "own",
+      "verified": false,
+      "date": "2026-11-14",
+      "src": [
+       "https://bulenox.com/faq",
+       "https://bulenox.com/member/signup"
+      ],
+      "n": "bots / algorithms / copiers allowed only when you built them for your own use; any third-party algorithm or software needs Bulenox management's approval first; a third-party API / composite-software connection costs $100 a month"
+     },
+     "copy_trading": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-14",
+      "src": [
+       "https://bulenox.com/faq"
+      ],
+      "n": "conflict: the FAQ allows your own copier for personal use, the 2026-10 research read 'copying across your own accounts prohibited': ask Bulenox in writing"
+     },
+     "hedging": {
+      "v": "banned_all_accounts",
+      "verified": false,
+      "date": "2026-11-14",
+      "n": "the bot's own rule for every firm"
+     },
+     "flat_by": {
+      "v": "16:59",
+      "verified": false,
+      "date": "2026-11-14",
+      "src": [
+       "https://bulenox.com/help-center/fast-track"
+      ],
+      "n": "close before the session end, 15:59 CT (Fast Track page; the bot is flat by 15:55 ET anyway)"
+     },
+     "ninjatrader": {
+      "v": true,
+      "verified": false,
+      "date": "2026-11-14",
+      "src": [
+       "https://bulenox.com/faq"
+      ],
+      "n": "Rithmic only (every account under one Rithmic user ID); NinjaTrader connects to Rithmic, one Rithmic connection at a time (vendor guides)"
+     },
+     "hold": {
+      "v": "Bulenox needs its approval for third-party algorithms and its copy rule is unclear: copy the LIT signal there only after Bulenox says yes in writing, then clear this hold",
+      "verified": false,
+      "date": "2026-11-14",
+      "src": [
+       "https://bulenox.com/faq",
+       "https://bulenox.com/member/signup"
+      ],
+      "n": "the owner's hold (engine/firms.check blocks new entries while it is set): clear it per account with rules {\"hold\": \"none\"}"
+     },
+     "plans": [
+      "bulenox_eod_50k"
+     ]
+    },
+    "new_firm": {
+     "name": "New firm (template: copy this block, rename the key, fill every value from the firm's own pages)",
+     "bots": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-13"
+     },
+     "copy_trading": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-13"
+     },
+     "hedging": {
+      "v": "banned_all_accounts",
+      "verified": false,
+      "date": "2026-11-13",
+      "n": "the bot's own rule for every firm"
+     },
+     "flat_by": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-13"
+     },
+     "ninjatrader": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-13"
+     },
+     "plans": [
+      "new_firm_50k"
+     ]
+    }
+   },
+   "plans": {
+    "tradeify_growth_50k": {
+     "firm": "tradeify",
+     "name": "Growth 50K (placeholder)",
+     "size": 50000,
+     "placeholder": true,
+     "price": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-13",
+      "n": "check the current discount code before buying"
+     },
+     "sizing_preset": "mffu_builder_50k",
+     "eval": {
+      "start": {
+       "v": 50000.0,
+       "verified": false,
+       "date": "2026-11-13",
+       "n": "the plan's size"
+      },
+      "target": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "dd_type": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "dd_amount": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "lock": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "dll": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "dll_type": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "max_micros": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "consistency": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "min_days": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "news": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      }
+     },
+     "funded": {
+      "max_active": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      }
+     },
+     "payout": {
+      "buffer": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "min": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "max": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "split": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "consistency": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      }
+     }
+    },
+    "bulenox_eod_50k": {
+     "firm": "bulenox",
+     "name": "Qualification Option 2 (EOD) 50K",
+     "size": 50000,
+     "placeholder": false,
+     "price": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-14",
+      "src": [
+       "https://funded.now/propfirm/bulenox/eod-50000",
+       "https://www.eltraderfinanciado.com/en/review/bulenox",
+       "https://affordableindicators.com/prop-firm-discounts/bulenox-discount-codes/"
+      ],
+      "n": "list $175 one-time (2026; older pages: $125 a month) + $148 activation; codes claim 75-89% off (BULENOX always-on, PROPSCOPE 89%: affiliate claims). Confirm at checkout"
+     },
+     "sizing_preset": "mffu_builder_50k",
+     "eval": {
+      "start": {
+       "v": 50000.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "n": "the plan's size"
+      },
+      "target": {
+       "v": 3000.0,
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "https://funded.now/propfirm/bulenox/eod-50000",
+        "https://fundingcodes.com/blog/bulenox-review/",
+        "https://crosstrade.io/prop-firms/bulenox"
+       ]
+      },
+      "dd_type": {
+       "v": "eod",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "https://bulenox.com/help-center/fast-track"
+       ],
+       "n": "Option 2: the drawdown updates once a day at the close on realised profit (chosen at purchase, for life)"
+      },
+      "dd_amount": {
+       "v": 2000.0,
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "https://funded.now/propfirm/bulenox/eod-50000",
+        "https://fundingcodes.com/blog/bulenox-review/",
+        "https://tradeharbor.co/prop-firm-rules/bulenox"
+       ],
+       "n": "most sources $2,500, one $2,000: the smaller is kept until the checkout page shows it"
+      },
+      "lock": {
+       "v": 100.0,
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "https://bulenox.com/help-center/fast-track"
+       ],
+       "n": "the drawdown stops for good at the start + $100 (Fast Track page, both options)"
+      },
+      "dll": {
+       "v": 1100.0,
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "https://fundingcodes.com/blog/bulenox-review/",
+        "https://crosstrade.io/prop-firms/bulenox"
+       ],
+       "n": "Option 2 at 50K: $1,100 (pauses the day, never fails)"
+      },
+      "dll_type": {
+       "v": "soft",
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "https://bulenox.com/help-center/fast-track",
+        "https://fundingcodes.com/blog/bulenox-review/"
+       ]
+      },
+      "max_micros": {
+       "v": 70,
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "https://crosstrade.io/prop-firms/bulenox",
+        "https://fundingcodes.com/blog/bulenox-review/"
+       ],
+       "n": "7 minis at the top of the scaling"
+      },
+      "max_micros_by_profit": {
+       "v": [
+        [
+         0,
+         20
+        ],
+        [
+         1500,
+         40
+        ],
+        [
+         4000,
+         70
+        ]
+       ],
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "https://crosstrade.io/prop-firms/bulenox",
+        "https://fundingcodes.com/blog/bulenox-review/"
+       ],
+       "n": "Option 2 scales with the cash on hand: 2 minis until +$1,500, 4 until +$4,000, 7 after (third-party summary)"
+      },
+      "consistency": {
+       "v": "none",
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "https://tradeharbor.co/prop-firm-rules/bulenox",
+        "https://crosstrade.io/prop-firms/bulenox"
+       ],
+       "n": "conflict: one source says no Qualification consistency, others 40% at payout"
+      },
+      "min_days": {
+       "v": 1,
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "https://funded.now/propfirm/bulenox/eod-50000"
+       ],
+       "n": "sources conflict (none / 1)"
+      },
+      "news": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-14",
+       "n": "not found"
+      }
+     },
+     "funded": {
+      "dd_type": {
+       "v": "eod",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "https://bulenox.com/help-center/fast-track"
+       ]
+      },
+      "dd_amount": {
+       "v": 2000.0,
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "https://funded.now/propfirm/bulenox/eod-50000",
+        "https://fundingcodes.com/blog/bulenox-review/"
+       ],
+       "n": "as the eval (the smaller reading)"
+      },
+      "lock": {
+       "v": 100.0,
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "https://bulenox.com/help-center/fast-track"
+       ]
+      },
+      "dll": {
+       "v": 1100.0,
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "https://bulenox.com/help-center/fast-track",
+        "https://fundingcodes.com/blog/bulenox-review/"
+       ],
+       "n": "Option 2 keeps the daily loss for the account's whole life (Fast Track page); the amount is a third-party reading"
+      },
+      "dll_type": {
+       "v": "soft",
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "https://bulenox.com/help-center/fast-track"
+       ]
+      },
+      "max_micros": {
+       "v": 70,
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "https://crosstrade.io/prop-firms/bulenox"
+       ]
+      },
+      "max_micros_by_profit": {
+       "v": [
+        [
+         0,
+         20
+        ],
+        [
+         1500,
+         40
+        ],
+        [
+         4000,
+         70
+        ]
+       ],
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "https://crosstrade.io/prop-firms/bulenox",
+        "https://fundingcodes.com/blog/bulenox-review/"
+       ],
+       "n": "as the eval"
+      },
+      "news": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-14",
+       "n": "not found"
+      },
+      "max_active": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "https://bulenox.com/accounts-pricing"
+       ],
+       "n": "no per-plan cap found: the firm total (accounts.bulenox) applies"
+      }
+     },
+     "payout": {
+      "buffer": {
+       "v": 2600.0,
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "https://www.quantvps.com/blog/bulenox-payout-rules",
+        "https://fundingcodes.com/blog/bulenox-review/"
+       ],
+       "n": "Safety Threshold Reserve $1,600-$4,600 by size (50K value per the 2026-10 study)"
+      },
+      "min": {
+       "v": 1000.0,
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "https://www.quantvps.com/blog/bulenox-payout-rules",
+        "https://fundingcodes.com/blog/bulenox-review/"
+       ]
+      },
+      "max": {
+       "v": 1500.0,
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "https://www.quantvps.com/blog/bulenox-payout-rules",
+        "https://fundingcodes.com/blog/bulenox-review/"
+       ],
+       "n": "the first 3 payouts on a 50K Master: up to $1,500 each; from the 4th, under 50% of the total profit (unconfirmed)"
+      },
+      "split": {
+       "v": 0.9,
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "https://www.quantvps.com/blog/bulenox-payout-rules",
+        "https://fundingcodes.com/blog/bulenox-review/"
+       ],
+       "n": "90% (some pages: 100% of the first $10,000)"
+      },
+      "consistency": {
+       "v": 0.4,
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "https://www.quantvps.com/blog/bulenox-payout-rules",
+        "https://fundingcodes.com/blog/bulenox-review/"
+       ],
+       "n": "best day <= 40% of the profit; missing it delays the payout, no breach"
+      },
+      "min_days": {
+       "v": 10,
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "https://www.quantvps.com/blog/bulenox-payout-rules",
+        "https://fundingcodes.com/blog/bulenox-review/"
+       ],
+       "n": "10 trading days a request; paid weekly on Wednesdays"
+      },
+      "max_payouts": {
+       "v": 3,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "https://bulenox.com/accounts-pricing",
+        "https://bulenox.com/help-center/master"
+       ],
+       "n": "after 3 payouts on Master accounts Bulenox decides the move to a Funded (live) account"
+      }
+     },
+     "notes": [
+      "filled 2026-11-14 (team A4) from bulenox.com pages + third-party summaries; on hold until Bulenox says yes in writing to the bot and copying"
+     ]
+    },
+    "new_firm_50k": {
+     "firm": "new_firm",
+     "name": "50K (template)",
+     "size": 50000,
+     "placeholder": true,
+     "price": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-13",
+      "n": "the owner's real price with the current code, never the list price"
+     },
+     "sizing_preset": "mffu_builder_50k",
+     "eval": {
+      "start": {
+       "v": 50000.0,
+       "verified": false,
+       "date": "2026-11-13",
+       "n": "the plan's size"
+      },
+      "target": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "dd_type": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "dd_amount": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "lock": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "dll": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "dll_type": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "max_micros": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "consistency": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "min_days": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "news": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      }
+     },
+     "funded": {
+      "max_active": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      }
+     },
+     "payout": {
+      "buffer": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "min": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "max": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "split": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      },
+      "consistency": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-13"
+      }
+     }
+    }
+   }
+  },
   "earnings": {
    "title": "NQ mega-cap earnings (maintained)",
    "updated": "2026-10-20",
@@ -1088,37 +1951,1242 @@
     }
    ]
   },
+  "firm_research": {
+   "v": 1,
+   "searched": "2026-11-14; MFFU + re-check 2026-11-16",
+   "by": "team A4 (account #4 ready), research/writeups/account-4-2026-11-14.md; team E 2026-11-16 (scale the prop money): MFFU account limits, copy trading, payout re-check; Lucid / FundedNext re-check",
+   "how_to_read": "The newest firm research, applied LAST by tools/build_firm_rules.py (it replaces the older values of research/lit/prop_firms.json and research/props/firms.json for these plans and firms). Same value format: {\"v\", \"verified\", \"date\", \"src\", \"n\"}. verified true = the firm's OWN help-center / plan page (support.lucidtrading.com, helpfutures.fundednext.com, fundednext.com), read through web search on 2026-11-14: the pages themselves are DNS-blocked from this machine, so every value is the search engine's reading of the firm's page. verified false = a third-party page, a conflict between the firm's own pages, or a rule the firm's page leaves open. Prices stay null in firm_rules.json (only the owner's real MFFU prices are stored as values); the price notes carry the list prices and the codes seen, unconfirmed until checkout. Bulenox (a placeholder firm) is filled in research/props/copy_profiles.json, not here. 2026-11-16 (team E): MFFU's own help center (help.myfundedfutures.com, DNS-blocked here too) read through web search: copy trading between your OWN accounts is allowed (article 10771500), 1 funded Builder 50K and 2 funded Builder 25K per person, at most 5 sim-funded accounts in all while you hold only 25K / 50K sizes (3 once any 100K / 150K is held). Payout, consistency and news values unchanged from 2026-10-18.",
+   "sources": {
+    "luc_pro_eval": "https://support.lucidtrading.com/en/articles/12890029-lucidpro-evaluation-account",
+    "luc_pro_dd": "https://support.lucidtrading.com/en/articles/12890136-lucidpro-drawdown",
+    "luc_pro_dll": "https://support.lucidtrading.com/en/articles/12890122-lucidpro-daily-loss-limit",
+    "luc_pro_custom": "https://support.lucidtrading.com/en/articles/16226068-lucidpro-customization",
+    "luc_pro_funded": "https://support.lucidtrading.com/en/articles/12890069-lucidpro-funded-account",
+    "luc_pro_pay": "https://support.lucidtrading.com/en/articles/12890092-lucidpro-payouts",
+    "luc_pro_cons": "https://support.lucidtrading.com/en/articles/12890109-lucidpro-consistency-percentage",
+    "luc_flex_eval": "https://support.lucidtrading.com/en/articles/12945790-lucidflex-evaluation-account",
+    "luc_flex_dd": "https://support.lucidtrading.com/en/articles/12945815-lucidflex-drawdown",
+    "luc_flex_custom": "https://support.lucidtrading.com/en/articles/16226050-lucidflex-customization",
+    "luc_flex_cons": "https://support.lucidtrading.com/en/articles/12945805-lucidflex-consistency-percentage",
+    "luc_flex_funded": "https://support.lucidtrading.com/en/articles/12945795-lucidflex-funded-account",
+    "luc_flex_scale": "https://support.lucidtrading.com/en/articles/12945808-lucidflex-scaling-plan",
+    "luc_flex_pay": "https://support.lucidtrading.com/en/articles/12945796-lucidflex-payouts",
+    "luc_other": "https://support.lucidtrading.com/en/articles/11404728-other-activities",
+    "luc_hedge": "https://support.lucidtrading.com/en/articles/11404734-prohibited-hedging",
+    "luc_hft": "https://support.lucidtrading.com/en/articles/11404736-prohibited-high-frequency-trading",
+    "luc_micro": "https://support.lucidtrading.com/en/articles/11404742-prohibited-microscalping",
+    "luc_max_acc": "https://support.lucidtrading.com/en/articles/11404617-maximum-number-of-accounts",
+    "luc_inact": "https://support.lucidtrading.com/en/articles/11404632-inactivity-policy",
+    "luc_hours": "https://support.lucidtrading.com/en/articles/11404729-allowed-trading-times",
+    "luc_platforms": "https://support.lucidtrading.com/en/articles/11404614-lucid-trading-supported-platforms",
+    "luc_commissions": "https://support.lucidtrading.com/en/articles/11508978-approved-products-and-commissions",
+    "luc_fees": "https://support.lucidtrading.com/en/articles/11404620-simulated-account-fees",
+    "luc_live": "https://support.lucidtrading.com/en/articles/16558826-new-live-structure",
+    "luc_faq": "https://lucidtrading.com/general-faq/",
+    "luc_product_50k": "https://lucidtrading.com/product/lucidtest-50k/",
+    "luc_tdv_nt": "https://lucidtrading.com/product/lucidreset-50k-nt-tdv/",
+    "luc_direct_agreement": "https://lucidtrading.com/wp-content/uploads/2025/05/LucidDirect-Account-Agreement-5-19.pdf",
+    "luc_code_vault": "https://affordableindicators.com/prop-firm-discounts/lucid-trading-discount-codes/",
+    "luc_code_etf": "https://www.eltraderfinanciado.com/en/discounts/lucid-trading",
+    "luc_code_pft": "https://propfirmtrader.com/offers/lucid-trading",
+    "luc_code_dgt": "https://damnpropfirms.com/account-plans/lucid-trading-pro-50000/",
+    "luc_bf_2026": "https://www.quantvps.com/blog/futures-prop-firm-black-friday-deals",
+    "fn_objectives": "https://fundednext.com/general-rules/futures/trading-objectives",
+    "fn_rd_rules": "https://helpfutures.fundednext.com/en/articles/17229762-fundednext-futures-rapid-daily-challenge-all-rules",
+    "fn_rd_funded": "https://helpfutures.fundednext.com/en/articles/17229779-fundednext-futures-rapid-daily-fundednext-account-all-rules",
+    "fn_rd_elig": "https://helpfutures.fundednext.com/en/articles/15878210-what-are-the-performance-reward-eligibility-criteria-for-fundednext-futures-rapid-daily-fundednext-account",
+    "fn_faq": "https://helpfutures.fundednext.com/en/articles/17225788-fundednext-futures-most-frequently-asked-questions",
+    "fn_copy": "https://helpfutures.fundednext.com/en/articles/17230319-what-is-copy-group-trading-policy-at-fundednext-futures",
+    "fn_accounts": "https://helpfutures.fundednext.com/en/articles/17225812-how-many-accounts-can-i-hold-with-fundednext-futures-and-what-is-the-maximum-allocation-available",
+    "fn_inact": "https://helpfutures.fundednext.com/en/articles/17228935-is-there-any-inactivity-period-in-fundednext-futures",
+    "fn_hours": "https://helpfutures.fundednext.com/en/articles/17225754-what-are-the-trading-hours-in-fundednext-futures",
+    "fn_allowed": "https://fundednext.com/general-rules/futures/what-is-allowed",
+    "fn_terms": "https://fundednext.com/futures-challenge-terms",
+    "fn_bots": "https://helpfutures.fundednext.com/en/articles/14298560-is-the-usage-of-automated-trading-systems-eas-and-bots-allowed-in-fundednext-futures",
+    "fn_platforms": "https://fundednext.com/general-rules/futures/trading-platforms",
+    "fn_promo": "https://helpfutures.fundednext.com/en/articles/16295692-fundednext-futures-rapid-daily-rapid-pro-up-to-50-discount-offer",
+    "fn_price_rapid": "https://propscope.net/en/funded-next/",
+    "mffu_copy": "https://help.myfundedfutures.com/en/articles/10771500-copy-trading-at-myfundedfutures",
+    "mffu_b50": "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+    "mffu_b25": "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
+    "mffu_builder_page": "https://myfundedfutures.com/plans/builder",
+    "mffu_eval_simple": "https://help.myfundedfutures.com/en/articles/11802636-traders-evaluation-simplified",
+    "mffu_fairplay": "https://help.myfundedfutures.com/en/articles/8444599-fair-play-and-prohibited-trading-practices",
+    "mffu_news": "https://help.myfundedfutures.com/en/articles/8230009-news-trading-policy",
+    "mffu_x_copier": "https://x.com/MyFundedFutures/status/1817807673179676787",
+    "fn_promo_2026_11": "https://helpfutures.fundednext.com/en/articles/16295692-fundednext-futures-rapid-daily-rapid-pro-up-discount-offer"
+   },
+   "firms": {
+    "lucid": {
+     "bots": {
+      "v": "allowed",
+      "verified": true,
+      "date": "2026-11-14",
+      "src": [
+       "luc_other",
+       "luc_faq"
+      ],
+      "n": "automated systems and trade copiers are permitted; you carry any software error. HFT and microscalping (over 50% of the profit from trades held 5 s or less) are banned. The older LucidDirect agreement (2025-05, another product) asks prior written approval for automated software: ask support once, in writing"
+     },
+     "copy_trading": {
+      "v": "allowed",
+      "verified": true,
+      "date": "2026-11-14",
+      "src": [
+       "luc_other",
+       "luc_faq"
+      ],
+      "n": "in-platform and third-party copiers permitted (copier set-up errors are yours); copying the same signal at another firm is not addressed directly"
+     },
+     "hedging": {
+      "v": "banned_all_accounts",
+      "verified": true,
+      "date": "2026-11-14",
+      "src": [
+       "luc_hedge"
+      ],
+      "n": "no opposite positions across your own accounts, other users' accounts or other firms' accounts (minis and micros of one contract count together); live accounts: a permanent ban"
+     },
+     "flat_by": {
+      "v": "16:45",
+      "verified": true,
+      "date": "2026-11-14",
+      "src": [
+       "luc_hours"
+      ],
+      "n": "flat by 4:45 PM ET Mon-Fri (open positions are closed, no fail); half days: flat before the early close"
+     },
+     "ninjatrader": {
+      "v": true,
+      "verified": true,
+      "date": "2026-11-14",
+      "src": [
+       "luc_platforms",
+       "luc_tdv_nt"
+      ],
+      "n": "NinjaTrader runs on Lucid's Tradovate (CQG) data: buy the TDV/NT version, not the Rithmic one; sign into Tradovate first"
+     },
+     "inactivity_days": {
+      "v": 30,
+      "verified": true,
+      "date": "2026-11-14",
+      "src": [
+       "luc_inact"
+      ],
+      "n": "an account with no net P/L of at least $1 in 30 calendar days is deleted"
+     }
+    },
+    "fundednext": {
+     "bots": {
+      "v": "allowed",
+      "verified": true,
+      "date": "2026-11-14",
+      "src": [
+       "fn_terms",
+       "fn_bots",
+       "fn_faq"
+      ],
+      "n": "EAs / bots allowed in the Challenge and the FundedNext account; BUT the FAQ adds that each EA or bot must run a distinct strategy, avoiding identical trades across any accounts (conflicts with copying one signal): ask FundedNext in writing"
+     },
+     "copy_trading": {
+      "v": "own_accounts",
+      "verified": false,
+      "date": "2026-11-14",
+      "src": [
+       "fn_copy",
+       "fn_faq"
+      ],
+      "n": "the Futures copy policy allows copying your OWN trades between your FundedNext accounts or between FundedNext and other prop firms (same name, verified accounts); the EA rule 'no identical trades across any accounts' conflicts: a written yes is needed"
+     },
+     "hedging": {
+      "v": "banned_all_accounts",
+      "verified": true,
+      "date": "2026-11-14",
+      "src": [
+       "fn_copy"
+      ],
+      "n": "cross-account hedging within FundedNext or with other firms is not allowed"
+     },
+     "flat_by": {
+      "v": "16:10",
+      "verified": true,
+      "date": "2026-11-14",
+      "src": [
+       "fn_hours"
+      ],
+      "n": "trading 17:00-15:10 CT; open positions closed at 15:10 CT (16:10 ET); half days: flatten yourself before the early close"
+     },
+     "ninjatrader": {
+      "v": true,
+      "verified": true,
+      "date": "2026-11-14",
+      "src": [
+       "fn_platforms"
+      ],
+      "n": "Tradovate, NinjaTrader or TradingView"
+     },
+     "inactivity_days": {
+      "v": 30,
+      "verified": true,
+      "date": "2026-11-14",
+      "src": [
+       "fn_inact"
+      ],
+      "n": "30 calendar days with no trade: the account is breached"
+     },
+     "hold": {
+      "v": "FundedNext's bot rule asks for no identical trades across accounts: copy the LIT signal there only after FundedNext says yes in writing, then clear this hold",
+      "verified": false,
+      "date": "2026-11-14",
+      "src": [
+       "fn_faq",
+       "fn_copy"
+      ],
+      "n": "the owner's hold (engine/firms.check blocks new entries while it is set): clear it per account with rules {\"hold\": \"none\"} once the written yes is in. 2026-11-16 re-check: FundedNext's copy policy article now says copying your OWN trades between your FundedNext accounts and other firms is allowed (same verified owner), but its terms still ban mirroring without written approval and its FAQ still flags identical trades: the hold stays until the written yes. RAPID code (FundedNext's own page, from 2026-11-05): Rapid Daily 50K $149.99 for a new user"
+     }
+    },
+    "mffu": {
+     "copy_trading": {
+      "v": "allowed",
+      "verified": true,
+      "date": "2026-11-16",
+      "src": [
+       "mffu_copy",
+       "mffu_x_copier",
+       "mffu_fairplay"
+      ],
+      "n": "MFFU's help center: copy trading is allowed across all MFFU account types (Tradesyncer is its preferred copier; your own software is fine). Only YOUR OWN accounts: copying another person or a group is banned (fair play). MFFU gives no help, support or reset for a copier mistake. A same-signal copy does not help a consistency rule"
+     },
+     "bots": {
+      "v": "allowed",
+      "verified": true,
+      "date": "2026-11-16",
+      "src": [
+       "mffu_fairplay",
+       "mffu_b50"
+      ],
+      "n": "automation allowed when it runs your own parameters and you oversee it; high-frequency trading and tools that exploit simulated fills are banned. Some third-party pages still say 'semi-automated only' (older text): be at the PC or on the phone while it trades"
+     }
+    }
+   },
+   "plans": {
+    "lucid_pro_50k": {
+     "price": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-14",
+      "src": [
+       "luc_code_vault",
+       "luc_code_etf",
+       "luc_code_pft",
+       "luc_code_dgt",
+       "luc_fees"
+      ],
+      "n": "list $172 (some pages $192); 30% codes seen in Nov 2026 (VAULT, ETFPROMO, PFT, DGT: affiliate pages, unconfirmed) -> about $120-$134 for the daily-loss-on version (one deal page: $115.40 on / $140.40 off). One-time fee, no activation fee. Black Friday 2026: not announced on 2026-11-07. Confirm at checkout"
+     },
+     "eval": {
+      "target": {
+       "v": 3000.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_eval",
+        "luc_product_50k"
+       ]
+      },
+      "dd_type": {
+       "v": "eod",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_dd"
+       ],
+       "n": "the max loss follows the highest END-OF-DAY closing balance; open losses are read as counting during the day (the strict reading)"
+      },
+      "dd_amount": {
+       "v": 2000.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_eval",
+        "luc_pro_dd"
+       ]
+      },
+      "lock": {
+       "v": 100.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_dd"
+       ],
+       "n": "once the closing balance passes the $52,100 trail balance the floor locks at $50,100"
+      },
+      "dll": {
+       "v": 1200.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_eval",
+        "luc_pro_dll",
+        "luc_pro_custom"
+       ],
+       "n": "the daily-loss-ON version (chosen at checkout, the cheaper one; it cannot be changed later). The OFF version has no daily limit; this profile keeps $1,200 (stricter)"
+      },
+      "dll_type": {
+       "v": "soft",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_dll"
+       ],
+       "n": "every Lucid daily loss is soft: locked out until the next session, never a fail unless the max loss is hit"
+      },
+      "max_micros": {
+       "v": 40,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_eval"
+       ]
+      },
+      "max_minis": {
+       "v": 4,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_eval"
+       ]
+      },
+      "consistency": {
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_eval",
+        "luc_product_50k"
+       ],
+       "n": "no consistency rule in the evaluation"
+      },
+      "min_days": {
+       "v": 1,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_eval"
+       ],
+       "n": "can pass in one trading day"
+      },
+      "news": {
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_faq",
+        "luc_hours"
+       ],
+       "n": "news trading allowed on LucidPro / Flex / Direct (banned only on LucidDaily funded)"
+      }
+     },
+     "funded": {
+      "dd_type": {
+       "v": "eod",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_funded",
+        "luc_pro_dd"
+       ]
+      },
+      "dd_amount": {
+       "v": 2000.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_funded"
+       ]
+      },
+      "lock": {
+       "v": 100.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_dd"
+       ],
+       "n": "locked floor $50,100"
+      },
+      "dll": {
+       "v": 1200.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_funded",
+        "luc_pro_dll"
+       ],
+       "n": "fixed $1,200 until the account closes above $52,100, then the LucidScale daily loss = 60% of the highest end-of-day profit (it never goes down). Only ever looser, so the fixed $1,200 is kept (stricter)"
+      },
+      "dll_type": {
+       "v": "soft",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_dll"
+       ]
+      },
+      "max_micros": {
+       "v": 40,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_funded"
+       ],
+       "n": "no scaling plan: the full size from day one"
+      },
+      "max_minis": {
+       "v": 4,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_funded"
+       ]
+      },
+      "news": {
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_faq"
+       ]
+      },
+      "max_active": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "luc_max_acc"
+       ],
+       "n": "no cap per plan: Lucid's 5 funded per household covers every product (copy_profiles.json accounts.lucid)"
+      }
+     },
+     "payout": {
+      "buffer": {
+       "v": 2100.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_pay"
+       ],
+       "n": "buffer = the initial max loss + $100: the balance stays at or above $52,100, nothing below it can be withdrawn"
+      },
+      "min": {
+       "v": 500.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_pay"
+       ],
+       "n": "smallest request $500"
+      },
+      "max": {
+       "v": 2000.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_pay"
+       ],
+       "n": "the first payout up to $2,000"
+      },
+      "max_after_first": {
+       "v": 2500.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_pay"
+       ],
+       "n": "from the second payout on up to $2,500"
+      },
+      "cycle_min": {
+       "v": 500.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_pay"
+       ],
+       "n": "profit goal: at least $500 of profit in the payout cycle (it resets after each payout)"
+      },
+      "share": {
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_pay"
+       ],
+       "n": "no share-of-profit cap on a request"
+      },
+      "split": {
+       "v": 0.9,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_pay"
+       ],
+       "n": "90/10 (100% of the first $10K only for accounts bought or reset before 2025-11-28 15:00 ET)"
+      },
+      "consistency": {
+       "v": 0.4,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_cons",
+        "luc_pro_pay"
+       ],
+       "n": "the biggest day <= 40% of the cycle's total profit; resets after each payout (35% for accounts bought or reset on or before 2025-11-28)"
+      },
+      "min_days": {
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_pay"
+       ],
+       "n": "no fixed payout window: any day once every condition is met"
+      },
+      "win_days": {
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_pay"
+       ]
+      },
+      "max_payouts": {
+       "v": 5,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_pay",
+        "luc_live"
+       ],
+       "n": "payout 5 is the top payout level; Lucid's risk team decides the move to a live account (at least 1 payout needed): the sim account is modelled as ending after 5"
+      },
+      "first_wait_days": {
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_pay"
+       ],
+       "n": "no waiting period after the first trade"
+      }
+     },
+     "notes": [
+      "rules re-read 2026-11-14 from Lucid's own help center (research/props/firm_research.json)",
+      "daily loss: the ON version ($1,200 soft) is the profile; OFF = no daily limit (dearer)",
+      "funded LucidScale daily loss (60% of the best end-of-day profit) not modelled (only looser)",
+      "payout caps $2,000 first / $2,500 after; 40% best day of the cycle; $500 profit a cycle; 90%"
+     ]
+    },
+    "lucid_flex_50k": {
+     "price": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-14",
+      "src": [
+       "luc_flex_custom"
+      ],
+      "n": "price set by the options chosen at checkout (daily loss on / off, 40% / 50% consistency); not quoted"
+     },
+     "eval": {
+      "target": {
+       "v": 3000.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_eval"
+       ]
+      },
+      "dd_type": {
+       "v": "eod",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_dd"
+       ]
+      },
+      "dd_amount": {
+       "v": 2000.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_eval",
+        "luc_flex_dd"
+       ]
+      },
+      "lock": {
+       "v": 100.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_dd"
+       ],
+       "n": "trail balance $52,100, locked floor $50,100"
+      },
+      "dll": {
+       "v": "none",
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_custom"
+       ],
+       "n": "optional at checkout (on / off); the amount of the ON version was not found: this profile is the OFF version"
+      },
+      "dll_type": {
+       "v": "none",
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_custom"
+       ]
+      },
+      "max_micros": {
+       "v": 40,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_eval",
+        "luc_flex_scale"
+       ],
+       "n": "4 minis / 40 micros; no scaling in the evaluation"
+      },
+      "max_minis": {
+       "v": 4,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_eval"
+       ]
+      },
+      "consistency": {
+       "v": 0.4,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_cons",
+        "luc_flex_eval"
+       ],
+       "n": "the biggest day <= 40% of the evaluation profit (50% with a paid add-on); evaluation only"
+      },
+      "min_days": {
+       "v": 1,
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_eval"
+       ],
+       "n": "no minimum stated; the 40% rule needs 3+ winning days in practice"
+      },
+      "news": {
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_faq"
+       ]
+      }
+     },
+     "funded": {
+      "dd_type": {
+       "v": "eod",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_funded",
+        "luc_flex_dd"
+       ]
+      },
+      "dd_amount": {
+       "v": 2000.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_funded"
+       ]
+      },
+      "lock": {
+       "v": 100.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_dd"
+       ]
+      },
+      "dll": {
+       "v": "none",
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_funded"
+       ],
+       "n": "optional (chosen at the evaluation purchase)"
+      },
+      "dll_type": {
+       "v": "none",
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_funded"
+       ]
+      },
+      "max_micros": {
+       "v": 40,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_scale"
+       ]
+      },
+      "max_minis": {
+       "v": 4,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_scale"
+       ]
+      },
+      "max_micros_by_profit": {
+       "v": [
+        [
+         0,
+         20
+        ],
+        [
+         1000,
+         30
+        ],
+        [
+         2000,
+         40
+        ]
+       ],
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_scale"
+       ],
+       "n": "scaling plan by the sim profit: 2 minis at $0-$999, 3 at $1,000-$1,999, 4 from $2,000 (read as the balance above the start at the last close)"
+      },
+      "news": {
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_faq"
+       ]
+      },
+      "max_active": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "luc_max_acc"
+       ],
+       "n": "no cap per plan: Lucid's 5 funded per household covers every product"
+      }
+     },
+     "payout": {
+      "buffer": {
+       "v": 0.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_funded"
+       ],
+       "n": "no payout buffer"
+      },
+      "min": {
+       "v": 500.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_pay"
+       ]
+      },
+      "max": {
+       "v": 2000.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_pay"
+       ],
+       "n": "50% of the profit up to $2,000 a payout at 50K (the caps do not rise)"
+      },
+      "share": {
+       "v": 0.5,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_pay"
+       ],
+       "n": "a request <= 50% of the profit"
+      },
+      "split": {
+       "v": 0.9,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_pay"
+       ]
+      },
+      "consistency": {
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_funded"
+       ],
+       "n": "no consistency rule once funded"
+      },
+      "win_days": {
+       "v": 5,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_pay"
+       ],
+       "n": "5 profitable days in the cycle"
+      },
+      "win_day_min": {
+       "v": 150.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_pay"
+       ],
+       "n": "a profitable day counts at $150 or more (50K)"
+      },
+      "cycle_min": {
+       "v": 0.01,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_pay"
+       ],
+       "n": "a positive net profit for the cycle"
+      },
+      "min_days": {
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_pay"
+       ]
+      },
+      "max_payouts": {
+       "v": 5,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_pay"
+       ],
+       "n": "up to 5 payouts, then Lucid's live review"
+      },
+      "first_wait_days": {
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_pay"
+       ]
+      }
+     },
+     "notes": [
+      "rules re-read 2026-11-14 from Lucid's own help center",
+      "eval 40% best-day rule (50% add-on): slower than LucidPro for LIT's one-winner eval",
+      "funded: no buffer, no consistency, 5 profitable days >= $150, 50% of the profit up to $2,000, contract scaling 20 / 30 / 40 micros"
+     ]
+    },
+    "fn_rapid_daily_50k": {
+     "price": {
+      "v": null,
+      "verified": false,
+      "date": "2026-11-14",
+      "src": [
+       "fn_promo",
+       "fn_price_rapid"
+      ],
+      "n": "list $299.99; FundedNext's own help center ran an up-to-50% code RAPID for Rapid Daily / Pro (Oct 2026): about $150 (one site, checked 2026-11-11); other codes 30-47% (affiliate claims). Confirm at checkout"
+     },
+     "eval": {
+      "target": {
+       "v": 3000.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_objectives",
+        "fn_rd_rules"
+       ]
+      },
+      "dd_type": {
+       "v": "eod",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_rules"
+       ],
+       "n": "updates once a day at the close; a floating loss through the max loss during a trade is an instant breach"
+      },
+      "dd_amount": {
+       "v": 2000.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_rules"
+       ]
+      },
+      "lock": {
+       "v": 100.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_rules"
+       ],
+       "n": "stops trailing at $50,100"
+      },
+      "dll": {
+       "v": 1000.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_rules"
+       ]
+      },
+      "dll_type": {
+       "v": "soft",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_rules"
+       ],
+       "n": "trading paused for the rest of the day; only the max loss ends the account"
+      },
+      "max_micros": {
+       "v": 40,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_rules"
+       ]
+      },
+      "max_minis": {
+       "v": 4,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_rules"
+       ]
+      },
+      "consistency": {
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_rules"
+       ],
+       "n": "Rapid Daily has no consistency rule at any stage"
+      },
+      "min_days": {
+       "v": 1,
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_rules"
+       ],
+       "n": "no time limit; no minimum days stated"
+      },
+      "news": {
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_allowed",
+        "fn_faq"
+       ],
+       "n": "news trading allowed on every account model, Rapid included"
+      }
+     },
+     "funded": {
+      "dd_type": {
+       "v": "eod",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_funded"
+       ]
+      },
+      "dd_amount": {
+       "v": 2000.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_funded"
+       ]
+      },
+      "lock": {
+       "v": 100.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_funded"
+       ],
+       "n": "the max loss is set to $50,100 after the first reward"
+      },
+      "dll": {
+       "v": 1000.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_rules"
+       ]
+      },
+      "dll_type": {
+       "v": "soft",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_rules"
+       ]
+      },
+      "max_micros": {
+       "v": 40,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_rules"
+       ]
+      },
+      "max_minis": {
+       "v": 4,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_rules"
+       ]
+      },
+      "news": {
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_allowed"
+       ]
+      },
+      "max_active": {
+       "v": null,
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "fn_accounts"
+       ],
+       "n": "no cap per plan: 5 active FundedNext accounts per household in all (copy_profiles.json accounts.fundednext)"
+      }
+     },
+     "payout": {
+      "buffer": {
+       "v": 2100.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_funded",
+        "fn_rd_elig"
+       ],
+       "n": "the end-of-day balance must clear $52,100"
+      },
+      "min": {
+       "v": 250.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_funded"
+       ]
+      },
+      "max": {
+       "v": 1200.0,
+       "verified": false,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_elig",
+        "fn_rd_funded"
+       ],
+       "n": "sources conflict: $1,200 (eligibility article); the All Rules page says the cap rises from the 4th payout; a Rapid Pro page says $1,000 for 1-3 and $1,250 for 4-5. The $1,200 reading is kept"
+      },
+      "cycle_min": {
+       "v": 500.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_funded"
+       ],
+       "n": "$500 of profit in the current cycle"
+      },
+      "share": {
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_funded"
+       ]
+      },
+      "split": {
+       "v": 0.9,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_funded"
+       ]
+      },
+      "consistency": {
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_funded"
+       ]
+      },
+      "min_days": {
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_elig"
+       ],
+       "n": "daily payouts: no minimum trading days"
+      },
+      "max_payouts": {
+       "v": 5,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_elig"
+       ],
+       "n": "the account is 'Concluded' after 5 rewards"
+      },
+      "first_wait_days": {
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_elig"
+       ]
+      }
+     },
+     "notes": [
+      "rules re-read 2026-11-14 from FundedNext's own help center",
+      "payout cap conflict ($1,200 vs a rising cap)",
+      "bot rule: no identical trades across accounts (FAQ) vs own-account copying allowed (copy policy): a written yes first (hold)"
+     ]
+    },
+    "mffu_builder_50k": {
+     "funded": {
+      "max_active": {
+       "v": 1,
+       "verified": true,
+       "date": "2026-11-16",
+       "src": [
+        "mffu_b50",
+        "mffu_builder_page"
+       ],
+       "n": "only ONE sim-funded Builder 50K per person at a time. A second Builder 50K can run and pass its eval, but MFFU will not fund it while Zlarior's funded Builder 50K is active. After a breach a new one can start the next trading day; after the 5th payout the account moves to live"
+      }
+     },
+     "notes": [
+      "price: list (coupons 40-50% off are common)",
+      "funded.dll set from research/lit/mffu_rules.json on 2026-10-18; results not re-simulated (rerun: python tools/lit_prop_firms.py all)",
+      "2026-11-16 re-check (team E): buffer $2,100, first payout $500 above it after 2 traded days, $500-$2,000 a request, best day <= 50% of the cycle at payout time, 80% to you, 5 payouts then live; news unrestricted on Builder. Same as 2026-10-18."
+     ]
+    },
+    "mffu_builder_25k": {
+     "funded": {
+      "max_active": {
+       "v": 2,
+       "verified": true,
+       "date": "2026-11-16",
+       "src": [
+        "mffu_b25",
+        "mffu_builder_page"
+       ],
+       "n": "up to 2 sim-funded Builder 25K per person (help center + the plan page's table). The Builder page's headline says 'one active Builder account per user': a conflict, ask support before a second funded 25K"
+      }
+     }
+    }
+   }
+  },
   "firm_rules": {
    "v": 1,
-   "built": "2026-10-30",
+   "built": "2026-11-14",
    "title": "Firm rule profiles for the fleet layer (engine/firms.py)",
    "how_to_read": "{\"v\": value, \"verified\": bool, \"src\": [...], \"date\": \"yyyy-mm-dd\", \"n\": note}:   verified true   the repo's research marks it confirmed: the firm's own help / plan page (read through web search), or the                   owner's own screenshots / receipts (MFFU). Re-check on the firm's site before money depends on it.   verified false  a third-party summary, a conflict between sources, or one source only.   v null          unknown: the value was assumed in research or not found. Never guessed here.   v \"none\"        the rule does not exist on that plan (e.g. no daily loss limit), per the sources. Prices: only the owner's real prices (MFFU); every other price is null (\"check current codes before buying\", CLAUDE.md).",
    "inputs": [
     "research/lit/mffu_rules.json",
     "research/lit/prop_firms.json",
-    "research/props/firms.json"
+    "research/props/firms.json",
+    "research/props/firm_research.json"
    ],
    "source_urls": {
-    "etf_lucid_dll": "https://www.eltraderfinanciado.com/en/news/lucid-trading/lucid-trading-optional-daily-loss-limit",
     "fm_rapid_eod": "https://www.financemagnates.com/forex/myfundedfutures-trades-intraday-drawdown-for-a-30-consistency-rule/",
+    "fn_accounts": "https://helpfutures.fundednext.com/en/articles/17225812-how-many-accounts-can-i-hold-with-fundednext-futures-and-what-is-the-maximum-allocation-available",
+    "fn_allowed": "https://fundednext.com/general-rules/futures/what-is-allowed",
     "fn_bots": "https://helpfutures.fundednext.com/en/articles/14298560-is-the-usage-of-automated-trading-systems-eas-and-bots-allowed-in-fundednext-futures",
-    "fn_dll": "https://helpfutures.fundednext.com/en/articles/17230292-daily-loss-limit-and-maximum-loss-limit-at-fundednext-futures",
-    "fn_platforms": "https://helpfutures.fundednext.com/en/articles/17225732-what-trading-platforms-does-fundednext-futures-offer",
+    "fn_copy": "https://helpfutures.fundednext.com/en/articles/17230319-what-is-copy-group-trading-policy-at-fundednext-futures",
+    "fn_faq": "https://helpfutures.fundednext.com/en/articles/17225788-fundednext-futures-most-frequently-asked-questions",
+    "fn_hours": "https://helpfutures.fundednext.com/en/articles/17225754-what-are-the-trading-hours-in-fundednext-futures",
+    "fn_inact": "https://helpfutures.fundednext.com/en/articles/17228935-is-there-any-inactivity-period-in-fundednext-futures",
+    "fn_objectives": "https://fundednext.com/general-rules/futures/trading-objectives",
+    "fn_platforms": "https://fundednext.com/general-rules/futures/trading-platforms",
+    "fn_price_rapid": "https://propscope.net/en/funded-next/",
+    "fn_promo": "https://helpfutures.fundednext.com/en/articles/16295692-fundednext-futures-rapid-daily-rapid-pro-up-to-50-discount-offer",
+    "fn_rd_elig": "https://helpfutures.fundednext.com/en/articles/15878210-what-are-the-performance-reward-eligibility-criteria-for-fundednext-futures-rapid-daily-fundednext-account",
     "fn_rd_funded": "https://helpfutures.fundednext.com/en/articles/17229779-fundednext-futures-rapid-daily-fundednext-account-all-rules",
     "fn_rd_rules": "https://helpfutures.fundednext.com/en/articles/17229762-fundednext-futures-rapid-daily-challenge-all-rules",
     "fn_terms": "https://fundednext.com/futures-challenge-terms",
     "ft_mffu": "https://www.fundedtrading.com/propfirm/my-funded-futures/",
     "h2t_topstep": "https://h2tfunding.com/does-topstep-allow-automated-trading/",
-    "lucid_test": "https://lucidtrading.com/product/lucidtest-50k/",
+    "luc_code_dgt": "https://damnpropfirms.com/account-plans/lucid-trading-pro-50000/",
+    "luc_code_etf": "https://www.eltraderfinanciado.com/en/discounts/lucid-trading",
+    "luc_code_pft": "https://propfirmtrader.com/offers/lucid-trading",
+    "luc_code_vault": "https://affordableindicators.com/prop-firm-discounts/lucid-trading-discount-codes/",
+    "luc_faq": "https://lucidtrading.com/general-faq/",
+    "luc_fees": "https://support.lucidtrading.com/en/articles/11404620-simulated-account-fees",
+    "luc_flex_cons": "https://support.lucidtrading.com/en/articles/12945805-lucidflex-consistency-percentage",
+    "luc_flex_custom": "https://support.lucidtrading.com/en/articles/16226050-lucidflex-customization",
+    "luc_flex_dd": "https://support.lucidtrading.com/en/articles/12945815-lucidflex-drawdown",
+    "luc_flex_eval": "https://support.lucidtrading.com/en/articles/12945790-lucidflex-evaluation-account",
+    "luc_flex_funded": "https://support.lucidtrading.com/en/articles/12945795-lucidflex-funded-account",
+    "luc_flex_pay": "https://support.lucidtrading.com/en/articles/12945796-lucidflex-payouts",
+    "luc_flex_scale": "https://support.lucidtrading.com/en/articles/12945808-lucidflex-scaling-plan",
+    "luc_hedge": "https://support.lucidtrading.com/en/articles/11404734-prohibited-hedging",
+    "luc_hours": "https://support.lucidtrading.com/en/articles/11404729-allowed-trading-times",
+    "luc_inact": "https://support.lucidtrading.com/en/articles/11404632-inactivity-policy",
+    "luc_live": "https://support.lucidtrading.com/en/articles/16558826-new-live-structure",
+    "luc_max_acc": "https://support.lucidtrading.com/en/articles/11404617-maximum-number-of-accounts",
+    "luc_other": "https://support.lucidtrading.com/en/articles/11404728-other-activities",
+    "luc_platforms": "https://support.lucidtrading.com/en/articles/11404614-lucid-trading-supported-platforms",
+    "luc_pro_cons": "https://support.lucidtrading.com/en/articles/12890109-lucidpro-consistency-percentage",
+    "luc_pro_custom": "https://support.lucidtrading.com/en/articles/16226068-lucidpro-customization",
+    "luc_pro_dd": "https://support.lucidtrading.com/en/articles/12890136-lucidpro-drawdown",
+    "luc_pro_dll": "https://support.lucidtrading.com/en/articles/12890122-lucidpro-daily-loss-limit",
+    "luc_pro_eval": "https://support.lucidtrading.com/en/articles/12890029-lucidpro-evaluation-account",
+    "luc_pro_funded": "https://support.lucidtrading.com/en/articles/12890069-lucidpro-funded-account",
+    "luc_pro_pay": "https://support.lucidtrading.com/en/articles/12890092-lucidpro-payouts",
+    "luc_product_50k": "https://lucidtrading.com/product/lucidtest-50k/",
+    "luc_tdv_nt": "https://lucidtrading.com/product/lucidreset-50k-nt-tdv/",
+    "mffu_b25": "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
     "mffu_b50": "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+    "mffu_builder_page": "https://myfundedfutures.com/plans/builder",
+    "mffu_copy": "https://help.myfundedfutures.com/en/articles/10771500-copy-trading-at-myfundedfutures",
+    "mffu_fairplay": "https://help.myfundedfutures.com/en/articles/8444599-fair-play-and-prohibited-trading-practices",
     "mffu_rapid": "https://myfundedfutures.com/plans/rapid",
     "mffu_rapid_eod": "https://help.myfundedfutures.com/en/articles/16158363-rapid-eod-50k-a-comprehensive-look",
     "mffu_rapid_pay": "https://help.myfundedfutures.com/en/articles/13745661",
-    "pmt_auto": "https://blog.pickmytrade.trade/best-prop-firms-that-allow-automated-trading-on-tradingview/",
-    "ptv_lucid_caps": "https://proptradingvibes.com/blog/lucid-trading-payout-caps",
-    "ptv_lucid_live": "https://proptradingvibes.com/blog/lucid-trading-live-account-transition",
-    "ptv_lucid_pro": "https://proptradingvibes.com/blog/lucidpro-funded-account-rules",
-    "qv_lucid_pay": "https://www.quantvps.com/blog/lucid-trading-prop-firm-payout-rules",
+    "mffu_x_copier": "https://x.com/MyFundedFutures/status/1817807673179676787",
     "tg_auto": "https://tradegreater.com/blog-tradingview-ninjatrader-prop-firm-automation",
     "topstep_pay": "https://help.topstep.com/en/articles/8284233"
    },
@@ -1128,20 +3196,23 @@
      "bots": {
       "v": "allowed",
       "verified": true,
-      "date": "2026-10-18",
+      "date": "2026-11-16",
       "src": [
-       "mffu_rules.json builder_50k.eval.automation"
+       "mffu_fairplay",
+       "mffu_b50"
       ],
-      "n": "bots allowed when set to your own parameters, with oversight; HFT and sim-fill exploits banned"
+      "n": "automation allowed when it runs your own parameters and you oversee it; high-frequency trading and tools that exploit simulated fills are banned. Some third-party pages still say 'semi-automated only' (older text): be at the PC or on the phone while it trades"
      },
      "copy_trading": {
-      "v": null,
-      "verified": false,
-      "date": "2026-10-18",
+      "v": "allowed",
+      "verified": true,
+      "date": "2026-11-16",
       "src": [
-       "mffu_rules.json builder_50k.eval.copy_trading"
+       "mffu_copy",
+       "mffu_x_copier",
+       "mffu_fairplay"
       ],
-      "n": "copying between your OWN accounts: not stated; mirroring 'for an unfair advantage' is banned; ask MFFU support in writing first"
+      "n": "MFFU's help center: copy trading is allowed across all MFFU account types (Tradesyncer is its preferred copier; your own software is fine). Only YOUR OWN accounts: copying another person or a group is banned (fair play). MFFU gives no help, support or reset for a copier mistake. A same-signal copy does not help a consistency rule"
      },
      "hedging": {
       "v": "banned_all_accounts",
@@ -1190,43 +3261,59 @@
      "bots": {
       "v": "allowed",
       "verified": true,
-      "date": "2026-10-20",
+      "date": "2026-11-14",
       "src": [
-       "pmt_auto",
-       "ptv_lucid_pro"
+       "luc_other",
+       "luc_faq"
       ],
-      "n": "automated systems and trade copiers permitted; HFT / microscalping banned"
+      "n": "automated systems and trade copiers are permitted; you carry any software error. HFT and microscalping (over 50% of the profit from trades held 5 s or less) are banned. The older LucidDirect agreement (2025-05, another product) asks prior written approval for automated software: ask support once, in writing"
      },
      "copy_trading": {
       "v": "allowed",
-      "verified": false,
-      "date": "2026-10-20",
+      "verified": true,
+      "date": "2026-11-14",
       "src": [
-       "pmt_auto"
+       "luc_other",
+       "luc_faq"
       ],
-      "n": "trade copiers permitted (one source)"
+      "n": "in-platform and third-party copiers permitted (copier set-up errors are yours); copying the same signal at another firm is not addressed directly"
      },
      "hedging": {
-      "v": "banned",
-      "verified": false,
-      "date": "2026-10-18",
+      "v": "banned_all_accounts",
+      "verified": true,
+      "date": "2026-11-14",
       "src": [
-       "prop_firms.json lucid bot note"
+       "luc_hedge"
       ],
-      "n": "no HFT / hedging (third-party summary)"
+      "n": "no opposite positions across your own accounts, other users' accounts or other firms' accounts (minis and micros of one contract count together); live accounts: a permanent ban"
      },
      "flat_by": {
-      "v": null,
-      "verified": false,
-      "date": "2026-10-18"
+      "v": "16:45",
+      "verified": true,
+      "date": "2026-11-14",
+      "src": [
+       "luc_hours"
+      ],
+      "n": "flat by 4:45 PM ET Mon-Fri (open positions are closed, no fail); half days: flat before the early close"
      },
      "ninjatrader": {
       "v": true,
       "verified": true,
-      "date": "2026-10-20",
+      "date": "2026-11-14",
       "src": [
-       "ptv_lucid_pro"
-      ]
+       "luc_platforms",
+       "luc_tdv_nt"
+      ],
+      "n": "NinjaTrader runs on Lucid's Tradovate (CQG) data: buy the TDV/NT version, not the Rithmic one; sign into Tradovate first"
+     },
+     "inactivity_days": {
+      "v": 30,
+      "verified": true,
+      "date": "2026-11-14",
+      "src": [
+       "luc_inact"
+      ],
+      "n": "an account with no net P/L of at least $1 in 30 calendar days is deleted"
      },
      "plans": [
       "lucid_flex_100k",
@@ -1244,39 +3331,69 @@
      "bots": {
       "v": "allowed",
       "verified": true,
-      "date": "2026-10-20",
+      "date": "2026-11-14",
       "src": [
        "fn_terms",
-       "fn_bots"
+       "fn_bots",
+       "fn_faq"
       ],
-      "n": "EAs / bots / AI allowed in the Challenge and the funded account (terms 2026-09-25)"
+      "n": "EAs / bots allowed in the Challenge and the FundedNext account; BUT the FAQ adds that each EA or bot must run a distinct strategy, avoiding identical trades across any accounts (conflicts with copying one signal): ask FundedNext in writing"
      },
      "copy_trading": {
       "v": "own_accounts",
-      "verified": true,
-      "date": "2026-10-20",
+      "verified": false,
+      "date": "2026-11-14",
       "src": [
-       "fn_terms"
+       "fn_copy",
+       "fn_faq"
       ],
-      "n": "copying your own accounts only"
+      "n": "the Futures copy policy allows copying your OWN trades between your FundedNext accounts or between FundedNext and other prop firms (same name, verified accounts); the EA rule 'no identical trades across any accounts' conflicts: a written yes is needed"
      },
      "hedging": {
-      "v": null,
-      "verified": false,
-      "date": "2026-10-18"
+      "v": "banned_all_accounts",
+      "verified": true,
+      "date": "2026-11-14",
+      "src": [
+       "fn_copy"
+      ],
+      "n": "cross-account hedging within FundedNext or with other firms is not allowed"
      },
      "flat_by": {
-      "v": null,
-      "verified": false,
-      "date": "2026-10-18"
+      "v": "16:10",
+      "verified": true,
+      "date": "2026-11-14",
+      "src": [
+       "fn_hours"
+      ],
+      "n": "trading 17:00-15:10 CT; open positions closed at 15:10 CT (16:10 ET); half days: flatten yourself before the early close"
      },
      "ninjatrader": {
       "v": true,
       "verified": true,
-      "date": "2026-10-20",
+      "date": "2026-11-14",
       "src": [
        "fn_platforms"
-      ]
+      ],
+      "n": "Tradovate, NinjaTrader or TradingView"
+     },
+     "inactivity_days": {
+      "v": 30,
+      "verified": true,
+      "date": "2026-11-14",
+      "src": [
+       "fn_inact"
+      ],
+      "n": "30 calendar days with no trade: the account is breached"
+     },
+     "hold": {
+      "v": "FundedNext's bot rule asks for no identical trades across accounts: copy the LIT signal there only after FundedNext says yes in writing, then clear this hold",
+      "verified": false,
+      "date": "2026-11-14",
+      "src": [
+       "fn_faq",
+       "fn_copy"
+      ],
+      "n": "the owner's hold (engine/firms.check blocks new entries while it is set): clear it per account with rules {\"hold\": \"none\"} once the written yes is in. 2026-11-16 re-check: FundedNext's copy policy article now says copying your OWN trades between your FundedNext accounts and other firms is allowed (same verified owner), but its terms still ban mirroring without written approval and its FAQ still flags identical trades: the hold stays until the written yes. RAPID code (FundedNext's own page, from 2026-11-05): Rapid Daily 50K $149.99 for a new user"
      },
      "plans": [
       "fn_legacy_100k",
@@ -1470,7 +3587,7 @@
       "start": {
        "v": 25000.0,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "plan size"
        ],
@@ -1479,7 +3596,7 @@
       "target": {
        "v": 1500.0,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
         "https://myfundedfutures.com/plans/builder"
@@ -1488,7 +3605,7 @@
       "dd_type": {
        "v": "eod",
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
         "https://help.myfundedfutures.com/en/articles/8348565-max-eod-trailing"
@@ -1497,7 +3614,7 @@
       "dd_amount": {
        "v": 1000.0,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
         "https://help.myfundedfutures.com/en/articles/8348565-max-eod-trailing"
@@ -1506,7 +3623,7 @@
       "lock": {
        "v": 100.0,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
         "https://help.myfundedfutures.com/en/articles/8348565-max-eod-trailing"
@@ -1516,7 +3633,7 @@
       "dll": {
        "v": 600.0,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
         "https://myfundedfutures.com/plans/builder",
@@ -1527,7 +3644,7 @@
       "dll_type": {
        "v": "soft",
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
         "https://myfundedfutures.com/plans/builder",
@@ -1537,7 +3654,7 @@
       "max_micros": {
        "v": 20,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look"
        ]
@@ -1545,7 +3662,7 @@
       "max_minis": {
        "v": 2,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look"
        ]
@@ -1553,7 +3670,7 @@
       "consistency": {
        "v": "none",
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look"
        ],
@@ -1561,12 +3678,12 @@
       },
       "min_days": {
        "v": 1,
-       "verified": false,
-       "date": "2026-10-18",
+       "verified": true,
+       "date": "2026-11-17",
        "src": [
-        "mffu_rules.json builder_50k.eval.min_trading_days_eval"
+        "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look"
        ],
-       "n": "1 per the help guides, the plan page says 2 (conflict)"
+       "n": "1 day (help center re-check 2026-11-17; was a conflict)"
       },
       "news": {
        "v": "none",
@@ -1582,7 +3699,7 @@
       "dd_type": {
        "v": "eod",
        "verified": true,
-       "date": "2026-10-26",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
         "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts",
@@ -1592,7 +3709,7 @@
       "dd_amount": {
        "v": 1000.0,
        "verified": true,
-       "date": "2026-10-26",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
         "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts",
@@ -1602,7 +3719,7 @@
       "lock": {
        "v": 100.0,
        "verified": true,
-       "date": "2026-10-26",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
         "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts",
@@ -1613,7 +3730,7 @@
       "dll": {
        "v": 600.0,
        "verified": true,
-       "date": "2026-10-26",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
         "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts",
@@ -1623,7 +3740,7 @@
       "dll_type": {
        "v": "soft",
        "verified": true,
-       "date": "2026-10-26",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
         "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts",
@@ -1633,7 +3750,7 @@
       "max_micros": {
        "v": 20,
        "verified": true,
-       "date": "2026-10-26",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
         "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts",
@@ -1643,7 +3760,7 @@
       "max_minis": {
        "v": 2,
        "verified": true,
-       "date": "2026-10-26",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
         "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts",
@@ -1662,20 +3779,19 @@
       "max_active": {
        "v": 2,
        "verified": true,
-       "date": "2026-10-26",
+       "date": "2026-11-16",
        "src": [
-        "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
-        "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts",
-        "owner's MFFU dashboard screenshots 2026-10-26 (Builder 25K bought for ATLAS, $43)"
+        "mffu_b25",
+        "mffu_builder_page"
        ],
-       "n": "up to 2 active sim-funded Builder 25K accounts per person"
+       "n": "up to 2 sim-funded Builder 25K per person (help center + the plan page's table). The Builder page's headline says 'one active Builder account per user': a conflict, ask support before a second funded 25K"
       }
      },
      "payout": {
       "buffer": {
        "v": 1100.0,
        "verified": true,
-       "date": "2026-10-26",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
         "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts",
@@ -1685,7 +3801,7 @@
       "min": {
        "v": 250.0,
        "verified": true,
-       "date": "2026-10-26",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
         "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts",
@@ -1695,7 +3811,7 @@
       "max": {
        "v": 1000.0,
        "verified": true,
-       "date": "2026-10-26",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
         "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts",
@@ -1711,7 +3827,7 @@
       "split": {
        "v": 0.8,
        "verified": true,
-       "date": "2026-10-26",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
         "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts",
@@ -1721,7 +3837,7 @@
       "consistency": {
        "v": 0.5,
        "verified": true,
-       "date": "2026-10-26",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
         "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts",
@@ -1746,7 +3862,7 @@
       "max_payouts": {
        "v": 5,
        "verified": true,
-       "date": "2026-10-26",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
         "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts",
@@ -1805,7 +3921,7 @@
       "start": {
        "v": 50000.0,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"
        ]
@@ -1813,7 +3929,7 @@
       "target": {
        "v": 3000.0,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
         "https://myfundedfutures.com/plans/builder"
@@ -1822,39 +3938,36 @@
       "dd_type": {
        "v": "eod",
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
-        "https://help.myfundedfutures.com/en/articles/8348565-max-eod-trailing",
-        "https://help.myfundedfutures.com/en/articles/17035331-builder-plan-150k-comprehensive-guide"
+        "https://help.myfundedfutures.com/en/articles/8348565-end-of-day-eod-drawdown-explained"
        ],
        "n": "EOD trailing: moves only at the session close, up only; open losses count intraday"
       },
       "dd_amount": {
        "v": 2000.0,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
-        "https://help.myfundedfutures.com/en/articles/8348565-max-eod-trailing",
-        "https://help.myfundedfutures.com/en/articles/17035331-builder-plan-150k-comprehensive-guide"
+        "https://help.myfundedfutures.com/en/articles/8348565-end-of-day-eod-drawdown-explained"
        ]
       },
       "lock": {
        "v": 100.0,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
-        "https://help.myfundedfutures.com/en/articles/8348565-max-eod-trailing",
-        "https://help.myfundedfutures.com/en/articles/17035331-builder-plan-150k-comprehensive-guide"
+        "https://help.myfundedfutures.com/en/articles/8348565-end-of-day-eod-drawdown-explained"
        ],
        "n": "the floor stops at start + $100 ($50,100)"
       },
       "dll": {
        "v": 1000.0,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
         "https://myfundedfutures.com/plans/builder",
@@ -1865,7 +3978,7 @@
       "dll_type": {
        "v": "soft",
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
         "https://myfundedfutures.com/plans/builder",
@@ -1875,28 +3988,26 @@
       "max_micros": {
        "v": 40,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
-        "https://help.myfundedfutures.com/en/articles/10244682-cross-instrument-policy",
-        "https://phidiaspropfirm.com/education/myfundedfutures-scaling-plan"
+        "https://help.myfundedfutures.com/en/articles/10244682-cross-instrument-policy"
        ]
       },
       "max_minis": {
        "v": 4,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
-        "https://help.myfundedfutures.com/en/articles/10244682-cross-instrument-policy",
-        "https://phidiaspropfirm.com/education/myfundedfutures-scaling-plan"
+        "https://help.myfundedfutures.com/en/articles/10244682-cross-instrument-policy"
        ],
        "n": "minis and micros count together (10 micros = 1 mini); orders above are auto-rejected"
       },
       "consistency": {
        "v": "none",
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
         "https://myfundedfutures.com/plans/builder"
@@ -1905,26 +4016,22 @@
       },
       "min_days": {
        "v": 1,
-       "verified": false,
-       "date": "2026-10-18",
+       "verified": true,
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
-        "https://help.myfundedfutures.com/en/articles/17005296-builder-plan-100k-comprehensive-guide",
-        "https://help.myfundedfutures.com/en/articles/17035331-builder-plan-150k-comprehensive-guide",
-        "https://myfundedfutures.com/how-it-works"
+        "https://help.myfundedfutures.com/en/articles/11802636-traders-evaluation-simplified",
+        "https://help.myfundedfutures.com/en/articles/11994562-consistency-rule-at-my-fundedfutures"
        ],
-       "n": "help guides: pass in as little as 1 trading day; the Builder plan page's table says 'min 2 days' (that row is about the first payout per another page). If the account is not marked passed after day 1, trade one small trade the next session."
+       "n": "CHANGED 2026-11-17 conflict -> confirmed: 1 day on Builder 25K/50K (guide, Traders Evaluation Simplified, consistency article)"
       },
       "news": {
        "v": "none",
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/8230009-news-trading-policy",
-        "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
-        "https://help.myfundedfutures.com/en/articles/17005296-builder-plan-100k-comprehensive-guide",
-        "https://help.myfundedfutures.com/en/articles/17035331-builder-plan-150k-comprehensive-guide",
-        "https://help.myfundedfutures.com/en/articles/12109396-comprehensive-faq-live-accounts-at-myfunded-futures"
+        "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"
        ],
        "n": "Builder: news trading unrestricted in the eval and sim funded"
       }
@@ -1933,35 +4040,35 @@
       "dd_type": {
        "v": "eod",
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
-        "https://help.myfundedfutures.com/en/articles/8348565-max-eod-trailing"
+        "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts"
        ]
       },
       "dd_amount": {
        "v": 2000.0,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
-        "https://help.myfundedfutures.com/en/articles/8348565-max-eod-trailing"
+        "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts"
        ]
       },
       "lock": {
        "v": 100.0,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
-        "https://help.myfundedfutures.com/en/articles/8348565-max-eod-trailing"
+        "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts"
        ],
        "n": "floor stops at +$100 above the start"
       },
       "dll": {
        "v": 1000.0,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"
        ]
@@ -1969,7 +4076,7 @@
       "dll_type": {
        "v": "soft",
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"
        ]
@@ -1977,7 +4084,7 @@
       "max_micros": {
        "v": 40,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"
        ]
@@ -1985,7 +4092,7 @@
       "max_minis": {
        "v": 4,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"
        ]
@@ -1993,7 +4100,7 @@
       "news": {
        "v": "none",
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/8230009-news-trading-policy",
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"
@@ -2003,20 +4110,19 @@
       "max_active": {
        "v": 1,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-16",
        "src": [
-        "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
-        "https://help.myfundedfutures.com/en/articles/17005296-builder-plan-100k-comprehensive-guide",
-        "https://help.myfundedfutures.com/en/articles/11802636-traders-evaluation-simplified"
+        "mffu_b50",
+        "mffu_builder_page"
        ],
-       "n": "1 active sim-funded Builder 50K per person"
+       "n": "only ONE sim-funded Builder 50K per person at a time. A second Builder 50K can run and pass its eval, but MFFU will not fund it while Zlarior's funded Builder 50K is active. After a breach a new one can start the next trading day; after the 5th payout the account moves to live"
       }
      },
      "payout": {
       "buffer": {
        "v": 2100.0,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
         "https://myfundedfutures.com/plans/builder"
@@ -2026,7 +4132,7 @@
       "min": {
        "v": 500.0,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
         "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts"
@@ -2035,7 +4141,7 @@
       "max": {
        "v": 2000.0,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
         "https://myfundedfutures.com/plans/builder"
@@ -2051,7 +4157,7 @@
       "split": {
        "v": 0.8,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
         "https://myfundedfutures.com/plans/builder"
@@ -2060,7 +4166,7 @@
       "consistency": {
        "v": 0.5,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
         "https://help.myfundedfutures.com/en/articles/11994562-consistency-rule-at-my-fundedfutures",
@@ -2071,7 +4177,7 @@
       "min_days": {
        "v": 2,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"
        ],
@@ -2086,7 +4192,7 @@
       "max_payouts": {
        "v": 5,
        "verified": true,
-       "date": "2026-10-18",
+       "date": "2026-11-17",
        "src": [
         "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
         "https://myfundedfutures.com/plans/builder"
@@ -2106,7 +4212,8 @@
      },
      "notes": [
       "price: list (coupons 40-50% off are common)",
-      "funded.dll set from research/lit/mffu_rules.json on 2026-10-18; results not re-simulated (rerun: python tools/lit_prop_firms.py all)"
+      "funded.dll set from research/lit/mffu_rules.json on 2026-10-18; results not re-simulated (rerun: python tools/lit_prop_firms.py all)",
+      "2026-11-16 re-check (team E): buffer $2,100, first payout $500 above it after 2 traded days, $500-$2,000 a request, best day <= 50% of the cycle at payout time, 80% to you, 5 payouts then live; news unrestricted on Builder. Same as 2026-10-18."
      ],
      "sold": true,
      "sources": [
@@ -6193,8 +8300,15 @@
      "price": {
       "v": null,
       "verified": false,
-      "date": "2026-10-18",
-      "n": "not quoted: use the owner's real price; look up the current discount code before buying (CLAUDE.md)"
+      "date": "2026-11-14",
+      "src": [
+       "luc_code_vault",
+       "luc_code_etf",
+       "luc_code_pft",
+       "luc_code_dgt",
+       "luc_fees"
+      ],
+      "n": "list $172 (some pages $192); 30% codes seen in Nov 2026 (VAULT, ETFPROMO, PFT, DGT: affiliate pages, unconfirmed) -> about $120-$134 for the daily-loss-on version (one deal page: $115.40 on / $140.40 off). One-time fee, no activation fee. Black Friday 2026: not announced on 2026-11-07. Confirm at checkout"
      },
      "sizing_preset": "mffu_builder_50k",
      "eval": {
@@ -6210,221 +8324,301 @@
       "target": {
        "v": 3000.0,
        "verified": true,
-       "date": "2026-10-20",
+       "date": "2026-11-14",
        "src": [
-        "lucid_test"
+        "luc_pro_eval",
+        "luc_product_50k"
        ]
       },
       "dd_type": {
        "v": "eod",
        "verified": true,
-       "date": "2026-10-20",
+       "date": "2026-11-14",
        "src": [
-        "lucid_test"
-       ]
+        "luc_pro_dd"
+       ],
+       "n": "the max loss follows the highest END-OF-DAY closing balance; open losses are read as counting during the day (the strict reading)"
       },
       "dd_amount": {
        "v": 2000.0,
        "verified": true,
-       "date": "2026-10-20",
+       "date": "2026-11-14",
        "src": [
-        "lucid_test"
+        "luc_pro_eval",
+        "luc_pro_dd"
        ]
       },
       "lock": {
        "v": 100.0,
        "verified": true,
-       "date": "2026-10-20",
-       "n": "the trailing floor stops this far above the start balance",
+       "date": "2026-11-14",
        "src": [
-        "lucid_test"
-       ]
+        "luc_pro_dd"
+       ],
+       "n": "once the closing balance passes the $52,100 trail balance the floor locks at $50,100"
       },
       "dll": {
-       "v": 1200,
+       "v": 1200.0,
        "verified": true,
-       "date": "2026-10-20",
-       "n": "sources disagree: DLL soft/optional (sources differ)",
+       "date": "2026-11-14",
        "src": [
-        "etf_lucid_dll"
-       ]
+        "luc_pro_eval",
+        "luc_pro_dll",
+        "luc_pro_custom"
+       ],
+       "n": "the daily-loss-ON version (chosen at checkout, the cheaper one; it cannot be changed later). The OFF version has no daily limit; this profile keeps $1,200 (stricter)"
       },
       "dll_type": {
        "v": "soft",
        "verified": true,
-       "date": "2026-10-20",
-       "n": "sources disagree: DLL soft/optional (sources differ)",
+       "date": "2026-11-14",
        "src": [
-        "etf_lucid_dll"
-       ]
+        "luc_pro_dll"
+       ],
+       "n": "every Lucid daily loss is soft: locked out until the next session, never a fail unless the max loss is hit"
       },
       "max_micros": {
        "v": 40,
        "verified": true,
-       "date": "2026-10-20",
+       "date": "2026-11-14",
        "src": [
-        "ptv_lucid_pro"
+        "luc_pro_eval"
        ]
       },
       "max_minis": {
        "v": 4,
        "verified": true,
-       "date": "2026-10-20",
+       "date": "2026-11-14",
        "src": [
-        "ptv_lucid_pro"
+        "luc_pro_eval"
        ]
       },
       "consistency": {
        "v": "none",
        "verified": true,
-       "date": "2026-10-20",
-       "n": "eval best day <= this share of the profit target / total profit",
+       "date": "2026-11-14",
        "src": [
-        "ptv_lucid_pro"
-       ]
+        "luc_pro_eval",
+        "luc_product_50k"
+       ],
+       "n": "no consistency rule in the evaluation"
       },
       "min_days": {
        "v": 1,
-       "verified": false,
-       "date": "2026-10-18"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_eval"
+       ],
+       "n": "can pass in one trading day"
       },
       "news": {
        "v": "none",
-       "verified": false,
-       "date": "2026-10-18",
-       "n": "allowed"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_faq",
+        "luc_hours"
+       ],
+       "n": "news trading allowed on LucidPro / Flex / Direct (banned only on LucidDaily funded)"
       }
      },
      "funded": {
       "dd_type": {
        "v": "eod",
        "verified": true,
-       "date": "2026-10-20",
+       "date": "2026-11-14",
        "src": [
-        "ptv_lucid_pro"
+        "luc_pro_funded",
+        "luc_pro_dd"
        ]
       },
       "dd_amount": {
        "v": 2000.0,
        "verified": true,
-       "date": "2026-10-20",
+       "date": "2026-11-14",
        "src": [
-        "ptv_lucid_pro"
+        "luc_pro_funded"
        ]
       },
       "lock": {
        "v": 100.0,
-       "verified": false,
-       "date": "2026-10-18"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_dd"
+       ],
+       "n": "locked floor $50,100"
       },
       "dll": {
-       "v": "none",
-       "verified": false,
-       "date": "2026-10-18"
+       "v": 1200.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_funded",
+        "luc_pro_dll"
+       ],
+       "n": "fixed $1,200 until the account closes above $52,100, then the LucidScale daily loss = 60% of the highest end-of-day profit (it never goes down). Only ever looser, so the fixed $1,200 is kept (stricter)"
       },
       "dll_type": {
-       "v": "none",
-       "verified": false,
-       "date": "2026-10-18"
+       "v": "soft",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_dll"
+       ]
       },
       "max_micros": {
        "v": 40,
-       "verified": false,
-       "date": "2026-10-18"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_funded"
+       ],
+       "n": "no scaling plan: the full size from day one"
       },
       "max_minis": {
        "v": 4,
-       "verified": false,
-       "date": "2026-10-18"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_funded"
+       ]
       },
       "news": {
        "v": "none",
-       "verified": false,
-       "date": "2026-10-18",
-       "n": "allowed"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_faq"
+       ]
       },
       "max_active": {
        "v": null,
        "verified": false,
-       "date": "2026-10-18",
-       "n": "how many funded accounts of this plan one person may hold: not found"
+       "date": "2026-11-14",
+       "src": [
+        "luc_max_acc"
+       ],
+       "n": "no cap per plan: Lucid's 5 funded per household covers every product (copy_profiles.json accounts.lucid)"
       }
      },
      "payout": {
       "buffer": {
        "v": 2100.0,
        "verified": true,
-       "date": "2026-10-20",
+       "date": "2026-11-14",
        "src": [
-        "ptv_lucid_pro",
-        "qv_lucid_pay"
+        "luc_pro_pay"
        ],
-       "n": "balance $52,100 and >= $500 profit in the cycle"
+       "n": "buffer = the initial max loss + $100: the balance stays at or above $52,100, nothing below it can be withdrawn"
       },
       "min": {
-       "v": 500,
-       "verified": false,
-       "date": "2026-10-18"
+       "v": 500.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_pay"
+       ],
+       "n": "smallest request $500"
       },
       "max": {
        "v": 2000.0,
        "verified": true,
-       "date": "2026-10-20",
+       "date": "2026-11-14",
        "src": [
-        "ptv_lucid_caps"
+        "luc_pro_pay"
        ],
-       "n": "up to $2,000, then $2,500 (rising cap)"
+       "n": "the first payout up to $2,000"
       },
       "share": {
-       "v": null,
-       "verified": false,
-       "date": "2026-10-18",
-       "n": "a request <= this share of the profit / balance above the buffer"
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_pay"
+       ],
+       "n": "no share-of-profit cap on a request"
       },
       "split": {
        "v": 0.9,
        "verified": true,
-       "date": "2026-10-20",
+       "date": "2026-11-14",
        "src": [
-        "qv_lucid_pay"
-       ]
+        "luc_pro_pay"
+       ],
+       "n": "90/10 (100% of the first $10K only for accounts bought or reset before 2025-11-28 15:00 ET)"
       },
       "consistency": {
        "v": 0.4,
-       "verified": false,
-       "date": "2026-10-18"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_cons",
+        "luc_pro_pay"
+       ],
+       "n": "the biggest day <= 40% of the cycle's total profit; resets after each payout (35% for accounts bought or reset on or before 2025-11-28)"
       },
       "min_days": {
-       "v": null,
-       "verified": false,
-       "date": "2026-10-18",
-       "n": "trading days a payout cycle"
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_pay"
+       ],
+       "n": "no fixed payout window: any day once every condition is met"
       },
       "win_days": {
-       "v": null,
-       "verified": false,
-       "date": "2026-10-18",
-       "n": "winning days a payout cycle"
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_pay"
+       ]
       },
       "max_payouts": {
        "v": 5,
        "verified": true,
-       "date": "2026-10-20",
+       "date": "2026-11-14",
        "src": [
-        "ptv_lucid_live"
+        "luc_pro_pay",
+        "luc_live"
        ],
-       "n": "5 payouts, then a live review"
+       "n": "payout 5 is the top payout level; Lucid's risk team decides the move to a live account (at least 1 payout needed): the sim account is modelled as ending after 5"
       },
       "first_wait_days": {
-       "v": 1,
-       "verified": false,
-       "date": "2026-10-18"
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_pay"
+       ],
+       "n": "no waiting period after the first trade"
+      },
+      "max_after_first": {
+       "v": 2500.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_pay"
+       ],
+       "n": "from the second payout on up to $2,500"
+      },
+      "cycle_min": {
+       "v": 500.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_pro_pay"
+       ],
+       "n": "profit goal: at least $500 of profit in the payout cycle (it resets after each payout)"
       }
      },
      "notes": [
-      "price $100/$140/$225/$420 vs $89/$129/$220/$420 vs $172 (50K)",
-      "DLL soft/optional (sources differ)",
-      "funded payout cap / buffer assumed"
+      "rules re-read 2026-11-14 from Lucid's own help center (research/props/firm_research.json)",
+      "daily loss: the ON version ($1,200 soft) is the profile; OFF = no daily limit (dearer)",
+      "funded LucidScale daily loss (60% of the best end-of-day profit) not modelled (only looser)",
+      "payout caps $2,000 first / $2,500 after; 40% best day of the cycle; $500 profit a cycle; 90%"
      ],
      "sold": true,
      "sources": [
@@ -7044,8 +9238,11 @@
      "price": {
       "v": null,
       "verified": false,
-      "date": "2026-10-18",
-      "n": "not quoted: use the owner's real price; look up the current discount code before buying (CLAUDE.md)"
+      "date": "2026-11-14",
+      "src": [
+       "luc_flex_custom"
+      ],
+      "n": "price set by the options chosen at checkout (daily loss on / off, 40% / 50% consistency); not quoted"
      },
      "sizing_preset": "mffu_builder_50k",
      "eval": {
@@ -7060,171 +9257,310 @@
       },
       "target": {
        "v": 3000.0,
-       "verified": false,
-       "date": "2026-10-18"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_eval"
+       ]
       },
       "dd_type": {
        "v": "eod",
-       "verified": false,
-       "date": "2026-10-18"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_dd"
+       ]
       },
       "dd_amount": {
        "v": 2000.0,
-       "verified": false,
-       "date": "2026-10-18"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_eval",
+        "luc_flex_dd"
+       ]
       },
       "lock": {
        "v": 100.0,
-       "verified": false,
-       "date": "2026-10-18",
-       "n": "the trailing floor stops this far above the start balance"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_dd"
+       ],
+       "n": "trail balance $52,100, locked floor $50,100"
       },
       "dll": {
        "v": "none",
        "verified": false,
-       "date": "2026-10-18",
-       "n": "no firm daily loss limit per the sources"
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_custom"
+       ],
+       "n": "optional at checkout (on / off); the amount of the ON version was not found: this profile is the OFF version"
       },
       "dll_type": {
        "v": "none",
        "verified": false,
-       "date": "2026-10-18"
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_custom"
+       ]
       },
       "max_micros": {
        "v": 40,
-       "verified": false,
-       "date": "2026-10-18"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_eval",
+        "luc_flex_scale"
+       ],
+       "n": "4 minis / 40 micros; no scaling in the evaluation"
       },
       "max_minis": {
        "v": 4,
-       "verified": false,
-       "date": "2026-10-18"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_eval"
+       ]
       },
       "consistency": {
-       "v": 0.5,
-       "verified": false,
-       "date": "2026-10-18",
-       "n": "eval best day <= this share of the profit target / total profit"
+       "v": 0.4,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_cons",
+        "luc_flex_eval"
+       ],
+       "n": "the biggest day <= 40% of the evaluation profit (50% with a paid add-on); evaluation only"
       },
       "min_days": {
-       "v": 2,
+       "v": 1,
        "verified": false,
-       "date": "2026-10-18"
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_eval"
+       ],
+       "n": "no minimum stated; the 40% rule needs 3+ winning days in practice"
       },
       "news": {
        "v": "none",
-       "verified": false,
-       "date": "2026-10-18",
-       "n": "allowed"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_faq"
+       ]
       }
      },
      "funded": {
       "dd_type": {
        "v": "eod",
-       "verified": false,
-       "date": "2026-10-18"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_funded",
+        "luc_flex_dd"
+       ]
       },
       "dd_amount": {
        "v": 2000.0,
-       "verified": false,
-       "date": "2026-10-18"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_funded"
+       ]
       },
       "lock": {
        "v": 100.0,
-       "verified": false,
-       "date": "2026-10-18"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_dd"
+       ]
       },
       "dll": {
        "v": "none",
        "verified": false,
-       "date": "2026-10-18"
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_funded"
+       ],
+       "n": "optional (chosen at the evaluation purchase)"
       },
       "dll_type": {
        "v": "none",
        "verified": false,
-       "date": "2026-10-18"
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_funded"
+       ]
       },
       "max_micros": {
        "v": 40,
-       "verified": false,
-       "date": "2026-10-18"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_scale"
+       ]
       },
       "max_minis": {
        "v": 4,
-       "verified": false,
-       "date": "2026-10-18"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_scale"
+       ]
       },
       "news": {
        "v": "none",
-       "verified": false,
-       "date": "2026-10-18",
-       "n": "allowed"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_faq"
+       ]
       },
       "max_active": {
        "v": null,
        "verified": false,
-       "date": "2026-10-18",
-       "n": "how many funded accounts of this plan one person may hold: not found"
+       "date": "2026-11-14",
+       "src": [
+        "luc_max_acc"
+       ],
+       "n": "no cap per plan: Lucid's 5 funded per household covers every product"
+      },
+      "max_micros_by_profit": {
+       "v": [
+        [
+         0,
+         20
+        ],
+        [
+         1000,
+         30
+        ],
+        [
+         2000,
+         40
+        ]
+       ],
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_scale"
+       ],
+       "n": "scaling plan by the sim profit: 2 minis at $0-$999, 3 at $1,000-$1,999, 4 from $2,000 (read as the balance above the start at the last close)"
       }
      },
      "payout": {
       "buffer": {
        "v": 0.0,
-       "verified": false,
-       "date": "2026-10-18"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_funded"
+       ],
+       "n": "no payout buffer"
       },
       "min": {
-       "v": 500,
-       "verified": false,
-       "date": "2026-10-18"
+       "v": 500.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_pay"
+       ]
       },
       "max": {
-       "v": 2000,
-       "verified": false,
-       "date": "2026-10-18"
+       "v": 2000.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_pay"
+       ],
+       "n": "50% of the profit up to $2,000 a payout at 50K (the caps do not rise)"
       },
       "share": {
        "v": 0.5,
-       "verified": false,
-       "date": "2026-10-18",
-       "n": "a request <= this share of the profit / balance above the buffer"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_pay"
+       ],
+       "n": "a request <= 50% of the profit"
       },
       "split": {
        "v": 0.9,
-       "verified": false,
-       "date": "2026-10-18"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_pay"
+       ]
       },
       "consistency": {
        "v": "none",
-       "verified": false,
-       "date": "2026-10-18"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_funded"
+       ],
+       "n": "no consistency rule once funded"
       },
       "min_days": {
-       "v": null,
-       "verified": false,
-       "date": "2026-10-18",
-       "n": "trading days a payout cycle"
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_pay"
+       ]
       },
       "win_days": {
-       "v": null,
-       "verified": false,
-       "date": "2026-10-18",
-       "n": "assumed in the research, not found: unknown"
+       "v": 5,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_pay"
+       ],
+       "n": "5 profitable days in the cycle"
       },
       "max_payouts": {
-       "v": null,
-       "verified": false,
-       "date": "2026-10-18"
+       "v": 5,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_pay"
+       ],
+       "n": "up to 5 payouts, then Lucid's live review"
       },
       "first_wait_days": {
-       "v": 1,
-       "verified": false,
-       "date": "2026-10-18"
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_pay"
+       ]
+      },
+      "win_day_min": {
+       "v": 150.0,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_pay"
+       ],
+       "n": "a profitable day counts at $150 or more (50K)"
+      },
+      "cycle_min": {
+       "v": 0.01,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "luc_flex_pay"
+       ],
+       "n": "a positive net profit for the cycle"
       }
      },
      "notes": [
-      "price varies $50-$150 at 50K (promos)",
-      "5-winning-day rule possibly removed Feb 2026"
+      "rules re-read 2026-11-14 from Lucid's own help center",
+      "eval 40% best-day rule (50% add-on): slower than LucidPro for LIT's one-winner eval",
+      "funded: no buffer, no consistency, 5 profitable days >= $150, 50% of the profit up to $2,000, contract scaling 20 / 30 / 40 micros"
      ],
      "sold": true,
      "sources": [
@@ -10268,8 +12604,12 @@
      "price": {
       "v": null,
       "verified": false,
-      "date": "2026-10-18",
-      "n": "not quoted: use the owner's real price; look up the current discount code before buying (CLAUDE.md)"
+      "date": "2026-11-14",
+      "src": [
+       "fn_promo",
+       "fn_price_rapid"
+      ],
+      "n": "list $299.99; FundedNext's own help center ran an up-to-50% code RAPID for Rapid Daily / Pro (Oct 2026): about $150 (one site, checked 2026-11-11); other codes 30-47% (affiliate claims). Confirm at checkout"
      },
      "sizing_preset": "mffu_builder_50k",
      "eval": {
@@ -10285,86 +12625,105 @@
       "target": {
        "v": 3000.0,
        "verified": true,
-       "date": "2026-10-20",
+       "date": "2026-11-14",
        "src": [
+        "fn_objectives",
         "fn_rd_rules"
        ]
       },
       "dd_type": {
        "v": "eod",
        "verified": true,
-       "date": "2026-10-20",
+       "date": "2026-11-14",
        "src": [
-        "fn_dll"
-       ]
+        "fn_rd_rules"
+       ],
+       "n": "updates once a day at the close; a floating loss through the max loss during a trade is an instant breach"
       },
       "dd_amount": {
        "v": 2000.0,
        "verified": true,
-       "date": "2026-10-20",
+       "date": "2026-11-14",
        "src": [
-        "fn_dll"
+        "fn_rd_rules"
        ]
       },
       "lock": {
        "v": 100.0,
        "verified": true,
-       "date": "2026-10-20",
-       "n": "the trailing floor stops this far above the start balance",
+       "date": "2026-11-14",
        "src": [
-        "fn_dll"
-       ]
+        "fn_rd_rules"
+       ],
+       "n": "stops trailing at $50,100"
       },
       "dll": {
-       "v": 1000,
+       "v": 1000.0,
        "verified": true,
-       "date": "2026-10-20",
-       "src": [
-        "fn_dll"
-       ]
-      },
-      "dll_type": {
-       "v": null,
-       "verified": false,
-       "date": "2026-10-18",
-       "n": "assumed in the research, not found: unknown"
-      },
-      "max_micros": {
-       "v": 40,
-       "verified": false,
-       "date": "2026-10-18"
-      },
-      "max_minis": {
-       "v": 4,
-       "verified": false,
-       "date": "2026-10-18"
-      },
-      "consistency": {
-       "v": "none",
-       "verified": true,
-       "date": "2026-10-20",
-       "n": "eval best day <= this share of the profit target / total profit",
+       "date": "2026-11-14",
        "src": [
         "fn_rd_rules"
        ]
       },
+      "dll_type": {
+       "v": "soft",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_rules"
+       ],
+       "n": "trading paused for the rest of the day; only the max loss ends the account"
+      },
+      "max_micros": {
+       "v": 40,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_rules"
+       ]
+      },
+      "max_minis": {
+       "v": 4,
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_rules"
+       ]
+      },
+      "consistency": {
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_rules"
+       ],
+       "n": "Rapid Daily has no consistency rule at any stage"
+      },
       "min_days": {
        "v": 1,
        "verified": false,
-       "date": "2026-10-18"
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_rules"
+       ],
+       "n": "no time limit; no minimum days stated"
       },
       "news": {
-       "v": null,
-       "verified": false,
-       "date": "2026-10-18",
-       "n": "check"
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_allowed",
+        "fn_faq"
+       ],
+       "n": "news trading allowed on every account model, Rapid included"
       }
      },
      "funded": {
       "dd_type": {
        "v": "eod",
        "verified": true,
-       "date": "2026-10-20",
+       "date": "2026-11-14",
        "src": [
         "fn_rd_funded"
        ]
@@ -10372,89 +12731,111 @@
       "dd_amount": {
        "v": 2000.0,
        "verified": true,
-       "date": "2026-10-20",
+       "date": "2026-11-14",
        "src": [
         "fn_rd_funded"
        ]
       },
       "lock": {
        "v": 100.0,
-       "verified": false,
-       "date": "2026-10-18"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_funded"
+       ],
+       "n": "the max loss is set to $50,100 after the first reward"
       },
       "dll": {
-       "v": 1000,
+       "v": 1000.0,
        "verified": true,
-       "date": "2026-10-20",
+       "date": "2026-11-14",
        "src": [
-        "fn_dll"
+        "fn_rd_rules"
        ]
       },
       "dll_type": {
-       "v": null,
-       "verified": false,
-       "date": "2026-10-18",
-       "n": "assumed in the research, not found: unknown"
+       "v": "soft",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_rules"
+       ]
       },
       "max_micros": {
        "v": 40,
-       "verified": false,
-       "date": "2026-10-18"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_rules"
+       ]
       },
       "max_minis": {
        "v": 4,
-       "verified": false,
-       "date": "2026-10-18"
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_rules"
+       ]
       },
       "news": {
-       "v": null,
-       "verified": false,
-       "date": "2026-10-18",
-       "n": "check"
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_allowed"
+       ]
       },
       "max_active": {
        "v": null,
        "verified": false,
-       "date": "2026-10-18",
-       "n": "how many funded accounts of this plan one person may hold: not found"
+       "date": "2026-11-14",
+       "src": [
+        "fn_accounts"
+       ],
+       "n": "no cap per plan: 5 active FundedNext accounts per household in all (copy_profiles.json accounts.fundednext)"
       }
      },
      "payout": {
       "buffer": {
-       "v": 2100,
+       "v": 2100.0,
        "verified": true,
-       "date": "2026-10-20",
+       "date": "2026-11-14",
        "src": [
-        "fn_rd_funded"
-       ]
+        "fn_rd_funded",
+        "fn_rd_elig"
+       ],
+       "n": "the end-of-day balance must clear $52,100"
       },
       "min": {
        "v": 250.0,
        "verified": true,
-       "date": "2026-10-20",
+       "date": "2026-11-14",
        "src": [
         "fn_rd_funded"
        ]
       },
       "max": {
        "v": 1200.0,
-       "verified": true,
-       "date": "2026-10-20",
+       "verified": false,
+       "date": "2026-11-14",
        "src": [
+        "fn_rd_elig",
         "fn_rd_funded"
        ],
-       "n": "$250 - $1,200 a request (hub, confirmed)"
+       "n": "sources conflict: $1,200 (eligibility article); the All Rules page says the cap rises from the 4th payout; a Rapid Pro page says $1,000 for 1-3 and $1,250 for 4-5. The $1,200 reading is kept"
       },
       "share": {
-       "v": null,
-       "verified": false,
-       "date": "2026-10-18",
-       "n": "a request <= this share of the profit / balance above the buffer"
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_funded"
+       ]
       },
       "split": {
        "v": 0.9,
        "verified": true,
-       "date": "2026-10-20",
+       "date": "2026-11-14",
        "src": [
         "fn_rd_funded"
        ]
@@ -10462,16 +12843,19 @@
       "consistency": {
        "v": "none",
        "verified": true,
-       "date": "2026-10-20",
+       "date": "2026-11-14",
        "src": [
         "fn_rd_funded"
        ]
       },
       "min_days": {
-       "v": null,
-       "verified": false,
-       "date": "2026-10-18",
-       "n": "trading days a payout cycle"
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_elig"
+       ],
+       "n": "daily payouts: no minimum trading days"
       },
       "win_days": {
        "v": null,
@@ -10482,22 +12866,34 @@
       "max_payouts": {
        "v": 5,
        "verified": true,
-       "date": "2026-10-20",
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_elig"
+       ],
+       "n": "the account is 'Concluded' after 5 rewards"
+      },
+      "first_wait_days": {
+       "v": "none",
+       "verified": true,
+       "date": "2026-11-14",
+       "src": [
+        "fn_rd_elig"
+       ]
+      },
+      "cycle_min": {
+       "v": 500.0,
+       "verified": true,
+       "date": "2026-11-14",
        "src": [
         "fn_rd_funded"
        ],
-       "n": "the account ends after 5 rewards"
-      },
-      "first_wait_days": {
-       "v": 1,
-       "verified": false,
-       "date": "2026-10-18"
+       "n": "$500 of profit in the current cycle"
       }
      },
      "notes": [
-      "prices for 50K/100K not found",
-      "DLL soft assumed",
-      "payout caps assumed"
+      "rules re-read 2026-11-14 from FundedNext's own help center",
+      "payout cap conflict ($1,200 vs a rising cap)",
+      "bot rule: no identical trades across accounts (FAQ) vs own-account copying allowed (copy policy): a written yes first (hold)"
      ],
      "sold": true,
      "sources": [

@@ -53,6 +53,23 @@ TAX = MP.TAX
 B25.OPTS.setdefault("room 40% + cap $300", (B25.tw(0.4, 300), None, None))
 
 
+class GFFirst(BL.GF):
+    """night-payfirst 2026-11-23 (owner: "take it sooner, one payout small so we can immediately buy more accounts"): ATLAS asks its
+    FIRST payout on the first day MFFU allows one (engine/funded_life first_at_min: >= $250 above the buffer, every rule kept), then
+    the normal plan (the full max). The live code's rule, played on the same paths."""
+
+    def __init__(self, *a, **k):
+        super().__init__(*a, **k)
+        self._ask0 = float(self.P["ask_above"])
+
+    def _fast_track(self, day):
+        self.P["ask_above"] = float(self.P["pay_min"]) if not self.pays else self._ask0
+        return super()._fast_track(day)
+
+
+A25_FIRST_AT_MIN = True          # engine/account_b.ATLAS_FIRST_AT_MIN (owner 2026-11-23)
+
+
 # ================================================================================================ the seats from TODAY
 def z50_seat():
     B = MP.by()
@@ -80,9 +97,10 @@ def a25_seat(ask=None, pct=None, need=None, BYa=None):
         cfg["pct"] = pct
     if need:
         cfg["need"] = need
-    s = BL.Seat(lambda _=None: BL.GEv(BL.E25, BL.Zatlas25(), stuck=200.0), lambda: BL.GF("builder25k", cfg, z, ask=ask),
+    G = GFFirst if A25_FIRST_AT_MIN and ask is None else BL.GF       # a lever's own ask keeps its old meaning
+    s = BL.Seat(lambda _=None: BL.GEv(BL.E25, BL.Zatlas25(), stuck=200.0), lambda: G("builder25k", cfg, z, ask=ask),
                 MP.P25, [])
-    f = BL.GF("builder25k", cfg, z, ask=ask)
+    f = G("builder25k", cfg, z, ask=ask)
     if A25_STATE:
         f.bal = f.trade_pnl = A25_STATE["bal"]
         f.cyc = list(A25_STATE["cyc"])

@@ -261,6 +261,8 @@ def normalize(spec: dict, primary: dict | None = None, seen_ids=(), seen_names=(
         out["lane"] = str(s.get("lane"))     # "rapid": LIT's lane of the Rapid EOD (engine/rapid.py: ATLAS shares the account)
     if s.get("slot") == "rapid2" and out.get("lane") == "rapid":
         out["slot"] = "rapid2"               # the 2nd Rapid (engine/rapid.py, data/rapid2.json): its own ATLAS / lifecycle key
+    if s.get("combo"):
+        out["combo"] = s.get("combo")        # engine/combo25 test harnesses only (the real bot reads the owner's switch, never this)
     if s.get("lit_bank") is True and out.get("lane") == "rapid":
         out["lit_bank"] = True               # the Rapid 25K's "bank at the room" option (engine/rapid.lit_bank; OFF by default)
     pre = PRESETS.get(out["preset"])
@@ -561,7 +563,12 @@ class Account:
 
     def shared(self):
         """The other strategy on this SAME account (engine/rapid.RapidAtlas: ATLAS on the Rapid EOD; engine/lit25.SharedAtlas:
-        ATLAS on its funded 25K), or None."""
+        ATLAS on its funded 25K; engine/combo25.ComboAtlas: ATLAS on this extra Builder account, the owner's combo switch), or None."""
+        cx = getattr(getattr(self.router, "bot", None), "acct_x", None)
+        if cx:                                           # engine/combo25 (OFF = {} / absent: today's path below, untouched)
+            lx = cx.get(self.id)
+            if lx is not None:
+                return lx
         if self.spec.get("lane") == "lit25":
             ab = getattr(getattr(self.router, "bot", None), "acct_b", None)
             return ab if getattr(ab, "shared_lane", None) == "lit25" and getattr(ab, "name", None) == self.spec.get("nt_account") else None
@@ -990,6 +997,11 @@ class Account:
             why = why or self.router.opposite_open(1 if ent["dir"] == 1 else -1, exclude=self)
             fl = getattr(self.router.bot, "fleet", None)           # engine/fleet.py (off = None): no hedge vs a follower
             why = why or (fl.opposite_open(1 if ent["dir"] == 1 else -1) if fl is not None else None)
+            sh0 = self.shared()
+            if not why and getattr(sh0, "combo_lane", False):
+                # engine/combo25 (the owner's combo switch, OFF = never here): first_in on this account's ONE position: ATLAS
+                # holding it at Zlarior's entry minute (entered at / before it, not out by then) = this LIT copy is skipped here
+                why = sh0.holds_at(int(ent["entry_t"]), sym, now, d=1 if ent["dir"] == 1 else -1)
             q = 0 if why else self.qty_for(ent, now)
             if q and not why:
                 # night-rehearse 2026-11-18: ATLAS's 25K (account B) / the Rapid's ATLAS / BLITZ on ANOTHER account holding the
@@ -1256,10 +1268,12 @@ class AccountRouter:
         b = self.bot
         mine = str(((acc.spec if acc is not None else {}) or {}).get("nt_account") or "").strip()
         same = acc.shared() if acc is not None else None
-        for attr, who in (("acct_b", "ATLAS's 25K"), ("acct_r", "ATLAS on the Rapid EOD"), ("acct_r2", "ATLAS on the Rapid EOD #2"),
-                          ("acct_c", "BLITZ (account C)"), ("acct_rb", "BLITZ on the Rapid EOD"),
-                          ("acct_rb2", "BLITZ on the Rapid EOD #2")):
-            o = getattr(b, attr, None)
+        rows = [(getattr(b, attr, None), who) for attr, who in
+                (("acct_b", "ATLAS's 25K"), ("acct_r", "ATLAS on the Rapid EOD"), ("acct_r2", "ATLAS on the Rapid EOD #2"),
+                 ("acct_c", "BLITZ (account C)"), ("acct_rb", "BLITZ on the Rapid EOD"),
+                 ("acct_rb2", "BLITZ on the Rapid EOD #2"))]
+        rows += [(o, getattr(o, "label", "ATLAS on an extra account")) for o in (getattr(b, "acct_x", None) or {}).values()]
+        for o, who in rows:
             if o is None or o is same or getattr(o, "open_t", None) is None:
                 continue
             if mine and str(getattr(o, "name", "") or "").strip() == mine:

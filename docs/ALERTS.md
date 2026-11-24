@@ -31,6 +31,13 @@ What buzzes (engine/alert_map.py; `python -X utf8 -m engine.alert_map` prints th
   `%USERPROFILE%\.olympus\ntfy.json`, never in the repo or a public post.
 - Telegram / Discord (below) are optional extras: when set up they go first, ntfy and the app stay the backups.
 
+## Test from your phone, PC off is fine (day-notify 2026-11-23)
+GitHub app (or github.com in Safari) -> **dcondax1-wq/olympus** -> **Actions** -> **Send me a test alert** -> **Run workflow** -> **Run workflow**.
+Within ~1 minute: "TEST: Olympus alerts work 4:05 PM ET" on ntfy (and Telegram / Discord when set up). The run turns **green** when it
+reached you, **red** when not (open it: one table, each channel ok / failed + what to fix). Needs the repo secret `LE_NTFY_TOPIC` and the
+workflow file on `main` (research/handoff/2026-11-23/day-notify/LEAD_WIRES.md). It cannot test the Olympus app (only your PC can push
+there): that is the app's own **Send a test** button. After each PC update you also get ONE "Update installed, alerts OK".
+
 # Phone alerts: Telegram / Discord first (engine/alert_bus.py, 2026-11-21)
 
 One `send(event)` for every alert. Order: **Telegram -> Discord -> private ntfy -> the Olympus app (Web Push)**; the first one

@@ -57,7 +57,7 @@ Common to every MFFU account
 | Split | **80%** to you ($1,000 asked = $800 lands) | 2026-11-20 |
 | Payouts | **5 sim payouts, then MFFU moves you to live**; your other sim accounts go **dormant** (see 6) | 2026-11-20 |
 | News / inactivity | allowed / 7 days | 2026-11-20 |
-| Bot extras | the payout push waits for the max request: **$1,000 at $2,100 MFFU profit** ($27,100 on NinjaTrader; MFFU may allow less earlier, the bot says "MFFU would pay $X; your plan waits for $1,000 at $2,100"); ATLAS 1 micro under $100 room (owner yes) | - |
+| Bot extras | **first payout at MFFU's minimum** (owner 2026-11-23: "take it sooner, one payout small so we can immediately buy more accounts"): the first close at >= $1,350 profit with the best day <= 50% and the 48 h done, asking what MFFU allows that day ($250 at $1,350); after it the payout push waits for the max request: **$1,000 at $2,100 MFFU profit** ($27,100 on NinjaTrader; MFFU may allow less earlier, the bot says "MFFU would pay $X; your plan waits for $1,000 at $2,100"); ATLAS 1 micro under $100 room (owner yes) | - |
 
 ## 4. Builder 50K SIM FUNDED (when Zlarior passes)
 | Rule | Value |

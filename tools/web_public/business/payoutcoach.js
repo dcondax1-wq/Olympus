@@ -71,9 +71,12 @@
     out.eligible = out.why.length === 0;
     out.request_today = out.eligible ? r2(Math.min(P.pay_max, above)) : 0;
     // the plan (POLICY): ask when the full max is above the buffer, else wait (MFFU would pay less now)
-    out.plan_line = r2(P.buffer + P.pay_max);
-    out.plan_ready = out.eligible && above >= P.pay_max - 1e-9;
-    out.plan_wait = out.eligible && !out.plan_ready ? r2(P.pay_max - above) : 0;
+    // night-payfirst 2026-11-23 (owner): first_at_min (ATLAS) = the FIRST payout on the first day MFFU allows one, for what it allows
+    out.first_at_min = !!s.first_at_min && nPay === 0;
+    const askAt = out.first_at_min ? P.pay_min : P.pay_max;
+    out.plan_line = r2(P.buffer + askAt);
+    out.plan_ready = out.eligible && above >= askAt - 1e-9;
+    out.plan_wait = out.eligible && !out.plan_ready ? r2(askAt - above) : 0;
     out.status = out.lost ? 'lost' : out.graduated ? 'graduated' : out.plan_ready ? 'ready' : out.eligible ? 'allowed' : 'not_yet';
     const req = out.request_today;
     out.to_you = r2(req * P.split);
@@ -115,7 +118,7 @@
     const cp = num(f.cycle_profit);
     return { balance: bal, cycle_start_balance: bal != null && cp != null ? r2(bal - cp) : null, best_day: num(f.best_day),
              cycle_days: num(f.cycle_days), first_trade: f.first_trade || null, last_trade: f.last_trade || x.last_trade || null,
-             payouts_n: num(f.payouts_n), room: f.lost ? 0 : num(f.room), eligible_from: f.eligible_from || null };
+             payouts_n: num(f.payouts_n), room: f.lost ? 0 : num(f.room), eligible_from: f.eligible_from || null, first_at_min: !!f.first_at_min };
   }
 
   // the card's rows (= engine/payout_coach.lines)
