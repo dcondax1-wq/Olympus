@@ -85,6 +85,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 > after 0 real winners in 7 live-window twin trades (NQ 31k -> 25k). V1 longs off / V2 all off when prior VIX > 25 and the 20-day trend is down: both lose in 2021-25 (+$1,265 -> -$646 / -$5,698) and Jan-Jun (-$1.2k / -$3.1k; eval -$3.1k / -$7.5k), 0 trades in Jul-Oct, placebo p 0.65 / 0.83. VIX 25+ is LIT's best band (PF 2.5 / 22.7); the live losers came at VIX 17-21. 7+ trades without a +0.5R winner: 25 runs in 2021-25, 4 in Jan-Jun 2026 (longest 12) = variance. Watch only: VIX 20-25 + downtrend (2021-25 PF 0.01, n28; Jan-Jun PF 5.9, n5).
 > Write-ups: [[lit-vix-downtrend-2026-11-24|LIT in high-VIX falling markets]]
 
+> [!failure]- Walk-forward portfolio of every stored run + 24-hour coverage
+> 1,983 runs, 508 pass the PICK rule (2021-24 + Jan-Jun 2026; corr with LIT / ATLAS < 0.3), greedy-Sharpe adds 6 at 25% of LIT's swing. Hold-outs vs LIT + ATLAS: 2025 +$5,453 vs +$4,480 but PF 1.09 vs 1.13, DD -$10.6k vs -$7.6k; Jul-Oct +$19,324 vs +$16,311 but PF 2.49 vs 3.36, 50K pass/fail 64/36 vs 100/0; +15 trades/week. Fails. Coverage: 02:00-15:30 ET covered every weekday, 18:00-02:00 (Asia) empty (Asia ideas already rejected).
+> Write-ups: [[portfolio-2026-11-24|24-hour coverage + a walk-forward portfolio of everything built]]
+
 > [!failure]- Stops x targets x TIME
 > 19 pre-registered variants on the live LIT trades, risk-matched $ + 3 MFFU evals, Bonferroni p < 0.0026. Tighter stops (1m CISD candle 7 pts, 1m entry swing 14-17, 3m FVG 15-22) x live price / 2R / 3R: every one loses Jul-Oct ($8.3k-$14.0k under live); 40-58% stopped, 28-41% of those were live winners (wicked out); the 1m swing's Jan-Jun +$75k is the size rule risking more $ (same $: +$8.8k / -$8.3k / 2021-25 -$23.0k). Targets 15m / 1h liquidity, opposing session high, 1h FVG, fixed 1.5 / 2 / 3R: hit up to 2x as often, all lose Jan-Jun $8-25k (1h FVG H2 +$235, p 0.50; 3R 2021-25 +$19k but both 2026 halves lose). TIME: winners +0.5R median 10 min, target median 180 min; N = 26 min from ...
 > Write-ups: [[stops-targets-time-2026-11-24|"Stops x targets x TIME]]

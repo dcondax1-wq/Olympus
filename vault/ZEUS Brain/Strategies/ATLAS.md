@@ -63,6 +63,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 ## Tested and rejected
 
+> [!failure]- Walk-forward portfolio of every stored run + 24-hour coverage
+> 1,983 runs, 508 pass the PICK rule (2021-24 + Jan-Jun 2026; corr with LIT / ATLAS < 0.3), greedy-Sharpe adds 6 at 25% of LIT's swing. Hold-outs vs LIT + ATLAS: 2025 +$5,453 vs +$4,480 but PF 1.09 vs 1.13, DD -$10.6k vs -$7.6k; Jul-Oct +$19,324 vs +$16,311 but PF 2.49 vs 3.36, 50K pass/fail 64/36 vs 100/0; +15 trades/week. Fails. Coverage: 02:00-15:30 ET covered every weekday, 18:00-02:00 (Asia) empty (Asia ideas already rejected).
+> Write-ups: [[portfolio-2026-11-24|24-hour coverage + a walk-forward portfolio of everything built]]
+
 > [!failure]- 2026-11-22 Regime guard round 3
 > (research/regime/guard3.py, regime-guard3-2026-11-22.md): shadow-setup hit rate R1, intraday variance ratio R2, trend-day share R3, thin volume R4, NQ-VIX co-movement R5, 2-of-5 vote R6; half / out; LIT and ATLAS. **0 of 22 pass, all fail the stage-0 kill-gate.** R1 sweeps pay worse in 2026 than in 2021-25 (flags 2026 87.5/80.8% vs OLD 70.4%). R5 flags LIT's best days. Best placebo 47.5% / 68.5% (95 needed). Closes the regime lever for market-weather and market-wide sweep signals, not every possible signal. ATLAS funded baseline moved 8.5/9.2/94.5 -> 8.2/8.3/94.2 because of a code change after 153552591; verdict unaffected.
 
