@@ -1,16 +1,16 @@
 {
- "generated_at": "2026-10-16T17:42:59",
+ "generated_at": "2026-10-16T15:32:38",
  "price_space": "back-adjusted (additive) to the current front month; bars since the last roll are exact exchange prices",
  "files": {
   "ES_15m.csv": {
-   "rows": 35769,
+   "rows": 35586,
    "from_et": "2025-04-13 18:00:00-04:00",
-   "to_et": "2026-10-16 16:45:00-04:00"
+   "to_et": "2026-10-15 20:00:00-04:00"
   },
   "ES_1h.csv": {
-   "rows": 8946,
+   "rows": 8901,
    "from_et": "2025-04-13 18:00:00-04:00",
-   "to_et": "2026-10-16 16:00:00-04:00"
+   "to_et": "2026-10-15 20:00:00-04:00"
   },
   "ES_1m.csv": {
    "rows": 28807,
@@ -18,19 +18,19 @@
    "to_et": "2026-10-15 20:10:00-04:00"
   },
   "ES_5m.csv": {
-   "rows": 107307,
+   "rows": 106699,
    "from_et": "2025-04-13 18:00:00-04:00",
-   "to_et": "2026-10-16 16:55:00-04:00"
+   "to_et": "2026-10-15 20:10:00-04:00"
   },
   "NQ_15m.csv": {
-   "rows": 118111,
+   "rows": 118072,
    "from_et": "2021-10-17 18:00:00-04:00",
-   "to_et": "2026-10-16 16:45:00-04:00"
+   "to_et": "2026-10-16 07:00:00-04:00"
   },
   "NQ_1h.csv": {
-   "rows": 29538,
+   "rows": 29529,
    "from_et": "2021-10-17 18:00:00-04:00",
-   "to_et": "2026-10-16 16:00:00-04:00"
+   "to_et": "2026-10-16 07:00:00-04:00"
   },
   "NQ_1m.csv": {
    "rows": 28569,
@@ -38,15 +38,14 @@
    "to_et": "2026-10-16 15:08:00-04:00"
   },
   "NQ_5m.csv": {
-   "rows": 354333,
+   "rows": 354216,
    "from_et": "2021-10-17 18:00:00-04:00",
-   "to_et": "2026-10-16 16:55:00-04:00"
+   "to_et": "2026-10-16 07:10:00-04:00"
   }
  },
  "nq_sources": {
   "tv-NQ1!": [
    "NQ1_5m_chunk_2026-08-24.csv",
-   "NQ1_5m_chunk_2026-10-16_regular.csv",
    "NQ1_5m_harvest_full.csv"
   ],
   "skipped_no_volume": [
@@ -60,14 +59,21 @@
   "yahoo-NQ=F": "NQ_5m.yahoo_backup.csv"
  },
  "nq_sessions_by_source": {
-  "tv-NQ1!": 1293
+  "tv-MNQ1!": 40,
+  "tv-NQ1!": 1253
  },
  "nq_session_source_ranges": [
   {
    "source": "tv-NQ1!",
    "from": "2021-10-18",
+   "to": "2026-08-21",
+   "sessions": 1253
+  },
+  {
+   "source": "tv-MNQ1!",
+   "from": "2026-08-24",
    "to": "2026-10-16",
-   "sessions": 1293
+   "sessions": 40
   }
  ],
  "volume_units": {
@@ -94,8 +100,7 @@
    "ES1_5m_chunk_2026-03-30.csv",
    "ES1_5m_chunk_2026-05-18.csv",
    "ES1_5m_chunk_2026-07-06.csv",
-   "ES1_5m_chunk_2026-08-24.csv",
-   "ES1_5m_chunk_2026-10-16_regular.csv"
+   "ES1_5m_chunk_2026-08-24.csv"
   ],
   "yahoo-ES=F": "clean ES_5m (2026-08-06 ->)",
   "builder": "tools/stitch_es_chunks.py"
