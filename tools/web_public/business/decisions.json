@@ -15,7 +15,7 @@
     "no",
     "later"
    ],
-   "status": "no",
+   "status": "yes",
    "source": "research/writeups/payout-policy-funded25-2026-11-17.md",
    "applies": "engine/funded_life builder25k ask_above 750 -> 1000 (push line only)",
    "added": "2026-11-17",
@@ -26,8 +26,8 @@
     "y2021_25": -6
    },
    "risk": "25K #2 no payout in 6 months 16.9% -> 18.5%; in a 2021-25-like market it costs $6 a month",
-   "recommend": "no",
-   "recommend_why": "Keep the $750 ping: waiting for $1,000 pays the same or a little less and each payout comes 2-5 trading days later. At real fills it is a little safer on ATLAS's 25K, but room 40% does that job much better; on the 25K #2 it still costs about $5 a month.",
+   "recommend": "yes",
+   "recommend_why": "Superseded 2026-11-21: the payout plan is the max request ($1,000 at $2,100 MFFU profit on a 25K, $2,000 at $4,100 on a 50K; CLAUDE.md). The PAYOUT READY push now fires at that line.",
    "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)",
    "answered": "2026-11-20 ~08:00 ET in chat (\"Yes to whatever you think it should be ... make sure your choice is good\"): Claude's pick from the data"
   },
@@ -146,28 +146,54 @@
    "id": "keep-1000-rapid",
    "question": "Rapid funded payouts: always leave $1,000 above the buffer in each Rapid?",
    "why": "Leaving more in the Rapid after each payout gives the bot more room, so fewer funded accounts get stuck; each payout is smaller and comes later.",
-   "impact": "-$20 a month in a Jul-Oct-like market (+$56 Jan-Jun-like, -$3 2021-25-like); first payout about 4 trading days later.",
-   "impact_usd": -20,
+   "impact": "About $0 on its own: -$18 a month in a Jul-Oct-like market (+$49 Jan-Jun-like, -$2 2021-25-like); first payout about 1-2 weeks later.",
+   "impact_usd": -18,
    "options": [
     "yes",
     "no",
     "later"
    ],
-   "status": "no",
-   "source": "research/writeups/rapid-levers-2026-11-16.md",
+   "status": "open",
+   "source": "research/writeups/rapid-funded-refit-2026-11-21.md",
    "applies": "Rapid funded payout rule: the 25K keeps $500 above the buffer today (a yes raises it to $1,000); the 50K preset keeps $1,000 already",
    "added": "2026-11-16",
-   "usd_month": -20,
+   "usd_month": -18,
    "usd_month_by": {
-    "jan_jun": 56,
-    "jul_oct": -20,
-    "y2021_25": -3
+    "jan_jun": 49,
+    "jul_oct": -18,
+    "y2021_25": -2
    },
-   "risk": "Rapid 25K no payout in 6 months 10.4% -> 11.5%; Rapid 25K funded account lost 28.3% -> 19.7%; in a 2021-25-like market it costs $3 a month",
-   "recommend": "no",
-   "recommend_why": "Keep $500 on the Rapid 25K (as built): payouts come sooner for about the same money. $1,000 is the safer choice (fewer accounts lost), so a yes is fine if you prefer safety. A Rapid 50K keeps $1,000 already.",
-   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)",
-   "answered": "2026-11-20 ~08:00 ET in chat (\"Yes to whatever you think it should be ... make sure your choice is good\"): Claude's pick from the data"
+   "risk": "Safer: a funded Rapid 25K lost in 6 months 24.0% -> 14.2% (Jan-Jun-like), 34.5% -> 24.8% (Jul-Oct-like): about 10 fewer lost Rapids in 100.",
+   "recommend": "yes",
+   "recommend_why": "Yes, best together with rapid-funded-refit (a bigger winner cap): the $1,000 kept in pays for the bigger cap's extra risk. On its own it costs about nothing and loses 10 fewer funded Rapids in 100.",
+   "valued": "2026-11-21 tools/money/rapid_funded_refit.py (ATLAS 10 ticks a side + sized on a 10-tick stop, 1,000 paths, Rapid eval as built; $ a month after fees and MFFU's split, before the 30% tax pot; design research/second/rapid_funded_refit_design.md)",
+   "answered": "2026-11-20 ~08:00 ET in chat (\"Yes to whatever you think it should be ... make sure your choice is good\"): Claude's pick from the data | reopened 2026-11-21: re-valued at real fills with the funded refit"
+  },
+  {
+   "id": "rapid-funded-refit",
+   "question": "Rapid funded: let a winner pay up to $2,000 on the 25K ($4,000 on a 50K) and keep $1,000 ($2,000) in the account?",
+   "why": "The Rapid funded presets copied the Builder's winner cap ($1,000 / $2,000), made for the Builder's 50% consistency and $2,000 payout cap. MFFU's Rapid EOD funded has neither. A bigger cap pays more; keeping more in the account stops it losing more.",
+   "impact": "Rapid 25K: +$314 a month in a Jul-Oct-like market (+$541 Jan-Jun-like, -$1 2021-25-like). A Rapid 50K (once bought): +$647 / +$1,460 / +$4.",
+   "impact_usd": 314,
+   "options": [
+    "yes",
+    "no",
+    "later"
+   ],
+   "status": "open",
+   "source": "research/writeups/rapid-funded-refit-2026-11-21.md",
+   "applies": "engine/multi_account presets mffu_rapid_eod_25k / _50k sizing.funded max_win (1,000 -> 2,000 / 2,000 -> 4,000) + engine/rapid.PLANS cushion (500 -> 1,000 / 1,000 -> 2,000); funded stage only, after a Sim check",
+   "added": "2026-11-21",
+   "usd_month": 314,
+   "usd_month_by": {
+    "jan_jun": 541,
+    "jul_oct": 314,
+    "y2021_25": -1
+   },
+   "risk": "Funded Rapid 25K lost in 6 months 24.0% -> 18.3% (Jan-Jun-like), 34.5% -> 31.8% (Jul-Oct-like); 50K 19.4% -> 15.3% / 22.7% -> 21.6%. The 50K stays at $4,000 (not $7,500): its biggest day stays near $7,200, far from MFFU's $10,000 day that would move it to live and pause every sim account. The cap alone (without keeping more in) loses more accounts.",
+   "recommend": "yes",
+   "recommend_why": "More money in both 2026 halves and fewer lost accounts; ~$0 in 2021-25-like markets. Needs both halves: the bigger cap and the bigger amount kept in.",
+   "valued": "2026-11-21 tools/money/rapid_funded_refit.py (ATLAS 10 ticks a side + sized on a 10-tick stop, 1,000 paths, Rapid eval as built; $ a month after fees and MFFU's split, before the 30% tax pot; design research/second/rapid_funded_refit_design.md)"
   },
   {
    "id": "ask-mffu-parallel",
