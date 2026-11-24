@@ -90,7 +90,13 @@ def main() -> int:
     ok(not re.search(r"\bAccount\b|Submit|CreateOrder|Cancel|Flatten|incoming|\$\"|\?\.", cs_code), "LE_TickRec.cs read-only + C# 5")
     users = [p for p in glob.glob(os.path.join(ROOT, "**", "*.py"), recursive=True)
              if "tickrec" not in os.path.basename(p) and "orderflow" not in p and "/scratch" not in p
-             and re.search(r"engine\.tickrec|from \. import tickrec|import tickrec", open(p, encoding="utf-8", errors="replace").read())]
+             and re.search(r"^\s*(import engine\.tickrec|from engine\.tickrec|from engine import [^\n#]*\btickrec\b|"
+                           r"from \. import [^\n#]*\btickrec\b|import tickrec\b)",
+                           open(p, encoding="utf-8", errors="replace").read(), re.M)]
+    # day-ofready 2026-11-24: real import lines only (a "python -m engine.tickrec" command line is not an import; run_area.py
+    # and tools/finish_tonight.py were false hits); engine/ofsum.py may import it: the read-only summary builder, itself
+    # imported by nothing in the bot (tests/test_ofready.py checks that)
+    users = [p for p in users if os.path.relpath(p, ROOT).replace(os.sep, "/") not in ("engine/ofsum.py", "tests/test_ofready.py")]
     # the one allowed caller: tools/pc_report.py STARTS `python -m engine.tickrec autopilot` as its own process (no import)
     rp = os.path.join(ROOT, "tools", "pc_report.py")
     if rp in users and not re.search(r"^\s*(from engine import tickrec|import engine\.tickrec|from engine\.tickrec)",

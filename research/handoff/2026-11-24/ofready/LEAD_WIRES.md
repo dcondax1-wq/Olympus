@@ -1,5 +1,20 @@
 # day-ofready: lead wires (after hours, with a red team; nothing below touches the trade path)
 
+**Update 2026-11-24: W1-W4 are now IMPLEMENTED on day-proedge (commit 50c7211b7+), not just proposed.** What is left for the
+lead: red team, land after hours, and (optional) show `tr.h` (tick-day holes) / `tr.e` (bf_errors) on the order-flow pillar line
+(the PC report posts them; no page reads them yet - pages are lead-wired). Details of what was done:
+- W1 `engine/tickrec.build_summaries()` (called from `autopilot()` after `write_tiny()`): oldest first, 10-minute budget a kick,
+  try/except around everything (returns a dict, never raises). `holes()` + `tiny()` keys `h`, `e`; `tools/pc_report.py` posts them
+  only when set.
+- W2 `engine/datafeed.EXTRAS` + `DAY_FILE` (+ `of/manifest.json`) in the same commit as the cloud's `extract()` (same module).
+- W3 `"what": "of"` requests (`DAYS_BACK_OF` 400, optional `until`), `build_of()`, `answer()` branch, `maybe_answer()` answers an
+  of ask and a bars ask apart; an of day's manifest is `of/manifest.json`, so a day folder in data/pc_days keeps its own.
+- W4 `tools/data_pull.py --latest` runs the battery at the end (`--no-battery` skips); `--of` also pulls the summaries in two
+  parts (newer than the newest here, older than the oldest here).
+- Tests: `tests/test_ofready.py` 31/31 (cloud accepts every name the PC can send, of round trip, grouping, W1 never raises),
+  `tests/test_tickrec_tiny.py` +3.
+
+
 New files (no bot file imports them): `engine/ofsum.py` (PC: tick day -> 3 small files), `research/orderflow/of_battery.py`
 (the pre-registered battery, `research/orderflow/DESIGN.md` @ bc2e5e68f), `tests/test_ofready.py` (4/4, synthetic only;
 added to `tests/run_area.py` area `pc`). Smoke 11/11.
