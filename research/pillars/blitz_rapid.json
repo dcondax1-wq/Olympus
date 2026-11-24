@@ -1,0 +1,983 @@
+{
+ "design": "research/pillars/DESIGN.md",
+ "plan": "mffu_rapid_eod_25k",
+ "n_eval": 2000,
+ "n_slot": 1000,
+ "rows": {
+  "V0 today LIT+ATLAS": {
+   "H1": {
+    "eval": {
+     "pass": 80.5,
+     "fail": 0.5,
+     "med_days": 33.0
+    },
+    "slot": {
+     "owner_6m": 11428,
+     "fees_6m": 126.9,
+     "net_6m": 11301,
+     "net_p10": 1358,
+     "net_p50": 11319,
+     "per_dollar": 90.02,
+     "no_pay": 7.4,
+     "evals": 1.31,
+     "lost": 0.28,
+     "p_lost": 27.2,
+     "pays": 10.54,
+     "first_pay_med": 53.0,
+     "per_month": 1884
+    },
+    "fixed_eval_book": {
+     "trades": 184,
+     "tpw": 7.19,
+     "win": 46.2,
+     "pf": 2.81,
+     "net": 30337,
+     "per_month": 4977,
+     "max_dd": -1397,
+     "win_days_pw": 1.99
+    },
+    "blitz_trades": 0
+   },
+   "H2": {
+    "eval": {
+     "pass": 85.5,
+     "fail": 2.0,
+     "med_days": 26.0
+    },
+    "slot": {
+     "owner_6m": 4945,
+     "fees_6m": 144.0,
+     "net_6m": 4801,
+     "net_p10": -194,
+     "net_p50": 4628,
+     "per_dollar": 34.35,
+     "no_pay": 15.1,
+     "evals": 1.48,
+     "lost": 0.43,
+     "p_lost": 38.0,
+     "pays": 6.88,
+     "first_pay_med": 56.0,
+     "per_month": 800
+    },
+    "fixed_eval_book": {
+     "trades": 86,
+     "tpw": 5.51,
+     "win": 43.0,
+     "pf": 2.48,
+     "net": 10966,
+     "per_month": 2952,
+     "max_dd": -1160,
+     "win_days_pw": 1.99
+    },
+    "blitz_trades": 0
+   },
+   "REF": {
+    "eval": {
+     "pass": 7.5,
+     "fail": 77.0,
+     "med_days": 29.0
+    },
+    "slot": {
+     "owner_6m": 68,
+     "fees_6m": 367.6,
+     "net_6m": -300,
+     "net_p10": -486,
+     "net_p50": -389,
+     "per_dollar": 0.18,
+     "no_pay": 96.9,
+     "evals": 3.78,
+     "lost": 0.2,
+     "p_lost": 18.8,
+     "pays": 0.07,
+     "first_pay_med": 67.0,
+     "per_month": -50
+    },
+    "fixed_eval_book": {
+     "trades": 1505,
+     "tpw": 6.99,
+     "win": 31.0,
+     "pf": 0.87,
+     "net": -27300,
+     "per_month": -532,
+     "max_dd": -41028,
+     "win_days_pw": 1.28
+    },
+    "blitz_trades": 0
+   }
+  },
+  "V1 + BLITZ $300 eval (built lane)": {
+   "H1": {
+    "eval": {
+     "pass": 81.5,
+     "fail": 3.1,
+     "med_days": 26.0
+    },
+    "slot": {
+     "owner_6m": 12088,
+     "fees_6m": 134.0,
+     "net_6m": 11954,
+     "net_p10": 1114,
+     "net_p50": 12542,
+     "per_dollar": 90.18,
+     "no_pay": 8.1,
+     "evals": 1.38,
+     "lost": 0.32,
+     "p_lost": 29.1,
+     "pays": 11.16,
+     "first_pay_med": 46.0,
+     "per_month": 1992
+    },
+    "fixed_eval_book": {
+     "trades": 391,
+     "tpw": 15.27,
+     "win": 51.9,
+     "pf": 2.24,
+     "net": 37901,
+     "per_month": 6218,
+     "max_dd": -1756,
+     "win_days_pw": 2.66
+    },
+    "blitz_trades": 207
+   },
+   "H2": {
+    "eval": {
+     "pass": 93.0,
+     "fail": 1.9,
+     "med_days": 19.0
+    },
+    "slot": {
+     "owner_6m": 5688,
+     "fees_6m": 146.2,
+     "net_6m": 5542,
+     "net_p10": 301,
+     "net_p50": 5489,
+     "per_dollar": 38.91,
+     "no_pay": 9.5,
+     "evals": 1.5,
+     "lost": 0.47,
+     "p_lost": 39.8,
+     "pays": 7.92,
+     "first_pay_med": 50.0,
+     "per_month": 924
+    },
+    "fixed_eval_book": {
+     "trades": 190,
+     "tpw": 12.18,
+     "win": 50.5,
+     "pf": 2.24,
+     "net": 16191,
+     "per_month": 4359,
+     "max_dd": -1209,
+     "win_days_pw": 2.44
+    },
+    "blitz_trades": 104
+   },
+   "REF": {
+    "eval": {
+     "pass": 13.9,
+     "fail": 81.8,
+     "med_days": 22.0
+    },
+    "slot": {
+     "owner_6m": 124,
+     "fees_6m": 447.7,
+     "net_6m": -323,
+     "net_p10": -583,
+     "net_p50": -486,
+     "per_dollar": 0.28,
+     "no_pay": 94.0,
+     "evals": 4.61,
+     "lost": 0.39,
+     "p_lost": 34.9,
+     "pays": 0.12,
+     "first_pay_med": 66.0,
+     "per_month": -54
+    },
+    "fixed_eval_book": {
+     "trades": 3244,
+     "tpw": 15.06,
+     "win": 41.3,
+     "pf": 0.94,
+     "net": -22990,
+     "per_month": -448,
+     "max_dd": -40421,
+     "win_days_pw": 1.69
+    },
+    "blitz_trades": 1739
+   }
+  },
+  "V1r V1 without one-position drop (ref)": {
+   "H1": {
+    "eval": {
+     "pass": 83.3,
+     "fail": 3.2,
+     "med_days": 26.0
+    },
+    "slot": {
+     "owner_6m": 12338,
+     "fees_6m": 133.7,
+     "net_6m": 12204,
+     "net_p10": 1592,
+     "net_p50": 12750,
+     "per_dollar": 92.25,
+     "no_pay": 7.3,
+     "evals": 1.38,
+     "lost": 0.32,
+     "p_lost": 29.0,
+     "pays": 11.39,
+     "first_pay_med": 45.0,
+     "per_month": 2034
+    },
+    "fixed_eval_book": {
+     "trades": 401,
+     "tpw": 15.66,
+     "win": 51.9,
+     "pf": 2.19,
+     "net": 37808,
+     "per_month": 6203,
+     "max_dd": -1756,
+     "win_days_pw": 2.66
+    },
+    "blitz_trades": 217
+   },
+   "H2": {
+    "eval": {
+     "pass": 93.2,
+     "fail": 1.6,
+     "med_days": 19.0
+    },
+    "slot": {
+     "owner_6m": 5699,
+     "fees_6m": 147.0,
+     "net_6m": 5552,
+     "net_p10": 331,
+     "net_p50": 5508,
+     "per_dollar": 38.78,
+     "no_pay": 9.4,
+     "evals": 1.51,
+     "lost": 0.47,
+     "p_lost": 40.4,
+     "pays": 7.93,
+     "first_pay_med": 50.0,
+     "per_month": 925
+    },
+    "fixed_eval_book": {
+     "trades": 192,
+     "tpw": 12.31,
+     "win": 50.5,
+     "pf": 2.24,
+     "net": 16246,
+     "per_month": 4374,
+     "max_dd": -1209,
+     "win_days_pw": 2.44
+    },
+    "blitz_trades": 106
+   },
+   "REF": {
+    "eval": {
+     "pass": 14.4,
+     "fail": 81.6,
+     "med_days": 22.0
+    },
+    "slot": {
+     "owner_6m": 111,
+     "fees_6m": 451.0,
+     "net_6m": -340,
+     "net_p10": -583,
+     "net_p50": -486,
+     "per_dollar": 0.25,
+     "no_pay": 94.5,
+     "evals": 4.64,
+     "lost": 0.4,
+     "p_lost": 35.3,
+     "pays": 0.11,
+     "first_pay_med": 66.0,
+     "per_month": -57
+    },
+    "fixed_eval_book": {
+     "trades": 3346,
+     "tpw": 15.53,
+     "win": 41.5,
+     "pf": 0.94,
+     "net": -21057,
+     "per_month": -411,
+     "max_dd": -39397,
+     "win_days_pw": 1.69
+    },
+    "blitz_trades": 1841
+   }
+  },
+  "V2 no BLITZ from LIT entry to LIT exit+30m": {
+   "H1": {
+    "eval": {
+     "pass": 81.0,
+     "fail": 3.3,
+     "med_days": 26.0
+    },
+    "slot": {
+     "owner_6m": 12037,
+     "fees_6m": 133.8,
+     "net_6m": 11903,
+     "net_p10": 1114,
+     "net_p50": 12496,
+     "per_dollar": 89.93,
+     "no_pay": 8.1,
+     "evals": 1.38,
+     "lost": 0.31,
+     "p_lost": 28.9,
+     "pays": 11.12,
+     "first_pay_med": 47.0,
+     "per_month": 1984
+    },
+    "fixed_eval_book": {
+     "trades": 389,
+     "tpw": 15.2,
+     "win": 51.7,
+     "pf": 2.23,
+     "net": 37710,
+     "per_month": 6187,
+     "max_dd": -1756,
+     "win_days_pw": 2.66
+    },
+    "blitz_trades": 205
+   },
+   "H2": {
+    "eval": {
+     "pass": 93.0,
+     "fail": 1.9,
+     "med_days": 19.0
+    },
+    "slot": {
+     "owner_6m": 5688,
+     "fees_6m": 146.2,
+     "net_6m": 5542,
+     "net_p10": 301,
+     "net_p50": 5489,
+     "per_dollar": 38.91,
+     "no_pay": 9.5,
+     "evals": 1.5,
+     "lost": 0.47,
+     "p_lost": 39.8,
+     "pays": 7.92,
+     "first_pay_med": 50.0,
+     "per_month": 924
+    },
+    "fixed_eval_book": {
+     "trades": 190,
+     "tpw": 12.18,
+     "win": 50.5,
+     "pf": 2.24,
+     "net": 16191,
+     "per_month": 4359,
+     "max_dd": -1209,
+     "win_days_pw": 2.44
+    },
+    "blitz_trades": 104
+   },
+   "REF": {
+    "eval": {
+     "pass": 14.0,
+     "fail": 81.8,
+     "med_days": 22.0
+    },
+    "slot": {
+     "owner_6m": 128,
+     "fees_6m": 447.1,
+     "net_6m": -320,
+     "net_p10": -583,
+     "net_p50": -486,
+     "per_dollar": 0.29,
+     "no_pay": 94.1,
+     "evals": 4.6,
+     "lost": 0.38,
+     "p_lost": 34.8,
+     "pays": 0.12,
+     "first_pay_med": 66.0,
+     "per_month": -53
+    },
+    "fixed_eval_book": {
+     "trades": 3230,
+     "tpw": 15.0,
+     "win": 41.3,
+     "pf": 0.94,
+     "net": -23220,
+     "per_month": -453,
+     "max_dd": -40740,
+     "win_days_pw": 1.69
+    },
+    "blitz_trades": 1725
+   }
+  },
+  "V2b no BLITZ within 30m of a LIT trade (look-ahead, diag)": {
+   "H1": {
+    "eval": {
+     "pass": 82.3,
+     "fail": 3.0,
+     "med_days": 26.0
+    },
+    "slot": {
+     "owner_6m": 12129,
+     "fees_6m": 134.4,
+     "net_6m": 11995,
+     "net_p10": 1157,
+     "net_p50": 12587,
+     "per_dollar": 90.23,
+     "no_pay": 8.1,
+     "evals": 1.38,
+     "lost": 0.32,
+     "p_lost": 29.5,
+     "pays": 11.2,
+     "first_pay_med": 46.0,
+     "per_month": 1999
+    },
+    "fixed_eval_book": {
+     "trades": 388,
+     "tpw": 15.16,
+     "win": 51.8,
+     "pf": 2.25,
+     "net": 38005,
+     "per_month": 6235,
+     "max_dd": -1756,
+     "win_days_pw": 2.66
+    },
+    "blitz_trades": 204
+   },
+   "H2": {
+    "eval": {
+     "pass": 93.0,
+     "fail": 1.9,
+     "med_days": 19.0
+    },
+    "slot": {
+     "owner_6m": 5688,
+     "fees_6m": 146.2,
+     "net_6m": 5542,
+     "net_p10": 301,
+     "net_p50": 5489,
+     "per_dollar": 38.91,
+     "no_pay": 9.5,
+     "evals": 1.5,
+     "lost": 0.47,
+     "p_lost": 39.8,
+     "pays": 7.92,
+     "first_pay_med": 50.0,
+     "per_month": 924
+    },
+    "fixed_eval_book": {
+     "trades": 190,
+     "tpw": 12.18,
+     "win": 50.5,
+     "pf": 2.24,
+     "net": 16191,
+     "per_month": 4359,
+     "max_dd": -1209,
+     "win_days_pw": 2.44
+    },
+    "blitz_trades": 104
+   },
+   "REF": {
+    "eval": {
+     "pass": 14.1,
+     "fail": 81.7,
+     "med_days": 22.0
+    },
+    "slot": {
+     "owner_6m": 126,
+     "fees_6m": 445.9,
+     "net_6m": -319,
+     "net_p10": -583,
+     "net_p50": -389,
+     "per_dollar": 0.28,
+     "no_pay": 94.1,
+     "evals": 4.59,
+     "lost": 0.39,
+     "p_lost": 35.4,
+     "pays": 0.12,
+     "first_pay_med": 66.0,
+     "per_month": -53
+    },
+    "fixed_eval_book": {
+     "trades": 3227,
+     "tpw": 14.98,
+     "win": 41.3,
+     "pf": 0.94,
+     "net": -22420,
+     "per_month": -437,
+     "max_dd": -40189,
+     "win_days_pw": 1.69
+    },
+    "blitz_trades": 1722
+   }
+  },
+  "V3 BLITZ half size once day >= 50% of best-day cap": {
+   "H1": {
+    "eval": {
+     "pass": 81.6,
+     "fail": 3.2,
+     "med_days": 26.0
+    },
+    "slot": {
+     "owner_6m": 12069,
+     "fees_6m": 133.9,
+     "net_6m": 11935,
+     "net_p10": 1090,
+     "net_p50": 12542,
+     "per_dollar": 90.11,
+     "no_pay": 8.4,
+     "evals": 1.38,
+     "lost": 0.32,
+     "p_lost": 29.0,
+     "pays": 11.15,
+     "first_pay_med": 46.0,
+     "per_month": 1989
+    },
+    "fixed_eval_book": {
+     "trades": 391,
+     "tpw": 15.27,
+     "win": 51.9,
+     "pf": 2.24,
+     "net": 37901,
+     "per_month": 6218,
+     "max_dd": -1756,
+     "win_days_pw": 2.66
+    },
+    "blitz_trades": 207
+   },
+   "H2": {
+    "eval": {
+     "pass": 93.0,
+     "fail": 1.9,
+     "med_days": 19.0
+    },
+    "slot": {
+     "owner_6m": 5688,
+     "fees_6m": 146.2,
+     "net_6m": 5542,
+     "net_p10": 301,
+     "net_p50": 5489,
+     "per_dollar": 38.91,
+     "no_pay": 9.5,
+     "evals": 1.5,
+     "lost": 0.47,
+     "p_lost": 39.8,
+     "pays": 7.92,
+     "first_pay_med": 50.0,
+     "per_month": 924
+    },
+    "fixed_eval_book": {
+     "trades": 190,
+     "tpw": 12.18,
+     "win": 50.5,
+     "pf": 2.24,
+     "net": 16191,
+     "per_month": 4359,
+     "max_dd": -1209,
+     "win_days_pw": 2.44
+    },
+    "blitz_trades": 104
+   },
+   "REF": {
+    "eval": {
+     "pass": 13.7,
+     "fail": 81.9,
+     "med_days": 22.0
+    },
+    "slot": {
+     "owner_6m": 118,
+     "fees_6m": 448.9,
+     "net_6m": -331,
+     "net_p10": -583,
+     "net_p50": -486,
+     "per_dollar": 0.26,
+     "no_pay": 94.3,
+     "evals": 4.62,
+     "lost": 0.39,
+     "p_lost": 34.6,
+     "pays": 0.11,
+     "first_pay_med": 63.0,
+     "per_month": -55
+    },
+    "fixed_eval_book": {
+     "trades": 3244,
+     "tpw": 15.06,
+     "win": 41.3,
+     "pf": 0.94,
+     "net": -22990,
+     "per_month": -448,
+     "max_dd": -40421,
+     "win_days_pw": 1.69
+    },
+    "blitz_trades": 1739
+   }
+  },
+  "V4 BLITZ stops for the day after its first loser": {
+   "H1": {
+    "eval": {
+     "pass": 82.6,
+     "fail": 1.3,
+     "med_days": 31.0
+    },
+    "slot": {
+     "owner_6m": 11838,
+     "fees_6m": 130.7,
+     "net_6m": 11707,
+     "net_p10": 1450,
+     "net_p50": 12003,
+     "per_dollar": 90.55,
+     "no_pay": 7.3,
+     "evals": 1.34,
+     "lost": 0.31,
+     "p_lost": 28.9,
+     "pays": 10.94,
+     "first_pay_med": 51.0,
+     "per_month": 1951
+    },
+    "fixed_eval_book": {
+     "trades": 300,
+     "tpw": 11.72,
+     "win": 51.0,
+     "pf": 2.47,
+     "net": 35428,
+     "per_month": 5812,
+     "max_dd": -1681,
+     "win_days_pw": 2.42
+    },
+    "blitz_trades": 116
+   },
+   "H2": {
+    "eval": {
+     "pass": 89.7,
+     "fail": 2.2,
+     "med_days": 22.0
+    },
+    "slot": {
+     "owner_6m": 5368,
+     "fees_6m": 143.6,
+     "net_6m": 5224,
+     "net_p10": -194,
+     "net_p50": 5023,
+     "per_dollar": 37.39,
+     "no_pay": 12.4,
+     "evals": 1.48,
+     "lost": 0.43,
+     "p_lost": 37.9,
+     "pays": 7.45,
+     "first_pay_med": 52.5,
+     "per_month": 871
+    },
+    "fixed_eval_book": {
+     "trades": 136,
+     "tpw": 8.72,
+     "win": 47.1,
+     "pf": 2.3,
+     "net": 13501,
+     "per_month": 3635,
+     "max_dd": -1209,
+     "win_days_pw": 2.18
+    },
+    "blitz_trades": 50
+   },
+   "REF": {
+    "eval": {
+     "pass": 11.2,
+     "fail": 80.8,
+     "med_days": 23.0
+    },
+    "slot": {
+     "owner_6m": 97,
+     "fees_6m": 416.5,
+     "net_6m": -319,
+     "net_p10": -583,
+     "net_p50": -389,
+     "per_dollar": 0.23,
+     "no_pay": 96.0,
+     "evals": 4.29,
+     "lost": 0.29,
+     "p_lost": 26.6,
+     "pays": 0.09,
+     "first_pay_med": 54.5,
+     "per_month": -53
+    },
+    "fixed_eval_book": {
+     "trades": 2378,
+     "tpw": 11.04,
+     "win": 38.1,
+     "pf": 0.88,
+     "net": -33013,
+     "per_month": -644,
+     "max_dd": -46069,
+     "win_days_pw": 1.53
+    },
+    "blitz_trades": 873
+   }
+  },
+  "V5 BLITZ $150": {
+   "H1": {
+    "eval": {
+     "pass": 83.0,
+     "fail": 1.2,
+     "med_days": 30.0
+    },
+    "slot": {
+     "owner_6m": 11703,
+     "fees_6m": 132.5,
+     "net_6m": 11570,
+     "net_p10": 1142,
+     "net_p50": 11853,
+     "per_dollar": 88.33,
+     "no_pay": 7.9,
+     "evals": 1.36,
+     "lost": 0.31,
+     "p_lost": 28.2,
+     "pays": 10.79,
+     "first_pay_med": 49.0,
+     "per_month": 1928
+    },
+    "fixed_eval_book": {
+     "trades": 391,
+     "tpw": 15.27,
+     "win": 51.9,
+     "pf": 2.48,
+     "net": 36312,
+     "per_month": 5958,
+     "max_dd": -1381,
+     "win_days_pw": 2.54
+    },
+    "blitz_trades": 207
+   },
+   "H2": {
+    "eval": {
+     "pass": 91.2,
+     "fail": 2.5,
+     "med_days": 21.0
+    },
+    "slot": {
+     "owner_6m": 5493,
+     "fees_6m": 146.4,
+     "net_6m": 5347,
+     "net_p10": -194,
+     "net_p50": 5163,
+     "per_dollar": 37.53,
+     "no_pay": 10.8,
+     "evals": 1.51,
+     "lost": 0.46,
+     "p_lost": 39.6,
+     "pays": 7.62,
+     "first_pay_med": 52.0,
+     "per_month": 891
+    },
+    "fixed_eval_book": {
+     "trades": 190,
+     "tpw": 12.18,
+     "win": 50.5,
+     "pf": 2.18,
+     "net": 13429,
+     "per_month": 3615,
+     "max_dd": -1139,
+     "win_days_pw": 2.37
+    },
+    "blitz_trades": 104
+   },
+   "REF": {
+    "eval": {
+     "pass": 13.0,
+     "fail": 79.8,
+     "med_days": 25.0
+    },
+    "slot": {
+     "owner_6m": 118,
+     "fees_6m": 424.7,
+     "net_6m": -307,
+     "net_p10": -583,
+     "net_p50": -389,
+     "per_dollar": 0.28,
+     "no_pay": 94.9,
+     "evals": 4.37,
+     "lost": 0.34,
+     "p_lost": 31.5,
+     "pays": 0.11,
+     "first_pay_med": 59.0,
+     "per_month": -51
+    },
+    "fixed_eval_book": {
+     "trades": 3244,
+     "tpw": 15.06,
+     "win": 41.3,
+     "pf": 0.91,
+     "net": -24240,
+     "per_month": -473,
+     "max_dd": -39534,
+     "win_days_pw": 1.59
+    },
+    "blitz_trades": 1739
+   }
+  },
+  "OWN BLITZ alone (eval + funded)": {
+   "H1": {
+    "eval": {
+     "pass": 30.6,
+     "fail": 0.0,
+     "med_days": 37.0
+    },
+    "slot": {
+     "owner_6m": 724,
+     "fees_6m": 97.2,
+     "net_6m": 626,
+     "net_p10": -97,
+     "net_p50": -97,
+     "per_dollar": 7.44,
+     "no_pay": 77.0,
+     "evals": 1.0,
+     "lost": 0.0,
+     "p_lost": 0.0,
+     "pays": 0.89,
+     "first_pay_med": 79.0,
+     "per_month": 104
+    },
+    "fixed_eval_book": {
+     "trades": 217,
+     "tpw": 8.48,
+     "win": 56.7,
+     "pf": 1.5,
+     "net": 7471,
+     "per_month": 1226,
+     "max_dd": -1506,
+     "win_days_pw": 1.37
+    },
+    "blitz_trades": 217
+   },
+   "H2": {
+    "eval": {
+     "pass": 49.9,
+     "fail": 0.0,
+     "med_days": 37.0
+    },
+    "slot": {
+     "owner_6m": 1701,
+     "fees_6m": 97.2,
+     "net_6m": 1604,
+     "net_p10": -97,
+     "net_p50": 410,
+     "per_dollar": 17.5,
+     "no_pay": 48.1,
+     "evals": 1.0,
+     "lost": 0.0,
+     "p_lost": 0.0,
+     "pays": 1.99,
+     "first_pay_med": 85.0,
+     "per_month": 267
+    },
+    "fixed_eval_book": {
+     "trades": 106,
+     "tpw": 6.79,
+     "win": 56.6,
+     "pf": 1.93,
+     "net": 5280,
+     "per_month": 1422,
+     "max_dd": -1198,
+     "win_days_pw": 1.09
+    },
+    "blitz_trades": 106
+   },
+   "REF": {
+    "eval": {
+     "pass": 17.4,
+     "fail": 0.9,
+     "med_days": 35.0
+    },
+    "slot": {
+     "owner_6m": 48,
+     "fees_6m": 103.0,
+     "net_6m": -55,
+     "net_p10": -97,
+     "net_p50": -97,
+     "per_dollar": 0.46,
+     "no_pay": 97.4,
+     "evals": 1.06,
+     "lost": 0.01,
+     "p_lost": 0.8,
+     "pays": 0.06,
+     "first_pay_med": 80.0,
+     "per_month": -9
+    },
+    "fixed_eval_book": {
+     "trades": 1841,
+     "tpw": 8.55,
+     "win": 50.1,
+     "pf": 1.04,
+     "net": 6243,
+     "per_month": 122,
+     "max_dd": -11101,
+     "win_days_pw": 1.0
+    },
+    "blitz_trades": 1841
+   }
+  }
+ },
+ "blitz_fixed": {
+  "$150": {
+   "H1": {
+    "trades": 217,
+    "tpw": 8.48,
+    "win": 56.7,
+    "pf": 1.7,
+    "net": 5873,
+    "per_month": 963,
+    "max_dd": -952,
+    "win_days_pw": 1.29
+   },
+   "H2": {
+    "trades": 106,
+    "tpw": 6.79,
+    "win": 56.6,
+    "pf": 1.62,
+    "net": 2478,
+    "per_month": 667,
+    "max_dd": -646,
+    "win_days_pw": 1.22
+   },
+   "REF": {
+    "trades": 1841,
+    "tpw": 8.55,
+    "win": 50.1,
+    "pf": 1.05,
+    "net": 3765,
+    "per_month": 73,
+    "max_dd": -5084,
+    "win_days_pw": 1.04
+   }
+  },
+  "$300": {
+   "H1": {
+    "trades": 217,
+    "tpw": 8.48,
+    "win": 56.7,
+    "pf": 1.5,
+    "net": 7471,
+    "per_month": 1226,
+    "max_dd": -1506,
+    "win_days_pw": 1.37
+   },
+   "H2": {
+    "trades": 106,
+    "tpw": 6.79,
+    "win": 56.6,
+    "pf": 1.93,
+    "net": 5280,
+    "per_month": 1422,
+    "max_dd": -1198,
+    "win_days_pw": 1.09
+   },
+   "REF": {
+    "trades": 1841,
+    "tpw": 8.55,
+    "win": 50.1,
+    "pf": 1.04,
+    "net": 6243,
+    "per_month": 122,
+    "max_dd": -11101,
+    "win_days_pw": 1.0
+   }
+  }
+ }
+}

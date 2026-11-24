@@ -422,3 +422,8 @@
   beyond the swing, 2R, LIT sizing, costs in. 0 of 10 pass (PF > 1 in all three spans and Holm p < 0.05; best raw p 0.17, all
   Holm 1.0); 9 of 10 lose 2026 H1. Only ICT 2022 adds $ to LIT in both 2026 halves (+$369 / +$681 a month on a Rapid 50K, ~5
   trades/wk) but DD $2.2k -> $4.8k, H1 eval fails 1.6% -> 34%, loses 2021-25. Corr LIT -0.06..+0.38. Nothing adopted.
+- 2026-11-24 BLITZ on the Rapid EOD 25K eval (research/writeups/four-pillars-2026-11-23.md, research/pillars/DESIGN.md pre-registered,
+  2,000 eval paths, real fills): the BUILT $300 lane fails the eval 0.5% -> 3.1% Jan-Jun (fails the +1 point bar). REJECTED: V2 no
+  BLITZ from a LIT entry to 30 min after its exit (3.3%; LIT is done before 11:00, removes 2 of 207 trades), V3 half size once the
+  day is at 50% of the best-day cap (3.2%), V4 one BLITZ loser and done (1.3% but lower pass than V5). PICK (paper, owner yes/no):
+  V5 BLITZ at $150: fail 1.2 / 2.5 / 79.8%, pass 83.0 / 91.2 / 13.0%, slot +$45 / +$91 / -$1 a month vs today; noise-sized gain.

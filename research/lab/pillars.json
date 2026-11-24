@@ -1,0 +1,376 @@
+{
+ "date": "2026-11-24",
+ "paper_only": true,
+ "note": "Research only. Nothing armed, no live_model*.json edited. Spans: 2026H1 = Jan-Jun, 2026H2 = Jul-Oct (to 10-16), 2021-25 = 2021-11..2025-12. Costs in ($1.90 a micro + slippage).",
+ "pillars": [
+  {
+   "id": "lit",
+   "name": "LIT (Zlarior)",
+   "status": "LIVE on the Zlarior 50K eval + 25K #2 eval + the Rapid 25K LIT lane. Edge light GREEN (data to 2026-11-20).",
+   "basis": "Zlarior size rule (50K eval sizing, size follows the stop), no account rules; research/writeups/lit-edge-2026-11-20.md + tools/lit_losses.py live",
+   "spans": {
+    "2026H1": {
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 4.98,
+     "usd_mo": 5562,
+     "maxdd": -2196,
+     "trades": 80
+    },
+    "2026H2": {
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 2.91,
+     "usd_mo": 2670,
+     "maxdd": -1396,
+     "trades": 40
+    },
+    "2021-25": {
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.01,
+     "usd_mo": 25,
+     "maxdd": -19426,
+     "trades": 511,
+     "worst_year": "2023 PF 0.62, -$13,025"
+    }
+   },
+   "edge_health": {
+    "tool": "tools/edge_health.py",
+    "light": "GREEN",
+    "data_to": "2026-11-20",
+    "last40": {
+     "trades": 17,
+     "tpw": 2.12,
+     "win": 52.9,
+     "pf": 4.62,
+     "usd_mo": 3147
+    },
+    "backtest_median_pf_40": {
+     "2026H1": 3.91,
+     "2026H2": 3.15,
+     "2021-25": 1.1
+    },
+    "last20": {
+     "trades": 7,
+     "win": 28.6,
+     "pf": 0.03,
+     "usd_mo": -901,
+     "note": "the cold run, about 1 in 11 for a 7-trade window"
+    }
+   },
+   "live_vs_backtest": {
+    "since": "2026-10-19 (eval start)",
+    "account_usd": -786,
+    "twin_usd": -858,
+    "twin_trades": 7,
+    "reached_account": 2,
+    "note": "Live is $72 better than the twin only because the 5 missed trades were small losers (feed gap, refused order, silent PC, 1 unknown). The one real fill measured was 3 ticks worse than the model (about $1.50)."
+   },
+   "accounts": [
+    "Zlarior Builder 50K eval ($49,214, $3,786 to pass, $1,046 room)",
+    "Zlarior Builder 25K #2 eval ($25,024)",
+    "Rapid EOD 25K eval, LIT lane (skips 58-64% of signals: 30% best-day rule)"
+   ],
+   "risks": [
+    "No edge outside 2026: 2021-25 PF 1.01, +$25 a month, max DD -$19.4k; 2023 lost $13.0k",
+    "Only 2 of 7 twin trades reached the account (PC / feed gaps); the self-heal update has been held back since Nov 23",
+    "Thin eval room: $1,046 on the 50K"
+   ],
+   "next": [
+    "Fix the held-back PC update so the bot runs the newest code (self-heal alert since 2026-11-23 21:30 ET)",
+    "Re-run tools/edge_health.py weekly; stop trading it if the light turns RED (2021-25 had red runs up to 79 sessions)"
+   ]
+  },
+  {
+   "id": "atlas",
+   "name": "ATLAS",
+   "status": "LIVE on the funded Builder 25K + the Rapid 25K ATLAS lane. Edge light GREEN (data to 2026-11-19). Combo on the 25K #2 built, OFF.",
+   "basis": "REAL fills (10 ticks a side), fixed $250 a trade, no account rules; atlas-fills-2026-11-20.md, atlas-edge-2026-11-20.md, research/onebook/results.json B02",
+   "spans": {
+    "2026H1": {
+     "tpw": 4.06,
+     "win": 36.5,
+     "pf": 2.39,
+     "usd_mo": 2614,
+     "maxdd": -1476
+    },
+    "2026H2": {
+     "tpw": 2.95,
+     "win": 37.0,
+     "pf": 2.07,
+     "usd_mo": 1172,
+     "maxdd": -1177
+    },
+    "2021-25": {
+     "tpw": 4.61,
+     "win": 19.3,
+     "pf": 0.82,
+     "usd_mo": -550,
+     "maxdd": -37122,
+     "note": "2025 alone PF 0.90; 2021-24 PF 0.80"
+    }
+   },
+   "funded_25k_owner_usd_mo": {
+    "2026H1": 503,
+    "2026H2": 402,
+    "2021-25": 19
+   },
+   "edge_health": {
+    "light": "GREEN",
+    "data_to": "2026-11-19",
+    "last40": {
+     "trades": 27,
+     "tpw": 3.38,
+     "win": 48.1,
+     "pf": 2.27
+    },
+    "backtest_median_pf_40": {
+     "2026H1": 2.75,
+     "2026H2": 2.73,
+     "2021-25": 1.06
+    }
+   },
+   "live_vs_backtest": {
+    "fills": 3,
+    "entry_slip_ticks": [
+     9,
+     11,
+     15
+    ],
+    "model_ticks": 1,
+    "note": "Market order at the 5m open while price runs; the backtest now uses 10 ticks. Funded shows $401. No live-vs-twin $ list or missed-trade list exists in the repo."
+   },
+   "combo": {
+    "zlarior_50k": {
+     "usd_mo_vs_lit_alone": {
+      "2026H1": [
+       2554,
+       905
+      ],
+      "2026H2": [
+       1501,
+       805
+      ],
+      "2021-25": [
+       16,
+       -10
+      ]
+     },
+     "eval_2wk_fail_pct": {
+      "combo": [
+       0.0,
+       4.4,
+       7.0
+      ],
+      "lit_alone": 0.5
+     },
+     "caveat": "Red team: the Jul-Oct gain rests on ATLAS's 5 best days (without them about -$23 a month); 2022 -$141 vs LIT alone. Advice stays: add after the 50K passes."
+    },
+    "zlarior_25k_2": {
+     "state": "built, OFF (engine/combo25.py, 23/23 checks)",
+     "usd_mo_vs_lit_alone": {
+      "2026H1": [
+       914,
+       402
+      ],
+      "2026H2": [
+       554,
+       315
+      ],
+      "2021-25": [
+       35,
+       13
+      ]
+     },
+     "eval_2wk_pass_pct": {
+      "combo": [
+       67.6,
+       53.2,
+       24.9
+      ],
+      "lit_alone": [
+       46.8,
+       41.2,
+       11.8
+      ]
+     },
+     "eval_2wk_fail_pct": {
+      "combo": [
+       1.3,
+       0.7,
+       4.5
+      ],
+      "lit_alone": [
+       0,
+       0,
+       0
+      ]
+     },
+     "caveat": "Stored at 1-tick costs and full-size ATLAS (live lane runs ATLAS x0.5 in the eval): optimistic. No 10-tick run yet.",
+     "switch_on": "python -X utf8 -m engine.combo50k --on --account \"<25K #2 NinjaTrader Name>\" (owner types the live phrase)"
+    }
+   },
+   "accounts": [
+    "ATLAS Builder 25K FUNDED ($401 MFFU profit, floor -$599, +$1,699 to the $1,000 request)",
+    "Rapid EOD 25K eval, ATLAS lane"
+   ],
+   "risks": [
+    "No edge at real fills outside 2026 (PF 0.82, -$550 a month at $250)",
+    "Entry slippage 9-15 ticks on every real fill",
+    "Thin funded buffer: $401 above start, floor at -$599"
+   ],
+   "next": [
+    "Re-measure fills at 10+ real ATLAS fills; the fast-entry 2-week test card is open (about +$100)",
+    "Re-run combo25 at 10-tick fills and x0.5 eval size before the owner switches the 25K #2 combo on"
+   ]
+  },
+  {
+   "id": "blitz",
+   "name": "BLITZ",
+   "status": "Paper, hidden. Eval-only lane on the Rapid EOD 25K built ($300) and OFF.",
+   "basis": "fixed $150 a trade, no account rules, 1-tick fills, 2026 on 1m bars, 2021-25 on 5m bars; research/pillars/blitz_rapid.json",
+   "spans": {
+    "2026H1": {
+     "tpw": 8.48,
+     "win": 56.7,
+     "pf": 1.7,
+     "usd_mo": 963,
+     "maxdd": -952
+    },
+    "2026H2": {
+     "tpw": 6.79,
+     "win": 56.6,
+     "pf": 1.62,
+     "usd_mo": 667,
+     "maxdd": -646
+    },
+    "2021-25": {
+     "tpw": 8.55,
+     "win": 50.1,
+     "pf": 1.05,
+     "usd_mo": 73,
+     "maxdd": -5084
+    }
+   },
+   "rapid25_eval_test": {
+    "design": "research/pillars/DESIGN.md (commit 24d5d94e2, before the run)",
+    "results": "research/pillars/blitz_rapid.json",
+    "V0_today": {
+     "pass": [
+      80.5,
+      85.5,
+      7.5
+     ],
+     "fail": [
+      0.5,
+      2.0,
+      77.0
+     ],
+     "slot_usd_mo": [
+      1884,
+      800,
+      -50
+     ]
+    },
+    "V1_built_300": {
+     "pass": [
+      81.5,
+      93.0,
+      13.9
+     ],
+     "fail": [
+      3.1,
+      1.9,
+      81.8
+     ],
+     "slot_usd_mo": [
+      1992,
+      924,
+      -54
+     ],
+     "verdict": "fails the pre-set eval-fail bar"
+    },
+    "V5_150_pick": {
+     "pass": [
+      83.0,
+      91.2,
+      13.0
+     ],
+     "fail": [
+      1.2,
+      2.5,
+      79.8
+     ],
+     "slot_usd_mo": [
+      1928,
+      891,
+      -51
+     ],
+     "verdict": "passes every pre-set check; gain +$45 / +$91 a month, noise-sized"
+    },
+    "own_rapid25": {
+     "pass": [
+      30.6,
+      49.9,
+      17.4
+     ],
+     "slot_usd_mo": [
+      104,
+      267,
+      -9
+     ],
+     "verdict": "no"
+    },
+    "multiple_testing": "4 eligible variants x 3 spans; paths resample the same ~125 / 78 / 1,077 sessions, so fail gaps under ~1 point are noise"
+   },
+   "accounts": [
+    "none live; Rapid EOD 25K eval lane built OFF"
+   ],
+   "risks": [
+    "2026-only edge: 2021-25 PF 1.05, +$73 a month; 2024 lost $200 a month; +1 tick slippage -> +$18",
+    "No real-money fill measured",
+    "At the built $300 the Rapid eval fails 6x as often in Jan-Jun (0.5% -> 3.1%)"
+   ],
+   "next": [
+    "Owner yes/no: change the Rapid lane from $300 to $150 (helper branch, lead lands), then switch on with the live phrase",
+    "After 20 Rapid BLITZ fills, compare real slippage to the 1-tick model"
+   ]
+  },
+  {
+   "id": "orderflow",
+   "name": "ORDER FLOW",
+   "status": "Not ready: the tick recorder (NinjaTrader AddOn) is built, never compiled, OFF. 0 tick days verified.",
+   "spans": {
+    "2026H1": null,
+    "2026H2": null,
+    "2021-25": null
+   },
+   "spans_note": "No tick data yet, so no OF numbers. Bar-proxy prior for OF3 (LVN rejection, stand-alone): 2021-25 155 trades PF 1.26 +$11,556 (0.71 a week, about $230 a month); 2026 H1 12 trades PF 1.10 +$326; H2 10 trades PF 4.56 +$4,990. 43 pre-registered bar tests, 0 pass.",
+   "readiness": {
+    "recorder": "ninjatrader/LE_TickRec.cs + engine/tickrec.py: t_ms, price, size, bid, ask; side from the quote rule, else the tick rule; no DOM",
+    "backfill": "NinjaTrader history server (futures, MFFU login), Tick 1, newest first, up to 365 days (depth and GetBid/GetAsk unverified); never reaches 2021-25",
+    "days_needed": 60,
+    "first_run_forward_only": "2027-02-22",
+    "first_run_with_backfill": "about 2026-11-26 to 11-30 if installed and enabled 11-24 evening"
+   },
+   "priors": {
+    "OF1": "sweep absorption keep/skip LIT: low-moderate (bar proxies: skipping 'refuted' LIT trades cost -$15k to -$22k in 2026 H1)",
+    "OF2": "block prints against the trade, skip: low (no bar proxy)",
+    "OF3": "LVN rejection stand-alone: low (fails the AM/PM split; under 1 trade a week even if it passes)"
+   },
+   "accounts": [
+    "none"
+   ],
+   "risks": [
+    "LE_TickRec.cs never compiled: a compile error blocks F5 for every NinjaScript, including the live feed",
+    "60 days = about 35-40 LIT trades, 2026-only, 2 looks: weak test",
+    "PC disk / load, and the held-back update"
+   ],
+   "next": [
+    "Owner at the PC on a quiet evening (after 16:05 ET): copy LE_TickRec.cs to AddOns, F5 (delete it if red), then pip install pyarrow && python -m engine.tickrec enable",
+    "At 60 tick days read the one result line; log failures in docs/TESTED_AND_REJECTED.md, no re-tuning"
+   ]
+  }
+ ]
+}
