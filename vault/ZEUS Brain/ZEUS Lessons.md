@@ -71,8 +71,9 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-66 entries from docs/TESTED_AND_REJECTED.md, newest first.
+67 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
+- **Market Learn weekly trial #1** · [[BLITZ (paper)]]
 - **Edge hunt lane B, cross-asset triggers** · [[edge-b-cross-2026-11-22|Edge hunt lane B]]
 - **Edge hunt lane D: small meta-labeled SIZE + re-entry on LIT** · [[Zlarior (LIT)]] · [[edge-d-meta-2026-11-22|Edge hunt lane D]], [[meta-labeling|Meta-labeling]]
 - **Edge hunt C, calendar / money-flow timing** · [[Zlarior (LIT)]] · [[edge-c-calendar-2026-11-22|Edge hunt lane C]]
