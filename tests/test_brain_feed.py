@@ -10,6 +10,7 @@ Read-only: it never trades, sizes, arms or writes. docs/BRAIN_FEED_PC.md.
   f. report    "bf" rides the ext post (EXT_LAST), every post <= MAX_STATUS_BYTES, merged() has it, ext_hash ignores it,
                a brain_feed crash leaves the report as before
   g. glance    lead wire 4: brain_glance lit() carries "atr" and "ax" [limit, stop, target]
+  h. preflight ATLAS's route reads kind before label (the label is "ATLAS <account>": readiness warned "on Sim" while LIVE)
 
     python -X utf8 -m tests.test_brain_feed
 """
@@ -228,6 +229,19 @@ def glance_part(B):
     check("g3. the glance still fits its budget", G.size(g) <= G.MAX_BYTES, G.size(g))
 
 
+def preflight_part():
+    from engine import preflight as PF
+    def atlas(ab):
+        r = [x for x in PF.arms({"second": {"route": {"account_b": ab}}}) if x[0] == "ATLAS 25K"]
+        return r[0] if r else None
+    live = atlas({"label": "ATLAS MFFU25K123", "kind": "LIVE", "enabled": True, "armed": True})
+    sim = atlas({"label": "ATLAS Sim101", "kind": "SIM", "enabled": True, "armed": True})
+    old = atlas({"label": "LIVE", "enabled": True, "armed": True})
+    check("h1. preflight: ATLAS on the real account (label 'ATLAS <account>', kind LIVE) = LIVE, armed (no false 'on Sim'); SIM stays not ok; "
+          "a label-only heartbeat still works", live == ("ATLAS 25K", True, "LIVE, armed") and sim[1] is False and sim[2].startswith("SIM")
+          and old == ("ATLAS 25K", True, "LIVE, armed"), (live, sim, old))
+
+
 def main():
     B = lit_part()
     sec, bz, root = other_bots()
@@ -236,6 +250,7 @@ def main():
     size_part(hb, root)
     report_part(B, sec, bz)
     glance_part(B)
+    preflight_part()
     AK.finish()
 
 
