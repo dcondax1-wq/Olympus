@@ -75,7 +75,7 @@ def arms(hb: dict) -> list:
             out.append(("Zlarior 50K", False, f"{lab} (not your eval)"))
     ab = _d(_d(_d(_d(hb).get("second")).get("route")).get("account_b"))
     if ab:
-        lab = str(ab.get("label") or ab.get("kind") or "?").upper()
+        lab = str(ab.get("kind") or ab.get("label") or "?").upper()   # kind first: the label is "ATLAS <account>", never "LIVE" (day-brain-feed)
         if ab.get("enabled") is False:
             out.append(("ATLAS 25K", False, "off"))
         else:

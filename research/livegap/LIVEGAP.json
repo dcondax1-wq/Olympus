@@ -1,8 +1,39 @@
 {
  "made": "2026-11-24",
- "bars_to": "2026-11-20",
- "pc_days_pulled": [],
- "live_source": "tools/web_public/trading/trades.json (data-pipe ledger rows, built 2026-10-25 15:38) + data/pc_days (0 days) + owner / PC balances on the board",
+ "bars_to": "2026-11-23",
+ "pc_days_pulled": [
+  "2026-10-14",
+  "2026-10-15",
+  "2026-10-16",
+  "2026-10-19",
+  "2026-10-20",
+  "2026-10-21",
+  "2026-10-22",
+  "2026-10-23",
+  "2026-10-26",
+  "2026-10-27",
+  "2026-10-28",
+  "2026-10-29",
+  "2026-10-30",
+  "2026-11-02",
+  "2026-11-03",
+  "2026-11-04",
+  "2026-11-05",
+  "2026-11-06",
+  "2026-11-09",
+  "2026-11-10",
+  "2026-11-11",
+  "2026-11-12",
+  "2026-11-13",
+  "2026-11-16",
+  "2026-11-17",
+  "2026-11-18",
+  "2026-11-19",
+  "2026-11-20",
+  "2026-11-23",
+  "2026-11-24"
+ ],
+ "live_source": "tools/web_public/trading/trades.json (data-pipe ledger rows, built 2026-10-25 15:38) + data/pc_days (30 days) + owner / PC balances on the board",
  "pc_gaps": [
   {
    "from": "2026-10-26 08:30",
@@ -23,10 +54,10 @@
    "src": "heartbeat remote / autopilot events"
   },
   {
-   "from": "2026-11-07 00:00",
-   "to": "2026-11-17 16:48",
-   "what": "PC SILENT: the 15-min report task was never installed and the auto-update not running; the account balance shows the bot did not trade LIT Nov 10-11",
-   "src": "board 'bot_started Nov 17 16:48'; balance $49,313.54 (Nov 6) -> $49,192.78 (Nov 17) = only Nov 16's -$129"
+   "from": "2026-11-09 15:55",
+   "to": "2026-11-15 20:39",
+   "what": "PC BOT OFF: no uptime sample from Nov 9 15:55 ET to Sun Nov 15 20:39 ET (the day folders' gaps.json; the report task was not installed either, so nobody saw it)",
+   "src": "data/pc_days/2026-11-09 and 2026-11-16 gaps.json uptime; no trade rows Nov 10-13; balance $49,313.54 (Nov 6) -> $49,192.78 (Nov 17) = only Nov 16's -$129"
   },
   {
    "from": "2026-11-24 00:45",
@@ -39,8 +70,8 @@
   "z50k": {
    "name": "Zlarior 50K (LIT, Builder 50K eval)",
    "start": "2026-10-19",
-   "sessions": 25,
-   "bars_to": "2026-11-20",
+   "sessions": 26,
+   "bars_to": "2026-11-23",
    "twin_usd": -1591.3,
    "twin_trades": 7,
    "twin_usd_lit_size": -858.4,
@@ -129,7 +160,7 @@
      "parts": {
       "MISSED": 347.7
      },
-     "cause": "MISSED: PC SILENT: the 15-min report task was never installed and the auto-update not running; the account balance shows the bot did not trade LIT Nov 10-11"
+     "cause": "MISSED: PC BOT OFF: no uptime sample from Nov 9 15:55 ET to Sun Nov 15 20:39 ET (the day folders' gaps.json; the report task was not installed either, so nobody saw it)"
     },
     {
      "when": "Wed Nov 11 03:56",
@@ -144,7 +175,7 @@
      "parts": {
       "MISSED": 42.4
      },
-     "cause": "MISSED: PC SILENT: the 15-min report task was never installed and the auto-update not running; the account balance shows the bot did not trade LIT Nov 10-11"
+     "cause": "MISSED: PC BOT OFF: no uptime sample from Nov 9 15:55 ET to Sun Nov 15 20:39 ET (the day folders' gaps.json; the report task was not installed either, so nobody saw it)"
     },
     {
      "when": "Mon Nov 16 06:16",
@@ -171,7 +202,7 @@
   "atlas25": {
    "name": "ATLAS (Builder 25K: eval Nov 6-17, funded from Nov 18)",
    "start": "2026-11-06",
-   "bars_to": "2026-11-20",
+   "bars_to": "2026-11-23",
    "median_live_risk_usd": 172.26,
    "twin_usd_est": 1263.49,
    "twin_r": 7.33,
@@ -213,7 +244,7 @@
      "live_usd": 0.0,
      "live_r": null,
      "live_qty": null,
-     "cause": "MISSED or not seen: PC SILENT: the 15-min report task was never installed and the auto-update not running; the account balance shows the bot did not trade LIT Nov 10-11",
+     "cause": "MISSED: PC BOT OFF: no uptime sample from Nov 9 15:55 ET to Sun Nov 15 20:39 ET (the day folders' gaps.json; the report task was not installed either, so nobody saw it)",
      "parts": {
       "MISSED_or_unseen": 176.56
      }
@@ -230,7 +261,7 @@
      "live_usd": 0.0,
      "live_r": null,
      "live_qty": null,
-     "cause": "MISSED or not seen: PC SILENT: the 15-min report task was never installed and the auto-update not running; the account balance shows the bot did not trade LIT Nov 10-11",
+     "cause": "MISSED: PC BOT OFF: no uptime sample from Nov 9 15:55 ET to Sun Nov 15 20:39 ET (the day folders' gaps.json; the report task was not installed either, so nobody saw it)",
      "parts": {
       "MISSED_or_unseen": 175.18
      }
@@ -247,7 +278,7 @@
      "live_usd": 0.0,
      "live_r": null,
      "live_qty": null,
-     "cause": "MISSED or not seen: PC SILENT: the 15-min report task was never installed and the auto-update not running; the account balance shows the bot did not trade LIT Nov 10-11",
+     "cause": "MISSED: PC BOT OFF: no uptime sample from Nov 9 15:55 ET to Sun Nov 15 20:39 ET (the day folders' gaps.json; the report task was not installed either, so nobody saw it)",
      "parts": {
       "MISSED_or_unseen": 175.53
      }
@@ -264,7 +295,7 @@
      "live_usd": 0.0,
      "live_r": null,
      "live_qty": null,
-     "cause": "MISSED or not seen: PC SILENT: the 15-min report task was never installed and the auto-update not running; the account balance shows the bot did not trade LIT Nov 10-11",
+     "cause": "MISSED: PC BOT OFF: no uptime sample from Nov 9 15:55 ET to Sun Nov 15 20:39 ET (the day folders' gaps.json; the report task was not installed either, so nobody saw it)",
      "parts": {
       "MISSED_or_unseen": 177.77
      }
@@ -281,7 +312,7 @@
      "live_usd": 0.0,
      "live_r": null,
      "live_qty": null,
-     "cause": "MISSED or not seen: PC SILENT: the 15-min report task was never installed and the auto-update not running; the account balance shows the bot did not trade LIT Nov 10-11",
+     "cause": "MISSED: PC BOT OFF: no uptime sample from Nov 9 15:55 ET to Sun Nov 15 20:39 ET (the day folders' gaps.json; the report task was not installed either, so nobody saw it)",
      "parts": {
       "MISSED_or_unseen": -0.17
      }
@@ -347,8 +378,8 @@
      "live_usd": 512.31,
      "live_r": 6.635,
      "live_qty": 1,
-     "inferred": "funded balance $401 = Nov 18 -$112.80 + 1 micro of this trade (38.75 pts x 6.635R x $2 - $1.90 = +$512.4): taken at 1 micro",
-     "cause": "traded (INFERRED from the balance): SIZE vs the usual risk",
+     "inferred": "CONFIRMED by data/pc_days/2026-11-20 trades: SELL 1 at 26,380.75, TARGET +$514.18 (account acctb); 1 micro = the funded best-day cap",
+     "cause": "traded (confirmed by the day folder): SIZE vs the usual risk",
      "parts": {
       "SIZE": -630.6
      }
@@ -358,7 +389,7 @@
   "z25k2": {
    "name": "Zlarior 25K #2 (LIT, Builder 25K eval)",
    "start": "2026-11-18",
-   "bars_to": "2026-11-20",
+   "bars_to": "2026-11-23",
    "twin_lit_trades": 0,
    "twin_atlas_trades": [],
    "twin_usd": 0,
@@ -369,7 +400,7 @@
   "rapid25k": {
    "name": "Rapid EOD 25K (LIT + ATLAS <= $250, eval)",
    "start": "2026-11-20",
-   "bars_to": "2026-11-20",
+   "bars_to": "2026-11-23",
    "twin_lit_trades": 0,
    "twin_atlas_trades": [
     {
@@ -438,7 +469,7 @@
   },
   {
    "account": "z50k",
-   "cause": "MISSED: PC silent Nov 7-17",
+   "cause": "MISSED: PC bot OFF Nov 9-15",
    "usd_vs_twin": 390.1
   },
   {
@@ -448,16 +479,16 @@
   },
   {
    "account": "atlas25",
-   "cause": "MISSED: PC silent Nov 7-17",
+   "cause": "MISSED: PC bot OFF Nov 9-15",
    "usd_vs_twin": 704.87
   }
  ],
  "market": {
   "z50k_twin_eval_usd": -1591.3,
   "z50k_twin_lit_size_usd": -858.4,
-  "backtest_expectation_lit_size_usd": 3179,
-  "expectation_basis": "Jul-Oct 2026 $2670.0/mo x 25 sessions / 21",
-  "market_shortfall_lit_size_usd": -4037,
+  "backtest_expectation_lit_size_usd": 3306,
+  "expectation_basis": "Jul-Oct 2026 $2670.0/mo x 26 sessions / 21",
+  "market_shortfall_lit_size_usd": -4164,
   "twin_winners": 0,
   "words": "the twin ITSELF lost money in the live window: most of the gap to the backtest's monthly average is the market, not the bot"
  }

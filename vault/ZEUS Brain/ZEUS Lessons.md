@@ -71,14 +71,19 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-72 entries from docs/TESTED_AND_REJECTED.md, newest first.
+77 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
+- **Personal futures account vs MFFU** · [[Zlarior (LIT)]], [[ATLAS]] · [[ownacct-2026-11-24|A personal futures account vs the MFFU prop path]]
+- **ATLAS funded 25K at ~$150 a trade, live sizing path** · [[ATLAS]] · [[atlas-funded-150-2026-11-24|ATLAS funded 25K at ~$150 a trade, on the LIVE sizing code]]
+- **Bad-case plan** · [[Zlarior (LIT)]] · [[badcase-2026-11-24|The BAD case]]
+- **Time windows removed** · [[Zlarior (LIT)]], [[ATLAS]] · [[notime-2026-11-24|Do the time windows add money?]]
 - **Dead hours per pillar** · [[Zlarior (LIT)]], [[ATLAS]] · [[dead-hours-2026-11-24|Dead hours per pillar]]
 - **LIT high-VIX downtrend** · [[Zlarior (LIT)]] · [[lit-vix-downtrend-2026-11-24|LIT in high-VIX falling markets]]
 - **Walk-forward portfolio of every stored run + 24-hour coverage** · [[Zlarior (LIT)]], [[ATLAS]] · [[portfolio-2026-11-24|24-hour coverage + a walk-forward portfolio of everything built]]
 - **Market structure: expansion / retracement** · [[structure-2026-11-24|Market structure]]
 - **Stops x targets x TIME** · [[Zlarior (LIT)]] · [[stops-targets-time-2026-11-24|"Stops x targets x TIME]]
 - **Market Learn weekly trial #1** · [[BLITZ (paper)]]
+- **Pro / institutional edges** · [[proedge-2026-11-24|Pro / institutional edges]]
 - **Edge hunt lane B, cross-asset triggers** · [[edge-b-cross-2026-11-22|Edge hunt lane B]]
 - **Edge hunt lane D: small meta-labeled SIZE + re-entry on LIT** · [[Zlarior (LIT)]] · [[edge-d-meta-2026-11-22|Edge hunt lane D]], [[meta-labeling|Meta-labeling]]
 - **Edge hunt C, calendar / money-flow timing** · [[Zlarior (LIT)]] · [[edge-c-calendar-2026-11-22|Edge hunt lane C]]
@@ -149,6 +154,7 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 ## Rejected in the write-ups
 
 - 2026-11-24 [[stops-targets-time-2026-11-24|"Stops x targets x TIME]] ([[Family stops|stops]])
+- 2026-11-24 [[proedge-2026-11-24|Pro / institutional edges]] ([[Family edge-hunt|edge-hunt]])
 - 2026-11-23 [[popular-ict-2026-11-23|Popular ICT / SMC strategies on CME NQ, run exactly as taught]] ([[Family other|other]])
 - 2026-11-23 [[orderflow-program-2026-11-23|Order-flow program]] ([[Family research|research]])
 - 2026-11-23 [[orderflow-2026-11-23|Order flow]] ([[Family research|research]])

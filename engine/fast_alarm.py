@@ -45,9 +45,9 @@ DAY_MAX = 6                                           # alarm pushes (starts) an
 PERSIST_S = 5 * 60                                    # a held repeat that lasts this long is pushed anyway (not a blip)
 WIN_FROM, WIN_TO = 1 * 60 + 58, 15 * 60 + 55          # ET minutes, weekdays
 COND = {"bot_down": "bot_down", "feed_stale": "feed_stale", "bot_stopped": "bot_stopped", "halt_open": "halt_open",
-        "no_stop": "no_stop"}   # -> pc_report code
+        "no_stop": "no_stop", "stop_missing": "no_stop"}   # -> pc_report code
 TITLE = {"bot_down": "ZEUS not polling", "feed_stale": "FEED STALE", "bot_stopped": "Bot stopped",
-         "halt_open": "CLOSE THE TRADE NOW", "no_stop": "TRADE HAS NO STOP"}
+         "halt_open": "CLOSE THE TRADE NOW", "no_stop": "TRADE HAS NO STOP", "stop_missing": "STOP MISSING AT THE BROKER"}
 NO_STOP_AGE_S = 60                                    # the state file's open leg is this old with the bot stopped
 # redteam2 2026-11-20: a CME half day (Thanksgiving 11-26 halt 13:00, 11-27 and 12-24 13:15 ET). MFFU does NOT auto-close at a
 # half-day halt ("the trader is responsible for closing the positions ... failure ... will result in breaching", help center
@@ -162,6 +162,91 @@ def no_stop(bot, now, folder=None, state_dir=None) -> str | None:
         return None
 
 
+def stop_missing(bot, now, folder=None, state_dir=None) -> str | None:
+    """day-zeroerr 2026-11-24: the bot IS running and a real account holds a position whose protective stop is not working at
+    NinjaTrader for over NO_STOP_AGE_S: a leg still "entry_sent" / "pending" / "unprotected" after its fill, or a "protected"
+    leg whose STOP order report says CANCELLED / REJECTED or is missing. The adapter itself re-sends a bracket that was not
+    delivered every poll (engine/ninjatrader._tick_leg -> _protect) and flattens a lost / never-reported stop; its warnings
+    are kind "risk", which has not reached the phone since 2026-11-18 (engine/push.pc_app_ok). This is the phone alarm for
+    that minute. Read-only: every state file (LIT, ATLAS, account C, extra accounts, the Rapid lanes). Never raises."""
+    try:
+        if not getattr(bot, "running", False):
+            return None                                # the stopped case is no_stop()
+        import glob
+        import json
+        from . import ninjatrader as NT
+        sd = state_dir or os.path.dirname(NT.STATE_PATH)
+        if folder is None:
+            folder = (getattr(bot, "cfg", None) or {}).get("nt_folder") or NT.default_folder()
+        og = os.path.join(folder, "outgoing")
+        try:
+            names = os.listdir(og)
+        except OSError:
+            return None
+        out = []
+        for p in sorted(glob.glob(os.path.join(sd, "ninjatrader_state*.json"))):
+            if "simcheck" in os.path.basename(p):
+                continue
+            try:
+                with open(p, encoding="utf-8") as fh:
+                    st = json.load(fh)
+            except Exception:
+                continue
+            acct = str((st or {}).get("account") or "")
+            if not acct or NT.is_sim(acct) or st.get("day") != NT._trading_day(now):
+                continue
+            suffix = f"_{acct.lower()}_position.txt"
+            for lg in st.get("legs") or []:
+                if not isinstance(lg, dict):
+                    continue
+                status = lg.get("status")
+                if status in ("entry_sent", "pending", "unprotected"):
+                    since = float(lg.get("sent_at") or st.get("saved_at") or now)
+                    why = "its stop and target were never placed"
+                elif status == "protected":
+                    sid = str(lg.get("stop_id") or "")
+                    if not sid:
+                        continue
+                    raw = None
+                    for n in names:
+                        if sid in n and n.lower().endswith(".txt") and "_position" not in n.lower():
+                            try:
+                                with open(os.path.join(og, n), encoding="utf-8-sig", errors="replace") as fh:
+                                    raw = fh.read()
+                            except OSError:
+                                raw = None
+                            break
+                    so = NT.parse_order_state(raw) if raw is not None else None
+                    if so is not None and so["state"] not in NT.DEAD:
+                        continue                       # working / filled: protected (a filled stop leaves the account flat)
+                    if so is None and (lg.get("after_reset") or sid in (lg.get("seen_ids") or [])):
+                        continue                       # a NinjaTrader restart wiped outgoing\: the working stop is not re-reported
+                    since = float(lg.get("bracket_at") or lg.get("sent_at") or st.get("saved_at") or now)
+                    why = f"its stop order is {so['state']}" if so else "NinjaTrader shows no stop order for it"
+                else:
+                    continue
+                if now - since < NO_STOP_AGE_S:
+                    continue
+                inst = str(lg.get("instrument") or "")
+                for n in names:
+                    if not n.lower().endswith(suffix) or not NT.same_instrument(n[:-len(suffix)], inst):
+                        continue
+                    try:
+                        with open(os.path.join(og, n), encoding="utf-8-sig", errors="replace") as fh:
+                            pos = NT.parse_position(fh.read())
+                    except OSError:
+                        pos = None
+                    if pos and pos["side"] != "FLAT":
+                        out.append(f"{pos['side']} {pos['qty']} {inst} on account ..{acct[-4:]} ({why})")
+        if not out:
+            return None
+        return ("; ".join(out[:3]) + ": NO working stop at the broker for over 1 min. The bot re-sends a missing bracket and "
+                "flattens a lost stop by itself; if NinjaTrader still shows the position without a stop, close it there now "
+                "(right-click the position > Close).")
+    except Exception:
+        return None
+
+
 def halt_open(bot, now, folder=None) -> str | None:
     """A broker position still open just before a CME early close (see HALT_WARN_MIN), else None. Only inside the last
     HALT_WARN_MIN minutes before the halt of an early-close day (3 days a year here: no file read at any other time)."""
@@ -215,6 +300,9 @@ def evaluate(bot, now, server_started_at=None, autostart=None, run_seen=None) ->
     ns = no_stop(bot, now)
     if ns:
         out["no_stop"] = ns
+    sm = stop_missing(bot, now)
+    if sm:
+        out["stop_missing"] = sm
     if not getattr(bot, "running", False):
         rec = autostart if isinstance(autostart, dict) else None
         acfg = (rec or {}).get("cfg") if isinstance((rec or {}).get("cfg"), dict) else None
@@ -283,7 +371,7 @@ class FastAlarm:
         if lp is not None and now - lp < REPEAT_S and not (since is not None and now - float(since) >= PERSIST_S):
             return f"held: {code} pushed {_span(now - lp)} ago"
         day = dt.datetime.fromtimestamp(float(now), ET).date().isoformat()
-        if int(self.day_n.get(day) or 0) >= DAY_MAX and code not in ("halt_open", "no_stop"):   # the account: never capped
+        if int(self.day_n.get(day) or 0) >= DAY_MAX and code not in ("halt_open", "no_stop", "stop_missing"):   # the account: never capped
             return f"held: {DAY_MAX} alarm pushes today already"
         return None
 
@@ -340,7 +428,8 @@ class FastAlarm:
                     r = self.send({"key": key, "code": code, "cond": COND[code], "back": True, "title": "Back to normal",
                                    "body": {"bot_down": "The bot polls again.", "bot_stopped": "The bot runs again.",
                                             "halt_open": "NinjaTrader shows the account flat before the halt.",
-                                            "no_stop": "The bot runs again (it places the stop at its first poll) or the trade is closed."}.get(
+                                            "no_stop": "The bot runs again (it places the stop at its first poll) or the trade is closed.",
+                                            "stop_missing": "The stop is working at NinjaTrader again, or the trade is closed."}.get(
                                        code, "NinjaTrader bars are fresh again.")
                                    + f" It was out for {_span(now - a['since'])}.", "tags": "white_check_mark"})
                     done.append((key, r))

@@ -49,6 +49,12 @@ import os
 import random
 import sys
 
+
+def _fs_replace(src, dst):
+    """engine/fsutil.replace: os.replace with Windows lock retries (test_selfheal)."""
+    from engine import fsutil
+    return fsutil.replace(src, dst)
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
@@ -121,7 +127,7 @@ def _write_json(path, obj, indent=1):
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(obj, fh, indent=indent, default=str)
-    os.replace(tmp, path)
+    _fs_replace(tmp, path)
 
 
 def hashes(root: str = ROOT) -> dict:
@@ -314,7 +320,7 @@ def save_lessons(rows: list, path: str = LESSONS) -> str:
     with gzip.open(path + ".tmp", "wt", encoding="utf-8", compresslevel=9) as fh:
         for r in sorted(rows, key=lambda r: (r["pillar"], str(r.get("day")), r.get("entry_t") or 0)):
             fh.write(json.dumps(r, separators=(",", ":"), default=str) + "\n")
-    os.replace(path + ".tmp", path)
+    _fs_replace(path + ".tmp", path)
     return path
 
 

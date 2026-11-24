@@ -29,7 +29,11 @@ def main():
         T.is_enabled = lambda: True
         T.recorder_status = lambda nd=None: {"backfill": "running", "oldest": "2026-09-14"}
         t = T.tiny(1795000000)
-        check("days, the 60-day target, backfill, oldest, newest, time", t == {"on": True, "d": 3, "of": 60, "bf": "running", "o": "2026-09-14", "l": "2026-11-23", "t": 1795000000}, t)
+        check("days, the 60-day target, backfill, oldest, newest, time", t == {"on": True, "d": 3, "of": 60, "bf": "running", "o": "2026-09-14", "l": "2026-11-23", "h": 35, "t": 1795000000}, t)
+        T.recorder_status = lambda nd=None: {"backfill": "running", "oldest": "2026-09-14", "bf_errors": "4"}
+        t = T.tiny(1795000000)
+        check("day-ofready: bf_errors as e, holes as h (weekdays missing, Thanksgiving not counted)", t.get("e") == 4 and t.get("h") == 35, t)
+        check("day-ofready: holes() skips CME full closures", T.holes(["2026-11-25", "2026-11-27"]) == 0 and T.holes(["2026-11-23", "2026-11-25"]) == 1)
         check("small (< 120 bytes as JSON)", len(json.dumps(t, separators=(",", ":"))) < 120, len(json.dumps(t)))
         T.recorder_status = lambda nd=None: {}
         t = T.tiny(5)

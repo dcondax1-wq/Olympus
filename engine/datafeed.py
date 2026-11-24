@@ -68,6 +68,8 @@ DAYS_BACK = 60                                  # a request reaches back at most
 DAILY_CAP = 8                                   # answers a day (ntfy.sh 250 messages a day per IP; status posts use ~210)
 MIN_GAP_S = 240                                 # between two answers (one 5-minute tick)
 MAX_TRIES = 3                                   # children started per request (a failing upload never loops)
+DAYS_BACK_OF = 400                              # day-ofready: a "what": "of" request may reach this far (the tick backfill: 365 days)
+OF_FILES = ("NQ_bars5m.csv.gz", "NQ_fp5m.csv.gz", "NQ_meta.json")
 STALE_LOCK_S = 1800
 BLACKOUT = (110, 960)                           # weekdays 01:50-16:00 ET (engine/datapipe.BLACKOUT): the session, nothing runs
 HTTP_TIMEOUT_S = 8.0
@@ -76,7 +78,8 @@ PREFER = {"NQ": ("NQ", "MNQ"), "ES": ("ES", "MES"), "GC": ("GC", "MGC"), "SI": (
 TFS = ("1m", "5m")
 SYM_TFS = {"GC": ("1m",), "SI": ("1m",)}        # metals (Kalshi K8 legs): 1-minute around 04:45-05:45 / 15:45-17:15 ET only
                                                 # (engine/datapipe.day_bars cuts them; ~150 bars a metal a day, a few KB)
-EXTRAS = ("review.json", "proposals.jsonl", "learn.json")   # from the nightly run's local day folder (logs/datapipe/days/<day>/);
+EXTRAS = ("review.json", "proposals.jsonl", "learn.json",
+          "of/NQ_bars5m.csv.gz", "of/NQ_fp5m.csv.gz", "of/NQ_meta.json")   # day-ofready: order-flow summaries (engine/ofsum.py)   # from the nightly run's local day folder (logs/datapipe/days/<day>/);
                                                 # learn.json = ZEUS learned's public cut (engine/zeus_learn.public)
 UA = "olympus-pc-data/1"
 _ID = re.compile(r"^[a-z0-9]{6,24}$")
@@ -85,6 +88,7 @@ _DAY = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 # EVERY PC answer from Nov 20 on ("unexpected file in the bundle") and no bar after Nov 19 arrived. tests/test_datafeed_names.py
 # keeps this list = every name pack_day can write.
 DAY_FILE = re.compile(r"^days/(\d{4}-\d{2}-\d{2})/(manifest\.json|trades\.jsonl\.gz|fills\.jsonl\.gz|review\.json|proposals\.jsonl|learn\.json|gaps\.json|"
+                      r"of/NQ_(?:bars5m|fp5m)\.csv\.gz|of/NQ_meta\.json|of/manifest\.json|"     # day-ofready (engine/ofsum.py)
                       r"bars/(?:MNQ|NQ|MES|ES|GC|MGC|SI|SIL)_(?:1m|5m)\.csv\.gz)$")
 
 
@@ -210,8 +214,13 @@ def parse_request(m, now) -> dict | None:
     t = _num(m.get("time")) or _num(j.get("t"))
     if not t or t < now - REQ_MAX_AGE_S or t > now + 600:
         return None
-    lo = (_et(now).date() - dt.timedelta(days=DAYS_BACK)).isoformat()
-    return {"id": rid, "since": max(since, lo), "t": int(t)}
+    what = "of" if j.get("what") == "of" else "all"            # day-ofready: "of" = only the order-flow summaries, 400 days back
+    lo = (_et(now).date() - dt.timedelta(days=DAYS_BACK_OF if what == "of" else DAYS_BACK)).isoformat()
+    out = {"id": rid, "since": max(since, lo), "t": int(t), "what": what}
+    until = str(j.get("until") or "")
+    if what == "of" and _DAY.match(until):
+        out["until"] = until
+    return out
 
 
 def _pinned_vk():
@@ -273,11 +282,16 @@ def parse_answer(m, now=None, base: str | None = None, vk="pinned") -> dict | No
     return {**out, "url": url, "size": size, "expires": int(exp)}
 
 
-def post_request(rid: str, since: str, now=None, env=None, http_fn=None) -> tuple:
-    """The cloud's ask. -> (ok, why)."""
+def post_request(rid: str, since: str, now=None, env=None, http_fn=None, what: str = "all", until: str | None = None) -> tuple:
+    """The cloud's ask. what="of" (day-ofready): only the order-flow summaries of the tick days since .. until. -> (ok, why)."""
     base, topic = feed_cfg(env)
-    body = json.dumps({"v": VERSION, "kind": REQ_KIND, "id": rid, "since": since, "t": int(now or time.time()),
-                       "want": ["bars", "trades"]}, separators=(",", ":")).encode("utf-8")
+    req = {"v": VERSION, "kind": REQ_KIND, "id": rid, "since": since, "t": int(now or time.time()),
+           "want": ["of"] if what == "of" else ["bars", "trades"]}
+    if what == "of":
+        req["what"] = "of"
+        if until:
+            req["until"] = until
+    body = json.dumps(req, separators=(",", ":")).encode("utf-8")
     st, b = (http_fn or http)("POST", f"{base}/{topic}", body, {"Priority": "1", "Content-Type": "text/plain"}, HTTP_TIMEOUT_S)
     if 200 <= int(st or 0) < 300:
         return True, "ok"
@@ -462,13 +476,55 @@ def build(since: str, now=None, root: str = ROOT, folder: str | None = None, arc
     return blob, meta
 
 
+def build_of(since: str, now=None, dp_work: str | None = None, max_zip: int = MAX_ZIP, until: str | None = None) -> tuple:
+    """day-ofready: (zip, meta) of the order-flow summaries only (logs/datapipe/days/<day>/of/, engine/ofsum.py), every tick day
+    since .. until, oldest first, under max_zip ("more" = ask again from the day after "to"). Each day's manifest is
+    of/manifest.json, so a day folder the cloud already holds (bars, trades, its manifest.json) is never overwritten."""
+    from . import datapipe as DP
+    now = int(now if now is not None else time.time())
+    base = os.path.join(dp_work or DP.WORK, "days")
+    try:
+        names = sorted(d for d in os.listdir(base) if _DAY.match(d))
+    except OSError:
+        names = []
+    days = [d for d in names if since <= d and (not until or d <= until)
+            and all(os.path.exists(os.path.join(base, d, "of", f)) for f in OF_FILES)]
+    packed, size, more = {}, 22, False
+    for d in days:
+        fs = {}
+        for f in OF_FILES:
+            with open(os.path.join(base, d, "of", f), "rb") as fh:
+                fs["of/" + f] = fh.read()
+        info = {p: {"bytes": len(b), "sha256": hashlib.sha256(b).hexdigest()} for p, b in fs.items()}
+        fs["of/manifest.json"] = json.dumps({"v": VERSION, "day": d, "kind": "of", "made_t": now, "partial": False,
+                                             "files": info}, indent=1, sort_keys=True).encode("utf-8")
+        c = _entry_cost(d, fs)
+        if packed and size + c > max_zip:
+            more = True
+            break
+        packed[d] = fs
+        size += c
+    blob = zip_days(packed) if packed else b""
+    while len(blob) > max_zip and len(packed) > 1:
+        packed.pop(max(packed))
+        more = True
+        blob = zip_days(packed)
+    meta = {"v": VERSION, "kind": ANS_KIND, "what": "of", "made_t": now, "since": since, "days": len(packed),
+            "from": min(packed) if packed else None, "to": max(packed) if packed else None, "partial": [], "more": bool(more),
+            "bytes": len(blob), "sha256": hashlib.sha256(blob).hexdigest() if blob else None, "bars": {}, "trades": 0,
+            "code": _code(ROOT)}
+    if until:
+        meta["until"] = until
+    return blob, meta
+
+
 def send(blob: bytes, meta: dict, env=None, http_fn=None) -> tuple:
     """PUT the zip as ONE ntfy attachment (message = the meta JSON). -> (ok, why, ntfy's answer dict)."""
     base, topic = feed_cfg(env)
     msg = json.dumps(meta, separators=(",", ":"), sort_keys=True, default=str)
     if len(msg.encode("utf-8")) > 3900:
         msg = json.dumps({k: meta.get(k) for k in ("v", "kind", "req", "made_t", "since", "days", "from", "to", "more",
-                                                    "bytes", "sha256", "code")}, separators=(",", ":"), sort_keys=True)
+                                                    "bytes", "sha256", "code", "what")}, separators=(",", ":"), sort_keys=True)
     msg = _sign_msg(msg)
     if blob:
         h = {"Filename": f"pcdata-{meta.get('from')}-{meta.get('to')}.zip", "Message": msg, "Priority": "1"}
@@ -503,7 +559,10 @@ def answer(req: dict, now=None, root: str = ROOT, work: str | None = None, folde
     out = {"ok": False, "req": req.get("id"), "days": 0}
     also = [str(x) for x in (req.get("also") or [])][:6]
     try:
-        blob, meta = build(str(req.get("since")), now, root, folder, archive_root, exec_store, dp_work, max_zip)
+        if req.get("what") == "of":                                  # day-ofready: order-flow summaries only
+            blob, meta = build_of(str(req.get("since")), now, dp_work, max_zip, req.get("until"))
+        else:
+            blob, meta = build(str(req.get("since")), now, root, folder, archive_root, exec_store, dp_work, max_zip)
         meta["req"] = str(req.get("id"))
         if also:
             meta["also"] = also
@@ -515,6 +574,7 @@ def answer(req: dict, now=None, root: str = ROOT, work: str | None = None, folde
         try:
             from .datapipe import scrub_text
             err = {"v": VERSION, "kind": ANS_KIND, "req": str(req.get("id")), "days": 0, "made_t": now,
+                   **({"what": "of"} if req.get("what") == "of" else {}),
                    "error": scrub_text(out["why"])[:200], **({"also": also} if also else {})}
             if send(b"", err, env, http_fn)[0]:
                 out.update(ok=True, error=err["error"])
@@ -623,8 +683,9 @@ def maybe_answer(now=None, env=None, say=print, work: str | None = None, spawn_f
             _write_json(os.path.join(w, "state.json"), st)
             return None
         req = dict(todo[-1])                                        # the newest ask, from the earliest day any open ask wants
-        req["since"] = min(r["since"] for r in todo)
-        req["also"] = [r["id"] for r in todo[:-1]]
+        same = [r for r in todo if r.get("what", "all") == req.get("what", "all") and r.get("until") == req.get("until")]
+        req["since"] = min(r["since"] for r in same)                # day-ofready: an "of" ask and a bars ask are answered apart
+        req["also"] = [r["id"] for r in same[:-1]]
         tr = st.get("tries") or {}
         for rid in [req["id"], *req["also"]]:
             tr[rid] = int(_num(tr.get(rid))) + 1                   # counted before the start: a child that dies still counts
@@ -675,8 +736,11 @@ def extract(blob: bytes, out_dir: str) -> list:
         by_day.setdefault(m.group(1), {})[m.group(2)] = info
     checked = []                                                    # every day is checked before anything is written
     for day, members in sorted(by_day.items()):
-        if "manifest.json" not in members:
+        mkey = "manifest.json" if "manifest.json" in members else "of/manifest.json"    # day-ofready: an "of" answer's day
+        if mkey not in members:
             raise ValueError(f"{day}: no manifest in the bundle")
+        if mkey != "manifest.json" and any(not p.startswith("of/") for p in members):
+            raise ValueError(f"{day}: an order-flow day with other files")
         data = {}
         for p, info in members.items():
             try:
@@ -689,7 +753,7 @@ def extract(blob: bytes, out_dir: str) -> list:
                 raise ValueError(f"{day}/{p}: damaged ({e.__class__.__name__})") from e
             data[p] = b
         try:
-            man = json.loads(data["manifest.json"].decode("utf-8"))
+            man = json.loads(data[mkey].decode("utf-8"))
         except (UnicodeDecodeError, ValueError) as e:
             raise ValueError(f"{day}: the manifest is not JSON") from e
         if not isinstance(man, dict) or man.get("day") != day:

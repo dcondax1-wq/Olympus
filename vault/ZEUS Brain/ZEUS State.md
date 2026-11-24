@@ -25,6 +25,10 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
 - Plan money for the bad case (2025-like: 50K pass ~32% / fail ~60%): day-badcase study. Edge proof stays strict (60+ ideas rejected 2026-11-24).
 - Zero-touch first: day-unstick (remote update without the owner), day-zeroerr (failure map + FAILOVER.md), zerotouch2 auto-park.
 
+## Owner decisions 2026-11-24 ~13:00 ET (chat)
+- "It can be paper till we study more": BLITZ stays PAPER (do not prompt the --blitz on switch).
+- "I'll hold the 4 accounts we have currently": Rapid EOD 25K, ATLAS Builder 25K funded, Zlarior 50K, Zlarior 25K #2 (ATLAS combo). No new evals bought (badcase: 2025-like markets make every eval -EV).
+
 ## Live now
 | What (checked 2026-11-19 18:37 ET, board.py read) | State |
 |---|---|
@@ -194,6 +198,7 @@ Rules: MFFU ONLY ("We stick with MFFU"). Limits: max 5 sim-funded, Builder 1x50K
 - Paper only for Claude: never arm live. After adding research/write-ups run `python tools/refresh_indexes.py`.
 
 ## Recent findings (don't redo)
+- (2026-11-24 afternoon) ALL REJECTED, no live change: litvix (0/7 = variance; VIX 25+ is LIT's best band), portfolio (6 add-ons: more trades, worse PF/DD), dead hours (in-sample noise), badcase (2025-like market: every eval -EV, 2026-like strongly +EV; early-warning rule fails; BLITZ Rapid stays paper rec; ATLAS funded $150 better in 4/4 -> live replay pending), proedge 17 variants 0 pass (EOD rebalance, gamma, overnight fade, LIT expansion skip, NQ/ES spread). Path left: order flow (tick backfill ~60 days), uptime, eval budget discipline.
 - (day-brain-app 2026-11-24) **The Brain** = tools/web_public/brain/ (one 3D brain, rooms #lit #atlas #blitz #of #learn #risk: next trade, live 3D chart with levels, thinking stream, learning from research/learn via tools/build_brain_learn.py -> brain/learn.json, today $). Wired (apps.js live:false, doors, gate bots/bots; argus moved to bots/review), sw v217. Livegap audit (research/writeups/livegap-2026-11-24.md): LIT live = backtest to the cent; Zlarior 50K twin -$1,591 vs live -$786 (market: 0/7 winners, VIX 25+); Rapid missed ATLAS +6.6R Nov 20 (~$1,683, armed?); ATLAS funded 1 micro (~$631). PC feed fields think/next/levels = day-brain-feed (after-hours, red team).
 - (day-brain-research 2026-11-24) **Expansion / retracement:** 8 pre-registered variants (pullback entries, big-day drive, LIT/ATLAS/BLITZ structure filters), 0 pass; LIT x1.5 at the day's extreme H1 +$13.3k / H2 +$519 = watching only. Base rates kept (research/structure/STRUCTURE_ATLAS.json, writeups/structure-2026-11-24.md). Market Learn STRUCTURE lens + research/learn/journal.json + brain_state.json (BRAIN_FEED.md); nightly cloud task trig_0167HjqFtT1YzTSeruBkwKSS 20:47 ET weekdays. Next: day-livegap (live vs backtest $ audit, owner #1).
 - (day-pillars-cinema 2026-11-24) **Four Pillars = a 3D Olympus temple at night** (owner: "those can look WAY better"): pillars-scene.js rewritten on core three r160 (cdnjs has no r160 addons, so bloom / PMREM light room / AO / mirror floor are hand-written), Cinzel titles (self-hosted OFL), glass heroes on Home / NQ / Zenith, quality tiers + auto step-down (software GL starts low). Branch day-pillars-cinema; LEAD WIRES research/handoff/2026-11-24/pillars-cinema/LEAD_WIRES.md (sw v214, ship pillars/fonts/). Tests: pillars 71, hero 30, nq 71, gate 91, perf_sweep 14, zenith 70.

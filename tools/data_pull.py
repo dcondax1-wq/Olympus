@@ -6,6 +6,8 @@
     python tools/data_pull.py --latest --edge    # + tools/edge_health.py on the fresh data/
     python tools/data_pull.py --latest --wait 0  # only ask (or use an answer already on the topic); run it again later
     python tools/data_pull.py --feed-status      # the answers on the topic (3 h) and the last pull, nothing written
+    python tools/data_pull.py --latest --of      # day-ofready: + the order-flow summaries (engine/ofsum.py, 400 days back), then
+                                                 # research/orderflow/of_battery.py runs after every --latest (--no-battery skips)
 
 The old route (the PC's git push to the backup's branch `data`) is OFF on the PC (the backup repo is public; no push sign-in):
     git fetch olympus data                       # what the plain command does first (the backup repo dcondax1-wq/olympus)
@@ -459,6 +461,8 @@ def answers_on_topic(now=None, since="3h") -> tuple:
 def covering(answers: list, since: str, need: str) -> dict | None:
     """The newest answer already on the topic that covers since .. need in one piece."""
     for x in reversed(answers):
+        if x.get("what") == "of":                                # day-ofready: an order-flow-only answer has no bars / trades
+            continue
         if x.get("days") and str(x.get("from")) <= since and str(x.get("to")) >= need and not x.get("more"):
             return x
     return None
@@ -562,6 +566,82 @@ def latest(a, sleep=None) -> int:
     return 0 if got else 3
 
 
+def of_days(out_dir: str = OUT) -> list:
+    """Days in out_dir with the PC's order-flow summary (days/<day>/of/NQ_meta.json, engine/ofsum.py)."""
+    try:
+        return sorted(d for d in os.listdir(out_dir) if re.fullmatch(r"\d{4}-\d{2}-\d{2}", d)
+                      and os.path.exists(os.path.join(out_dir, d, "of", "NQ_meta.json")))
+    except OSError:
+        return []
+
+
+def latest_of(a, sleep=None) -> int:
+    """day-ofready: ask the PC for its order-flow summaries only ("what": "of", up to 400 days back) in two parts: days newer
+    than the newest one already here, then days older than the oldest (the tick backfill runs newest first). Same return
+    codes as latest()."""
+    from engine import datafeed as DF
+    sleep = sleep or time.sleep
+    have = of_days(a.out)
+    today = dt.date.today()
+    if a.since:
+        parts = [(a.since, None)]
+    elif have:
+        parts = [((dt.date.fromisoformat(have[-1]) + dt.timedelta(days=1)).isoformat(), None),
+                 ((today - dt.timedelta(days=DF.DAYS_BACK_OF - 5)).isoformat(),
+                  (dt.date.fromisoformat(have[0]) - dt.timedelta(days=1)).isoformat())]
+    else:
+        parts = [((today - dt.timedelta(days=DF.DAYS_BACK_OF - 5)).isoformat(), None)]
+    wait_s = 60.0 * (a.wait if a.wait is not None else 9)
+    got = []
+    for since, until in parts:
+        rounds = 0
+        while True:
+            rid = secrets.token_hex(5)
+            okp, why = DF.post_request(rid, since, int(time.time()), what="of", until=until)
+            if not okp:
+                print(f"could not ask the PC: {why}")
+                return 1
+            print(f"Asked the PC for its order-flow summaries {since} .. {until or 'now'} (request {rid}).")
+            if wait_s <= 0:
+                return 2
+            use = wait_answer(rid, int(time.time()), wait_s, sleep=sleep)
+            if use is None:
+                print(f"No answer from the PC in {int(wait_s // 60)} min (it answers outside 01:50-16:00 ET). Run this again later.")
+                return 2 if not got else 0
+            if not use.get("days"):
+                print(f"The PC could not pack them: {use['error']}." if use.get("error") else
+                      f"The PC has no order-flow summaries {since} .. {until or 'now'}.")
+                break
+            try:
+                wrote = DF.extract(fetch_bundle(use), a.out)
+            except ValueError as e:
+                print(f"The PC's answer was not usable: {e}. Nothing written.")
+                return 1
+            got += wrote
+            print(f"Received order-flow summaries of {len(wrote)} day(s) {use['from']} .. {use['to']}.")
+            if use.get("more") and rounds < 6:                     # ~15-30 days an answer; the PC answers 8 a day at most
+                since, rounds = (dt.date.fromisoformat(str(use["to"])) + dt.timedelta(days=1)).isoformat(), rounds + 1
+                continue
+            break
+    print(f"order-flow days here now: {len(of_days(a.out))}")
+    return 0 if got else 3
+
+
+def run_battery(out_dir: str = OUT) -> None:
+    """W4 (day-ofready): the pre-registered order-flow battery (research/orderflow/of_battery.py) on the pulled days. It
+    prints "waiting: N of 40" until there are 40 tick days and runs each look (40 / 60 / 120) once. Never fails the pull."""
+    try:
+        r = subprocess.run([sys.executable, "-X", "utf8", os.path.join(ROOT, "research", "orderflow", "of_battery.py"),
+                            "--src", out_dir], cwd=ROOT, capture_output=True, text=True, timeout=3600)
+        for ln in (r.stdout or "").strip().splitlines()[-14:]:
+            print("  order flow: " + ln)
+        if r.returncode:
+            print("  order flow: the battery failed: " + (r.stderr or "").strip().splitlines()[-1:][0][:160]
+                  if (r.stderr or "").strip() else "  order flow: the battery failed")
+    except Exception as e:  # noqa: BLE001
+        print(f"  order flow: battery not run ({e.__class__.__name__})")
+
+
 def feed_status() -> int:
     from engine import datafeed as DF
     ok, answers = answers_on_topic(since="12h")
@@ -584,6 +664,8 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Pull the PC's days (futures bars, trades, review): --latest over ntfy, else the "
                                              "backup repo branch data.")
     ap.add_argument("--latest", action="store_true", help="ask the PC over ntfy and import (engine/datafeed.py)")
+    ap.add_argument("--of", action="store_true", help="--latest: also ask for the order-flow summaries (up to 400 days back)")
+    ap.add_argument("--no-battery", action="store_true", help="--latest: skip the order-flow battery run")
     ap.add_argument("--since", default=None, help="--latest: first CME day to ask for (default: the newest day in data/)")
     ap.add_argument("--wait", type=float, default=None, help="--latest: minutes to wait for the PC (default 9; 0 = only ask)")
     ap.add_argument("--feed-status", action="store_true", help="show the answers on the ntfy topic and the last pull")
@@ -609,6 +691,8 @@ def main(argv=None) -> int:
             return rc
         if rc == 3:
             print("Nothing new from the PC.")
+        if a.of:
+            latest_of(a)
     else:
         global REPO
         REPO = a.repo or REPO
@@ -654,6 +738,8 @@ def main(argv=None) -> int:
             print(f"  (the PC wrote: {pc.get('text')})")
     if a.edge and not a.dry_run:
         subprocess.run([sys.executable, os.path.join(ROOT, "tools", "edge_health.py")], cwd=ROOT)
+    if a.latest and not a.no_battery and not a.dry_run:
+        run_battery(a.out)
     return 0
 
 

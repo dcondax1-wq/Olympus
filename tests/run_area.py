@@ -78,6 +78,7 @@ AREAS["pc"] += [m for m in ("start_api", "launch_checklist", "nt_outgoing", "nt_
                              "new_accounts", "go", "nt_roll_guard", "broker_balance", "eval_fix", "fsutil", "account_rename")
                  if m not in AREAS["pc"]]   # night-startfix 2026-11-22 (audit Package D): the PC self-test's suites, run at landing too
 AREAS["pc"] += ["task_audit"]   # night-tasks 2026-11-23: one report runner (tools/task_audit.py, pc_report's 5-min gap)
+AREAS["pc"].append("brain_feed")    # day-brain-feed 2026-11-24: the Brain app feed on the PC report (engine/brain_feed.py, ext block bf)
 AREAS["pc"] += ["arm_report", "arm_rt"]   # day-armfix 2026-11-22 + red team 2026-11-23: START summary, ATLAS funded rename (keeps every number)
 AREAS["pc"].append("self_heal_pc")    # night-selfheal 2026-11-20: the PC self-heal (engine/self_heal.py, docs/SELF_HEAL.md); its own line
 AREAS["pc"].append("remote_ctl")      # night-phonectl 2026-11-20: phone remote through the backup repo (olympus/control, engine/remote_ctl.py)
@@ -379,6 +380,7 @@ AREAS["cities"].append("pillars")         # day-pillars 2026-11-24: the FOUR PIL
 AREAS["nq"].append("pillars")             # day-pillars 2026-11-24: the NQ page strip + header link
 AREAS["nq"].append("brain_app")           # day-brain-app 2026-11-24: THE BRAIN (brain/: 6 regions, next trade, 3D chart, thinking, learning, today $)
 AREAS["pc"].append("tickrec_tiny")        # day-pillars 2026-11-24: engine.tickrec.tiny / write_tiny (the order-flow pillar line)
+AREAS["pc"].append("ofready")             # day-ofready 2026-11-24: engine/ofsum.py day summaries + research/orderflow/of_battery.py (synthetic only)
 AREAS["cities"].append("research_hub2")   # night-hub2 2026-11-22: the Research Hub (cities/hub.html, data tools/build_research_hub.py); its own line
 AREAS["cities"].append("strategy_lab")    # day-mind 2026-11-23: Strategy Lab data (tools/build_strategy_lab.py) + the Research Hub tab
 AREAS["olympus"].append("brain3d")       # day-arenas 2026-11-21: the bot brain in 3D (olympus/brain3d.js + brain3d-scene.js, brain3d-lab.html); its own line
@@ -500,5 +502,8 @@ AREAS["faults"].append("state_safe_rt"); AREAS["nq"].append("state_safe_rt")   #
 AREAS["nq"].append("accounts_screen"); AREAS["pc"].append("accounts_screen")   # day-accounts 2026-11-23: nq/accounts.html (one card per account + 7-day clock) + the new Rapid's keep-alive end to end + cloud K7 fixes
 
 AREAS["pc"].append("remote_notice")     # day-notifyfix 2026-11-23: a remote command's phone notice goes through every channel; its receipt rides the feed ("rc")
+AREAS["nq"].append("chaos_live"); AREAS["pc"].append("chaos_live")   # day-zeroerr 2026-11-24: failure map chaos harness (engine/live_guard + fast_alarm stop_missing)
+AREAS["pc"].append("live_guard_rt")   # red team 2026-11-24: an account the owner disabled never gets MISSED TRADE / NOT READY
+
 if __name__ == "__main__":
     sys.exit(main())

@@ -49,8 +49,8 @@ ACCTS = {   # docs/ACCOUNT_RULES.md; start = first session the bot could trade i
                 "start_bal": 25000.0},
 }
 # trades the cloud has no row for but the account balance pins exactly (inferred; the PC's day folder confirms or refutes)
-INFERRED = {("ATLAS", "2026-11-20", "EMA"): {"q": 1, "why": "funded balance $401 = Nov 18 -$112.80 + 1 micro of this trade "
-                                                         "(38.75 pts x 6.635R x $2 - $1.90 = +$512.4): taken at 1 micro"}}
+INFERRED = {("ATLAS", "2026-11-20", "EMA"): {"q": 1, "why": "CONFIRMED by data/pc_days/2026-11-20 trades: SELL 1 at 26,380.75, "
+                                                         "TARGET +$514.18 (account acctb); 1 micro = the funded best-day cap"}}
 ATLAS_MEMBERS = {"ema_lon_vix": "EMA", "macd_sweep": "MACD", "sr_nyreclaim": "SR"}
 # what the files we can see say about the PC (STATE.md / STATE_HISTORY / board events / lit-more-money-2026-11-19.md)
 PC_GAPS = [
@@ -60,9 +60,10 @@ PC_GAPS = [
      "NinjaTrader refused (fixed)", "src": "engine/ninjatrader._nt_said_no_account, engine/live._void_refused_days"},
     {"from": "2026-11-03 15:00", "to": "2026-11-03 21:06", "what": "bot re-set up and re-armed by hand 20:51-21:06 ET; no record "
      "of the 15:39 signal", "src": "heartbeat remote / autopilot events"},
-    {"from": "2026-11-07 00:00", "to": "2026-11-17 16:48", "what": "PC SILENT: the 15-min report task was never installed and the "
-     "auto-update not running; the account balance shows the bot did not trade LIT Nov 10-11",
-     "src": "board 'bot_started Nov 17 16:48'; balance $49,313.54 (Nov 6) -> $49,192.78 (Nov 17) = only Nov 16's -$129"},
+    {"from": "2026-11-09 15:55", "to": "2026-11-15 20:39", "what": "PC BOT OFF: no uptime sample from Nov 9 15:55 ET to Sun Nov 15 "
+     "20:39 ET (the day folders' gaps.json; the report task was not installed either, so nobody saw it)",
+     "src": "data/pc_days/2026-11-09 and 2026-11-16 gaps.json uptime; no trade rows Nov 10-13; balance $49,313.54 (Nov 6) -> "
+            "$49,192.78 (Nov 17) = only Nov 16's -$129"},
     {"from": "2026-11-24 00:45", "to": "now", "what": "auto-update HELD BACK by a local change on the PC (self-heal could not fix): "
      "the bot runs the code it had before", "src": "board self_heal events Nov 24 00:45-01:45 ET"},
 ]
@@ -260,7 +261,7 @@ def audit():
         if inf and not lv:
             usd_ = round(t["r"] * t["risk"] * PV * inf["q"] - ECOMM * inf["q"], 2)
             row.update(live_usd=usd_, live_qty=inf["q"], live_r=t["r"], inferred=inf["why"])
-            row["cause"] = "traded (INFERRED from the balance): SIZE vs the usual risk"
+            row["cause"] = "traded (confirmed by the day folder): SIZE vs the usual risk"
             row["parts"] = {"SIZE": round(usd_ - row["twin_usd_est"], 2)}
         elif t["one_position_skip"]:
             row["cause"], row["parts"] = "not a gap: the one-position rule skips it (another member open)", {}
@@ -270,7 +271,7 @@ def audit():
             row["parts"] = {"SLIPPED": round(lv["usd"] - t["r"] * abs(lv["usd"] / lv["r"]), 2) if lv.get("r") else 0.0}
         else:
             g = in_gap(t["entry_t"])
-            row["cause"] = "MISSED or not seen: " + (g["what"] if g else "no live row (pull data/pc_days; Nov 19-20 rows are not in the cloud)")
+            row["cause"] = "MISSED: " + (g["what"] if g else "no live row in data/pc_days")
             row["parts"] = {"MISSED_or_unseen": round(-t["r"] * med, 2)}
         AL.append(row)
     res["accounts"]["atlas25"] = {
@@ -307,7 +308,7 @@ def audit():
                 tag = c
                 if c.startswith("MISSED"):
                     cc = r["cause"]
-                    tag = ("MISSED: PC silent Nov 7-17" if "SILENT" in cc or "balance did not move" in cc else
+                    tag = ("MISSED: PC bot OFF Nov 9-15" if "BOT OFF" in cc or "SILENT" in cc or "balance did not move" in cc else
                            "MISSED: order refused (account Name, fixed)" if "refused" in cc else
                            "MISSED: bot / feed gap" if "gap" in cc else
                            "MISSED: bot re-set up by hand" if "re-set up" in cc else "MISSED or unseen: no live row")

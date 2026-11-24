@@ -361,7 +361,7 @@ def from_problem(p: dict, msg: dict) -> dict:
     code = str(_d(p).get("code") or "")
     kind = "bot_stopped" if code in ("bot_down", "bot_stopped") else "problem"
     return {"kind": kind, "key": str(_d(p).get("key") or ""), "title": msg.get("title"), "body": msg.get("body"),
-            "notify_type": "problems", "dual": code in ("halt_open", "no_stop"), "report": True, "soft": bool(_d(p).get("soft"))}
+            "notify_type": "problems", "dual": code in ("halt_open", "no_stop", "stop_missing"), "report": True, "soft": bool(_d(p).get("soft"))}
 
 
 # ------------------------------------------------------------------------------------------------ state + log
