@@ -25,7 +25,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 
 | Arena | Front page (the Home tile) | Live apps | Its page |
 |---|---|---|---|
-| **NQ Bot** | Bots right now (`nq/`) | 26 | `hub/arena.html?a=nq` |
+| **NQ Bot** | Bots right now (`nq/`) | 27 | `hub/arena.html?a=nq` |
 | **Jarvis** | Jarvis (`jarvis/`) | 4 | `hub/arena.html?a=jarvis` |
 | **Websites** | Website business (`agency/`) | 1 | `hub/arena.html?a=agency` |
 | **Data City** | Cities and Hellas (`cities/`) | 8 | `hub/arena.html?a=data` |
@@ -107,6 +107,7 @@ Retired apps are not on Home, in search or in A to Z. Their old links open the r
 | Ares (`ares`) | NQ Bot | trading | The war room: GO, WAIT or HALT | `../data.json`, `jarvis.json`, `rules.json`, `../home.json` | `tests.test_ares_page` |
 | Argus (`argus`) | NQ Bot | trading | The hundred eyes: what to fix | bundled fixture / its own files | `tests.test_argus_page` |
 | Board (`board`) | NQ Bot | trading | What the bot, you and Claude know: accounts | `board.json`, `../business/accounts.json`, `fixture.json`, `../nq/fixture.json` | `tests.test_board` |
+| The Brain (`brain`) | NQ Bot | trading | Every bot as one 3D brain: next trade | `fixture.json` | `tests.test_brain` |
 | Chronos (`chronos`) (retired) | NQ Bot | trading | Time and the session clock | `../odeon/trades.json`, `fixture.json` | `tests.test_chronos_page` |
 | Delphi (`delphi`) (retired) | NQ Bot | trading | The oracle's briefing: plan, target, go / no-go | `fixture.json`, `../home.json`, `../ledger/rules.json` | `tests.test_delphi_page` |
 | Demeter (`demeter`) | NQ Bot | trading | Account health: drawdown dials, payout rules | `fixture.json`, `../home.json`, `../ledger/rules.json`, `../plutus/roadmap.json` | `tests.test_demeter_page` |
@@ -182,7 +183,7 @@ Retired apps are not on Home, in search or in A to Z. Their old links open the r
 | Agora Gallery (`gallery`) (retired) | Everything else | life | Every 3D shape of the Agora on a | `fixture.json` | covered by `tests.test_olympus_kit` |
 | Settings (`settings`) | Everything else | life | Look, voice, storage and the tour | bundled fixture / its own files | `tests.test_settings_page` |
 
-79 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
+80 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
 
 ## Where the organizing code lives
 

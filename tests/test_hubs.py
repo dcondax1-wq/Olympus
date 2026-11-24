@@ -54,8 +54,8 @@ def test_static():
     check("a. the files: hub/index.html, hub.js, hub.css, icon.svg, olympus/hub-status.js, docs/OLYMPUS_IA_V2.md",
           all(os.path.isfile(os.path.join(H, n)) for n in names) and os.path.isfile(HSJ) and os.path.isfile(os.path.join(AK.ROOT, "docs", "OLYMPUS_IA_V2.md")))
     html, js, css, hs, nav, cat = (AK.read(p) for p in (os.path.join(H, "index.html"), os.path.join(H, "hub.js"), os.path.join(H, "hub.css"), HSJ, NAV, CAT))
-    order = ["../olympus/agora.css?v=a11", "hub.css?v=h6", "me.css?v=m2", "../olympus/themes.js?v=o11", "../olympus/gate-catalog.js?v=nv14", "../olympus/hub-status.js?v=h5",
-             '../olympus/gate-nav.js?v=g13" data-app="hub" defer', "me.js?v=m3", "hub.js?v=h5"]
+    order = ["../olympus/agora.css?v=a11", "hub.css?v=h6", "me.css?v=m2", "../olympus/themes.js?v=o11", "../olympus/gate-catalog.js?v=nv15", "../olympus/hub-status.js?v=h5",
+             '../olympus/gate-nav.js?v=g14" data-app="hub" defer', "me.js?v=m3", "hub.js?v=h5"]
     pos = [html.find(x) for x in order]
     check("a. the page loads agora.css, hub.css, me.css, the theme engine, the catalog, hub-status, gate-nav (data-app=hub, deferred), me.js (the Me hub) and hub.js, in that order, all in <head>",
           all(p >= 0 for p in pos) and pos == sorted(pos) and max(pos) < html.index("</head>"), dict(zip(order, pos)))
@@ -83,8 +83,8 @@ def test_static():
           "--ag-serif" in css and "tabular-nums" in css and not AK.BANNED_LOOK.search(css + js + hs) and css.count("min-height: 44px") >= 3
           and "safe-area-inset" in css and "176px" in css and "prefers-reduced-motion: reduce" in css and 'data-oly-lite="1"' in css)
     ui = AK.read(os.path.join(AK.WEB, "olympus", "agora-ui.js"))
-    check("a. agora-ui.js adds gate-nav.js?v=g13 next to itself on every AGORA app (never framed, never twice, data-ag-nonav opts out); every page loads agora-ui.js?v=11",
-          "new URL('gate-nav.js?v=g13', meSrc)" in ui and "if (framed || window.OLYMPUS_GATE_NAV" in ui and "data-ag-nonav" in ui and "script[src*=\"gate-nav.js\"]" in ui
+    check("a. agora-ui.js adds gate-nav.js?v=g14 next to itself on every AGORA app (never framed, never twice, data-ag-nonav opts out); every page loads agora-ui.js?v=12",
+          "new URL('gate-nav.js?v=g14', meSrc)" in ui and "if (framed || window.OLYMPUS_GATE_NAV" in ui and "data-ag-nonav" in ui and "script[src*=\"gate-nav.js\"]" in ui
           and not re.search(r"agora-ui\.js\?v=1\"", "".join(AK.read(os.path.join(AK.WEB, a, "index.html")) for a in os.listdir(AK.WEB) if os.path.isfile(os.path.join(AK.WEB, a, "index.html")))))
     check("a. gate-nav: breadcrumb (nav aria-label=Breadcrumb, aria-current on the last crumb), 'Home' instead of 'Gate', the nine hubs first in Go to",
           "'Breadcrumb'" in nav and "'aria-current', 'page'" in nav and "label.textContent = 'Home'" in nav and "'Hubs'" in nav and "hub/index.html?h=" in nav and "'gate.recent.v1'" in nav)

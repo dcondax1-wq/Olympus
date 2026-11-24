@@ -82,6 +82,7 @@ export const REGISTRY = {
   why:        { kind: 'tiles',         ms: 800 },
   widget:     { kind: 'tiles',         ms: 800 },
   warroom:    { kind: 'columns',       ms: 800 },
+  brain:      { kind: 'sunburst',      ms: 900 },
   clio:       { kind: 'scroll',        ms: 600 },
   atlas:      { kind: 'sunburst',      ms: 900 },
   observatory:{ kind: 'sunburst',      ms: 950 },

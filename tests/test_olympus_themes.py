@@ -187,7 +187,7 @@ def test_static(data):
         test_reach_data(data)
     for app in APPS:
         html = read(WEB, app, "index.html")
-        i_th, i_js = html.find('<script src="../olympus/themes.js?v=o11"></script>'), html.find(f'../olympus/olympus.js?v=o25" data-app="{app}"')
+        i_th, i_js = html.find('<script src="../olympus/themes.js?v=o11"></script>'), html.find(f'../olympus/olympus.js?v=o26" data-app="{app}"')
         check(f"a. {app}: loads the theme engine just before the kit", 0 < i_th < i_js, (i_th, i_js))
     for app in THREE_APPS:
         code = "".join(read(p) for p in glob.glob(os.path.join(WEB, app, "*.js")))

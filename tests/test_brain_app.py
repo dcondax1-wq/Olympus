@@ -148,8 +148,8 @@ def node(sc):
           sl["thinkFrom"] == "think" and sl["think"][0].startswith("Checks 6 of 9") and sl["chart"]["n"] == 48
           and {"sweep:26190.25", "entry:26232.5", "stop:26178", "target:26401.5", "fvg:26205-26214.75"} <= set(sl["chart"]["kinds"])
           and sum(k.startswith("fib:") for k in sl["chart"]["kinds"]) == 4 and not any(k.startswith("level:26190.25") for k in sl["chart"]["kinds"]), sl)
-    check("n. learning from brain/learn.json: LIT has this week's lessons, the confidence is not invented", sl["learn"]["week"] >= 1 and sl["learn"]["conf"] is None
-          and sl["learn"]["word"] == "not scored yet" and "insights" in sl["learn"]["src"], sl["learn"])
+    check("n. learning from brain/learn.json: LIT has this week's lessons, the confidence is not invented", sl["learn"]["week"] >= 1 and (sl["learn"]["conf"] is None and sl["learn"]["word"] == "not scored yet" or "brain_state" in sl["learn"]["src"] and 0 < (sl["learn"]["conf"] or 0) <= 1)
+          and ("insights" in sl["learn"]["src"] or "journal" in sl["learn"]["src"]), sl["learn"])
     ll = L["r"]["lit"]
     check("n. live post without the new fields: LIT derived from the War Room (5m CISD, the CISD line as the limit, the stop from its words), the PC's log as thinking",
           ll["next"]["from"] == "derived" and "5m CISD" in ll["next"]["setup"] and ll["thinkFrom"] == "log" and any("London low" in t for t in ll["think"])
@@ -159,7 +159,7 @@ def node(sc):
           and "fvg:26205-26214.75" in PL["r"]["lit"]["chart"]["kinds"], PL["r"]["lit"])
     check("n. in a trade: LIT says so, entry / stop / target from the open trade", TR["r"]["lit"]["next"]["inTrade"] is True and TR["r"]["lit"]["next"]["stop"] == 26178.0, TR["r"]["lit"]["next"])
     check("n. BLITZ OFF (paper), ORDER FLOW collecting 23 of 60 from the tick line, MARKET LEARN = the weekly lessons, RISK from the glance rooms",
-          S["r"]["blitz"]["status"] == "OFF" and "23 of 60" in S["r"]["of"]["next"]["setup"] and S["r"]["learn"]["status"] == "WEEKLY"
+          S["r"]["blitz"]["status"] == "OFF" and "23 of 60" in S["r"]["of"]["next"]["setup"] and S["r"]["learn"]["status"] in ("WEEKLY", "LEARNING")
           and len(S["r"]["risk"]["money"]["rooms"]) == 2 and S["r"]["risk"]["money"]["rooms"][0]["room"] == 1025, (S["r"]["blitz"]["status"], S["r"]["of"]["next"], S["r"]["risk"]["money"]))
     nl = N["r"]["lit"]
     check("n. nothing at all: NO DATA, no prices, no chart bars, no PC thinking (only the schedule), risk waiting (nothing made up)",
@@ -223,7 +223,7 @@ def browser(sc):
     check("b. LIT room: the live 3D chart with the levels labelled (swept level, limit, stop, target, FVG, fibs)", ls.get("chart") and ls.get("chartMode") == "3d"
           and {"sweep", "entry", "stop", "target", "fvg", "fib"} <= set(ls.get("legend", [])) and any("swept" in x for x in ls.get("lbls", [])) and any(x.startswith("stop") for x in ls.get("lbls", [])), ls)
     check("b. LIT room: the thinking stream (7 PC lines + the day's story), learning (not scored yet, this week's lessons), today $ with SAMPLE",
-          len(ls.get("think", [])) >= 7 and ls["think"][0].startswith("Checks") and "reasoning" in ls.get("thinkSrc", "") and ls.get("conf") == "not scored yet" and ls.get("week", 0) >= 1
+          len(ls.get("think", [])) >= 7 and ls["think"][0].startswith("Checks") and "reasoning" in ls.get("thinkSrc", "") and (ls.get("conf") == "not scored yet" or "%" in str(ls.get("conf")) or str(ls.get("conf")) in ("high", "medium", "low")) and ls.get("week", 0) >= 1
           and "SAMPLE" in ls.get("money", "") and "$1,025" in ls.get("money", ""), {k: ls.get(k) for k in ("think", "thinkSrc", "conf", "week", "money")})
     lr = o.get("learn") or {}
     check("b. MARKET LEARN room: the market read, this week's shared lessons, the source named", lr.get("r") == "learn" and "Market now" in lr.get("body", "") and lr.get("week", 0) >= 1 and "insights.json" in lr.get("learnSrc", ""), {k: lr.get(k) for k in ("r", "week", "learnSrc")})

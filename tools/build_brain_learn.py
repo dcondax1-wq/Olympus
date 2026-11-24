@@ -57,9 +57,11 @@ def journal_rows(j):
         if not isinstance(r, dict):
             continue
         pid = _pid(r.get("pillar"))
-        if not pid or not r.get("text"):
+        ev = r.get("evidence") if isinstance(r.get("evidence"), dict) else {}
+        txt = r.get("text") or r.get("noticed")      # day-brain-research journal uses "noticed" + evidence{n, usd}
+        if not pid or not txt:
             continue
-        out.append({"date": _s(r.get("date"), 10), "pillar": pid, "text": _s(r.get("text")), "n": _num(r.get("n")), "usd": _num(r.get("usd")),
+        out.append({"date": _s(r.get("date"), 10), "pillar": pid, "text": _s(txt), "n": _num(r.get("n", ev.get("n"))), "usd": _num(r.get("usd", ev.get("usd"))),
                     "status": _s(r.get("status") or "noted", 20).lower()})
     out.sort(key=lambda r: r["date"], reverse=True)
     return out[:120]
@@ -78,7 +80,7 @@ def state_rows(s):
         tn = v.get("testing_next")
         out[pid] = {"confidence": None if c is None else round(max(0.0, min(1.0, c)), 3),
                     "lessons": int(v["lessons"]) if isinstance(v.get("lessons"), (int, float)) else len(v["lessons"]) if isinstance(v.get("lessons"), list) else None,
-                    "last_learned": _s(v.get("last_learned"), 120) or None,
+                    "last_learned": _s((v["last_learned"].get("what") if isinstance(v.get("last_learned"), dict) else v.get("last_learned")), 120) or None,
                     "testing_next": [_s(x, 200) for x in (tn if isinstance(tn, list) else [tn] if tn else [])][:4],
                     "market_read": _s(v.get("market_read"), 240) or None}
     return out

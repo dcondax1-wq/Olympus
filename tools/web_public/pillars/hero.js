@@ -61,7 +61,7 @@ export async function mount(box, opts) {
   box.dataset.live = '1';
   // its look: a page that does not link hero.css (NQ: its HTML is at its first-paint budget) gets it here, and a hidden frame shows once styled
   if (![...document.styleSheets].some((x) => /pillars\/hero\.css/.test(x.href || '')) && !document.getElementById('pheroCss')) {
-    await new Promise((ok) => { const l = document.createElement('link'); l.id = 'pheroCss'; l.rel = 'stylesheet'; l.href = new URL('./hero.css?v=c1', BASE).href; l.onload = l.onerror = ok; document.head.append(l); setTimeout(ok, 3000); });
+    await new Promise((ok) => { const l = document.createElement('link'); l.id = 'pheroCss'; l.rel = 'stylesheet'; l.href = new URL('./hero.css?v=c2', BASE).href; l.onload = l.onerror = ok; document.head.append(l); setTimeout(ok, 3000); });
   }
   if (box.dataset.auto === 'nq') box.hidden = false;
   // Zenith (the site root) keeps its shell across routes: the hero belongs on Today only
