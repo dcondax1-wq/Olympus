@@ -1,0 +1,95 @@
+{
+ "V0 today LIT+ATLAS": {
+  "Y25": {
+   "eval": {
+    "pass": 6.6,
+    "fail": 65.2,
+    "med_days": 33.0
+   },
+   "net_6m": -236,
+   "owner_6m": 58,
+   "fees_6m": 294.1,
+   "p_lost": 14.6
+  },
+  "REF": {
+   "eval": {
+    "pass": 6.2,
+    "fail": 79.4,
+    "med_days": 29.0
+   },
+   "net_6m": -290,
+   "owner_6m": 79,
+   "fees_6m": 368.4,
+   "p_lost": 16.8
+  },
+  "H1": {
+   "eval": {
+    "pass": 77.8,
+    "fail": 0.6,
+    "med_days": 32.0
+   },
+   "net_6m": 11132,
+   "owner_6m": 11260,
+   "fees_6m": 127.7,
+   "p_lost": 28.4
+  },
+  "H2": {
+   "eval": {
+    "pass": 86.4,
+    "fail": 2.8,
+    "med_days": 26.0
+   },
+   "net_6m": 4833,
+   "owner_6m": 4979,
+   "fees_6m": 146.0,
+   "p_lost": 39.0
+  }
+ },
+ "V5 BLITZ $150": {
+  "Y25": {
+   "eval": {
+    "pass": 16.6,
+    "fail": 68.2,
+    "med_days": 27.0
+   },
+   "net_6m": -179,
+   "owner_6m": 161,
+   "fees_6m": 340.4,
+   "p_lost": 39.6
+  },
+  "REF": {
+   "eval": {
+    "pass": 10.6,
+    "fail": 82.6,
+    "med_days": 25.0
+   },
+   "net_6m": -305,
+   "owner_6m": 123,
+   "fees_6m": 428.5,
+   "p_lost": 30.4
+  },
+  "H1": {
+   "eval": {
+    "pass": 80.6,
+    "fail": 1.0,
+    "med_days": 29.0
+   },
+   "net_6m": 11471,
+   "owner_6m": 11605,
+   "fees_6m": 134.3,
+   "p_lost": 29.6
+  },
+  "H2": {
+   "eval": {
+    "pass": 92.4,
+    "fail": 2.6,
+    "med_days": 22.0
+   },
+   "net_6m": 5315,
+   "owner_6m": 5462,
+   "fees_6m": 146.6,
+   "p_lost": 39.8
+  }
+ },
+ "blitz_plus_ev_all": false
+}
