@@ -1,0 +1,10 @@
+{
+  "what": "SAMPLE lessons for the 'What the market taught us' panel (tools/build_pillars.py) until research/learn/insights.json (session day-marketlearn) lands. Placeholders, not findings: the page shows a SAMPLE banner.",
+  "insights": [
+    {"pillar": "lit", "date": "2026-11-20", "text": "SAMPLE · Quiet Asia ranges led to cleaner London sweeps; wide Asia ranges led to more stopped trades.", "source": "sample"},
+    {"pillar": "lit", "date": "2026-11-18", "text": "SAMPLE · Trades taken in the first 30 minutes after a news print had wider stops and smaller size.", "source": "sample"},
+    {"pillar": "atlas", "date": "2026-11-20", "text": "SAMPLE · Fills at the 5m open slipped 9-15 ticks when price was running; the backtest now assumes 10.", "source": "sample"},
+    {"pillar": "blitz", "date": "2026-11-18", "text": "SAMPLE · The 30-minute clock exit is where it earns; early exits cut the win rate.", "source": "sample"},
+    {"pillar": "orderflow", "date": "2026-11-23", "text": "SAMPLE · Bar data cannot stand in for real ticks: every bar proxy failed the pre-set bar.", "source": "sample"}
+  ]
+}
