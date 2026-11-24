@@ -1,0 +1,464 @@
+{
+ "made": "2026-11-24",
+ "bars_to": "2026-11-20",
+ "pc_days_pulled": [],
+ "live_source": "tools/web_public/trading/trades.json (data-pipe ledger rows, built 2026-10-25 15:38) + data/pc_days (0 days) + owner / PC balances on the board",
+ "pc_gaps": [
+  {
+   "from": "2026-10-26 08:30",
+   "to": "2026-10-26 08:45",
+   "what": "bot / feed gap: the model entered during it, never routed",
+   "src": "engine/live.py comment at the un-routed exit (23:08 ET 2026-10-26)"
+  },
+  {
+   "from": "2026-10-27 00:00",
+   "to": "2026-10-27 23:59",
+   "what": "every MFFU order went to an account Name without the 'R': NinjaTrader refused (fixed)",
+   "src": "engine/ninjatrader._nt_said_no_account, engine/live._void_refused_days"
+  },
+  {
+   "from": "2026-11-03 15:00",
+   "to": "2026-11-03 21:06",
+   "what": "bot re-set up and re-armed by hand 20:51-21:06 ET; no record of the 15:39 signal",
+   "src": "heartbeat remote / autopilot events"
+  },
+  {
+   "from": "2026-11-07 00:00",
+   "to": "2026-11-17 16:48",
+   "what": "PC SILENT: the 15-min report task was never installed and the auto-update not running; the account balance shows the bot did not trade LIT Nov 10-11",
+   "src": "board 'bot_started Nov 17 16:48'; balance $49,313.54 (Nov 6) -> $49,192.78 (Nov 17) = only Nov 16's -$129"
+  },
+  {
+   "from": "2026-11-24 00:45",
+   "to": "now",
+   "what": "auto-update HELD BACK by a local change on the PC (self-heal could not fix): the bot runs the code it had before",
+   "src": "board self_heal events Nov 24 00:45-01:45 ET"
+  }
+ ],
+ "accounts": {
+  "z50k": {
+   "name": "Zlarior 50K (LIT, Builder 50K eval)",
+   "start": "2026-10-19",
+   "sessions": 25,
+   "bars_to": "2026-11-20",
+   "twin_usd": -1591.3,
+   "twin_trades": 7,
+   "twin_usd_lit_size": -858.4,
+   "live_usd_balance": -786.0,
+   "balance_src": "PC live via ntfy, 2026-11-24 11:00 ET (board)",
+   "live_trades_seen": 2,
+   "live_usd_trades_seen": -566.4,
+   "extra_unexplained_usd": -219.6,
+   "extra_note": "balance move not explained by a trade we can see: fees + rows not in the cloud (Oct 19-23 and after Nov 20); the room says the account once closed a day at ~$50,168 (floor $48,168), so at least one unseen winner ~+$168 came before Oct 28",
+   "trades": [
+    {
+     "when": "Mon Oct 26 08:37",
+     "day": "2026-10-26",
+     "side": "SHORT",
+     "twin_exit": "BE",
+     "twin_r": 0.015,
+     "twin_qty": 5,
+     "twin_usd": 0.5,
+     "live_qty": null,
+     "live_usd": 0.0,
+     "parts": {
+      "MISSED": -0.5
+     },
+     "cause": "MISSED: bot / feed gap: the model entered during it, never routed"
+    },
+    {
+     "when": "Tue Oct 27 06:12",
+     "day": "2026-10-27",
+     "side": "SHORT",
+     "twin_exit": "STOP",
+     "twin_r": -1.004,
+     "twin_qty": 5,
+     "twin_usd": -689.5,
+     "live_qty": null,
+     "live_usd": 0.0,
+     "parts": {
+      "MISSED": 689.5
+     },
+     "cause": "MISSED: every MFFU order went to an account Name without the 'R': NinjaTrader refused (fixed) (the bot booked 6 MNQ -827 that was voided)"
+    },
+    {
+     "when": "Wed Oct 28 03:43",
+     "day": "2026-10-28",
+     "side": "SHORT",
+     "twin_exit": "STOP",
+     "twin_r": -1.006,
+     "twin_qty": 5,
+     "twin_usd": -437.0,
+     "live_qty": 5,
+     "live_usd": -437.0,
+     "live_entry": 29945.0,
+     "twin_entry": 29945.0,
+     "live_exit_px": 29987.75,
+     "parts": {
+      "SIZE": -0.0,
+      "SLIPPED": 0.0
+     },
+     "cause": "traded (SIZE + SLIPPED)",
+     "entry_slip_usd": 0.0
+    },
+    {
+     "when": "Tue Nov 03 15:39",
+     "day": "2026-11-03",
+     "side": "LONG",
+     "twin_exit": "EOD",
+     "twin_r": 0.213,
+     "twin_qty": 2,
+     "twin_usd": 54.2,
+     "live_qty": null,
+     "live_usd": 0.0,
+     "parts": {
+      "MISSED": -54.2
+     },
+     "cause": "MISSED: bot re-set up and re-armed by hand 20:51-21:06 ET; no record of the 15:39 signal"
+    },
+    {
+     "when": "Tue Nov 10 03:33",
+     "day": "2026-11-10",
+     "side": "LONG",
+     "twin_exit": "STOP",
+     "twin_r": -1.004,
+     "twin_qty": 3,
+     "twin_usd": -347.7,
+     "live_qty": null,
+     "live_usd": 0.0,
+     "parts": {
+      "MISSED": 347.7
+     },
+     "cause": "MISSED: PC SILENT: the 15-min report task was never installed and the auto-update not running; the account balance shows the bot did not trade LIT Nov 10-11"
+    },
+    {
+     "when": "Wed Nov 11 03:56",
+     "day": "2026-11-11",
+     "side": "SHORT",
+     "twin_exit": "CUT_T15",
+     "twin_r": -0.305,
+     "twin_qty": 1,
+     "twin_usd": -42.4,
+     "live_qty": null,
+     "live_usd": 0.0,
+     "parts": {
+      "MISSED": 42.4
+     },
+     "cause": "MISSED: PC SILENT: the 15-min report task was never installed and the auto-update not running; the account balance shows the bot did not trade LIT Nov 10-11"
+    },
+    {
+     "when": "Mon Nov 16 06:16",
+     "day": "2026-11-16",
+     "side": "LONG",
+     "twin_exit": "STOP",
+     "twin_r": -1.004,
+     "twin_qty": 1,
+     "twin_usd": -129.4,
+     "live_qty": 1,
+     "live_usd": -129.4,
+     "live_entry": 27799.5,
+     "twin_entry": 27798.75,
+     "live_exit_px": 27734.8,
+     "parts": {
+      "SIZE": -0.0,
+      "SLIPPED": 0.0
+     },
+     "cause": "traded (SIZE + SLIPPED)",
+     "entry_slip_usd": -1.5
+    }
+   ]
+  },
+  "atlas25": {
+   "name": "ATLAS (Builder 25K: eval Nov 6-17, funded from Nov 18)",
+   "start": "2026-11-06",
+   "bars_to": "2026-11-20",
+   "median_live_risk_usd": 172.26,
+   "twin_usd_est": 1263.49,
+   "twin_r": 7.33,
+   "live_usd_trades_seen": 2022.59,
+   "live_usd_balance": {
+    "eval_passed": 1946.1,
+    "funded_now": 401.0,
+    "total": 2347.1,
+    "src": "owner note Nov 17 ($26,946.10, passed) + PC live Nov 24 (funded $401)"
+   },
+   "note": "ATLAS twin $ = twin R x the median live $ risk of its seen trades (the account's own need / funded sizing is not replayed): an estimate. The balance (+$2,347) is MORE than the seen trades (+$1,510): live rows are missing for the silent Nov 7-17 and for Nov 19-24. Eval: +$1,946.10 = seen -$168.81 + $1,791.89 + $323 not seen (no twin trade explains it: an EXTRA). Funded: $401 = Nov 18 -$112.80 + Nov 20 1 micro +$512.4 (inferred).",
+   "trades": [
+    {
+     "when": "Fri Nov 06 04:00",
+     "day": "2026-11-06",
+     "member": "EMA",
+     "side": "SHORT",
+     "twin_exit": "STOP",
+     "twin_r": -1.029,
+     "twin_usd_est": -177.25,
+     "one_position_skip": false,
+     "live_usd": -168.81,
+     "live_r": -0.98,
+     "live_qty": 2,
+     "cause": "traded (SLIPPED = live R vs twin R x risk)",
+     "parts": {
+      "SLIPPED": 8.44
+     }
+    },
+    {
+     "when": "Tue Nov 10 03:55",
+     "day": "2026-11-10",
+     "member": "EMA",
+     "side": "LONG",
+     "twin_exit": "STOP",
+     "twin_r": -1.025,
+     "twin_usd_est": -176.56,
+     "one_position_skip": false,
+     "live_usd": 0.0,
+     "live_r": null,
+     "live_qty": null,
+     "cause": "MISSED or not seen: PC SILENT: the 15-min report task was never installed and the auto-update not running; the account balance shows the bot did not trade LIT Nov 10-11",
+     "parts": {
+      "MISSED_or_unseen": 176.56
+     }
+    },
+    {
+     "when": "Wed Nov 11 09:40",
+     "day": "2026-11-11",
+     "member": "MACD",
+     "side": "SHORT",
+     "twin_exit": "STOP",
+     "twin_r": -1.017,
+     "twin_usd_est": -175.18,
+     "one_position_skip": false,
+     "live_usd": 0.0,
+     "live_r": null,
+     "live_qty": null,
+     "cause": "MISSED or not seen: PC SILENT: the 15-min report task was never installed and the auto-update not running; the account balance shows the bot did not trade LIT Nov 10-11",
+     "parts": {
+      "MISSED_or_unseen": 175.18
+     }
+    },
+    {
+     "when": "Thu Nov 12 09:45",
+     "day": "2026-11-12",
+     "member": "SR",
+     "side": "SHORT",
+     "twin_exit": "STOP",
+     "twin_r": -1.019,
+     "twin_usd_est": -175.53,
+     "one_position_skip": false,
+     "live_usd": 0.0,
+     "live_r": null,
+     "live_qty": null,
+     "cause": "MISSED or not seen: PC SILENT: the 15-min report task was never installed and the auto-update not running; the account balance shows the bot did not trade LIT Nov 10-11",
+     "parts": {
+      "MISSED_or_unseen": 175.53
+     }
+    },
+    {
+     "when": "Fri Nov 13 03:40",
+     "day": "2026-11-13",
+     "member": "MACD",
+     "side": "LONG",
+     "twin_exit": "STOP",
+     "twin_r": -1.032,
+     "twin_usd_est": -177.77,
+     "one_position_skip": false,
+     "live_usd": 0.0,
+     "live_r": null,
+     "live_qty": null,
+     "cause": "MISSED or not seen: PC SILENT: the 15-min report task was never installed and the auto-update not running; the account balance shows the bot did not trade LIT Nov 10-11",
+     "parts": {
+      "MISSED_or_unseen": 177.77
+     }
+    },
+    {
+     "when": "Fri Nov 13 08:05",
+     "day": "2026-11-13",
+     "member": "EMA",
+     "side": "LONG",
+     "twin_exit": "BE",
+     "twin_r": 0.001,
+     "twin_usd_est": 0.17,
+     "one_position_skip": false,
+     "live_usd": 0.0,
+     "live_r": null,
+     "live_qty": null,
+     "cause": "MISSED or not seen: PC SILENT: the 15-min report task was never installed and the auto-update not running; the account balance shows the bot did not trade LIT Nov 10-11",
+     "parts": {
+      "MISSED_or_unseen": -0.17
+     }
+    },
+    {
+     "when": "Tue Nov 17 08:20",
+     "day": "2026-11-17",
+     "member": "EMA",
+     "side": "SHORT",
+     "twin_exit": "TARGET",
+     "twin_r": 6.865,
+     "twin_usd_est": 1182.53,
+     "one_position_skip": false,
+     "live_usd": 1791.89,
+     "live_r": 6.59,
+     "live_qty": 2,
+     "cause": "traded (SLIPPED = live R vs twin R x risk)",
+     "parts": {
+      "SLIPPED": -74.78
+     }
+    },
+    {
+     "when": "Tue Nov 17 10:15",
+     "day": "2026-11-17",
+     "member": "SR",
+     "side": "LONG",
+     "twin_exit": "STOP",
+     "twin_r": -1.022,
+     "twin_usd_est": 0.0,
+     "one_position_skip": true,
+     "live_usd": 0.0,
+     "live_r": null,
+     "live_qty": null,
+     "cause": "not a gap: the one-position rule skips it (another member open)",
+     "parts": {}
+    },
+    {
+     "when": "Wed Nov 18 04:50",
+     "day": "2026-11-18",
+     "member": "MACD",
+     "side": "SHORT",
+     "twin_exit": "STOP",
+     "twin_r": -1.044,
+     "twin_usd_est": -179.83,
+     "one_position_skip": false,
+     "live_usd": -112.8,
+     "live_r": -0.92,
+     "live_qty": 2,
+     "cause": "traded (SLIPPED = live R vs twin R x risk)",
+     "parts": {
+      "SLIPPED": 15.2
+     }
+    },
+    {
+     "when": "Fri Nov 20 03:45",
+     "day": "2026-11-20",
+     "member": "EMA",
+     "side": "SHORT",
+     "twin_exit": "TARGET",
+     "twin_r": 6.635,
+     "twin_usd_est": 1142.91,
+     "one_position_skip": false,
+     "live_usd": 512.31,
+     "live_r": 6.635,
+     "live_qty": 1,
+     "inferred": "funded balance $401 = Nov 18 -$112.80 + 1 micro of this trade (38.75 pts x 6.635R x $2 - $1.90 = +$512.4): taken at 1 micro",
+     "cause": "traded (INFERRED from the balance): SIZE vs the usual risk",
+     "parts": {
+      "SIZE": -630.6
+     }
+    }
+   ]
+  },
+  "z25k2": {
+   "name": "Zlarior 25K #2 (LIT, Builder 25K eval)",
+   "start": "2026-11-18",
+   "bars_to": "2026-11-20",
+   "twin_lit_trades": 0,
+   "twin_atlas_trades": [],
+   "twin_usd": 0,
+   "live_usd_balance": 24.0,
+   "balance_src": "PC live via ntfy, 2026-11-24 11:00 ET (board)",
+   "note": "no LIT twin trade from the start to the last bar we have; the small balance move is unexplained from the cloud"
+  },
+  "rapid25k": {
+   "name": "Rapid EOD 25K (LIT + ATLAS <= $250, eval)",
+   "start": "2026-11-20",
+   "bars_to": "2026-11-20",
+   "twin_lit_trades": 0,
+   "twin_atlas_trades": [
+    {
+     "when": "Fri Nov 20 03:45",
+     "member": "EMA",
+     "r": 6.635,
+     "usd_at_250_risk": 1658.75
+    }
+   ],
+   "twin_usd": 1658.75,
+   "live_usd_balance": -24.0,
+   "balance_src": "PC live via ntfy, 2026-11-24 11:00 ET (board)",
+   "note": "no LIT twin trade from the start to the last bar we have; the small balance move is unexplained from the cloud; the Rapid account's 'armed' check is still on the owner's to-do (board 'WAITING ON THE OWNER'), so ATLAS's Nov 20 +6.6R twin trade may not have been eligible"
+  }
+ },
+ "causes_ranked": [
+  {
+   "account": "rapid25k",
+   "cause": "MISSED or not armed (ATLAS on Rapid)",
+   "usd_vs_twin": -1682.75
+  },
+  {
+   "account": "atlas25",
+   "cause": "SIZE",
+   "usd_vs_twin": -630.6
+  },
+  {
+   "account": "z50k",
+   "cause": "EXTRA: unexplained balance move",
+   "usd_vs_twin": -219.6
+  },
+  {
+   "account": "z50k",
+   "cause": "MISSED: bot re-set up by hand",
+   "usd_vs_twin": -54.2
+  },
+  {
+   "account": "atlas25",
+   "cause": "SLIPPED",
+   "usd_vs_twin": -51.14
+  },
+  {
+   "account": "z50k",
+   "cause": "MISSED: bot / feed gap",
+   "usd_vs_twin": -0.5
+  },
+  {
+   "account": "z50k",
+   "cause": "SIZE",
+   "usd_vs_twin": 0.0
+  },
+  {
+   "account": "z50k",
+   "cause": "SLIPPED",
+   "usd_vs_twin": 0.0
+  },
+  {
+   "account": "z25k2",
+   "cause": "EXTRA: unexplained balance move",
+   "usd_vs_twin": 24.0
+  },
+  {
+   "account": "atlas25",
+   "cause": "EXTRA: unexplained balance move",
+   "usd_vs_twin": 324.51
+  },
+  {
+   "account": "z50k",
+   "cause": "MISSED: PC silent Nov 7-17",
+   "usd_vs_twin": 390.1
+  },
+  {
+   "account": "z50k",
+   "cause": "MISSED: order refused (account Name, fixed)",
+   "usd_vs_twin": 689.5
+  },
+  {
+   "account": "atlas25",
+   "cause": "MISSED: PC silent Nov 7-17",
+   "usd_vs_twin": 704.87
+  }
+ ],
+ "market": {
+  "z50k_twin_eval_usd": -1591.3,
+  "z50k_twin_lit_size_usd": -858.4,
+  "backtest_expectation_lit_size_usd": 3179,
+  "expectation_basis": "Jul-Oct 2026 $2670.0/mo x 25 sessions / 21",
+  "market_shortfall_lit_size_usd": -4037,
+  "twin_winners": 0,
+  "words": "the twin ITSELF lost money in the live window: most of the gap to the backtest's monthly average is the market, not the bot"
+ }
+}
