@@ -75,3 +75,7 @@
 .g-head:has(> .phero.band .ph-stage[data-mode="3d"]) { position: relative; }
 .phero.slim .ph-chips { position: relative; }
 .phero.slim .pc { background: rgba(0,0,0,.55); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
+
+/* day-brain-app 2026-11-24: a Brain link beside Open (Home + NQ hero) */
+.phero .ph-acts { display: inline-flex; gap: 6px; }
+.phero .ph-brain { color: #f4effb; background: linear-gradient(180deg, #2a1846, #16131e); box-shadow: 0 0 0 1px #9d59ee, 0 0 16px rgba(157,89,238,.5); }

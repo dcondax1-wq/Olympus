@@ -744,6 +744,20 @@ APPS / AMBIENT: `why: ['Why', '?', '#c8a24a']`, `why: 'scroll',` · FLAVOUR: `wh
 ```
 APPS / AMBIENT: `board: ['Board', '▤', '#c8a24a']`, `board: 'scroll',` · FLAVOUR: `board: ['columns', 'Read the board', 'tick']` · REGISTRY: `board: { kind: 'tiles', ms: 800 }`
 
+## warroom (2026-11-24, day-warroom: every bot, every step, live; section written by day-brain-app)
+Folder `tools/web_public/warroom/`, test `tests/test_warroom.py`. Wired by `tools/wire_new_apps.py`.
+```js
+  app('warroom', 'War Room', 'trading', '#f1c14b', 'Every NQ bot, every step, live: what it waits for and how close a trade is', { glyph: '⚔' }),
+```
+APPS / AMBIENT: `warroom: ['War Room', '⚔', '#f1c14b']`, `warroom: 'chimes',` · FLAVOUR: `warroom: ['columns', 'Every bot, every step, live', 'tick']` · REGISTRY: `warroom: { kind: 'columns', ms: 800 }`
+
+## brain (2026-11-24, day-brain-app: THE BRAIN, one living 3D brain of every bot)
+Folder `tools/web_public/brain/` (learn.json from `tools/build_brain_learn.py`, fixture.json from `tests/brain_fixture.py`), test `tests/test_brain_app.py`. Wired by `tools/wire_new_apps.py` (lead). Lead wires: `research/handoff/2026-11-24/brain-app/LEAD_WIRES.md`.
+```js
+  app('brain', 'The Brain', 'trading', '#9d59ee', 'One living 3D brain: each bot\'s next trade, live chart, thinking and what it learned', { glyph: 'Ψ' }),
+```
+APPS / AMBIENT: `brain: ['The Brain', 'Ψ', '#9d59ee']`, `brain: 'chimes',` · FLAVOUR: `brain: ['rings', 'Every bot, thinking', 'tick']` · REGISTRY: `brain: { kind: 'sunburst', ms: 900 }`
+
 ---
 # Wiring WIDGET, the iPhone widget + Glance page (2026-11-20, wired in 90cd8c33; section written 2026-11-22)
 

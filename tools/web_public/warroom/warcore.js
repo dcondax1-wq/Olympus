@@ -409,7 +409,7 @@ export function build(src, nowS, memo) {
   M.headline = asOf + (M.positions.length ? `In a trade: ${M.positions[0].head}.`
     : !lite ? 'Waiting for your PC\'s report.'
       : ctx.stopped ? 'The PC bot is STOPPED: nothing is trading.'
-        : top && top.meter.pct >= 40 ? `${top.name} is ${top.meter.word.toLowerCase()}: ${top.now ? top.now.label : ''}. ${top.next ? top.next.text : ''}`
+        : top && top.meter.pct >= 40 ? `${top.name} ${/^was /i.test(top.meter.word) ? '' : 'is '}${top.meter.word.toLowerCase()}: ${top.now ? top.now.label : ''}. ${top.next ? top.next.text : ''}`
           : `Quiet: no setup forming.${M.next ? ` Next window: ${M.next.who} ${M.next.day === 'today' ? 'at' : M.next.day} ${M.next.at} ET.` : ''}`);
   return M;
 }

@@ -173,3 +173,8 @@ a { color: inherit; } button { font: inherit; color: inherit; }
 @keyframes blink { 50% { opacity: 0; } }
 html.wr-low *, html.wr-low *::before, html.wr-low *::after { animation: none !important; transition: none !important; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* day-brain-app 2026-11-24: the Brain link in the top bar */
+.hero { position: relative; }
+.hero .brl { float: right; margin: -4px -4px 4px 10px; display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 14px; text-decoration: none; font-weight: 700; font-size: 13px;
+  color: #f4effb; border: 1px solid #9d59ee; background: #16131e; box-shadow: 0 0 14px rgba(157,89,238,.45); }

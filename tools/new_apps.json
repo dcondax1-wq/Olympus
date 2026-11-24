@@ -715,6 +715,24 @@
     "kind": "columns",
     "ms": 800
    }
+  },
+  {
+   "id": "brain",
+   "name": "The Brain",
+   "group": "trading",
+   "accent": "#9d59ee",
+   "description": "One living 3D brain: each bot\\'s next trade, live chart, thinking and what it learned",
+   "glyph": "Ψ",
+   "ambient": "chimes",
+   "flavour": [
+    "rings",
+    "Every bot, thinking",
+    "tick"
+   ],
+   "transition": {
+    "kind": "sunburst",
+    "ms": 900
+   }
   }
  ],
  "pending": [],
