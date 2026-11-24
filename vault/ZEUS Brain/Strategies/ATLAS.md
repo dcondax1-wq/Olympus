@@ -63,6 +63,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 ## Tested and rejected
 
+> [!failure]- Time windows removed
+> LIT entries 18:00-15:30 (whole day) vs 02:00-15:30: -$10,511 / +$27,310 / +$9,644 vs +$1,275 / +$32,773 / +$8,962 (2021-25 / Jan-Jun / Jul-Oct). ATLAS members at any time 00:00-15:55 (live code, month-by-month replay): EMA -$4.3k / +$16.8k / -$3.6k vs +$12.4k / +$19.9k / +$8.1k; MACD -$4.1k / +$8.2k / -$4.5k vs +$21.4k / +$22.1k / +$2.6k; S/R +$1.1k / +$7.4k / +$3.1k vs +$8.9k / +$12.2k / +$2.9k; book 50K Jul-Oct pass 90 -> 17%. The windows ADD money: keep them.
+> Write-ups: [[notime-2026-11-24|Do the time windows add money?]]
+
 > [!failure]- Dead hours per pillar
 > worst 1-3 half-hour window per book picked on 2021-24 only (PF < 0.8, 20+ trades), tested on 2025 / Jan-Jun / Jul-Oct 2026 + placebo. LIT 02:00-03:00 (-$7.6k in 2021-24) loses $10.1k / $5.2k in 2026 if skipped; ATLAS EMA 05:30-07:00 Jul-Oct -$856; MACD 02:30-03:00 Jan-Jun -$201 (p 0.057); S/R 11:00-12:00 +$1,009 / +$268 / +$15 but p 0.25; BLITZ none. 0 pass: the coverage map's bad hours are in-sample.
 > Write-ups: [[dead-hours-2026-11-24|Dead hours per pillar]]

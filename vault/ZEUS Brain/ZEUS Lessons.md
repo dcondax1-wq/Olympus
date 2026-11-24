@@ -71,9 +71,10 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-74 entries from docs/TESTED_AND_REJECTED.md, newest first.
+75 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
 - **Bad-case plan** · [[Zlarior (LIT)]] · [[badcase-2026-11-24|The BAD case]]
+- **Time windows removed** · [[Zlarior (LIT)]], [[ATLAS]] · [[notime-2026-11-24|Do the time windows add money?]]
 - **Dead hours per pillar** · [[Zlarior (LIT)]], [[ATLAS]] · [[dead-hours-2026-11-24|Dead hours per pillar]]
 - **LIT high-VIX downtrend** · [[Zlarior (LIT)]] · [[lit-vix-downtrend-2026-11-24|LIT in high-VIX falling markets]]
 - **Walk-forward portfolio of every stored run + 24-hour coverage** · [[Zlarior (LIT)]], [[ATLAS]] · [[portfolio-2026-11-24|24-hour coverage + a walk-forward portfolio of everything built]]
