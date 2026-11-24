@@ -89,3 +89,4 @@ details.tests summary { cursor: pointer; color: var(--mut); font-size: 12.5px; m
 .foot a { padding: 8px 12px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); text-decoration: none; font-size: 13px; color: var(--glow); }
 .foot p { flex-basis: 100%; margin: 6px 0 0; color: var(--mut); font-size: 11px; }
 .flat[hidden] { display: none !important; }
+.list { margin: 0; padding-left: 18px; font-size: 13.5px; } .list li { margin-bottom: 6px; } #pRisks li::marker { color: var(--red); } #pNext li::marker { color: var(--gold); }

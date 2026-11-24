@@ -84,23 +84,25 @@ def data():
     s = {x["k"]: x for x in P["lit"]["spans"]}
     check("d. LIT spans = research/lab/backtest_live.json", s["2026 H1"]["pf"] == lit["2026 H1 (picked on)"]["pf"] and s["2026 H2"]["usd_mo"] == lit["2026 H2 (check)"]["per_month"]
           and s["2021-25"]["tpw"] == lit["2021-25 (reference)"]["per_week"] and s["2021-25"]["win"] == lit["2021-25 (reference)"]["win_pct"], s)
-    at = json.load(open(os.path.join(ROOT, "research", "second", "atlas.json")))["numbers"]
-    s = {x["k"]: x for x in P["atlas"]["spans"]}
-    check("d. ATLAS spans = research/second/atlas.json (2026 H1 / H2 / 2025 / 2021-24)", s["2026 H1"]["pf"] == at["H1"]["pf"] and s["2026 H2"]["usd_mo"] == at["H2"]["per_month"]
-          and s["2025"]["pf"] == at["y2025"]["pf"] and s["2021-24"]["tpw"] == at["y2124"]["tpw"], s)
-    s = {x["k"]: x for x in P["blitz"]["spans"]}
-    check("d. BLITZ spans = blitz-review-2026-11-18.md table (PF 1.70 / 1.62 / 1.05, $963 / $667 / $73 a month)",
-          [s[k]["pf"] for k in ("2026 H1", "2026 H2", "2021-25")] == [1.70, 1.62, 1.05] and [s[k]["usd_mo"] for k in ("2026 H1", "2026 H2", "2021-25")] == [963, 667, 73]
-          and s["2026 H1"]["tpw"] == 8.5 and s["2026 H1"]["win"] == 56.7, s)
+    R = {("of" if p["id"] == "orderflow" else p["id"]): p for p in json.load(open(os.path.join(ROOT, "research", "lab", "pillars.json")))["pillars"]}
+    for pid in ("lit", "atlas", "blitz"):
+        got = {x["k"]: x for x in P[pid]["spans"]}
+        want = R[pid]["spans"]
+        ok = all(got[lab]["pf"] == want[k]["pf"] and got[lab]["usd_mo"] == want[k]["usd_mo"] and got[lab]["tpw"] == want[k]["tpw"] and got[lab]["win"] == want[k]["win"]
+                 for k, lab in (("2026H1", "2026 H1"), ("2026H2", "2026 H2"), ("2021-25", "2021-25")))
+        check(f"d. {pid.upper()} spans = research/lab/pillars.json (the lead's four-pillars research)", ok, (got, want))
+    check("d. ATLAS at REAL fills: PF 2.39 / 2.07 / 0.82, $2,614 / $1,172 / -$550 a month", [x["pf"] for x in P["atlas"]["spans"]] == [2.39, 2.07, 0.82]
+          and [x["usd_mo"] for x in P["atlas"]["spans"]] == [2614, 1172, -550], P["atlas"]["spans"])
+    check("d. status, risks and next steps are the research file's words", all(P[k]["status"] == R[k]["status"] and P[k]["risks"] == R[k]["risks"] and P[k]["next"] == R[k]["next"] for k in ("lit", "atlas", "blitz", "of")))
     of = json.load(open(os.path.join(ROOT, "research", "lab", "orderflow.json")))
     check("d. ORDER FLOW: the 3 pre-registered tick designs, no span numbers of its own, the proxy tests all listed",
           [x["id"] for x in P["of"]["designs"]] == list(of["tick_designs"]) and not P["of"]["spans"]
           and len(P["of"]["tests"]) == sum(isinstance(v, dict) for v in list(of["bar_tests"].values()) + list(of["round2"]["standalone"].values())) and all(x["gate"] for x in P["of"]["designs"]))
-    check("d. honest status: BLITZ built + switched off, ORDER FLOW counting to 60 tick days, LIT + ATLAS on the PC bot",
-          "switched off" in P["blitz"]["status"].lower() and P["blitz"]["state"] == "off" and "60" in P["of"]["status"] and P["of"]["state"] == "collecting"
-          and P["lit"]["state"] == P["atlas"]["state"] == "live")
-    check("d. every pillar: an edge line, a source, what's next", all(p["edge"] and p["src"] and p["next"] for p in d["pillars"]))
-    check("d. the edge lines quote the span PFs", "4.98" in P["lit"]["edge"] and "3.18" in P["atlas"]["edge"] and "1.05" in P["blitz"]["edge"])
+    check("d. honest status: BLITZ paper + OFF, ORDER FLOW NOT READY (recorder never compiled, 0 tick days), LIT + ATLAS live",
+          "OFF" in P["blitz"]["status"] and P["blitz"]["state"] == "off" and P["of"]["status"].startswith("Not ready") and P["of"]["state"] == "notready"
+          and P["lit"]["state"] == P["atlas"]["state"] == "live" and P["of"]["readiness"]["days_needed"] == 60 and all(d["prior"] for d in P["of"]["designs"]))
+    check("d. every pillar: an edge line, a source, risks, what's next (a list)", all(p["edge"] and p["src"] and p["risks"] and isinstance(p["next"], list) and p["next"] for p in d["pillars"]))
+    check("d. the edge lines quote the span PFs", "4.98" in P["lit"]["edge"] and "2.39" in P["atlas"]["edge"] and "0.82" in P["atlas"]["edge"] and "1.05" in P["blitz"]["edge"])
 
 
 def fixture_post():
@@ -165,12 +167,12 @@ def node():
     check("n. BLITZ: OFF on the Rapid accounts only, no thinking, its 3 spans", m["blitz"]["word"] == "OFF" and m["blitz"]["accts"] and all(":off:" in a and a.startswith("rapid") for a in m["blitz"]["accts"])
           and "OFF" in m["blitz"]["empty"] and m["blitz"]["spans"] == 3, m["blitz"])
     check("n. ORDER FLOW: 23 of 60 tick days from the post, the backfill step now, no accounts", m["of"]["tick"] == {"has": True, "d": 23, "of": 60, "text": m["of"]["tick"]["text"]} and "23 of 60" in m["of"]["tick"]["text"]
-          and m["of"]["now"] == ["backfill"] and m["of"]["accts"] == [], m["of"])
+          and m["of"]["now"] == ["backfill"] and m["of"]["accts"] == [] and m["of"]["word"] == "COLLECTING", m["of"])
     check("n. no post: LIT / ATLAS say waiting / no PC numbers, nothing armed, no today lines; ORDER FLOW says the count is not in the post",
           n["lit"]["armed"] == 0 and not n["lit"]["today"] and "Waiting" in n["lit"]["empty"] and n["lit"]["word"] == "LIVE · waiting for the PC" and "waiting" in n["lit"]["text"] and o["chipsN"][0]["line"] == "waiting for the PC" and not n["of"]["tick"]["has"]
-          and "Waiting" in n["of"]["tick"]["text"], (n["lit"], n["of"]["tick"]))
+          and "Waiting" in n["of"]["tick"]["text"] and n["of"]["word"] == "NOT READY", (n["lit"], n["of"]["tick"], n["of"]["word"]))
     check("n. 4 chips: LIT, ATLAS, BLITZ, ORDER FLOW with honest lines", [c["id"] for c in o["chips"]] == ["lit", "atlas", "blitz", "of"] and o["chips"][2]["line"] == "built · OFF"
-          and o["chips"][3]["line"] == "23/60 tick days" and o["chipsN"][3]["line"] == "ticks: waiting", o["chips"])
+          and o["chips"][3]["line"] == "23/60 tick days" and o["chipsN"][3]["line"] == "recorder not set up", o["chips"])
     check("n. pillarOf: order flow / BLITZ / ATLAS / LIT / none", o["of"] == ["of", "blitz", "atlas", "lit", None], o["of"])
     return post, now
 
@@ -228,8 +230,11 @@ def browser(post, now):
     B = o.get("blitz") or {}
     check("b. BLITZ panel: OFF, its Rapid accounts OFF, PF 1.70 / 1.62 / 1.05, every step off, no thinking today",
           B.get("status") == "OFF" and B.get("arm") and all(a.startswith("OFF") for a in B["arm"]) and B.get("spans") == ["1.70", "1.62", "1.05"] and B.get("off") == 6 and "OFF" in B.get("today", ""), B)
+    T = o.get("ofToday") or {}
+    check("b. ORDER FLOW today (no tick line in the post): NOT READY, the waiting line, the first-result dates", T.get("status") == "NOT READY" and "Waiting" in T.get("ticks", "")
+          and "2027-02-22" in T.get("ready", "") and "about about" not in T.get("ready", "") and T.get("nullText") is False, T)
     A = o.get("atlas") or {}
-    check("b. ATLAS panel: its 3 lobes + 4 spans + the live-settings row", A.get("lobes") == 3 and A.get("spans") == 5, A)
+    check("b. ATLAS panel: its 3 lobes + 3 spans + the last-40 row", A.get("lobes") == 3 and A.get("spans") == 4, A)
     check("b. a tap on a column picks that pillar", o.get("colPick") == "of", o.get("colPick"))
     check("b. no sideways scroll at 390 (Pillars, NQ, Hub)", o.get("wide") is False and o.get("nqWide") is False and o.get("hubWide") is False, (o.get("wide"), o.get("nqWide"), o.get("hubWide")))
     check("b. 2D fallback: 4 columns, a tap picks", o.get("flat") == ["2d", 4] and o.get("flatPick") == "lit", (o.get("flat"), o.get("flatPick")))

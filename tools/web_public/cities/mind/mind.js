@@ -215,7 +215,8 @@ function pillarBody(body, L) {
   const m = pillarModel(L.id);
   body.replaceChildren(el('h2', { text: L.name }), el('div', { class: 'muted', text: L.sub }));
   if (!m) { body.append(el('p', { class: 'muted', text: 'The pillars data did not load.' })); return; }
-  body.append(el('div', { class: 'state', id: 'pillarState' }, el('b', { class: m.level === 'ok' ? 'live' : m.level === 'off' ? 'off' : 'stale', text: m.statusWord }), document.createTextNode(' ' + m.status)));
+  const dup = m.status.toLowerCase().startsWith(m.statusWord.split(' ')[0].toLowerCase());   // "NOT READY Not ready: ..." once only
+  body.append(el('div', { class: 'state', id: 'pillarState' }, dup ? null : el('b', { class: m.level === 'ok' ? 'live' : m.level === 'off' ? 'off' : 'stale', text: m.statusWord + ' ' }), document.createTextNode(m.status)));
   if (L.id === 'of') body.append(el('div', { class: 'state', id: 'pillarTicks' }, el('b', { class: m.tick && m.tick.has ? 'live' : 'waiting', text: 'Ticks: ' }), document.createTextNode(m.tick ? m.tick.text : 'waiting')));
   if (L.id === 'atlas') {
     const row = el('div', { class: 'arrows' }); ['ema', 'macd', 'sr'].forEach((id) => { const x = M.lobeById(id); row.append(el('button', { type: 'button', class: 'more', style: 'width:auto;margin:0', text: x.name + ' ›', onclick: () => select(id) })); });
@@ -231,7 +232,9 @@ function pillarBody(body, L) {
   body.append(el('h3', { text: 'How it thinks' }));
   const ol = el('ol', { class: 'chain', id: 'chain' });
   m.chain.steps.forEach((x, i) => ol.append(el('li', { class: x.state, 'data-step': x.key }, el('span', { class: 'dot', text: x.state === 'done' ? '✓' : String(i + 1) }), el('b', { text: x.label }), el('p', { text: x.help }))));
-  body.append(ol, el('h3', { text: "What's next" }), el('p', { text: m.next }));
+  body.append(ol);
+  if (m.risks.length) { body.append(el('h3', { text: 'Risks' })); m.risks.forEach((t) => body.append(el('p', { class: 'muted', text: '• ' + t }))); }
+  body.append(el('h3', { text: "What's next" })); m.next.forEach((t, i) => body.append(el('p', { text: `${i + 1}. ${t}` })));
   body.append(el('p', { class: 'muted', text: `Source: ${m.src}` }), el('p', {}, el('a', { class: 'link', href: '../../pillars/#' + L.id, text: `Open the ${L.name} pillar ›` })));
 }
 function findingBody(body, id) {

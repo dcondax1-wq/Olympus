@@ -56,21 +56,26 @@ function drawPanel() {
       el('span', {}, el('span', { class: 'arm ' + a.state, text: a.stateWord })),
       a.clock ? el('span', { class: 'ck ' + a.clock.lvl, text: `7-day clock: ${a.clock.text}` }) : null));
   }
+  if (!m.accounts.length && m.accountsNote.length) for (const t of m.accountsNote) acc.append(el('div', { class: 'acct' }, el('span', { class: 'nm', text: t }), el('span'), el('span', { class: 'ck', text: `as of the research ${m.researchDate}` })));
   if (m.id !== 'of') acc.append(el('p', { class: 'muted', id: 'pLast', text: m.last ? `Last trade: ${m.last.text}` : (m.id === 'blitz' ? 'Last trade: none (switched OFF)' : 'Last trade: none in the PC post or the ledger yet') }));
   box.append(acc);
   // order flow: the tick count + the 3 designs waiting for it
   if (m.id === 'of') {
     const t = m.tick || {}, sec = el('section', { class: 'sec', id: 'pTicks' }, el('h3', { text: 'Ticks recorded' }));
     sec.append(el('div', { class: 'bar', role: 'img', 'aria-label': t.has ? `${t.d} of ${t.of} tick days` : 'tick count not reported yet' }, el('i', { style: `width:${Math.round((t.frac || 0) * 100)}%` })));
-    sec.append(el('div', { class: t.has ? '' : 'muted', text: t.text }), t.ageText ? el('div', { class: 'muted', text: t.ageText }) : null);
+    sec.append(el('div', { class: t.has ? '' : 'muted', text: t.text }));
+    if (t.ageText) sec.append(el('div', { class: 'muted', text: t.ageText }));
     sec.append(el('h3', { text: 'Pre-registered designs, waiting for the ticks', style: 'margin-top:12px' }));
-    for (const d of m.designs) sec.append(el('div', { class: 'design', 'data-d': d.id }, el('span', { class: 'w', text: 'waiting' }), el('b', { text: d.id }), document.createTextNode(d.text), el('span', { class: 'g', text: d.gate })));
+    for (const d of m.designs) sec.append(el('div', { class: 'design', 'data-d': d.id }, el('span', { class: 'w', text: 'waiting' }), el('b', { text: d.id }), document.createTextNode(d.text), el('span', { class: 'g', text: d.gate }),
+      d.prior ? el('span', { class: 'g', text: `Prior: ${d.prior}` }) : null));
+    const R = m.readiness;
+    if (R) sec.append(el('div', { class: 'muted', id: 'pReady', style: 'margin-top:8px', text: `First result: ${R.first_run_with_backfill || '?'} with the backfill; ${R.first_run_forward_only || '?'} forward only (${R.days_needed || 60} tick days).` }));
     box.append(sec);
   }
   // edge + numbers
   const edge = el('section', { class: 'sec', id: 'pEdge' }, el('h3', { text: 'Edge' }), el('div', { text: m.edge }));
   if (m.spans.length || m.recent) edge.append(spansTable(m));
-  else edge.append(el('p', { class: 'muted', text: 'No numbers of its own yet: the tick designs have not run. The bar proxies tested so far are below.' }));
+  else edge.append(el('p', { class: 'muted', text: m.spansNote || 'No numbers of its own yet: the tick designs have not run. The bar proxies tested so far are below.' }));
   if (m.id === 'of' && m.tests.length) {
     const d = el('details', { class: 'tests' }, el('summary', { text: `${m.tests.length} bar / LVN proxy tests (all rejected)` }));
     for (const x of m.tests) {
@@ -79,6 +84,7 @@ function drawPanel() {
     }
     edge.append(d);
   }
+  if (m.basis) edge.append(el('p', { class: 'src', text: `Basis: ${m.basis}` }));
   edge.append(el('p', { class: 'src', text: `Source: ${m.src}` }));
   box.append(edge);
   // thinking
@@ -92,7 +98,8 @@ function drawPanel() {
   if (m.today.length) { const strip = el('div', { class: 'today' }); m.today.forEach((r) => strip.append(el('div', { class: 'tchip', style: `--c:${r.color}` }, el('span', { class: 'tt', text: r.hm }), el('b', { text: r.name }), el('span', { class: 'tx', text: r.text })))); td.append(strip); requestAnimationFrame(() => { strip.scrollLeft = strip.scrollWidth; }); }
   else td.append(el('div', { class: 'muted', text: m.todayEmpty }));
   box.append(td);
-  box.append(el('section', { class: 'sec', id: 'pNext' }, el('h3', { text: "What's next" }), el('div', { class: 'next', text: m.next })));
+  if (m.risks.length) { const r = el('section', { class: 'sec', id: 'pRisks' }, el('h3', { text: 'Risks' })); const ul = el('ul', { class: 'list' }); m.risks.forEach((t) => ul.append(el('li', { text: t }))); r.append(ul); box.append(r); }
+  const nx = el('section', { class: 'sec', id: 'pNext' }, el('h3', { text: "What's next" })), ol2 = el('ol', { class: 'list next' }); m.next.forEach((t) => ol2.append(el('li', { text: t }))); nx.append(ol2); box.append(nx);
 }
 function pcPill() {
   const p = $('pcPill'), F = window.PC_FEED, lite = S.lite, rt = lite ? +((lite.reporter && lite.reporter.t) || lite.t) || 0 : 0, age = rt ? nowS() - rt : null;

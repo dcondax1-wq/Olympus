@@ -20,7 +20,7 @@ export function usd(v, sign = true) {
   const a = '$' + Math.abs(Math.round(n)).toLocaleString('en-US');
   return n < 0 && Math.round(n) ? '-' + a : (sign && Math.round(n) > 0 ? '+' + a : a);
 }
-const STATE_WORD = { live: 'LIVE', off: 'OFF', collecting: 'COLLECTING' };
+const STATE_WORD = { live: 'LIVE', off: 'OFF', collecting: 'COLLECTING', notready: 'NOT READY' };
 const ARM_WORD = { armed: 'ARMED', on: 'ON, not armed', off: 'OFF', unknown: 'not reported', paper: 'paper only' };
 
 /* ---------------- accounts per pillar (from the Accounts screen's cards) ---------------- */
@@ -87,7 +87,7 @@ export function chainOf(p, glance, nowS, tick) {
 export function tickLine(lite, nowS, studyDays) {
   const tr = isObj(lite) && isObj(lite.tr) ? lite.tr : isObj(lite) && isObj(lite.pc) && isObj(lite.pc.tr) ? lite.pc.tr : null;
   const of = num(tr && tr.of) || num(studyDays) || 60;
-  if (!tr) return { has: false, of, d: null, frac: null, text: `Waiting: the PC's post does not carry the tick count yet (needs ${of} NQ tick days)` };
+  if (!tr) return { has: false, of, d: null, frac: null, text: `Waiting: no tick count from the PC yet (the recorder is not running; ${of} NQ tick days needed)` };
   const d = Math.max(0, num(tr.d) || 0), age = num(tr.t) !== null ? Math.max(0, (num(nowS) || 0) - num(tr.t)) : null;
   const bits = [`${d} of ${of} NQ tick days`];
   if (tr.bf) bits.push(`backfill ${str(tr.bf, 12)}`);
@@ -106,6 +106,8 @@ export function pillar(p, ctx) {
   const gAge = num(isObj(glance) ? glance.t : null) !== null ? Math.max(0, nowS - num(glance.t)) : null;
   const armed = accounts.filter((a) => a.state === 'armed').length;
   let statusWord = STATE_WORD[p.state] || String(p.state || '').toUpperCase(), level = p.state === 'live' ? 'ok' : p.state === 'off' ? 'off' : 'warn';
+  let status = p.status;
+  if (p.id === 'of' && tick && tick.has && tick.on) { statusWord = 'COLLECTING'; status = tick.text; }   // only the PC's own count makes it "collecting"
   if (Array.isArray(c.cards)) {                     // account words only when the caller handed in the account cards (the Brain does not)
     const reported = accounts.some((a) => a.has);      // an account the PC sent numbers for (not just the plan file's row)
     if (p.state === 'live' && (!accounts.length || !reported)) { statusWord = 'LIVE · waiting for the PC'; level = 'warn'; }
@@ -114,16 +116,18 @@ export function pillar(p, ctx) {
   const today = p.bot === 'lit' || p.bot === 'atlas'
     ? todayRows(glance, c.lite).filter((r) => r.bot === p.bot)
     : [];
-  const todayEmpty = p.id === 'blitz' ? 'Switched OFF: no thinking today' : p.id === 'of' ? (tick && tick.has ? tick.text : 'Collecting ticks: nothing to think about until the study runs')
+  const todayEmpty = p.id === 'blitz' ? 'Switched OFF: no thinking today' : p.id === 'of' ? (tick && tick.has ? tick.text : 'Not running: no ticks recorded, nothing to think about yet')
     : !glance ? "Waiting for the PC's report" : 'No thinking logged yet today';
   return {
-    id: p.id, name: p.name, alias: p.alias, color: p.color, state: p.state, statusWord, level, status: p.status,
+    id: p.id, name: p.name, alias: p.alias, color: p.color, state: p.state, statusWord, level, status,
     accounts, armed, accountsText: p.id === 'of' ? 'No account: research on recorded ticks (the PC records, nothing trades)'
       : p.id === 'blitz' ? (accounts.length ? `${accounts.length} Rapid account${accounts.length === 1 ? '' : 's'} it was built for · OFF` : 'Rapid eval only · no Rapid account reported · OFF')
         : accounts.some((a) => a.has) ? `${accounts.length} account${accounts.length === 1 ? '' : 's'} · ${armed} armed`
           : accounts.length ? `${accounts.length} account${accounts.length === 1 ? '' : 's'} planned · waiting for the PC's numbers` : "Waiting for the PC's accounts",
     last: lastTrade(p, c.lite, c.file), edge: p.edge, spans: arr(p.spans), recent: p.recent || null, src: p.src,
-    chain, today, todayEmpty, next: p.next, tick, designs: arr(p.designs), tests: arr(p.tests),
+    chain, today, todayEmpty, next: arr(p.next).length ? arr(p.next) : [str(p.next, 400)].filter(Boolean), risks: arr(p.risks), basis: str(p.basis, 300),
+    accountsNote: arr(p.accounts_note), researchDate: str(p.research_date, 10), spansNote: str(p.spans_note, 500), readiness: isObj(p.readiness) ? p.readiness : null,
+    tick, designs: arr(p.designs), tests: arr(p.tests),
     glanceAge: gAge, fresh: gAge !== null && gAge < FRESH_S,
   };
 }
@@ -138,7 +142,7 @@ export function build(data, ctx) {
 /** the 4 mini chips for Home / NQ: name, one status word, one short line */
 export function chips(model) {
   return arr(model).map((m) => ({ id: m.id, name: m.name, color: m.color, level: m.level, word: m.statusWord,
-    line: m.id === 'of' ? (m.tick && m.tick.has ? `${m.tick.d}/${m.tick.of} tick days` : 'ticks: waiting')
+    line: m.id === 'of' ? (m.tick && m.tick.has ? `${m.tick.d}/${m.tick.of} tick days` : 'recorder not set up')
       : m.id === 'blitz' ? 'built · OFF'
         : m.accounts.some((a) => a.has) ? `${m.armed}/${m.accounts.length} armed` : 'waiting for the PC' }));
 }

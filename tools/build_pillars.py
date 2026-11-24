@@ -22,6 +22,7 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "tools", "web_public", "pillars", "pillars-data.json")
 SRC = {
+    "pillars": "research/lab/pillars.json",          # the lead's four-pillars research (status, spans, risks, next): the PRIMARY source
     "lit": "research/lab/backtest_live.json",
     "atlas": "research/second/atlas.json",
     "edge": "tools/web_public/edge.json",
@@ -119,8 +120,39 @@ def of_tests():
     return rows
 
 
+SPAN_KEYS = (("2026H1", "2026 H1"), ("2026H2", "2026 H2"), ("2021-25", "2021-25"))
+
+
+def research_pillars() -> dict:
+    """research/lab/pillars.json (four-pillars-2026-11-23.md) by our ids: status, spans, basis, risks, next, accounts + the extras"""
+    d = _load(SRC["pillars"]) or {}
+    out = {}
+    for p in d.get("pillars") or []:
+        if not isinstance(p, dict):
+            continue
+        pid = "of" if p.get("id") == "orderflow" else p.get("id")
+        spans = []
+        for k, label in SPAN_KEYS:
+            v = (p.get("spans") or {}).get(k)
+            if isinstance(v, dict):
+                spans.append(sp(label, v.get("tpw"), v.get("win"), v.get("pf"), v.get("usd_mo"), v.get("maxdd"), v.get("trades")))
+        eh = p.get("edge_health") if isinstance(p.get("edge_health"), dict) else {}
+        l40 = eh.get("last40") if isinstance(eh.get("last40"), dict) else None
+        out[pid] = {"status": str(p.get("status") or ""), "spans": spans, "basis": str(p.get("basis") or ""),
+                    "risks": [str(x) for x in p.get("risks") or []], "next": [str(x) for x in p.get("next") or []],
+                    "accounts_note": [str(x) for x in p.get("accounts") or [] if str(x).lower() != "none"],
+                    "light": eh.get("light"), "light_to": eh.get("data_to"),
+                    "recent": sp(f"last 40 sessions · light {eh.get('light')}", l40.get("tpw"), l40.get("win"), l40.get("pf"), l40.get("usd_mo"), None, l40.get("trades")) if l40 else None,
+                    "spans_note": str(p.get("spans_note") or ""), "readiness": p.get("readiness") if isinstance(p.get("readiness"), dict) else None,
+                    "priors": p.get("priors") if isinstance(p.get("priors"), dict) else {}, "date": d.get("date")}
+    return out
+
+
 def build() -> dict:
-    lit, atlas, blitz = lit_spans(), atlas_spans(), blitz_spans()
+    R = research_pillars()
+    lit = R.get("lit", {}).get("spans") or lit_spans()
+    atlas = R.get("atlas", {}).get("spans") or atlas_spans()
+    blitz = R.get("blitz", {}).get("spans") or blitz_spans()
     ofd = _load(SRC["of"]) or {}
     tests = of_tests()
     g = lambda s, k: next((x for x in s if x["k"] == k), {})  # noqa: E731
@@ -129,26 +161,28 @@ def build() -> dict:
     gates = {"OF1": "Pass = more net $ than all LIT in both 2026 halves while keeping at least half the trades",
              "OF2": "Pass = more net $ than all LIT in both 2026 halves while keeping at least half the trades",
              "OF3": "Pass = PF >= 1.15 and net > 0 in each half, >= 0.5 trades a week, placebo p < 0.10"}
+    pri = R.get("of", {}).get("priors") or {}
     for x in designs:
         x["gate"] = gates.get(x["id"], "")
+        x["prior"] = str(pri.get(x["id"]) or "")
     pillars = [
         {"id": "lit", "name": "LIT", "alias": "Zlarior", "color": "#f1c14b", "bot": "lit", "state": "live",
          "status": "On the PC bot: MFFU Builder 50K eval + Builder 25K #2 eval",
          "edge": (f"Sweep, inducement, CISD; stop 1 tick beyond the sweep, one VIX-band target. PF {pf(lit, '2026 H1')} / {pf(lit, '2026 H2')} "
                   f"in the 2026 halves, {pf(lit, '2021-25')} over 2021-25 (barely positive before 2026)."),
-         "spans": lit, "recent": recent("lit"), "src": f"{SRC['lit']} + {SRC['edge']}",
+         "spans": lit, "recent": R.get("lit", {}).get("recent") or recent("lit"), "src": SRC["pillars"] if R.get("lit") else f"{SRC['lit']} + {SRC['edge']}",
          "next": "Pass the Builder 50K eval, then the 25K #2; no rule change without the proof protocol (STATE.md, CLAUDE.md)."},
         {"id": "atlas", "name": "ATLAS", "alias": "EMA · MACD · S/R", "color": "#77db89", "bot": "atlas", "state": "live",
          "status": "On the PC bot: MFFU Builder 25K funded (3 small lobes, 1 trade a day each)",
          "edge": (f"Three small lobes that rarely trade together: London EMA pullback, MACD divergence at a sweep, NY level reclaim. "
-                  f"PF {pf(atlas, '2026 H1')} / {pf(atlas, '2026 H2')} in 2026, {pf(atlas, '2025')} in 2025, {pf(atlas, '2021-24')} over 2021-24."),
-         "spans": atlas, "recent": recent("atlas"), "src": f"{SRC['atlas']} + {SRC['edge']}",
+                  f"At real fills: PF {pf(atlas, '2026 H1')} / {pf(atlas, '2026 H2')} in 2026, {pf(atlas, '2021-25') or pf(atlas, '2021-24')} over 2021-25."),
+         "spans": atlas, "recent": R.get("atlas", {}).get("recent") or recent("atlas"), "src": SRC["pillars"] if R.get("atlas") else f"{SRC['atlas']} + {SRC['edge']}",
          "next": "First payout on the funded 25K: ask the max $1,000 at $2,100 profit (CLAUDE.md); keep the rules (358 tweaks found nothing better)."},
         {"id": "blitz", "name": "BLITZ", "alias": "the scalper", "color": "#9d59ee", "bot": "blitz", "state": "off",
          "status": "Built and switched off: paper only, meant for a Rapid eval (hidden on the dashboard since 2026-11-15)",
          "edge": (f"Rides a 1m band break for 30 minutes (checks every 30 min 11:00-15:30, 1.5 ATR stop, trail after +1R). "
                   f"PF {pf(blitz, '2026 H1')} / {pf(blitz, '2026 H2')} in 2026, {pf(blitz, '2021-25')} over 2021-25 ($150 a trade, costs in)."),
-         "spans": blitz, "recent": None, "src": SRC["blitz"],
+         "spans": blitz, "recent": None, "src": SRC["pillars"] if R.get("blitz") else SRC["blitz"],
          "chain": [
              {"key": "filter", "label": "Day filter", "help": "Trade a day only if yesterday's 09:30-16:00 range is at least 0.8 x the mean of the last 14."},
              {"key": "band", "label": "Noise band", "help": "Today's 09:30 open x (1 +/- sigma): sigma = the usual move for that minute over the last 14 sessions."},
@@ -159,10 +193,10 @@ def build() -> dict:
          "chain_src": "engine/blitz.py",
          "next": ("Stays OFF (owner switch). Its one paying use: next to Zlarior on a FUNDED 50K while LIT is flat (+$290-300 a month in 2026, "
                   "+$16 in 2021-25): needs the 50K funded first and new code (blitz-review-2026-11-18).")},
-        {"id": "of", "name": "ORDER FLOW", "alias": "ticks, delta, absorption", "color": "#5fd0c9", "bot": None, "state": "collecting",
+        {"id": "of", "name": "ORDER FLOW", "alias": "ticks, delta, absorption", "color": "#5fd0c9", "bot": None, "state": "notready",
          "status": f"Recording NQ ticks on the PC; the study runs at {STUDY_DAYS} tick days",
          "edge": ("Not proven yet: " + str(ofd.get("status") or "no result") + ". The real test needs tick data (who hit the bid / the ask)."),
-         "spans": [], "recent": None, "src": SRC["of"],
+         "spans": [], "recent": None, "src": f"{SRC['pillars']} + {SRC['of']}",
          "designs": designs, "tests": tests, "study_days": STUDY_DAYS, "trigger": ofd.get("tick_trigger") or "",
          "chain": [
              {"key": "record", "label": "Record ticks", "help": "NinjaTrader's tick recorder saves every NQ trade (price, size, side) on the PC."},
@@ -173,6 +207,19 @@ def build() -> dict:
          "chain_src": "research/writeups/orderflow-program-2026-11-23.md, engine/tickrec.py",
          "next": f"Keep the recorder on; at {STUDY_DAYS} tick days the PC runs OF1-OF3 by itself and posts one line (engine/tickrec autopilot)."},
     ]
+    # the lead's research wins for the words it has: status, risks, next steps, the accounts it names, the basis of the numbers
+    for p in pillars:
+        r = R.get(p["id"])
+        if not r:
+            p.setdefault("risks", []); p["next"] = [p["next"]]; continue
+        if r["status"]:
+            p["status"] = r["status"]
+        p["risks"], p["next"] = r["risks"], (r["next"] or [p["next"]])
+        p["accounts_note"], p["basis"], p["research_date"] = r["accounts_note"], r["basis"], r["date"]
+        if p["id"] == "of":
+            p["spans_note"], p["readiness"] = r["spans_note"], r["readiness"]
+            if r["readiness"] and r["readiness"].get("days_needed"):
+                p["study_days"] = int(_n(r["readiness"]["days_needed"]) or STUDY_DAYS)
     return {"v": 1, "title": "The Four Pillars", "said": "Orderflow and BLITZ alongside LIT and ATLAS are gonna make us. Those are our 4 pillars.",
             "said_when": "2026-11-23 23:00 ET", "pillars": pillars, "sources": SRC}
 

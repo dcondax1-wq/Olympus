@@ -52,6 +52,16 @@ const out = {};
     const cr = await p.evaluate(() => { const r = document.getElementById('c').getBoundingClientRect(); return { x: r.left, y: r.top, h: r.height }; });
     if (pr) { await p.mouse.click(cr.x + pr.x, cr.y + pr.y + 60); await p.waitForTimeout(500); out.colPick = await p.evaluate(() => document.getElementById('panel').dataset.p); }
     out.errors = errs; await ctx.close();
+    // today's real state: a post without the tick line = ORDER FLOW NOT READY
+    {
+      const P2 = JSON.parse(JSON.stringify(POST.post)); delete P2.tr;
+      const ctx2 = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: SHOTS ? 2 : 1 }), p2 = await ctx2.newPage();
+      await p2.route('**/pc_feed.js*', (r) => r.fulfill({ contentType: 'application/javascript', body: REAL + `\n;window.PC_FEED.fetchLatest = async () => (${JSON.stringify(P2)});` }));
+      await p2.goto(BASE + '/pillars/' + AT + '#of'); await p2.waitForFunction(() => document.documentElement.dataset.ready === '1', null, { timeout: 30000 }); await p2.waitForTimeout(1200);
+      out.ofToday = await p2.evaluate(() => ({ nullText: /\bnull\b|undefined/.test(document.getElementById('panel').textContent), status: document.getElementById('pStatus').textContent, ticks: (document.getElementById('pTicks') || {}).textContent || '', ready: (document.getElementById('pReady') || {}).textContent || '' }));
+      if (SHOTS) await p2.screenshot({ path: SHOTS + '/3b_pillars_orderflow_today.png', fullPage: true });
+      await ctx2.close();
+    }
     // the 2D fallback + no post at all
     ({ p, ctx, errs } = await page('/pillars/?lite=2d#of', true));
     out.flat = await p.evaluate(() => [document.documentElement.dataset.mode, document.querySelectorAll('#flat .col').length]);
