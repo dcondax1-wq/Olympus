@@ -1,0 +1,4809 @@
+{
+ "title": "Stops x targets x TIME (2026-11-24)",
+ "kind": "stops_targets",
+ "built": "2026-11-24",
+ "writeup": "research/writeups/stops-targets-time-2026-11-24.md",
+ "tool": "tools/stops_targets_time.py",
+ "n_tests": 19,
+ "alpha_bonferroni": 0.0026,
+ "N_minutes": 26,
+ "time": {
+  "H1": {
+   "n": 79,
+   "targets": 15,
+   "stops": 31,
+   "mins_to_target": {
+    "25": 64.0,
+    "50": 180.0,
+    "75": 336.5,
+    "90": 423.6
+   },
+   "mins_to_stop": {
+    "25": 16.0,
+    "50": 33.0,
+    "75": 72.5,
+    "90": 110.0
+   },
+   "mins_to_05R_winners": {
+    "25": 4.0,
+    "50": 10.0,
+    "75": 19.0,
+    "90": 29.0
+   },
+   "mins_to_1R_winners": {
+    "25": 9.5,
+    "50": 22.0,
+    "75": 49.5,
+    "90": 67.6
+   },
+   "no_05R_after_N": [
+    {
+     "N": 5,
+     "n_no05": 67,
+     "won_pct": 14.9,
+     "avg_r": 0.645
+    },
+    {
+     "N": 10,
+     "n_no05": 53,
+     "won_pct": 11.3,
+     "avg_r": 0.322
+    },
+    {
+     "N": 15,
+     "n_no05": 42,
+     "won_pct": 9.5,
+     "avg_r": 0.283
+    },
+    {
+     "N": 20,
+     "n_no05": 28,
+     "won_pct": 14.3,
+     "avg_r": 0.646
+    },
+    {
+     "N": 30,
+     "n_no05": 21,
+     "won_pct": 9.5,
+     "avg_r": -0.097
+    },
+    {
+     "N": 45,
+     "n_no05": 14,
+     "won_pct": 7.1,
+     "avg_r": -0.365
+    },
+    {
+     "N": 60,
+     "n_no05": 9,
+     "won_pct": 0.0,
+     "avg_r": -0.611
+    },
+    {
+     "N": 90,
+     "n_no05": 4,
+     "won_pct": 0.0,
+     "avg_r": -0.635
+    },
+    {
+     "N": 120,
+     "n_no05": 2,
+     "won_pct": 0.0,
+     "avg_r": -0.261
+    }
+   ]
+  },
+  "H2": {
+   "n": 40,
+   "targets": 10,
+   "stops": 20,
+   "mins_to_target": {
+    "25": 106.0,
+    "50": 179.5,
+    "75": 258.0,
+    "90": 309.8
+   },
+   "mins_to_stop": {
+    "25": 16.0,
+    "50": 39.5,
+    "75": 60.0,
+    "90": 148.0
+   },
+   "mins_to_05R_winners": {
+    "25": 8.0,
+    "50": 10.0,
+    "75": 13.5,
+    "90": 64.1
+   },
+   "mins_to_1R_winners": {
+    "25": 16.5,
+    "50": 36.5,
+    "75": 100.2,
+    "90": 193.8
+   },
+   "no_05R_after_N": [
+    {
+     "N": 5,
+     "n_no05": 37,
+     "won_pct": 24.3,
+     "avg_r": 0.767
+    },
+    {
+     "N": 10,
+     "n_no05": 28,
+     "won_pct": 14.3,
+     "avg_r": 0.347
+    },
+    {
+     "N": 15,
+     "n_no05": 22,
+     "won_pct": 9.1,
+     "avg_r": 0.019
+    },
+    {
+     "N": 20,
+     "n_no05": 18,
+     "won_pct": 11.1,
+     "avg_r": 0.124
+    },
+    {
+     "N": 30,
+     "n_no05": 17,
+     "won_pct": 11.8,
+     "avg_r": 0.191
+    },
+    {
+     "N": 45,
+     "n_no05": 11,
+     "won_pct": 18.2,
+     "avg_r": 0.525
+    },
+    {
+     "N": 60,
+     "n_no05": 8,
+     "won_pct": 25.0,
+     "avg_r": 1.098
+    },
+    {
+     "N": 90,
+     "n_no05": 6,
+     "won_pct": 16.7,
+     "avg_r": 0.815
+    },
+    {
+     "N": 120,
+     "n_no05": 4,
+     "won_pct": 0.0,
+     "avg_r": -0.209
+    }
+   ]
+  },
+  "N": 26,
+  "N_rule": "80th pct of minutes-to-+0.5R of Jan-Jun TARGET winners",
+  "tstop_condition": {
+   "late_trades": 21,
+   "won_pct": 9.5,
+   "avg_r": -0.097,
+   "met": true
+  },
+  "other_bots": {
+   "ATLAS": {
+    "H1": {
+     "n": 54,
+     "mins_winners": {
+      "25": 29,
+      "50": 92,
+      "75": 220,
+      "90": 364
+     },
+     "mins_losers": {
+      "25": 15,
+      "50": 38,
+      "75": 65,
+      "90": 171
+     },
+     "by_hold": [
+      {
+       "held_min": "0-15",
+       "n": 9,
+       "win_pct": 33,
+       "avg_r": -0.03
+      },
+      {
+       "held_min": "15-30",
+       "n": 11,
+       "win_pct": 27,
+       "avg_r": 0.25
+      },
+      {
+       "held_min": "30-60",
+       "n": 9,
+       "win_pct": 44,
+       "avg_r": -0.13
+      },
+      {
+       "held_min": "60-120",
+       "n": 11,
+       "win_pct": 55,
+       "avg_r": 1.27
+      },
+      {
+       "held_min": "120-more",
+       "n": 14,
+       "win_pct": 71,
+       "avg_r": 2.82
+      }
+     ]
+    },
+    "H2": {
+     "n": 25,
+     "mins_winners": {
+      "25": 19,
+      "50": 52,
+      "75": 108,
+      "90": 258
+     },
+     "mins_losers": {
+      "25": 10,
+      "50": 12,
+      "75": 25,
+      "90": 26
+     },
+     "by_hold": [
+      {
+       "held_min": "0-15",
+       "n": 6,
+       "win_pct": 17,
+       "avg_r": -0.55
+      },
+      {
+       "held_min": "15-30",
+       "n": 9,
+       "win_pct": 33,
+       "avg_r": 0.61
+      },
+      {
+       "held_min": "30-60",
+       "n": 5,
+       "win_pct": 80,
+       "avg_r": 0.63
+      },
+      {
+       "held_min": "60-120",
+       "n": 2,
+       "win_pct": 100,
+       "avg_r": 1.86
+      },
+      {
+       "held_min": "120-more",
+       "n": 3,
+       "win_pct": 100,
+       "avg_r": 3.75
+      }
+     ]
+    },
+    "2021-25": {
+     "n": 629,
+     "mins_winners": {
+      "25": 35,
+      "50": 172,
+      "75": 316,
+      "90": 425
+     },
+     "mins_losers": {
+      "25": 15,
+      "50": 25,
+      "75": 65,
+      "90": 195
+     },
+     "by_hold": [
+      {
+       "held_min": "0-15",
+       "n": 97,
+       "win_pct": 8,
+       "avg_r": -0.87
+      },
+      {
+       "held_min": "15-30",
+       "n": 159,
+       "win_pct": 24,
+       "avg_r": -0.51
+      },
+      {
+       "held_min": "30-60",
+       "n": 116,
+       "win_pct": 37,
+       "avg_r": -0.32
+      },
+      {
+       "held_min": "60-120",
+       "n": 98,
+       "win_pct": 44,
+       "avg_r": -0.11
+      },
+      {
+       "held_min": "120-more",
+       "n": 159,
+       "win_pct": 65,
+       "avg_r": 1.47
+      }
+     ]
+    }
+   },
+   "BLITZ": {
+    "H1": {
+     "n": 217,
+     "mins_winners": {
+      "25": 31,
+      "50": 31,
+      "75": 31,
+      "90": 31
+     },
+     "mins_losers": {
+      "25": 10,
+      "50": 20,
+      "75": 31,
+      "90": 31
+     },
+     "by_hold": [
+      {
+       "held_min": "0-15",
+       "n": 24,
+       "win_pct": 0,
+       "avg_r": -0.96
+      },
+      {
+       "held_min": "15-30",
+       "n": 33,
+       "win_pct": 39,
+       "avg_r": -0.12
+      },
+      {
+       "held_min": "30-60",
+       "n": 160,
+       "win_pct": 69,
+       "avg_r": 0.39
+      }
+     ]
+    },
+    "H2": {
+     "n": 106,
+     "mins_winners": {
+      "25": 31,
+      "50": 31,
+      "75": 31,
+      "90": 31
+     },
+     "mins_losers": {
+      "25": 20,
+      "50": 28,
+      "75": 31,
+      "90": 31
+     },
+     "by_hold": [
+      {
+       "held_min": "0-15",
+       "n": 5,
+       "win_pct": 0,
+       "avg_r": -0.86
+      },
+      {
+       "held_min": "15-30",
+       "n": 20,
+       "win_pct": 20,
+       "avg_r": -0.33
+      },
+      {
+       "held_min": "30-60",
+       "n": 81,
+       "win_pct": 69,
+       "avg_r": 0.4
+      }
+     ]
+    },
+    "2021-25": {
+     "n": 1841,
+     "mins_winners": {
+      "25": 35,
+      "50": 35,
+      "75": 35,
+      "90": 35
+     },
+     "mins_losers": {
+      "25": 15,
+      "50": 20,
+      "75": 30,
+      "90": 35
+     },
+     "by_hold": [
+      {
+       "held_min": "0-15",
+       "n": 143,
+       "win_pct": 3,
+       "avg_r": -0.93
+      },
+      {
+       "held_min": "15-30",
+       "n": 392,
+       "win_pct": 20,
+       "avg_r": -0.56
+      },
+      {
+       "held_min": "30-60",
+       "n": 1306,
+       "win_pct": 64,
+       "avg_r": 0.29
+      }
+     ]
+    }
+   }
+  }
+ },
+ "spans": {
+  "H1": [
+   "2026-01-01",
+   "2026-06-30"
+  ],
+  "H2": [
+   "2026-07-01",
+   "2026-12-31"
+  ],
+  "2021-25": [
+   "2021-01-01",
+   "2025-12-31"
+  ]
+ },
+ "note": "2021-25 has no 1m bars: A stops there are the same rule on 5m bars (proxy); A3 falls back to the live stop. Costs in ($1.40 + 1 tick a side on the stop/EOD exits; evals $1.90).",
+ "variants": {
+  "LIVE (1 tick beyond the 5m sweep, VIX band)": {
+   "params": {},
+   "risk_matched": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 4.98,
+     "net": 33901,
+     "per_month": 5562,
+     "dd": -2196,
+     "avg_r": 0.825
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 2.91,
+     "net": 9919,
+     "per_month": 2670,
+     "dd": -1396,
+     "avg_r": 0.769
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.01,
+     "net": 1265,
+     "per_month": 25,
+     "dd": -19426,
+     "avg_r": 0.017
+    }
+   },
+   "lit_rule": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 4.98,
+     "net": 33901,
+     "per_month": 5562,
+     "dd": -2196,
+     "avg_r": 0.825
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 2.91,
+     "net": 9919,
+     "per_month": 2670,
+     "dd": -1396,
+     "avg_r": 0.769
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.01,
+     "net": 1265,
+     "per_month": 25,
+     "dd": -19426,
+     "avg_r": 0.017
+    }
+   },
+   "own_r": {
+    "H1": {
+     "win": 27.5,
+     "avg_r_own": 0.865,
+     "target_hit": 18.8,
+     "full_stop": 28.8,
+     "stop_pts_med": 44.2
+    },
+    "H2": {
+     "win": 37.5,
+     "avg_r_own": 0.76,
+     "target_hit": 25.0,
+     "full_stop": 40.0,
+     "stop_pts_med": 51.6
+    },
+    "2021-25": {
+     "win": 20.9,
+     "avg_r_own": 0.035,
+     "target_hit": 9.8,
+     "full_stop": 44.2,
+     "stop_pts_med": 38.2
+    }
+   },
+   "evals": {
+    "H1": {
+     "builder50k": {
+      "pass10": 44.5,
+      "fail10": 0.0,
+      "pass40": 93.3,
+      "fail40": 0.0,
+      "days_to_pass": 10.0,
+      "cost_per_pass": 98
+     },
+     "builder25k": {
+      "pass10": 43.7,
+      "fail10": 0.0,
+      "pass40": 92.1,
+      "fail40": 0.0,
+      "days_to_pass": 10.0,
+      "cost_per_pass": 68
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    },
+    "H2": {
+     "builder50k": {
+      "pass10": 39.1,
+      "fail10": 0.0,
+      "pass40": 66.7,
+      "fail40": 0.0,
+      "days_to_pass": 9.5,
+      "cost_per_pass": 138
+     },
+     "builder25k": {
+      "pass10": 39.1,
+      "fail10": 0.0,
+      "pass40": 87.2,
+      "fail40": 0.0,
+      "days_to_pass": 11.5,
+      "cost_per_pass": 72
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    },
+    "2021-25": {
+     "builder50k": {
+      "pass10": 10.9,
+      "fail10": 0.8,
+      "pass40": 26.3,
+      "fail40": 9.6,
+      "days_to_pass": 14.0,
+      "cost_per_pass": 349
+     },
+     "builder25k": {
+      "pass10": 10.7,
+      "fail10": 0.8,
+      "pass40": 24.1,
+      "fail40": 9.4,
+      "days_to_pass": 12.5,
+      "cost_per_pass": 261
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    }
+   },
+   "eval50_live_path": {
+    "H1": {
+     "n": 78,
+     "pf": 4.25,
+     "net": 33663,
+     "per_month": 5523,
+     "dd": -2491,
+     "p10": 44.5,
+     "f10": 0.0,
+     "pass_med": 11.0
+    },
+    "H2": {
+     "n": 40,
+     "pf": 2.26,
+     "net": 11735,
+     "per_month": 3159,
+     "dd": -2693,
+     "p10": 39.1,
+     "f10": 0.0,
+     "pass_med": 12.0
+    }
+   },
+   "boot_p_H2": null,
+   "boot_p_H1": null,
+   "verdict": "baseline"
+  },
+  "A1 1m CISD candle stop, live target price": {
+   "params": {
+    "stop": "cisd1",
+    "tgt": "live"
+   },
+   "risk_matched": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 52.5,
+     "pf": 3.21,
+     "net": 24758,
+     "per_month": 4062,
+     "dd": -5220,
+     "avg_r": 0.652
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 42.5,
+     "pf": 0.79,
+     "net": -1367,
+     "per_month": -368,
+     "dd": -3116,
+     "avg_r": -0.165
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 45.8,
+     "pf": 0.9,
+     "net": -10134,
+     "per_month": -199,
+     "dd": -28602,
+     "avg_r": -0.043
+    }
+   },
+   "lit_rule": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 52.5,
+     "pf": 2.55,
+     "net": 35463,
+     "per_month": 5818,
+     "dd": -10798,
+     "avg_r": 1.074
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 42.5,
+     "pf": 0.98,
+     "net": -314,
+     "per_month": -85,
+     "dd": -7133,
+     "avg_r": -0.334
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 45.8,
+     "pf": 0.8,
+     "net": -36042,
+     "per_month": -706,
+     "dd": -51101,
+     "avg_r": -0.32
+    }
+   },
+   "own_r": {
+    "H1": {
+     "win": 51.2,
+     "avg_r_own": 0.886,
+     "target_hit": 6.2,
+     "full_stop": 46.2,
+     "stop_pts_med": 7.0
+    },
+    "H2": {
+     "win": 42.5,
+     "avg_r_own": 0.082,
+     "target_hit": 5.0,
+     "full_stop": 55.0,
+     "stop_pts_med": 7.2
+    },
+    "2021-25": {
+     "win": 38.9,
+     "avg_r_own": -0.041,
+     "target_hit": 2.5,
+     "full_stop": 54.0,
+     "stop_pts_med": 10.2
+    }
+   },
+   "evals": {
+    "H1": {
+     "builder50k": {
+      "pass10": 21.8,
+      "fail10": 0.0,
+      "pass40": 64.0,
+      "fail40": 0.0,
+      "days_to_pass": 12.0,
+      "cost_per_pass": 143
+     },
+     "builder25k": {
+      "pass10": 21.8,
+      "fail10": 0.0,
+      "pass40": 64.0,
+      "fail40": 0.0,
+      "days_to_pass": 13.0,
+      "cost_per_pass": 98
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    },
+    "H2": {
+     "builder50k": {
+      "pass10": 29.0,
+      "fail10": 0.0,
+      "pass40": 87.2,
+      "fail40": 0.0,
+      "days_to_pass": 13.0,
+      "cost_per_pass": 105
+     },
+     "builder25k": {
+      "pass10": 29.0,
+      "fail10": 0.0,
+      "pass40": 64.1,
+      "fail40": 0.0,
+      "days_to_pass": 10.5,
+      "cost_per_pass": 98
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    },
+    "2021-25": {
+     "builder50k": {
+      "pass10": 10.5,
+      "fail10": 0.9,
+      "pass40": 22.8,
+      "fail40": 20.1,
+      "days_to_pass": 11.0,
+      "cost_per_pass": 402
+     },
+     "builder25k": {
+      "pass10": 10.2,
+      "fail10": 1.9,
+      "pass40": 21.0,
+      "fail40": 15.1,
+      "days_to_pass": 11.0,
+      "cost_per_pass": 300
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    }
+   },
+   "eval50_live_path": {
+    "H1": {
+     "n": 80,
+     "pf": 3.58,
+     "net": 12796,
+     "per_month": 2099,
+     "dd": -2333,
+     "p10": 21.8,
+     "f10": 0.0,
+     "pass_med": 12.0
+    },
+    "H2": {
+     "n": 40,
+     "pf": 1.78,
+     "net": 3004,
+     "per_month": 809,
+     "dd": -2002,
+     "p10": 29.0,
+     "f10": 0.0,
+     "pass_med": 13.0
+    }
+   },
+   "wick": {
+    "H1": {
+     "tight_trades": 79,
+     "tight_stopouts": 37,
+     "stopout_pct": 46.8,
+     "wicked_live_winner": 15,
+     "wicked_live_target": 2,
+     "wick_pct_of_stopouts": 40.5
+    },
+    "H2": {
+     "tight_trades": 40,
+     "tight_stopouts": 22,
+     "stopout_pct": 55.0,
+     "wicked_live_winner": 9,
+     "wicked_live_target": 3,
+     "wick_pct_of_stopouts": 40.9
+    },
+    "2021-25": {
+     "tight_trades": 510,
+     "tight_stopouts": 276,
+     "stopout_pct": 54.1,
+     "wicked_live_winner": 105,
+     "wicked_live_target": 20,
+     "wick_pct_of_stopouts": 38.0
+    }
+   },
+   "tight_share": {
+    "H1": 98.8,
+    "H2": 100.0,
+    "2021-25": 99.8
+   },
+   "boot_p_H2": 0.9845,
+   "boot_p_H1": 0.7305,
+   "gate": {
+    "both_2026_halves": false,
+    "2021_25_not_worse": false,
+    "h2_significant_bonferroni": false
+   },
+   "verdict": "rejected"
+  },
+  "A1 1m CISD candle stop, 2R": {
+   "params": {
+    "stop": "cisd1",
+    "tgt": "R2"
+   },
+   "risk_matched": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 52.5,
+     "pf": 1.19,
+     "net": 2141,
+     "per_month": 351,
+     "dd": -3333,
+     "avg_r": -0.009
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 42.5,
+     "pf": 0.6,
+     "net": -2588,
+     "per_month": -697,
+     "dd": -3458,
+     "avg_r": -0.26
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 45.8,
+     "pf": 0.79,
+     "net": -22340,
+     "per_month": -438,
+     "dd": -32938,
+     "avg_r": -0.102
+    }
+   },
+   "lit_rule": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 52.5,
+     "pf": 0.96,
+     "net": -889,
+     "per_month": -146,
+     "dd": -7037,
+     "avg_r": -0.197
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 42.5,
+     "pf": 0.63,
+     "net": -5117,
+     "per_month": -1378,
+     "dd": -6249,
+     "avg_r": -0.61
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 45.8,
+     "pf": 0.81,
+     "net": -34279,
+     "per_month": -672,
+     "dd": -49368,
+     "avg_r": -0.218
+    }
+   },
+   "own_r": {
+    "H1": {
+     "win": 51.2,
+     "avg_r_own": 0.099,
+     "target_hit": 27.5,
+     "full_stop": 46.2,
+     "stop_pts_med": 7.0
+    },
+    "H2": {
+     "win": 42.5,
+     "avg_r_own": -0.157,
+     "target_hit": 20.0,
+     "full_stop": 55.0,
+     "stop_pts_med": 7.2
+    },
+    "2021-25": {
+     "win": 41.3,
+     "avg_r_own": -0.083,
+     "target_hit": 22.3,
+     "full_stop": 54.0,
+     "stop_pts_med": 10.2
+    }
+   },
+   "evals": {
+    "H1": {
+     "builder50k": {
+      "pass10": 1.7,
+      "fail10": 0.0,
+      "pass40": 10.1,
+      "fail40": 5.6,
+      "days_to_pass": 13.0,
+      "cost_per_pass": 908
+     },
+     "builder25k": {
+      "pass10": 1.7,
+      "fail10": 0.0,
+      "pass40": 10.1,
+      "fail40": 5.6,
+      "days_to_pass": 12.0,
+      "cost_per_pass": 623
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 7.9,
+      "fail40": 1.1,
+      "days_to_pass": 20.0,
+      "cost_per_pass": 1236
+     }
+    },
+    "H2": {
+     "builder50k": {
+      "pass10": 0.0,
+      "fail10": 31.9,
+      "pass40": 0.0,
+      "fail40": 97.4,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     },
+     "builder25k": {
+      "pass10": 0.0,
+      "fail10": 27.5,
+      "pass40": 0.0,
+      "fail40": 89.7,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 18.8,
+      "pass40": 0.0,
+      "fail40": 84.6,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    },
+    "2021-25": {
+     "builder50k": {
+      "pass10": 3.8,
+      "fail10": 6.5,
+      "pass40": 14.2,
+      "fail40": 20.8,
+      "days_to_pass": 15.0,
+      "cost_per_pass": 645
+     },
+     "builder25k": {
+      "pass10": 3.8,
+      "fail10": 5.0,
+      "pass40": 14.1,
+      "fail40": 18.4,
+      "days_to_pass": 15.5,
+      "cost_per_pass": 446
+     },
+     "rapid25k": {
+      "pass10": 0.6,
+      "fail10": 2.6,
+      "pass40": 11.3,
+      "fail40": 11.7,
+      "days_to_pass": 24.0,
+      "cost_per_pass": 858
+     }
+    }
+   },
+   "eval50_live_path": {
+    "H1": {
+     "n": 80,
+     "pf": 0.93,
+     "net": -1302,
+     "per_month": -214,
+     "dd": -7977,
+     "p10": 1.7,
+     "f10": 0.0,
+     "pass_med": 13.0
+    },
+    "H2": {
+     "n": 40,
+     "pf": 0.37,
+     "net": -8191,
+     "per_month": -2205,
+     "dd": -9263,
+     "p10": 0.0,
+     "f10": 31.9,
+     "pass_med": null
+    }
+   },
+   "wick": {
+    "H1": {
+     "tight_trades": 79,
+     "tight_stopouts": 37,
+     "stopout_pct": 46.8,
+     "wicked_live_winner": 15,
+     "wicked_live_target": 2,
+     "wick_pct_of_stopouts": 40.5
+    },
+    "H2": {
+     "tight_trades": 40,
+     "tight_stopouts": 22,
+     "stopout_pct": 55.0,
+     "wicked_live_winner": 9,
+     "wicked_live_target": 3,
+     "wick_pct_of_stopouts": 40.9
+    },
+    "2021-25": {
+     "tight_trades": 510,
+     "tight_stopouts": 276,
+     "stopout_pct": 54.1,
+     "wicked_live_winner": 105,
+     "wicked_live_target": 20,
+     "wick_pct_of_stopouts": 38.0
+    }
+   },
+   "tight_share": {
+    "H1": 98.8,
+    "H2": 100.0,
+    "2021-25": 99.8
+   },
+   "boot_p_H2": 0.9935,
+   "boot_p_H1": 0.9995,
+   "gate": {
+    "both_2026_halves": false,
+    "2021_25_not_worse": false,
+    "h2_significant_bonferroni": false
+   },
+   "verdict": "rejected"
+  },
+  "A1 1m CISD candle stop, 3R": {
+   "params": {
+    "stop": "cisd1",
+    "tgt": "R3"
+   },
+   "risk_matched": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 52.5,
+     "pf": 1.12,
+     "net": 1293,
+     "per_month": 212,
+     "dd": -4333,
+     "avg_r": -0.028
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 42.5,
+     "pf": 0.37,
+     "net": -4086,
+     "per_month": -1100,
+     "dd": -4516,
+     "avg_r": -0.316
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 45.8,
+     "pf": 0.86,
+     "net": -14684,
+     "per_month": -288,
+     "dd": -34772,
+     "avg_r": -0.072
+    }
+   },
+   "lit_rule": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 52.5,
+     "pf": 0.95,
+     "net": -1222,
+     "per_month": -201,
+     "dd": -8833,
+     "avg_r": -0.221
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 42.5,
+     "pf": 0.53,
+     "net": -6434,
+     "per_month": -1732,
+     "dd": -7777,
+     "avg_r": -0.602
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 45.8,
+     "pf": 0.85,
+     "net": -26164,
+     "per_month": -513,
+     "dd": -53002,
+     "avg_r": -0.191
+    }
+   },
+   "own_r": {
+    "H1": {
+     "win": 51.2,
+     "avg_r_own": 0.055,
+     "target_hit": 16.2,
+     "full_stop": 46.2,
+     "stop_pts_med": 7.0
+    },
+    "H2": {
+     "win": 42.5,
+     "avg_r_own": -0.242,
+     "target_hit": 10.0,
+     "full_stop": 55.0,
+     "stop_pts_med": 7.2
+    },
+    "2021-25": {
+     "win": 39.9,
+     "avg_r_own": -0.05,
+     "target_hit": 15.5,
+     "full_stop": 54.0,
+     "stop_pts_med": 10.2
+    }
+   },
+   "evals": {
+    "H1": {
+     "builder50k": {
+      "pass10": 11.8,
+      "fail10": 4.2,
+      "pass40": 21.3,
+      "fail40": 32.6,
+      "days_to_pass": 8.0,
+      "cost_per_pass": 430
+     },
+     "builder25k": {
+      "pass10": 11.8,
+      "fail10": 4.2,
+      "pass40": 27.0,
+      "fail40": 28.1,
+      "days_to_pass": 9.0,
+      "cost_per_pass": 234
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    },
+    "H2": {
+     "builder50k": {
+      "pass10": 0.0,
+      "fail10": 29.0,
+      "pass40": 0.0,
+      "fail40": 97.4,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     },
+     "builder25k": {
+      "pass10": 0.0,
+      "fail10": 27.5,
+      "pass40": 0.0,
+      "fail40": 89.7,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 4.3,
+      "pass40": 0.0,
+      "fail40": 64.1,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    },
+    "2021-25": {
+     "builder50k": {
+      "pass10": 8.6,
+      "fail10": 5.7,
+      "pass40": 17.4,
+      "fail40": 19.8,
+      "days_to_pass": 10.0,
+      "cost_per_pass": 527
+     },
+     "builder25k": {
+      "pass10": 8.6,
+      "fail10": 4.8,
+      "pass40": 16.8,
+      "fail40": 17.3,
+      "days_to_pass": 10.0,
+      "cost_per_pass": 374
+     },
+     "rapid25k": {
+      "pass10": 0.4,
+      "fail10": 1.7,
+      "pass40": 8.4,
+      "fail40": 14.2,
+      "days_to_pass": 27.0,
+      "cost_per_pass": 1154
+     }
+    }
+   },
+   "eval50_live_path": {
+    "H1": {
+     "n": 80,
+     "pf": 0.66,
+     "net": -6961,
+     "per_month": -1142,
+     "dd": -11119,
+     "p10": 11.8,
+     "f10": 4.2,
+     "pass_med": 8.0
+    },
+    "H2": {
+     "n": 40,
+     "pf": 0.31,
+     "net": -8607,
+     "per_month": -2317,
+     "dd": -9911,
+     "p10": 0.0,
+     "f10": 29.0,
+     "pass_med": null
+    }
+   },
+   "wick": {
+    "H1": {
+     "tight_trades": 79,
+     "tight_stopouts": 37,
+     "stopout_pct": 46.8,
+     "wicked_live_winner": 15,
+     "wicked_live_target": 2,
+     "wick_pct_of_stopouts": 40.5
+    },
+    "H2": {
+     "tight_trades": 40,
+     "tight_stopouts": 22,
+     "stopout_pct": 55.0,
+     "wicked_live_winner": 9,
+     "wicked_live_target": 3,
+     "wick_pct_of_stopouts": 40.9
+    },
+    "2021-25": {
+     "tight_trades": 510,
+     "tight_stopouts": 276,
+     "stopout_pct": 54.1,
+     "wicked_live_winner": 105,
+     "wicked_live_target": 20,
+     "wick_pct_of_stopouts": 38.0
+    }
+   },
+   "tight_share": {
+    "H1": 98.8,
+    "H2": 100.0,
+    "2021-25": 99.8
+   },
+   "boot_p_H2": 0.9992,
+   "boot_p_H1": 1.0,
+   "gate": {
+    "both_2026_halves": false,
+    "2021_25_not_worse": false,
+    "h2_significant_bonferroni": false
+   },
+   "verdict": "rejected"
+  },
+  "A2 1m entry swing stop, live target price": {
+   "params": {
+    "stop": "swing1",
+    "tgt": "live"
+   },
+   "risk_matched": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 57.5,
+     "pf": 4.88,
+     "net": 42732,
+     "per_month": 7011,
+     "dd": -4060,
+     "avg_r": 1.246
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 52.5,
+     "pf": 1.31,
+     "net": 1643,
+     "per_month": 442,
+     "dd": -3290,
+     "avg_r": 0.211
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 48.1,
+     "pf": 0.79,
+     "net": -21693,
+     "per_month": -425,
+     "dd": -34904,
+     "avg_r": -0.08
+    }
+   },
+   "lit_rule": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 57.5,
+     "pf": 4.21,
+     "net": 75271,
+     "per_month": 12349,
+     "dd": -8919,
+     "avg_r": 2.609
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 52.5,
+     "pf": 1.58,
+     "net": 7338,
+     "per_month": 1976,
+     "dd": -8842,
+     "avg_r": 0.733
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 48.1,
+     "pf": 0.83,
+     "net": -29463,
+     "per_month": -577,
+     "dd": -49621,
+     "avg_r": -0.124
+    }
+   },
+   "own_r": {
+    "H1": {
+     "win": 46.2,
+     "avg_r_own": 1.56,
+     "target_hit": 10.0,
+     "full_stop": 40.0,
+     "stop_pts_med": 14.4
+    },
+    "H2": {
+     "win": 37.5,
+     "avg_r_own": 0.336,
+     "target_hit": 7.5,
+     "full_stop": 45.0,
+     "stop_pts_med": 17.1
+    },
+    "2021-25": {
+     "win": 34.4,
+     "avg_r_own": -0.059,
+     "target_hit": 4.7,
+     "full_stop": 51.7,
+     "stop_pts_med": 17.2
+    }
+   },
+   "evals": {
+    "H1": {
+     "builder50k": {
+      "pass10": 40.3,
+      "fail10": 0.0,
+      "pass40": 71.9,
+      "fail40": 0.0,
+      "days_to_pass": 9.0,
+      "cost_per_pass": 128
+     },
+     "builder25k": {
+      "pass10": 40.3,
+      "fail10": 0.0,
+      "pass40": 69.7,
+      "fail40": 0.0,
+      "days_to_pass": 9.0,
+      "cost_per_pass": 90
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    },
+    "H2": {
+     "builder50k": {
+      "pass10": 42.0,
+      "fail10": 0.0,
+      "pass40": 69.2,
+      "fail40": 0.0,
+      "days_to_pass": 7.0,
+      "cost_per_pass": 133
+     },
+     "builder25k": {
+      "pass10": 42.0,
+      "fail10": 0.0,
+      "pass40": 64.1,
+      "fail40": 0.0,
+      "days_to_pass": 6.0,
+      "cost_per_pass": 98
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    },
+    "2021-25": {
+     "builder50k": {
+      "pass10": 11.9,
+      "fail10": 1.1,
+      "pass40": 23.6,
+      "fail40": 5.6,
+      "days_to_pass": 10.0,
+      "cost_per_pass": 389
+     },
+     "builder25k": {
+      "pass10": 10.3,
+      "fail10": 1.1,
+      "pass40": 22.0,
+      "fail40": 6.6,
+      "days_to_pass": 12.0,
+      "cost_per_pass": 287
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    }
+   },
+   "eval50_live_path": {
+    "H1": {
+     "n": 80,
+     "pf": 3.18,
+     "net": 19207,
+     "per_month": 3151,
+     "dd": -3824,
+     "p10": 40.3,
+     "f10": 0.0,
+     "pass_med": 9.5
+    },
+    "H2": {
+     "n": 40,
+     "pf": 2.15,
+     "net": 5929,
+     "per_month": 1596,
+     "dd": -3641,
+     "p10": 42.0,
+     "f10": 0.0,
+     "pass_med": 9.0
+    }
+   },
+   "wick": {
+    "H1": {
+     "tight_trades": 80,
+     "tight_stopouts": 32,
+     "stopout_pct": 40.0,
+     "wicked_live_winner": 9,
+     "wicked_live_target": 1,
+     "wick_pct_of_stopouts": 28.1
+    },
+    "H2": {
+     "tight_trades": 40,
+     "tight_stopouts": 18,
+     "stopout_pct": 45.0,
+     "wicked_live_winner": 7,
+     "wicked_live_target": 2,
+     "wick_pct_of_stopouts": 38.9
+    },
+    "2021-25": {
+     "tight_trades": 509,
+     "tight_stopouts": 264,
+     "stopout_pct": 51.9,
+     "wicked_live_winner": 77,
+     "wicked_live_target": 13,
+     "wick_pct_of_stopouts": 29.2
+    }
+   },
+   "tight_share": {
+    "H1": 100.0,
+    "H2": 100.0,
+    "2021-25": 99.6
+   },
+   "boot_p_H2": 0.9363,
+   "boot_p_H1": 0.3205,
+   "gate": {
+    "both_2026_halves": false,
+    "2021_25_not_worse": false,
+    "h2_significant_bonferroni": false
+   },
+   "verdict": "rejected"
+  },
+  "A2 1m entry swing stop, 2R": {
+   "params": {
+    "stop": "swing1",
+    "tgt": "R2"
+   },
+   "risk_matched": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 57.5,
+     "pf": 1.18,
+     "net": 1973,
+     "per_month": 324,
+     "dd": -3330,
+     "avg_r": 0.056
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 52.5,
+     "pf": 0.49,
+     "net": -2654,
+     "per_month": -715,
+     "dd": -3290,
+     "avg_r": -0.113
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 48.1,
+     "pf": 0.91,
+     "net": -9114,
+     "per_month": -179,
+     "dd": -19578,
+     "avg_r": -0.046
+    }
+   },
+   "lit_rule": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 57.5,
+     "pf": 1.14,
+     "net": 3397,
+     "per_month": 557,
+     "dd": -7434,
+     "avg_r": 0.106
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 52.5,
+     "pf": 0.74,
+     "net": -3351,
+     "per_month": -902,
+     "dd": -8842,
+     "avg_r": -0.022
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 48.1,
+     "pf": 0.92,
+     "net": -14464,
+     "per_month": -283,
+     "dd": -25747,
+     "avg_r": -0.081
+    }
+   },
+   "own_r": {
+    "H1": {
+     "win": 50.0,
+     "avg_r_own": 0.128,
+     "target_hit": 26.2,
+     "full_stop": 40.0,
+     "stop_pts_med": 14.4
+    },
+    "H2": {
+     "win": 42.5,
+     "avg_r_own": -0.091,
+     "target_hit": 17.5,
+     "full_stop": 45.0,
+     "stop_pts_med": 17.1
+    },
+    "2021-25": {
+     "win": 38.6,
+     "avg_r_own": -0.026,
+     "target_hit": 23.9,
+     "full_stop": 51.7,
+     "stop_pts_med": 17.2
+    }
+   },
+   "evals": {
+    "H1": {
+     "builder50k": {
+      "pass10": 10.1,
+      "fail10": 0.0,
+      "pass40": 31.5,
+      "fail40": 0.0,
+      "days_to_pass": 19.0,
+      "cost_per_pass": 292
+     },
+     "builder25k": {
+      "pass10": 10.1,
+      "fail10": 0.0,
+      "pass40": 33.7,
+      "fail40": 0.0,
+      "days_to_pass": 18.0,
+      "cost_per_pass": 187
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 19.1,
+      "fail40": 0.0,
+      "days_to_pass": 23.0,
+      "cost_per_pass": 509
+     }
+    },
+    "H2": {
+     "builder50k": {
+      "pass10": 4.3,
+      "fail10": 0.0,
+      "pass40": 17.9,
+      "fail40": 0.0,
+      "days_to_pass": 21.0,
+      "cost_per_pass": 511
+     },
+     "builder25k": {
+      "pass10": 4.3,
+      "fail10": 0.0,
+      "pass40": 17.9,
+      "fail40": 0.0,
+      "days_to_pass": 21.0,
+      "cost_per_pass": 351
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    },
+    "2021-25": {
+     "builder50k": {
+      "pass10": 4.0,
+      "fail10": 2.3,
+      "pass40": 14.9,
+      "fail40": 6.8,
+      "days_to_pass": 16.5,
+      "cost_per_pass": 616
+     },
+     "builder25k": {
+      "pass10": 3.8,
+      "fail10": 2.4,
+      "pass40": 14.5,
+      "fail40": 6.9,
+      "days_to_pass": 17.0,
+      "cost_per_pass": 434
+     },
+     "rapid25k": {
+      "pass10": 0.9,
+      "fail10": 0.7,
+      "pass40": 8.5,
+      "fail40": 1.0,
+      "days_to_pass": 26.5,
+      "cost_per_pass": 1141
+     }
+    }
+   },
+   "eval50_live_path": {
+    "H1": {
+     "n": 80,
+     "pf": 1.08,
+     "net": 1522,
+     "per_month": 250,
+     "dd": -5746,
+     "p10": 10.1,
+     "f10": 0.0,
+     "pass_med": 19.0
+    },
+    "H2": {
+     "n": 40,
+     "pf": 0.7,
+     "net": -2795,
+     "per_month": -752,
+     "dd": -5196,
+     "p10": 4.3,
+     "f10": 0.0,
+     "pass_med": 21.0
+    }
+   },
+   "wick": {
+    "H1": {
+     "tight_trades": 80,
+     "tight_stopouts": 32,
+     "stopout_pct": 40.0,
+     "wicked_live_winner": 9,
+     "wicked_live_target": 1,
+     "wick_pct_of_stopouts": 28.1
+    },
+    "H2": {
+     "tight_trades": 40,
+     "tight_stopouts": 18,
+     "stopout_pct": 45.0,
+     "wicked_live_winner": 7,
+     "wicked_live_target": 2,
+     "wick_pct_of_stopouts": 38.9
+    },
+    "2021-25": {
+     "tight_trades": 509,
+     "tight_stopouts": 264,
+     "stopout_pct": 51.9,
+     "wicked_live_winner": 77,
+     "wicked_live_target": 13,
+     "wick_pct_of_stopouts": 29.2
+    }
+   },
+   "tight_share": {
+    "H1": 100.0,
+    "H2": 100.0,
+    "2021-25": 99.6
+   },
+   "boot_p_H2": 0.9982,
+   "boot_p_H1": 1.0,
+   "gate": {
+    "both_2026_halves": false,
+    "2021_25_not_worse": false,
+    "h2_significant_bonferroni": false
+   },
+   "verdict": "rejected"
+  },
+  "A2 1m entry swing stop, 3R": {
+   "params": {
+    "stop": "swing1",
+    "tgt": "R3"
+   },
+   "risk_matched": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 57.5,
+     "pf": 1.48,
+     "net": 5294,
+     "per_month": 869,
+     "dd": -3607,
+     "avg_r": 0.177
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 52.5,
+     "pf": 0.59,
+     "net": -2127,
+     "per_month": -573,
+     "dd": -3290,
+     "avg_r": -0.089
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 48.1,
+     "pf": 0.86,
+     "net": -14848,
+     "per_month": -291,
+     "dd": -29279,
+     "avg_r": -0.066
+    }
+   },
+   "lit_rule": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 57.5,
+     "pf": 1.52,
+     "net": 12256,
+     "per_month": 2011,
+     "dd": -7434,
+     "avg_r": 0.522
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 52.5,
+     "pf": 0.82,
+     "net": -2355,
+     "per_month": -634,
+     "dd": -8842,
+     "avg_r": -0.038
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 48.1,
+     "pf": 0.88,
+     "net": -21771,
+     "per_month": -426,
+     "dd": -41652,
+     "avg_r": -0.104
+    }
+   },
+   "own_r": {
+    "H1": {
+     "win": 50.0,
+     "avg_r_own": 0.284,
+     "target_hit": 22.5,
+     "full_stop": 40.0,
+     "stop_pts_med": 14.4
+    },
+    "H2": {
+     "win": 37.5,
+     "avg_r_own": -0.064,
+     "target_hit": 12.5,
+     "full_stop": 45.0,
+     "stop_pts_med": 17.1
+    },
+    "2021-25": {
+     "win": 36.0,
+     "avg_r_own": -0.04,
+     "target_hit": 15.1,
+     "full_stop": 51.7,
+     "stop_pts_med": 17.2
+    }
+   },
+   "evals": {
+    "H1": {
+     "builder50k": {
+      "pass10": 23.5,
+      "fail10": 0.0,
+      "pass40": 55.1,
+      "fail40": 0.0,
+      "days_to_pass": 11.5,
+      "cost_per_pass": 167
+     },
+     "builder25k": {
+      "pass10": 25.2,
+      "fail10": 0.0,
+      "pass40": 53.9,
+      "fail40": 0.0,
+      "days_to_pass": 11.0,
+      "cost_per_pass": 117
+     },
+     "rapid25k": {
+      "pass10": 0.8,
+      "fail10": 0.0,
+      "pass40": 43.8,
+      "fail40": 0.0,
+      "days_to_pass": 22.0,
+      "cost_per_pass": 222
+     }
+    },
+    "H2": {
+     "builder50k": {
+      "pass10": 15.9,
+      "fail10": 0.0,
+      "pass40": 53.8,
+      "fail40": 0.0,
+      "days_to_pass": 15.0,
+      "cost_per_pass": 170
+     },
+     "builder25k": {
+      "pass10": 15.9,
+      "fail10": 0.0,
+      "pass40": 35.9,
+      "fail40": 0.0,
+      "days_to_pass": 7.0,
+      "cost_per_pass": 176
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    },
+    "2021-25": {
+     "builder50k": {
+      "pass10": 6.6,
+      "fail10": 3.1,
+      "pass40": 18.2,
+      "fail40": 9.7,
+      "days_to_pass": 13.0,
+      "cost_per_pass": 504
+     },
+     "builder25k": {
+      "pass10": 6.8,
+      "fail10": 3.1,
+      "pass40": 17.3,
+      "fail40": 10.2,
+      "days_to_pass": 12.0,
+      "cost_per_pass": 364
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.2,
+      "pass40": 3.7,
+      "fail40": 5.7,
+      "days_to_pass": 32.5,
+      "cost_per_pass": 2642
+     }
+    }
+   },
+   "eval50_live_path": {
+    "H1": {
+     "n": 80,
+     "pf": 2.03,
+     "net": 13874,
+     "per_month": 2276,
+     "dd": -3969,
+     "p10": 23.5,
+     "f10": 0.0,
+     "pass_med": 12.0
+    },
+    "H2": {
+     "n": 40,
+     "pf": 0.7,
+     "net": -2768,
+     "per_month": -745,
+     "dd": -5118,
+     "p10": 15.9,
+     "f10": 0.0,
+     "pass_med": 15.0
+    }
+   },
+   "wick": {
+    "H1": {
+     "tight_trades": 80,
+     "tight_stopouts": 32,
+     "stopout_pct": 40.0,
+     "wicked_live_winner": 9,
+     "wicked_live_target": 1,
+     "wick_pct_of_stopouts": 28.1
+    },
+    "H2": {
+     "tight_trades": 40,
+     "tight_stopouts": 18,
+     "stopout_pct": 45.0,
+     "wicked_live_winner": 7,
+     "wicked_live_target": 2,
+     "wick_pct_of_stopouts": 38.9
+    },
+    "2021-25": {
+     "tight_trades": 509,
+     "tight_stopouts": 264,
+     "stopout_pct": 51.9,
+     "wicked_live_winner": 77,
+     "wicked_live_target": 13,
+     "wick_pct_of_stopouts": 29.2
+    }
+   },
+   "tight_share": {
+    "H1": 100.0,
+    "H2": 100.0,
+    "2021-25": 99.6
+   },
+   "boot_p_H2": 0.9972,
+   "boot_p_H1": 0.999,
+   "gate": {
+    "both_2026_halves": false,
+    "2021_25_not_worse": false,
+    "h2_significant_bonferroni": false
+   },
+   "verdict": "rejected"
+  },
+  "A3 3m FVG stop, live target price": {
+   "params": {
+    "stop": "fvg3",
+    "tgt": "live"
+   },
+   "risk_matched": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 52.5,
+     "pf": 5.26,
+     "net": 46392,
+     "per_month": 7611,
+     "dd": -3543,
+     "avg_r": 1.208
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 37.5,
+     "pf": 0.7,
+     "net": -1994,
+     "per_month": -537,
+     "dd": -2783,
+     "avg_r": -0.141
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.01,
+     "net": 1033,
+     "per_month": 20,
+     "dd": -19426,
+     "avg_r": 0.017
+    }
+   },
+   "lit_rule": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 52.5,
+     "pf": 4.22,
+     "net": 64853,
+     "per_month": 10640,
+     "dd": -5771,
+     "avg_r": 1.757
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 37.5,
+     "pf": 0.53,
+     "net": -6626,
+     "per_month": -1784,
+     "dd": -7801,
+     "avg_r": -0.656
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.01,
+     "net": 801,
+     "per_month": 16,
+     "dd": -19426,
+     "avg_r": 0.016
+    }
+   },
+   "own_r": {
+    "H1": {
+     "win": 41.2,
+     "avg_r_own": 1.42,
+     "target_hit": 11.2,
+     "full_stop": 42.5,
+     "stop_pts_med": 15.2
+    },
+    "H2": {
+     "win": 30.0,
+     "avg_r_own": -0.052,
+     "target_hit": 7.5,
+     "full_stop": 57.5,
+     "stop_pts_med": 21.9
+    },
+    "2021-25": {
+     "win": 20.9,
+     "avg_r_own": 0.035,
+     "target_hit": 9.8,
+     "full_stop": 44.4,
+     "stop_pts_med": 38.0
+    }
+   },
+   "evals": {
+    "H1": {
+     "builder50k": {
+      "pass10": 42.0,
+      "fail10": 0.0,
+      "pass40": 86.5,
+      "fail40": 0.0,
+      "days_to_pass": 10.0,
+      "cost_per_pass": 106
+     },
+     "builder25k": {
+      "pass10": 44.5,
+      "fail10": 0.0,
+      "pass40": 86.5,
+      "fail40": 0.0,
+      "days_to_pass": 9.0,
+      "cost_per_pass": 73
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    },
+    "H2": {
+     "builder50k": {
+      "pass10": 26.1,
+      "fail10": 0.0,
+      "pass40": 30.8,
+      "fail40": 0.0,
+      "days_to_pass": 7.0,
+      "cost_per_pass": 298
+     },
+     "builder25k": {
+      "pass10": 26.1,
+      "fail10": 0.0,
+      "pass40": 30.8,
+      "fail40": 10.3,
+      "days_to_pass": 6.0,
+      "cost_per_pass": 205
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    },
+    "2021-25": {
+     "builder50k": {
+      "pass10": 10.9,
+      "fail10": 0.8,
+      "pass40": 26.3,
+      "fail40": 9.6,
+      "days_to_pass": 14.0,
+      "cost_per_pass": 349
+     },
+     "builder25k": {
+      "pass10": 10.7,
+      "fail10": 0.8,
+      "pass40": 24.1,
+      "fail40": 9.4,
+      "days_to_pass": 12.5,
+      "cost_per_pass": 261
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    }
+   },
+   "eval50_live_path": {
+    "H1": {
+     "n": 80,
+     "pf": 3.99,
+     "net": 24769,
+     "per_month": 4064,
+     "dd": -2184,
+     "p10": 42.0,
+     "f10": 0.0,
+     "pass_med": 11.0
+    },
+    "H2": {
+     "n": 40,
+     "pf": 1.33,
+     "net": 2437,
+     "per_month": 656,
+     "dd": -3293,
+     "p10": 26.1,
+     "f10": 0.0,
+     "pass_med": 7.5
+    }
+   },
+   "wick": {
+    "H1": {
+     "tight_trades": 73,
+     "tight_stopouts": 30,
+     "stopout_pct": 41.1,
+     "wicked_live_winner": 9,
+     "wicked_live_target": 1,
+     "wick_pct_of_stopouts": 30.0
+    },
+    "H2": {
+     "tight_trades": 32,
+     "tight_stopouts": 21,
+     "stopout_pct": 65.6,
+     "wicked_live_winner": 8,
+     "wicked_live_target": 4,
+     "wick_pct_of_stopouts": 38.1
+    },
+    "2021-25": {
+     "tight_trades": 2,
+     "tight_stopouts": 1,
+     "stopout_pct": 50.0,
+     "wicked_live_winner": 0,
+     "wicked_live_target": 0,
+     "wick_pct_of_stopouts": 0.0
+    }
+   },
+   "tight_share": {
+    "H1": 91.2,
+    "H2": 80.0,
+    "2021-25": 0.4
+   },
+   "boot_p_H2": 0.999,
+   "boot_p_H1": 0.242,
+   "gate": {
+    "both_2026_halves": false,
+    "2021_25_not_worse": false,
+    "h2_significant_bonferroni": false
+   },
+   "verdict": "rejected"
+  },
+  "A3 3m FVG stop, 2R": {
+   "params": {
+    "stop": "fvg3",
+    "tgt": "R2"
+   },
+   "risk_matched": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 52.5,
+     "pf": 1.62,
+     "net": 6732,
+     "per_month": 1104,
+     "dd": -3076,
+     "avg_r": 0.148
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 37.5,
+     "pf": 0.75,
+     "net": -1642,
+     "per_month": -442,
+     "dd": -2599,
+     "avg_r": -0.133
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.06,
+     "net": 5606,
+     "per_month": 110,
+     "dd": -17455,
+     "avg_r": 0.044
+    }
+   },
+   "lit_rule": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 52.5,
+     "pf": 1.47,
+     "net": 9383,
+     "per_month": 1539,
+     "dd": -5101,
+     "avg_r": 0.235
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 37.5,
+     "pf": 0.63,
+     "net": -5309,
+     "per_month": -1429,
+     "dd": -7376,
+     "avg_r": -0.369
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.06,
+     "net": 6239,
+     "per_month": 122,
+     "dd": -17455,
+     "avg_r": 0.052
+    }
+   },
+   "own_r": {
+    "H1": {
+     "win": 47.5,
+     "avg_r_own": 0.233,
+     "target_hit": 33.8,
+     "full_stop": 42.5,
+     "stop_pts_med": 15.2
+    },
+    "H2": {
+     "win": 30.0,
+     "avg_r_own": -0.142,
+     "target_hit": 22.5,
+     "full_stop": 57.5,
+     "stop_pts_med": 21.9
+    },
+    "2021-25": {
+     "win": 31.7,
+     "avg_r_own": 0.068,
+     "target_hit": 24.3,
+     "full_stop": 44.4,
+     "stop_pts_med": 38.0
+    }
+   },
+   "evals": {
+    "H1": {
+     "builder50k": {
+      "pass10": 16.0,
+      "fail10": 3.4,
+      "pass40": 41.6,
+      "fail40": 4.5,
+      "days_to_pass": 12.0,
+      "cost_per_pass": 221
+     },
+     "builder25k": {
+      "pass10": 10.9,
+      "fail10": 0.0,
+      "pass40": 43.8,
+      "fail40": 0.0,
+      "days_to_pass": 14.0,
+      "cost_per_pass": 144
+     },
+     "rapid25k": {
+      "pass10": 0.8,
+      "fail10": 0.0,
+      "pass40": 33.7,
+      "fail40": 0.0,
+      "days_to_pass": 23.0,
+      "cost_per_pass": 288
+     }
+    },
+    "H2": {
+     "builder50k": {
+      "pass10": 11.6,
+      "fail10": 8.7,
+      "pass40": 12.8,
+      "fail40": 0.0,
+      "days_to_pass": 7.0,
+      "cost_per_pass": 716
+     },
+     "builder25k": {
+      "pass10": 7.2,
+      "fail10": 8.7,
+      "pass40": 7.7,
+      "fail40": 10.3,
+      "days_to_pass": 6.0,
+      "cost_per_pass": 819
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 4.3,
+      "pass40": 0.0,
+      "fail40": 25.6,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    },
+    "2021-25": {
+     "builder50k": {
+      "pass10": 8.2,
+      "fail10": 1.1,
+      "pass40": 27.9,
+      "fail40": 3.8,
+      "days_to_pass": 16.0,
+      "cost_per_pass": 329
+     },
+     "builder25k": {
+      "pass10": 7.5,
+      "fail10": 1.2,
+      "pass40": 25.4,
+      "fail40": 6.4,
+      "days_to_pass": 16.0,
+      "cost_per_pass": 248
+     },
+     "rapid25k": {
+      "pass10": 1.1,
+      "fail10": 0.2,
+      "pass40": 13.8,
+      "fail40": 3.9,
+      "days_to_pass": 27.5,
+      "cost_per_pass": 702
+     }
+    }
+   },
+   "eval50_live_path": {
+    "H1": {
+     "n": 79,
+     "pf": 1.17,
+     "net": 3552,
+     "per_month": 583,
+     "dd": -3726,
+     "p10": 16.0,
+     "f10": 3.4,
+     "pass_med": 12.0
+    },
+    "H2": {
+     "n": 40,
+     "pf": 0.69,
+     "net": -3821,
+     "per_month": -1029,
+     "dd": -5610,
+     "p10": 11.6,
+     "f10": 8.7,
+     "pass_med": 7.0
+    }
+   },
+   "wick": {
+    "H1": {
+     "tight_trades": 73,
+     "tight_stopouts": 30,
+     "stopout_pct": 41.1,
+     "wicked_live_winner": 9,
+     "wicked_live_target": 1,
+     "wick_pct_of_stopouts": 30.0
+    },
+    "H2": {
+     "tight_trades": 32,
+     "tight_stopouts": 21,
+     "stopout_pct": 65.6,
+     "wicked_live_winner": 8,
+     "wicked_live_target": 4,
+     "wick_pct_of_stopouts": 38.1
+    },
+    "2021-25": {
+     "tight_trades": 2,
+     "tight_stopouts": 1,
+     "stopout_pct": 50.0,
+     "wicked_live_winner": 0,
+     "wicked_live_target": 0,
+     "wick_pct_of_stopouts": 0.0
+    }
+   },
+   "tight_share": {
+    "H1": 91.2,
+    "H2": 80.0,
+    "2021-25": 0.4
+   },
+   "boot_p_H2": 0.9895,
+   "boot_p_H1": 0.997,
+   "gate": {
+    "both_2026_halves": false,
+    "2021_25_not_worse": true,
+    "h2_significant_bonferroni": false
+   },
+   "verdict": "rejected"
+  },
+  "A3 3m FVG stop, 3R": {
+   "params": {
+    "stop": "fvg3",
+    "tgt": "R3"
+   },
+   "risk_matched": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 52.5,
+     "pf": 2.12,
+     "net": 12136,
+     "per_month": 1991,
+     "dd": -3077,
+     "avg_r": 0.327
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 37.5,
+     "pf": 0.86,
+     "net": -966,
+     "per_month": -260,
+     "dd": -2599,
+     "avg_r": -0.104
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.21,
+     "net": 20995,
+     "per_month": 411,
+     "dd": -15134,
+     "avg_r": 0.109
+    }
+   },
+   "lit_rule": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 52.5,
+     "pf": 1.94,
+     "net": 18836,
+     "per_month": 3090,
+     "dd": -5101,
+     "avg_r": 0.631
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 37.5,
+     "pf": 0.68,
+     "net": -4502,
+     "per_month": -1212,
+     "dd": -7376,
+     "avg_r": -0.347
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.22,
+     "net": 22069,
+     "per_month": 432,
+     "dd": -15134,
+     "avg_r": 0.12
+    }
+   },
+   "own_r": {
+    "H1": {
+     "win": 46.2,
+     "avg_r_own": 0.428,
+     "target_hit": 28.8,
+     "full_stop": 42.5,
+     "stop_pts_med": 15.2
+    },
+    "H2": {
+     "win": 30.0,
+     "avg_r_own": -0.079,
+     "target_hit": 15.0,
+     "full_stop": 57.5,
+     "stop_pts_med": 21.9
+    },
+    "2021-25": {
+     "win": 27.0,
+     "avg_r_own": 0.135,
+     "target_hit": 17.6,
+     "full_stop": 44.4,
+     "stop_pts_med": 38.0
+    }
+   },
+   "evals": {
+    "H1": {
+     "builder50k": {
+      "pass10": 28.6,
+      "fail10": 0.8,
+      "pass40": 55.1,
+      "fail40": 1.1,
+      "days_to_pass": 9.0,
+      "cost_per_pass": 167
+     },
+     "builder25k": {
+      "pass10": 26.1,
+      "fail10": 0.0,
+      "pass40": 57.3,
+      "fail40": 0.0,
+      "days_to_pass": 11.5,
+      "cost_per_pass": 110
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 42.7,
+      "fail40": 0.0,
+      "days_to_pass": 25.0,
+      "cost_per_pass": 228
+     }
+    },
+    "H2": {
+     "builder50k": {
+      "pass10": 15.9,
+      "fail10": 10.1,
+      "pass40": 38.5,
+      "fail40": 0.0,
+      "days_to_pass": 9.0,
+      "cost_per_pass": 239
+     },
+     "builder25k": {
+      "pass10": 15.9,
+      "fail10": 8.7,
+      "pass40": 20.5,
+      "fail40": 12.8,
+      "days_to_pass": 5.0,
+      "cost_per_pass": 307
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    },
+    "2021-25": {
+     "builder50k": {
+      "pass10": 12.0,
+      "fail10": 1.1,
+      "pass40": 34.7,
+      "fail40": 4.7,
+      "days_to_pass": 15.0,
+      "cost_per_pass": 265
+     },
+     "builder25k": {
+      "pass10": 11.5,
+      "fail10": 1.0,
+      "pass40": 35.1,
+      "fail40": 4.5,
+      "days_to_pass": 17.0,
+      "cost_per_pass": 179
+     },
+     "rapid25k": {
+      "pass10": 0.1,
+      "fail10": 0.0,
+      "pass40": 8.6,
+      "fail40": 1.5,
+      "days_to_pass": 32.0,
+      "cost_per_pass": 1128
+     }
+    }
+   },
+   "eval50_live_path": {
+    "H1": {
+     "n": 79,
+     "pf": 1.81,
+     "net": 14625,
+     "per_month": 2399,
+     "dd": -3533,
+     "p10": 28.6,
+     "f10": 0.8,
+     "pass_med": 15.5
+    },
+    "H2": {
+     "n": 40,
+     "pf": 0.89,
+     "net": -1247,
+     "per_month": -336,
+     "dd": -4764,
+     "p10": 15.9,
+     "f10": 10.1,
+     "pass_med": 9.0
+    }
+   },
+   "wick": {
+    "H1": {
+     "tight_trades": 73,
+     "tight_stopouts": 30,
+     "stopout_pct": 41.1,
+     "wicked_live_winner": 9,
+     "wicked_live_target": 1,
+     "wick_pct_of_stopouts": 30.0
+    },
+    "H2": {
+     "tight_trades": 32,
+     "tight_stopouts": 21,
+     "stopout_pct": 65.6,
+     "wicked_live_winner": 8,
+     "wicked_live_target": 4,
+     "wick_pct_of_stopouts": 38.1
+    },
+    "2021-25": {
+     "tight_trades": 2,
+     "tight_stopouts": 1,
+     "stopout_pct": 50.0,
+     "wicked_live_winner": 0,
+     "wicked_live_target": 0,
+     "wick_pct_of_stopouts": 0.0
+    }
+   },
+   "tight_share": {
+    "H1": 91.2,
+    "H2": 80.0,
+    "2021-25": 0.4
+   },
+   "boot_p_H2": 0.976,
+   "boot_p_H1": 0.984,
+   "gate": {
+    "both_2026_halves": false,
+    "2021_25_not_worse": true,
+    "h2_significant_bonferroni": false
+   },
+   "verdict": "rejected"
+  },
+  "B1 next 15m liquidity": {
+   "params": {
+    "tgt": "liq15"
+   },
+   "risk_matched": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 2.46,
+     "net": 12467,
+     "per_month": 2045,
+     "dd": -1990,
+     "avg_r": 0.311
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 2.17,
+     "net": 6097,
+     "per_month": 1642,
+     "dd": -1047,
+     "avg_r": 0.448
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.13,
+     "net": 13243,
+     "per_month": 259,
+     "dd": -18242,
+     "avg_r": 0.079
+    }
+   },
+   "lit_rule": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 2.46,
+     "net": 12467,
+     "per_month": 2045,
+     "dd": -1990,
+     "avg_r": 0.311
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 2.17,
+     "net": 6097,
+     "per_month": 1642,
+     "dd": -1047,
+     "avg_r": 0.448
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.13,
+     "net": 13243,
+     "per_month": 259,
+     "dd": -18242,
+     "avg_r": 0.079
+    }
+   },
+   "own_r": {
+    "H1": {
+     "win": 35.0,
+     "avg_r_own": 0.343,
+     "target_hit": 30.0,
+     "full_stop": 28.8,
+     "stop_pts_med": 44.2
+    },
+    "H2": {
+     "win": 40.0,
+     "avg_r_own": 0.498,
+     "target_hit": 35.0,
+     "full_stop": 40.0,
+     "stop_pts_med": 51.6
+    },
+    "2021-25": {
+     "win": 29.4,
+     "avg_r_own": 0.105,
+     "target_hit": 21.1,
+     "full_stop": 44.2,
+     "stop_pts_med": 38.2
+    }
+   },
+   "evals": {
+    "H1": {
+     "builder50k": {
+      "pass10": 31.1,
+      "fail10": 0.0,
+      "pass40": 58.4,
+      "fail40": 0.0,
+      "days_to_pass": 9.5,
+      "cost_per_pass": 157
+     },
+     "builder25k": {
+      "pass10": 29.4,
+      "fail10": 0.0,
+      "pass40": 65.2,
+      "fail40": 0.0,
+      "days_to_pass": 11.0,
+      "cost_per_pass": 97
+     },
+     "rapid25k": {
+      "pass10": 1.7,
+      "fail10": 0.0,
+      "pass40": 37.1,
+      "fail40": 0.0,
+      "days_to_pass": 26.0,
+      "cost_per_pass": 262
+     }
+    },
+    "H2": {
+     "builder50k": {
+      "pass10": 29.0,
+      "fail10": 0.0,
+      "pass40": 35.9,
+      "fail40": 0.0,
+      "days_to_pass": 10.5,
+      "cost_per_pass": 256
+     },
+     "builder25k": {
+      "pass10": 27.5,
+      "fail10": 0.0,
+      "pass40": 23.1,
+      "fail40": 0.0,
+      "days_to_pass": 9.0,
+      "cost_per_pass": 273
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 10.3,
+      "fail40": 0.0,
+      "days_to_pass": 30.5,
+      "cost_per_pass": 948
+     }
+    },
+    "2021-25": {
+     "builder50k": {
+      "pass10": 10.9,
+      "fail10": 1.1,
+      "pass40": 34.8,
+      "fail40": 5.7,
+      "days_to_pass": 17.0,
+      "cost_per_pass": 264
+     },
+     "builder25k": {
+      "pass10": 10.4,
+      "fail10": 1.2,
+      "pass40": 31.7,
+      "fail40": 6.9,
+      "days_to_pass": 17.0,
+      "cost_per_pass": 199
+     },
+     "rapid25k": {
+      "pass10": 0.5,
+      "fail10": 0.4,
+      "pass40": 10.1,
+      "fail40": 7.7,
+      "days_to_pass": 24.0,
+      "cost_per_pass": 965
+     }
+    }
+   },
+   "eval50_live_path": {
+    "H1": {
+     "n": 79,
+     "pf": 2.11,
+     "net": 15061,
+     "per_month": 2471,
+     "dd": -2937,
+     "p10": 31.1,
+     "f10": 0.0,
+     "pass_med": 10.5
+    },
+    "H2": {
+     "n": 40,
+     "pf": 1.66,
+     "net": 6947,
+     "per_month": 1870,
+     "dd": -2158,
+     "p10": 29.0,
+     "f10": 0.0,
+     "pass_med": 21.0
+    }
+   },
+   "struct_used_pct": {
+    "H1": 87.5,
+    "H2": 92.5,
+    "2021-25": 78.1
+   },
+   "boot_p_H2": 0.8858,
+   "boot_p_H1": 0.995,
+   "gate": {
+    "both_2026_halves": false,
+    "2021_25_not_worse": true,
+    "h2_significant_bonferroni": false
+   },
+   "verdict": "rejected"
+  },
+  "B2 next 1h liquidity": {
+   "params": {
+    "tgt": "liq1h"
+   },
+   "risk_matched": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 3.64,
+     "net": 22492,
+     "per_month": 3690,
+     "dd": -1990,
+     "avg_r": 0.565
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 2.13,
+     "net": 5887,
+     "per_month": 1585,
+     "dd": -1470,
+     "avg_r": 0.434
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.07,
+     "net": 6430,
+     "per_month": 126,
+     "dd": -21506,
+     "avg_r": 0.061
+    }
+   },
+   "lit_rule": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 3.64,
+     "net": 22492,
+     "per_month": 3690,
+     "dd": -1990,
+     "avg_r": 0.565
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 2.13,
+     "net": 5887,
+     "per_month": 1585,
+     "dd": -1470,
+     "avg_r": 0.434
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.07,
+     "net": 6430,
+     "per_month": 126,
+     "dd": -21506,
+     "avg_r": 0.061
+    }
+   },
+   "own_r": {
+    "H1": {
+     "win": 33.8,
+     "avg_r_own": 0.602,
+     "target_hit": 26.2,
+     "full_stop": 28.8,
+     "stop_pts_med": 44.2
+    },
+    "H2": {
+     "win": 35.0,
+     "avg_r_own": 0.424,
+     "target_hit": 25.0,
+     "full_stop": 40.0,
+     "stop_pts_med": 51.6
+    },
+    "2021-25": {
+     "win": 28.0,
+     "avg_r_own": 0.086,
+     "target_hit": 17.4,
+     "full_stop": 44.2,
+     "stop_pts_med": 38.2
+    }
+   },
+   "evals": {
+    "H1": {
+     "builder50k": {
+      "pass10": 34.5,
+      "fail10": 0.0,
+      "pass40": 80.9,
+      "fail40": 0.0,
+      "days_to_pass": 11.0,
+      "cost_per_pass": 113
+     },
+     "builder25k": {
+      "pass10": 31.1,
+      "fail10": 0.0,
+      "pass40": 73.0,
+      "fail40": 0.0,
+      "days_to_pass": 11.5,
+      "cost_per_pass": 86
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 10.1,
+      "fail40": 0.0,
+      "days_to_pass": 22.0,
+      "cost_per_pass": 961
+     }
+    },
+    "H2": {
+     "builder50k": {
+      "pass10": 26.1,
+      "fail10": 0.0,
+      "pass40": 23.1,
+      "fail40": 0.0,
+      "days_to_pass": 9.0,
+      "cost_per_pass": 398
+     },
+     "builder25k": {
+      "pass10": 18.8,
+      "fail10": 0.0,
+      "pass40": 20.5,
+      "fail40": 0.0,
+      "days_to_pass": 12.5,
+      "cost_per_pass": 307
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": 32.0,
+      "cost_per_pass": null
+     }
+    },
+    "2021-25": {
+     "builder50k": {
+      "pass10": 11.0,
+      "fail10": 1.1,
+      "pass40": 34.3,
+      "fail40": 4.8,
+      "days_to_pass": 18.0,
+      "cost_per_pass": 268
+     },
+     "builder25k": {
+      "pass10": 10.9,
+      "fail10": 1.2,
+      "pass40": 32.3,
+      "fail40": 6.1,
+      "days_to_pass": 17.0,
+      "cost_per_pass": 195
+     },
+     "rapid25k": {
+      "pass10": 0.5,
+      "fail10": 0.1,
+      "pass40": 11.5,
+      "fail40": 2.8,
+      "days_to_pass": 26.0,
+      "cost_per_pass": 844
+     }
+    }
+   },
+   "eval50_live_path": {
+    "H1": {
+     "n": 78,
+     "pf": 2.81,
+     "net": 22949,
+     "per_month": 3765,
+     "dd": -2746,
+     "p10": 34.5,
+     "f10": 0.0,
+     "pass_med": 12.0
+    },
+    "H2": {
+     "n": 40,
+     "pf": 1.72,
+     "net": 7430,
+     "per_month": 2000,
+     "dd": -2684,
+     "p10": 26.1,
+     "f10": 0.0,
+     "pass_med": 9.0
+    }
+   },
+   "struct_used_pct": {
+    "H1": 92.5,
+    "H2": 85.0,
+    "2021-25": 86.9
+   },
+   "boot_p_H2": 0.9978,
+   "boot_p_H1": 0.9892,
+   "gate": {
+    "both_2026_halves": false,
+    "2021_25_not_worse": true,
+    "h2_significant_bonferroni": false
+   },
+   "verdict": "rejected"
+  },
+  "B3 opposing session high/low": {
+   "params": {
+    "tgt": "sess"
+   },
+   "risk_matched": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 4.0,
+     "net": 25584,
+     "per_month": 4197,
+     "dd": -1990,
+     "avg_r": 0.59
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 2.41,
+     "net": 7358,
+     "per_month": 1981,
+     "dd": -1396,
+     "avg_r": 0.593
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.05,
+     "net": 4931,
+     "per_month": 97,
+     "dd": -19380,
+     "avg_r": 0.045
+    }
+   },
+   "lit_rule": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 4.0,
+     "net": 25584,
+     "per_month": 4197,
+     "dd": -1990,
+     "avg_r": 0.59
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 2.41,
+     "net": 7358,
+     "per_month": 1981,
+     "dd": -1396,
+     "avg_r": 0.593
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.05,
+     "net": 4931,
+     "per_month": 97,
+     "dd": -19380,
+     "avg_r": 0.045
+    }
+   },
+   "own_r": {
+    "H1": {
+     "win": 31.2,
+     "avg_r_own": 0.651,
+     "target_hit": 23.8,
+     "full_stop": 28.8,
+     "stop_pts_med": 44.2
+    },
+    "H2": {
+     "win": 35.0,
+     "avg_r_own": 0.584,
+     "target_hit": 22.5,
+     "full_stop": 40.0,
+     "stop_pts_med": 51.6
+    },
+    "2021-25": {
+     "win": 26.0,
+     "avg_r_own": 0.069,
+     "target_hit": 15.7,
+     "full_stop": 44.2,
+     "stop_pts_med": 38.2
+    }
+   },
+   "evals": {
+    "H1": {
+     "builder50k": {
+      "pass10": 39.5,
+      "fail10": 0.0,
+      "pass40": 70.8,
+      "fail40": 0.0,
+      "days_to_pass": 8.0,
+      "cost_per_pass": 130
+     },
+     "builder25k": {
+      "pass10": 37.8,
+      "fail10": 0.0,
+      "pass40": 71.9,
+      "fail40": 0.0,
+      "days_to_pass": 9.0,
+      "cost_per_pass": 88
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 4.5,
+      "fail40": 0.0,
+      "days_to_pass": 26.0,
+      "cost_per_pass": 2163
+     }
+    },
+    "H2": {
+     "builder50k": {
+      "pass10": 31.9,
+      "fail10": 0.0,
+      "pass40": 28.2,
+      "fail40": 0.0,
+      "days_to_pass": 8.5,
+      "cost_per_pass": 325
+     },
+     "builder25k": {
+      "pass10": 31.9,
+      "fail10": 0.0,
+      "pass40": 20.5,
+      "fail40": 0.0,
+      "days_to_pass": 8.0,
+      "cost_per_pass": 307
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    },
+    "2021-25": {
+     "builder50k": {
+      "pass10": 13.0,
+      "fail10": 0.8,
+      "pass40": 30.8,
+      "fail40": 5.0,
+      "days_to_pass": 14.0,
+      "cost_per_pass": 298
+     },
+     "builder25k": {
+      "pass10": 11.8,
+      "fail10": 0.8,
+      "pass40": 30.0,
+      "fail40": 4.7,
+      "days_to_pass": 15.0,
+      "cost_per_pass": 210
+     },
+     "rapid25k": {
+      "pass10": 0.5,
+      "fail10": 0.0,
+      "pass40": 6.1,
+      "fail40": 2.2,
+      "days_to_pass": 24.0,
+      "cost_per_pass": 1594
+     }
+    }
+   },
+   "eval50_live_path": {
+    "H1": {
+     "n": 78,
+     "pf": 2.73,
+     "net": 24113,
+     "per_month": 3956,
+     "dd": -2734,
+     "p10": 39.5,
+     "f10": 0.0,
+     "pass_med": 9.0
+    },
+    "H2": {
+     "n": 40,
+     "pf": 1.85,
+     "net": 8818,
+     "per_month": 2374,
+     "dd": -2684,
+     "p10": 31.9,
+     "f10": 0.0,
+     "pass_med": 8.5
+    }
+   },
+   "struct_used_pct": {
+    "H1": 82.5,
+    "H2": 87.5,
+    "2021-25": 74.0
+   },
+   "boot_p_H2": 0.961,
+   "boot_p_H1": 0.9768,
+   "gate": {
+    "both_2026_halves": false,
+    "2021_25_not_worse": true,
+    "h2_significant_bonferroni": false
+   },
+   "verdict": "rejected"
+  },
+  "B4 1h FVG": {
+   "params": {
+    "tgt": "fvg1h"
+   },
+   "risk_matched": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 3.8,
+     "net": 23898,
+     "per_month": 3921,
+     "dd": -2196,
+     "avg_r": 0.584
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 2.95,
+     "net": 10154,
+     "per_month": 2734,
+     "dd": -1047,
+     "avg_r": 0.663
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.1,
+     "net": 9714,
+     "per_month": 190,
+     "dd": -19690,
+     "avg_r": 0.058
+    }
+   },
+   "lit_rule": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 3.8,
+     "net": 23898,
+     "per_month": 3921,
+     "dd": -2196,
+     "avg_r": 0.584
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 2.95,
+     "net": 10154,
+     "per_month": 2734,
+     "dd": -1047,
+     "avg_r": 0.663
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.1,
+     "net": 9714,
+     "per_month": 190,
+     "dd": -19690,
+     "avg_r": 0.058
+    }
+   },
+   "own_r": {
+    "H1": {
+     "win": 28.7,
+     "avg_r_own": 0.619,
+     "target_hit": 20.0,
+     "full_stop": 28.8,
+     "stop_pts_med": 44.2
+    },
+    "H2": {
+     "win": 37.5,
+     "avg_r_own": 0.68,
+     "target_hit": 30.0,
+     "full_stop": 40.0,
+     "stop_pts_med": 51.6
+    },
+    "2021-25": {
+     "win": 23.5,
+     "avg_r_own": 0.078,
+     "target_hit": 13.7,
+     "full_stop": 44.2,
+     "stop_pts_med": 38.2
+    }
+   },
+   "evals": {
+    "H1": {
+     "builder50k": {
+      "pass10": 40.3,
+      "fail10": 0.0,
+      "pass40": 86.5,
+      "fail40": 0.0,
+      "days_to_pass": 10.5,
+      "cost_per_pass": 106
+     },
+     "builder25k": {
+      "pass10": 39.5,
+      "fail10": 0.0,
+      "pass40": 76.4,
+      "fail40": 0.0,
+      "days_to_pass": 9.0,
+      "cost_per_pass": 82
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    },
+    "H2": {
+     "builder50k": {
+      "pass10": 36.2,
+      "fail10": 0.0,
+      "pass40": 87.2,
+      "fail40": 0.0,
+      "days_to_pass": 13.0,
+      "cost_per_pass": 105
+     },
+     "builder25k": {
+      "pass10": 36.2,
+      "fail10": 0.0,
+      "pass40": 76.9,
+      "fail40": 0.0,
+      "days_to_pass": 11.5,
+      "cost_per_pass": 82
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    },
+    "2021-25": {
+     "builder50k": {
+      "pass10": 11.3,
+      "fail10": 1.1,
+      "pass40": 27.8,
+      "fail40": 7.1,
+      "days_to_pass": 15.0,
+      "cost_per_pass": 330
+     },
+     "builder25k": {
+      "pass10": 11.1,
+      "fail10": 1.0,
+      "pass40": 27.8,
+      "fail40": 6.3,
+      "days_to_pass": 15.0,
+      "cost_per_pass": 227
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.3,
+      "fail40": 0.5,
+      "days_to_pass": 39.0,
+      "cost_per_pass": 33469
+     }
+    }
+   },
+   "eval50_live_path": {
+    "H1": {
+     "n": 78,
+     "pf": 3.28,
+     "net": 26055,
+     "per_month": 4275,
+     "dd": -2510,
+     "p10": 40.3,
+     "f10": 0.0,
+     "pass_med": 11.0
+    },
+    "H2": {
+     "n": 40,
+     "pf": 2.35,
+     "net": 13114,
+     "per_month": 3531,
+     "dd": -1947,
+     "p10": 36.2,
+     "f10": 0.0,
+     "pass_med": 13.5
+    }
+   },
+   "struct_used_pct": {
+    "H1": 48.8,
+    "H2": 52.5,
+    "2021-25": 47.4
+   },
+   "boot_p_H2": 0.5035,
+   "boot_p_H1": 0.9982,
+   "gate": {
+    "both_2026_halves": false,
+    "2021_25_not_worse": true,
+    "h2_significant_bonferroni": false
+   },
+   "verdict": "rejected"
+  },
+  "B5 fixed 1.5R": {
+   "params": {
+    "tgt": "R1.5"
+   },
+   "risk_matched": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 2.06,
+     "net": 9004,
+     "per_month": 1477,
+     "dd": -2009,
+     "avg_r": 0.266
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 1.64,
+     "net": 3340,
+     "per_month": 899,
+     "dd": -1076,
+     "avg_r": 0.248
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.01,
+     "net": 1243,
+     "per_month": 24,
+     "dd": -16968,
+     "avg_r": 0.025
+    }
+   },
+   "lit_rule": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 2.06,
+     "net": 9004,
+     "per_month": 1477,
+     "dd": -2009,
+     "avg_r": 0.266
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 1.64,
+     "net": 3340,
+     "per_month": 899,
+     "dd": -1076,
+     "avg_r": 0.248
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.01,
+     "net": 1243,
+     "per_month": 24,
+     "dd": -16968,
+     "avg_r": 0.025
+    }
+   },
+   "own_r": {
+    "H1": {
+     "win": 47.5,
+     "avg_r_own": 0.313,
+     "target_hit": 43.8,
+     "full_stop": 28.8,
+     "stop_pts_med": 44.2
+    },
+    "H2": {
+     "win": 47.5,
+     "avg_r_own": 0.257,
+     "target_hit": 45.0,
+     "full_stop": 40.0,
+     "stop_pts_med": 51.6
+    },
+    "2021-25": {
+     "win": 37.6,
+     "avg_r_own": 0.045,
+     "target_hit": 31.5,
+     "full_stop": 44.2,
+     "stop_pts_med": 38.2
+    }
+   },
+   "evals": {
+    "H1": {
+     "builder50k": {
+      "pass10": 25.2,
+      "fail10": 0.0,
+      "pass40": 55.1,
+      "fail40": 0.0,
+      "days_to_pass": 11.0,
+      "cost_per_pass": 167
+     },
+     "builder25k": {
+      "pass10": 23.5,
+      "fail10": 0.0,
+      "pass40": 52.8,
+      "fail40": 0.0,
+      "days_to_pass": 11.5,
+      "cost_per_pass": 119
+     },
+     "rapid25k": {
+      "pass10": 10.1,
+      "fail10": 0.0,
+      "pass40": 41.6,
+      "fail40": 0.0,
+      "days_to_pass": 13.0,
+      "cost_per_pass": 234
+     }
+    },
+    "H2": {
+     "builder50k": {
+      "pass10": 18.8,
+      "fail10": 0.0,
+      "pass40": 28.2,
+      "fail40": 0.0,
+      "days_to_pass": 9.5,
+      "cost_per_pass": 325
+     },
+     "builder25k": {
+      "pass10": 14.5,
+      "fail10": 0.0,
+      "pass40": 28.2,
+      "fail40": 0.0,
+      "days_to_pass": 11.0,
+      "cost_per_pass": 223
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 7.7,
+      "fail40": 0.0,
+      "days_to_pass": 17.0,
+      "cost_per_pass": 1264
+     }
+    },
+    "2021-25": {
+     "builder50k": {
+      "pass10": 5.7,
+      "fail10": 1.1,
+      "pass40": 25.2,
+      "fail40": 4.5,
+      "days_to_pass": 19.0,
+      "cost_per_pass": 365
+     },
+     "builder25k": {
+      "pass10": 4.9,
+      "fail10": 1.2,
+      "pass40": 23.1,
+      "fail40": 6.0,
+      "days_to_pass": 20.0,
+      "cost_per_pass": 272
+     },
+     "rapid25k": {
+      "pass10": 1.7,
+      "fail10": 0.7,
+      "pass40": 18.5,
+      "fail40": 5.8,
+      "days_to_pass": 23.0,
+      "cost_per_pass": 526
+     }
+    }
+   },
+   "eval50_live_path": {
+    "H1": {
+     "n": 78,
+     "pf": 2.11,
+     "net": 15284,
+     "per_month": 2508,
+     "dd": -2489,
+     "p10": 25.2,
+     "f10": 0.0,
+     "pass_med": 13.0
+    },
+    "H2": {
+     "n": 40,
+     "pf": 1.39,
+     "net": 3761,
+     "per_month": 1012,
+     "dd": -1873,
+     "p10": 18.8,
+     "f10": 0.0,
+     "pass_med": 9.5
+    }
+   },
+   "boot_p_H2": 0.9637,
+   "boot_p_H1": 0.9995,
+   "gate": {
+    "both_2026_halves": false,
+    "2021_25_not_worse": false,
+    "h2_significant_bonferroni": false
+   },
+   "verdict": "rejected"
+  },
+  "B6 fixed 2R": {
+   "params": {
+    "tgt": "R2"
+   },
+   "risk_matched": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 2.34,
+     "net": 11422,
+     "per_month": 1874,
+     "dd": -1978,
+     "avg_r": 0.29
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 1.8,
+     "net": 4187,
+     "per_month": 1127,
+     "dd": -1047,
+     "avg_r": 0.327
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.06,
+     "net": 5873,
+     "per_month": 115,
+     "dd": -17455,
+     "avg_r": 0.045
+    }
+   },
+   "lit_rule": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 2.34,
+     "net": 11422,
+     "per_month": 1874,
+     "dd": -1978,
+     "avg_r": 0.29
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 1.8,
+     "net": 4187,
+     "per_month": 1127,
+     "dd": -1047,
+     "avg_r": 0.327
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.06,
+     "net": 5873,
+     "per_month": 115,
+     "dd": -17455,
+     "avg_r": 0.045
+    }
+   },
+   "own_r": {
+    "H1": {
+     "win": 37.5,
+     "avg_r_own": 0.327,
+     "target_hit": 32.5,
+     "full_stop": 28.8,
+     "stop_pts_med": 44.2
+    },
+    "H2": {
+     "win": 42.5,
+     "avg_r_own": 0.343,
+     "target_hit": 37.5,
+     "full_stop": 40.0,
+     "stop_pts_med": 51.6
+    },
+    "2021-25": {
+     "win": 31.7,
+     "avg_r_own": 0.069,
+     "target_hit": 24.3,
+     "full_stop": 44.2,
+     "stop_pts_med": 38.2
+    }
+   },
+   "evals": {
+    "H1": {
+     "builder50k": {
+      "pass10": 30.3,
+      "fail10": 0.0,
+      "pass40": 65.2,
+      "fail40": 0.0,
+      "days_to_pass": 10.5,
+      "cost_per_pass": 141
+     },
+     "builder25k": {
+      "pass10": 26.9,
+      "fail10": 0.0,
+      "pass40": 60.7,
+      "fail40": 0.0,
+      "days_to_pass": 11.0,
+      "cost_per_pass": 104
+     },
+     "rapid25k": {
+      "pass10": 1.7,
+      "fail10": 0.0,
+      "pass40": 37.1,
+      "fail40": 0.0,
+      "days_to_pass": 21.0,
+      "cost_per_pass": 262
+     }
+    },
+    "H2": {
+     "builder50k": {
+      "pass10": 20.3,
+      "fail10": 0.0,
+      "pass40": 20.5,
+      "fail40": 0.0,
+      "days_to_pass": 11.0,
+      "cost_per_pass": 448
+     },
+     "builder25k": {
+      "pass10": 20.3,
+      "fail10": 0.0,
+      "pass40": 25.6,
+      "fail40": 0.0,
+      "days_to_pass": 17.5,
+      "cost_per_pass": 246
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 17.9,
+      "fail40": 0.0,
+      "days_to_pass": 26.5,
+      "cost_per_pass": 542
+     }
+    },
+    "2021-25": {
+     "builder50k": {
+      "pass10": 8.2,
+      "fail10": 1.1,
+      "pass40": 27.9,
+      "fail40": 3.8,
+      "days_to_pass": 16.0,
+      "cost_per_pass": 329
+     },
+     "builder25k": {
+      "pass10": 7.5,
+      "fail10": 1.2,
+      "pass40": 25.4,
+      "fail40": 6.4,
+      "days_to_pass": 16.0,
+      "cost_per_pass": 248
+     },
+     "rapid25k": {
+      "pass10": 1.1,
+      "fail10": 0.2,
+      "pass40": 13.8,
+      "fail40": 3.9,
+      "days_to_pass": 27.5,
+      "cost_per_pass": 702
+     }
+    }
+   },
+   "eval50_live_path": {
+    "H1": {
+     "n": 78,
+     "pf": 2.48,
+     "net": 17799,
+     "per_month": 2920,
+     "dd": -2973,
+     "p10": 30.3,
+     "f10": 0.0,
+     "pass_med": 12.0
+    },
+    "H2": {
+     "n": 40,
+     "pf": 1.83,
+     "net": 7602,
+     "per_month": 2047,
+     "dd": -2158,
+     "p10": 20.3,
+     "f10": 0.0,
+     "pass_med": 16.0
+    }
+   },
+   "boot_p_H2": 0.957,
+   "boot_p_H1": 0.999,
+   "gate": {
+    "both_2026_halves": false,
+    "2021_25_not_worse": true,
+    "h2_significant_bonferroni": false
+   },
+   "verdict": "rejected"
+  },
+  "B7 fixed 3R": {
+   "params": {
+    "tgt": "R3"
+   },
+   "risk_matched": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 2.91,
+     "net": 16242,
+     "per_month": 2665,
+     "dd": -1868,
+     "avg_r": 0.373
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 2.38,
+     "net": 7190,
+     "per_month": 1936,
+     "dd": -1047,
+     "avg_r": 0.484
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.21,
+     "net": 20648,
+     "per_month": 404,
+     "dd": -15134,
+     "avg_r": 0.104
+    }
+   },
+   "lit_rule": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 2.91,
+     "net": 16242,
+     "per_month": 2665,
+     "dd": -1868,
+     "avg_r": 0.373
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 2.38,
+     "net": 7190,
+     "per_month": 1936,
+     "dd": -1047,
+     "avg_r": 0.484
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 53.8,
+     "pf": 1.21,
+     "net": 20648,
+     "per_month": 404,
+     "dd": -15134,
+     "avg_r": 0.104
+    }
+   },
+   "own_r": {
+    "H1": {
+     "win": 30.0,
+     "avg_r_own": 0.428,
+     "target_hit": 25.0,
+     "full_stop": 28.8,
+     "stop_pts_med": 44.2
+    },
+    "H2": {
+     "win": 37.5,
+     "avg_r_own": 0.512,
+     "target_hit": 27.5,
+     "full_stop": 40.0,
+     "stop_pts_med": 51.6
+    },
+    "2021-25": {
+     "win": 26.8,
+     "avg_r_own": 0.13,
+     "target_hit": 17.4,
+     "full_stop": 44.2,
+     "stop_pts_med": 38.2
+    }
+   },
+   "evals": {
+    "H1": {
+     "builder50k": {
+      "pass10": 42.0,
+      "fail10": 0.0,
+      "pass40": 86.5,
+      "fail40": 0.0,
+      "days_to_pass": 9.0,
+      "cost_per_pass": 106
+     },
+     "builder25k": {
+      "pass10": 37.0,
+      "fail10": 0.0,
+      "pass40": 75.3,
+      "fail40": 0.0,
+      "days_to_pass": 10.0,
+      "cost_per_pass": 84
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 14.6,
+      "fail40": 0.0,
+      "days_to_pass": 27.0,
+      "cost_per_pass": 665
+     }
+    },
+    "H2": {
+     "builder50k": {
+      "pass10": 30.4,
+      "fail10": 0.0,
+      "pass40": 43.6,
+      "fail40": 0.0,
+      "days_to_pass": 10.0,
+      "cost_per_pass": 211
+     },
+     "builder25k": {
+      "pass10": 23.2,
+      "fail10": 0.0,
+      "pass40": 33.3,
+      "fail40": 0.0,
+      "days_to_pass": 11.5,
+      "cost_per_pass": 189
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 28.2,
+      "fail40": 0.0,
+      "days_to_pass": 27.5,
+      "cost_per_pass": 345
+     }
+    },
+    "2021-25": {
+     "builder50k": {
+      "pass10": 12.0,
+      "fail10": 1.1,
+      "pass40": 34.7,
+      "fail40": 4.7,
+      "days_to_pass": 15.0,
+      "cost_per_pass": 265
+     },
+     "builder25k": {
+      "pass10": 11.5,
+      "fail10": 1.0,
+      "pass40": 35.1,
+      "fail40": 4.5,
+      "days_to_pass": 17.0,
+      "cost_per_pass": 179
+     },
+     "rapid25k": {
+      "pass10": 0.1,
+      "fail10": 0.0,
+      "pass40": 8.6,
+      "fail40": 1.5,
+      "days_to_pass": 32.0,
+      "cost_per_pass": 1128
+     }
+    }
+   },
+   "eval50_live_path": {
+    "H1": {
+     "n": 78,
+     "pf": 2.32,
+     "net": 16675,
+     "per_month": 2736,
+     "dd": -3075,
+     "p10": 42.0,
+     "f10": 0.0,
+     "pass_med": 9.0
+    },
+    "H2": {
+     "n": 40,
+     "pf": 1.76,
+     "net": 8034,
+     "per_month": 2163,
+     "dd": -2158,
+     "p10": 30.4,
+     "f10": 0.0,
+     "pass_med": 17.5
+    }
+   },
+   "boot_p_H2": 0.8055,
+   "boot_p_H1": 0.996,
+   "gate": {
+    "both_2026_halves": false,
+    "2021_25_not_worse": true,
+    "h2_significant_bonferroni": false
+   },
+   "verdict": "rejected"
+  },
+  "C1 time stop: no +0.5R after 26 min -> out": {
+   "params": {
+    "time": {
+     "N": 26,
+     "rule": "tstop"
+    }
+   },
+   "risk_matched": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 5.78,
+     "net": 32741,
+     "per_month": 5372,
+     "dd": -2047,
+     "avg_r": 0.822
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 40.0,
+     "pf": 2.8,
+     "net": 8100,
+     "per_month": 2181,
+     "dd": -1526,
+     "avg_r": 0.58
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 45.4,
+     "pf": 0.88,
+     "net": -8943,
+     "per_month": -175,
+     "dd": -21887,
+     "avg_r": -0.024
+    }
+   },
+   "lit_rule": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 5.78,
+     "net": 32741,
+     "per_month": 5372,
+     "dd": -2047,
+     "avg_r": 0.822
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 40.0,
+     "pf": 2.8,
+     "net": 8100,
+     "per_month": 2181,
+     "dd": -1526,
+     "avg_r": 0.58
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 45.4,
+     "pf": 0.88,
+     "net": -8943,
+     "per_month": -175,
+     "dd": -21887,
+     "avg_r": -0.024
+    }
+   },
+   "own_r": {
+    "H1": {
+     "win": 33.8,
+     "avg_r_own": 0.84,
+     "target_hit": 16.2,
+     "full_stop": 12.5,
+     "stop_pts_med": 44.2
+    },
+    "H2": {
+     "win": 35.0,
+     "avg_r_own": 0.596,
+     "target_hit": 20.0,
+     "full_stop": 17.5,
+     "stop_pts_med": 51.6
+    },
+    "2021-25": {
+     "win": 24.7,
+     "avg_r_own": -0.006,
+     "target_hit": 5.7,
+     "full_stop": 20.7,
+     "stop_pts_med": 38.2
+    }
+   },
+   "evals": {
+    "H1": {
+     "builder50k": {
+      "pass10": 49.6,
+      "fail10": 0.0,
+      "pass40": 96.6,
+      "fail40": 0.0,
+      "days_to_pass": 9.0,
+      "cost_per_pass": 95
+     },
+     "builder25k": {
+      "pass10": 50.4,
+      "fail10": 0.0,
+      "pass40": 96.6,
+      "fail40": 0.0,
+      "days_to_pass": 8.0,
+      "cost_per_pass": 65
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    },
+    "H2": {
+     "builder50k": {
+      "pass10": 29.0,
+      "fail10": 0.0,
+      "pass40": 46.2,
+      "fail40": 0.0,
+      "days_to_pass": 11.5,
+      "cost_per_pass": 199
+     },
+     "builder25k": {
+      "pass10": 29.0,
+      "fail10": 0.0,
+      "pass40": 46.2,
+      "fail40": 0.0,
+      "days_to_pass": 11.5,
+      "cost_per_pass": 136
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 7.7,
+      "fail40": 0.0,
+      "days_to_pass": 36.0,
+      "cost_per_pass": 1264
+     }
+    },
+    "2021-25": {
+     "builder50k": {
+      "pass10": 7.2,
+      "fail10": 0.3,
+      "pass40": 14.8,
+      "fail40": 6.9,
+      "days_to_pass": 11.0,
+      "cost_per_pass": 620
+     },
+     "builder25k": {
+      "pass10": 6.5,
+      "fail10": 0.3,
+      "pass40": 13.4,
+      "fail40": 6.1,
+      "days_to_pass": 11.0,
+      "cost_per_pass": 472
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    }
+   },
+   "eval50_live_path": {
+    "H1": {
+     "n": 80,
+     "pf": 4.09,
+     "net": 28507,
+     "per_month": 4677,
+     "dd": -2730,
+     "p10": 49.6,
+     "f10": 0.0,
+     "pass_med": 9.0
+    },
+    "H2": {
+     "n": 40,
+     "pf": 2.18,
+     "net": 8968,
+     "per_month": 2415,
+     "dd": -2079,
+     "p10": 29.0,
+     "f10": 0.0,
+     "pass_med": 26.0
+    }
+   },
+   "boot_p_H2": 0.8223,
+   "boot_p_H1": 0.564,
+   "gate": {
+    "both_2026_halves": false,
+    "2021_25_not_worse": false,
+    "h2_significant_bonferroni": false
+   },
+   "verdict": "rejected"
+  },
+  "C2 tighten: no +0.5R after 26 min -> stop to -0.5R": {
+   "params": {
+    "time": {
+     "N": 26,
+     "rule": "tighten"
+    }
+   },
+   "risk_matched": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 52.5,
+     "pf": 4.76,
+     "net": 31836,
+     "per_month": 5223,
+     "dd": -2399,
+     "avg_r": 0.81
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 35.0,
+     "pf": 2.45,
+     "net": 8065,
+     "per_month": 2171,
+     "dd": -1747,
+     "avg_r": 0.614
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 44.4,
+     "pf": 0.97,
+     "net": -2454,
+     "per_month": -48,
+     "dd": -16213,
+     "avg_r": -0.01
+    }
+   },
+   "lit_rule": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 52.5,
+     "pf": 4.76,
+     "net": 31836,
+     "per_month": 5223,
+     "dd": -2399,
+     "avg_r": 0.81
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 35.0,
+     "pf": 2.45,
+     "net": 8065,
+     "per_month": 2171,
+     "dd": -1747,
+     "avg_r": 0.614
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 44.4,
+     "pf": 0.97,
+     "net": -2454,
+     "per_month": -48,
+     "dd": -16213,
+     "avg_r": -0.01
+    }
+   },
+   "own_r": {
+    "H1": {
+     "win": 26.2,
+     "avg_r_own": 0.829,
+     "target_hit": 17.5,
+     "full_stop": 12.5,
+     "stop_pts_med": 44.2
+    },
+    "H2": {
+     "win": 27.5,
+     "avg_r_own": 0.629,
+     "target_hit": 22.5,
+     "full_stop": 17.5,
+     "stop_pts_med": 51.6
+    },
+    "2021-25": {
+     "win": 18.6,
+     "avg_r_own": 0.009,
+     "target_hit": 8.0,
+     "full_stop": 20.7,
+     "stop_pts_med": 38.2
+    }
+   },
+   "evals": {
+    "H1": {
+     "builder50k": {
+      "pass10": 50.4,
+      "fail10": 0.0,
+      "pass40": 95.5,
+      "fail40": 0.0,
+      "days_to_pass": 9.0,
+      "cost_per_pass": 96
+     },
+     "builder25k": {
+      "pass10": 49.6,
+      "fail10": 0.0,
+      "pass40": 98.9,
+      "fail40": 0.0,
+      "days_to_pass": 9.0,
+      "cost_per_pass": 64
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    },
+    "H2": {
+     "builder50k": {
+      "pass10": 29.0,
+      "fail10": 0.0,
+      "pass40": 43.6,
+      "fail40": 0.0,
+      "days_to_pass": 11.0,
+      "cost_per_pass": 211
+     },
+     "builder25k": {
+      "pass10": 29.0,
+      "fail10": 0.0,
+      "pass40": 51.3,
+      "fail40": 0.0,
+      "days_to_pass": 12.5,
+      "cost_per_pass": 123
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    },
+    "2021-25": {
+     "builder50k": {
+      "pass10": 8.7,
+      "fail10": 0.3,
+      "pass40": 19.5,
+      "fail40": 6.4,
+      "days_to_pass": 13.0,
+      "cost_per_pass": 472
+     },
+     "builder25k": {
+      "pass10": 7.5,
+      "fail10": 0.3,
+      "pass40": 18.2,
+      "fail40": 6.1,
+      "days_to_pass": 13.0,
+      "cost_per_pass": 346
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    }
+   },
+   "eval50_live_path": {
+    "H1": {
+     "n": 80,
+     "pf": 3.91,
+     "net": 29998,
+     "per_month": 4922,
+     "dd": -2786,
+     "p10": 50.4,
+     "f10": 0.0,
+     "pass_med": 9.0
+    },
+    "H2": {
+     "n": 40,
+     "pf": 1.94,
+     "net": 8496,
+     "per_month": 2287,
+     "dd": -2329,
+     "p10": 29.0,
+     "f10": 0.0,
+     "pass_med": 28.0
+    }
+   },
+   "boot_p_H2": 0.9127,
+   "boot_p_H1": 0.6055,
+   "gate": {
+    "both_2026_halves": false,
+    "2021_25_not_worse": false,
+    "h2_significant_bonferroni": false
+   },
+   "verdict": "rejected"
+  },
+  "C3 time-BE: after 26 min in profit -> breakeven": {
+   "params": {
+    "time": {
+     "N": 26,
+     "rule": "timebe"
+    }
+   },
+   "risk_matched": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 66.2,
+     "pf": 4.68,
+     "net": 25444,
+     "per_month": 4174,
+     "dd": -2196,
+     "avg_r": 0.585
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 55.0,
+     "pf": 2.1,
+     "net": 5384,
+     "per_month": 1449,
+     "dd": -1796,
+     "avg_r": 0.515
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 64.4,
+     "pf": 0.84,
+     "net": -12630,
+     "per_month": -247,
+     "dd": -25745,
+     "avg_r": -0.024
+    }
+   },
+   "lit_rule": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 66.2,
+     "pf": 4.68,
+     "net": 25444,
+     "per_month": 4174,
+     "dd": -2196,
+     "avg_r": 0.585
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 55.0,
+     "pf": 2.1,
+     "net": 5384,
+     "per_month": 1449,
+     "dd": -1796,
+     "avg_r": 0.515
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "win": 64.4,
+     "pf": 0.84,
+     "net": -12630,
+     "per_month": -247,
+     "dd": -25745,
+     "avg_r": -0.024
+    }
+   },
+   "own_r": {
+    "H1": {
+     "win": 22.5,
+     "avg_r_own": 0.636,
+     "target_hit": 13.8,
+     "full_stop": 21.2,
+     "stop_pts_med": 44.2
+    },
+    "H2": {
+     "win": 27.5,
+     "avg_r_own": 0.505,
+     "target_hit": 20.0,
+     "full_stop": 35.0,
+     "stop_pts_med": 51.6
+    },
+    "2021-25": {
+     "win": 16.2,
+     "avg_r_own": -0.009,
+     "target_hit": 6.5,
+     "full_stop": 34.2,
+     "stop_pts_med": 38.2
+    }
+   },
+   "evals": {
+    "H1": {
+     "builder50k": {
+      "pass10": 35.3,
+      "fail10": 0.0,
+      "pass40": 91.0,
+      "fail40": 0.0,
+      "days_to_pass": 12.0,
+      "cost_per_pass": 101
+     },
+     "builder25k": {
+      "pass10": 36.1,
+      "fail10": 0.0,
+      "pass40": 86.5,
+      "fail40": 0.0,
+      "days_to_pass": 12.0,
+      "cost_per_pass": 73
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    },
+    "H2": {
+     "builder50k": {
+      "pass10": 36.2,
+      "fail10": 0.0,
+      "pass40": 87.2,
+      "fail40": 0.0,
+      "days_to_pass": 15.0,
+      "cost_per_pass": 105
+     },
+     "builder25k": {
+      "pass10": 34.8,
+      "fail10": 0.0,
+      "pass40": 66.7,
+      "fail40": 0.0,
+      "days_to_pass": 8.0,
+      "cost_per_pass": 94
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    },
+    "2021-25": {
+     "builder50k": {
+      "pass10": 8.4,
+      "fail10": 0.7,
+      "pass40": 20.5,
+      "fail40": 5.2,
+      "days_to_pass": 15.0,
+      "cost_per_pass": 447
+     },
+     "builder25k": {
+      "pass10": 8.6,
+      "fail10": 0.7,
+      "pass40": 21.4,
+      "fail40": 6.2,
+      "days_to_pass": 14.0,
+      "cost_per_pass": 294
+     },
+     "rapid25k": {
+      "pass10": 0.0,
+      "fail10": 0.0,
+      "pass40": 0.0,
+      "fail40": 0.0,
+      "days_to_pass": null,
+      "cost_per_pass": null
+     }
+    }
+   },
+   "eval50_live_path": {
+    "H1": {
+     "n": 80,
+     "pf": 3.43,
+     "net": 21521,
+     "per_month": 3531,
+     "dd": -2491,
+     "p10": 35.3,
+     "f10": 0.0,
+     "pass_med": 12.0
+    },
+    "H2": {
+     "n": 40,
+     "pf": 2.17,
+     "net": 9080,
+     "per_month": 2445,
+     "dd": -2714,
+     "p10": 36.2,
+     "f10": 0.0,
+     "pass_med": 16.0
+    }
+   },
+   "boot_p_H2": 0.9597,
+   "boot_p_H1": 0.945,
+   "gate": {
+    "both_2026_halves": false,
+    "2021_25_not_worse": false,
+    "h2_significant_bonferroni": false
+   },
+   "verdict": "rejected"
+  }
+ }
+}
