@@ -1,0 +1,915 @@
+{
+ "made": "2026-11-24",
+ "design": "research/hours/DESIGN.md",
+ "pick": {
+  "LIT": {
+   "from": "02:00",
+   "to": "03:00",
+   "slots": [
+    4,
+    2
+   ],
+   "pick_usd": -7587,
+   "pick_n": 27,
+   "pick_pf": 0.01,
+   "hours": [
+    4,
+    31
+   ]
+  },
+  "ATLAS EMA": {
+   "from": "05:30",
+   "to": "07:00",
+   "slots": [
+    11,
+    3
+   ],
+   "pick_usd": -11204,
+   "pick_n": 69,
+   "pick_pf": 0.14,
+   "hours": [
+    6,
+    18
+   ]
+  },
+  "ATLAS MACD": {
+   "from": "02:30",
+   "to": "03:00",
+   "slots": [
+    5,
+    1
+   ],
+   "pick_usd": -2298,
+   "pick_n": 25,
+   "pick_pf": 0.53,
+   "hours": [
+    4,
+    21
+   ]
+  },
+  "ATLAS S/R": {
+   "from": "11:00",
+   "to": "12:00",
+   "slots": [
+    22,
+    2
+   ],
+   "pick_usd": -3397,
+   "pick_n": 47,
+   "pick_pf": 0.62,
+   "hours": [
+    19,
+    23
+   ]
+  },
+  "BLITZ": null
+ },
+ "frozen_before_holdouts": true,
+ "books": {
+  "LIT": {
+   "window": "02:00-03:00 ET",
+   "spans": {
+    "2025": {
+     "today": {
+      "n": 114,
+      "tpw": 2.39,
+      "pf": 1.19,
+      "net": 3210,
+      "per_month": 283,
+      "max_dd": -7071,
+      "evals": {
+       "Builder 50K": {
+        "pass10": 10.5,
+        "fail10": 0.0,
+        "pass40": 34.2,
+        "fail40": 52.3,
+        "days_med": 14.5
+       },
+       "Builder 25K": {
+        "pass10": 10.5,
+        "fail10": 0.0,
+        "pass40": 34.2,
+        "fail40": 52.3,
+        "days_med": 14.5
+       },
+       "Rapid EOD 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 52.3,
+        "days_med": null
+       }
+      }
+     },
+     "skip": {
+      "n": 102,
+      "tpw": 2.14,
+      "pf": 1.39,
+      "net": 5690,
+      "per_month": 502,
+      "max_dd": -5084,
+      "evals": {
+       "Builder 50K": {
+        "pass10": 10.5,
+        "fail10": 0.0,
+        "pass40": 34.2,
+        "fail40": 37.7,
+        "days_med": 14.5
+       },
+       "Builder 25K": {
+        "pass10": 10.5,
+        "fail10": 0.0,
+        "pass40": 34.2,
+        "fail40": 37.7,
+        "days_med": 14.5
+       },
+       "Rapid EOD 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 37.7,
+        "days_med": null
+       }
+      }
+     },
+     "gain": 2480,
+     "skipped": 12
+    },
+    "Jan-Jun 2026": {
+     "today": {
+      "n": 80,
+      "tpw": 3.39,
+      "pf": 4.98,
+      "net": 33901,
+      "per_month": 6033,
+      "max_dd": -2196,
+      "evals": {
+       "Builder 50K": {
+        "pass10": 43.1,
+        "fail10": 0.0,
+        "pass40": 97.5,
+        "fail40": 2.5,
+        "days_med": 11.0
+       },
+       "Builder 25K": {
+        "pass10": 43.1,
+        "fail10": 0.0,
+        "pass40": 97.5,
+        "fail40": 2.5,
+        "days_med": 11.0
+       },
+       "Rapid EOD 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 2.5,
+        "days_med": null
+       }
+      }
+     },
+     "skip": {
+      "n": 62,
+      "tpw": 2.63,
+      "pf": 4.82,
+      "net": 23768,
+      "per_month": 4230,
+      "max_dd": -1857,
+      "evals": {
+       "Builder 50K": {
+        "pass10": 33.9,
+        "fail10": 0.0,
+        "pass40": 98.7,
+        "fail40": 0.0,
+        "days_med": 16.0
+       },
+       "Builder 25K": {
+        "pass10": 33.9,
+        "fail10": 0.0,
+        "pass40": 98.7,
+        "fail40": 0.0,
+        "days_med": 16.0
+       },
+       "Rapid EOD 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 0.0,
+        "days_med": null
+       }
+      }
+     },
+     "gain": -10133,
+     "skipped": 18
+    },
+    "Jul-Oct 2026": {
+     "today": {
+      "n": 40,
+      "tpw": 2.35,
+      "pf": 2.91,
+      "net": 9919,
+      "per_month": 2451,
+      "max_dd": -1396,
+      "evals": {
+       "Builder 50K": {
+        "pass10": 23.7,
+        "fail10": 0.0,
+        "pass40": 76.1,
+        "fail40": 0.0,
+        "days_med": 15.5
+       },
+       "Builder 25K": {
+        "pass10": 23.7,
+        "fail10": 0.0,
+        "pass40": 76.1,
+        "fail40": 0.0,
+        "days_med": 15.5
+       },
+       "Rapid EOD 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 0.0,
+        "days_med": null
+       }
+      }
+     },
+     "skip": {
+      "n": 32,
+      "tpw": 1.88,
+      "pf": 2.14,
+      "net": 4710,
+      "per_month": 1164,
+      "max_dd": -1325,
+      "evals": {
+       "Builder 50K": {
+        "pass10": 13.2,
+        "fail10": 0.0,
+        "pass40": 45.7,
+        "fail40": 0.0,
+        "days_med": 20.5
+       },
+       "Builder 25K": {
+        "pass10": 13.2,
+        "fail10": 0.0,
+        "pass40": 45.7,
+        "fail40": 0.0,
+        "days_med": 20.5
+       },
+       "Rapid EOD 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 0.0,
+        "days_med": null
+       }
+      }
+     },
+     "gain": -5209,
+     "skipped": 8
+    }
+   },
+   "placebo_p": 1.0,
+   "gain_all_holdouts": -12862,
+   "verdict": "FAIL",
+   "why": [
+    "Jan-Jun 2026 -10,133 $",
+    "Jul-Oct 2026 -5,209 $",
+    "placebo p 1.0"
+   ]
+  },
+  "ATLAS EMA": {
+   "window": "05:30-07:00 ET",
+   "spans": {
+    "2025": {
+     "today": {
+      "n": 115,
+      "tpw": 2.42,
+      "pf": 0.89,
+      "net": -1724,
+      "per_month": -152,
+      "max_dd": -6917,
+      "evals": {
+       "Builder 50K": {
+        "pass10": 3.9,
+        "fail10": 0.0,
+        "pass40": 19.6,
+        "fail40": 40.2,
+        "days_med": 16.0
+       },
+       "Builder 25K": {
+        "pass10": 3.9,
+        "fail10": 0.0,
+        "pass40": 19.6,
+        "fail40": 40.2,
+        "days_med": 16.0
+       },
+       "Rapid EOD 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 40.2,
+        "days_med": null
+       }
+      }
+     },
+     "skip": {
+      "n": 95,
+      "tpw": 2.0,
+      "pf": 0.94,
+      "net": -708,
+      "per_month": -62,
+      "max_dd": -6120,
+      "evals": {
+       "Builder 50K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 8.0,
+        "fail40": 28.1,
+        "days_med": 18.5
+       },
+       "Builder 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 8.0,
+        "fail40": 28.1,
+        "days_med": 18.5
+       },
+       "Rapid EOD 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 28.1,
+        "days_med": null
+       }
+      }
+     },
+     "gain": 1016,
+     "skipped": 20
+    },
+    "Jan-Jun 2026": {
+     "today": {
+      "n": 55,
+      "tpw": 2.33,
+      "pf": 2.55,
+      "net": 9511,
+      "per_month": 1693,
+      "max_dd": -2298,
+      "evals": {
+       "Builder 50K": {
+        "pass10": 17.4,
+        "fail10": 0.0,
+        "pass40": 63.3,
+        "fail40": 19.0,
+        "days_med": 20.0
+       },
+       "Builder 25K": {
+        "pass10": 17.4,
+        "fail10": 0.0,
+        "pass40": 63.3,
+        "fail40": 19.0,
+        "days_med": 20.0
+       },
+       "Rapid EOD 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 27.8,
+        "fail40": 19.0,
+        "days_med": 34.0
+       }
+      }
+     },
+     "skip": {
+      "n": 51,
+      "tpw": 2.16,
+      "pf": 2.79,
+      "net": 10029,
+      "per_month": 1785,
+      "max_dd": -2299,
+      "evals": {
+       "Builder 50K": {
+        "pass10": 17.4,
+        "fail10": 0.0,
+        "pass40": 63.3,
+        "fail40": 19.0,
+        "days_med": 20.0
+       },
+       "Builder 25K": {
+        "pass10": 17.4,
+        "fail10": 0.0,
+        "pass40": 63.3,
+        "fail40": 19.0,
+        "days_med": 20.0
+       },
+       "Rapid EOD 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 32.9,
+        "fail40": 19.0,
+        "days_med": 34.0
+       }
+      }
+     },
+     "gain": 518,
+     "skipped": 4
+    },
+    "Jul-Oct 2026": {
+     "today": {
+      "n": 21,
+      "tpw": 1.24,
+      "pf": 5.1,
+      "net": 4890,
+      "per_month": 1208,
+      "max_dd": -281,
+      "evals": {
+       "Builder 50K": {
+        "pass10": 1.3,
+        "fail10": 0.0,
+        "pass40": 34.8,
+        "fail40": 0.0,
+        "days_med": 18.5
+       },
+       "Builder 25K": {
+        "pass10": 1.3,
+        "fail10": 0.0,
+        "pass40": 34.8,
+        "fail40": 0.0,
+        "days_med": 18.5
+       },
+       "Rapid EOD 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 0.0,
+        "days_med": null
+       }
+      }
+     },
+     "skip": {
+      "n": 16,
+      "tpw": 0.94,
+      "pf": 5.34,
+      "net": 4034,
+      "per_month": 997,
+      "max_dd": -281,
+      "evals": {
+       "Builder 50K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 30.4,
+        "fail40": 0.0,
+        "days_med": 24.5
+       },
+       "Builder 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 30.4,
+        "fail40": 0.0,
+        "days_med": 24.5
+       },
+       "Rapid EOD 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 0.0,
+        "days_med": null
+       }
+      }
+     },
+     "gain": -856,
+     "skipped": 5
+    }
+   },
+   "placebo_p": 0.3725,
+   "gain_all_holdouts": 678,
+   "verdict": "FAIL",
+   "why": [
+    "Jul-Oct 2026 -856 $",
+    "placebo p 0.3725"
+   ]
+  },
+  "ATLAS MACD": {
+   "window": "02:30-03:00 ET",
+   "spans": {
+    "2025": {
+     "today": {
+      "n": 69,
+      "tpw": 1.45,
+      "pf": 1.33,
+      "net": 3897,
+      "per_month": 344,
+      "max_dd": -6754,
+      "evals": {
+       "Builder 50K": {
+        "pass10": 3.1,
+        "fail10": 0.0,
+        "pass40": 20.1,
+        "fail40": 18.6,
+        "days_med": 19.5
+       },
+       "Builder 25K": {
+        "pass10": 3.1,
+        "fail10": 0.0,
+        "pass40": 20.1,
+        "fail40": 18.6,
+        "days_med": 19.5
+       },
+       "Rapid EOD 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 5.0,
+        "fail40": 18.6,
+        "days_med": 32.5
+       }
+      }
+     },
+     "skip": {
+      "n": 64,
+      "tpw": 1.34,
+      "pf": 1.47,
+      "net": 5090,
+      "per_month": 449,
+      "max_dd": -5823,
+      "evals": {
+       "Builder 50K": {
+        "pass10": 3.1,
+        "fail10": 0.0,
+        "pass40": 20.1,
+        "fail40": 16.6,
+        "days_med": 19.5
+       },
+       "Builder 25K": {
+        "pass10": 3.1,
+        "fail10": 0.0,
+        "pass40": 20.1,
+        "fail40": 16.6,
+        "days_med": 19.5
+       },
+       "Rapid EOD 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 5.0,
+        "fail40": 16.6,
+        "days_med": 32.5
+       }
+      }
+     },
+     "gain": 1193,
+     "skipped": 5
+    },
+    "Jan-Jun 2026": {
+     "today": {
+      "n": 29,
+      "tpw": 1.23,
+      "pf": 3.44,
+      "net": 9873,
+      "per_month": 1757,
+      "max_dd": -1301,
+      "evals": {
+       "Builder 50K": {
+        "pass10": 9.2,
+        "fail10": 0.0,
+        "pass40": 58.2,
+        "fail40": 0.0,
+        "days_med": 16.0
+       },
+       "Builder 25K": {
+        "pass10": 9.2,
+        "fail10": 0.0,
+        "pass40": 58.2,
+        "fail40": 0.0,
+        "days_med": 16.0
+       },
+       "Rapid EOD 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 20.3,
+        "fail40": 0.0,
+        "days_med": 28.5
+       }
+      }
+     },
+     "skip": {
+      "n": 27,
+      "tpw": 1.14,
+      "pf": 3.46,
+      "net": 9672,
+      "per_month": 1721,
+      "max_dd": -1301,
+      "evals": {
+       "Builder 50K": {
+        "pass10": 9.2,
+        "fail10": 0.0,
+        "pass40": 50.6,
+        "fail40": 0.0,
+        "days_med": 17.0
+       },
+       "Builder 25K": {
+        "pass10": 9.2,
+        "fail10": 0.0,
+        "pass40": 50.6,
+        "fail40": 0.0,
+        "days_med": 17.0
+       },
+       "Rapid EOD 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 5.1,
+        "fail40": 0.0,
+        "days_med": 31.5
+       }
+      }
+     },
+     "gain": -201,
+     "skipped": 2
+    },
+    "Jul-Oct 2026": {
+     "today": {
+      "n": 14,
+      "tpw": 0.82,
+      "pf": 1.94,
+      "net": 1647,
+      "per_month": 407,
+      "max_dd": -785,
+      "evals": {
+       "Builder 50K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 0.0,
+        "days_med": null
+       },
+       "Builder 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 0.0,
+        "days_med": null
+       },
+       "Rapid EOD 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 0.0,
+        "days_med": null
+       }
+      }
+     },
+     "skip": {
+      "n": 12,
+      "tpw": 0.71,
+      "pf": 2.5,
+      "net": 2033,
+      "per_month": 502,
+      "max_dd": -524,
+      "evals": {
+       "Builder 50K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 0.0,
+        "days_med": null
+       },
+       "Builder 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 0.0,
+        "days_med": null
+       },
+       "Rapid EOD 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 0.0,
+        "days_med": null
+       }
+      }
+     },
+     "gain": 386,
+     "skipped": 2
+    }
+   },
+   "placebo_p": 0.057,
+   "gain_all_holdouts": 1378,
+   "verdict": "FAIL",
+   "why": [
+    "Jan-Jun 2026 -201 $",
+    "placebo p 0.057"
+   ]
+  },
+  "ATLAS S/R": {
+   "window": "11:00-12:00 ET",
+   "spans": {
+    "2025": {
+     "today": {
+      "n": 66,
+      "tpw": 1.39,
+      "pf": 1.33,
+      "net": 3103,
+      "per_month": 274,
+      "max_dd": -1786,
+      "evals": {
+       "Builder 50K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 0.0,
+        "days_med": null
+       },
+       "Builder 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 0.0,
+        "days_med": null
+       },
+       "Rapid EOD 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 0.0,
+        "days_med": null
+       }
+      }
+     },
+     "skip": {
+      "n": 52,
+      "tpw": 1.09,
+      "pf": 1.6,
+      "net": 4112,
+      "per_month": 363,
+      "max_dd": -1054,
+      "evals": {
+       "Builder 50K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 0.0,
+        "days_med": null
+       },
+       "Builder 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 0.0,
+        "days_med": null
+       },
+       "Rapid EOD 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 0.0,
+        "days_med": null
+       }
+      }
+     },
+     "gain": 1009,
+     "skipped": 14
+    },
+    "Jan-Jun 2026": {
+     "today": {
+      "n": 28,
+      "tpw": 1.19,
+      "pf": 3.49,
+      "net": 6354,
+      "per_month": 1131,
+      "max_dd": -514,
+      "evals": {
+       "Builder 50K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 36.7,
+        "fail40": 0.0,
+        "days_med": 34.0
+       },
+       "Builder 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 36.7,
+        "fail40": 0.0,
+        "days_med": 34.0
+       },
+       "Rapid EOD 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 36.7,
+        "fail40": 0.0,
+        "days_med": 34.0
+       }
+      }
+     },
+     "skip": {
+      "n": 24,
+      "tpw": 1.02,
+      "pf": 4.7,
+      "net": 6622,
+      "per_month": 1179,
+      "max_dd": -514,
+      "evals": {
+       "Builder 50K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 31.6,
+        "fail40": 0.0,
+        "days_med": 32.0
+       },
+       "Builder 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 31.6,
+        "fail40": 0.0,
+        "days_med": 32.0
+       },
+       "Rapid EOD 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 31.6,
+        "fail40": 0.0,
+        "days_med": 32.0
+       }
+      }
+     },
+     "gain": 268,
+     "skipped": 4
+    },
+    "Jul-Oct 2026": {
+     "today": {
+      "n": 16,
+      "tpw": 0.94,
+      "pf": 1.94,
+      "net": 1691,
+      "per_month": 418,
+      "max_dd": -1520,
+      "evals": {
+       "Builder 50K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 0.0,
+        "days_med": null
+       },
+       "Builder 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 0.0,
+        "days_med": null
+       },
+       "Rapid EOD 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 0.0,
+        "days_med": null
+       }
+      }
+     },
+     "skip": {
+      "n": 13,
+      "tpw": 0.76,
+      "pf": 2.31,
+      "net": 1706,
+      "per_month": 422,
+      "max_dd": -1264,
+      "evals": {
+       "Builder 50K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 0.0,
+        "days_med": null
+       },
+       "Builder 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 0.0,
+        "days_med": null
+       },
+       "Rapid EOD 25K": {
+        "pass10": 0.0,
+        "fail10": 0.0,
+        "pass40": 0.0,
+        "fail40": 0.0,
+        "days_med": null
+       }
+      }
+     },
+     "gain": 15,
+     "skipped": 3
+    }
+   },
+   "placebo_p": 0.253,
+   "gain_all_holdouts": 1292,
+   "verdict": "FAIL",
+   "why": [
+    "placebo p 0.253"
+   ]
+  },
+  "BLITZ": {
+   "window": null,
+   "verdict": "no dead window on PICK"
+  }
+ },
+ "passed": []
+}
