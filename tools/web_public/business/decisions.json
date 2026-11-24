@@ -417,6 +417,32 @@
    "valued": "2026-11-20 ATLAS 10 ticks a side, 1,000 paths (rapid-launch-2026-11-20.md)",
    "answered": "2026-11-20 ~08:00 ET in chat (\"Yes to whatever you think it should be ... make sure your choice is good\"): Claude's pick from the data",
    "next": "live after a code review + tests this weekend (Rapid lane only)"
+  },
+  {
+   "id": "fast-entry",
+   "question": "Fast entry: send Zlarior's and ATLAS's orders on the minute's first trade instead of waiting 2 seconds?",
+   "why": "Every real entry so far filled worse than the backtest (ATLAS 10-16 ticks, Zlarior 4) because price runs in the 2.7 s before the order arrives; 2.0 s of that is a built-in wait. Fast entry cuts it to ~0.85 s. Same trades, same sizes, only sooner.",
+   "impact": "$0 to ~$160 a month (central ~$100: ATLAS ~5 ticks and Zlarior ~1 tick better per entry); not provable from 1-minute bars, so it is a 2-week test that the fills will settle.",
+   "impact_usd": 100,
+   "options": [
+    "yes",
+    "no",
+    "later"
+   ],
+   "status": "open",
+   "source": "research/writeups/nq-speed-fills-2026-11-20.md",
+   "applies": "On the PC, once: python -X utf8 -m engine.fast_entry --on (off again: --off). No code change; the bot picks it up within 30 s.",
+   "added": "2026-11-20",
+   "usd_month": 100,
+   "usd_month_by": {
+    "jump_low": 0,
+    "sqrt_central": 103,
+    "linear_high": 161
+   },
+   "risk": "No trade decision changes (replay: same ledger ON vs OFF). A minute that spikes and snaps back can make an early fill a few $ worse; expected cost if it does not help: ~$0, a few $ a trade either way.",
+   "recommend": "yes",
+   "recommend_why": "Free to try and undo; the only way to measure it. Check ATLAS's next ~8 fills: if they are not clearly better than 10-16 ticks, switch it off.",
+   "valued": "2026-11-20 4 real fills, research/speed/fast_entry_value.py (jump / sqrt / linear price paths)"
   }
  ]
 }
