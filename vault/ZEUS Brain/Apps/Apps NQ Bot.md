@@ -33,9 +33,11 @@ door: "NQ Bot"
 | Oracle (`oracle`) | trading | The market radar, live | bundled fixture / its own files | `tests.test_oracle_page` |
 | Pantheon (`pantheon`) | trading | The data gods: rates, liquidity, fear | `jarvis.json`, `pantheon.json`, `fixture.json` | `tests.test_pantheon` |
 | Pheme (`pheme`) (retired) | trading | The word on the street: releases, and NQ's | `fixture.json`, `stats.json` | `tests.test_pheme_page` |
+| Four Pillars (`pillars`) | trading | LIT, ATLAS, BLITZ, ORDER FLOW: status, accounts, edge | `pillars-data.json`, `../home.json`, `../business/accounts.json`, `../business/payday.json`, `../odeon/trades.json` | `tests.test_pillars` |
 | Pnyx (`pnyx`) | money | Prop-firm rules and risk calculator: stop to micros | `fixture.json`, `../home.json`, `../ledger/rules.json` | `tests.test_pnyx_page` |
 | Pythia (`pythia`) | trading | The risk calendar: the next 14 days, and | `fixture.json`, `events.json`, `../home.json` | `tests.test_pythia_page` |
 | Trading (`trading`) | trading | Every trade: today, calendar, stats, payout rules | `../status_feed.json`, `../why/why.json`, `../odeon/trades.json`, `../home.json`, `fixture.json`, ... | `tests.test_trading_page` |
+| War Room (`warroom`) | trading | Every NQ bot, every step, live: what it | bundled fixture / its own files | `tests.test_warroom` |
 | Why (`why`) | trading | Why our trades win and lose, per bot | `why.json` | `tests.test_why_page` |
 | Zenith (`zenith`) | trading | NQ bots · Zlarior · ATLAS | data.json, home.json, live.json (the bot feeds) | `tests.test_zenith_mode` |
 
