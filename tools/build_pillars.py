@@ -159,7 +159,12 @@ def lessons() -> tuple[dict, bool, str]:
         d, src, sample = _load(INSIGHTS_FIXTURE) or {}, INSIGHTS_FIXTURE, True
     rows = []
     if isinstance(d, dict) and isinstance(d.get("pillars"), dict):
+        built = str(d.get("built") or "")[:10]
         for k, v in d["pillars"].items():
+            if isinstance(v, dict):  # day-marketlearn shape: {name, lessons: [str], read: str, ...}
+                rd = v.get("read")
+                v = ([{"text": "Now: " + rd, "date": built, "source": "today's market read"}] if isinstance(rd, str) and rd else []) + \
+                    [{"text": x, "date": built} for x in (v.get("lessons") or []) if isinstance(x, str)]
             for r in v if isinstance(v, list) else []:
                 if isinstance(r, dict):
                     rows.append({**r, "pillar": k})

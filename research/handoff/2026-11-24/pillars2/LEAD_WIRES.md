@@ -5,7 +5,7 @@ https://dcondax1-wq.github.io/pillars/ returns 404: `tools/build_web_dashboard.p
 and `pillars` is not in it. The sw OTHER_APPS entry is there, but the folder never reaches the site.
 
 ## Wires (in this order)
-1. **URGENT: publish the Pillars folder.** Add `"pillars"` to the app tuple in `tools/build_web_dashboard.py` (~line 1243, next to `"nq"`),
+1. DONE by lead (pc 03adb9cb4). Was: **publish the Pillars folder.** Add `"pillars"` to the app tuple in `tools/build_web_dashboard.py` (~line 1243, next to `"nq"`),
    build, then `gh_publish`. This also fixes `test_homescreen` (its build list expects `pillars`).
 2. **Root service worker cache:** bump `CACHE` in the root `sw.js` from `le-public-v211` to `le-public-v212` (root `index.html` / Zenith
    changed; `python tools/bump_versions.py --check --base origin/pc` asks for it). Returning iPhones then load the new Home/Zenith on next open.
@@ -14,8 +14,9 @@ and `pillars` is not in it. The sw OTHER_APPS entry is there, but the folder nev
    ['pillars', 'pillars/', 'Four Pillars', 'The four pillars', 'LIT, ATLAS, BLITZ, ORDER FLOW: status, edge, next', 'bots', 'bots', 'four pillars lit zlarior atlas blitz order flow orderflow ticks edge strategy what is next', 'nq'],
    ```
    then `python tools/bump_versions.py --apply` (cascades gate-nav g11 -> g12 across ~50 apps and the Jarvis/Kalshi sw caches; I left it to you).
-4. **When `research/learn/insights.json` lands (day-marketlearn):** `python tools/build_pillars.py` and commit `pillars-data.json`;
-   the SAMPLE banner and the fixture lines disappear by themselves (`tools/build_pillars.py --check` tells you if it is stale).
+4. DONE in this branch: insights.json landed on pc; pillars-data.json is rebuilt from it (LIT 5, ATLAS 4, BLITZ 5 lessons, ORDER FLOW 'Waiting').
+   After each market-learn run: `python tools/build_pillars.py` (`--check` says when it is stale).
+   Home Screen kit for pillars/ (manifest, 180/192/512/maskable icons, capable, status bar, title, theme-color, viewport-fit) is in this branch: test_homescreen passes for pillars.
 5. Optional: Jarvis `apps.js` / olympus.js APPS entry for Pillars (icon is `pillars/icon-192.png`; the folder has its own manifest + apple-touch-icon,
    so "Add to Home Screen" from /pillars/ already gives a "Pillars" icon).
 
