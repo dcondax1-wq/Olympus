@@ -1147,10 +1147,15 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
         if back:
             put_back(sh, ff.get("restore"))             # files checked out from main by hand: as they were before
             restore_untracked(sh, ff.get("untracked_moved"), new)   # the untracked files the self-heal cleared for the merge
+        unpark = ""
+        if back and ff.get("parked"):                   # red team 2026-11-24: the old code gets the owner's parked hand edit back
+            cp, pout = sh.git("stash", "pop")
+            unpark = ("; your parked edit to " + ", ".join(ff["parked"][:3]) + " is back") if cp == 0 else \
+                     ("; your parked edit to " + ", ".join(ff["parked"][:3]) + " stays in git stash (git stash list)")
         if "requirements.txt" in changed:
             sh.py(["-m", "pip", "install", "-q", "-r", "requirements.txt"], timeout=900)
         return done("rolled_back" if back else "failed",
-                    f"new code {new[:7]}: {why}; " + (f"rolled back to {old[:7]}, the version that ran fine" if back
+                    f"new code {new[:7]}: {why}; " + (f"rolled back to {old[:7]}, the version that ran fine{unpark}" if back
                                                        else f"ROLLBACK FAILED ({rout.strip()[-120:]}): fix by hand"),
                     alert=True, bad_sha=new, **({"held": held} if held else {}))
 
