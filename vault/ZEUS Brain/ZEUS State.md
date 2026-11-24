@@ -25,6 +25,10 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
 - Plan money for the bad case (2025-like: 50K pass ~32% / fail ~60%): day-badcase study. Edge proof stays strict (60+ ideas rejected 2026-11-24).
 - Zero-touch first: day-unstick (remote update without the owner), day-zeroerr (failure map + FAILOVER.md), zerotouch2 auto-park.
 
+## Owner decisions 2026-11-24 ~13:00 ET (chat)
+- "It can be paper till we study more": BLITZ stays PAPER (do not prompt the --blitz on switch).
+- "I'll hold the 4 accounts we have currently": Rapid EOD 25K, ATLAS Builder 25K funded, Zlarior 50K, Zlarior 25K #2 (ATLAS combo). No new evals bought (badcase: 2025-like markets make every eval -EV).
+
 ## Live now
 | What (checked 2026-11-19 18:37 ET, board.py read) | State |
 |---|---|
