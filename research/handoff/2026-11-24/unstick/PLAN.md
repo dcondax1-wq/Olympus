@@ -92,3 +92,30 @@ dashboard_view.json, research/...), add its path to the end of the stash line. T
 | = another earlier version (0ed39de35) | updated |
 | = an unknown edit | skipped: "local changes in tracked files (not touched): notify_settings.json" (unchanged, as it must be) |
 The chain is rebuilt on the then-current pc when the name arrives (pc moves). It works for any PC HEAD that is an ancestor of pc.
+
+## Round 2 (lead 16:59 ET: "find ANY zero-touch route in the old code")
+| Question | Answer (old code 75d5a60b9) |
+|---|---|
+| Which commit does the PC run? | The lite feed has no commit or version field. `sh` (self-heal tiny) is stale since 11-23 16:30 ET (the Windows state-save bug day-updfix fixed). Board `ev` repeats the truncated held-back line every 15 min, with no file name and no `rc` receipt. Unknown beyond "≤ 75d5a60b9 era". |
+| (1) Old paths that read fetched remote content and write or apply it | Only: the update's own fast_forward (merge --ff-only / reset --keep); self_heal restore_untracked (writes `new:<path>` back only for files it moved itself); remote_ctl (reads control/command.json, a fixed command list: no git, no file writes); heartbeat.read / tools/data_pull (CLOUD side, not run on the PC); live_board / lit_learn pull (read-only shows). None resets or parks a dirty tracked file. |
+| (2) Windows scheduled tasks | OlympusPCReport (pc_report_task.ps1), publish_nq, the keeper + weekly care (pc_tune.ps1), OlympusClock (w32tm only), wake/sleep (schedule_pc.ps1), PC Care, agency mail, live_link. All run the PC's LOCAL code. Only the bot start does `autoupdate --pull` = the same fast_forward rule. |
+| (3) Boot / power cut / Windows-update reboot | run_bot.ps1 → `--pull` (same rule). Rollback and refused merges use `git reset --keep` (keeps local changes). The ONLY forced checkout (`checkout -f -B`) is `autoupdate.connect`, run by the owner (setup_everything.ps1 / GITHUB_SIGNIN). No remote or scheduled path reaches it. |
+| Remote 'update' preconditions | LE_REMOTE defaults to 1 under run_bot.ps1 (LE_SUPERVISED). Refused while not flat, or 01:50-16:00 ET on a weekday. Then the same fast_forward. |
+| (4) Pre-emptive chain | Built on pc 1ea04f047: 84 commits cycling every earlier version (all 195 branches) of notify_settings.json, update_source.json, dashboard_view.json, research/mind/{store,calibration}.json, research/learn_queue.json, research/lab/{edge_health,rule_log,kalshi_adapt,health_band,combo_25k_check,combo_50k_check,combo_50k}.json, data/clean/manifest.json, data/board/shared.jsonl, research/kalshi_k8_live/data/tape.jsonl, data/draw_learner.json, data/{NQ,ES}_rolls.json, data/clean/{NQ,ES}_rolls.json, research/orderflow/results.json, tools/model_versions.json, data/NQ_imported_days.json, data/ltf/NQJ_imported_days.json, tools/web_public/business/decisions.json. Tip tree == pc tree. Merged into day-unstick. |
+
+Left out on purpose: live_model*.json and STRATEGY.md (hub_data / rulelog read their git history; hard rule), second_model.json (it can't be the
+culprit), and the big data CSVs (a2_lit_audit reads data/NQ_5m.csv's last commit, and the PC appends live bars, so they never equal a committed version).
+
+Safe to push to pc? Yes. It's a fast-forward and the net tree change is none. No workflow runs on a pc push. The only side effect is
+cosmetic: ~84 "day-unstick" subjects in `git log` (botctl's recent-commits list, vault/hub changelogs). Push it only while pc is still the
+chain's base. If pc has moved, rebuild (1 min): the command is in the next section.
+
+Honest odds: low, about 5-10%. It only unblocks if the PC's file equals a committed version. A hand edit, or a file the bot rewrites
+with times or prices (the likely cases), stays blocked, and the owner's one stash line remains the only way. No legitimate old-code
+mechanism resets an unknown edit to a tracked file without someone at the PC.
+
+Side finding (security, cloud side): tools/data_pull.copy_days writes `days/<day>/<p>` from a fetched ref with no `..` check
+(`os.path.join(d, *p.split("/"))`). It is a cloud tool, not a PC route, and is NOT used here. Worth a path check later.
+
+Rebuild on the current pc: `git fetch origin '+refs/heads/*:refs/remotes/origin/*' && python3 research/handoff/2026-11-24/unstick/cycle_versions.py $(sed 's/^/--path /' research/handoff/2026-11-24/unstick/candidates.txt) --build`,
+then `git push origin <tip>:pc`.
