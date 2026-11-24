@@ -8,7 +8,7 @@
    "id": "payout-ping-1000",
    "question": "Funded 25K: ask for the full $1,000 payout (at balance $27,100) instead of pinging you at $750?",
    "why": "The bot pings you when $750 sits above the $1,100 buffer; waiting for the full $1,000 (balance $27,100) means fewer, bigger requests.",
-   "impact": "-$9 a month in a Jul-Oct-like market (-$11 Jan-Jun-like, -$6 2021-25-like); first payout about 2 trading days later. At real fills on ATLAS's 25K (10 ticks a side): about the same money (+$8 a month Jan-Jun-like, -$1 Jul-Oct-like), lost in 6 months 21.7% -> 20.7% (17.6% -> 16.0%), first payout 2-3 trading days later; with room 40% it adds almost nothing (14.0% -> 13.1%).",
+   "impact": "-$9 a month in a Jul-Oct-like market (-$11 Jan-Jun-like, -$6 2021-25-like); first payout about 2 trading days later.",
    "impact_usd": -9,
    "options": [
     "yes",
@@ -27,7 +27,7 @@
    },
    "risk": "25K #2 no payout in 6 months 16.9% -> 18.5%; in a 2021-25-like market it costs $6 a month",
    "recommend": "no",
-   "recommend_why": "Keep the $750 ping: waiting for $1,000 pays the same or a little less and each payout comes 2-5 trading days later. At real fills it is a little safer on ATLAS's 25K, but room 40% does that job much better; on the 25K #2 it still costs about $5 a month.",
+   "recommend_why": "Keep the $750 ping: waiting for $1,000 pays a little less and each payout comes about 2 trading days later.",
    "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)"
   },
   {
@@ -60,27 +60,27 @@
    "id": "rapid25-lit-bank",
    "question": "Rapid 25K: Zlarior trades 1 micro and takes profit at the day's room (instead of skipping most trades)?",
    "why": "Today the 30% best-day guard skips 60-65% of Zlarior's trades there. Banking at the room passes and pays sooner, but fails a little more.",
-   "impact": "At real fills (ATLAS 10 ticks a side): +$101 a month in a Jul-Oct-like market (+$24 Jan-Jun-like, +$1 2021-25-like); first payout about 6-9 days sooner. At backtest fills it was +$83.",
-   "impact_usd": 101,
+   "impact": "+$83 a month in a Jul-Oct-like market (+$10 Jan-Jun-like, +$7 2021-25-like); first payout about 5 trading days sooner.",
+   "impact_usd": 83,
    "options": [
     "yes",
     "no",
     "later"
    ],
    "status": "open",
-   "source": "research/writeups/rapid-launch-2026-11-20.md",
+   "source": "research/writeups/rapid25-lit-lane-2026-11-18.md",
    "applies": "python -X utf8 -m engine.rapid --lit-bank on (built OFF)",
    "added": "2026-11-18",
-   "usd_month": 101,
+   "usd_month": 83,
    "usd_month_by": {
-    "jan_jun": 24,
-    "jul_oct": 101,
-    "y2021_25": 1
+    "jan_jun": 10,
+    "jul_oct": 83,
+    "y2021_25": 7
    },
-   "risk": "At real fills: Rapid 25K eval fails within 60 trading days 0.5% -> 3.1% (Jan-Jun-like) and 2.0% -> 2.7% (Jul-Oct-like); funded Rapid lost in 6 months 27.2% -> 28.7% / 38.0% -> 39.1%; eval passes in about 21-30 trading days instead of 26-33.",
-   "recommend": "no",
-   "recommend_why": "Not yet: the money is real (+$101 a month Jul-Oct-like) but at real fills the eval fails 6x as often in a Jan-Jun-like market (0.5% -> 3.1%), over the 1-point limit set before the test. A yes is fine if you prefer a faster pass; it stays built OFF.",
-   "valued": "2026-11-20 tools/money/rapid25_launch.py (real fills: ATLAS 10 ticks a side, LIT unchanged; Rapid 25K LIT + ATLAS $250, keep $500, 1,000 paths; $ a month after fees and MFFU's split, before the 30% tax pot; design research/second/rapid25_launch_design.md)"
+   "risk": "Rapid 25K no payout in 6 months 10.4% -> 7.9%; Rapid 25K funded account lost 28.3% -> 32.2%; Rapid 25K eval fails in 3 months 0.1% -> 0.6%; Rapid 25K eval passes in about 21 trading days instead of 25",
+   "recommend": "yes",
+   "recommend_why": "More money in both 2026 halves without a real jump in risk.",
+   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)"
   },
   {
    "id": "atlas-on-50k-funded",
@@ -112,9 +112,9 @@
   {
    "id": "atlas-on-rapid",
    "question": "Rapid EOD: ATLAS trades it next to Zlarior from day one?",
-   "why": "On the Rapid 25K the 30% best-day rule skips most of Zlarior's trades. Launch check 2026-11-20 at real fills: LIT alone passes the eval in only 25-42% of runs within 60 trading days, ATLAS alone 49-64%, both together 81-86% (median 26-33 days).",
-   "impact": "At real fills (ATLAS 10 ticks a side): +$609 a month in a Jul-Oct-like market (+$1,662 Jan-Jun-like, -$28 2021-25-like); first payout about Feb 18 with ATLAS, while without it half the runs see no payout in 6 months. At backtest fills it was +$817 a month (+$2,084 Jan-Jun-like, +$7 2021-25-like).",
-   "impact_usd": 609,
+   "why": "On the Rapid 25K the 30% best-day rule skips most of Zlarior's trades: alone it passes in about 42 trading days, with ATLAS about 25.",
+   "impact": "+$817 a month in a Jul-Oct-like market (+$2,084 Jan-Jun-like, +$7 2021-25-like); first payout about 39 trading days sooner.",
+   "impact_usd": 817,
    "options": [
     "yes",
     "no",
@@ -124,16 +124,16 @@
    "source": "research/writeups/stack-one-account-2026-11-16.md",
    "applies": "Rapid preset already built LIT + ATLAS ($250 on the 25K, $500 on a 50K); a no turns ATLAS off there",
    "added": "2026-11-16",
-   "usd_month": 609,
+   "usd_month": 817,
    "usd_month_by": {
-    "jan_jun": 1662,
-    "jul_oct": 609,
-    "y2021_25": -28
+    "jan_jun": 2084,
+    "jul_oct": 817,
+    "y2021_25": 7
    },
-   "risk": "At real fills: a funded Rapid lost in 6 months 38.0% with ATLAS vs 14.1% without (Jul-Oct-like; 27.2% vs 5.6% Jan-Jun-like), but without ATLAS half the runs never get paid; no payout in 6 months 15.1% vs 50.0%. A $150 ATLAS lane is safer (28.8% lost) but pays $93-366 a month less. Launch check (same paths): ATLAS alone makes $707 / $141 a month, below both together, so no ATLAS-only option. With both, 12% / 26% of runs lose the first Rapid before any payout (re-buy $97.20).",
+   "risk": "Rapid 25K no payout in 6 months 50.1% -> 10.4%; Rapid 25K funded account lost 14.1% -> 28.3%; Rapid 25K eval passes in about 25 trading days instead of 42",
    "recommend": "yes",
-   "recommend_why": "Keep ATLAS on the Rapid (it is already built that way): even at real fills it adds about $600 a month in a Jul-Oct-like market, and without it the 30% rule skips most of Zlarior's trades and half of the runs see no payout in 6 months.",
-   "valued": "2026-11-20 tools/atlas_risk.py (real fills: ATLAS 10 ticks a side, LIT unchanged; the Rapid 25K as built, keep $500, 1,000 paths; $ a month after fees and MFFU's split, before the 30% tax pot)"
+   "recommend_why": "Keep ATLAS on the Rapid (it is already built that way): without it the 30% rule skips most of Zlarior's trades and half of the runs see no payout in 6 months.",
+   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)"
   },
   {
    "id": "keep-1000-rapid",
@@ -216,8 +216,8 @@
    "id": "atlas-funded-room-40",
    "question": "ATLAS's funded 25K: risk 40% of the room a trade instead of 60% (safer, but the first payout comes later)?",
    "why": "The bot stops ATLAS for good once the funded room is under $100. Smaller trades make that rarer, but each win is smaller, so payouts come later.",
-   "impact": "At real fills (10 ticks a side): +$24 a month in a Jan-Jun-like market ($503 -> $527), -$9 Jul-Oct-like ($402 -> $393), -$3 2021-25-like; first payout 3-8 trading days later (Dec 29 instead of Dec 23 Jan-Jun-like; Jan 19 instead of Jan 7 Jul-Oct-like). At backtest fills it was -$26 a month, 5 trading days later.",
-   "impact_usd": -9,
+   "impact": "-$26 a month in a Jul-Oct-like market (-$25 Jan-Jun-like, $0 2021-25-like); first payout about 5 trading days later.",
+   "impact_usd": -26,
    "options": [
     "yes",
     "no",
@@ -227,16 +227,16 @@
    "source": "research/writeups/atlas-health-2026-11-18.md",
    "applies": "ATLAS's funded sizing 60% -> 40% of the room (engine/account_b funded preset; Claude changes it only after your yes, Sim check first)",
    "added": "2026-11-19",
-   "usd_month": -9,
+   "usd_month": -26,
    "usd_month_by": {
-    "jan_jun": 24,
-    "jul_oct": -9,
-    "y2021_25": -3
+    "jan_jun": -25,
+    "jul_oct": -26,
+    "y2021_25": 0
    },
-   "risk": "At real fills the funded 25K is lost in 6 months 14.0% of the time instead of 21.7% (Jul-Oct-like), 11.0% instead of 17.6% (Jan-Jun-like); 2021-25-like 98% either way. Backtest fills: 10.2% -> 5.8%.",
-   "recommend": "yes",
-   "recommend_why": "At real fills (ATLAS's entries fill about 10 ticks late) 60% of the room is too big for $887: 40% loses the account about a third less often (1 in 7 instead of 1 in 5) for about the same money. It passed the pre-registered bar at 6 and 10 ticks; the cost is a first payout about 3-8 trading days later.",
-   "valued": "2026-11-20 tools/atlas_risk.py (real fills: ATLAS 10 ticks a side; 1,000 week-block paths from today's $887 room, MFFU Builder 25K funded rules; $ a month = payouts to you after MFFU's split, before the 30% tax pot)"
+   "risk": "ATLAS 25K funded account lost 10.2% -> 5.8%",
+   "recommend": "no",
+   "recommend_why": "Your choice: keep 60% for the faster first payout (fastest money), or say yes for safety: the funded 25K gets stuck 6 in 100 times instead of 10 in 100 within 6 months, for about $26 a month less.",
+   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)"
   },
   {
    "id": "drop-lucid-account4",
@@ -294,8 +294,8 @@
    "id": "atlas-funded-keep-trading",
    "question": "ATLAS's funded 25K: keep trading 1 micro when the room drops under $100, instead of stopping for good?",
    "why": "Today the bot gives the funded account up at $100 of room. Small 1-micro trades that still fit can climb back: about 1 in 5 such accounts recover in a 2026-like market.",
-   "impact": "+$3 a month in a Jul-Oct-like market (+$10 Jan-Jun-like, +$4 2021-25-like); chance of losing the account in 6 months 10.5% -> 9.5% (9.8% -> 7.7% Jan-Jun-like); first payout unchanged. At real fills (10 ticks a side): +$6 a month Jul-Oct-like (+$14 Jan-Jun-like, +$1 2021-25-like); chance of losing the account 23.5% -> 21.7% (20.3% -> 17.6% Jan-Jun-like); first payout unchanged.",
-   "impact_usd": 6,
+   "impact": "+$3 a month in a Jul-Oct-like market (+$10 Jan-Jun-like, +$4 2021-25-like); chance of losing the account in 6 months 10.5% -> 9.5% (9.8% -> 7.7% Jan-Jun-like); first payout unchanged.",
+   "impact_usd": 3,
    "options": [
     "yes",
     "no",
@@ -305,16 +305,16 @@
    "source": "research/writeups/atlas-more-money-2026-11-19.md",
    "applies": "data/account_b.json \"min_room\": 0 (built key: the funded stuck line $100 -> none; Claude changes it only after your yes)",
    "added": "2026-11-19",
-   "usd_month": 6,
+   "usd_month": 3,
    "usd_month_by": {
-    "jan_jun": 14,
-    "jul_oct": 6,
-    "y2021_25": 1
+    "jan_jun": 10,
+    "jul_oct": 3,
+    "y2021_25": 4
    },
    "risk": "None found: a 1-micro trade only goes on when its full stop-out fits the room; a stranded account still holds one of the 2 funded 25K places until you close it",
    "recommend": "yes",
-   "recommend_why": "It only keeps alive an account the bot would abandon: at real fills it never loses an account the old $100 stop would keep (0 of 1,000 test paths) and saves about 2-3 in 100. Small money, no downside.",
-   "valued": "2026-11-20 tools/atlas_risk.py (real fills: ATLAS 10 ticks a side; 1,000 week-block paths from today's $887 room, MFFU Builder 25K funded rules; $ a month = payouts to you after MFFU's split, before the 30% tax pot)",
+   "recommend_why": "It never pays less on any of the 600 test paths; it only keeps alive an account the bot would abandon. Small money, no downside.",
+   "valued": "2026-11-19 tools/atlas_more.py (600 week-block paths from today's account, MFFU Builder 25K funded rules, costs in)",
    "answered": "2026-11-19 ~20:00 ET in chat (\"Yes\")",
    "closed_note": "Owner YES. To apply: data/account_b.json on the PC \"min_room\": 0 (no CLI yet: next chat adds `python -m engine.account_b --min-room 0` and gives the owner the one line at the PC)."
   },
