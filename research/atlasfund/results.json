@@ -1,0 +1,328 @@
+{
+ "made": "2026-11-24",
+ "design": "research/atlasfund/DESIGN.md",
+ "check_live_equals_code": {
+  "checked": 652,
+  "diff": 0,
+  "examples": []
+ },
+ "room15_spec_funded_cfg": {
+  "pct": 0.15,
+  "pct_min_usd": 50,
+  "pct_max_usd": 750,
+  "ref": 20,
+  "wk": true,
+  "room_f": null,
+  "max_win": 1000,
+  "slip_ticks": 2,
+  "skip_breach": true
+ },
+ "today_cfg": {
+  "pct": 0.4,
+  "pct_min_usd": 50,
+  "pct_max_usd": 750,
+  "ref": 20,
+  "wk": true,
+  "room_f": null,
+  "max_win": 1000,
+  "slip_ticks": 2,
+  "skip_breach": true
+ },
+ "rows": {
+  "today": {
+   "2021-25": {
+    "paid_6m": 283,
+    "per_month": 47,
+    "per_month_p10": 0,
+    "payouts_6m": 0.35,
+    "lost_6m": 0.0,
+    "stuck_6m": 90.6,
+    "dead_6m": 90.6,
+    "first_med": 25.0,
+    "any_pay_6m": 22.7,
+    "trades_per_week": 4.74,
+    "max_risk": 563,
+    "real": {
+     "accounts": 22,
+     "lost": 0,
+     "stuck": 21,
+     "payouts": 9,
+     "paid": 7200,
+     "per_month": 141,
+     "net_trading": 2237,
+     "pf": 1.03
+    }
+   },
+   "2025": {
+    "paid_6m": 382,
+    "per_month": 64,
+    "per_month_p10": 0,
+    "payouts_6m": 0.48,
+    "lost_6m": 0.0,
+    "stuck_6m": 85.9,
+    "dead_6m": 85.9,
+    "first_med": 28.0,
+    "any_pay_6m": 28.5,
+    "trades_per_week": 4.43,
+    "max_risk": 558,
+    "real": {
+     "accounts": 4,
+     "lost": 0,
+     "stuck": 3,
+     "payouts": 2,
+     "paid": 1600,
+     "per_month": 130,
+     "net_trading": 1965,
+     "pf": 1.11
+    }
+   },
+   "H1": {
+    "paid_6m": 2963,
+    "per_month": 494,
+    "per_month_p10": 400,
+    "payouts_6m": 3.7,
+    "lost_6m": 0.0,
+    "stuck_6m": 5.5,
+    "dead_6m": 5.5,
+    "first_med": 23.0,
+    "any_pay_6m": 95.0,
+    "trades_per_week": 3.96,
+    "max_risk": 485,
+    "real": {
+     "accounts": 1,
+     "lost": 0,
+     "stuck": 0,
+     "payouts": 4,
+     "paid": 3200,
+     "per_month": 525,
+     "net_trading": 12716,
+     "pf": 2.98
+    }
+   },
+   "H2": {
+    "paid_6m": 2746,
+    "per_month": 458,
+    "per_month_p10": 267,
+    "payouts_6m": 3.43,
+    "lost_6m": 0.0,
+    "stuck_6m": 3.1,
+    "dead_6m": 3.1,
+    "first_med": 32.0,
+    "any_pay_6m": 96.8,
+    "trades_per_week": 3.05,
+    "max_risk": 527,
+    "real": {
+     "accounts": 1,
+     "lost": 0,
+     "stuck": 0,
+     "payouts": 2,
+     "paid": 1600,
+     "per_month": 431,
+     "net_trading": 6232,
+     "pf": 3.13
+    }
+   }
+  },
+  "cap150": {
+   "2021-25": {
+    "paid_6m": 268,
+    "per_month": 45,
+    "per_month_p10": 0,
+    "payouts_6m": 0.34,
+    "lost_6m": 0.0,
+    "stuck_6m": 85.3,
+    "dead_6m": 85.3,
+    "first_med": 38.0,
+    "any_pay_6m": 24.2,
+    "trades_per_week": 4.71,
+    "max_risk": 169,
+    "real": {
+     "accounts": 16,
+     "lost": 0,
+     "stuck": 15,
+     "payouts": 7,
+     "paid": 5600,
+     "per_month": 110,
+     "net_trading": 4913,
+     "pf": 1.08
+    }
+   },
+   "2025": {
+    "paid_6m": 399,
+    "per_month": 66,
+    "per_month_p10": 0,
+    "payouts_6m": 0.5,
+    "lost_6m": 0.0,
+    "stuck_6m": 77.4,
+    "dead_6m": 77.4,
+    "first_med": 40.0,
+    "any_pay_6m": 31.6,
+    "trades_per_week": 4.41,
+    "max_risk": 161,
+    "real": {
+     "accounts": 1,
+     "lost": 0,
+     "stuck": 0,
+     "payouts": 1,
+     "paid": 800,
+     "per_month": 65,
+     "net_trading": 2282,
+     "pf": 1.17
+    }
+   },
+   "H1": {
+    "paid_6m": 2815,
+    "per_month": 469,
+    "per_month_p10": 267,
+    "payouts_6m": 3.52,
+    "lost_6m": 0.0,
+    "stuck_6m": 4.5,
+    "dead_6m": 4.5,
+    "first_med": 30.0,
+    "any_pay_6m": 96.2,
+    "trades_per_week": 3.96,
+    "max_risk": 162,
+    "real": {
+     "accounts": 1,
+     "lost": 0,
+     "stuck": 0,
+     "payouts": 4,
+     "paid": 3200,
+     "per_month": 525,
+     "net_trading": 8095,
+     "pf": 2.72
+    }
+   },
+   "H2": {
+    "paid_6m": 2239,
+    "per_month": 373,
+    "per_month_p10": 133,
+    "payouts_6m": 2.8,
+    "lost_6m": 0.0,
+    "stuck_6m": 3.8,
+    "dead_6m": 3.8,
+    "first_med": 43.0,
+    "any_pay_6m": 96.1,
+    "trades_per_week": 3.09,
+    "max_risk": 158,
+    "real": {
+     "accounts": 1,
+     "lost": 0,
+     "stuck": 0,
+     "payouts": 2,
+     "paid": 1600,
+     "per_month": 431,
+     "net_trading": 3459,
+     "pf": 2.81
+    }
+   },
+   "verdict": "FAIL",
+   "why": [
+    "2021-25 paid $268 vs $283",
+    "H1 paid $2815 vs $2963",
+    "H2 paid $2239 vs $2746",
+    "H2 dead 3.8% vs 3.1%"
+   ]
+  },
+  "room15": {
+   "2021-25": {
+    "paid_6m": 290,
+    "per_month": 48,
+    "per_month_p10": 0,
+    "payouts_6m": 0.36,
+    "lost_6m": 0.0,
+    "stuck_6m": 78.5,
+    "dead_6m": 78.5,
+    "first_med": 41.0,
+    "any_pay_6m": 25.4,
+    "trades_per_week": 4.67,
+    "max_risk": 542,
+    "real": {
+     "accounts": 13,
+     "lost": 0,
+     "stuck": 12,
+     "payouts": 6,
+     "paid": 4800,
+     "per_month": 94,
+     "net_trading": 4049,
+     "pf": 1.07
+    }
+   },
+   "2025": {
+    "paid_6m": 472,
+    "per_month": 79,
+    "per_month_p10": 0,
+    "payouts_6m": 0.59,
+    "lost_6m": 0.0,
+    "stuck_6m": 68.2,
+    "dead_6m": 68.2,
+    "first_med": 46.0,
+    "any_pay_6m": 36.6,
+    "trades_per_week": 4.37,
+    "max_risk": 558,
+    "real": {
+     "accounts": 3,
+     "lost": 0,
+     "stuck": 2,
+     "payouts": 2,
+     "paid": 1600,
+     "per_month": 130,
+     "net_trading": 3238,
+     "pf": 1.25
+    }
+   },
+   "H1": {
+    "paid_6m": 2916,
+    "per_month": 486,
+    "per_month_p10": 400,
+    "payouts_6m": 3.65,
+    "lost_6m": 0.0,
+    "stuck_6m": 3.4,
+    "dead_6m": 3.4,
+    "first_med": 30.0,
+    "any_pay_6m": 97.2,
+    "trades_per_week": 3.96,
+    "max_risk": 485,
+    "real": {
+     "accounts": 1,
+     "lost": 0,
+     "stuck": 0,
+     "payouts": 4,
+     "paid": 3200,
+     "per_month": 525,
+     "net_trading": 10084,
+     "pf": 2.87
+    }
+   },
+   "H2": {
+    "paid_6m": 2403,
+    "per_month": 400,
+    "per_month_p10": 133,
+    "payouts_6m": 3.0,
+    "lost_6m": 0.0,
+    "stuck_6m": 3.2,
+    "dead_6m": 3.2,
+    "first_med": 43.0,
+    "any_pay_6m": 96.6,
+    "trades_per_week": 3.09,
+    "max_risk": 527,
+    "real": {
+     "accounts": 1,
+     "lost": 0,
+     "stuck": 0,
+     "payouts": 2,
+     "paid": 1600,
+     "per_month": 431,
+     "net_trading": 3349,
+     "pf": 2.66
+    }
+   },
+   "verdict": "FAIL",
+   "why": [
+    "H1 paid $2916 vs $2963",
+    "H2 paid $2403 vs $2746",
+    "H2 dead 3.2% vs 3.1%"
+   ]
+  }
+ }
+}
