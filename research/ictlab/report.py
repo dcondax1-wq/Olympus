@@ -118,6 +118,8 @@ w("Paper research, futures data only (CME NQ1! 5m 2021-10 .. 2026-11-20; ES1! fr
   "(to 2026-10-13); standalones at LIT size. Costs in everywhere.")
 w("")
 w(HEAD)
+w("**Follow-up (real engine, eval-safe forms, config diffs): `research/writeups/ict-lab-proof-2026-11-25.md`.** Cards there: B2 ATLAS x0.5 outside SB hours (Builder evals), B1 C2 (small). LIT TDO half-size and funded ATLAS x1.5: no card.")
+w("")
 w("## Detail squares (the best variant of each concept; every variant is in the tables below)")
 w("")
 w("Years 2022..2026, one square each: 🟩 better, 🟥 worse, ⬜ about flat, 🟨 made $ but no better than a random filter of the same size. "
