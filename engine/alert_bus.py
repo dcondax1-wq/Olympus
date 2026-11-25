@@ -72,7 +72,7 @@ MINUS = "-"
 NOTIFY_TYPE = {"entry": "trade_opened", "exit": "trade_closed", "daily": "daily_summary", "pc_silent": "pc_silent",
                "bot_stopped": "problems", "problem": "problems", "dll_near": "room_low", "dd_near": "room_low",
                "seven_day": "account_status", "payout_ready": "account_status", "hedge_risk": "problems",
-               "brief": "morning_brief"}
+               "brief": "morning_brief", "setup": "setup_progress"}
 
 _LOCK = threading.RLock()
 _THREADS: list = []

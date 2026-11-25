@@ -152,6 +152,13 @@ class Watchdog:
                 self.guard = LiveGuard(clock=clock)
             except Exception:
                 self.guard = None
+        self.progress = None                 # day-closer: setup progress pushes (engine/setup_progress.py, read-only), real server only
+        if clock is time.time:
+            try:
+                from .setup_progress import SetupProgress
+                self.progress = SetupProgress(clock=clock)
+            except Exception:
+                self.progress = None
 
     def alert(self, text: str):
         self._print(f"[watchdog] {time.strftime('%Y-%m-%d %H:%M:%S')} {text}")
@@ -211,6 +218,11 @@ class Watchdog:
                                autostart=load() if not getattr(self.bot, "running", False) else None)
             except Exception as e:  # noqa: BLE001
                 self.fast.last = {"t": int(now), "error": f"{e.__class__.__name__}: {e}"}
+        if getattr(self, "progress", None) is not None:
+            try:
+                self.progress.step(self.bot, now)
+            except Exception as e:  # noqa: BLE001
+                self.progress.last = {"t": int(now), "error": f"{e.__class__.__name__}: {e}"}
         if getattr(self, "guard", None) is not None:   # read-only, never stops this loop (it never raises by contract)
             try:
                 self.guard.step(self.bot, now)
@@ -241,4 +253,5 @@ class Watchdog:
                 "keepawake": self.keepawake.status() if self.keepawake is not None else None,
                 "autostart": self.autostart_info,
                 "fast_alarm": getattr(getattr(self, "fast", None), "last", None),
-                "live_guard": getattr(getattr(self, "guard", None), "last", None)}
+                "live_guard": getattr(getattr(self, "guard", None), "last", None),
+                "setup_progress": getattr(getattr(self, "progress", None), "last", None)}
