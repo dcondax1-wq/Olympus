@@ -1,13 +1,13 @@
 {
- "built": "2026-11-25 18:34",
- "checks": "40/40",
+ "built": "2026-11-23 18:15",
+ "checks": "56/56",
  "segments": {
   "2026-09-02 a50": {
    "live": 7,
    "ref": 7,
    "masked_armed": [],
    "end": null,
-   "seconds": 540,
+   "seconds": 444,
    "rows": [
     {
      "day": "2026-09-02",
@@ -248,6 +248,107 @@
      ]
     }
    }
+  },
+  "2026-10-02 study": {
+   "live": 4,
+   "ref": 4,
+   "masked_armed": [],
+   "end": [
+    "2026-10-07",
+    "pass"
+   ],
+   "seconds": 413,
+   "rows": [
+    {
+     "day": "2026-10-02",
+     "bot": "A",
+     "entry": "03:10:00",
+     "dir": 1,
+     "qty": 7,
+     "usd": 2705.59,
+     "exit": "TARGET"
+    },
+    {
+     "day": "2026-10-05",
+     "bot": "Z",
+     "entry": "08:35:00",
+     "dir": -1,
+     "qty": 1,
+     "usd": -164.9,
+     "exit": "STOP"
+    },
+    {
+     "day": "2026-10-06",
+     "bot": "A",
+     "entry": "04:10:00",
+     "dir": 1,
+     "qty": 1,
+     "usd": 147.6,
+     "exit": "TIME"
+    },
+    {
+     "day": "2026-10-07",
+     "bot": "A",
+     "entry": "09:55:00",
+     "dir": 1,
+     "qty": 1,
+     "usd": 367.6,
+     "exit": "TIME"
+    }
+   ],
+   "logs": [
+    "2026-10-02 Entry at 03:34 ET NOT routed: one position on the 50K: ATLAS on Zlarior 50K holds a LONG EMA trade from 03:10 ET (conflict rule first_in: the first bot in keeps the account)",
+    "2026-10-02 ATLAS on Zlarior 50K filled first: Zlarior's armed long setup(s) on this 50K are cancelled while ATLAS holds it (conflict rule first_in)",
+    "2026-10-02 ATLAS on Zlarior 50K: EMA LONG at the 03:10 ET open: ROUTED MARKET 7 MNQ (2 s after the open), stop 30,839.25, target 31,088.75; size two week: one winner passes: 8 micros x 194.2 pts target covers $3,000; two week: 40% of $2,000 room -> 7",
+    "2026-10-06 ATLAS on Zlarior 50K: S/R SHORT at the 10:15 ET open is not ATLAS's trade: ATLAS's own ema_lon_vix trade from 04:10 ET is still open (one ATLAS trade at a time)",
+    "2026-10-06 Entry at 04:32 ET NOT routed: one position on the 50K: ATLAS on Zlarior 50K holds a LONG EMA trade from 04:10 ET (conflict rule first_in: the first bot in keeps the account)",
+    "2026-10-06 ATLAS on Zlarior 50K: MACD SHORT at the 04:30 ET open is not ATLAS's trade: ATLAS's own ema_lon_vix trade from 04:10 ET is still open (one ATLAS trade at a time)",
+    "2026-10-06 ATLAS on Zlarior 50K: EMA LONG at the 04:10 ET open: ROUTED MARKET 1 MNQ (2 s after the open), stop 31,339.75, target 31,653.00; size two week: one winner passes: 1 micros x 254.7 pts target covers $459",
+    "2026-10-07 Zlarior 50K PASSED: $53,056: MFFU locks it until the funded account is issued. Send Claude the new account name. No more orders go to it; the other accounts keep trading.",
+    "2026-10-07 Entry at 10:10 ET NOT routed: one position on the 50K: ATLAS on Zlarior 50K holds a LONG MACD trade from 09:55 ET (conflict rule first_in: the first bot in keeps the account)",
+    "2026-10-07 ATLAS on Zlarior 50K filled first: Zlarior's armed long setup(s) on this 50K are cancelled while ATLAS holds it (conflict rule first_in)",
+    "2026-10-07 ATLAS on Zlarior 50K: MACD LONG at the 09:55 ET open: ROUTED MARKET 1 MNQ (2 s after the open), stop 31,142.75, target 31,784.00; size two week: one winner passes: 1 micros x 570.0 pts target covers $312"
+   ],
+   "rules": {
+    "conflict": "first",
+    "atlas_size_factor": 1.0
+   }
+  },
+  "extra_accounts": {
+   "2026-10-02": {
+    "atlas_50k": [
+     "03:10:00"
+    ],
+    "extra": {
+     "z25b": [
+      [
+       "03:34:00",
+       1
+      ]
+     ],
+     "reod": [
+      [
+       "03:34:00",
+       1
+      ]
+     ]
+    }
+   },
+   "2026-09-04": {
+    "atlas_50k": [
+     "03:10:00"
+    ],
+    "extra": {
+     "z25b": [],
+     "reod": []
+    }
+   }
+  },
+  "close_on_opposite": {
+   "atlas": 9,
+   "atlas_exit": "LIT PRIORITY",
+   "zlarior": 6,
+   "seconds": 92
   }
  }
 }

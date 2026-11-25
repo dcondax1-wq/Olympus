@@ -1,12 +1,12 @@
 {
- "built": "2026-11-25 18:34",
- "checks": "17/17",
+ "built": "2026-11-24 02:32",
+ "checks": "23/23",
  "segments": {
   "2026-09-02": {
    "live": 8,
    "ref": 8,
    "end": null,
-   "seconds": 549,
+   "seconds": 575,
    "rows": [
     {
      "day": "2026-09-02",
@@ -207,6 +207,147 @@
     "2026-09-10 ATLAS + Zlarior on ONE account ON for Zlarior 25K #2 (account entry 'combo' (test harness)): one position at a time (conflict first_in), ATLAS size x0.5 in the eval / x1 funded",
     "2026-09-10 [ATLAS on Zlarior 25K #2] SIM Sim252 MFFU Builder 25K, strategies ema_lon_vix, macd_sweep, sr_nyreclaim, size need, eval from 2026-09-02 (balance $25,360, room $1,000): ready",
     "2026-09-10 [Zlarior 25K #2] SIM Sim252 MFFU Builder 25K, mode two_week, eval from 2026-09-02: ready"
+   ]
+  },
+  "2026-10-02": {
+   "live": 5,
+   "ref": 5,
+   "end": null,
+   "seconds": 502,
+   "rows": [
+    {
+     "day": "2026-10-02",
+     "bot": "A",
+     "entry": "03:10:00",
+     "dir": 1,
+     "qty": 1,
+     "usd": 386.51,
+     "exit": "TARGET"
+    },
+    {
+     "day": "2026-10-05",
+     "bot": "Z",
+     "entry": "08:35:00",
+     "dir": -1,
+     "qty": 2,
+     "usd": -329.8,
+     "exit": "STOP"
+    },
+    {
+     "day": "2026-10-06",
+     "bot": "A",
+     "entry": "04:10:00",
+     "dir": 1,
+     "qty": 1,
+     "usd": -59.4,
+     "exit": "HEDGE"
+    },
+    {
+     "day": "2026-10-06",
+     "bot": "Z",
+     "entry": "04:32:00",
+     "dir": -1,
+     "qty": 3,
+     "usd": -113.7,
+     "exit": "CUT_T15"
+    },
+    {
+     "day": "2026-10-07",
+     "bot": "A",
+     "entry": "09:55:00",
+     "dir": 1,
+     "qty": 1,
+     "usd": 367.6,
+     "exit": "TIME"
+    }
+   ],
+   "ref_rows": [
+    {
+     "day": "2026-10-02",
+     "bot": "A",
+     "entry": "03:10:00",
+     "dir": 1,
+     "qty": 1,
+     "usd": 386.5,
+     "exit": "TARGET"
+    },
+    {
+     "day": "2026-10-05",
+     "bot": "Z",
+     "entry": "08:35:00",
+     "dir": -1,
+     "qty": 2,
+     "usd": -329.8,
+     "exit": "STOP"
+    },
+    {
+     "day": "2026-10-06",
+     "bot": "A",
+     "entry": "04:10:00",
+     "dir": 1,
+     "qty": 1,
+     "usd": -58.9,
+     "exit": "FLAT"
+    },
+    {
+     "day": "2026-10-06",
+     "bot": "Z",
+     "entry": "04:32:00",
+     "dir": -1,
+     "qty": 3,
+     "usd": -113.7,
+     "exit": "CUT_T15"
+    },
+    {
+     "day": "2026-10-07",
+     "bot": "A",
+     "entry": "09:55:00",
+     "dir": 1,
+     "qty": 1,
+     "usd": 367.6,
+     "exit": "flat"
+    }
+   ],
+   "logs": [
+    "2026-10-02 [ATLAS on Zlarior 25K #2] EXIT 1 NQ -> True",
+    "2026-10-02 [ATLAS on Zlarior 25K #2] MODIFY 1 NQ -> True",
+    "2026-10-02 [Zlarior 25K #2] entry at 03:34 ET NOT routed on this account: one position on Zlarior 25K #2: ATLAS on Zlarior 25K #2 holds a LONG EMA trade from 03:10 ET (conflict rule first_in: the first bot in keeps the account)",
+    "2026-10-02 [ATLAS on Zlarior 25K #2] BUY 1 NQ -> True",
+    "2026-10-02 [ATLAS on Zlarior 25K #2] EMA LONG at the 03:10 ET open: ROUTED MARKET 1 MNQ on Sim252 (2 s after the open), stop 30,839.25, target 31,088.75; size two week: one winner passes: 4 micros x 194.2 pts target covers $1,500; two week: 40% of $1,000 room -> 3; atlas_size_factor eval 0.5: 3 -> 1",
+    "2026-10-02 [ATLAS on Zlarior 25K #2] STARTUP RECONCILED on Sim252: NinjaTrader positions / orders and contract check out; entries allowed",
+    "2026-10-02 ATLAS + Zlarior on ONE account ON for Zlarior 25K #2 (account entry 'combo' (test harness)): one position at a time (conflict first_in), ATLAS size x0.5 in the eval / x1 funded",
+    "2026-10-02 [ATLAS on Zlarior 25K #2] SIM Sim252 MFFU Builder 25K, strategies ema_lon_vix, macd_sweep, sr_nyreclaim, size need, eval from 2026-10-02 (balance $25,000, room $1,000): ready",
+    "2026-10-02 [Zlarior 25K #2] SIM Sim252 MFFU Builder 25K, mode two_week, eval from 2026-10-02: ready",
+    "2026-10-05 [Zlarior 25K #2] EXIT 2 NQ -> True",
+    "2026-10-05 [Zlarior 25K #2] SELL 2 NQ -> True",
+    "2026-10-05 [Zlarior 25K #2] entry at 08:35 ET at 2 instead of 1: two week: one winner passes: 3 micros x 229.8 pts target covers $1,113; two week: 40% of $1,000 room -> 2",
+    "2026-10-05 ATLAS + Zlarior on ONE account ON for Zlarior 25K #2 (account entry 'combo' (test harness)): one position at a time (conflict first_in), ATLAS size x0.5 in the eval / x1 funded",
+    "2026-10-05 [ATLAS on Zlarior 25K #2] SIM Sim252 MFFU Builder 25K, strategies ema_lon_vix, macd_sweep, sr_nyreclaim, size need, eval from 2026-10-02 (balance $25,000, room $1,000): ready",
+    "2026-10-05 [Zlarior 25K #2] SIM Sim252 MFFU Builder 25K, mode two_week, eval from 2026-10-02: ready",
+    "2026-10-06 [ATLAS on Zlarior 25K #2] S/R SHORT at the 10:15 ET open is not ATLAS's trade: ATLAS's own ema_lon_vix trade from 04:10 ET is still open (one ATLAS trade at a time)",
+    "2026-10-06 [Zlarior 25K #2] EXIT 3 NQ -> True",
+    "2026-10-06 [Zlarior 25K #2] SELL 3 NQ -> True",
+    "2026-10-06 [Zlarior 25K #2] entry at 04:32 ET at 3 instead of 5: two week: one winner passes: 3 micros x 287.8 pts target covers $1,503",
+    "2026-10-06 [ATLAS on Zlarior 25K #2] EXIT 1 NQ -> True",
+    "2026-10-06 [ATLAS on Zlarior 25K #2] EMA 04:10 ET: HEDGE - flatten 1 MNQ at market (~31,370.00)",
+    "2026-10-06 [ATLAS on Zlarior 25K #2] LIT enters SHORT: ATLAS's EMA on Sim252 is closed at market first (LIT has priority)",
+    "2026-10-06 [Zlarior 25K #2] entry at 04:32 ET at 3 instead of 5: two week: one winner passes: 3 micros x 287.8 pts target covers $1,443",
+    "2026-10-06 [ATLAS on Zlarior 25K #2] MACD SHORT at the 04:30 ET open is not ATLAS's trade: ATLAS's own ema_lon_vix trade from 04:10 ET is still open (one ATLAS trade at a time)",
+    "2026-10-06 [ATLAS on Zlarior 25K #2] BUY 1 NQ -> True",
+    "2026-10-06 [ATLAS on Zlarior 25K #2] EMA LONG at the 04:10 ET open: ROUTED MARKET 1 MNQ on Sim252 (2 s after the open), stop 31,339.75, target 31,653.00; size two week: one winner passes: 3 micros x 254.7 pts target covers $1,443; two week: 40% of $670 room -> 2; atlas_size_factor eval 0.5: 2 -> 1",
+    "2026-10-06 [ATLAS on Zlarior 25K #2] STARTUP RECONCILED on Sim252: NinjaTrader positions / orders and contract check out; entries allowed",
+    "2026-10-06 ATLAS + Zlarior on ONE account ON for Zlarior 25K #2 (account entry 'combo' (test harness)): one position at a time (conflict first_in), ATLAS size x0.5 in the eval / x1 funded",
+    "2026-10-06 [ATLAS on Zlarior 25K #2] SIM Sim252 MFFU Builder 25K, strategies ema_lon_vix, macd_sweep, sr_nyreclaim, size need, eval from 2026-10-02 (balance $24,670, room $670): ready",
+    "2026-10-06 [Zlarior 25K #2] SIM Sim252 MFFU Builder 25K, mode two_week, eval from 2026-10-02: ready",
+    "2026-10-07 [ATLAS on Zlarior 25K #2] EXIT 1 NQ -> True",
+    "2026-10-07 [ATLAS on Zlarior 25K #2] MACD 09:55 ET: TIME - flatten 1 MNQ at market (~31,399.00)",
+    "2026-10-07 [Zlarior 25K #2] entry at 10:10 ET NOT routed on this account: one position on Zlarior 25K #2: ATLAS on Zlarior 25K #2 holds a LONG MACD trade from 09:55 ET (conflict rule first_in: the first bot in keeps the account)",
+    "2026-10-07 [ATLAS on Zlarior 25K #2] BUY 1 NQ -> True",
+    "2026-10-07 [ATLAS on Zlarior 25K #2] MACD LONG at the 09:55 ET open: ROUTED MARKET 1 MNQ on Sim252 (2 s after the open), stop 31,142.75, target 31,784.00; size two week: one winner passes: 2 micros x 570.0 pts target covers $1,616; two week: 40% of $497 room -> 1; atlas_size_factor eval 0.5: 1 -> 1",
+    "2026-10-07 [ATLAS on Zlarior 25K #2] STARTUP RECONCILED on Sim252: NinjaTrader positions / orders and contract check out; entries allowed",
+    "2026-10-07 ATLAS + Zlarior on ONE account ON for Zlarior 25K #2 (account entry 'combo' (test harness)): one position at a time (conflict first_in), ATLAS size x0.5 in the eval / x1 funded",
+    "2026-10-07 [ATLAS on Zlarior 25K #2] SIM Sim252 MFFU Builder 25K, strategies ema_lon_vix, macd_sweep, sr_nyreclaim, size need, eval from 2026-10-02 (balance $24,556, room $556): ready",
+    "2026-10-07 [Zlarior 25K #2] SIM Sim252 MFFU Builder 25K, mode two_week, eval from 2026-10-02: ready"
    ]
   }
  }
