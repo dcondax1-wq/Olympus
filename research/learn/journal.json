@@ -472,6 +472,20 @@
  {
   "date": "2026-11-25",
   "pillar": "atlas",
+  "lens": "context",
+  "noticed": "ATLAS does better when: mixed weeks + London 02-05. avg R 0.999 / 1.156 / 0.303 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 226,
+   "usd": 13770,
+   "z": 1.74
+  },
+  "status": "rejected",
+  "key": "lesson|atlas|regime=mixed & session=London 02-05",
+  "was": "watching"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "atlas",
   "lens": "structure",
   "noticed": "ATLAS does worse when: entries 50-80% into the day's range. avg R 0.884 / 0.606 / -0.105 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
   "evidence": {
@@ -496,6 +510,20 @@
   "status": "watching",
   "key": "lesson|atlas|st_pos=high",
   "was": "rejected"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "atlas",
+  "lens": "structure",
+  "noticed": "ATLAS does worse when: entries 50-80% into the day's range. avg R 0.884 / 0.606 / -0.105 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 376,
+   "usd": -13641,
+   "z": -1.36
+  },
+  "status": "rejected",
+  "key": "lesson|atlas|st_pos=high",
+  "was": "watching"
  },
  {
   "date": "2026-11-25",
@@ -529,6 +557,20 @@
   "date": "2026-11-25",
   "pillar": "atlas",
   "lens": "context",
+  "noticed": "ATLAS does better when: VIX 15-20. avg R 1.128 / 0.868 / 0.142 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 563,
+   "usd": 16207,
+   "z": 1.29
+  },
+  "status": "rejected",
+  "key": "lesson|atlas|vix_band=VIX 15-20",
+  "was": "watching"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "atlas",
+  "lens": "context",
   "noticed": "ATLAS does better when: VIX 15-20 + London 02-05. avg R 1.698 / 0.95 / 0.439 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
   "evidence": {
    "n": 266,
@@ -552,6 +594,20 @@
   "status": "confirmed",
   "key": "lesson|atlas|vix_band=VIX 15-20 & session=London 02-05",
   "was": "rejected"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "atlas",
+  "lens": "context",
+  "noticed": "ATLAS does better when: VIX 15-20 + London 02-05. avg R 1.698 / 0.95 / 0.439 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 266,
+   "usd": 29694,
+   "z": 3.4
+  },
+  "status": "rejected",
+  "key": "lesson|atlas|vix_band=VIX 15-20 & session=London 02-05",
+  "was": "confirmed"
  },
  {
   "date": "2026-11-25",
@@ -585,6 +641,20 @@
   "date": "2026-11-25",
   "pillar": "blitz",
   "lens": "context",
+  "noticed": "BLITZ does worse when: Tuesdays. avg R 0.059 / 0.016 / -0.042 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 413,
+   "usd": -3809,
+   "z": -1.53
+  },
+  "status": "rejected",
+  "key": "lesson|blitz|dow=Tue",
+  "was": "watching"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "blitz",
+  "lens": "context",
   "noticed": "BLITZ does worse when: after a big day + Tuesdays. avg R -0.017 / -0.238 / -0.115 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
   "evidence": {
    "n": 123,
@@ -613,6 +683,20 @@
   "date": "2026-11-25",
   "pillar": "blitz",
   "lens": "context",
+  "noticed": "BLITZ does worse when: after a big day + Tuesdays. avg R -0.017 / -0.238 / -0.115 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 123,
+   "usd": -2449,
+   "z": -2.04
+  },
+  "status": "rejected",
+  "key": "lesson|blitz|prior_day=big & dow=Tue",
+  "was": "confirmed"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "blitz",
+  "lens": "context",
   "noticed": "BLITZ does worse when: trending weeks + NY AM 09:30-11:30. avg R -0.082 / -0.271 / -0.095 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
   "evidence": {
    "n": 159,
@@ -636,6 +720,20 @@
   "status": "confirmed",
   "key": "lesson|blitz|regime=trend & session=NY AM 09:30-11:30",
   "was": "rejected"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "blitz",
+  "lens": "context",
+  "noticed": "BLITZ does worse when: trending weeks + NY AM 09:30-11:30. avg R -0.082 / -0.271 / -0.095 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 159,
+   "usd": -4611,
+   "z": -2.19
+  },
+  "status": "rejected",
+  "key": "lesson|blitz|regime=trend & session=NY AM 09:30-11:30",
+  "was": "confirmed"
  },
  {
   "date": "2026-11-25",
@@ -669,6 +767,20 @@
   "date": "2026-11-25",
   "pillar": "blitz",
   "lens": "structure",
+  "noticed": "BLITZ does better when: a displacement our way in the 30 min before (late). avg R 0.544 / 0.81 / 0.04 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 167,
+   "usd": 3203,
+   "z": 1.41
+  },
+  "status": "rejected",
+  "key": "lesson|blitz|st_disp=yes",
+  "was": "watching"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "blitz",
+  "lens": "structure",
   "noticed": "BLITZ does worse when: fading the last swing, retrace past 1.0, swing broken + the day half used (0.5-0.8 ATR). avg R 0.009 / 0.046 / -0.115 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
   "evidence": {
    "n": 281,
@@ -692,6 +804,20 @@
   "status": "confirmed",
   "key": "lesson|blitz|st_swing=against_broken & st_used=half",
   "was": "rejected"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "blitz",
+  "lens": "structure",
+  "noticed": "BLITZ does worse when: fading the last swing, retrace past 1.0, swing broken + the day half used (0.5-0.8 ATR). avg R 0.009 / 0.046 / -0.115 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 281,
+   "usd": -4709,
+   "z": -2.45
+  },
+  "status": "rejected",
+  "key": "lesson|blitz|st_swing=against_broken & st_used=half",
+  "was": "confirmed"
  },
  {
   "date": "2026-11-25",
@@ -723,6 +849,20 @@
  },
  {
   "date": "2026-11-25",
+  "pillar": "blitz",
+  "lens": "structure",
+  "noticed": "BLITZ does worse when: the day half used (0.5-0.8 ATR). avg R 0.106 / -0.117 / -0.035 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 480,
+   "usd": -4742,
+   "z": -1.7
+  },
+  "status": "rejected",
+  "key": "lesson|blitz|st_used=half",
+  "was": "watching"
+ },
+ {
+  "date": "2026-11-25",
   "pillar": "lit",
   "lens": "structure",
   "noticed": "LIT (Zlarior) does worse when: the day half used (0.5-0.8 ATR). avg R 0.576 / 0.455 / -0.141 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
@@ -751,11 +891,35 @@
  },
  {
   "date": "2026-11-25",
+  "pillar": "lit",
+  "lens": "structure",
+  "noticed": "LIT (Zlarior) does worse when: the day half used (0.5-0.8 ATR). avg R 0.576 / 0.455 / -0.141 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 143,
+   "usd": -11183,
+   "z": -1.22
+  },
+  "status": "rejected",
+  "key": "lesson|lit|st_used=half",
+  "was": "watching"
+ },
+ {
+  "date": "2026-11-25",
   "pillar": "market",
   "lens": "idea mill",
-  "noticed": "idea mill: 38880 ideas tested so far; 0 passed discovery (FDR), 0 the many-tests haircut, 0 all 3 hold-outs; a random-sign placebo gives 0 / 0 / 0",
+  "noticed": "the 1h VWAP +-2sd momentum NY-afternoon family (the v2 discovery lead), confirmed on the 3 hold-outs: FAILED",
+  "evidence": {},
+  "status": "rejected",
+  "key": "ideamill|confirm|1h vwap momentum",
+  "checked": "2026-11-25"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "market",
+  "lens": "idea mill",
+  "noticed": "idea mill: 56160 ideas tested so far; 0 passed discovery (FDR), 0 the many-tests haircut, 0 all 3 hold-outs; a random-sign placebo gives 0 / 0 / 0; family-first (v3): 0 of 52 families passed, 0 variants survived the hold-outs",
   "evidence": {
-   "n": 38880
+   "n": 56160
   },
   "status": "watching",
   "key": "ideamill|summary",

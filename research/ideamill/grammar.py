@@ -98,6 +98,14 @@ def context(tf="5m"):
         p = prev.get(wkey[k])
         if p is not None:
             pwh[k], pwl[k] = wh[p], wl[p]
+    mkey = np.array([d[:7] for d in udays])
+    mh_, ml_ = {}, {}
+    for k in range(nd):
+        mh_[mkey[k]] = max(mh_.get(mkey[k], -np.inf), dh[k]); ml_[mkey[k]] = min(ml_.get(mkey[k], np.inf), dl[k])
+    mks = sorted(mh_)
+    mprev = {mks[i]: mks[i - 1] for i in range(1, len(mks))}
+    pmh = np.array([mh_[mprev[m]] if m in mprev else np.nan for m in mkey])
+    pml = np.array([ml_[mprev[m]] if m in mprev else np.nan for m in mkey])
     trend = np.r_[np.zeros(21), np.sign(dc[20:-1] - dc[:-21])] if nd > 21 else np.zeros(nd)
     trend = trend[:nd]
     vix = _daily_csv("VIX_1d.csv")
@@ -113,11 +121,21 @@ def context(tf="5m"):
     gex_p = np.array([{True: 1, False: -1, None: 0}[prior(gd, gmed, d)] if gd else 0 for d in udays])
     # intraday: overnight high/low (18:00-09:30), opening range 09:30-10:00, session VWAP + sd, EMA, RSI, volume median
     on_h = np.full(n, np.nan); on_l = np.full(n, np.nan); or_h = np.full(n, np.nan); or_l = np.full(n, np.nan)
+    as_h = np.full(n, np.nan); as_l = np.full(n, np.nan); ld_h = np.full(n, np.nan); ld_l = np.full(n, np.nan)
     vwap = np.zeros(n); vsd = np.zeros(n)
     cur = -1
     for i in range(n):
         if di[i] != cur:
             cur = di[i]; oh, ol, rh, rl = -np.inf, np.inf, -np.inf, np.inf; pv = vv = pv2 = 0.0
+            ah, al, lh, ll = -np.inf, np.inf, -np.inf, np.inf
+        if mins[i] >= 1080 or mins[i] < 120:
+            ah, al = max(ah, h[i]), min(al, l[i])
+        elif mins[i] < 960:
+            as_h[i], as_l[i] = ah, al
+        if 120 <= mins[i] < 300:
+            lh, ll = max(lh, h[i]), min(ll, l[i])
+        elif 300 <= mins[i] < 960:
+            ld_h[i], ld_l[i] = lh, ll
         tp = (h[i] + l[i] + c[i]) / 3; w = max(v[i], 1.0)
         pv += tp * w; vv += w; m = pv / vv; pv2 += w * (tp - m) ** 2
         vwap[i] = m; vsd[i] = np.sqrt(pv2 / vv)
@@ -135,7 +153,7 @@ def context(tf="5m"):
     rsi = 100 - 100 / (1 + up / np.maximum(dn, 1e-9))
     vmed = pd.Series(v).rolling(20).median().shift(1).bfill().to_numpy()
     X = dict(time=df["time"].to_numpy(), o=o, h=h, l=l, c=c, v=v, mins=mins, day=day, di=di, udays=udays, dow=dow, atr=atr, pdh=pdh[di], pdl=pdl[di],
-             pdc=pdc[di], rth_o=rth_o[di], pwh=pwh[di], pwl=pwl[di], nr7=nr7[di], trend=trend[di], vix=vix_p[di],
+             pdc=pdc[di], rth_o=rth_o[di], pwh=pwh[di], pwl=pwl[di], pmh=pmh[di], pml=pml[di], as_h=as_h, as_l=as_l, ld_h=ld_h, ld_l=ld_l, nr7=nr7[di], trend=trend[di], vix=vix_p[di],
              gex=gex_p[di], on_h=on_h, on_l=on_l, or_h=or_h, or_l=or_l, vwap=vwap, vsd=vsd, e20=e20, e50=e50, rsi=rsi, vmed=vmed,
              n=n)
     X["tf"] = tf
@@ -313,11 +331,70 @@ def t_es_div(X):
     return s
 
 
+def t_pm_sweep(X): return trig_level_sweep(X, X["pmh"], X["pml"])
+def t_pm_break(X): return trig_level_break(X, X["pmh"], X["pml"])
+def t_asia_break(X): return trig_level_break(X, X["as_h"], X["as_l"])
+def t_london_break(X): return trig_level_break(X, X["ld_h"], X["ld_l"])
+
+
+def t_open_drive(X):
+    """09:30-09:45 move >= 3 x 5m ATR -> go with it at the first bar that opens 09:45 or later (one per day)."""
+    s = np.zeros(X["n"], np.int8)
+    o, c, mins, di, a = X["o"], X["c"], X["mins"], X["di"], X["atr"]
+    start, done = {}, set()
+    for i in range(X["n"]):
+        d = di[i]
+        if mins[i] == 570:
+            start[d] = o[i]
+        if 585 <= mins[i] < 960 and d in start and d not in done:
+            done.add(d)
+            mv = c[i - 1] - start[d] if i > 0 else 0.0
+            if abs(mv) >= 3 * a[i]:
+                s[i - 1] = 1 if mv > 0 else -1           # signal on the bar that closes 09:45 -> entry at the next open
+    return s
+
+
+def t_three_bar_rev(X):
+    o, c = X["o"], X["c"]
+    up = (c > o)
+    dn = (c < o)
+    s = np.zeros(X["n"], np.int8)
+    for i in range(3, X["n"]):
+        if dn[i - 3] and dn[i - 2] and dn[i - 1] and c[i] > o[i - 3]:
+            s[i] = 1
+        elif up[i - 3] and up[i - 2] and up[i - 1] and c[i] < o[i - 3]:
+            s[i] = -1
+    return s
+
+
+def t_exhaustion(X):
+    """A bar of range >= 2.5 x ATR whose close sits in the far 40% from its push (a long wick) -> fade the push."""
+    o, h, l, c, a = X["o"], X["h"], X["l"], X["c"], X["atr"]
+    r = np.maximum(h - l, TICK)
+    s = np.zeros(X["n"], np.int8)
+    big = r >= 2.5 * a
+    s[big & (h - np.maximum(o, c) >= 0.6 * r)] = -1     # pushed up, closed low: short
+    s[big & (np.minimum(o, c) - l >= 0.6 * r)] = 1      # pushed down, closed high: long
+    return s
+
+
+def t_atr_band(X):
+    up_b, dn_b = X["e20"] + 2 * X["atr"], X["e20"] - 2 * X["atr"]
+    c, pc = X["c"], _prev(X["c"])
+    s = np.zeros(X["n"], np.int8)
+    s[(c > up_b) & (pc <= _prev(up_b))] = 1
+    s[(c < dn_b) & (pc >= _prev(dn_b))] = -1
+    return s
+
+
 TRIGGERS = {"pd_sweep": t_pd_sweep, "pd_break": t_pd_break, "pw_sweep": t_pw_sweep, "pw_break": t_pw_break,
             "on_sweep": t_on_sweep, "or_break": t_or_break, "nr7_or_break": t_nr7_or_break, "gap": t_gap,
             "vwap_cross": t_vwap_cross, "vwap_band": t_vwap_band, "round100": t_round, "displacement": t_disp,
             "fvg_retest": t_fvg_retest, "inside_break": t_inside_break, "vol_spike": t_vol_spike, "ema_cross": t_ema_cross,
-            "rsi_rev": t_rsi_rev, "es_div": t_es_div}
+            "rsi_rev": t_rsi_rev, "es_div": t_es_div,
+            # v3 (research/ideamill/DESIGN_v3.md)
+            "pm_sweep": t_pm_sweep, "pm_break": t_pm_break, "asia_break": t_asia_break, "london_break": t_london_break,
+            "open_drive": t_open_drive, "three_bar_rev": t_three_bar_rev, "exhaustion": t_exhaustion, "atr_band": t_atr_band}
 NEEDS = {"es_div": "ES 5m bars (start 2025-04: not in discovery)"}
 
 

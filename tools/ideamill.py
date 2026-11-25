@@ -31,7 +31,9 @@ DISC = ("2021-11-01", "2024-12-31")
 HOLD = {"2025": ("2025-01-01", "2025-12-31"), "2026 H1": ("2026-01-01", "2026-06-30"), "2026 Jul-Oct": ("2026-07-01", "2026-10-16")}
 MIN_DISC, MIN_HOLD, Q_FDR, DSR_MIN, PF_HOLD, FWD_MIN = 100, 10, 0.10, 0.95, 1.10, 20
 B, BLOCK = 1000, 5
-PROTO = 2                       # DESIGN addendum v2 (p from the block-bootstrap SE; v1 rows are kept, not counted)
+PROTO = 3                       # DESIGN_v3.md (family-first); proto 1 / 2 rows are kept in the log, not counted
+CONFIRM_FAMILY = "1h|vwap_band|fade|nypm|"     # DESIGN_v3 pre-designated confirmation track
+CONFIRM_NAMED = "1h|vwap_band|fade|nypm|none|atr|T12"
 
 
 # ================================================================================================ statistics
@@ -217,6 +219,88 @@ def gates(T_all, X, say):
     return counts
 
 
+# ================================================================================================ v3: family-first
+def simes(p):
+    p = np.sort(np.asarray(p, float))
+    m = len(p)
+    return float(min(1.0, np.min(p * m / np.arange(1, m + 1)))) if m else 1.0
+
+
+def hier(T_all, X, say):
+    """DESIGN_v3: Stage A BH over families (Simes p), Stage B BH inside passing families at q R / F, C DSR, D hold-outs.
+    Same for the placebo. Returns (counts, families table, survivors)."""
+    import grammar as G
+    sc = [t for t in T_all if t.get("status") == "scored"]
+    fam = {}
+    for t in sc:
+        fam.setdefault((t["spec"]["trigger"], t["spec"]["dir"]), []).append(t)
+    keys = sorted(fam)
+    F = len({(I["trigger"], I["dir"]) for I in G.ideas()})
+    out = {}
+    for lab, pk, mk in (("real", "disc", "mean_r"), ("placebo", "placebo", "mean_r")):
+        fp = [simes([t[pk]["p"] for t in fam[k]]) for k in keys]
+        okA = bh(fp, Q_FDR)
+        R = int(okA.sum())
+        rows, surv = [], []
+        for k, p_, a in zip(keys, fp, okA):
+            row = {"family": f"{k[0]}|{k[1]}", "variants": len(fam[k]), "simes_p": round(p_, 6), "stageA": bool(a),
+                   "best_p": round(min(t[pk]["p"] for t in fam[k]), 6),
+                   "positive": sum(1 for t in fam[k] if (t[pk][mk] or 0) > 0)}
+            if a:
+                qB = Q_FDR * R / F
+                okB = bh([t[pk]["p"] for t in fam[k]], qB)
+                passB = [t for t, o in zip(fam[k], okB) if o and (t[pk][mk] or 0) > 0]
+                row["stageB"] = len(passB)
+                nC = nD = 0
+                srs = np.array([t[pk]["sr"] for t in fam[k]])
+                for t in passB:
+                    XX = X[t["spec"]["tf"]]
+                    d, r, g = G.run_idea(XX, t["spec"])
+                    rr = r if lab == "real" else placebo_r(t["id"], r, g)
+                    v, _ = dsr(daily_series(d, rr, XX, DISC), len(fam[k]), float(srs.var()))
+                    if v < DSR_MIN:
+                        continue
+                    nC += 1
+                    H = {h: span_stats(d, rr, XX, sp) for h, sp in HOLD.items()}
+                    okH = all(H[h]["n"] >= MIN_HOLD and (H[h]["mean_r"] or 0) > 0 and (H[h]["pf"] or 0) >= PF_HOLD for h in H)
+                    if lab == "real":
+                        t["gate"] = "D" if okH else "C"
+                        t["disc"]["dsr"] = round(v, 4)
+                        t["hold"] = H
+                        surv.append(t)
+                    nD += okH
+                row["stageC"], row["stageD"] = nC, nD
+            rows.append(row)
+        out[lab] = {"families": F, "stageA": R, "stageB": sum(r.get("stageB", 0) for r in rows),
+                    "stageC": sum(r.get("stageC", 0) for r in rows), "stageD": sum(r.get("stageD", 0) for r in rows),
+                    "table": sorted(rows, key=lambda r: r["simes_p"]), "survivors": surv}
+    return out
+
+
+def confirm_track(X, say):
+    """DESIGN_v3 pre-designated track: the 1h VWAP +-2sd momentum NY PM family, hold-outs spent once."""
+    import grammar as G
+    XX = X["1h"]
+    fam = [I for I in G.ideas() if I["id"].startswith(CONFIRM_FAMILY)]
+    per = {h: [] for h in HOLD}
+    named = None
+    for I in fam:
+        d, r, g = G.run_idea(XX, I)
+        H = {h: span_stats(d, r, XX, sp) for h, sp in HOLD.items()}
+        if I["id"] == CONFIRM_NAMED:
+            named = H
+        for h in HOLD:
+            if H[h]["n"]:
+                per[h].append(H[h]["mean_r"])
+    c1 = all(named[h]["n"] >= MIN_HOLD and (named[h]["mean_r"] or 0) > 0 and (named[h]["pf"] or 0) >= PF_HOLD for h in HOLD)
+    avg = {h: round(float(np.mean(v)), 4) if v else None for h, v in per.items()}
+    c2 = all((avg[h] or 0) > 0 for h in HOLD)
+    res = {"family": CONFIRM_FAMILY, "named": CONFIRM_NAMED, "C1_named": named, "C1_pass": bool(c1),
+           "C2_family_avg_r": avg, "C2_pass": bool(c2), "verdict": "paper" if (c1 and c2) else "rejected"}
+    say(f"confirmation track {CONFIRM_FAMILY}: C1 {c1} {json.dumps(named)} | C2 {c2} {avg} -> {res['verdict']}")
+    return res
+
+
 # ================================================================================================ batch
 def batch(n, cap_s=1200, say=print, journal=None):
     import grammar as G
@@ -244,7 +328,15 @@ def batch(n, cap_s=1200, say=print, journal=None):
             if done % 1000 == 0:
                 fh.flush(); say(f"  {done} scored [{time.time() - t0:.0f}s]")
     T_all = [t for t in load_trials() if t.get("proto") == PROTO]
-    counts = gates(T_all, X, say)
+    counts = gates(T_all, X, say)                     # v2-style flat BH, kept for comparison
+    H3 = hier(T_all, X, say)
+    counts.update({"v3_families": H3["real"]["families"], "v3_stageA": H3["real"]["stageA"], "v3_stageB": H3["real"]["stageB"],
+                   "v3_stageC": H3["real"]["stageC"], "v3_stageD": H3["real"]["stageD"],
+                   "v3_placebo": [H3["placebo"][k] for k in ("stageA", "stageB", "stageC", "stageD")]})
+    confirm = confirm_track(X, say) if not os.path.exists(os.path.join(OUT, "confirm_v3.json")) else \
+        json.load(open(os.path.join(OUT, "confirm_v3.json"), encoding="utf-8"))
+    json.dump(confirm, open(os.path.join(OUT, "confirm_v3.json"), "w", encoding="utf-8"), indent=1, default=float)
+    counts["confirm_track"] = confirm["verdict"]
     counts["tested_this_run"] = done
     counts["seconds"] = round(time.time() - t0)
     surv = sorted([t for t in T_all if t.get("gate") in ("G2", "G3")], key=lambda t: -(t["disc"].get("sr") or 0))
@@ -253,13 +345,17 @@ def batch(n, cap_s=1200, say=print, journal=None):
     best_raw = sorted([t for t in T_all if t.get("status") == "scored" and (t["disc"]["mean_r"] or 0) > 0],
                       key=lambda t: t["disc"]["p"])[:10]
     S = {"made": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC"), "data_end": data_end, "design": "research/ideamill/DESIGN.md",
-         "counts": counts, "top": top, "best_raw_p": [{"id": t["id"], "disc": t["disc"]} for t in best_raw], "week": week_counts(T_all)}
+         "counts": counts, "families": H3["real"]["table"], "placebo_families": H3["placebo"]["table"][:10],
+         "v3_survivors": [{"id": t["id"], "gate": t["gate"], "disc": t["disc"], "hold": t.get("hold")} for t in H3["real"]["survivors"]],
+         "confirm_track": confirm, "top": top, "best_raw_p": [{"id": t["id"], "disc": t["disc"]} for t in best_raw], "week": week_counts(T_all)}
     json.dump(S, open(SUMMARY, "w", encoding="utf-8"), indent=1, default=float)
     to_journal(T_all, counts, journal)
     say(f"tested {done} | total trials {counts['trials_total']} | scored {counts['scored']} | too few {counts['too_few']} | "
         f"untestable {counts['untestable']} | mean>0 {counts['discovery_mean_positive']} | raw p<.05 {counts['raw_p_below_0.05']} "
         f"(luck ~{counts['expected_raw_p05_by_luck']:.0f}) | G1 BH {counts['G1_bh']} | G2 DSR {counts['G2_dsr']} | G3 hold-outs {counts['G3_holdouts']} | "
-        f"placebo G1/G2/G3 {counts['placebo_G1']}/{counts['placebo_G2']}/{counts['placebo_G3']} | {counts['seconds']} s")
+        f"placebo G1/G2/G3 {counts['placebo_G1']}/{counts['placebo_G2']}/{counts['placebo_G3']} | v3 families A/B/C/D "
+        f"{counts['v3_stageA']}/{counts['v3_stageB']}/{counts['v3_stageC']}/{counts['v3_stageD']} of {counts['v3_families']} "
+        f"(placebo {counts['v3_placebo']}) | confirm {counts['confirm_track']} | {counts['seconds']} s")
     return S
 
 
@@ -268,7 +364,7 @@ def week_counts(T_all):
     wk = today - dt.timedelta(days=today.weekday())
     this = [t for t in T_all if t.get("t", "")[:10] >= wk.isoformat()]
     return {"week_from": wk.isoformat(), "tested_this_week": len(this), "tested_total": len(T_all),
-            "survived_total": sum(1 for t in T_all if t.get("gate") in ("G2", "G3"))}
+            "survived_total": sum(1 for t in T_all if t.get("gate") in ("G2", "G3", "C", "D"))}
 
 
 def to_journal(T_all, counts, path=None):
@@ -282,8 +378,17 @@ def to_journal(T_all, counts, path=None):
                         f"{counts['G2_dsr']} the many-tests haircut, {counts['G3_holdouts']} all 3 hold-outs; a random-sign placebo "
                         f"gives {counts['placebo_G1']} / {counts['placebo_G2']} / {counts['placebo_G3']}"),
             "evidence": {"n": counts["trials_total"]}, "status": "watching"}]
+    if "v3_stageA" in counts:
+        obs[0]["noticed"] += (f"; family-first (v3): {counts['v3_stageA']} of {counts['v3_families']} families passed, "
+                              f"{counts['v3_stageD']} variants survived the hold-outs")
+    cf = counts.get("confirm_track")
+    if cf:
+        obs.append({"key": "ideamill|confirm|1h vwap momentum", "pillar": "market", "lens": "idea mill",
+                    "noticed": "the 1h VWAP +-2sd momentum NY-afternoon family (the v2 discovery lead), confirmed on the 3 hold-outs: "
+                               + ("PASSED -> forward paper" if cf == "paper" else "FAILED"),
+                    "evidence": {}, "status": "paper" if cf == "paper" else "rejected"})
     for t in T_all:
-        if t.get("gate") not in ("G2", "G3"):
+        if t.get("gate") not in ("G2", "G3", "C", "D"):
             continue
         H = t.get("hold") or {}
         hw = "; ".join(f"{h} {H[h]['mean_r']}R x{H[h]['n']}" for h in H) if H else ""
@@ -291,7 +396,7 @@ def to_journal(T_all, counts, path=None):
                     "noticed": f"idea {t['id']}: discovery {t['disc']['mean_r']}R a trade over {t['disc']['n']} trades (p {t['disc']['p']}, "
                                f"DSR {t['disc'].get('dsr')}); hold-outs: {hw}",
                     "evidence": {"n": t["disc"]["n"], "z": t["disc"].get("sr")},
-                    "status": "paper" if t["gate"] == "G3" else "watching"})
+                    "status": "paper" if t["gate"] in ("G3", "D") else "watching"})
     path = path or ML.JOURNAL
     J, _ = ML.update_journal(ML.journal_doc(path), obs)
     ML._write_json(path, J)
