@@ -71,7 +71,7 @@ the last column), plus the suites already named.
 | G8 | Olympus `main` is README-only, so GitHub runs no workflow: the cloud "PC silent" alarm (row 1) does not run here (day-notify) | **left**: the lead wires the workflow (research/handoff/2026-11-23/day-notify/LEAD_WIRES.md). Until then a PC that is OFF is told by nobody |
 | G9 | Broker cash per account is not saved daily (the unexplained -$220) | **left**: livegap proposal (save NinjaTrader cash at 17:00 ET into the day folder) |
 | G10 | A position on an EXTRA account with no bot leg at all (state file lost) | **left**: guards.reconcile_tick covers the main account only; the stop_missing alarm needs a leg. Small follow-up |
-| G11 | Files that are never parked (live_model*.json, second_model.json, data/) still block the update | **left by design** (strategy / account files are the owner's); now loud after 3 h instead of silent |
+| G11 | Files that are never parked (live_model*.json, second_model.json, data/) still block the update | **closed (day-handsfree)**: tracked market data in data/ is parkable; strategy / account / rule files still never parked by themselves, but the 1 h push says the phone fix: Telegram `/update force` (git stash, nothing lost). docs/HANDS_FREE.md |
 
 ## How the new checks run
 - `engine/live_guard.py` (read-only), driven by `engine/watchdog.Watchdog.check` every 30 s (the real server only; a test's fake

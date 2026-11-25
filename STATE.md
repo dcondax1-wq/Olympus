@@ -6,6 +6,12 @@ Owner wants SHORT replies ("be simple and to the point. You send too much info."
 docs/BOARD.md). 2. Read this file. 3. Answer owner notes with `python tools/board.py note "..." --answers all`.
 Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7; bot checks green: lit_live --quick OK, NT selftest OK, ATLAS 47/47).
 
+- Hands-free (day-handsfree 2026-11-25, docs/HANDS_FREE.md; owner: "I don't want to go on my PC and restart it every single time"):
+  Telegram replies to the alert bot = /status /update /update force /restart /pause /resume (owner's private chat only, same gates
+  as the phone, receipts as replies, "PC is back up" after a restart; never kill/stop/flatten/start/arm). Writers sandbox test: the
+  PC's own writers leave git status clean. Tracked market data in data/ parkable; '/update force' parks strategy/account files
+  (git stash). Stuck-update push after 1 h with the Telegram fix. LE_TickRec.cs copied by self-heal + build id proves the
+  compile (one F5 line per build only if NinjaTrader did not compile it). tests.test_handsfree 44/44. Branch day-handsfree (+ zerotouch2 round 2).
 - Zero-touch 2 (day-zerotouch2 2026-11-24, research/handoff/2026-11-24/zerotouch2/): a hand edit that blocks the update is now PARKED
   (git stash of only those files, one phone line, the update installs); strategy/account files + data/ never parked (alert). START
   prints "Auto-resume ON for ...". MONDAY_SETUP prints NinjaTrader start/connect + auto-sign-in (owner's choice). New phone page
