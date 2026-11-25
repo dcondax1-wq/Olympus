@@ -63,7 +63,7 @@ both 2026 halves (H2 25K pass 90 -> 64%). No candidate.
 - **NQ + ES filler, one position** (lit-more-money 2026-11-19, re-read on the eval objective): 4.5 trades a week (+55%) but 2-week
   pass 43.7 / 42.0 vs 44.5 / 39.1, eval-path money -$9.7k (H1) / -$4.3k (H2), 2021-25 -$66 a month. Rejected then, rejected now.
 - ATLAS on ES: rejected 2026-11-20 (PF 0.60-0.84 in 2026). LIT + ATLAS on one account: the a50 combo research (add only after the
-  50K passes) stands. No longer ES1! export in data/tv_exports, so 2021-24 ES is untestable.
+  50K passes) stands. The ES1! exports in data/tv_exports start 2025-06 (nothing older), so 2021-24 ES is untestable.
 
 ## Why this week has no trade
 The backtest twin also has 1.4 trades a week since Oct 19 (-$858, 0 winners). A 2026 week with zero LIT trades happened once
