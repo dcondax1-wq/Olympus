@@ -71,7 +71,7 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-81 entries from docs/TESTED_AND_REJECTED.md, newest first.
+82 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
 - **Idea mill v3, family-first** · [[ideamill-v3-2026-11-25|IDEA MILL v3]]
 - **Idea mill v2, 38,880 grammar ideas** · [[ideamill-2026-11-25|IDEA MILL]]
@@ -154,6 +154,7 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 - **Popular ICT/SMC strategies as taught** · [[Zlarior (LIT)]] · [[popular-ict-2026-11-23|Popular ICT / SMC strategies on CME NQ, run exactly as taught]]
 - **2026-11-24 BLITZ on the Rapid EOD 25K eval ...** · [[BLITZ (paper)]], [[Rapid lanes]] · [[four-pillars-2026-11-23|The four pillars]]
 - **ICT lab, every popular ICT / time-price concept tested the other ways** · [[ict-lab-2026-11-25|ICT lab 2026-11-25]], [[ict-lab-proof-2026-11-25|ICT lab proof 2026-11-25]]
+- **ICT lab round 2** · [[ict-lab2-2026-11-25|ICT lab round 2]]
 
 ## Rejected in the write-ups
 

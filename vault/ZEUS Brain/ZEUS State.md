@@ -14,6 +14,12 @@ Owner wants SHORT replies ("be simple and to the point. You send too much info."
 docs/BOARD.md). 2. Read this file. 3. Answer owner notes with `python tools/board.py note "..." --answers all`.
 Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7; bot checks green: lit_live --quick OK, NT selftest OK, ATLAS 47/47).
 
+- Hands-free (day-handsfree 2026-11-25, docs/HANDS_FREE.md; owner: "I don't want to go on my PC and restart it every single time"):
+  Telegram replies to the alert bot = /status /update /update force /restart /pause /resume (owner's private chat only, same gates
+  as the phone, receipts as replies, "PC is back up" after a restart; never kill/stop/flatten/start/arm). Writers sandbox test: the
+  PC's own writers leave git status clean. Tracked market data in data/ parkable; '/update force' parks strategy/account files
+  (git stash). Stuck-update push after 1 h with the Telegram fix. LE_TickRec.cs copied by self-heal + build id proves the
+  compile (one F5 line per build only if NinjaTrader did not compile it). tests.test_handsfree 44/44. Branch day-handsfree (+ zerotouch2 round 2).
 - Zero-touch 2 (day-zerotouch2 2026-11-24, research/handoff/2026-11-24/zerotouch2/): a hand edit that blocks the update is now PARKED
   (git stash of only those files, one phone line, the update installs); strategy/account files + data/ never parked (alert). START
   prints "Auto-resume ON for ...". MONDAY_SETUP prints NinjaTrader start/connect + auto-sign-in (owner's choice). New phone page
@@ -37,6 +43,10 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
 ## Order flow (2026-11-24 night, pc 00ce6255a)
 - Landed (red team #5 CLEAR): LE_TickRec year backfill fix (Sep 14 wall = expired 09-26 contract read as end of history), market depth top-10 forward recording, OF idea mill (294 variants, forward protocol), live OF room + nightly 'flow said / happened' line, datafeed 'of' paging. Installs with the owner's one line.
 - OPTIONAL owner step for the C# part: NinjaTrader > New > NinjaScript Editor > F5 (once). With it: first real OF result ~Nov 26-27; without: ~Dec 18, no depth. data/depth parquet ~3 GB/yr: add a disk_clean cap later.
+
+## 2026-11-25 landings (after hours)
+- day-zeroerr-rt (setup-progress alerts LIT 5/7/8 + cancelled, ATLAS 30/10 pts + armed; <=12/day, ATLAS <=8; quiet 23-07 ET except 'entering now'), day-handsfree-rt (Telegram /status /update [force] /restart /pause /resume, owner-only, never arm; never-block writers test; per-switch Y confirm at START; ns_sync LE_TickRec copy), day-sbhalf (ATLAS time_size OFF by default; owner CLI `python -X utf8 -m engine.account_b --time-size on` + phrase; Decide card atlas-sb-half). All red-team CLEAR; lit_live OK, NT selftest OK, update_gate SAME.
+- Research today: ICT lab 1+2 (533 variants: 2 real findings - LIT x 00:00 True Day Open, ATLAS x Silver Bullet hours; B2 card), more-trades (0/26), Pillars v4 live. ATLAS at real fills loses 2021-25 (PF 0.82).
 
 ## Live now
 | What (checked 2026-11-19 18:37 ET, board.py read) | State |
