@@ -2292,7 +2292,8 @@ class LiveBot:
             mr = g.get("atlas_eval_min_room_usd")
             if stage == "eval" and mr is not None and room is not None and float(room) < float(mr):
                 return 0, [f"guard atlas_eval_min_room_usd: room ${float(room):,.0f} < ${float(mr):,.0f}"], room
-            r = combo50k.atlas_qty(self.combo, {"risk_pts": risk, "tgt_pts": tgt}, st, self.eval_start(), base=lsz or None,
+            r = combo50k.atlas_qty(self.combo, {"risk_pts": risk, "tgt_pts": tgt, "entry_t": t.get("entry_t")}, st,
+                                   self.eval_start(), base=lsz or None,
                                    stage=stage, key=k)
             return int(r["qty"]), list(r.get("reasons") or []), room
         except Exception as e:
