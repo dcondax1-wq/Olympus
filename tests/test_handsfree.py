@@ -541,8 +541,102 @@ def test_reboot():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+# ------------------------------------------------------------------------------------------------ h. red team #7 asks
+def test_rt7():
+    from engine import pending_switch as PS
+    from engine import go as G
+    from engine.go import LIVE_PHRASE
+    tmp = tempfile.mkdtemp(prefix="le_rt7_")
+    try:
+        ps = os.path.join(tmp, "pending_switches.json")
+        quiet = (lambda *_: None)
+
+        def queue(*keys):
+            PS._save([], ps)
+            for k in keys:
+                PS.request(k, path=ps)
+        seen, asked = [], []
+        queue("blitz_on", "combo_on")
+        out = PS.apply_all(LIVE_PHRASE, ps, apply_one=lambda k, p: seen.append(k) or {"ok": True},
+                           confirm=lambda q: asked.append(q) or "", say=quiet)
+        check("h1. the phrase alone switches NOTHING on: each queued switch asked on its own line, Enter = no (BLITZ stays paper)",
+              seen == [] and len(asked) == 2 and "BLITZ" in asked[0] and "Type Y" in asked[0]
+              and all("Not switched on" in o for o in out) and PS.load(ps) == [], (out, asked))
+        queue("blitz_on", "combo_on")
+        out = PS.apply_all(LIVE_PHRASE, ps, apply_one=lambda k, p: seen.append(k) or {"ok": True},
+                           confirm=lambda q: "Y" if "combo" in q else "yes please", say=quiet)
+        check("h2. only an exact Y / YES switches that one on (combo Y -> on, blitz 'yes please' -> no)",
+              seen == ["combo_on"] and out[1].startswith("[OK]") and out[0].startswith("[..] Not switched on"), (seen, out))
+
+        def eof(_q):
+            raise EOFError
+        queue("blitz_on")
+        seen.clear()
+        out = PS.apply_all(LIVE_PHRASE, ps, apply_one=lambda k, p: seen.append(k) or {"ok": True}, confirm=eof, say=quiet)
+        check("h3. no console (EOF): nothing switched on, the request KEPT for the next START", seen == [] and
+              [x["key"] for x in PS.load(ps)] == ["blitz_on"], out)
+        keep = G._ps_path
+        G._ps_path = lambda: ps
+        try:
+            out = G.pending_apply(LIVE_PHRASE, None)          # the Start page / a job (no inp): never asks, never applies
+        finally:
+            G._ps_path = keep
+        check("h4. START from the page (no console): no switch applied, the queue stays", [x["key"] for x in PS.load(ps)] == ["blitz_on"]
+              and all("Not switched on" in o for o in out), out)
+        check("h5. START's first line says it will ask (not 'the phrase turns them on')", "asked about each one" in PS.first_line(ps)
+              and "turns them on too" not in PS.first_line(ps))
+
+        # 2. update_source.json never parked, not even by force
+        from engine import self_heal as SH
+        r = SH.park_local(tmp, lambda *a, **k: (0, ""), ["update_source.json"], now=et(2026, 11, 28, 12), flat="", force=True)
+        check("h6. '/update force' never parks update_source.json (where the PC updates from)", r["parked"] == []
+              and r["kept"] == ["update_source.json"], r)
+
+        # 3. a crash-loop rollback after a force update pops the force-park back
+        from engine import autoupdate as AU
+        g = os.path.join(tmp, "repo")
+        os.makedirs(g)
+
+        def git(*a):
+            return subprocess.run(["git", *a], cwd=g, capture_output=True, text=True)
+        git("init", "-q")
+        git("config", "user.email", "t@t")
+        git("config", "user.name", "t")
+        open(os.path.join(g, "live_model.json"), "w").write('{"v": 1}\n')
+        open(os.path.join(g, "bot.py"), "w").write("old\n")
+        git("add", "-A")
+        git("commit", "-q", "-m", "old")
+        old = git("rev-parse", "HEAD").stdout.strip()
+        open(os.path.join(g, "live_model.json"), "w").write('{"v": 1, "owner": true}\n')   # the owner's hand edit
+        sh = AU.Shell(cwd=g)
+        pk = SH.park_local(g, lambda *a, timeout=60, env=None: sh.git(*a), ["live_model.json"], now=et(2026, 11, 28, 12), flat="",
+                           force=True, push=quiet, board=quiet)
+        open(os.path.join(g, "live_model.json"), "w").write('{"v": 2}\n')
+        open(os.path.join(g, "bot.py"), "w").write("new crashes\n")
+        git("commit", "-q", "-am", "new")
+        new = git("rev-parse", "HEAD").stdout.strip()
+        stp = os.path.join(tmp, "autoupdate.json")
+        AU.record({"t": int(et(2026, 11, 28, 12)), "mode": "manual", "status": "updated", "reason": "x", "old": old, "new": new,
+                   "restart": True, "parked": pk["parked"], "stash": pk["stash"], "park_force": True}, state={}, path=stp)
+        guard = AU.load_state(stp).get("crash_guard") or {}
+        t = et(2026, 11, 28, 12, 5)
+        pushes = []
+        res = {}
+        for i in range(AU.CRASH_RUNS + 1):
+            res = AU.crash_check(sh, now=t + 30 * i, path=stp, notify_fn=lambda tt, b, key=None: pushes.append(b))
+        txt = open(os.path.join(g, "live_model.json")).read()
+        check("h7. the crash guard remembers the force park (files + stash)", guard.get("stash") == pk["stash"]
+              and guard.get("parked") == ["live_model.json"] and guard.get("park_force") is True, guard)
+        check("h8. crash-loop rollback after a '/update force': back on the old code AND the owner's parked edit is back",
+              res.get("status") == "rolled_back" and git("rev-parse", "HEAD").stdout.strip() == old and '"owner": true' in txt
+              and git("stash", "list").stdout.strip() == "" and pushes and "parked edit is back" in pushes[-1], (res, txt, pushes))
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def main(argv=None) -> int:
     a = sys.argv[1:] if argv is None else argv
+    test_rt7()
     test_telegram()
     test_static()
     test_park()

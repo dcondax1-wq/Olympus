@@ -1050,6 +1050,13 @@ def crash_check(sh=None, now=None, path: str = STATE_PATH, notify_fn=None, count
                 generated_files.discard(sh.git, hit)
         c, o = sh.git("reset", "--keep", g["old"])
         back = git_head(sh) == g["old"]
+        unpark = ""
+        if back and g.get("parked") and g.get("stash"):
+            # red team #7 (day-handsfree): the old code runs WITH the edit parked for this update again (a '/update force' park of
+            # live_model*.json / second_model.json / a rule file too), exactly like run_update's own rollback
+            c3, o3 = sh.git("stash", "pop", "-q", "--index", "stash@{0}") if _stash_top(sh) == g["stash"] else (1, "not the top stash")
+            unpark = (" Your parked edit is back in place." if c3 == 0 else
+                      f" Your parked edit ({', '.join(g['parked'][:2])}) stays in git stash ({str(o3).strip()[-80:]}).")
         s = load_state(path)
         s.pop("crash_guard", None)
         if back:
@@ -1063,7 +1070,7 @@ def crash_check(sh=None, now=None, path: str = STATE_PATH, notify_fn=None, count
             sh.py(["-m", "pip", "install", "-q", "-r", "requirements.txt"], timeout=900)
         title = "Update rolled back" if back else "Update crash loop: ROLLBACK FAILED"
         body = (f"The new code {g['new'][:7]} kept stopping ({len(starts)} starts, each within {CRASH_WINDOW_S // 60} min of the last). "
-                + (f"Back on {g['old'][:7]}, the version that ran fine; the bad one is skipped." if back
+                + (f"Back on {g['old'][:7]}, the version that ran fine; the bad one is skipped.{unpark}" if back
                    else f"Could not go back ({(o or '').strip()[-100:]}): fix by hand."))
         try:
             (notify_fn or notify_sync)(title, body, key=f"auto:crash:{g['new'][:10]}")
@@ -1143,6 +1150,9 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
     res.update(old=old, new=new)
     if ff.get("parked"):
         res["parked"] = ff["parked"]
+        if ff.get("stash"):                           # red team #7: the crash-loop rollback pops it back too (record -> crash_guard)
+            res["stash"] = ff["stash"]
+            res["park_force"] = bool(park and park_force)
     if ff["status"] != "updated":
         return done(ff["status"], ff["reason"], alert=ff.get("alert", False))
 
@@ -1238,6 +1248,9 @@ def record(res: dict, state: dict | None = None, path: str = STATE_PATH) -> dict
             s["restart_pending"] = {"sha": res["new"], "from": res["old"], "t": res["t"]}
             s["crash_guard"] = {"new": res["new"], "old": res["old"], "t": res["t"], "starts": [],
                                 "changed": [p for p in (res.get("changed") or []) if p == "requirements.txt"]}
+            if res.get("parked") and res.get("stash"):  # red team #7: a crash rollback gives the parked (incl. force) edit back
+                s["crash_guard"].update(parked=list(res["parked"])[:20], stash=res["stash"],
+                                        park_force=bool(res.get("park_force")))
         s.pop("bad_sha", None)
     save_state(s, path)
     return s

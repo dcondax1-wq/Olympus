@@ -611,6 +611,7 @@ def fix_update(ctx, untracked: str = "apply", generated: bool = True, new: str |
 # edit there changes what the bot does, so it blocks + alerts instead of silently going to the stash
 PARK_NEVER = ("second_model.json", "live_model*.json", "data/*", "*journal*", "research/lit/mffu_rules.json",
               "research/props/firm_rules.json", "research/lab/combo_50k.json", "tools/web_public/business/decisions.json")
+FORCE_NEVER = ("update_source.json",)       # red team #7: never parked, not even by the owner's '/update force'
 PARKED_JSON = "parked.json"
 PARKED_LOG = "parked.jsonl"
 
@@ -655,7 +656,9 @@ def park_local(root: str, git, rels, now=None, log=None, via: str = "self-heal",
     rels = [str(r).replace("\\", "/") for r in (rels or []) if r]
     # force (day-handsfree, the owner's Telegram '/update force' only): every tracked file inside the bot folder may be parked
     # (strategy / account / rule files too: git stash keeps them, nothing is lost); never a path outside it or a .env file
-    can = (lambda r: bool(r) and not r.startswith(("../", "/")) and not os.path.isabs(r) and ".env" not in r) if force else parkable
+    # red team #7: update_source.json (where the PC updates FROM) stays never-parked even under force
+    can = (lambda r: bool(r) and not r.startswith(("../", "/")) and not os.path.isabs(r) and ".env" not in r
+           and r not in FORCE_NEVER) if force else parkable
     out = {"parked": [], "kept": [r for r in rels if not can(r)], "stash": None, "line": "", "why": ""}
     ok = [r for r in rels if can(r)]
     if not ok:

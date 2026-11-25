@@ -381,13 +381,14 @@ def test_add_switch(tmp):
         out = PS.apply_all("no", ps, apply_one=lambda k, p: seen.append(k) or {"ok": True})
         check("f. a START without the phrase applies nothing and keeps the queue", out == [] and not seen and PS.load(ps))
         from engine.go import LIVE_PHRASE
-        out = PS.apply_all(LIVE_PHRASE, ps, apply_one=lambda k, p: seen.append((k, p == LIVE_PHRASE)) or {"ok": True, "say": "on"})
-        check("f. the ONE phrase applies every queued switch through its own setter (with the phrase), then the queue is empty",
+        out = PS.apply_all(LIVE_PHRASE, ps, apply_one=lambda k, p: seen.append((k, p == LIVE_PHRASE)) or {"ok": True, "say": "on"},
+                           confirm=lambda q: "Y", say=lambda *_: None)     # red team #7: each switch asked; Y here
+        check("f. the phrase + Y applies the queued switch through its own setter (with the phrase), then the queue is empty",
               seen == [("combo_on", True)] and out[0].startswith("[OK] Switched on from your phone's request") and PS.load(ps) == [], (out, seen))
         g_src = open(os.path.join(ROOT, "engine", "go.py")).read()
         check("f. START: queue shown before the phrase, applied after keep-alive (same phrase)",
               g_src.index("pending_first_line()") < g_src.index('phrase = typed_phrase(ask(" Type  I ACCEPT LIVE RISK  then Enter')
-              and "for ln in pending_apply(phrase):" in g_src)
+              and "for ln in pending_apply(phrase, inp):" in g_src)
     finally:
         AC.inventory = keep_inv
 

@@ -2,9 +2,11 @@
 at my next START with zero extra steps").
 
 The phone (remote command {"cmd": "switch", "key": "<key>"}) only QUEUES a switch in data/pending_switches.json (gitignored). Nothing
-changes then. The next START BOT shows the queue as its FIRST line, and after the ONE phrase the owner types anyway
-(I ACCEPT LIVE RISK) applies each one through the switch's own setter (which checks the phrase again); then the queue is empty.
-A START without the phrase applies nothing and keeps the queue. Nothing arms without that phrase.
+changes then. The next START BOT shows the queue as its FIRST line. After the ONE phrase the owner types anyway (I ACCEPT LIVE
+RISK) each queued switch is shown on its OWN line and asked: "Type Y to also switch on <X>" (default NO; red team #7 2026-11-25,
+owner 2026-11-24 "BLITZ stays paper": a queued blitz_on must never ride along unnoticed). Y = applied through the switch's own
+setter (which checks the phrase again); anything else (Enter = no) = not applied and dropped (the phone can ask again); no console
+(EOF) = not applied and KEPT for the next START. A START without the phrase applies nothing and keeps the queue.
 
   combo_on     ATLAS on Zlarior's 50K (engine/combo50k.set_on: also needs the Decide card answered yes)
   blitz_on     arm BLITZ on its own 25K (engine/go.arm_c: needs BLITZ's 25K set first)
@@ -80,7 +82,7 @@ def first_line(path: str | None = None, now=None) -> str:
     if not items:
         return ""
     return ("[..] Your phone asked to switch on: " + "; ".join(known.get(x["key"], x["key"]) for x in items)
-            + ". The phrase you type below turns them on too.")
+            + ". After the phrase you are asked about each one (Y = switch on, Enter = no).")
 
 
 def _apply_one(key: str, phrase: str) -> dict:
@@ -98,22 +100,38 @@ def _apply_one(key: str, phrase: str) -> dict:
     return {"ok": False, "error": "unknown switch"}
 
 
-def apply_all(phrase: str, path: str | None = None, now=None, apply_one=None) -> list:
-    """After START's typed phrase: apply every queued switch, then empty the queue. -> lines to print. Wrong phrase = nothing."""
+YES = ("y", "yes")
+
+
+def apply_all(phrase: str, path: str | None = None, now=None, apply_one=None, confirm=None, say=print) -> list:
+    """After START's typed phrase: ask about EACH queued switch (confirm(question) -> the owner's answer; default NO), apply the
+    ones answered Y, drop the ones answered anything else, keep them all when there is no console (EOF). -> lines to print.
+    Wrong phrase = nothing asked, nothing applied. confirm=None = input()."""
     from .go import LIVE_PHRASE, typed_phrase
     items = load(path, now)
     if not items or typed_phrase(str(phrase or "")) != LIVE_PHRASE:
         return []
-    known, out = keys(), []
+    ask = confirm or input
+    known, out, keep = keys(), [], []
     for x in items:
+        lbl = known.get(x["key"], x["key"])
+        say(f" [..] Your phone asked to switch on: {lbl} (queued {x.get('via') or 'phone'})")
+        try:
+            ans = str(ask(f"      Type Y to also switch on {lbl} (Enter = no): ") or "").strip().lower()
+        except (EOFError, OSError):
+            keep.append(x)
+            out.append(f"[..] Not switched on: {lbl} (not asked here: START_BOT.bat asks at the next START)")
+            continue
+        if ans not in YES:
+            out.append(f"[..] Not switched on: {lbl} (you said no; the phone can ask again)")
+            continue
         try:
             r = (apply_one or _apply_one)(x["key"], phrase)
         except Exception as e:  # noqa: BLE001
             r = {"ok": False, "error": f"{e.__class__.__name__}: {e}"}
-        lbl = known.get(x["key"], x["key"])
         out.append(f"[OK] Switched on from your phone's request: {lbl}" + (f" ({r.get('say')})" if r.get("say") else "")
                    if r.get("ok") else f"[FIX] Not switched on: {lbl}: {str(r.get('error'))[:160]}")
-    _save([], path)
+    _save(keep, path)
     return out
 
 

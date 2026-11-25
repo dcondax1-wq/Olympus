@@ -9,7 +9,7 @@ arms an account, places an order or changes sizing / strategy; the live phrase s
 ## Every reason you touched the PC in the last 3 weeks
 | Reason (when) | Automatic now? | How / what is left |
 |---|---|---|
-| Update blocked by a file (Oct 27 lit_journal, Nov 23-25 results.json) | **yes** | Bot-made files are git-ignored or in `engine/generated_files`; proved by `tests.test_handsfree` b (the PC's own writers in a temp copy leave `git status` clean). A hand edit is parked (git stash) by the hourly update; tracked market data in `data/` is parkable now. Still stuck 1 h later: Telegram says so, the fix is a reply: **/update** (or **/update force** for a strategy / account file: parked too, nothing lost) |
+| Update blocked by a file (Oct 27 lit_journal, Nov 23-25 results.json) | **yes** | Bot-made files are git-ignored or in `engine/generated_files`; proved by `tests.test_handsfree` b (the PC's own writers in a temp copy leave `git status` clean). A hand edit is parked (git stash) by the hourly update; tracked market data in `data/` is parkable now. Still stuck 1 h later: Telegram says so, the fix is a reply: **/update** (or **/update force** for a strategy / account file: parked too, nothing lost; update_source.json is never parked; a crash-loop rollback gives the parked edit back) |
 | Restart the bot / server | **yes** (phone) | Telegram **/restart** or PC Control > Restart: after 16:00 ET and flat; your eval comes back armed (auto-resume) and Telegram replies "PC is back up" |
 | Install new code now | **yes** (phone) | Telegram **/update** or PC Control > Update now (otherwise it installs by itself within the hour, outside 01:50-16:00 ET) |
 | Pause / resume entries | **yes** (phone) | Telegram **/pause** [HH:MM \| tomorrow] and **/resume** |
@@ -23,7 +23,7 @@ arms an account, places an order or changes sizing / strategy; the live phrase s
 | Unarmed after START (an account missed) | **yes (check) / your phrase** | START + the ONE phrase arms every account and turns auto-resume + keep-alive on for each; the 01:55 / 09:00 ET line says which account is NOT ready. Arming itself is yours by rule |
 | 7-day keep-alive switch | **yes** | part of the START phrase since Nov 23 (no KEEPALIVE_ON.bat) |
 | New account | **phone + your phrase** | PC Control > Add account (held, never armed); it joins your next START + phrase. Arming a real account is never remote |
-| BLITZ / combo switch | **phone + your phrase** | PC Control queues it; your next START + phrase applies it (BLITZ stays paper, owner Nov 24) |
+| BLITZ / combo switch | **phone + your phrase + Y** | PC Control queues it; your next START shows each queued switch on its own line and asks 'Type Y to also switch on ...' (Enter = no; red team #7: BLITZ stays paper, owner Nov 24) |
 | Order-flow add-on F5 (LE_TickRec.cs) | **copy: yes; compile: probably** | Self-heal copies a new build into NinjaTrader's AddOns after 16:00 ET when flat. NinjaTrader normally compiles a changed file by itself while it runs (not yet seen on your PC). The add-on now reports its build, so if NinjaTrader still runs the old one 30 min later you get ONE line per new build: NinjaScript Editor > F5. There is no way to compile without NinjaTrader's own window |
 | Contract roll (Dec 10) | **no, unless no-chart mode** | With the LE_BarFeed chart: switch the chart to 03-27 (docs/ROLL_DEC_2026.md; the bot blocks entries until then and reminds you). With NO_CHART_MODE (LE_Feed add-on) the roll needs no click |
 | Missing pip packages | **yes** | self-heal installs them after 16:00 ET when flat |

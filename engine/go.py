@@ -971,7 +971,7 @@ def _step_arm(cfg, phrase, dry=False, open_page=True, inp=None) -> int:
         _open()
     shortcut()
     keepalive_consent(phrase)              # the same typed phrase: keep-alive ON for exactly the accounts armed above
-    for ln in pending_apply(phrase):       # day-zerotouch2: the phone's queued switches (combo, BLITZ, a new lane), same phrase
+    for ln in pending_apply(phrase, inp):  # day-zerotouch2 + red team #7: each queued switch asked on its own line (default NO)
         print(f" {ln}")
     return _summary([AR.row(z_lbl, True)] + rows, 0)
 
@@ -989,10 +989,13 @@ def pending_first_line() -> str:
         return ""
 
 
-def pending_apply(phrase) -> list:
+def pending_apply(phrase, inp=None) -> list:
+    """The phone's queued switches after the phrase: each one shown and asked 'Type Y ...' (default NO; red team #7)."""
     try:
         from . import pending_switch
-        return pending_switch.apply_all(phrase, _ps_path())
+        def no_console(_q):                # the Start page / a job cannot ask: nothing is switched on, the queue stays
+            raise EOFError
+        return pending_switch.apply_all(phrase, _ps_path(), confirm=inp or no_console)
     except Exception as e:  # noqa: BLE001
         return [f"[..] Phone switches not applied ({e.__class__.__name__}): START again"]
 
