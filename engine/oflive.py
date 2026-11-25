@@ -1,0 +1,279 @@
+"""Order flow, live and daily (day-ofmax 2026-11-25; READ-ONLY, PAPER: it never trades, sizes, arms or routes anything).
+
+1. live_read(): the last minutes of the live tick file LE_TickRec writes (Documents\\NinjaTrader 8\\le_ticks\\NQ_<ET day>.csv,
+   flushed every second) -> delta of the last 5 / 15 minutes and, at LIT's ARMED sweep level, the zone read of OF1
+   (research/orderflow/PREREG_ticks.md: volume and delta within 8 ticks of the level; "absorbed" = delta against the trade and
+   >= 20 % of the zone volume, i.e. aggressive orders hit into the extreme and it held). engine/brain_feed.of_bot shows it in the
+   Brain's Order Flow room. Reads only the file's tail (<= TAIL_BYTES): cheap every 15 minutes, any time of day.
+2. journal_kick(): once a day, after the close (engine/tickrec.autopilot), one line per finished day into
+   data/orderflow_journal.jsonl: what order flow said at each LIT trade's sweep (from the day's order-flow summary,
+   engine/ofsum) vs what the trade did, and a running "flow right N of M". So the owner sees it learn daily.
+Standard library only (no pandas, no engine.tickrec, nothing that can trade): brain_feed / pc_report may import it.
+"""
+from __future__ import annotations
+
+import csv
+import datetime as dt
+import gzip
+import io
+import json
+import os
+import time
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TICK = 0.25
+ZONE_TICKS, ABS_SHARE, MIN_ZONE = 8, 0.20, 50
+TAIL_BYTES = 4_000_000
+JOURNAL = os.path.join(ROOT, "data", "orderflow_journal.jsonl")
+try:
+    from zoneinfo import ZoneInfo
+    ET = ZoneInfo("America/New_York")
+except Exception:  # noqa: BLE001
+    ET = None
+
+
+def nt_dir() -> str | None:
+    o = os.environ.get("OLYMPUS_NT_DIR")
+    if o:
+        return o
+    home = os.path.expanduser("~")
+    for p in (os.path.join(home, "Documents", "NinjaTrader 8"), os.path.join(home, "OneDrive", "Documents", "NinjaTrader 8")):
+        if os.path.isdir(p):
+            return p
+    return None
+
+
+def _et_day(t: float) -> str:
+    return dt.datetime.fromtimestamp(t, ET).strftime("%Y-%m-%d") if ET else time.strftime("%Y-%m-%d", time.gmtime(t))
+
+
+def tail_ticks(path: str, max_bytes: int = TAIL_BYTES) -> list:
+    """[(t_ms, price, size, bid, ask)] from the end of one live LE_TickRec CSV (a torn first / last line is dropped)."""
+    try:
+        size = os.path.getsize(path)
+        with open(path, "rb") as fh:
+            if size > max_bytes:
+                fh.seek(size - max_bytes)
+                fh.readline()
+            raw = fh.read().decode("utf-8", "replace")
+    except OSError:
+        return []
+    out = []
+    for ln in raw.splitlines():
+        p = ln.split(",")
+        if len(p) != 5 or p[0] == "t_ms":
+            continue
+        try:
+            out.append((int(p[0]), float(p[1]), int(float(p[2])), float(p[3] or 0), float(p[4] or 0)))
+        except ValueError:
+            continue
+    return out
+
+
+def sides(ticks: list) -> list:
+    """Aggressor side per trade: quote rule (price >= ask buy, <= bid sell), else the tick rule (as engine/tickrec.classify)."""
+    out, last_p, last_s = [], None, 0
+    for _t, p, _v, b, a in ticks:
+        s = 0
+        if b > 0 and a > 0 and a >= b:
+            s = 1 if p >= a else (-1 if p <= b else 0)
+        if s == 0 and last_p is not None:
+            s = 1 if p > last_p else (-1 if p < last_p else last_s)
+        out.append(s)
+        last_p, last_s = p, s or last_s
+    return out
+
+
+def zone_read(rows, level: float, d: int) -> dict:
+    """OF1 at a level: rows [(price, size, side)] -> {"vz", "dz", "read"}: absorbed / not absorbed / not tested yet."""
+    vz = dz = 0
+    for p, v, s in rows:
+        if abs(p - level) <= ZONE_TICKS * TICK:
+            vz += v
+            dz += v * s
+    if vz < MIN_ZONE:
+        read = "not tested yet"
+    elif dz * d < 0 and abs(dz) >= ABS_SHARE * vz:
+        read = "absorbed"
+    else:
+        read = "not absorbed"
+    return {"vz": int(vz), "dz": int(dz), "read": read}
+
+
+def live_read(level: float | None = None, d: int = 0, now: float | None = None, nd: str | None = None) -> dict | None:
+    """The live order-flow read for the Brain (None when there is no live tick file for today)."""
+    nd = nd or nt_dir()
+    if not nd:
+        return None
+    now = now or time.time()
+    p = os.path.join(nd, "le_ticks", f"NQ_{_et_day(now)}.csv")
+    tk = tail_ticks(p)
+    if not tk:
+        return None
+    sd = sides(tk)
+    end = tk[-1][0]
+    out = {"t": int(end // 1000), "age_s": int(max(0, now - end / 1000))}
+    for mins in (5, 15):
+        a = end - mins * 60_000
+        v = sum(x[2] for x in tk if x[0] > a)
+        dl = sum(x[2] * s for x, s in zip(tk, sd) if x[0] > a)
+        out[f"v{mins}"], out[f"d{mins}"] = int(v), int(dl)
+    if level is not None and d in (1, -1):
+        a = end - 30 * 60_000
+        out["level"] = {"px": level, "d": d, **zone_read([(x[1], x[2], s) for x, s in zip(tk, sd) if x[0] > a], level, d)}
+    return out
+
+
+# ------------------------------------------------------------------------------------------------ daily journal
+def _read_json(p, default=None):
+    try:
+        with open(p, encoding="utf-8") as fh:
+            return json.load(fh)
+    except Exception:  # noqa: BLE001
+        return default
+
+
+def _jl(p) -> list:
+    out = []
+    try:
+        with open(p, encoding="utf-8") as fh:
+            for ln in fh:
+                try:
+                    r = json.loads(ln)
+                    if isinstance(r, dict):
+                        out.append(r)
+                except ValueError:
+                    pass
+    except OSError:
+        pass
+    return out
+
+
+def lit_trades_of(day: str, root: str = ROOT) -> list:
+    """Zlarior's (LIT) entries of one ET day with their result: [{"t", "d", "stop", "entry", "pnl"}] from the bot's own ledger
+    (data/live_state.json) and the data pipe's archive (logs/datapipe/ledger_archive.jsonl, kept 15-minute copies)."""
+    rows = list((_read_json(os.path.join(root, "data", "live_state.json"), {}) or {}).get("ledger") or [])
+    rows += [r for r in _jl(os.path.join(root, "logs", "datapipe", "ledger_archive.jsonl")) if r.get("bot") in (None, "zlarior")
+             and str(r.get("src") or "main") == "main"]
+    ent, pnl = {}, {}
+    for r in rows:
+        try:
+            et_ = int(r.get("entry_t") or 0)
+        except (TypeError, ValueError):
+            continue
+        if not et_ or _et_day(et_) != day:
+            continue
+        if r.get("side") in ("buy", "sell") and (r.get("result") or {}).get("ok", True) and r.get("stop"):
+            ent.setdefault(et_, {"t": et_, "d": 1 if r["side"] == "buy" else -1, "stop": float(r["stop"]),
+                                 "entry": float(r.get("entry") or 0)})
+        elif r.get("side") == "exit" and r.get("pnl") is not None:
+            pnl.setdefault(et_, {})[int(r.get("t") or 0)] = float(r["pnl"])
+    return [{**e, "pnl": round(sum((pnl.get(k) or {}).values()), 2) if k in pnl else None} for k, e in sorted(ent.items())]
+
+
+def _summary(day: str, root: str) -> dict | None:
+    """The day's order-flow summary (engine/ofsum files under logs/datapipe/days/<day>/of) as plain lists."""
+    d = os.path.join(root, "logs", "datapipe", "days", day, "of")
+    try:
+        with gzip.open(os.path.join(d, "NQ_bars5m.csv.gz"), "rt") as fh:
+            bars = [{k: float(v) if v not in ("", None) else 0.0 for k, v in r.items()} for r in csv.DictReader(fh)]
+        with gzip.open(os.path.join(d, "NQ_fp5m.csv.gz"), "rt") as fh:
+            fp = [{k: float(v) for k, v in r.items()} for r in csv.DictReader(fh)]
+    except (OSError, ValueError):
+        return None
+    return {"bars": bars, "fp": fp}
+
+
+def said_at(S: dict, t_entry: int, d: int, stop: float) -> dict:
+    """What order flow said at a trade's sweep: the bar of the 6 before entry with the extreme (low for a long), OF1's zone
+    read at that extreme, and the 15-minute delta before entry."""
+    bars = S["bars"]
+    idx = [i for i, b in enumerate(bars) if t_entry - 1800 <= b["t"] < t_entry]
+    if not idx:
+        return {"read": "no data"}
+    j = min(idx, key=lambda i: bars[i]["l"]) if d == 1 else max(idx, key=lambda i: bars[i]["h"])
+    ext = bars[j]["l"] if d == 1 else bars[j]["h"]
+    rows = [(bars[j]["l"] + f["k"] * TICK, f["a"] + f["b"] + f["u"], 0) for f in S["fp"] if int(f["bar"]) == j]
+    vz = sum(v for p, v, _ in rows if abs(p - ext) <= ZONE_TICKS * TICK)
+    dz = sum(f["a"] - f["b"] for f in S["fp"] if int(f["bar"]) == j and abs(bars[j]["l"] + f["k"] * TICK - ext) <= ZONE_TICKS * TICK)
+    read = "not tested" if vz <= 0 else ("absorbed" if dz * d < 0 and abs(dz) >= ABS_SHARE * vz else "not absorbed")
+    d15 = sum(b["buy"] - b["sell"] for b in bars if t_entry - 900 <= b["t"] < t_entry)
+    return {"read": read, "vz": int(vz), "dz": int(dz), "d15": int(d15), "ext": ext}
+
+
+def journal_day(day: str, root: str = ROOT) -> dict | None:
+    S = _summary(day, root)
+    if S is None:
+        return None
+    trades = lit_trades_of(day, root)
+    rec = {"day": day, "trades": []}
+    for tr in trades:
+        s = said_at(S, tr["t"], tr["d"], tr["stop"])
+        agree = None
+        if tr["pnl"] is not None and s["read"] in ("absorbed", "not absorbed"):
+            agree = (s["read"] == "absorbed") == (tr["pnl"] > 0)
+        rec["trades"].append({"t": tr["t"], "d": tr["d"], "pnl": tr["pnl"], **s, "agree": agree})
+    rth = [b for b in S["bars"] if 570 <= _mod(b["t"]) < 960]
+    if rth:
+        rec["rth_delta"] = int(sum(b["buy"] - b["sell"] for b in rth))
+        rec["rth_move"] = round(rth[-1]["c"] - rth[0]["o"], 2)
+        rec["flow_matched_price"] = (rec["rth_delta"] > 0) == (rec["rth_move"] > 0) if rec["rth_move"] else None
+    rec["line"] = _line(rec)
+    return rec
+
+
+def _mod(t: float) -> int:
+    x = dt.datetime.fromtimestamp(t, ET) if ET else dt.datetime.utcfromtimestamp(t)
+    return x.hour * 60 + x.minute
+
+
+def _line(rec: dict) -> str:
+    md = dt.date.fromisoformat(rec["day"]).strftime("%b %d")
+    if rec["trades"]:
+        bits = []
+        for t in rec["trades"]:
+            hm = dt.datetime.fromtimestamp(t["t"], ET).strftime("%H:%M") if ET else ""
+            res = "open" if t["pnl"] is None else (f"won ${t['pnl']:,.0f}" if t["pnl"] > 0 else f"lost ${-t['pnl']:,.0f}")
+            verdict = "" if t["agree"] is None else (" (flow was right)" if t["agree"] else " (flow was wrong)")
+            bits.append(f"LIT {'long' if t['d'] == 1 else 'short'} {hm}: flow said {t['read'].upper()} -> {res}{verdict}")
+        return f"{md}: " + "; ".join(bits)
+    if "rth_delta" in rec:
+        who = "buyers" if rec["rth_delta"] > 0 else "sellers"
+        m = "agreed with" if rec.get("flow_matched_price") else "did not match"
+        return f"{md}: no LIT trade. Day delta {rec['rth_delta']:+,} ({who}), price {rec['rth_move']:+.0f} pts: flow {m} price"
+    return f"{md}: no LIT trade"
+
+
+def journal_kick(root: str = ROOT, days_back: int = 5, now: float | None = None) -> dict:
+    """Append the finished ET days (last days_back) that have a summary and no journal line yet. Never raises."""
+    try:
+        now = now or time.time()
+        have = {r.get("day") for r in _jl(JOURNAL)}
+        today = _et_day(now)
+        base = os.path.join(root, "logs", "datapipe", "days")
+        try:
+            cands = sorted(d for d in os.listdir(base) if len(d) == 10 and d < today)[-days_back:]
+        except OSError:
+            cands = []
+        new = []
+        for d in cands:
+            if d in have:
+                continue
+            rec = journal_day(d, root)
+            if rec:
+                new.append(rec)
+        if new:
+            os.makedirs(os.path.dirname(JOURNAL), exist_ok=True)
+            with open(JOURNAL, "a", encoding="utf-8") as fh:
+                for r in new:
+                    fh.write(json.dumps(r, separators=(",", ":")) + "\n")
+        return {"added": [r["day"] for r in new]}
+    except Exception as e:  # noqa: BLE001
+        return {"error": f"{e.__class__.__name__}: {str(e)[:80]}"}
+
+
+def journal_tally(path: str | None = None) -> dict:
+    rows = _jl(path or JOURNAL)
+    ag = [t["agree"] for r in rows for t in r.get("trades") or [] if t.get("agree") is not None]
+    return {"days": len(rows), "right": sum(1 for a in ag if a), "judged": len(ag),
+            "last": rows[-1].get("line") if rows else None}

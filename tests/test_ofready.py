@@ -52,6 +52,7 @@ def main():
     depth_checks()
     paging_checks()
     battery_kick_checks()
+    live_checks()
     print(f"{sum(RES)}/{len(RES)} passed")
     return 0 if all(RES) else 1
 
@@ -295,6 +296,74 @@ def battery_kick_checks():
                          "verdicts": {"OF1 LIT": "REJECTED", "OF5 abs": "TOO FEW"}})
     check("battery phone line: plain, says LIT stays", "OF1 REJECTED" in line and "LIT stays" in line and len(line) < 300, line)
     check("battery looks 40 / 60 / 120 / 250", B.LOOK_AT == (40, 60, 120, 250) and T.BATTERY_LOOKS == B.LOOK_AT)
+
+
+def live_checks():
+    """day-ofmax: the Brain's Order Flow room (live paper read at LIT's armed level) + the daily journal."""
+    import datetime as dt
+    import json
+    import tempfile
+    from zoneinfo import ZoneInfo
+    from engine import brain_feed as BF, oflive as OL, ofsum
+    ET = ZoneInfo("America/New_York")
+    with tempfile.TemporaryDirectory() as td:
+        nd = os.path.join(td, "NT"); os.makedirs(os.path.join(nd, "le_ticks"))
+        now = dt.datetime(2026, 11, 25, 10, 30, tzinfo=ET).timestamp()
+        t0 = int((now - 600) * 1000)
+        lines = ["t_ms,price,size,bid,ask"]
+        for k in range(300):                                  # sellers hit into 21000.00-21001 (the long's extreme): it holds
+            lines.append(f"{t0 + k * 1000},{21000.0 if k % 3 else 21000.25},{4},{21000.0},{21000.25}")
+        for k in range(100):                                  # then buyers lift the ask higher up
+            lines.append(f"{t0 + 300_000 + k * 1000},21010.25,2,21010.0,21010.25")
+        open(os.path.join(nd, "le_ticks", "NQ_2026-11-25.csv"), "w").write("\n".join(lines) + "\n")
+        r = OL.live_read(21000.0, 1, now=now, nd=nd)
+        check("live read: 5 / 15-minute delta from the tick file's tail", r and r["v15"] == 300 * 4 + 100 * 2 and r["d15"] == -200, r)
+        check("live read: OF1 zone at the armed long's extreme = absorbed (sellers hit, it held)", r and r["level"]["read"] == "absorbed", r and r.get("level"))
+        check("zone read: a short at the same level is not absorbed", OL.zone_read([(21000.0, 100, -1)], 21000.0, -1)["read"] == "not absorbed")
+        check("zone read: too little volume = not tested yet", OL.zone_read([(21000.0, 10, -1)], 21000.0, 1)["read"] == "not tested yet")
+        os.environ["OLYMPUS_NT_DIR"] = nd
+        keep_t = OL.time.time
+        try:
+            OL.time.time = lambda: now
+            root = os.path.join(td, "root"); os.makedirs(os.path.join(root, "data"))
+            json.dump({"enabled": True}, open(os.path.join(root, "data", "tickrec.json"), "w"))
+            br = {"setups": [{"status": "armed", "side": "LONG", "plan": {"stop": 20999.75, "limit": 21004.0}}]}
+            b = BF.of_bot(root, br)
+            th = " | ".join(b.get("think") or [])
+            check("Brain Order Flow lane: live delta line + 'at LIT's long level 21,000' read (paper)", "flow 5m" in th and "LIT long lvl" in th and ": absorbed" in th and b.get("paper"), th)
+            g = BF.build({"t": int(now), "brain": br, "price": 21005.0}, root=root, now=now)
+            check("whole Brain feed block still inside its size cap", BF.size(g) <= BF.MAX_BYTES, BF.size(g))
+        finally:
+            OL.time.time = keep_t
+            os.environ.pop("OLYMPUS_NT_DIR", None)
+        # journal: a LIT long whose sweep was absorbed and that won -> "flow was right"
+        day = "2026-11-24"
+        x = ofsum.synth_day(day, n=60_000)
+        root = os.path.join(td, "root2")
+        ofsum.write_day(day, os.path.join(root, "logs", "datapipe", "days"), x=x)
+        R = ofsum.read(os.path.join(root, "logs", "datapipe", "days", day))
+        bars = R["bars"]
+        e_t = int(bars.t.iloc[150])
+        os.makedirs(os.path.join(root, "data"), exist_ok=True)
+        json.dump({"ledger": [{"t": e_t + 2, "side": "buy", "entry_t": e_t, "entry": 1, "stop": float(bars.l.iloc[147]) - 0.25, "result": {"ok": True}},
+                              {"t": e_t + 900, "side": "exit", "entry_t": e_t, "pnl": 312.5, "result": {"ok": True}}]},
+                  open(os.path.join(root, "data", "live_state.json"), "w"))
+        keep_j = OL.JOURNAL
+        OL.JOURNAL = os.path.join(root, "data", "orderflow_journal.jsonl")
+        try:
+            r1 = OL.journal_kick(root, now=dt.datetime(2026, 11, 25, 20, 0, tzinfo=ET).timestamp())
+            rows = [json.loads(l) for l in open(OL.JOURNAL)]
+            ln = rows[0]["line"] if rows else ""
+            check("journal: one line for the finished day with the LIT trade, what flow said and the result",
+                  r1.get("added") == [day] and "LIT long" in ln and "won $312" in ln and "flow said" in ln, (r1, ln))
+            r2 = OL.journal_kick(root, now=dt.datetime(2026, 11, 25, 21, 0, tzinfo=ET).timestamp())
+            check("journal: a day is written once", r2.get("added") == [], r2)
+            tl = OL.journal_tally(OL.JOURNAL)
+            check("journal tally (flow right N of M)", tl["days"] == 1 and tl["judged"] in (0, 1), tl)
+        finally:
+            OL.JOURNAL = keep_j
+    imp = imports(os.path.join(ROOT, "engine", "oflive.py"))
+    check("oflive imports nothing that can trade, no pandas / tickrec", not any(i.startswith(b) for i in imp for b in BANNED + ("pandas", "engine.tickrec")), imp)
 
 
 if __name__ == "__main__":

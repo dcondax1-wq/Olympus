@@ -588,13 +588,18 @@ def autopilot(now: dt.datetime | None = None, study=None, nd: str | None = None)
         # before the bot's 02:00 ET (a kick at 01:39 ET with a 10-min budget plus the ingest ran up to 01:50+)
         of_sum = build_summaries(budget_s=max(0.0, min(OF_BUDGET_S, seconds_left(et) - 900)))
         of_bat = battery_kick(et)                      # day-ofmax: the pre-registered battery at 40 / 60 / 120 / 250 days (never raises)
+        try:                                           # day-ofmax: one journal line per finished day (what flow said vs result)
+            from . import oflive
+            of_jr = oflive.journal_kick()
+        except Exception as e:  # noqa: BLE001
+            of_jr = {"error": e.__class__.__name__}
         want = None
         if len(days) >= STUDY_DAYS and not runs:
             want = "first look"
         elif runs and len(runs) < 2 and st.get("backfill") == "done" and len(days) >= runs[-1]["days"] + 20:
             want = "final look (backfill done)"
         out = {"ran": False, "ingest": {k: ing.get(k) for k in ("ok", "files", "rows")}, "nq_days": len(days),
-               "backfill": st.get("backfill"), "oldest": st.get("oldest"), "of_summaries": of_sum, "of_battery": of_bat}
+               "backfill": st.get("backfill"), "oldest": st.get("oldest"), "of_summaries": of_sum, "of_battery": of_bat, "of_journal": of_jr}
         if not want:
             out["why"] = "waiting: %d of %d NQ tick days" % (len(days), STUDY_DAYS) if len(days) < STUDY_DAYS else "already ran"
             return out
