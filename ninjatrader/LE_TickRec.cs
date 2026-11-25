@@ -67,6 +67,9 @@ namespace NinjaTrader.NinjaScript.AddOns
 {
     public class LE_TickRec : AddOnBase
     {
+        // day-handsfree 2026-11-25: the build id in the status line (",v=") lets the PC see whether NinjaTrader compiled THIS file
+        // (engine/ns_sync.py). `python -m engine.ns_sync --stamp` writes it after every edit; tests.test_handsfree checks it.
+        public const string LE_BUILD = "b4b6e8afaa";
         private static readonly object RunLock = new object();
         private static LE_TickRec running;
         private static readonly long EpochTicks = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks;
@@ -273,7 +276,7 @@ namespace NinjaTrader.NinjaScript.AddOns
                 }
                 File.WriteAllText(statusPath, DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)
                     + ",on=" + (on ? "1" : "0") + ",instruments=" + names + ",rows=" + rows.ToString(CultureInfo.InvariantCulture)
-                    + BackfillStatus() + "\n");
+                    + BackfillStatus() + ",v=" + LE_BUILD + "\n");
             }
             catch (Exception)
             {

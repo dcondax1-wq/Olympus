@@ -398,6 +398,9 @@ class RemoteControl:
         self.handsoff_path = handsoff.path_for(bot) if sp else os.path.join(folder, "handsoff.jsonl")
         self._stop = threading.Event()
         self._thread = None
+        self._tg_thread = None
+        self.tg = None
+        self._via_tg = False
         self._err_at = 0.0
         self.busy = False
 
@@ -418,8 +421,11 @@ class RemoteControl:
         except Exception as e:
             return {"ok": False, "error": f"{e.__class__.__name__}: {e}"}
 
-    def _finish(self, d: dict, cid: str, cmd: str, status: str, msg: str, now: float, title: str | None = None):
+    def _finish(self, d: dict, cid: str, cmd: str, status: str, msg: str, now: float, title: str | None = None, reply=None,
+                tg: dict | None = None):
         rec = {"cmd": cmd, "t": int(now), "status": status, "msg": str(msg)[:300]}
+        if tg:
+            rec["tg"] = {k: v for k, v in tg.items() if k == "mid"}
         d.setdefault("done", {})[cid] = rec
         d["last"] = {"id": cid, **rec}
         save_done(d, self.done_path)
@@ -428,6 +434,14 @@ class RemoteControl:
             from . import handsoff
             handsoff.record(cmd, "phone", str(msg)[:160], now=now, path=self.handsoff_path)
         t, b, k = title or f"Remote {cmd}: {status}", str(msg)[:500], f"remote:{cid}:{status}"
+        if reply is not None:                          # Telegram (engine/tg_cmd.py): the receipt is the reply to the owner's message
+            ok = False
+            try:
+                ok = bool(reply(f"{t}\n{b}"))
+            except Exception:  # noqa: BLE001
+                ok = False
+            self._noticed(cid, {"ok": ok, "receipts": {"telegram": 1} if ok else {}, "failed": {} if ok else {"telegram": "reply"}})
+            return
         if self.notify is default_notify:
             self.notify(t, b, k, on_done=lambda res, _c=cid: self._noticed(_c, res))
         else:
@@ -489,7 +503,8 @@ class RemoteControl:
         if cmd == "switch":
             return self._switch(c, now)
         if cmd in ("update", "restart"):
-            return self._gated(cmd, now)
+            # day-handsfree: 'force' (also park strategy / account / rule files: git stash) only from the owner's own Telegram chat
+            return self._gated(cmd, now, force=c.get("force") is True and getattr(self, "_via_tg", False))
         return "refused", "unknown command"
 
     def _start(self, c: dict) -> tuple:
@@ -575,7 +590,7 @@ class RemoteControl:
         row = presence.check_in("phone", c.get("hours"), now, self.presence_path)
         return "done", f"checked in from the phone: present until {presence._hm(row['t'] + int(row['hours'] * 3600))} ET"
 
-    def _gated(self, cmd: str, now: float) -> tuple:
+    def _gated(self, cmd: str, now: float, force: bool = False) -> tuple:
         from . import autoupdate as au
         env = self._env()
         if env.get("LE_SUPERVISED") != "1":
@@ -592,7 +607,7 @@ class RemoteControl:
             return "refused", w
         fn = self.hooks.get("update")
         try:
-            res = fn() if callable(fn) else self._real_update(now)
+            res = (fn(force=True) if force else fn()) if callable(fn) else self._real_update(now, force=force)
         except Exception as e:
             return "failed", f"update error: {e.__class__.__name__}: {e}"
         st = res.get("status")
@@ -601,15 +616,83 @@ class RemoteControl:
         return ("done" if st in ("up_to_date",) else "refused" if st in ("skipped", "off") else "failed"), \
             f"update {st}: {res.get('reason')}"
 
-    def _real_update(self, now):
+    def _real_update(self, now, force: bool = False):
         from . import autoupdate as au
         state = au.load_state()
         sh = au.Shell(log=au.file_log)
-        au.file_log("remote update (owner, control branch)")
+        au.file_log("remote update (owner, " + ("Telegram, force" if force else "phone") + ")")
         # the owner asked for it: the opt-in toggle is not needed, every other rule stays (LE_AUTOUPDATE=0 still blocks it)
-        res = au.run_update(sh, "manual", now, None, state={**state, "enabled": True}, park=True)   # a blocking hand edit is parked
+        res = au.run_update(sh, "manual", now, None, state={**state, "enabled": True}, park=True,   # a blocking hand edit is parked
+                            park_force=force)
         au.record(res)
         return res
+
+    def _one(self, c: dict, now: float, quiet_old: bool = False, reply=None, tg: dict | None = None):
+        """Screen + run ONE command (the control branch, an inbox file, or Telegram). Returns (id, cmd, status, msg) or None
+        (silent). A restart/update that restarts exits the process here (hooks["exit"] in tests: row status "restarting")."""
+        d = load_done(self.done_path)
+        done = d.get("done") or {}
+        why = screen(c, now, done)
+        cid, cmd = c.get("id"), str(c.get("cmd") or "").strip().lower()
+        if why in ("blank", "duplicate"):
+            return None
+        ts = parse_ts(c.get("ts"))
+        if quiet_old and why and (ts is None or now - ts > INBOX_QUIET_S):
+            return None                               # an old one-tap file left on the branch: silent
+        if why:
+            if isinstance(cid, str) and ID_RE.match(cid):
+                self._finish(d, cid, cmd or "?", "ignored", why, now, title=f"Remote {cmd or 'command'} ignored", reply=reply, tg=tg)
+            return (cid, cmd, "ignored", why)
+        # marked BEFORE it runs: a crash or the restart itself never runs it twice
+        d.setdefault("done", {})[cid] = {"cmd": cmd, "t": int(now), "status": "running", "msg": ""}
+        save_done(d, self.done_path)
+        self._via_tg = reply is not None
+        try:
+            status, msg = self.run_cmd(c, d, now)
+        finally:
+            self._via_tg = False
+        if status == "restart":
+            self._finish(d, cid, cmd, "done", msg, now, reply=reply, tg=tg)
+            try:
+                self.bot._save_state()
+            except Exception:
+                pass
+            if cmd == "restart":         # the owner's own restart is not a crash: engine/autoupdate.crash_check skips it
+                try:
+                    from .autoupdate import mark_deliberate_restart
+                    (self.hooks.get("deliberate") or mark_deliberate_restart)("the phone's restart")
+                except Exception:  # noqa: BLE001
+                    pass
+            self._hook("beat")
+            time.sleep(0 if self.hooks.get("exit") else 2)
+            fn = self.hooks.get("exit") or (lambda code: os._exit(code))
+            from .autoupdate import RESTART_CODE
+            fn(RESTART_CODE)
+            return (cid, cmd, "restarting", msg)
+        self._finish(d, cid, cmd, status, msg, now, reply=reply, tg=tg)
+        return (cid, cmd, status, msg)
+
+    def run_external(self, cmds, now=None, reply=None, tg: dict | None = None) -> list:
+        """Commands from Telegram (engine/tg_cmd.py): the SAME screen / gates / done ids as the control branch; the receipt goes
+        to reply(text) instead of the phone notice. Returns [(id, cmd, status, msg)]; [] while the control pass runs."""
+        now = self.clock() if now is None else now
+        out = []
+        if self.busy:
+            return out
+        self.busy = True
+        try:
+            for c in cmds or []:
+                row = self._one(c, now, quiet_old=True, reply=reply, tg=tg)
+                if row is None:
+                    continue
+                out.append((row[0], row[1], "done" if row[2] == "restarting" else row[2], row[3]))
+                if row[2] == "restarting":
+                    return out
+            if out:
+                self._hook("beat")
+            return out
+        finally:
+            self.busy = False
 
     # ---- one pass
     def pending_tick(self, now=None):
@@ -668,45 +751,12 @@ class RemoteControl:
                 save_done(d, self.done_path)
             inbox = [(c, True) for t in f.get("inbox") or [] for c in parse(t)[:1]]     # one command per inbox file
             for c, from_inbox in [(c, False) for c in parse(f["text"])] + inbox:
-                d = load_done(self.done_path)
-                done = d.get("done") or {}
-                why = screen(c, now, done)
-                cid, cmd = c.get("id"), str(c.get("cmd") or "").strip().lower()
-                if why in ("blank", "duplicate"):
+                row = self._one(c, now, quiet_old=from_inbox)
+                if row is None:
                     continue
-                ts = parse_ts(c.get("ts"))
-                if from_inbox and why and (ts is None or now - ts > INBOX_QUIET_S):
-                    continue                          # an old one-tap file left on the branch: silent
-                if why:
-                    if isinstance(cid, str) and ID_RE.match(cid):
-                        self._finish(d, cid, cmd or "?", "ignored", why, now, title=f"Remote {cmd or 'command'} ignored")
-                    out.append((cid, cmd, "ignored", why))
-                    continue
-                # marked BEFORE it runs: a crash or the restart itself never runs it twice
-                d.setdefault("done", {})[cid] = {"cmd": cmd, "t": int(now), "status": "running", "msg": ""}
-                save_done(d, self.done_path)
-                status, msg = self.run_cmd(c, d, now)
-                if status == "restart":
-                    self._finish(d, cid, cmd, "done", msg, now)
-                    try:
-                        self.bot._save_state()
-                    except Exception:
-                        pass
-                    out.append((cid, cmd, "done", msg))
-                    if cmd == "restart":         # the owner's own restart is not a crash: engine/autoupdate.crash_check skips it
-                        try:
-                            from .autoupdate import mark_deliberate_restart
-                            (self.hooks.get("deliberate") or mark_deliberate_restart)("the phone's restart")
-                        except Exception:  # noqa: BLE001
-                            pass
-                    self._hook("beat")
-                    time.sleep(0 if self.hooks.get("exit") else 2)
-                    fn = self.hooks.get("exit") or (lambda code: os._exit(code))
-                    from .autoupdate import RESTART_CODE
-                    fn(RESTART_CODE)
+                out.append((row[0], row[1], "done" if row[2] == "restarting" else row[2], row[3]))
+                if row[2] == "restarting":
                     return out
-                self._finish(d, cid, cmd, status, msg, now)
-                out.append((cid, cmd, status, msg))
             if out:
                 self._hook("beat")                   # a fresh heartbeat now: its "remote" line shows the result
             return out
@@ -725,7 +775,38 @@ class RemoteControl:
                     pass
             self._stop.wait(self.every_s)
 
+    def _run_tg(self):
+        from . import tg_cmd
+        poller = tg_cmd.TgCommands(self, env=self.env, clock=self.clock)
+        self.tg = poller
+        while not self._stop.is_set():
+            try:
+                poller.tick()
+            except Exception as e:  # noqa: BLE001
+                try:
+                    self.log(f"[telegram] error: {e.__class__.__name__}: {e}")
+                except Exception:
+                    pass
+            self._stop.wait(tg_cmd.POLL_S)
+
+    def start_tg(self) -> bool:
+        """Telegram commands (engine/tg_cmd.py): on the supervised PC server (LE_REMOTE=1, run_bot.ps1) unless LE_TG_CMD=0. It
+        does not need GitHub, so it runs even when the control branch is off."""
+        from . import tg_cmd
+        env = self._env()
+        if env.get("LE_REMOTE", "0") != "1" or not tg_cmd.enabled(env):
+            return False
+        if self._tg_thread is None or not self._tg_thread.is_alive():
+            self._tg_thread = threading.Thread(target=self._run_tg, name="remote-telegram", daemon=True)
+            self._tg_thread.start()
+            self.log("[telegram] on: replies /status /update /restart /pause /resume from the owner's chat (every ~15 s)")
+        return True
+
     def start(self) -> bool:
+        try:
+            self.start_tg()
+        except Exception as e:  # noqa: BLE001
+            self.log(f"[telegram] off: {e.__class__.__name__}: {e}")
         if not enabled(self._env(), self.cwd):
             self.log("[remote] off (scripts/run_bot.ps1 sets LE_REMOTE=1)")
             return False
@@ -740,4 +821,7 @@ class RemoteControl:
         self._stop.set()
 
     def status(self) -> dict:
-        return {**hb_field(self.done_path, self._env(), self.clock()), "thread_alive": bool(self._thread and self._thread.is_alive())}
+        out = {**hb_field(self.done_path, self._env(), self.clock()), "thread_alive": bool(self._thread and self._thread.is_alive())}
+        if self.tg is not None:
+            out["telegram"] = {**self.tg.status(), "alive": bool(self._tg_thread and self._tg_thread.is_alive())}
+        return out

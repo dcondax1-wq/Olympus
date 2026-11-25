@@ -430,7 +430,7 @@ def from_main(sh, path: str, old: str, new: str) -> str | None:
 
 
 def fast_forward(sh, branch: str = BRANCH, log=None, skip_sha: str | None = None, src: dict | None = None,
-                 crash_sha: str | None = None, park: bool = False, now=None) -> dict:
+                 crash_sha: str | None = None, park: bool = False, now=None, park_force: bool = False) -> dict:
     """Move the checkout to origin/<branch> (fast-forward only), the one way every update runs: the auto-update, the
     phone's "update", UPDATE.bat and START BOT (`python -m engine.autoupdate --pull`), the dashboard's Start page.
     Before the dirty check: ATLAS's account block an older version wrote into second_model.json goes to
@@ -510,8 +510,11 @@ def fast_forward(sh, branch: str = BRANCH, log=None, skip_sha: str | None = None
         # Only run_update passes park=True, after its window (never 01:50-16:00 ET on a weekday) and flat checks.
         try:
             from . import self_heal
-            pk = self_heal.park_local(getattr(sh, "cwd", ROOT) or ROOT, sh.git, [p for p in blocking if p != TRACKED_LOCAL],
-                                      now=now, log=log, via="the auto-update")
+            # day-handsfree: park_force (the owner's Telegram '/update force' only) also parks the strategy / account / rule files
+            pk = self_heal.park_local(getattr(sh, "cwd", ROOT) or ROOT, sh.git,
+                                      [p for p in blocking if park_force or p != TRACKED_LOCAL],
+                                      now=now, log=log, via="the owner's /update force" if park_force else "the auto-update",
+                                      force=park_force)
             if pk.get("parked"):
                 res["parked"] = pk["parked"]
                 res["stash"] = pk.get("stash")
@@ -1108,7 +1111,7 @@ def selftest_step(sh, old: str | None, args=None, timeout: float = SELFTEST_TIME
 
 def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = None, state: dict | None = None,
                tests=TESTS, branch: str = BRANCH, env=None, all_hours: bool = False, selftest: bool | None = None,
-               park: bool | None = None) -> dict:
+               park: bool | None = None, park_force: bool = False) -> dict:
     """One check. Returns {"status", "reason", "old", "new", "restart", "alert"}; status: off | skipped | up_to_date |
     updated | rolled_back | failed. `flat` = flat_reason (None = flat). Pure apart from `sh`. selftest: run the PC
     self-test after `tests` (selftest_step; a regression holds the update back: rolled back, "held" = the check).
@@ -1134,7 +1137,8 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
     # park (day-zerotouch2): the server's own checks (daily / hourly) and the phone's "Update now" park a blocking hand edit
     if park is None:
         park = mode in ("daily", "hourly")
-    ff = fast_forward(sh, branch, skip_sha=state.get("bad_sha"), crash_sha=state.get("crash_sha"), park=bool(park), now=now)
+    ff = fast_forward(sh, branch, skip_sha=state.get("bad_sha"), crash_sha=state.get("crash_sha"), park=bool(park), now=now,
+                      park_force=bool(park and park_force))
     old, new, changed = ff.get("old"), ff.get("new"), ff.get("changed") or []
     res.update(old=old, new=new)
     if ff.get("parked"):
