@@ -547,7 +547,9 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
     except Exception:  # noqa: BLE001
         snap["bf_bars"], snap["bf_root"] = None, root
     # the order-flow study's one result line (engine/tickrec autopilot writes data/orderflow_note.json; plain JSON, no import)
-    snap["research"] = [x for x in [read_json(os.path.join(root, "data", "orderflow_note.json"), None)] if isinstance(x, dict) and x.get("key")]
+    snap["research"] = [x for x in [read_json(os.path.join(root, "data", "orderflow_note.json"), None),
+                                    read_json(os.path.join(root, "data", "orderflow_battery_note.json"), None)]   # day-ofmax: the battery's look line
+                        if isinstance(x, dict) and x.get("key")]
     snap["tr"] = read_json(os.path.join(root, "data", "tickrec_tiny.json"), None)   # day-pillars 2026-11-24: the order-flow tick count (engine/tickrec.write_tiny; plain JSON, no import)
     try:                                    # the Kalshi rewards PAPER card (tools/kalshi_rewards_paper.py public summary, < 1 KB)
         from engine import live_publish as _lpk

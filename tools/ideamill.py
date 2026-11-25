@@ -4,6 +4,8 @@
     python -X utf8 tools/ideamill.py --batch 0            # every grammar idea not tried yet
     python -X utf8 tools/ideamill.py --harvest            # weekly: arXiv q-fin + NBER abstracts -> mapped ideas / needs a human
     python -X utf8 tools/ideamill.py --report             # the gate counts + the survivors
+    python -X utf8 tools/ideamill.py --of                 # the order-flow grammar only (research/orderflow/DESIGN_forward.md):
+                                                          # off under 60 tick days, its own 60/40 split, runs in every --batch too
 Outputs (research/ideamill/): trials.jsonl.gz (EVERY trial, the running count on each line), summary.json (the Brain reads it),
 harvest.json, needs_human.json, rejected_registry.json; survivors -> research/learn/journal.json (pillar market, lens idea mill).
 """
@@ -348,6 +350,7 @@ def batch(n, cap_s=1200, say=print, journal=None):
          "counts": counts, "families": H3["real"]["table"], "placebo_families": H3["placebo"]["table"][:10],
          "v3_survivors": [{"id": t["id"], "gate": t["gate"], "disc": t["disc"], "hold": t.get("hold")} for t in H3["real"]["survivors"]],
          "confirm_track": confirm, "top": top, "best_raw_p": [{"id": t["id"], "disc": t["disc"]} for t in best_raw], "week": week_counts(T_all)}
+    S["of"] = of_grammar(say)                         # day-ofmax: the order-flow ideas, forward-only protocol (off until the data)
     json.dump(S, open(SUMMARY, "w", encoding="utf-8"), indent=1, default=float)
     to_journal(T_all, counts, journal)
     say(f"tested {done} | total trials {counts['trials_total']} | scored {counts['scored']} | too few {counts['too_few']} | "
@@ -476,6 +479,21 @@ def rejected_registry(say=print):
     return out
 
 
+def of_grammar(say=print) -> dict:
+    """The `of` grammar (research/orderflow/DESIGN_forward.md): order-flow ideas have no 2021-24 discovery span, so they run under
+    their own forward-only protocol (of_forward.run) on the PC's order-flow summaries; it switches itself on at 60 tick days.
+    Never raises into the batch."""
+    try:
+        import importlib.util
+        p = os.path.join(ROOT, "research", "orderflow", "of_forward.py")
+        sp = importlib.util.spec_from_file_location("of_forward", p)
+        m = importlib.util.module_from_spec(sp); sp.loader.exec_module(m)
+        return m.run(say=say)
+    except Exception as e:  # noqa: BLE001
+        say(f"of grammar skipped: {e.__class__.__name__}: {str(e)[:120]}")
+        return {"state": "error", "why": f"{e.__class__.__name__}: {str(e)[:120]}"}
+
+
 def report(say=print):
     S = json.load(open(SUMMARY, encoding="utf-8")) if os.path.exists(SUMMARY) else {}
     say(json.dumps(S.get("counts"), indent=1))
@@ -491,8 +509,16 @@ def main(argv=None):
     ap.add_argument("--cap", type=float, default=20, help="minutes")
     ap.add_argument("--harvest", action="store_true")
     ap.add_argument("--report", action="store_true")
+    ap.add_argument("--of", action="store_true", help="the order-flow grammar only (forward-only protocol)")
     a = ap.parse_args(argv)
     os.makedirs(OUT, exist_ok=True)
+    if a.of:
+        r = of_grammar()
+        if os.path.exists(SUMMARY):                    # keep the batch's summary, refresh its "of" block
+            S = json.load(open(SUMMARY, encoding="utf-8"))
+            S["of"] = r
+            json.dump(S, open(SUMMARY, "w", encoding="utf-8"), indent=1, default=float)
+        return 0
     if a.harvest:
         harvest(); rejected_registry()
     if a.batch is not None:

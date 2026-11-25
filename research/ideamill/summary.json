@@ -678,5 +678,11 @@
   "tested_this_week": 56160,
   "tested_total": 56160,
   "survived_total": 0
+ },
+ "of": {
+  "state": "off",
+  "tick_days": 0,
+  "design": "research/orderflow/DESIGN_forward.md",
+  "why": "waiting: 0 of 60 tick days (the battery covers 40-60)"
  }
 }

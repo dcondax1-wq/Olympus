@@ -344,4 +344,15 @@ data/ticks/
 data/tickrec.json
 data/orderflow_auto.json
 data/orderflow_note.json
+# day-ofmax 2026-11-25: bot-written order-flow files (depth store, journal, battery line, small state files)
+data/depth/
+data/depth_ingested.json
+data/orderflow_battery_note.json
+data/orderflow_journal.jsonl
+data/tickrec_tiny.json
+data/tickrec_ingested.json
 data/orderflow_*.json.tmp
+# red team 2026-11-25: the order-flow autopilot lock and the state files' .tmp copies (written by the PC)
+data/tickrec_autopilot.lock
+data/tickrec_*.json.tmp
+data/depth_*.json.tmp
