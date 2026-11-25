@@ -48,6 +48,15 @@ def main():
                        cwd=ROOT, capture_output=True, text=True, timeout=1800)
     check("of_mill selftest (DESIGN2: a planted signal passes the 4 gates, random features do not, ideamill rows)",
           r.returncode == 0 and "selftest: OK" in r.stdout, (r.stdout + r.stderr)[-400:])
+    r = subprocess.run([sys.executable, "-X", "utf8", os.path.join(ROOT, "research", "orderflow", "of_forward.py"), "--selftest"],
+                       cwd=ROOT, capture_output=True, text=True, timeout=2400)
+    check("of_forward selftest (DESIGN_forward: off < 60 days, provisional never a candidate, split frozen once, planted idea "
+          "reaches forward paper, placebo passes nothing)", r.returncode == 0 and "selftest: OK" in r.stdout, (r.stdout + r.stderr)[-400:])
+    import importlib.util as _iu
+    sp = _iu.spec_from_file_location("ideamill_t", os.path.join(ROOT, "tools", "ideamill.py"))
+    IM = _iu.module_from_spec(sp); sp.loader.exec_module(IM)
+    g = IM.of_grammar(say=lambda *_: None)
+    check("tools/ideamill.py 'of' grammar: off (waiting) with no order-flow summaries here", g.get("state") in ("off", "error") and "waiting" in str(g.get("why")), g)
     feed_checks()
     depth_checks()
     paging_checks()
