@@ -66,3 +66,9 @@ The trade-level `NQ_prints.csv.gz` file is dropped: the PC now computes OF2's fr
 over the 5 previous tick days, >= 3 needed) and ships per-bar signed block volume `bth` (plus fixed b10/b20/b50) in
 `NQ_bars5m.csv.gz`, with `block_th` in the meta. OF2's window (sweep-extreme bar open -> entry, both on the 5m grid) is whole
 bars, so the result is identical (selftest: parity with `of_study.prereg` on raw ticks). No trade-level tape leaves the PC.
+
+## Note added 2026-11-25 (day-ofmax, before any tick data reached the cloud; no rule changed)
+A 4th look at **250 tick days** is added (looks 40 / 60 / 120 / 250; `--final` = the 250 look, or when the backfill reports
+done). This can only make a PASS harder: a test that passed earlier must still pass at every later look. The PC also runs the
+battery itself at each look (`engine/tickrec.autopilot`, results under `logs/orderflow/`, one phone line), so the first look
+happens the night the 40th day is in, not when the cloud next pulls.

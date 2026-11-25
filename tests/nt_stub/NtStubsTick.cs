@@ -118,6 +118,22 @@ namespace NinjaTrader.Data
         public double Bid { get; set; }
         public double Ask { get; set; }
     }
+    // day-ofmax: market depth (the add-on finds these by NAME through reflection, as it would in NinjaTrader)
+    public class MarketDepthRow { public double Price { get; set; } public long Volume { get; set; } }
+    public class MarketDepthEventArgs : EventArgs { public MarketDataType MarketDataType { get; set; } public int Position { get; set; } }
+    public class MarketDepth<T> : IDisposable where T : MarketDepthRow
+    {
+        public static List<MarketDepth<T>> Made = new List<MarketDepth<T>>();
+        public List<T> Asks = new List<T>();
+        public List<T> Bids = new List<T>();
+        public NinjaTrader.Cbi.Instrument Instrument;
+        public bool Disposed;
+        public MarketDepth(NinjaTrader.Cbi.Instrument instrument) { Instrument = instrument; Made.Add(this); }
+        public event EventHandler<MarketDepthEventArgs> Update;
+        public bool HasHandler { get { return Update != null; } }
+        public void Fire() { if (Update != null) Update(this, new MarketDepthEventArgs()); }
+        public void Dispose() { Disposed = true; }
+    }
     public class MarketData
     {
         public MarketData(NinjaTrader.Cbi.Instrument instrument) { }

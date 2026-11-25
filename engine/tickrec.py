@@ -260,6 +260,94 @@ def _et_today() -> str:
 
 
 RAW_KEEP_DAYS = 7          # a live le_ticks CSV is deleted this many days after its ET day once it is in data/ticks
+DEPTH_DIR = os.path.join(ROOT, "data", "depth")   # day-ofmax: <ROOT>_<day>.parquet (or .csv.gz) from le_ticks\depth\<ROOT>_<day>.csv
+DEPTH_LEVELS = 10
+
+
+def depth_cols() -> list:
+    return ["t_ms", "bp"] + [f"{g}{k}" for g in ("bd", "bs", "ad", "as") for k in range(1, DEPTH_LEVELS + 1)]
+
+
+def read_depth_csv(path: str) -> pd.DataFrame:
+    """One le_ticks\depth\<ROOT>_<day>.csv (LE_TickRec day-ofmax): t_ms,bp,bd1..10,bs1..10,ad1..10,as1..10 -> typed frame
+    (offsets in ticks: -1 = no level; sizes 0 = no level). A torn last line (written while read) is dropped."""
+    x = pd.read_csv(path, on_bad_lines="skip")
+    cols = depth_cols()
+    x = x[[c for c in cols if c in x.columns]].apply(pd.to_numeric, errors="coerce")
+    x = x.dropna(subset=["t_ms", "bp"])
+    for c in cols[2:]:
+        if c not in x.columns:
+            x[c] = np.nan
+        x[c] = x[c].fillna(-1 if c[1] == "d" else 0).astype(np.int32)
+    x["t_ms"] = x["t_ms"].astype(np.int64)
+    return x[cols].sort_values("t_ms", kind="stable").reset_index(drop=True)
+
+
+def depth_path(day: str, root: str = "NQ", ext: str | None = None) -> str:
+    ext = ext or (".parquet" if _has_pyarrow() else ".csv.gz")
+    return os.path.join(DEPTH_DIR, f"{root}_{day}{ext}")
+
+
+def read_depth(day: str, root: str = "NQ") -> pd.DataFrame | None:
+    """The stored top-10 book snapshots of one ET day, or None."""
+    for ext in (".parquet", ".csv.gz"):
+        p = depth_path(day, root, ext)
+        if os.path.exists(p) and (ext != ".parquet" or _has_pyarrow()):
+            return pd.read_parquet(p) if ext == ".parquet" else pd.read_csv(p)
+    return None
+
+
+def ingest_depth(nd: str | None = None) -> dict:
+    """le_ticks\depth\*.csv -> data/depth (whole-file rewrite when the raw file changed; the raw file is append-only for its
+    day); a raw file RAW_KEEP_DAYS after its day, once stored, is deleted. Never raises."""
+    try:
+        nd = nd or nt_dir()
+        if not nd:
+            return {"ok": False, "why": "no NinjaTrader folder"}
+        fs = sorted(glob.glob(os.path.join(nd, REC_DIR, "depth", "*_????-??-??.csv")))
+        man_p = os.path.join(os.path.dirname(CFG_PATH), "depth_ingested.json")
+        try:
+            man = json.load(open(man_p, encoding="utf-8"))
+        except Exception:
+            man = {}
+        today, n, rows, removed = _et_today(), 0, 0, []
+        os.makedirs(DEPTH_DIR, exist_ok=True)
+        for f in fs:
+            b = os.path.basename(f)
+            root, day = b[:-15], b[-14:-4]
+            try:
+                sig = "%d:%d" % (os.path.getsize(f), int(os.path.getmtime(f)))
+            except OSError:
+                continue
+            if man.get(b) != sig:
+                try:
+                    x = read_depth_csv(f)
+                    p = depth_path(day, root)
+                    if p.endswith(".parquet"):
+                        x.to_parquet(p + ".tmp", index=False)
+                    else:
+                        x.to_csv(p + ".tmp", index=False, compression="gzip")
+                    _fsutil_replace(p + ".tmp", p)
+                    man[b] = sig
+                    n += 1
+                    rows += len(x)
+                except Exception as e:  # noqa: BLE001
+                    print("tickrec: depth skip", b, e)
+                    continue
+            try:
+                if man.get(b) == sig and (dt.date.fromisoformat(today) - dt.date.fromisoformat(day)).days > RAW_KEEP_DAYS:
+                    os.remove(f)
+                    man.pop(b, None)
+                    removed.append(b)
+            except (OSError, ValueError):
+                pass
+        os.makedirs(os.path.dirname(man_p), exist_ok=True)
+        with open(man_p + ".tmp", "w", encoding="utf-8") as fh:
+            json.dump(man, fh)
+        _fsutil_replace(man_p + ".tmp", man_p)
+        return {"ok": True, "files": n, "rows": rows, "removed_raw": removed}
+    except Exception as e:  # noqa: BLE001
+        return {"ok": False, "why": f"{e.__class__.__name__}: {str(e)[:80]}"}
 
 
 def refresh_instruments(nd: str | None = None, today: dt.date | None = None) -> bool:
@@ -356,8 +444,9 @@ def ingest(nd: str | None = None) -> dict:
     except Exception:
         pass
     rolled = refresh_instruments(nd)
+    dep = ingest_depth(nd)                                   # day-ofmax: market depth snapshots (never raises)
     return {"ok": True, "files": n_bf + n_live, "backfill_files": n_bf, "live_files": n_live, "rows": rows, "written": sorted(written),
-            "removed_raw": removed, "instruments_rolled": rolled}
+            "removed_raw": removed, "instruments_rolled": rolled, "depth": dep}
 
 
 # ------------------------------------------------------------------------------------------------------------ autopilot
@@ -498,13 +587,14 @@ def autopilot(now: dt.datetime | None = None, study=None, nd: str | None = None)
         # day-ofready: per-day order-flow summaries for the cloud (never raises). Red team 2026-11-24: the budget also ends 15 min
         # before the bot's 02:00 ET (a kick at 01:39 ET with a 10-min budget plus the ingest ran up to 01:50+)
         of_sum = build_summaries(budget_s=max(0.0, min(OF_BUDGET_S, seconds_left(et) - 900)))
+        of_bat = battery_kick(et)                      # day-ofmax: the pre-registered battery at 40 / 60 / 120 / 250 days (never raises)
         want = None
         if len(days) >= STUDY_DAYS and not runs:
             want = "first look"
         elif runs and len(runs) < 2 and st.get("backfill") == "done" and len(days) >= runs[-1]["days"] + 20:
             want = "final look (backfill done)"
         out = {"ran": False, "ingest": {k: ing.get(k) for k in ("ok", "files", "rows")}, "nq_days": len(days),
-               "backfill": st.get("backfill"), "oldest": st.get("oldest"), "of_summaries": of_sum}
+               "backfill": st.get("backfill"), "oldest": st.get("oldest"), "of_summaries": of_sum, "of_battery": of_bat}
         if not want:
             out["why"] = "waiting: %d of %d NQ tick days" % (len(days), STUDY_DAYS) if len(days) < STUDY_DAYS else "already ran"
             return out
@@ -544,19 +634,74 @@ def build_summaries(budget_s: float = OF_BUDGET_S, out_root: str | None = None) 
     try:
         from . import ofsum
         root = out_root or ofsum.OUT_DEFAULT
-        t0, made, failed, left = time.time(), 0, 0, 0
+        t0, made, failed, left, dep = time.time(), 0, 0, 0, 0
+        today = _et_today()
         for d in nq_days():
-            if all(os.path.exists(os.path.join(root, d, "of", nm)) for nm in ofsum.NAMES):
+            if d >= today:
+                continue                                   # day-ofmax: only finished ET days (today's ticks still arrive)
+            of = os.path.join(root, d, "of")
+            have = all(os.path.exists(os.path.join(of, nm)) for nm in ofsum.NAMES)
+            stale = False
+            if have:                                       # rebuilt when the tick file changed after (a backfill replaced a live day)
+                try:
+                    tp = _day_path(d, ".parquet") if os.path.exists(_day_path(d, ".parquet")) else _day_path(d, ".csv.gz")
+                    stale = os.path.getmtime(tp) > os.path.getmtime(os.path.join(of, "NQ_meta.json")) + 1
+                except OSError:
+                    stale = False
+            want_depth = not os.path.exists(os.path.join(of, ofsum.DEPTH_NAME)) and \
+                any(os.path.exists(depth_path(d, "NQ", e)) for e in (".parquet", ".csv.gz"))
+            if have and not stale and not want_depth:
                 continue
             if time.time() - t0 > budget_s:
                 left += 1
                 continue
-            r = ofsum.write_day(d, root)
+            if have and not stale:
+                dep += 1 if ofsum.write_depth(d, root) else 0
+                continue
+            r = ofsum.write_day(d, root, force=stale)
             made += 1 if r.get("ok") else 0
             failed += 0 if r.get("ok") else 1
-        return {"made": made, "failed": failed, "left": left}
+        return {"made": made, "failed": failed, "left": left, "depth": dep}
     except Exception as e:  # noqa: BLE001
         return {"error": f"{e.__class__.__name__}: {str(e)[:80]}"}
+
+
+BATTERY_NOTE = os.path.join(ROOT, "data", "orderflow_battery_note.json")   # day-ofmax: the battery's phone line (pc_report)
+BATTERY_DIR = os.path.join(ROOT, "logs", "orderflow")                     # results + looks on the PC (logs/ is not tracked)
+BATTERY_LOOKS = (40, 60, 120, 250)                                          # research/orderflow/DESIGN.md
+
+
+def battery_kick(et: dt.datetime, out_root: str | None = None, runner=None) -> dict:
+    """day-ofmax: run research/orderflow/of_battery.py on the PC's own summaries the night a look's day count (40 / 60 / 120 /
+    250) is first reached, as its own process, ended 15 min before 02:00 ET; one phone line in data/orderflow_battery_note.json.
+    Never raises, never touches a tracked repo file (results under logs/orderflow/)."""
+    try:
+        from . import ofsum
+        root = out_root or ofsum.OUT_DEFAULT
+        try:
+            n = sum(1 for d in os.listdir(root) if os.path.exists(os.path.join(root, d, "of", "NQ_meta.json")))
+        except OSError:
+            n = 0
+        look = sum(1 for a in BATTERY_LOOKS if n >= a)
+        try:
+            done = max([int(x.get("look") or 0) for x in json.load(open(os.path.join(BATTERY_DIR, "battery_looks.json"), encoding="utf-8"))] or [0])
+        except Exception:
+            done = 0
+        out = {"days": n, "look": look, "done": done}
+        if look == 0 or look <= done:
+            return {**out, "ran": False}
+        left = seconds_left(et)
+        if left < 1800:
+            return {**out, "ran": False, "why": "less than 30 min before 02:00 ET"}
+        cmd = [sys.executable, "-X", "utf8", os.path.join(ROOT, "research", "orderflow", "of_battery.py"), "--src", root,
+               "--out-dir", BATTERY_DIR, "--line", BATTERY_NOTE]
+        if runner is not None:
+            return {**out, "ran": bool(runner(cmd, max(60.0, left - 900)))}
+        import subprocess
+        r = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, timeout=max(60.0, left - 900))
+        return {**out, "ran": r.returncode == 0, "tail": (r.stdout or r.stderr or "")[-200:]}
+    except Exception as e:  # noqa: BLE001
+        return {"ran": False, "error": f"{e.__class__.__name__}: {str(e)[:80]}"}
 
 
 CME_CLOSED = {"2025-11-27", "2025-12-25", "2026-01-01", "2026-04-03", "2026-11-26", "2026-12-25", "2027-01-01"}   # no Globex session

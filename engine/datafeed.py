@@ -70,6 +70,9 @@ MIN_GAP_S = 240                                 # between two answers (one 5-min
 MAX_TRIES = 3                                   # children started per request (a failing upload never loops)
 DAYS_BACK_OF = 400                              # day-ofready: a "what": "of" request may reach this far (the tick backfill: 365 days)
 OF_FILES = ("NQ_bars5m.csv.gz", "NQ_fp5m.csv.gz", "NQ_meta.json")
+OF_PAGES = 4                                    # day-ofmax: one "of" ask a night is answered with up to 4 pages (<= 1.85 MB each)
+OF_PAGE_GAP_S = 20                              # between two pages of one answer
+OF_RESERVE = 2                                  # answers kept free today for normal bar / trade pulls
 STALE_LOCK_S = 1800
 BLACKOUT = (110, 960)                           # weekdays 01:50-16:00 ET (engine/datapipe.BLACKOUT): the session, nothing runs
 HTTP_TIMEOUT_S = 8.0
@@ -79,7 +82,7 @@ TFS = ("1m", "5m")
 SYM_TFS = {"GC": ("1m",), "SI": ("1m",)}        # metals (Kalshi K8 legs): 1-minute around 04:45-05:45 / 15:45-17:15 ET only
                                                 # (engine/datapipe.day_bars cuts them; ~150 bars a metal a day, a few KB)
 EXTRAS = ("review.json", "proposals.jsonl", "learn.json",
-          "of/NQ_bars5m.csv.gz", "of/NQ_fp5m.csv.gz", "of/NQ_meta.json")   # day-ofready: order-flow summaries (engine/ofsum.py)   # from the nightly run's local day folder (logs/datapipe/days/<day>/);
+          "of/NQ_bars5m.csv.gz", "of/NQ_fp5m.csv.gz", "of/NQ_meta.json", "of/NQ_depth5m.csv.gz")   # day-ofready: order-flow summaries (engine/ofsum.py)   # from the nightly run's local day folder (logs/datapipe/days/<day>/);
                                                 # learn.json = ZEUS learned's public cut (engine/zeus_learn.public)
 UA = "olympus-pc-data/1"
 _ID = re.compile(r"^[a-z0-9]{6,24}$")
@@ -88,7 +91,7 @@ _DAY = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 # EVERY PC answer from Nov 20 on ("unexpected file in the bundle") and no bar after Nov 19 arrived. tests/test_datafeed_names.py
 # keeps this list = every name pack_day can write.
 DAY_FILE = re.compile(r"^days/(\d{4}-\d{2}-\d{2})/(manifest\.json|trades\.jsonl\.gz|fills\.jsonl\.gz|review\.json|proposals\.jsonl|learn\.json|gaps\.json|"
-                      r"of/NQ_(?:bars5m|fp5m)\.csv\.gz|of/NQ_meta\.json|of/manifest\.json|"     # day-ofready (engine/ofsum.py)
+                      r"of/NQ_(?:bars5m|fp5m|depth5m)\.csv\.gz|of/NQ_meta\.json|of/manifest\.json|"     # day-ofready (engine/ofsum.py)
                       r"bars/(?:MNQ|NQ|MES|ES|GC|MGC|SI|SIL)_(?:1m|5m)\.csv\.gz)$")
 
 
@@ -489,11 +492,15 @@ def build_of(since: str, now=None, dp_work: str | None = None, max_zip: int = MA
         names = []
     days = [d for d in names if since <= d and (not until or d <= until)
             and all(os.path.exists(os.path.join(base, d, "of", f)) for f in OF_FILES)]
+    days = sorted(days, reverse=True)              # day-ofmax: NEWEST first, so pages grow the cloud's range backwards, no gaps
     packed, size, more = {}, 22, False
     for d in days:
         fs = {}
-        for f in OF_FILES:
-            with open(os.path.join(base, d, "of", f), "rb") as fh:
+        for f in OF_FILES + ("NQ_depth5m.csv.gz",):                 # day-ofmax: the depth summary when the day has one
+            fp_ = os.path.join(base, d, "of", f)
+            if f not in OF_FILES and not os.path.exists(fp_):
+                continue
+            with open(fp_, "rb") as fh:
                 fs["of/" + f] = fh.read()
         info = {p: {"bytes": len(b), "sha256": hashlib.sha256(b).hexdigest()} for p, b in fs.items()}
         fs["of/manifest.json"] = json.dumps({"v": VERSION, "day": d, "kind": "of", "made_t": now, "partial": False,
@@ -506,7 +513,7 @@ def build_of(since: str, now=None, dp_work: str | None = None, max_zip: int = MA
         size += c
     blob = zip_days(packed) if packed else b""
     while len(blob) > max_zip and len(packed) > 1:
-        packed.pop(max(packed))
+        packed.pop(min(packed))                     # newest first: the OLDEST packed day waits for the next page
         more = True
         blob = zip_days(packed)
     meta = {"v": VERSION, "kind": ANS_KIND, "what": "of", "made_t": now, "since": since, "days": len(packed),
@@ -524,7 +531,8 @@ def send(blob: bytes, meta: dict, env=None, http_fn=None) -> tuple:
     msg = json.dumps(meta, separators=(",", ":"), sort_keys=True, default=str)
     if len(msg.encode("utf-8")) > 3900:
         msg = json.dumps({k: meta.get(k) for k in ("v", "kind", "req", "made_t", "since", "days", "from", "to", "more",
-                                                    "bytes", "sha256", "code", "what")}, separators=(",", ":"), sort_keys=True)
+                                                    "bytes", "sha256", "code", "what", "page", "more_tomorrow", "until")},
+                         separators=(",", ":"), sort_keys=True)
     msg = _sign_msg(msg)
     if blob:
         h = {"Filename": f"pcdata-{meta.get('from')}-{meta.get('to')}.zip", "Message": msg, "Priority": "1"}
@@ -550,9 +558,67 @@ def _state(w: str) -> dict:
     return st if isinstance(st, dict) else {}
 
 
+def _record_sent(w: str, now: int, out: dict, rids: list) -> None:
+    st = _state(w)
+    day = _et(now).date().isoformat()
+    if out.get("ok"):
+        ans = st.get("answered") or {}
+        for rid in rids:
+            ans[str(rid)] = now
+        st["answered"] = {k: v for k, v in ans.items() if int(_num(v)) > now - 2 * 86400}
+        st["sent"] = ([s for s in (st.get("sent") or []) if str(s.get("day") or "") >= (_et(now).date() - dt.timedelta(days=7)).isoformat()]
+                      + [{"t": now, "day": day, "req": out.get("req"), "days": out.get("days"), "bytes": out.get("bytes"),
+                          "from": out.get("first"), "to": out.get("last"), "more": out.get("more"), **({"page": out["page"]} if "page" in out else {})}])[-40:]
+        st["last_sent_t"] = now
+    else:
+        st["last_error"] = {"t": now, "req": out.get("req"), "why": str(out.get("why"))[:200]}
+    _write_json(os.path.join(w, "state.json"), st)
+
+
+def _answer_of(req: dict, now: int, w: str, env, http_fn, dp_work, max_zip: int, also: list, sleep=None) -> dict:
+    """day-ofmax: ONE "of" ask -> up to OF_PAGES answers (newest days first, each <= max_zip), never past DAILY_CAP minus
+    OF_RESERVE answers today. Each page carries "page" (1..) and "more"; the cloud collects them by the ask's id."""
+    sleep = sleep or time.sleep
+    since, until = str(req.get("since")), req.get("until")
+    out = {"ok": False, "req": req.get("id"), "days": 0, "pages": 0}
+    day = _et(now).date().isoformat()
+    used = sum(1 for s_ in (_state(w).get("sent") or []) if s_.get("day") == day)
+    budget = max(1, min(OF_PAGES, DAILY_CAP - OF_RESERVE - used))
+    first = last = None
+    t_start = time.time()
+    for page in range(1, budget + 1):
+        t = now + int(time.time() - t_start)                         # the caller's clock (tests pass a fixed now)
+        try:
+            blob, meta = build_of(since, t, dp_work, max_zip, until)
+            meta.update(req=str(req.get("id")), page=page)
+            if also:
+                meta["also"] = also
+            if meta["more"] and page == budget:
+                meta["more_tomorrow"] = True
+            ok, why, j = send(blob, meta, env, http_fn)
+        except Exception as e:  # noqa: BLE001
+            ok, why, meta = False, f"{e.__class__.__name__}: {str(e)[:160]}", {"days": 0, "more": False}
+        po = {"ok": ok, "why": why, "req": req.get("id"), "days": meta.get("days", 0), "bytes": meta.get("bytes"),
+              "first": meta.get("from"), "last": meta.get("to"), "more": meta.get("more"), "page": page}
+        _record_sent(w, t, po, [req.get("id"), *also])
+        log(f"answer {req.get('id')} page {page}: ok {ok} days {po['days']} ({po['first']}..{po['last']}) more {po['more']} {'' if ok else why}", w)
+        if not ok:
+            out["why"] = why
+            break
+        out.update(ok=True, pages=page, days=out["days"] + int(po["days"] or 0), more=bool(po["more"]))
+        first = po["first"] if first is None or (po["first"] and po["first"] < first) else first
+        last = po["last"] if last is None or (po["last"] and po["last"] > last) else last
+        if not po["more"] or not po["first"]:
+            break
+        until = (dt.date.fromisoformat(str(po["first"])) - dt.timedelta(days=1)).isoformat()   # the next page: older days
+        sleep(OF_PAGE_GAP_S)
+    out.update(first=first, last=last)
+    return out
+
+
 def answer(req: dict, now=None, root: str = ROOT, work: str | None = None, folder: str | None = None, env=None,
            http_fn=None, archive_root: str | None = None, exec_store: str | None = None, dp_work: str | None = None,
-           max_zip: int = MAX_ZIP) -> dict:
+           max_zip: int = MAX_ZIP, sleep=None) -> dict:
     """Pack the days since req["since"] and send them as the answer to req["id"]. Returns a summary; never raises."""
     w = work or WORK
     now = int(now if now is not None else time.time())
@@ -560,7 +626,7 @@ def answer(req: dict, now=None, root: str = ROOT, work: str | None = None, folde
     also = [str(x) for x in (req.get("also") or [])][:6]
     try:
         if req.get("what") == "of":                                  # day-ofready: order-flow summaries only
-            blob, meta = build_of(str(req.get("since")), now, dp_work, max_zip, req.get("until"))
+            return _answer_of(req, now, w, env, http_fn, dp_work, max_zip, also, sleep)
         else:
             blob, meta = build(str(req.get("since")), now, root, folder, archive_root, exec_store, dp_work, max_zip)
         meta["req"] = str(req.get("id"))
@@ -670,6 +736,9 @@ def maybe_answer(now=None, env=None, say=print, work: str | None = None, spawn_f
         visible = {r["id"] for r in (parse_request(m, now) for m in msgs) if r}
         st["tries"] = {k: v for k, v in (st.get("tries") or {}).items() if k in visible}   # forget asks gone from the topic
         todo = pending(msgs, now, st) if ok else []
+        today = _et(now).date().isoformat()                         # day-ofmax: ONE "of" ask answered a night (red team)
+        if any(s_.get("day") == today and "page" in s_ for s_ in (st.get("sent") or [])):
+            todo = [r for r in todo if r.get("what") != "of"]
         why = None
         day = _et(now).date().isoformat()
         if todo and sum(1 for s in (st.get("sent") or []) if s.get("day") == day) >= DAILY_CAP:

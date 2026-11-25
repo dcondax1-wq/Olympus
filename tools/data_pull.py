@@ -576,55 +576,83 @@ def of_days(out_dir: str = OUT) -> list:
 
 
 def latest_of(a, sleep=None) -> int:
-    """day-ofready: ask the PC for its order-flow summaries only ("what": "of", up to 400 days back) in two parts: days newer
-    than the newest one already here, then days older than the oldest (the tick backfill runs newest first). Same return
+    """day-ofready / day-ofmax: ONE ask a night for the PC's order-flow summaries ("what": "of", up to 400 days back); the PC
+    answers it with up to datafeed.OF_PAGES pages, newest days first. With summaries already here the ask covers only the
+    days OLDER than the oldest one here (newer days ride along with every normal --latest pull, 60 days back). Same return
     codes as latest()."""
     from engine import datafeed as DF
     sleep = sleep or time.sleep
     have = of_days(a.out)
     today = dt.date.today()
+    lo = (today - dt.timedelta(days=DF.DAYS_BACK_OF - 5)).isoformat()
     if a.since:
-        parts = [(a.since, None)]
+        since, until = a.since, None
     elif have:
-        parts = [((dt.date.fromisoformat(have[-1]) + dt.timedelta(days=1)).isoformat(), None),
-                 ((today - dt.timedelta(days=DF.DAYS_BACK_OF - 5)).isoformat(),
-                  (dt.date.fromisoformat(have[0]) - dt.timedelta(days=1)).isoformat())]
+        since, until = lo, (dt.date.fromisoformat(have[0]) - dt.timedelta(days=1)).isoformat()
+        if until < since:
+            print("order flow: every day the PC can send is here already.")
+            return 3
     else:
-        parts = [((today - dt.timedelta(days=DF.DAYS_BACK_OF - 5)).isoformat(), None)]
+        since, until = lo, None
+    mark = os.path.join(a.out, "_of_ask.json")
+    try:
+        last = json.load(open(mark, encoding="utf-8"))
+    except Exception:
+        last = {}
+    night = _et_str(time.time())[:10]
+    rid = last.get("rid") if last.get("night") == night else None
+    t0 = int(last.get("t") or time.time())
+    if rid is None:
+        rid = secrets.token_hex(5)
+        okp, why = DF.post_request(rid, since, int(time.time()), what="of", until=until)
+        if not okp:
+            print(f"could not ask the PC: {why}")
+            return 1
+        t0 = int(time.time())
+        try:
+            os.makedirs(a.out, exist_ok=True)
+            json.dump({"rid": rid, "night": night, "t": t0, "since": since, "until": until}, open(mark, "w", encoding="utf-8"))
+        except OSError:
+            pass
+        print(f"Asked the PC for its order-flow summaries {since} .. {until or 'now'} (request {rid}; one ask a night).")
+    else:
+        print(f"Tonight's order-flow ask {rid} is already out: collecting its pages.")
     wait_s = 60.0 * (a.wait if a.wait is not None else 9)
-    got = []
-    for since, until in parts:
-        rounds = 0
-        while True:
-            rid = secrets.token_hex(5)
-            okp, why = DF.post_request(rid, since, int(time.time()), what="of", until=until)
-            if not okp:
-                print(f"could not ask the PC: {why}")
-                return 1
-            print(f"Asked the PC for its order-flow summaries {since} .. {until or 'now'} (request {rid}).")
-            if wait_s <= 0:
-                return 2
-            use = wait_answer(rid, int(time.time()), wait_s, sleep=sleep)
-            if use is None:
-                print(f"No answer from the PC in {int(wait_s // 60)} min (it answers outside 01:50-16:00 ET). Run this again later.")
-                return 2 if not got else 0
-            if not use.get("days"):
-                print(f"The PC could not pack them: {use['error']}." if use.get("error") else
-                      f"The PC has no order-flow summaries {since} .. {until or 'now'}.")
-                break
-            try:
-                wrote = DF.extract(fetch_bundle(use), a.out)
-            except ValueError as e:
-                print(f"The PC's answer was not usable: {e}. Nothing written.")
-                return 1
-            got += wrote
-            print(f"Received order-flow summaries of {len(wrote)} day(s) {use['from']} .. {use['to']}.")
-            if use.get("more") and rounds < 6:                     # ~15-30 days an answer; the PC answers 8 a day at most
-                since, rounds = (dt.date.fromisoformat(str(use["to"])) + dt.timedelta(days=1)).isoformat(), rounds + 1
-                continue
-            break
-    print(f"order-flow days here now: {len(of_days(a.out))}")
-    return 0 if got else 3
+    base, topic = DF.feed_cfg()
+    got, pages, end, nxt = [], {}, time.time() + wait_s, 1
+    while True:
+        ok, msgs = DF.poll(base, topic, int(t0 - 60))
+        now = int(time.time())
+        for m in msgs if ok else []:
+            x = DF.parse_answer(m, now, base)
+            if x and x.get("what") == "of" and (x.get("req") == rid or rid in (x.get("also") or [])):
+                pages[int(x.get("page") or 1)] = x
+        while nxt in pages:
+            use = pages[nxt]
+            if use.get("days"):
+                try:
+                    wrote = DF.extract(fetch_bundle(use), a.out)
+                    got += wrote
+                    print(f"Received page {nxt}: order-flow summaries of {len(wrote)} day(s) {use['from']} .. {use['to']}.")
+                except ValueError as e:
+                    print(f"Page {nxt} of the PC's answer was not usable: {e}.")
+            elif use.get("error"):
+                print(f"The PC could not pack them: {use['error']}.")
+            else:
+                print(f"The PC has no order-flow summaries {since} .. {until or 'now'}.")
+            if not use.get("more"):
+                print(f"order-flow days here now: {len(of_days(a.out))}")
+                return 0 if got else 3
+            if use.get("more_tomorrow"):
+                print(f"More days wait for tomorrow night's ask (the PC sends {DF.OF_PAGES} pages a night). "
+                      f"Order-flow days here now: {len(of_days(a.out))}")
+                return 0
+            nxt += 1
+        if time.time() >= end or wait_s <= 0:
+            print(f"Still waiting for page {nxt} of the PC's answer (it answers outside 01:50-16:00 ET); run this again later "
+                  "(tonight's ask is remembered, no new ask is sent).")
+            return 0 if got else 2
+        sleep(15)
 
 
 def run_battery(out_dir: str = OUT) -> None:

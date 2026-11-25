@@ -35,7 +35,7 @@ TICK = 0.25
 # frozen (DESIGN.md / PREREG_ticks.md)
 ZONE, ABS_SHARE, BLOCK_PCT, BLOCK_DAYS = 8, 0.20, 99.5, 5
 MIN_DAYS, MIN_ROWS, FLOOR = 40, 50_000, 8
-LOOK_AT = (40, 60, 120)
+LOOK_AT = (40, 60, 120, 250)            # day-ofmax: + 250 (DESIGN.md note 2026-11-25); a PASS must hold at every later look
 OF5_S, OF6_G = (0.20, 0.35), (6, 12)
 ATLAS_USD = 250.0
 N_PLACEBO = 3000
@@ -422,7 +422,11 @@ def quality(D, days):
             "label": "quote-rule sides" if q and np.mean(q) >= 0.5 else "tick-rule sides (NinjaTrader history: side guessed from up/down ticks)"}, fwd
 
 
-def run(src=None, ticks=False, force=False, final=False, raw=None, lit=None, atlas=None, write=True, seed=20261124):
+def run(src=None, ticks=False, force=False, final=False, raw=None, lit=None, atlas=None, write=True, seed=20261124, out_dir=None):
+    global OUT, LOOKS
+    if out_dir:                                                           # the PC: logs/orderflow (never a tracked repo file)
+        os.makedirs(out_dir, exist_ok=True)
+        OUT, LOOKS = os.path.join(out_dir, "battery_results.json"), os.path.join(out_dir, "battery_looks.json")
     R = raw if raw is not None else find_days(src, ticks)
     dropped = sorted(d for d, x in R.items() if int(x["meta"].get("rows", 0)) < MIN_ROWS)
     days = sorted(d for d in R if d not in dropped)
@@ -435,7 +439,7 @@ def run(src=None, ticks=False, force=False, final=False, raw=None, lit=None, atl
         print(status["state"])
         return status
     looks = json.load(open(LOOKS)) if (write and os.path.exists(LOOKS)) else []
-    look_no = 3 if final else sum(1 for a in LOOK_AT if len(days) >= a)
+    look_no = len(LOOK_AT) if final else sum(1 for a in LOOK_AT if len(days) >= a)
     if write and not force and any(x.get("look") == look_no for x in looks):
         print(f"look {look_no} already done ({len(days)} days); --force to re-print, --final for the last look")
         return status
@@ -493,6 +497,17 @@ def run(src=None, ticks=False, force=False, final=False, raw=None, lit=None, atl
         json.dump(looks, open(LOOKS, "w"), indent=1)
     show(out)
     return out
+
+
+def phone_line(out) -> str:
+    """One line for the owner's phone: days, each test's verdict, the honest bottom line."""
+    v = out.get("verdicts") or {}
+    short = {k.split(" ")[0]: (x.split(" ")[0] if x else "?") for k, x in v.items()}
+    bits = ", ".join(f"{k} {x}" for k, x in short.items())
+    anyp = any(x.startswith("PASS") for x in v.values())
+    return (f"Order-flow battery look {out.get('look')} on {out.get('tick_days')} tick days ({out.get('first')}..{out.get('last')}): {bits}. "
+            + ("A PASS is a candidate only: forward paper next, nothing live changes without your yes." if anyp
+               else "Nothing passed: LIT stays as it is."))
 
 
 def show(out):
@@ -576,7 +591,13 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--src"); ap.add_argument("--ticks", action="store_true"); ap.add_argument("--force", action="store_true")
     ap.add_argument("--final", action="store_true"); ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--out-dir", help="write results / looks here (the PC: logs/orderflow) instead of research/orderflow")
+    ap.add_argument("--line", help="also write the phone line JSON here (the PC's autopilot)")
     a = ap.parse_args()
     if a.selftest:
         sys.exit(0 if selftest() else 1)
-    run(a.src, a.ticks, a.force, a.final)
+    res = run(a.src, a.ticks, a.force, a.final, out_dir=a.out_dir)
+    if a.line and isinstance(res, dict) and res.get("state") == "ran":
+        with open(a.line, "w", encoding="utf-8") as fh:
+            json.dump({"key": "research:ofbattery:%s" % res.get("look"), "t": int(__import__("time").time()),
+                       "title": "Order flow: battery look %s" % res.get("look"), "body": phone_line(res)}, fh)

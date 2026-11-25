@@ -44,6 +44,8 @@ TICK = 0.25
 HIST_MAX = 200
 VERSION = 1
 NAMES = ("NQ_bars5m.csv.gz", "NQ_fp5m.csv.gz", "NQ_meta.json")
+DEPTH_NAME = "NQ_depth5m.csv.gz"         # day-ofmax: optional (only days the live depth recorder saw; depth has no backfill)
+PULL_MIN = 20                            # a pull / stack: one level of the top 3 changes by >= 20 contracts and >= 50 %
 BLOCK_PCT, BLOCK_DAYS = 99.5, 5          # frozen: research/orderflow/PREREG_ticks.md OF2
 OUT_DEFAULT = os.path.join(ROOT, "logs", "datapipe", "days")
 
@@ -153,6 +155,60 @@ def block_threshold(day: str, out_root: str = OUT_DEFAULT, metas: dict | None = 
     return v
 
 
+def depth_summary(dp: pd.DataFrame) -> pd.DataFrame:
+    """Top-10 book snapshots (engine.tickrec.read_depth) -> one row per 5m bar: t, n (snapshots), bid5 / ask5 (mean size of the
+    top 5 levels each side), imb (mean (bid5 - ask5) / (bid5 + ask5)), bmax / amax (biggest single level seen, an iceberg /
+    wall proxy), pull_b / pull_a (a top-3 level at the SAME price shrinks by >= PULL_MIN and >= 50 % between snapshots while
+    the best bid did not move: liquidity pulled), stack_b / stack_a (the same, growing), spread (mean ticks best ask - best bid)."""
+    if dp is None or dp.empty:
+        return pd.DataFrame()
+    t = dp.t_ms.to_numpy(np.int64)
+    bar = (t // 1000) // 300 * 300
+    bs = dp[[f"bs{k}" for k in range(1, 11)]].to_numpy(float)
+    as_ = dp[[f"as{k}" for k in range(1, 11)]].to_numpy(float)
+    bd = dp[[f"bd{k}" for k in range(1, 11)]].to_numpy(int)
+    ad = dp[[f"ad{k}" for k in range(1, 11)]].to_numpy(int)
+    bp = dp.bp.to_numpy(float)
+    b5, a5 = bs[:, :5].sum(1), as_[:, :5].sum(1)
+    imb = np.where(b5 + a5 > 0, (b5 - a5) / np.maximum(1.0, b5 + a5), 0.0)
+    same = np.r_[False, bp[1:] == bp[:-1]]
+    def moves(sz, off):
+        prev_sz, prev_off = np.vstack([sz[:1], sz[:-1]]), np.vstack([off[:1], off[:-1]])
+        ok = same[:, None] & (off[:, :3] == prev_off[:, :3]) & (off[:, :3] >= 0)
+        ch = sz[:, :3] - prev_sz[:, :3]
+        big = np.abs(ch) >= np.maximum(PULL_MIN, 0.5 * prev_sz[:, :3])
+        return (ok & big & (ch < 0)).sum(1), (ok & big & (ch > 0)).sum(1)
+    pb, sb = moves(bs, bd)
+    pa, sa = moves(as_, ad)
+    f = pd.DataFrame({"t": bar, "b5": b5, "a5": a5, "imb": imb, "bm": bs.max(1), "am": as_.max(1), "pb": pb, "pa": pa,
+                      "sb": sb, "sa": sa, "spr": np.where(ad[:, 0] >= 0, ad[:, 0], np.nan)})
+    g = f.groupby("t")
+    out = pd.DataFrame({"n": g.size(), "bid5": g.b5.mean().round(1), "ask5": g.a5.mean().round(1), "imb": g.imb.mean().round(4),
+                        "bmax": g.bm.max().astype(np.int64), "amax": g.am.max().astype(np.int64), "pull_b": g.pb.sum(),
+                        "pull_a": g.pa.sum(), "stack_b": g.sb.sum(), "stack_a": g.sa.sum(), "spread": g.spr.mean().round(2)})
+    return out.reset_index()
+
+
+def write_depth(day: str, out_root: str = OUT_DEFAULT, dp: pd.DataFrame | None = None) -> bool:
+    """days/<day>/of/NQ_depth5m.csv.gz from data/depth (when the live depth recorder saw that day). Never raises."""
+    try:
+        if dp is None:
+            from . import tickrec
+            dp = tickrec.read_depth(day, "NQ")
+        s_ = depth_summary(dp)
+        if s_.empty:
+            return False
+        d = os.path.join(out_root, day, "of")
+        os.makedirs(d, exist_ok=True)
+        p = os.path.join(d, DEPTH_NAME)
+        with open(p + ".tmp", "wb") as fh:
+            fh.write(_gz_csv(s_))
+        _fs_replace(p + ".tmp", p)
+        return True
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def write_day(day: str, out_root: str = OUT_DEFAULT, x: pd.DataFrame | None = None, force: bool = False) -> dict:
     """Write days/<day>/of/* (atomic per file). Returns {"day", "ok", "bytes"} and never raises."""
     try:
@@ -173,7 +229,8 @@ def write_day(day: str, out_root: str = OUT_DEFAULT, x: pd.DataFrame | None = No
             with open(p + ".tmp", "wb") as fh:
                 fh.write(b)
             _fs_replace(p + ".tmp", p)
-        return {"day": day, "ok": True, "bytes": sum(len(b) for b in files.values())}
+        dep = write_depth(day, out_root)                                   # day-ofmax: the depth summary when it exists
+        return {"day": day, "ok": True, "bytes": sum(len(b) for b in files.values()), "depth": dep}
     except Exception as e:                                                 # never raise into a caller (nightly task)
         return {"day": day, "ok": False, "why": f"{e.__class__.__name__}: {str(e)[:120]}"}
 
@@ -191,7 +248,9 @@ def read(day_dir: str) -> dict | None:
         meta = json.load(open(os.path.join(d, "NQ_meta.json"), encoding="utf-8"))
         bars = pd.read_csv(os.path.join(d, "NQ_bars5m.csv.gz"))
         fp = pd.read_csv(os.path.join(d, "NQ_fp5m.csv.gz"))
-        return {"bars": bars, "fp": fp, "meta": meta}
+        dp = os.path.join(d, DEPTH_NAME)
+        depth = pd.read_csv(dp) if os.path.exists(dp) else None
+        return {"bars": bars, "fp": fp, "meta": meta, "depth": depth}
     except (OSError, ValueError, KeyError):
         return None
 

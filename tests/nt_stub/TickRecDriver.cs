@@ -102,6 +102,38 @@ public static class TickRecDriver
         clock = new DateTime(2026, 11, 27, 22, 15, 0, DateTimeKind.Utc);          // Fri 17:15 ET: the next pass retries it
         Run(r, 6);
         Ok(File.Exists(Path.Combine(lt, "bf_NQ_2026-11-25.csv")) && File.Exists(Path.Combine(lt, "bf_NQ_2026-11-26.csv")), "next pass retries the dropped day");
+        // 9a. DEPTH (day-ofmax): NQ only by default, top-10 snapshot on change, at most one per 250 ms, header, offsets in ticks
+        System.Collections.Generic.List<NinjaTrader.Data.MarketDepth<NinjaTrader.Data.MarketDepthRow>> made = NinjaTrader.Data.MarketDepth<NinjaTrader.Data.MarketDepthRow>.Made;
+        Ok(made.Count >= 1 && made[made.Count - 1].Instrument.FullName == "NQ 12-26" && made[made.Count - 1].HasHandler, "depth subscribed for NQ (not ES), event bound by reflection");
+        bool esDepth = false;
+        foreach (NinjaTrader.Data.MarketDepth<NinjaTrader.Data.MarketDepthRow> m in made) if (m.Instrument.FullName.StartsWith("ES")) esDepth = true;
+        Ok(!esDepth, "no depth for ES by default");
+        NinjaTrader.Data.MarketDepth<NinjaTrader.Data.MarketDepthRow> md = made[made.Count - 1];
+        for (int k = 0; k < 12; k++)
+        {
+            NinjaTrader.Data.MarketDepthRow b = new NinjaTrader.Data.MarketDepthRow(); b.Price = 21000 - 0.25 * k; b.Volume = 5 + k; md.Bids.Add(b);
+            NinjaTrader.Data.MarketDepthRow a = new NinjaTrader.Data.MarketDepthRow(); a.Price = 21000.25 + 0.25 * k; a.Volume = 7 + k; md.Asks.Add(a);
+        }
+        MethodInfo flush = typeof(LE_TickRec).GetMethod("Flush", BindingFlags.NonPublic | BindingFlags.Instance);
+        md.Fire(); flush.Invoke(r, new object[] { null });
+        string[] dl = Directory.GetFiles(Path.Combine(lt, "depth"));
+        Ok(dl.Length == 1 && Path.GetFileName(dl[0]).StartsWith("NQ_"), "depth file le_ticks/depth/NQ_<day>.csv: " + string.Join(";", dl));
+        string[] lines = File.ReadAllLines(dl[0]);
+        Ok(lines[0] == LE_TickRec.DepthHeader().Trim() && lines[0].Split(',').Length == 42 && lines.Length == 2, "header (42 columns) + 1 snapshot: " + lines.Length);
+        string[] c = lines[1].Split(',');
+        Ok(c[1] == "21000" && c[2] == "0" && c[3] == "1" && c[11] == "9" && c[12] == "5" && c[22] == "1" && c[32] == "7", "bp, bid offsets 0,1.., ask offset 1, sizes: " + lines[1]);
+        md.Fire(); md.Fire(); flush.Invoke(r, new object[] { null });
+        Ok(File.ReadAllLines(dl[0]).Length == 2, "same book again: no new line");
+        md.Bids[0].Volume = 50; md.Fire(); flush.Invoke(r, new object[] { null });
+        Ok(File.ReadAllLines(dl[0]).Length == 2, "a change inside 250 ms waits (throttle)");
+        clock = clock.AddMilliseconds(300); flush.Invoke(r, new object[] { null }); flush.Invoke(r, new object[] { null });
+        Ok(File.ReadAllLines(dl[0]).Length == 3 && File.ReadAllLines(dl[0])[2].Split(',')[12] == "50", "... and is written by the 1 s timer once 250 ms passed");
+        Ok(Status(dir).Contains("depth=on"), "status depth=on: " + Status(dir).Trim());
+        // 9b. pure helpers of the roll fix
+        Ok(LE_TickRec.Candidates("NQ", new DateTime(2026, 11, 23)).Count == 1, "Nov 23: one contract to try");
+        System.Collections.Generic.List<string> cs = LE_TickRec.Candidates("NQ", new DateTime(2026, 12, 14));
+        Ok(cs.Count == 2 && cs[0] == "NQ 03-27" && cs[1] == "NQ 12-26", "Dec 14 (expiry week): front 03-27, then the expiring 12-26: " + string.Join(",", cs.ToArray()));
+        Ok(LE_TickRec.Candidates("NQ", new DateTime(2026, 9, 10))[0] == "NQ 09-26" && LE_TickRec.Candidates("NQ", new DateTime(2026, 9, 10)).Count == 1, "Sep 10 = NQ 09-26 only");
         // 9. disable: no more requests
         File.Delete(Path.Combine(lt, "enabled.txt"));
         Run(r, 1);
@@ -110,6 +142,29 @@ public static class TickRecDriver
         Run(r, 20);
         Ok(NinjaTrader.Data.BarsRequest.Log.Count == d, "disabled: backfill stops");
         r.Drive(State.Terminated);
+        Ok(md.Disposed && !md.HasHandler, "depth unsubscribed and disposed on stop / disable");
+
+        // 10. ROLL FIX (day-ofmax): NinjaTrader does not know "NQ 09-26" -> those days are skipped, NOT the end of history; the
+        // June contract's days behind them are fetched; old end.txt and old-format .none are ignored once
+        foreach (string f in Directory.GetFiles(lt)) File.Delete(f);
+        File.WriteAllText(Path.Combine(lt, "bf_NQ_end.txt"), "2026-09-14\n");
+        File.WriteAllText(Path.Combine(lt, "bf_NQ_2026-09-15.none"), "no ticks from the server 2026-11-24\n");
+        File.WriteAllText(Path.Combine(lt, "instruments.txt"), "NQ 12-26\n");
+        File.WriteAllText(Path.Combine(lt, "depth_off.txt"), "off\n");
+        NinjaTrader.Cbi.Instrument.Missing.Add("NQ 09-26");
+        NinjaTrader.Data.BarsRequest.Oldest = new DateTime(2026, 6, 1);
+        clock = new DateTime(2026, 9, 26, 15, 0, 0, DateTimeKind.Utc);           // a Saturday: requests all day
+        LE_TickRec r2 = new LE_TickRec();
+        r2.Drive(State.SetDefaults); r2.Drive(State.Active);
+        File.WriteAllText(Path.Combine(lt, "enabled.txt"), "on\n");
+        Run(r2, 400);
+        string st2 = Status(dir);
+        Ok(File.Exists(Path.Combine(lt, "bf_NQ_2026-09-15.csv")), "an old-format .none day is asked once more");
+        Ok(File.ReadAllText(Path.Combine(lt, "bf_NQ_2026-09-01.none")).StartsWith("v2 unknown contract NQ 09-26"), "Sep 1 (NQ 09-26 unknown): marked, not requested");
+        Ok(File.Exists(Path.Combine(lt, "bf_NQ_2026-06-10.csv")), "past the unknown contract: June days (NQ 06-26) are fetched");
+        Ok(File.Exists(Path.Combine(lt, "bf_NQ_end2.txt")) && File.ReadAllText(Path.Combine(lt, "bf_NQ_end2.txt")).StartsWith("2026-05"), "the real end (before Jun 1) found and written as end2.txt");
+        Ok(st2.Contains("bf_unknown=") && !st2.Contains("bf_unknown=0") && st2.Contains("depth=off"), "status bf_unknown counted, depth off by depth_off.txt: " + st2.Trim());
+        r2.Drive(State.Terminated);
         Console.WriteLine(fails == 0 ? "ALL PASS" : fails + " FAILED");
         return fails == 0 ? 0 : 1;
     }
