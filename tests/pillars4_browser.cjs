@@ -35,7 +35,7 @@ const out = {};
         srcs: [...document.querySelectorAll('#dTradeTable tbody tr')].map((r) => r.dataset.src), feed: t('dFeedAge'), feedCls: (document.getElementById('dFeedAge') || {}).className || '',
         setup: t('dSetup'), steps: [...document.querySelectorAll('#dSteps li')].map((x) => x.className + ':' + x.textContent), rej: t('dRejN'), mill: t('dMill'),
         lessons: document.querySelectorAll('#dLessons li').length, sections: [...document.querySelectorAll('#data > section')].map((s) => s.id), tabs: [...document.querySelectorAll('.dtabs a')].map((a) => a.getAttribute('href')),
-        foot: [...document.querySelectorAll('#dfoot a')].map((a) => a.getAttribute('href')), brainLink: !!document.querySelector('#dNext a.go[href="../brain/#lit"]') };
+        spark: ((document.querySelector('#dSpark svg') || {}).outerHTML || '').slice(0, 160) + ' / ' + ((document.querySelector('#dSpark .sx b') || {}).textContent || ''), foot: [...document.querySelectorAll('#dfoot a')].map((a) => a.getAttribute('href')), brainLink: !!document.querySelector('#dNext a.go[href="../brain/#lit"]') };
     });
     out.litWide = await wide(p);
     if (SHOTS) { await p.screenshot({ path: SHOTS + '/05_pillar_data_lit.png' }); await p.screenshot({ path: SHOTS + '/05b_pillar_data_lit_full.png', fullPage: true }); }
@@ -78,7 +78,7 @@ const out = {};
     ({ p, ctx, errs } = await page('/brain/' + AT + '&lite=2d#lit', POST.post, true));
     out.brain = await p.evaluate(() => ({ feed: (document.getElementById('rFeedAge') || {}).textContent || '', cls: (document.getElementById('rFeedAge') || {}).className || '',
       setup: (document.querySelector('#rNext .setup') || {}).textContent || '', steps: [...document.querySelectorAll('#rChain li')].map((x) => x.className + ':' + x.textContent),
-      src: [...document.querySelectorAll('#rNext .src')].map((x) => x.textContent).join(' '), top: getComputedStyle(document.querySelector('.top')).backgroundColor }));
+      src: [...document.querySelectorAll('#rNext .src')].map((x) => x.textContent).join(' '), back: document.getElementById('back').getAttribute('href'), crumb: document.getElementById('crN').textContent, data: (document.getElementById('rData') || { getAttribute: () => '' }).getAttribute('href'), top: getComputedStyle(document.querySelector('.top')).backgroundColor }));
     if (SHOTS) { await p.evaluate(() => { const e = document.getElementById('room'); window.scrollTo(0, e.getBoundingClientRect().top + scrollY - 70); }); await p.waitForTimeout(300); await p.screenshot({ path: SHOTS + '/08_brain_lit.png' }); }
     all.push(...errs); await ctx.close();
   } catch (e) { out.fatal = String(e && e.stack || e).slice(0, 600); }

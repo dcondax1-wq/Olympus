@@ -421,6 +421,7 @@ def p4_browser(q, now):
           and "NY 08:30" in L.get("setup", "") and "now:CISD" in L.get("steps", []) and L.get("brainLink"), (L.get("feed"), L.get("steps")))
     check("p. LIT data page: tested-and-rejected count, the idea mill, what it learned, 4 pillar tabs, the footer path", "Tested and rejected:" in L.get("rej", "") and "56,160" in L.get("mill", "")
           and L.get("lessons", 0) >= 1 and L.get("tabs") == ["#lit", "#atlas", "#blitz", "#of"] and L.get("foot") == ["./#lit", "../brain/#lit", "../trading/", "../cities/hub.html", "../nq/accounts.html"], (L.get("rej"), L.get("foot")))
+    check("p. LIT data page: the real $ path as a sparkline (every real closed trade, ends at the all-time $)", "Real $ path over 3 trades" in (L.get("spark") or "") and "over 3 real trades" in (L.get("spark") or ""), L.get("spark"))
     A = o.get("atlas") or {}
     check("p. a tab switches to ATLAS in place: its open trade, its month, back to #atlas", A.get("title") == "ATLAS · Data" and A.get("hash") == "#atlas" and "OPEN NOW" in A.get("open", "") and A.get("back") == "./#atlas", A)
     OF = o.get("of") or {}
@@ -441,6 +442,8 @@ def p4_browser(q, now):
     check("p. Brain LIT room: 'Brain feed 10 min ago' (green) on Next trade, the feed's setup + steps, its source named, a solid header",
           "Brain feed 10 min ago" in BR.get("feed", "") and " ok" in " " + BR.get("cls", "") and "NY 08:30" in BR.get("setup", "") and "now:CISD" in BR.get("steps", []) and "brain feed" in BR.get("src", "")
           and BR.get("top", "").startswith("rgba(0, 0, 0, 0.9"), BR)
+    check("p. Brain LIT room: Home › Pillars › LIT Brain, back to the Pillars at #lit, the LIT data link", BR.get("back") == "../pillars/#lit" and BR.get("crumb") == "LIT Brain"
+          and BR.get("data") == "../pillars/data.html#lit", BR)
 
 
 def main():

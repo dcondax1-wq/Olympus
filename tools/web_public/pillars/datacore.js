@@ -81,6 +81,7 @@ export function stats(rows, nowS) {
     avgR: rs.length ? rs.reduce((s, r) => s + r.r, 0) / rs.length : null, best: live.length ? Math.max(...live.map((r) => r.usd)) : null, worst: live.length ? Math.min(...live.map((r) => r.usd)) : null,
     paperN: arr(rows).filter((r) => r.src === 'paper').length, open, first: live.length ? live[live.length - 1].day : null, weekFrom: wk, monthOf: mo,
     thin: live.length < 20,
+    curve: live.slice().sort((a, b) => a.t - b.t).reduce((acc, r) => { acc.push({ t: r.t, day: r.day, v: (acc.length ? acc[acc.length - 1].v : 0) + r.usd }); return acc; }, []),
   };
 }
 

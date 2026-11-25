@@ -3,7 +3,7 @@
 // Reads the site's JSON + the PC's public status post (../pc_feed.js). Until a PC post arrives, the LIVE parts (status, next setup, thinking)
 // show the Brain's bundled fixture, labelled SAMPLE; money, trades and research are always the real files. createElement / textContent only.
 // Read only: GET requests; nothing is sent, armed or placed. ?at=<ISO> pins the clock (tests). window.PILLAR_DATA = the test hook.
-import * as DC from './datacore.js?v=d1';
+import * as DC from './datacore.js?v=d2';
 import * as B from '../brain/braincore.js?v=b3';
 import * as PF from './pillarsfeed.js?v=p4';
 
@@ -85,9 +85,25 @@ function moneyCard(D) {
     k('This month', DC.usd(s.month), lvl(s.month), `${s.monthN} trade${s.monthN === 1 ? '' : 's'} in ${s.monthOf || '-'}`, 'kMonth'),
     k('Win rate', s.win === null ? '-' : `${fmt(s.win, 0)}%`, 'gold', `${s.n} real trade${s.n === 1 ? '' : 's'} closed`, 'kWin'),
     k('Profit factor', s.pfWord, s.pf !== null && s.pf >= 1 ? 'ok' : s.pf !== null ? 'bad' : 'gold', `all-time ${DC.usd(s.total)}${s.avgR !== null ? ` · avg ${s.avgR > 0 ? '+' : ''}${s.avgR.toFixed(2)}R` : ''}`, 'kPf')));
+  if (s.curve.length >= 2) box.append(spark(s.curve));
   if (s.open) box.append(el('p', { class: 'wait', id: 'dOpen' }, el('b', { text: 'OPEN NOW: ' }), document.createTextNode(`${s.open.side} since ${s.open.hm} ET${s.open.usd !== null ? ` · ${DC.usd(s.open.usd)}` : ''}`)));
   box.append(el('p', { class: 'src', text: `Real MFFU trades only (trading/trades.json + the PC's newest).${s.thin ? ` Only ${s.n} so far: too few to judge the edge; the backtest numbers are under Research.` : ''}${s.paperN ? ` ${s.paperN} paper twin trade${s.paperN === 1 ? '' : 's'} not counted.` : ''}` }));
   return box;
+}
+/** the real $ path, trade by trade: an SVG line (gold above $0, the area tinted), first and last day under it */
+function spark(curve) {
+  const NS = 'http://www.w3.org/2000/svg', W = 340, H = 64, pad = 4;
+  const vs = [0, ...curve.map((p) => p.v)], lo = Math.min(...vs), hi = Math.max(...vs), span = Math.max(1, hi - lo);
+  const x = (i) => pad + (i / curve.length) * (W - pad * 2), y = (v) => pad + (1 - (v - lo) / span) * (H - pad * 2);
+  const pts = [[x(0), y(0)], ...curve.map((p, i) => [x(i + 1), y(p.v)])];
+  const svg = document.createElementNS(NS, 'svg'); svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('class', 'spark'); svg.setAttribute('role', 'img');
+  const last = curve[curve.length - 1].v; svg.setAttribute('aria-label', `Real $ path over ${curve.length} trades: ${DC.usd(last)}`);
+  const mk = (tag, at) => { const e = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(at)) e.setAttribute(k, v); svg.append(e); return e; };
+  mk('line', { x1: pad, x2: W - pad, y1: y(0), y2: y(0), class: 'z' });
+  mk('path', { d: `M${pts.map((p) => p.join(',')).join(' L')} L${pts[pts.length - 1][0]},${y(0)} Z`, class: 'a ' + (last >= 0 ? 'up' : 'dn') });
+  mk('path', { d: `M${pts.map((p) => p.join(',')).join(' L')}`, class: 'l ' + (last >= 0 ? 'up' : 'dn') });
+  const e = pts[pts.length - 1]; mk('circle', { cx: e[0], cy: e[1], r: 3.5, class: 'd ' + (last >= 0 ? 'up' : 'dn') });
+  return el('div', { class: 'sparkbox', id: 'dSpark' }, svg, el('div', { class: 'sx' }, el('span', { text: curve[0].day.slice(5) }), el('b', { class: lvl(last), text: `${DC.usd(last)} over ${curve.length} real trades` }), el('span', { text: curve[curve.length - 1].day.slice(5) })));
 }
 function tradesCard(D) {
   if (!['lit', 'atlas'].includes(D.id)) return null;

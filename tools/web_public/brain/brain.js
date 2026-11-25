@@ -241,6 +241,7 @@ function drawRoom(M, keepChart) {
   box.style.setProperty('--c', r.color);
   box.append(el('div', { class: 'rhead' }, el('div', {}, el('h2', { text: r.name }), el('div', { class: 'al', text: `${r.alias} · ${r.blurb}` })),
     el('button', { type: 'button', class: 'x', onclick: () => go(null), text: 'Whole brain' })));
+  if (['lit', 'atlas', 'blitz', 'of'].includes(r.id)) box.append(el('a', { class: 'dlink', id: 'rData', href: `../pillars/data.html#${r.id}`, text: `${r.name} data: trades $, win rate, PF, verdicts ›` }));
   box.append(el('p', {}, el('span', { class: 'badge ' + r.level, id: 'rStatus', text: r.status }), document.createTextNode(' '), el('span', { class: 'muted', text: r.statusText })));
   for (const c of [nextCard(r), chartCard(r), thinkCard(r), learnCard(r), moneyCard(r, M)]) if (c) box.append(c);
   mountChart(r);
@@ -275,8 +276,14 @@ function go(id) {
   if (location.hash.slice(1) !== (want || '')) history.replaceState(null, '', want ? '#' + want : location.pathname + location.search);
   select(want);
 }
+function crumbs(id) {                                   // Home › Pillars › <pillar> Brain: back goes to the pillar you came from
+  const pil = ['lit', 'atlas', 'blitz', 'of'].includes(id), r = id ? B.REGIONS.find((x) => x.id === id) : null;
+  const back = $('back'), crP = $('crP'), crN = $('crN'); if (!back || !crP || !crN) return;
+  back.href = pil ? `../pillars/#${id}` : '../pillars/'; crP.href = back.href;
+  crN.textContent = r ? `${r.name} Brain` : 'Brain';
+}
 function select(id) {
-  S.sel = id; if (S.scene) S.scene.fly(id);
+  S.sel = id; crumbs(id); if (S.scene) S.scene.fly(id);
   if (S.model) { drawTags(S.model); drawDock(S.model); if (!$('flat').hidden) drawFlat(S.model); drawRoom(S.model, false); }
   if (id) setTimeout(() => { const r = $('room'); if (r && r.getBoundingClientRect().top > innerHeight * 0.8) r.scrollIntoView({ behavior: REDUCE ? 'auto' : 'smooth', block: 'start' }); }, 50);
 }
@@ -286,7 +293,7 @@ window.BRAIN = { ready: () => document.documentElement.dataset.ready === '1', mo
   select: go, chartMode: () => (S.chart ? S.chart.mode : null) };
 
 (async function main() {
-  S.sel = B.IDS.includes(location.hash.slice(1)) ? location.hash.slice(1) : null;
+  S.sel = B.IDS.includes(location.hash.slice(1)) ? location.hash.slice(1) : null; crumbs(S.sel);
   await loadSite();
   render();
   requestAnimationFrame(() => setTimeout(startScene, 30));

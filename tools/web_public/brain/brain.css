@@ -148,3 +148,7 @@ a { color: var(--lav); }
 .fage.ok i { animation: fbeat 2.4s ease-in-out infinite; }
 @keyframes fbeat { 50% { opacity: .35; } }
 @media (prefers-reduced-motion: reduce) { .fage.ok i { animation: none; } }
+.crumbs { font-size: 11.5px; color: var(--mut); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.crumbs a { color: var(--mut); text-decoration: none; display: inline-block; padding: 6px 0; margin: -6px 0; } .crumbs span { color: var(--gold); font-weight: 700; }
+.dlink { display: flex; align-items: center; min-height: 44px; margin: 0 0 10px; padding: 0 12px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 13.5px;
+  color: var(--c); border: 1px solid color-mix(in srgb, var(--c) 55%, #3e255e); background: color-mix(in srgb, var(--c) 9%, #16131e); }
