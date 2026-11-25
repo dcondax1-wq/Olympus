@@ -39,7 +39,7 @@ MISS_MAX_AGE_S = 6 * 3600          # never push about a signal older than this (
 MISS_EVERY_S = 60
 ARM_SLOTS = ((1, 55), (9, 0))      # ET
 ARM_SLOT_MIN = 15                  # the slot's check runs once inside [slot, slot + 15 min)
-STUCK_S = 3 * 3600
+STUCK_S = 3600                  # day-handsfree: 1 h (was 3 h): the fix is now one Telegram reply
 STUCK_REASONS = ("local changes in tracked files", "not on branch", "git fetch failed", "git status failed",
                  "is not a fast-forward", "fast-forward refused", "could not be set", "unknown", "auto-update is off")
 
@@ -439,12 +439,16 @@ def update_stuck(state: dict | None, au: dict | None, now) -> tuple:
         return st, None
     st["sent_day"] = day
     hrs = (now - float(st["since"])) / 3600.0
-    fix = ("send Claude: 'update blocked by <the file>' (strategy / account files are never parked by themselves)"
+    # day-handsfree 2026-11-25: every fix the phone can do is ONE Telegram reply (engine/tg_cmd.py) or the PC Control page button
+    fix = ("reply /update to this bot (or PC Control > Update now): it parks the edit with git stash and installs; if it names a "
+           "strategy / account file, reply /update force (parked too, nothing lost: git stash list)"
            if "local changes" in reason else
-           "python -m engine.autoupdate --enable" if "is off" in reason else
+           "reply /update to this bot (it installs once now); at the PC once: python -m engine.autoupdate --enable"
+           if "is off" in reason else
            "send Claude this line (the PC is not on its update branch / has its own commits)"
            if ("branch" in reason or "fast-forward" in reason) else
-           "check the PC's internet / GitHub sign-in (UPDATE.bat shows the error)")
+           "reply /update to this bot to try again now; if it fails the same way: check the PC's internet / GitHub sign-in "
+           "(UPDATE.bat shows the error)")
     return st, {"key": f"guard:upd:{day}", "code": "update_stuck", "soft": True, "tags": "warning",
                 "title": f"Bot update stuck for {hrs:.0f} h"[:120],
                 "body": f"The PC is still on its old code: {reason[:220]}. Every fix since then is not on the PC. Fix: {fix}."[:600]}

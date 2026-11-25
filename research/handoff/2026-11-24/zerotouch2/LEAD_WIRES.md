@@ -18,3 +18,13 @@ What changed (engine side, ships with the branch):
 - engine/go.autoresume_line (START prints it after the opt-in); engine/monday.boot_lines (NinjaTrader start/connect, auto-sign-in).
 - tests: test_zerotouch2 (new, 50/50); test_self_heal_pc b3 now expects "would park"; test_autorun's 3 checks fixed (they failed on
   pc already since day-updfix: their hand edit was in a file the update did not touch).
+
+## Round 2 (after the red team 1e9b8b62 + the lead's items 5-7)
+- Red team's LEAD item done here: a rollback after an auto-park runs `git stash pop` (the stash was taken on `old`); the alert says
+  "your parked edit is back in place" (or names it as still in git stash). Test: test_zerotouch2 a.
+- #5 remote `add_account` (engine/remote_ctl._add_account -> account_cli.add, HELD, idempotent, every field checked) + the page's
+  Add-an-account form. #6 remote `switch` -> engine/pending_switch (combo_on, blitz_on, lane:<id>): START shows the queue FIRST and
+  applies it after the ONE phrase (engine/go.pending_first_line / pending_apply). #7 docs/NEW_STRATEGY.md + tools/new_strategy.py
+  (engine/lanes/<id>.py OFF switch + proof gate, proof.py, decide_card.json, test). Lead: add a lane's decide_card.json to the
+  Decide cards when one is made; a YES there should send `switch lane:<id>` (or the owner taps it on pc/control.html).
+- data/pending_switches.json and data/lanes/ added to .gitignore.

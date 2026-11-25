@@ -611,12 +611,22 @@ def fix_update(ctx, untracked: str = "apply", generated: bool = True, new: str |
 # edit there changes what the bot does, so it blocks + alerts instead of silently going to the stash
 PARK_NEVER = ("second_model.json", "live_model*.json", "data/*", "*journal*", "research/lit/mffu_rules.json",
               "research/props/firm_rules.json", "research/lab/combo_50k.json", "tools/web_public/business/decisions.json")
+FORCE_NEVER = ("update_source.json",)       # red team #7: never parked, not even by the owner's '/update force'
 PARKED_JSON = "parked.json"
 PARKED_LOG = "parked.jsonl"
 
 
+# day-handsfree 2026-11-25 (owner: "I want an easier process"; failure map G11): the TRACKED market data under data/ (the cloud
+# refreshes it and ships it with the code; the PC's copy is an import / cache) may be parked too, so a bar import on the PC can never
+# hold the update back. The owner's own data/ files (accounts, switches, state) are gitignored: they never reach this check.
+PARK_DATA_OK = ("data/NQ_*.csv", "data/ES_*.csv", "data/*_rolls.json", "data/*_imported_days.json", "data/ltf/*", "data/clean/*",
+                "data/board/shared.jsonl", "data/tv_exports/*", "data/tv_mnq_*.csv", "data/SEAMS.md")
+
+
 def parkable(rel: str) -> bool:
     r = str(rel or "").replace("\\", "/").strip()
+    if r and any(fnmatch.fnmatchcase(r, g) for g in PARK_DATA_OK) and "journal" not in r:
+        return True
     return bool(r) and not never(r) and not any(fnmatch.fnmatchcase(r, g) for g in PARK_NEVER)
 
 
@@ -636,15 +646,21 @@ def read_parked(root: str = ROOT) -> dict:
     return d if isinstance(d, dict) else {}
 
 
-def park_local(root: str, git, rels, now=None, log=None, via: str = "self-heal", push=None, board=None, flat=None) -> dict:
+def park_local(root: str, git, rels, now=None, log=None, via: str = "self-heal", push=None, board=None, flat=None,
+               force: bool = False) -> dict:
     """Park the local edits of these tracked files (only those) with git stash so the update can fast-forward. Returns
     {"parked": [...], "kept": [files it may never park: they still block + alert], "stash": sha | None, "line", "why"}.
     flat: why a trade may be open (None = flat; default engine/autoupdate.files_flat_reason). Never raises."""
     now = time.time() if now is None else float(now)
     log = log or SAY_OFF
     rels = [str(r).replace("\\", "/") for r in (rels or []) if r]
-    out = {"parked": [], "kept": [r for r in rels if not parkable(r)], "stash": None, "line": "", "why": ""}
-    ok = [r for r in rels if parkable(r)]
+    # force (day-handsfree, the owner's Telegram '/update force' only): every tracked file inside the bot folder may be parked
+    # (strategy / account / rule files too: git stash keeps them, nothing is lost); never a path outside it or a .env file
+    # red team #7: update_source.json (where the PC updates FROM) stays never-parked even under force
+    can = (lambda r: bool(r) and not r.startswith(("../", "/")) and not os.path.isabs(r) and ".env" not in r
+           and r not in FORCE_NEVER) if force else parkable
+    out = {"parked": [], "kept": [r for r in rels if not can(r)], "stash": None, "line": "", "why": ""}
+    ok = [r for r in rels if can(r)]
     if not ok:
         return out
     try:
@@ -1273,8 +1289,21 @@ def fix_site(ctx) -> list:
     return out
 
 
+def fix_ninjascript(ctx) -> list:
+    """day-handsfree: the order-flow add-on (ninjatrader/LE_TickRec.cs) copied into NinjaTrader's AddOns when the repo has a new
+    build (outside trading hours, flat), and ONE 'press F5 once' line per build when NinjaTrader still runs the old compiled
+    code 30 min later (engine/ns_sync.py). Off: LE_NS_SYNC=0. Never touches a file it did not ship."""
+    if str(ctx.env.get("LE_NS_SYNC", "1")) == "0" or not ctx.nt:
+        return []
+    from . import ns_sync
+    rows = ns_sync.check(ctx.root, ctx.nt, ctx.now, apply=ctx.apply, flat=lambda: trade_open(ctx) or None)
+    st = {"copied": "fixed", "need": "need", "would": "would"}
+    return [item("ninjascript", "ninjascript", st[r["status"]], r["text"], r.get("step", ""))
+            for r in rows if r.get("status") in st]
+
+
 REMEDIES = (("git_lock", fix_git_locks), ("update", fix_update), ("oif", fix_oif), ("pid", fix_pids), ("server", fix_server),
-            ("nt", fix_nt), ("pip", fix_pip), ("clock", fix_clock), ("site", fix_site))
+            ("nt", fix_nt), ("pip", fix_pip), ("clock", fix_clock), ("site", fix_site), ("ninjascript", fix_ninjascript))
 
 
 def run(ctx, state: dict | None = None, force_clean: bool = False, only=None, disk_free=None) -> dict:

@@ -430,7 +430,7 @@ def from_main(sh, path: str, old: str, new: str) -> str | None:
 
 
 def fast_forward(sh, branch: str = BRANCH, log=None, skip_sha: str | None = None, src: dict | None = None,
-                 crash_sha: str | None = None, park: bool = False, now=None) -> dict:
+                 crash_sha: str | None = None, park: bool = False, now=None, park_force: bool = False) -> dict:
     """Move the checkout to origin/<branch> (fast-forward only), the one way every update runs: the auto-update, the
     phone's "update", UPDATE.bat and START BOT (`python -m engine.autoupdate --pull`), the dashboard's Start page.
     Before the dirty check: ATLAS's account block an older version wrote into second_model.json goes to
@@ -510,8 +510,11 @@ def fast_forward(sh, branch: str = BRANCH, log=None, skip_sha: str | None = None
         # Only run_update passes park=True, after its window (never 01:50-16:00 ET on a weekday) and flat checks.
         try:
             from . import self_heal
-            pk = self_heal.park_local(getattr(sh, "cwd", ROOT) or ROOT, sh.git, [p for p in blocking if p != TRACKED_LOCAL],
-                                      now=now, log=log, via="the auto-update")
+            # day-handsfree: park_force (the owner's Telegram '/update force' only) also parks the strategy / account / rule files
+            pk = self_heal.park_local(getattr(sh, "cwd", ROOT) or ROOT, sh.git,
+                                      [p for p in blocking if park_force or p != TRACKED_LOCAL],
+                                      now=now, log=log, via="the owner's /update force" if park_force else "the auto-update",
+                                      force=park_force)
             if pk.get("parked"):
                 res["parked"] = pk["parked"]
                 res["stash"] = pk.get("stash")
@@ -565,6 +568,11 @@ def fast_forward(sh, branch: str = BRANCH, log=None, skip_sha: str | None = None
             return done("failed", f"fast-forward refused: {(out.strip() or out2.strip())}"[:4000], alert=True)
     log(f"fast-forwarded {old[:7]} -> {new[:7]} ({len(changed)} files)")
     return done("updated", f"{old[:7]} -> {new[:7]}")
+
+
+def _stash_top(sh) -> str | None:
+    c, out = sh.git("rev-parse", "-q", "--verify", "refs/stash")
+    return _sha(out) if c == 0 else None
 
 
 def restore_untracked(sh, moved, new) -> list:
@@ -1042,6 +1050,13 @@ def crash_check(sh=None, now=None, path: str = STATE_PATH, notify_fn=None, count
                 generated_files.discard(sh.git, hit)
         c, o = sh.git("reset", "--keep", g["old"])
         back = git_head(sh) == g["old"]
+        unpark = ""
+        if back and g.get("parked") and g.get("stash"):
+            # red team #7 (day-handsfree): the old code runs WITH the edit parked for this update again (a '/update force' park of
+            # live_model*.json / second_model.json / a rule file too), exactly like run_update's own rollback
+            c3, o3 = sh.git("stash", "pop", "-q", "--index", "stash@{0}") if _stash_top(sh) == g["stash"] else (1, "not the top stash")
+            unpark = (" Your parked edit is back in place." if c3 == 0 else
+                      f" Your parked edit ({', '.join(g['parked'][:2])}) stays in git stash ({str(o3).strip()[-80:]}).")
         s = load_state(path)
         s.pop("crash_guard", None)
         if back:
@@ -1055,7 +1070,7 @@ def crash_check(sh=None, now=None, path: str = STATE_PATH, notify_fn=None, count
             sh.py(["-m", "pip", "install", "-q", "-r", "requirements.txt"], timeout=900)
         title = "Update rolled back" if back else "Update crash loop: ROLLBACK FAILED"
         body = (f"The new code {g['new'][:7]} kept stopping ({len(starts)} starts, each within {CRASH_WINDOW_S // 60} min of the last). "
-                + (f"Back on {g['old'][:7]}, the version that ran fine; the bad one is skipped." if back
+                + (f"Back on {g['old'][:7]}, the version that ran fine; the bad one is skipped.{unpark}" if back
                    else f"Could not go back ({(o or '').strip()[-100:]}): fix by hand."))
         try:
             (notify_fn or notify_sync)(title, body, key=f"auto:crash:{g['new'][:10]}")
@@ -1103,7 +1118,7 @@ def selftest_step(sh, old: str | None, args=None, timeout: float = SELFTEST_TIME
 
 def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = None, state: dict | None = None,
                tests=TESTS, branch: str = BRANCH, env=None, all_hours: bool = False, selftest: bool | None = None,
-               park: bool | None = None) -> dict:
+               park: bool | None = None, park_force: bool = False) -> dict:
     """One check. Returns {"status", "reason", "old", "new", "restart", "alert"}; status: off | skipped | up_to_date |
     updated | rolled_back | failed. `flat` = flat_reason (None = flat). Pure apart from `sh`. selftest: run the PC
     self-test after `tests` (selftest_step; a regression holds the update back: rolled back, "held" = the check).
@@ -1129,11 +1144,15 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
     # park (day-zerotouch2): the server's own checks (daily / hourly) and the phone's "Update now" park a blocking hand edit
     if park is None:
         park = mode in ("daily", "hourly")
-    ff = fast_forward(sh, branch, skip_sha=state.get("bad_sha"), crash_sha=state.get("crash_sha"), park=bool(park), now=now)
+    ff = fast_forward(sh, branch, skip_sha=state.get("bad_sha"), crash_sha=state.get("crash_sha"), park=bool(park), now=now,
+                      park_force=bool(park and park_force))
     old, new, changed = ff.get("old"), ff.get("new"), ff.get("changed") or []
     res.update(old=old, new=new)
     if ff.get("parked"):
         res["parked"] = ff["parked"]
+        if ff.get("stash"):                           # red team #7: the crash-loop rollback pops it back too (record -> crash_guard)
+            res["stash"] = ff["stash"]
+            res["park_force"] = bool(park and park_force)
     if ff["status"] != "updated":
         return done(ff["status"], ff["reason"], alert=ff.get("alert", False))
 
@@ -1148,10 +1167,11 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
             put_back(sh, ff.get("restore"))             # files checked out from main by hand: as they were before
             restore_untracked(sh, ff.get("untracked_moved"), new)   # the untracked files the self-heal cleared for the merge
         unpark = ""
-        if back and ff.get("parked"):                   # red team 2026-11-24: the old code gets the owner's parked hand edit back
-            cp, pout = sh.git("stash", "pop")
-            unpark = ("; your parked edit to " + ", ".join(ff["parked"][:3]) + " is back") if cp == 0 else \
-                     ("; your parked edit to " + ", ".join(ff["parked"][:3]) + " stays in git stash (git stash list)")
+        if back and ff.get("parked") and ff.get("stash"):
+            # red team day-zerotouch2: the old code must run WITH the owner's hand edit again (the stash was taken on `old`)
+            c3, o3 = sh.git("stash", "pop", "-q", "--index", "stash@{0}") if _stash_top(sh) == ff["stash"] else (1, "not the top stash")
+            unpark = ("; your parked edit is back in place" if c3 == 0 else
+                      f"; your parked edit ({', '.join(ff['parked'][:2])}) stays in git stash ({str(o3).strip()[-80:]})")
         if "requirements.txt" in changed:
             sh.py(["-m", "pip", "install", "-q", "-r", "requirements.txt"], timeout=900)
         return done("rolled_back" if back else "failed",
@@ -1228,6 +1248,9 @@ def record(res: dict, state: dict | None = None, path: str = STATE_PATH) -> dict
             s["restart_pending"] = {"sha": res["new"], "from": res["old"], "t": res["t"]}
             s["crash_guard"] = {"new": res["new"], "old": res["old"], "t": res["t"], "starts": [],
                                 "changed": [p for p in (res.get("changed") or []) if p == "requirements.txt"]}
+            if res.get("parked") and res.get("stash"):  # red team #7: a crash rollback gives the parked (incl. force) edit back
+                s["crash_guard"].update(parked=list(res["parked"])[:20], stash=res["stash"],
+                                        park_force=bool(res.get("park_force")))
         s.pop("bad_sha", None)
     save_state(s, path)
     return s
