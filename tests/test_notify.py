@@ -61,7 +61,8 @@ def settings():
         imp = {k for k, v in s["alerts"].items() if v}
         check("a. no file: the defaults ('important only': trade results, pass/fail/locked/payout, daily summary, PC silent, problems; "
               "quiet 23:00-07:00, summary 16:15, silent after 20 min, reminder 2 h)",
-              imp == {"trade_opened", "trade_closed", "account_status", "room_low", "daily_summary", "morning_brief", "pc_silent", "problems"} and s["quiet_hours"] == {"from": "23:00", "to": "07:00"}
+              imp == {"trade_opened", "trade_closed", "account_status", "room_low", "daily_summary", "morning_brief", "pc_silent", "problems",
+                      "setup_progress"} and s["quiet_hours"] == {"from": "23:00", "to": "07:00"}
               and s["daily_summary_at"] == "16:15" and s["morning_brief_at"] == "07:30"
               and s["pc_silent_after_min"] == 20 and s["pc_silent_remind_after_min"] == 120, s)
         p = os.path.join(tmp, "s.json")

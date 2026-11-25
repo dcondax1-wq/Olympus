@@ -777,124 +777,124 @@
  },
  "changelog": [
   {
-   "t": 1794030665,
-   "date": "2026-11-07",
-   "title": "Cities: add verified City Network switcher (#322)"
+   "t": 1795610139,
+   "date": "2026-11-25",
+   "title": "NOTIFICATIONS.md + notify_settings help: the setup_progress line"
   },
   {
-   "t": 1794030106,
-   "date": "2026-11-07",
-   "title": "ATLAS Strategy City: read-only HQ night metropolis (#224)"
+   "t": 1795610123,
+   "date": "2026-11-25",
+   "title": "day-closer: setup progress pushes (owner: 'any time we get closer'), read-only"
   },
   {
-   "t": 1794029925,
-   "date": "2026-11-07",
-   "title": "Data City: build a connected night metropolis (#126)"
+   "t": 1795577721,
+   "date": "2026-11-25",
+   "title": "vault: rebuilt for this landing (tools/obsidian_brain.py)"
   },
   {
-   "t": 1794028915,
-   "date": "2026-11-07",
-   "title": "Deepen Kalshi City night metropolis"
+   "t": 1795577716,
+   "date": "2026-11-25",
+   "title": "STATE: order-flow max landed + optional F5"
   },
   {
-   "t": 1794028667,
-   "date": "2026-11-07",
-   "title": "Reduce Oracle mobile horizon glare"
+   "t": 1795576758,
+   "date": "2026-11-25",
+   "title": "red team #5: ignore the autopilot lock and state .tmp files; an order-flow ask never eats the 2 reserved answers"
   },
   {
-   "t": 1794028517,
-   "date": "2026-11-07",
-   "title": "Build a denser Cities night metropolis"
+   "t": 1795574002,
+   "date": "2026-11-25",
+   "title": "Ledger: light finder round 21:31"
   },
   {
-   "t": 1794028283,
-   "date": "2026-11-07",
-   "title": "Add a skippable Atlas city-gate entrance"
+   "t": 1795570830,
+   "date": "2026-11-25",
+   "title": "day-ofmax 6: of_forward.py (DESIGN_forward: 24 OF families, frozen 60/40 split at 120 days, Simes+BH family-first, DSR, confirm, 20 forward trades, placebo thro"
   },
   {
-   "t": 1794027905,
-   "date": "2026-11-07",
-   "title": "Make Oracle fallback honest and accessible"
+   "t": 1795570387,
+   "date": "2026-11-25",
+   "title": "orderflow DESIGN_forward: forward-only protocol for OF ideas (24 families, 60/40 split frozen at 120 days, v3 family-first Simes+BH, DSR, confirm, 20 forward tr"
   },
   {
-   "t": 1794026959,
-   "date": "2026-11-07",
-   "title": "Atlas: make a standalone Olympus command center"
+   "t": 1795570318,
+   "date": "2026-11-25",
+   "title": "day-ofmax: autopilot order-flow paths derive from CFG_PATH (tests no longer write summaries / battery / journal into the real logs/ and data/); battery 'waiting"
   },
   {
-   "t": 1794026917,
-   "date": "2026-11-07",
-   "title": "Fix Data City project-base navigation"
+   "t": 1795570196,
+   "date": "2026-11-25",
+   "title": "day-ofmax: lead wires note (roll-wall cause + fix, NT8 tick history ~1 year, depth disk/CPU, the one F5 step, ETA)"
   },
   {
-   "t": 1794024432,
-   "date": "2026-11-07",
-   "title": "Pantheon: keep data controls visible after GPU loss"
+   "t": 1795570125,
+   "date": "2026-11-25",
+   "title": "day-ofmax 4: Brain Order Flow room - live PAPER read from the tick file's tail (5/15-min delta; OF1 zone read at LIT's armed sweep level) inside the bf block ca"
   },
   {
-   "t": 1794022323,
-   "date": "2026-11-07",
-   "title": "Kalshi City: connect the night city and its districts"
+   "t": 1795569787,
+   "date": "2026-11-25",
+   "title": "day-ofmax 3: of_mill.py (DESIGN2: 49 features x LIT/ATLAS/level fades x hi/lo, BH-FDR + holdout + deflated Sharpe + forward gate, ideamill candidates() hook), r"
   },
   {
-   "t": 1794022144,
-   "date": "2026-11-07",
-   "title": "Cities: connect 173 catalog cities into one HQ metropolis"
+   "t": 1795569783,
+   "date": "2026-11-25",
+   "title": "Land idea mill v3 (56,160 ideas, 52 families, 0 pass; VWAP-band family rejected on hold-outs); rebuild data"
   },
   {
-   "t": 1794021520,
-   "date": "2026-11-07",
-   "title": "Data City: connected night network"
+   "t": 1795569693,
+   "date": "2026-11-25",
+   "title": "Idea mill v3: family-first FDR, 8 new triggers (56,160 ideas): 0 of 52 families pass; VWAP-momentum confirmation fails all 3 hold-outs"
   },
   {
-   "t": 1794012989,
-   "date": "2026-11-07",
-   "title": "oracle-freshness: reject future-dated market sources"
+   "t": 1795569495,
+   "date": "2026-11-25",
+   "title": "orderflow DESIGN2: pre-registered idea mill (48 OF features x LIT/ATLAS filters + level fades x 2 sides = 288 variants; gates: discovery BH-FDR q .10, holdout, "
   },
   {
-   "t": 1793999279,
-   "date": "2026-11-06",
-   "title": "Recover Data City from any frame-loop exception (#304)"
+   "t": 1795569435,
+   "date": "2026-11-25",
+   "title": "Idea mill v3 pre-registration: family-first hierarchical FDR, 8 new triggers, the VWAP-family hold-out confirmation (before any run)"
   },
   {
-   "t": 1793998878,
-   "date": "2026-11-06",
-   "title": "Show Data City map if visible 3D never draws its first frame (#303)"
+   "t": 1795569425,
+   "date": "2026-11-25",
+   "title": "day-ofmax 1+2: LE_TickRec roll fix (unknown contract never = end of history; expiring contract tried; end2/none-v2 so the Sep 14 wall is re-probed), market dept"
   },
   {
-   "t": 1793998624,
-   "date": "2026-11-06",
-   "title": "Keep the Data City map link visible through 3D failures (#302)"
+   "t": 1795569376,
+   "date": "2026-11-25",
+   "title": "Land idea mill v2 (38,880 ideas, 0 pass); rebuild hub + brain data"
   },
   {
-   "t": 1793998320,
-   "date": "2026-11-06",
-   "title": "Cities: open the atlas after GPU context loss (#301)"
+   "t": 1795569205,
+   "date": "2026-11-25",
+   "title": "Idea mill: grammar (38,880 ideas), FDR + deflated-Sharpe + hold-out + placebo protocol, harvester, Brain feed; first batch 0 survivors"
   },
   {
-   "t": 1793998151,
-   "date": "2026-11-06",
-   "title": "Give Data City a direct no-GPU map view (#300)"
+   "t": 1795568921,
+   "date": "2026-11-25",
+   "title": "Idea mill DESIGN addendum v2: p-value floor bug, dow filters, 15m/1h (before the v2 run)"
   },
   {
-   "t": 1793997865,
-   "date": "2026-11-06",
-   "title": "Keep Data City readable after WebGL or frame failures (#299)"
+   "t": 1795568572,
+   "date": "2026-11-25",
+   "title": "Idea mill: pre-registered protocol (before any idea scored)"
   },
   {
-   "t": 1793997425,
-   "date": "2026-11-06",
-   "title": "Keep Data City 3D available on phones using ultra effects (#298)"
+   "t": 1795563446,
+   "date": "2026-11-24",
+   "title": "live.unrouted_exit_skip: any open leg of ours (or has_open_bracket) blocks the skip (red team #4 one-liner); ledger note"
   },
   {
-   "t": 1793997099,
-   "date": "2026-11-06",
-   "title": "Data City: refresh fallback skyline module on phones (#297)"
+   "t": 1795561187,
+   "date": "2026-11-24",
+   "title": "Red team day-zeroerr (ledgerfix): the pre-eval_start skip in multi_account._process only when the account does not hold the entry (its open trade / an open Ninj"
   },
   {
-   "t": 1793997027,
-   "date": "2026-11-06",
-   "title": "Data City: show a district skyline when 3D is unavailable (#296)"
+   "t": 1795561123,
+   "date": "2026-11-24",
+   "title": "STATE: PC update blocker root cause + the one line"
   }
  ],
  "props": {
