@@ -26,6 +26,10 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
 - ONE owner/anyone-at-PC line (bot folder, cmd): `git stash push -m "owner park" -- research/orderflow/results.json && UPDATE.bat` (then START_BOT.bat + phrase if not armed). Installs brain feed, zeroerr alarms, OF data path, fsutil fixes.
 - Pending red team #4: origin/day-zeroerr bc17172e (unrouted-exit skip + eval_start ledger repair + arm_daily) - land after the PC is unblocked.
 
+## Order flow (2026-11-24 night, pc 00ce6255a)
+- Landed (red team #5 CLEAR): LE_TickRec year backfill fix (Sep 14 wall = expired 09-26 contract read as end of history), market depth top-10 forward recording, OF idea mill (294 variants, forward protocol), live OF room + nightly 'flow said / happened' line, datafeed 'of' paging. Installs with the owner's one line.
+- OPTIONAL owner step for the C# part: NinjaTrader > New > NinjaScript Editor > F5 (once). With it: first real OF result ~Nov 26-27; without: ~Dec 18, no depth. data/depth parquet ~3 GB/yr: add a disk_clean cap later.
+
 ## Live now
 | What (checked 2026-11-19 18:37 ET, board.py read) | State |
 |---|---|
