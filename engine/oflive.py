@@ -244,11 +244,12 @@ def _line(rec: dict) -> str:
     return f"{md}: no LIT trade"
 
 
-def journal_kick(root: str = ROOT, days_back: int = 5, now: float | None = None) -> dict:
+def journal_kick(root: str = ROOT, days_back: int = 5, now: float | None = None, journal: str | None = None) -> dict:
     """Append the finished ET days (last days_back) that have a summary and no journal line yet. Never raises."""
     try:
         now = now or time.time()
-        have = {r.get("day") for r in _jl(JOURNAL)}
+        jp = journal or JOURNAL
+        have = {r.get("day") for r in _jl(jp)}
         today = _et_day(now)
         base = os.path.join(root, "logs", "datapipe", "days")
         try:
@@ -263,8 +264,8 @@ def journal_kick(root: str = ROOT, days_back: int = 5, now: float | None = None)
             if rec:
                 new.append(rec)
         if new:
-            os.makedirs(os.path.dirname(JOURNAL), exist_ok=True)
-            with open(JOURNAL, "a", encoding="utf-8") as fh:
+            os.makedirs(os.path.dirname(jp), exist_ok=True)
+            with open(jp, "a", encoding="utf-8") as fh:
                 for r in new:
                     fh.write(json.dumps(r, separators=(",", ":")) + "\n")
         return {"added": [r["day"] for r in new]}

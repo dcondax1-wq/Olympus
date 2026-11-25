@@ -435,8 +435,13 @@ def run(src=None, ticks=False, force=False, final=False, raw=None, lit=None, atl
               "dropped_thin": dropped, "need": MIN_DAYS, "first": days[0] if days else None, "last": days[-1] if days else None}
     if len(days) < MIN_DAYS:
         status["state"] = f"waiting: {len(days)} of {MIN_DAYS} tick days"
-        if write:
-            json.dump(status, open(OUT, "w"), indent=1)
+        if write:                                                         # only when more than the time changed (clean tree)
+            try:
+                old = json.load(open(OUT, encoding="utf-8"))
+            except Exception:  # noqa: BLE001
+                old = {}
+            if {k: v for k, v in old.items() if k != "made"} != {k: v for k, v in status.items() if k != "made"}:
+                json.dump(status, open(OUT, "w"), indent=1)
         print(status["state"])
         return status
     looks = json.load(open(LOOKS)) if (write and os.path.exists(LOOKS)) else []

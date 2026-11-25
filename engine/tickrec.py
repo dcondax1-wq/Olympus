@@ -586,11 +586,13 @@ def autopilot(now: dt.datetime | None = None, study=None, nd: str | None = None)
         write_tiny()                                   # the Four Pillars line (days so far) for the status post, after each ingest
         # day-ofready: per-day order-flow summaries for the cloud (never raises). Red team 2026-11-24: the budget also ends 15 min
         # before the bot's 02:00 ET (a kick at 01:39 ET with a 10-min budget plus the ingest ran up to 01:50+)
-        of_sum = build_summaries(budget_s=max(0.0, min(OF_BUDGET_S, seconds_left(et) - 900)))
-        of_bat = battery_kick(et)                      # day-ofmax: the pre-registered battery at 40 / 60 / 120 / 250 days (never raises)
+        of_root = os.path.join(_base(), "logs", "datapipe", "days")      # day-ofmax: derived from CFG_PATH (tests stay in their temp dir)
+        of_sum = build_summaries(budget_s=max(0.0, min(OF_BUDGET_S, seconds_left(et) - 900)), out_root=of_root)
+        of_bat = battery_kick(et, of_root, battery_dir=os.path.join(_base(), "logs", "orderflow"),
+                              note=os.path.join(_base(), "data", "orderflow_battery_note.json"))   # day-ofmax: looks 40/60/120/250
         try:                                           # day-ofmax: one journal line per finished day (what flow said vs result)
             from . import oflive
-            of_jr = oflive.journal_kick()
+            of_jr = oflive.journal_kick(_base(), journal=os.path.join(_base(), "data", "orderflow_journal.jsonl"))
         except Exception as e:  # noqa: BLE001
             of_jr = {"error": e.__class__.__name__}
         want = None
@@ -676,7 +678,13 @@ BATTERY_DIR = os.path.join(ROOT, "logs", "orderflow")                     # resu
 BATTERY_LOOKS = (40, 60, 120, 250)                                          # research/orderflow/DESIGN.md
 
 
-def battery_kick(et: dt.datetime, out_root: str | None = None, runner=None) -> dict:
+def _base() -> str:
+    """The folder that holds data/ and logs/ (the repo on the PC; a test's temp folder when it moves CFG_PATH)."""
+    return os.path.dirname(os.path.dirname(CFG_PATH))
+
+
+def battery_kick(et: dt.datetime, out_root: str | None = None, runner=None, battery_dir: str | None = None,
+                 note: str | None = None) -> dict:
     """day-ofmax: run research/orderflow/of_battery.py on the PC's own summaries the night a look's day count (40 / 60 / 120 /
     250) is first reached, as its own process, ended 15 min before 02:00 ET; one phone line in data/orderflow_battery_note.json.
     Never raises, never touches a tracked repo file (results under logs/orderflow/)."""
@@ -689,7 +697,7 @@ def battery_kick(et: dt.datetime, out_root: str | None = None, runner=None) -> d
             n = 0
         look = sum(1 for a in BATTERY_LOOKS if n >= a)
         try:
-            done = max([int(x.get("look") or 0) for x in json.load(open(os.path.join(BATTERY_DIR, "battery_looks.json"), encoding="utf-8"))] or [0])
+            done = max([int(x.get("look") or 0) for x in json.load(open(os.path.join(battery_dir or BATTERY_DIR, "battery_looks.json"), encoding="utf-8"))] or [0])
         except Exception:
             done = 0
         out = {"days": n, "look": look, "done": done}
@@ -699,7 +707,7 @@ def battery_kick(et: dt.datetime, out_root: str | None = None, runner=None) -> d
         if left < 1800:
             return {**out, "ran": False, "why": "less than 30 min before 02:00 ET"}
         cmd = [sys.executable, "-X", "utf8", os.path.join(ROOT, "research", "orderflow", "of_battery.py"), "--src", root,
-               "--out-dir", BATTERY_DIR, "--line", BATTERY_NOTE]
+               "--out-dir", battery_dir or BATTERY_DIR, "--line", note or BATTERY_NOTE]
         if runner is not None:
             return {**out, "ran": bool(runner(cmd, max(60.0, left - 900)))}
         import subprocess
