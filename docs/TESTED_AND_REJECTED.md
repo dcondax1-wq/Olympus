@@ -422,3 +422,12 @@
   beyond the swing, 2R, LIT sizing, costs in. 0 of 10 pass (PF > 1 in all three spans and Holm p < 0.05; best raw p 0.17, all
   Holm 1.0); 9 of 10 lose 2026 H1. Only ICT 2022 adds $ to LIT in both 2026 halves (+$369 / +$681 a month on a Rapid 50K, ~5
   trades/wk) but DD $2.2k -> $4.8k, H1 eval fails 1.6% -> 34%, loses 2021-25. Corr LIT -0.06..+0.38. Nothing adopted.
+- **ICT lab, every popular ICT / time-price concept tested the other ways (2026-11-25, `research/writeups/ict-lab-2026-11-25.md`,
+  `research/ictlab/`, rules pre-registered in `research/ictlab/DESIGN.md`):** Quarterly Theory (TDO / TSO / 90 / 22.5-min AMDX), 8 ICT macros,
+  Silver Bullet 03 / 10 / 14, Judas, PO3, SMT NQ-ES (2025-04+), IPDA 20/40/60, PDH/PDL draw, NWOG/NDOG, OTE, killzones, CBDR / Asia SD; 23
+  standalones + 16 filters x ONLY / x1.5 on LIT and ATLAS + 10 combos + 6 gates = 133 variants; views: year / quarter heat map, rolling 3-month
+  walk-forward (pick on 6), 40-session MFFU eval windows, $/mo + DD, 2026 alone, placebo luck count. **Standalones: 0 pass** (11 of 12 concepts
+  lose in >= 2 of 5 years; IPDA -$80k..-$101k, macros -$50k..-$61k; OTE + PDH/PDL draw gate green all 5 years +$21k but 0.9 trades/wk, p 0.056:
+  paper watch). Confluence filters: 9 pass the card test vs 1.8 by luck, but they collapse to 2 findings, both size-ups that raise the eval
+  fail rate: LIT x1.5 on the True Day Open side (+$27.8k, 2026 eval fail 1% -> 20%) and ATLAS x1.5 in SB hours (+$21.7k, 5/5 years, fail
+  2% -> 13%) = owner cards, not adopted. Every ONLY (skip) filter loses 2026 money.
