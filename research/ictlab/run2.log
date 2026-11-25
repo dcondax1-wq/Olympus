@@ -1,0 +1,169 @@
+sessions 1318
+standalone {'S_MMBM': 219, 'S_TURTLE': 85, 'S_BREAKER': 614, 'S_MITIG': 849, 'S_OB': 601, 'S_UNICORN': 570, 'S_IFVG': 1124, 'S_BPR': 701, 'S_VOID': 907, 'S_W_TUE': 72, 'S_W_WED': 47, 'S_W_THU': 36, 'S_DOR': 334, 'S_WPO3': 53, 'S_WYCKOFF': 21, 'S_MP80': 53, 'S_VAFADE': 406, 'S_VWAPSD': 853, 'S_ORBV': 62, 'S_DIVRSI': 979, 'S_DIVMACD': 843, 'S_ROUND': 38, 'S_PWFADE': 331, 'S_PWBRK': 698}
+features done
+LIT_BASE                   works most years (4 of 5)      yrs+4 wf   40639 p None tot    45085
+LIT_F_OB_HALF              never                          yrs+0 wf   -2331 p 0.894 tot   -23958
+LIT_F_OB_ONLY              never                          yrs+0 wf   -4661 p 0.886 tot   -47915
+LIT_F_BRK_HALF             never (only 2023)              yrs+1 wf   -2398 p 0.116 tot   -19579
+LIT_F_BRK_ONLY             never (only 2023)              yrs+1 wf   -4795 p 0.14 tot   -39158
+LIT_F_FVG_HALF             never (only 2023)              yrs+1 wf   -1946 p 0.816 tot   -22953
+LIT_F_FVG_ONLY             never (only 2023)              yrs+1 wf   -3891 p 0.802 tot   -45906
+LIT_F_IFVG_HALF            never (only 2023)              yrs+1 wf    4711 p 0.018 tot   -14046
+LIT_F_IFVG_ONLY            never (only 2023)              yrs+1 wf    9422 p 0.012 tot   -28093
+LIT_F_WEEK_HALF            mixed (2023, 2024, 2025 up)    yrs+3 wf    5862 p 0.008 tot      691
+LIT_F_WEEK_ONLY            mixed (2023, 2024, 2025 up)    yrs+3 wf   11725 p 0.01 tot     1381
+LIT_F_WPO3_HALF            mixed (2023, 2024 up)          yrs+2 wf   -2754 p 0.7 tot   -12807
+LIT_F_WPO3_ONLY            mixed (2023, 2024 up)          yrs+2 wf   -5508 p 0.704 tot   -25614
+LIT_F_DOR_HALF             mixed (2025 up)                yrs+1 wf   -2248 p 0.152 tot    -9590
+LIT_F_DOR_ONLY             mixed (2025 up)                yrs+1 wf   -4496 p 0.17 tot   -19181
+LIT_F_VA_HALF              mixed (2024 up)                yrs+1 wf    -999 p 0.28 tot   -11334
+LIT_F_VA_ONLY              mixed (2024 up)                yrs+1 wf   -1998 p 0.26 tot   -22669
+LIT_F_POC_HALF             mixed (2024 up)                yrs+1 wf   -1959 p 0.212 tot    -6383
+LIT_F_POC_ONLY             mixed (2024 up)                yrs+1 wf   -3917 p 0.25 tot   -12765
+LIT_F_VWAP_HALF            mixed (2022, 2024, 2025 up)    yrs+3 wf    -313 p 0.2 tot       61
+LIT_F_VWAP_ONLY            mixed (2022, 2024, 2025 up)    yrs+3 wf    -626 p 0.194 tot      121
+LIT_F_DIV_HALF             never                          yrs+0 wf    -465 p 0.752 tot   -20013
+LIT_F_DIV_ONLY             never                          yrs+0 wf    -929 p 0.708 tot   -40025
+LIT_F_ROUND_HALF           never (only 2023)              yrs+1 wf    1546 p 0.906 tot   -20652
+LIT_F_ROUND_ONLY           never (only 2023)              yrs+1 wf    3092 p 0.944 tot   -41305
+LIT_F_PW_HALF              never                          yrs+0 wf   -6091 p 0.94 tot   -24361
+LIT_F_PW_ONLY              never                          yrs+0 wf  -12182 p 0.938 tot   -48722
+LIT_F_WYK_HALF             never (only 2023)              yrs+1 wf    2224 p 0.568 tot   -19898
+LIT_F_WYK_ONLY             never (only 2023)              yrs+1 wf    4447 p 0.544 tot   -39796
+LIT_F_ORB_HALF             mixed (2022, 2024, 2025 up)    yrs+3 wf     242 p 0.248 tot     -289
+LIT_F_ORB_ONLY             mixed (2022, 2024, 2025 up)    yrs+3 wf     484 p 0.242 tot     -577
+LIT_F_TURTLE_HALF          mixed (2024 up)                yrs+1 wf   -3092 p 0.334 tot   -19761
+LIT_F_TURTLE_ONLY          mixed (2024 up)                yrs+1 wf   -6183 p 0.332 tot   -39522
+LIT filters done
+ATLAS_BASE                 works most years (4 of 5)      yrs+4 wf   11824 p None tot    34011
+ATLAS_F_OB_HALF            never                          yrs+0 wf   -6224 p 0.48 tot   -16048
+ATLAS_F_OB_ONLY            never                          yrs+0 wf  -12447 p 0.506 tot   -32095
+ATLAS_F_BRK_HALF           never                          yrs+0 wf   -6466 p 0.538 tot   -16927
+ATLAS_F_BRK_ONLY           never                          yrs+0 wf  -12931 p 0.59 tot   -33855
+ATLAS_F_FVG_HALF           never                          yrs+0 wf   -6373 p 0.11 tot   -16804
+ATLAS_F_FVG_ONLY           never (only 2024)              yrs+1 wf  -12747 p 0.13 tot   -33608
+ATLAS_F_IFVG_HALF          never                          yrs+0 wf   -5585 p 0.482 tot   -15584
+ATLAS_F_IFVG_ONLY          never                          yrs+0 wf  -11171 p 0.55 tot   -31167
+ATLAS_F_WEEK_HALF          never (only 2023)              yrs+1 wf   -2026 p 0.702 tot    -9575
+ATLAS_F_WEEK_ONLY          never (only 2023)              yrs+1 wf   -4051 p 0.698 tot   -19150
+ATLAS_F_WPO3_HALF          never (only 2023)              yrs+1 wf    -822 p 0.3 tot    -8208
+ATLAS_F_WPO3_ONLY          never (only 2023)              yrs+1 wf   -1644 p 0.298 tot   -16416
+ATLAS_F_DOR_HALF           mixed (2023, 2024, 2025 up)    yrs+3 wf    2675 p 0.004 tot     -984
+ATLAS_F_DOR_ONLY           mixed (2023, 2024, 2025 up)    yrs+3 wf    5351 p 0.006 tot    -1968
+ATLAS_F_VA_HALF            never (only 2024)              yrs+1 wf   -1745 p 0.134 tot    -9577
+ATLAS_F_VA_ONLY            never (only 2024)              yrs+1 wf   -3489 p 0.128 tot   -19154
+ATLAS_F_POC_HALF           mixed (2022, 2024 up)          yrs+2 wf   -1195 p 0.106 tot    -4995
+ATLAS_F_POC_ONLY           mixed (2022, 2024 up)          yrs+2 wf   -2390 p 0.092 tot    -9990
+ATLAS_F_VWAP_HALF          mixed (2022, 2023, 2025 up)    yrs+3 wf   -1127 p 0.28 tot    -2196
+ATLAS_F_VWAP_ONLY          mixed (2022, 2023, 2025 up)    yrs+3 wf   -2253 p 0.274 tot    -4391
+ATLAS_F_DIV_HALF           mixed (2022, 2024 up)          yrs+2 wf   -4307 p 0.086 tot    -5656
+ATLAS_F_DIV_ONLY           mixed (2022, 2024 up)          yrs+2 wf   -8613 p 0.084 tot   -11312
+ATLAS_F_ROUND_HALF         never                          yrs+0 wf   -6562 p 0.854 tot   -13450
+ATLAS_F_ROUND_ONLY         never                          yrs+0 wf  -13124 p 0.804 tot   -26901
+ATLAS_F_PW_HALF            never (only 2024)              yrs+1 wf   -6351 p 0.248 tot   -13335
+ATLAS_F_PW_ONLY            never (only 2024)              yrs+1 wf  -12702 p 0.222 tot   -26670
+ATLAS_F_WYK_HALF           never (only 2023)              yrs+1 wf   -6450 p 0.648 tot   -15049
+ATLAS_F_WYK_ONLY           never (only 2023)              yrs+1 wf  -12900 p 0.66 tot   -30099
+ATLAS_F_ORB_HALF           never (only 2022)              yrs+1 wf   -1868 p 0.292 tot    -1662
+ATLAS_F_ORB_ONLY           never (only 2022)              yrs+1 wf   -3736 p 0.3 tot    -3324
+ATLAS_F_TURTLE_HALF        never (only 2024)              yrs+1 wf   -6361 p 0.342 tot   -15925
+ATLAS_F_TURTLE_ONLY        never (only 2024)              yrs+1 wf  -12721 p 0.304 tot   -31850
+ATLAS filters done
+S_MMBM                     mixed (2022, 2023, 2026 up)    yrs+3 wf   -3724 p 0.268 tot     5955
+S_MMBM|F_TDO               mixed (2022, 2023, 2025 up)    yrs+3 wf    6089 p 0.23 tot     6845
+S_MMBM|F_DOL               never (only 2022)              yrs+1 wf   -1897 p 0.828 tot    -4933
+S_MMBM|F_WEEK              works every year               yrs+5 wf    8982 p 0.106 tot    11575
+S_TURTLE                   mixed (2022, 2024, 2025 up)    yrs+3 wf    7478 p 0.116 tot     7056
+S_TURTLE|F_TDO             mixed (2022, 2024, 2025 up)    yrs+3 wf    7866 p 0.082 tot     7444
+S_TURTLE|F_DOL             mixed (2022, 2025, 2026 up)    yrs+3 wf    1125 p 0.296 tot     1431
+S_TURTLE|F_WEEK            mixed (2024, 2025 up)          yrs+2 wf    2486 p 0.218 tot     1937
+S_BREAKER                  mixed (2023, 2026 up)          yrs+2 wf   -9016 p 0.748 tot   -11734
+S_BREAKER|F_TDO            2026 only                      yrs+1 wf   -6861 p 0.838 tot   -10076
+S_BREAKER|F_DOL            never (only 2023)              yrs+1 wf   -6632 p 0.61 tot    -4259
+S_BREAKER|F_WEEK           2026 H1 only                   yrs+1 wf   -6708 p 0.846 tot    -7047
+S_MITIG                    never (only 2022)              yrs+1 wf   -9331 p 0.91 tot   -37772
+S_MITIG|F_TDO              never (only 2024)              yrs+1 wf   -1380 p 0.762 tot   -12984
+S_MITIG|F_DOL              mixed (2022, 2026 up)          yrs+2 wf   -4526 p 0.692 tot   -14395
+S_MITIG|F_WEEK             never (only 2022)              yrs+1 wf  -13421 p 0.928 tot   -26458
+S_OB                       never (only 2024)              yrs+1 wf  -19538 p 0.976 tot   -52973
+S_OB|F_TDO                 never                          yrs+0 wf   -7582 p 0.972 tot   -32261
+S_OB|F_DOL                 never (only 2022)              yrs+1 wf   -9943 p 0.654 tot   -14054
+S_OB|F_WEEK                mixed (2022, 2024 up)          yrs+2 wf  -13326 p 0.808 tot   -19551
+S_UNICORN                  never (only 2025)              yrs+1 wf  -22632 p 0.868 tot   -40958
+S_UNICORN|F_TDO            never (only 2025)              yrs+1 wf   -3823 p 0.93 tot   -32087
+S_UNICORN|F_DOL            never (only 2025)              yrs+1 wf  -17124 p 0.686 tot   -16301
+S_UNICORN|F_WEEK           never (only 2025)              yrs+1 wf  -20296 p 0.784 tot   -22420
+S_IFVG                     never                          yrs+0 wf   -1326 p 1.0 tot   -90973
+S_IFVG|F_TDO               never                          yrs+0 wf   -1433 p 1.0 tot   -77941
+S_IFVG|F_DOL               never                          yrs+0 wf       0 p 1.0 tot   -51222
+S_IFVG|F_WEEK              never                          yrs+0 wf     -81 p 1.0 tot   -46021
+S_BPR                      2026 only                      yrs+1 wf   -8148 p 0.944 tot   -28427
+S_BPR|F_TDO                never (only 2022)              yrs+1 wf  -10707 p 0.896 tot   -19455
+S_BPR|F_DOL                2026 H1 only                   yrs+1 wf   -6520 p 0.98 tot   -19940
+S_BPR|F_WEEK               mixed (2022, 2025 up)          yrs+2 wf   -1286 p 0.88 tot   -13473
+S_VOID                     never                          yrs+0 wf  -24250 p 0.988 tot  -146602
+S_VOID|F_TDO               never                          yrs+0 wf  -27681 p 0.796 tot   -70363
+S_VOID|F_DOL               2026 H1 only                   yrs+1 wf  -12861 p 0.926 tot   -68379
+S_VOID|F_WEEK              never                          yrs+0 wf  -16376 p 0.856 tot   -52805
+S_W_TUE                    mixed (2023, 2024, 2026 up)    yrs+3 wf     726 p 0.222 tot     3919
+S_W_TUE|F_TDO              mixed (2023, 2024, 2025, 2026 up) yrs+4 wf   -1061 p 0.284 tot     2083
+S_W_TUE|F_DOL              mixed (2023, 2024, 2026 up)    yrs+3 wf    2331 p 0.162 tot     3031
+S_W_TUE|F_WEEK             mixed (2023, 2024, 2026 up)    yrs+3 wf     726 p 0.212 tot     3919
+S_W_WED                    mixed (2024, 2025 up)          yrs+2 wf    1717 p 0.332 tot      397
+S_W_WED|F_TDO              mixed (2024, 2025 up)          yrs+2 wf    -531 p 0.392 tot     -278
+S_W_WED|F_DOL              2026 H1 only                   yrs+1 wf       0 p 0.766 tot    -1630
+S_W_WED|F_WEEK             mixed (2024, 2025 up)          yrs+2 wf    1717 p 0.356 tot      397
+S_W_THU                    never (only 2024)              yrs+1 wf   -4413 p 0.89 tot    -5973
+S_W_THU|F_TDO              mixed (2024, 2025 up)          yrs+2 wf   -4008 p 0.856 tot    -5319
+S_W_THU|F_DOL              mixed (2024, 2025 up)          yrs+2 wf    -478 p 0.634 tot    -1153
+S_W_THU|F_WEEK             never (only 2024)              yrs+1 wf    1192 p 0.474 tot     -133
+S_DOR                      never (only 2022)              yrs+1 wf   -5979 p 0.87 tot   -26054
+S_DOR|F_TDO                never                          yrs+0 wf       0 p 1.0 tot        0
+S_DOR|F_DOL                never (only 2022)              yrs+1 wf   -5979 p 0.846 tot   -26054
+S_DOR|F_WEEK               mixed (2022, 2025 up)          yrs+2 wf   -2971 p 0.876 tot   -19374
+S_WPO3                     works most years (4 of 5)      yrs+4 wf     230 p 0.238 tot      764
+S_WPO3|F_TDO               works most years (4 of 5)      yrs+4 wf     554 p 0.21 tot     1029
+S_WPO3|F_DOL               mixed (2022, 2024, 2025 up)    yrs+3 wf    -838 p 0.578 tot     -202
+S_WPO3|F_WEEK              works most years (4 of 5)      yrs+4 wf     230 p 0.294 tot      764
+S_WYCKOFF                  mixed (2022, 2023, 2025, 2026 up) yrs+4 wf     -51 p 0.194 tot     2655
+S_WYCKOFF|F_TDO            mixed (2022, 2023, 2025, 2026 up) yrs+4 wf     -51 p 0.196 tot     3520
+S_WYCKOFF|F_DOL            mixed (2023, 2025, 2026 up)    yrs+3 wf    2340 p 0.1 tot     3844
+S_WYCKOFF|F_WEEK           mixed (2025, 2026 up)          yrs+2 wf    1542 p 0.34 tot      861
+S_MP80                     mixed (2024, 2026 up)          yrs+2 wf    -732 p 0.642 tot    -1030
+S_MP80|F_TDO               mixed (2024, 2026 up)          yrs+2 wf    -407 p 0.708 tot     -700
+S_MP80|F_DOL               mixed (2024, 2026 up)          yrs+2 wf     524 p 0.15 tot      876
+S_MP80|F_WEEK              mixed (2023, 2024 up)          yrs+2 wf     386 p 0.56 tot      -43
+S_VAFADE                   never                          yrs+0 wf  -17137 p 0.986 tot   -39488
+S_VAFADE|F_TDO             never                          yrs+0 wf  -11672 p 0.98 tot   -34224
+S_VAFADE|F_DOL             never (only 2023)              yrs+1 wf   -3974 p 0.898 tot   -18555
+S_VAFADE|F_WEEK            never                          yrs+0 wf   -3718 p 0.986 tot   -24693
+S_VWAPSD                   never                          yrs+0 wf  -16749 p 0.874 tot   -74536
+S_VWAPSD|F_TDO             never (only 2024)              yrs+1 wf  -22418 p 0.806 tot   -52972
+S_VWAPSD|F_DOL             mixed (2024, 2025, 2026 up)    yrs+3 wf  -20613 p 0.442 tot    -8481
+S_VWAPSD|F_WEEK            mixed (2023, 2024, 2026 up)    yrs+3 wf   -6063 p 0.6 tot   -21137
+S_ORBV                     mixed (2023, 2024 up)          yrs+2 wf     -65 p 0.456 tot       63
+S_ORBV|F_TDO               never (only 2023)              yrs+1 wf    -241 p 0.388 tot      103
+S_ORBV|F_DOL               never (only 2023)              yrs+1 wf       0 p 0.728 tot     -680
+S_ORBV|F_WEEK              mixed (2023, 2024 up)          yrs+2 wf    -159 p 0.356 tot      600
+S_DIVRSI                   never                          yrs+0 wf       0 p 1.0 tot   -97867
+S_DIVRSI|F_TDO             never                          yrs+0 wf   -3002 p 1.0 tot   -92366
+S_DIVRSI|F_DOL             never                          yrs+0 wf   -4086 p 0.998 tot   -44402
+S_DIVRSI|F_WEEK            never                          yrs+0 wf   -6084 p 1.0 tot   -45299
+S_DIVMACD                  never                          yrs+0 wf       0 p 1.0 tot   -88997
+S_DIVMACD|F_TDO            never                          yrs+0 wf       0 p 1.0 tot   -84592
+S_DIVMACD|F_DOL            never                          yrs+0 wf     963 p 1.0 tot   -48496
+S_DIVMACD|F_WEEK           never                          yrs+0 wf   -2606 p 0.992 tot   -38175
+S_ROUND                    mixed (2023, 2025 up)          yrs+2 wf    -665 p 0.23 tot     2556
+S_ROUND|F_TDO              mixed (2024, 2025 up)          yrs+2 wf   -1603 p 0.436 tot      129
+S_ROUND|F_DOL              mixed (2023, 2024, 2025 up)    yrs+3 wf     495 p 0.154 tot     3636
+S_ROUND|F_WEEK             never (only 2024)              yrs+1 wf    -958 p 0.364 tot      729
+S_PWFADE                   never (only 2025)              yrs+1 wf    -625 p 0.726 tot   -14169
+S_PWFADE|F_TDO             mixed (2022, 2025 up)          yrs+2 wf    1807 p 0.64 tot    -8907
+S_PWFADE|F_DOL             never (only 2025)              yrs+1 wf   -4690 p 0.91 tot   -11840
+S_PWFADE|F_WEEK            never (only 2025)              yrs+1 wf    1583 p 0.628 tot    -2891
+S_PWBRK                    mixed (2022, 2024 up)          yrs+2 wf   -5451 p 0.596 tot   -18479
+S_PWBRK|F_TDO              never                          yrs+0 wf   -2108 p 0.956 tot   -21166
+S_PWBRK|F_DOL              never (only 2022)              yrs+1 wf   -5198 p 0.718 tot   -19070
+S_PWBRK|F_WEEK             mixed (2022, 2024 up)          yrs+2 wf   -5545 p 0.708 tot   -22892
+{"variants": 400, "cards_real": 0, "cards_expected_by_luck": 1.1, "p05_real": 26, "p05_expected": 20.0, "by_group": {"single": {"n": 64, "cards": 0, "luck": 0.0}, "pair": {"n": 240, "cards": 0, "luck": 0.0}, "stand": {"n": 24, "cards": 0, "luck": 0.2}, "gate": {"n": 72, "cards": 0, "luck": 0.8}}}
+exit 0

@@ -457,3 +457,12 @@
   REJECTED (2026 H1 -$152 / H2 -$822 at fixed size; 2021-25 +$6.3k, DD -$21.1k -> -$14.0k: paper lead); funded ATLAS x1.5 in SB hours
   REJECTED (same payouts, dead accounts H2 2.8% -> 7.2%). Open as owner cards: ATLAS x0.5 outside SB hours (Builder evals: fails 4-12% -> 0-2%,
   2026 $ -$601 / -$97, 2021-25 +$20.9k; not Rapid) and ATLAS C2 x1.5 (+$4.1k, small).
+- **ICT lab round 2 (2026-11-25, `research/writeups/ict-lab2-2026-11-25.md`, `research/ictlab/ict_lab2.py`, pre-registered
+  `research/ictlab/DESIGN2.md`):** MMBM/MMSM, Turtle Soup, breaker, mitigation, strict order block, Unicorn, IFVG, BPR, liquidity void,
+  weekly profiles (Tue / Wed reversal / Thu consolidation), daily open retracement, weekly PO3, Wyckoff spring/upthrust, Market Profile 80%
+  rule, VAH/VAL fades, VWAP 2-SD, ORB + volume, RSI / MACD divergence at levels, round numbers, prior-week high/low fade / break; 16
+  confluences on LIT and ATLAS (eval-safe HALF / ONLY), all 120 pairs, 72 bias gates = 400 variants: **0 cards** (1.1 expected by luck;
+  p<0.05 26 vs 20 by chance). Worst alone: liquidity void -$147k, RSI div -$98k, MACD div -$89k, IFVG -$91k. Every size-down that cuts the
+  2021-25 losses (weekly bias on LIT +$7.7k, ATLAS near the daily open +$12.3k) costs money in both 2026 halves. Paper watch only: MMBM with
+  the weekly bias (green 5/5 years, +$11.6k, 0.35 trades/wk, p 0.11). TDO x0.5 on FUNDED accounts (real engine): funded losses roughly
+  halved (50K H2 13.1% -> 6.9%) but the owner's 2026 Jul-Oct payouts drop on every plan (-$106 .. -$467 / 6 months): rejected again.
