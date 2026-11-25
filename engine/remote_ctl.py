@@ -611,8 +611,9 @@ class RemoteControl:
         except Exception as e:
             return "failed", f"update error: {e.__class__.__name__}: {e}"
         st = res.get("status")
+        pk = parked_line(res.get("parked"))
         if res.get("restart"):
-            return "restart", f"updated {str(res.get('old') or '')[:7]} -> {str(res.get('new') or '')[:7]}, self-tests passed: restarting"
+            return "restart", f"updated {str(res.get('old') or '')[:7]} -> {str(res.get('new') or '')[:7]}, self-tests passed: restarting{pk}"
         return ("done" if st in ("up_to_date",) else "refused" if st in ("skipped", "off") else "failed"), \
             f"update {st}: {res.get('reason')}"
 
@@ -825,3 +826,24 @@ class RemoteControl:
         if self.tg is not None:
             out["telegram"] = {**self.tg.status(), "alive": bool(self._tg_thread and self._tg_thread.is_alive())}
         return out
+
+
+# red team 2026-11-25 (day-handsfree): '/update force' may park the strategy / account / rule files; the receipt must SAY so, or a
+# parked live_model*.json would change what the bot trades without a word (the repo's version runs from the restart on)
+_RULE_FILES = ("live_model", "second_model", "mffu_rules", "firm_rules", "combo_50k", "notify_settings", "update_source")
+
+
+def parked_line(parked) -> str:
+    """'' or '. Parked (git stash): ... ; STRATEGY / RULE FILES now run the repo's version: ...'. Never raises."""
+    try:
+        ps = [str(p) for p in (parked or []) if p]
+        if not ps:
+            return ""
+        rules = [p for p in ps if any(k in p for k in _RULE_FILES)]
+        line = f". Parked your local edit (git stash, 'git stash pop' brings it back): {', '.join(ps[:4])}" + \
+               (f" +{len(ps) - 4}" if len(ps) > 4 else "")
+        if rules:
+            line += f". STRATEGY / RULE FILES now run the repo's approved version: {', '.join(rules[:4])}"
+        return line
+    except Exception:  # noqa: BLE001
+        return ""

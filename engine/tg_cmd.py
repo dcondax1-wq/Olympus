@@ -61,6 +61,11 @@ def is_owner(msg: dict, chat: str | None) -> bool:
     if not chat or not isinstance(msg, dict):
         return False
     c, f = msg.get("chat") or {}, msg.get("from") or {}
+    # red team 2026-11-25: a FORWARDED message (or one sent through an inline bot) carries the owner as `from` but someone else's
+    # words: never a command (a forwarded "/update force" from anyone would otherwise run)
+    if any(msg.get(k) for k in ("forward_origin", "forward_from", "forward_from_chat", "forward_sender_name", "forward_date",
+                                 "via_bot", "is_automatic_forward")):
+        return False
     return (str(c.get("type")) == "private" and str(c.get("id")) == chat and str(f.get("id")) == chat
             and not f.get("is_bot"))
 
