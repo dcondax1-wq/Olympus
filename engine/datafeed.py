@@ -739,6 +739,8 @@ def maybe_answer(now=None, env=None, say=print, work: str | None = None, spawn_f
         today = _et(now).date().isoformat()                         # day-ofmax: ONE "of" ask answered a night (red team)
         if any(s_.get("day") == today and "page" in s_ for s_ in (st.get("sent") or [])):
             todo = [r for r in todo if r.get("what") != "of"]
+        if sum(1 for s_ in (st.get("sent") or []) if s_.get("day") == today) >= DAILY_CAP - OF_RESERVE:
+            todo = [r for r in todo if r.get("what") != "of"]       # red team 2026-11-25: an "of" ask never eats the reserve
         why = None
         day = _et(now).date().isoformat()
         if todo and sum(1 for s in (st.get("sent") or []) if s.get("day") == day) >= DAILY_CAP:
