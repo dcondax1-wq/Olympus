@@ -209,7 +209,7 @@ function render() {
   if (sample) sm.textContent = 'SAMPLE: the PC\'s report has not reached this page yet, so status, next setup and thinking show a recorded-style morning. Money, trades and research are the real files.';
   drawTabs(all);
   const box = $('data'); box.replaceChildren(); box.dataset.p = D.id;
-  for (const c of [headCard(D), moneyCard(D), D.id === 'of' ? flowCard(D) : nextCard(D, sample), tradesCard(D), D.id === 'of' ? nextCard(D, sample) : null, learnCard(D), researchCard(D)]) if (c) box.append(c);
+  for (const c of [headCard(D), D.id === 'of' ? null : moneyCard(D), D.id === 'of' ? flowCard(D) : nextCard(D, sample), tradesCard(D), D.id === 'of' ? nextCard(D, sample) : null, learnCard(D), researchCard(D)]) if (c) box.append(c);
   const f = $('dfoot'); f.replaceChildren(el('a', { href: `./#${D.id}`, text: '‹ Pillars' }), el('a', { href: `../brain/#${D.id}`, text: 'Brain room ›' }), el('a', { href: '../trading/', text: 'Trades ›' }),
     el('a', { href: '../cities/hub.html', text: 'Research ›' }), el('a', { href: '../nq/accounts.html', text: 'Accounts ›' }));
   document.documentElement.dataset.ready = '1';
