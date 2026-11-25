@@ -44,6 +44,10 @@ def main():
                        cwd=ROOT, capture_output=True, text=True, timeout=900)
     check("of_battery selftest (OF1/OF2 parity with of_study.prereg, 40-day gate, all 6 tests run)",
           r.returncode == 0 and "selftest: OK" in r.stdout, (r.stdout + r.stderr)[-400:])
+    r = subprocess.run([sys.executable, "-X", "utf8", os.path.join(ROOT, "research", "orderflow", "of_mill.py"), "--selftest"],
+                       cwd=ROOT, capture_output=True, text=True, timeout=1800)
+    check("of_mill selftest (DESIGN2: a planted signal passes the 4 gates, random features do not, ideamill rows)",
+          r.returncode == 0 and "selftest: OK" in r.stdout, (r.stdout + r.stderr)[-400:])
     feed_checks()
     depth_checks()
     paging_checks()

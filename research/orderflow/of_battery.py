@@ -62,6 +62,7 @@ class Day:
         b = b.rename(columns={"o": "open", "h": "high", "l": "low", "c": "close", "vol": "volume"})
         self.bars = b.reset_index(drop=True)
         self.fp = R["fp"]
+        self.depth = R.get("depth")                                     # day-ofmax: per-5m depth summary (None before depth)
         self.row_of_t = {int(t): i for i, t in enumerate(b.t)}
         self.fp_by_bar = {int(k): g for k, g in self.fp.groupby("bar")}
 
@@ -491,6 +492,13 @@ def run(src=None, ticks=False, force=False, final=False, raw=None, lit=None, atl
         if out["OF1 LIT only when absorbed"]["verdict"].startswith("PASS") and g1 <= 0:
             out["OF1 LIT only when absorbed"]["verdict"] = "REJECTED (sides disagree)"
     out["verdicts"] = {k: v["verdict"] for k, v in out.items() if isinstance(v, dict) and "verdict" in v and "(info)" not in k}
+    if write:                                                             # day-ofmax: the DESIGN2 idea mill at the same look
+        try:
+            M = _mod("of_mill.py", "of_mill")
+            mr = M.run_look(D, days, H, T, units, os.path.dirname(OUT), look_no, days[-1])
+            out["mill"] = {"counts": mr["counts"], "candidates": [v["id"] for v in mr["candidates"]], "near_misses": mr["near_misses"]}
+        except Exception as e:  # noqa: BLE001
+            out["mill"] = {"error": f"{e.__class__.__name__}: {str(e)[:120]}"}
     if write:
         json.dump(out, open(OUT, "w"), indent=1, default=str)
         looks.append({"look": look_no, "made": out["made"], "days": len(days), "verdicts": out["verdicts"]})
@@ -505,7 +513,9 @@ def phone_line(out) -> str:
     short = {k.split(" ")[0]: (x.split(" ")[0] if x else "?") for k, x in v.items()}
     bits = ", ".join(f"{k} {x}" for k, x in short.items())
     anyp = any(x.startswith("PASS") for x in v.values())
-    return (f"Order-flow battery look {out.get('look')} on {out.get('tick_days')} tick days ({out.get('first')}..{out.get('last')}): {bits}. "
+    mc = (out.get("mill") or {}).get("counts") or {}
+    mill = f" Idea mill: {mc.get('g1g2g3', 0)} of {mc.get('scored', 0)} ideas passed 3 gates (forward paper next)." if mc else ""
+    return (f"Order-flow battery look {out.get('look')} on {out.get('tick_days')} tick days ({out.get('first')}..{out.get('last')}): {bits}.{mill} "
             + ("A PASS is a candidate only: forward paper next, nothing live changes without your yes." if anyp
                else "Nothing passed: LIT stays as it is."))
 

@@ -93,3 +93,7 @@ A failed variant goes to `docs/TESTED_AND_REJECTED.md` in one summary line per l
 | H8 | CVD | delta of the bar just before the entry family's trigger bar minus the day's mean bar delta, / vol |
 
 Variant count: 48 features x 3 entries x 2 sides = 288 (204 without depth). FDR is over all of them at each look.
+
+## Erratum 2026-11-25 (same day, before any data; counting only, no rule changed)
+The table above has **49** features (A6 + B11 + C6 + D2 + E4 + F4 + G8 + H8), not 48: **294 variants** (246 without depth).
+FDR and the deflated Sharpe use the real count of variants scored at each look, so nothing else changes.
