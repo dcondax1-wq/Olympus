@@ -48,3 +48,13 @@ Luck control reported every run: expected false survivors at G1 under BH (<= q x
 `python -X utf8 tools/ideamill.py --batch N` (nightly light: N grammar ideas not yet tried, no network, time cap 20 min),
 `--harvest` (weekly, network), `--report`. Optional step in `tools/market_learn_weekly.py --nightly --ideamill N` (off by
 default; skipped when over its time cap). An idea already in trials.jsonl is never re-scored on the same data end date.
+
+## Addendum v2 (2026-11-25 01:15 UTC, committed BEFORE the v2 run; v1 rows stay in trials.jsonl, marked proto 1)
+1. **Bug in v1 G1 (found after the v1 batch, fixed before any re-score):** with 1,000 bootstrap draws the smallest possible p
+   is 1/1,001 = 0.001, while BH over ~7,000 scored ideas needs p <= 0.10 / 7,000 = 0.000014 for the best idea: G1 could never
+   pass, whatever the edge. v2 p = the normal tail of the observed mean over the block-bootstrap standard error of the mean
+   (same moving-block bootstrap, 1,000 draws, block 5): p = 1 - Phi(mean / SE_boot). Every other gate unchanged.
+2. **The day-of-week filters the protocol listed but v1's code left out are added:** "no_mon", "no_fri".
+3. **Timeframes:** the same grammar on 15m and 1h NQ bars (data/NQ_15m.csv, NQ_1h.csv; the 09:30-10:00 opening range does not
+   exist on 1h bars, so those ideas log "too few"). 1m bars exist only from 2026: not testable in discovery, not run.
+4. BH and DSR count EVERY v2 trial ever (proto 2 rows); v1 rows are kept for the record and not counted twice.
