@@ -37,14 +37,20 @@ Branch `day-pillars4` (from origin/pc 94341394). Helpers never edit sw.js, build
   grain, finer gold capitals (necking rings, bead ring, top plate), a light shaft per column in its colour (brighter live / tapped, one draw
   call), GPU dust in the shafts, more sparks on live columns, tap = glide + small orbit settle + push-in, **depth of field on the tapped
   column** (hq + WebGL2 only). Draw calls hq 18 / low 12 (cap 24). Low tier unchanged.
+- **Brain 3D** (`brain-scene.js` b3): the temple's HDR bloom, a breathing glow per region (brighter with its pulse / when it fires, others
+  dim on select), 56 tracts with travelling signals (hq; 28 low), 8,000 neurons (hq), 520 GPU dust motes, fly-to + orbit settle, depth of
+  field around the selected region (hq only); tiers hq -> DPR 1.25 -> no bloom -> low (software GL starts low). Draw calls 8 (cap 10).
+- **Brain ticker fix**: a re-render while the newest thought was still typing took the half-typed text as the whole line ("Ch"); each line
+  now carries `data-full`. Crumb links are 44 px tap targets on Brain / Pillars / data pages.
 - **ORDER FLOW colour** `#5fd0c9` (cyan) -> lilac `#c9a7ff` everywhere (pillars, Home + Zenith chips, Strategy Brain, Research Hub).
 - Versions: pillarscore / pillarsfeed p4, pillars.js c2, pillars.css c3, scene c2, hero.js c3 (gate, Zenith, NQ), mindcore m6, mind.js m9,
-  hub.css h4, brain.js / brain.css b4, braincore b3, data d2, today t1.
+  hub.css h4, brain.js / brain.css b5, brain-scene b3, braincore b3, pillars.css c4, data.js d3 / data.css d3 / datacore d2, today t1.
 
 ## Tests
 test_pillars 116/116 (new section p: 33 checks: static, data vs sources, node datacore / todaycore / braincore bf, browser data pages,
 Pillars row, Home strip layout, Brain feed age; pillars_browser.cjs now waits for data-mode + a drawn frame: software GL is slow here),
-test_brain_app 70/70 (3 new brain-feed checks), test_pillars_hero 30/30, smoke 11/11.
+test_brain_app 70/70 (3 new brain-feed checks), test_pillars_hero 30/30, test_warroom 27/27, test_nq_page 52/52, smoke 11/11,
+test_gate_page static 35/35 (its browser half needs Python Playwright, not installed in this container; the Home layout is pinned by test_pillars p + test_pillars_hero b).
 
 ## Shots
 `shots/before/` vs `shots/after/` (390 x 844 @2x): 01 Pillars hq, 02 tap ATLAS (DOF), 03 Home (Today strip), 04 Pillars panel (go-deeper

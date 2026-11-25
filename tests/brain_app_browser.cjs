@@ -38,7 +38,7 @@ const T = (ms) => new Promise((r) => setTimeout(r, ms));
     dist: (document.getElementById('rDist') || {}).textContent || '', px: [...document.querySelectorAll('#rPx b')].map((x) => x.textContent),
     chart: !!document.getElementById('rChartBox'), chartMode: (document.getElementById('rChartBox') || { dataset: {} }).dataset.mode || null,
     lbls: [...document.querySelectorAll('.lbl')].map((x) => x.textContent), legend: [...document.querySelectorAll('.legend span')].map((x) => x.dataset.k),
-    think: [...document.querySelectorAll('#rStream li span')].map((x) => x.textContent), thinkSrc: (document.querySelector('#rThink .src') || {}).textContent || '',
+    think: [...document.querySelectorAll('#rStream li span')].map((x) => x.dataset.full || x.textContent), thinkSrc: (document.querySelector('#rThink .src') || {}).textContent || '',
     conf: (document.getElementById('rConf') || {}).textContent || '', week: document.querySelectorAll('#rWeek li em').length, testing: (document.getElementById('rTesting') || {}).textContent || '',
     money: (document.getElementById('rMoney') || {}).textContent || '', learnSrc: (document.querySelector('#rLearn .src') || {}).textContent || '',
     body: document.body.innerText,

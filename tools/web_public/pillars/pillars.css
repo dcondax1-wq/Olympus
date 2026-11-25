@@ -128,7 +128,7 @@ details.tests summary { cursor: pointer; color: var(--mut); font-size: 12.5px; m
 /* day-pillars4: Home › Pillars crumbs, a 44 px back, the "go deeper" row under each pillar's name (data page, Brain room, trades / research) */
 .back { width: 44px; height: 44px; font-size: 19px; }
 .crumbs { margin-top: 1px; font-size: 11.5px; color: var(--mut); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.crumbs a { color: var(--mut); text-decoration: none; display: inline-block; padding: 6px 0; margin: -6px 0; } .crumbs span { color: var(--gold); font-weight: 700; }
+.crumbs a { color: var(--mut); text-decoration: none; display: inline-block; min-width: 44px; text-align: center; padding: 14px 2px; margin: -14px -6px; line-height: 16px; } .crumbs span { color: var(--gold); font-weight: 700; }
 .pgo { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 6px; margin-top: 10px; }
 .pgo a { display: flex; flex-direction: column; justify-content: center; min-height: 54px; padding: 8px 10px; border-radius: 14px; text-decoration: none; min-width: 0;
   background: var(--card); border: 1px solid var(--line); }

@@ -254,7 +254,7 @@ def browser(sc):
     check("b. ORDER FLOW room: 23 of 60 not in this post -> 'Not collecting yet' honest; BLITZ room OFF, not thinking", (o.get("of") or {}).get("r") == "of" and (o.get("blitz") or {}).get("status") == "OFF"
           and "not thinking" in (o.get("blitz") or {}).get("body", ""), ((o.get("of") or {}).get("setup"), (o.get("blitz") or {}).get("status")))
     pl = o.get("litPlus") or {}
-    check("b. the PC's new fields on a real post: its next line + think lines + FVG drawn", "London low sweep" in pl.get("setup", "") and pl.get("think", [""])[0].startswith("Checks") and "fvg" in pl.get("legend", []), {k: pl.get(k) for k in ("setup", "legend")})
+    check("b. the PC's new fields on a real post: its next line + think lines + FVG drawn", "London low sweep" in pl.get("setup", "") and pl.get("think", [""])[0].startswith("Checks") and "fvg" in pl.get("legend", []), {k: pl.get(k) for k in ("setup", "legend", "think")})
     tr = o.get("trade") or {}
     check("b. in a trade: IN A TRADE on the LIT room, entry / stop / target", "IN A TRADE" in tr.get("body", "") and tr.get("px", [None, None])[1] == "26,178.00", tr.get("px"))
     check("b. no sideways scroll at 390; every tap target >= 44 px", (o.get("sampleGeo") or {}).get("wide") is False and (o.get("liveGeo") or {}).get("wide") is False

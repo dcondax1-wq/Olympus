@@ -88,7 +88,7 @@ async function startScene() {
   const mode2d = q.get('lite') === '2d';
   if (!mode2d) {
     try {
-      const mod = await import('./brain-scene.js?v=b2');
+      const mod = await import('./brain-scene.js?v=b3');
       const low = mod.isLowPower(window);
       S.scene = await mod.create($('c'), B.REGIONS, { onPick: (id) => go(id), reduce: REDUCE, low, onFrame: placeTags });
     } catch (_) { S.scene = null; }
@@ -176,13 +176,13 @@ function thinkCard(r) {
   const box = sec('Thinking', 'rThink'), ul = el('ul', { class: 'stream', id: 'rStream' });
   if (!r.think.length) ul.append(el('li', {}, el('time', { text: '' }), el('span', { class: 'muted', text: r.id === 'blitz' ? 'Switched OFF: BLITZ is not thinking today.' : 'No thinking lines from the PC yet.' })));
   const seen = S.seen[r.id] || new Set();
-  r.think.forEach((x, i) => { const li = el('li', { class: `k-${x.kind || 'log'}${!seen.has(x.text) && !S.first ? ' new' : ''}` }, el('time', { text: x.hm || '' }), el('span', { text: x.text })); ul.append(li); if (i === 0) li.dataset.top = '1'; });
+  r.think.forEach((x, i) => { const li = el('li', { class: `k-${x.kind || 'log'}${!seen.has(x.text) && !S.first ? ' new' : ''}` }, el('time', { text: x.hm || '' }), el('span', { text: x.text, 'data-full': x.text })); ul.append(li); if (i === 0) li.dataset.top = '1'; });
   box.append(ul, el('p', { class: 'src', text: r.thinkFrom === 'think' ? 'The PC\'s reasoning lines (newest first)' : r.thinkFrom === 'log' ? 'The PC\'s thought log + the day\'s story (the PC\'s fuller reasoning lines are not in its report yet)' : r.id === 'learn' ? 'What the learner found this week' : 'Derived from the PC\'s numbers' }));
   return box;
 }
 function typeTop() {                                   // type the newest line of the open room, once per new line
   const li = document.querySelector('#rStream li[data-top] span'); if (!li || REDUCE) return;
-  const full = li.textContent; if (S.typedFor === full) return; S.typedFor = full;
+  const full = li.dataset.full || li.textContent; if (S.typedFor === full) return; S.typedFor = full;   // data-full = the whole line (a re-entry mid-typing used to take the half-typed text)
   let i = 0; const caret = el('i', { class: 'caret' }); clearInterval(S.typing);
   S.typing = setInterval(() => { i += 2; li.textContent = full.slice(0, i); li.append(caret); if (i >= full.length) { clearInterval(S.typing); li.textContent = full; } }, 18);
 }
