@@ -254,12 +254,206 @@ def browser(post, now):
           (o.get("hubLab") or {}).get("n", 0) > 50 and (o.get("hubLab") or {}).get("live") == 0 and o.get("hubLabBlitz") == 0, (o.get("hubLab"), o.get("hubLabBlitz")))
 
 
+# ---------------- p. day-pillars4: the pillar DATA page, research per pillar, the Home Today strip, the Brain feed's age ----------------
+P4_FILES = ["data.html", "data.js", "data.css", "datacore.js", "todaycore.js", "today.js"]
+
+
+def p4_post(post, now):
+    """the section-n post + the PC's brain feed (10 min old) + an OPEN ATLAS trade and one closed LIT trade in lite.at"""
+    q = json.loads(json.dumps(post))
+    q["bf"] = {"v": 1, "t": now - 600, "market": {"phase": "ranging", "today_range_pts": 120.5, "where_in_range_pct": 40, "regime": "normal (VIX 16.1)"},
+               "bots": {"lit": {"think": ["10:14 short limit 21,040.25 armed, stop 21,061.5", "10:12 VIX 16.1 -> target 5.2R"],
+                                "next": {"setup": "SHORT sweep + shift of the NY 08:30 high", "steps": [{"name": "sweep", "done": True}, {"name": "inducement", "done": True},
+                                         {"name": "CISD", "done": False}, {"name": "entry", "done": False}], "waiting_for": "the 5m CISD to close", "dist_pts": 6.5,
+                                         "limit": 21040.25, "stop": 21061.5, "target": 20930.0},
+                                "levels": [{"kind": "stop", "price": 21061.5, "label": "stop"}]},
+                        "atlas": {"err": "KeyError: x"}}}
+    q["at"] = {"a": [{"id": "atlas", "tr": [[now - 1800, None, -1, 0, 0, 0, 0, 0, 37.5, 0.3]]},
+                     {"id": "mffu50k_eval", "tr": [[now - 7200, now - 5400, 1, 0, 0, 0, 0, 0, 212.0, 1.1]]}]}
+    return q
+
+
+NODE4 = r"""
+import * as DC from '%(dc)s';
+import * as TC from '%(tc)s';
+import * as B from '%(bc)s';
+import * as PF from '%(feed)s';
+import fs from 'fs';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const F = require('%(pcfeed)s');
+const rd = (p) => JSON.parse(fs.readFileSync(p, 'utf8'));
+const now = %(now)s, post = rd('%(post)s'), data = rd('%(data)s'), trades = rd('%(trades)s');
+const site = { pillarsData: data, home: {}, biz: rd('%(biz)s'), learn: rd('%(learn)s'), feed: F };
+const M = B.build({ ...site, lite: post }, now), N = B.build({ ...site, lite: null }, now);
+const L = B.region(M, 'lit');
+const out = {};
+out.feed = M.feed; out.feedNone = N.feed; out.market = M.market;
+out.litNext = { from: L.next.from, setup: L.next.setup, steps: L.next.steps, limit: L.next.limit, dist: L.next.dist, think0: L.think[0] };
+out.atlasFrom = B.region(M, 'atlas').next.from;
+out.think = B.thinkLines(['09:05 a line', 'no time']);
+out.old = B.feedAge({ bf: { t: now - 50 * 60 } }, now).level;
+out.late = B.feedAge({ bf: { t: now - 30 * 60 } }, now).level;
+out.tight = B.build({ ...site, lite: { ...post, bf: { t: now, bots: { lit: { next: { setup: 'x', steps: '6/10' } } } } } }, now).regions[0].next.stepsText;
+const PM = PF.modelFrom({ data, home: {}, biz: site.biz, lite: post, nowS: now, feed: F });
+for (const id of DC.IDS) { const d = DC.build(id, { nowS: now, data, trades, lite: post, region: B.region(M, id), pillars: PM }); out[id] = { n: d.tradesN, st: d.stats, rej: d.rejected.n, rows: d.trades.map((r) => r.src + ':' + (r.open ? 'open' : 'closed') + ':' + r.usd), flow: d.flow, next: d.next && d.next.setup, mill: d.mill && d.mill.ideas }; }
+out.liveOnly = DC.tradesOf('lit', trades, null).filter((r) => r.src === 'live').length;
+out.dedupe = DC.tradesOf('atlas', trades, { at: { a: [{ id: 'atlas', tr: [[trades.trades.filter((t) => t.bot === 'ATLAS' && t.src === 'live').slice(-1)[0].t + 30, 1, -1, 0, 0, 0, 0, 0, -112.8, -0.92]] }] } }).filter((r) => r.src === 'live').length;
+out.stats0 = DC.stats([], now);
+const cards = PF.cardsFrom({ home: {}, biz: site.biz, lite: post, nowS: now, feed: F }).cards;
+out.today = TC.build(cards, post, now); out.todayNone = TC.build(PF.cardsFrom({ home: {}, biz: site.biz, lite: null, nowS: now, feed: F }).cards, null, now);
+out.money = ['+$1,234', '-$56', '$0', '-', null].map(TC.money);
+console.log(JSON.stringify(out));
+"""
+
+
+def p4_static():
+    for f in P4_FILES:
+        check(f"p. pillars/{f} exists", os.path.exists(os.path.join(WEB, f)))
+    src = {f: read("pillars", f) for f in P4_FILES}
+    code = "\n".join(src.values())
+    check("p. no innerHTML / eval / storage writes in the new files; read only (no POST)", not re.search(r"innerHTML|eval\(|new Function|method:\s*'POST'|localStorage\.setItem", code), "")
+    check("p. OLYMPUS NIGHT: no cyan / brown / olive anywhere in the pillars app, the Brain, the Home hero chips",
+          not re.search(r"#5fd0c9|cyan|brown|olive|#00ffff", code + read("pillars", "pillarscore.js") + read("pillars", "pillars-data.json") + read("brain", "braincore.js"), re.I)
+          and "#5fd0c9" not in read("gate", "index.html").lower() and "#5fd0c9" not in read("index.html").lower())
+    check("p. data.html: one h1, Home › Pillars › <pillar> crumbs, a 44 px back to the Pillars, pc_feed + data.js",
+          src["data.html"].count("<h1") == 1 and 'href="../gate/">Home</a>' in src["data.html"] and 'id="back" href="./"' in src["data.html"] and "data.js?v=" in src["data.html"] and "pc_feed.js" in src["data.html"]
+          and "width: 44px; height: 44px" in src["data.css"])
+    pi = read("pillars", "index.html")
+    check("p. the Pillars page: back = Home (../gate/), Home › Pillars crumbs, the footer opens the data page, Trades + Brain", 'class="back" href="../gate/"' in pi and 'class="crumbs"' in pi
+          and 'id="footData"' in pi and '../trading/' in pi and '../brain/' in pi)
+    g = read("gate", "index.html")
+    check("p. Home: the Today strip in the header right under the Four Pillars, no height of its own, today.js loaded after the page",
+          re.search(r'id="pillarsHero".*?</section>\s*<nav class="g-today" id="todayStrip"[^>]*style="height:24px;margin:0 0 -26px"', g, re.S) is not None and "pillars/today.js?v=" in g)
+    bj = read("brain", "brain.js")
+    check("p. the Brain: brain feed read first (lite.bf), its age on Next trade (#rFeedAge), the header no longer see-through",
+          "lite.bf" in read("brain", "braincore.js") and "rFeedAge" in bj and "backdrop-filter: blur(12px)" in read("brain", "brain.css"))
+
+
+def p4_data():
+    d = json.load(open(os.path.join(WEB, "pillars-data.json"), encoding="utf-8"))
+    P = {p["id"]: p for p in d["pillars"]}
+    text = open(os.path.join(ROOT, "docs", "TESTED_AND_REJECTED.md"), encoding="utf-8").read()
+    bullets = sum(1 for l in text.splitlines() if l.startswith("- "))
+    n = sum(P[k]["rejected"]["n"] for k in P) + d["rejected_shared"]["n"]
+    check("p. rejected: every bullet of docs/TESTED_AND_REJECTED.md filed once (4 pillars + shared), newest first, <= 12 rows each",
+          n == bullets and all(len(P[k]["rejected"]["rows"]) <= 12 and [r["d"] for r in P[k]["rejected"]["rows"]] == sorted([r["d"] for r in P[k]["rejected"]["rows"]], reverse=True) for k in P), (n, bullets))
+    check("p. rejected: LIT and ATLAS rows name their pillar, the order-flow rows are order flow, idea mills are shared",
+          P["of"]["rejected"]["n"] >= 2 and all("rder" in r["title"] or "LVN" in r["title"] for r in P["of"]["rejected"]["rows"]) and P["lit"]["rejected"]["n"] > P["atlas"]["rejected"]["n"] > 0
+          and not any("dea mill" in r["title"] for k in P for r in P[k]["rejected"]["rows"]), {k: P[k]["rejected"]["n"] for k in P})
+    mill = json.load(open(os.path.join(ROOT, "research", "ideamill", "summary.json")))
+    check("p. idea mill = research/ideamill/summary.json (ideas, scored, families, passed)", d["mill"]["ideas"] == mill["counts"]["trials_total"] and d["mill"]["scored"] == mill["counts"]["scored"]
+          and d["mill"]["families"] == len(mill["families"]) and d["mill"]["passed"] == 0, d["mill"])
+    pr = P["of"]["progress"]
+    st = json.load(open(os.path.join(ROOT, "research", "orderflow", "results.json")))
+    check("p. order-flow progress: 2 pre-registered looks, looks used from the study's mode, tick days on disk, the battery's need",
+          pr["looks"] == 2 and pr["looks_used"] == (1 if st["mode"] == "REAL" else 0) and pr["tick_days_on_disk"] == st["tick_days"] and pr["battery_need"] == 40, pr)
+    check("p. ORDER FLOW is lilac (#c9a7ff), not cyan", P["of"]["color"] == "#c9a7ff")
+
+
+def p4_node(post, now):
+    q = p4_post(post, now)
+    with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as fh:
+        json.dump(q, fh); pf = fh.name
+    js = NODE4 % {"dc": os.path.join(WEB, "datacore.js"), "tc": os.path.join(WEB, "todaycore.js"), "bc": os.path.join(PUB, "brain", "braincore.js"), "feed": os.path.join(WEB, "pillarsfeed.js"),
+                  "pcfeed": os.path.join(PUB, "pc_feed.js"), "now": now, "post": pf, "data": os.path.join(WEB, "pillars-data.json"), "trades": os.path.join(PUB, "trading", "trades.json"),
+                  "biz": os.path.join(PUB, "business", "accounts.json"), "learn": os.path.join(PUB, "brain", "learn.json")}
+    with tempfile.NamedTemporaryFile("w", suffix=".mjs", delete=False, dir=WEB) as fh:
+        fh.write(js); mf = fh.name
+    try:
+        r = subprocess.run(["node", mf], capture_output=True, text=True, timeout=60)
+    finally:
+        os.unlink(mf); os.unlink(pf)
+    try:
+        o = json.loads(r.stdout.strip().splitlines()[-1])
+    except Exception as e:  # noqa: BLE001
+        check("p. node run", False, (r.stderr or str(e))[:800]); return None
+    check("p. Brain: the brain feed is read FIRST (its setup, [{name, done}] steps with the first open one 'now', limit, 6.5 pts, its HH:MM think lines)",
+          o["litNext"]["from"] == "bf" and "NY 08:30" in o["litNext"]["setup"] and [s["state"] for s in o["litNext"]["steps"]] == ["done", "done", "now", "wait"]
+          and o["litNext"]["limit"] == 21040.25 and o["litNext"]["dist"] == 6.5 and o["litNext"]["think0"]["hm"] == "10:14", o["litNext"])
+    check("p. Brain: a bot the feed failed on ({err}) falls back to the step report", o["atlasFrom"] in ("derived", "pc"), o["atlasFrom"])
+    check("p. Brain: the feed's age (10 min = ok, 30 = warn, 50 = bad), none = the step report's age or 'none'",
+          o["feed"]["has"] and o["feed"]["level"] == "ok" and round(o["feed"]["age"]) == 600 and "brain feed 10 min ago" in o["feed"]["text"] and o["late"] == "warn" and o["old"] == "bad" and o["feedNone"]["level"] == "none", (o["feed"], o["late"], o["old"]))
+    check("p. Brain: the market block, a tight feed's '6/10' steps, 'HH:MM words' think lines split", o["market"]["phase"] == "ranging" and o["tight"] == "6/10"
+          and o["think"] == [{"hm": "09:05", "text": "a line"}, {"hm": "", "text": "no time"}], (o["market"], o["tight"], o["think"]))
+    lit, at = o["lit"], o["atlas"]
+    check("p. data: LIT trades = the real file's live + paper + the PC's newest (a closed +$212); stats count real closed trades only (paper apart)",
+          lit["rows"][0] == "live:closed:212" and lit["st"]["n"] == o["liveOnly"] + 1 and lit["st"]["paperN"] == 3 and lit["st"]["weekN"] == 1 and round(lit["st"]["week"]) == 212, lit)
+    check("p. data: ATLAS's open trade from the post is open (not in the stats), PF / win rate from closed trades", at["rows"][0] == "live:open:37.5" and at["st"]["open"] and at["st"]["n"] == 3
+          and abs(at["st"]["pf"] - 6.363) < 0.01 and round(at["st"]["win"]) == 33, at["st"])
+    check("p. data: the same trade in the file and the post is counted once", o["dedupe"] == 3, o["dedupe"])
+    check("p. data: no trades = zeros and '-' (no made-up number)", o["stats0"]["n"] == 0 and o["stats0"]["win"] is None and o["stats0"]["pf"] is None and o["stats0"]["pfWord"] == "-", o["stats0"])
+    check("p. data: BLITZ + ORDER FLOW trade nothing; their rejected counts + the idea mill on every pillar", o["blitz"]["n"] == 0 and o["of"]["n"] == 0 and o["of"]["rej"] >= 2 and all(o[k]["mill"] == 56160 or o[k]["mill"] for k in ("lit", "atlas", "blitz", "of")), (o["blitz"], o["of"]["rej"]))
+    check("p. data: ORDER FLOW progress = 23 of 60 tick days from the post, 0 of 2 looks, the 3 designs", o["of"]["flow"]["days"] == 23 and o["of"]["flow"]["of"] == 60 and o["of"]["flow"]["looks"] == 2
+          and o["of"]["flow"]["looksUsed"] == 0 and len(o["of"]["flow"]["designs"]) == 3, o["of"]["flow"])
+    T, TN = o["today"], o["todayNone"]
+    check("p. Today: <= 4 accounts with today $, the open ATLAS trade, the next setup from the brain feed", 0 < len(T["accounts"]) <= 4 and T["openText"].startswith("ATLAS SHORT")
+          and T["next"]["from"] == "bf" and "NY 08:30" in T["nextText"] and T["has"] is True, T)
+    check("p. Today without a post: every $ '-', open '-', next 'waiting for the PC'", TN["dayText"] == "-" and TN["openText"] == "-" and TN["nextText"] == "waiting for the PC" and all(a["text"] == "-" for a in TN["accounts"]), TN)
+    check("p. Today: money text -> number", o["money"] == [1234, -56, 0, None, None], o["money"])
+    return q
+
+
+def p4_browser(q, now):
+    env = {**os.environ, "NODE_PATH": _npm_root()}
+    if subprocess.run(["node", "-e", "require('playwright')"], capture_output=True, env=env, timeout=30).returncode != 0:
+        print("[SKIP] p. Node Playwright not installed here", flush=True); return
+    shots = os.environ.get("PILLARS_SHOTS", "")
+    with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as fh:
+        json.dump({"post": q, "at_iso": dt.datetime.fromtimestamp(now, dt.timezone.utc).isoformat()}, fh); pf = fh.name
+    srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(_Quiet, directory=PUB))
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    try:
+        r = subprocess.run(["node", os.path.join(ROOT, "tests", "pillars4_browser.cjs"), f"http://127.0.0.1:{srv.server_address[1]}", shots, pf], capture_output=True, text=True, timeout=500, env=env)
+    finally:
+        srv.shutdown(); os.unlink(pf)
+    try:
+        o = json.loads(r.stdout.strip().splitlines()[-1])
+    except Exception as e:  # noqa: BLE001
+        check("p. browser run", False, (r.stderr or r.stdout or str(e))[:800]); return
+    check("p. browser: no fatal, no page error", "fatal" not in o and not o.get("errors"), (o.get("fatal"), (o.get("errors") or [])[:3]))
+    L = o.get("lit") or {}
+    check("p. LIT data page: 'LIT · Data', Home › Pillars › LIT, back to the Pillars at #lit, the PC pill, no SAMPLE", L.get("title") == "LIT · Data" and "Home" in L.get("crumbs", "") and "LIT" in L.get("crumbs", "")
+          and L.get("back") == "./#lit" and not L.get("sample") and L.get("pill", "").startswith("PC"), L)
+    check("p. LIT data page: this week +$212, win rate, PF, the last trades (newest = the PC's), sections in order", "+$212" in L.get("week", "") and "%" in L.get("win", "") and L.get("rows", 0) >= 3
+          and L.get("srcs", [""])[0] == "live" and L.get("sections") == ["dHead", "dMoney", "dNext", "dTrades", "dLearn", "dResearch"], L)
+    check("p. LIT data page: brain feed 10 min ago (green), its setup + steps (CISD now), the Brain room link", "Brain feed 10 min ago" in L.get("feed", "") and " ok" in " " + L.get("feedCls", "")
+          and "NY 08:30" in L.get("setup", "") and "now:CISD" in L.get("steps", []) and L.get("brainLink"), (L.get("feed"), L.get("steps")))
+    check("p. LIT data page: tested-and-rejected count, the idea mill, what it learned, 4 pillar tabs, the footer path", "Tested and rejected:" in L.get("rej", "") and "56,160" in L.get("mill", "")
+          and L.get("lessons", 0) >= 1 and L.get("tabs") == ["#lit", "#atlas", "#blitz", "#of"] and L.get("foot") == ["./#lit", "../brain/#lit", "../trading/", "../cities/hub.html", "../nq/accounts.html"], (L.get("rej"), L.get("foot")))
+    A = o.get("atlas") or {}
+    check("p. a tab switches to ATLAS in place: its open trade, its month, back to #atlas", A.get("title") == "ATLAS · Data" and A.get("hash") == "#atlas" and "OPEN NOW" in A.get("open", "") and A.get("back") == "./#atlas", A)
+    OF = o.get("of") or {}
+    check("p. ORDER FLOW data page: 23 / 60 tick days, 0 / 2 looks, 3 designs, no trade table, its verdicts", OF.get("days") == "23 / 60" and OF.get("looks") == "0 / 2" and OF.get("designs") == 3
+          and not OF.get("trades") and "Tested and rejected" in OF.get("rej", ""), OF)
+    N = o.get("none") or {}
+    check("p. no PC post: SAMPLE banner + pill on the live parts, the real trades still drawn", N.get("sample") and N.get("pill") == "SAMPLE" and N.get("rows", 0) >= 3 and "SAMPLE" in N.get("feed", ""), N)
+    PI = o.get("pillars") or {}
+    check("p. Pillars page: back to Home, Home › Pillars, the go-deeper row (data, Brain room, trades) for the open pillar", PI.get("back") == "../gate/" and "Home" in PI.get("crumbs", "")
+          and PI.get("go") == ["data.html#atlas", "../brain/#atlas", "../trading/"] and PI.get("foot") == "data.html#atlas", PI)
+    H = o.get("home") or {}
+    check("p. Home Today strip: Today $, the accounts, the open ATLAS trade, the next setup, each a link; from the PC post", H.get("ready") == "post" and H.get("cells", [""])[0].startswith("Today")
+          and any("ATLAS SHORT" in c for c in H.get("cells", [])) and any("NY 08:30" in c for c in H.get("cells", [])) and "/pillars/data.html#lit" in H.get("hrefs", []), H)
+    check("p. Home: the strip takes no room (search < 160, 6 dashboards from < 260, More <= 844), above the search, no sideways scroll",
+          H.get("h") == 24 and H.get("q", 999) < 160 and H.get("grid", 999) < 260 and H.get("more", 999) <= 844 and H.get("stripBottom", 999) <= H.get("q", 0) and o.get("homeWide") is False, H)
+    check("p. no sideways scroll on the data pages", o.get("litWide") is False and o.get("ofWide") is False)
+    BR = o.get("brain") or {}
+    check("p. Brain LIT room: 'Brain feed 10 min ago' (green) on Next trade, the feed's setup + steps, its source named, a solid header",
+          "Brain feed 10 min ago" in BR.get("feed", "") and " ok" in " " + BR.get("cls", "") and "NY 08:30" in BR.get("setup", "") and "now:CISD" in BR.get("steps", []) and "brain feed" in BR.get("src", "")
+          and BR.get("top", "").startswith("rgba(0, 0, 0, 0.9"), BR)
+
+
 def main():
     static()
     data()
     got = node()
     if got and os.environ.get("PL_NO_BROWSER") != "1":
         browser(*got)
+    p4_static()
+    p4_data()
+    q = p4_node(*got) if got else None
+    if q and os.environ.get("PL_NO_BROWSER") != "1":
+        p4_browser(q, got[1])
     print(f"\n{sum(RES)}/{len(RES)} passed")
     sys.exit(0 if all(RES) else 1)
 

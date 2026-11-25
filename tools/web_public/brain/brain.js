@@ -4,7 +4,7 @@
 // arrives it shows the bundled fixture.json, always labelled SAMPLE. Deep links: brain/#lit #atlas #blitz #of #learn #risk.
 // Text only through textContent / createElement. Storage: none. Read only: GET requests; nothing is sent, armed or placed.
 // ?at=<ISO> pins the clock, ?lite=2d forces the flat brain, ?lite=1 the low tier, ?fx=hq pins hq (tests and screenshots). window.BRAIN = the test hook.
-import * as B from './braincore.js?v=b1';
+import * as B from './braincore.js?v=b3';
 import * as NB from '../nq/nqbars.js?v=b1';
 
 const $ = (id) => document.getElementById(id);
@@ -116,11 +116,15 @@ function drawDock(M) {
 const sec = (title, id, ...kids) => el('section', { class: 'card', id }, el('h3', { text: title }), ...kids);
 function nextCard(r) {
   const n = r.next; if (!n) return null;
-  const box = sec('Next trade', 'rNext', el('p', { class: 'setup', text: n.setup || 'Nothing forming' }));
+  const box = sec('Next trade', 'rNext');
+  if (n.feed && (r.id === 'lit' || r.id === 'atlas')) box.append(el('div', { class: 'fage ' + n.feed.level, id: 'rFeedAge', role: 'status' }, el('i'),
+    document.createTextNode(n.feed.age === null ? 'No brain feed from the PC yet' : `${n.feed.what === 'brain feed' ? 'Brain feed' : 'Step report'} ${B.ago(n.feed.age)}${n.feed.hm ? ` · ${n.feed.hm} ET` : ''}${n.feed.level === 'bad' ? ' · OLD: this is where the bot was then' : n.feed.level === 'warn' ? ' · late (it comes every ~30 min)' : ''}`)));
+  box.append(el('p', { class: 'setup', text: n.setup || 'Nothing forming' }));
   box.append(el('div', { class: 'meter', role: 'img', 'aria-label': `${n.pct || 0}% of the way to a trade` }, el('i', { style: `width:${n.pct || 0}%` })),
     el('div', { class: 'mrow' }, el('span', {}, el('b', { text: n.word || '' })), el('span', { class: 'num', text: `${n.pct || 0}% of the way` })));
   const chain = el('ul', { class: 'chain', id: 'rChain' });
   if (n.steps) for (const s of n.steps) chain.append(el('li', { class: s.state, text: s.label }));
+  else if (n.stepsText) chain.append(el('li', { class: 'now', text: `step ${n.stepsText}` }));
   else if (r.chain.length === 1) for (const s of r.chain[0].steps) chain.append(el('li', { class: s.state, 'data-step': s.n, title: s.help, text: s.label }));
   box.append(chain);
   if (!n.steps && r.chain.length > 1) for (const L of r.chain) {
@@ -137,7 +141,7 @@ function nextCard(r) {
     [['l', n.inTrade ? 'Entry' : 'Limit', n.limit], ['s', 'Stop', n.stop], ['t', 'Target', n.target]].forEach(([c, k, v]) => p3.append(el('div', { class: c }, el('small', { text: k }), el('b', { class: 'num', text: v == null ? 'not set' : B.px(v) }))));
     box.append(p3);
     const rr = n.rr !== null && n.rr !== undefined ? `${n.rr.toFixed(1)}R` : '';
-    box.append(el('p', { class: 'src', text: `${n.from === 'pc' ? 'From the PC\'s own next-trade line' : 'Read from the PC\'s steps and words'}${rr ? ` · target ${rr}` : ''}${n.inTrade ? ' · IN A TRADE' : ''}` }));
+    box.append(el('p', { class: 'src', text: `${n.from === 'bf' ? 'From the PC\'s brain feed (its own next-trade line)' : n.from === 'pc' ? 'From the PC\'s own next-trade line' : 'Read from the PC\'s steps and words (no brain feed line)'}${rr ? ` · target ${rr}` : ''}${n.inTrade ? ' · IN A TRADE' : ''}` }));
   }
   if (r.designs && r.designs.length) { const ul = el('ul', { class: 'lrn' }); for (const d of r.designs) ul.append(el('li', {}, el('em', { text: 'waiting' }), document.createTextNode(`${d.id}: ${d.text}`))); box.append(ul); }
   return box;
