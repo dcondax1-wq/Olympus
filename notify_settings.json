@@ -10,7 +10,8 @@
     "morning_brief": true,
     "pc_silent": true,
     "problems": true,
-    "other": false
+    "other": false,
+    "setup_progress": true
   },
   "quiet_hours": {
     "from": "23:00",
