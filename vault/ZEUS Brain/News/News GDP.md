@@ -23,7 +23,7 @@ _none_
 
 ## Releases (newest first)
 
-- 2026-11-25 08:30 ET · GDP Q3 second estimate
+- [[Day 2026-11-25|2026-11-25]] 08:30 ET · GDP Q3 second estimate
 - [[Day 2026-10-29|2026-10-29]] 08:30 ET · GDP Q3 advance estimate
 
 [[ZEUS News]] · [[Lesson news hit]] · [[Lesson news soon]] · [[ZEUS Home]]

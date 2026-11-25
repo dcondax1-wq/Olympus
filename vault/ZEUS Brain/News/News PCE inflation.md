@@ -23,7 +23,7 @@ _none_
 
 ## Releases (newest first)
 
-- 2026-11-25 08:30 ET · Personal Income & Outlays / Core PCE (Oct)
+- [[Day 2026-11-25|2026-11-25]] 08:30 ET · Personal Income & Outlays / Core PCE (Oct)
 - [[Day 2026-10-29|2026-10-29]] 08:30 ET · Personal Income & Outlays / Core PCE (Sep)
 
 [[ZEUS News]] · [[Lesson news hit]] · [[Lesson news soon]] · [[ZEUS Home]]

@@ -71,8 +71,9 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-77 entries from docs/TESTED_AND_REJECTED.md, newest first.
+78 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
+- **Idea mill v2, 38,880 grammar ideas** · [[ideamill-2026-11-25|IDEA MILL]]
 - **Personal futures account vs MFFU** · [[Zlarior (LIT)]], [[ATLAS]] · [[ownacct-2026-11-24|A personal futures account vs the MFFU prop path]]
 - **ATLAS funded 25K at ~$150 a trade, live sizing path** · [[ATLAS]] · [[atlas-funded-150-2026-11-24|ATLAS funded 25K at ~$150 a trade, on the LIVE sizing code]]
 - **Bad-case plan** · [[Zlarior (LIT)]] · [[badcase-2026-11-24|The BAD case]]
