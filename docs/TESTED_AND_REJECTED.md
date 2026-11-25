@@ -431,3 +431,7 @@
   paper watch). Confluence filters: 9 pass the card test vs 1.8 by luck, but they collapse to 2 findings, both size-ups that raise the eval
   fail rate: LIT x1.5 on the True Day Open side (+$27.8k, 2026 eval fail 1% -> 20%) and ATLAS x1.5 in SB hours (+$21.7k, 5/5 years, fail
   2% -> 13%) = owner cards, not adopted. Every ONLY (skip) filter loses 2026 money.
+  Proof follow-up the same day (`ict-lab-proof-2026-11-25.md`, real engine rank.py/onebook, 1,000 paths): LIT x0.5 on the wrong TDO side
+  REJECTED (2026 H1 -$152 / H2 -$822 at fixed size; 2021-25 +$6.3k, DD -$21.1k -> -$14.0k: paper lead); funded ATLAS x1.5 in SB hours
+  REJECTED (same payouts, dead accounts H2 2.8% -> 7.2%). Open as owner cards: ATLAS x0.5 outside SB hours (Builder evals: fails 4-12% -> 0-2%,
+  2026 $ -$601 / -$97, 2021-25 +$20.9k; not Rapid) and ATLAS C2 x1.5 (+$4.1k, small).
