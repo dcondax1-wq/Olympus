@@ -27,6 +27,7 @@ import datetime as dt
 import hashlib
 import json
 import os
+import re
 import time
 from zoneinfo import ZoneInfo
 
@@ -38,6 +39,7 @@ LIT_STEPS = (5, 7, 8)                 # the Brain's step numbers (engine/brain.S
 ENTRY_STEP = 8                        # "Entering now": always sent (quiet hours, the day cap)
 NEAR_PTS = (30.0, 10.0)
 DAY_MAX = 12
+ATLAS_MAX = 8                         # red team 2026-11-25: ATLAS lines stop at 8 a day, so a choppy ATLAS day never uses the LIT lines' room
 QUIET = (23 * 60, 7 * 60)
 DEAD = ("rejected", "no_fill", "blocked")
 
@@ -109,7 +111,7 @@ def followers(bot, model: str, key: str | None = None) -> str:
             (off if why else on).append(LG._mask(LG._label(a)) + (f" - {LG._mask(why)[:40]}" if why else ""))
         for label, m, why in LG.missing_configured(bot):
             if m == model:
-                off.append(f"{label} - {str(why)[:40]}")
+                off.append(f"{LG._mask(label)} - {LG._mask(why)[:40]}")      # red team 2026-11-25: masked like the rest
         parts = []
         if on:
             parts.append("Also on: " + ", ".join(on[:3]))
@@ -197,7 +199,10 @@ def atlas_events(second: dict | None, keys, price, sent: set, now) -> list:
         stage = st.get("stage")
         if stage == "armed":
             pl = _d(b.get("plan"))
-            sid = _h(f"{pl.get('entry')}:{pl.get('stop')}:{st.get('text')}") if pl else _h(st.get("text"))
+            # red team 2026-11-25: the EMA member's "Armed" text carries the live EMA 50 value (changes every 5m bar while it stays
+            # armed / flips armed <-> waiting), so a text hash re-sent the same setup all day: a plan keys on entry + stop only,
+            # no plan on the text with its numbers taken out (one "armed" line per member, side and wording a day)
+            sid = _h(f"{pl.get('entry')}:{pl.get('stop')}") if pl else _h(re.sub(r"[0-9][0-9,.:]*", "#", str(st.get("text") or "")))
             key = f"setup:atlas:{day}:{k}:{sid}:armed"
             if key not in sent:
                 extra = (f" Entry {_px(pl.get('entry'))} · stop {_px(pl.get('stop'))} · target {_px(pl.get('target'))}." if pl else "")
@@ -250,7 +255,7 @@ class SetupProgress:
             d = {}
         if isinstance(d, dict) and d.get("day") == day:
             self.sent = set(d.get("sent") or [])
-            self.n = {day: int(d.get("n") or 0)}
+            self.n = {day: int(d.get("n") or 0), day + ":atlas": int(d.get("na") or 0)}
         else:
             self.sent, self.n = set(), {day: 0}
 
@@ -259,7 +264,8 @@ class SetupProgress:
             os.makedirs(os.path.dirname(self.state_path), exist_ok=True)
             tmp = self.state_path + ".tmp"
             with open(tmp, "w", encoding="utf-8") as fh:
-                json.dump({"day": self._day, "n": int(self.n.get(self._day) or 0), "sent": sorted(self.sent)[-300:]}, fh)
+                json.dump({"day": self._day, "n": int(self.n.get(self._day) or 0),
+                       "na": int(self.n.get(str(self._day) + ":atlas") or 0), "sent": sorted(self.sent)[-300:]}, fh)
             from .fsutil import replace as _replace
             _replace(tmp, self.state_path)
         except Exception:
@@ -292,7 +298,8 @@ class SetupProgress:
             changed = False
             for e in evs:
                 quiet = _quiet(now) and not e["entry"]
-                capped = int(self.n.get(day) or 0) >= DAY_MAX and not e["entry"]
+                capped = (int(self.n.get(day) or 0) >= DAY_MAX or (str(e["key"]).startswith("setup:atlas:")
+                          and int(self.n.get(day + ":atlas") or 0) >= ATLAS_MAX)) and not e["entry"]
                 if quiet or capped:
                     r = "held: quiet hours" if quiet else f"held: {DAY_MAX} today"
                 else:
@@ -300,6 +307,8 @@ class SetupProgress:
                                    "notify_type": TYPE, "soft": not e["entry"]})
                     if r in ("queued", "sent", "dup"):
                         self.n[day] = int(self.n.get(day) or 0) + 1
+                        if str(e["key"]).startswith("setup:atlas:"):
+                            self.n[day + ":atlas"] = int(self.n.get(day + ":atlas") or 0) + 1
                 self.sent.add(e["key"])
                 self.sent.update(e.get("also") or [])
                 changed = True
