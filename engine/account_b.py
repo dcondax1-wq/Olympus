@@ -82,6 +82,7 @@ from __future__ import annotations
 
 import datetime as _dt
 import json
+import math
 import os
 import threading
 import time as _time
@@ -185,6 +186,9 @@ def write_local(block, path: str | None = None, why: str = "") -> str:
     rec = {"account_b": block if isinstance(block, dict) and block else None, "saved_at": int(_time.time()),
            "note": "ATLAS's account on this PC (engine/account_b.py). Local, gitignored: second_model.json ships account_b null."
            + (f" {why}" if why else "")}
+    keep = _time_size_raw(path)                  # the owner's time_size switch (combo lanes) survives every block rewrite
+    if keep is not None:
+        rec[TIME_SIZE_KEY] = keep
     tmp = p + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(rec, fh, indent=1, ensure_ascii=False)
@@ -202,6 +206,114 @@ def tracked_cfg(path: str | None = None):
         return ab if isinstance(ab, dict) and ab else None
     except Exception:
         return None
+
+
+# ---------------------------------------------------------------------------------------------------------------- time_size
+# ATLAS x0.5 outside the Silver Bullet hours, Builder EVAL combo lanes only (Zlarior's 50K + the 25K #2: engine/combo50k.atlas_qty,
+# stage "eval"). Research: research/writeups/ict-lab-proof-2026-11-25.md (card B2). OFF BY DEFAULT: no "time_size" key in
+# data/account_b.json (top level, next to "account_b") = today's sizing exactly. Never ATLAS's own 25K (account B, funded),
+# never the Rapid lane (engine/rapid.py has its own sizing), never a funded stage. Written only by the owner's step:
+#     python -X utf8 -m engine.account_b --time-size on      (types I ACCEPT LIVE RISK)
+#     python -X utf8 -m engine.account_b --time-size off
+#     python -X utf8 -m engine.account_b --time-size status
+TIME_SIZE_KEY = "time_size"
+TIME_SIZE_DEFAULT = {"hours_et": [3, 10, 14], "in_mult": 1.0, "out_mult": 0.5}
+TIME_SIZE_CMD = "python -X utf8 -m engine.account_b --time-size on"
+
+
+def time_size_norm(raw) -> dict | None:
+    """A time_size block -> {"hours_et": [..], "in_mult", "out_mult"} or None = OFF (absent, {"on": false}, or not usable:
+    hours must be whole ET hours 0-23, the multipliers in (0, 1]: this switch only ever lowers a size)."""
+    if not isinstance(raw, dict) or raw.get("on") is False:
+        return None
+    try:
+        hrs = raw.get("hours_et", TIME_SIZE_DEFAULT["hours_et"])
+        hrs = sorted({int(h) for h in hrs if float(h) == int(h)})
+        mi = float(raw.get("in_mult", TIME_SIZE_DEFAULT["in_mult"]))
+        mo = float(raw.get("out_mult", TIME_SIZE_DEFAULT["out_mult"]))
+    except (TypeError, ValueError):
+        return None
+    if not hrs or any(h < 0 or h > 23 for h in hrs) or not (0.0 < mi <= 1.0) or not (0.0 < mo <= 1.0):
+        return None
+    return {"hours_et": hrs, "in_mult": mi, "out_mult": mo}
+
+
+def _time_size_raw(path: str | None = None):
+    try:
+        with open(local_path(path), encoding="utf-8") as fh:
+            c = json.load(fh)
+        return c.get(TIME_SIZE_KEY) if isinstance(c, dict) else None
+    except Exception:
+        return None
+
+
+def read_time_size(path: str | None = None) -> dict | None:
+    """The owner's switch from the PC-local data/account_b.json, normalized; None = OFF (missing file / key / unusable)."""
+    return time_size_norm(_time_size_raw(path))
+
+
+def time_size_mult(ts: dict | None, entry_t) -> float:
+    """The multiplier for an ATLAS entry at entry_t (unix s): in_mult inside the hours (ET clock hour), out_mult outside.
+    No switch or no entry time = 1.0 (today's size)."""
+    ts = time_size_norm(ts)
+    if not ts or entry_t is None:
+        return 1.0
+    try:
+        from zoneinfo import ZoneInfo
+        h = _dt.datetime.fromtimestamp(int(entry_t), ZoneInfo("America/New_York")).hour
+    except Exception:
+        return 1.0
+    return float(ts["in_mult"] if h in ts["hours_et"] else ts["out_mult"])
+
+
+def apply_time_size(q: int, ts: dict | None, entry_t) -> tuple:
+    """(micros, reason | None): q x the multiplier, floored to whole micros, never below 1 micro while q >= 1."""
+    q = int(q or 0)
+    ts = time_size_norm(ts)
+    m = time_size_mult(ts, entry_t)
+    if q <= 0 or m >= 1.0 - 1e-12:
+        return q, None
+    q2 = max(1, int(math.floor(q * m + 1e-9)))
+    return q2, f"time_size x{m:g} outside {'/'.join(f'{h:02d}' for h in ts['hours_et'])} ET: {q} -> {q2}"
+
+
+def set_time_size(on: bool, phrase: str = "", path: str | None = None, today: str | None = None, block: dict | None = None) -> dict:
+    """The owner's switch. ON needs the typed live phrase; OFF never does. Only the top-level "time_size" key of
+    data/account_b.json changes ("account_b" is kept byte for byte; a missing file gets no "account_b" key, so
+    second_model.json's block still counts)."""
+    p = local_path(path)
+    try:
+        with open(p, encoding="utf-8") as fh:
+            c = json.load(fh)
+        if not isinstance(c, dict):
+            return {"ok": False, "error": f"{LOCAL_REL} is not a JSON object: fix it first, nothing written"}
+    except FileNotFoundError:
+        c = {}
+    except Exception as e:
+        return {"ok": False, "error": f"{LOCAL_REL} unreadable ({e.__class__.__name__}): nothing written"}
+    if on:
+        from .go import LIVE_PHRASE, typed_phrase
+        if typed_phrase(phrase) != LIVE_PHRASE:
+            return {"ok": False, "error": "the live phrase was not typed: nothing switched on"}
+        ts = time_size_norm({**TIME_SIZE_DEFAULT, **(block or {})})
+        if ts is None:
+            return {"ok": False, "error": "time_size values not usable: nothing switched on"}
+        c[TIME_SIZE_KEY] = {**ts, "set": today or _dt.date.today().isoformat()}
+        say = (f"time_size ON: ATLAS on the Builder EVAL combo lanes (Zlarior 50K + 25K #2) x{ts['out_mult']:g} outside "
+               f"{', '.join(f'{h:02d}:00' for h in ts['hours_et'])} ET (+1 h each), x{ts['in_mult']:g} inside. Not the Rapid, not "
+               "ATLAS's funded 25K. The running bot picks it up at its next poll.")
+    else:
+        if TIME_SIZE_KEY not in c:
+            return {"ok": True, "path": p, "say": "time_size is already OFF (today's sizing)"}
+        c.pop(TIME_SIZE_KEY, None)
+        say = "time_size OFF: ATLAS's combo sizing is today's again (next poll)"
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    tmp = p + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
+        json.dump(c, fh, indent=1, ensure_ascii=False)
+    from .fsutil import replace as _fs_replace
+    _fs_replace(tmp, p)
+    return {"ok": True, "path": p, "say": say, "time_size": c.get(TIME_SIZE_KEY)}
 
 
 def raw_cfg(path: str | None = None):
@@ -2429,8 +2541,25 @@ def main(argv=None) -> int:
     ap.add_argument("--balance", type=float, default=None, help="--to-funded: its balance that day as MFFU shows it (default "
                                                                  "the plan start, $25,000)")
     ap.add_argument("--payout", help="record one payout MFFU paid on the funded account: yyyy-mm-dd=$")
+    ap.add_argument("--time-size", dest="time_size", choices=("on", "off", "status"), default=None,
+                    help="ATLAS x0.5 outside the Silver Bullet hours on the Builder EVAL combo lanes (on needs the live phrase)")
     ap.add_argument("--funded-status", action="store_true", help="the funded payout tracker now")
     a = ap.parse_args(argv)
+    if a.time_size:
+        if a.time_size == "status":
+            ts = read_time_size()
+            print(f"  [..]  time_size {'ON ' + json.dumps(ts) if ts else 'OFF (today' + chr(39) + 's sizing)'}")
+            return 0
+        phrase = ""
+        if a.time_size == "on":
+            print(" ATLAS on the Builder EVAL combo lanes (Zlarior 50K + 25K #2) trades HALF size outside 03, 10 and 14 ET.")
+            try:
+                phrase = input(" Type  I ACCEPT LIVE RISK  then Enter (anything else stops here, nothing switched on): ")
+            except EOFError:
+                phrase = ""
+        r = set_time_size(a.time_size == "on", phrase)
+        print(f"  [{'OK' if r['ok'] else 'FIX'}]  {r.get('say') or r.get('error')}")
+        return 0 if r["ok"] else 1
     if a.min_room is not None:
         r = set_min_room(a.min_room)
         print(f"  [{'OK' if r['ok'] else 'FIX'}]  {r.get('say') or r.get('error')}")

@@ -68,24 +68,30 @@ def spec_for(bot, acc) -> dict | None:
     if not real:
         if not over:
             return None
-        rules = CB.normalize(over if isinstance(over, dict) else {}, plan=plan or CB.PLAN)
+        rules = CB.normalize({k: v for k, v in over.items() if k != "time_size"} if isinstance(over, dict) else {},
+                             plan=plan or CB.PLAN)
         src = "account entry 'combo' (test harness)"
+        tsz = AB.time_size_norm(over.get("time_size")) if isinstance(over, dict) else None
     else:
         nm = str(s.get("nt_account") or "").strip()
         if not CB.switch_on_for(nm):
             return None
         rules = CB.load_rules(plan=plan or CB.PLAN)
         src = CB.SWITCH_REL
+        tsz = AB.read_time_size()
     if plan is None:
         return {"off_why": f"{acc.name}: the combo is built for the Builder 25K / 50K presets, not {s.get('preset')}: OFF"}
     if s.get("adapter") == "ninjatrader" and not str(s.get("nt_account") or "").strip():
         return {"off_why": f"{acc.name}: no NinjaTrader Name: OFF"}
     if rules.get("problem"):
         return {"off_why": f"{acc.name}: combo rules not usable ({rules['problem']}): OFF"}
-    return {"on": True, "account": s.get("nt_account") or acc.id, "acc_id": acc.id, "plan": plan, "conflict": rules["conflict"],
-            "atlas_size_factor": dict(rules["atlas_size_factor"]), "guards": dict(rules["guards"]),
-            "unknown": list(rules.get("unknown") or []), "keys": list(CB.MEMBERS), "label": label_of(acc), "src": src,
-            "max_micros": 40}
+    out = {"on": True, "account": s.get("nt_account") or acc.id, "acc_id": acc.id, "plan": plan, "conflict": rules["conflict"],
+           "atlas_size_factor": dict(rules["atlas_size_factor"]), "guards": dict(rules["guards"]),
+           "unknown": list(rules.get("unknown") or []), "keys": list(CB.MEMBERS), "label": label_of(acc), "src": src,
+           "max_micros": 40}
+    if tsz:
+        out["time_size"] = tsz                         # engine/account_b time_size (OFF = absent = today's spec)
+    return out
 
 
 def ab_block(acc, combo) -> dict:
@@ -472,7 +478,7 @@ class ComboAtlas(RapidAtlas):
         sz = {"qty": 0, "reasons": []}
         if not why:
             try:
-                sz = self.size({"risk_pts": risk, "tgt_pts": tgt}, self.eval_state(now), k)
+                sz = self.size({"risk_pts": risk, "tgt_pts": tgt, "entry_t": t.get("entry_t")}, self.eval_state(now), k)
             except Exception as e:
                 sz = {"qty": 0, "reasons": [f"sizing failed ({e.__class__.__name__}: {e}): not traded"]}
             self.last_size = {"qty": sz["qty"], "key": k, "reasons": [str(x)[:120] for x in sz["reasons"]][-6:], "t": int(now)}
