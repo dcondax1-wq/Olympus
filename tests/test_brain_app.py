@@ -120,6 +120,14 @@ const out = {
   think: B.thinkLines(['a', ['09:40', 'b'], { hm: '09:41', text: 'c' }, { x: 1 }, null]),
   fibs: B.fibs({ price: 100, price2: 200 }).map((f) => f.price),
 };
+// day-pillars4: the PC's brain feed (lite.bf, engine/brain_feed.py) is read FIRST, with its age; a bot it failed on ({err}) falls back
+const bfLite = (age) => ({ ...X.plus, bf: { v: 1, t: X.now - age, market: { phase: 'expanding', today_range_pts: 150 }, bots: {
+  lit: { think: ['10:01 the feed thought'], next: { setup: 'FEED SETUP short', steps: [{ name: 'sweep', done: true }, { name: 'CISD', done: false }, { name: 'entry', done: false }], limit: 26250, stop: 26270, target: 26150, dist_pts: 4 } },
+  atlas: { err: 'KeyError: x' } } } });
+const F1 = B.build({ ...site, lite: bfLite(300), bars: X.bars }, X.now), F2 = B.build({ ...site, lite: bfLite(3600), bars: X.bars }, X.now);
+const r1 = B.region(F1, 'lit');
+out.bf = { from: r1.next.from, setup: r1.next.setup, steps: r1.next.steps.map((s) => s.state), limit: r1.next.limit, think0: r1.think[0], feed: F1.feed, old: F2.feed.level, oldText: F2.feed.text,
+  atlas: B.region(F1, 'atlas').next.from, market: F1.market && F1.market.phase, plusFeed: B.build({ ...site, lite: X.plus, bars: X.bars }, X.now).feed.what };
 console.log(JSON.stringify(out));
 """
 
@@ -169,6 +177,14 @@ def node(sc):
     check("n. levelRows: FVG zone, [label, price], TP alias, junk dropped", o["rows"] == [{"kind": "fvg", "price": 10, "price2": 12, "label": "fvg"}, {"kind": "level", "price": 20, "price2": None, "label": "PDH"},
           {"kind": "target", "price": 30, "price2": None, "label": "TP"}], o["rows"])
     check("n. thinkLines: strings, [hm, text], {hm, text}; junk dropped", [t["text"] for t in o["think"]] == ["a", "b", "c"] and o["think"][1]["hm"] == "09:40", o["think"])
+    F = o.get("bf") or {}
+    check("n. brain feed (lite.bf) read FIRST: its setup, [{name, done}] steps (first open = now), limit, 'HH:MM' think line; 5 min = fresh",
+          F.get("from") == "bf" and F.get("setup") == "FEED SETUP short" and F.get("steps") == ["done", "now", "wait"] and F.get("limit") == 26250
+          and F.get("think0", {}).get("hm") == "10:01" and (F.get("feed") or {}).get("level") == "ok" and (F.get("feed") or {}).get("what") == "brain feed", F)
+    check("n. brain feed 60 min old = 'bad', its age in words",
+          F.get("old") == "bad" and "ago" in F.get("oldText", ""), F)
+    check("n. brain feed: ATLAS {err} -> derived / glance, market phase read, a post without bf names the step report",
+          F.get("atlas") in ("derived", "pc") and F.get("market") == "expanding" and F.get("plusFeed") == "step report", F)
     check("n. fibs of a 100 -> 200 leg: 150, 138.25, 129.5, 121", o["fibs"] == [150, 138.25, 129.5, 121], o["fibs"])
 
 
@@ -238,7 +254,7 @@ def browser(sc):
     check("b. ORDER FLOW room: 23 of 60 not in this post -> 'Not collecting yet' honest; BLITZ room OFF, not thinking", (o.get("of") or {}).get("r") == "of" and (o.get("blitz") or {}).get("status") == "OFF"
           and "not thinking" in (o.get("blitz") or {}).get("body", ""), ((o.get("of") or {}).get("setup"), (o.get("blitz") or {}).get("status")))
     pl = o.get("litPlus") or {}
-    check("b. the PC's new fields on a real post: its next line + think lines + FVG drawn", "London low sweep" in pl.get("setup", "") and pl.get("think", [""])[0].startswith("Checks") and "fvg" in pl.get("legend", []), {k: pl.get(k) for k in ("setup", "legend")})
+    check("b. the PC's new fields on a real post: its next line + think lines + FVG drawn", "London low sweep" in pl.get("setup", "") and pl.get("think", [""])[0].startswith("Checks") and "fvg" in pl.get("legend", []), {k: pl.get(k) for k in ("setup", "legend", "think")})
     tr = o.get("trade") or {}
     check("b. in a trade: IN A TRADE on the LIT room, entry / stop / target", "IN A TRADE" in tr.get("body", "") and tr.get("px", [None, None])[1] == "26,178.00", tr.get("px"))
     check("b. no sideways scroll at 390; every tap target >= 44 px", (o.get("sampleGeo") or {}).get("wide") is False and (o.get("liveGeo") or {}).get("wide") is False

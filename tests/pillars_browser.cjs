@@ -25,6 +25,8 @@ const out = {};
   try {
     // ---- the Pillars page ----
     let { p, ctx, errs } = await page('/pillars/' + AT + '#lit', true);
+    // software GL is slow here: wait for the scene's mode + its first drawn frame (day-pillars4)
+    await p.waitForFunction(() => document.documentElement.dataset.mode && (!window.__pillars || (window.__pillars.stats() || {}).calls > 0), null, { timeout: 90000 }).catch(() => {});
     out.mode = await p.evaluate(() => document.documentElement.dataset.mode);
     out.stats = await p.evaluate(() => (window.__pillars ? window.__pillars.stats() : null));
     out.tabs = await p.evaluate(() => [...document.querySelectorAll('.ptab')].map((t) => t.dataset.p + ':' + t.querySelector('small').textContent));

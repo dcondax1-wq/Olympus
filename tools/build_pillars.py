@@ -185,6 +185,80 @@ def lessons() -> tuple[dict, bool, str]:
     return out, sample, src
 
 
+# ---------------- research per pillar (day-pillars4 2026-11-25: "more data, more research") ----------------
+REJECTED = "docs/TESTED_AND_REJECTED.md"
+IDEAMILL = "research/ideamill/summary.json"
+OF_FILES = {"battery": "research/orderflow/battery_results.json", "study": "research/orderflow/results.json", "lab": "research/lab/orderflow.json"}
+OF_LOOKS = 2                        # research/orderflow/PREREG_ticks.md: one first look, one final look after the backfill; no change after a look
+
+
+def pillar_of(text: str, fam=None):
+    """tools/web_public/pillars/pillarof.js pillarOf, in Python (the same rule, test-pinned): lit | atlas | blitz | of | None"""
+    t = str(text or "")
+    if re.search(r"order.?flow|\btick (data|recorder|profile|days?|study)|\breal ticks\b|\bcumulative delta\b|\bdelta (divergence|bars?)\b|footprint|\bLVN\b|\bCVD\b|absorption|stacked imbalance|block prints?", t, re.I):
+        return "of"
+    best, at = None, 10 ** 9
+    for pid, rx in (("blitz", r"\bBLITZ\b|\bscalp"), ("atlas", r"\bATLAS\b|\bEMA pullback|\bMACD\b|\bS/R\b|account.?b\b"), ("lit", r"\bLIT\b|zlarior|\bCISD\b|\bsweep")):
+        m = re.search(rx, t, re.I)
+        if m and m.start() < at:
+            at, best = m.start(), pid
+    return best
+
+
+def rejected_rows() -> dict:
+    """docs/TESTED_AND_REJECTED.md, one row per bullet: {pillar: {"n": all rows for it, "rows": newest 12 [{d, title, text}]}} + "shared"."""
+    try:
+        text = open(os.path.join(ROOT, REJECTED), encoding="utf-8").read()
+    except OSError:
+        return {}
+    out = {k: [] for k in ("lit", "atlas", "blitz", "of", "shared")}
+    items, cur = [], None
+    for line in text.splitlines():                    # a bullet can wrap onto the next lines: join them
+        if line.startswith("- "):
+            cur = [line[2:].strip()]; items.append(cur)
+        elif cur is not None and line.strip() and not line.startswith("#"):
+            cur.append(line.strip())
+        else:
+            cur = None
+    for parts in items:
+        body = " ".join(parts)
+        m = re.match(r"\*\*(.+?)\*\*:?\s*(.*)", body)
+        title, rest = (m.group(1), m.group(2)) if m else (re.split(r"[:(]", body, maxsplit=1)[0], body)
+        dm = re.search(r"20\d\d-\d\d-\d\d", body)
+        clean = lambda x, n: re.sub(r"[<>`*]", "", x).strip()[:n]  # noqa: E731
+        pid = "shared" if re.search(r"idea mill", title, re.I) else (pillar_of(title) or pillar_of(rest[:160]) or "shared")
+        out[pid].append({"d": dm.group(0) if dm else "", "title": clean(re.sub(r"^20\d\d-\d\d-\d\d:?\s*", "", re.sub(r"\s*\(.*$", "", title)) or title, 110), "text": clean(rest, 300)})
+    res = {}
+    for k, v in out.items():
+        v.sort(key=lambda x: x["d"], reverse=True)
+        res[k] = {"n": len(v), "rows": v[:12]}
+    return res
+
+
+def idea_mill() -> dict | None:
+    d = _load(IDEAMILL)
+    if not isinstance(d, dict):
+        return None
+    c = d.get("counts") or {}
+    fams = [f for f in d.get("families") or [] if isinstance(f, dict)]
+    best = min(fams, key=lambda f: _n(f.get("simes_p")) if _n(f.get("simes_p")) is not None else 9, default=None)
+    gates = sum(int(_n(c.get(k)) or 0) for k in ("G1_bh", "G2_dsr", "G3_holdouts", "G4_forward", "v3_stageA"))
+    return {"made": str(d.get("made") or "")[:16], "data_end": str(d.get("data_end") or "")[:10], "ideas": int(_n(c.get("trials_total")) or 0),
+            "scored": int(_n(c.get("scored")) or 0), "families": len(fams), "raw_p05": int(_n(c.get("raw_p_below_0.05")) or 0),
+            "luck_p05": _n(c.get("expected_raw_p05_by_luck")), "passed": gates,
+            "best": {"family": str(best.get("family") or ""), "p": _n(best.get("simes_p"))} if best else None, "src": IDEAMILL}
+
+
+def of_progress() -> dict:
+    """the order-flow research files (the PC's live tick count rides its post: lite.tr, read in the browser)"""
+    bat, study, lab = (_load(OF_FILES[k]) or {} for k in ("battery", "study", "lab"))
+    real = str(study.get("mode") or "").upper() == "REAL"
+    r2 = lab.get("round2") if isinstance(lab.get("round2"), dict) else {}
+    return {"tick_days_on_disk": int(_n(study.get("tick_days")) or 0), "study_mode": str(study.get("mode") or "none"), "looks_used": 1 if real else 0, "looks": OF_LOOKS,
+            "battery_need": int(_n(bat.get("need")) or 0) or None, "battery_state": str(bat.get("state") or "")[:80], "battery_made": str(bat.get("made") or "")[:10],
+            "proxy_tests": str(lab.get("status") or "")[:200], "round2_n": len(r2) if r2 else None, "src": ", ".join(OF_FILES.values())}
+
+
 def build() -> dict:
     R = research_pillars()
     lit = R.get("lit", {}).get("spans") or lit_spans()
@@ -230,7 +304,7 @@ def build() -> dict:
          "chain_src": "engine/blitz.py",
          "next": ("Stays OFF (owner switch). Its one paying use: next to Zlarior on a FUNDED 50K while LIT is flat (+$290-300 a month in 2026, "
                   "+$16 in 2021-25): needs the 50K funded first and new code (blitz-review-2026-11-18).")},
-        {"id": "of", "name": "ORDER FLOW", "alias": "ticks, delta, absorption", "color": "#5fd0c9", "bot": None, "state": "notready",
+        {"id": "of", "name": "ORDER FLOW", "alias": "ticks, delta, absorption", "color": "#c9a7ff", "bot": None, "state": "notready",
          "status": f"Recording NQ ticks on the PC; the study runs at {STUDY_DAYS} tick days",
          "edge": ("Not proven yet: " + str(ofd.get("status") or "no result") + ". The real test needs tick data (who hit the bid / the ask)."),
          "spans": [], "recent": None, "src": f"{SRC['pillars']} + {SRC['of']}",
@@ -260,7 +334,11 @@ def build() -> dict:
     L, lsample, lsrc = lessons()
     for p in pillars:
         p["lessons"] = L.get(p["id"], [])
-    return {"v": 1, "lessons_sample": lsample, "lessons_src": lsrc, "title": "The Four Pillars", "said": "Orderflow and BLITZ alongside LIT and ATLAS are gonna make us. Those are our 4 pillars.",
+    rj = rejected_rows()
+    for p in pillars:
+        p["rejected"] = rj.get(p["id"], {"n": 0, "rows": []})
+    pillars[3]["progress"] = of_progress()
+    return {"v": 2, "rejected_shared": rj.get("shared", {"n": 0, "rows": []}), "rejected_src": REJECTED, "mill": idea_mill(), "lessons_sample": lsample, "lessons_src": lsrc, "title": "The Four Pillars", "said": "Orderflow and BLITZ alongside LIT and ATLAS are gonna make us. Those are our 4 pillars.",
             "said_when": "2026-11-23 23:00 ET", "pillars": pillars, "sources": SRC}
 
 
