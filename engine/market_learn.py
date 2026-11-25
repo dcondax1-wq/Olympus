@@ -1211,6 +1211,19 @@ def brain_state(K: dict, J: list, rows: list, trials: dict | None = None, sread:
     return out
 
 
+def ideamill_block(root: str = ROOT) -> dict | None:
+    """The idea mill's latest gate counts for the Brain ("ideas tested this week / total / survived"); None before its first run."""
+    S = _read_json(os.path.join(root, "research", "ideamill", "summary.json"), None)
+    if not S:
+        return None
+    c, w = S.get("counts") or {}, S.get("week") or {}
+    return {"made": S.get("made"), "data_end": S.get("data_end"), "tested_this_week": w.get("tested_this_week"),
+            "tested_total": c.get("trials_total"), "passed_discovery": c.get("G1_bh"), "passed_haircut": c.get("G2_dsr"),
+            "passed_holdouts": c.get("G3_holdouts"), "needs_owner_yes": c.get("G4_forward"),
+            "placebo": [c.get("placebo_G1"), c.get("placebo_G2"), c.get("placebo_G3")],
+            "best": ((S.get("top") or S.get("best_raw_p") or [{}])[0]).get("id")}
+
+
 def nightly(root: str = ROOT, out_dir: str | None = None, rows: list | None = None, trials: dict | None = None,
             with_bars: bool = True, draws: int = 0, today: str | None = None, live_rows: list | None = None) -> dict:
     """The light refresh (< 2 min, no numba, no backtest): lessons from the stored rows (+ new live rows), the STRUCTURE lens,
@@ -1230,6 +1243,7 @@ def nightly(root: str = ROOT, out_dir: str | None = None, rows: list | None = No
     J, added = update_journal(journal_doc(jpath), obs, today=today)
     S = brain_state(K, J, rows, trials, sread, today=today)
     S["added_today"] = len(added)
+    S["ideamill"] = ideamill_block(root)
     _write_json(jpath, J)
     _write_json(os.path.join(out_dir, "brain_state.json"), S)
     return {"journal": J, "added": added, "brain": S}

@@ -62,7 +62,8 @@
    "pf_h2": 2.65
   },
   "status": "rejected",
-  "key": "variant|F4 ATLAS skip middle of the range"
+  "key": "variant|F4 ATLAS skip middle of the range",
+  "checked": "2026-11-25"
  },
  {
   "date": "2026-11-24",
@@ -153,7 +154,8 @@
    "p": 0.51437
   },
   "status": "rejected",
-  "key": "trial|blitz|half|pd_room=far"
+  "key": "trial|blitz|half|pd_room=far",
+  "checked": "2026-11-25"
  },
  {
   "date": "2026-11-24",
@@ -166,7 +168,8 @@
    "pf_h2": 1.69
   },
   "status": "rejected",
-  "key": "variant|F5 BLITZ skip half-used day"
+  "key": "variant|F5 BLITZ skip half-used day",
+  "checked": "2026-11-25"
  },
  {
   "date": "2026-11-24",
@@ -192,7 +195,8 @@
    "pf_h2": 2.96
   },
   "status": "rejected",
-  "key": "variant|F1 LIT skip late chase"
+  "key": "variant|F1 LIT skip late chase",
+  "checked": "2026-11-25"
  },
  {
   "date": "2026-11-24",
@@ -205,7 +209,8 @@
    "pf_h2": 2.91
   },
   "status": "rejected",
-  "key": "variant|F2 LIT skip mid-retrace fade"
+  "key": "variant|F2 LIT skip mid-retrace fade",
+  "checked": "2026-11-25"
  },
  {
   "date": "2026-11-24",
@@ -218,7 +223,8 @@
    "pf_h2": 2.8
   },
   "status": "rejected",
-  "key": "variant|F3 LIT x1.5 at the day's extreme"
+  "key": "variant|F3 LIT x1.5 at the day's extreme",
+  "checked": "2026-11-25"
  },
  {
   "date": "2026-11-24",
@@ -235,7 +241,8 @@
    ]
   },
   "status": "confirmed",
-  "key": "market|after|big_day_before"
+  "key": "market|after|big_day_before",
+  "checked": "2026-11-25"
  },
  {
   "date": "2026-11-24",
@@ -252,7 +259,8 @@
    ]
   },
   "status": "confirmed",
-  "key": "market|after|big_overnight"
+  "key": "market|after|big_overnight",
+  "checked": "2026-11-25"
  },
  {
   "date": "2026-11-24",
@@ -269,7 +277,8 @@
    ]
   },
   "status": "watching",
-  "key": "market|after|inside_day_before"
+  "key": "market|after|inside_day_before",
+  "checked": "2026-11-25"
  },
  {
   "date": "2026-11-24",
@@ -286,7 +295,8 @@
    ]
   },
   "status": "watching",
-  "key": "market|after|nr7_before"
+  "key": "market|after|nr7_before",
+  "checked": "2026-11-25"
  },
  {
   "date": "2026-11-24",
@@ -303,7 +313,8 @@
    ]
   },
   "status": "confirmed",
-  "key": "market|after|quiet_day_before"
+  "key": "market|after|quiet_day_before",
+  "checked": "2026-11-25"
  },
  {
   "date": "2026-11-24",
@@ -320,7 +331,8 @@
    ]
   },
   "status": "confirmed",
-  "key": "market|after|small_overnight"
+  "key": "market|after|small_overnight",
+  "checked": "2026-11-25"
  },
  {
   "date": "2026-11-24",
@@ -332,7 +344,8 @@
    "usd": null
   },
   "status": "confirmed",
-  "key": "market|back_to_open"
+  "key": "market|back_to_open",
+  "checked": "2026-11-25"
  },
  {
   "date": "2026-11-24",
@@ -344,7 +357,8 @@
    "usd": null
   },
   "status": "confirmed",
-  "key": "market|fib_no_free_edge"
+  "key": "market|fib_no_free_edge",
+  "checked": "2026-11-25"
  },
  {
   "date": "2026-11-24",
@@ -356,7 +370,8 @@
    "usd": null
   },
   "status": "confirmed",
-  "key": "market|fvg_fill"
+  "key": "market|fvg_fill",
+  "checked": "2026-11-25"
  },
  {
   "date": "2026-11-24",
@@ -368,7 +383,8 @@
    "usd": null
   },
   "status": "confirmed",
-  "key": "market|measured_move"
+  "key": "market|measured_move",
+  "checked": "2026-11-25"
  },
  {
   "date": "2026-11-24",
@@ -380,7 +396,8 @@
    "usd": null
   },
   "status": "confirmed",
-  "key": "market|retrace|shallow_vs_deep"
+  "key": "market|retrace|shallow_vs_deep",
+  "checked": "2026-11-25"
  },
  {
   "date": "2026-11-24",
@@ -393,7 +410,8 @@
    "pf_h2": 1.11
   },
   "status": "rejected",
-  "key": "variant|S1 expansion pullback 0.5 -> extreme"
+  "key": "variant|S1 expansion pullback 0.5 -> extreme",
+  "checked": "2026-11-25"
  },
  {
   "date": "2026-11-24",
@@ -406,7 +424,8 @@
    "pf_h2": 1.75
   },
   "status": "rejected",
-  "key": "variant|S2 deep pullback 0.79 -> 1.272"
+  "key": "variant|S2 deep pullback 0.79 -> 1.272",
+  "checked": "2026-11-25"
  },
  {
   "date": "2026-11-24",
@@ -419,6 +438,327 @@
    "pf_h2": 1.01
   },
   "status": "rejected",
-  "key": "variant|S3 expansion follows expansion (first 5m displacement)"
+  "key": "variant|S3 expansion follows expansion (first 5m displacement)",
+  "checked": "2026-11-25"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "atlas",
+  "lens": "context",
+  "noticed": "ATLAS does better when: mixed weeks + London 02-05. avg R 0.999 / 1.156 / 0.303 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 226,
+   "usd": 13770,
+   "z": 1.74
+  },
+  "status": "rejected",
+  "key": "lesson|atlas|regime=mixed & session=London 02-05",
+  "was": "watching"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "atlas",
+  "lens": "context",
+  "noticed": "ATLAS does better when: mixed weeks + London 02-05. avg R 0.999 / 1.156 / 0.303 (Jan-Jun / Jul-Oct / 2021-25) vs its own average",
+  "evidence": {
+   "n": 226,
+   "usd": 13770,
+   "z": 1.74
+  },
+  "status": "watching",
+  "key": "lesson|atlas|regime=mixed & session=London 02-05",
+  "was": "rejected"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "atlas",
+  "lens": "structure",
+  "noticed": "ATLAS does worse when: entries 50-80% into the day's range. avg R 0.884 / 0.606 / -0.105 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 376,
+   "usd": -13641,
+   "z": -1.36
+  },
+  "status": "rejected",
+  "key": "lesson|atlas|st_pos=high",
+  "was": "watching"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "atlas",
+  "lens": "structure",
+  "noticed": "ATLAS does worse when: entries 50-80% into the day's range. avg R 0.884 / 0.606 / -0.105 (Jan-Jun / Jul-Oct / 2021-25) vs its own average",
+  "evidence": {
+   "n": 376,
+   "usd": -13641,
+   "z": -1.36
+  },
+  "status": "watching",
+  "key": "lesson|atlas|st_pos=high",
+  "was": "rejected"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "atlas",
+  "lens": "context",
+  "noticed": "ATLAS does better when: VIX 15-20. avg R 1.128 / 0.868 / 0.142 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 563,
+   "usd": 16207,
+   "z": 1.29
+  },
+  "status": "rejected",
+  "key": "lesson|atlas|vix_band=VIX 15-20",
+  "was": "watching"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "atlas",
+  "lens": "context",
+  "noticed": "ATLAS does better when: VIX 15-20. avg R 1.128 / 0.868 / 0.142 (Jan-Jun / Jul-Oct / 2021-25) vs its own average",
+  "evidence": {
+   "n": 563,
+   "usd": 16207,
+   "z": 1.29
+  },
+  "status": "watching",
+  "key": "lesson|atlas|vix_band=VIX 15-20",
+  "was": "rejected"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "atlas",
+  "lens": "context",
+  "noticed": "ATLAS does better when: VIX 15-20 + London 02-05. avg R 1.698 / 0.95 / 0.439 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 266,
+   "usd": 29694,
+   "z": 3.4
+  },
+  "status": "rejected",
+  "key": "lesson|atlas|vix_band=VIX 15-20 & session=London 02-05",
+  "was": "confirmed"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "atlas",
+  "lens": "context",
+  "noticed": "ATLAS does better when: VIX 15-20 + London 02-05. avg R 1.698 / 0.95 / 0.439 (Jan-Jun / Jul-Oct / 2021-25) vs its own average",
+  "evidence": {
+   "n": 266,
+   "usd": 29694,
+   "z": 3.4
+  },
+  "status": "confirmed",
+  "key": "lesson|atlas|vix_band=VIX 15-20 & session=London 02-05",
+  "was": "rejected"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "blitz",
+  "lens": "context",
+  "noticed": "BLITZ does worse when: Tuesdays. avg R 0.059 / 0.016 / -0.042 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 413,
+   "usd": -3809,
+   "z": -1.53
+  },
+  "status": "rejected",
+  "key": "lesson|blitz|dow=Tue",
+  "was": "watching"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "blitz",
+  "lens": "context",
+  "noticed": "BLITZ does worse when: Tuesdays. avg R 0.059 / 0.016 / -0.042 (Jan-Jun / Jul-Oct / 2021-25) vs its own average",
+  "evidence": {
+   "n": 413,
+   "usd": -3809,
+   "z": -1.53
+  },
+  "status": "watching",
+  "key": "lesson|blitz|dow=Tue",
+  "was": "rejected"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "blitz",
+  "lens": "context",
+  "noticed": "BLITZ does worse when: after a big day + Tuesdays. avg R -0.017 / -0.238 / -0.115 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 123,
+   "usd": -2449,
+   "z": -2.04
+  },
+  "status": "rejected",
+  "key": "lesson|blitz|prior_day=big & dow=Tue",
+  "was": "confirmed"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "blitz",
+  "lens": "context",
+  "noticed": "BLITZ does worse when: after a big day + Tuesdays. avg R -0.017 / -0.238 / -0.115 (Jan-Jun / Jul-Oct / 2021-25) vs its own average",
+  "evidence": {
+   "n": 123,
+   "usd": -2449,
+   "z": -2.04
+  },
+  "status": "confirmed",
+  "key": "lesson|blitz|prior_day=big & dow=Tue",
+  "was": "rejected"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "blitz",
+  "lens": "context",
+  "noticed": "BLITZ does worse when: trending weeks + NY AM 09:30-11:30. avg R -0.082 / -0.271 / -0.095 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 159,
+   "usd": -4611,
+   "z": -2.19
+  },
+  "status": "rejected",
+  "key": "lesson|blitz|regime=trend & session=NY AM 09:30-11:30",
+  "was": "confirmed"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "blitz",
+  "lens": "context",
+  "noticed": "BLITZ does worse when: trending weeks + NY AM 09:30-11:30. avg R -0.082 / -0.271 / -0.095 (Jan-Jun / Jul-Oct / 2021-25) vs its own average",
+  "evidence": {
+   "n": 159,
+   "usd": -4611,
+   "z": -2.19
+  },
+  "status": "confirmed",
+  "key": "lesson|blitz|regime=trend & session=NY AM 09:30-11:30",
+  "was": "rejected"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "blitz",
+  "lens": "structure",
+  "noticed": "BLITZ does better when: a displacement our way in the 30 min before (late). avg R 0.544 / 0.81 / 0.04 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 167,
+   "usd": 3203,
+   "z": 1.41
+  },
+  "status": "rejected",
+  "key": "lesson|blitz|st_disp=yes",
+  "was": "watching"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "blitz",
+  "lens": "structure",
+  "noticed": "BLITZ does better when: a displacement our way in the 30 min before (late). avg R 0.544 / 0.81 / 0.04 (Jan-Jun / Jul-Oct / 2021-25) vs its own average",
+  "evidence": {
+   "n": 167,
+   "usd": 3203,
+   "z": 1.41
+  },
+  "status": "watching",
+  "key": "lesson|blitz|st_disp=yes",
+  "was": "rejected"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "blitz",
+  "lens": "structure",
+  "noticed": "BLITZ does worse when: fading the last swing, retrace past 1.0, swing broken + the day half used (0.5-0.8 ATR). avg R 0.009 / 0.046 / -0.115 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 281,
+   "usd": -4709,
+   "z": -2.45
+  },
+  "status": "rejected",
+  "key": "lesson|blitz|st_swing=against_broken & st_used=half",
+  "was": "confirmed"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "blitz",
+  "lens": "structure",
+  "noticed": "BLITZ does worse when: fading the last swing, retrace past 1.0, swing broken + the day half used (0.5-0.8 ATR). avg R 0.009 / 0.046 / -0.115 (Jan-Jun / Jul-Oct / 2021-25) vs its own average",
+  "evidence": {
+   "n": 281,
+   "usd": -4709,
+   "z": -2.45
+  },
+  "status": "confirmed",
+  "key": "lesson|blitz|st_swing=against_broken & st_used=half",
+  "was": "rejected"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "blitz",
+  "lens": "structure",
+  "noticed": "BLITZ does worse when: the day half used (0.5-0.8 ATR). avg R 0.106 / -0.117 / -0.035 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 480,
+   "usd": -4742,
+   "z": -1.7
+  },
+  "status": "rejected",
+  "key": "lesson|blitz|st_used=half",
+  "was": "watching"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "blitz",
+  "lens": "structure",
+  "noticed": "BLITZ does worse when: the day half used (0.5-0.8 ATR). avg R 0.106 / -0.117 / -0.035 (Jan-Jun / Jul-Oct / 2021-25) vs its own average",
+  "evidence": {
+   "n": 480,
+   "usd": -4742,
+   "z": -1.7
+  },
+  "status": "watching",
+  "key": "lesson|blitz|st_used=half",
+  "was": "rejected"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "lit",
+  "lens": "structure",
+  "noticed": "LIT (Zlarior) does worse when: the day half used (0.5-0.8 ATR). avg R 0.576 / 0.455 / -0.141 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 143,
+   "usd": -11183,
+   "z": -1.22
+  },
+  "status": "rejected",
+  "key": "lesson|lit|st_used=half",
+  "was": "watching"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "lit",
+  "lens": "structure",
+  "noticed": "LIT (Zlarior) does worse when: the day half used (0.5-0.8 ATR). avg R 0.576 / 0.455 / -0.141 (Jan-Jun / Jul-Oct / 2021-25) vs its own average",
+  "evidence": {
+   "n": 143,
+   "usd": -11183,
+   "z": -1.22
+  },
+  "status": "watching",
+  "key": "lesson|lit|st_used=half",
+  "was": "rejected"
+ },
+ {
+  "date": "2026-11-25",
+  "pillar": "market",
+  "lens": "idea mill",
+  "noticed": "idea mill: 38880 ideas tested so far; 0 passed discovery (FDR), 0 the many-tests haircut, 0 all 3 hold-outs; a random-sign placebo gives 0 / 0 / 0",
+  "evidence": {
+   "n": 38880
+  },
+  "status": "watching",
+  "key": "ideamill|summary",
+  "checked": "2026-11-25"
  }
 ]

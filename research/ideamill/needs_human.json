@@ -1,0 +1,562 @@
+[
+ {
+  "src": "export.arxiv.org",
+  "title": "Design an Algorithmic Stablecoin based on a Predictive PID Controller",
+  "abstract": "Cryptocurrencies issued based on blockchain technology have attracted increasing attention in recent years. However, their high volatility makes it difficult for them to become circulating currencies. This led to the creation of stablecoins. Existing stablecoins can be divided into three main categories: stablecoins pegged to fiat currencies, stablecoins collateralized by crypto assets, and algorithmically controlled stablecoins. Most existing stablecoins are either of the first two types. We design an algorithmic stablecoin controlled only by a predictive Proportional-Integral-Derivative (PID) controller, which uses the price forecasted by Autoregressive Integrated Moving Average (ARIMA) model as part of its input. Simulation experiments show that, under ideal market conditions, the stablecoin can achieve long-term goals that fluctuate within a pre-defined range. Furthermore, it consistently restores prices to the anchor interval in the presence of exogenous disturbances.",
+  "link": "http://arxiv.org/abs/2611.30982v1",
+  "date": "2026-11-23T16:40",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Cleaning correlation matrices with external information: the Maximum Variance estimat",
+  "abstract": "Rotationally invariant estimators clean the eigenvalues of an empirical correlation matrix but keep its noisy eigenvectors. We study an estimator that corrects the eigenvectors by using external information, namely a partition of the assets into groups such as asset classes or regions. The Maximum Variance (MaxVar) estimator restricts the leading eigenvectors to linear combinations of the maximum-variance portfolios of the groups and replaces the rest of the spectrum by a single eigenvalue. It is a factor model with about n parameters instead of n2/2, and it is positive de nite even when the number of observations is smaller than the number of assets n. We apply it to the correlation matrix of 47 futures on stock indices, bonds and currencies, with the three asset classes as groups. In an illustrative Monte Carlo test, in which the reference matrix has the structure assumed by the estimator, the distance to the reference is reduced by one third with respect to the empirical matrix, against less than 10% for the rotationally invariant estimator. The decisive test is the performance of a portfolio on real data: over 1993-2018, the Sharpe ratio of the risk parity portfolio, which involves the inverse of the matrix, is 1.28 with the MaxVar estimator, 1.24 with the rotationally invariant estimator and 1.17 with the empirical matrix, and the advantage increases when the estimation window is shortened.",
+  "link": "http://arxiv.org/abs/2611.30843v1",
+  "date": "2026-11-23T15:27",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "CCFinance: Reconstructing Financial News Samples from Web Archives",
+  "abstract": "Proprietary news archives assign stories to firms, so reproducing a financial study often requires access to both the articles and the vendor's assignments. CCFinance lets researchers reconstruct firm coverage under different selection rules by recording which version of a story was captured, which issuers it names and how often each appears. From 14.8 million English-language records in Fine News, derived from public Common Crawl News, we identify 5.22 million distinct, consistently dated articles with issuer links. Exact reconstruction requires the restricted snapshot and derived artifacts. We compare GLiNER and Stanza on 250 model-labeled article leads and assess issuer links and story focus against blinded model judgments. Estimated precision among 475 accepted links is 96.8%. Among held-out articles with a detected company, requiring three mentions raises subject precision from 31.9% to 66.1%. Across the 2017-2025 panel, the same rule reduces the number of issuer-years with at least 50 qualifying stories from 13,918 to 8,641. Three reimplementations examine volatility tracking, bank networks and overnight returns. In the network study, bank pairs appearing together rose from 177 to 242 across publishers between January and April 2020, but fell from 50 to 35 within Reuters.",
+  "link": "http://arxiv.org/abs/2611.30737v1",
+  "date": "2026-11-23T14:13",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Political Orientation and Participation in Prediction Markets: Large Stakes Converge, Small Stakes Diverge",
+  "abstract": "Prediction markets offer a way to study collective expectations and beliefs: people express their views on various events and, by putting money behind their predictions, take on the risks of their judgments. As a result, the scale of investment can reveal additional dimensions of individual behavior and beliefs. In this study, we use a complex network approach to examine the structure of user participation, drawing on roughly 1.14 billion transaction records from the Polymarket platform, covering more than 3.1 million wallet addresses and 764,000 prediction events. To do this, we build a bipartite network of users and events and analyze patterns of investment concentration, connections between topics, and the network's community structure. Our findings show a highly skewed distribution of financial participation: 1\\% of events account for 64\\% of total transaction volume, while 1\\% of wallets account for 79.2\\% of total financial participation. We also examine how investment scale and political orientation shape user participation patterns. Focusing on the 2024 U.S. presidential election, we compare users who invested exclusively in a Trump victory or exclusively in a Harris victory, grouping wallets by purchase size rather than by retail or institutional status. The results show that among large-scale investors, capital allocation patterns across topics are more similar between the two political groups; in contrast, these patterns diverge more and vary more among small-scale",
+  "link": "http://arxiv.org/abs/2611.29576v1",
+  "date": "2026-11-22T15:55",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Marked INAR model and the rough Hawkes--Heston limit",
+  "abstract": "We develop a discrete-time Monte Carlo algorithm for the rough Hawkes-Heston model based on a nearly unstable marked integer-valued autoregressive (INAR) process. We implement the algorithm with a block fast Fourier transform (FFT) scheme that evaluates the excitation convolution in $O(N\\log^2 N)$ operations per path on an $N$-bin grid. We prove joint convergence in law of the spot variance, log price and common marked point measure to their rough Hawkes-Heston limits. We prove convergence of European call and put option prices, as well as convergence of arithmetic Asian and down-and-out put option prices to their continuously monitored values. For European options, the one-year implied volatility smiles computed from the grid transform approach the continuous affine reference across four roughness levels. Monte Carlo experiments on the same three grids compare arithmetic Asian and down-and-out put option prices with a finer-grid reference and demonstrate the efficiency of the proposed algorithm.",
+  "link": "http://arxiv.org/abs/2611.29565v1",
+  "date": "2026-11-22T15:43",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Gated Payoff-Weighted Net Profit Maximization For Online Portfolio Selection With Transaction Costs",
+  "abstract": "In this paper, we study online portfolio selection (OLPS) problems. The net profit maximization (NPM) acting upon Adaptive Online Moving Average (AOLMA), namely the AOLNPM strategy in portfolio selection, trades when forecast gain exceeds the transaction cost. In essence, this method relies heavily on calibrated forecasts. Indeed, we show that AOLMA forecasts overstate the realized relative returns. We therefore design a gate that adjusts how strongly an AOLMA forecast is used; for each asset, it learns the recent mixture proportion assigned to AOLMA from predictive likelihoods against a neutral forecast (no change). The proportion therefore estimates the extent to which the forecast is realized. We then feed the resulting forecast into the NPM portfolio rule, where the gate acts as an asset-specific cost threshold. A payoff-weighted fund combines gated NPM experts with fixed decay factors in proportion to their wealth and needs no learning rate. On nine datasets with a transaction cost rate of 0.1%, our method produces 5.9 times the wealth of AOLNPM in geometric mean and sits above AOLNPM on every dataset, with its preponderance growing with the cost rate.",
+  "link": "http://arxiv.org/abs/2611.29552v1",
+  "date": "2026-11-22T15:30",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Modeling Joint Tail Risk and Dependence for Cryptocurrencies via a Copula-Based Semiparametric Framework",
+  "abstract": "This study proposes a Bayesian copula-based bivariate semiparametric framework for jointly forecasting Value-at-Risk (VaR) and Expected Shortfall (ES) while modeling cross-asset tail dependence. The marginal dynamics are specified using four ES-CAViaR-type models, including extensions incorporating Rogers-Satchell and Garman-Klass volatility measures. To construct the copula inputs, we use the empirical ranks of standardized residuals, which depend on the marginal parameters, thereby linking marginal tail dynamics and dependence modeling without requiring fully specified marginal distributions. Clayton and BB1 copulas are considered, and adaptive Markov chain Monte Carlo methods are used for estimation and joint tail-risk forecasting. A simulation study under a DCC-GARCH-$t$ data-generating process evaluates the finite-sample forecasting performance of the proposed framework. Using Bitcoin and Ethereum data, we evaluate one-step-ahead forecasts from 2020 to 2025 through a rolling-window forecasting scheme and compare the proposed models with Bayesian DCC-GARCH-N and DCC-GARCH-$t$ benchmarks. Rolling copula estimates also reveal time-varying asymmetry in Bitcoin-Ethereum tail dependence, with lower-tail dependence remaining higher than upper-tail dependence for most of the period. The proposed framework delivers competitive forecasting performance for both marginal and joint tail risk.",
+  "link": "http://arxiv.org/abs/2611.28524v1",
+  "date": "2026-11-21T03:21",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Do Econophysics-Inspired Inputs Improve Neural Covariance Forecasting? A Leakage-Free Walk-Forward Study of Intraday DJIA Data",
+  "abstract": "Tools from econophysics, including Random Matrix Theory (RMT), Tsallis q-Gaussian tails, Hawkes self-excitation and diffusion-inspired regularization, are often proposed as ingredients for financial risk models, but their incremental value over strong contemporary benchmarks remains unclear. We introduce a Physics-Inspired Neural Covariance (PINC) framework for one-day-ahead covariance forecasting using 1-minute data from the 29 Dow Jones Industrial Average constituents over 545 trading days. The model incorporates RMT-cleaned correlations, Tsallis tail indices and Hawkes intensities as inputs and optionally includes a Fokker-Planck-inspired regularization term selected strictly on validation data. Evaluation is performed through a nested walk-forward design with 11 folds, 231 out-of-sample trading days and multiple random seeds, with explicit leakage controls and reproducibility tests. Neural models outperform static covariance estimators such as sample, Ledoit-Wolf, RMT and EVT-based estimators, but show no statistically significant improvement over HAR-RV or LSTM benchmarks. Validation consistently rejects the physics-inspired regularizer, and ablation studies find no measurable contribution from the RMT, Tsallis or Hawkes features. Portfolio experiments show no statistically significant Sharpe ratio improvement after transaction costs. These results suggest that, for this dataset and forecasting horizon, econophysics-inspired components do not provide measurable benefits ",
+  "link": "http://arxiv.org/abs/2611.27616v1",
+  "date": "2026-11-20T13:45",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Nonlinear Shrinkage for Higher Moments Estimation in Large Portfolios",
+  "abstract": "Portfolio risk is not limited to the variance of returns. The moments of portfolio returns depend directly on the covariance matrix and higher-order co-dependences (coskewness, cokurtosis, etc.). In practice, however, these objects are extremely noisy, especially for large portfolios. Here we introduce filtering methods based on tensor decompositions that extend cross-validated covariance cleaning and the Average Oracle methodology to even-order co-moment tensors. Using returns on historical Russell 1000 constituents, we find that the proposed filters improve out-of-sample estimation accuracy relative to sample estimators, both for correlation and cokurtosis tensors, as measured by relative squared Frobenius errors. These improvements translate into lower relative errors on portfolio volatility and kurtosis, and into lower out-of-sample volatility and kurtosis when the portfolio objective penalizes both variance and the fourth moment.",
+  "link": "http://arxiv.org/abs/2611.27274v1",
+  "date": "2026-11-20T08:15",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Trust and Lottery-Related Anomalies",
+  "abstract": "We examine whether social trust shapes the pricing of lottery-like stocks by influencing investors' beliefs regarding optimistic information associated with extreme future payoffs. We argue that higher social trust reduces investors' skepticism toward optimistic information associated with extreme future payoffs, increasing demand for lottery-type stocks and leading to overpricing and lower subsequent returns. Using a sample of 8,875 firms across 49 US states over the period 1996-2018 and MAX as a proxy for lottery-like characteristics, we show that the MAX effect is concentrated in regions with relatively high trust and is weak or absent in regions with relatively low trust. We further find that this trust conditioning is stronger in regions with lower education or income levels, consistent with social trust playing a relatively more important role when investors have more limited access to private information. The results are robust to alternative lottery proxies and a range of robustness checks. Our findings identify social trust as a novel determinant of the pricing of lottery-like stocks and provide evidence that social capital may amplify belief-driven mispricing in assets with highly skewed payoffs.",
+  "link": "http://arxiv.org/abs/2611.27020v1",
+  "date": "2026-11-20T02:49",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Are Calibrated Decision Models Calibrated on Markets? Geolocated News, Markov Switching and a System One Model for Nasdaq-100 Allocation",
+  "abstract": "Portfolio allocation is driven by probabilities of losses, not only by forecasts of the direction (up/down) of the market. A decision model such as Jev returns a probability for a yes/no question and has been reported to be well calibrated on a set of benchmarks. However, the model's calibration against realised market outcomes has not been tested. In this study, every Friday we ask whether the Nasdaq-100 will close lower four weeks later and compare a two-regime Markov-switching model estimated on data from 1990 to 2026, Jev reading weekly headlines and geolocated news features computed with spatial queries in PostGIS, and their combination. A knowledge probe shows that Jev knows events up to late 2024, so we evaluate it on 88 weeks from January 2025 onwards. None of the models predicts the direction better than the historical base rate. A key finding is that raw Jev overestimates the probability of a decline: its mean forecast is 0.48 against an observed frequency of 0.38, and its ECE is 0.10. A prior shift to the historical base rate, which uses no outcomes from the test period, lowers the ECE to 0.015. In contrast, Platt scaling, isotonic regression and the combination with the Markov model all make the forecasts worse. In a half-Kelly allocation, the raw Jev strategy returns 3.1% per year, whereas after the prior shift it returns 14.5%; a simple buy-and-hold strategy in QQQ returns 15.3% per year. The Markov model forecasts large declines (more than 10%) well, with an AU",
+  "link": "http://arxiv.org/abs/2611.26716v1",
+  "date": "2026-11-19T19:15",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Held-to-Maturity Accounting: Hidden Losses and Systemic Fragility",
+  "abstract": "This paper studies how accounting-induced opacity affects systemic risk in the banking system. Motivated by the buildup of unrealized losses during recent monetary tightening episodes, we develop a model in which banks hold correlated interest rate sensitive assets and are connected through an endogenous interbank network. We show that Held-To-Maturity (HTM) accounting amplifies systemic risk by delaying loss recognition, allowing losses to accumulate and become synchronized across institutions. When losses are realized under liquidity stress, the interaction of correlated exposures and network linkages generates nonlinear increases in defaults. These findings suggest that accounting regimes are not neutral from a financial stability perspective, as they influence both the buildup and propagation of systemic risk, particularly in environments with common asset exposures and strong interconnectedness.",
+  "link": "http://arxiv.org/abs/2611.26700v1",
+  "date": "2026-11-19T19:01",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Error analysis for the numerical approximation of the quantile hedging problem",
+  "abstract": "We analyse numerical approximations of quantile hedging in complete linear markets with Markovian diffusion dynamics. The problem is formulated as stochastic control for an augmented state $(X,P)$, where the probability martingale $P$ is constrained to $[0,1]$ and controlled through an unbounded volatility coefficient. We combine control truncation with piecewise-constant policy time-stepping (PCPT), stopping controls continuously upon boundary hitting to preserve the state constraint. Using one-step dynamic programming principles and regularisation, we derive a generator inequality and explicit value-function error bounds. Under standard coefficient regularity and a Lipschitz payoff, optimising the truncation and regularisation parameters yields an error exponent arbitrarily close to $1/8$ from below, uniformly in the probability variable. For controls bounded from the outset, we obtain exponents arbitrarily close to $1/4$ from below, approaching the exponent established by Jakobsen, Picarelli and Reisinger without state constraints. We also implement a fully discrete scheme with neural-network controls. Grid-time projection onto $[0,1]$ introduces a martingale defect and a pricing bias. We quantify this bias in a toy problem and mitigate it using a state-dependent control bound. Experiments in Black--Scholes and Lipschitz local-volatility models illustrate the correction and the decrease in pricing errors under grid refinement.",
+  "link": "http://arxiv.org/abs/2611.26673v1",
+  "date": "2026-11-19T14:55",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Trading Before a Committed Rebalance",
+  "abstract": "An institution must complete a portfolio adjustment, but traders who prepare inventory for it can choose whether to participate. We study how public forecasts affect the institution's cost in a Bayesian execution game with optional activation, transient impact, and uniform-price terminal completion. The curvature of equilibrium cost as a function of the posterior target mean determines the value of information. In the scalar model, information benefits every fixed participation roster. Optional supply can reverse this ranking at entry, at full participation, and in a smooth interior with lognormal activation costs. For centered scalar targets, information weakly lowers cost relative to no information, strictly when the posterior mean is nonzero with positive probability. Centered Gaussian precision gains are always beneficial. An exact symmetric finite-population equilibrium identifies how information resolution and individual strategic size interact near entry. A portfolio extension gives a matrix criterion for the fixed-roster ranking, which can fail under general cross-impact. Even with isotropic execution, shared activation allows equally accurate signals about target magnitude and composition to have opposite execution values under one unchanged prior. Intraday ETF price data is used to characterize target uncertainty and trading conditions without identifying activation or institutional costs.",
+  "link": "http://arxiv.org/abs/2611.25762v1",
+  "date": "2026-11-19T09:02",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Auto-Alpha: A Framework for Autonomous Factor Research",
+  "abstract": "Autonomous factor research requires generating economic hypotheses as well as implementing and testing them. We present Auto-Alpha, a framework that connects report-guided initialization to self-directed research through a test-driven implementation loop. An idea agent proposes economic mechanisms and signal constructions; a research agent develops them with backtest feedback. Semantic audit, quantitative review, and human admission select factors for a persistent library, while an Experience Library retains research insights. Starting from 120 research reports, Auto-Alpha builds an initial library of 32 factors. It then generates new ideas and refines existing candidates, producing 420 implementations and retaining 62 additional factors. We evaluate factor quality and portfolio performance using a fixed library snapshot of 105 factors. The median 1-day Rank IC is 0.0301, and a weekly Top-300 portfolio returns 16.81% annualized after stated costs over 2020-2026, versus 1.71% for the CSI 1000 price index. These retrospective results document an operating research process and its artifacts; controlled evaluation is needed to isolate the contribution of its components.",
+  "link": "http://arxiv.org/abs/2611.25732v1",
+  "date": "2026-11-19T08:44",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Quantum Calibration of Local-Volatility Surfaces from Sparse Option Quotes",
+  "abstract": "Calibrating a volatility surface from sparse option prices requires repeated solutions of a pricing equation as the volatility parameters change. We implement a hybrid quantum and classical method for this inverse problem using the Dupire local-volatility model. A positive coefficient representation specifies the local variance, and linear combinations of Hamiltonian simulations approximate the associated pricing evolution. The circuit propagates through successive maturity intervals and evaluates discrepancies at the observed strikes. Measurement counts provide the objective values used by a classical optimiser to update the volatility coefficients. We implement this calibration cycle in a logical gate simulator and assess it alongside classical pricing solvers and alternative surface models. Multiple-maturity synthetic examples illustrate the reconstruction of smiles and skews, while a separate small circuit experiment tests the complete measured calibration. The comparisons quantify the effects of model flexibility, pricing approximation and measurement precision. Recorded gate counts and sampling budgets identify the main computational costs of the implementation.",
+  "link": "http://arxiv.org/abs/2611.25344v1",
+  "date": "2026-11-19T01:32",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Stock bubbles in limited participation models with power utilities",
+  "abstract": "We prove that the equilibrium state-price deflated cum-dividend stock-price process in Guasoni, Larsen, and Leoni (2025) is a strict local martingale. Our result is based on proving that the unrestricted trader faces an endogenously complete model.",
+  "link": "http://arxiv.org/abs/2611.24912v1",
+  "date": "2026-11-18T18:47",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Sensitivity analysis in real options studies: systematic review and recommendations",
+  "abstract": "Real options (RO) modeling provides a powerful framework for valuing managerial flexibility under uncertainty in capital-intensive investments across various industries, including climate, energy, and transportation. However, the transparency and usefulness of such models depends heavily on sensitivity analysis (SA). This study reviews over 100 peer-reviewed RO journal articles to examine the extent and quality of SA practices. The review focuses particularly on the extent of model scrutiny: how many input variables are subjected to sensitivity analysis; whether local or global approaches are applied; and whether the shape of the input-output relationships is examined. Our findings reveal a strong overreliance on one-at-a-time (OAT) techniques and a corresponding minimal adoption of global sensitivity analysis (GSA). This methodological gap limits the ability of the RO field to critically examine its own models and to support its decision-making. The paper concludes by outlining concrete recommendations for how to effectively incorporate GSA into future RO studies in order to enhance model transparency, relevance, and credibility.",
+  "link": "http://arxiv.org/abs/2611.24266v1",
+  "date": "2026-11-18T11:45",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Algorithmic Market Making Can Lead to Rough Volatility Through the Order Book",
+  "abstract": "Existing work suggests that markets can show volatility with paths rougher than those of Brownian motion. In theory this can happen when the order flow is close to instability with memory that decays as a power law. However, it is not fully clear how such order flow could arise from the predominantly algorithmic market making that characterizes order book dynamics. We show one such consistent mechanism. We treat each market maker as a desk that uses a first-order gradient rule to move the distances of its orders from the mid price toward target distances provided by an unknown oracle. We assume that distinct desks do not act synchronously in time but act whenever new information relevant to their respective oracles arrives, which each desk samples over its own characteristic lookback horizon. Across all desks the rule therefore takes the form of stochastic gradient descent (SGD) with information-driven (mini-batch) noise. In the continuum limit this update rule makes the volume of the order book follow a conservative stochastic partial differential equation (the Dean--Kawasaki equation) whose fluctuations drive the order flow. The distinct horizons of the desks further induce a persistent memory in the order flow that decays as a power law. Standard scaling arguments then lead to rough volatility. We confirm the key predictions of the model on simulated agents and on six months of Binance data with about 790 million orders. In liquid markets governed mainly by market makers, ",
+  "link": "http://arxiv.org/abs/2611.24028v1",
+  "date": "2026-11-18T08:16",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "When Price Charts Rhyme: Historical Visual Retrieval for Stock Return Prediction",
+  "abstract": "We study whether visually similar price histories predict similar future returns, using a vision model to retrieve each stock's most similar charts from three decades of U.S. price histories. A representation pretrained only on natural images already retrieves neighbors whose realized returns predict the cross-section of stock returns. Aligning the representation with subsequent returns more than doubles the strategy's Sharpe ratio and outperforms a convolutional neural network trained directly on chart images. The predictability is concentrated among stocks with greater limits to arbitrage. Returns and order imbalances around portfolio formation indicate that the signal identifies temporary selling pressure that partially reverts. A sparse autoencoder traces the return-aligned signal to recurring visual states that determine which historical charts are retrieved. Our approach traces each forecast to dated historical charts, making it more transparent than direct image-to-return models and linking rule-based technical analysis with machine-learning chart reading.",
+  "link": "http://arxiv.org/abs/2611.23723v1",
+  "date": "2026-11-18T02:27",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Spectral Pricing of Corridor Products under Layered Local Volatility",
+  "abstract": "We price corridor products under a $N$-layered local volatility, piecewise constant in the price and in time, with knock-out barriers. A spatial scale transformation and the GIT method reduce the killed Green's function to a symmetric tridiagonal system of fixed size $N-1$. With equal scaled layer widths the spectrum follows from one tridiagonal eigen-decomposition together with the explicit eigenfunctions that vanish at every interface. For general scaled layer widths an exact counting theorem locates every eigenvalue. Consecutive time intervals of constant volatility are connected by a matrix that re-expands the solution in the eigenbasis of the preceding interval, and the result converges exponentially in the number of retained terms in the eigenfunction expansion. Allowing the killing rate to vary between layers preserves this construction. On a single time interval, the corridor accrual distribution is then recovered by inverting the time and Fourier transforms, without introducing an additional state variable. Exact representations for Greeks and layer vegas follow by differentiation. In our benchmarks the method agrees with independent calculations near rounding error and keeps full accuracy at volatility interfaces, where the tested uniform finite-difference (FD) grids lose one order of convergence. The method computes the accrual law about sixty times faster than the tested FD scheme that includes accrued time as a second state variable.",
+  "link": "http://arxiv.org/abs/2611.23587v1",
+  "date": "2026-11-17T22:38",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Covariate-Indexed Inclusion Probabilities on Unbalanced Panels",
+  "abstract": "We estimate the probability that an item with given covariates belongs to a set when the cross-section changes over time and items and periods are dependent. We propose two convex models whose fitted probabilities are nonnegative by construction and remain valid whatever the dependence between items, for which we establish consistency, finite-sample bounds and limit distributions for serially dependent panels. One suits events of moderate or high probability, the other rare events, and half the disagreement between their fits estimates a lower bound on the misspecification error of the worse fit, without knowledge of the true probabilities. On monthly US stock failures, the rare-event model predicts better than the ordinary logit and the classical failure logit. With the eight classical predictors, most of the gain comes from basis functions of the rank angle of each predictor and summary.",
+  "link": "http://arxiv.org/abs/2611.22730v1",
+  "date": "2026-11-17T13:02",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "AllocFlow: End-to-End Portfolio Trading Action Generation from Raw Market Data",
+  "abstract": "Real-world portfolio management requires converting noisy market observations into coordinated, simultaneous allocations across multiple assets under shared capital constraints. Advances in forecasting models and alpha discovery help identify opportunities. However, traditional pipelines often decouple signal forecasting from portfolio construction, potentially misaligning learning with allocation and execution objectives. We present AllocFlow, an end-to-end flow-matching framework that directly generates joint portfolio allocations from raw multi-asset market histories. To capture dependencies among portfolio positions, AllocFlow employs a cross-asset flow Transformer conditioned on temporal market representations to generate continuous, signed position weights across all instruments jointly. To address the sample inefficiency and instability of learning continuous allocation policies from scratch, we establish a two-stage training scheme: strategy-supervised imitation shapes a structured distribution of candidate portfolios, followed by group-relative reinforcement learning (RL) that refines joint decisions using portfolio-level financial rewards and a frozen policy reference. On hourly cryptocurrency perpetual futures, RL refinement raises the annualized net return of the imitation policy from $27.79\\%$ to $51.38\\%$ and its Calmar ratio from $0.955$ to $4.043$, surpassing the teacher strategy on every metric, and AllocFlow reaches a Calmar ratio of $4.90$ on six further mo",
+  "link": "http://arxiv.org/abs/2611.19937v1",
+  "date": "2026-11-15T11:10",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Dynamic Spatio-Temporal Graph Attention Networks with Nested Clustered Optimization for Multi-Asset Portfolios",
+  "abstract": "Nested Clustered Optimization (NCO) insulates asset allocation from Markowitz covariance ill-conditioning. However, classical tree clustering relies on static pairwise Pearson correlation, failing to capture time-varying, asymmetric downside risk contagion across multi-asset markets. We propose a unified deep graph machine learning architecture: Dynamic Spatio-Temporal Graph Attention Networks with Nested Clustered Optimization (ST-GAT-NCO) for multi-asset tactical allocation. The framework extracts temporal momentum and downside risk dynamics via causal dilated 1D-convolutions, then deploys a multi-head Graph Attention Network (GAT) over dynamic market topologies to learn latent spatial node representations. These learned embeddings define an angular metric distance space that guides two-stage downside NCO optimization under institutional constraints and turnover smoothing. Evaluated over a 73-month non-anticipative walk-forward out-of-sample window (January 2020 to January 2026) across 13 global asset classes net of 10 bps transaction costs, ST-GAT-NCO achieves a 5.32% CAGR and 37.06% cumulative net return, delivering an excess Sharpe ratio of 0.30 and a Sortino ratio of 0.48. This substantially outperforms classical Minimum Variance (3.68% CAGR, 0.08 Sharpe), Hierarchical Risk Parity (2.65% CAGR), and Plain Symmetric NCO (4.11% CAGR, 0.15 Sharpe), while restricting maximum drawdown to -13.07% (versus -19.44% for Equal-Weight and -16.36% for Downside NCO) under a controlled",
+  "link": "http://arxiv.org/abs/2611.19903v1",
+  "date": "2026-11-15T09:31",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "PIRanNN: Random-Feature Pricing and Calibration under Jump-Diffusion and Stochastic-Volatility Models",
+  "abstract": "We study a random-feature method for pricing and calibrating European options under jump-diffusion (Merton, Kou) and stochastic-volatility (Heston, SABR) models. The network has one hidden layer with a probit activation and fixed random inner weights, so fitting it to the pricing equation, the payoff and the boundary conditions is a single regularised least-squares problem, with no iterative training. For Merton and Kou the jump integral of each feature is explicit, so no quadrature is needed. One factorisation of the least-squares matrix gives the price at every state and time, its Greeks, and the exact derivatives of the prices with respect to the model parameters for gradient-based calibration. For the jump models, subtracting the Black-Scholes price removes the payoff kink and reduces the pricing error by about two orders of magnitude. The method is then about as accurate as a standard Crank-Nicolson finite-difference scheme at the same run time, although a finite-difference scheme that also subtracts the Black-Scholes price is about two orders of magnitude more accurate still. On the test problems of a recent physics-informed neural network study, the method matches that network's accuracy in seconds instead of about half an hour. The calibration experiments show that a solver can fit the quotes and still return wrong parameters when its pricing error is not small compared with the effect of the parameters on the prices: without the subtraction the solver misses the jump",
+  "link": "http://arxiv.org/abs/2611.19792v1",
+  "date": "2026-11-15T04:47",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Who Should Be on the Panel? Task-Conditioned Persona Selection for LLM Trading Agents",
+  "abstract": "Multi-agent LLM systems are built by fixing a cast of roles and then designing how the cast coordinates. Which agents should make up the group for a given task is left to the designer, and the same cast is reused for every task. Financial trading makes the cost of that choice visible: stocks trade differently, and the trading styles suited to one need not suit another. We study task-conditioned persona selection, composing the group from the characteristics of the task it will face, and instantiate it with FinPanel, an LLM multi-agent trading system in which a recruiter selects a panel of named trader personas for each stock from a direction-blind statistical sketch of how the stock trades, each persona gives an independent daily call in its own style, and a manager commits the trade after reading the panel's arguments and their desk-kept, hierarchical track records. Because nothing is returned to the traders, the panel stays the panel that was selected, and it can trade a new stock from an empty record. On eight US stocks over the out-of-knowledge year 2025, against three prior LLM trading agents re-implemented in the same framework and against rule-based, predictive and reinforcement-learning baselines, the selected panel is ahead of a fixed panel of the same size and of the prior agents run as their papers prescribe, with a shallower drawdown than buy-and-hold on every stock; it keeps its performance with no warm-up and with no record at all, whereas the memory-augmented a",
+  "link": "http://arxiv.org/abs/2611.18150v1",
+  "date": "2026-11-13T13:25",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "A Push Down the Mountain: Framing Effects and Internal State Interventions on Collusive Behavior in a Long-Horizon LLM Agent",
+  "abstract": "Can sustained gain-loss (valence) framing sway an LLM agent toward market manipulation? We place Gemma 3 12B into the seat of a defendant in the London silver-fixing litigation, in a market simulation built from real case transcripts. Across 260 simulations, the agent is asked to collude on the price of silver by a counterparty. We draw from behavioral economics to vary the counterparty's requests across four categorical frames: gain, loss, blame and credit. We also add pressure from the agent's management, as well as endorsement by another defendant. In Phase II, we extract the internal states induced by texts evoking each frame and rerun our experiment with those states injected at the model's layer 22. In Phase I, loss framing raised participation to 25% (p = 0.007), and blame to 33% (p = 0.0003), compared to only 5% under neutral framing. A second bank's endorsement raised participation under credit (praise) from 18% to 40% (Holm p = 0.027). Pressure from management raised trading volume 10-19 times but did not raise collusion. In Phase II, injected states pointed the other way. Loss and blame states made the agent more vigilant, refusing all 60 requests (p < 0.001). Gain and credit states raised collusion to 32% from 13% with no state (p = 0.051). At one saved decision, when UBS asked directly to sell through an identified stop-loss, injected states led the agent to sell in 37 of 40 replies, versus 1 of 10 with no state and 0 of 10 with a random state of the same strengt",
+  "link": "http://arxiv.org/abs/2611.17515v1",
+  "date": "2026-11-12T21:09",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Improving Algorithmic Trading for BESS on Intraday Electricity Markets through Distributional Price Forecasts",
+  "abstract": "Grid-scale battery energy storage systems (BESS) are becoming increasingly important in short-term energy markets, where they help balance fluctuations in variable renewable generation. In many countries, the continuous intraday market is the most important wholesale market for BESS to monetize their flexibility. In this paper, we propose an extension to the myopic rolling intrinsic policy that incorporates intraday price forecasts tailored specifically to the BESS trading problem. While a large literature addresses intraday price forecasting, most existing work focuses on volume-weighted prices during the last hours of trading and consequently fails to capture the features most relevant to BESS trading. Our approach addresses this gap by introducing a novel target variable derived from the limit order book and its dynamics. The resulting forecasts are designed to inform the optimization about future profit opportunities while preserving computational efficiency and avoiding the burden of full stochastic optimization. In a realistic high-frequency simulation setting covering 2023 and 2024, our method improves profits by up to 42% over the naive rolling intrinsic formulation. We further analyze the relationship between forecast accuracy, stability, and financial performance, establishing a clear inverse relationship between accuracy and stability. Finally, we find evidence that BESS size and duration jointly influence both overall profitability and the marginal benefit of inco",
+  "link": "http://arxiv.org/abs/2611.17170v1",
+  "date": "2026-11-12T17:43",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Idiosyncratic Market Effects in Global Time Series Momentum",
+  "abstract": "Time series momentum is a pervasive explanatory factor in financial markets whereby a market's recent historical average return positively predicts future returns. Recent applications of statistical learning augment the traditional linear model definition with a more descriptive global nonlinear factor model. We extend the work of \\citet{MoskowitzNonlinear} and demonstrate that models fit at the individual market level exhibit response curves that are distinct from the global factor model. We highlight the heterogeneity of forward market returns as a function of time series momentum and provide a framework that enables each feature-market pair to express its unique prediction behaviour. Empirical results demonstrate that, despite substantially smaller sample sizes, fitting nonlinear models to individual markets is a robust and often overlooked modelling approach that can result in a marginal improvement in out-of-sample performance.",
+  "link": "http://arxiv.org/abs/2611.15646v1",
+  "date": "2026-11-11T15:56",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Conformal Risk Certificates for Portfolio Optimization Under Uncertainty: A Gated Reinforcement-Learning Approach",
+  "abstract": "Reinforcement-learning portfolio policies can optimize allocations from prices, covariances, and prior positions, yet they lack a calibrated, replayable mechanism for certifying that a proposed allocation respects a bounded risk envelope before execution. Regulators increasingly expect automated portfolio systems to provide exactly this kind of pre-trade audit trail, interpretable risk limit, and human-oversight mechanism. Gated Conformal Semantic Risk Control addresses this gap by separating return-seeking allocation from text-conditioned downside-risk verification. An instruction-tuned language model maps timestamped disclosures into schema-validated semantic risk states over macro, liquidity, earnings, and sector channels. These states induce correlated ellipsoidal factor-shock uncertainty sets whose conformal radii are calibrated by rolling finite-sample prediction over localized semantic nonconformity buckets. An asymmetric second-order cone gate then checks each raw PPO proposal against a certified worst-case semantic loss budget. The gate stays inactive for compliant proposals and intervenes only when that budget is exceeded. In walk-forward out-of-sample tests on nine liquid U.S. Select Sector SPDR ETFs, Raw PPO earns a 12.7% annual return while incurring a 4.05% semantic violation rate. Gated-CSRC removes all observed out-of-sample semantic limit breaches while retaining an 11.7% annual return. This 100-basis-point auditable safety premium is smaller than the yield l",
+  "link": "http://arxiv.org/abs/2611.14699v1",
+  "date": "2026-11-10T20:07",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Fine-Tuning an Order-Flow Foundation Model for Sub-Second Forecasting",
+  "abstract": "Generative models have become the standard approach in language and vision. These models are typically pretrained first and then fine-tuned. Recent work demonstrates how to pretrain an autoregressive generative model on Level-3 order-flow data. However, to our knowledge, no one has fine-tuned such a model yet for downstream tasks. Here we first pretrain a 300M-parameter generative model on Level-3 order-flow data collected from two crypto exchanges, Bitstamp and Bitfinex. Then we fine-tune the pretrained model to predict the microprice return and its realized volatility. We show that our fine-tuned model outperforms classical baselines, such as gradient boosting on handcrafted features, in predicting microprice returns over sub-second horizons. Furthermore, the predictive ability of the model transfers zero-shot to assets it was never fine-tuned on. Due to the short-term nature of these forecasts, the predicted microprice moves are smaller than the bid-ask spread plus fees, so the natural applications are in execution and market making. These results indicate that a pretrained generative model can be turned into a competitive short-horizon price forecaster via fine-tuning.",
+  "link": "http://arxiv.org/abs/2611.14117v1",
+  "date": "2026-11-10T14:07",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Deceleration without identification: testing a power-law trend in Bitcoin prices under persistent noise",
+  "abstract": "Plotted against time since its first block on logarithmic axes, the price of Bitcoin lies close to a straight line, and a power law in time has been proposed as its long-run trend. A good fit is weak evidence: when deviations from a trend are as persistent as a random walk, regressions on time find trends and high $R^2$ where none exist. We first bound what fifteen years of weekly prices can reveal, then test only what is answerable. Using a few low-frequency averages, invariant to the noise scale and calibrated over a declared family of persistent deviations with a four-year cycle and declining volatility, we test constant drift in expected log price against an added log-age term. The procedure was fixed, validated and publicly hashed before it was applied once. Constant drift is rejected under this family at nominal 5%, and a log-age coefficient of 5.7, close to the published exponent, is not rejected. The rejection does not survive allowing persistence beyond a random walk, and a Gompertz curve with a ceiling fits about as well as the power law. Whether deviations revert to the trend cannot be decided. Registered forecasts for 2027-2030 will be scored by future prices.",
+  "link": "http://arxiv.org/abs/2611.13962v1",
+  "date": "2026-11-10T11:56",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Optimal Trading Speed on Blockchain",
+  "abstract": "On blockchain-based exchanges, faster blocks weaken the priority-fee competition among arbitrageurs and shift rents from the block producer to them. Equilibrium liquidity peaks at an interior block speed; beyond a threshold, an active liquidity provider cream-skims and passive capital shrinks. Evidence from the Base Flashblocks upgrade, a tenfold block-speed increase, confirms the predictions. Priority-fee bids decrease sharply and arbitrageurs' net profit rises. The active liquidity provider rebalances faster, avoids toxic flow, and earns a higher profit. Pool depth falls and effective spreads widen despite closer tracking of external prices.",
+  "link": "http://arxiv.org/abs/2611.13616v2",
+  "date": "2026-11-10T05:52",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Making sense of rule 605",
+  "abstract": "The paper analyzes monthly reports of two companies: one market maker, Virtu, and one broker-dealer, SoHo, in the period between January 2021 and March 2024. The predictive power of standard methods for the probability laws of stock orders- linear regression and LSTM- is poor, despite their probability laws being relatively stable. However, the month-to-month correlations are highly stable and predictable. In this paper, we study the distributions of the sixteen datasets resulting from the 26 stock-trading parameters reported by brokerages under regulatory requirements.",
+  "link": "http://arxiv.org/abs/2611.13365v1",
+  "date": "2026-11-09T23:38",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Diversification Across Predictors: Heterogeneous Ensemble Learning for Cross-Sectional Return Prediction",
+  "abstract": "Cross-sectional stock return prediction remains challenging due to extremely low signal-to-noise ratios, high-dimensional factor spaces, and non-stationary predictor effectiveness. Individual model classes exhibit complementary failure modes in this regime: neural networks overfit noise due to high variance, while linear models underfit nonlinear structure due to high bias. We propose a heterogeneous ensemble framework that extends the financial principle of diversification to the predictor level. Through a bagging procedure combining linear predictors with nonlinear predictors, each model functions as a distinct specialist whose prediction errors exhibit low cross-covariance, enabling error cancellation upon aggregation. We formalize this mechanism via bias-variance-covariance decomposition, establishing an exact mathematical correspondence between portfolio diversification and predictor aggregation. On CSI300 daily-frequency Alpha158 factor datasets, the proposed ensemble achieves a Rank IC improvement exceeding 13\\% over standalone neural networks and surpasses tree-based state-of-the-art methods including XGBoost and Double Ensemble, as measured by both predictive accuracy and portfolio-based evaluation metrics.",
+  "link": "http://arxiv.org/abs/2611.12389v1",
+  "date": "2026-11-09T13:28",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Adjoint Kernel Sensitivity of the Rough Heston Characteristic Exponent",
+  "abstract": "Multi-factor approximations of rough volatility kernels affect the characteristic exponents used in Fourier-based derivative valuation. We derive an adjoint representation for the first-order sensitivity of the rough Heston characteristic exponent with respect to its memory kernel, with model parameters and the input variance curve held fixed. The Volterra--Riccati functional $\\mathcal L_T(K,z)$ admits a local real-analytic extension, jointly in the kernel perturbation and the transform parameter. The Fr\u00e9chet derivative of this extension with respect to the kernel in $L^1$ is represented by integration against a continuous sensitivity kernel $B_K(u,z)$, obtained from a backward linear Volterra equation and independent of the perturbation direction. This representation resolves the leading-order contributions of kernel perturbations across memory lags. On the structural kernel class, which contains the fractional kernel and its multi-factor approximations and has empty interior in $L^1$, the extension yields Hadamard directional differentiability and a first-order expansion with a quadratic $L^1$-remainder for all sufficiently close structural kernels, uniformly on compact subsets of the strip of transform parameters. The same sensitivity kernel yields multi-factor weight and decay-rate derivatives. Numerical experiments at multi-factor reference kernels assess the finite-resolution implementation and illustrate how the lag distribution of positive perturbations with equal $L^",
+  "link": "http://arxiv.org/abs/2611.11652v1",
+  "date": "2026-11-08T22:19",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Trained, Frozen, or Absent: Identifying What a Quantum Layer Contributes to Cross-Sectional Equity Ranking",
+  "abstract": "Hybrid quantumclassical models are increasingly proposed for nancial prediction, but reported gains are rarely separated from the classical components around them. We study a hybrid quantum temporal convolutional network for daily cross-sectional ranking of 2000 Tokyo Stock Exchange equities under a protocol built to make the quantum contribution identiable: six conditions (circuit trained, frozen or absent, a parameter-matched classical surrogate, and the circuit alone, trained or frozen) through one code path; four walk-forward folds with ve seeds; bootstrap intervals, Deated Sharpe Ratios, backtest-overtting probabilities and family-wise error control; ve classical baselines including a gradient-boosted tree; and a locked holdout. On 500 out-of-sample days two one-sided tests place the trained-versus-frozen dierence inside 0.03 annualised Sharpe (p = 0.0055, minimum detectable eect 0.02): the circuit is equivalent to a frozen one, not merely indistinguishable from it. With the circuit as the head's only input the two are equivalent inside 0.25; against the network with no circuit the design resolves only 0.50. No condition is distinguishable from zero (best De-ated Sharpe Ratio 0.17). The holdout reproduces the ablation on a protable window, and 2000 US equities reproduce it where every condition loses money.",
+  "link": "http://arxiv.org/abs/2611.10801v1",
+  "date": "2026-11-07T15:29",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Is price-impact decay statistically identifiable by propagator estimation? Diffusive prices force the inferred kernel to be transient and fine-tuned",
+  "abstract": "Despite the long memory of market-order flow, price dynamics remain diffusive---a seemingly paradoxical coexistence known in econophysics as the diffusivity puzzle. The propagator model has long been regarded as a promising solution: price impact decays in time, finely balanced against the order-flow memory, and propagators inferred from data have been reported to be consistent with this fine balance. Here we prove a no-go theorem: asymptotic impact decay is not statistically identifiable by propagator estimation, since for diffusive prices the fine-tuned decay is returned whether or not the true impact decays. It rests on universal theorems for the Wiener--Hopf deconvolution by which propagators are inferred under long-memory order flow: (i) the inferred propagator is necessarily transient, even when the true impact is permanent; (ii) under a mild condition, it decays with the fine-balance exponent, fixed by the order-flow autocorrelation alone. The fine-tuned decay is thus a property of the deconvolution, not evidence of impact decay. We demonstrate this with an exactly solvable null model that retains order splitting and the square-root law but whose impact is strictly permanent: the inferred propagator shows an artificial fine-tuned decay although the true impact never decays. Nonlinear propagator estimation, being of Wiener--Hopf type, is subject to the same theorems whenever true metaorders have long memory.",
+  "link": "http://arxiv.org/abs/2611.10574v1",
+  "date": "2026-11-07T08:29",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Objective Diversification of Dynamic Hedging",
+  "abstract": "A hedging objective reflects the risk preference of the hedger, so the conventional approach is to estimate the hedge ratio directly under the chosen objective. This paper asks whether that estimate should be used alone. We construct five objective-specific rolling hedge-ratio estimators---minimum variance, least absolute deviation (LAD), downside semivariance, lower-tail quantile, and Expected Shortfall (ES)---from the same historical stock--market returns, and combine the resulting estimates under a fixed final evaluation objective. Separate multi-output ExtraTrees models predict the within-stock-date ranks of the five candidates under MSE, LAD, downside semivariance, and 10\\% quantile loss. The design uses pre-specified 60-, 90-, 120-, and 180-day windows with objective-matched rolling estimators as benchmarks. Adaptive weighting improves the corresponding loss in all sixteen objective--window comparisons. Equal weighting, which uses the same objective-specific hedge ratios without state variables or learned reweighting, already improves downside and quantile hedging. The results therefore suggest that estimates generated under other objectives can be useful even when the final hedging preference and evaluation objective are fixed, while adaptive weighting can provide a further improvement.",
+  "link": "http://arxiv.org/abs/2611.10333v1",
+  "date": "2026-11-07T00:03",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Neural Realized Measures: Forecast-Supervised Intraday Aggregation for Volatility Forecasting",
+  "abstract": "High-frequency volatility forecasting typically separates measurement from prediction: intraday observations are first compressed into a daily realized measure using a fixed aggregation rule, and the resulting statistic is then passed to a forecasting model. This conventional pipeline therefore treats measure construction as forecast-agnostic preprocessing. We ask whether the aggregation stage itself can instead be learned from the downstream forecasting objective while preserving the statistical structure of established realized measures. We propose Neural Realized Measures (NRM), a primitive-preserving, forecast-supervised aggregation framework that retains the original measure-specific intraday contributions but replaces uniform aggregation with positive, mean-normalized context-dependent weights. Uniform weights exactly recover the corresponding raw realized measure (RRM), so the classical construction is nested as a special case. Because NRM remains an explicit weighted sum of established primitive contributions, it also retains direct bar-level attribution. Across SF, HAR, and MIDAS forecasting specifications, NRM is evaluated against corresponding RRM specifications under controlled comparisons. In Heston simulations, NRM reduces RMSE for both contemporaneous and next-day latent integrated variance across all evaluated primitive--regime combinations. On six cryptocurrencies using five-minute data, NRM improves QLIKE in all 54 paired out-of-sample comparisons, with mean",
+  "link": "http://arxiv.org/abs/2611.07287v1",
+  "date": "2026-11-05T01:10",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Hard to Fool: A Bounded LLM Research Loop for Quantitative Finance, and What Two Dozen Campaigns Found",
+  "abstract": "Agentic research loops that let a language model propose a change, run a fixed experiment and keep whatever improves the metric work well in machine learning. In trading research the same loop is a machine for producing false discoveries: a backtest that \"improves the metric\" is, by default, overfit, look-ahead, a multiple-comparisons artifact, cost-free, or market drift wearing a strategy. We describe Autonomous Quant Researcher, an open-source loop built on the opposite premise: the model proposes, and only trusted code decides. Proposals are strict declarative JSON over a fixed vocabulary, so there is no model-written code to sandbox. Evaluation runs on immutable chronological stores split into discovery, validation and a final holdout that can be opened exactly once, after a durable receipt is written. Acceptance is a conjunction of absolute gates (positive edge and net P&L after costs, a positive weekly-cluster bootstrap lower bound, survival at elevated costs, per-year stability and sample floors), never a single score. Duplicates are refused before they spend a trial, and every formulation, refusal, crash and result is kept in a hash-chained, append-only ledger. We report every campaign run to date, across 0DTE options priced from traded option bars, overnight SPX verticals, daily ETF rules, technical-analysis premises, Kalshi crypto binaries, earnings options, off-exchange volume and a pre-registered alternative-data campaign. Most hypotheses fail, and we report them.",
+  "link": "http://arxiv.org/abs/2611.06607v1",
+  "date": "2026-11-04T14:57",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "A general technique for explicit quantile representations",
+  "abstract": "This work proves existence of contours independent of probability level for exact quantile integrals of strictly positive real-analytic densities. Explicit constructions cover five broad distribution families and yield a finite-interval representation of Black-Scholes implied volatility using forward functions.",
+  "link": "http://arxiv.org/abs/2611.06459v1",
+  "date": "2026-11-04T12:56",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Price-Volume Correlations Are Always Zero",
+  "abstract": "We argue that the use of the empirical time series of values, volumes, and prices of consecutive trades made during the averaging interval to calculate the price-volume correlation in a way that follows the definition of correlation always gives zero correlation. We show that the usual expression for the empirical calculation of the correlation misleads the researchers and doesn't fulfill the definition of price-volume correlation. The mistake has its origin in the dependence of volume weighted average price on the mean values and volumes of trades during the averaging interval but not on time series of prices only. The true sense of the declared positive or negative results of the empirical calculations of price-volume correlations made by numerous researchers in reality is determined by the difference between the volume weighted average price and its limiting expression of average price, which is correct only when all volumes of consecutive trades are constant, and multiplication of this difference by the mean trade volume. To empirically determine the statistical dependence between time series of prices and trade volumes, one should calculate the correlations between prices and squares of trade volumes or correlations between squares of prices and squares of volumes. We derive the expressions for empirical calculations of these correlations.",
+  "link": "http://arxiv.org/abs/2611.08528v1",
+  "date": "2026-11-04T10:08",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Beyond Anonymous Order Flow: Wallet Identity as a Feature for Short-Horizon Return Prediction",
+  "abstract": "Conventional public order-book data summarize trading without identifying the accounts behind it. Hyperliquid's Level-4 record also exposes persistent pseudonymous wallet addresses. We reconstruct full-depth books from consensus-ordered messages and evaluate wallet identity as a feature for short-horizon return prediction. The July 1-27, 2026 record covers 17.1 billion messages, 14.3 million aggressive orders by 147,113 wallets, and $84.3 billion in taker notional across ten markets. In the three model markets, notional-weighted ten-second markout rankings persist across adjacent ten-day windows (Spearman rho = 0.52); covariate-adjusted validation markouts reach 3.11 basis points in the top ventile. On a 100-millisecond grid, eleven features describing previously scored top-decile wallets raise one-second out-of-sample R2 from 10.88% to 12.",
+  "link": "http://arxiv.org/abs/2611.05218v1",
+  "date": "2026-11-03T17:03",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Safe Portfolio Learning from Untrusted Predictions: Signed Trust, Abstention, and Cross-Universe Polarity Failure",
+  "abstract": "Portfolio use of machine predictions must often proceed while the predictions' economic direction, reliability, and timing remain untrusted, and while feedback from overlapping multi-period positions arrives with delay. A controller chooses among Safe, Follow, and Reverse portfolio actions, so signal orientation is learned rather than assumed. A share-adaptive master updates action probabilities from matured Safe-relative rewards, an evidence gate can abstain by transferring unsupported directional probability to Safe, a delayed collateral budget reserves worst-case loss capacity before exposure is funded, and a protected split account caps the capital adaptive decisions may touch. The architecture carries a dual certificate, tracking regret against switching action sequences under delay and one-sided intervention, together with a pathwise collateral safety bound that holds when predictions fail. On a 24-stock development universe a conservative prediction-assisted overlay stays near equal-weight performance at a fraction of the turnover. On a frozen 82-stock holdout, the pre-specified Reverse orientation fails to outperform Equal Weight; a separately labeled post-holdout diagnostic shows that permanently flipping the sign to Follow also does not recover a return edge. Under the post-holdout controller, protected wealth remains within 15.9 basis points of the Safe benchmark throughout. The contribution is safe adaptive use of untrusted predictions, not demonstrated alpha.",
+  "link": "http://arxiv.org/abs/2611.04826v1",
+  "date": "2026-11-03T12:55",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Multidimensional Views Behind Target-Price Revisions: An LLM-Based Representation of Analyst Outlooks",
+  "abstract": "A target price compresses an analyst's multidimensional views into a single number. We propose an LLM-based text representation that extracts these views from research reports as question-based outlook scores with supporting evidence. The questions organize reported views on earnings, valuation, industry conditions, and other investment dimensions into a compact representation of analyst sentiment. In walk-forward evaluation, the scores improve prediction of subsequent target-price revisions beyond current-revision momentum and sector differences. They outperform financial dictionary and FinBERT sentiment measures. These findings suggest that structured questions can capture information about subsequent analyst actions that is not fully reflected in the current numerical revision. By linking each dimension to an explicit investment question and supporting report evidence, the approach makes the extracted outlooks available for inspection and interpretation. It offers a way to complement target-price signals with a multidimensional view of the judgments expressed in analyst narratives.",
+  "link": "http://arxiv.org/abs/2611.04119v1",
+  "date": "2026-11-03T00:52",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Decomposing Rank Reversals under Temporal Nonstationarity: Alignment, Aggressiveness, and Instability",
+  "abstract": "Under temporal nonstationarity, model performance rankings reverse across training horizons due to heterogeneous sensitivities to memory. While existing literature addresses adaptive lookbacks, effective model complexity, and empirical forecast evaluation in isolation, no unified framework explains the structural mechanics driving these rank reversals. We bridge this gap by deriving a model-agnostic decomposition of out-of-sample $R^2$ into target alignment, miscalibrated aggressiveness, and predictive instability. Within this framework, we mathematically characterize complexity phase boundaries, establish closed-form optimal-memory equations for ridge regression under local drift, and extend these guarantees to complex model architectures via surrogate bounds. We validate these theoretical dynamics by benchmarking 14 linear, tree-based, and neural architectures across large-scale financial panels. In doing so, our framework demonstrates that empirical model rank reversals are driven by predictable surges in miscalibrated aggressiveness, providing a rigorous mechanistic diagnosis of generalization under temporal shift.",
+  "link": "http://arxiv.org/abs/2611.04116v1",
+  "date": "2026-11-03T00:46",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Penalize the Common Trade: A Collision-Aware Layer for Learned Portfolios",
+  "abstract": "Different learning systems can make nearly the same trade when they share data, objectives, or representations. The market then sees decision concentration even if the models look diverse. We call exposure to this shared direction a signal collision. A linear-impact game shows the basic externality: each allocator chooses too much common exposure because it does not bear the full price effect imposed on others. An overlap-dependent toll recovers the social choice, and a feedback model gives the exact gain at which return-responsive allocation becomes unstable. We also state the restrictive spectral conditions under which a leading eigenportfolio can reveal the collision direction. These results motivate a simple post-model layer: subtract a penalty for loading on the recent common return mode before forming the portfolio. In a frozen panel of ten liquid cross-asset ETFs, 760 completed weeks from January 2012 through July 2026, and exact self-financing costs of 10 basis points per dollar traded, this layer changes maximum drawdown from 23.6% to 14.1%, volatility from 12.6% to 10.7%, and excess-return Sharpe from 0.664 to 0.667. A volatility-matched momentum diagnostic still draws down 19.9%. Paired stationary-bootstrap uncertainty is wide: the 95% interval for drawdown improvement is $[-3.3,18.4]$ percentage points and includes zero. The result establishes a reproducible risk-control association and specifies the holdings-and-flow validation needed to attribute the common dire",
+  "link": "http://arxiv.org/abs/2611.03453v1",
+  "date": "2026-11-02T16:59",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Honest Small Decision Models for Finance: Scale, Specialization Collapse, and Mixed-Corpus Remediation",
+  "abstract": "Financial workflows need fast, calibrated, auditable decisions, not just generated text. We train System-1 decision models, small language models fine-tuned to answer typed questions (choice/score/noul) with a probability in a single forward pass, across two model families (K2-Horizon and Qwen3.5/3.8) and nine rungs from 0.8B to 32B parameters, using one frozen LoRA recipe on a public decision benchmark and two new finance corpora: a programmatic-gold policy corpus (rule-reading with exact labels) and a reality-labeled outcome corpus (19,640 realized forward-return questions in walk-forward splits, plus a sealed 2026 test of 1,360 questions). Narrow fine-tuning costs general decision competence 9-45 percentage points, a data-mixture effect that shrinks with model scale and is associated with narrow-gradient volume. On reality-labeled questions, every trained rung from 0.8B to 32B lands at the horizon-conditioned prior baseline (accuracy 0.37-0.38, no detectable conditional edge under our controls); the models respond with flat, well-calibrated probabilities that track per-horizon base rates: naturally honest uncertainty, with a mid-scale calibration sweet spot (ECE 0.026 at 2B, degrading to 0.043-0.044 at 9-32B under prior drift). A mixed-corpus remediation carries all competencies in one adapter at modest cost: it matches or slightly exceeds the generalist specialist on the public benchmark while holding the policy ceiling and near-specialist outcome calibration, yielding a ",
+  "link": "http://arxiv.org/abs/2611.03755v1",
+  "date": "2026-11-02T11:18",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Learning AI Agents, Market Makers, and Stress in Automated Markets",
+  "abstract": "Automated markets increasingly route order flow from learning trading agents through automated market makers (AMMs). We model trader archetypes as AI agents defined by their reward functions and analyze the feedback they create on a constant-product AMM. Herd-dominated and arbitrage-dominated markets of equal size have identical return distributions and turnover, so no rule based on volatility, value-at-risk, stress frequency, or volume can tell them apart; yet their stress episodes differ in length by a factor unbounded in the feedback-to-noise ratio $\u03b2/s$. Serial statistics identify the feedback sign from $\u0398((s/\u03b2)^2\\log(1/\u03b4))$ observations, and this rate is tight. When agents trade together, profit-seeking agents ride herds rather than lean against them, leading to all-or-nothing participation. Spread-earning market makers restore stability but make liquidity fragile, with discontinuous collapse and hysteresis; maker--taker pricing, not a uniform fee, is the effective instrument.",
+  "link": "http://arxiv.org/abs/2611.01799v1",
+  "date": "2026-11-01T11:08",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "AIDA: An AI Outage Registry with Evidence from On-Chain MEV",
+  "abstract": "Generative AI coding tools have lowered the cost of writing trading software, but no systematic dataset records when these services fail. We introduce the AI Incident and Disruption Archive (AIDA), a multi-vendor registry of 5,868 deduplicated outage incidents across 30 providers from 2025 to 2026, with foundation-model incidents verified against primary status-page or postmortem URLs. Pairing AIDA with 5,041,034 verified maximal extractable value (MEV) transactions by 8,516 Ethereum addresses, their contract creations, and a 22-month Base Layer-2 panel of 1,099,593,191 swaps and 29,120 private executors, we establish two findings. First, entry into MEV expanded where code and public state suffice, as active arbitrage addresses quadrupled from late 2024 to late 2026 and liquidators grew by a third, while sandwich attackers, who need private order flow and builder access, declined. Execution nonetheless remained concentrated, with the top fifty addresses executing two thirds of verified trades. Second, AI outages stall new trading code while deployed bots keep trading. On Ethereum, addresses releasing a private executor fall to 0.67 on the day of an eight-hour disruption (0.68 for executor creations during OpenAI outage hours) and to 0.66 at lag two before rebounding on day three; on Base, operator top-level creations fall to 0.76 during OpenAI hours and executor-deploying operators to 0.88 at lag two. Non-trading creations, automated factory clones, and live arbitrage and san",
+  "link": "http://arxiv.org/abs/2611.01656v2",
+  "date": "2026-11-01T07:05",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Boom-Busty Marketron as a Model of Market Dynamics: How Investor-Market Reflexivity Amplifies Non-Equilibrium",
+  "abstract": "We introduce the Boom-Busty Marketron, a model of a multi-asset market in which the demand of a single collective investor moves prices and itself depends on market performance. This creates an investor-market reflexive loop in the spirit of Soros's theory. The market state is stationary without being at equilibrium: a non-equilibrium steady state (NESS), with broken detailed balance and a probability current circulating between mispricing, demand and volatility. While stochastic volatility with the leverage effect already breaks detailed balance and makes the market dynamics irreversible, the investor-market loop pushes the market further away from equilibrium. Calibrated to the S\\&P 500 from 1996 to 2024 by simulated moments, the model reproduces the stylised facts of returns together with quantitative metrics of the market, including cross-sectional ones, and its return and cycle statistics stay stationary for a century and a half on the 1996--2010 inputs. Its central emergent behaviour is a boom-bust cycle, whose frequency meets the S\\&P's within one-sigma ranges. The model also produces a default rate of the order of that of investment-grade issuers, prices inside Fisher Black's factor of two of value, the dumb-money effect of Frazzini and Lamont, and a measurable arrow of time. Standard long-short factors built from its cross section rotate through the cycle, and so do its industry groups along the defensive axis.",
+  "link": "http://arxiv.org/abs/2611.01185v1",
+  "date": "2026-10-31T18:36",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "A New GAUSS Software Component for Implementing Dynamic Tests of Contagion with an Application",
+  "abstract": "The main goal of this article is to present a new software component created by the authors in GAUSS for implementing dynamic tests for contagion. These tests are aimed at providing the possibilities of testing for spiller-over effects between financial markets during a crisis or during a pandemic situation such as the one that we experienced recently. Unlike standard tests for contagion that have fixed dates for a potential shift, the tests implemented here are dynamic in the sense that the potential contagion effect is measured across the time span. The leverage bootstrap simulation technique is utilized in order to generate critical values that are reliable when the tests are implemented in order to make sure that the conducted inference is accurate. Since the approach is new, software component needs to be created for conducting the underlying tests, which is accomplished via this article. The module is very easy to implement by the general practitioners via a graphical user interface. An application is offered by using real data from stock markets in order to demonstrate how the software component can be used.",
+  "link": "http://arxiv.org/abs/2610.41740v1",
+  "date": "2026-10-30T13:47",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "The Generalised Kessler Syndrome and the Persian Gulf",
+  "abstract": "The term Kessler syndrome was coined for a runaway orbital cascade creating a high-density debris field. The idea is generalised and applied to supply chains. An additive channel enables failures to generate further failures; a subtractive channel erodes the capacity to contain and restore. When damage outpaces repair, failure becomes irreversible and the system settles into a new state. Supplies connect the theory to its application. Stocks insulate subsystems from one another, and their exhaustion exposes dependencies. For the Persian Gulf states, restrictions on maritime supplies from spring 2026 are inadequately compensated by air and road transport alternatives. This depletes inventories unevenly across products and impairs the functioning of the logistics system itself. Throughput optimisation builds fragility everywhere; the Gulf is where it is becoming visible, with the Strait of Hormuz restriction as the trigger. Formulated as a Kelly portfolio allocation under a weakest-link payoff, the optimal strategy concentrates resources on the lagging rather than the leading inputs.",
+  "link": "http://arxiv.org/abs/2610.40129v1",
+  "date": "2026-10-29T14:21",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Sparse Autoencoders as Implicit Diversification Regularisers for Cross-Sectional Cryptocurrency Returns",
+  "abstract": "Factor models are central to asset pricing and portfolio construction, but neural factors are often difficult to interpret, and their effect on portfolio risk is unclear. A sparse autoencoder (SAE) may address both concerns by describing daily returns across many assets with only a few active features. We ask whether this sparse representation produces stable financial factors and better-diversified portfolios. We study cryptocurrency returns, use equities as a secondary test, and compare the SAE with common benchmarks in a time-ordered evaluation. We find consistently lower volatility in SAE portfolios and link this result to lower correlations among the selected assets. However, the SAE does not outperform a simple contrarian strategy on risk-adjusted return, and its factor identities are not stable across training runs. Our contribution is to show that sparse coding can support portfolio diversification, while clearly separating this risk effect from claims about alpha or stable factor identities.",
+  "link": "http://arxiv.org/abs/2610.39205v1",
+  "date": "2026-10-29T02:28",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Calibration of Passive Market Impact with a Queue-Sensitive Propagator Model",
+  "abstract": "We develop a framework for calibrating passive market impact, defined as the price response to liquidity-providing limit orders, in contrast to the impact of liquidity-consuming market orders. We build on the model of Ouazzani Chahdi, Rosenbaum, and Szymanski (arxiv:2412.07461), which combines Hawkes-driven market-order flow with queue-reactive limit-order and cancellation dynamics. Within this model, we show that the price decomposes into a universal propagator term driven by signed order-flow imbalance and a state-dependent correction that captures the dependence of price sensitivity on volume at the best quotes. This decomposition links limit-order-book microstructure to standard propagator models and yields a regression on two observable signals: the propagator signal and the queue-weighted order-flow imbalance. We calibrate the model on high-frequency order-book data and find that the passive-impact term explains substantial variation in prices beyond the classical propagator, improving both model fit and the accuracy of predicted impact curves.",
+  "link": "http://arxiv.org/abs/2610.38442v1",
+  "date": "2026-10-28T08:22",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Optimal Order Placement under a State-Dependent Hawkes Process Limit Order Book model",
+  "abstract": "We study optimal quote placement for a market maker facing order flow modeled by a state-dependent Hawkes process. A block-based linear demand specification links market-order counts to execution volumes, providing the demand moments required by a continuous time discrete state dynamic programming formulation. Under a quadratic terminal inventory penalty, we characterize inventory-dependent quotes and derive backward recursions for the coefficients of a quadratic value function. Numerical experiments using LOBSTER data examine quote distributions, inventory exposure, and terminal wealth. The implemented strategy yields higher aggregate terminal wealth than fixed-spread benchmarks at one and three ticks, but lower wealth than the two-tick benchmark. These results illustrate the framework's numerical implementation and distinguish terminal-wealth comparisons from evaluation under the inventory-penalized objective.",
+  "link": "http://arxiv.org/abs/2610.37324v1",
+  "date": "2026-10-27T14:35",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Depositing More Should Not Earn Less: Supplier Income Monotonicity and Rate Curve Design in Pooled Lending Markets",
+  "abstract": "In utilization dependent interest rate models, adding liquidity can reduce a supplier's total interest income even as the supplier's balance increases. A supplier holding a fraction $\u03b1$ of final pool supply keeps income nondecreasing with a marginal deposit exactly when $\u03b1(1+\u03b7)\\leq1$, where $\u03b7$ is the elasticity of the borrow rate with respect to utilization. When the condition fails, the supplier can instead raise its income by withdrawing, which pushes utilization further up. On two public Drift markets, a lender held more of the pool than the curve protected in at least one hour in nine on SOL and one in thirteen on USDC. A protocol turns this into a design constraint by choosing, at each utilization, the largest supplier share it intends to protect. That choice caps the elasticity, and integrating the cap describes every admissible curve. Protecting the same share at every utilization gives a power law boundary, and protecting every fresh depositor gives a hyperbolic one. On a multiple kink USDT market, compliant repairs can lower or raise supplier income, because the constraint governs how income responds to a deposit and not the price level.",
+  "link": "http://arxiv.org/abs/2610.36899v1",
+  "date": "2026-10-27T09:31",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Simple Portfolios that Deliver Consistent Decent Returns",
+  "abstract": "Portfolio construction has been studied extensively in both academia and industry. Its applications range from pension funds and hedge funds to private savings. The academic literature centers on methodology, commonly evaluated in settings that allow short selling, leverage, and frequent trading. Industry, on the other hand, operates under real constraints, but its data and methods are proprietary and largely unpublished. Neither is directly available to the private investor. This paper is an empirical study of established portfolio construction methods in the setting of the private investor. We consider a small investable universe of liquid US ETFs, where trading is monthly and carries a cost, and neither shorting nor leverage is permitted. Portfolio construction is posed as a convex optimization problem, its inputs are estimated from public data, and every parameter is interpretable. We denote such portfolios simple. We show that simple portfolios of as few as three ETFs deliver consistent and decent returns, without tuning to the backtest period. To find them, we have developed a framework, which we share publicly, able to backtest hundreds of portfolios on a standard laptop over a twenty year period or longer. When no return forecast is made, portfolios are constructed from risk alone, using methods such as risk parity and minimum volatility, built on a statistical factor model fitted with expectation maximization. When a forecast is made, we combine the Markowitz formula",
+  "link": "http://arxiv.org/abs/2610.36491v1",
+  "date": "2026-10-27T01:45",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Event definition and the branching ratio: Hawkes estimates of price-change clustering in the consolidated quote feed",
+  "abstract": "Hawkes models of price changes in the consolidated US quote feed find a sub-millisecond kernel component and a branching ratio near criticality. We show that in large-tick stocks the first is the feed's construction: half of NBBO changes are locks or depleted quotes, resolved within a millisecond, which the model reads as excitation. Defining the event as a mid-price level persisting for one millisecond removes the component. Raw fits put three times the clean kernel mass within one second, which a simulation reproduces. Since the total branching ratio trades off against the baseline, we report kernel mass on a fixed window.",
+  "link": "http://arxiv.org/abs/2610.36317v1",
+  "date": "2026-10-26T21:42",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Decorrelating the Advice Layer: A Calibrated Fragility Metric and Tested Mitigations for Synchronized Liquidation in Agentic Wealth Management",
+  "abstract": "Conversational AI agents are turning wealth management into a continuous loop of market analysis, allocation, risk checks and execution, run for millions of clients on a handful of foundation models. We build a multi-asset agent-based model of this layer, calibrated to measured model concentration, cross-model correlation, retail turnover and 33 years of real equity returns, and ask when the layer amplifies market declines and what prevents it. The effective number of independent decision-makers is bounded however many clients the layer serves: about 2.0 at today's consumer concentration. This monoculture of views drives crowding in individual securities and sets the blast radius of a compromised model provider, but it does not drive market-wide liquidation. Index tail losses rise with the square root of agentic adoption, are 1.47-1.90 times larger under an agentic than under a periodic robo-advice architecture, and do not rise with model concentration; synchronized automation (risk overlays, drawdown cuts and attention-driven execution) drives them. A fragility index computed from aggregate flow, public returns and an impact estimate forecasts tail liquidation out of sample (hold-out R^2 of 0.56) far better than concentration or correlation measures. Decorrelating the automation, not the models, works: dispersing overlay parameters, staging execution and a participation breaker together cut tail liquidation by 63% at no measurable cost to client welfare, whereas provider div",
+  "link": "http://arxiv.org/abs/2610.37705v1",
+  "date": "2026-10-26T18:30",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Det-MASO: Diversity-Regularized Multi-Agent Sequential Optimization for Factor Generation",
+  "abstract": "Quantitative investment requires alpha factors that are both predictive and diverse. However, existing factor generation methods, including formulaic mining and neural end-to-end models, are mostly based on a single-agent design, which limits exploration of the factor space and reduces adaptability to changing markets. Multi-agent approaches can broaden exploration, but agents trained under a shared objective often collapse to similar outputs, while existing diversity techniques either scale poorly with asset-universe size or address redundancy only after training. We propose a multi-agent sequential optimization (Det-MASO) framework for generating diversified, context-adaptive alpha factors. It introduces a differentiable log-determinant penalty on the inter-agent correlation matrix directly into the joint objective, discouraging correlated agent behavior during training with computational cost that scales linearly with the number of assets. We further show that this penalty prevents homogeneous equilibria and preserves factor diversity throughout optimization, while a context-conditioned scheduler dynamically adjusts agent emphasis across market regimes and Shapley interaction index analysis is used to characterize the cooperation structure that emerges among them. Experiments show that Det-MASO outperforms baselines, improving the information coefficient by 1.1\\%, the annualized return by 6.4\\%, and the Sharpe ratio by 0.33.",
+  "link": "http://arxiv.org/abs/2610.34936v1",
+  "date": "2026-10-26T07:03",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Optimal portfolio choice under green transition timing risk",
+  "abstract": "We study an investor's optimal portfolio choice problem when they account for the impact of a possible future green transition, whose timing is uncertain. We model the green transition as a discontinuity in the stock price processes, driven by a single jump process with constant intensity, in which 'green' stocks increase in value and 'brown' stocks decrease in value. The investor is ambiguous about the timing of the green transition and designs an investment strategy which is robust to this risk. The investor has constant relative risk aversion preferences over both wealth and model ambiguity, which introduce a multiplicative ambiguity penalty for power utility and an additive ambiguity penalty for log utility. We separate the problem into pre- and post-transition cases, derive the solution, and provide a verification theorem. We further show that the log utility, ambiguity-neutral, and worst-case problems are obtained as special cases of our general problem. In a case study with one green and one brown stock, we show that when the stock prices are positively correlated, an investor who is aware of transition risk increases their investment in the green stock and reduces their investment in the brown stock, compared to when they ignore the possibility of a transition. We illustrate the difference between an ambiguity-averse and a risk-averse investor, and show how an ambiguity-averse investor re-allocates their portfolio as their view on the probability of a green transition",
+  "link": "http://arxiv.org/abs/2610.33597v1",
+  "date": "2026-10-24T10:48",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Tokenised Sukuk: A Verifiable Architecture for Asset Evidence and Programmable Shariah Compliance",
+  "abstract": "Security-token standards such as ERC-3643 decide who may hold a token, not what stands behind it. For a sukuk this gap matters: whether a certificate may trade at a negotiated price depends on what its portfolio contains, and a token that checks only investor identity keeps trading after every non-debt asset has been sold. We ask whether this tradability condition can be enforced on-chain, and at what cost. We encode the tradability conditions of the 2023 resolution of the Shariah Advisory Council of the Securities Commission Malaysia on Sukuk Wakalah bi al-Istithmar as issuance and transfer policies that read EIP-712 claims, signed by separate institutional roles, about each asset's rights, valuation, encumbrance and Shariah classification and about the allocation of proceeds. Across 26 scenarios that we constructed on a synthetic instrument, an identity-only baseline wrongly allowed 13 operations that the encoded policy denies, and asset evidence without the Shariah rule still allowed 6. The full policy matched every expected outcome and added 35,834 gas (71.0%) per transfer, independent of portfolio size. Our evaluation also exposes a trade-off that the constructed scenarios had missed. Checking the continuing condition through a single nominated asset keeps the cost of a transfer constant but can block trades the ruling allows, and a bounded fallback scan narrows this gap at about 12,050 gas per scanned asset. Our results indicate that Shariah tradability conditions can b",
+  "link": "http://arxiv.org/abs/2610.33538v1",
+  "date": "2026-10-24T08:33",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Optimal Size in Market Making under State-Dependent Hawkes Process",
+  "abstract": "We study market making with a parametric model of executed volume that accounts for quote placement and state-dependent order flow. Executed volume is expressed as the product of an average order size, an exponential demand function, and a Prony-series multiplier depending on quote depth, market-order count constructed from a state-dependent Hawkes model. An approximation result for finite Prony sums on a compact state domain provides a mathematical basis for the representation. An empirical study of limit-order-book data examines the calibrated demand and intensity models, sensitivity to inventory restrictions, and the resulting placement policies. In retrospective evaluations conditional on realised order-flow paths, the selected calibration achieves higher terminal utility than a baseline while respecting the prescribed inventory bound. The comparisons also distinguish the contribution of trading revenues from that of inventory control. The resulting closed-form volume specification takes placement levels as inputs and can therefore be used with alternative quoting rules.",
+  "link": "http://arxiv.org/abs/2610.31903v1",
+  "date": "2026-10-22T20:59",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "export.arxiv.org",
+  "title": "Equilibria and Learning in Competitive Market Making",
+  "abstract": "We propose a market-making game played among $N \\ge 2$ strategic market makers and a single non-strategic representative trader. In a continuous quote space, standard finite-game arguments do not apply, while non-convex and discontinuous payoffs rule out classical continuous existence results and complicate learning. Nonetheless, we characterize pure-strategy Nash equilibria (PSNEs) and show that at least one PSNE always exists under minimal assumptions on the underlying asset value distribution, and that the equilibrium bid-ask spread widens strictly with asset value volatility. To obtain a tractable learning framework, we discretize prices and, under an additional regularity condition, show that the time-averaged play of no-internal-regret learners approaches the continuous Nash price envelope as the tick size vanishes. Finally, we empirically validate our theoretical results through numerical simulations.",
+  "link": "http://arxiv.org/abs/2610.30891v1",
+  "date": "2026-10-22T08:09",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "www.nber.org",
+  "title": "Five Facts About Stablecoins -- by Lin William Cong, Gordon Y. Liao, Eswar S. Prasad, Tony Zhang",
+  "abstract": "We document five facts about payment stablecoins using wallet-level blockchain data from 2020 to 2025. First, stablecoins serve as a transaction currency: onchain volume exceeds Bitcoin\u2019s despite a much smaller supply, velocity has risen sharply, and transactions have shifted toward low-value transfers. Second, using transaction timing to refine exchange-based attribution, we find activity spread across the Americas, Europe, and Asia and fewer cross-regional flows than the standard method implies. Third, we estimate a structural cash-management model on the holdings data and find that the costs of accessing stablecoin wallets have fallen since 2023. Fourth, stablecoins are becoming the settlement currency of a fast-growing onchain credit market, and their growth appears to reallocate rather than destroy credit. Fifth, smart contracts are involved in about a third of Ethereum stablecoin transactions and over two thirds of volume, and protocols such as x402 demonstrate sub-cent machine-to-machine payments. Stablecoins behave as tokenized money, with implications for financial markets and regulation.",
+  "link": "https://www.nber.org/papers/w36038#fromrss",
+  "date": "",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "www.nber.org",
+  "title": "Democratizing Venture Capital: Tax Incentives and the Geographic Expansion of Startup Investing -- by Murillo Campello, Guilherme Junqueira",
+  "abstract": "Can tax subsidies expand the geographic reach of startup investing? Despite decades of growth, venture capital (VC) remains concentrated in a handful of metropolitan areas, leaving most of the country with limited access to startup financing. We study the 2009\u20132010 enhancement of the Qualified Small Business Stock (QSBS) program, which eliminated federal capital gains taxes on investments in qualifying startups. By raising the payoff to success, the reform made riskier investments more attractive, including entry into unfamiliar markets. This incentive is especially strong for VC funds. Relative to similarly sized metros that already had VC, the reform raised the probability that a previously unserved metro received VC investment in qualifying sectors by 8 to 10 percentage points. There was no comparable increase in sectors excluded from QSBS or among angel investors, who receive the same tax benefit. Startups in newly served markets performed like those in other non-hub markets, created high-wage jobs, and attracted scientific and technical workers, some from established hubs. Our findings suggest that a sufficiently large subsidy can extend VC into markets it had long bypassed, even with no requirement on where startups are located.",
+  "link": "https://www.nber.org/papers/w36039#fromrss",
+  "date": "",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "www.nber.org",
+  "title": "Are Republicans and Democrats Different Taxpayers? Evidence From Property Tax Appeals -- by Brad C. Nathan, Ricardo Perez-Truglia, Alejandro Zentner",
+  "abstract": "Democrats and Republicans express some sharply different views about tax policy, but whether these ideological divisions translate into partisan differences in taxpayer behavior is far less clear. We study this question in the context of a common form of tax avoidance: property tax appeals. In a survey, we find that Americans, on average, believe Republican homeowners are more likely to appeal their property taxes than Democratic homeowners with similarly valued homes. Yet linking administrative property tax records from Dallas County with voting records reveals that this stereotype is not borne out in practice: the partisan gap in appeals is small, both in absolute terms (0.29 percentage points) and relative to several demographic gaps in appeals we use as benchmarks. Similar appeal rates could nonetheless conceal differences in motives. Using quasi-experimental and field experimental evidence, we find that Democrats and Republicans appeal for broadly similar reasons. In sum, despite differing tax policy preferences and public perceptions about their behavior, Democrats and Republicans are strikingly similar in both their propensity to appeal their property taxes and their underlying motives.",
+  "link": "https://www.nber.org/papers/w36055#fromrss",
+  "date": "",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ },
+ {
+  "src": "www.nber.org",
+  "title": "Supply-Side Drivers of Long-Acting Reversible Contraceptives: Evidence from Medicaid Beneficiaries -- by Maya Rossin-Slater, Natalia Serna, Lin-Tung Tsai",
+  "abstract": "U.S. federal law mandates that most insurers offer contraceptives for free to patients, yet nearly one in three women of reproductive age still report inadequate access to contraceptive services. With demand-side affordability barriers largely removed, supply-side factors\u2014the actions of healthcare facilities and providers\u2014may be critical in explaining this unmet need. This paper examines supply-side determinants of long-acting reversible contraceptive (LARC) use among Medicaid beneficiaries, a population for whom both LARCs and oral contraceptives (OCs) are covered at zero out-of-pocket cost. Unlike OCs, LARCs require clinician insertion and upfront device stocking, making them especially vulnerable to supply-side forces. Using national Medicaid claims data from 2015\u20132019 and a movers design that separates place-based from patient-based variation, we find that local supply-side factors explain 58.5 percent of geographic variation in LARC use\u2014substantially more than the 37.7 percent explained for OCs. We then estimate the causal effects of a supply-side policy that substantially lowers the cost of stocking LARCs for safety-net providers: the 340B Drug Pricing Program. Leveraging the staggered timing of program participation across clinics in an event-study design, we find that the arrival of the first participating clinic in an enrollee's ZIP code increases LARC use by 4.3 percent without displacing OC use or increasing LARC removals. Together, these findings identify the supp",
+  "link": "https://www.nber.org/papers/w36059#fromrss",
+  "date": "",
+  "why": "a trading idea the grammar cannot express yet (needs a human read)"
+ }
+]

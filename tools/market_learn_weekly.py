@@ -8,6 +8,7 @@ Research only: hashes the live files before and after and fails loudly if one ch
     python -X utf8 tools/market_learn_weekly.py --no-decide   # test, but put nothing on the Decide card
     python -X utf8 tools/market_learn_weekly.py --nightly     # LIGHT (< 2 min, no numba, no backtest): journal + brain state only
     python -X utf8 tools/market_learn_weekly.py --nightly --out logs/learning   # the PC: write outside the git tree
+    python -X utf8 tools/market_learn_weekly.py --nightly --ideamill 200        # + 200 new idea-mill ideas (tools/ideamill.py)
 Outputs: research/learn/lessons.jsonl.gz, knowledge.json, insights.json, trials.json, WHAT_WE_KNOW.md, weekly/<date>.json,
 journal.json + brain_state.json (the Brain app feed, shape in research/learn/BRAIN_FEED.md; every run, weekly and nightly).
 Tests: python -X utf8 -m tests.test_market_learn
@@ -129,6 +130,13 @@ def nightly(a, say=print, root: str = ROOT) -> dict:
     if not rows:
         raise SystemExit("no research/learn/lessons.jsonl.gz yet: run the weekly seed first (tools/market_learn_weekly.py --seed)")
     book = M.daily_book(root)
+    if getattr(a, "ideamill", 0):                       # optional: the idea mill's nightly batch (off by default; needs numba)
+        try:
+            from tools import ideamill as IM
+            IM.batch(a.ideamill, cap_s=60 * a.ideamill_cap, say=say,
+                     journal=os.path.join(a.out or M.OUT, "journal.json"))
+        except Exception as ex:  # noqa: BLE001
+            say(f"idea mill skipped ({ex.__class__.__name__}: {str(ex)[:120]})")
     br = M.nightly(root, out_dir=a.out, rows=rows, live_rows=live(book, say=say))
     if M.hashes(root) != before:
         raise SystemExit("A LIVE FILE CHANGED during the nightly run")
@@ -145,6 +153,8 @@ def main(argv=None) -> int:
     ap.add_argument("--draws", type=int, default=M.CHANCE_DRAWS)
     ap.add_argument("--nightly", action="store_true", help="light: journal + brain state only (< 2 min, no numba)")
     ap.add_argument("--out", default=None, help="folder for journal.json + brain_state.json (default research/learn)")
+    ap.add_argument("--ideamill", type=int, default=0, help="--nightly: also score N new idea-mill ideas (0 = off)")
+    ap.add_argument("--ideamill-cap", type=float, default=20, help="minutes cap for the idea-mill step")
     a = ap.parse_args(argv)
     if a.out:
         a.out = os.path.join(ROOT, a.out) if not os.path.isabs(a.out) else a.out

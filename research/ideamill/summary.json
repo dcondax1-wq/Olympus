@@ -1,0 +1,153 @@
+{
+ "made": "2026-11-25 01:11 UTC",
+ "data_end": "2026-11-20",
+ "design": "research/ideamill/DESIGN.md",
+ "counts": {
+  "trials_total": 38880,
+  "scored": 24480,
+  "too_few": 12240,
+  "untestable": 2160,
+  "discovery_mean_positive": 3978,
+  "raw_p_below_0.05": 275,
+  "G1_bh": 0,
+  "G2_dsr": 0,
+  "G3_holdouts": 0,
+  "G4_forward": 0,
+  "placebo_G1": 0,
+  "placebo_G2": 0,
+  "placebo_G3": 0,
+  "expected_false_G1_bh_bound": 0.0,
+  "expected_raw_p05_by_luck": 1224.0,
+  "tested_this_run": 0,
+  "seconds": 7
+ },
+ "top": [],
+ "best_raw_p": [
+  {
+   "id": "1h|vwap_band|fade|nypm|none|atr|T12",
+   "disc": {
+    "n": 392,
+    "mean_r": 0.2266,
+    "pf": 1.62,
+    "sum_r": 88.83,
+    "days": 819,
+    "p": 0.00027,
+    "sr": 0.11288
+   }
+  },
+  {
+   "id": "1h|vwap_band|fade|nypm|no_fri|atr|T12",
+   "disc": {
+    "n": 313,
+    "mean_r": 0.2622,
+    "pf": 1.718,
+    "sum_r": 82.06,
+    "days": 819,
+    "p": 0.00032,
+    "sr": 0.11143
+   }
+  },
+  {
+   "id": "1h|vwap_band|fade|nypm|no_fri|atr|R3",
+   "disc": {
+    "n": 313,
+    "mean_r": 0.2196,
+    "pf": 1.606,
+    "sum_r": 68.73,
+    "days": 819,
+    "p": 0.00037,
+    "sr": 0.11022
+   }
+  },
+  {
+   "id": "1h|vwap_band|fade|nypm|none|atr|R3",
+   "disc": {
+    "n": 392,
+    "mean_r": 0.191,
+    "pf": 1.526,
+    "sum_r": 74.88,
+    "days": 819,
+    "p": 0.0004,
+    "sr": 0.11005
+   }
+  },
+  {
+   "id": "1h|vwap_band|fade|nypm|no_fri|atr|R2",
+   "disc": {
+    "n": 313,
+    "mean_r": 0.1862,
+    "pf": 1.518,
+    "sum_r": 58.28,
+    "days": 819,
+    "p": 0.00098,
+    "sr": 0.10373
+   }
+  },
+  {
+   "id": "1h|vwap_band|fade|nypm|none|atr|R2",
+   "disc": {
+    "n": 392,
+    "mean_r": 0.1676,
+    "pf": 1.467,
+    "sum_r": 65.72,
+    "days": 819,
+    "p": 0.001,
+    "sr": 0.10594
+   }
+  },
+  {
+   "id": "1h|vwap_band|fade|nypm|no_mon|atr|T12",
+   "disc": {
+    "n": 319,
+    "mean_r": 0.2376,
+    "pf": 1.652,
+    "sum_r": 75.78,
+    "days": 819,
+    "p": 0.00106,
+    "sr": 0.10568
+   }
+  },
+  {
+   "id": "1h|vwap_band|fade|nypm|no_mon|atr|R3",
+   "disc": {
+    "n": 319,
+    "mean_r": 0.2053,
+    "pf": 1.568,
+    "sum_r": 65.5,
+    "days": 819,
+    "p": 0.00113,
+    "sr": 0.10634
+   }
+  },
+  {
+   "id": "1h|vwap_band|fade|nypm|gex_hi|struct|R1",
+   "disc": {
+    "n": 205,
+    "mean_r": 0.1472,
+    "pf": 1.588,
+    "sum_r": 30.17,
+    "days": 819,
+    "p": 0.00139,
+    "sr": 0.0972
+   }
+  },
+  {
+   "id": "1h|vwap_band|fade|nypm|no_mon|atr|R2",
+   "disc": {
+    "n": 319,
+    "mean_r": 0.193,
+    "pf": 1.542,
+    "sum_r": 61.58,
+    "days": 819,
+    "p": 0.00139,
+    "sr": 0.10841
+   }
+  }
+ ],
+ "week": {
+  "week_from": "2026-11-23",
+  "tested_this_week": 38880,
+  "tested_total": 38880,
+  "survived_total": 0
+ }
+}

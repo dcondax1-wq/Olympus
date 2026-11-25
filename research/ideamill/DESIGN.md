@@ -58,3 +58,5 @@ default; skipped when over its time cap). An idea already in trials.jsonl is nev
 3. **Timeframes:** the same grammar on 15m and 1h NQ bars (data/NQ_15m.csv, NQ_1h.csv; the 09:30-10:00 opening range does not
    exist on 1h bars, so those ideas log "too few"). 1m bars exist only from 2026: not testable in discovery, not run.
 4. BH and DSR count EVERY v2 trial ever (proto 2 rows); v1 rows are kept for the record and not counted twice.
+
+5. Format: the trial log is research/ideamill/trials.jsonl.gz (gzip members appended per run; same rows; 22 MB -> 1.9 MB).

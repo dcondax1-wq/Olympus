@@ -1,0 +1,284 @@
+[
+ {
+  "idea": "Personal futures account vs MFFU (2026-11-24, `ownacct-2026-11-24.md`, `research/ownacct/`, pre-registered DESIGN.md):",
+  "date": "2026-11-24",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "ATLAS funded 25K at ~$150 a trade, live sizing path (2026-11-24, `atlas-funded-150-2026-11-24.md`, `research/atlasfund/`):",
+  "date": "2026-11-24",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "Bad-case plan (2026-11-24, `badcase-2026-11-24.md`, `research/badcase/`, pre-registered DESIGN.md, rank.py engine + a 2025 market):",
+  "date": "2026-11-24",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "Time windows removed (2026-11-24, `notime-2026-11-24.md`, `research/notime/`, pre-registered DESIGN.md):",
+  "date": "2026-11-24",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "Dead hours per pillar (2026-11-24, `dead-hours-2026-11-24.md`, `research/hours/`, pre-registered DESIGN.md):",
+  "date": "2026-11-24",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "LIT high-VIX downtrend (2026-11-24, `lit-vix-downtrend-2026-11-24.md`, `research/litvix/`, pre-registered DESIGN.md):",
+  "date": "2026-11-24",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "Walk-forward portfolio of every stored run + 24-hour coverage (2026-11-24, `portfolio-2026-11-24.md`, `research/portfolio/`, pre-registered DESIGN.md):",
+  "date": "2026-11-24",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "Market structure: expansion / retracement (2026-11-24, `structure-2026-11-24.md`, `research/structure/`, pre-registered DESIGN.md):",
+  "date": "2026-11-24",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "Stops x targets x TIME (2026-11-24, `stops-targets-time-2026-11-24.md`, `tools/stops_targets_time.py`, Lab `research/lab/stops_targets.json`):",
+  "date": "2026-11-24",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "Market Learn weekly trial #1 (2026-11-24, `engine/market_learn.py`, `research/learn/trials.json`):",
+  "date": "2026-11-24",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "Pro / institutional edges (2026-11-24, `proedge-2026-11-24.md`, code `research/proedge/`, design pre-registered 64639bf64):",
+  "date": "2026-11-24",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "Edge hunt lane B, cross-asset triggers (2026-11-22, `edge-b-cross-2026-11-22.md`, code `research/edge_hunt/b/`):",
+  "date": "2026-11-22",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "Edge hunt lane D: small meta-labeled SIZE + re-entry on LIT (2026-11-22, `edge-d-meta-2026-11-22.md`, code `research/edge_hunt/d/`):",
+  "date": "2026-11-22",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "Edge hunt C, calendar / money-flow timing (2026-11-22, `edge-c-calendar-2026-11-22.md`, `research/edge_hunt/c/edge_c.py`):",
+  "date": "2026-11-22",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "Edge hunt lane A, NQ RTH session structure (2026-11-22, `edge-a-session-2026-11-22.md`, `research/edge_hunt/a/session_edges.py`):",
+  "date": "2026-11-22",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "2026-11-22 Regime guard round 3",
+  "date": "2026-11-22",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "Popular classic strategies (2026-11-23, `popular-classic-2026-11-23.md`, `tools/popular_classic.py`, `research/lab/popular_classic.json`):",
+  "date": "2026-11-23",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "Win / loss anatomy rules (2026-11-18, `win-loss-anatomy-2026-11-18.md`):",
+  "date": "2026-11-18",
+  "sessions_since": 2,
+  "due": false
+ },
+ {
+  "idea": "ZEUS Lab LIT ideas (2026-11-18, `zeus-lab-lit-ideas-2026-11-18.md`, `tools/lit_lab_ideas.py`, Lab kind `lit_idea`):",
+  "date": "2026-11-18",
+  "sessions_since": 2,
+  "due": false
+ },
+ {
+  "idea": "Order-flow round 2, LVN family + volume at price (2026-11-23, `orderflow-program-2026-11-23.md` round 2, `research/orderflow/of_lvn.py`):",
+  "date": "2026-11-23",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "Order-flow program on bars (2026-11-23, `orderflow-program-2026-11-23.md`, `research/orderflow/of_program.py`, pre-registered):",
+  "date": "2026-11-23",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "ATLAS new members (2026-11-18, `atlas-members-2026-11-18.md`, `tools/atlas_plus.py`, `research/second/atlas_plus.json`):",
+  "date": "2026-11-18",
+  "sessions_since": 2,
+  "due": false
+ },
+ {
+  "idea": "New-strategy hunt (2026-11-17, `new-strategy-hunt-2026-11-17.md`, `tools/new_hunt.py`, `research/second/new_hunt.json`):",
+  "date": "2026-11-17",
+  "sessions_since": 3,
+  "due": false
+ },
+ {
+  "idea": "Market-regime warning features (2026-11-17, `edge-health-2026-11-17.md`, `tools/edge_health.py`):",
+  "date": "2026-11-17",
+  "sessions_since": 3,
+  "due": false
+ },
+ {
+  "idea": "Regime guard (2026-11-20, `regime-guard-2026-11-20.md`, `research/regime_guard/`):",
+  "date": "2026-11-20",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "Famous published strategies (2026-11-17, `public-strategies-2026-11-17.md`, `tools/pub_strats.py`):",
+  "date": "2026-11-17",
+  "sessions_since": 3,
+  "due": false
+ },
+ {
+  "idea": "Drift switch (2026-11-17, `drift-switch-2026-11-17.md`, `tools/money/drift_switch.py`):",
+  "date": "2026-11-17",
+  "sessions_since": 3,
+  "due": false
+ },
+ {
+  "idea": "Walk-forward re-tuning (2026-11-17, `lit-walkforward-2026-11-17.md`, `tools/lit_wf_retune.py`, `research/lit/wf_retune.json`):",
+  "date": "2026-11-17",
+  "sessions_since": 3,
+  "due": false
+ },
+ {
+  "idea": "Rule-native layer (2026-11-17, `rule-native-2026-11-17.md`):",
+  "date": "2026-11-17",
+  "sessions_since": 3,
+  "due": false
+ },
+ {
+  "idea": "ICT ATM range + ES/NQ SMT as the trigger, MES, Judas swing (2026-11-20, `newstrat-ict-smt-2026-11-20.md`):",
+  "date": "2026-11-20",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "B-holds (2026-10-27, `b-holds-vs-lit-priority.md`, `tools/bholds.py`, runs `bholds_*`):",
+  "date": "2026-10-27",
+  "sessions_since": 18,
+  "due": false
+ },
+ {
+  "idea": "LIT studies of 2026-10-18/19 (none adopted unless noted; write-ups in research/writeups/):",
+  "date": "2026-10-18",
+  "sessions_since": 25,
+  "due": false
+ },
+ {
+  "idea": "Reversal exits after the first live trade (2026-10-28, `lit-reversal-exit.md`, `tools/lit_rev_exit.py`, runs `lit_rev_*`):",
+  "date": "2026-10-28",
+  "sessions_since": 17,
+  "due": false
+ },
+ {
+  "idea": "Diversifier search (2026-10-26, `diversifier-search.md`, `tools/div_search.py` / `div_stack.py`, runs `div_*`):",
+  "date": "2026-10-26",
+  "sessions_since": 19,
+  "due": false
+ },
+ {
+  "idea": "Payout / eval mechanics (2026-10-26, `payout-policy.md`, `eval-cost.md`):",
+  "date": "2026-10-26",
+  "sessions_since": 19,
+  "due": false
+ },
+ {
+  "idea": "ATLAS funded 25K day limit (2026-10-31, `atlas-funded-one-a-day-2026-10-31.md`, `tools/atx_funded_day.py`, runs `atxd_*`):",
+  "date": "2026-10-31",
+  "sessions_since": 15,
+  "due": false
+ },
+ {
+  "idea": "ATLAS + BLITZ edge night (2026-10-30, `atlas-blitz-edge-2026-10-30.md`, `tools/ab_edge.py`, runs `ab_*`):",
+  "date": "2026-10-30",
+  "sessions_since": 15,
+  "due": false
+ },
+ {
+  "idea": "Rapid EOD levers (2026-11-16, `rapid-levers-2026-11-16.md`, `tools/money/rapid_levers.py`):",
+  "date": "2026-11-16",
+  "sessions_since": 4,
+  "due": false
+ },
+ {
+  "idea": "ATLAS deep edge (2026-11-15, `2026-11-15-atlas-deep.md`, `tools/atlas_deep.py`, 29 variants, slot $ at $43):",
+  "date": "2026-11-15",
+  "sessions_since": 5,
+  "due": false
+ },
+ {
+  "idea": "E2 new NQ strategies (2026-11-13, `nq-new-strategies-2026-11-13.md`, `tools/e2_new_strats.py`, runs `e2_*`):",
+  "date": "2026-11-13",
+  "sessions_since": 5,
+  "due": false
+ },
+ {
+  "idea": "E3 same edge, more markets (2026-11-13, `es-and-sessions-2026-11-13.md`, `tools/e3_es_sessions.py`, runs `e3_*`):",
+  "date": "2026-11-13",
+  "sessions_since": 5,
+  "due": false
+ },
+ {
+  "idea": "Learn loop first night (2026-11-15, `docs/LEARN_LOOP.md`, queue `research/learn_queue.json`):",
+  "date": "2026-11-15",
+  "sessions_since": 5,
+  "due": false
+ },
+ {
+  "idea": "edge2 (2026-11-21, `edge2-2026-11-21.md`, `research/edge2/`):",
+  "date": "2026-11-21",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "Holidays / roll / FOMC windows (2026-11-21, `holidays-2026-11-21.md`, `research/holidays/`):",
+  "date": "2026-11-21",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "Rapid 25K slot (2026-11-22, `rapid25-slot-2026-11-22.md`, `research/rapidfit/`):",
+  "date": "2026-11-22",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "One-account combined book (2026-11-22, lane E, `one-account-book-2026-11-22.md`, `research/onebook/`):",
+  "date": "2026-11-22",
+  "sessions_since": 0,
+  "due": false
+ },
+ {
+  "idea": "2026-11-22 Lucid accounts on a $300 a month fleet (fleet v2, research/writeups/fleet-v2-2026-11-22.md).",
+  "date": "2026-11-22",
+  "sessions_since": 0,
+  "due": false
+ }
+]
