@@ -6,7 +6,7 @@ type: "decisions"
 
 # ZEUS Decisions
 
-> [!question] 2 open
+> [!question] 3 open
 > Answer on the Decide card (Business app). A yes means Claude tests it; nothing live changes without proof.
 
 ## Open
@@ -22,6 +22,12 @@ type: "decisions"
 > **Impact:** About +$2,282 a month in a Jul-Oct-like market (+$5,001 Jan-Jun-like) over 6 months from one account; first payout ~9 weeks after the buy (median). Same purchase as card buy-rapid50-now, plus the re-buy stop.
 > Added 2026-11-22 · write-up [[plan-ranking-2026-11-22|Plan ranking]] · id `plan-rapid50k-max2-rebuys`
 > Card: [[Decide plan-rapid50k-max2-rebuys|open the card note]]
+
+> [!question] ATLAS on the Builder evals (Zlarior 50K + 25K #2): trade HALF size outside the Silver Bullet hours (3-4, 10-11, 14-15 ET), normal size inside?
+> **Why:** Your ICT idea tested on the real engine (MFFU rules, real fills): ATLAS's trades outside Silver Bullet hours are the weak ones. Halving them cuts eval blow-ups a lot; money stays about the same in 2026.
+> **Impact:** 50K eval fail rate 12% -> 1% (Jan-Jun 2026) and 10% -> 2% (Jul-Oct); 25K pass 81 -> 92% / 60 -> 67%. 2026 $ about flat (-$601 / -$97 over each half); 2021-25 +$20.9k better with the biggest drop -$37.1k -> -$17.9k. Passes are a few days slower. NOT for the Rapid 25K (pass 51% -> 36%).
+> Added 2026-11-25 · id `atlas-sb-half`
+> Card: [[Decide atlas-sb-half|open the card note]]
 
 ## Yes
 

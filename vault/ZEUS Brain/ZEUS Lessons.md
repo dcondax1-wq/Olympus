@@ -153,7 +153,7 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 - **2026-11-22 Lucid accounts on a $300 a month fleet** · [[Zlarior (LIT)]], [[Rapid lanes]] · [[fleet-v2-2026-11-22|Fleet v2]]
 - **Popular ICT/SMC strategies as taught** · [[Zlarior (LIT)]] · [[popular-ict-2026-11-23|Popular ICT / SMC strategies on CME NQ, run exactly as taught]]
 - **2026-11-24 BLITZ on the Rapid EOD 25K eval ...** · [[BLITZ (paper)]], [[Rapid lanes]] · [[four-pillars-2026-11-23|The four pillars]]
-- **ICT lab, every popular ICT / time-price concept tested the other ways** · [[ict-lab-2026-11-25|ICT lab 2026-11-25]]
+- **ICT lab, every popular ICT / time-price concept tested the other ways** · [[ict-lab-2026-11-25|ICT lab 2026-11-25]], [[ict-lab-proof-2026-11-25|ICT lab proof 2026-11-25]]
 
 ## Rejected in the write-ups
 

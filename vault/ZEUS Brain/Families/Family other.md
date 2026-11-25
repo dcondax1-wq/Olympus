@@ -7,14 +7,15 @@ type: "family"
 
 # Research family: other
 
-> [!abstract] 120 write-ups
-> adopt-candidate 16, finding 14, info 17, promising 14, rejected 36, research 23
+> [!abstract] 121 write-ups
+> adopt-candidate 16, finding 14, info 17, promising 14, rejected 36, research 24
 
 | Date | Write-up | Verdict |
 |---|---|---|
 | 2026-11-25 | [[more-trades-2026-11-25\|More trades]] | research |
 | 2026-11-25 | [[ideamill-v3-2026-11-25\|IDEA MILL v3]] | research |
 | 2026-11-25 | [[ideamill-2026-11-25\|IDEA MILL]] | research |
+| 2026-11-25 | [[ict-lab-proof-2026-11-25\|ICT lab proof 2026-11-25]] | research |
 | 2026-11-25 | [[ict-lab-2026-11-25\|ICT lab 2026-11-25]] | research |
 | 2026-11-24 | [[structure-2026-11-24\|Market structure]] | research |
 | 2026-11-24 | [[portfolio-2026-11-24\|24-hour coverage + a walk-forward portfolio of everything built]] | research |
