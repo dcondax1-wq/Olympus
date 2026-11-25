@@ -567,6 +567,11 @@ def fast_forward(sh, branch: str = BRANCH, log=None, skip_sha: str | None = None
     return done("updated", f"{old[:7]} -> {new[:7]}")
 
 
+def _stash_top(sh) -> str | None:
+    c, out = sh.git("rev-parse", "-q", "--verify", "refs/stash")
+    return _sha(out) if c == 0 else None
+
+
 def restore_untracked(sh, moved, new) -> list:
     """Put back the untracked files the self-heal moved for a merge that failed or was rolled back (engine/self_heal). Never raises."""
     if not moved:
@@ -1148,10 +1153,11 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
             put_back(sh, ff.get("restore"))             # files checked out from main by hand: as they were before
             restore_untracked(sh, ff.get("untracked_moved"), new)   # the untracked files the self-heal cleared for the merge
         unpark = ""
-        if back and ff.get("parked"):                   # red team 2026-11-24: the old code gets the owner's parked hand edit back
-            cp, pout = sh.git("stash", "pop")
-            unpark = ("; your parked edit to " + ", ".join(ff["parked"][:3]) + " is back") if cp == 0 else \
-                     ("; your parked edit to " + ", ".join(ff["parked"][:3]) + " stays in git stash (git stash list)")
+        if back and ff.get("parked") and ff.get("stash"):
+            # red team day-zerotouch2: the old code must run WITH the owner's hand edit again (the stash was taken on `old`)
+            c3, o3 = sh.git("stash", "pop", "-q", "--index", "stash@{0}") if _stash_top(sh) == ff["stash"] else (1, "not the top stash")
+            unpark = ("; your parked edit is back in place" if c3 == 0 else
+                      f"; your parked edit ({', '.join(ff['parked'][:2])}) stays in git stash ({str(o3).strip()[-80:]})")
         if "requirements.txt" in changed:
             sh.py(["-m", "pip", "install", "-q", "-r", "requirements.txt"], timeout=900)
         return done("rolled_back" if back else "failed",

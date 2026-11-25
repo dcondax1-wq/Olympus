@@ -356,3 +356,5 @@ data/orderflow_*.json.tmp
 data/tickrec_autopilot.lock
 data/tickrec_*.json.tmp
 data/depth_*.json.tmp
+data/pending_switches.json
+data/lanes/
