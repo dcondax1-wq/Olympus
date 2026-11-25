@@ -1,0 +1,32 @@
+{
+ "family": "1h|vwap_band|fade|nypm|",
+ "named": "1h|vwap_band|fade|nypm|none|atr|T12",
+ "C1_named": {
+  "2025": {
+   "n": 96,
+   "mean_r": -0.0667,
+   "pf": 0.837,
+   "sum_r": -6.4
+  },
+  "2026 H1": {
+   "n": 39,
+   "mean_r": -0.0787,
+   "pf": 0.772,
+   "sum_r": -3.07
+  },
+  "2026 Jul-Oct": {
+   "n": 21,
+   "mean_r": -0.2485,
+   "pf": 0.2,
+   "sum_r": -5.22
+  }
+ },
+ "C1_pass": false,
+ "C2_family_avg_r": {
+  "2025": -0.0566,
+  "2026 H1": -0.0898,
+  "2026 Jul-Oct": -0.188
+ },
+ "C2_pass": false,
+ "verdict": "rejected"
+}

@@ -45,6 +45,8 @@ def part_a():
     v10, _ = M.dsr(w, 10, 0.002); v1e5, _ = M.dsr(w, 100000, 0.002)
     ok(0 <= v1e5 < v10 <= 1, f"a DSR falls with more trials ({v10:.3f} -> {v1e5:.3f})")
     ok(abs(M.pf(np.array([2.0, -1.0, -1.0])) - 1.0) < 1e-9, "a PF")
+    ok(abs(M.simes([0.01, 0.5, 0.9]) - 0.03) < 1e-12 and M.simes(rng.uniform(size=500)) > 0.05,
+       "a Simes family p: 3 x the smallest when one stands out; noise stays large")
 
 
 def part_b():
