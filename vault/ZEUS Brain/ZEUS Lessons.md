@@ -71,7 +71,7 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-79 entries from docs/TESTED_AND_REJECTED.md, newest first.
+80 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
 - **Idea mill v3, family-first** · [[ideamill-v3-2026-11-25|IDEA MILL v3]]
 - **Idea mill v2, 38,880 grammar ideas** · [[ideamill-2026-11-25|IDEA MILL]]
@@ -86,6 +86,7 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 - **Stops x targets x TIME** · [[Zlarior (LIT)]] · [[stops-targets-time-2026-11-24|"Stops x targets x TIME]]
 - **Market Learn weekly trial #1** · [[BLITZ (paper)]]
 - **Pro / institutional edges** · [[proedge-2026-11-24|Pro / institutional edges]]
+- **More trades: frequency vs edge** · [[Zlarior (LIT)]], [[ATLAS]] · [[more-trades-2026-11-25|More trades]]
 - **Edge hunt lane B, cross-asset triggers** · [[edge-b-cross-2026-11-22|Edge hunt lane B]]
 - **Edge hunt lane D: small meta-labeled SIZE + re-entry on LIT** · [[Zlarior (LIT)]] · [[edge-d-meta-2026-11-22|Edge hunt lane D]], [[meta-labeling|Meta-labeling]]
 - **Edge hunt C, calendar / money-flow timing** · [[Zlarior (LIT)]] · [[edge-c-calendar-2026-11-22|Edge hunt lane C]]
