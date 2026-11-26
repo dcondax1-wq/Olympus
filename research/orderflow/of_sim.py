@@ -48,7 +48,7 @@ def _et0(day: str) -> int:
     return int(pd.Timestamp(day + " 00:00", tz="America/New_York").tz_convert("UTC").value // 10**9)
 
 
-def simulate_day(day: str, p0: int, rng: np.random.Generator, mode: str = "planted", depth: bool = False):
+def simulate_day(day: str, p0: int, rng: np.random.Generator, mode: str = "planted", depth: bool = False, lvl: bool = False):
     """-> (ticks DataFrame in engine.tickrec columns, depth DataFrame or None, episodes [dict], last price in ticks)."""
     T = 24 * 3600
     sec = np.arange(T)
@@ -62,6 +62,8 @@ def simulate_day(day: str, p0: int, rng: np.random.Generator, mode: str = "plant
     eps = []
     # draw episode times first (bar-aligned), so the base walk can be built once
     starts = sorted(rng.choice(np.arange(600, 870, 5), size=EPISODES, replace=False) * 60)
+    if lvl:                                                               # the first sweep right after the opening range
+        starts = [600 * 60] + [s for s in starts if s >= 600 * 60 + 3600]
     starts = [s for k, s in enumerate(starts) if k == 0 or s - starts[k - 1] >= 3600][:EPISODES]
     n_sec = rng.poisson(rate)
     for s in starts:
@@ -86,7 +88,13 @@ def simulate_day(day: str, p0: int, rng: np.random.Generator, mode: str = "plant
         d_push = 1 if rng.random() < 0.5 else -1                         # +1: sweep a high (fade = short)
         win = p[max(0, s - 3600):s]
         level = (win.max() if d_push == 1 else win.min())
-        if abs(level - p[s]) > 80:                                        # too far: sweep from here instead
+        at_orb = lvl and s == 600 * 60
+        if at_orb:                                                        # the paper bot's levels: the nearer 09:30-10:00 extreme
+            orb = p[570 * 60:600 * 60]
+            hi, lo = np.floor(orb.max()) + 1, np.floor(orb.min())
+            d_push = 1 if hi - p[s] <= p[s] - lo else -1
+            level = hi if d_push == 1 else lo
+        if abs(level - p[s]) > 80 and not at_orb:                         # too far: sweep from here instead
             level = p[s] + d_push * rng.integers(20, 40)
         over = rng.integers(8, 20)
         back = rng.integers(14, 30)
@@ -149,24 +157,27 @@ def _depth(day, bid, sec, rth, rng):
     return pd.DataFrame(out)
 
 
-def world(n_days: int = 50, mode: str = "planted", depth_last: int = 0, seed: int = 7, start: str = "2026-09-14"):
+def world(n_days: int = 50, mode: str = "planted", depth_last: int = 0, seed: int = 7, start: str = "2026-09-14", lvl: bool = False,
+          keep_ticks: bool = False):
     """n_days of summaries + signals. -> {"R": {day: summary dict as of_battery._from_bytes}, "lit": [...], "atlas": [...],
     "episodes": {day: [...]}}"""
     from engine import ofsum
     B = _mod("of_battery.py", "of_battery_sim")
     rng = np.random.default_rng(seed)
     days = [d.strftime("%Y-%m-%d") for d in pd.bdate_range(start, periods=n_days)]
-    R, metas, EP = {}, {}, {}
+    R, metas, EP, TK = {}, {}, {}, {}
     p = 80_000
     for k, d in enumerate(days):
-        x, dp, eps, p = simulate_day(d, p, rng, mode, depth=k >= n_days - depth_last)
+        x, dp, eps, p = simulate_day(d, p, rng, mode, depth=k >= n_days - depth_last, lvl=lvl)
+        if keep_ticks:
+            TK[d] = (x, dp)
         files = ofsum.summarize(x, d, ofsum.block_threshold(d, metas=metas))
         R[d] = B._from_bytes(files)
         R[d]["depth"] = ofsum.depth_summary(dp) if dp is not None else None
         metas[d] = R[d]["meta"]
         EP[d] = eps
     lit, atlas = signals(R, EP, rng, B)
-    return {"R": R, "lit": lit, "atlas": atlas, "episodes": EP, "days": days}
+    return {"R": R, "lit": lit, "atlas": atlas, "episodes": EP, "days": days, "ticks": TK}
 
 
 def signals(R, EP, rng, B):

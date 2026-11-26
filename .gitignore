@@ -361,3 +361,8 @@ data/lanes/
 # day-handsfree 2026-11-25: Telegram command state (engine/tg_cmd.py: getUpdates offset, last poll) + its .tmp copies
 data/tg_cmd.json
 data/tg_cmd.json.*.tmp
+# day-oflearn 2026-11-26: the Order Flow pillar's paper bot (engine/of_paper.py), PC-local, never tracked
+data/of_paper.json
+data/of_paper.json.tmp
+data/of_paper_cache/
+data/of_paper_off

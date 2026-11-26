@@ -1050,6 +1050,9 @@ def eod_notice(view: dict, now) -> dict:
     body = f"{head} on {view.get('name')}. {eval_line(view.get('eval'))}"
     if not view.get("fresh"):
         body += " (bot numbers older than 30 min: is the PC bot running?)"
+    ofl = of_paper_line(now)                 # day-oflearn: the Order Flow pillar's PAPER line (never a real trade)
+    if ofl:
+        body += " " + ofl[:220] + " (paper)."
     return _payload("eod", f"Day summary {_et(now):%a %b %d}", body, f"ops:eod:{day}", now)
 
 
@@ -1504,9 +1507,56 @@ def watch_notices(state: dict, now) -> list:
         return []
 
 
+OF_PAPER_LOCK_S = 240
+
+
+def of_paper_kick(now, real: bool = True, root: str | None = None, popen=None) -> str | None:
+    """day-oflearn: start the Order Flow pillar's PAPER bot (engine/of_paper.py tick) as its own detached process, 09:25-16:10 ET
+    weekdays, at most once per 4 minutes. PAPER ONLY (it never routes); this task never waits for it. LE_OFPAPER=0 or
+    data/of_paper_off = off. Returns what it did (None = not due). Never raises."""
+    try:
+        root = root or ROOT
+        if os.environ.get("LE_OFPAPER") == "0" or os.path.exists(os.path.join(root, "data", "of_paper_off")):
+            return "off"
+        e = _et(now)
+        if e.weekday() >= 5 or not (9 * 60 + 25 <= e.hour * 60 + e.minute <= 16 * 60 + 10):
+            return None
+        lock = os.path.join(root, "data", "of_paper_cache", "run.lock")
+        try:
+            if now - os.path.getmtime(lock) < OF_PAPER_LOCK_S:
+                return "locked"
+        except OSError:
+            pass
+        os.makedirs(os.path.dirname(lock), exist_ok=True)
+        with open(lock, "w") as fh:
+            fh.write(str(int(now)))
+        if not real:
+            return "started (test)"
+        import subprocess
+        kw = {"cwd": root, "stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL, "stdin": subprocess.DEVNULL}
+        if os.name == "nt":
+            kw["creationflags"] = 0x00000008 | 0x00000200 | 0x08000000      # DETACHED_PROCESS | NEW_PROCESS_GROUP | NO_WINDOW
+        (popen or subprocess.Popen)([sys.executable, "-X", "utf8", "-m", "engine.of_paper", "tick"], **kw)
+        return "started"
+    except Exception as e:  # noqa: BLE001
+        return f"error {e.__class__.__name__}"
+
+
+def of_paper_line(now, root: str | None = None) -> str | None:
+    """Today's OF paper line from data/of_paper.json (plain JSON read, no numpy), else None. Never raises."""
+    try:
+        with open(os.path.join(root or ROOT, "data", "of_paper.json"), encoding="utf-8") as fh:
+            S = json.load(fh)
+        return S.get("line") if S.get("day") == _et(now).strftime("%Y-%m-%d") else None
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def tick(now=None, ctx=None, state=None, sender=None, state_path: str = STATE_PATH, do_backup=True) -> list:
     """One scheduled run: every notice that is due, sent once. Returns the results."""
     now = time.time() if now is None else now
+    if ctx is None:                          # day-oflearn: the OF paper bot (scheduled runs only, never a replay / test ctx)
+        of_paper_kick(now)
     state = load_state(state_path) if state is None else state
     D = due(now)
     full = D["presession"] or D["weekly"]
