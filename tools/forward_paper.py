@@ -387,6 +387,12 @@ def run(only=None, bands=False, dry=False, say=print, rules=None, today=None):
         _write(BANDS, B)
         _write(STATE, doc)
         journal(doc)
+        if rules is None:                  # the Brain's "What the bots learned" page reads it (big-learnview): rebuild, soft
+            try:
+                import build_brain_learn
+                build_brain_learn.main([])
+            except Exception as e:  # noqa: BLE001
+                say(f"brain/learn.json not rebuilt: {e.__class__.__name__}: {e}")
     say(f"forward: {len(out_rules)} rules, {len(fwd_days)} forward sessions (data to {data_end}), {time.time() - t0:.0f}s")
     return doc
 
