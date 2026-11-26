@@ -1,0 +1,25 @@
+diff --git a/engine/sizing.py b/engine/sizing.py
+index 2384a85f9..ac30cb54a 100644
+--- a/engine/sizing.py
++++ b/engine/sizing.py
+@@ -764,7 +764,8 @@ TW_50K = {"target": 3000.0, "mll": 2000.0, "lock": 100.0, "dll": 1000.0, "max_mi
+ TW_25K = {"target": 1500.0, "mll": 1000.0, "lock": 100.0, "dll": 600.0, "max_micros": 20, "scale": 0.5}
+ TW_DEFAULT = {"base": "need", "need_buf": 1.0, "usd": 800.0, "ref": 25.0, "max_usd": None, "wk": True,
+               "press_at": None, "press_mult": 1.0, "press_room": None, "protect_over": None, "protect_keep": 0.0,
+-              "room_f": 0.6, "dll_cap": True, "stop_at_target": True, "min_days": 2}
++              "room_f": 0.6, "dll_cap": True, "stop_at_target": True, "min_days": 2,
++              "protect_below": None, "protect_room_f": None}
+ EVAL_SESSIONS = 10          # the owner's rule: an eval not passed after 10 sessions is reset (a new purchase)
+ 
+ 
+@@ -837,6 +838,10 @@ def two_week_qty(trade: dict, state: dict, cfg: dict | None = None, acct: dict |
+         if c["press_room"] is not None:
+             room_f = c["press_room"]
+             note(f"clock press from session {int(c['press_at'])}: room cap {float(room_f) * 100:.0f}%")
++    if c.get("protect_below") is not None and room is not None and room < float(c["protect_below"]) * float(A["mll"]) * sc:
++        # research/evalsizer (2026-11-26, variant PR1): near the floor the room cap tightens (fewer fails, slower passes)
++        room_f = c["protect_room_f"]
++        note(f"protect: room ${room:,.0f} under {float(c['protect_below']) * 100:.0f}% of the max loss -> room cap {float(room_f) * 100:.0f}%")
+     q = idm_apply(q, trade, risk, maxq, c.get("idm", "both"), why)   # inducement-count size (idm_m; absent = unchanged)
+     # ---- caps: ceilings (2026-10-24 cap invariant: a full stop-out of stop + 1 tick + $1.90 a micro; when not even 1
+     #      micro fits a cap -> 0 = skip, never raised back to 1)

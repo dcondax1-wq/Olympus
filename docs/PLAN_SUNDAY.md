@@ -27,3 +27,20 @@ Rules kept: paper only for Claude; strategy changes only with proof + owner yes;
 | 5 Order flow | LANDED: year backfill fix, depth, OF mill, live room. First result after install (+F5): ~Nov 27-Dec 1. |
 | 6 Alerts / idea mill | LANDED: setup-progress pings; nightly idea mill v3. |
 Next to Sunday: (a) after the owner's line, verify on the feed: bf block, Telegram commands, setup pings, k7; (b) order-flow backfill over the holiday weekend + first battery look; (c) the owner's yes/no on atlas-sb-half; (d) weekend finder rounds only for real issues.
+
+## BIG NQ-bot queue (owner 2026-11-26: "big stuff for the NQ bot, not small fixes") - reassign each finishing helper here
+| Job | Owner of the job | Status |
+|---|---|---|
+| Optimal eval SIZING POLICY + business planner (12-month plan, tripwires) | big-evalsizer | LANDED 11-26 (2 Decide cards) |
+| Sim shadow eval (paper Builder 50K) + buy gate W3/W5 on Money + /today | big-shadow (evalsizer helper) | running |
+| DAY-TYPE classifier + learning view (brain/learned.html) | big-regime | LANDED 11-26 |
+| LIVE SETUP SCORE (similar past setups -> win rate, $; display only) | big-setupscore (regime helper) | running |
+| Direct broker API execution (replace the NT GUI/file bridge) feasibility + paper prototype | big-execution | running |
+| BLITZ v2: rebuild the 3rd pillar or retire it with proof | moretrades helper | running |
+| Order flow pillar: one-line send (red team #14), LE_TickRec depth, OF mill, learner (LANDED 11-26), live room | proedge + oflearn helpers | running |
+| PAYOUT ENGINE (funded payout rules, next payout $/date, policy study; read-only) | big-payout (proedge helper) | running |
+| Guard2 risk alarm + noleak + Telegram trade cards / EOD / weekly | guard2 / zeroerr | LANDED 11-26 |
+| ATLAS v2 (pullback limits) | atlas2 | REJECTED 11-26 (PF 1.02-1.06 long-run but -26-42% of 2026 $; only lever = cheaper real fills) |
+| NEXT: multi-account ALLOCATION optimizer (which signal goes to which of the 4 accounts, correlated EV, rules) | - | queued |
+| NEXT: news-event volatility playbook (CPI/NFP/FOMC, defined risk, MFFU news rules per plan) | - | queued |
+| NEXT: LIT v2 learning from live (journal + OF + day type -> nightly suggestions, owner-gated) | - | queued |

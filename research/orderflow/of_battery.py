@@ -162,7 +162,7 @@ def filter_report(rows, keep, H, rng):
         res["skip_placebo_p"] = round((ge + 1) / (N_PLACEBO + 1), 3)
     else:
         res["skip_placebo_p"] = None
-    ok = ok and (res["skip_placebo_p"] or 1) < 0.10
+    ok = ok and (1 if res["skip_placebo_p"] is None else res["skip_placebo_p"]) < 0.10  # day-oflearn fix: p 0.0 was read as 1
     res["skipped"] = nskip
     res["verdict"] = "TOO FEW" if few else ("PASS (candidate)" if ok else "REJECTED")
     return res
@@ -185,7 +185,7 @@ def standalone_report(sig, H, rng):
         res["placebo_p"] = round(float((np.array(dr) >= act.sum()).mean()), 3)
     else:
         res["placebo_p"] = None
-    ok = ok and (res["placebo_p"] or 1) < 0.10
+    ok = ok and (1 if res["placebo_p"] is None else res["placebo_p"]) < 0.10
     res["all_net$"] = round(float(act.sum()))
     res["verdict"] = "TOO FEW" if few else ("PASS (candidate)" if ok else "REJECTED")
     return res
@@ -515,9 +515,9 @@ def run(src=None, ticks=False, force=False, final=False, raw=None, lit=None, atl
 def phone_line(out) -> str:
     """One line for the owner's phone: days, each test's verdict, the honest bottom line."""
     v = out.get("verdicts") or {}
-    short = {k.split(" ")[0]: (x.split(" ")[0] if x else "?") for k, x in v.items()}
+    short = {k.split(" ")[0]: ("too few" if str(x).startswith("TOO FEW") else str(x).split(" ")[0].lower() if x else "?") for k, x in v.items()}
     bits = ", ".join(f"{k} {x}" for k, x in short.items())
-    anyp = any(x.startswith("PASS") for x in v.values())
+    anyp = any(str(x).startswith("PASS") for x in v.values())
     mc = (out.get("mill") or {}).get("counts") or {}
     mill = f" Idea mill: {mc.get('g1g2g3', 0)} of {mc.get('scored', 0)} ideas passed 3 gates (forward paper next)." if mc else ""
     return (f"Order-flow battery look {out.get('look')} on {out.get('tick_days')} tick days ({out.get('first')}..{out.get('last')}): {bits}.{mill} "

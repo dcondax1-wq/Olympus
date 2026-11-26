@@ -243,6 +243,10 @@ class Relay:
             return self.http(method, url, body)
         if SEALED:
             raise RuntimeError("PC self-test child: the relay is not called")
+        if method != "GET":
+            from . import pc_identity                # day-noleak: only the owner's PC posts to the relay
+            if not pc_identity.may_post("push relay", url=url):
+                raise RuntimeError("dry run: not the owner's PC (engine/pc_identity)")
         req = urllib.request.Request(url, data=body, method=method, headers={"User-Agent": "LiquidityEngine/1.0"})
         with urllib.request.urlopen(req, timeout=self.timeout) as r:
             return r.read().decode("utf-8", "replace")
@@ -549,6 +553,9 @@ def vapid_header(endpoint: str, priv_b64: str, pub_b64: str | None = None, subje
 
 
 def _send_builtin(sub: dict, data: bytes, priv: str, pub: str, ttl: int = TTL_S, urgency: str = "high") -> int:
+    from . import pc_identity                        # day-noleak: Web Push only from the owner's PC (or the cloud monitor)
+    if not pc_identity.may_post("web push", url=sub.get("endpoint")):
+        return 0
     body = encrypt(data, sub["keys"]["p256dh"], sub["keys"]["auth"])
     req = urllib.request.Request(sub["endpoint"], data=body, method="POST", headers={
         "Content-Encoding": "aes128gcm", "Content-Type": "application/octet-stream", "TTL": str(int(ttl)),
@@ -1436,7 +1443,13 @@ def _bus_send(payload: dict) -> dict | None:
         if k in ("fill", "outcome") and notify.real_trade(payload):
             what = "entry" if k == "fill" else "exit"
             p = dict(payload)
-            r = AB.send(AB.from_trade(p, what), on_done=lambda res: res.get("ok") and notify.instant_record(p, what))
+            ev = AB.from_trade(p, what)
+            try:                                       # day-cards: the chart picture + the bot's reason (engine/trade_card, read-only)
+                from . import trade_card
+                ev = trade_card.attach(ev, p, what)
+            except Exception:
+                pass
+            r = AB.send(ev, on_done=lambda res: res.get("ok") and notify.instant_record(p, what))
             return {"bus": r}
         if k == "risk" and str(payload.get("key") or "").startswith("hedge"):
             r = AB.send({"kind": "hedge_risk", "key": str(payload.get("key")), "title": payload.get("title"),

@@ -91,7 +91,8 @@ def part_b(priv, vk):
     ok(d.get("signed") == 49193.0, "with a vk the page shows the PC's real balance")
     ok(d.get("plain") == 99999.0, "without a vk the newest post wins as before (why the vk must be pinned)")
     src = open(os.path.join(ROOT, "tools", "web_public", "pc_feed.js"), encoding="utf-8").read()
-    ok("feed.vk ? await keepSigned(t, feed.vk) : t" in src, "fetchLatest checks signatures whenever status_feed.json has a vk")
+    ok("ks.length ? await keepSigned(t, ks) : t" in src and "const ks = feedKeys(feed)" in src,
+       "fetchLatest checks signatures whenever status_feed.json has a vk (day-guard2: vk + vks + this phone's trusted keys)")
 
 
 def part_c():

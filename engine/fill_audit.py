@@ -136,7 +136,8 @@ def _rkey(r) -> str:
 
 def _leg_view(lg) -> dict:
     keep = ("instrument", "qty", "dir", "entry_t", "stop", "stop0", "target", "entry_id", "stop_id", "target_id", "status",
-            "filled", "fill_px", "fill_mtime", "sent_at", "bracket_qty", "closed", "closed_at")
+            "filled", "fill_px", "fill_mtime", "sent_at", "bracket_qty", "closed", "closed_at",
+            "send_at", "ack_at", "fill_seen_at", "ref")       # big-execution 2026-11-26: the latency chain per entry
     return {k: lg.get(k) for k in keep if k in lg}
 
 

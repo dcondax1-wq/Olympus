@@ -261,10 +261,21 @@ def mark_tested(cfg: dict):
 
 
 # ------------------------------------------------------------------------------------------------ network (one place, fakeable)
+def _may_post(kind: str, url=None) -> bool:
+    """day-noleak 2026-11-26: only the owner's PC posts for real (a sandbox's report reached the public topic). Never raises."""
+    try:
+        from engine import pc_identity
+        return pc_identity.may_post(kind, url=url)
+    except Exception:  # noqa: BLE001
+        return os.name == "nt"                       # red team 2026-11-26: fail-OPEN on Windows (the PC), closed elsewhere
+
+
 def default_http(method, url, body=None, headers=None, timeout=HTTP_TIMEOUT_S):
     """-> (status, text). Never raises."""
     if os.environ.get("LE_PR_NO_NET") == "1":
         return 0, "network off (LE_PR_NO_NET=1)"
+    if method != "GET" and not _may_post("pc_report post", url):
+        return 0, "dry run: not the owner's PC (engine/pc_identity)"
     req = urllib.request.Request(url, data=body, method=method)
     req.add_header("User-Agent", UA)
     for k, v in (headers or {}).items():
@@ -313,8 +324,8 @@ def _signed(body, core: bool = False, real: bool = True) -> str:
             SIGN_STATE["why"] = "too big to sign"
             return b
         SIGN_STATE["why"] = None
-        pin = _ss.feed_vk() if real else None
-        if pin and _ss.vk_of(k) != pin:
+        pins = _ss.feed_vks() if real else []
+        if pins and _ss.vk_of(k) not in pins and not _ss.rotation_pending():
             # redteam 2026-11-21: a new key (new PC / Windows profile) under a pinned vk: every post is signed but the phone and
             # board.py drop them all. Still posted; the run record says why (rec["unsigned"]).
             SIGN_STATE["why"] = "this PC's key is not the pinned vk: the phone drops these posts (re-pin: python tools/status_sign.py check)"
@@ -2352,6 +2363,15 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
                 posted += 1
             else:
                 rec["errors"].append("status: " + why)
+            if http is None:                          # day-guard2: a key change's hand-over post (status_sign rotate), every 6 h for 14 days
+                try:
+                    from tools import status_sign as _ss
+                    rt = _ss.rotation_due()
+                    if rt:
+                        ok2, why2 = ntfy_post(cfg["ntfy"], cfg["status_topic"], rt, priority="min")
+                        rec["key_handover"] = "posted" if ok2 else why2
+                except Exception:  # noqa: BLE001
+                    pass
     elif not status.get("t"):
         rec["errors"].append("status: the bot has never reported on this PC (nothing to show)")
     write_json(os.path.join(work, "status.json"), status, compact=True)
@@ -2545,6 +2565,11 @@ def after_run(quiet: bool = True) -> None:
     try:                           # MFFU rule-change watcher (tools/rules_watch.py): weekdays from 17:05 ET, once a day; alerts only on a real change
         from tools import rules_watch as _rw
         _rw.maybe_run()
+    except Exception:
+        pass
+    try:                           # the auto trade journal (tools/journal_build.py): weekdays from 17:20 ET, once a day, into data/journal/ (gitignored)
+        from tools import journal_build as _jb
+        _jb.maybe_run()
     except Exception:
         pass
     # the Sunday money report (tools/weekly_money_report.py): once a week, Sunday from 17:00 ET, on your private topic; soft, never stops this run

@@ -69,7 +69,7 @@ const out = {};
     out.home = await p.evaluate(() => {
       const s = document.getElementById('todayStrip'), r = (q) => { const e = document.querySelector(q); return e ? e.getBoundingClientRect() : null; };
       return { ready: s && s.dataset.ready, cells: s ? [...s.querySelectorAll('a')].map((a) => a.textContent) : [], hrefs: s ? [...s.querySelectorAll('a')].map((a) => new URL(a.href).pathname + new URL(a.href).hash) : [],
-        h: s ? Math.round(s.getBoundingClientRect().height) : 0, stripBottom: s ? Math.round(s.getBoundingClientRect().bottom) : 0, q: Math.round(r('#q').top), grid: Math.round(r('.g-agrid').top), more: Math.round(r('#moreBtn').bottom) };
+        h: s ? Math.round(s.getBoundingClientRect().height) : 0, tapMin: s ? Math.min(...[...s.querySelectorAll('a')].map((a) => { const r = a.getBoundingClientRect(); return Math.min(r.width, r.height); })) : 0, stripBottom: s ? Math.round(s.getBoundingClientRect().bottom) : 0, q: Math.round(r('#q').top), grid: Math.round(r('.g-agrid').top), more: Math.round(r('#moreBtn').bottom) };
     });
     out.homeWide = await wide(p);
     if (SHOTS) await p.screenshot({ path: SHOTS + '/03_home.png' });

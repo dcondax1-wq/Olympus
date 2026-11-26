@@ -1,0 +1,674 @@
+{
+ "K0 today|W0|B": {
+  "net12_mean": -705,
+  "net12_p10": -2027,
+  "net12_p50": -1441,
+  "net12_p90": 1361,
+  "net6_mean": -420,
+  "net6_p10": -1042,
+  "net6_p50": -727,
+  "net6_p90": 687,
+  "month_1_6": [
+   -252,
+   -97,
+   0
+  ],
+  "month_7_12": [
+   -286,
+   -155,
+   0
+  ],
+  "fees_month_mean": 134.9,
+  "fees_month_p90": 171.3,
+  "cash_needed_p90": 2040,
+  "p_loss12": 77.4,
+  "buys": 20.67,
+  "pays": 0.83,
+  "fails": 16.65,
+  "passes": 4.1
+ },
+ "K0 today|W0|SW": {
+  "net12_mean": 6514,
+  "net12_p10": -12,
+  "net12_p50": 5382,
+  "net12_p90": 14523,
+  "net6_mean": 6253,
+  "net6_p10": 417,
+  "net6_p50": 5276,
+  "net6_p90": 13561,
+  "month_1_6": [
+   -160,
+   0,
+   3404
+  ],
+  "month_7_12": [
+   -226,
+   -97,
+   0
+  ],
+  "fees_month_mean": 80.8,
+  "fees_month_p90": 120.8,
+  "cash_needed_p90": 315,
+  "p_loss12": 10.1,
+  "buys": 11.9,
+  "pays": 7.39,
+  "fails": 8.03,
+  "passes": 4.34
+ },
+ "K0 today|W0|M25": {
+  "net12_mean": 2425,
+  "net12_p10": -1484,
+  "net12_p50": 893,
+  "net12_p90": 8627,
+  "net6_mean": 939,
+  "net6_p10": -848,
+  "net6_p50": -48,
+  "net6_p90": 3846,
+  "month_1_6": [
+   -223,
+   -63,
+   800
+  ],
+  "month_7_12": [
+   -223,
+   -63,
+   1537
+  ],
+  "fees_month_mean": 94.6,
+  "fees_month_p90": 134.5,
+  "cash_needed_p90": 1517,
+  "p_loss12": 37.0,
+  "buys": 14.4,
+  "pays": 3.24,
+  "fails": 10.08,
+  "passes": 4.98
+ },
+ "K0 today|W0|G": {
+  "net12_mean": 37598,
+  "net12_p10": 20096,
+  "net12_p50": 36949,
+  "net12_p90": 54948,
+  "net6_mean": 15398,
+  "net6_p10": 4331,
+  "net6_p50": 14742,
+  "net6_p90": 26796,
+  "month_1_6": [
+   0,
+   1600,
+   6877
+  ],
+  "month_7_12": [
+   0,
+   3269,
+   7765
+  ],
+  "fees_month_mean": 30.1,
+  "fees_month_p90": 44.9,
+  "cash_needed_p90": 92,
+  "p_loss12": 0.0,
+  "buys": 4.62,
+  "pays": 37.6,
+  "fails": 0.79,
+  "passes": 5.85
+ },
+ "K0 today|W3|B": {
+  "net12_mean": -207,
+  "net12_p10": -1294,
+  "net12_p50": -630,
+  "net12_p90": 1316,
+  "net6_mean": -249,
+  "net6_p10": -790,
+  "net6_p50": -538,
+  "net6_p90": 649,
+  "month_1_6": [
+   -252,
+   -63,
+   0
+  ],
+  "month_7_12": [
+   -223,
+   0,
+   0
+  ],
+  "fees_month_mean": 76.7,
+  "fees_month_p90": 114.2,
+  "cash_needed_p90": 1323,
+  "p_loss12": 76.7,
+  "buys": 11.74,
+  "pays": 0.67,
+  "fails": 11.01,
+  "passes": 2.58
+ },
+ "K0 today|W3|SW": {
+  "net12_mean": 6890,
+  "net12_p10": 516,
+  "net12_p50": 5894,
+  "net12_p90": 14712,
+  "net6_mean": 6292,
+  "net6_p10": 484,
+  "net6_p50": 5299,
+  "net6_p90": 13561,
+  "month_1_6": [
+   -126,
+   0,
+   3404
+  ],
+  "month_7_12": [
+   -160,
+   0,
+   0
+  ],
+  "fees_month_mean": 42.2,
+  "fees_month_p90": 76.4,
+  "cash_needed_p90": 155,
+  "p_loss12": 6.7,
+  "buys": 6.13,
+  "pays": 7.31,
+  "fails": 4.75,
+  "passes": 3.48
+ },
+ "K0 today|W3|M25": {
+  "net12_mean": 2378,
+  "net12_p10": -1100,
+  "net12_p50": 752,
+  "net12_p90": 8479,
+  "net6_mean": 1002,
+  "net6_p10": -694,
+  "net6_p50": 7,
+  "net6_p90": 3846,
+  "month_1_6": [
+   -218,
+   -63,
+   800
+  ],
+  "month_7_12": [
+   -160,
+   0,
+   1282
+  ],
+  "fees_month_mean": 68.8,
+  "fees_month_p90": 102.6,
+  "cash_needed_p90": 1134,
+  "p_loss12": 38.9,
+  "buys": 10.47,
+  "pays": 2.92,
+  "fails": 8.0,
+  "passes": 4.0
+ },
+ "K0 today|W3|G": {
+  "net12_mean": 37140,
+  "net12_p10": 18988,
+  "net12_p50": 36900,
+  "net12_p90": 54902,
+  "net6_mean": 15372,
+  "net6_p10": 4205,
+  "net6_p50": 14742,
+  "net6_p90": 26796,
+  "month_1_6": [
+   0,
+   1600,
+   6873
+  ],
+  "month_7_12": [
+   0,
+   3200,
+   7718
+  ],
+  "fees_month_mean": 28.2,
+  "fees_month_p90": 42.0,
+  "cash_needed_p90": 92,
+  "p_loss12": 0.1,
+  "buys": 4.32,
+  "pays": 37.13,
+  "fails": 0.78,
+  "passes": 5.65
+ },
+ "K0 today|W5|B": {
+  "net12_mean": -122,
+  "net12_p10": -1013,
+  "net12_p50": -630,
+  "net12_p90": 1251,
+  "net6_mean": -141,
+  "net6_p10": -664,
+  "net6_p50": -320,
+  "net6_p90": 486,
+  "month_1_6": [
+   -223,
+   0,
+   0
+  ],
+  "month_7_12": [
+   -223,
+   0,
+   0
+  ],
+  "fees_month_mean": 62.0,
+  "fees_month_p90": 94.5,
+  "cash_needed_p90": 1037,
+  "p_loss12": 76.1,
+  "buys": 9.44,
+  "pays": 0.58,
+  "fails": 9.1,
+  "passes": 2.26
+ },
+ "K0 today|W5|G": {
+  "net12_mean": 37538,
+  "net12_p10": 19852,
+  "net12_p50": 36949,
+  "net12_p90": 54948,
+  "net6_mean": 15395,
+  "net6_p10": 4331,
+  "net6_p50": 14742,
+  "net6_p90": 26796,
+  "month_1_6": [
+   0,
+   1600,
+   6875
+  ],
+  "month_7_12": [
+   0,
+   3252,
+   7765
+  ],
+  "fees_month_mean": 29.9,
+  "fees_month_p90": 44.4,
+  "cash_needed_p90": 92,
+  "p_loss12": 0.0,
+  "buys": 4.59,
+  "pays": 37.55,
+  "fails": 0.79,
+  "passes": 5.83
+ },
+ "K0 today|W5|M25": {
+  "net12_mean": 2331,
+  "net12_p10": -957,
+  "net12_p50": 625,
+  "net12_p90": 8153,
+  "net6_mean": 1023,
+  "net6_p10": -630,
+  "net6_p50": -255,
+  "net6_p90": 3806,
+  "month_1_6": [
+   -189,
+   0,
+   800
+  ],
+  "month_7_12": [
+   -160,
+   0,
+   801
+  ],
+  "fees_month_mean": 62.6,
+  "fees_month_p90": 92.1,
+  "cash_needed_p90": 974,
+  "p_loss12": 40.7,
+  "buys": 9.49,
+  "pays": 2.82,
+  "fails": 7.39,
+  "passes": 3.71
+ },
+ "K0 today|W5|SW": {
+  "net12_mean": 6841,
+  "net12_p10": 456,
+  "net12_p50": 5766,
+  "net12_p90": 14679,
+  "net6_mean": 6287,
+  "net6_p10": 465,
+  "net6_p50": 5280,
+  "net6_p90": 13561,
+  "month_1_6": [
+   -155,
+   0,
+   3404
+  ],
+  "month_7_12": [
+   -160,
+   0,
+   0
+  ],
+  "fees_month_mean": 46.9,
+  "fees_month_p90": 72.0,
+  "cash_needed_p90": 155,
+  "p_loss12": 6.3,
+  "buys": 6.74,
+  "pays": 7.32,
+  "fails": 5.13,
+  "passes": 3.56
+ },
+ "K2 + 2nd Rapid 25K|W5|B": {
+  "net12_mean": -279,
+  "net12_p10": -1271,
+  "net12_p50": -767,
+  "net12_p90": 911,
+  "net6_mean": -244,
+  "net6_p10": -859,
+  "net6_p50": -432,
+  "net6_p90": 382,
+  "month_1_6": [
+   -286,
+   0,
+   0
+  ],
+  "month_7_12": [
+   -320,
+   0,
+   0
+  ],
+  "fees_month_mean": 78.7,
+  "fees_month_p90": 124.5,
+  "cash_needed_p90": 1334,
+  "p_loss12": 81.9,
+  "buys": 11.16,
+  "pays": 0.63,
+  "fails": 10.64,
+  "passes": 2.24
+ },
+ "K2 + 2nd Rapid 25K|W5|M25": {
+  "net12_mean": 2480,
+  "net12_p10": -1242,
+  "net12_p50": 253,
+  "net12_p90": 8932,
+  "net6_mean": 1105,
+  "net6_p10": -830,
+  "net6_p50": -315,
+  "net6_p90": 4162,
+  "month_1_6": [
+   -257,
+   0,
+   737
+  ],
+  "month_7_12": [
+   -257,
+   0,
+   800
+  ],
+  "fees_month_mean": 83.5,
+  "fees_month_p90": 125.0,
+  "cash_needed_p90": 1271,
+  "p_loss12": 46.9,
+  "buys": 11.82,
+  "pays": 3.23,
+  "fails": 9.05,
+  "passes": 4.12
+ },
+ "K2 + 2nd Rapid 25K|W5|G": {
+  "net12_mean": 58813,
+  "net12_p10": 28825,
+  "net12_p50": 59030,
+  "net12_p90": 88782,
+  "net6_mean": 23070,
+  "net6_p10": 5308,
+  "net6_p50": 22393,
+  "net6_p90": 42091,
+  "month_1_6": [
+   -97,
+   1860,
+   10953
+  ],
+  "month_7_12": [
+   0,
+   5347,
+   12750
+  ],
+  "fees_month_mean": 44.4,
+  "fees_month_p90": 66.3,
+  "cash_needed_p90": 189,
+  "p_loss12": 0.1,
+  "buys": 6.35,
+  "pays": 59.58,
+  "fails": 0.84,
+  "passes": 7.43
+ },
+ "K2 + 2nd Rapid 25K|W5|SW": {
+  "net12_mean": 9394,
+  "net12_p10": 324,
+  "net12_p50": 7105,
+  "net12_p90": 21702,
+  "net6_mean": 8830,
+  "net6_p10": 354,
+  "net6_p50": 6586,
+  "net6_p90": 20682,
+  "month_1_6": [
+   -194,
+   0,
+   5086
+  ],
+  "month_7_12": [
+   -194,
+   0,
+   0
+  ],
+  "fees_month_mean": 64.2,
+  "fees_month_p90": 98.7,
+  "cash_needed_p90": 292,
+  "p_loss12": 7.6,
+  "buys": 8.64,
+  "pays": 10.12,
+  "fails": 6.09,
+  "passes": 4.47
+ },
+ "K2 + 2nd Rapid 25K|W3|B": {
+  "net12_mean": -510,
+  "net12_p10": -1851,
+  "net12_p50": -968,
+  "net12_p90": 1151,
+  "net6_mean": -491,
+  "net6_p10": -1179,
+  "net6_p50": -830,
+  "net6_p90": 482,
+  "month_1_6": [
+   -349,
+   -97,
+   0
+  ],
+  "month_7_12": [
+   -320,
+   0,
+   0
+  ],
+  "fees_month_mean": 111.7,
+  "fees_month_p90": 165.0,
+  "cash_needed_p90": 1883,
+  "p_loss12": 81.6,
+  "buys": 16.06,
+  "pays": 0.78,
+  "fails": 14.62,
+  "passes": 2.93
+ },
+ "K2 + 2nd Rapid 25K|W3|G": {
+  "net12_mean": 58414,
+  "net12_p10": 27830,
+  "net12_p50": 58998,
+  "net12_p90": 88675,
+  "net6_mean": 23059,
+  "net6_p10": 5244,
+  "net6_p50": 22393,
+  "net6_p90": 42091,
+  "month_1_6": [
+   -97,
+   1849,
+   10953
+  ],
+  "month_7_12": [
+   0,
+   5242,
+   12690
+  ],
+  "fees_month_mean": 42.8,
+  "fees_month_p90": 63.0,
+  "cash_needed_p90": 189,
+  "p_loss12": 0.1,
+  "buys": 6.13,
+  "pays": 59.14,
+  "fails": 0.83,
+  "passes": 7.27
+ },
+ "K2 + 2nd Rapid 25K|W3|M25": {
+  "net12_mean": 2634,
+  "net12_p10": -1531,
+  "net12_p50": 548,
+  "net12_p90": 9616,
+  "net6_mean": 1065,
+  "net6_p10": -1013,
+  "net6_p50": -281,
+  "net6_p90": 4159,
+  "month_1_6": [
+   -320,
+   -63,
+   800
+  ],
+  "month_7_12": [
+   -257,
+   0,
+   1386
+  ],
+  "fees_month_mean": 102.6,
+  "fees_month_p90": 148.8,
+  "cash_needed_p90": 1597,
+  "p_loss12": 43.2,
+  "buys": 14.64,
+  "pays": 3.57,
+  "fails": 10.8,
+  "passes": 4.86
+ },
+ "K2 + 2nd Rapid 25K|W3|SW": {
+  "net12_mean": 9329,
+  "net12_p10": 260,
+  "net12_p50": 6984,
+  "net12_p90": 21740,
+  "net6_mean": 8794,
+  "net6_p10": 312,
+  "net6_p50": 6566,
+  "net6_p90": 20639,
+  "month_1_6": [
+   -194,
+   0,
+   5086
+  ],
+  "month_7_12": [
+   -257,
+   0,
+   0
+  ],
+  "fees_month_mean": 72.1,
+  "fees_month_p90": 120.1,
+  "cash_needed_p90": 294,
+  "p_loss12": 8.4,
+  "buys": 9.82,
+  "pays": 10.15,
+  "fails": 7.0,
+  "passes": 4.63
+ },
+ "K2 + 2nd Rapid 25K|W0|G": {
+  "net12_mean": 59116,
+  "net12_p10": 29739,
+  "net12_p50": 59135,
+  "net12_p90": 88782,
+  "net6_mean": 23089,
+  "net6_p10": 5308,
+  "net6_p50": 22393,
+  "net6_p90": 42091,
+  "month_1_6": [
+   -97,
+   1880,
+   10953
+  ],
+  "month_7_12": [
+   0,
+   5423,
+   12790
+  ],
+  "fees_month_mean": 45.3,
+  "fees_month_p90": 67.3,
+  "cash_needed_p90": 189,
+  "p_loss12": 0.0,
+  "buys": 6.5,
+  "pays": 59.87,
+  "fails": 0.84,
+  "passes": 7.51
+ },
+ "K2 + 2nd Rapid 25K|W0|B": {
+  "net12_mean": -1223,
+  "net12_p10": -2828,
+  "net12_p50": -2038,
+  "net12_p90": 1130,
+  "net6_mean": -723,
+  "net6_p10": -1528,
+  "net6_p50": -1058,
+  "net6_p90": 417,
+  "month_1_6": [
+   -383,
+   -160,
+   0
+  ],
+  "month_7_12": [
+   -383,
+   -155,
+   0
+  ],
+  "fees_month_mean": 190.0,
+  "fees_month_p90": 239.0,
+  "cash_needed_p90": 2851,
+  "p_loss12": 82.8,
+  "buys": 27.47,
+  "pays": 0.97,
+  "fails": 22.02,
+  "passes": 4.6
+ },
+ "K2 + 2nd Rapid 25K|W0|M25": {
+  "net12_mean": 2647,
+  "net12_p10": -2095,
+  "net12_p50": 506,
+  "net12_p90": 9772,
+  "net6_mean": 978,
+  "net6_p10": -1208,
+  "net6_p50": -373,
+  "net6_p90": 4162,
+  "month_1_6": [
+   -349,
+   -97,
+   800
+  ],
+  "month_7_12": [
+   -320,
+   -63,
+   1537
+  ],
+  "fees_month_mean": 138.0,
+  "fees_month_p90": 188.4,
+  "cash_needed_p90": 2129,
+  "p_loss12": 43.7,
+  "buys": 19.77,
+  "pays": 3.96,
+  "fails": 13.56,
+  "passes": 6.01
+ },
+ "K2 + 2nd Rapid 25K|W0|SW": {
+  "net12_mean": 8778,
+  "net12_p10": -501,
+  "net12_p50": 6514,
+  "net12_p90": 21088,
+  "net6_mean": 8737,
+  "net6_p10": 159,
+  "net6_p50": 6557,
+  "net6_p90": 20639,
+  "month_1_6": [
+   -257,
+   0,
+   5086
+  ],
+  "month_7_12": [
+   -349,
+   -155,
+   0
+  ],
+  "fees_month_mean": 127.7,
+  "fees_month_p90": 176.4,
+  "cash_needed_p90": 691,
+  "p_loss12": 13.7,
+  "buys": 17.68,
+  "pays": 10.27,
+  "fails": 11.61,
+  "passes": 5.6
+ }
+}

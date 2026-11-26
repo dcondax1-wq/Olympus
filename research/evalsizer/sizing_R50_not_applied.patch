@@ -1,0 +1,3 @@
+# Variant R50 (bigger room cap): config only, live_model.json AND live_model_lit.json lit_sizing.two_week (line 70). NOT APPLIED.
+-      "room_f": 0.4,
++      "room_f": 0.5,

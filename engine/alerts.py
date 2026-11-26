@@ -59,6 +59,9 @@ def public(cfg=None) -> dict:
 
 
 def _post(url, body):
+    from . import pc_identity                        # day-noleak
+    if not pc_identity.may_post("alert", url=url):
+        return 0
     req = urllib.request.Request(url, data=json.dumps(body).encode(), headers={"Content-Type": "application/json", "User-Agent": "LiquidityEngine/1.0"})
     with urllib.request.urlopen(req, timeout=10) as r:
         return r.status

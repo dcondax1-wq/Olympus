@@ -111,6 +111,7 @@ def summarize(x: pd.DataFrame, day: str, block_th: float | None = None) -> dict:
         else:
             m = sz >= th
             bars[lab] = np.bincount(bi[m], weights=(sz * sd)[m], minlength=nb).astype(np.int64)
+    bars["sac"], bars["sruns"] = sign_persistence(bi, sd, nb)              # day-oflearn (DESIGN3): trade-sign persistence
     k = pk - lo[bi]
     f = pd.DataFrame({"bar": bi, "k": k, "b": sz * (sd < 0), "a": sz * (sd > 0), "u": sz * (sd == 0)})
     fp = f.groupby(["bar", "k"], sort=True)[["b", "a", "u"]].sum().reset_index()
@@ -121,6 +122,31 @@ def summarize(x: pd.DataFrame, day: str, block_th: float | None = None) -> dict:
             "sides": side_quality(x), "bars": int(nb), "fp_rows": int(len(fp))}
     return {"NQ_bars5m.csv.gz": _gz_csv(bars), "NQ_fp5m.csv.gz": _gz_csv(fp),
             "NQ_meta.json": json.dumps(meta, separators=(",", ":")).encode("utf-8")}
+
+
+SAC_MIN = 20                             # DESIGN3: a bar needs >= 20 signed trades for its sign autocorrelation
+
+
+def sign_persistence(bi, sd, nb):
+    """Per bar (DESIGN3 J3): lag-1 autocorrelation of the trade signs in trade order, (mean(s s') - m^2) / (1 - m^2) with m the
+    bar's mean sign, and sign runs / signed trades. Unknown sides are dropped. '' when the bar has < SAC_MIN signed trades."""
+    m = sd != 0
+    b, s = bi[m], sd[m].astype(float)
+    sac = np.full(nb, np.nan); runs = np.full(nb, np.nan)
+    if len(s) < 2:
+        return [""] * nb, [""] * nb
+    n = np.bincount(b, minlength=nb).astype(float)
+    mean = np.bincount(b, weights=s, minlength=nb) / np.maximum(n, 1)
+    same = b[1:] == b[:-1]
+    prod = np.bincount(b[1:][same], weights=(s[1:] * s[:-1])[same], minlength=nb)
+    npair = np.bincount(b[1:][same], minlength=nb).astype(float)
+    flips = np.bincount(b[1:][same], weights=(s[1:] != s[:-1])[same].astype(float), minlength=nb)
+    den = 1 - mean ** 2
+    ok = (n >= SAC_MIN) & (den > 1e-9) & (npair > 0)
+    sac[ok] = (prod[ok] / npair[ok] - mean[ok] ** 2) / den[ok]
+    runs[ok] = (flips[ok] + 1) / n[ok]
+    fmt = lambda a: [round(float(v), 4) if np.isfinite(v) else "" for v in a]
+    return fmt(sac), fmt(runs)
 
 
 def hist_percentile(hists, q):
@@ -180,12 +206,23 @@ def depth_summary(dp: pd.DataFrame) -> pd.DataFrame:
         return (ok & big & (ch < 0)).sum(1), (ok & big & (ch > 0)).sum(1)
     pb, sb = moves(bs, bd)
     pa, sa = moves(as_, ad)
+    # day-oflearn (DESIGN3 L1/L2): best-queue imbalance and the Cont-Kukanov-Stoikov order-flow imbalance between snapshots
+    qb, qa = bs[:, 0], as_[:, 0]
+    pa_ = bp + np.where(ad[:, 0] >= 0, ad[:, 0], 1) * TICK
+    imb1 = np.where(qb + qa > 0, (qb - qa) / np.maximum(1.0, qb + qa), 0.0)
+    e = np.zeros(len(bp))
+    if len(bp) > 1:
+        e[1:] = ((bp[1:] >= bp[:-1]) * qb[1:] - (bp[1:] <= bp[:-1]) * qb[:-1]
+                 - (pa_[1:] <= pa_[:-1]) * qa[1:] + (pa_[1:] >= pa_[:-1]) * qa[:-1])
+        e[1:][bar[1:] != bar[:-1]] = 0.0                                   # a pair across two bars counts in neither
     f = pd.DataFrame({"t": bar, "b5": b5, "a5": a5, "imb": imb, "bm": bs.max(1), "am": as_.max(1), "pb": pb, "pa": pa,
-                      "sb": sb, "sa": sa, "spr": np.where(ad[:, 0] >= 0, ad[:, 0], np.nan)})
+                      "sb": sb, "sa": sa, "spr": np.where(ad[:, 0] >= 0, ad[:, 0], np.nan),
+                      "i1": imb1, "e": e, "d1": (qb + qa) / 2})
     g = f.groupby("t")
     out = pd.DataFrame({"n": g.size(), "bid5": g.b5.mean().round(1), "ask5": g.a5.mean().round(1), "imb": g.imb.mean().round(4),
                         "bmax": g.bm.max().astype(np.int64), "amax": g.am.max().astype(np.int64), "pull_b": g.pb.sum(),
-                        "pull_a": g.pa.sum(), "stack_b": g.sb.sum(), "stack_a": g.sa.sum(), "spread": g.spr.mean().round(2)})
+                        "pull_a": g.pa.sum(), "stack_b": g.sb.sum(), "stack_a": g.sa.sum(), "spread": g.spr.mean().round(2),
+                        "imb1": g.i1.mean().round(4), "ofi": g.e.sum().round(1), "dep1": g.d1.mean().round(1)})
     return out.reset_index()
 
 

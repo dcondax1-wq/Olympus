@@ -55,7 +55,7 @@ AREAS = {
     "trading": ["trading_page", "edge_chip", "pc_bars", "nq_chart"],                                                      # the Trading page (tools/web_public/trading/, 2026-11-17)
     "fleet": ["fleet_mffu", "copy_accounts", "firms", "fleet", "rapid", "rapid25", "news_official", "accounts_cli", "onboard", "cross_hedge"],                 # team E 2026-11-16: copy accounts + firm rules
     "board": ["board", "payout_coach", "bots_back", "live_link", "edge_chip", "zeus_hub", "help_page", "decide"],                                       # night-board 2026-11-17: the Board (docs/BOARD.md)
-    "journal": ["journal_edge", "journal_page", "kronos_page", "apollo_page", "kratos_page", "kairos_page", "odeon_page"],   # night-botgap 2026-11-18: the trade-journal apps + Mnemosyne's "The bot's edge"
+    "journal": ["journal_edge", "journal_build", "journal_page", "kronos_page", "apollo_page", "kratos_page", "kairos_page", "odeon_page"],   # night-botgap 2026-11-18: the trade-journal apps + Mnemosyne's "The bot's edge"
 }
 # audit D6 (2026-11-22): the PC self-test's suites that sat in no area (cloud landings never ran them)
 AREAS["pc"] += ["start_api", "launch_checklist", "nt_outgoing", "nt_exec_audit", "selfheal", "ops", "run_switch", "new_accounts", "go",
@@ -80,6 +80,7 @@ AREAS["pc"] += [m for m in ("start_api", "launch_checklist", "nt_outgoing", "nt_
 AREAS["pc"] += ["task_audit"]   # night-tasks 2026-11-23: one report runner (tools/task_audit.py, pc_report's 5-min gap)
 AREAS["pc"].append("brain_feed")    # day-brain-feed 2026-11-24: the Brain app feed on the PC report (engine/brain_feed.py, ext block bf)
 AREAS["pc"] += ["arm_report", "arm_rt"]   # day-armfix 2026-11-22 + red team 2026-11-23: START summary, ATLAS funded rename (keeps every number)
+AREAS["pc"] += ["nt_socket", "le_bridge_cs"]   # big-execution 2026-11-26: socket order bridge prototype (paper only; engine/nt_socket.py + ninjatrader/LE_Bridge.cs)
 AREAS["pc"].append("self_heal_pc")    # night-selfheal 2026-11-20: the PC self-heal (engine/self_heal.py, docs/SELF_HEAL.md); its own line
 AREAS["pc"].append("remote_ctl")      # night-phonectl 2026-11-20: phone remote through the backup repo (olympus/control, engine/remote_ctl.py)
 AREAS["pc"] += ["trading_home"]   # 2026-11-22: TRADE_HOME.bat menu (engine/trade_home.py), add-account prices, nq/trading_home.html at 390x844
@@ -98,11 +99,15 @@ AREAS["pc"].append("obsidian_brain")    # night-obsidian 2026-11-20: ZEUS Brain,
 AREAS["pc"].append("tickrec_cs")       # day-ofprogram 2026-11-23: LE_TickRec.cs backfill (mcs + fake history server) + autopilot
 AREAS["pc"].append("tickrec")          # day-orderflow 2026-11-23: read-only tick recorder (engine/tickrec.py, ninjatrader/LE_TickRec.cs, OFF)
 AREAS["pc"].append("tickrec_auto_rt")   # red team 2026-11-23: no autopilot start 01:40-16:05 ET, study stopped before 02:00, an unfinished study never counts
+AREAS["nq"].append("nq_live")           # day-livedash 2026-11-26: the NQ live screen (nq/live.html + livecore.js); its own line
+AREAS["nq"].append("lit_setups_learn")  # day-litlearn 2026-11-26: LIT learns from live (tools/lit_setups_learn.py, --nightly --litlearn); its own line
 AREAS["nq"].append("why_page")          # night-anatomy 2026-11-18: why we win / lose (tools/win_loss_anatomy.py, tools/web_public/why/); its own line
 AREAS["nq"].append("learn_night")       # night-learnloop 2026-11-19: ZEUS learned (engine/zeus_learn.py) + tools/learn_night.py + metals feed + speed; its own line
+AREAS["nq"].append("forward_paper")     # big-forward 2026-11-26: tools/forward_paper.py (watched leads scored on new sessions); its own line
 AREAS["nq"].append("combo_50k")         # night-combolive 2026-11-19: ATLAS + Zlarior on ONE 50K (engine/combo50k.py, OFF) + its LiveBot parity replay
 AREAS["pc"].append("learn_night")       # the same suite: the PC side (data pipe hook, status ext "zl", datafeed metals, the 15-minute report's imports)
 AREAS["kalshi"].append("kalshi_adapt")  # night-kadapt 2026-11-19: the K8 weekly re-test (engine/kalshi_adapt.py, tools/kalshi_adapt.py); its own line
+AREAS["money"].append("tax_ledger")   # day-batch7 2026-11-26: payouts + fees per account per month for the accountant (tools/tax_ledger.py)
 AREAS["money"].append("money_ideas")   # night-moneyideas 2026-11-20: money book + Kalshi bankroll ladder (tools/money/money_book.py, kalshi_bankroll.py); its own line
 AREAS["money"].append("fleet_months")  # day-fleet 2026-11-20: the whole fleet month by month to Jun 2027 (tools/money/fleet_months.py, business/fleet_plan.json); its own line
 AREAS["money"].append("fleet_90day")   # day-fleet 2026-11-21: the 90-day scale plan + its 3 purchase cards (tools/money/fleet_90day.py); its own line
@@ -117,7 +122,9 @@ AREAS["nq"] += ["faults"]; AREAS["pc"] += ["faults"]   # night-faults 2026-11-23
 AREAS["pc"] += ["nq_live_reliability", "account_b_min_room"]   # the same suite (fast alarm, autoupdate flat, datafeed gaps) + ATLAS min_room CLI
 AREAS["nq"].append("fill_cost")          # night-atlasfills 2026-11-20: "real slippage so far" per bot (tools/fill_cost.py + learn_night card)
 AREAS["nq"].append("market_learn")       # day-marketlearn 2026-11-24: shared Market Learn (engine/market_learn.py, tools/market_learn_weekly.py); its own line
+AREAS["nq"].append("batch5")             # day-batch5 2026-11-26: health bands + forecast shape
 AREAS["nq"].append("ideamill")            # day-ideamill 2026-11-25: the idea mill (tools/ideamill.py, research/ideamill/grammar.py)
+AREAS["nq"].append("atlas2")              # day-atlas2 2026-11-26: ATLAS v2 at real fills (research/atlas2/atlas2.py: switch, fixed scoring, gate)
 # night-webpush 2026-11-19: Olympus phone notifications from the PC (engine/push.py: own key, relay intake, phone first / ntfy backup;
 # docs/NOTIFICATIONS.md); the browser half (the card, the button, push-sw.js) runs with the jarvis suites
 AREAS["pc"] += ["push", "webpush"]
@@ -346,6 +353,13 @@ AREAS["privacy"].append("cross_site")   # day-security 2026-11-20: the bot serve
 AREAS["pc"].append("cross_site")
 AREAS["pc"].append("redteam2_live")       # day-redteam2 2026-11-20: half-day halt alarm + TRADE HAS NO STOP alarm (engine/fast_alarm.py)
 AREAS["pc"].append("alert_bus")         # day-alerts 2026-11-21: engine/alert_bus.py (Telegram / Discord first, ntfy + Web Push fallbacks)
+AREAS["pc"].append("noleak")           # day-noleak 2026-11-26: only the owner's PC posts to the real phone channels (engine/pc_identity.py)
+AREAS["privacy"].append("noleak")
+AREAS["board"].append("noleak")
+AREAS["pc"].append("noleak_rt"); AREAS["privacy"].append("noleak_rt")   # red team 2026-11-26: the real PC never goes dark (fail-open on Windows)
+AREAS["pc"].append("guard2")           # day-guard2 2026-11-26: risk-distance alarms, signed status feed + key rotation, /today
+AREAS["board"].append("guard2")
+AREAS["privacy"].append("guard2")
 AREAS["pc"].append("alert_drill")       # day-alerts 2026-11-21: end-to-end alert drill (telegram / ntfy / off set-ups)
 AREAS["pc"].append("alerts_box")        # alerts-phone 2026-11-21: /alerts/ = ALERTS_SETUP Telegram from the phone (engine/alerts_box.py); its own line
 AREAS["pc"].append("alerts_start_code")   # day-security3 2026-11-21: the /alerts/ page's one-time START code; its own line
@@ -381,8 +395,13 @@ AREAS["cities"].append("mind_brain")      # day-mind 2026-11-23: the 3D Strategy
 AREAS["cities"].append("pillars")         # day-pillars 2026-11-24: the FOUR PILLARS page (pillars/), the Brain regroup, the Hub filter
 AREAS["nq"].append("pillars")             # day-pillars 2026-11-24: the NQ page strip + header link
 AREAS["nq"].append("brain_app")           # day-brain-app 2026-11-24: THE BRAIN (brain/: 6 regions, next trade, 3D chart, thinking, learning, today $)
+AREAS["nq"].append("brain_learned")       # big-learnview 2026-11-26: brain/learned.html (What the bots learned: lessons, tests next, ideas on trial)
 AREAS["pc"].append("tickrec_tiny")        # day-pillars 2026-11-24: engine.tickrec.tiny / write_tiny (the order-flow pillar line)
 AREAS["pc"].append("ofready")             # day-ofready 2026-11-24: engine/ofsum.py day summaries + research/orderflow/of_battery.py (synthetic only)
+AREAS["pc"].append("oflearn")             # day-oflearn 2026-11-26: DESIGN3 v3 features + nightly learner, proven on of_sim planted ticks (synthetic only, ~5 min)
+AREAS["pc"].append("of_send")             # day-ofmax 2026-11-26: the owner's one order-flow line, rehearsed end to end (fake ntfy)
+AREAS["pc"].append("of_paper")            # day-oflearn 2026-11-26: the Order Flow pillar PAPER bot (engine/of_paper.py; synthetic live CSVs, ~4 min)
+AREAS["pc"].append("of_paper_rt")   # red team 2026-11-26: the paper child BELOW_NORMAL
 AREAS["cities"].append("research_hub2")   # night-hub2 2026-11-22: the Research Hub (cities/hub.html, data tools/build_research_hub.py); its own line
 AREAS["cities"].append("strategy_lab")    # day-mind 2026-11-23: Strategy Lab data (tools/build_strategy_lab.py) + the Research Hub tab
 AREAS["olympus"].append("brain3d")       # day-arenas 2026-11-21: the bot brain in 3D (olympus/brain3d.js + brain3d-scene.js, brain3d-lab.html); its own line
@@ -476,7 +495,8 @@ AREAS["pc"] += ["zerotouch"]      # night-zerotouch 2026-11-22: START phrase = k
 AREAS["pc"].append("zerotouch_rt")      # red team 2026-11-23: an old explicit keep-alive OFF sticks, NinjaTrader reopen back-off, no-console start
 AREAS["pc"] += ["zerotouch2", "zerotouch2_rt"]   # day-zerotouch2 2026-11-24 + red team: auto-park, phone inbox (newest by time), PC checklist
 AREAS["pc"].append("handsfree")
-AREAS["pc"].append("ops2")
+AREAS["pc"].append("ops2")   # day-ops2 2026-11-26: hands-free roll (LE_Feed shadow), OneDrive / clock in START, backup + restore sandbox   # day-handsfree 2026-11-25: Telegram commands, writers sandbox (git status stays clean), NinjaScript sync, reboot chain
+AREAS["pc"].append("ops2_rt"); AREAS["pc"].append("le_feed_hub_rt")   # red team 2026-11-26: gappy shadow never verifies, backups disarmed, LE_FeedHub heartbeat
 AREAS["pc"].append("zeroerr2")   # big-zeroerr2 2026-11-26: hang guard (a hung server restarted when flat in < 5 min), the sweep's clusters   # day-ops2 2026-11-26: hands-free roll (LE_Feed shadow), OneDrive / clock in START, backup + restore sandbox   # day-handsfree 2026-11-25: Telegram commands, writers sandbox (git status stays clean), NinjaScript sync, reboot chain
 AREAS["pc"].append("hang_guard_rt")   # red team 2026-11-26: every account flat, python-only kill, no restart loop
 AREAS["pc"].append("handsfree_rt")   # red team 2026-11-25: forwarded Telegram = no command, force-park receipt names strategy files
@@ -517,6 +537,10 @@ AREAS["nq"].append("ledgerfix_rt"); AREAS["pc"].append("ledgerfix_rt")   # red t
 
 AREAS["nq"].append("setup_progress"); AREAS["pc"].append("setup_progress")   # day-closer 2026-11-25: setup progress pushes (engine/setup_progress.py, read-only)
 AREAS["nq"].append("setup_progress_rt"); AREAS["pc"].append("setup_progress_rt")   # red team 2026-11-25: no re-send on a moving EMA, ATLAS cap 8
+AREAS["nq"].append("nt_transport_rt")   # red team 2026-11-26: a live account never gets the socket transport
+
+AREAS["nq"].append("trade_cards"); AREAS["pc"].append("trade_cards")   # day-cards 2026-11-26: Telegram trade cards (chart PNG), 16:20 day summary, Friday week report
+AREAS["nq"].append("trade_cards_rt"); AREAS["pc"].append("trade_cards_rt")   # red team 2026-11-26: long captions never cut, NT files only when needed
 
 if __name__ == "__main__":
     sys.exit(main())

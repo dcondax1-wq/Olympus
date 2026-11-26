@@ -181,6 +181,26 @@ def target_dir(root: str = ROOT, env=None) -> str:
     return os.path.join(prof, "Documents", "Olympus Backup")
 
 
+def disarm(name: str, b: bytes) -> bytes:
+    """red team 2026-11-26: a backup never carries a proof that arms real money. Besides data/auto_resume.json / autostart.json
+    (NEVER), two files hold one inside: .env.local.ps1's live-switch line (the one START's typed phrase writes, go.LIVE_LINE) and the
+    keep-alive "consent" (data/keepalive.json, the same phrase). Both are taken out here; on a new PC the owner's typed phrase at
+    START puts them back. Everything else in those files is kept. Never raises (a file it cannot read as text goes in as it is)."""
+    try:
+        if name == "bot/.env.local.ps1":
+            t = b.decode("utf-8-sig")
+            keep = [ln for ln in t.splitlines(True) if "NINJATRADER_LIVE" not in ln.upper()]
+            return "".join(keep).encode("utf-8")
+        if name == "bot/data/keepalive.json":
+            d = json.loads(b.decode("utf-8"))
+            if isinstance(d, dict) and "consent" in d:
+                d.pop("consent", None)
+                return json.dumps(d, indent=1).encode("utf-8")
+    except Exception:  # noqa: BLE001
+        pass
+    return b
+
+
 def make(root: str = ROOT, env=None, now=None, dest: str | None = None) -> dict:
     """One encrypted backup. {"ok", "path", "files", "bytes", "error"}."""
     from cryptography.fernet import Fernet
@@ -192,7 +212,7 @@ def make(root: str = ROOT, env=None, now=None, dest: str | None = None) -> dict:
         with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
             for name, p in files:
                 with open(p, "rb") as fh:
-                    b = fh.read()
+                    b = disarm(name, fh.read())
                 z.writestr(name, b)
                 man["files"][name] = hashlib.sha256(b).hexdigest()
             z.writestr("manifest.json", json.dumps(man, indent=1))
@@ -251,7 +271,7 @@ def restore(path: str, code: str, root: str = ROOT, env=None, force: bool = Fals
         else:
             bad.append(name)
             continue
-        plan.append((name, rel, kind, dst, b))
+        plan.append((name, rel, kind, dst, disarm(name, b)))   # red team: an older / hand-made backup is disarmed on restore too
     if bad:
         return {"ok": False, "error": f"{len(bad)} file(s) failed the check (nothing written): {', '.join(bad[:3])}"}
     tracked = set()

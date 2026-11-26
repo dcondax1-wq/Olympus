@@ -81,6 +81,18 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 ## Tested and rejected
 
+> [!failure]- LIT fragility audit
+> 16 knobs at +-10/20%: mostly a plateau; sensitive in Jul-Oct = displacement 0.8 (+10% -> -$894/mo) and the 8R bank (+-10% -> -$290..-$960/mo), tuned near their top; no knob makes 2021-25 real money (-$360..+$160/mo). Costs: 2021-25 negative at +1 tick/side (PF 0.97), 2026 barely moves. MC 50K at 40% room: pass/fail 95/4 (2026 pool), 86/13 (Jul-Nov), 36/62 (2021-25); P(7+ losers in 23 trades) 3-4%. Deflated Sharpe 2026 0.87-0.93 with N 1,483-4,449 trials, only 20-27% of the Sharpe above the best-of-N luck level; 2021-26 DSR 0. Sizing: a simplified sim said room_f 0.3 cuts fails; the real engine (big-evalsizer, rank.py) says no, 0.4 earns more at every mix: keep 0.4.
+> Write-ups: [[lit-fragility-2026-11-26|How fragile is LIT]]
+
+> [!failure]- LIT gate tweaks via the setup-learning loop
+> 13 versions vs live through the automatic bar (beat live on Jan-Jun AND Jul-Nov 20 net + PF, 2021-25 net not worse, walk-forward >= 5/7 blocks, 2-4 trades/wk): 0 pass. New ones: sweep >= 0.75 ATR +$1,029 / -$4 / -$3,662 (walk 4/7); 2 inducements -$19,514 / -$4,880 / -$2,105; limit 12 bars -$4 / -$444 / -$8,787; 1m CISD within 15 bars -$10,565 / -$1,504 / -$2,815 (Jan-Jun / Jul-Nov 20 / 2021-25 vs live). The other 9 repeat earlier rejections (disp 0.6 / 1.0, depth 0.3, no inducement, 2nd trade, no Monday rule, Silver Bullet only, TDO side only, skip VIX 25+): still fail. The loop re-tests them every night and only raises an owner card on a full pass.
+> Write-ups: [[lit-learns-live-2026-11-26|LIT learns from live]]
+
+> [!failure]- LIT entry refinement on 1m
+> 5 versions vs today (limit at the 5m CISD level, then the 1m CISD; H1 / H2 / 2021-25 $5,562 / $2,670 / $25 a month, 2-week 44.5 / 39.1). Tap 1 tick through $5,280 / $2,227 / -$171; tap at 50% of the zone 1.2 trades/wk, 2-week 37.8 / 29.0; expiry 20 min $5,266 / $2,506 / -$37; plain limit at 50% no 1m CISD $402 / $4,714 / $1,397, 2-week 16.8 / 29.0; plain limit filled only 1 tick through (touch = no fill) $3,036 / $2,087 / -$305. 0 pass: the 1m CISD confirmation carries the edge.
+> Write-ups: [[entry-fine-2026-11-26|LIT entry refinement on 1m bars]]
+
 > [!failure]- Personal futures account vs MFFU
 > LIT + ATLAS, fixed-fractional, $1.24 RT, whole micros. $25k at 0.5%: +$49 / +$103 / +$3,001 / +$1,078 a month (2021-25 / 2025 / Jan-Jun / Jul-Oct), DD -24%; at 1%: +$243 / +$357 / +$10,922 / +$3,652, DD -50% (-$24k, 40 months); 2% = -83%. MFFU 50K slot: -$98 / -$78 / +$1,202 / +$1,228. LIT needs ~$14.4k (1% risk) for 90% of its 1-micro stops. Research only, owner's call.
 > Write-ups: [[ownacct-2026-11-24|A personal futures account vs the MFFU prop path]]
@@ -223,11 +235,20 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 > Silver Bullet, Judas Swing, Asia sweep, London breakout, PDH/PDL sweep, NY open FVG, PO3/AMD, ICT 2022, Turtle Soup, Unicorn; 5m, stop 1 tick beyond the swing, 2R, LIT sizing, costs in. 0 of 10 pass (PF > 1 in all three spans and Holm p < 0.05; best raw p 0.17, all Holm 1.0); 9 of 10 lose 2026 H1. Only ICT 2022 adds $ to LIT in both 2026 halves (+$369 / +$681 a month on a Rapid 50K, ~5 trades/wk) but DD $2.2k -> $4.8k, H1 eval fails 1.6% -> 34%, loses 2021-25. Corr LIT -0.06..+0.38. Nothing adopted.
 > Write-ups: [[popular-ict-2026-11-23|Popular ICT / SMC strategies on CME NQ, run exactly as taught]]
 
+> [!failure]- 2026-11-26 Eval sizing POLICY
+> 2026-11-26 Eval sizing POLICY (big-evalsizer, research/evalsizer/, design pre-registered first): 18 state-dependent LIT eval sizers x Builder 50K / 25K / Rapid EOD 25K (room cap 25-60%, fixed 10-30% of room, quarter / half Kelly, bold near the target, protect near the floor, bold+protect, two DP-optimal policies on the 2026 H1 and the all-history LIT R pools), real engine, every MFFU rule, 1,000 paths, 4 markets. Pick on H1 = today (two_week room_f 0.4) on both Builders; Rapid pick R60 fails 2021-25. NO variant beats today in all 4 markets on any plan. One trade-off line: a bigger room cap = more $ in 2026 markets (R50 50K +$116/+$199, 25K +$130/+$180 a slot / 6 mo, fails +3-7 pts), less ...
+> Write-ups: [[evalsizer-2026-11-26|Optimal eval sizing policy]]
+
 
 ## Write-ups
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-26 | [[litasia-2026-11-26\|LIT's Asia slot at real Asia costs]] | research |
+| 2026-11-26 | [[lit-learns-live-2026-11-26\|LIT learns from live]] | research |
+| 2026-11-26 | [[lit-fragility-2026-11-26\|How fragile is LIT]] | research |
+| 2026-11-26 | [[execpol-2026-11-26\|Entry execution policy for LIT and ATLAS]] | research |
+| 2026-11-26 | [[entry-fine-2026-11-26\|LIT entry refinement on 1m bars]] | research |
 | 2026-11-25 | [[more-trades-2026-11-25\|More trades]] | research |
 | 2026-11-24 | [[proedge-2026-11-24\|Pro / institutional edges]] | rejected |
 | 2026-11-24 | [[lit-vix-downtrend-2026-11-24\|LIT in high-VIX falling markets]] | research |
@@ -263,13 +284,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-11-17 | [[drift-switch-2026-11-17\|"Edge stopped working" switch]] | rejected |
 | 2026-11-16 | [[stack-one-account-2026-11-16\|More strategies on ONE MFFU account]] | promising |
 | 2026-11-15 | [[2026-11-15-s2-edge\|S2 edge]] | promising |
-| 2026-11-15 | [[2026-11-15-lit-deep\|LIT deep edge]] | rejected |
-| 2026-11-14 | [[account-4-2026-11-14\|Account #4]] | adopt-candidate |
-| 2026-11-13 | [[millionaire-plan-2026-11-13\|The millionaire plan]] | adopt-candidate |
-| 2026-11-13 | [[eval-guard-2026-11-13\|Eval guard]] | research |
-| 2026-11-13 | [[es-and-sessions-2026-11-13\|Same edge, more markets]] | rejected |
 
-... and 78 older (see the families).
+... and 83 older (see the families).
 
 ## Links
 

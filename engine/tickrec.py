@@ -271,7 +271,7 @@ def depth_cols() -> list:
 
 
 def read_depth_csv(path: str) -> pd.DataFrame:
-    """One le_ticks\depth\<ROOT>_<day>.csv (LE_TickRec day-ofmax): t_ms,bp,bd1..10,bs1..10,ad1..10,as1..10 -> typed frame
+    r"""One le_ticks\depth\<ROOT>_<day>.csv (LE_TickRec day-ofmax): t_ms,bp,bd1..10,bs1..10,ad1..10,as1..10 -> typed frame
     (offsets in ticks: -1 = no level; sizes 0 = no level). A torn last line (written while read) is dropped."""
     x = pd.read_csv(path, on_bad_lines="skip")
     cols = depth_cols()
@@ -300,7 +300,7 @@ def read_depth(day: str, root: str = "NQ") -> pd.DataFrame | None:
 
 
 def ingest_depth(nd: str | None = None) -> dict:
-    """le_ticks\depth\*.csv -> data/depth (whole-file rewrite when the raw file changed; the raw file is append-only for its
+    r"""le_ticks\depth\*.csv -> data/depth (whole-file rewrite when the raw file changed; the raw file is append-only for its
     day); a raw file RAW_KEEP_DAYS after its day, once stored, is deleted. Never raises."""
     try:
         nd = nd or nt_dir()
@@ -558,6 +558,32 @@ def phone_line(res: dict, days: int) -> str:
                if anyp else "Nothing passed, LIT stays as it is."))
 
 
+OFLEARN_MIN_LEFT_S = 1800
+
+
+def oflearn_kick(et, root: str | None = None) -> dict:
+    """research/orderflow/of_learn.pc_nightly (DESIGN3 learner, paper): once an ET day, only with >= 30 min before the bot's 02:00 ET
+    window, results under logs/orderflow (never a tracked file). LE_OFLEARN=0 = off. Never raises."""
+    try:
+        if os.environ.get("LE_OFLEARN") == "0":
+            return {"off": True}
+        if seconds_left(et) < OFLEARN_MIN_LEFT_S:
+            return {"skipped": "too close to 02:00 ET"}
+        root = root or _base()
+        st_p = os.path.join(root, "logs", "orderflow", "of_learn_state.json")
+        try:
+            if json.load(open(st_p, encoding="utf-8")).get("updated") == et.date().isoformat():
+                return {"skipped": "already ran today"}
+        except Exception:  # noqa: BLE001
+            pass
+        import importlib.util
+        sp = importlib.util.spec_from_file_location("of_learn_pc", os.path.join(ROOT, "research", "orderflow", "of_learn.py"))
+        m = importlib.util.module_from_spec(sp); sp.loader.exec_module(m)
+        return m.pc_nightly(root, now=et)
+    except Exception as e:  # noqa: BLE001
+        return {"error": f"{e.__class__.__name__}: {str(e)[:80]}"}
+
+
 def autopilot(now: dt.datetime | None = None, study=None, nd: str | None = None) -> dict:
     """Zero-click chain, run by the PC's 15-minute report task outside trading hours: ingest new recorder / backfill files,
     then run research/orderflow/of_study.py ONCE when 60+ NQ tick days exist and once more when the backfill reports done
@@ -597,13 +623,14 @@ def autopilot(now: dt.datetime | None = None, study=None, nd: str | None = None)
             of_jr = oflive.journal_kick(_base(), journal=os.path.join(_base(), "data", "orderflow_journal.jsonl"))
         except Exception as e:  # noqa: BLE001
             of_jr = {"error": e.__class__.__name__}
+        of_ln = oflearn_kick(et)                        # day-oflearn: the nightly order-flow learner (DESIGN3, paper, once a day)
         want = None
         if len(days) >= STUDY_DAYS and not runs:
             want = "first look"
         elif runs and len(runs) < 2 and st.get("backfill") == "done" and len(days) >= runs[-1]["days"] + 20:
             want = "final look (backfill done)"
         out = {"ran": False, "ingest": {k: ing.get(k) for k in ("ok", "files", "rows")}, "nq_days": len(days),
-               "backfill": st.get("backfill"), "oldest": st.get("oldest"), "of_summaries": of_sum, "of_battery": of_bat, "of_journal": of_jr}
+               "backfill": st.get("backfill"), "oldest": st.get("oldest"), "of_summaries": of_sum, "of_battery": of_bat, "of_journal": of_jr, "of_learn": of_ln}
         if not want:
             out["why"] = "waiting: %d of %d NQ tick days" % (len(days), STUDY_DAYS) if len(days) < STUDY_DAYS else "already ran"
             return out

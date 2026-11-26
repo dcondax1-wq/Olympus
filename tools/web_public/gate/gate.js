@@ -257,7 +257,7 @@
     var done = false, fin = function () { if (done) return; done = true; cb(w.OLYMPUS_TRUTH || null); };
     w.addEventListener('gate-truth', fin);
     try {
-      var url = new w.URL(base + 'olympus/truth.js?v=r14', w.location.href).href, s = d.createElement('script');
+      var url = new w.URL(base + 'olympus/truth.js?v=r15', w.location.href).href, s = d.createElement('script');
       s.type = 'module';
       s.textContent = 'import * as T from ' + JSON.stringify(url) + '; window.OLYMPUS_TRUTH = T; window.dispatchEvent(new Event("gate-truth"));';
       d.head.appendChild(s);
@@ -557,7 +557,8 @@
     getJSON(base + 'business/decisions.json').then(function (j) { got.dec = j; one(); });   // olympus2: the next thing to decide (the top open Decide card)
     getJSON(base + 'kalshi/k8.json').then(function (j) { got.k8 = j; one(); });             // olympus2: Kalshi K8 today (the live legs' results and the next window)
     getJSON(base + 'kalshi.json').then(function (j) { got.k = j; one(); });
-    getJSON(base + 'me/me.json').then(function (j) { got.me = j; one(); });   // the Me hub's tiles: only the PC's own link serves it (a 404 elsewhere)
+    if (ON_PC) getJSON(base + 'me/me.json').then(function (j) { got.me = j; one(); });   // the Me hub's tiles: only the PC's own link serves it
+    else one();                                                                         // day-site5: the public site never has it (it was a 404 on every Home open)
     getJSON(base + 'money/scoreboard.json').then(function (j) { got.sb = j; one(); });
     getJSON(base + 'hephaestus/jarvis.json').then(function (j) { got.cards.hephaestus = j; one(); });
     getJSON(base + 'plutus/jarvis.json').then(function (j) { got.cards.plutus = j; one(); });

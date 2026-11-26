@@ -155,6 +155,10 @@ def track(day_pnl: dict, payouts: dict | None = None, plan: str | dict | None = 
         why.append(f"best day {_money(best)} is {best_pct:.0f}% of the cycle's {_money(cprof)} (max {cons * 100:.0f}%)")
     elif cprof <= 0 and cyc:
         why.append(f"cycle profit {_money(cprof)}: nothing to pay yet")
+    # day-batch7 2026-11-26 (docs/MFFU_RULES_RECHECK_2026-11-26.md A1): MFFU's Builder guides, "Net Profit Required (Subsequent
+    # Payouts): $250 (25K) / $500 (50K) since last payout" - payouts 2-5 need the minimum MADE since the last one, not only above the buffer
+    if n_pay and 0 < cprof < float(P["pay_min"]):
+        why.append(f"{_money(cprof)} made since the last payout, MFFU needs {_money(P['pay_min'])} since the last payout")
     eligible = not why
     # fleet plan 2026-11-22 (research/writeups/fleet-plan-2026-11-22.md): take payouts 1-4, NEVER the 5th (MFFU moves you to live
     # and every sim account sleeps): after the 4th the tracker never says "ready" again (engine/payout_autopilot warns instead)

@@ -423,7 +423,7 @@ def prereg(days):
         res["placebo_p"] = round(float((np.array(dr) >= act.sum()).mean()), 3) if S else None
         spans_ok = [res[nm] for nm, _, _ in SPANS if nm in res]
         ok = len(spans_ok) >= 2 and all((x.get("pf") or 0) >= 1.15 and x.get("net$", 0) > 0 and (x.get("per_wk") or 0) >= 0.5
-                                        for x in spans_ok) and (res["placebo_p"] or 1) < 0.10
+                                        for x in spans_ok) and (1 if res["placebo_p"] is None else res["placebo_p"]) < 0.10
         res["verdict"] = ("PASS" if ok else "REJECTED") if v == "A" else "info (variant B, not gated)"
         out["OF3%s LVN rejection, tick profile%s" % (v, " + delta with trade" if v == "A" else "")] = res
     return out
