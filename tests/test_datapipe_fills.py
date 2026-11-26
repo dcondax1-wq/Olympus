@@ -2,7 +2,8 @@
     python -X utf8 -m tests.test_datapipe_fills
 a. from a synthetic OIF audit log + archived order states + fill-audit legs: one row per MARKET entry order of the day, every
    account (Zlarior main, ATLAS acctb_), send time from the OIF file name (ms), NinjaTrader's fill time + price, seconds split
-b. bracket orders (STOPMARKET / LIMIT), CLOSEPOSITION and another day's entry are left out; account names cut to the last 4
+b. (day-zeroerr 2026-11-26: every fill, entry AND exit) bracket orders (STOPMARKET / LIMIT) and CLOSEPOSITION are rows of their own
+   (leg stop / target / close), another day's entry is left out; account names cut to the last 4
 c. a FILLED state wins over a later WORKING line for the same order; a leg's own sent_at is kept as leg_sent_t
 d. datapipe.pack_day and datafeed.pack_day both carry fills.jsonl.gz; load_day reads it back; the manifest counts it
 e. tools/fill_speed.py: ticks past the fill bar's open, $ past the backtest's 1 tick, seconds, per account; old days without
@@ -68,14 +69,18 @@ def main():
         rows = DP.day_fills("2026-11-20", root=tmp, names=names)
         by = {r["order_id"]: r for r in rows}
         a, z = by.get(ida), by.get(idz)
-        check("a. 2 MARKET entries of the day, both accounts", len(rows) == 2 and a is not None and z is not None, str(rows))
+        ents = [r for r in rows if r.get("leg") == "entry"]
+        check("a. 2 MARKET entries of the day, both accounts", len(ents) == 2 and a is not None and z is not None, str(rows))
         check("a. ATLAS: book atlas, sent 2.412 s after the open, filled 0.319 s later at 26,375.50",
               a and a["book"] == "atlas" and a["sent_s_after_open"] == 2.412 and a["fill_s_after_sent"] == 0.319
               and a["fill_px"] == 26375.5 and a["filled"] == 1 and a["action"] == "SELL", str(a))
         check("a. Zlarior: book zlarior, 3 filled, sent 2.25 s, filled 0.35 s later", z and z["book"] == "zlarior"
               and z["filled"] == 3 and z["sent_s_after_open"] == 2.25 and z["fill_s_after_sent"] == 0.35, str(z))
         txt = json.dumps(rows)
-        check("b. brackets, CLOSEPOSITION and the Nov 18 entry left out", ido not in by and "STOPMARKET" not in txt and "CLOSEPOSITION" not in txt)
+        check("b. brackets and CLOSEPOSITION are exit rows now (day-zeroerr), the Nov 18 entry left out",
+              ido not in by and all(r.get("leg") in ("entry", "stop", "target", "close") for r in rows)
+              and ("STOPMARKET" not in txt or any(r.get("leg") == "stop" for r in rows))
+              and ("CLOSEPOSITION" not in txt or any(r.get("leg") == "close" for r in rows)), txt[:400])
         check("b. account names only as their last 4", "MFFUFUND25K6017" not in txt and "MFFUEVAL50K1234" not in txt
               and a["account"] == "...6017" and z["account"] == "...1234", txt[:200])
         check("c. FILLED wins over a later WORKING line", a["state"] == "FILLED")
@@ -84,11 +89,11 @@ def main():
                             build_twin=False, now=ET_ + 86400)
         back = [json.loads(x) for x in gzip.decompress(files["fills.jsonl.gz"]).decode().splitlines() if x]
         man = json.loads(files["manifest.json"])
-        check("d. datapipe.pack_day carries fills.jsonl.gz (2 rows) + the manifest counts it",
-              len(back) == 2 and man["counts"].get("fills") == 2 and "fills.jsonl.gz" in man["files"], str(man.get("counts")))
+        check("d. datapipe.pack_day carries fills.jsonl.gz (every row) + the manifest counts it",
+              len(back) == len(rows) and man["counts"].get("fills") == len(rows) and "fills.jsonl.gz" in man["files"], str(man.get("counts")))
         dd = os.path.join(tmp, "days")
         DP.write_local("2026-11-20", files, days_dir=dd)
-        check("d. load_day reads fills back", len(DP.load_day(os.path.join(dd, "2026-11-20"))["fills"]) == 2)
+        check("d. load_day reads fills back", len(DP.load_day(os.path.join(dd, "2026-11-20"))["fills"]) == len(rows))
         from engine import datafeed as DF
         old_root, DP.ROOT = DP.ROOT, tmp
         try:

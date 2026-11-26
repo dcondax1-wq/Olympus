@@ -461,6 +461,15 @@ def ledger_rows(root: str = ROOT, exec_store: str | None = None) -> list:
                 if isinstance(r, dict) and r.get("t") is not None:
                     out.append({**r, "src": f"accounts/{aid}", "bot": bot if bot != "other" else "zlarior", "acct": str(aid),
                                 "mode": _mode(r, None, (blob or {}).get("nt_account"))})
+    # day-zeroerr: BLITZ's PAPER trades (engine/blitz.py shadow, never routed: data/blitz_state.json "ledger" = its 25K paper eval,
+    # "ledger50" = its paper units next to LIT on a 50K); src blitz_paper / blitz50_paper, acct acctc, mode paper
+    bs = _read_json(os.path.join(root, "data", "blitz_state.json"), {}) or {}
+    for led, src in (("ledger", "blitz_paper"), ("ledger50", "blitz50_paper")):
+        for r in (bs.get(led) or []) if isinstance(bs, dict) else []:
+            if isinstance(r, dict) and (r.get("entry_t") or r.get("exit_t")):
+                # reason = its exit kind: an open snapshot and the closed row are two archive rows (the one with exit_t is final)
+                out.append({**r, "t": r.get("entry_t") or r.get("exit_t"), "reason": r.get("exit_kind") or "open", "src": src,
+                            "bot": "blitz", "acct": "acctc", "mode": "paper"})
     ep = os.path.join(exec_store or os.path.join(root, "logs", "exec_audit"), "ledger.jsonl")
     for r in _jl_read(ep):
         if r.get("t") is not None:
@@ -558,59 +567,147 @@ def _book(tag: str) -> str:
     return {"": "zlarior", "acctb": "atlas", "acctc": "account_c"}.get(t, t or "zlarior")
 
 
+# day-zeroerr fill log (2026-11-26, lead: "every real fill, entry AND exit, every lane"): the ONE schema of a fill row. The
+# execution helpers' latency logging uses these names too (one place):
+FILL_FIELDS = ("order_id", "lane", "book", "leg", "account", "instrument", "side", "action", "qty", "order_type", "intended_px",
+               "fill_px", "slip_ticks", "filled", "state", "signal_t", "send_t", "ack_t", "fill_t", "entry_t",
+               # kept for the older readers (tools/fill_speed.py, tools/reconcile_live.py): the same values under the old names
+               "sent_t", "leg_sent_t", "sent_s_after_open", "fill_s_after_sent")
+#   lane        whose order: "zlarior" (the main LIT 50K log), "atlas" (account B), "blitz" (account C), an extra account's id
+#               ("b25k_2", "rapid_lit" ...), a combo / fleet lane: from the adapter's own OIF log file name
+#   leg         entry (MARKET) | stop (STOPMARKET) | target (LIMIT) | close (CLOSEPOSITION: no order id, no price in NinjaTrader's
+#               files, so fill_px / slip_ticks stay empty; the ledger has the model exit)
+#   intended_px entry: the price the bot priced the order from (the adapter leg's "ref"); stop / target: the price in the order
+#               (the last PLACE / CHANGE before the fill)
+#   slip_ticks  (fill - intended) in ticks, positive = worse for us (a BUY filled higher, a SELL lower); a target LIMIT is <= 0
+#   signal_t    entry: the model's entry bar time (entry_t); exits: None (a broker-side stop / target)
+#   send_t      the OIF file's millisecond stamp; ack_t: NinjaTrader's first working state's file time (None when the order
+#               filled before the archive saw it working); fill_t: the FILLED state's file time
+_OID = re.compile(r"^LE(\d{9,11})([A-Za-z0-9]*?)([EST])$")
+_LOG_LINE = re.compile(r"^\S+ \S+ ET\s+(\S+)\s+(oif_le_\S+\.txt)\s+(.+)$")
+LEGS = {"E": "entry", "S": "stop", "T": "target"}
+TICK = 0.25
+
+
+def _lane_of(log_path: str) -> str:
+    b = os.path.basename(log_path)
+    suf = b[len("ninjatrader_oif"):].split(".")[0].lstrip("_").lower()
+    return {"": "zlarior", "acctb": "atlas", "acctc": "blitz"}.get(suf, suf)
+
+
+def _num(x):
+    try:
+        v = float(x)
+        return v if v == v else None
+    except (TypeError, ValueError):
+        return None
+
+
+def _slip(action, intended, fill):
+    if intended is None or fill is None:
+        return None
+    s = (fill - intended) / TICK
+    return round(s if str(action).upper() == "BUY" else -s, 2)
+
+
 def day_fills(day: str, root: str | None = None, exec_store: str | None = None, names=(), oif_log: str | None = None) -> list:
-    """Every MARKET entry order of `day` (all accounts) with its send time, NinjaTrader's fill time and price. From files the
-    PC already writes (the OIF audit log, the archived outgoing order states, the fill audit's legs). Never raises."""
+    """Every order of `day` the bots sent to NinjaTrader, every lane (logs/ninjatrader_oif*.log: the main 50K, ATLAS, BLITZ, each
+    extra account / Rapid lane / combo / fleet / keep-alive adapter), entries AND exits (stop, target, close), with the send,
+    working and fill times, the intended and filled price and the slippage in ticks (FILL_FIELDS). From files the PC already
+    writes (the OIF audit logs, the archived outgoing order states, the fill audit's legs). Read-only. Never raises."""
     root = root or ROOT
     es = exec_store or os.path.join(root, "logs", "exec_audit")
-    rows = {}
-    try:
-        with open(oif_log or os.path.join(root, "logs", "ninjatrader_oif.log"), encoding="utf-8", errors="replace") as fh:
+    logs = [oif_log] if oif_log else sorted(glob.glob(os.path.join(root, "logs", "ninjatrader_oif*.log")))
+    rows, closes = {}, []
+    for lp in logs:
+        lane = _lane_of(lp) if not oif_log else "zlarior"
+        try:
+            fh = open(lp, encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        with fh:
             for ln in fh:
-                if "PLACE;" not in ln or ";MARKET;" not in ln:
-                    continue
-                m = _OIF_NAME.search(ln)
-                f = ln[ln.index("PLACE;"):].strip().split(";")
-                if not m or len(f) < 11:
-                    continue
-                oid = f[10]                  # PLACE;ACCOUNT;INSTRUMENT;ACTION;QTY;TYPE;LIMIT;STOP;TIF;OCO;ORDER ID
-                e = _ENTRY_ID.match(oid)
-                if not e or trading_day(int(e.group(1))) != day:
-                    continue
                 try:
-                    qty = int(float(f[4] or 0))
-                except ValueError:
-                    qty = None
-                rows[oid] = {"order_id": oid, "entry_t": int(e.group(1)), "book": _book(m.group(1)), "account": mask(f[1]),
-                             "instrument": f[2], "action": f[3], "qty": qty, "sent_t": int(m.group(2)) / 1000.0}
-    except (OSError, ValueError):
-        pass
+                    m = _OIF_NAME.search(ln)
+                    if not m:
+                        continue
+                    cmd = ln[ln.index(m.group(0)) + len(m.group(0)):].strip()
+                    f = cmd.split(";")
+                    send = int(m.group(2)) / 1000.0
+                    if f[0] == "CLOSEPOSITION":
+                        if trading_day(int(send)) == day:
+                            closes.append({"order_id": f"CLOSE:{lane}:{m.group(2)}", "lane": lane, "book": _book(m.group(1)), "leg": "close",
+                                           "account": mask(f[1] if len(f) > 1 else ""), "instrument": f[2] if len(f) > 2 else None,
+                                           "order_type": "CLOSEPOSITION", "send_t": send, "sent_t": send})
+                        continue
+                    if f[0] not in ("PLACE", "CHANGE") or len(f) < 11:
+                        continue
+                    oid = f[10]
+                    o = _OID.match(oid)
+                    if not o or trading_day(int(o.group(1))) != day:
+                        continue
+                    r = rows.get(oid)
+                    if f[0] == "PLACE":
+                        try:
+                            qty = int(float(f[4] or 0))
+                        except ValueError:
+                            qty = None
+                        leg = LEGS[o.group(3)]
+                        r = {"order_id": oid, "lane": lane, "book": _book(m.group(1)), "leg": leg, "entry_t": int(o.group(1)),
+                             "account": mask(f[1]), "instrument": f[2], "action": f[3], "side": "BUY" if f[3] == "BUY" else "SELL",
+                             "qty": qty, "order_type": f[5], "send_t": send, "sent_t": send,
+                             "intended_px": _num(f[7]) if leg == "stop" else _num(f[6]) if leg == "target" else None,
+                             "signal_t": int(o.group(1)) if leg == "entry" else None}
+                        rows[oid] = r
+                    elif r is not None:                      # a stop move / resize: the stop's price is the last one sent
+                        if r["leg"] == "stop" and _num(f[7]):
+                            r["intended_px"] = _num(f[7])
+                        elif r["leg"] == "target" and _num(f[6]):
+                            r["intended_px"] = _num(f[6])
+                except (ValueError, IndexError, KeyError):
+                    continue
     states = {}
     for r in _jl_read(os.path.join(es, "orders.jsonl")):
-        oid = r.get("id")
-        if oid in rows or (oid and _ENTRY_ID.match(str(oid)) and trading_day(int(_ENTRY_ID.match(str(oid)).group(1))) == day):
-            old = states.get(oid)
-            if old is None or str(r.get("state")) == "FILLED" or str(old.get("state")) != "FILLED":
-                states[oid] = r
+        oid = str(r.get("id") or "")
+        o = _OID.match(oid)
+        if not o or trading_day(int(o.group(1))) != day:
+            continue
+        states.setdefault(oid, []).append(r)
     legs = {k: v for k, v in (_read_json(os.path.join(es, "legs.json"), {}) or {}).items() if isinstance(v, dict)}
-    out = []
     try:
-        return _fill_rows(rows, states, legs, names)
+        return _fill_rows(rows, states, legs, names) + [scrub(c, names) for c in sorted(closes, key=lambda c: c["send_t"])]
     except Exception:                                    # a bad state / leg value: the day packs without fill rows
-        return out
+        return []
 
 
 def _fill_rows(rows, states, legs, names) -> list:
     out = []
     for oid in sorted(set(rows) | set(states)):
-        r = dict(rows.get(oid) or {"order_id": oid, "entry_t": int(_ENTRY_ID.match(oid).group(1))})
-        st, lg = states.get(oid) or {}, legs.get(oid) or {}
-        r.update({"state": st.get("state"), "filled": st.get("filled") if st.get("filled") is not None else lg.get("filled"),
-                  "fill_px": st.get("avg") or lg.get("fill_px"), "fill_t": st.get("mtime") or lg.get("fill_mtime")})
-        if lg.get("sent_at") is not None:
-            r["leg_sent_t"] = float(lg["sent_at"])
+        o = _OID.match(oid)
+        r = dict(rows.get(oid) or {"order_id": oid, "entry_t": int(o.group(1)), "leg": LEGS[o.group(3)], "lane": None})
+        sts = sorted(states.get(oid) or [], key=lambda x: float(x.get("mtime") or x.get("seen") or 0))
+        fin = next((x for x in reversed(sts) if str(x.get("state")) == "FILLED"), None) or (sts[-1] if sts else {})
+        ack = next((x for x in sts if str(x.get("state")) in ("ACCEPTED", "WORKING", "SUBMITTED", "TRIGGERPENDING")), None)
+        lg = legs.get(oid) or (legs.get(r.get("entry_id")) if r.get("entry_id") else None) or {}
+        if r["leg"] != "entry" and not lg:            # an exit's leg is the entry's (legs.json is keyed by the entry order)
+            lg = legs.get(oid[:-1] + "E") or {}
+        fill_px = _num(fin.get("avg")) or (_num(lg.get("fill_px")) if r["leg"] == "entry" else None)
+        r.update({"state": fin.get("state"), "filled": fin.get("filled") if fin.get("filled") is not None else (lg.get("filled") if r["leg"] == "entry" else None),
+                  "fill_px": fill_px,
+                  "fill_t": (fin.get("mtime") if str(fin.get("state")) == "FILLED" else None) or (lg.get("fill_mtime") if r["leg"] == "entry" else None),
+                  "ack_t": ack.get("mtime") if ack else None})
+        if r["leg"] == "entry":
+            if lg.get("sent_at") is not None:
+                r["leg_sent_t"] = float(lg["sent_at"])
+            if r.get("intended_px") is None and _num(lg.get("ref")) is not None:
+                r["intended_px"] = _num(lg.get("ref"))
+            if r.get("side") is None and lg.get("dir") is not None:
+                r["side"] = "BUY" if int(lg["dir"]) > 0 else "SELL"
+                r["action"] = r["side"]
+        r["slip_ticks"] = _slip(r.get("action") or r.get("side"), r.get("intended_px"), r.get("fill_px"))
         sent = r.get("sent_t") if r.get("sent_t") is not None else r.get("leg_sent_t")
-        r["sent_s_after_open"] = None if sent is None else round(float(sent) - r["entry_t"], 3)
+        r["send_t"] = r.get("send_t") if r.get("send_t") is not None else sent
+        r["sent_s_after_open"] = None if sent is None or r["leg"] != "entry" else round(float(sent) - r["entry_t"], 3)
         r["fill_s_after_sent"] = None if sent is None or r.get("fill_t") is None else round(float(r["fill_t"]) - float(sent), 3)
         out.append(scrub(r, names))
     return sorted(out, key=lambda r: (r["entry_t"], str(r.get("book")), str(r.get("order_id"))))

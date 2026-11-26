@@ -52,7 +52,8 @@ def collect(days_dir: str) -> list:
     for d in sorted(glob.glob(os.path.join(days_dir, "????-??-??"))):
         day = os.path.basename(d)
         opens = _opens(d)
-        fills = [r for r in _jl(os.path.join(d, "fills.jsonl.gz")) if r.get("fill_px") and r.get("filled")]
+        fills = [r for r in _jl(os.path.join(d, "fills.jsonl.gz")) if r.get("fill_px") and r.get("filled")
+                 and r.get("leg", "entry") == "entry"]               # day-zeroerr: the file has exit fills too now
         if fills:
             for r in fills:
                 side = 1 if str(r.get("action", "")).upper() == "BUY" else -1

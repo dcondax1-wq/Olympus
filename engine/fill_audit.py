@@ -136,7 +136,7 @@ def _rkey(r) -> str:
 
 def _leg_view(lg) -> dict:
     keep = ("instrument", "qty", "dir", "entry_t", "stop", "stop0", "target", "entry_id", "stop_id", "target_id", "status",
-            "filled", "fill_px", "fill_mtime", "sent_at", "bracket_qty", "closed", "closed_at")
+            "filled", "fill_px", "fill_mtime", "sent_at", "bracket_qty", "closed", "closed_at", "ref", "lane")   # ref: the price it was sent at (day-zeroerr fill log)
     return {k: lg.get(k) for k in keep if k in lg}
 
 
@@ -221,6 +221,14 @@ def collect(bot=None, state_path=None, nt_state_path=None, store=None, now=None,
         if not legs:
             ns = _read_json(nt_state_path or os.path.join(DATA, "ninjatrader_state.json"), {}) or {}
             legs = list(ns.get("legs") or [])
+        if nt_state_path is None and state_path is None:   # day-zeroerr fill log: every other lane's adapter too (ATLAS, the extra
+            import glob as _glob                             # accounts, Rapid, combo, keep-alive): their own state files, read-only
+            for sp in sorted(_glob.glob(os.path.join(DATA, "ninjatrader_state_*.json"))):
+                if "simcheck" in os.path.basename(sp):
+                    continue
+                ns = _read_json(sp, {}) or {}
+                lane = os.path.basename(sp)[len("ninjatrader_state_"):-len(".json")]
+                legs += [{**lg, "lane": lane} for lg in list(ns.get("legs") or []) + list(ns.get("history") or []) if isinstance(lg, dict)]
         gp = _p(store, "legs.json")
         L = _read_json(gp, {}) or {}
         n = 0
@@ -290,6 +298,8 @@ def collect(bot=None, state_path=None, nt_state_path=None, store=None, now=None,
 def _legs_by_entry(store) -> dict:
     out = {}
     for lg in (_read_json(_p(store, "legs.json"), {}) or {}).values():
+        if lg.get("lane"):
+            continue                         # another lane's leg (ATLAS, an extra account): never one of the main LIT account's
         if lg.get("entry_t") is not None:
             out.setdefault(int(lg["entry_t"]), []).append(lg)
     return out

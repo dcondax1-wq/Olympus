@@ -523,5 +523,7 @@ AREAS["nq"].append("setup_progress_rt"); AREAS["pc"].append("setup_progress_rt")
 
 AREAS["nq"].append("trade_cards"); AREAS["pc"].append("trade_cards")   # day-cards 2026-11-26: Telegram trade cards (chart PNG), 16:20 day summary, Friday week report
 
+AREAS["nq"].append("fill_log"); AREAS["pc"].append("fill_log")   # day-zeroerr 2026-11-26: every real fill (entry + exit, every lane) in fills.jsonl.gz, BLITZ paper rows, extra accounts in the day summary
+
 if __name__ == "__main__":
     sys.exit(main())

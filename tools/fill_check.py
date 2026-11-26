@@ -237,7 +237,8 @@ def load(root: str = ROOT) -> dict:
                 led = _merge_rows(_jl_read(os.path.join(root, "logs", "exec_audit", "ledger.jsonl")), led)
                 arch = _read_json(os.path.join(root, "logs", "exec_audit", "legs.json"), {}) or {}
                 have = {lg.get("entry_id") for lg in legs if lg.get("entry_id")}
-                legs += [lg for lg in arch.values() if isinstance(lg, dict) and lg.get("entry_id") not in have]
+                legs += [lg for lg in arch.values() if isinstance(lg, dict) and lg.get("entry_id") not in have
+                         and not lg.get("lane")]                 # day-zeroerr: another lane's leg (ATLAS, an extra account) is not Zlarior's
             adapter = st.get("adapter") if key == "lit" else ("ninjatrader" if nt else None)
             out["accounts"][key] = {"ledger": led, "legs": legs, "account": nt.get("account") or st.get("account"), "adapter": adapter}
         except Exception:
