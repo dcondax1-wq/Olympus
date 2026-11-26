@@ -1,0 +1,4774 @@
+{
+ "n": 1000,
+ "kelly_H1": 0.2704511278195489,
+ "pools": {
+  "H1": [
+   80,
+   0.8028278102008091,
+   0.625
+  ],
+  "ALL": [
+   631,
+   0.15312495826595174,
+   0.49181605611847234
+  ]
+ },
+ "rows": {
+  "mffu_builder_50k": {
+   "T0": {
+    "H1": {
+     "eval": {
+      "pass": 83.8,
+      "fail": 16.2,
+      "med_days": 7.0
+     },
+     "slot": {
+      "owner_6m": 7450,
+      "fees_6m": 196.5,
+      "net_6m": 7253,
+      "net_p10": 4616,
+      "evals_bought": 2.14,
+      "net_per_eval": 3389.3,
+      "payouts_per_month": 0.78,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 32.7,
+      "funded_lost": 0.23,
+      "no_pay_pct": 0.4,
+      "owner_per_pass": 4432
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 84.6,
+      "fail": 14.6,
+      "med_days": 7.0
+     },
+     "slot": {
+      "owner_6m": 7566,
+      "fees_6m": 195.4,
+      "net_6m": 7371,
+      "net_p10": 3108,
+      "evals_bought": 2.13,
+      "net_per_eval": 3462.2,
+      "payouts_per_month": 0.79,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 32.6,
+      "funded_lost": 0.2,
+      "no_pay_pct": 1.7,
+      "owner_per_pass": 4501
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 19.4,
+      "fail": 80.6,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 194,
+      "fees_6m": 768.0,
+      "net_6m": -574,
+      "net_p10": -1010,
+      "evals_bought": 8.37,
+      "net_per_eval": -68.7,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 168.3,
+      "spend_per_month_mean": 128.0,
+      "funded_lost": 1.31,
+      "no_pay_pct": 89.7,
+      "owner_per_pass": 119
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 21.1,
+      "fail": 78.7,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 197,
+      "fees_6m": 665.2,
+      "net_6m": -468,
+      "net_p10": -918,
+      "evals_bought": 7.25,
+      "net_per_eval": -64.6,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 153.0,
+      "spend_per_month_mean": 110.9,
+      "funded_lost": 1.18,
+      "no_pay_pct": 89.4,
+      "owner_per_pass": 132
+     }
+    }
+   },
+   "R25": {
+    "H1": {
+     "eval": {
+      "pass": 89.7,
+      "fail": 9.8,
+      "med_days": 8.0
+     },
+     "slot": {
+      "owner_6m": 7221,
+      "fees_6m": 180.1,
+      "net_6m": 7041,
+      "net_p10": 4525,
+      "evals_bought": 1.96,
+      "net_per_eval": 3588.5,
+      "payouts_per_month": 0.75,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 30.0,
+      "funded_lost": 0.21,
+      "no_pay_pct": 0.7,
+      "owner_per_pass": 4455
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 86.9,
+      "fail": 11.0,
+      "med_days": 11.0
+     },
+     "slot": {
+      "owner_6m": 7154,
+      "fees_6m": 179.1,
+      "net_6m": 6974,
+      "net_p10": 3016,
+      "evals_bought": 1.95,
+      "net_per_eval": 3574.8,
+      "payouts_per_month": 0.75,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 29.9,
+      "funded_lost": 0.2,
+      "no_pay_pct": 3.2,
+      "owner_per_pass": 4477
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 17.8,
+      "fail": 82.1,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 166,
+      "fees_6m": 682.1,
+      "net_6m": -516,
+      "net_p10": -918,
+      "evals_bought": 7.43,
+      "net_per_eval": -69.4,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 153.0,
+      "spend_per_month_mean": 113.7,
+      "funded_lost": 1.07,
+      "no_pay_pct": 91.1,
+      "owner_per_pass": 126
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 21.4,
+      "fail": 78.4,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 173,
+      "fees_6m": 598.4,
+      "net_6m": -426,
+      "net_p10": -826,
+      "evals_bought": 6.52,
+      "net_per_eval": -65.3,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 137.7,
+      "spend_per_month_mean": 99.7,
+      "funded_lost": 1.01,
+      "no_pay_pct": 90.7,
+      "owner_per_pass": 137
+     }
+    }
+   },
+   "R30": {
+    "H1": {
+     "eval": {
+      "pass": 88.9,
+      "fail": 10.8,
+      "med_days": 7.0
+     },
+     "slot": {
+      "owner_6m": 7333,
+      "fees_6m": 185.8,
+      "net_6m": 7147,
+      "net_p10": 4525,
+      "evals_bought": 2.02,
+      "net_per_eval": 3531.1,
+      "payouts_per_month": 0.76,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 31.0,
+      "funded_lost": 0.23,
+      "no_pay_pct": 0.7,
+      "owner_per_pass": 4450
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 87.5,
+      "fail": 11.0,
+      "med_days": 10.0
+     },
+     "slot": {
+      "owner_6m": 7309,
+      "fees_6m": 182.2,
+      "net_6m": 7127,
+      "net_p10": 3108,
+      "evals_bought": 1.99,
+      "net_per_eval": 3590.2,
+      "payouts_per_month": 0.76,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 30.4,
+      "funded_lost": 0.2,
+      "no_pay_pct": 2.8,
+      "owner_per_pass": 4506
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 18.9,
+      "fail": 81.1,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 181,
+      "fees_6m": 710.5,
+      "net_6m": -530,
+      "net_p10": -918,
+      "evals_bought": 7.74,
+      "net_per_eval": -68.4,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 153.0,
+      "spend_per_month_mean": 118.4,
+      "funded_lost": 1.13,
+      "no_pay_pct": 90.3,
+      "owner_per_pass": 130
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 21.3,
+      "fail": 78.6,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 200,
+      "fees_6m": 618.4,
+      "net_6m": -418,
+      "net_p10": -826,
+      "evals_bought": 6.74,
+      "net_per_eval": -62.1,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 137.7,
+      "spend_per_month_mean": 103.1,
+      "funded_lost": 1.05,
+      "no_pay_pct": 89.3,
+      "owner_per_pass": 150
+     }
+    }
+   },
+   "R50": {
+    "H1": {
+     "eval": {
+      "pass": 80.8,
+      "fail": 19.2,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 7576,
+      "fees_6m": 207.0,
+      "net_6m": 7369,
+      "net_p10": 4616,
+      "evals_bought": 2.25,
+      "net_per_eval": 3267.8,
+      "payouts_per_month": 0.79,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 34.5,
+      "funded_lost": 0.22,
+      "no_pay_pct": 0.4,
+      "owner_per_pass": 4454
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 79.6,
+      "fail": 20.3,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 7779,
+      "fees_6m": 209.4,
+      "net_6m": 7570,
+      "net_p10": 4525,
+      "evals_bought": 2.28,
+      "net_per_eval": 3318.6,
+      "payouts_per_month": 0.81,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 34.9,
+      "funded_lost": 0.21,
+      "no_pay_pct": 1.3,
+      "owner_per_pass": 4499
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 19.2,
+      "fail": 80.8,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 216,
+      "fees_6m": 822.3,
+      "net_6m": -606,
+      "net_p10": -1102,
+      "evals_bought": 8.96,
+      "net_per_eval": -67.7,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 183.6,
+      "spend_per_month_mean": 137.1,
+      "funded_lost": 1.48,
+      "no_pay_pct": 88.9,
+      "owner_per_pass": 119
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 21.2,
+      "fail": 78.8,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 213,
+      "fees_6m": 715.5,
+      "net_6m": -503,
+      "net_p10": -918,
+      "evals_bought": 7.79,
+      "net_per_eval": -64.5,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 153.0,
+      "spend_per_month_mean": 119.2,
+      "funded_lost": 1.31,
+      "no_pay_pct": 88.7,
+      "owner_per_pass": 130
+     }
+    }
+   },
+   "R60": {
+    "H1": {
+     "eval": {
+      "pass": 77.3,
+      "fail": 22.7,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 7610,
+      "fees_6m": 215.5,
+      "net_6m": 7394,
+      "net_p10": 4616,
+      "evals_bought": 2.35,
+      "net_per_eval": 3149.1,
+      "payouts_per_month": 0.79,
+      "spend_per_month_p90": 61.2,
+      "spend_per_month_mean": 35.9,
+      "funded_lost": 0.22,
+      "no_pay_pct": 0.2,
+      "owner_per_pass": 4442
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 77.3,
+      "fail": 22.7,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 7845,
+      "fees_6m": 220.0,
+      "net_6m": 7625,
+      "net_p10": 4525,
+      "evals_bought": 2.4,
+      "net_per_eval": 3182.3,
+      "payouts_per_month": 0.82,
+      "spend_per_month_p90": 61.2,
+      "spend_per_month_mean": 36.7,
+      "funded_lost": 0.21,
+      "no_pay_pct": 1.5,
+      "owner_per_pass": 4470
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 19.2,
+      "fail": 80.8,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 237,
+      "fees_6m": 874.9,
+      "net_6m": -638,
+      "net_p10": -1193,
+      "evals_bought": 9.53,
+      "net_per_eval": -67.0,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 198.9,
+      "spend_per_month_mean": 145.8,
+      "funded_lost": 1.61,
+      "no_pay_pct": 87.8,
+      "owner_per_pass": 121
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 20.6,
+      "fail": 79.4,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 234,
+      "fees_6m": 757.4,
+      "net_6m": -524,
+      "net_p10": -1010,
+      "evals_bought": 8.25,
+      "net_per_eval": -63.5,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 168.3,
+      "spend_per_month_mean": 126.2,
+      "funded_lost": 1.33,
+      "no_pay_pct": 87.4,
+      "owner_per_pass": 138
+     }
+    }
+   },
+   "F10": {
+    "H1": {
+     "eval": {
+      "pass": 89.6,
+      "fail": 9.0,
+      "med_days": 9.0
+     },
+     "slot": {
+      "owner_6m": 6965,
+      "fees_6m": 177.4,
+      "net_6m": 6787,
+      "net_p10": 3108,
+      "evals_bought": 1.93,
+      "net_per_eval": 3511.3,
+      "payouts_per_month": 0.73,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 29.6,
+      "funded_lost": 0.21,
+      "no_pay_pct": 2.0,
+      "owner_per_pass": 4419
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 83.0,
+      "fail": 8.6,
+      "med_days": 14.0
+     },
+     "slot": {
+      "owner_6m": 6322,
+      "fees_6m": 168.6,
+      "net_6m": 6153,
+      "net_p10": 1416,
+      "evals_bought": 1.84,
+      "net_per_eval": 3349.5,
+      "payouts_per_month": 0.66,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 28.1,
+      "funded_lost": 0.18,
+      "no_pay_pct": 8.4,
+      "owner_per_pass": 4468
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 16.1,
+      "fail": 83.7,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 144,
+      "fees_6m": 631.6,
+      "net_6m": -488,
+      "net_p10": -826,
+      "evals_bought": 6.88,
+      "net_per_eval": -70.9,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 137.7,
+      "spend_per_month_mean": 105.3,
+      "funded_lost": 0.91,
+      "no_pay_pct": 92.2,
+      "owner_per_pass": 128
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 21.0,
+      "fail": 78.6,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 160,
+      "fees_6m": 559.5,
+      "net_6m": -400,
+      "net_p10": -734,
+      "evals_bought": 6.09,
+      "net_per_eval": -65.5,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 122.4,
+      "spend_per_month_mean": 93.3,
+      "funded_lost": 0.89,
+      "no_pay_pct": 91.2,
+      "owner_per_pass": 142
+     }
+    }
+   },
+   "F15": {
+    "H1": {
+     "eval": {
+      "pass": 90.9,
+      "fail": 7.9,
+      "med_days": 9.0
+     },
+     "slot": {
+      "owner_6m": 7094,
+      "fees_6m": 175.9,
+      "net_6m": 6919,
+      "net_p10": 3108,
+      "evals_bought": 1.92,
+      "net_per_eval": 3610.9,
+      "payouts_per_month": 0.74,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 29.3,
+      "funded_lost": 0.21,
+      "no_pay_pct": 1.2,
+      "owner_per_pass": 4456
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 86.1,
+      "fail": 8.0,
+      "med_days": 13.0
+     },
+     "slot": {
+      "owner_6m": 6661,
+      "fees_6m": 171.5,
+      "net_6m": 6489,
+      "net_p10": 2700,
+      "evals_bought": 1.87,
+      "net_per_eval": 3473.9,
+      "payouts_per_month": 0.69,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 28.6,
+      "funded_lost": 0.19,
+      "no_pay_pct": 5.2,
+      "owner_per_pass": 4482
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 16.6,
+      "fail": 83.2,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 165,
+      "fees_6m": 640.9,
+      "net_6m": -476,
+      "net_p10": -826,
+      "evals_bought": 6.98,
+      "net_per_eval": -68.2,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 137.7,
+      "spend_per_month_mean": 106.8,
+      "funded_lost": 0.95,
+      "no_pay_pct": 91.1,
+      "owner_per_pass": 139
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 21.5,
+      "fail": 78.1,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 168,
+      "fees_6m": 565.3,
+      "net_6m": -397,
+      "net_p10": -734,
+      "evals_bought": 6.16,
+      "net_per_eval": -64.5,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 122.4,
+      "spend_per_month_mean": 94.2,
+      "funded_lost": 0.89,
+      "no_pay_pct": 91.0,
+      "owner_per_pass": 147
+     }
+    }
+   },
+   "F20": {
+    "H1": {
+     "eval": {
+      "pass": 90.9,
+      "fail": 8.5,
+      "med_days": 9.0
+     },
+     "slot": {
+      "owner_6m": 7197,
+      "fees_6m": 178.2,
+      "net_6m": 7019,
+      "net_p10": 4525,
+      "evals_bought": 1.94,
+      "net_per_eval": 3616.0,
+      "payouts_per_month": 0.75,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 29.7,
+      "funded_lost": 0.2,
+      "no_pay_pct": 1.4,
+      "owner_per_pass": 4509
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 86.5,
+      "fail": 8.8,
+      "med_days": 13.0
+     },
+     "slot": {
+      "owner_6m": 6877,
+      "fees_6m": 175.7,
+      "net_6m": 6701,
+      "net_p10": 3016,
+      "evals_bought": 1.91,
+      "net_per_eval": 3501.1,
+      "payouts_per_month": 0.72,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 29.3,
+      "funded_lost": 0.2,
+      "no_pay_pct": 5.0,
+      "owner_per_pass": 4417
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 16.6,
+      "fail": 83.1,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 166,
+      "fees_6m": 657.7,
+      "net_6m": -491,
+      "net_p10": -826,
+      "evals_bought": 7.16,
+      "net_per_eval": -68.6,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 137.7,
+      "spend_per_month_mean": 109.6,
+      "funded_lost": 0.98,
+      "no_pay_pct": 91.1,
+      "owner_per_pass": 137
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 21.5,
+      "fail": 78.2,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 168,
+      "fees_6m": 583.1,
+      "net_6m": -415,
+      "net_p10": -734,
+      "evals_bought": 6.35,
+      "net_per_eval": -65.4,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 122.4,
+      "spend_per_month_mean": 97.2,
+      "funded_lost": 0.97,
+      "no_pay_pct": 91.0,
+      "owner_per_pass": 138
+     }
+    }
+   },
+   "F30": {
+    "H1": {
+     "eval": {
+      "pass": 88.9,
+      "fail": 10.8,
+      "med_days": 7.0
+     },
+     "slot": {
+      "owner_6m": 7333,
+      "fees_6m": 185.8,
+      "net_6m": 7147,
+      "net_p10": 4525,
+      "evals_bought": 2.02,
+      "net_per_eval": 3531.1,
+      "payouts_per_month": 0.76,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 31.0,
+      "funded_lost": 0.23,
+      "no_pay_pct": 0.7,
+      "owner_per_pass": 4450
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 87.5,
+      "fail": 11.0,
+      "med_days": 10.0
+     },
+     "slot": {
+      "owner_6m": 7310,
+      "fees_6m": 182.2,
+      "net_6m": 7128,
+      "net_p10": 3108,
+      "evals_bought": 1.99,
+      "net_per_eval": 3591.0,
+      "payouts_per_month": 0.76,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 30.4,
+      "funded_lost": 0.2,
+      "no_pay_pct": 2.7,
+      "owner_per_pass": 4507
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 18.9,
+      "fail": 81.1,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 181,
+      "fees_6m": 710.5,
+      "net_6m": -530,
+      "net_p10": -918,
+      "evals_bought": 7.74,
+      "net_per_eval": -68.4,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 153.0,
+      "spend_per_month_mean": 118.4,
+      "funded_lost": 1.13,
+      "no_pay_pct": 90.3,
+      "owner_per_pass": 130
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 21.3,
+      "fail": 78.6,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 200,
+      "fees_6m": 618.4,
+      "net_6m": -418,
+      "net_p10": -826,
+      "evals_bought": 6.74,
+      "net_per_eval": -62.1,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 137.7,
+      "spend_per_month_mean": 103.1,
+      "funded_lost": 1.05,
+      "no_pay_pct": 89.3,
+      "owner_per_pass": 150
+     }
+    }
+   },
+   "K25": {
+    "H1": {
+     "eval": {
+      "pass": 87.8,
+      "fail": 10.2,
+      "med_days": 10.0
+     },
+     "slot": {
+      "owner_6m": 6832,
+      "fees_6m": 178.2,
+      "net_6m": 6654,
+      "net_p10": 3016,
+      "evals_bought": 1.94,
+      "net_per_eval": 3428.0,
+      "payouts_per_month": 0.71,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 29.7,
+      "funded_lost": 0.2,
+      "no_pay_pct": 2.4,
+      "owner_per_pass": 4422
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 78.2,
+      "fail": 10.8,
+      "med_days": 15.0
+     },
+     "slot": {
+      "owner_6m": 6070,
+      "fees_6m": 169.2,
+      "net_6m": 5901,
+      "net_p10": -92,
+      "evals_bought": 1.84,
+      "net_per_eval": 3202.0,
+      "payouts_per_month": 0.63,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 28.2,
+      "funded_lost": 0.17,
+      "no_pay_pct": 10.7,
+      "owner_per_pass": 4490
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 16.4,
+      "fail": 83.3,
+      "med_days": 7.0
+     },
+     "slot": {
+      "owner_6m": 149,
+      "fees_6m": 626.4,
+      "net_6m": -478,
+      "net_p10": -826,
+      "evals_bought": 6.82,
+      "net_per_eval": -70.0,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 137.7,
+      "spend_per_month_mean": 104.4,
+      "funded_lost": 0.88,
+      "no_pay_pct": 92.3,
+      "owner_per_pass": 137
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 20.5,
+      "fail": 78.7,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 165,
+      "fees_6m": 554.7,
+      "net_6m": -390,
+      "net_p10": -734,
+      "evals_bought": 6.04,
+      "net_per_eval": -64.5,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 122.4,
+      "spend_per_month_mean": 92.5,
+      "funded_lost": 0.89,
+      "no_pay_pct": 91.3,
+      "owner_per_pass": 147
+     }
+    }
+   },
+   "K50": {
+    "H1": {
+     "eval": {
+      "pass": 90.8,
+      "fail": 8.2,
+      "med_days": 9.0
+     },
+     "slot": {
+      "owner_6m": 7082,
+      "fees_6m": 175.9,
+      "net_6m": 6906,
+      "net_p10": 3108,
+      "evals_bought": 1.92,
+      "net_per_eval": 3604.2,
+      "payouts_per_month": 0.74,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 29.3,
+      "funded_lost": 0.21,
+      "no_pay_pct": 1.3,
+      "owner_per_pass": 4454
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 85.2,
+      "fail": 8.7,
+      "med_days": 14.0
+     },
+     "slot": {
+      "owner_6m": 6606,
+      "fees_6m": 170.7,
+      "net_6m": 6436,
+      "net_p10": 1508,
+      "evals_bought": 1.86,
+      "net_per_eval": 3460.0,
+      "payouts_per_month": 0.69,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 28.5,
+      "funded_lost": 0.18,
+      "no_pay_pct": 5.6,
+      "owner_per_pass": 4494
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 16.5,
+      "fail": 83.2,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 152,
+      "fees_6m": 638.1,
+      "net_6m": -486,
+      "net_p10": -826,
+      "evals_bought": 6.95,
+      "net_per_eval": -69.9,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 137.7,
+      "spend_per_month_mean": 106.4,
+      "funded_lost": 0.95,
+      "no_pay_pct": 92.0,
+      "owner_per_pass": 130
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 21.1,
+      "fail": 78.4,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 165,
+      "fees_6m": 562.1,
+      "net_6m": -397,
+      "net_p10": -734,
+      "evals_bought": 6.12,
+      "net_per_eval": -64.9,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 122.4,
+      "spend_per_month_mean": 93.7,
+      "funded_lost": 0.9,
+      "no_pay_pct": 91.3,
+      "owner_per_pass": 144
+     }
+    }
+   },
+   "BP6": {
+    "H1": {
+     "eval": {
+      "pass": 83.8,
+      "fail": 16.2,
+      "med_days": 7.0
+     },
+     "slot": {
+      "owner_6m": 7450,
+      "fees_6m": 196.5,
+      "net_6m": 7253,
+      "net_p10": 4616,
+      "evals_bought": 2.14,
+      "net_per_eval": 3389.3,
+      "payouts_per_month": 0.78,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 32.7,
+      "funded_lost": 0.23,
+      "no_pay_pct": 0.4,
+      "owner_per_pass": 4432
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 84.6,
+      "fail": 14.6,
+      "med_days": 7.0
+     },
+     "slot": {
+      "owner_6m": 7566,
+      "fees_6m": 195.4,
+      "net_6m": 7371,
+      "net_p10": 3108,
+      "evals_bought": 2.13,
+      "net_per_eval": 3463.8,
+      "payouts_per_month": 0.79,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 32.6,
+      "funded_lost": 0.2,
+      "no_pay_pct": 1.7,
+      "owner_per_pass": 4501
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 19.4,
+      "fail": 80.6,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 194,
+      "fees_6m": 768.0,
+      "net_6m": -574,
+      "net_p10": -1010,
+      "evals_bought": 8.37,
+      "net_per_eval": -68.7,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 168.3,
+      "spend_per_month_mean": 128.0,
+      "funded_lost": 1.31,
+      "no_pay_pct": 89.7,
+      "owner_per_pass": 120
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 21.1,
+      "fail": 78.7,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 197,
+      "fees_6m": 665.3,
+      "net_6m": -468,
+      "net_p10": -918,
+      "evals_bought": 7.25,
+      "net_per_eval": -64.6,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 153.0,
+      "spend_per_month_mean": 110.9,
+      "funded_lost": 1.18,
+      "no_pay_pct": 89.4,
+      "owner_per_pass": 132
+     }
+    }
+   },
+   "BP8": {
+    "H1": {
+     "eval": {
+      "pass": 83.8,
+      "fail": 16.2,
+      "med_days": 7.0
+     },
+     "slot": {
+      "owner_6m": 7450,
+      "fees_6m": 196.5,
+      "net_6m": 7253,
+      "net_p10": 4616,
+      "evals_bought": 2.14,
+      "net_per_eval": 3389.3,
+      "payouts_per_month": 0.78,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 32.7,
+      "funded_lost": 0.23,
+      "no_pay_pct": 0.4,
+      "owner_per_pass": 4432
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 84.6,
+      "fail": 14.6,
+      "med_days": 7.0
+     },
+     "slot": {
+      "owner_6m": 7566,
+      "fees_6m": 195.4,
+      "net_6m": 7371,
+      "net_p10": 3108,
+      "evals_bought": 2.13,
+      "net_per_eval": 3463.8,
+      "payouts_per_month": 0.79,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 32.6,
+      "funded_lost": 0.2,
+      "no_pay_pct": 1.7,
+      "owner_per_pass": 4501
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 19.4,
+      "fail": 80.6,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 194,
+      "fees_6m": 768.0,
+      "net_6m": -574,
+      "net_p10": -1010,
+      "evals_bought": 8.37,
+      "net_per_eval": -68.7,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 168.3,
+      "spend_per_month_mean": 128.0,
+      "funded_lost": 1.31,
+      "no_pay_pct": 89.7,
+      "owner_per_pass": 120
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 21.1,
+      "fail": 78.7,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 197,
+      "fees_6m": 665.3,
+      "net_6m": -468,
+      "net_p10": -918,
+      "evals_bought": 7.25,
+      "net_per_eval": -64.6,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 153.0,
+      "spend_per_month_mean": 110.9,
+      "funded_lost": 1.18,
+      "no_pay_pct": 89.4,
+      "owner_per_pass": 132
+     }
+    }
+   },
+   "PR1": {
+    "H1": {
+     "eval": {
+      "pass": 89.2,
+      "fail": 10.5,
+      "med_days": 7.0
+     },
+     "slot": {
+      "owner_6m": 7330,
+      "fees_6m": 182.8,
+      "net_6m": 7147,
+      "net_p10": 4525,
+      "evals_bought": 1.99,
+      "net_per_eval": 3589.6,
+      "payouts_per_month": 0.76,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 30.5,
+      "funded_lost": 0.22,
+      "no_pay_pct": 0.7,
+      "owner_per_pass": 4467
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 86.0,
+      "fail": 11.2,
+      "med_days": 8.0
+     },
+     "slot": {
+      "owner_6m": 7280,
+      "fees_6m": 187.1,
+      "net_6m": 7093,
+      "net_p10": 3016,
+      "evals_bought": 2.04,
+      "net_per_eval": 3480.3,
+      "payouts_per_month": 0.76,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 31.2,
+      "funded_lost": 0.22,
+      "no_pay_pct": 3.1,
+      "owner_per_pass": 4450
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 19.1,
+      "fail": 80.8,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 186,
+      "fees_6m": 698.0,
+      "net_6m": -512,
+      "net_p10": -918,
+      "evals_bought": 7.6,
+      "net_per_eval": -67.4,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 153.0,
+      "spend_per_month_mean": 116.3,
+      "funded_lost": 1.18,
+      "no_pay_pct": 90.1,
+      "owner_per_pass": 127
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 21.2,
+      "fail": 78.7,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 174,
+      "fees_6m": 611.8,
+      "net_6m": -437,
+      "net_p10": -826,
+      "evals_bought": 6.66,
+      "net_per_eval": -65.6,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 137.7,
+      "spend_per_month_mean": 102.0,
+      "funded_lost": 1.05,
+      "no_pay_pct": 90.9,
+      "owner_per_pass": 132
+     }
+    }
+   },
+   "PR2": {
+    "H1": {
+     "eval": {
+      "pass": 90.1,
+      "fail": 8.8,
+      "med_days": 8.0
+     },
+     "slot": {
+      "owner_6m": 7266,
+      "fees_6m": 181.2,
+      "net_6m": 7084,
+      "net_p10": 4525,
+      "evals_bought": 1.97,
+      "net_per_eval": 3588.8,
+      "payouts_per_month": 0.76,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 30.2,
+      "funded_lost": 0.21,
+      "no_pay_pct": 0.9,
+      "owner_per_pass": 4485
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 85.2,
+      "fail": 10.5,
+      "med_days": 8.0
+     },
+     "slot": {
+      "owner_6m": 7029,
+      "fees_6m": 184.2,
+      "net_6m": 6845,
+      "net_p10": 2925,
+      "evals_bought": 2.01,
+      "net_per_eval": 3412.1,
+      "payouts_per_month": 0.73,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 30.7,
+      "funded_lost": 0.2,
+      "no_pay_pct": 5.5,
+      "owner_per_pass": 4449
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 19.9,
+      "fail": 80.1,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 171,
+      "fees_6m": 668.4,
+      "net_6m": -497,
+      "net_p10": -826,
+      "evals_bought": 7.28,
+      "net_per_eval": -68.3,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 137.7,
+      "spend_per_month_mean": 111.4,
+      "funded_lost": 1.1,
+      "no_pay_pct": 90.8,
+      "owner_per_pass": 124
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 21.4,
+      "fail": 78.4,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 174,
+      "fees_6m": 593.8,
+      "net_6m": -419,
+      "net_p10": -826,
+      "evals_bought": 6.47,
+      "net_per_eval": -64.8,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 137.7,
+      "spend_per_month_mean": 99.0,
+      "funded_lost": 1.0,
+      "no_pay_pct": 90.8,
+      "owner_per_pass": 139
+     }
+    }
+   },
+   "BPR": {
+    "H1": {
+     "eval": {
+      "pass": 89.2,
+      "fail": 10.5,
+      "med_days": 7.0
+     },
+     "slot": {
+      "owner_6m": 7330,
+      "fees_6m": 182.8,
+      "net_6m": 7147,
+      "net_p10": 4525,
+      "evals_bought": 1.99,
+      "net_per_eval": 3589.6,
+      "payouts_per_month": 0.76,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 30.5,
+      "funded_lost": 0.22,
+      "no_pay_pct": 0.7,
+      "owner_per_pass": 4467
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 86.0,
+      "fail": 11.2,
+      "med_days": 8.0
+     },
+     "slot": {
+      "owner_6m": 7274,
+      "fees_6m": 187.1,
+      "net_6m": 7087,
+      "net_p10": 3016,
+      "evals_bought": 2.04,
+      "net_per_eval": 3477.2,
+      "payouts_per_month": 0.76,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 31.2,
+      "funded_lost": 0.22,
+      "no_pay_pct": 3.2,
+      "owner_per_pass": 4443
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 19.1,
+      "fail": 80.8,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 184,
+      "fees_6m": 698.2,
+      "net_6m": -514,
+      "net_p10": -918,
+      "evals_bought": 7.61,
+      "net_per_eval": -67.6,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 153.0,
+      "spend_per_month_mean": 116.4,
+      "funded_lost": 1.19,
+      "no_pay_pct": 90.2,
+      "owner_per_pass": 125
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 21.2,
+      "fail": 78.7,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 174,
+      "fees_6m": 611.8,
+      "net_6m": -437,
+      "net_p10": -826,
+      "evals_bought": 6.66,
+      "net_per_eval": -65.6,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 137.7,
+      "spend_per_month_mean": 102.0,
+      "funded_lost": 1.05,
+      "no_pay_pct": 90.9,
+      "owner_per_pass": 132
+     }
+    }
+   },
+   "D1": {
+    "H1": {
+     "eval": {
+      "pass": 90.1,
+      "fail": 9.7,
+      "med_days": 10.0
+     },
+     "slot": {
+      "owner_6m": 7038,
+      "fees_6m": 176.6,
+      "net_6m": 6862,
+      "net_p10": 3108,
+      "evals_bought": 1.92,
+      "net_per_eval": 3566.4,
+      "payouts_per_month": 0.73,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 29.4,
+      "funded_lost": 0.21,
+      "no_pay_pct": 1.1,
+      "owner_per_pass": 4486
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 89.1,
+      "fail": 9.7,
+      "med_days": 16.0
+     },
+     "slot": {
+      "owner_6m": 6749,
+      "fees_6m": 172.6,
+      "net_6m": 6576,
+      "net_p10": 3016,
+      "evals_bought": 1.88,
+      "net_per_eval": 3498.0,
+      "payouts_per_month": 0.7,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 28.8,
+      "funded_lost": 0.19,
+      "no_pay_pct": 3.9,
+      "owner_per_pass": 4566
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 15.4,
+      "fail": 84.6,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 154,
+      "fees_6m": 653.2,
+      "net_6m": -500,
+      "net_p10": -826,
+      "evals_bought": 7.12,
+      "net_per_eval": -70.2,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 137.7,
+      "spend_per_month_mean": 108.9,
+      "funded_lost": 0.91,
+      "no_pay_pct": 91.8,
+      "owner_per_pass": 135
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 20.4,
+      "fail": 79.5,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 166,
+      "fees_6m": 579.6,
+      "net_6m": -413,
+      "net_p10": -734,
+      "evals_bought": 6.31,
+      "net_per_eval": -65.4,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 122.4,
+      "spend_per_month_mean": 96.6,
+      "funded_lost": 0.9,
+      "no_pay_pct": 91.2,
+      "owner_per_pass": 145
+     }
+    }
+   },
+   "D2": {
+    "H1": {
+     "eval": {
+      "pass": 88.2,
+      "fail": 11.8,
+      "med_days": 8.0
+     },
+     "slot": {
+      "owner_6m": 7266,
+      "fees_6m": 185.6,
+      "net_6m": 7080,
+      "net_p10": 4525,
+      "evals_bought": 2.02,
+      "net_per_eval": 3501.5,
+      "payouts_per_month": 0.76,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 30.9,
+      "funded_lost": 0.23,
+      "no_pay_pct": 0.4,
+      "owner_per_pass": 4444
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 88.8,
+      "fail": 11.1,
+      "med_days": 12.0
+     },
+     "slot": {
+      "owner_6m": 7206,
+      "fees_6m": 182.9,
+      "net_6m": 7024,
+      "net_p10": 3016,
+      "evals_bought": 1.99,
+      "net_per_eval": 3525.9,
+      "payouts_per_month": 0.75,
+      "spend_per_month_p90": 45.9,
+      "spend_per_month_mean": 30.5,
+      "funded_lost": 0.2,
+      "no_pay_pct": 2.4,
+      "owner_per_pass": 4564
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 17.1,
+      "fail": 82.9,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 171,
+      "fees_6m": 705.5,
+      "net_6m": -534,
+      "net_p10": -918,
+      "evals_bought": 7.68,
+      "net_per_eval": -69.5,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 153.0,
+      "spend_per_month_mean": 117.6,
+      "funded_lost": 1.11,
+      "no_pay_pct": 91.1,
+      "owner_per_pass": 125
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 20.7,
+      "fail": 79.3,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 184,
+      "fees_6m": 619.7,
+      "net_6m": -436,
+      "net_p10": -826,
+      "evals_bought": 6.75,
+      "net_per_eval": -64.5,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 137.7,
+      "spend_per_month_mean": 103.3,
+      "funded_lost": 1.02,
+      "no_pay_pct": 90.5,
+      "owner_per_pass": 142
+     }
+    }
+   }
+  },
+  "mffu_builder_25k": {
+   "T0": {
+    "H1": {
+     "eval": {
+      "pass": 87.7,
+      "fail": 6.6,
+      "med_days": 7.0
+     },
+     "slot": {
+      "owner_6m": 3407,
+      "fees_6m": 119.5,
+      "net_6m": 3288,
+      "net_p10": 1474,
+      "evals_bought": 1.9,
+      "net_per_eval": 1733.1,
+      "payouts_per_month": 0.71,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 19.9,
+      "funded_lost": 0.24,
+      "no_pay_pct": 3.3,
+      "owner_per_pass": 2126
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 83.2,
+      "fail": 9.7,
+      "med_days": 8.0
+     },
+     "slot": {
+      "owner_6m": 3025,
+      "fees_6m": 121.1,
+      "net_6m": 2904,
+      "net_p10": 611,
+      "evals_bought": 1.92,
+      "net_per_eval": 1510.0,
+      "payouts_per_month": 0.63,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 20.2,
+      "funded_lost": 0.27,
+      "no_pay_pct": 9.2,
+      "owner_per_pass": 2015
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 19.5,
+      "fail": 80.0,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 67,
+      "fees_6m": 391.0,
+      "net_6m": -324,
+      "net_p10": -504,
+      "evals_bought": 6.21,
+      "net_per_eval": -52.2,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 84.0,
+      "spend_per_month_mean": 65.2,
+      "funded_lost": 0.96,
+      "no_pay_pct": 93.1,
+      "owner_per_pass": 56
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 21.1,
+      "fail": 77.7,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 61,
+      "fees_6m": 337.7,
+      "net_6m": -277,
+      "net_p10": -441,
+      "evals_bought": 5.36,
+      "net_per_eval": -51.7,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 73.5,
+      "spend_per_month_mean": 56.3,
+      "funded_lost": 0.83,
+      "no_pay_pct": 93.8,
+      "owner_per_pass": 58
+     }
+    }
+   },
+   "R25": {
+    "H1": {
+     "eval": {
+      "pass": 89.2,
+      "fail": 3.9,
+      "med_days": 8.0
+     },
+     "slot": {
+      "owner_6m": 3328,
+      "fees_6m": 117.9,
+      "net_6m": 3210,
+      "net_p10": 1411,
+      "evals_bought": 1.87,
+      "net_per_eval": 1715.7,
+      "payouts_per_month": 0.69,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 19.6,
+      "funded_lost": 0.24,
+      "no_pay_pct": 4.9,
+      "owner_per_pass": 2121
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 78.4,
+      "fail": 4.8,
+      "med_days": 12.0
+     },
+     "slot": {
+      "owner_6m": 2774,
+      "fees_6m": 114.3,
+      "net_6m": 2660,
+      "net_p10": -126,
+      "evals_bought": 1.81,
+      "net_per_eval": 1466.4,
+      "payouts_per_month": 0.58,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 19.0,
+      "funded_lost": 0.23,
+      "no_pay_pct": 13.4,
+      "owner_per_pass": 2058
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 17.4,
+      "fail": 81.5,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 65,
+      "fees_6m": 338.8,
+      "net_6m": -274,
+      "net_p10": -441,
+      "evals_bought": 5.38,
+      "net_per_eval": -50.9,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 73.5,
+      "spend_per_month_mean": 56.5,
+      "funded_lost": 0.69,
+      "no_pay_pct": 93.1,
+      "owner_per_pass": 74
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 20.9,
+      "fail": 76.0,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 54,
+      "fees_6m": 300.1,
+      "net_6m": -247,
+      "net_p10": -378,
+      "evals_bought": 4.76,
+      "net_per_eval": -51.7,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 63.0,
+      "spend_per_month_mean": 50.0,
+      "funded_lost": 0.67,
+      "no_pay_pct": 94.4,
+      "owner_per_pass": 64
+     }
+    }
+   },
+   "R30": {
+    "H1": {
+     "eval": {
+      "pass": 89.5,
+      "fail": 3.8,
+      "med_days": 8.0
+     },
+     "slot": {
+      "owner_6m": 3406,
+      "fees_6m": 118.6,
+      "net_6m": 3287,
+      "net_p10": 1474,
+      "evals_bought": 1.88,
+      "net_per_eval": 1746.6,
+      "payouts_per_month": 0.71,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 19.8,
+      "funded_lost": 0.24,
+      "no_pay_pct": 3.9,
+      "owner_per_pass": 2145
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 79.5,
+      "fail": 5.7,
+      "med_days": 11.0
+     },
+     "slot": {
+      "owner_6m": 2814,
+      "fees_6m": 115.6,
+      "net_6m": 2698,
+      "net_p10": -126,
+      "evals_bought": 1.83,
+      "net_per_eval": 1470.3,
+      "payouts_per_month": 0.59,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 19.3,
+      "funded_lost": 0.24,
+      "no_pay_pct": 13.0,
+      "owner_per_pass": 2015
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 18.3,
+      "fail": 80.6,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 62,
+      "fees_6m": 353.1,
+      "net_6m": -292,
+      "net_p10": -441,
+      "evals_bought": 5.61,
+      "net_per_eval": -52.0,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 73.5,
+      "spend_per_month_mean": 58.9,
+      "funded_lost": 0.76,
+      "no_pay_pct": 93.5,
+      "owner_per_pass": 64
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 21.8,
+      "fail": 75.5,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 58,
+      "fees_6m": 310.2,
+      "net_6m": -253,
+      "net_p10": -441,
+      "evals_bought": 4.92,
+      "net_per_eval": -51.3,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 73.5,
+      "spend_per_month_mean": 51.7,
+      "funded_lost": 0.72,
+      "no_pay_pct": 94.0,
+      "owner_per_pass": 63
+     }
+    }
+   },
+   "R50": {
+    "H1": {
+     "eval": {
+      "pass": 84.5,
+      "fail": 13.6,
+      "med_days": 7.0
+     },
+     "slot": {
+      "owner_6m": 3547,
+      "fees_6m": 129.2,
+      "net_6m": 3418,
+      "net_p10": 1474,
+      "evals_bought": 2.05,
+      "net_per_eval": 1667.3,
+      "payouts_per_month": 0.74,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 21.5,
+      "funded_lost": 0.26,
+      "no_pay_pct": 1.4,
+      "owner_per_pass": 2146
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 82.0,
+      "fail": 15.1,
+      "med_days": 6.5
+     },
+     "slot": {
+      "owner_6m": 3214,
+      "fees_6m": 129.2,
+      "net_6m": 3084,
+      "net_p10": 737,
+      "evals_bought": 2.05,
+      "net_per_eval": 1503.8,
+      "payouts_per_month": 0.67,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 21.5,
+      "funded_lost": 0.27,
+      "no_pay_pct": 5.5,
+      "owner_per_pass": 2060
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 19.7,
+      "fail": 79.8,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 78,
+      "fees_6m": 435.2,
+      "net_6m": -357,
+      "net_p10": -567,
+      "evals_bought": 6.91,
+      "net_per_eval": -51.7,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 94.5,
+      "spend_per_month_mean": 72.5,
+      "funded_lost": 1.1,
+      "no_pay_pct": 91.8,
+      "owner_per_pass": 57
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 21.4,
+      "fail": 77.9,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 86,
+      "fees_6m": 367.6,
+      "net_6m": -281,
+      "net_p10": -504,
+      "evals_bought": 5.83,
+      "net_per_eval": -48.2,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 84.0,
+      "spend_per_month_mean": 61.3,
+      "funded_lost": 0.94,
+      "no_pay_pct": 91.2,
+      "owner_per_pass": 71
+     }
+    }
+   },
+   "R60": {
+    "H1": {
+     "eval": {
+      "pass": 81.6,
+      "fail": 18.2,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 3622,
+      "fees_6m": 137.8,
+      "net_6m": 3484,
+      "net_p10": 2148,
+      "evals_bought": 2.19,
+      "net_per_eval": 1593.0,
+      "payouts_per_month": 0.75,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 23.0,
+      "funded_lost": 0.26,
+      "no_pay_pct": 0.6,
+      "owner_per_pass": 2156
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 79.6,
+      "fail": 20.4,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 3311,
+      "fees_6m": 136.9,
+      "net_6m": 3174,
+      "net_p10": 1411,
+      "evals_bought": 2.17,
+      "net_per_eval": 1460.8,
+      "payouts_per_month": 0.69,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 22.8,
+      "funded_lost": 0.28,
+      "no_pay_pct": 3.2,
+      "owner_per_pass": 2054
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 20.3,
+      "fail": 79.6,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 93,
+      "fees_6m": 482.4,
+      "net_6m": -390,
+      "net_p10": -630,
+      "evals_bought": 7.66,
+      "net_per_eval": -50.9,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 105.0,
+      "spend_per_month_mean": 80.4,
+      "funded_lost": 1.25,
+      "no_pay_pct": 89.8,
+      "owner_per_pass": 59
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 20.8,
+      "fail": 79.0,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 93,
+      "fees_6m": 410.4,
+      "net_6m": -318,
+      "net_p10": -567,
+      "evals_bought": 6.51,
+      "net_per_eval": -48.8,
+      "payouts_per_month": 0.02,
+      "spend_per_month_p90": 94.5,
+      "spend_per_month_mean": 68.4,
+      "funded_lost": 1.08,
+      "no_pay_pct": 90.5,
+      "owner_per_pass": 67
+     }
+    }
+   },
+   "F10": {
+    "H1": {
+     "eval": {
+      "pass": 85.2,
+      "fail": 3.8,
+      "med_days": 10.0
+     },
+     "slot": {
+      "owner_6m": 3150,
+      "fees_6m": 113.8,
+      "net_6m": 3036,
+      "net_p10": 668,
+      "evals_bought": 1.81,
+      "net_per_eval": 1680.0,
+      "payouts_per_month": 0.66,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 19.0,
+      "funded_lost": 0.22,
+      "no_pay_pct": 9.2,
+      "owner_per_pass": 2163
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 63.2,
+      "fail": 4.8,
+      "med_days": 16.0
+     },
+     "slot": {
+      "owner_6m": 2102,
+      "fees_6m": 106.2,
+      "net_6m": 1996,
+      "net_p10": -126,
+      "evals_bought": 1.69,
+      "net_per_eval": 1184.0,
+      "payouts_per_month": 0.44,
+      "spend_per_month_p90": 21.0,
+      "spend_per_month_mean": 17.7,
+      "funded_lost": 0.2,
+      "no_pay_pct": 30.6,
+      "owner_per_pass": 2035
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 15.5,
+      "fail": 81.9,
+      "med_days": 7.0
+     },
+     "slot": {
+      "owner_6m": 52,
+      "fees_6m": 324.3,
+      "net_6m": -272,
+      "net_p10": -441,
+      "evals_bought": 5.15,
+      "net_per_eval": -52.9,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 73.5,
+      "spend_per_month_mean": 54.1,
+      "funded_lost": 0.65,
+      "no_pay_pct": 94.5,
+      "owner_per_pass": 63
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 18.9,
+      "fail": 77.5,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 51,
+      "fees_6m": 288.0,
+      "net_6m": -237,
+      "net_p10": -378,
+      "evals_bought": 4.57,
+      "net_per_eval": -51.8,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 63.0,
+      "spend_per_month_mean": 48.0,
+      "funded_lost": 0.57,
+      "no_pay_pct": 94.9,
+      "owner_per_pass": 68
+     }
+    }
+   },
+   "F15": {
+    "H1": {
+     "eval": {
+      "pass": 87.7,
+      "fail": 3.3,
+      "med_days": 9.0
+     },
+     "slot": {
+      "owner_6m": 3270,
+      "fees_6m": 115.7,
+      "net_6m": 3154,
+      "net_p10": 674,
+      "evals_bought": 1.84,
+      "net_per_eval": 1717.8,
+      "payouts_per_month": 0.68,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 19.3,
+      "funded_lost": 0.22,
+      "no_pay_pct": 7.8,
+      "owner_per_pass": 2175
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 70.2,
+      "fail": 5.2,
+      "med_days": 13.0
+     },
+     "slot": {
+      "owner_6m": 2393,
+      "fees_6m": 107.9,
+      "net_6m": 2285,
+      "net_p10": -126,
+      "evals_bought": 1.71,
+      "net_per_eval": 1334.7,
+      "payouts_per_month": 0.5,
+      "spend_per_month_p90": 21.0,
+      "spend_per_month_mean": 18.0,
+      "funded_lost": 0.2,
+      "no_pay_pct": 23.5,
+      "owner_per_pass": 2097
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 16.2,
+      "fail": 81.1,
+      "med_days": 7.0
+     },
+     "slot": {
+      "owner_6m": 51,
+      "fees_6m": 324.8,
+      "net_6m": -274,
+      "net_p10": -441,
+      "evals_bought": 5.16,
+      "net_per_eval": -53.1,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 73.5,
+      "spend_per_month_mean": 54.1,
+      "funded_lost": 0.66,
+      "no_pay_pct": 94.6,
+      "owner_per_pass": 62
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 20.2,
+      "fail": 75.6,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 50,
+      "fees_6m": 288.5,
+      "net_6m": -239,
+      "net_p10": -378,
+      "evals_bought": 4.58,
+      "net_per_eval": -52.2,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 63.0,
+      "spend_per_month_mean": 48.1,
+      "funded_lost": 0.58,
+      "no_pay_pct": 94.7,
+      "owner_per_pass": 66
+     }
+    }
+   },
+   "F20": {
+    "H1": {
+     "eval": {
+      "pass": 88.2,
+      "fail": 3.8,
+      "med_days": 8.0
+     },
+     "slot": {
+      "owner_6m": 3274,
+      "fees_6m": 115.4,
+      "net_6m": 3158,
+      "net_p10": 674,
+      "evals_bought": 1.83,
+      "net_per_eval": 1723.9,
+      "payouts_per_month": 0.68,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 19.2,
+      "funded_lost": 0.22,
+      "no_pay_pct": 7.6,
+      "owner_per_pass": 2175
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 72.9,
+      "fail": 4.5,
+      "med_days": 13.0
+     },
+     "slot": {
+      "owner_6m": 2487,
+      "fees_6m": 109.1,
+      "net_6m": 2378,
+      "net_p10": -126,
+      "evals_bought": 1.73,
+      "net_per_eval": 1373.0,
+      "payouts_per_month": 0.52,
+      "spend_per_month_p90": 21.0,
+      "spend_per_month_mean": 18.2,
+      "funded_lost": 0.2,
+      "no_pay_pct": 21.7,
+      "owner_per_pass": 2061
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 15.7,
+      "fail": 81.8,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 60,
+      "fees_6m": 330.9,
+      "net_6m": -271,
+      "net_p10": -441,
+      "evals_bought": 5.25,
+      "net_per_eval": -51.6,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 73.5,
+      "spend_per_month_mean": 55.1,
+      "funded_lost": 0.68,
+      "no_pay_pct": 93.8,
+      "owner_per_pass": 71
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 19.6,
+      "fail": 77.0,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 59,
+      "fees_6m": 293.7,
+      "net_6m": -235,
+      "net_p10": -378,
+      "evals_bought": 4.66,
+      "net_per_eval": -50.3,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 63.0,
+      "spend_per_month_mean": 49.0,
+      "funded_lost": 0.62,
+      "no_pay_pct": 93.8,
+      "owner_per_pass": 75
+     }
+    }
+   },
+   "F30": {
+    "H1": {
+     "eval": {
+      "pass": 89.5,
+      "fail": 3.8,
+      "med_days": 8.0
+     },
+     "slot": {
+      "owner_6m": 3391,
+      "fees_6m": 117.8,
+      "net_6m": 3273,
+      "net_p10": 1474,
+      "evals_bought": 1.87,
+      "net_per_eval": 1750.5,
+      "payouts_per_month": 0.71,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 19.6,
+      "funded_lost": 0.24,
+      "no_pay_pct": 4.9,
+      "owner_per_pass": 2156
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 79.5,
+      "fail": 5.7,
+      "med_days": 11.0
+     },
+     "slot": {
+      "owner_6m": 2794,
+      "fees_6m": 113.1,
+      "net_6m": 2681,
+      "net_p10": -126,
+      "evals_bought": 1.79,
+      "net_per_eval": 1493.3,
+      "payouts_per_month": 0.58,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 18.8,
+      "funded_lost": 0.24,
+      "no_pay_pct": 14.5,
+      "owner_per_pass": 2065
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 18.3,
+      "fail": 80.6,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 62,
+      "fees_6m": 353.1,
+      "net_6m": -292,
+      "net_p10": -441,
+      "evals_bought": 5.61,
+      "net_per_eval": -52.0,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 73.5,
+      "spend_per_month_mean": 58.9,
+      "funded_lost": 0.76,
+      "no_pay_pct": 93.5,
+      "owner_per_pass": 65
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 21.8,
+      "fail": 75.5,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 58,
+      "fees_6m": 310.2,
+      "net_6m": -253,
+      "net_p10": -441,
+      "evals_bought": 4.92,
+      "net_per_eval": -51.3,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 73.5,
+      "spend_per_month_mean": 51.7,
+      "funded_lost": 0.72,
+      "no_pay_pct": 94.0,
+      "owner_per_pass": 63
+     }
+    }
+   },
+   "K25": {
+    "H1": {
+     "eval": {
+      "pass": 84.0,
+      "fail": 3.8,
+      "med_days": 10.0
+     },
+     "slot": {
+      "owner_6m": 3094,
+      "fees_6m": 114.0,
+      "net_6m": 2980,
+      "net_p10": -63,
+      "evals_bought": 1.81,
+      "net_per_eval": 1646.2,
+      "payouts_per_month": 0.64,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 19.0,
+      "funded_lost": 0.22,
+      "no_pay_pct": 10.6,
+      "owner_per_pass": 2166
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 61.2,
+      "fail": 4.9,
+      "med_days": 18.0
+     },
+     "slot": {
+      "owner_6m": 2025,
+      "fees_6m": 103.9,
+      "net_6m": 1921,
+      "net_p10": -126,
+      "evals_bought": 1.65,
+      "net_per_eval": 1164.9,
+      "payouts_per_month": 0.42,
+      "spend_per_month_p90": 21.0,
+      "spend_per_month_mean": 17.3,
+      "funded_lost": 0.19,
+      "no_pay_pct": 32.4,
+      "owner_per_pass": 2029
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 16.3,
+      "fail": 81.3,
+      "med_days": 7.0
+     },
+     "slot": {
+      "owner_6m": 49,
+      "fees_6m": 323.1,
+      "net_6m": -274,
+      "net_p10": -441,
+      "evals_bought": 5.13,
+      "net_per_eval": -53.5,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 73.5,
+      "spend_per_month_mean": 53.9,
+      "funded_lost": 0.64,
+      "no_pay_pct": 94.7,
+      "owner_per_pass": 60
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 19.4,
+      "fail": 76.8,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 52,
+      "fees_6m": 287.7,
+      "net_6m": -236,
+      "net_p10": -378,
+      "evals_bought": 4.57,
+      "net_per_eval": -51.6,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 63.0,
+      "spend_per_month_mean": 47.9,
+      "funded_lost": 0.59,
+      "no_pay_pct": 94.5,
+      "owner_per_pass": 69
+     }
+    }
+   },
+   "K50": {
+    "H1": {
+     "eval": {
+      "pass": 87.7,
+      "fail": 3.9,
+      "med_days": 9.0
+     },
+     "slot": {
+      "owner_6m": 3238,
+      "fees_6m": 115.6,
+      "net_6m": 3123,
+      "net_p10": 674,
+      "evals_bought": 1.83,
+      "net_per_eval": 1701.8,
+      "payouts_per_month": 0.67,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 19.3,
+      "funded_lost": 0.23,
+      "no_pay_pct": 8.3,
+      "owner_per_pass": 2147
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 70.6,
+      "fail": 3.9,
+      "med_days": 14.0
+     },
+     "slot": {
+      "owner_6m": 2378,
+      "fees_6m": 106.6,
+      "net_6m": 2271,
+      "net_p10": -126,
+      "evals_bought": 1.69,
+      "net_per_eval": 1342.2,
+      "payouts_per_month": 0.5,
+      "spend_per_month_p90": 21.0,
+      "spend_per_month_mean": 17.8,
+      "funded_lost": 0.19,
+      "no_pay_pct": 24.0,
+      "owner_per_pass": 2110
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 16.2,
+      "fail": 81.0,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 51,
+      "fees_6m": 325.1,
+      "net_6m": -274,
+      "net_p10": -441,
+      "evals_bought": 5.16,
+      "net_per_eval": -53.1,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 73.5,
+      "spend_per_month_mean": 54.2,
+      "funded_lost": 0.64,
+      "no_pay_pct": 94.5,
+      "owner_per_pass": 63
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 19.6,
+      "fail": 76.6,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 48,
+      "fees_6m": 287.5,
+      "net_6m": -240,
+      "net_p10": -378,
+      "evals_bought": 4.56,
+      "net_per_eval": -52.5,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 63.0,
+      "spend_per_month_mean": 47.9,
+      "funded_lost": 0.59,
+      "no_pay_pct": 94.9,
+      "owner_per_pass": 64
+     }
+    }
+   },
+   "BP6": {
+    "H1": {
+     "eval": {
+      "pass": 87.7,
+      "fail": 6.6,
+      "med_days": 7.0
+     },
+     "slot": {
+      "owner_6m": 3407,
+      "fees_6m": 119.5,
+      "net_6m": 3288,
+      "net_p10": 1474,
+      "evals_bought": 1.9,
+      "net_per_eval": 1733.1,
+      "payouts_per_month": 0.71,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 19.9,
+      "funded_lost": 0.24,
+      "no_pay_pct": 3.3,
+      "owner_per_pass": 2126
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 83.2,
+      "fail": 9.7,
+      "med_days": 8.0
+     },
+     "slot": {
+      "owner_6m": 3029,
+      "fees_6m": 121.2,
+      "net_6m": 2908,
+      "net_p10": 611,
+      "evals_bought": 1.92,
+      "net_per_eval": 1511.2,
+      "payouts_per_month": 0.63,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 20.2,
+      "funded_lost": 0.27,
+      "no_pay_pct": 9.1,
+      "owner_per_pass": 2015
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 19.4,
+      "fail": 80.1,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 68,
+      "fees_6m": 390.9,
+      "net_6m": -323,
+      "net_p10": -504,
+      "evals_bought": 6.21,
+      "net_per_eval": -52.0,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 84.0,
+      "spend_per_month_mean": 65.2,
+      "funded_lost": 0.96,
+      "no_pay_pct": 93.0,
+      "owner_per_pass": 56
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 21.1,
+      "fail": 77.7,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 61,
+      "fees_6m": 337.5,
+      "net_6m": -277,
+      "net_p10": -441,
+      "evals_bought": 5.36,
+      "net_per_eval": -51.7,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 73.5,
+      "spend_per_month_mean": 56.2,
+      "funded_lost": 0.83,
+      "no_pay_pct": 93.8,
+      "owner_per_pass": 58
+     }
+    }
+   },
+   "BP8": {
+    "H1": {
+     "eval": {
+      "pass": 87.7,
+      "fail": 6.6,
+      "med_days": 7.0
+     },
+     "slot": {
+      "owner_6m": 3407,
+      "fees_6m": 119.5,
+      "net_6m": 3288,
+      "net_p10": 1474,
+      "evals_bought": 1.9,
+      "net_per_eval": 1733.1,
+      "payouts_per_month": 0.71,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 19.9,
+      "funded_lost": 0.24,
+      "no_pay_pct": 3.3,
+      "owner_per_pass": 2126
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 83.2,
+      "fail": 9.7,
+      "med_days": 8.0
+     },
+     "slot": {
+      "owner_6m": 3029,
+      "fees_6m": 121.2,
+      "net_6m": 2908,
+      "net_p10": 611,
+      "evals_bought": 1.92,
+      "net_per_eval": 1511.2,
+      "payouts_per_month": 0.63,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 20.2,
+      "funded_lost": 0.27,
+      "no_pay_pct": 9.1,
+      "owner_per_pass": 2015
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 19.4,
+      "fail": 80.1,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 68,
+      "fees_6m": 390.9,
+      "net_6m": -323,
+      "net_p10": -504,
+      "evals_bought": 6.21,
+      "net_per_eval": -52.0,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 84.0,
+      "spend_per_month_mean": 65.2,
+      "funded_lost": 0.96,
+      "no_pay_pct": 93.0,
+      "owner_per_pass": 56
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 21.1,
+      "fail": 77.7,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 61,
+      "fees_6m": 337.5,
+      "net_6m": -277,
+      "net_p10": -441,
+      "evals_bought": 5.36,
+      "net_per_eval": -51.7,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 73.5,
+      "spend_per_month_mean": 56.2,
+      "funded_lost": 0.83,
+      "no_pay_pct": 93.8,
+      "owner_per_pass": 58
+     }
+    }
+   },
+   "PR1": {
+    "H1": {
+     "eval": {
+      "pass": 87.5,
+      "fail": 4.6,
+      "med_days": 7.0
+     },
+     "slot": {
+      "owner_6m": 3367,
+      "fees_6m": 119.2,
+      "net_6m": 3248,
+      "net_p10": 1411,
+      "evals_bought": 1.89,
+      "net_per_eval": 1716.7,
+      "payouts_per_month": 0.7,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 19.9,
+      "funded_lost": 0.25,
+      "no_pay_pct": 4.7,
+      "owner_per_pass": 2131
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 75.5,
+      "fail": 7.1,
+      "med_days": 8.0
+     },
+     "slot": {
+      "owner_6m": 2801,
+      "fees_6m": 117.4,
+      "net_6m": 2683,
+      "net_p10": -126,
+      "evals_bought": 1.86,
+      "net_per_eval": 1440.4,
+      "payouts_per_month": 0.58,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 19.6,
+      "funded_lost": 0.25,
+      "no_pay_pct": 14.8,
+      "owner_per_pass": 2011
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 18.9,
+      "fail": 80.0,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 58,
+      "fees_6m": 349.2,
+      "net_6m": -291,
+      "net_p10": -441,
+      "evals_bought": 5.54,
+      "net_per_eval": -52.5,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 73.5,
+      "spend_per_month_mean": 58.2,
+      "funded_lost": 0.81,
+      "no_pay_pct": 93.7,
+      "owner_per_pass": 57
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 20.6,
+      "fail": 76.4,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 57,
+      "fees_6m": 306.2,
+      "net_6m": -249,
+      "net_p10": -378,
+      "evals_bought": 4.86,
+      "net_per_eval": -51.3,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 63.0,
+      "spend_per_month_mean": 51.0,
+      "funded_lost": 0.7,
+      "no_pay_pct": 94.3,
+      "owner_per_pass": 63
+     }
+    }
+   },
+   "PR2": {
+    "H1": {
+     "eval": {
+      "pass": 84.8,
+      "fail": 5.4,
+      "med_days": 7.0
+     },
+     "slot": {
+      "owner_6m": 3255,
+      "fees_6m": 120.1,
+      "net_6m": 3135,
+      "net_p10": 674,
+      "evals_bought": 1.91,
+      "net_per_eval": 1644.0,
+      "payouts_per_month": 0.68,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 20.0,
+      "funded_lost": 0.25,
+      "no_pay_pct": 6.6,
+      "owner_per_pass": 2118
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 69.2,
+      "fail": 6.8,
+      "med_days": 7.0
+     },
+     "slot": {
+      "owner_6m": 2577,
+      "fees_6m": 118.4,
+      "net_6m": 2458,
+      "net_p10": -126,
+      "evals_bought": 1.88,
+      "net_per_eval": 1307.6,
+      "payouts_per_month": 0.54,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 19.7,
+      "funded_lost": 0.24,
+      "no_pay_pct": 20.3,
+      "owner_per_pass": 1982
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 19.3,
+      "fail": 78.4,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 58,
+      "fees_6m": 340.3,
+      "net_6m": -283,
+      "net_p10": -441,
+      "evals_bought": 5.4,
+      "net_per_eval": -52.3,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 73.5,
+      "spend_per_month_mean": 56.7,
+      "funded_lost": 0.77,
+      "no_pay_pct": 93.9,
+      "owner_per_pass": 59
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 19.2,
+      "fail": 77.0,
+      "med_days": 5.5
+     },
+     "slot": {
+      "owner_6m": 58,
+      "fees_6m": 299.7,
+      "net_6m": -241,
+      "net_p10": -378,
+      "evals_bought": 4.76,
+      "net_per_eval": -50.7,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 63.0,
+      "spend_per_month_mean": 49.9,
+      "funded_lost": 0.65,
+      "no_pay_pct": 94.0,
+      "owner_per_pass": 70
+     }
+    }
+   },
+   "BPR": {
+    "H1": {
+     "eval": {
+      "pass": 87.5,
+      "fail": 4.6,
+      "med_days": 7.0
+     },
+     "slot": {
+      "owner_6m": 3367,
+      "fees_6m": 119.2,
+      "net_6m": 3248,
+      "net_p10": 1411,
+      "evals_bought": 1.89,
+      "net_per_eval": 1716.7,
+      "payouts_per_month": 0.7,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 19.9,
+      "funded_lost": 0.25,
+      "no_pay_pct": 4.7,
+      "owner_per_pass": 2130
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 75.6,
+      "fail": 7.1,
+      "med_days": 8.0
+     },
+     "slot": {
+      "owner_6m": 2800,
+      "fees_6m": 117.4,
+      "net_6m": 2683,
+      "net_p10": -126,
+      "evals_bought": 1.86,
+      "net_per_eval": 1439.1,
+      "payouts_per_month": 0.58,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 19.6,
+      "funded_lost": 0.25,
+      "no_pay_pct": 14.8,
+      "owner_per_pass": 2011
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 18.9,
+      "fail": 80.0,
+      "med_days": 5.0
+     },
+     "slot": {
+      "owner_6m": 59,
+      "fees_6m": 349.1,
+      "net_6m": -290,
+      "net_p10": -441,
+      "evals_bought": 5.54,
+      "net_per_eval": -52.3,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 73.5,
+      "spend_per_month_mean": 58.2,
+      "funded_lost": 0.81,
+      "no_pay_pct": 93.6,
+      "owner_per_pass": 58
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 20.6,
+      "fail": 76.3,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 58,
+      "fees_6m": 306.3,
+      "net_6m": -249,
+      "net_p10": -378,
+      "evals_bought": 4.86,
+      "net_per_eval": -51.2,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 63.0,
+      "spend_per_month_mean": 51.1,
+      "funded_lost": 0.7,
+      "no_pay_pct": 94.2,
+      "owner_per_pass": 64
+     }
+    }
+   },
+   "D1": {
+    "H1": {
+     "eval": {
+      "pass": 89.8,
+      "fail": 7.0,
+      "med_days": 10.0
+     },
+     "slot": {
+      "owner_6m": 3282,
+      "fees_6m": 116.7,
+      "net_6m": 3165,
+      "net_p10": 1411,
+      "evals_bought": 1.85,
+      "net_per_eval": 1708.9,
+      "payouts_per_month": 0.68,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 19.4,
+      "funded_lost": 0.23,
+      "no_pay_pct": 4.0,
+      "owner_per_pass": 2173
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 76.7,
+      "fail": 15.2,
+      "med_days": 18.0
+     },
+     "slot": {
+      "owner_6m": 2503,
+      "fees_6m": 115.2,
+      "net_6m": 2388,
+      "net_p10": -126,
+      "evals_bought": 1.83,
+      "net_per_eval": 1306.4,
+      "payouts_per_month": 0.52,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 19.2,
+      "funded_lost": 0.24,
+      "no_pay_pct": 16.1,
+      "owner_per_pass": 1999
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 15.2,
+      "fail": 84.3,
+      "med_days": 7.0
+     },
+     "slot": {
+      "owner_6m": 51,
+      "fees_6m": 332.3,
+      "net_6m": -281,
+      "net_p10": -441,
+      "evals_bought": 5.27,
+      "net_per_eval": -53.3,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 73.5,
+      "spend_per_month_mean": 55.4,
+      "funded_lost": 0.65,
+      "no_pay_pct": 95.0,
+      "owner_per_pass": 63
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 20.0,
+      "fail": 78.2,
+      "med_days": 7.0
+     },
+     "slot": {
+      "owner_6m": 59,
+      "fees_6m": 298.6,
+      "net_6m": -239,
+      "net_p10": -378,
+      "evals_bought": 4.74,
+      "net_per_eval": -50.5,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 63.0,
+      "spend_per_month_mean": 49.8,
+      "funded_lost": 0.6,
+      "no_pay_pct": 94.0,
+      "owner_per_pass": 76
+     }
+    }
+   },
+   "D2": {
+    "H1": {
+     "eval": {
+      "pass": 89.9,
+      "fail": 9.6,
+      "med_days": 9.0
+     },
+     "slot": {
+      "owner_6m": 3419,
+      "fees_6m": 120.7,
+      "net_6m": 3298,
+      "net_p10": 1474,
+      "evals_bought": 1.92,
+      "net_per_eval": 1721.6,
+      "payouts_per_month": 0.71,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 20.1,
+      "funded_lost": 0.24,
+      "no_pay_pct": 2.6,
+      "owner_per_pass": 2186
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 85.5,
+      "fail": 13.9,
+      "med_days": 14.0
+     },
+     "slot": {
+      "owner_6m": 2925,
+      "fees_6m": 117.2,
+      "net_6m": 2808,
+      "net_p10": 611,
+      "evals_bought": 1.86,
+      "net_per_eval": 1508.6,
+      "payouts_per_month": 0.61,
+      "spend_per_month_p90": 31.5,
+      "spend_per_month_mean": 19.5,
+      "funded_lost": 0.25,
+      "no_pay_pct": 8.2,
+      "owner_per_pass": 2055
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 17.5,
+      "fail": 82.2,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 66,
+      "fees_6m": 357.5,
+      "net_6m": -292,
+      "net_p10": -441,
+      "evals_bought": 5.67,
+      "net_per_eval": -51.4,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 73.5,
+      "spend_per_month_mean": 59.6,
+      "funded_lost": 0.77,
+      "no_pay_pct": 93.1,
+      "owner_per_pass": 67
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 20.2,
+      "fail": 78.8,
+      "med_days": 6.0
+     },
+     "slot": {
+      "owner_6m": 70,
+      "fees_6m": 319.0,
+      "net_6m": -249,
+      "net_p10": -441,
+      "evals_bought": 5.06,
+      "net_per_eval": -49.3,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 73.5,
+      "spend_per_month_mean": 53.2,
+      "funded_lost": 0.72,
+      "no_pay_pct": 92.8,
+      "owner_per_pass": 74
+     }
+    }
+   }
+  },
+  "mffu_rapid_eod_25k": {
+   "T0": {
+    "H1": {
+     "eval": {
+      "pass": 79.3,
+      "fail": 0.3,
+      "med_days": 33.0
+     },
+     "slot": {
+      "owner_6m": 11428,
+      "fees_6m": 126.9,
+      "net_6m": 11301,
+      "net_p10": 1358,
+      "evals_bought": 1.31,
+      "net_per_eval": 8652.9,
+      "payouts_per_month": 1.76,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 21.2,
+      "funded_lost": 0.28,
+      "no_pay_pct": 7.4,
+      "owner_per_pass": 10158
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 85.5,
+      "fail": 2.4,
+      "med_days": 26.0
+     },
+     "slot": {
+      "owner_6m": 4945,
+      "fees_6m": 144.0,
+      "net_6m": 4801,
+      "net_p10": -194,
+      "evals_bought": 1.48,
+      "net_per_eval": 3241.5,
+      "payouts_per_month": 1.15,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 24.0,
+      "funded_lost": 0.43,
+      "no_pay_pct": 15.1,
+      "owner_per_pass": 3949
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 7.0,
+      "fail": 76.8,
+      "med_days": 31.0
+     },
+     "slot": {
+      "owner_6m": 68,
+      "fees_6m": 367.6,
+      "net_6m": -300,
+      "net_p10": -486,
+      "evals_bought": 3.78,
+      "net_per_eval": -79.3,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 81.0,
+      "spend_per_month_mean": 61.3,
+      "funded_lost": 0.2,
+      "no_pay_pct": 96.9,
+      "owner_per_pass": 270
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 7.5,
+      "fail": 63.7,
+      "med_days": 32.0
+     },
+     "slot": {
+      "owner_6m": 75,
+      "fees_6m": 296.3,
+      "net_6m": -221,
+      "net_p10": -389,
+      "evals_bought": 3.05,
+      "net_per_eval": -72.4,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 64.8,
+      "spend_per_month_mean": 49.4,
+      "funded_lost": 0.17,
+      "no_pay_pct": 96.5,
+      "owner_per_pass": 343
+     }
+    }
+   },
+   "R25": {
+    "H1": {
+     "eval": {
+      "pass": 79.4,
+      "fail": 0.1,
+      "med_days": 33.0
+     },
+     "slot": {
+      "owner_6m": 11404,
+      "fees_6m": 126.8,
+      "net_6m": 11277,
+      "net_p10": 1432,
+      "evals_bought": 1.3,
+      "net_per_eval": 8641.2,
+      "payouts_per_month": 1.75,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 21.1,
+      "funded_lost": 0.28,
+      "no_pay_pct": 7.4,
+      "owner_per_pass": 10164
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 85.8,
+      "fail": 0.6,
+      "med_days": 26.0
+     },
+     "slot": {
+      "owner_6m": 4908,
+      "fees_6m": 142.0,
+      "net_6m": 4766,
+      "net_p10": -194,
+      "evals_bought": 1.46,
+      "net_per_eval": 3262.3,
+      "payouts_per_month": 1.14,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 23.7,
+      "funded_lost": 0.43,
+      "no_pay_pct": 15.3,
+      "owner_per_pass": 3945
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 6.9,
+      "fail": 73.3,
+      "med_days": 32.0
+     },
+     "slot": {
+      "owner_6m": 64,
+      "fees_6m": 339.9,
+      "net_6m": -276,
+      "net_p10": -486,
+      "evals_bought": 3.5,
+      "net_per_eval": -78.8,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 81.0,
+      "spend_per_month_mean": 56.7,
+      "funded_lost": 0.18,
+      "no_pay_pct": 96.9,
+      "owner_per_pass": 289
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 7.5,
+      "fail": 61.2,
+      "med_days": 32.0
+     },
+     "slot": {
+      "owner_6m": 73,
+      "fees_6m": 281.2,
+      "net_6m": -209,
+      "net_p10": -389,
+      "evals_bought": 2.89,
+      "net_per_eval": -72.1,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 64.8,
+      "spend_per_month_mean": 46.9,
+      "funded_lost": 0.16,
+      "no_pay_pct": 96.7,
+      "owner_per_pass": 361
+     }
+    }
+   },
+   "R30": {
+    "H1": {
+     "eval": {
+      "pass": 79.5,
+      "fail": 0.2,
+      "med_days": 33.0
+     },
+     "slot": {
+      "owner_6m": 11411,
+      "fees_6m": 127.0,
+      "net_6m": 11284,
+      "net_p10": 1432,
+      "evals_bought": 1.31,
+      "net_per_eval": 8633.4,
+      "payouts_per_month": 1.75,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 21.2,
+      "funded_lost": 0.28,
+      "no_pay_pct": 7.3,
+      "owner_per_pass": 10161
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 85.8,
+      "fail": 1.3,
+      "med_days": 26.0
+     },
+     "slot": {
+      "owner_6m": 4916,
+      "fees_6m": 142.4,
+      "net_6m": 4774,
+      "net_p10": -194,
+      "evals_bought": 1.47,
+      "net_per_eval": 3258.5,
+      "payouts_per_month": 1.14,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 23.7,
+      "funded_lost": 0.43,
+      "no_pay_pct": 15.4,
+      "owner_per_pass": 3958
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 7.0,
+      "fail": 74.5,
+      "med_days": 32.5
+     },
+     "slot": {
+      "owner_6m": 56,
+      "fees_6m": 352.5,
+      "net_6m": -296,
+      "net_p10": -486,
+      "evals_bought": 3.63,
+      "net_per_eval": -81.7,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 81.0,
+      "spend_per_month_mean": 58.8,
+      "funded_lost": 0.19,
+      "no_pay_pct": 97.2,
+      "owner_per_pass": 242
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 7.6,
+      "fail": 63.1,
+      "med_days": 32.0
+     },
+     "slot": {
+      "owner_6m": 72,
+      "fees_6m": 286.9,
+      "net_6m": -215,
+      "net_p10": -389,
+      "evals_bought": 2.95,
+      "net_per_eval": -72.8,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 64.8,
+      "spend_per_month_mean": 47.8,
+      "funded_lost": 0.17,
+      "no_pay_pct": 96.7,
+      "owner_per_pass": 333
+     }
+    }
+   },
+   "R50": {
+    "H1": {
+     "eval": {
+      "pass": 79.2,
+      "fail": 1.1,
+      "med_days": 32.5
+     },
+     "slot": {
+      "owner_6m": 11460,
+      "fees_6m": 127.7,
+      "net_6m": 11332,
+      "net_p10": 1767,
+      "evals_bought": 1.31,
+      "net_per_eval": 8624.4,
+      "payouts_per_month": 1.76,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 21.3,
+      "funded_lost": 0.28,
+      "no_pay_pct": 6.9,
+      "owner_per_pass": 10142
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 85.8,
+      "fail": 2.2,
+      "med_days": 26.0
+     },
+     "slot": {
+      "owner_6m": 4983,
+      "fees_6m": 144.5,
+      "net_6m": 4839,
+      "net_p10": -194,
+      "evals_bought": 1.49,
+      "net_per_eval": 3254.1,
+      "payouts_per_month": 1.16,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 24.1,
+      "funded_lost": 0.43,
+      "no_pay_pct": 14.5,
+      "owner_per_pass": 3961
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 7.2,
+      "fail": 78.6,
+      "med_days": 32.5
+     },
+     "slot": {
+      "owner_6m": 77,
+      "fees_6m": 383.7,
+      "net_6m": -307,
+      "net_p10": -486,
+      "evals_bought": 3.95,
+      "net_per_eval": -77.8,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 81.0,
+      "spend_per_month_mean": 64.0,
+      "funded_lost": 0.22,
+      "no_pay_pct": 96.8,
+      "owner_per_pass": 278
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 7.4,
+      "fail": 65.0,
+      "med_days": 31.5
+     },
+     "slot": {
+      "owner_6m": 82,
+      "fees_6m": 300.2,
+      "net_6m": -218,
+      "net_p10": -389,
+      "evals_bought": 3.09,
+      "net_per_eval": -70.6,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 64.8,
+      "spend_per_month_mean": 50.0,
+      "funded_lost": 0.17,
+      "no_pay_pct": 96.3,
+      "owner_per_pass": 360
+     }
+    }
+   },
+   "R60": {
+    "H1": {
+     "eval": {
+      "pass": 79.2,
+      "fail": 1.3,
+      "med_days": 32.5
+     },
+     "slot": {
+      "owner_6m": 11471,
+      "fees_6m": 127.9,
+      "net_6m": 11343,
+      "net_p10": 1803,
+      "evals_bought": 1.32,
+      "net_per_eval": 8619.5,
+      "payouts_per_month": 1.76,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 21.3,
+      "funded_lost": 0.28,
+      "no_pay_pct": 6.8,
+      "owner_per_pass": 10143
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 85.6,
+      "fail": 3.2,
+      "med_days": 26.0
+     },
+     "slot": {
+      "owner_6m": 4993,
+      "fees_6m": 145.4,
+      "net_6m": 4848,
+      "net_p10": -194,
+      "evals_bought": 1.5,
+      "net_per_eval": 3240.5,
+      "payouts_per_month": 1.16,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 24.2,
+      "funded_lost": 0.43,
+      "no_pay_pct": 14.5,
+      "owner_per_pass": 3957
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 7.1,
+      "fail": 79.0,
+      "med_days": 32.0
+     },
+     "slot": {
+      "owner_6m": 82,
+      "fees_6m": 391.1,
+      "net_6m": -309,
+      "net_p10": -486,
+      "evals_bought": 4.02,
+      "net_per_eval": -76.8,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 81.0,
+      "spend_per_month_mean": 65.2,
+      "funded_lost": 0.23,
+      "no_pay_pct": 96.4,
+      "owner_per_pass": 279
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 7.4,
+      "fail": 66.8,
+      "med_days": 31.5
+     },
+     "slot": {
+      "owner_6m": 86,
+      "fees_6m": 306.1,
+      "net_6m": -220,
+      "net_p10": -389,
+      "evals_bought": 3.15,
+      "net_per_eval": -70.0,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 64.8,
+      "spend_per_month_mean": 51.0,
+      "funded_lost": 0.18,
+      "no_pay_pct": 96.3,
+      "owner_per_pass": 358
+     }
+    }
+   },
+   "F10": {
+    "H1": {
+     "eval": {
+      "pass": 76.4,
+      "fail": 0.2,
+      "med_days": 36.0
+     },
+     "slot": {
+      "owner_6m": 10787,
+      "fees_6m": 125.9,
+      "net_6m": 10661,
+      "net_p10": -97,
+      "evals_bought": 1.29,
+      "net_per_eval": 8232.4,
+      "payouts_per_month": 1.66,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 21.0,
+      "funded_lost": 0.27,
+      "no_pay_pct": 10.1,
+      "owner_per_pass": 9905
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 78.2,
+      "fail": 0.3,
+      "med_days": 27.0
+     },
+     "slot": {
+      "owner_6m": 4438,
+      "fees_6m": 137.8,
+      "net_6m": 4300,
+      "net_p10": -194,
+      "evals_bought": 1.42,
+      "net_per_eval": 3032.5,
+      "payouts_per_month": 1.03,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 23.0,
+      "funded_lost": 0.39,
+      "no_pay_pct": 23.6,
+      "owner_per_pass": 3873
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 6.1,
+      "fail": 69.2,
+      "med_days": 31.0
+     },
+     "slot": {
+      "owner_6m": 40,
+      "fees_6m": 313.2,
+      "net_6m": -274,
+      "net_p10": -389,
+      "evals_bought": 3.22,
+      "net_per_eval": -84.9,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 64.8,
+      "spend_per_month_mean": 52.2,
+      "funded_lost": 0.14,
+      "no_pay_pct": 97.6,
+      "owner_per_pass": 228
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 6.9,
+      "fail": 56.3,
+      "med_days": 32.0
+     },
+     "slot": {
+      "owner_6m": 63,
+      "fees_6m": 268.8,
+      "net_6m": -206,
+      "net_p10": -389,
+      "evals_bought": 2.77,
+      "net_per_eval": -74.5,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 64.8,
+      "spend_per_month_mean": 44.8,
+      "funded_lost": 0.16,
+      "no_pay_pct": 97.0,
+      "owner_per_pass": 308
+     }
+    }
+   },
+   "F15": {
+    "H1": {
+     "eval": {
+      "pass": 78.2,
+      "fail": 0.4,
+      "med_days": 33.0
+     },
+     "slot": {
+      "owner_6m": 11172,
+      "fees_6m": 126.3,
+      "net_6m": 11045,
+      "net_p10": 718,
+      "evals_bought": 1.3,
+      "net_per_eval": 8502.9,
+      "payouts_per_month": 1.72,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 21.0,
+      "funded_lost": 0.28,
+      "no_pay_pct": 8.9,
+      "owner_per_pass": 10110
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 83.2,
+      "fail": 0.3,
+      "med_days": 25.0
+     },
+     "slot": {
+      "owner_6m": 4723,
+      "fees_6m": 140.6,
+      "net_6m": 4582,
+      "net_p10": -194,
+      "evals_bought": 1.45,
+      "net_per_eval": 3168.9,
+      "payouts_per_month": 1.09,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 23.4,
+      "funded_lost": 0.42,
+      "no_pay_pct": 19.2,
+      "owner_per_pass": 3916
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 7.0,
+      "fail": 70.9,
+      "med_days": 32.0
+     },
+     "slot": {
+      "owner_6m": 35,
+      "fees_6m": 322.2,
+      "net_6m": -287,
+      "net_p10": -389,
+      "evals_bought": 3.31,
+      "net_per_eval": -86.5,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 64.8,
+      "spend_per_month_mean": 53.7,
+      "funded_lost": 0.17,
+      "no_pay_pct": 97.8,
+      "owner_per_pass": 166
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 7.6,
+      "fail": 58.3,
+      "med_days": 30.0
+     },
+     "slot": {
+      "owner_6m": 72,
+      "fees_6m": 273.5,
+      "net_6m": -201,
+      "net_p10": -389,
+      "evals_bought": 2.81,
+      "net_per_eval": -71.6,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 64.8,
+      "spend_per_month_mean": 45.6,
+      "funded_lost": 0.15,
+      "no_pay_pct": 96.7,
+      "owner_per_pass": 359
+     }
+    }
+   },
+   "F20": {
+    "H1": {
+     "eval": {
+      "pass": 79.1,
+      "fail": 0.5,
+      "med_days": 33.0
+     },
+     "slot": {
+      "owner_6m": 11309,
+      "fees_6m": 126.6,
+      "net_6m": 11182,
+      "net_p10": 965,
+      "evals_bought": 1.3,
+      "net_per_eval": 8588.4,
+      "payouts_per_month": 1.74,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 21.1,
+      "funded_lost": 0.28,
+      "no_pay_pct": 8.3,
+      "owner_per_pass": 10133
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 83.9,
+      "fail": 0.5,
+      "med_days": 25.0
+     },
+     "slot": {
+      "owner_6m": 4793,
+      "fees_6m": 140.9,
+      "net_6m": 4652,
+      "net_p10": -194,
+      "evals_bought": 1.45,
+      "net_per_eval": 3208.3,
+      "payouts_per_month": 1.11,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 23.5,
+      "funded_lost": 0.42,
+      "no_pay_pct": 18.2,
+      "owner_per_pass": 3945
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 6.8,
+      "fail": 72.8,
+      "med_days": 29.5
+     },
+     "slot": {
+      "owner_6m": 61,
+      "fees_6m": 331.0,
+      "net_6m": -270,
+      "net_p10": -486,
+      "evals_bought": 3.4,
+      "net_per_eval": -79.3,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 81.0,
+      "spend_per_month_mean": 55.2,
+      "funded_lost": 0.18,
+      "no_pay_pct": 97.2,
+      "owner_per_pass": 277
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 7.8,
+      "fail": 61.1,
+      "med_days": 32.0
+     },
+     "slot": {
+      "owner_6m": 82,
+      "fees_6m": 276.6,
+      "net_6m": -195,
+      "net_p10": -389,
+      "evals_bought": 2.85,
+      "net_per_eval": -68.5,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 64.8,
+      "spend_per_month_mean": 46.1,
+      "funded_lost": 0.15,
+      "no_pay_pct": 96.5,
+      "owner_per_pass": 424
+     }
+    }
+   },
+   "F30": {
+    "H1": {
+     "eval": {
+      "pass": 79.5,
+      "fail": 0.2,
+      "med_days": 33.0
+     },
+     "slot": {
+      "owner_6m": 11399,
+      "fees_6m": 126.7,
+      "net_6m": 11272,
+      "net_p10": 1350,
+      "evals_bought": 1.3,
+      "net_per_eval": 8650.8,
+      "payouts_per_month": 1.75,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 21.1,
+      "funded_lost": 0.28,
+      "no_pay_pct": 7.6,
+      "owner_per_pass": 10159
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 85.8,
+      "fail": 1.3,
+      "med_days": 26.0
+     },
+     "slot": {
+      "owner_6m": 4903,
+      "fees_6m": 141.9,
+      "net_6m": 4761,
+      "net_p10": -194,
+      "evals_bought": 1.46,
+      "net_per_eval": 3260.8,
+      "payouts_per_month": 1.14,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 23.7,
+      "funded_lost": 0.43,
+      "no_pay_pct": 16.1,
+      "owner_per_pass": 3999
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 7.0,
+      "fail": 74.5,
+      "med_days": 32.5
+     },
+     "slot": {
+      "owner_6m": 56,
+      "fees_6m": 350.9,
+      "net_6m": -295,
+      "net_p10": -486,
+      "evals_bought": 3.61,
+      "net_per_eval": -81.6,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 81.0,
+      "spend_per_month_mean": 58.5,
+      "funded_lost": 0.19,
+      "no_pay_pct": 97.2,
+      "owner_per_pass": 241
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 7.6,
+      "fail": 63.1,
+      "med_days": 32.0
+     },
+     "slot": {
+      "owner_6m": 72,
+      "fees_6m": 284.2,
+      "net_6m": -212,
+      "net_p10": -389,
+      "evals_bought": 2.92,
+      "net_per_eval": -72.5,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 64.8,
+      "spend_per_month_mean": 47.4,
+      "funded_lost": 0.16,
+      "no_pay_pct": 96.7,
+      "owner_per_pass": 337
+     }
+    }
+   },
+   "K25": {
+    "H1": {
+     "eval": {
+      "pass": 77.5,
+      "fail": 0.3,
+      "med_days": 35.0
+     },
+     "slot": {
+      "owner_6m": 10730,
+      "fees_6m": 127.1,
+      "net_6m": 10603,
+      "net_p10": -97,
+      "evals_bought": 1.31,
+      "net_per_eval": 8106.0,
+      "payouts_per_month": 1.65,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 21.2,
+      "funded_lost": 0.28,
+      "no_pay_pct": 10.8,
+      "owner_per_pass": 9844
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 68.8,
+      "fail": 0.4,
+      "med_days": 34.0
+     },
+     "slot": {
+      "owner_6m": 3764,
+      "fees_6m": 133.7,
+      "net_6m": 3631,
+      "net_p10": -194,
+      "evals_bought": 1.38,
+      "net_per_eval": 2638.5,
+      "payouts_per_month": 0.87,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 22.3,
+      "funded_lost": 0.34,
+      "no_pay_pct": 29.5,
+      "owner_per_pass": 3565
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 5.6,
+      "fail": 67.5,
+      "med_days": 34.5
+     },
+     "slot": {
+      "owner_6m": 29,
+      "fees_6m": 307.8,
+      "net_6m": -279,
+      "net_p10": -389,
+      "evals_bought": 3.17,
+      "net_per_eval": -88.1,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 64.8,
+      "spend_per_month_mean": 51.3,
+      "funded_lost": 0.14,
+      "no_pay_pct": 98.5,
+      "owner_per_pass": 175
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 5.5,
+      "fail": 55.0,
+      "med_days": 31.0
+     },
+     "slot": {
+      "owner_6m": 47,
+      "fees_6m": 266.9,
+      "net_6m": -220,
+      "net_p10": -389,
+      "evals_bought": 2.75,
+      "net_per_eval": -80.2,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 64.8,
+      "spend_per_month_mean": 44.5,
+      "funded_lost": 0.14,
+      "no_pay_pct": 98.3,
+      "owner_per_pass": 260
+     }
+    }
+   },
+   "K50": {
+    "H1": {
+     "eval": {
+      "pass": 78.8,
+      "fail": 0.3,
+      "med_days": 33.0
+     },
+     "slot": {
+      "owner_6m": 11246,
+      "fees_6m": 126.7,
+      "net_6m": 11119,
+      "net_p10": 810,
+      "evals_bought": 1.3,
+      "net_per_eval": 8533.6,
+      "payouts_per_month": 1.73,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 21.1,
+      "funded_lost": 0.28,
+      "no_pay_pct": 8.4,
+      "owner_per_pass": 10141
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 82.8,
+      "fail": 0.2,
+      "med_days": 25.0
+     },
+     "slot": {
+      "owner_6m": 4737,
+      "fees_6m": 140.3,
+      "net_6m": 4597,
+      "net_p10": -194,
+      "evals_bought": 1.44,
+      "net_per_eval": 3185.6,
+      "payouts_per_month": 1.1,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 23.4,
+      "funded_lost": 0.42,
+      "no_pay_pct": 19.7,
+      "owner_per_pass": 3928
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 7.0,
+      "fail": 69.8,
+      "med_days": 32.0
+     },
+     "slot": {
+      "owner_6m": 37,
+      "fees_6m": 320.4,
+      "net_6m": -283,
+      "net_p10": -389,
+      "evals_bought": 3.3,
+      "net_per_eval": -86.0,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 64.8,
+      "spend_per_month_mean": 53.4,
+      "funded_lost": 0.17,
+      "no_pay_pct": 97.5,
+      "owner_per_pass": 175
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 7.7,
+      "fail": 58.0,
+      "med_days": 31.0
+     },
+     "slot": {
+      "owner_6m": 67,
+      "fees_6m": 273.3,
+      "net_6m": -206,
+      "net_p10": -389,
+      "evals_bought": 2.81,
+      "net_per_eval": -73.4,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 64.8,
+      "spend_per_month_mean": 45.6,
+      "funded_lost": 0.16,
+      "no_pay_pct": 97.2,
+      "owner_per_pass": 311
+     }
+    }
+   },
+   "BP6": {
+    "H1": {
+     "eval": {
+      "pass": 79.3,
+      "fail": 0.3,
+      "med_days": 33.0
+     },
+     "slot": {
+      "owner_6m": 11428,
+      "fees_6m": 126.9,
+      "net_6m": 11301,
+      "net_p10": 1358,
+      "evals_bought": 1.31,
+      "net_per_eval": 8652.9,
+      "payouts_per_month": 1.76,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 21.2,
+      "funded_lost": 0.28,
+      "no_pay_pct": 7.4,
+      "owner_per_pass": 10158
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 85.5,
+      "fail": 2.4,
+      "med_days": 26.0
+     },
+     "slot": {
+      "owner_6m": 4945,
+      "fees_6m": 144.0,
+      "net_6m": 4801,
+      "net_p10": -194,
+      "evals_bought": 1.48,
+      "net_per_eval": 3241.5,
+      "payouts_per_month": 1.15,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 24.0,
+      "funded_lost": 0.43,
+      "no_pay_pct": 15.1,
+      "owner_per_pass": 3949
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 7.0,
+      "fail": 76.8,
+      "med_days": 31.0
+     },
+     "slot": {
+      "owner_6m": 68,
+      "fees_6m": 367.6,
+      "net_6m": -300,
+      "net_p10": -486,
+      "evals_bought": 3.78,
+      "net_per_eval": -79.3,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 81.0,
+      "spend_per_month_mean": 61.3,
+      "funded_lost": 0.2,
+      "no_pay_pct": 96.9,
+      "owner_per_pass": 270
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 7.5,
+      "fail": 63.7,
+      "med_days": 32.0
+     },
+     "slot": {
+      "owner_6m": 75,
+      "fees_6m": 296.3,
+      "net_6m": -221,
+      "net_p10": -389,
+      "evals_bought": 3.05,
+      "net_per_eval": -72.4,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 64.8,
+      "spend_per_month_mean": 49.4,
+      "funded_lost": 0.17,
+      "no_pay_pct": 96.5,
+      "owner_per_pass": 343
+     }
+    }
+   },
+   "BP8": {
+    "H1": {
+     "eval": {
+      "pass": 79.3,
+      "fail": 0.3,
+      "med_days": 33.0
+     },
+     "slot": {
+      "owner_6m": 11428,
+      "fees_6m": 126.9,
+      "net_6m": 11301,
+      "net_p10": 1358,
+      "evals_bought": 1.31,
+      "net_per_eval": 8652.9,
+      "payouts_per_month": 1.76,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 21.2,
+      "funded_lost": 0.28,
+      "no_pay_pct": 7.4,
+      "owner_per_pass": 10158
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 85.5,
+      "fail": 2.4,
+      "med_days": 26.0
+     },
+     "slot": {
+      "owner_6m": 4945,
+      "fees_6m": 144.0,
+      "net_6m": 4801,
+      "net_p10": -194,
+      "evals_bought": 1.48,
+      "net_per_eval": 3241.5,
+      "payouts_per_month": 1.15,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 24.0,
+      "funded_lost": 0.43,
+      "no_pay_pct": 15.1,
+      "owner_per_pass": 3949
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 7.0,
+      "fail": 76.8,
+      "med_days": 31.0
+     },
+     "slot": {
+      "owner_6m": 68,
+      "fees_6m": 367.6,
+      "net_6m": -300,
+      "net_p10": -486,
+      "evals_bought": 3.78,
+      "net_per_eval": -79.3,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 81.0,
+      "spend_per_month_mean": 61.3,
+      "funded_lost": 0.2,
+      "no_pay_pct": 96.9,
+      "owner_per_pass": 270
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 7.5,
+      "fail": 63.7,
+      "med_days": 32.0
+     },
+     "slot": {
+      "owner_6m": 75,
+      "fees_6m": 296.3,
+      "net_6m": -221,
+      "net_p10": -389,
+      "evals_bought": 3.05,
+      "net_per_eval": -72.4,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 64.8,
+      "spend_per_month_mean": 49.4,
+      "funded_lost": 0.17,
+      "no_pay_pct": 96.5,
+      "owner_per_pass": 343
+     }
+    }
+   },
+   "PR1": {
+    "H1": {
+     "eval": {
+      "pass": 79.4,
+      "fail": 0.1,
+      "med_days": 33.0
+     },
+     "slot": {
+      "owner_6m": 11393,
+      "fees_6m": 127.0,
+      "net_6m": 11266,
+      "net_p10": 1358,
+      "evals_bought": 1.31,
+      "net_per_eval": 8619.6,
+      "payouts_per_month": 1.75,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 21.2,
+      "funded_lost": 0.28,
+      "no_pay_pct": 7.3,
+      "owner_per_pass": 10145
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 85.0,
+      "fail": 0.6,
+      "med_days": 26.0
+     },
+     "slot": {
+      "owner_6m": 4904,
+      "fees_6m": 141.8,
+      "net_6m": 4762,
+      "net_p10": -194,
+      "evals_bought": 1.46,
+      "net_per_eval": 3264.2,
+      "payouts_per_month": 1.14,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 23.6,
+      "funded_lost": 0.42,
+      "no_pay_pct": 15.4,
+      "owner_per_pass": 3949
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 7.0,
+      "fail": 73.6,
+      "med_days": 32.5
+     },
+     "slot": {
+      "owner_6m": 62,
+      "fees_6m": 342.3,
+      "net_6m": -281,
+      "net_p10": -486,
+      "evals_bought": 3.52,
+      "net_per_eval": -79.7,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 81.0,
+      "spend_per_month_mean": 57.1,
+      "funded_lost": 0.18,
+      "no_pay_pct": 97.1,
+      "owner_per_pass": 273
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 7.5,
+      "fail": 62.0,
+      "med_days": 32.0
+     },
+     "slot": {
+      "owner_6m": 74,
+      "fees_6m": 282.0,
+      "net_6m": -208,
+      "net_p10": -389,
+      "evals_bought": 2.9,
+      "net_per_eval": -71.7,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 64.8,
+      "spend_per_month_mean": 47.0,
+      "funded_lost": 0.16,
+      "no_pay_pct": 96.6,
+      "owner_per_pass": 361
+     }
+    }
+   },
+   "PR2": {
+    "H1": {
+     "eval": {
+      "pass": 79.2,
+      "fail": 0.4,
+      "med_days": 32.5
+     },
+     "slot": {
+      "owner_6m": 11319,
+      "fees_6m": 127.1,
+      "net_6m": 11191,
+      "net_p10": 1093,
+      "evals_bought": 1.31,
+      "net_per_eval": 8556.2,
+      "payouts_per_month": 1.74,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 21.2,
+      "funded_lost": 0.28,
+      "no_pay_pct": 7.7,
+      "owner_per_pass": 10088
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 80.9,
+      "fail": 0.4,
+      "med_days": 25.0
+     },
+     "slot": {
+      "owner_6m": 4704,
+      "fees_6m": 140.4,
+      "net_6m": 4564,
+      "net_p10": -194,
+      "evals_bought": 1.44,
+      "net_per_eval": 3160.5,
+      "payouts_per_month": 1.09,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 23.4,
+      "funded_lost": 0.41,
+      "no_pay_pct": 18.6,
+      "owner_per_pass": 3884
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 6.6,
+      "fail": 71.7,
+      "med_days": 31.0
+     },
+     "slot": {
+      "owner_6m": 53,
+      "fees_6m": 333.6,
+      "net_6m": -280,
+      "net_p10": -486,
+      "evals_bought": 3.43,
+      "net_per_eval": -81.7,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 81.0,
+      "spend_per_month_mean": 55.6,
+      "funded_lost": 0.17,
+      "no_pay_pct": 97.1,
+      "owner_per_pass": 242
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 7.2,
+      "fail": 60.6,
+      "med_days": 31.0
+     },
+     "slot": {
+      "owner_6m": 77,
+      "fees_6m": 278.4,
+      "net_6m": -202,
+      "net_p10": -389,
+      "evals_bought": 2.86,
+      "net_per_eval": -70.4,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 64.8,
+      "spend_per_month_mean": 46.4,
+      "funded_lost": 0.15,
+      "no_pay_pct": 96.7,
+      "owner_per_pass": 380
+     }
+    }
+   },
+   "BPR": {
+    "H1": {
+     "eval": {
+      "pass": 79.4,
+      "fail": 0.1,
+      "med_days": 33.0
+     },
+     "slot": {
+      "owner_6m": 11393,
+      "fees_6m": 127.0,
+      "net_6m": 11266,
+      "net_p10": 1358,
+      "evals_bought": 1.31,
+      "net_per_eval": 8619.6,
+      "payouts_per_month": 1.75,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 21.2,
+      "funded_lost": 0.28,
+      "no_pay_pct": 7.3,
+      "owner_per_pass": 10145
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 85.0,
+      "fail": 0.6,
+      "med_days": 26.0
+     },
+     "slot": {
+      "owner_6m": 4904,
+      "fees_6m": 141.8,
+      "net_6m": 4762,
+      "net_p10": -194,
+      "evals_bought": 1.46,
+      "net_per_eval": 3264.2,
+      "payouts_per_month": 1.14,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 23.6,
+      "funded_lost": 0.42,
+      "no_pay_pct": 15.4,
+      "owner_per_pass": 3949
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 7.0,
+      "fail": 73.6,
+      "med_days": 32.5
+     },
+     "slot": {
+      "owner_6m": 62,
+      "fees_6m": 342.3,
+      "net_6m": -281,
+      "net_p10": -486,
+      "evals_bought": 3.52,
+      "net_per_eval": -79.7,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 81.0,
+      "spend_per_month_mean": 57.1,
+      "funded_lost": 0.18,
+      "no_pay_pct": 97.1,
+      "owner_per_pass": 273
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 7.5,
+      "fail": 62.0,
+      "med_days": 32.0
+     },
+     "slot": {
+      "owner_6m": 74,
+      "fees_6m": 282.0,
+      "net_6m": -208,
+      "net_p10": -389,
+      "evals_bought": 2.9,
+      "net_per_eval": -71.7,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 64.8,
+      "spend_per_month_mean": 47.0,
+      "funded_lost": 0.16,
+      "no_pay_pct": 96.6,
+      "owner_per_pass": 361
+     }
+    }
+   },
+   "D1": {
+    "H1": {
+     "eval": {
+      "pass": 79.3,
+      "fail": 0.8,
+      "med_days": 35.0
+     },
+     "slot": {
+      "owner_6m": 11114,
+      "fees_6m": 126.5,
+      "net_6m": 10987,
+      "net_p10": 944,
+      "evals_bought": 1.3,
+      "net_per_eval": 8445.2,
+      "payouts_per_month": 1.71,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 21.1,
+      "funded_lost": 0.28,
+      "no_pay_pct": 8.3,
+      "owner_per_pass": 10003
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 84.4,
+      "fail": 2.6,
+      "med_days": 29.0
+     },
+     "slot": {
+      "owner_6m": 4722,
+      "fees_6m": 141.0,
+      "net_6m": 4581,
+      "net_p10": -194,
+      "evals_bought": 1.45,
+      "net_per_eval": 3157.0,
+      "payouts_per_month": 1.1,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 23.5,
+      "funded_lost": 0.42,
+      "no_pay_pct": 16.6,
+      "owner_per_pass": 3870
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 7.4,
+      "fail": 76.8,
+      "med_days": 36.5
+     },
+     "slot": {
+      "owner_6m": 51,
+      "fees_6m": 337.0,
+      "net_6m": -286,
+      "net_p10": -486,
+      "evals_bought": 3.47,
+      "net_per_eval": -82.6,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 81.0,
+      "spend_per_month_mean": 56.2,
+      "funded_lost": 0.17,
+      "no_pay_pct": 97.5,
+      "owner_per_pass": 231
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 7.2,
+      "fail": 65.4,
+      "med_days": 33.5
+     },
+     "slot": {
+      "owner_6m": 75,
+      "fees_6m": 282.3,
+      "net_6m": -208,
+      "net_p10": -389,
+      "evals_bought": 2.9,
+      "net_per_eval": -71.5,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 64.8,
+      "spend_per_month_mean": 47.0,
+      "funded_lost": 0.15,
+      "no_pay_pct": 97.3,
+      "owner_per_pass": 390
+     }
+    }
+   },
+   "D2": {
+    "H1": {
+     "eval": {
+      "pass": 79.4,
+      "fail": 1.0,
+      "med_days": 34.0
+     },
+     "slot": {
+      "owner_6m": 11213,
+      "fees_6m": 126.6,
+      "net_6m": 11086,
+      "net_p10": 1281,
+      "evals_bought": 1.3,
+      "net_per_eval": 8514.8,
+      "payouts_per_month": 1.73,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 21.1,
+      "funded_lost": 0.28,
+      "no_pay_pct": 7.7,
+      "owner_per_pass": 10074
+     }
+    },
+    "H2": {
+     "eval": {
+      "pass": 86.1,
+      "fail": 2.9,
+      "med_days": 28.0
+     },
+     "slot": {
+      "owner_6m": 4957,
+      "fees_6m": 141.3,
+      "net_6m": 4815,
+      "net_p10": -194,
+      "evals_bought": 1.45,
+      "net_per_eval": 3311.7,
+      "payouts_per_month": 1.15,
+      "spend_per_month_p90": 32.4,
+      "spend_per_month_mean": 23.6,
+      "funded_lost": 0.42,
+      "no_pay_pct": 14.7,
+      "owner_per_pass": 4026
+     }
+    },
+    "REF": {
+     "eval": {
+      "pass": 6.8,
+      "fail": 79.0,
+      "med_days": 33.0
+     },
+     "slot": {
+      "owner_6m": 61,
+      "fees_6m": 360.9,
+      "net_6m": -300,
+      "net_p10": -486,
+      "evals_bought": 3.71,
+      "net_per_eval": -80.9,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 81.0,
+      "spend_per_month_mean": 60.2,
+      "funded_lost": 0.19,
+      "no_pay_pct": 96.8,
+      "owner_per_pass": 243
+     }
+    },
+    "Y25": {
+     "eval": {
+      "pass": 7.8,
+      "fail": 67.6,
+      "med_days": 33.0
+     },
+     "slot": {
+      "owner_6m": 78,
+      "fees_6m": 295.0,
+      "net_6m": -217,
+      "net_p10": -389,
+      "evals_bought": 3.04,
+      "net_per_eval": -71.7,
+      "payouts_per_month": 0.01,
+      "spend_per_month_p90": 64.8,
+      "spend_per_month_mean": 49.2,
+      "funded_lost": 0.17,
+      "no_pay_pct": 96.7,
+      "owner_per_pass": 344
+     }
+    }
+   }
+  }
+ },
+ "dp": {
+  "mffu_builder_50k_D1": {
+   "N": 38,
+   "p_pass_start": 0.9413481436034382,
+   "a_start": 300.0
+  },
+  "mffu_builder_50k_D2": {
+   "N": 30,
+   "p_pass_start": 0.4865110969324583,
+   "a_start": 550.0
+  },
+  "mffu_builder_25k_D1": {
+   "N": 38,
+   "p_pass_start": 0.9409936570451957,
+   "a_start": 150.0
+  },
+  "mffu_builder_25k_D2": {
+   "N": 30,
+   "p_pass_start": 0.48510005624473584,
+   "a_start": 275.0
+  },
+  "mffu_rapid_eod_25k_D1": {
+   "N": 38,
+   "p_pass_start": 0.9409936570451957,
+   "a_start": 150.0
+  },
+  "mffu_rapid_eod_25k_D2": {
+   "N": 30,
+   "p_pass_start": 0.48510005624473584,
+   "a_start": 275.0
+  }
+ },
+ "pick": {
+  "mffu_builder_50k": {
+   "pick": "T0",
+   "eligible": 16,
+   "beats_T0": {
+    "H2": false,
+    "REF": false,
+    "Y25": false
+   },
+   "pass_ok": {
+    "H1": true,
+    "H2": true,
+    "REF": true,
+    "Y25": true
+   },
+   "card": false,
+   "robust": "T0",
+   "robust_min_gain": 0,
+   "best_by_market": {
+    "H1": "R60",
+    "H2": "R60",
+    "REF": "F15",
+    "Y25": "K25"
+   }
+  },
+  "mffu_builder_25k": {
+   "pick": "T0",
+   "eligible": 15,
+   "beats_T0": {
+    "H2": false,
+    "REF": false,
+    "Y25": false
+   },
+   "pass_ok": {
+    "H1": true,
+    "H2": true,
+    "REF": true,
+    "Y25": true
+   },
+   "card": false,
+   "robust": "T0",
+   "robust_min_gain": 0,
+   "best_by_market": {
+    "H1": "R60",
+    "H2": "R60",
+    "REF": "F20",
+    "Y25": "F20"
+   }
+  },
+  "mffu_rapid_eod_25k": {
+   "pick": "R60",
+   "eligible": 18,
+   "beats_T0": {
+    "H2": true,
+    "REF": false,
+    "Y25": true
+   },
+   "pass_ok": {
+    "H1": true,
+    "H2": true,
+    "REF": true,
+    "Y25": true
+   },
+   "card": false,
+   "robust": "T0",
+   "robust_min_gain": 0,
+   "best_by_market": {
+    "H1": "R60",
+    "H2": "R60",
+    "REF": "F20",
+    "Y25": "F20"
+   }
+  }
+ }
+}

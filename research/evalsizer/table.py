@@ -12,21 +12,23 @@ def show(plan, k, A, n_list):
     out = []
     for n in n_list:
         n = min(n, A.shape[0] - 1)
-        out.append(f"\n{plan} {k}: trades left {n}; rows = room to the floor, cols = $ still needed; cell = % of room risked")
-        needs = [0.1, 0.25, 0.5, 0.75, 1.0]
-        out.append("room\\need " + " ".join(f"{int(x * tgt):>6d}" for x in needs))
-        for rf in (0.15, 0.3, 0.5, 0.75, 1.0):
-            room = rf * mll
+        out.append(f"\n{plan} {k}: {n} LIT trades left; rows = profit now, cols = room to the floor; cell = % of room risked")
+        rooms = [0.15, 0.3, 0.5, 0.75, 1.0, 1.5]
+        out.append("profit\\room " + " ".join(f"{int(x * mll):>6d}" for x in rooms))
+        for pf in (-0.5, -0.25, 0.0, 0.25, 0.5, 0.75, 0.9):
+            b = pf * tgt
             cells = []
-            for x in needs:
-                b = tgt - x * tgt
+            for x in rooms:
+                room = x * mll
                 fl = b - room
-                if fl < -mll - 1e-9 or fl > lock + 1e-9:
+                ok = -mll - 1e-9 <= fl <= lock + 1e-9 and (room <= mll + 1e-9 or abs(fl - lock) < 1e-6 or fl <= lock)
+                ok = ok and (room <= mll + 1e-9 or b - mll > lock)
+                if not ok:
                     cells.append("     -")
                     continue
                 fi, bi = int(round((fl + mll) / step)), int(round((b + mll) / step))
                 cells.append(f"{100 * A[n, fi, bi] / room:5.0f}%")
-            out.append(f"{int(room):>9d} " + " ".join(cells))
+            out.append(f"{int(b):>11d} " + " ".join(cells))
     return "\n".join(out)
 
 
