@@ -69,31 +69,33 @@ def band_of(rs: list[float], window: int) -> dict | None:
             "streak_p75": int(round(pct(streaks, 75) or 0)), "streak_p95": int(round(pct(streaks, 95) or 0))}
 
 
+def from_research(src: dict) -> dict:
+    """research/health/bands.json (day-batch5: {made, window, bots: {LIT|ATLAS|BLITZ: {bands: {"2026"|"2021-25": {p5, p50, p95, n_windows,
+    trades}}, live: {n, trades: [{day, r, usd}], mean_r, zone}}}}) -> the page's shape (lit / atlas only: BLITZ never on the Trading page).
+    The 2026 band is the one the words use; the 2021-25 band rides along as a second line."""
+    w = int(src.get("window") or WINDOW)
+    out = {"v": 2, "made": str(src.get("made") or "")[:10], "provisional": False, "window": w, "src": "research/health/bands.json", "bots": {}}
+    for k, b in (src.get("bots") or {}).items():
+        bot = str(k).lower()
+        if bot not in NAMES or not isinstance(b, dict):
+            continue
+        bands_ = b.get("bands") or {}
+        main, ref = bands_.get("2026") or {}, bands_.get("2021-25") or {}
+        if not all(isinstance(main.get(q), (int, float)) for q in ("p5", "p50", "p95")):
+            continue
+        live = b.get("live") or {}
+        out["bots"][bot] = {"name": NAMES[bot], "window": w, "avg_r": {q: main[q] for q in ("p5", "p50", "p95")}, "n_backtest": main.get("trades"), "n_windows": main.get("n_windows"),
+                            "span": "2026", "ref": {"span": "2021-25", **{q: ref.get(q) for q in ("p5", "p50", "p95")}} if ref else None,
+                            "live": [{"day": str(t.get("day") or "")[:10], "r": t.get("r"), "usd": t.get("usd")} for t in live.get("trades") or [] if isinstance(t, dict) and isinstance(t.get("r"), (int, float))],
+                            "zone": str(live.get("zone") or "")[:80]}
+    return out
+
+
 def bands() -> dict:
     src = _load(BANDS_SRC)
-    file = _load(TRADES) or {}
     if isinstance(src, dict) and isinstance(src.get("bots"), dict):
-        # research/health/bands.json (day-batch5): bots.<BOT>.bands.{"2026","2021-25"}.{p5,p50,p95} over a rolling `window`;
-        # the page wants avg_r p5..p95 + streaks: p5/p50/p95 from the research file (the 2026 band), p25/p75 + streaks from the
-        # backtest trades at the same window (labelled), the 2021-25 band kept for the 'normal years' line.
-        w = int(src.get("window") or WINDOW)
-        out = {"v": 1, "made": str(src.get("made") or "")[:10], "provisional": False, "window": w,
-               "src": "research/health/bands.json (2026 band; quarter lines + streaks from the backtest trades)", "bots": {}}
-        for bot in ("lit", "atlas"):
-            rb = (src["bots"].get(bot.upper()) or {}) if isinstance(src["bots"].get(bot.upper()), dict) else {}
-            b26 = ((rb.get("bands") or {}).get("2026") or {}) if isinstance(rb.get("bands"), dict) else {}
-            if not all(isinstance(b26.get(k), (int, float)) for k in ("p5", "p50", "p95")):
-                continue
-            rows = sorted((t for t in file.get("trades") or [] if isinstance(t, dict) and str(t.get("bot", "")).lower() == bot and t.get("src") == "backtest"
-                           and isinstance(t.get("r"), (int, float)) and isinstance(t.get("t"), (int, float))), key=lambda t: t["t"])
-            pb = band_of([float(t["r"]) for t in rows], w) or {}
-            q = dict(pb.get("avg_r") or {})
-            q.update({k: round(float(b26[k]), 3) for k in ("p5", "p50", "p95")})
-            out["bots"][bot] = {"name": NAMES[bot], "window": w, "avg_r": q, "streak_p75": pb.get("streak_p75"), "streak_p95": pb.get("streak_p95"),
-                                "band_2021_25": (rb.get("bands") or {}).get("2021-25"), "n_backtest": int(b26.get("trades") or 0)}
-        if out["bots"]:
-            return out
-
+        return from_research(src)
+    file = _load(TRADES) or {}
     out = {"v": 1, "made": str(file.get("built_from") or "")[:10], "provisional": True, "window": WINDOW,
            "src": "PROVISIONAL: measured on the backtest trades in trading/trades.json (research/health/bands.json has not landed)", "bots": {}}
     for bot in ("lit", "atlas"):
