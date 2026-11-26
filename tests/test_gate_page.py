@@ -48,7 +48,7 @@ def catalog():
     if not exe:
         return None
     r = subprocess.run([exe, "-e", "process.stdout.write(JSON.stringify((() => { const G = require(process.argv[1]); return { apps: G.apps, districts: G.districts, start: G.start,"
-                        " q: Object.fromEntries(['money', 'drawdown', 'kalshi', 'journal', 'news', 'discount', 'chatgpt', 'zzzz', '', 'risk stop'].map((q) => [q, G.find(q, 8).map((a) => a.id)])), all: Object.fromEntries(['risk', 'theme', 'payout', 'micros', 'health', 'all apps', 'zzzz'].map((q) => { const r = G.findAll(q); return [q, { hubs: r.hubs.map((h) => h.id), actions: r.actions.map((x) => x.id), apps: r.apps.map((a) => a.id), tabs: r.tabs.map((t) => t.id) }]; })), az: G.az().map((a) => a.id), retired: G.RETIRED || [], quick: G.quick, actions: G.actions }; })()))", CAT],
+                        " q: Object.fromEntries(['money', 'drawdown', 'kalshi', 'journal', 'news', 'discount', 'chatgpt', 'zzzz', '', 'risk stop'].map((q) => [q, G.find(q, 8).map((a) => a.id)])), all: Object.fromEntries(['risk', 'theme', 'payout', 'micros', 'health', 'all apps', 'zzzz'].map((q) => { const r = G.findAll(q); return [q, { hubs: r.hubs.map((h) => h.id), actions: r.actions.map((x) => x.id), apps: r.apps.map((a) => a.id), tabs: r.tabs.map((t) => t.id) }]; })), az: G.az().map((a) => a.id), retired: G.RETIRED || [], archived: G.ARCHIVED || [], quick: G.quick, actions: G.actions }; })()))", CAT],
                        capture_output=True, text=True, timeout=60)
     return json.loads(r.stdout) if r.returncode == 0 else {"_error": r.stderr[-500:]}
 
@@ -71,7 +71,7 @@ def test_static():
           and html.count("<h1") == 1 and 'role="status"' in html and 'aria-live="polite"' in html and 'role="dialog"' not in html)
     check("a. one base-path line: gate/ -> '../', the site root (olympus-live.html) -> ''; agora.css + gate.css, then themes, the catalog, hub-status and gate.js load from GATE_BASE, in order (async = false)",
           r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g26'" in html and "b + 'olympus/agora.css" in html
-          and "['olympus/themes.js?v=o11', 'pc_feed.js?v=n8', 'olympus/gate-catalog.js?v=nv15', 'olympus/hub-status.js?v=h5', 'age.js?v=1', 'business/payoutcoach.js?v=4', 'gate/gate.js?v=g22', 'olympus/home-fx.js?v=x3', 'olympus/a11y.js']" in html and "s.async = false" in html)
+          and "['olympus/themes.js?v=o11', 'pc_feed.js?v=n8', 'olympus/gate-catalog.js?v=nv16', 'olympus/hub-status.js?v=h5', 'age.js?v=1', 'business/payoutcoach.js?v=4', 'gate/gate.js?v=g23', 'olympus/home-fx.js?v=x3', 'olympus/a11y.js']" in html and "s.async = false" in html)
     tiles = re.findall(r'class="g-hub[^"]*" data-hub="(\w+)" data-to="hub/index.html\?h=(\w+)"', html)
     check("a. the hub tiles are plain links in the page (they work even if gate.js fails), in the owner's order (night A 2026-11-16): Bots & Evals (wide) and My Money (wide) first, Kalshi and Worlds near the end, Settings & Help last",
           [t[0] for t in tiles] == HUBS and all(a == b for a, b in tiles) and 'class="g-hub g-wide" data-hub="bots"' in html and 'class="g-hub g-wide" data-hub="money"' in html and html.count('class="g-hline"') == len(HUBS))
@@ -174,8 +174,8 @@ def test_catalog():
           "bots/risk" in A["risk"]["tabs"] and "aegis" in A["risk"]["apps"] and A["theme"]["actions"][:1] == ["act-look"] and A["payout"]["actions"][:1] == ["act-payout"] and A["payout"]["apps"][0] == "ledger"
           and A["micros"]["actions"][:1] == ["act-micros"] and "pnyx" in A["micros"]["apps"] and A["health"]["hubs"] == ["me"] and A["all apps"]["actions"][:1] == ["act-az"]
           and not any(A["zzzz"].values()), A)
-    live = [i for i in ids if i not in C["retired"]]   # olympus2 (owner 2026-11-20): retired apps leave A to Z (their URLs still open)
-    check(f"b. All apps A to Z holds every live app once ({len(live)} of {len(apps)}; {len(C['retired'])} retired), sorted by plain label, the labs last",
+    live = [i for i in ids if i not in C["retired"] and i not in C.get("archived", [])]   # olympus2 (owner 2026-11-20): retired apps leave A to Z (their URLs still open); day-site5: archived too
+    check(f"b. All apps A to Z holds every live app once ({len(live)} of {len(apps)}; {len(C['retired'])} retired, {len(C.get('archived', []))} archived), sorted by plain label, the labs last",
           sorted(C["az"]) == sorted(live) and len(C["az"]) == len(live) and set(C["az"][-len(LABS):]) == LABS, C["az"][:5])
     bad_act = [x["id"] for x in C["actions"] if not os.path.isfile(os.path.join(AK.WEB, x["path"].split("?")[0].split("#")[0]))]
     check("b. every plain action opens a page of the site (read only: none trades or changes a bot); Your six are catalog apps", not bad_act and all(k[0] in ids for k in C["quick"]) and len(C["quick"]) == 6, bad_act)
