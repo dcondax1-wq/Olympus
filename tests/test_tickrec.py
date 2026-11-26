@@ -96,8 +96,8 @@ def main() -> int:
     # day-ofready 2026-11-24: real import lines only (a "python -m engine.tickrec" command line is not an import; run_area.py
     # and tools/finish_tonight.py were false hits); engine/ofsum.py may import it: the read-only summary builder, itself
     # imported by nothing in the bot (tests/test_ofready.py checks that)
-    users = [p for p in users if os.path.relpath(p, ROOT).replace(os.sep, "/") not in ("engine/ofsum.py", "tools/of_send_now.py")
-             and not os.path.relpath(p, ROOT).replace(os.sep, "/").startswith("tests/")]   # tests and the owner's one OF line are not the bot
+    users = [p for p in users if os.path.relpath(p, ROOT).replace(os.sep, "/") not in ("engine/ofsum.py", "tools/of_send_now.py", "engine/of_paper.py")
+             and not os.path.relpath(p, ROOT).replace(os.sep, "/").startswith("tests/")]   # tests, the owner's one OF line and the OF paper bot (its own process) are not the bot
     # the one allowed caller: tools/pc_report.py STARTS `python -m engine.tickrec autopilot` as its own process (no import)
     rp = os.path.join(ROOT, "tools", "pc_report.py")
     if rp in users and not re.search(r"^\s*(from engine import tickrec|import engine\.tickrec|from engine\.tickrec)",

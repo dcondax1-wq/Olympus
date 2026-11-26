@@ -976,6 +976,64 @@ def _step_arm(cfg, phrase, dry=False, open_page=True, inp=None) -> int:
     return _summary([AR.row(z_lbl, True)] + rows, 0)
 
 
+def pc_warn_lines(nt_folder=None, net=None, sync=None, inp=None, elevate=None) -> list:
+    """START's PC checklist (day-ops2 2026-11-26: the health check's WARNs on the owner's PC: the NinjaTrader folder inside OneDrive,
+    the clock 8.4 s behind). OneDrive: one [FIX] line naming tools/bat/NT_OFF_ONEDRIVE.bat (it needs NinjaTrader closed, so START
+    cannot do it). Clock off by more than 2.5 s: synced at once (sync_clock: w32tm, else the OlympusClock task, no admin); still off
+    and a console: 'Type Y' runs FIX_CLOCK.bat with Windows' own administrator prompt (one Yes, for good). Never raises."""
+    out = []
+    try:
+        from . import pc_backup
+        cl = pc_backup.code_line()
+        if cl:
+            out.append("\n " + cl)
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        from . import ops_checks as OC
+        from .ninjatrader import default_folder
+        c = OC.check_onedrive(nt_folder or default_folder())
+        out.append(f"\n [{'OK' if c.get('level') == OC.OK else 'FIX'}] {c.get('name', 'OneDrive')}: {c.get('text') or ''}"
+                   + ("" if c.get('level') == OC.OK else f" {c.get('fix') or OC.ONEDRIVE_FIX}"))
+        n = net if net is not None else OC.internet()
+        d = n.get("drift_s")
+        if d is not None and abs(d) > 2.5:
+            r = (sync or sync_clock)()
+            if r.get("ok"):
+                out.append(f" [OK] Clock was {abs(d):.1f} s {'behind' if d > 0 else 'ahead'}: {r.get('say')}")
+            else:
+                out.append(f" [FIX] Clock {abs(d):.1f} s {'behind' if d > 0 else 'ahead'}" + (": the bot sends no new entry until it is fixed"
+                           if abs(d) > 5 else "") + ". Once: right-click "
+                           "FIX_CLOCK.bat > Run as administrator (it keeps the clock right for good).")
+                if inp is not None:
+                    try:
+                        a = str(inp(" Type Y to run FIX_CLOCK now (Windows asks Yes once; Enter = later): ") or "").strip().lower()
+                    except (EOFError, OSError):
+                        a = ""
+                    if a in ("y", "yes"):
+                        ok = (elevate or _elevate_fix_clock)()
+                        out.append(" [OK] FIX_CLOCK ran: the clock follows internet time from now on." if ok else
+                                   " [..] FIX_CLOCK did not run (No at the Windows prompt?): right-click FIX_CLOCK.bat > Run as administrator.")
+        elif d is not None:
+            out.append(f" [OK] Clock within {max(abs(d), 0.5):.1f} s of internet time")
+    except Exception as e:  # noqa: BLE001
+        out.append(f" [..] PC checklist skipped ({e.__class__.__name__})")
+    return out
+
+
+def _elevate_fix_clock() -> bool:
+    """FIX_CLOCK.bat through Windows' own administrator prompt (UAC). True = it ran (the owner said Yes)."""
+    if os.name != "nt":
+        return False
+    ps = os.path.join(os.environ.get("SystemRoot", r"C:\Windows"), "System32", "WindowsPowerShell", "v1.0", "powershell.exe")
+    bat = os.path.join(ROOT, "FIX_CLOCK.bat")
+    try:
+        r = subprocess.run([ps, "-NoProfile", "-Command", f"Start-Process -FilePath '{bat}' -Verb RunAs -Wait"], timeout=600)
+        return r.returncode == 0
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def _ps_path() -> str:
     """data/pending_switches.json next to the start config (CFG): a test harness's temp CFG never reads the owner's queue."""
     return os.path.join(os.path.dirname(CFG), "pending_switches.json")
@@ -1187,6 +1245,9 @@ def run(dry=False, inp=input, py=sys.executable, pull=True) -> int:
     if step_sims(py, dry, cfg=cfg):
         return 1
 
+    if not dry:
+        for ln in pc_warn_lines(inp=inp):   # day-ops2: OneDrive + the clock, each with its one fix (never blocks the start)
+            print(ln)
     # 3. the owner arms (typed, never by the bot)
     ps = pending_first_line()               # day-zerotouch2: switches the phone queued come FIRST, the same phrase applies them
     if ps:

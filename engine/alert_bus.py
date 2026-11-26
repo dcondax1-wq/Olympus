@@ -218,9 +218,13 @@ def redact(s, cfg: dict | None = None) -> str:
 
 # ------------------------------------------------------------------------------------------------ the texts
 def text(ev: dict) -> tuple:
-    """(title, body) in plain English with $, for one event. Never raises."""
+    """(title, body) in plain English with $, for one event. Never raises. day-cards: an entry / exit with a trade card's
+    "more" (the bot's reason, $ risk / R; engine/trade_card) gets it as extra lines on every channel."""
     try:
-        return _text(_d(ev))
+        t, b = _text(_d(ev))
+        if _d(ev).get("more") and _d(ev).get("kind") in ("entry", "exit"):
+            b = (b + "\n" + str(ev["more"]))[:1200]
+        return t, b
     except Exception:
         return (str(_d(ev).get("title") or "Olympus alert")[:120], str(_d(ev).get("body") or "")[:900])
 
@@ -448,6 +452,37 @@ def send_telegram(c: dict, title: str, body: str, silent: bool) -> tuple:
     return None, f"Telegram answered {st or 'nothing'} {str(j.get('description') or txt or '')[:80]}".strip()
 
 
+def _multipart(fields: dict, file_field: str, filename: str, data: bytes, ctype: str = "image/png") -> tuple:
+    import uuid
+    bnd = "olympus" + uuid.uuid4().hex
+    out = []
+    for k, v in fields.items():
+        out.append(f"--{bnd}\r\nContent-Disposition: form-data; name=\"{k}\"\r\n\r\n{v}\r\n".encode("utf-8"))
+    out.append(f"--{bnd}\r\nContent-Disposition: form-data; name=\"{file_field}\"; filename=\"{filename}\"\r\n"
+               f"Content-Type: {ctype}\r\n\r\n".encode("utf-8") + data + b"\r\n")
+    out.append(f"--{bnd}--\r\n".encode("utf-8"))
+    return b"".join(out), f"multipart/form-data; boundary={bnd}"
+
+
+def send_telegram_photo(c: dict, photo_path: str, caption: str, silent: bool) -> tuple:
+    """day-cards: sendPhoto (the trade card's chart) with the caption (Telegram: <= 1024 characters). (receipt | None, why)."""
+    try:
+        with open(photo_path, "rb") as fh:
+            data = fh.read()
+    except OSError as e:
+        return None, f"no picture ({e.__class__.__name__})"
+    if not data or len(data) > 5_000_000:
+        return None, "picture empty / too big"
+    body, ctype = _multipart({"chat_id": c["chat_id"], "caption": caption[:1024], "disable_notification": "true" if silent else "false"},
+                             "photo", "trade.png", data)
+    st, txt = _http("POST", f"{TG_API}/bot{c['token']}/sendPhoto", body, {"Content-Type": ctype}, timeout=max(TIMEOUT_S, 20))
+    j = _json(txt)
+    mid = _d(j.get("result")).get("message_id")
+    if 200 <= int(st or 0) < 300 and j.get("ok") and mid is not None:
+        return f"telegram:{mid}", "ok"
+    return None, f"Telegram photo answered {st or 'nothing'} {str(j.get('description') or txt or '')[:80]}".strip()
+
+
 def send_discord(c: dict, title: str, body: str, silent: bool) -> tuple:
     data = {"content": f"**{title}**\n{body}"[:1990], "allowed_mentions": {"parse": []}}
     if silent:
@@ -516,6 +551,18 @@ def channels(cfg: dict) -> list:
 def _one(ch: str, cfg: dict, ev: dict, title: str, body: str, silent: bool) -> tuple:
     try:
         if ch == "telegram":
+            if ev.get("photo"):                         # day-cards: the chart; a failed photo falls back to the text message
+                cap = f"{title}\n{body}" + (f"\n{ev['legend']}" if ev.get("legend") else "")
+                if len(cap) > 1024:                     # red team 2026-11-26: Telegram cuts a caption at 1024; never lose the $ lines
+                    cap = f"{title}\n{body}"           # the legend goes first; still too long = the full text message below
+                r = None
+                try:
+                    if len(cap) <= 1024:
+                        r, why = send_telegram_photo(cfg["telegram"], str(ev["photo"]), cap, silent)
+                except Exception:  # noqa: BLE001 (any photo trouble: the text message below, never a lost alert)
+                    r = None
+                if r:
+                    return r, why
             return send_telegram(cfg["telegram"], title, body, silent)
         if ch == "discord":
             return send_discord(cfg["discord"], title, body, silent)

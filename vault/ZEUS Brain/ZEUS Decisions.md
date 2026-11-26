@@ -6,7 +6,7 @@ type: "decisions"
 
 # ZEUS Decisions
 
-> [!question] 3 open
+> [!question] 5 open
 > Answer on the Decide card (Business app). A yes means Claude tests it; nothing live changes without proof.
 
 ## Open
@@ -28,6 +28,18 @@ type: "decisions"
 > **Impact:** 50K eval fail rate 12% -> 1% (Jan-Jun 2026) and 10% -> 2% (Jul-Oct); 25K pass 81 -> 92% / 60 -> 67%. 2026 $ about flat (-$601 / -$97 over each half); 2021-25 +$20.9k better with the biggest drop -$37.1k -> -$17.9k. Passes are a few days slower. NOT for the Rapid 25K (pass 51% -> 36%).
 > Added 2026-11-25 · id `atlas-sb-half`
 > Card: [[Decide atlas-sb-half|open the card note]]
+
+> [!question] Stop buying NEW evals when LIT's last 40 trades add up to less than 0R, and start again when a free Sim eval (the same bot on NinjaTrader Sim, Builder 50K rules) passes?
+> **Why:** A bad (2021-25-like) market eats eval fees: today's plan loses $667 a year there. This rule stops the buying while the strategy is cold; the accounts you already own keep trading.
+> **Impact:** 12 months, today's 4 accounts + re-buys: 2021-25-like -$667 -> -$202 (cash you may need $2,011 -> $1,357); market turns bad after 3 months +$377; 2026-like -$443 of $38,399 (-1%); 25%-of-2026 mix -$94 of $2,651. Today LIT's last 40 trades = +30R: nothing stops now.
+> Added 2026-11-26 · write-up [[business-planner-2026-11-26|Business planner]] · id `stop-buying-tripwire`
+> Card: [[Decide stop-buying-tripwire|open the card note]]
+
+> [!question] Buy a 2nd Rapid EOD 25K eval ($97.20, LIT + ATLAS) now, AND stop all new eval buys whenever the business (payouts minus fees since today) is $300 under its best, restarting when a free Sim eval ...
+> **Why:** A 2nd Rapid lane pays a lot in a good market but loses fees in a bad one; the $300 stop removes most of that bad-market cost.
+> **Impact:** 12 months (fresh paths): 2026-like $37,598 -> $58,813; market turns bad after 3 months $6,514 -> $9,394; 2021-25-like -$705 -> -$279; 25% mix $2,425 -> $2,480. Keep ~$1,300 cash for fees (p90).
+> Added 2026-11-26 · write-up [[business-planner-2026-11-26|Business planner]] · id `rapid25-second-with-stop`
+> Card: [[Decide rapid25-second-with-stop|open the card note]]
 
 ## Yes
 

@@ -501,12 +501,12 @@ def payout_advice(balance: float, start: float = 50000.0, paid_days=(), today: s
     short = None
     if ready and since is not None and since_profit is not None and list(paid_days) and float(since_profit) < float(since):
         ready, short = False, round(float(since) - float(since_profit), 2)
-    # night-payday 2026-11-23: the FIRST request waits 24 h after the first funded trade (not on MFFU's own Rapid pages; a third-party
-    # page says so, research/lit/mffu_rules.json rapid_eod_25k "first_payout_wait"; Rapid 50K "first request 24 h after the first
-    # trade"): needs MFFU confirm, so never on the first funded trading day itself (the check runs after the close)
+    # night-payday 2026-11-23: the FIRST request waits 24 h after the first funded trade; CONFIRMED 2026-11-26 on MFFU's own Payout
+    # Policy Overview (help article 13745661: "First payout eligible 24 hours after first trade", Rapid plans; research/lit/mffu_rules.json
+    # rapid_eod_25k "first_payout_wait"), so never on the first funded trading day itself (the check runs after the close)
     wait = None
     if ready and not list(paid_days) and today is not None and first_trade is not None and str(today) <= str(first_trade):
-        ready, wait = False, f"first request the trading day after the first funded trade {first_trade} (24 h; needs MFFU confirm)"
+        ready, wait = False, f"first request the trading day after the first funded trade {first_trade} (24 h after the first trade, MFFU payout policy)"
     out = {"keep_at": keep, "request": amt if ready else 0.0, "to_you": round(amt * SPLIT, 2) if ready else 0.0, "ready": ready,
             "to_next": round(max(0.0, keep + PAY_MIN - float(balance)), 2)}
     if short is not None:                 # MFFU's net-since-the-last-payout rule (the 25K's $250) not met yet

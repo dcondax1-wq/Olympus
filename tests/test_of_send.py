@@ -139,6 +139,20 @@ def main():
         got = DPL.of_days(pc)
         check("resume: all 42 days reach the cloud over %d evenings, none sent twice, then 'Already sent'" % nights,
               len(got) == 42 and not dup and "Already sent" in out, (len(got), dup, out[-200:]))
+        # 3b. red team 2026-11-26: TWO ranges in one evening (a new day AND older days) with 5 answers already used today: the
+        #     second range must not take a 7th (the reserve for the bars); before the fix _answer_of sent >= 1 page per range
+        t3 = t_ + 2 * 86400
+        fake.clock = (lambda v: (lambda: v))(t3)
+        newday = (pd.Timestamp(days[-1]) + pd.offsets.BDay(1)).strftime("%Y-%m-%d")
+        write_pc_day(rd, newday, 60_000, 99)
+        json.dump({"oldest": days[5], "newest": days[-1], "t": int(t_)}, open(os.path.join(feed_work, "of_push.json"), "w"))
+        d3 = dt.datetime.fromtimestamp(t3, dt.timezone(dt.timedelta(hours=-5))).date().isoformat()
+        st3 = json.load(open(os.path.join(feed_work, "state.json")))
+        st3["sent"] = list(st3.get("sent") or []) + [{"day": d3, "t": int(t3) - 600, "ok": True, "req": f"x{i}"} for i in range(5)]
+        json.dump(st3, open(os.path.join(feed_work, "state.json"), "w"))
+        rc, out = runf(now=t3, max_zip=120_000)
+        n_today = sum(1 for x in json.load(open(os.path.join(feed_work, "state.json")))["sent"] if x.get("day") == d3)
+        check("two ranges with 5 used today: at most 6 answers today (2 stay free for the bars)", n_today <= 6, (n_today, out[-300:]))
         # 4. the battery on the pulled days (cloud side, into a temp folder: no tracked file touched)
         bsp = importlib.util.spec_from_file_location("of_battery_t", os.path.join(ROOT, "research", "orderflow", "of_battery.py"))
         BB = importlib.util.module_from_spec(bsp); bsp.loader.exec_module(BB)

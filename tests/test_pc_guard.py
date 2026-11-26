@@ -215,14 +215,14 @@ def extras():
 
 # ============================================================================================== day summary
 def summary():
-    day = at(2026, 11, 16, 16, 20)          # Monday, after the 16:15 summary time
+    day = at(2026, 11, 16, 16, 20)          # Monday, at the 16:20 summary time (day-cards: was 16:15)
     cards = {"lit": lit(today_pnl=420.0, trades_today=1, room=1800.0), "atlas": atlas(today_pnl=-110.0, trades_today=2, room=890.0)}
     st, m = run({}, snap(day, cards))
     d = [x for x in m if ":day:" in x["key"]]
     check("16:20 ET Monday: one day summary, total +$310, $ today / $ to pass / room per account, tomorrow's news",
           [x["key"] for x in d] == ["guard:day:2026-11-16"] and d[0]["title"] == "Day Mon Nov 16: +$310"
-          and "Zlarior 50K: +$420 today, $3,000 to pass, room $1,800 of $2,000" in d[0]["body"]
-          and "ATLAS 25K: -$110 today, $1,500 to pass, room $890 of $1,000" in d[0]["body"] and "(Sim / paper)" in d[0]["body"]
+          and "Zlarior 50K: +$420 today, 1 trade, $3,000 to pass, room $1,800 of $2,000" in d[0]["body"]
+          and "ATLAS 25K: -$110 today, 2 trades, $1,500 to pass, room $890 of $1,000" in d[0]["body"] and "(Sim / paper)" in d[0]["body"]
           and "Tomorrow (Tue):" in d[0]["body"], d)
     _s, m = run(st, snap(day + 900, cards))
     check("once a day", not [x for x in m if ":day:" in x["key"]], m)

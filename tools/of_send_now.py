@@ -72,8 +72,21 @@ def _state_path(feed_work: str) -> str:
     return os.path.join(feed_work, STATE_NAME)
 
 
+def _low_priority() -> None:
+    """red team 2026-11-26: ATLAS can hold a trade in the evening (Asia members, 18:00-02:00 ET): this line's imports, summaries
+    (up to 3 h) and uploads run BELOW_NORMAL on Windows, like the autopilot, so the bot's polls keep the CPU. Never raises."""
+    try:
+        if os.name == "nt":
+            import ctypes
+            k = ctypes.windll.kernel32
+            k.SetPriorityClass(k.GetCurrentProcess(), 0x00004000)
+    except Exception:  # noqa: BLE001
+        pass
+
+
 def run(now: float | None = None, env=None, http_fn=None, sleep=None, nd: str | None = None, dp_work: str | None = None,
         feed_work: str | None = None, max_zip: int | None = None) -> int:
+    _low_priority()
     missing = _old_code()
     if missing:
         say("Run the update line first (UPDATE.bat), then this line again. (This PC has older code: " + missing + ")")
@@ -154,6 +167,10 @@ def run(now: float | None = None, env=None, http_fn=None, sleep=None, nd: str | 
             "Next: run this line again tomorrow after 16:05 ET.")
         return 6
     for since, until in ranges:
+        used = sum(1 for x in (DF._state(feed_work).get("sent") or []) if x.get("day") == today)
+        if DF.DAILY_CAP - DF.OF_RESERVE - used <= 0:      # red team 2026-11-26: the 2nd range too (_answer_of sends >= 1 page)
+            more = True
+            break
         rid = "push" + secrets.token_hex(5)
         r = DF._answer_of({"id": rid, "since": since, "until": until, "what": "of"}, int(now), feed_work, env, http_fn, dp_work,
                           max_zip, [], sleep, pages=DF.DAILY_CAP)

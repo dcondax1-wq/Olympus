@@ -187,6 +187,8 @@ def plan(a) -> list:
         out.append(("blitz", [["research/blitz/learn.py", "night"]]))   # -> research/blitz/lessons.jsonl; Sunday ET the re-test
     if "forward" not in skip:              # big-forward 2026-11-26: every watched lead scored on NEW sessions vs its own backtest band
         out.append(("forward", [["tools/forward_paper.py"]]))   # -> research/forward/forward.json + journal.jsonl (paper only)
+    if "oflearn" not in skip:              # day-oflearn 2026-11-26 (owner: "keep building order flow and learning about it"): DESIGN3
+        out.append(("oflearn", [["research/orderflow/of_learn.py"]]))   # -> research/learn/of_signals.jsonl + journal.json lines; paper only
     return out
 
 

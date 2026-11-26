@@ -1155,7 +1155,7 @@
     "news": "T1 NOT allowed: flat, no orders, -2/+2 min (FOMC, minutes, NFP, CPI)",
     "inactivity_days": 7,
     "inactivity_note": "a breach by inactivity forfeits all sim profits (accounts bought on/after 2026-08-25)",
-    "first_payout_wait": "not stated by MFFU (a third-party page says 24 h after the first trade)",
+    "first_payout_wait": "24 h after the first trade (CONFIRMED 2026-11-26: MFFU Payout Policy Overview, help article 13745661, Rapid plans: 'First payout eligible 24 hours after first trade'; before: third-party only)",
     "min_traded_days": "not stated",
     "max_funded": 3
    },

@@ -27,7 +27,7 @@ import time
 
 VERSION = 1
 MAX_BYTES = 2000             # the whole block (all bots + market): the ext post's room after the other blocks (pc_report MAX_STATUS_BYTES 3800)
-THINK_N = {"lit": 8, "atlas": 8, "blitz": 4, "of": 3}
+THINK_N = {"lit": 8, "atlas": 8, "blitz": 4, "of": 5}       # day-oflearn: 3 -> 5 (+ the OF paper line, + the learner line)
 LEVELS_N = 12
 LINE_N = 64                  # one thought line, characters
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -338,7 +338,9 @@ def of_bot(root: str | None = None, br: dict | None = None) -> dict:
     except OSError:
         days = 0
     runs = [r for r in _l(auto.get("runs")) if isinstance(r, dict)]
-    if not on and not days and not runs and not note:
+    learned = any(os.path.exists(os.path.join(root, *p)) for p in (("logs", "orderflow", "of_learn_state.json"),
+                                                                  ("research", "learn", "of_learn_state.json"), ("data", "of_paper.json")))
+    if not on and not days and not runs and not note and not learned:
         return {}
     live = _of_live(br) if on else []
     think = live + [_line("", f"tick recorder {'on' if on else 'off'}, {days} tick days stored (study at 60)")]
@@ -349,6 +351,15 @@ def of_bot(root: str | None = None, br: dict | None = None) -> dict:
             think.insert(len(live), _line("", _plain(tl["last"]) + (f" | flow right {tl['right']} of {tl['judged']}" if tl["judged"] else "")))
     except Exception:  # noqa: BLE001
         pass
+    ofp = _d(_rj(os.path.join(root, "data", "of_paper.json")))      # day-oflearn: the pillar's PAPER bot (engine/of_paper.py)
+    today_et = dt.datetime.now(ET).strftime("%Y-%m-%d") if ET is not None else None
+    if ofp.get("line") and ofp.get("day") == today_et:
+        think.insert(len(live), _line(_hm(ofp.get("t")), _plain(ofp["line"])))
+    for lp in (os.path.join(root, "logs", "orderflow", "of_learn_state.json"), os.path.join(root, "research", "learn", "of_learn_state.json")):
+        ln = _d(_rj(lp)).get("line")                     # day-oflearn: the nightly learner's newest line (research/orderflow/of_learn.py)
+        if ln:
+            think.append(_line("", "learner: " + _plain(ln)))
+            break
     if runs:
         think.append(_line("", f"study looks done: {len(runs)} of 2, last at {runs[-1].get('days')} days"))
     if note.get("body"):

@@ -62,8 +62,8 @@ def settings():
         check("a. no file: the defaults ('important only': trade results, pass/fail/locked/payout, daily summary, PC silent, problems; "
               "quiet 23:00-07:00, summary 16:15, silent after 20 min, reminder 2 h)",
               imp == {"trade_opened", "trade_closed", "account_status", "room_low", "daily_summary", "morning_brief", "pc_silent", "problems",
-                      "setup_progress"} and s["quiet_hours"] == {"from": "23:00", "to": "07:00"}
-              and s["daily_summary_at"] == "16:15" and s["morning_brief_at"] == "07:30"
+                      "setup_progress", "trade_cards", "weekly_report"} and s["quiet_hours"] == {"from": "23:00", "to": "07:00"}
+              and s["daily_summary_at"] == "16:20" and s["morning_brief_at"] == "07:30"
               and s["pc_silent_after_min"] == 20 and s["pc_silent_remind_after_min"] == 120, s)
         p = os.path.join(tmp, "s.json")
         with open(p, "w") as fh:
@@ -79,7 +79,7 @@ def settings():
         check("a. the repo's notify_settings.json loads, names every type, 'important only' on (owner 2026-11-18), the asked defaults",
               set(raw["alerts"]) == set(N.TYPES) and {k for k, v in repo["alerts"].items() if v} == set(N.IMPORTANT)
               and repo["alerts"] == N.DEFAULTS["alerts"] and repo["milestones_pct"] == [25, 50, 75, 100]
-              and repo["pc_silent_after_min"] == 20 and repo["pc_silent_remind_after_min"] == 120 and repo["daily_summary_at"] == "16:15"
+              and repo["pc_silent_after_min"] == 20 and repo["pc_silent_remind_after_min"] == 120 and repo["daily_summary_at"] == "16:20"
               and repo["morning_brief_at"] == "07:30" and raw["alerts"]["morning_brief"] is True, repo)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

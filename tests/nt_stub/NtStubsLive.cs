@@ -201,6 +201,26 @@ public static class Driver
         Check("a new copy starts after the old one stopped", Read("le_feed_status.txt").Contains("source=addon"));
         b.Drive(NinjaTrader.NinjaScript.State.Terminated);
         Check("terminated cleanly", NinjaTrader.Code.Output.Lines.FindAll(l => l.Contains("LE_Feed: stopped")).Count == 2);
+        // day-ops2: SHADOW mode (the hands-free roll): bars to le_feed\shadow, no hub cover, the chart's files untouched; then live
+        string sh = Path.Combine(Dir, "shadow");
+        File.WriteAllText(Path.Combine(Dir, "le_feed_mode.txt"), "shadow\n");
+        File.WriteAllText(Path.Combine(Dir, "MNQ_1m.csv"), "time,open,high,low,close,volume\nCHART\n");
+        File.WriteAllText(Path.Combine(Dir, "accounts.csv"), "CHART\n");
+        var c = new NinjaTrader.NinjaScript.AddOns.LE_Feed();
+        c.Drive(NinjaTrader.NinjaScript.State.SetDefaults);
+        c.Drive(NinjaTrader.NinjaScript.State.Active);
+        Thread.Sleep(2500);
+        string ss = File.Exists(Path.Combine(sh, "le_feed_status.txt")) ? File.ReadAllText(Path.Combine(sh, "le_feed_status.txt")) : "";
+        Check("shadow: status in le_feed\\shadow with mode=shadow and the build id: " + ss.Trim(), ss.Contains("mode=shadow") && ss.Contains(",v="));
+        Check("shadow: bars written to le_feed\\shadow", File.Exists(Path.Combine(sh, "MNQ_1m.csv")) && File.ReadAllText(Path.Combine(sh, "MNQ_1m.csv")).Trim().Split('\n').Length >= 10);
+        Check("shadow: the chart's MNQ_1m.csv and accounts.csv untouched", Read("MNQ_1m.csv").Contains("CHART") && Read("accounts.csv") == "CHART\n");
+        Check("shadow: the hub covers nothing (LE_BarFeed keeps writing)", !NinjaTrader.NinjaScript.AddOns.LE_FeedHub.Covers("MNQ"));
+        File.WriteAllText(Path.Combine(Dir, "le_feed_mode.txt"), "live\n");
+        Thread.Sleep(16000);
+        Check("live: the add-on now writes le_feed\\MNQ_1m.csv itself", !Read("MNQ_1m.csv").Contains("CHART") && Read("MNQ_1m.csv").Trim().Split('\n').Length >= 10);
+        Check("live: the hub covers MNQ (the chart defers)", NinjaTrader.NinjaScript.AddOns.LE_FeedHub.Covers("MNQ"));
+        Check("live: status back in le_feed with mode=live", Read("le_feed_status.txt").Contains("mode=live"));
+        c.Drive(NinjaTrader.NinjaScript.State.Terminated);
         Console.WriteLine(fails == 0 ? "ALL PASS" : fails + " FAILED");
         return fails == 0 ? 0 : 1;
     }

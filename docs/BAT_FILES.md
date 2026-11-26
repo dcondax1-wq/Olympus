@@ -47,6 +47,8 @@ timers changed. Only if you once typed the optional `schtasks ... RUN_MONEY.bat`
 | `KALSHI_LIVE.bat` | `tools\bat\KALSHI_LIVE.bat` | menu M -> 34 |
 | `KALSHI_STOP.bat` | `tools\bat\KALSHI_STOP.bat` | menu M -> 35 |
 | `KEEPALIVE_OFF.bat` | `tools\bat\KEEPALIVE_OFF.bat` | menu M -> 3 |
+| `NT_OFF_ONEDRIVE.bat` (new, day-ops2) | `tools\bat\NT_OFF_ONEDRIVE.bat` | menu M -> 42 |
+| `RESTORE_NEW_PC.bat` (new, day-ops2) | `tools\bat\RESTORE_NEW_PC.bat` | menu M -> 43 |
 | `LIVE_LINK.bat` | `tools\bat\LIVE_LINK.bat` | menu 11 |
 | `MONEY_INBOX.bat` | `tools\bat\MONEY_INBOX.bat` | menu M -> 31 |
 | `MOVE_BOT.bat` | `tools\bat\MOVE_BOT.bat` | menu M -> 28 |
