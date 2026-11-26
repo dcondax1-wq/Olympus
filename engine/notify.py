@@ -46,7 +46,9 @@ ET = ZoneInfo("America/New_York")
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SETTINGS_PATH = os.path.join(ROOT, "notify_settings.json")
 TYPES = ("trade_opened", "trade_closed", "eval_milestones", "account_status", "room_low", "daily_summary", "morning_brief", "pc_silent",
-         "problems", "other", "setup_progress")
+         "problems", "other", "setup_progress", "trade_cards", "weekly_report")
+# trade_cards (day-cards 2026-11-26): the Telegram entry / exit message is a chart picture + the bot's reason (engine/trade_card);
+# weekly_report: the Friday 17:00 ET week report (tools/pc_guard.weekly_report). Both ON (IMPORTANT).
 # setup_progress (day-closer 2026-11-25, owner: "I want those notifications too, any time we get closer"): engine/setup_progress.py,
 # LIT 5/10, 7/10, 8/10 + cancelled, ATLAS 30 / 10 pts from a level + armed; ON by default (IMPORTANT), quiet 23:00-07:00 ET except
 # "entering now"
@@ -57,7 +59,7 @@ TYPES = ("trade_opened", "trade_closed", "eval_milestones", "account_status", "r
 # owner 2026-11-18 evening: "I want notifications when we get in a trade in any account" -> trade_opened ON, sent the moment the
 # bot routes the entry (instant_entry below, from engine/push.pc_notify), not at the next 15-minute report.
 IMPORTANT = ("trade_opened", "trade_closed", "account_status", "room_low", "daily_summary", "morning_brief", "pc_silent", "problems",
-             "setup_progress")   # problems = emergencies (bot down, NinjaTrader closed)
+             "setup_progress", "trade_cards", "weekly_report")   # problems = emergencies (bot down, NinjaTrader closed)
 # night-notify 2026-11-22 (owner: "every important event"): room_low ON = daily loss limit 70% used, max drawdown 50% / 75% used
 # (tools/pc_guard: once a day / once per level per eval). Before it was OFF, so "daily loss limit near" reached no phone.
 # A trade's entry and result in quiet hours (23:00-07:00 ET) come WITHOUT sound but still show (as before 2026-11-20). Putting
@@ -81,7 +83,7 @@ DEFAULTS = {
     "trade_routes": "both",
     "milestones_pct": [25, 50, 75, 100],
     "room_low_used_pct": [50, 75],
-    "daily_summary_at": "16:15",
+    "daily_summary_at": "16:20",
     "morning_brief_at": "07:30",
     "pc_silent_after_min": 20,
     "pc_silent_remind_after_min": 120,
@@ -237,6 +239,8 @@ def kind_of(key: str) -> str:
         return "room_low"
     if k.startswith("guard:day:"):
         return "daily_summary"
+    if k.startswith("guard:week:"):                 # tools/pc_guard.weekly_report: the Friday 17:00 ET week report
+        return "weekly_report"
     if k.startswith("guard:brief:"):                # tools/morning_brief.py: the 07:30 ET ZEUS brief
         return "morning_brief"
     if k.startswith(("payout:", "payout5:")):     # engine/payout_autopilot: payout ready, the Builder #5 guard
