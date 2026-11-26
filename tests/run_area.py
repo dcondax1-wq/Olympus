@@ -103,6 +103,7 @@ AREAS["nq"].append("learn_night")       # night-learnloop 2026-11-19: ZEUS learn
 AREAS["nq"].append("combo_50k")         # night-combolive 2026-11-19: ATLAS + Zlarior on ONE 50K (engine/combo50k.py, OFF) + its LiveBot parity replay
 AREAS["pc"].append("learn_night")       # the same suite: the PC side (data pipe hook, status ext "zl", datafeed metals, the 15-minute report's imports)
 AREAS["kalshi"].append("kalshi_adapt")  # night-kadapt 2026-11-19: the K8 weekly re-test (engine/kalshi_adapt.py, tools/kalshi_adapt.py); its own line
+AREAS["money"].append("tax_ledger")   # day-batch7 2026-11-26: payouts + fees per account per month for the accountant (tools/tax_ledger.py)
 AREAS["money"].append("money_ideas")   # night-moneyideas 2026-11-20: money book + Kalshi bankroll ladder (tools/money/money_book.py, kalshi_bankroll.py); its own line
 AREAS["money"].append("fleet_months")  # day-fleet 2026-11-20: the whole fleet month by month to Jun 2027 (tools/money/fleet_months.py, business/fleet_plan.json); its own line
 AREAS["money"].append("fleet_90day")   # day-fleet 2026-11-21: the 90-day scale plan + its 3 purchase cards (tools/money/fleet_90day.py); its own line
