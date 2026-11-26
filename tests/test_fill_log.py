@@ -163,6 +163,12 @@ def t_eod():
     m = G.day_summary(snap, now, {})
     b = m[0]["body"] if m else ""
     check("the 25K #2 line: today, week, month, trades, to pass", "Zlarior 25K #2: -$40 today, -$30 week, -$6 month, 1 trade, $1,506 to pass" in b, b)
+    snap["live"]["board"]["blitz"] = {"name": "BLITZ", "plan": "25K", "today_pnl": 999.0, "week_pnl": 999.0, "configured": True}
+    mb = G.day_summary(snap, now, {})
+    wb = G.weekly_report(snap, ts(2026, 11, 27, 17, 5), {}, reviews_path=os.devnull)
+    check("BLITZ (hidden, paper) is never in the day summary or the week report",
+          mb and "BLITZ" not in mb[0]["body"] and "999" not in mb[0]["title"] and all("BLITZ" not in w["body"] for w in wb), (mb, wb))
+    snap["live"]["board"].pop("blitz")
     check("a paper lane is left out; the total adds the extra account", "Rapid" not in b and m and m[0]["title"].endswith("+$80"), (b, m and m[0]["title"]))
 
 

@@ -134,6 +134,11 @@ def cards(snap: dict) -> list:
     return out
 
 
+def owner_cards(snap: dict) -> list:
+    """cards() without BLITZ (hidden from the owner, paper: owner 2026-11-16): the day summary and the week report."""
+    return [(k, c) for k, c in cards(snap) if k != "blitz"]
+
+
 def label(k: str, c: dict) -> str:
     import re
     size = re.search(r"(\d+K)", str(c.get("plan") or ""))
@@ -506,7 +511,7 @@ def day_summary(snap: dict, now: int, sent: dict | None = None) -> list:
         news = " " + notify.news_line(now) if notify else ""
     except Exception:
         news = ""
-    cs = cards(snap)
+    cs = owner_cards(snap)
     age = snap.get("hb_age")
     if not cs:
         why = "the bot has not reported" if age is None else f"no account numbers in the last report ({int(age) // 60} min ago)"
@@ -561,7 +566,7 @@ def weekly_report(snap: dict, now: int, sent: dict | None = None, reviews_path: 
         recs = LL._jl_read(reviews_path or LL._p(None, "reviews.jsonl"))
         W = LL.weekly_summary([r for r in recs if isinstance(r, dict) and r.get("day") and r.get("bot")], mon.isoformat())
         parts = []
-        cs = cards(snap)
+        cs = owner_cards(snap)
         money_rows = [f"{label(k, c)} {signed(_f(c.get('week_pnl')))}" for k, c in cs if _f(c.get("week_pnl")) is not None]
         tot = sum(_f(c.get("week_pnl")) or 0.0 for k, c in cs)
         if money_rows:
