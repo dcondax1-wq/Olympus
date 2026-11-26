@@ -82,5 +82,17 @@
   ],
   "sig": "56859decfa73fde5|LIT x1.5 when the entry sits in the 20% of the day's range on its side (structure F3)",
   "built": "2026-11-26"
+ },
+ "atlas_s1_gate": {
+  "n_bt": 690,
+  "mu": -0.0295,
+  "sd": 1.8947,
+  "sum_bt": -20.37,
+  "days": [
+   "2021-11-02",
+   "2026-10-13"
+  ],
+  "sig": "0599abb8b305b8c6|ATLAS only when S1 (20-day NQ range above its 1-year median) is ON: skip the S1-OFF trades",
+  "built": "2026-11-26"
  }
 }
