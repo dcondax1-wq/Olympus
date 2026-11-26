@@ -197,8 +197,48 @@ def part_j():
     check("j5 no order / broker path in the two modules", not bad)
 
 
+def part_k():
+    """red team #19 notes: (1) no owner $ on the PUBLIC feed; (2) payouts recorded by the old CLIs count (no false W5 STOP)."""
+    tmp = tempfile.mkdtemp()
+    try:
+        P = _paths(tmp)
+        _w(P["seed_path"], [{"day": "2026-10-01", "entry_t": i, "r": 0.5} for i in range(40)])
+        _w(P["report_path"], {"rows": []})
+        _w(P["switch"], {"show": True})
+        st = SE.today_et()
+        _w(P["shadow_state"], {"start": "2026-11-02"})
+        _w(P["buys_path"], {"rows": [{"day": "2026-11-03", "plan": "Rapid EOD 25K", "price": 97.2}]})
+        _w(P["ledger_path"], {"rows": [{"key": "atlas", "day": "2026-11-04", "gross": 1000.0, "to_you": 800.0, "kind": "builder"}]})
+        g = BG.refresh(trackers=[], **P)
+        t = BG.tiny(g)
+        check("k1 public tiny(): OK/STOP + LIT R, no $ at all", t and "$" not in t["l"] and "LIT last 40 trades" in t["l"] and "payouts-minus-fees rule OK" in t["l"])
+        from tools import morning_brief as MB
+        check("k2 the morning brief (its lines also go to a public Board event) carries no $", "$" not in MB.buy_gate_line(P["out_path"]))
+        check("k3 the private 16:15 line keeps the business $", "$" in MB.buy_gate_line(P["out_path"], key="line"))
+        # (2) fees $250, then a $1,000 payout recorded ONLY through account_b's own CLI, then one more $97.20 fee:
+        #     real business: -250 -> +550 (best) -> +452.80 = $97 under: OK; a ledger-only view: -$347 = $347 under its best: STOP
+        _w(P["buys_path"], {"rows": [{"day": "2026-11-02", "plan": "Builder 25K", "price": 63.0}, {"day": "2026-11-02", "plan": "Rapid EOD 25K", "price": 187.0},
+                                     {"day": "2026-11-05", "plan": "Rapid EOD 25K", "price": 97.2}]})
+        _w(P["ledger_path"], {"rows": []})
+        trk = [{"key": "atlas", "day": "2026-11-04", "to_you": 800.0}]
+        old = BG.biz_by_day(P["ledger_path"], P["buys_path"], "2026-11-02", trackers=[])
+        new = BG.biz_by_day(P["ledger_path"], P["buys_path"], "2026-11-02", trackers=trk)
+        check("k4 a payout only in the account's own tracker is counted", abs(sum(new.values()) - sum(old.values()) - 800.0) < 0.01)
+        R = [("2026-10-01", i, 0.5) for i in range(40)]
+        g_old = BG.evaluate(R, old, [], "2026-11-02", "2026-11-06", rules=("W5",))
+        g_new = BG.evaluate(R, new, [], "2026-11-02", "2026-11-06", rules=("W5",))
+        check("k5 no false W5 STOP: ledger-only view would say STOP, with the tracker it is OK ($97 under its best)",
+              g_old["verdict"] == "STOP" and g_new["verdict"] == "OK" and abs(g_new["w5"]["under"] - 97.2) < 0.01)
+        _w(P["ledger_path"], {"rows": [{"key": "atlas", "day": "2026-11-04", "gross": 1000.0, "to_you": 800.0, "kind": "builder"}]})
+        both = BG.biz_by_day(P["ledger_path"], P["buys_path"], "2026-11-02", trackers=trk)
+        check("k6 a payout in BOTH the ledger and the tracker counts once", abs(sum(both.values()) - sum(new.values())) < 0.01)
+        check("k7 tracker_payouts() never raises on this machine", isinstance(BG.tracker_payouts(), list))
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def main() -> int:
-    for f in (part_a, part_b, part_c, part_d, part_e, part_f, part_g, part_h, part_i, part_j):
+    for f in (part_a, part_b, part_c, part_d, part_e, part_f, part_g, part_h, part_i, part_j, part_k):
         try:
             f()
         except Exception as e:  # noqa: BLE001

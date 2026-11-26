@@ -379,7 +379,7 @@ def evening_extra(day: str, pa_path=None, digest_path=None, fleet=None) -> str:
         pass
     try:                                        # big-shadow: the buy gate + the shadow eval (display only; OFF unless switched on)
         from tools import morning_brief as _mb
-        bg = _mb.buy_gate_line()
+        bg = _mb.buy_gate_line(key="line")      # the private 16:15 push: with the business $ (red team #19: never on the public feed)
         if bg:
             out.append(bg)
             from engine import buy_gate as _bg

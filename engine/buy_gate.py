@@ -47,12 +47,47 @@ def lit_r(seed_path=None, report_path=None) -> list:
     return seed + tw
 
 
-def biz_by_day(ledger_path=None, buys_path=None, start: str = "") -> dict:
-    """{day: payouts to you - eval fees that day} from the gate's start day on."""
+def tracker_payouts() -> list:
+    """Payouts recorded through the OLD per-account CLIs (account_b / eval_life / rapid --payout) never reach the payout ledger
+    (red team #19): read the accounts' own trackers too. -> [{key, day, to_you}] (Builder 80%, Rapid 90%). Never raises."""
+    out = []
+    try:
+        from engine import account_b as A
+        for d, v in ((A.raw_cfg() or {}).get("payouts") or {}).items():
+            out.append({"key": "atlas", "day": str(d), "to_you": float(v) * 0.8})
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        from engine import multi_account as MA
+        for r in MA.load_file(MA.ACCOUNTS_PATH) or []:
+            for d, v in (((r or {}).get("funded") or {}).get("payouts") or {}).items():
+                out.append({"key": f"x:{r.get('id')}", "day": str(d), "to_you": float(v) * 0.8})
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        from engine import rapid as RP
+        for slot in ("rapid", "rapid2"):
+            blk = RP.read(RP.slot_path(slot)) or {}
+            for d, v in (blk.get("payouts") or {}).items():
+                out.append({"key": slot, "day": str(d), "to_you": float(v) * RP.SPLIT})
+    except Exception:  # noqa: BLE001
+        pass
+    return out
+
+
+def biz_by_day(ledger_path=None, buys_path=None, start: str = "", trackers=None) -> dict:
+    """{day: payouts to you - eval fees that day} from the gate's start day on. Payouts = the payout ledger + any tracker payout
+    the ledger does not have (same account key + day = one payout: engine/payout_autopilot.record writes both)."""
     out = collections.defaultdict(float)
+    seen = set()
     for x in (SE._read(ledger_path or LEDGER, {}) or {}).get("rows") or []:
         if isinstance(x, dict) and str(x.get("day", "")) >= start:
             out[str(x["day"])] += float(x.get("to_you") or 0.0)
+            seen.add((str(x.get("key")), str(x["day"])))
+    for x in (tracker_payouts() if trackers is None else trackers):
+        if str(x.get("day", "")) >= start and (str(x.get("key")), str(x["day"])) not in seen:
+            out[str(x["day"])] += float(x.get("to_you") or 0.0)
+            seen.add((str(x.get("key")), str(x["day"])))
     for x in (SE._read(buys_path or BUYS, {}) or {}).get("rows") or []:
         if isinstance(x, dict) and str(x.get("day", "")) >= start:
             out[str(x["day"])] -= float(x.get("price") or 0.0)
@@ -106,6 +141,19 @@ def line(g: dict, sh: dict | None = None) -> str:
     return out + " (display only, never buys)"
 
 
+def public_line(g: dict) -> str:
+    """The line for the PUBLIC status topic (red team #19): OK / STOP + LIT's R, never the owner's $ (those stay in line(),
+    read only by the private 16:15 summary / morning brief)."""
+    w3, w5 = g["w3"], g["w5"]
+    head = "Buy gate: OK to buy new evals" if g["verdict"] == "OK" else "Buy gate: STOP buying new evals"
+    parts = []
+    if "W3" in g["rules"]:
+        parts.append(f"LIT last {w3['n']} trades {w3['sum40']:+.1f}R" + (" (STOP)" if w3["stop"] else ""))
+    if "W5" in g["rules"]:
+        parts.append("payouts-minus-fees rule " + ("STOP" if w5["stop"] else "OK"))
+    return head + " · " + " · ".join(parts) + " (display only)"
+
+
 def refresh(now=None, write=True, **paths) -> dict:
     sh = SE.refresh(now=now, report_path=paths.get("report_path"), state_path=paths.get("shadow_state"),
                     out_path=paths.get("shadow_out"), write=write)
@@ -114,8 +162,9 @@ def refresh(now=None, write=True, **paths) -> dict:
     today = SE.today_et(now)
     start = sh["start"]
     g = evaluate(lit_r(paths.get("seed_path"), paths.get("report_path")),
-                 biz_by_day(paths.get("ledger_path"), paths.get("buys_path"), start), sh.get("passes") or [], start, today, rules)
-    g.update(t=int(now if now is not None else time.time()), start=start, shown=bool(cfg.get("show")), line=line(g),
+                 biz_by_day(paths.get("ledger_path"), paths.get("buys_path"), start, paths.get("trackers")), sh.get("passes") or [],
+                 start, today, rules)
+    g.update(t=int(now if now is not None else time.time()), start=start, shown=bool(cfg.get("show")), line=line(g), pub=public_line(g),
              shadow=sh.get("line"))
     if write:
         SE._write(paths.get("out_path") or OUT, g)
@@ -131,7 +180,7 @@ def tiny(g: dict | None = None) -> dict | None:
     cut = lambda s, n: str(s or "").encode("utf-8")[:n].decode("utf-8", "ignore")
     if g.get("verdict") not in ("OK", "STOP"):
         return None                                      # an unknown / damaged verdict shows nothing (never a stray "OK to buy")
-    return {"s": g["verdict"], "l": cut(g.get("line"), 170), "sh": cut(g.get("shadow"), 170), "t": g.get("t")}
+    return {"s": g["verdict"], "l": cut(g.get("pub"), 170), "sh": cut(g.get("shadow"), 170), "t": g.get("t")}   # pub: no owner $
 
 
 def record_buy(plan: str, price: float, day: str | None = None, path: str | None = None) -> dict:

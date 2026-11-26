@@ -644,14 +644,15 @@ def _room(r: dict):
     return _f(_d(src.get("eval")).get("room")) if room is None else room
 
 
-def buy_gate_line(path: str | None = None) -> str:
+def buy_gate_line(path: str | None = None, key: str = "pub") -> str:
     """big-shadow: the buy gate's last line (engine/buy_gate, logs/buy_gate.json) when its switch shows it and it is under 2 days
-    old, else ''. Display only. Never raises."""
+    old, else ''. key "pub" (default) = no owner $: the brief's lines also go to a Board event, which rides the PUBLIC feed
+    (red team #19); "line" (with the business $) only for the private 16:15 push. Display only. Never raises."""
     try:
         from engine import buy_gate as _bg
         g = _bg.SE._read(path or _bg.OUT, None)
         if isinstance(g, dict) and g.get("shown") and time.time() - float(g.get("t") or 0) <= 2 * 86400:
-            return str(g.get("line") or "")[:300]
+            return str(g.get(key) or "")[:300]
     except Exception:  # noqa: BLE001
         pass
     return ""
