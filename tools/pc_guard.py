@@ -449,6 +449,13 @@ def guard(state: dict | None, snap: dict, roll_state=None) -> tuple:
         cands += account_pushes(snap, st["sent"], now)
     except Exception:
         pass
+    try:                     # $500 / $300 / $150 left before the floor / daily limit (engine/risk_alarm.py, read-only), fresh numbers only
+        # the running server's live guard checks every minute (engine/live_guard); this 15-minute run is the fallback when it is down
+        if snap.get("hb_age") is not None and snap["hb_age"] <= HB_FRESH_S and snap.get("server") is False:
+            from engine import risk_alarm
+            cands += risk_alarm.pushes(_d(snap.get("live")), st["sent"], now)
+    except Exception:
+        pass
     try:
         cands += day_summary(snap, now, st["sent"])
     except Exception:

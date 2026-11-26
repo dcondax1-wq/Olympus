@@ -476,11 +476,50 @@ def _write_json(path, obj):
 
 
 # ================================================================================================ the driver
+# ================================================================================================ 4. risk distance (day-guard2)
+RISK_EVERY_S = 60
+RISK_PATH = os.path.join(ROOT, "logs", "risk_alarm.json")      # gitignored (logs/): the keys sent, so a restart never repeats one
+
+
+def _live_view():
+    """The running server's own live view (engine/live_site cache), or None. Never raises."""
+    try:
+        from .live_site import _live
+        return _live()
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _load_risk(path) -> dict:
+    d = _read_json(path, {})
+    return dict(d.get("sent") or {}) if isinstance(d, dict) else {}
+
+
+def _save_risk(sent: dict, path, now):
+    keep = {k: v for k, v in (sent or {}).items() if now - float(v or 0) < 3 * 86400}
+    _write_json(path, {"sent": keep})
+
+
+def risk_pushes(live, sent: dict, now) -> list:
+    """engine/risk_alarm's pushes as instant_problem payloads (code "risk"). `sent` is only read here (the caller marks). Never raises."""
+    if not live:
+        return []
+    try:
+        from . import risk_alarm
+        out = []
+        for m in risk_alarm.pushes(live, dict(sent), now):
+            out.append({"key": m["key"], "code": "risk", "covers": list(m.get("covers") or []), "title": m["title"][:120], "body": m["body"][:600],
+                        **({"tags": m["tags"]} if m.get("tags") else {}), **({"soft": True} if m.get("priority") == "default" else {})})
+        return out
+    except Exception:  # noqa: BLE001
+        return []
+
+
 class LiveGuard:
     """step() every watchdog check (30 s). send(payload) -> str (tests); default engine/notify.instant_problem."""
 
     def __init__(self, send=None, clock=time.time, state_path: str | None = None, au_path: str | None = None,
-                 arm_path: str | None = None):
+                 arm_path: str | None = None, risk_live=None, risk_path: str | None = None):
         self._send = send
         self.clock = clock
         self.state_path = state_path or STATE_PATH
@@ -489,6 +528,10 @@ class LiveGuard:
         self.sent: set = set()
         self.arm_done: set = set()
         self._miss_t = 0.0
+        self._risk_t = 0.0
+        self.risk_live = risk_live                   # tests: a function -> the live view; default the server's own (engine/live_site)
+        self.risk_path = risk_path or RISK_PATH
+        self.sent_risk: dict = _load_risk(self.risk_path)
         self.last: dict = {}
 
     def send(self, p: dict) -> str:
@@ -535,6 +578,14 @@ class LiveGuard:
                     p = arm_payload(rows, now)
                     if p:
                         self._push(p, done)
+            if now - self._risk_t >= RISK_EVERY_S:       # day-guard2: $500 / $300 / $150 left (engine/risk_alarm), every minute
+                self._risk_t = now
+                for p in risk_pushes(self.risk_live() if self.risk_live else _live_view(), self.sent_risk, now):
+                    self._push(p, done)
+                    if p["key"] in self.sent:
+                        for k in [p["key"], *p.get("covers", [])]:
+                            self.sent_risk[k] = int(now)
+                        _save_risk(self.sent_risk, self.risk_path, now)
             st = _read_json(self.state_path, {})
             au = _read_json(self.au_path or os.path.join(ROOT, "data", "autoupdate.json"), {})
             new, p = update_stuck(st.get("upd"), au, now)

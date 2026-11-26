@@ -233,7 +233,7 @@ def kind_of(key: str) -> str:
         return "account_status"
     if k.startswith("guard:goal:"):                 # tools/pc_guard.py: 25 / 50 / 75 % = progress; 100 % = the target reached
         return "account_status" if k.rstrip().endswith(":100") else "eval_milestones"
-    if k.startswith(("guard:dd:", "guard:dll:")):
+    if k.startswith(("guard:dd:", "guard:dll:", "guard:risk:")):    # guard:risk: engine/risk_alarm $500 / $300 / $150 left
         return "room_low"
     if k.startswith("guard:day:"):
         return "daily_summary"
@@ -923,6 +923,9 @@ def entry_message(p: dict, now=None, s: dict | None = None) -> dict:
 
 def _post(base, topic, msg, timeout=8) -> bool:
     import urllib.request
+    from . import pc_identity                        # day-noleak: only the owner's PC (or the cloud monitor in Actions)
+    if not pc_identity.may_post("ntfy alert", url=base):
+        return False
     h = {"Content-Type": "text/plain; charset=utf-8", "Title": msg["title"].encode("ascii", "replace").decode("ascii"),
          "Priority": msg["priority"], "Tags": msg["tags"]}
     req = urllib.request.Request(f"{base}/{topic}", data=msg["body"].encode("utf-8"), headers=h, method="POST")

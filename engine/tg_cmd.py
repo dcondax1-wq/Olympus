@@ -8,8 +8,9 @@ flat, outside 01:50-16:00 ET on a weekday for update / restart, LE_SUPERVISED, e
 Telegram reply to the owner's message.
 
   /status            the bot's status (accounts, armed, open trade, today's $)
-  /today             the payouts (engine/payout_engine, READ-ONLY): per funded account "request today" or the next one's $ and
-                     date, the buffer to keep and what blocks it (big-payout 2026-11-26; it never requests a payout)
+  /today             where are we: every account's $ / today / to pass / $ left before the floor or daily limit, the funded
+                     payout state, the open trade, the LIT setup, today's + tomorrow's big news (engine/today_brief; read-only,
+                     answered here, never through the control path)
   /update            the auto-update now (parks a blocking hand edit with git stash; strategy / account files are not parked)
   /update force      the same, and ALSO parks the strategy / account / rule files that block it (git stash: nothing is lost,
                      'git stash list' / 'git stash pop' bring it back). Only ever sent by the owner after a "Bot update stuck" push.
@@ -38,11 +39,12 @@ POLL_S = 15.0
 BACK_AFTER_S = 90.0                     # the "PC is back up" receipt after a /restart or /update: this long after the server start
 BACK_MAX_S = 30 * 60                    # ... for a command at most this old
 MAX_TEXT = 80
-ALLOW = ("status", "update", "restart", "pause", "resume", "help", "today")
+ALLOW = ("status", "today", "update", "restart", "pause", "resume", "help")
 TO_CMD = {"status": "status", "update": "update", "restart": "restart", "pause": "pause", "resume": "resume_entries"}
 REFUSED_WORDS = ("kill", "stop", "flatten", "start", "arm", "add_account", "switch", "present", "buy", "sell", "long", "short")
 PAUSE_ARG = re.compile(r"^(tomorrow|\d{1,2}:\d{2}|\d{4}-\d{2}-\d{2})$")
-HELP = ("PC commands (reply here):\n/status - how the bot is doing\n/today - payouts: ready today, or the next one's $ and date\n/update - install the newest code now (outside 01:50-16:00 ET, "
+HELP = ("PC commands (reply here):\n/status - how the bot is doing\n/today - where are we: accounts, $ today, $ left, open trade, "
+        "setup, news\n/update - install the newest code now (outside 01:50-16:00 ET, "
         "flat)\n/restart - restart the PC server (your eval comes back armed by itself)\n/pause [HH:MM|tomorrow] - no new entries "
         "until then\n/resume - lift the pause\nTrading, arming, stop and flatten are never done from Telegram.")
 
@@ -89,8 +91,10 @@ def parse_text(text: str) -> tuple:
         return None, "Not a command I take. " + HELP
     if head == "help":
         return None, HELP
-    if head == "today":                                        # big-payout: a read-only answer, nothing runs on the PC
-        return (None, today_text()) if not args else (None, "/today takes no words after it.")
+    if head == "today":
+        if args:
+            return None, "/today takes no words after it."
+        return {"cmd": "today"}, None
     c = {"cmd": TO_CMD[head]}
     if head == "pause":
         until = args[0] if args else "tomorrow"
@@ -107,13 +111,18 @@ def parse_text(text: str) -> tuple:
     return c, None
 
 
-def today_text() -> str:
-    """/today: the payout plan in plain words (engine/payout_engine.today_line). Never raises."""
+def today_reply(now, live_fn=None) -> str:
+    """/today's text (engine/today_brief) from the server's own live view (live_fn() for tests). Never raises."""
     try:
-        from . import payout_engine
-        return payout_engine.today_line()[:3500]
+        from . import today_brief
+        if live_fn is not None:
+            live = live_fn()
+        else:
+            from .live_site import _live
+            live = _live()
+        return today_brief.text(live, now)
     except Exception as e:  # noqa: BLE001
-        return f"Payouts: could not read the accounts ({e.__class__.__name__})."
+        return f"/today failed ({e.__class__.__name__}); /status still works."
 
 
 # ------------------------------------------------------------------------------------------------ state + Telegram calls
@@ -180,8 +189,10 @@ def send_reply(token: str, chat: str, text: str, reply_to=None, http=None) -> bo
 class TgCommands:
     """Polls Telegram and hands owner commands to a RemoteControl (rc.run_external). cfg_fn -> engine/alert_bus.config()."""
 
-    def __init__(self, rc, cfg_fn=None, http=None, path: str = STATE_PATH, clock=time.time, env=None, started_at=None):
+    def __init__(self, rc, cfg_fn=None, http=None, path: str = STATE_PATH, clock=time.time, env=None, started_at=None,
+                 today_live=None):
         self.rc = rc
+        self.today_live = today_live                 # tests: a function -> the live view for /today
         self.cfg_fn = cfg_fn
         self.http = http
         self.path = path
@@ -240,6 +251,9 @@ class TgCommands:
             if c is None:
                 if say:
                     send_reply(token, chat, say, mid, self.http)
+                continue
+            if c.get("cmd") == "today":              # read-only: answered here, never through the control path
+                send_reply(token, chat, today_reply(now, self.today_live), mid, self.http)
                 continue
             c.update(id=f"tg-{uid}", ts=msg.get("date"))
             reply = (lambda text, _m=mid: send_reply(token, chat, text, _m, self.http))
