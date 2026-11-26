@@ -40,3 +40,15 @@ two_week keys protect_below 0.5 / protect_room_f 0.25; absent = today, bit for b
 `sizing_R50_not_applied.patch` (room_f 0.5): +$116-199 in 2026 but 3-7 more fails in 100, so it misses the fail bar.
 
 Caveats: DP ignores ATLAS and the intraday floor; block bootstrap per market; 2025 pool is one year; 54 variants counted.
+
+## Sensitivity: mixed markets (added after the run, NOT pre-registered; asked by day-moretrades' "trust ~25% of the 2026 edge")
+`research/evalsizer/mix_check.py` -> `mix_check.json`: each 5-session block from 2026 with prob w, else 2021-25; same engine.
+| w (2026 share) | Plan | today 0.4 | room 0.3 | room 0.25 | protect PR1 | room 0.5 |
+|---|---|---|---|---|---|---|
+| 50% | 50K | $1,913, 52/48% | $1,746, 54/46% | $1,627, 52/47% | $1,696, 53/46% | $1,976, 51/49% |
+| 50% | 25K | $660, 51/46% | $589, 50/44% | $532, 50/44% | $585, 49/44% | $730, 51/48% |
+| 25% | 50K | $387, 34/65% | $329, 34/66% | $289, 33/67% | $293, 34/65% | $382, 34/66% |
+| 25% | 25K | $47, 34/64% | $24, 33/64% | $19, 33/63% | $16, 33/64% | $59, 33/66% |
+In the real engine 0.3 does not cut fails in mixed markets (0-2 points), it only passes slower, so today's 0.4 earns more at every
+mix. day-moretrades' simple sim (no soft day, no ATLAS lane, no clock) showed 1/3-1/2 fewer fails at 0.3; the real rules erase it.
+Today stays at 0.4.
