@@ -169,6 +169,20 @@ def lit_events(br: dict | None, sent: set, now) -> list:
     return out
 
 
+def score_line(br, ev: dict) -> str:
+    """big-setupscore 2026-11-26: ' · Similar setups: N, won X%, avg +Y R ...' for a LIT setup line (engine/setup_score, display only:
+    it never changes which trades are taken). '' for a cancel line, an unknown setup or any problem. Never raises."""
+    try:
+        if not ev.get("step"):
+            return ""
+        from . import setup_score
+        row = next((s for s in (_d(br).get("setups") or []) if isinstance(s, dict) and str(s.get("id")) == str(ev.get("sid"))), None)
+        ln = setup_score.line(setup_score.brain_score(row)) if row else ""
+        return f"\n{ln}" if ln else ""
+    except Exception:  # noqa: BLE001
+        return ""
+
+
 # ================================================================================================ ATLAS
 def atlas_keys(bot) -> list:
     try:
@@ -290,7 +304,7 @@ class SetupProgress:
             self._load(day)
             evs = lit_events(getattr(bot, "brain", None), self.sent, now)
             for e in evs:
-                e["body"] = (e["body"] + followers(bot, "lit"))[:600]
+                e["body"] = (e["body"] + followers(bot, "lit") + score_line(getattr(bot, "brain", None), e))[:600]
             px = (getattr(bot, "state", None) or {}).get("price")
             for e in atlas_events(getattr(bot, "second", None), atlas_keys(bot), px, self.sent, now):
                 e["body"] = (e["body"] + followers(bot, "atlas", e.get("k")))[:600]

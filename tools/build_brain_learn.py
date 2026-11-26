@@ -24,6 +24,8 @@ IDEAMILL = "research/ideamill/summary.json"
 LIVEGAP = "research/livegap/daily.json"
 HEALTH = "research/health/bands.json"
 OF_LEARN = "research/orderflow/learner.json"        # the order-flow learner's lines when it lands ({lines: [{date, text}]})
+SETUPS = "research/learn/lit_setups.json"
+SCORE_EVAL = "research/setupscore/eval.json"         # big-setupscore 2026-11-26: the pre-registered holdout verdict
 PROMOTE_N = 20
 PILLARS = ("lit", "atlas", "blitz", "of", "learn", "risk")
 ALIAS = {"orderflow": "of", "order_flow": "of", "zlarior": "lit", "market": "learn", "shared": "learn", "accounts": "risk"}
@@ -243,11 +245,45 @@ def next_tests(st):
     return out
 
 
+def setup_scores():
+    """The newest sessions' LIT setups (research/learn/lit_setups.json review) with their 'similar setups' score (engine/setup_score,
+    pool dated before each setup's day) + the holdout verdict. Display only."""
+    doc, ev = _load(SETUPS), _load(SCORE_EVAL)
+    if not isinstance(doc, dict):
+        return None
+    try:
+        sys.path.insert(0, ROOT)
+        from engine import setup_score as SS
+    except Exception:  # noqa: BLE001
+        return None
+    rows = []
+    for r in doc.get("review") or []:
+        if not isinstance(r, dict):
+            continue
+        f = r.get("f") or {}
+        try:
+            hh, mm = str(r.get("at") or "").split(":")
+            mod = int(hh) * 60 + int(mm)
+        except ValueError:
+            mod = None
+        d = -1 if str(r.get("side") or "").upper().startswith("S") else 1
+        sc = SS.score(SS.feats(mod=mod, depth=f.get("depth"), disp=f.get("disp"), idm=f.get("idm"), vix=SS._prior_vix(str(r.get("day")))), d,
+                      before=str(r.get("day")))
+        rows.append({"day": _s(r.get("day"), 10), "at": _s(r.get("at"), 5), "side": _s(r.get("side"), 6), "step": r.get("step"),
+                     "why": _s(r.get("why"), 40), "outcome": _s(r.get("outcome"), 12), "r": _num(r.get("r")),
+                     "n": (sc or {}).get("n"), "win": (sc or {}).get("win"), "avg_r": (sc or {}).get("avg_r")})
+    rows.sort(key=lambda x: (x["day"], x["at"]), reverse=True)
+    A = ((ev or {}).get("holdouts") or {}).get("A Jul-Oct 2026 (pool to 2026-06-30)") or {}
+    a = A.get("all with an outcome") or {}
+    return {"verdict": _s((ev or {}).get("verdict") or "not checked", 20), "rows": rows[:12],
+            "holdout": {k: a.get(k) for k in ("n", "spearman", "p", "auc", "top_third_r", "bottom_third_r")} if a else None}
+
+
 def learning(st):
     f, m, d, h, o = _load(FORWARD), _load(IDEAMILL), _load(LIVEGAP), _load(HEALTH), _load(OF_LEARN)
     src = [p for p, x in ((FORWARD, f), (IDEAMILL, m), (LIVEGAP, d), (HEALTH, h), (OF_LEARN, o)) if x is not None]
     return {"sources": src, "forward": forward_rows(f), "ideamill": ideamill_block(m, st), "livegap": livegap_block(d),
-            "health": health_block(h), "lit_setups": lit_setups(st), "of": of_lines(o, st), "next": next_tests(st),
+            "health": health_block(h), "lit_setups": lit_setups(st), "setup_scores": setup_scores(), "of": of_lines(o, st), "next": next_tests(st),
             "promote_bar": f"{PROMOTE_N} new trades, holding near its own backtest, money made overall"}
 
 

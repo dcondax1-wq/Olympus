@@ -1302,6 +1302,163 @@
     "11-20 15:50 long: stopped at step 0 (outside hours). setups like it (NY PM, discount, 1.5+, 1.2+) won 12 of 20, avg -0.07R."
    ]
   },
+  "setup_scores": {
+   "verdict": "info only",
+   "rows": [
+    {
+     "day": "2026-11-20",
+     "at": "15:50",
+     "side": "LONG",
+     "step": 0,
+     "why": "outside hours",
+     "outcome": "overlapped",
+     "r": null,
+     "n": 50,
+     "win": 0.54,
+     "avg_r": -0.189
+    },
+    {
+     "day": "2026-11-20",
+     "at": "13:20",
+     "side": "LONG",
+     "step": 2,
+     "why": "sweep too shallow",
+     "outcome": "overlapped",
+     "r": null,
+     "n": 50,
+     "win": 0.52,
+     "avg_r": 0.209
+    },
+    {
+     "day": "2026-11-20",
+     "at": "10:20",
+     "side": "SHORT",
+     "step": 7,
+     "why": "never filled",
+     "outcome": "no fill",
+     "r": null,
+     "n": 50,
+     "win": 0.44,
+     "avg_r": 0.093
+    },
+    {
+     "day": "2026-11-20",
+     "at": "09:35",
+     "side": "SHORT",
+     "step": 7,
+     "why": "never filled",
+     "outcome": "no fill",
+     "r": null,
+     "n": 50,
+     "win": 0.48,
+     "avg_r": 0.103
+    },
+    {
+     "day": "2026-11-20",
+     "at": "08:50",
+     "side": "LONG",
+     "step": 7,
+     "why": "never filled",
+     "outcome": "no fill",
+     "r": null,
+     "n": 50,
+     "win": 0.58,
+     "avg_r": 0.07
+    },
+    {
+     "day": "2026-11-20",
+     "at": "07:55",
+     "side": "LONG",
+     "step": 4,
+     "why": "displacement too small",
+     "outcome": "overlapped",
+     "r": null,
+     "n": 50,
+     "win": 0.52,
+     "avg_r": 0.315
+    },
+    {
+     "day": "2026-11-20",
+     "at": "05:30",
+     "side": "LONG",
+     "step": 3,
+     "why": "no inducement",
+     "outcome": "overlapped",
+     "r": null,
+     "n": 50,
+     "win": 0.52,
+     "avg_r": 0.027
+    },
+    {
+     "day": "2026-11-20",
+     "at": "03:35",
+     "side": "SHORT",
+     "step": 4,
+     "why": "displacement too small",
+     "outcome": "would",
+     "r": 3.94,
+     "n": 50,
+     "win": 0.58,
+     "avg_r": 0.402
+    },
+    {
+     "day": "2026-11-20",
+     "at": "02:50",
+     "side": "LONG",
+     "step": 7,
+     "why": "never filled",
+     "outcome": "no fill",
+     "r": null,
+     "n": 50,
+     "win": 0.68,
+     "avg_r": 0.242
+    },
+    {
+     "day": "2026-11-19",
+     "at": "15:20",
+     "side": "LONG",
+     "step": 4,
+     "why": "displacement too small",
+     "outcome": "overlapped",
+     "r": null,
+     "n": 50,
+     "win": 0.46,
+     "avg_r": -0.061
+    },
+    {
+     "day": "2026-11-19",
+     "at": "14:30",
+     "side": "LONG",
+     "step": 3,
+     "why": "no inducement",
+     "outcome": "overlapped",
+     "r": null,
+     "n": 50,
+     "win": 0.42,
+     "avg_r": -0.03
+    },
+    {
+     "day": "2026-11-19",
+     "at": "09:50",
+     "side": "LONG",
+     "step": 3,
+     "why": "no inducement",
+     "outcome": "overlapped",
+     "r": null,
+     "n": 50,
+     "win": 0.46,
+     "avg_r": -0.223
+    }
+   ],
+   "holdout": {
+    "n": 191,
+    "spearman": -0.085,
+    "p": 0.8835,
+    "auc": 0.535,
+    "top_third_r": -0.122,
+    "bottom_third_r": 0.124
+   }
+  },
   "of": {
    "lines": [],
    "next": "waiting for its first trades (no data to learn from yet)"
