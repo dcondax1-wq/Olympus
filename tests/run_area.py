@@ -520,6 +520,7 @@ AREAS["nq"].append("ledgerfix_rt"); AREAS["pc"].append("ledgerfix_rt")   # red t
 
 AREAS["nq"].append("setup_progress"); AREAS["pc"].append("setup_progress")   # day-closer 2026-11-25: setup progress pushes (engine/setup_progress.py, read-only)
 AREAS["nq"].append("setup_progress_rt"); AREAS["pc"].append("setup_progress_rt")   # red team 2026-11-25: no re-send on a moving EMA, ATLAS cap 8
+AREAS["nq"].append("nt_transport_rt")   # red team 2026-11-26: a live account never gets the socket transport
 
 if __name__ == "__main__":
     sys.exit(main())

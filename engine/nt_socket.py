@@ -329,8 +329,14 @@ def make_adapter(cfg: dict | None = None, **kw):
     disable a live account."""
     c = cfg or {}
     want = str(c.get("nt_transport") or os.environ.get(TRANSPORT_ENV, "") or "file").strip().lower() == "socket"
-    if want and (not PAPER_ONLY or is_sim(nt.resolve_account(c))):
-        return NtSocketAdapter(c, **kw)
+    sim = False
+    if want:
+        try:                                             # red team 2026-11-26: an account lookup error never stops the bot from
+            sim = bool(is_sim(nt.resolve_account(c)))    # starting: it means "not proven Sim" = the file bridge, as today
+        except Exception:  # noqa: BLE001
+            sim = False
+    if want and sim:                                     # red team: Sim ONLY, whatever PAPER_ONLY says (a live account never
+        return NtSocketAdapter(c, **kw)                  # changes transport through this switch)
     return NinjaTraderAdapter(c, **kw)
 
 
