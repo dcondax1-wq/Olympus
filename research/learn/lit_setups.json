@@ -1,0 +1,2124 @@
+{
+ "v": 1,
+ "kind": "lit-setups",
+ "built": "2026-11-26 16:39 UTC",
+ "paper_only": true,
+ "data_end": "2026-11-20",
+ "setups": 8784,
+ "taken": 638,
+ "steps": [
+  {
+   "step": 0,
+   "why": "outside hours",
+   "n": 745,
+   "with_outcome": 241,
+   "won": 102,
+   "avg_r": -0.179
+  },
+  {
+   "step": 2,
+   "why": "sweep too shallow",
+   "n": 642,
+   "with_outcome": 146,
+   "won": 68,
+   "avg_r": -0.269
+  },
+  {
+   "step": 3,
+   "why": "no inducement",
+   "n": 2486,
+   "with_outcome": 592,
+   "won": 281,
+   "avg_r": -0.022
+  },
+  {
+   "step": 4,
+   "why": "displacement too small",
+   "n": 1469,
+   "with_outcome": 455,
+   "won": 216,
+   "avg_r": 0.021
+  },
+  {
+   "step": 6,
+   "why": "limit not armed",
+   "n": 24,
+   "with_outcome": 24,
+   "won": 16,
+   "avg_r": 0.172
+  },
+  {
+   "step": 7,
+   "why": "never filled",
+   "n": 2579,
+   "with_outcome": 0,
+   "won": 0,
+   "avg_r": null
+  },
+  {
+   "step": 8,
+   "why": "taken",
+   "n": 638,
+   "with_outcome": 638,
+   "won": 344,
+   "avg_r": 0.158
+  },
+  {
+   "step": 9,
+   "why": "blocked by a day rule",
+   "n": 201,
+   "with_outcome": 201,
+   "won": 94,
+   "avg_r": -0.038
+  }
+ ],
+ "gates": [
+  {
+   "gate": "monday",
+   "step": 9,
+   "words": "the Monday rule",
+   "spans": {
+    "H1": {
+     "value": 2113,
+     "blocked_n": 8,
+     "missed_win_usd": 5,
+     "avoided_loss_usd": 909,
+     "blocked_won": 3,
+     "knock_on_usd": 1594,
+     "pf_live": 4.98,
+     "pf_open": 4.42
+    },
+    "H2": {
+     "value": 302,
+     "blocked_n": 3,
+     "missed_win_usd": 2,
+     "avoided_loss_usd": 304,
+     "blocked_won": 1,
+     "knock_on_usd": 0,
+     "pf_live": 2.49,
+     "pf_open": 2.37
+    },
+    "2021-25": {
+     "value": -3749,
+     "blocked_n": 32,
+     "missed_win_usd": 7031,
+     "avoided_loss_usd": 5282,
+     "blocked_won": 18,
+     "knock_on_usd": -2008,
+     "pf_live": 1.01,
+     "pf_open": 1.05
+    }
+   },
+   "verdict": "mixed",
+   "value_total": -1334
+  },
+  {
+   "gate": "target",
+   "step": 6,
+   "words": "a VIX-band target >= 1.5R away",
+   "spans": {
+    "H1": {
+     "value": -353,
+     "blocked_n": 1,
+     "missed_win_usd": 353,
+     "avoided_loss_usd": 0,
+     "blocked_won": 1,
+     "knock_on_usd": 0,
+     "pf_live": 4.98,
+     "pf_open": 5.02
+    },
+    "H2": {
+     "value": 398,
+     "blocked_n": 2,
+     "missed_win_usd": 2,
+     "avoided_loss_usd": 400,
+     "blocked_won": 1,
+     "knock_on_usd": 0,
+     "pf_live": 2.49,
+     "pf_open": 2.34
+    },
+    "2021-25": {
+     "value": -1052,
+     "blocked_n": 6,
+     "missed_win_usd": 1562,
+     "avoided_loss_usd": 446,
+     "blocked_won": 4,
+     "knock_on_usd": 64,
+     "pf_live": 1.01,
+     "pf_open": 1.02
+    }
+   },
+   "verdict": "mixed",
+   "value_total": -1007
+  },
+  {
+   "gate": "wk_stop",
+   "step": 9,
+   "words": "the weekly stop (2 losses -> half size)",
+   "spans": {
+    "H1": {
+     "value": -1453,
+     "blocked_n": 0,
+     "missed_win_usd": 0,
+     "avoided_loss_usd": 0,
+     "blocked_won": 0,
+     "knock_on_usd": 0,
+     "pf_live": 4.98,
+     "pf_open": 4.84
+    },
+    "H2": {
+     "value": 233,
+     "blocked_n": 0,
+     "missed_win_usd": 0,
+     "avoided_loss_usd": 0,
+     "blocked_won": 0,
+     "knock_on_usd": 0,
+     "pf_live": 2.49,
+     "pf_open": 2.4
+    },
+    "2021-25": {
+     "value": 621,
+     "blocked_n": 0,
+     "missed_win_usd": 0,
+     "avoided_loss_usd": 0,
+     "blocked_won": 0,
+     "knock_on_usd": 0,
+     "pf_live": 1.01,
+     "pf_open": 1.01
+    }
+   },
+   "verdict": "mixed",
+   "value_total": -599
+  },
+  {
+   "gate": "stop_size",
+   "step": 6,
+   "words": "stop 8-80 points",
+   "spans": {
+    "H1": {
+     "value": 628,
+     "blocked_n": 4,
+     "missed_win_usd": 107,
+     "avoided_loss_usd": 398,
+     "blocked_won": 1,
+     "knock_on_usd": -133,
+     "pf_live": 4.98,
+     "pf_open": 4.79
+    },
+    "H2": {
+     "value": 116,
+     "blocked_n": 1,
+     "missed_win_usd": 0,
+     "avoided_loss_usd": 116,
+     "blocked_won": 0,
+     "knock_on_usd": 0,
+     "pf_live": 2.49,
+     "pf_open": 2.44
+    },
+    "2021-25": {
+     "value": 3597,
+     "blocked_n": 23,
+     "missed_win_usd": 7426,
+     "avoided_loss_usd": 8570,
+     "blocked_won": 11,
+     "knock_on_usd": 2853,
+     "pf_live": 1.01,
+     "pf_open": 0.98
+    }
+   },
+   "verdict": "earns",
+   "value_total": 4341
+  },
+  {
+   "gate": "depth",
+   "step": 2,
+   "words": "sweep >= 0.5 ATR past the level",
+   "spans": {
+    "H1": {
+     "value": 1898,
+     "blocked_n": 7,
+     "missed_win_usd": 2,
+     "avoided_loss_usd": 2257,
+     "blocked_won": 2,
+     "knock_on_usd": -357,
+     "pf_live": 4.98,
+     "pf_open": 4.07
+    },
+    "H2": {
+     "value": 1029,
+     "blocked_n": 3,
+     "missed_win_usd": 0,
+     "avoided_loss_usd": 749,
+     "blocked_won": 0,
+     "knock_on_usd": 280,
+     "pf_live": 2.49,
+     "pf_open": 2.21
+    },
+    "2021-25": {
+     "value": 5038,
+     "blocked_n": 39,
+     "missed_win_usd": 4926,
+     "avoided_loss_usd": 10870,
+     "blocked_won": 15,
+     "knock_on_usd": -553,
+     "pf_live": 1.01,
+     "pf_open": 0.96
+    }
+   },
+   "verdict": "earns",
+   "value_total": 7965
+  },
+  {
+   "gate": "one_a_day",
+   "step": 9,
+   "words": "one trade a day",
+   "spans": {
+    "H1": {
+     "value": 4958,
+     "blocked_n": 19,
+     "missed_win_usd": 178,
+     "avoided_loss_usd": 3214,
+     "blocked_won": 8,
+     "knock_on_usd": 0,
+     "pf_live": 4.98,
+     "pf_open": 3.53
+    },
+    "H2": {
+     "value": -2565,
+     "blocked_n": 10,
+     "missed_win_usd": 4755,
+     "avoided_loss_usd": 1572,
+     "blocked_won": 5,
+     "knock_on_usd": 0,
+     "pf_live": 2.49,
+     "pf_open": 2.52
+    },
+    "2021-25": {
+     "value": 5626,
+     "blocked_n": 90,
+     "missed_win_usd": 11686,
+     "avoided_loss_usd": 16699,
+     "blocked_won": 41,
+     "knock_on_usd": 0,
+     "pf_live": 1.01,
+     "pf_open": 0.96
+    }
+   },
+   "verdict": "mixed",
+   "value_total": 8019
+  },
+  {
+   "gate": "inducement",
+   "step": 3,
+   "words": "an inducement within 1 ATR, <= 36 bars",
+   "spans": {
+    "H1": {
+     "value": 4567,
+     "blocked_n": 19,
+     "missed_win_usd": 5240,
+     "avoided_loss_usd": 3904,
+     "blocked_won": 10,
+     "knock_on_usd": 5900,
+     "pf_live": 4.98,
+     "pf_open": 3.5
+    },
+    "H2": {
+     "value": 3693,
+     "blocked_n": 20,
+     "missed_win_usd": 1110,
+     "avoided_loss_usd": 4853,
+     "blocked_won": 3,
+     "knock_on_usd": -50,
+     "pf_live": 2.49,
+     "pf_open": 1.52
+    },
+    "2021-25": {
+     "value": -91,
+     "blocked_n": 215,
+     "missed_win_usd": 41396,
+     "avoided_loss_usd": 38719,
+     "blocked_won": 106,
+     "knock_on_usd": 45,
+     "pf_live": 1.01,
+     "pf_open": 1.01
+    }
+   },
+   "verdict": "mixed",
+   "value_total": 8169
+  },
+  {
+   "gate": "limit_wait",
+   "step": 7,
+   "words": "the limit lives 6 bars (30 min)",
+   "spans": {
+    "H1": {
+     "value": 4,
+     "blocked_n": 3,
+     "missed_win_usd": 0,
+     "avoided_loss_usd": 376,
+     "blocked_won": 0,
+     "knock_on_usd": 1,
+     "pf_live": 4.98,
+     "pf_open": 4.97
+    },
+    "H2": {
+     "value": 444,
+     "blocked_n": 4,
+     "missed_win_usd": 172,
+     "avoided_loss_usd": 349,
+     "blocked_won": 2,
+     "knock_on_usd": 267,
+     "pf_live": 2.49,
+     "pf_open": 2.35
+    },
+    "2021-25": {
+     "value": 8786,
+     "blocked_n": 25,
+     "missed_win_usd": 372,
+     "avoided_loss_usd": 6903,
+     "blocked_won": 8,
+     "knock_on_usd": 1929,
+     "pf_live": 1.01,
+     "pf_open": 0.93
+    }
+   },
+   "verdict": "earns",
+   "value_total": 9234
+  },
+  {
+   "gate": "cisd1m",
+   "step": 7,
+   "words": "a 1m CISD within 22 bars after the tap",
+   "spans": {
+    "H1": {
+     "value": 14487,
+     "blocked_n": 22,
+     "missed_win_usd": 1481,
+     "avoided_loss_usd": 6598,
+     "blocked_won": 4,
+     "knock_on_usd": 955,
+     "pf_live": 4.98,
+     "pf_open": 2.18
+    },
+    "H2": {
+     "value": 5154,
+     "blocked_n": 23,
+     "missed_win_usd": 1086,
+     "avoided_loss_usd": 5004,
+     "blocked_won": 5,
+     "knock_on_usd": 1909,
+     "pf_live": 2.49,
+     "pf_open": 1.39
+    },
+    "2021-25": {
+     "value": -8496,
+     "blocked_n": 535,
+     "missed_win_usd": 91062,
+     "avoided_loss_usd": 189941,
+     "blocked_won": 194,
+     "knock_on_usd": -6633,
+     "pf_live": 1.01,
+     "pf_open": 1.04
+    }
+   },
+   "verdict": "mixed",
+   "value_total": 11145
+  },
+  {
+   "gate": "window",
+   "step": 0,
+   "words": "entry hours 02:00-15:30 ET",
+   "spans": {
+    "H1": {
+     "value": 5412,
+     "blocked_n": 13,
+     "missed_win_usd": 842,
+     "avoided_loss_usd": 2465,
+     "blocked_won": 6,
+     "knock_on_usd": 3791,
+     "pf_live": 4.98,
+     "pf_open": 3.85
+    },
+    "H2": {
+     "value": -660,
+     "blocked_n": 11,
+     "missed_win_usd": 1128,
+     "avoided_loss_usd": 1338,
+     "blocked_won": 3,
+     "knock_on_usd": -871,
+     "pf_live": 2.49,
+     "pf_open": 2.48
+    },
+    "2021-25": {
+     "value": 8525,
+     "blocked_n": 62,
+     "missed_win_usd": 10052,
+     "avoided_loss_usd": 20234,
+     "blocked_won": 28,
+     "knock_on_usd": -890,
+     "pf_live": 1.01,
+     "pf_open": 0.94
+    }
+   },
+   "verdict": "mixed",
+   "value_total": 13277
+  },
+  {
+   "gate": "disp",
+   "step": 4,
+   "words": "displacement body >= 0.8 ATR",
+   "spans": {
+    "H1": {
+     "value": 6829,
+     "blocked_n": 30,
+     "missed_win_usd": 6330,
+     "avoided_loss_usd": 4300,
+     "blocked_won": 19,
+     "knock_on_usd": 7122,
+     "pf_live": 4.98,
+     "pf_open": 3.29
+    },
+    "H2": {
+     "value": 4396,
+     "blocked_n": 32,
+     "missed_win_usd": 7773,
+     "avoided_loss_usd": 8298,
+     "blocked_won": 11,
+     "knock_on_usd": 3463,
+     "pf_live": 2.49,
+     "pf_open": 1.37
+    },
+    "2021-25": {
+     "value": 9473,
+     "blocked_n": 225,
+     "missed_win_usd": 63016,
+     "avoided_loss_usd": 59887,
+     "blocked_won": 100,
+     "knock_on_usd": 15908,
+     "pf_live": 1.01,
+     "pf_open": 0.94
+    }
+   },
+   "verdict": "earns",
+   "value_total": 20698
+  }
+ ],
+ "review": [
+  {
+   "day": "2026-11-18",
+   "at": "05:15",
+   "side": "SHORT",
+   "step": 4,
+   "why": "displacement too small",
+   "r": 4.641,
+   "usd": null,
+   "would_usd": 1123.0,
+   "outcome": "would",
+   "like": {
+    "n": 64,
+    "won": 32,
+    "avg_r": -0.21,
+    "on": [
+     "sess",
+     "tdo",
+     "depth_b",
+     "disp_b"
+    ],
+    "words": "London, discount, 0.5-1.5, <0.8"
+   },
+   "f": {
+    "depth": 0.847,
+    "disp": 0.249,
+    "idm": 3,
+    "vix_band": "VIX 25+",
+    "tdo": "discount",
+    "sb": false,
+    "sess": "London"
+   },
+   "words": "11-18 05:15 short: stopped at step 4 (displacement too small); would have made +4.641R. setups like it (London, discount, 0.5-1.5, <0.8) won 32 of 64, avg -0.21R."
+  },
+  {
+   "day": "2026-11-18",
+   "at": "07:20",
+   "side": "LONG",
+   "step": 3,
+   "why": "no inducement",
+   "r": null,
+   "usd": null,
+   "would_usd": null,
+   "outcome": "overlapped",
+   "like": {
+    "n": 60,
+    "won": 39,
+    "avg_r": 0.21,
+    "on": [
+     "sess",
+     "tdo",
+     "depth_b",
+     "disp_b"
+    ],
+    "words": "London, premium, 0.5-1.5, 1.2+"
+   },
+   "f": {
+    "depth": 1.098,
+    "disp": 1.402,
+    "idm": 0,
+    "vix_band": "VIX 25+",
+    "tdo": "premium",
+    "sb": false,
+    "sess": "London"
+   },
+   "words": "11-18 07:20 long: stopped at step 3 (no inducement). setups like it (London, premium, 0.5-1.5, 1.2+) won 39 of 60, avg +0.21R."
+  },
+  {
+   "day": "2026-11-18",
+   "at": "08:50",
+   "side": "LONG",
+   "step": 3,
+   "why": "no inducement",
+   "r": null,
+   "usd": null,
+   "would_usd": null,
+   "outcome": "overlapped",
+   "like": {
+    "n": 31,
+    "won": 14,
+    "avg_r": -0.21,
+    "on": [
+     "sess",
+     "tdo",
+     "depth_b",
+     "disp_b"
+    ],
+    "words": "NY AM, premium, 1.5+, <0.8"
+   },
+   "f": {
+    "depth": 3.511,
+    "disp": 0.777,
+    "idm": 0,
+    "vix_band": "VIX 25+",
+    "tdo": "premium",
+    "sb": false,
+    "sess": "NY AM"
+   },
+   "words": "11-18 08:50 long: stopped at step 3 (no inducement). setups like it (NY AM, premium, 1.5+, <0.8) won 14 of 31, avg -0.21R."
+  },
+  {
+   "day": "2026-11-18",
+   "at": "11:20",
+   "side": "SHORT",
+   "step": 2,
+   "why": "sweep too shallow",
+   "r": null,
+   "usd": null,
+   "would_usd": null,
+   "outcome": "overlapped",
+   "like": {
+    "n": 190,
+    "won": 94,
+    "avg_r": 0.01,
+    "on": [
+     "sess",
+     "tdo"
+    ],
+    "words": "NY AM, premium"
+   },
+   "f": {
+    "depth": 0.08,
+    "disp": 0.888,
+    "idm": 0,
+    "vix_band": "VIX 25+",
+    "tdo": "premium",
+    "sb": false,
+    "sess": "NY AM"
+   },
+   "words": "11-18 11:20 short: stopped at step 2 (sweep too shallow). setups like it (NY AM, premium) won 94 of 190, avg +0.01R."
+  },
+  {
+   "day": "2026-11-18",
+   "at": "12:20",
+   "side": "LONG",
+   "step": 7,
+   "why": "never filled",
+   "r": null,
+   "usd": null,
+   "would_usd": null,
+   "outcome": "no fill",
+   "like": {
+    "n": 61,
+    "won": 31,
+    "avg_r": -0.01,
+    "on": [
+     "sess",
+     "tdo",
+     "depth_b",
+     "disp_b"
+    ],
+    "words": "NY PM, discount, 1.5+, 0.8-1.2"
+   },
+   "f": {
+    "depth": 3.101,
+    "disp": 1.183,
+    "idm": 1,
+    "vix_band": "VIX 25+",
+    "tdo": "discount",
+    "sb": false,
+    "sess": "NY PM"
+   },
+   "words": "11-18 12:20 long: stopped at step 7 (never filled). setups like it (NY PM, discount, 1.5+, 0.8-1.2) won 31 of 61, avg -0.01R."
+  },
+  {
+   "day": "2026-11-19",
+   "at": "04:40",
+   "side": "LONG",
+   "step": 4,
+   "why": "displacement too small",
+   "r": null,
+   "usd": null,
+   "would_usd": null,
+   "outcome": "overlapped",
+   "like": {
+    "n": 30,
+    "won": 18,
+    "avg_r": 0.12,
+    "on": [
+     "sess",
+     "tdo",
+     "depth_b",
+     "disp_b"
+    ],
+    "words": "London, premium, 0.5-1.5, <0.8"
+   },
+   "f": {
+    "depth": 0.678,
+    "disp": 0.718,
+    "idm": 2,
+    "vix_band": "VIX 20-25",
+    "tdo": "premium",
+    "sb": false,
+    "sess": "London"
+   },
+   "words": "11-19 04:40 long: stopped at step 4 (displacement too small). setups like it (London, premium, 0.5-1.5, <0.8) won 18 of 30, avg +0.12R."
+  },
+  {
+   "day": "2026-11-19",
+   "at": "07:00",
+   "side": "SHORT",
+   "step": 4,
+   "why": "displacement too small",
+   "r": null,
+   "usd": null,
+   "would_usd": null,
+   "outcome": "overlapped",
+   "like": {
+    "n": 34,
+    "won": 15,
+    "avg_r": -0.01,
+    "on": [
+     "sess",
+     "tdo",
+     "depth_b",
+     "disp_b",
+     "vix_band",
+     "dir"
+    ],
+    "words": "London, discount, 1.5+, <0.8, VIX 20-25, short"
+   },
+   "f": {
+    "depth": 3.121,
+    "disp": 0.569,
+    "idm": 2,
+    "vix_band": "VIX 20-25",
+    "tdo": "discount",
+    "sb": false,
+    "sess": "London"
+   },
+   "words": "11-19 07:00 short: stopped at step 4 (displacement too small). setups like it (London, discount, 1.5+, <0.8, VIX 20-25, short) won 15 of 34, avg -0.01R."
+  },
+  {
+   "day": "2026-11-19",
+   "at": "08:55",
+   "side": "LONG",
+   "step": 4,
+   "why": "displacement too small",
+   "r": 0.006,
+   "usd": null,
+   "would_usd": 2.0,
+   "outcome": "would",
+   "like": {
+    "n": 31,
+    "won": 14,
+    "avg_r": -0.21,
+    "on": [
+     "sess",
+     "tdo",
+     "depth_b",
+     "disp_b"
+    ],
+    "words": "NY AM, premium, 1.5+, <0.8"
+   },
+   "f": {
+    "depth": 2.444,
+    "disp": 0.459,
+    "idm": 3,
+    "vix_band": "VIX 20-25",
+    "tdo": "premium",
+    "sb": false,
+    "sess": "NY AM"
+   },
+   "words": "11-19 08:55 long: stopped at step 4 (displacement too small); would have made +0.006R. setups like it (NY AM, premium, 1.5+, <0.8) won 14 of 31, avg -0.21R."
+  },
+  {
+   "day": "2026-11-19",
+   "at": "09:50",
+   "side": "LONG",
+   "step": 3,
+   "why": "no inducement",
+   "r": null,
+   "usd": null,
+   "would_usd": null,
+   "outcome": "overlapped",
+   "like": {
+    "n": 31,
+    "won": 14,
+    "avg_r": -0.21,
+    "on": [
+     "sess",
+     "tdo",
+     "depth_b",
+     "disp_b"
+    ],
+    "words": "NY AM, premium, 1.5+, <0.8"
+   },
+   "f": {
+    "depth": 1.507,
+    "disp": 0.372,
+    "idm": 0,
+    "vix_band": "VIX 20-25",
+    "tdo": "premium",
+    "sb": false,
+    "sess": "NY AM"
+   },
+   "words": "11-19 09:50 long: stopped at step 3 (no inducement). setups like it (NY AM, premium, 1.5+, <0.8) won 14 of 31, avg -0.21R."
+  },
+  {
+   "day": "2026-11-19",
+   "at": "14:30",
+   "side": "LONG",
+   "step": 3,
+   "why": "no inducement",
+   "r": null,
+   "usd": null,
+   "would_usd": null,
+   "outcome": "overlapped",
+   "like": {
+    "n": 46,
+    "won": 14,
+    "avg_r": -0.23,
+    "on": [
+     "sess",
+     "tdo",
+     "depth_b",
+     "disp_b"
+    ],
+    "words": "NY PM, discount, 0.5-1.5, <0.8"
+   },
+   "f": {
+    "depth": 0.507,
+    "disp": 0.767,
+    "idm": 0,
+    "vix_band": "VIX 20-25",
+    "tdo": "discount",
+    "sb": true,
+    "sess": "NY PM"
+   },
+   "words": "11-19 14:30 long: stopped at step 3 (no inducement). setups like it (NY PM, discount, 0.5-1.5, <0.8) won 14 of 46, avg -0.23R."
+  },
+  {
+   "day": "2026-11-19",
+   "at": "15:20",
+   "side": "LONG",
+   "step": 4,
+   "why": "displacement too small",
+   "r": null,
+   "usd": null,
+   "would_usd": null,
+   "outcome": "overlapped",
+   "like": {
+    "n": 46,
+    "won": 14,
+    "avg_r": -0.23,
+    "on": [
+     "sess",
+     "tdo",
+     "depth_b",
+     "disp_b"
+    ],
+    "words": "NY PM, discount, 0.5-1.5, <0.8"
+   },
+   "f": {
+    "depth": 1.423,
+    "disp": 0.789,
+    "idm": 2,
+    "vix_band": "VIX 20-25",
+    "tdo": "discount",
+    "sb": false,
+    "sess": "NY PM"
+   },
+   "words": "11-19 15:20 long: stopped at step 4 (displacement too small). setups like it (NY PM, discount, 0.5-1.5, <0.8) won 14 of 46, avg -0.23R."
+  },
+  {
+   "day": "2026-11-20",
+   "at": "02:50",
+   "side": "LONG",
+   "step": 7,
+   "why": "never filled",
+   "r": null,
+   "usd": null,
+   "would_usd": null,
+   "outcome": "no fill",
+   "like": {
+    "n": 30,
+    "won": 15,
+    "avg_r": 0.41,
+    "on": [
+     "sess",
+     "tdo",
+     "depth_b",
+     "disp_b"
+    ],
+    "words": "London, discount, 0.5-1.5, 1.2+"
+   },
+   "f": {
+    "depth": 1.157,
+    "disp": 1.247,
+    "idm": 1,
+    "vix_band": "VIX 25+",
+    "tdo": "discount",
+    "sb": false,
+    "sess": "London"
+   },
+   "words": "11-20 02:50 long: stopped at step 7 (never filled). setups like it (London, discount, 0.5-1.5, 1.2+) won 15 of 30, avg +0.41R."
+  },
+  {
+   "day": "2026-11-20",
+   "at": "03:35",
+   "side": "SHORT",
+   "step": 4,
+   "why": "displacement too small",
+   "r": 3.94,
+   "usd": null,
+   "would_usd": 516.0,
+   "outcome": "would",
+   "like": {
+    "n": 15,
+    "won": 9,
+    "avg_r": 0.23,
+    "on": [
+     "sess",
+     "tdo",
+     "depth_b",
+     "disp_b",
+     "vix_band",
+     "dir"
+    ],
+    "words": "London, discount, 1.5+, <0.8, VIX 25+, short"
+   },
+   "f": {
+    "depth": 1.878,
+    "disp": 0.401,
+    "idm": 2,
+    "vix_band": "VIX 25+",
+    "tdo": "discount",
+    "sb": true,
+    "sess": "London"
+   },
+   "words": "11-20 03:35 short: stopped at step 4 (displacement too small); would have made +3.94R. setups like it (London, discount, 1.5+, <0.8, VIX 25+, short) won 9 of 15, avg +0.23R."
+  },
+  {
+   "day": "2026-11-20",
+   "at": "05:30",
+   "side": "LONG",
+   "step": 3,
+   "why": "no inducement",
+   "r": null,
+   "usd": null,
+   "would_usd": null,
+   "outcome": "overlapped",
+   "like": {
+    "n": 18,
+    "won": 7,
+    "avg_r": -0.24,
+    "on": [
+     "sess",
+     "tdo",
+     "depth_b",
+     "disp_b",
+     "vix_band"
+    ],
+    "words": "London, discount, 1.5+, 1.2+, VIX 25+"
+   },
+   "f": {
+    "depth": 3.726,
+    "disp": 1.366,
+    "idm": 0,
+    "vix_band": "VIX 25+",
+    "tdo": "discount",
+    "sb": false,
+    "sess": "London"
+   },
+   "words": "11-20 05:30 long: stopped at step 3 (no inducement). setups like it (London, discount, 1.5+, 1.2+, VIX 25+) won 7 of 18, avg -0.24R."
+  },
+  {
+   "day": "2026-11-20",
+   "at": "07:55",
+   "side": "LONG",
+   "step": 4,
+   "why": "displacement too small",
+   "r": null,
+   "usd": null,
+   "would_usd": null,
+   "outcome": "overlapped",
+   "like": {
+    "n": 24,
+    "won": 14,
+    "avg_r": 0.57,
+    "on": [
+     "sess",
+     "tdo",
+     "depth_b",
+     "disp_b",
+     "vix_band"
+    ],
+    "words": "London, discount, 1.5+, <0.8, VIX 25+"
+   },
+   "f": {
+    "depth": 1.894,
+    "disp": 0.693,
+    "idm": 1,
+    "vix_band": "VIX 25+",
+    "tdo": "discount",
+    "sb": false,
+    "sess": "London"
+   },
+   "words": "11-20 07:55 long: stopped at step 4 (displacement too small). setups like it (London, discount, 1.5+, <0.8, VIX 25+) won 14 of 24, avg +0.57R."
+  },
+  {
+   "day": "2026-11-20",
+   "at": "08:50",
+   "side": "LONG",
+   "step": 7,
+   "why": "never filled",
+   "r": null,
+   "usd": null,
+   "would_usd": null,
+   "outcome": "no fill",
+   "like": {
+    "n": 67,
+    "won": 35,
+    "avg_r": -0.01,
+    "on": [
+     "sess",
+     "tdo",
+     "depth_b",
+     "disp_b"
+    ],
+    "words": "NY AM, discount, 1.5+, 1.2+"
+   },
+   "f": {
+    "depth": 3.454,
+    "disp": 1.862,
+    "idm": 1,
+    "vix_band": "VIX 25+",
+    "tdo": "discount",
+    "sb": false,
+    "sess": "NY AM"
+   },
+   "words": "11-20 08:50 long: stopped at step 7 (never filled). setups like it (NY AM, discount, 1.5+, 1.2+) won 35 of 67, avg -0.01R."
+  },
+  {
+   "day": "2026-11-20",
+   "at": "09:35",
+   "side": "SHORT",
+   "step": 7,
+   "why": "never filled",
+   "r": null,
+   "usd": null,
+   "would_usd": null,
+   "outcome": "no fill",
+   "like": {
+    "n": 52,
+    "won": 27,
+    "avg_r": 0.04,
+    "on": [
+     "sess",
+     "tdo",
+     "depth_b",
+     "disp_b"
+    ],
+    "words": "NY AM, premium, 1.5+, 1.2+"
+   },
+   "f": {
+    "depth": 2.664,
+    "disp": 2.539,
+    "idm": 2,
+    "vix_band": "VIX 25+",
+    "tdo": "premium",
+    "sb": false,
+    "sess": "NY AM"
+   },
+   "words": "11-20 09:35 short: stopped at step 7 (never filled). setups like it (NY AM, premium, 1.5+, 1.2+) won 27 of 52, avg +0.04R."
+  },
+  {
+   "day": "2026-11-20",
+   "at": "10:20",
+   "side": "SHORT",
+   "step": 7,
+   "why": "never filled",
+   "r": null,
+   "usd": null,
+   "would_usd": null,
+   "outcome": "no fill",
+   "like": {
+    "n": 52,
+    "won": 27,
+    "avg_r": 0.04,
+    "on": [
+     "sess",
+     "tdo",
+     "depth_b",
+     "disp_b"
+    ],
+    "words": "NY AM, premium, 1.5+, 1.2+"
+   },
+   "f": {
+    "depth": 3.342,
+    "disp": 1.602,
+    "idm": 2,
+    "vix_band": "VIX 25+",
+    "tdo": "premium",
+    "sb": true,
+    "sess": "NY AM"
+   },
+   "words": "11-20 10:20 short: stopped at step 7 (never filled). setups like it (NY AM, premium, 1.5+, 1.2+) won 27 of 52, avg +0.04R."
+  },
+  {
+   "day": "2026-11-20",
+   "at": "13:20",
+   "side": "LONG",
+   "step": 2,
+   "why": "sweep too shallow",
+   "r": null,
+   "usd": null,
+   "would_usd": null,
+   "outcome": "overlapped",
+   "like": {
+    "n": 22,
+    "won": 11,
+    "avg_r": -0.12,
+    "on": [
+     "sess",
+     "tdo",
+     "depth_b"
+    ],
+    "words": "NY PM, discount, <0.5"
+   },
+   "f": {
+    "depth": 0.393,
+    "disp": 1.022,
+    "idm": 1,
+    "vix_band": "VIX 25+",
+    "tdo": "discount",
+    "sb": false,
+    "sess": "NY PM"
+   },
+   "words": "11-20 13:20 long: stopped at step 2 (sweep too shallow). setups like it (NY PM, discount, <0.5) won 11 of 22, avg -0.12R."
+  },
+  {
+   "day": "2026-11-20",
+   "at": "15:50",
+   "side": "LONG",
+   "step": 0,
+   "why": "outside hours",
+   "r": null,
+   "usd": null,
+   "would_usd": null,
+   "outcome": "overlapped",
+   "like": {
+    "n": 20,
+    "won": 12,
+    "avg_r": -0.07,
+    "on": [
+     "sess",
+     "tdo",
+     "depth_b",
+     "disp_b"
+    ],
+    "words": "NY PM, discount, 1.5+, 1.2+"
+   },
+   "f": {
+    "depth": 4.379,
+    "disp": 1.72,
+    "idm": 0,
+    "vix_band": "VIX 25+",
+    "tdo": "discount",
+    "sb": false,
+    "sess": "NY PM"
+   },
+   "words": "11-20 15:50 long: stopped at step 0 (outside hours). setups like it (NY PM, discount, 1.5+, 1.2+) won 12 of 20, avg -0.07R."
+  }
+ ],
+ "suggestions": [
+  {
+   "name": "disp_0.6",
+   "words": "displacement >= 0.6 ATR (looser)",
+   "status": "watching",
+   "already_tested": [
+    "line 20: - **More trades: frequency vs edge (2026-11-25, `more-trades-2026-11-25.md`, `research/moretrades/`, pre-regis"
+   ],
+   "delta": {
+    "H1": {
+     "net": 1615,
+     "pf": 4.55,
+     "pf_live": 4.98,
+     "tpw": 3.67
+    },
+    "H2": {
+     "net": -3413,
+     "pf": 1.69,
+     "pf_live": 2.49,
+     "tpw": 3.53
+    },
+    "2026": {
+     "net": -1798,
+     "pf": 3.27,
+     "pf_live": 3.94,
+     "tpw": 3.62
+    },
+    "2021-25": {
+     "net": -16195,
+     "pf": 0.88,
+     "pf_live": 1.01,
+     "tpw": 2.79
+    }
+   },
+   "walk": [
+    [
+     "2021",
+     -2034
+    ],
+    [
+     "2022",
+     -10329
+    ],
+    [
+     "2023",
+     -1314
+    ],
+    [
+     "2024",
+     -1617
+    ],
+    [
+     "2025",
+     -900
+    ],
+    [
+     "2026 H1",
+     1615
+    ],
+    [
+     "2026 H2",
+     -3413
+    ]
+   ],
+   "walk_wins": 1,
+   "gates": {
+    "pick_h1": false,
+    "check_jul_oct": false,
+    "y2021_25": false,
+    "walk_forward": false,
+    "trades_week": true
+   },
+   "pass": false
+  },
+  {
+   "name": "disp_1.0",
+   "words": "displacement >= 1.0 ATR (stricter)",
+   "status": "watching",
+   "already_tested": [
+    "line 200: re-fit disp 0.7/0.8/0.9 x BE 1R/1.5R/off x bank 5/8/12R (27) every month / quarter on the trailing 6 / 12 mont"
+   ],
+   "delta": {
+    "H1": {
+     "net": -10211,
+     "pf": 4.61,
+     "pf_live": 4.98,
+     "tpw": 2.42
+    },
+    "H2": {
+     "net": -6672,
+     "pf": 1.53,
+     "pf_live": 2.49,
+     "tpw": 2.31
+    },
+    "2026": {
+     "net": -16883,
+     "pf": 3.35,
+     "pf_live": 3.94,
+     "tpw": 2.38
+    },
+    "2021-25": {
+     "net": -14512,
+     "pf": 0.83,
+     "pf_live": 1.01,
+     "tpw": 1.81
+    }
+   },
+   "walk": [
+    [
+     "2021",
+     1203
+    ],
+    [
+     "2022",
+     -4922
+    ],
+    [
+     "2023",
+     -1807
+    ],
+    [
+     "2024",
+     -6371
+    ],
+    [
+     "2025",
+     -2615
+    ],
+    [
+     "2026 H1",
+     -10211
+    ],
+    [
+     "2026 H2",
+     -6672
+    ]
+   ],
+   "walk_wins": 1,
+   "gates": {
+    "pick_h1": false,
+    "check_jul_oct": false,
+    "y2021_25": false,
+    "walk_forward": false,
+    "trades_week": true
+   },
+   "pass": false
+  },
+  {
+   "name": "depth_0.3",
+   "words": "sweep >= 0.3 ATR (looser)",
+   "status": "watching",
+   "already_tested": [
+    "line 20: - **More trades: frequency vs edge (2026-11-25, `more-trades-2026-11-25.md`, `research/moretrades/`, pre-regis"
+   ],
+   "delta": {
+    "H1": {
+     "net": 1,
+     "pf": 4.98,
+     "pf_live": 4.98,
+     "tpw": 3.16
+    },
+    "H2": {
+     "net": -617,
+     "pf": 2.36,
+     "pf_live": 2.49,
+     "tpw": 3.01
+    },
+    "2026": {
+     "net": -616,
+     "pf": 3.87,
+     "pf_live": 3.94,
+     "tpw": 3.11
+    },
+    "2021-25": {
+     "net": -1337,
+     "pf": 1.0,
+     "pf_live": 1.01,
+     "tpw": 2.43
+    }
+   },
+   "walk": [
+    [
+     "2021",
+     0
+    ],
+    [
+     "2022",
+     -485
+    ],
+    [
+     "2023",
+     -1457
+    ],
+    [
+     "2024",
+     -1663
+    ],
+    [
+     "2025",
+     2268
+    ],
+    [
+     "2026 H1",
+     1
+    ],
+    [
+     "2026 H2",
+     -617
+    ]
+   ],
+   "walk_wins": 2,
+   "gates": {
+    "pick_h1": true,
+    "check_jul_oct": false,
+    "y2021_25": false,
+    "walk_forward": false,
+    "trades_week": true
+   },
+   "pass": false
+  },
+  {
+   "name": "depth_0.75",
+   "words": "sweep >= 0.75 ATR (stricter)",
+   "status": "watching",
+   "already_tested": [],
+   "delta": {
+    "H1": {
+     "net": 1029,
+     "pf": 5.66,
+     "pf_live": 4.98,
+     "tpw": 3.01
+    },
+    "H2": {
+     "net": -4,
+     "pf": 2.49,
+     "pf_live": 2.49,
+     "tpw": 2.95
+    },
+    "2026": {
+     "net": 1025,
+     "pf": 4.24,
+     "pf_live": 3.94,
+     "tpw": 2.99
+    },
+    "2021-25": {
+     "net": -3662,
+     "pf": 0.98,
+     "pf_live": 1.01,
+     "tpw": 2.29
+    }
+   },
+   "walk": [
+    [
+     "2021",
+     504
+    ],
+    [
+     "2022",
+     45
+    ],
+    [
+     "2023",
+     140
+    ],
+    [
+     "2024",
+     -3437
+    ],
+    [
+     "2025",
+     -914
+    ],
+    [
+     "2026 H1",
+     1029
+    ],
+    [
+     "2026 H2",
+     -4
+    ]
+   ],
+   "walk_wins": 4,
+   "gates": {
+    "pick_h1": true,
+    "check_jul_oct": false,
+    "y2021_25": false,
+    "walk_forward": false,
+    "trades_week": true
+   },
+   "pass": false
+  },
+  {
+   "name": "no_idm",
+   "words": "no inducement needed",
+   "status": "watching",
+   "already_tested": [
+    "line 20: - **More trades: frequency vs edge (2026-11-25, `more-trades-2026-11-25.md`, `research/moretrades/`, pre-regis",
+    "line 215: held in both periods. \"No inducement\" looked better, but the sample is thin."
+   ],
+   "delta": {
+    "H1": {
+     "net": -4567,
+     "pf": 3.5,
+     "pf_live": 4.98,
+     "tpw": 3.48
+    },
+    "H2": {
+     "net": -3693,
+     "pf": 1.52,
+     "pf_live": 2.49,
+     "tpw": 3.85
+    },
+    "2026": {
+     "net": -8259,
+     "pf": 2.57,
+     "pf_live": 3.94,
+     "tpw": 3.62
+    },
+    "2021-25": {
+     "net": 90,
+     "pf": 1.01,
+     "pf_live": 1.01,
+     "tpw": 3.12
+    }
+   },
+   "walk": [
+    [
+     "2021",
+     -306
+    ],
+    [
+     "2022",
+     -2323
+    ],
+    [
+     "2023",
+     2992
+    ],
+    [
+     "2024",
+     -3339
+    ],
+    [
+     "2025",
+     3066
+    ],
+    [
+     "2026 H1",
+     -4567
+    ],
+    [
+     "2026 H2",
+     -3693
+    ]
+   ],
+   "walk_wins": 2,
+   "gates": {
+    "pick_h1": false,
+    "check_jul_oct": false,
+    "y2021_25": true,
+    "walk_forward": false,
+    "trades_week": true
+   },
+   "pass": false
+  },
+  {
+   "name": "idm_2",
+   "words": "2 inducements needed",
+   "status": "watching",
+   "already_tested": [],
+   "delta": {
+    "H1": {
+     "net": -19514,
+     "pf": 4.12,
+     "pf_live": 4.98,
+     "tpw": 1.68
+    },
+    "H2": {
+     "net": -4880,
+     "pf": 2.98,
+     "pf_live": 2.49,
+     "tpw": 0.9
+    },
+    "2026": {
+     "net": -24394,
+     "pf": 3.76,
+     "pf_live": 3.94,
+     "tpw": 1.38
+    },
+    "2021-25": {
+     "net": -2105,
+     "pf": 0.98,
+     "pf_live": 1.01,
+     "tpw": 1.02
+    }
+   },
+   "walk": [
+    [
+     "2021",
+     2258
+    ],
+    [
+     "2022",
+     -11644
+    ],
+    [
+     "2023",
+     5195
+    ],
+    [
+     "2024",
+     -1022
+    ],
+    [
+     "2025",
+     3108
+    ],
+    [
+     "2026 H1",
+     -19514
+    ],
+    [
+     "2026 H2",
+     -4880
+    ]
+   ],
+   "walk_wins": 3,
+   "gates": {
+    "pick_h1": false,
+    "check_jul_oct": false,
+    "y2021_25": false,
+    "walk_forward": false,
+    "trades_week": false
+   },
+   "pass": false
+  },
+  {
+   "name": "wait_12",
+   "words": "the limit lives 12 bars (60 min)",
+   "status": "watching",
+   "already_tested": [],
+   "delta": {
+    "H1": {
+     "net": -4,
+     "pf": 4.97,
+     "pf_live": 4.98,
+     "tpw": 3.2
+    },
+    "H2": {
+     "net": -444,
+     "pf": 2.35,
+     "pf_live": 2.49,
+     "tpw": 3.14
+    },
+    "2026": {
+     "net": -448,
+     "pf": 3.85,
+     "pf_live": 3.94,
+     "tpw": 3.18
+    },
+    "2021-25": {
+     "net": -8787,
+     "pf": 0.93,
+     "pf_live": 1.01,
+     "tpw": 2.48
+    }
+   },
+   "walk": [
+    [
+     "2021",
+     0
+    ],
+    [
+     "2022",
+     -4430
+    ],
+    [
+     "2023",
+     -1639
+    ],
+    [
+     "2024",
+     -1245
+    ],
+    [
+     "2025",
+     -1473
+    ],
+    [
+     "2026 H1",
+     -4
+    ],
+    [
+     "2026 H2",
+     -444
+    ]
+   ],
+   "walk_wins": 0,
+   "gates": {
+    "pick_h1": false,
+    "check_jul_oct": false,
+    "y2021_25": false,
+    "walk_forward": false,
+    "trades_week": true
+   },
+   "pass": false
+  },
+  {
+   "name": "cisd1m_15",
+   "words": "1m CISD within 15 bars",
+   "status": "watching",
+   "already_tested": [],
+   "delta": {
+    "H1": {
+     "net": -10565,
+     "pf": 3.76,
+     "pf_live": 4.98,
+     "tpw": 2.93
+    },
+    "H2": {
+     "net": -1504,
+     "pf": 2.3,
+     "pf_live": 2.49,
+     "tpw": 2.76
+    },
+    "2026": {
+     "net": -12068,
+     "pf": 3.17,
+     "pf_live": 3.94,
+     "tpw": 2.86
+    },
+    "2021-25": {
+     "net": -2815,
+     "pf": 0.98,
+     "pf_live": 1.01,
+     "tpw": 2.18
+    }
+   },
+   "walk": [
+    [
+     "2021",
+     400
+    ],
+    [
+     "2022",
+     -2099
+    ],
+    [
+     "2023",
+     2867
+    ],
+    [
+     "2024",
+     -2543
+    ],
+    [
+     "2025",
+     -1440
+    ],
+    [
+     "2026 H1",
+     -10565
+    ],
+    [
+     "2026 H2",
+     -1504
+    ]
+   ],
+   "walk_wins": 2,
+   "gates": {
+    "pick_h1": false,
+    "check_jul_oct": false,
+    "y2021_25": false,
+    "walk_forward": false,
+    "trades_week": true
+   },
+   "pass": false
+  },
+  {
+   "name": "two_a_day",
+   "words": "a 2nd trade a day",
+   "status": "watching",
+   "already_tested": [
+    "line 20: - **More trades: frequency vs edge (2026-11-25, `more-trades-2026-11-25.md`, `research/moretrades/`, pre-regis",
+    "line 224: continuation / flip 2nd trade, costs inside the $800, Berlin-time London boxes (no 2026 change, 2021-25 +$5.8k",
+    "line 315: (30 trades, -3.35R); a 2nd trade a day re-run (H1 -$1.0k..-5.0k); funded $2,000 cap as a take-profit (-$37 / -"
+   ],
+   "delta": {
+    "H1": {
+     "net": -4958,
+     "pf": 3.53,
+     "pf_live": 4.98,
+     "tpw": 3.87
+    },
+    "H2": {
+     "net": 2565,
+     "pf": 2.52,
+     "pf_live": 2.49,
+     "tpw": 3.65
+    },
+    "2026": {
+     "net": -2393,
+     "pf": 3.12,
+     "pf_live": 3.94,
+     "tpw": 3.79
+    },
+    "2021-25": {
+     "net": -5626,
+     "pf": 0.96,
+     "pf_live": 1.01,
+     "tpw": 2.8
+    }
+   },
+   "walk": [
+    [
+     "2021",
+     775
+    ],
+    [
+     "2022",
+     -2842
+    ],
+    [
+     "2023",
+     -227
+    ],
+    [
+     "2024",
+     429
+    ],
+    [
+     "2025",
+     -3760
+    ],
+    [
+     "2026 H1",
+     -4958
+    ],
+    [
+     "2026 H2",
+     2565
+    ]
+   ],
+   "walk_wins": 3,
+   "gates": {
+    "pick_h1": false,
+    "check_jul_oct": true,
+    "y2021_25": false,
+    "walk_forward": false,
+    "trades_week": true
+   },
+   "pass": false
+  },
+  {
+   "name": "no_monday",
+   "words": "no Monday rule",
+   "status": "watching",
+   "already_tested": [
+    "line 29: after a STOP (any / same side / opposite / 30-min cool-off / same level re-swept same session), after BE / TAR",
+    "line 382: CISD window doubled, 00:00-15:55, min target 1.0R, stop 4-120, Monday rule off): none adds money in H1. Loser "
+   ],
+   "delta": {
+    "H1": {
+     "net": -2113,
+     "pf": 4.42,
+     "pf_live": 4.98,
+     "tpw": 3.32
+    },
+    "H2": {
+     "net": -302,
+     "pf": 2.37,
+     "pf_live": 2.49,
+     "tpw": 3.21
+    },
+    "2026": {
+     "net": -2415,
+     "pf": 3.58,
+     "pf_live": 3.94,
+     "tpw": 3.28
+    },
+    "2021-25": {
+     "net": 3749,
+     "pf": 1.05,
+     "pf_live": 1.01,
+     "tpw": 2.5
+    }
+   },
+   "walk": [
+    [
+     "2021",
+     -132
+    ],
+    [
+     "2022",
+     -310
+    ],
+    [
+     "2023",
+     1344
+    ],
+    [
+     "2024",
+     -39
+    ],
+    [
+     "2025",
+     2885
+    ],
+    [
+     "2026 H1",
+     -2113
+    ],
+    [
+     "2026 H2",
+     -302
+    ]
+   ],
+   "walk_wins": 2,
+   "gates": {
+    "pick_h1": false,
+    "check_jul_oct": false,
+    "y2021_25": true,
+    "walk_forward": false,
+    "trades_week": true
+   },
+   "pass": false
+  },
+  {
+   "name": "sb_only",
+   "words": "only Silver Bullet hours (03-04, 10-11, 14-15 ET)",
+   "status": "watching",
+   "already_tested": [
+    "line 206: - Published models as taught: ICT 2022, Silver Bullet, Mech/IFVG, continuation, ATM 5m/1m with a sharp V (0.2\u2013",
+    "line 439: `research/lab/popular_ict.json`, rules pre-registered in `research/writeups/specs/popular-ict-2026-11-23.md`):",
+    "line 451: Silver Bullet 03 / 10 / 14, Judas, PO3, SMT NQ-ES (2025-04+), IPDA 20/40/60, PDH/PDL draw, NWOG/NDOG, OTE, kil"
+   ],
+   "delta": {
+    "H1": {
+     "net": -29754,
+     "pf": 2.43,
+     "pf_live": 4.98,
+     "tpw": 0.74
+    },
+    "H2": {
+     "net": -9139,
+     "pf": 0.96,
+     "pf_live": 2.49,
+     "tpw": 0.64
+    },
+    "2026": {
+     "net": -38893,
+     "pf": 1.82,
+     "pf_live": 3.94,
+     "tpw": 0.7
+    },
+    "2021-25": {
+     "net": -3346,
+     "pf": 0.93,
+     "pf_live": 1.01,
+     "tpw": 0.76
+    }
+   },
+   "walk": [
+    [
+     "2021",
+     3056
+    ],
+    [
+     "2022",
+     -12239
+    ],
+    [
+     "2023",
+     2247
+    ],
+    [
+     "2024",
+     9884
+    ],
+    [
+     "2025",
+     -6295
+    ],
+    [
+     "2026 H1",
+     -29754
+    ],
+    [
+     "2026 H2",
+     -9139
+    ]
+   ],
+   "walk_wins": 3,
+   "gates": {
+    "pick_h1": false,
+    "check_jul_oct": false,
+    "y2021_25": false,
+    "walk_forward": false,
+    "trades_week": false
+   },
+   "pass": false
+  },
+  {
+   "name": "tdo_side",
+   "words": "only on the True Day Open side (longs below, shorts above)",
+   "status": "watching",
+   "already_tested": [
+    "line 450: `research/ictlab/`, rules pre-registered in `research/ictlab/DESIGN.md`):** Quarterly Theory (TDO / TSO / 90 /",
+    "line 456: fail rate: LIT x1.5 on the True Day Open side (+$27.8k, 2026 eval fail 1% -> 20%) and ATLAS x1.5 in SB hours (",
+    "line 458: Proof follow-up the same day (`ict-lab-proof-2026-11-25.md`, real engine rank.py/onebook, 1,000 paths): LIT x0"
+   ],
+   "delta": {
+    "H1": {
+     "net": -7708,
+     "pf": 4.39,
+     "pf_live": 4.98,
+     "tpw": 2.7
+    },
+    "H2": {
+     "net": -2344,
+     "pf": 2.34,
+     "pf_live": 2.49,
+     "tpw": 2.24
+    },
+    "2026": {
+     "net": -10051,
+     "pf": 3.58,
+     "pf_live": 3.94,
+     "tpw": 2.52
+    },
+    "2021-25": {
+     "net": 4133,
+     "pf": 1.07,
+     "pf_live": 1.01,
+     "tpw": 1.74
+    }
+   },
+   "walk": [
+    [
+     "2021",
+     2954
+    ],
+    [
+     "2022",
+     -1847
+    ],
+    [
+     "2023",
+     740
+    ],
+    [
+     "2024",
+     5431
+    ],
+    [
+     "2025",
+     -3145
+    ],
+    [
+     "2026 H1",
+     -7708
+    ],
+    [
+     "2026 H2",
+     -2344
+    ]
+   ],
+   "walk_wins": 3,
+   "gates": {
+    "pick_h1": false,
+    "check_jul_oct": false,
+    "y2021_25": true,
+    "walk_forward": false,
+    "trades_week": true
+   },
+   "pass": false
+  },
+  {
+   "name": "skip_vix25",
+   "words": "no trade when the prior VIX close >= 25",
+   "status": "watching",
+   "already_tested": [
+    "line 11: - **LIT high-VIX downtrend (2026-11-24, `lit-vix-downtrend-2026-11-24.md`, `research/litvix/`, pre-registered "
+   ],
+   "delta": {
+    "H1": {
+     "net": -4065,
+     "pf": 4.58,
+     "pf_live": 4.98,
+     "tpw": 2.89
+    },
+    "H2": {
+     "net": 0,
+     "pf": 2.49,
+     "pf_live": 2.49,
+     "tpw": 3.01
+    },
+    "2026": {
+     "net": -4065,
+     "pf": 3.7,
+     "pf_live": 3.94,
+     "tpw": 2.94
+    },
+    "2021-25": {
+     "net": -10009,
+     "pf": 0.91,
+     "pf_live": 1.01,
+     "tpw": 2.06
+    }
+   },
+   "walk": [
+    [
+     "2021",
+     351
+    ],
+    [
+     "2022",
+     -11370
+    ],
+    [
+     "2023",
+     222
+    ],
+    [
+     "2024",
+     655
+    ],
+    [
+     "2025",
+     133
+    ],
+    [
+     "2026 H1",
+     -4065
+    ],
+    [
+     "2026 H2",
+     0
+    ]
+   ],
+   "walk_wins": 4,
+   "gates": {
+    "pick_h1": false,
+    "check_jul_oct": false,
+    "y2021_25": false,
+    "walk_forward": false,
+    "trades_week": true
+   },
+   "pass": false
+  }
+ ],
+ "variants_tested": 13,
+ "note": "Research only. A suggestion goes live only after the owner says yes AND the full CLAUDE.md proof is re-run by hand."
+}

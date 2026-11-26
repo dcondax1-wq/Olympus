@@ -18,7 +18,10 @@ _No period table published for this one yet; see the write-ups._
 
 ## Tested and rejected
 
-_Nothing on the rejected list names this one yet._
+> [!failure]- BLITZ v2 rebuild
+> 8 structural versions (noise-area band/VWAP exit, no time exit, cost gate stop >= 0.25% of price, opening-drive checks, limit at the band, first break only, 2 combos) vs today $912 / $688 / $89 a month (H1 / Jul-Nov / 2021-25). Best = V1 noise-area exit: 2021-25 PF 1.34, $352/mo, every year +, walk-forward 14/19, but 2026 $671 / $231 and on the shared 50K with LIT + ATLAS the 2026 pass falls 95 -> 87 / 88 -> 82. BLITZ today on the shared 50K: Jul-Nov pass 88.2 -> 82.5. Correlation ~0 does not help. 25K at $400: fail 43-76%; Rapid pass 0-28%. Verdict: retire BLITZ as a pillar; V1 is the only base worth reviving.
+> Write-ups: [[blitz-v2-2026-11-26|BLITZ v2]]
+
 
 ## Write-ups
 

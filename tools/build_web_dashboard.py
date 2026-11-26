@@ -1332,6 +1332,13 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     if n_rc:
         print(f"  recaps: {n_rc} PNGs -> recaps/")
     # the money machines (tools/money_engine.py + tools/money_publish.py, 2026-11-10): paper/sample output published to <site>/money/ so
+    # site5 2026-11-26: the Money view forecast + strategy health bands (trading/bands.json, business/forecast.json); never fatal
+    try:
+        import subprocess
+        rmh = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "build_money_health.py")], capture_output=True, text=True, timeout=120)
+        print(f"  money/health: rc={rmh.returncode}")
+    except Exception as e:  # noqa: BLE001
+        print(f"  money/health: skipped ({e})")
     # Mint, Stoa, Mint City and the five scanner pages never open blank. Never fatal: a failure only leaves their own fixtures in use.
     try:
         import subprocess, tempfile
