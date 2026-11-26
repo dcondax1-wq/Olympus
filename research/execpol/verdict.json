@@ -1,0 +1,270 @@
+{
+ "ATLAS": {
+  "HYB-2": {
+   "1_beats_mkt_all_spans": false,
+   "2a_beats_at_half_slip": false,
+   "2b_next_within_10pct": false,
+   "3_missed_winners_le_25pct": true,
+   "adopt": false,
+   "gain_vs_mkt_usd": {
+    "2026 H1": 2315,
+    "2026 Jul-Oct": -1290,
+    "2021-25": 23704
+   }
+  },
+  "LIM0-1": {
+   "1_beats_mkt_all_spans": false,
+   "2a_beats_at_half_slip": false,
+   "2b_next_within_10pct": false,
+   "3_missed_winners_le_25pct": true,
+   "adopt": false,
+   "gain_vs_mkt_usd": {
+    "2026 H1": 1165,
+    "2026 Jul-Oct": -1227,
+    "2021-25": 21783
+   }
+  },
+  "LIM0-15": {
+   "1_beats_mkt_all_spans": false,
+   "2a_beats_at_half_slip": false,
+   "2b_next_within_10pct": false,
+   "3_missed_winners_le_25pct": true,
+   "adopt": false,
+   "gain_vs_mkt_usd": {
+    "2026 H1": 2242,
+    "2026 Jul-Oct": -658,
+    "2021-25": 22857
+   }
+  },
+  "LIM0-2": {
+   "1_beats_mkt_all_spans": false,
+   "2a_beats_at_half_slip": false,
+   "2b_next_within_10pct": false,
+   "3_missed_winners_le_25pct": true,
+   "adopt": false,
+   "gain_vs_mkt_usd": {
+    "2026 H1": 2793,
+    "2026 Jul-Oct": -1227,
+    "2021-25": 21783
+   }
+  },
+  "LIM0-5": {
+   "1_beats_mkt_all_spans": false,
+   "2a_beats_at_half_slip": false,
+   "2b_next_within_10pct": false,
+   "3_missed_winners_le_25pct": true,
+   "adopt": false,
+   "gain_vs_mkt_usd": {
+    "2026 H1": 2266,
+    "2026 Jul-Oct": -1524,
+    "2021-25": 21783
+   }
+  },
+  "LIMb2-5": {
+   "1_beats_mkt_all_spans": false,
+   "2a_beats_at_half_slip": false,
+   "2b_next_within_10pct": false,
+   "3_missed_winners_le_25pct": true,
+   "adopt": false,
+   "gain_vs_mkt_usd": {
+    "2026 H1": -1343,
+    "2026 Jul-Oct": -1363,
+    "2021-25": 25875
+   }
+  },
+  "LIMb4-5": {
+   "1_beats_mkt_all_spans": false,
+   "2a_beats_at_half_slip": false,
+   "2b_next_within_10pct": false,
+   "3_missed_winners_le_25pct": true,
+   "adopt": false,
+   "gain_vs_mkt_usd": {
+    "2026 H1": -1852,
+    "2026 Jul-Oct": -1206,
+    "2021-25": 30423
+   }
+  },
+  "ML2": {
+   "1_beats_mkt_all_spans": false,
+   "2a_beats_at_half_slip": false,
+   "2b_next_within_10pct": false,
+   "3_missed_winners_le_25pct": true,
+   "adopt": false,
+   "gain_vs_mkt_usd": {
+    "2026 H1": 1891,
+    "2026 Jul-Oct": -1684,
+    "2021-25": 16143
+   }
+  },
+  "ML4": {
+   "1_beats_mkt_all_spans": false,
+   "2a_beats_at_half_slip": false,
+   "2b_next_within_10pct": false,
+   "3_missed_winners_le_25pct": true,
+   "adopt": false,
+   "gain_vs_mkt_usd": {
+    "2026 H1": 1496,
+    "2026 Jul-Oct": -1845,
+    "2021-25": 10504
+   }
+  },
+  "ML8": {
+   "1_beats_mkt_all_spans": false,
+   "2a_beats_at_half_slip": false,
+   "2b_next_within_10pct": false,
+   "3_missed_winners_le_25pct": true,
+   "adopt": false,
+   "gain_vs_mkt_usd": {
+    "2026 H1": 400,
+    "2026 Jul-Oct": -2174,
+    "2021-25": -774
+   }
+  },
+  "PB-5": {
+   "1_beats_mkt_all_spans": false,
+   "2a_beats_at_half_slip": false,
+   "2b_next_within_10pct": true,
+   "3_missed_winners_le_25pct": false,
+   "adopt": false,
+   "gain_vs_mkt_usd": {
+    "2026 H1": 709,
+    "2026 Jul-Oct": -230,
+    "2021-25": 32848
+   }
+  }
+ },
+ "LIT": {
+  "HYB-2": {
+   "1_beats_mkt_all_spans": false,
+   "2a_beats_at_half_slip": false,
+   "2b_next_within_10pct": false,
+   "3_missed_winners_le_25pct": true,
+   "adopt": false,
+   "gain_vs_mkt_usd": {
+    "2026 H1": -3191,
+    "2026 Jul-Oct": 92,
+    "2021-25": -8064
+   }
+  },
+  "LIM0-1": {
+   "1_beats_mkt_all_spans": false,
+   "2a_beats_at_half_slip": false,
+   "2b_next_within_10pct": false,
+   "3_missed_winners_le_25pct": false,
+   "adopt": false,
+   "gain_vs_mkt_usd": {
+    "2026 H1": -11130,
+    "2026 Jul-Oct": -1548,
+    "2021-25": -7503
+   }
+  },
+  "LIM0-15": {
+   "1_beats_mkt_all_spans": false,
+   "2a_beats_at_half_slip": false,
+   "2b_next_within_10pct": false,
+   "3_missed_winners_le_25pct": true,
+   "adopt": false,
+   "gain_vs_mkt_usd": {
+    "2026 H1": -3693,
+    "2026 Jul-Oct": -311,
+    "2021-25": -5249
+   }
+  },
+  "LIM0-2": {
+   "1_beats_mkt_all_spans": false,
+   "2a_beats_at_half_slip": false,
+   "2b_next_within_10pct": false,
+   "3_missed_winners_le_25pct": true,
+   "adopt": false,
+   "gain_vs_mkt_usd": {
+    "2026 H1": -4250,
+    "2026 Jul-Oct": -1548,
+    "2021-25": -7503
+   }
+  },
+  "LIM0-5": {
+   "1_beats_mkt_all_spans": false,
+   "2a_beats_at_half_slip": false,
+   "2b_next_within_10pct": false,
+   "3_missed_winners_le_25pct": true,
+   "adopt": false,
+   "gain_vs_mkt_usd": {
+    "2026 H1": -4608,
+    "2026 Jul-Oct": -311,
+    "2021-25": -7503
+   }
+  },
+  "LIMb2-5": {
+   "1_beats_mkt_all_spans": false,
+   "2a_beats_at_half_slip": false,
+   "2b_next_within_10pct": false,
+   "3_missed_winners_le_25pct": true,
+   "adopt": false,
+   "gain_vs_mkt_usd": {
+    "2026 H1": -4562,
+    "2026 Jul-Oct": -722,
+    "2021-25": -4430
+   }
+  },
+  "LIMb4-5": {
+   "1_beats_mkt_all_spans": false,
+   "2a_beats_at_half_slip": false,
+   "2b_next_within_10pct": false,
+   "3_missed_winners_le_25pct": false,
+   "adopt": false,
+   "gain_vs_mkt_usd": {
+    "2026 H1": -9319,
+    "2026 Jul-Oct": -1793,
+    "2021-25": -2821
+   }
+  },
+  "ML2": {
+   "1_beats_mkt_all_spans": false,
+   "2a_beats_at_half_slip": false,
+   "2b_next_within_10pct": true,
+   "3_missed_winners_le_25pct": true,
+   "adopt": false,
+   "gain_vs_mkt_usd": {
+    "2026 H1": 0,
+    "2026 Jul-Oct": 0,
+    "2021-25": 0
+   }
+  },
+  "ML4": {
+   "1_beats_mkt_all_spans": false,
+   "2a_beats_at_half_slip": false,
+   "2b_next_within_10pct": true,
+   "3_missed_winners_le_25pct": true,
+   "adopt": false,
+   "gain_vs_mkt_usd": {
+    "2026 H1": 0,
+    "2026 Jul-Oct": 0,
+    "2021-25": 0
+   }
+  },
+  "ML8": {
+   "1_beats_mkt_all_spans": false,
+   "2a_beats_at_half_slip": false,
+   "2b_next_within_10pct": true,
+   "3_missed_winners_le_25pct": true,
+   "adopt": false,
+   "gain_vs_mkt_usd": {
+    "2026 H1": 0,
+    "2026 Jul-Oct": 0,
+    "2021-25": 0
+   }
+  },
+  "PB-5": {
+   "1_beats_mkt_all_spans": false,
+   "2a_beats_at_half_slip": false,
+   "2b_next_within_10pct": false,
+   "3_missed_winners_le_25pct": false,
+   "adopt": false,
+   "gain_vs_mkt_usd": {
+    "2026 H1": -7825,
+    "2026 Jul-Oct": -376,
+    "2021-25": 6114
+   }
+  }
+ }
+}
