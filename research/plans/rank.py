@@ -123,7 +123,7 @@ def spec(plan):
     ec["_dll"] = min(E["dll"], soft)
     F = {**F, "dll": min(F["dll"], soft), "stuck": 200.0 if big else 100.0}
     if plan.startswith("mffu_rapid"):
-        F["cycle_min"] = max(F["cycle_min"], 500.0 if big else 250.0)   # >= $500 / $250 net since the last payout
+        F["cycle_min"] = max(F["cycle_min"], 500.0 if big else 250.0)   # >= $500 / $250 net since the last payout (MFFU's Rapid EOD pages, confirmed 2026-11-26)
         F["keep"] = 1000.0 if big else 500.0                            # the bot's own Rapid rule (engine/rapid.py CUSHION)
     ask = "cap" if F["cap1"] < 1e8 else F["pay_min"]
     z = RL.Z(ATLAS=500 if big else 250)

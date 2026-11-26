@@ -97,6 +97,25 @@ def main() -> int:
         on = json.load(open(os.path.join(out, "entries.json")))
         check("entries.json: no account name beyond the masked '...1234', no balance field",
               all(x["acct"] == "...1234" for x in on["trades"]) and "balance" not in json.dumps(on))
+    # the PC hook: weekdays from 17:20 ET, once a day, into its own (gitignored) folder; never raises
+    import datetime as dt
+    from zoneinfo import ZoneInfo
+    ET = ZoneInfo("America/New_York")
+    with tempfile.TemporaryDirectory() as d:
+        sp, od = os.path.join(d, "state.json"), os.path.join(d, "journal")
+        t_early = dt.datetime(2026, 11, 24, 17, 0, tzinfo=ET).timestamp()
+        t_ok = dt.datetime(2026, 11, 24, 17, 25, tzinfo=ET).timestamp()
+        t_sat = dt.datetime(2026, 11, 28, 18, 0, tzinfo=ET).timestamp()
+        r0 = J.maybe_run(t_early, sp, od)
+        r1 = J.maybe_run(t_ok, sp, od)
+        r2 = J.maybe_run(t_ok + 900, sp, od)
+        r3 = J.maybe_run(t_sat, sp, od)
+        check("PC hook: not before 17:20 ET, once a weekday (state file), never on a weekend, writes into its own folder",
+              r0 is None and r1 is not None and r1.get("day") == "2026-11-24" and r2 is None and r3 is None
+              and os.path.exists(os.path.join(od, "entries.json")), (r0, r1, r2, r3))
+    gi = open(os.path.join(ROOT, ".gitignore")).read()
+    check("data/journal/ and data/journal_build.json are gitignored (a tracked change would block the PC's auto-update)",
+          "data/journal/" in gi and "data/journal_build.json" in gi)
     fails = [n for n, ok in RES if not ok]
     print(f"\n{len(RES) - len(fails)}/{len(RES)} OK" + (f"  FAIL: {fails}" if fails else ""))
     return 1 if fails else 0

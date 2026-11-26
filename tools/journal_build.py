@@ -20,6 +20,7 @@ entry = {id, bot, acct, mode, day, week, entry_et, exit_et, side, qty, entry, st
          mfe_r, mae_r, held_min, exit, setup: [steps], why: [reasons], tags: {session, vix, tdo, sb_hour, weekday}, chart}
 
     python -X utf8 tools/journal_build.py                 # build from what this machine has
+    PC: tools/pc_report.py runs maybe_run() every 15 min -> once a weekday from 17:20 ET into data/journal/ (gitignored; LE_JOURNAL=0 off)
     python -X utf8 tools/journal_build.py --all           # include paper trades
     python -X utf8 tools/journal_build.py --rows f.jsonl --bars data/NQ_1m.csv --out <dir>   (tests / a one-off file)
 Tests: python -X utf8 -m tests.test_journal_build
@@ -46,6 +47,9 @@ import pngchart  # noqa: E402
 ET = ZoneInfo("America/New_York")
 OUT_DIR = os.path.join(ROOT, "tools", "web_public", "journal")
 WEEK_DIR = os.path.join(ROOT, "research", "journal")
+PC_DIR = os.path.join(ROOT, "data", "journal")             # gitignored: the PC's nightly build (a tracked-file change would block auto-update)
+STATE = os.path.join(ROOT, "data", "journal_build.json")   # gitignored: {"day", "t", "n", "error"}
+RUN_FROM = 17 * 60 + 20                                     # ET minutes, weekdays: after engine/datapipe's 17:05 pack
 PV, COMM = 2.0, 1.90                     # MNQ $ a point, $ a micro round trip
 VIXB = ((0, 15, "<15"), (15, 18, "15-18"), (18, 22, "18-22"), (22, 999, "22+"))
 VERSION = 1
@@ -397,6 +401,42 @@ def build(rows_file=None, bars_path=None, out_dir=OUT_DIR, week_dir=WEEK_DIR, in
         json.dump(doc, fh, indent=1)
     os.replace(tmp, os.path.join(out_dir, "entries.json"))
     return doc
+
+
+def due(now, path: str | None = None) -> bool:
+    e = dt.datetime.fromtimestamp(now, ET)
+    if e.weekday() >= 5 or e.hour * 60 + e.minute < RUN_FROM:
+        return False
+    try:
+        with open(path or STATE, encoding="utf-8") as fh:
+            st = json.load(fh)
+    except Exception:
+        st = {}
+    return st.get("day") != e.date().isoformat()
+
+
+def maybe_run(now=None, state_path: str | None = None, out_dir: str | None = None) -> dict | None:
+    """tools/pc_report.py's hook (the PC's 15-minute task): once a weekday from 17:20 ET, after the data pipe's 17:05 pack, the
+    journal of every real trade into data/journal/ (entries.json, charts/, weeks/; gitignored). Read-only, never raises."""
+    import time as _time
+    try:
+        now = _time.time() if now is None else now
+        if os.environ.get("LE_JOURNAL") == "0" or os.environ.get("LE_SELFTEST_CHILD") == "1" or not due(now, state_path):
+            return None
+        od = out_dir or PC_DIR
+        try:
+            doc = build(None, None, od, os.path.join(od, "weeks"))
+            st = {"day": dt.datetime.fromtimestamp(now, ET).date().isoformat(), "t": int(now), "n": doc["n"], "weeks": len(doc["weeks"])}
+        except Exception as e:
+            st = {"day": dt.datetime.fromtimestamp(now, ET).date().isoformat(), "t": int(now), "n": None,
+                  "error": f"{e.__class__.__name__}: {str(e)[:160]}"}
+        p = state_path or STATE
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        with open(p, "w", encoding="utf-8") as fh:
+            json.dump(st, fh)
+        return st
+    except Exception:
+        return None
 
 
 def main(argv=None) -> int:

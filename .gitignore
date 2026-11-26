@@ -365,3 +365,6 @@ data/tg_cmd.json.*.tmp
 # day-noleak 2026-11-26: this machine is the owner's PC (engine/pc_identity.py); per-PC, never committed
 data/pc_identity.json
 data/pc_identity.json.tmp
+# day-batch7 2026-11-26: the PC's nightly trade journal (tools/journal_build.py maybe_run)
+data/journal/
+data/journal_build.json
