@@ -16,7 +16,8 @@ and the allowlist (engine/ninjatrader._live_gate).
 
 What runs on the funded 25K (the same pattern as engine/rapid.py, LIT + ATLAS on one account):
   LIT lane    an engine/multi_account extra account (preset mffu_builder_25k, mode funded, id/lane "lit25", the funded
-              start / payouts / prior of ATLAS's block): the 25K funded rule (60% of the room, <= $750, a winner <= $1,000),
+              start / payouts / prior of ATLAS's block): the 25K funded rule at ATLAS's funded room share (account_b
+              FUNDED_ON 40%, owner YES 2026-11-20; the preset's 60% only when that switch is off), <= $750, a winner <= $1,000,
               no extra day guard (= the research's funded_qty).
   ATLAS       SharedAtlas below = engine/account_b.AccountB (its own state, order tag "acctb_", payout tracker) with:
               $ risk = min($250, 30% of the room, the soft day left), micros = $ / one full stop-out (stop + 1 tick, $1.90),
@@ -111,6 +112,9 @@ def lane_spec(spec: dict, cfg: dict | None = None) -> dict:
          "eval_prior_pnl": float(F.get("prior") or 0.0),
          "funded": {"start": F.get("start") or "", "payouts": dict(F.get("payouts") or {})},
          "lit_sizing": {"guard": None}}
+    fp = spec.get("funded_room_pct")            # day-alloc 2026-11-26 (lead): the lane follows ATLAS's owner-approved funded room
+    if fp is not None:                          # share (account_b FUNDED_ON 40%, owner YES 2026-11-20), never above the preset's 60%
+        s["lit_sizing"]["funded"] = {"pct": min(0.6, float(fp))}
     if armed and cfg.get("confirm"):
         s["confirm"] = cfg["confirm"]           # the phrase typed at this start, in memory only
     return s

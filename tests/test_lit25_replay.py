@@ -120,6 +120,9 @@ def main(argv=None) -> int:
             lit_e, lane_e, atl_e = entries(b, day), entries(L, day) if L else [], entries(A, day)
             n_lit, n_lane, n_atlas = n_lit + len(lit_e), n_lane + len(lane_e), n_atlas + len(atl_e)
             check(f"{day} ON: LIT lane + SharedAtlas on {NAME}", ok_cfg, (L and L.problem, getattr(A, "problem", None), type(A).__name__))
+            check(f"{day} ON: the lane sizes at ATLAS's 40% funded room (owner's FUNDED_ON), not the preset's 60%",
+                  L is not None and ((L.spec.get("lit_sizing") or {}).get("funded") or {}).get("pct") == 0.4,
+                  L and L.spec.get("lit_sizing"))
             check(f"{day} ON: never both lanes holding on {NAME} at one poll; no entry while the other is open (ledger order)",
                   not both and not order_bad([o for o in (L, A) if o is not None]), (both[:3], order_bad([o for o in (L, A) if o is not None])[:3]))
             check(f"{day} ON: every LIT-lane entry is one of LIT's own entries ({len(lane_e)} lane / {len(lit_e)} LIT)",
