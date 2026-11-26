@@ -133,9 +133,10 @@ class BridgeClient:
 
 
 class NtSocketAdapter(NinjaTraderAdapter):
-    name = "nt-socket"
+    name = "ninjatrader"               # the same adapter to the rest of the bot (ledgers, checks); only the transport differs
+    transport = "socket"
 
-    def __init__(self, cfg: dict | None = None, readonly: bool = False, clock=None, client: BridgeClient | None = None):
+    def __init__(self, cfg: dict | None = None, readonly: bool = False, clock=None, client: BridgeClient | None = None):  # noqa: D401
         cfg = dict(cfg or {})
         self.client = client or BridgeClient(cfg.get("bridge_host") or HOST, cfg.get("bridge_port"),
                                              float(cfg.get("bridge_timeout_s", 2.0)))
@@ -226,7 +227,11 @@ class NtSocketAdapter(NinjaTraderAdapter):
                 "rtt_ms": self.client.last_rtt_ms}
 
     def _send_lines(self, lines: list, label: str) -> dict:
-        return self._write_oif(lines, label)
+        t0 = self.clock()
+        r = self._write_oif(lines, label)
+        if r.get("ok"):                                  # latency log: sent and acknowledged in the same request
+            r.update(written_at=t0, picked_at=self.clock())
+        return r
 
     # ------------------------------------------------------------------ transport: read
     def _snapshot(self):
@@ -312,6 +317,27 @@ class NtSocketAdapter(NinjaTraderAdapter):
                         "down_since": self.client.down_since, "rtt_ms_p50": rt[len(rt) // 2] if rt else None,
                         "rtt_ms_p99": rt[int(len(rt) * 0.99)] if rt else None, "paper_only": PAPER_ONLY}
         return st
+
+
+TRANSPORT_ENV = "LE_NT_TRANSPORT"
+
+
+def make_adapter(cfg: dict | None = None, **kw):
+    """engine/live.ADAPTERS["ninjatrader"]: the FILE bridge (NinjaTraderAdapter, today) unless the transport is switched to
+    "socket" (start / account cfg {"nt_transport": "socket"} or env LE_NT_TRANSPORT=socket; default OFF) AND the account is a
+    NinjaTrader simulation account. While PAPER_ONLY a live account always keeps the file bridge, so the switch can never
+    disable a live account."""
+    c = cfg or {}
+    want = str(c.get("nt_transport") or os.environ.get(TRANSPORT_ENV, "") or "file").strip().lower() == "socket"
+    sim = False
+    if want:
+        try:                                             # red team 2026-11-26: an account lookup error never stops the bot from
+            sim = bool(is_sim(nt.resolve_account(c)))    # starting: it means "not proven Sim" = the file bridge, as today
+        except Exception:  # noqa: BLE001
+            sim = False
+    if want and sim:                                     # red team: Sim ONLY, whatever PAPER_ONLY says (a live account never
+        return NtSocketAdapter(c, **kw)                  # changes transport through this switch)
+    return NinjaTraderAdapter(c, **kw)
 
 
 # ---------------------------------------------------------------------- a simulated LE_Bridge (self-test, exec_compare --fake)
@@ -447,7 +473,7 @@ def selftest(verbose=True) -> bool:
     import shutil
     import tempfile
     tmp = tempfile.mkdtemp(prefix="le_ntsock_")
-    saved = {k: os.environ.get(k) for k in (nt.LIVE_ENV, "NINJATRADER_ACCOUNT", "NINJATRADER_FOLDER", nt.ALLOW_ENV)}
+    saved = {k: os.environ.get(k) for k in (nt.LIVE_ENV, "NINJATRADER_ACCOUNT", "NINJATRADER_FOLDER", nt.ALLOW_ENV, TRANSPORT_ENV)}
     for k in saved:
         os.environ.pop(k, None)
     checks = []
@@ -492,6 +518,8 @@ def selftest(verbose=True) -> bool:
               and ad.read_order(lg["stop_id"])["state"] == "WORKING" and ad.read_order(lg["target_id"])["state"] == "WORKING")
         check("no files: nothing written in the NinjaTrader folder (no incoming / le_outbox)",
               not os.path.exists(os.path.join(folder, "incoming")) and not os.path.exists(os.path.join(folder, "le_outbox")))
+        check("latency log: send_at / ack_at / fill_seen_at kept on the leg", all(lg.get(k) is not None for k in
+                                                                                  ("send_at", "ack_at", "fill_seen_at")), str(lg))
         check("one position at a time", "still open" in ad.send({"sym": "NQ", "side": "buy", "qty": 1, "stop": 24990,
                                                                   "target": 25080, "entry": 25020}).get("error", ""))
         r = ad.send({"side": "modify", "stop": 25020.25, "entry_t": T})
@@ -551,6 +579,20 @@ def selftest(verbose=True) -> bool:
               and ad3.position_for("MNQ 12-26")["side"] == "FLAT", json.dumps(r))
         check("kill: no entry after it", "kill switch" in ad3.send({"sym": "NQ", "side": "buy", "qty": 1, "stop": 24990,
                                                                      "target": 25080, "entry": 25020}).get("error", ""))
+        # the opt-in transport (engine/live.ADAPTERS["ninjatrader"] = make_adapter): OFF by default; socket only for a Sim account
+        base = {"adapter": "ninjatrader", "nt_folder": folder, "nt_lock": False, "nt_state_path": os.path.join(tmp, "st_f.json"),
+                "bridge_port": fb.port}
+        f0 = make_adapter(base)
+        f1 = make_adapter({**base, "nt_transport": "socket"})
+        f2 = make_adapter({**base, "nt_transport": "socket", "account": "MFFUEVAL123", "nt_account": "MFFUEVAL123"})
+        os.environ[TRANSPORT_ENV] = "socket"
+        f3 = make_adapter(base)
+        os.environ.pop(TRANSPORT_ENV, None)
+        check("transport switch: default = file bridge; socket only when switched on AND a Sim account; a live account keeps files",
+              type(f0) is NinjaTraderAdapter and type(f1) is NtSocketAdapter and type(f2) is NinjaTraderAdapter
+              and type(f3) is NtSocketAdapter and f1.name == "ninjatrader", f"{type(f0)} {type(f1)} {type(f2)} {type(f3)}")
+        from engine import live as _live, nt_socket as _me      # the imported module (this file may run as __main__)
+        check("engine/live.ADAPTERS['ninjatrader'] is the factory", _live.ADAPTERS["ninjatrader"] is _me.make_adapter)
         rt = sorted(ad3.client.rtts)
         check("latency recorded (local round trip)", rt and rt[len(rt) // 2] < 50, f"p50 {rt[len(rt) // 2] if rt else None}")
     finally:

@@ -136,7 +136,8 @@ def _rkey(r) -> str:
 
 def _leg_view(lg) -> dict:
     keep = ("instrument", "qty", "dir", "entry_t", "stop", "stop0", "target", "entry_id", "stop_id", "target_id", "status",
-            "filled", "fill_px", "fill_mtime", "sent_at", "bracket_qty", "closed", "closed_at", "ref", "lane")   # ref: the price it was sent at (day-zeroerr fill log)
+            "filled", "fill_px", "fill_mtime", "sent_at", "bracket_qty", "closed", "closed_at",
+            "send_at", "ack_at", "fill_seen_at", "ref", "lane")   # big-execution: the latency chain per entry; day-zeroerr: lane
     return {k: lg.get(k) for k in keep if k in lg}
 
 

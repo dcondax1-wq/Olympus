@@ -293,8 +293,13 @@ def accounts_part():
     from engine import live
     from tests.test_lit_add_safety import World
     from engine.ninjatrader import NinjaTraderAdapter
+    from engine import nt_socket
+    # big-execution 2026-11-26: the table entry is a factory (engine/nt_socket.make_adapter) that returns NinjaTraderAdapter,
+    # or its socket subclass (opt-in, Sim only) which inherits the same roll guard unchanged
     check("D. every adapter kind the accounts build for NinjaTrader is the one class with the roll guard",
-          live.ADAPTERS["ninjatrader"] is NinjaTraderAdapter)
+          live.ADAPTERS["ninjatrader"] is NinjaTraderAdapter or (live.ADAPTERS["ninjatrader"] is nt_socket.make_adapter
+                                                                 and issubclass(nt_socket.NtSocketAdapter, NinjaTraderAdapter)
+                                                                 and "_contract_mismatch" not in vars(nt_socket.NtSocketAdapter)))
     with Env(LE_SIGNAL_ROOT=None, LE_LIVE_MODEL=None):
         w = World()
         fake = w.fake

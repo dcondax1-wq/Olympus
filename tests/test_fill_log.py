@@ -69,7 +69,8 @@ def setup(root):
     with open(os.path.join(es, "orders.jsonl"), "w") as fh:
         for r in st:
             fh.write(json.dumps(r) + "\n")
-    json.dump({f"{L}E": {"entry_t": LIT_T, "fill_px": 27784.75, "sent_at": LIT_T + 3.1, "ref": 27784.0, "dir": 1},
+    json.dump({f"{L}E": {"entry_t": LIT_T, "fill_px": 27784.75, "sent_at": LIT_T + 3.1, "ref": 27784.0, "dir": 1,
+                         "send_at": LIT_T + 3.15, "ack_at": LIT_T + 3.3, "fill_seen_at": LIT_T + 3.6},
                f"{A}E": {"entry_t": ATL_T, "fill_px": 26380.75, "sent_at": ATL_T + 4.0, "ref": 26382.0, "dir": -1, "lane": "acctb"}},
               open(os.path.join(es, "legs.json"), "w"))
     json.dump({"ledger": [{"id": "b1", "day": DAY, "entry_t": ts(2026, 11, 20, 10, 5), "dir": 1, "qty": 2, "entry": 27800,
@@ -90,9 +91,16 @@ def t_fills(root):
     check("LIT entry: lane, side, qty, MARKET, intended 27,784 (the adapter's ref), filled 27,784.75, +3 ticks worse",
           e.get("lane") == "zlarior" and e.get("side") == "BUY" and e.get("qty") == 1 and e.get("order_type") == "MARKET"
           and e.get("intended_px") == 27784.0 and e.get("fill_px") == 27784.75 and e.get("slip_ticks") == 3.0, e)
-    check("...signal_t / send_t / fill_t, and the old fields kept (sent_s_after_open, fill_s_after_sent)",
-          e.get("signal_t") == LIT_T and abs(e.get("send_t") - (LIT_T + 3.2)) < 0.01 and abs(e.get("fill_t") - (LIT_T + 3.4)) < 0.01
-          and e.get("sent_s_after_open") == 3.2 and e.get("fill_s_after_sent") == 0.2, e)
+    check("...one schema with big-execution: the leg's own send_at / ack_at / fill_seen_at win (send 3.15, ack 3.30, seen 3.60), "
+          "fill_t = NinjaTrader's fill report, model_px = intended_px (alias), ack_s_after_send",
+          e.get("signal_t") == LIT_T and abs(e.get("send_t") - (LIT_T + 3.15)) < 0.001 and abs(e.get("ack_t") - (LIT_T + 3.3)) < 0.001
+          and abs(e.get("fill_seen_t") - (LIT_T + 3.6)) < 0.001 and abs(e.get("fill_t") - (LIT_T + 3.4)) < 0.01
+          and e.get("model_px") == e.get("intended_px") == 27784.0 and e.get("ack_s_after_send") == 0.15, e)
+    check("...the old fields kept from the OIF stamp (sent_s_after_open 3.2, fill_s_after_sent 0.2)",
+          e.get("sent_s_after_open") == 3.2 and e.get("fill_s_after_sent") == 0.2, e)
+    a0 = by.get(f"{A}E", {})
+    check("...no leg timestamps (ATLAS here): send_t = the OIF file stamp, ack_t from the archive (None: it filled first)",
+          abs(a0.get("send_t", 0) - (ATL_T + 4.1)) < 0.01 and a0.get("ack_t") is None and "fill_seen_t" not in a0, a0)
     t = by.get(f"{L}T", {})
     check("LIT exit (target LIMIT 28,174): leg target, filled at its price, 0 ticks", t.get("leg") == "target" and t.get("fill_px") == 28174.0
           and t.get("slip_ticks") == 0.0 and t.get("side") == "SELL", t)

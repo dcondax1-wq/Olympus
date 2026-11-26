@@ -570,7 +570,8 @@ def _book(tag: str) -> str:
 # day-zeroerr fill log (2026-11-26, lead: "every real fill, entry AND exit, every lane"): the ONE schema of a fill row. The
 # execution helpers' latency logging uses these names too (one place):
 FILL_FIELDS = ("order_id", "lane", "book", "leg", "account", "instrument", "side", "action", "qty", "order_type", "intended_px",
-               "fill_px", "slip_ticks", "filled", "state", "signal_t", "send_t", "ack_t", "fill_t", "entry_t",
+               "model_px", "fill_px", "slip_ticks", "filled", "state", "signal_t", "send_t", "ack_t", "fill_t", "fill_seen_t",
+               "ack_s_after_send", "entry_t",
                # kept for the older readers (tools/fill_speed.py, tools/reconcile_live.py): the same values under the old names
                "sent_t", "leg_sent_t", "sent_s_after_open", "fill_s_after_sent")
 #   lane        whose order: "zlarior" (the main LIT 50K log), "atlas" (account B), "blitz" (account C), an extra account's id
@@ -581,8 +582,12 @@ FILL_FIELDS = ("order_id", "lane", "book", "leg", "account", "instrument", "side
 #               (the last PLACE / CHANGE before the fill)
 #   slip_ticks  (fill - intended) in ticks, positive = worse for us (a BUY filled higher, a SELL lower); a target LIMIT is <= 0
 #   signal_t    entry: the model's entry bar time (entry_t); exits: None (a broker-side stop / target)
-#   send_t      the OIF file's millisecond stamp; ack_t: NinjaTrader's first working state's file time (None when the order
-#               filled before the archive saw it working); fill_t: the FILLED state's file time
+#   send_t / ack_t / fill_seen_t   (merged with big-execution's latency log, 2026-11-26) the adapter leg's own send_at / ack_at /
+#               fill_seen_at when it has them (entries); else send_t = the OIF file's millisecond stamp, ack_t = NinjaTrader's first
+#               working state's file time (None when it filled before the archive saw it working); fill_seen_t: entries only
+#   fill_t      NinjaTrader's fill report: the FILLED state's file time (else the leg's fill_mtime)
+#   model_px    entries only: the SAME value as intended_px under big-execution's name (an alias, never a second source)
+#   ack_s_after_send   ack_t - send_t
 _OID = re.compile(r"^LE(\d{9,11})([A-Za-z0-9]*?)([EST])$")
 _LOG_LINE = re.compile(r"^\S+ \S+ ET\s+(\S+)\s+(oif_le_\S+\.txt)\s+(.+)$")
 LEGS = {"E": "entry", "S": "stop", "T": "target"}
@@ -691,16 +696,24 @@ def _fill_rows(rows, states, legs, names) -> list:
         lg = legs.get(oid) or (legs.get(r.get("entry_id")) if r.get("entry_id") else None) or {}
         if r["leg"] != "entry" and not lg:            # an exit's leg is the entry's (legs.json is keyed by the entry order)
             lg = legs.get(oid[:-1] + "E") or {}
-        fill_px = _num(fin.get("avg")) or (_num(lg.get("fill_px")) if r["leg"] == "entry" else None)
-        r.update({"state": fin.get("state"), "filled": fin.get("filled") if fin.get("filled") is not None else (lg.get("filled") if r["leg"] == "entry" else None),
+        ent = r["leg"] == "entry"
+        fill_px = _num(fin.get("avg")) or (_num(lg.get("fill_px")) if ent else None)
+        r.update({"state": fin.get("state"), "filled": fin.get("filled") if fin.get("filled") is not None else (lg.get("filled") if ent else None),
                   "fill_px": fill_px,
-                  "fill_t": (fin.get("mtime") if str(fin.get("state")) == "FILLED" else None) or (lg.get("fill_mtime") if r["leg"] == "entry" else None),
+                  "fill_t": (fin.get("mtime") if str(fin.get("state")) == "FILLED" else None) or (lg.get("fill_mtime") if ent else None),
                   "ack_t": ack.get("mtime") if ack else None})
-        if r["leg"] == "entry":
+        if ent:
             if lg.get("sent_at") is not None:
                 r["leg_sent_t"] = float(lg["sent_at"])
+            # big-execution 2026-11-26 latency chain: the adapter leg's own timestamps win (send_at = the order file in incoming\,
+            # ack_at = NinjaTrader took it, fill_seen_at = the bot saw the fill); the file-archive times above are the fallback
+            for src, dst in (("send_at", "send_t"), ("ack_at", "ack_t"), ("fill_seen_at", "fill_seen_t")):
+                if lg.get(src) is not None:
+                    r[dst] = float(lg[src])
             if r.get("intended_px") is None and _num(lg.get("ref")) is not None:
                 r["intended_px"] = _num(lg.get("ref"))
+            if r.get("intended_px") is not None:
+                r["model_px"] = r["intended_px"]     # big-execution's name for the same value (entries only: an alias, not a 2nd source)
             if r.get("side") is None and lg.get("dir") is not None:
                 r["side"] = "BUY" if int(lg["dir"]) > 0 else "SELL"
                 r["action"] = r["side"]
@@ -709,6 +722,8 @@ def _fill_rows(rows, states, legs, names) -> list:
         r["send_t"] = r.get("send_t") if r.get("send_t") is not None else sent
         r["sent_s_after_open"] = None if sent is None or r["leg"] != "entry" else round(float(sent) - r["entry_t"], 3)
         r["fill_s_after_sent"] = None if sent is None or r.get("fill_t") is None else round(float(r["fill_t"]) - float(sent), 3)
+        if r.get("send_t") is not None and r.get("ack_t") is not None:
+            r["ack_s_after_send"] = round(r["ack_t"] - r["send_t"], 3)
         out.append(scrub(r, names))
     return sorted(out, key=lambda r: (r["entry_t"], str(r.get("book")), str(r.get("order_id"))))
 
