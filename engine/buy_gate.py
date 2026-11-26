@@ -127,7 +127,7 @@ def tiny(g: dict | None = None) -> dict | None:
     g = g if g is not None else SE._read(OUT, None)
     if not isinstance(g, dict) or not g.get("shown"):
         return None
-    return {"s": g["verdict"], "l": str(g.get("line") or "")[:200], "sh": str(g.get("shadow") or "")[:160], "t": g.get("t")}
+    return {"s": g["verdict"], "l": str(g.get("line") or "")[:180], "sh": str(g.get("shadow") or "")[:190], "t": g.get("t")}
 
 
 def record_buy(plan: str, price: float, day: str | None = None, path: str | None = None) -> dict:

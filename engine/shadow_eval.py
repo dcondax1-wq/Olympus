@@ -35,6 +35,7 @@ STATE = os.path.join(ROOT, "data", "shadow_eval.json")
 OUT = os.path.join(ROOT, "logs", "shadow_eval.json")
 SWITCH = os.path.join(ROOT, "data", "buy_gate.json")
 PV, COMM, SLIP = 2.0, 1.90, 0.25
+STALE_S = 4 * 86400                    # logs/exec_audit/report.json older than this (a long weekend + 1 day): the shadow says it is stale
 PLAN_50K = {"name": "Builder 50K", "target": 3000.0, "mll": 2000.0, "lock": 100.0, "dll": 1000.0, "max_micros": 40,
             "stuck": 200.0, "min_days": 1, "cons": None}
 
@@ -209,7 +210,14 @@ def refresh(now=None, report_path=None, state_path=None, out_path=None, start: s
         _write(sp, st)
     res = run(twin_trades(report_path), st["start"], day)
     A = res["attempts"]
-    res.update(t=int(now if now is not None else time.time()), start=st["start"], line=line(res),
+    try:                                       # the nightly LIT backtest (engine/fill_audit) feeds the shadow: say so when it stopped
+        age = time.time() - os.path.getmtime(report_path or REPORT)
+    except OSError:
+        age = None
+    res["twin_age_h"] = None if age is None else round(age / 3600, 1)
+    stale = age is None or age > STALE_S
+    res.update(t=int(now if now is not None else time.time()), start=st["start"],
+               line=line(res) + (" (no fresh LIT backtest rows: is the nightly fill audit running?)" if stale else ""), stale=stale,
                passes=[a["end"] for a in A if a["result"] == "pass"], fails=sum(1 for a in A if a["result"] == "fail"),
                attempts=A[-10:])
     if write:
