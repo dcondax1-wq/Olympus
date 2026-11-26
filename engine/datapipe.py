@@ -609,9 +609,18 @@ def _fill_rows(rows, states, legs, names) -> list:
                   "fill_px": st.get("avg") or lg.get("fill_px"), "fill_t": st.get("mtime") or lg.get("fill_mtime")})
         if lg.get("sent_at") is not None:
             r["leg_sent_t"] = float(lg["sent_at"])
+        # big-execution 2026-11-26, the latency chain (one place, the same names for every account): signal_t = the
+        # decision bar's close (= entry_t), send_t = order file in incoming\, ack_t = NinjaTrader took it, fill_t =
+        # NinjaTrader's fill report, fill_seen_t = the bot saw it; model_px = the price the model entered at
+        r["signal_t"] = r.get("entry_t")
+        for src, dst in (("send_at", "send_t"), ("ack_at", "ack_t"), ("fill_seen_at", "fill_seen_t"), ("ref", "model_px")):
+            if lg.get(src) is not None:
+                r[dst] = float(lg[src])
         sent = r.get("sent_t") if r.get("sent_t") is not None else r.get("leg_sent_t")
         r["sent_s_after_open"] = None if sent is None else round(float(sent) - r["entry_t"], 3)
         r["fill_s_after_sent"] = None if sent is None or r.get("fill_t") is None else round(float(r["fill_t"]) - float(sent), 3)
+        if r.get("send_t") is not None and r.get("ack_t") is not None:
+            r["ack_s_after_send"] = round(r["ack_t"] - r["send_t"], 3)
         out.append(scrub(r, names))
     return sorted(out, key=lambda r: (r["entry_t"], str(r.get("book")), str(r.get("order_id"))))
 

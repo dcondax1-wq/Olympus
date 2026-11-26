@@ -147,8 +147,9 @@ class TradovateAdapter:
 
 from .tradovate import TradovateAdapter as _TvAdapter  # full REST adapter with live gates (engine/tradovate.py)
 from .ninjatrader import NinjaTraderAdapter as _NtAdapter  # NinjaTrader 8 order files with live gates (engine/ninjatrader.py)
+from .nt_socket import make_adapter as _nt_make  # noqa: E402  the file bridge unless nt_transport "socket" on a Sim account (OFF)
 ADAPTERS = {"paper": PaperAdapter, "traderspost": TradersPostAdapter, "tradovate": _TvAdapter,
-            "tradovate-demo": _TvAdapter, "tradovate-live": _TvAdapter, "ninjatrader": _NtAdapter}
+            "tradovate-demo": _TvAdapter, "tradovate-live": _TvAdapter, "ninjatrader": _nt_make}
 # Optional adapter capability flags, read with getattr(adapter, flag, False) (paper and Tradovate set none of them):
 #   loop_tick         tick() is called at the start of every poll
 #   route_stop_moves  the model's stop moves (breakeven at 1R) are sent as {"side": "modify", "stop": px}

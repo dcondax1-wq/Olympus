@@ -305,6 +305,7 @@ tool after adding a write-up. Every write-up's runs are in `research/runs/<id>.j
 | - | [LIT in high-VIX falling markets: bad luck or a losing regime? (2026-11-24)](lit-vix-downtrend-2026-11-24.md) | - | info<br><sub></sub> | 0 |
 | - | [LIT learns from live (day-litlearn 2026-11-26)](lit-learns-live-2026-11-26.md) | - | info<br><sub></sub> | 0 |
 | - | [How fragile is LIT (Zlarior)? Robustness & fragility audit (2026-11-26)](lit-fragility-2026-11-26.md) | - | info<br><sub></sub> | 0 |
+| - | [Order latency: where the seconds go from the bar close to the order (big-execution,…](latency-2026-11-26.md) | - | info<br><sub></sub> | 0 |
 | - | [IDEA MILL v3: family-first testing, 56,160 ideas (2026-11-25)](ideamill-v3-2026-11-25.md) | - | info<br><sub></sub> | 0 |
 | - | [IDEA MILL: thousands of ideas under one honest protocol (2026-11-25)](ideamill-2026-11-25.md) | - | info<br><sub></sub> | 0 |
 | - | [ICT lab round 2 (2026-11-25): 22 more concepts + 120 pairs, every test view](ict-lab2-2026-11-25.md) | - | info<br><sub></sub> | 0 |
