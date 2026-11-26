@@ -7,14 +7,17 @@ type: "family"
 
 # Research family: other
 
-> [!abstract] 131 write-ups
-> adopt-candidate 16, finding 14, info 17, promising 14, rejected 36, research 34
+> [!abstract] 134 write-ups
+> adopt-candidate 16, finding 14, info 17, promising 14, rejected 36, research 37
 
 | Date | Write-up | Verdict |
 |---|---|---|
 | 2026-11-26 | [[news-playbook-2026-11-26\|News-day playbook]] | research |
+| 2026-11-26 | [[lit-learns-live-2026-11-26\|LIT learns from live]] | research |
 | 2026-11-26 | [[lit-fragility-2026-11-26\|How fragile is LIT]] | research |
+| 2026-11-26 | [[forward-paper-2026-11-26\|Forward-paper harness]] | research |
 | 2026-11-26 | [[execution-2026-11-26\|A sturdier execution path for the MFFU accounts]] | research |
+| 2026-11-26 | [[execpol-2026-11-26\|Entry execution policy for LIT and ATLAS]] | research |
 | 2026-11-26 | [[evalsizer-2026-11-26\|Optimal eval sizing policy]] | research |
 | 2026-11-26 | [[entry-fine-2026-11-26\|LIT entry refinement on 1m bars]] | research |
 | 2026-11-26 | [[day-type-2026-11-26\|Day-type classifier + playbook routing]] | research |

@@ -71,10 +71,11 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-88 entries from docs/TESTED_AND_REJECTED.md, newest first.
+89 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
 - **LIT fragility audit** · [[Zlarior (LIT)]] · [[lit-fragility-2026-11-26|How fragile is LIT]]
 - **News-day playbook** · [[news-playbook-2026-11-26|News-day playbook]]
+- **LIT gate tweaks via the setup-learning loop** · [[Zlarior (LIT)]] · [[lit-learns-live-2026-11-26|LIT learns from live]]
 - **BLITZ v2 rebuild** · [[BLITZ (paper)]], [[50K combo]] · [[blitz-v2-2026-11-26|BLITZ v2]]
 - **Day-type classifier + playbook routing** · [[BLITZ (paper)]] · [[day-type-2026-11-26|Day-type classifier + playbook routing]]
 - **LIT entry refinement on 1m** · [[Zlarior (LIT)]] · [[entry-fine-2026-11-26|LIT entry refinement on 1m bars]]

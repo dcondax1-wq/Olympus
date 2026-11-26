@@ -178,6 +178,7 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-26 | [[execpol-2026-11-26\|Entry execution policy for LIT and ATLAS]] | research |
 | 2026-11-26 | [[batch5-2026-11-26\|Batch 5]] | research |
 | 2026-11-25 | [[more-trades-2026-11-25\|More trades]] | research |
 | 2026-11-24 | [[atlas-funded-150-2026-11-24\|ATLAS funded 25K at ~$150 a trade, on the LIVE sizing code]] | research |
@@ -217,9 +218,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-11-04 | [[2026-11-04_lit_ideas_night\|LIT ideas night]] | rejected |
 | 2026-11-04 | [[2026-11-04_atlas_round3\|ATLAS round 3]] | research |
 | 2026-11-03 | [[2026-11-03-slippage\|How much slippage each bot survives]] | info |
-| 2026-11-03 | [[2026-11-03-fates\|FATES]] | info |
 
-... and 29 older (see the families).
+... and 30 older (see the families).
 
 ## Links
 

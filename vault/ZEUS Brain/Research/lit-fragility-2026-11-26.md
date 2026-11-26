@@ -26,9 +26,7 @@ PAPER RESEARCH ONLY: nothing live changed. Plan written before the runs (`resear
 
 **LIT sits on a plateau, not a knife-edge, but its 2026 money is mostly the 2026 market.** Trust about a quarter of the
 2026 rate: about $1,000-1,400 a month forward per 50K at the LIT size, not $4,250. Plan evals for a 2021-25-like market
-too. In that market today's 40% room size fails about half the evals. **Sizing: 30% of the room (room_f 0.3) passes the
-same share of evals as 40% in every mix of markets tested, with 1/3 to 1/2 fewer fails, at ~1-2 trades (2-3 sessions)
-slower.** Sent to big-evalsizer. room_f is owner-approved at 0.4, so a change is the owner's call.
+too. In that market today's 40% room size fails about half the evals. **Sizing: keep today's 40% (room_f 0.4).** My simplified sim (below, section 5) suggested 0.3 cuts fails, but big-evalsizer re-checked it in the real eval engine (research/plans/rank.py: every MFFU rule, the soft day stop, the one-winner need cap, the ATLAS lane): 0.3 does NOT cut fails there, and 0.4 earns more in every market mix (branch big-evalsizer, research/evalsizer/mix_check.json).
 
 ## Links
 

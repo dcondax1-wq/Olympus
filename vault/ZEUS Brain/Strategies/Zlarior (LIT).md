@@ -82,8 +82,12 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 ## Tested and rejected
 
 > [!failure]- LIT fragility audit
-> 16 knobs at +-10/20%: mostly a plateau; sensitive in Jul-Oct = displacement 0.8 (+10% -> -$894/mo) and the 8R bank (+-10% -> -$290..-$960/mo), tuned near their top; no knob makes 2021-25 real money (-$360..+$160/mo). Costs: 2021-25 negative at +1 tick/side (PF 0.97), 2026 barely moves. MC 50K at 40% room: pass/fail 95/4 (2026 pool), 86/13 (Jul-Nov), 36/62 (2021-25); P(7+ losers in 23 trades) 3-4%. Deflated Sharpe 2026 0.87-0.93 with N 1,483-4,449 trials, only 20-27% of the Sharpe above the best-of-N luck level; 2021-26 DSR 0. Sizing: room_f 0.3 vs 0.4 = same pass, 1/3-1/2 fewer fails in every market mix (owner's call; sent to big-evalsizer).
+> 16 knobs at +-10/20%: mostly a plateau; sensitive in Jul-Oct = displacement 0.8 (+10% -> -$894/mo) and the 8R bank (+-10% -> -$290..-$960/mo), tuned near their top; no knob makes 2021-25 real money (-$360..+$160/mo). Costs: 2021-25 negative at +1 tick/side (PF 0.97), 2026 barely moves. MC 50K at 40% room: pass/fail 95/4 (2026 pool), 86/13 (Jul-Nov), 36/62 (2021-25); P(7+ losers in 23 trades) 3-4%. Deflated Sharpe 2026 0.87-0.93 with N 1,483-4,449 trials, only 20-27% of the Sharpe above the best-of-N luck level; 2021-26 DSR 0. Sizing: a simplified sim said room_f 0.3 cuts fails; the real engine (big-evalsizer, rank.py) says no, 0.4 earns more at every mix: keep 0.4.
 > Write-ups: [[lit-fragility-2026-11-26|How fragile is LIT]]
+
+> [!failure]- LIT gate tweaks via the setup-learning loop
+> 13 versions vs live through the automatic bar (beat live on Jan-Jun AND Jul-Nov 20 net + PF, 2021-25 net not worse, walk-forward >= 5/7 blocks, 2-4 trades/wk): 0 pass. New ones: sweep >= 0.75 ATR +$1,029 / -$4 / -$3,662 (walk 4/7); 2 inducements -$19,514 / -$4,880 / -$2,105; limit 12 bars -$4 / -$444 / -$8,787; 1m CISD within 15 bars -$10,565 / -$1,504 / -$2,815 (Jan-Jun / Jul-Nov 20 / 2021-25 vs live). The other 9 repeat earlier rejections (disp 0.6 / 1.0, depth 0.3, no inducement, 2nd trade, no Monday rule, Silver Bullet only, TDO side only, skip VIX 25+): still fail. The loop re-tests them every night and only raises an owner card on a full pass.
+> Write-ups: [[lit-learns-live-2026-11-26|LIT learns from live]]
 
 > [!failure]- LIT entry refinement on 1m
 > 5 versions vs today (limit at the 5m CISD level, then the 1m CISD; H1 / H2 / 2021-25 $5,562 / $2,670 / $25 a month, 2-week 44.5 / 39.1). Tap 1 tick through $5,280 / $2,227 / -$171; tap at 50% of the zone 1.2 trades/wk, 2-week 37.8 / 29.0; expiry 20 min $5,266 / $2,506 / -$37; plain limit at 50% no 1m CISD $402 / $4,714 / $1,397, 2-week 16.8 / 29.0; plain limit filled only 1 tick through (touch = no fill) $3,036 / $2,087 / -$305. 0 pass: the 1m CISD confirmation carries the edge.
@@ -240,7 +244,9 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-26 | [[lit-learns-live-2026-11-26\|LIT learns from live]] | research |
 | 2026-11-26 | [[lit-fragility-2026-11-26\|How fragile is LIT]] | research |
+| 2026-11-26 | [[execpol-2026-11-26\|Entry execution policy for LIT and ATLAS]] | research |
 | 2026-11-26 | [[entry-fine-2026-11-26\|LIT entry refinement on 1m bars]] | research |
 | 2026-11-25 | [[more-trades-2026-11-25\|More trades]] | research |
 | 2026-11-24 | [[proedge-2026-11-24\|Pro / institutional edges]] | rejected |
@@ -278,10 +284,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-11-16 | [[stack-one-account-2026-11-16\|More strategies on ONE MFFU account]] | promising |
 | 2026-11-15 | [[2026-11-15-s2-edge\|S2 edge]] | promising |
 | 2026-11-15 | [[2026-11-15-lit-deep\|LIT deep edge]] | rejected |
-| 2026-11-14 | [[account-4-2026-11-14\|Account #4]] | adopt-candidate |
-| 2026-11-13 | [[millionaire-plan-2026-11-13\|The millionaire plan]] | adopt-candidate |
 
-... and 80 older (see the families).
+... and 82 older (see the families).
 
 ## Links
 
