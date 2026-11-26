@@ -385,7 +385,7 @@ def part_g(tmp, dd_c):
     a = argparse.Namespace(no_pull=False, wait=0.0, skip="", full=False, fetch=False, dry_run=False)
     P = LN.plan(a)
     check("g. plan: pull (data_pull --latest), edge_health, cost_alarm, anatomy build/explain/page, zeus_lab run --publish, learned, decide",
-          [s for s, _ in P] == ["pull", "edge", "costs", "anatomy", "lab", "learned", "decide", "hub", "blitz"]
+          [s for s, _ in P] == ["pull", "edge", "costs", "anatomy", "lab", "learned", "decide", "hub", "blitz", "oflearn"]
           and P[0][1] == [["tools/data_pull.py", "--latest", "--wait", "0.0"]] and P[4][1] == [["tools/zeus_lab.py", "run", "--publish"]]
           and P[2][1] == [["tools/cost_alarm.py"]] and [c[1] for c in P[3][1]] == ["build", "explain", "page"], P)
     root = os.path.join(tmp, "groot")

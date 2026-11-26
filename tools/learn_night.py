@@ -179,6 +179,8 @@ def plan(a) -> list:
         out.append(("hub", [["tools/research_hub.py"]]))   # -> tools/web_public/clio/hub.json (read only on every source)
     if "blitz" not in skip:                # day-blitz150 2026-11-24 (owner: BLITZ "should learn from mistakes"): tag the new BLITZ trades
         out.append(("blitz", [["research/blitz/learn.py", "night"]]))   # -> research/blitz/lessons.jsonl; Sunday ET the re-test
+    if "oflearn" not in skip:              # day-oflearn 2026-11-26 (owner: "keep building order flow and learning about it"): DESIGN3
+        out.append(("oflearn", [["research/orderflow/of_learn.py"]]))   # -> research/learn/of_signals.jsonl + journal.json lines; paper only
     return out
 
 

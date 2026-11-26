@@ -1,7 +1,7 @@
 """Order-flow ideas, forward-only protocol (research/orderflow/DESIGN_forward.md, frozen ab61ea293). Paper research only.
 
 The idea mill's `of` grammar: tools/ideamill.py calls run() in every --batch (and --of). Off under 60 tick days, provisional
-from 60, frozen split from 120 (research/ideamill/of_split.json, written once). 24 families = (entry, feature group);
+from 60, frozen split from 120 (research/ideamill/of_split.json, written once). 36 families = (entry, feature group; v2 A-H + v3 I-L, DESIGN3.md);
 gates A (Simes + BH over families), B (BH inside at q R / F), C (deflated Sharpe), D (Confirm), E (20 Forward trades);
 the placebo through the same gates.
     python -X utf8 research/orderflow/of_forward.py [--src DIR]      python -X utf8 research/orderflow/of_forward.py --selftest
@@ -36,13 +36,21 @@ def _mod(path, name):
 
 M = _mod("of_mill.py", "of_mill_f")         # features, entry_rows, Ctx, bh, dsr, FEATURES
 B = M.B                                    # of_battery: Day, find_days, lit_trades, atlas_md
+V3 = _mod("of_v3.py", "of_v3_f")           # day-oflearn: DESIGN3.md groups I / J / K / L join the families (L like G: depth)
 
 
 def groups():
     g = {}
     for f in M.FEATURES:
         g.setdefault(f[0], []).append(f)
+    for k, fs in V3.GROUPS_V3.items():                                      # DESIGN3: 24 + 12 = 36 families
+        g[k] = list(fs)
     return g
+
+
+def all_features(cx, i, d, ext_i, level):
+    """v2 (DESIGN2) + v3 (DESIGN3) features of one entry row."""
+    return {**M.features(cx, i, d, ext_i, level), **V3.features(cx, i, d, ext_i, level)}
 
 
 def _perm_p(pnl, keep, alt, fam, rng):
@@ -117,7 +125,7 @@ def run(R=None, src=None, lit=None, atlas=None, say=print, write=True, backfill_
         atlas, _ = B.atlas_md()
     ctx = {d: M.Ctx(D[d]) for d in days}
     rows = M.entry_rows(D, days, lit, atlas)
-    F = [M.features(ctx[r[1]], r[2], r[3], r[6], r[7]) for r in rows]
+    F = [all_features(ctx[r[1]], r[2], r[3], r[6], r[7]) for r in rows]
     depth_days = sum(1 for d in days if getattr(D[d], "depth", None) is not None and len(D[d].depth))
     dset, cset, fset = set(disc), set(conf), set(fwd)
     G = groups()
@@ -131,7 +139,7 @@ def run(R=None, src=None, lit=None, atlas=None, say=print, write=True, backfill_
         day = np.array([rows[k][1] for k in idx])
         md, mc, mf = (np.array([x in S_ for x in day]) for S_ in (dset, cset, fset))
         for g, feats in G.items():
-            if g == "G" and depth_days < 40:
+            if g in ("G", "L") and depth_days < 40:
                 continue
             fr = {"family": f"{fam}|{g}", "variants": []}
             for feat in feats:
