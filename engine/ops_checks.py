@@ -1535,7 +1535,9 @@ def of_paper_kick(now, real: bool = True, root: str | None = None, popen=None) -
         import subprocess
         kw = {"cwd": root, "stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL, "stdin": subprocess.DEVNULL}
         if os.name == "nt":
-            kw["creationflags"] = 0x00000008 | 0x00000200 | 0x08000000      # DETACHED_PROCESS | NEW_PROCESS_GROUP | NO_WINDOW
+            # red team 2026-11-26: it runs 09:25-16:10 ET while the bot trades: BELOW_NORMAL (0x4000), like the tick autopilot and
+            # tools/of_send_now, so a big tick day never takes CPU from the live loop
+            kw["creationflags"] = 0x00000008 | 0x00000200 | 0x08000000 | 0x00004000   # DETACHED | NEW_GROUP | NO_WINDOW | BELOW_NORMAL
         (popen or subprocess.Popen)([sys.executable, "-X", "utf8", "-m", "engine.of_paper", "tick"], **kw)
         return "started"
     except Exception as e:  # noqa: BLE001
