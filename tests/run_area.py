@@ -543,6 +543,8 @@ AREAS["nq"].append("nt_transport_rt")   # red team 2026-11-26: a live account ne
 
 AREAS["nq"].append("trade_cards"); AREAS["pc"].append("trade_cards")   # day-cards 2026-11-26: Telegram trade cards (chart PNG), 16:20 day summary, Friday week report
 AREAS["nq"].append("trade_cards_rt"); AREAS["pc"].append("trade_cards_rt")   # red team 2026-11-26: long captions never cut, NT files only when needed
+AREAS["pc"].append("buy_gate"); AREAS["money"].append("buy_gate")   # big-shadow 2026-11-26: shadow eval + buy gate (display only)
+AREAS["pc"].append("buy_gate_rt")   # red team 2026-11-26: bg < 400 B, a damaged verdict shows nothing
 
 if __name__ == "__main__":
     sys.exit(main())

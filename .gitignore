@@ -377,3 +377,8 @@ data/of_paper.json
 data/of_paper.json.tmp
 data/of_paper_cache/
 data/of_paper_off
+
+# big-shadow (engine/shadow_eval.py, engine/buy_gate.py): the switch, the shadow start day, the eval fees ledger (machine-local)
+data/buy_gate.json
+data/shadow_eval.json
+data/eval_buys.json

@@ -103,7 +103,11 @@ def part_a():
     order = re.findall(r'<script src="([^"?]+)', h)
     want = ["../olympus/themes.js", "../olympus/a11y.js", "../pc_feed.js", "payoutcoach.js", "mffumodel.js", "mffucenter.js", "../edge_chip.js", "../nqdeep.js", "moneyview.js", "mffu.js"]   # nqdeep: the first-payout range (night-nqdash2); moneyview: the gauges (day-site5)
     check("a. mffu.html: AGORA look, one h1, a polite status line, back to Business, the scripts in order (feed, coach, model, center, edge chip, page)",
-          'data-theme="agora"' in h and "viewport-fit=cover" in h and h.count("<h1") == 1 and 'aria-live="polite"' in h and 'href="./"' in h and order[:len(want)] == want and set(order[len(want):]) <= {"../olympus/nqfx.js", "../trading/panelfx.js"}, order)   # + the effects after the page (owner 2026-11-20)
+          'data-theme="agora"' in h and "viewport-fit=cover" in h and h.count("<h1") == 1 and 'aria-live="polite"' in h and 'href="./"' in h and order[:len(want)] == want and set(order[len(want):]) <= {"buygate.js", "../olympus/nqfx.js", "../trading/panelfx.js"}, order)   # + the effects after the page (owner 2026-11-20); buygate.js: the buy gate card (big-shadow, display only)
+    bg = AK.read(os.path.join(BIZ, "buygate.js"))
+    check("a. buygate.js: textContent only, no outside address, no storage, hidden unless the PC sends 'bg' (display only)",
+          not re.search(r"\.innerHTML|outerHTML|insertAdjacentHTML|document\.write|\beval\s*\(|new Function|https?://|XMLHttpRequest|localStorage|sessionStorage", bg)
+          and "textContent" in bg and "box.hidden = true" in bg and 'id="buyGate"' in h and 'hidden' in h.split('id="buyGate"')[1][:40])
     bad = r"\.innerHTML|outerHTML|insertAdjacentHTML|document\.write|\beval\s*\(|new Function|https?://|method:|XMLHttpRequest|WebSocket|sendBeacon|document\.cookie|localStorage|sessionStorage"
     check("a. mffu.js / mffucenter.js: textContent only, no markup from data, no outside address, GET only, no storage; the center has no fetch at all",
           not re.search(bad, js + cj) and "textContent" in js and "fetch(" not in cj, re.findall(bad, js + cj)[:4])
