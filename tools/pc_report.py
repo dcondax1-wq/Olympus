@@ -2535,6 +2535,11 @@ def after_run(quiet: bool = True) -> None:
     try:                           # payout autopilot (engine/payout_autopilot): payout ready after the close, the #5 guard, the Rapid $10k day
         from engine import payout_autopilot as _pa
         _pa.tick()
+        try:                       # big-payout 2026-11-26: the Money page's payout tile (engine/payout_engine, read-only plan)
+            from engine import payout_engine as _pe
+            _pe.write_tile()
+        except Exception:
+            pass
     except Exception:
         pass
     try:                           # fleet manager (engine/fleet_mgr): one alert per account change with the next money move (advice only)
