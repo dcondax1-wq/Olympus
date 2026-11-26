@@ -6,6 +6,11 @@ Owner wants SHORT replies ("be simple and to the point. You send too much info."
 docs/BOARD.md). 2. Read this file. 3. Answer owner notes with `python tools/board.py note "..." --answers all`.
 Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7; bot checks green: lit_live --quick OK, NT selftest OK, ATLAS 47/47).
 
+- Ops 2 (day-ops2 2026-11-26): the Dec 10 roll hands-free once LE_Feed verifies (shadow from Nov 26, 2 equal days -> live, one
+  'Roll done' line; tick recorder now rolls Dec 10 like the orders, was Dec 11); START names the OneDrive folder (tools/bat/
+  NT_OFF_ONEDRIVE.bat) and syncs / fixes the clock (8.4 s behind: FIX_CLOCK with one Windows Yes); weekly encrypted backup of
+  the PC's private state to OneDrive\Olympus Backup + tools/bat/RESTORE_NEW_PC.bat (recovery code shown once by START).
+  tests.test_ops2 43/43. Branch day-ops2.
 - Hands-free (day-handsfree 2026-11-25, docs/HANDS_FREE.md; owner: "I don't want to go on my PC and restart it every single time"):
   Telegram replies to the alert bot = /status /update /update force /restart /pause /resume (owner's private chat only, same gates
   as the phone, receipts as replies, "PC is back up" after a restart; never kill/stop/flatten/start/arm). Writers sandbox test: the

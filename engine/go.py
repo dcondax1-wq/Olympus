@@ -976,7 +976,7 @@ def _step_arm(cfg, phrase, dry=False, open_page=True, inp=None) -> int:
     return _summary([AR.row(z_lbl, True)] + rows, 0)
 
 
-def pc_checklist_lines(nt_folder=None, net=None, sync=None, inp=None, elevate=None) -> list:
+def pc_warn_lines(nt_folder=None, net=None, sync=None, inp=None, elevate=None) -> list:
     """START's PC checklist (day-ops2 2026-11-26: the health check's WARNs on the owner's PC: the NinjaTrader folder inside OneDrive,
     the clock 8.4 s behind). OneDrive: one [FIX] line naming tools/bat/NT_OFF_ONEDRIVE.bat (it needs NinjaTrader closed, so START
     cannot do it). Clock off by more than 2.5 s: synced at once (sync_clock: w32tm, else the OlympusClock task, no admin); still off
@@ -1246,7 +1246,7 @@ def run(dry=False, inp=input, py=sys.executable, pull=True) -> int:
         return 1
 
     if not dry:
-        for ln in pc_checklist_lines(inp=inp):   # day-ops2: OneDrive + the clock, each with its one fix (never blocks the start)
+        for ln in pc_warn_lines(inp=inp):   # day-ops2: OneDrive + the clock, each with its one fix (never blocks the start)
             print(ln)
     # 3. the owner arms (typed, never by the bot)
     ps = pending_first_line()               # day-zerotouch2: switches the phone queued come FIRST, the same phrase applies them

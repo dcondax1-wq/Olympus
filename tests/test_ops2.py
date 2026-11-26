@@ -184,16 +184,16 @@ def test_pc_checklist():
         check("B1. OneDrive check reads the REAL place: a junction out of OneDrive is fine, a folder inside it is not",
               OC.check_onedrive(link)["level"] == OC.OK and OC.check_onedrive(os.path.join(od, "x"))["level"] == OC.WARN)
         check("B2. its fix names the one-click tools\\bat\\NT_OFF_ONEDRIVE.bat", "NT_OFF_ONEDRIVE.bat" in OC.check_onedrive(od + "/x")["fix"])
-        lines = G.pc_checklist_lines(nt_folder=os.path.join(od, "x"), net={"up": True, "drift_s": 8.4}, sync=lambda: {"ok": False},
+        lines = G.pc_warn_lines(nt_folder=os.path.join(od, "x"), net={"up": True, "drift_s": 8.4}, sync=lambda: {"ok": False},
                                      inp=lambda q: "", elevate=lambda: True)
         check("B3. START: OneDrive [FIX] line + the clock 8.4 s behind: sync tried, then the FIX_CLOCK line (Enter = later)",
               any("[FIX] OneDrive" in x for x in lines) and any("[FIX] Clock 8.4 s behind" in x and "no new entry" in x for x in lines)
               and not any("FIX_CLOCK ran" in x for x in lines), lines)
-        lines = G.pc_checklist_lines(nt_folder=link, net={"up": True, "drift_s": 8.4}, sync=lambda: {"ok": True, "say": "synced"})
+        lines = G.pc_warn_lines(nt_folder=link, net={"up": True, "drift_s": 8.4}, sync=lambda: {"ok": True, "say": "synced"})
         check("B4. the clock synced by itself (the OlympusClock task / w32tm): one [OK] line, nothing to do",
               any("[OK] Clock was 8.4 s behind: synced" in x for x in lines) and any("[OK] OneDrive" in x for x in lines), lines)
         ran = []
-        lines = G.pc_checklist_lines(nt_folder=link, net={"up": True, "drift_s": -3.0}, sync=lambda: {"ok": False},
+        lines = G.pc_warn_lines(nt_folder=link, net={"up": True, "drift_s": -3.0}, sync=lambda: {"ok": False},
                                      inp=lambda q: "y", elevate=lambda: ran.append(1) or True)
         check("B5. Y at the clock question: FIX_CLOCK runs through Windows' own prompt (once)", ran == [1]
               and any("FIX_CLOCK ran" in x for x in lines), lines)
@@ -203,7 +203,7 @@ def test_pc_checklist():
                                                                   "robocopy", "onedrive-backup-", "mklink /J", "-Undo"))
               and "Remove-Item" not in ps and ps.isascii())
         g = open(os.path.join(ROOT, "engine", "go.py"), encoding="utf-8").read()
-        check("B7. START prints the checklist before the phrase", g.index("pc_checklist_lines(inp=inp)") < g.index("3/4 Real money"))
+        check("B7. START prints the checklist before the phrase", g.index("pc_warn_lines(inp=inp)") < g.index("3/4 Real money"))
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 

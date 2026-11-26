@@ -1,5 +1,10 @@
 # December 2026 roll: MNQ 12-26 -> MNQ 03-27
 
+**day-ops2 (2026-11-26): hands-free when the LE_Feed add-on verifies.** engine/roll_auto.py puts LE_Feed in shadow mode from
+Nov 26, compares it with the chart bar for bar and switches the bars to it only after 2 equal days (after 16:00 ET, flat); then the
+Dec 10 roll needs no click and Telegram says 'Roll done'. The steps below stay the fallback (if LE_Feed never compiles or matches).
+The order-flow recorder now rolls on Dec 10 like the orders (it was Dec 11).
+
 **Verdict: ready.** If you switch the NinjaTrader chart on Wednesday evening and NinjaTrader merges "back adjusted", the
 bot's whole LIT window, every level (PDH/PDL, PWH/PWL, PMH/PML, the gaps) and every LIT trade come out exactly as they
 would on clean data. Tested end to end on the real September roll (`python -X utf8 -m tests.test_roll`, 23/23). The March
