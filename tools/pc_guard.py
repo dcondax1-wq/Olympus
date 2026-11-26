@@ -14,7 +14,7 @@ LE_BarFeed contract file. It never blocks, places, changes or cancels an order, 
                   The count knows only the bot's own trades. Feed and bot silence were already pushed by pc_report (FEED STALE
                   after 5 min, bot down after 15).
   milestones      eval progress 25 / 50 / 75 / 100% of the profit target (notify_settings.json milestones_pct), once per level.
-  day summary     16:15 ET on CME trading days (daily_summary_at, first report run up to 16:59): $ today, $ to pass, room left per
+  day summary     16:20 ET (half days: the halt + 20 min) on CME trading days (daily_summary_at, first report run up to 16:59): $ today, $ to pass, room left per
                   account, tomorrow's big US news (engine/notify.news_line).
   morning brief   07:30 ET on CME trading days (notify_settings.json morning_brief_at, up to 09:30; tools/morning_brief.py): ONE
                   4-line ZEUS push (PC ok?, each account $ / to pass / to payout, overnight + today's hours + news, edge + needs you)
@@ -93,7 +93,7 @@ DLL_NEAR = 0.70
 QUIET_DAYS = 5
 MFFU_IDLE_DAYS = 7
 HB_FRESH_S = 900
-SUMMARY_FROM, SUMMARY_TO = 16 * 60 + 15, 17 * 60      # notify_settings.json daily_summary_at (16:15) up to the 17:00 CME break
+SUMMARY_FROM, SUMMARY_TO = 16 * 60 + 20, 17 * 60      # notify_settings.json daily_summary_at (16:20; half days 13:20) up to the 17:00 CME break
 BOTS = ("lit", "atlas", "blitz")
 
 
@@ -387,6 +387,56 @@ def evening_extra(day: str, pa_path=None, digest_path=None, fleet=None) -> str:
     return (" " + " ".join(x.rstrip(".") + "." for x in out)) if out else ""
 
 
+def month_pnl(snap: dict, k: str, now) -> float | None:
+    """day-cards: this calendar month's $ of one account from the heartbeat's eval days (the main account: acct.eval.days; an extra
+    account: its acct.accounts row). None when unknown. Never raises."""
+    try:
+        hb = _d(snap.get("hb"))
+        acct = _d(hb.get("acct"))
+        mon = dt.datetime.fromtimestamp(int(now), ET).strftime("%Y-%m")
+        days = None
+        if k == "lit":
+            days = _d(_d(acct.get("eval")).get("days"))
+        else:
+            for a in acct.get("accounts") or []:
+                if isinstance(a, dict) and str(a.get("id")) == str(k):
+                    days = _d(_d(a.get("eval")).get("days"))
+        if not days:
+            return None
+        return round(sum(float(v) for d, v in days.items() if str(d).startswith(mon)), 2)
+    except Exception:
+        return None
+
+
+def near_setups(snap: dict, n: int = 3) -> str:
+    """day-cards: today's LIT setups that got close and why they did not fire (the Brain's own words: rejected / no fill /
+    blocked), ' Close but no trade: ...' or ''. Never raises."""
+    try:
+        br = _d(_d(snap.get("hb")).get("brain"))
+        rows = [x for x in br.get("setups") or [] if isinstance(x, dict) and x.get("status") in ("rejected", "no_fill", "blocked")]
+        if not rows:
+            return ""
+        from engine import notify
+        bits = [f"{x.get('hm') or ''} {x.get('side') or ''} {str(x.get('status_text') or x.get('status'))[:90]}".strip() for x in rows[-n:]]
+        return " Close but no trade: " + notify.mask_ids("; ".join(bits)) + "."
+    except Exception:
+        return ""
+
+
+def clocks_line(snap: dict, now) -> str:
+    """day-cards: the MFFU 7-day clocks (engine/clock7) of the accounts with 3 days or less left, ' 7-day: ...' or ''. Never raises."""
+    try:
+        from engine import clock7, mffu_view
+        mf = mffu_view.compact(snap.get("live"))
+        k7 = clock7.build(mf, _d(snap.get("hb")).get("keepalive"), now)
+        rows = [r for r in (k7 or {}).get("a") or [] if isinstance(r, dict) and r.get("left") is not None and int(r["left"]) <= 3]
+        if not rows:
+            return " 7-day clocks: all accounts 4+ days." if k7 else ""
+        return " 7-day: " + "; ".join(clock7.line(r) for r in rows[:4]) + "."
+    except Exception:
+        return ""
+
+
 def day_summary(snap: dict, now: int, sent: dict | None = None) -> list:
     """The day summary after the close (notify_settings.json daily_summary_at, 16:15 ET, up to the 17:00 CME break; CME
     trading days only): per account $ today, $ to pass and the room left, then tomorrow's big US news."""
@@ -397,6 +447,13 @@ def day_summary(snap: dict, now: int, sent: dict | None = None) -> list:
         frm = notify.hm_min(_settings().get("daily_summary_at"), SUMMARY_FROM)
     except Exception:
         notify, frm = None, SUMMARY_FROM
+    try:                             # day-cards 2026-11-26: a CME half day (13:00 / 13:15 halt) sends it 20 min after the halt
+        from engine import cme_calendar as _cc
+        ec = _cc.early_close(e.date())
+        if ec is not None:
+            frm = min(frm, int(ec) + 20)
+    except Exception:
+        pass
     if e.weekday() >= 5 or not (frm <= m < SUMMARY_TO):
         return []
     try:
@@ -424,15 +481,71 @@ def day_summary(snap: dict, now: int, sent: dict | None = None) -> list:
         tot += t or 0.0
         room = _f(c.get("room"))
         tt = _f(c.get("to_target"))
+        wk = _f(c.get("week_pnl"))
+        mo = month_pnl(snap, k, now)
+        nt = c.get("trades_today")
         lines.append(f"{label(k, c)}: {signed(t)} today"
+                     + (f", {signed(wk)} week" if wk is not None else "") + (f", {signed(mo)} month" if mo is not None else "")
+                     + (f", {int(nt)} trade{'s' if int(nt) != 1 else ''}" if isinstance(nt, (int, float)) else "")
                      + (f", {money(tt)} to pass" if tt is not None and tt > 0 else ", target reached" if tt is not None else "")
                      + (f", room {money(room)} of {money(c.get('mll'))}" if room is not None else "")
                      + ("" if real(k, c, snap) else " (Sim / paper)"))
     stale = age is None or age > HB_FRESH_S
     head = f"Day {e:%a %b %d}: {signed(tot)}" + (" (last report old)" if stale else "")
     body = ("; ".join(lines) + "." + (f" These are the numbers of the last report, {int(age) // 60} min ago." if stale and age is not None else "")
-            + news + evening_extra(e.date().isoformat()))
+            + near_setups(snap) + clocks_line(snap, now) + news + evening_extra(e.date().isoformat()))
     return [{"key": key, "title": head, "body": body, "priority": "default", "tags": "memo"}]
+
+
+WEEK_FROM = 17 * 60                     # day-cards: the week report, Friday 17:00 ET (the CME weekly close); Saturday before noon catches up
+
+
+def weekly_report(snap: dict, now: int, sent: dict | None = None, reviews_path: str | None = None) -> list:
+    """day-cards 2026-11-26: ONE week report, Friday from 17:00 ET (Saturday before 12:00 if the PC missed it): $ this week per
+    account, the week's trades live vs the backtest twin per bot (engine/live_learning.weekly_summary on the PC's reviews:
+    matched / missed / extra, $ gap, slippage), the live win rate vs the twin's, and what the learning journal noticed (the
+    causes it tagged). notify_settings.json alerts.weekly_report (ON). Never raises (nothing to say = no push)."""
+    try:
+        e = dt.datetime.fromtimestamp(int(now), ET)
+        m = e.hour * 60 + e.minute
+        if e.weekday() == 4 and m >= WEEK_FROM:
+            mon = e.date() - dt.timedelta(days=4)
+        elif e.weekday() == 5 and m < 12 * 60:
+            mon = e.date() - dt.timedelta(days=5)
+        else:
+            return []
+        key = f"{PREFIX}week:{mon.isoformat()}"
+        if key in (sent or {}):
+            return []
+        from engine import live_learning as LL, notify
+        recs = LL._jl_read(reviews_path or LL._p(None, "reviews.jsonl"))
+        W = LL.weekly_summary([r for r in recs if isinstance(r, dict) and r.get("day") and r.get("bot")], mon.isoformat())
+        parts = []
+        cs = cards(snap)
+        money_rows = [f"{label(k, c)} {signed(_f(c.get('week_pnl')))}" for k, c in cs if _f(c.get("week_pnl")) is not None]
+        tot = sum(_f(c.get("week_pnl")) or 0.0 for k, c in cs)
+        if money_rows:
+            parts.append("This week: " + ", ".join(money_rows) + ".")
+        noticed = []
+        for bot, b in (W.get("bots") or {}).items():
+            name = LL.BOTS.get(bot, bot)
+            lw = sum(1 for r in recs if isinstance(r, dict) and r.get("bot") == bot and mon.isoformat() <= str(r.get("day")) <= W["to"]
+                     and float(((r.get("live") or {}).get("usd")) or 0) > 0)
+            tw = sum(1 for r in recs if isinstance(r, dict) and r.get("bot") == bot and mon.isoformat() <= str(r.get("day")) <= W["to"]
+                     and float(((r.get("twin") or {}).get("usd")) or 0) > 0)
+            parts.append(f"{name}: {b.get('text')}; winners {lw}/{b.get('trades_live') or 0} live vs {tw}/{b.get('trades_twin') or 0} backtest.")
+            for cause, n in list((b.get("causes") or {}).items())[:3]:
+                noticed.append(f"{name} {cause} x{n}")
+        if noticed:
+            parts.append("Learning noticed: " + "; ".join(noticed) + ".")
+        if not parts:
+            return []
+        if not (W.get("bots")):
+            parts.append("No live or backtest trades this week.")
+        return [{"key": key, "title": f"Week {mon:%b %d}-{(mon + dt.timedelta(days=4)):%b %d}: {signed(tot)}",
+                 "body": notify.mask_ids(" ".join(parts))[:1500], "priority": "default", "tags": "bar_chart"}]
+    except Exception:
+        return []
 
 
 # ------------------------------------------------------------------------------------------------ one run
@@ -451,6 +564,10 @@ def guard(state: dict | None, snap: dict, roll_state=None) -> tuple:
         pass
     try:
         cands += day_summary(snap, now, st["sent"])
+    except Exception:
+        pass
+    try:                     # day-cards: the Friday 17:00 ET week report
+        cands += weekly_report(snap, now, st["sent"])
     except Exception:
         pass
     try:                     # the 07:30 ET ZEUS morning brief (tools/morning_brief.py, read-only): once a day, + one Board event
