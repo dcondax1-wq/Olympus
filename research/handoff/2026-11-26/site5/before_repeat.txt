@@ -1,0 +1,3 @@
+page    FCP ms  LCP ms  DCL ms  load ms  CLS    KB@load req@load  KB@+6s req@+6s JS KB@+6s img KB@+6s
+/gate/    1120    1120     432     1870  0.000     238      35     495      55       393          0
+{"/gate/":{"runs":3,"fcp":1120,"lcp":1120,"dcl":432.29999999993015,"load":1870.0999999999767,"cls":0,"kbLoad":237.8115234375,"reqLoad":35,"kb6s":495.19921875,"req6s":55,"jsKb6s":392.57421875,"imgKb6s":0,"top":["164KB /jarvis/three.module.min.js","26KB /olympus/themes.js?v=o11","25KB /pillars/fonts/cinzel-latin.woff2","23KB /gate/gate.js?v=g22","21KB /pillars/pillars-scene.js?v=c2","17KB /olympus/gate-catalog.js?v=nv15","15KB /nq/nqdesk.js?v=8","14KB /business/decisions.json?t=1795709915930"]}}

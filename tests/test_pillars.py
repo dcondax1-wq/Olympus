@@ -324,7 +324,7 @@ def p4_static():
           and 'id="footData"' in pi and '../trading/' in pi and '../brain/' in pi)
     g = read("gate", "index.html")
     check("p. Home: the Today strip in the header right under the Four Pillars, no height of its own, today.js loaded after the page",
-          re.search(r'id="pillarsHero".*?</section>\s*<nav class="g-today" id="todayStrip"[^>]*style="height:24px;margin:0 0 -26px"', g, re.S) is not None and "pillars/today.js?v=" in g)
+          re.search(r'id="pillarsHero".*?</section>\s*<nav class="g-today" id="todayStrip"[^>]*style="height:44px;margin:-2px 0 -26px"', g, re.S) is not None and "pillars/today.js?v=" in g)
     bj = read("brain", "brain.js")
     check("p. the Brain: brain feed read first (lite.bf), its age on Next trade (#rFeedAge), the header no longer see-through",
           "lite.bf" in read("brain", "braincore.js") and "rFeedAge" in bj and "backdrop-filter: blur(12px)" in read("brain", "brain.css"))
@@ -435,8 +435,8 @@ def p4_browser(q, now):
     H = o.get("home") or {}
     check("p. Home Today strip: Today $, the accounts, the open ATLAS trade, the next setup, each a link; from the PC post", H.get("ready") == "post" and H.get("cells", [""])[0].startswith("Today")
           and any("ATLAS SHORT" in c for c in H.get("cells", [])) and any("NY 08:30" in c for c in H.get("cells", [])) and "/pillars/data.html#lit" in H.get("hrefs", []), H)
-    check("p. Home: the strip takes no room (search < 160, 6 dashboards from < 260, More <= 844), above the search, no sideways scroll",
-          H.get("h") == 24 and H.get("q", 999) < 160 and H.get("grid", 999) < 260 and H.get("more", 999) <= 844 and H.get("stripBottom", 999) <= H.get("q", 0) and o.get("homeWide") is False, H)
+    check("p. Home: the strip takes no room, 44 px tap targets (search < 160, 6 dashboards from < 260, More <= 844), above the search, no sideways scroll",
+          H.get("h") == 44 and H.get("tapMin", 0) >= 44 and H.get("q", 999) < 160 and H.get("grid", 999) < 260 and H.get("more", 999) <= 844 and H.get("stripBottom", 999) <= H.get("q", 0) and o.get("homeWide") is False, H)
     check("p. no sideways scroll on the data pages", o.get("litWide") is False and o.get("ofWide") is False)
     BR = o.get("brain") or {}
     check("p. Brain LIT room: 'Brain feed 10 min ago' (green) on Next trade, the feed's setup + steps, its source named, a solid header",

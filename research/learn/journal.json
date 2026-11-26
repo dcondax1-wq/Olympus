@@ -1,5 +1,41 @@
 [
  {
+  "date": "2026-11-18",
+  "pillar": "lit",
+  "lens": "setup review",
+  "noticed": "2026-11-18: 5 LIT setups, 0 taken. 11-18 05:15 short: stopped at step 4 (displacement too small); would have made +4.641R. setups like it (London, discount, 0.5-1.5, <0.8) won 32 of 64, avg -0.21R.",
+  "evidence": {
+   "n": 5,
+   "taken": 0
+  },
+  "status": "watching",
+  "key": "litlearn|day|2026-11-18"
+ },
+ {
+  "date": "2026-11-19",
+  "pillar": "lit",
+  "lens": "setup review",
+  "noticed": "2026-11-19: 6 LIT setups, 0 taken. 11-19 14:30 long: stopped at step 3 (no inducement). setups like it (NY PM, discount, 0.5-1.5, <0.8) won 14 of 46, avg -0.23R.",
+  "evidence": {
+   "n": 6,
+   "taken": 0
+  },
+  "status": "watching",
+  "key": "litlearn|day|2026-11-19"
+ },
+ {
+  "date": "2026-11-20",
+  "pillar": "lit",
+  "lens": "setup review",
+  "noticed": "2026-11-20: 9 LIT setups, 0 taken. 11-20 07:55 long: stopped at step 4 (displacement too small). setups like it (London, discount, 1.5+, <0.8, VIX 25+) won 14 of 24, avg +0.57R.",
+  "evidence": {
+   "n": 9,
+   "taken": 0
+  },
+  "status": "watching",
+  "key": "litlearn|day|2026-11-20"
+ },
+ {
   "date": "2026-11-24",
   "pillar": "atlas",
   "lens": "context",
@@ -63,7 +99,7 @@
   },
   "status": "rejected",
   "key": "variant|F4 ATLAS skip middle of the range",
-  "checked": "2026-11-25"
+  "checked": "2026-11-26"
  },
  {
   "date": "2026-11-24",
@@ -155,7 +191,7 @@
   },
   "status": "rejected",
   "key": "trial|blitz|half|pd_room=far",
-  "checked": "2026-11-25"
+  "checked": "2026-11-26"
  },
  {
   "date": "2026-11-24",
@@ -169,7 +205,7 @@
   },
   "status": "rejected",
   "key": "variant|F5 BLITZ skip half-used day",
-  "checked": "2026-11-25"
+  "checked": "2026-11-26"
  },
  {
   "date": "2026-11-24",
@@ -196,7 +232,7 @@
   },
   "status": "rejected",
   "key": "variant|F1 LIT skip late chase",
-  "checked": "2026-11-25"
+  "checked": "2026-11-26"
  },
  {
   "date": "2026-11-24",
@@ -210,7 +246,7 @@
   },
   "status": "rejected",
   "key": "variant|F2 LIT skip mid-retrace fade",
-  "checked": "2026-11-25"
+  "checked": "2026-11-26"
  },
  {
   "date": "2026-11-24",
@@ -224,7 +260,7 @@
   },
   "status": "rejected",
   "key": "variant|F3 LIT x1.5 at the day's extreme",
-  "checked": "2026-11-25"
+  "checked": "2026-11-26"
  },
  {
   "date": "2026-11-24",
@@ -242,7 +278,7 @@
   },
   "status": "confirmed",
   "key": "market|after|big_day_before",
-  "checked": "2026-11-25"
+  "checked": "2026-11-26"
  },
  {
   "date": "2026-11-24",
@@ -260,7 +296,7 @@
   },
   "status": "confirmed",
   "key": "market|after|big_overnight",
-  "checked": "2026-11-25"
+  "checked": "2026-11-26"
  },
  {
   "date": "2026-11-24",
@@ -278,7 +314,7 @@
   },
   "status": "watching",
   "key": "market|after|inside_day_before",
-  "checked": "2026-11-25"
+  "checked": "2026-11-26"
  },
  {
   "date": "2026-11-24",
@@ -296,7 +332,7 @@
   },
   "status": "watching",
   "key": "market|after|nr7_before",
-  "checked": "2026-11-25"
+  "checked": "2026-11-26"
  },
  {
   "date": "2026-11-24",
@@ -314,7 +350,7 @@
   },
   "status": "confirmed",
   "key": "market|after|quiet_day_before",
-  "checked": "2026-11-25"
+  "checked": "2026-11-26"
  },
  {
   "date": "2026-11-24",
@@ -332,7 +368,7 @@
   },
   "status": "confirmed",
   "key": "market|after|small_overnight",
-  "checked": "2026-11-25"
+  "checked": "2026-11-26"
  },
  {
   "date": "2026-11-24",
@@ -345,7 +381,7 @@
   },
   "status": "confirmed",
   "key": "market|back_to_open",
-  "checked": "2026-11-25"
+  "checked": "2026-11-26"
  },
  {
   "date": "2026-11-24",
@@ -358,7 +394,7 @@
   },
   "status": "confirmed",
   "key": "market|fib_no_free_edge",
-  "checked": "2026-11-25"
+  "checked": "2026-11-26"
  },
  {
   "date": "2026-11-24",
@@ -371,7 +407,7 @@
   },
   "status": "confirmed",
   "key": "market|fvg_fill",
-  "checked": "2026-11-25"
+  "checked": "2026-11-26"
  },
  {
   "date": "2026-11-24",
@@ -384,7 +420,7 @@
   },
   "status": "confirmed",
   "key": "market|measured_move",
-  "checked": "2026-11-25"
+  "checked": "2026-11-26"
  },
  {
   "date": "2026-11-24",
@@ -397,7 +433,7 @@
   },
   "status": "confirmed",
   "key": "market|retrace|shallow_vs_deep",
-  "checked": "2026-11-25"
+  "checked": "2026-11-26"
  },
  {
   "date": "2026-11-24",
@@ -411,7 +447,7 @@
   },
   "status": "rejected",
   "key": "variant|S1 expansion pullback 0.5 -> extreme",
-  "checked": "2026-11-25"
+  "checked": "2026-11-26"
  },
  {
   "date": "2026-11-24",
@@ -425,7 +461,7 @@
   },
   "status": "rejected",
   "key": "variant|S2 deep pullback 0.79 -> 1.272",
-  "checked": "2026-11-25"
+  "checked": "2026-11-26"
  },
  {
   "date": "2026-11-24",
@@ -439,7 +475,7 @@
   },
   "status": "rejected",
   "key": "variant|S3 expansion follows expansion (first 5m displacement)",
-  "checked": "2026-11-25"
+  "checked": "2026-11-26"
  },
  {
   "date": "2026-11-25",
@@ -924,5 +960,662 @@
   "status": "watching",
   "key": "ideamill|summary",
   "checked": "2026-11-25"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "atlas",
+  "lens": "context",
+  "noticed": "ATLAS does better when: mixed weeks + London 02-05. avg R 0.999 / 1.156 / 0.303 (Jan-Jun / Jul-Oct / 2021-25) vs its own average",
+  "evidence": {
+   "n": 226,
+   "usd": 13770,
+   "z": 1.74
+  },
+  "status": "watching",
+  "key": "lesson|atlas|regime=mixed & session=London 02-05",
+  "was": "rejected"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "atlas",
+  "lens": "context",
+  "noticed": "ATLAS does better when: mixed weeks + London 02-05. avg R 0.999 / 1.156 / 0.303 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 226,
+   "usd": 13770,
+   "z": 1.74
+  },
+  "status": "rejected",
+  "key": "lesson|atlas|regime=mixed & session=London 02-05",
+  "was": "watching"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "atlas",
+  "lens": "structure",
+  "noticed": "ATLAS does worse when: entries 50-80% into the day's range. avg R 0.884 / 0.606 / -0.105 (Jan-Jun / Jul-Oct / 2021-25) vs its own average",
+  "evidence": {
+   "n": 376,
+   "usd": -13641,
+   "z": -1.36
+  },
+  "status": "watching",
+  "key": "lesson|atlas|st_pos=high",
+  "was": "rejected"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "atlas",
+  "lens": "structure",
+  "noticed": "ATLAS does worse when: entries 50-80% into the day's range. avg R 0.884 / 0.606 / -0.105 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 376,
+   "usd": -13641,
+   "z": -1.36
+  },
+  "status": "rejected",
+  "key": "lesson|atlas|st_pos=high",
+  "was": "watching"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "atlas",
+  "lens": "context",
+  "noticed": "ATLAS does better when: VIX 15-20. avg R 1.128 / 0.868 / 0.142 (Jan-Jun / Jul-Oct / 2021-25) vs its own average",
+  "evidence": {
+   "n": 563,
+   "usd": 16207,
+   "z": 1.29
+  },
+  "status": "watching",
+  "key": "lesson|atlas|vix_band=VIX 15-20",
+  "was": "rejected"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "atlas",
+  "lens": "context",
+  "noticed": "ATLAS does better when: VIX 15-20. avg R 1.128 / 0.868 / 0.142 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 563,
+   "usd": 16207,
+   "z": 1.29
+  },
+  "status": "rejected",
+  "key": "lesson|atlas|vix_band=VIX 15-20",
+  "was": "watching"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "atlas",
+  "lens": "context",
+  "noticed": "ATLAS does better when: VIX 15-20 + London 02-05. avg R 1.698 / 0.95 / 0.439 (Jan-Jun / Jul-Oct / 2021-25) vs its own average",
+  "evidence": {
+   "n": 266,
+   "usd": 29694,
+   "z": 3.4
+  },
+  "status": "confirmed",
+  "key": "lesson|atlas|vix_band=VIX 15-20 & session=London 02-05",
+  "was": "rejected"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "atlas",
+  "lens": "context",
+  "noticed": "ATLAS does better when: VIX 15-20 + London 02-05. avg R 1.698 / 0.95 / 0.439 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 266,
+   "usd": 29694,
+   "z": 3.4
+  },
+  "status": "rejected",
+  "key": "lesson|atlas|vix_band=VIX 15-20 & session=London 02-05",
+  "was": "confirmed"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "blitz",
+  "lens": "context",
+  "noticed": "BLITZ does worse when: Tuesdays. avg R 0.059 / 0.016 / -0.042 (Jan-Jun / Jul-Oct / 2021-25) vs its own average",
+  "evidence": {
+   "n": 413,
+   "usd": -3809,
+   "z": -1.53
+  },
+  "status": "watching",
+  "key": "lesson|blitz|dow=Tue",
+  "was": "rejected"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "blitz",
+  "lens": "context",
+  "noticed": "BLITZ does worse when: Tuesdays. avg R 0.059 / 0.016 / -0.042 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 413,
+   "usd": -3809,
+   "z": -1.53
+  },
+  "status": "rejected",
+  "key": "lesson|blitz|dow=Tue",
+  "was": "watching"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "blitz",
+  "lens": "context",
+  "noticed": "BLITZ does worse when: after a big day + Tuesdays. avg R -0.017 / -0.238 / -0.115 (Jan-Jun / Jul-Oct / 2021-25) vs its own average",
+  "evidence": {
+   "n": 123,
+   "usd": -2449,
+   "z": -2.04
+  },
+  "status": "confirmed",
+  "key": "lesson|blitz|prior_day=big & dow=Tue",
+  "was": "rejected"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "blitz",
+  "lens": "context",
+  "noticed": "BLITZ does worse when: after a big day + Tuesdays. avg R -0.017 / -0.238 / -0.115 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 123,
+   "usd": -2449,
+   "z": -2.04
+  },
+  "status": "rejected",
+  "key": "lesson|blitz|prior_day=big & dow=Tue",
+  "was": "confirmed"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "blitz",
+  "lens": "context",
+  "noticed": "BLITZ does worse when: trending weeks + NY AM 09:30-11:30. avg R -0.082 / -0.271 / -0.095 (Jan-Jun / Jul-Oct / 2021-25) vs its own average",
+  "evidence": {
+   "n": 159,
+   "usd": -4611,
+   "z": -2.19
+  },
+  "status": "confirmed",
+  "key": "lesson|blitz|regime=trend & session=NY AM 09:30-11:30",
+  "was": "rejected"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "blitz",
+  "lens": "context",
+  "noticed": "BLITZ does worse when: trending weeks + NY AM 09:30-11:30. avg R -0.082 / -0.271 / -0.095 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 159,
+   "usd": -4611,
+   "z": -2.19
+  },
+  "status": "rejected",
+  "key": "lesson|blitz|regime=trend & session=NY AM 09:30-11:30",
+  "was": "confirmed"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "blitz",
+  "lens": "structure",
+  "noticed": "BLITZ does better when: a displacement our way in the 30 min before (late). avg R 0.544 / 0.81 / 0.04 (Jan-Jun / Jul-Oct / 2021-25) vs its own average",
+  "evidence": {
+   "n": 167,
+   "usd": 3203,
+   "z": 1.41
+  },
+  "status": "watching",
+  "key": "lesson|blitz|st_disp=yes",
+  "was": "rejected"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "blitz",
+  "lens": "structure",
+  "noticed": "BLITZ does better when: a displacement our way in the 30 min before (late). avg R 0.544 / 0.81 / 0.04 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 167,
+   "usd": 3203,
+   "z": 1.41
+  },
+  "status": "rejected",
+  "key": "lesson|blitz|st_disp=yes",
+  "was": "watching"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "blitz",
+  "lens": "structure",
+  "noticed": "BLITZ does worse when: fading the last swing, retrace past 1.0, swing broken + the day half used (0.5-0.8 ATR). avg R 0.009 / 0.046 / -0.115 (Jan-Jun / Jul-Oct / 2021-25) vs its own average",
+  "evidence": {
+   "n": 281,
+   "usd": -4709,
+   "z": -2.45
+  },
+  "status": "confirmed",
+  "key": "lesson|blitz|st_swing=against_broken & st_used=half",
+  "was": "rejected"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "blitz",
+  "lens": "structure",
+  "noticed": "BLITZ does worse when: fading the last swing, retrace past 1.0, swing broken + the day half used (0.5-0.8 ATR). avg R 0.009 / 0.046 / -0.115 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 281,
+   "usd": -4709,
+   "z": -2.45
+  },
+  "status": "rejected",
+  "key": "lesson|blitz|st_swing=against_broken & st_used=half",
+  "was": "confirmed"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "blitz",
+  "lens": "structure",
+  "noticed": "BLITZ does worse when: the day half used (0.5-0.8 ATR). avg R 0.106 / -0.117 / -0.035 (Jan-Jun / Jul-Oct / 2021-25) vs its own average",
+  "evidence": {
+   "n": 480,
+   "usd": -4742,
+   "z": -1.7
+  },
+  "status": "watching",
+  "key": "lesson|blitz|st_used=half",
+  "was": "rejected"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "blitz",
+  "lens": "structure",
+  "noticed": "BLITZ does worse when: the day half used (0.5-0.8 ATR). avg R 0.106 / -0.117 / -0.035 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 480,
+   "usd": -4742,
+   "z": -1.7
+  },
+  "status": "rejected",
+  "key": "lesson|blitz|st_used=half",
+  "was": "watching"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "structure",
+  "noticed": "LIT (Zlarior) does worse when: the day half used (0.5-0.8 ATR). avg R 0.576 / 0.455 / -0.141 (Jan-Jun / Jul-Oct / 2021-25) vs its own average",
+  "evidence": {
+   "n": 143,
+   "usd": -11183,
+   "z": -1.22
+  },
+  "status": "watching",
+  "key": "lesson|lit|st_used=half",
+  "was": "rejected"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "structure",
+  "noticed": "LIT (Zlarior) does worse when: the day half used (0.5-0.8 ATR). avg R 0.576 / 0.455 / -0.141 (Jan-Jun / Jul-Oct / 2021-25) vs its own average - FADED: no longer the same in all 3 spans",
+  "evidence": {
+   "n": 143,
+   "usd": -11183,
+   "z": -1.22
+  },
+  "status": "rejected",
+  "key": "lesson|lit|st_used=half",
+  "was": "watching"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "setup gate",
+  "noticed": "Gate step 7 'a 1m CISD within 22 bars after the tap' is mixed: +$14,487 / +$5,154 / $-8,496 (Jan-Jun / Jul-Oct / 2021-25); it blocked 580 trades: missed winners $93,629, avoided losers $201,543",
+  "evidence": {
+   "usd": 11145,
+   "h1": 14487,
+   "h2": 5154,
+   "y21_25": -8496
+  },
+  "status": "watching",
+  "key": "litlearn|gate|cisd1m"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "setup gate",
+  "noticed": "Gate step 2 'sweep >= 0.5 ATR past the level' earns: +$1,898 / +$1,029 / +$5,038 (Jan-Jun / Jul-Oct / 2021-25); it blocked 49 trades: missed winners $4,928, avoided losers $13,876",
+  "evidence": {
+   "usd": 7965,
+   "h1": 1898,
+   "h2": 1029,
+   "y21_25": 5038
+  },
+  "status": "confirmed",
+  "key": "litlearn|gate|depth"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "setup gate",
+  "noticed": "Gate step 4 'displacement body >= 0.8 ATR' earns: +$6,829 / +$4,396 / +$9,473 (Jan-Jun / Jul-Oct / 2021-25); it blocked 287 trades: missed winners $77,119, avoided losers $72,485",
+  "evidence": {
+   "usd": 20698,
+   "h1": 6829,
+   "h2": 4396,
+   "y21_25": 9473
+  },
+  "status": "confirmed",
+  "key": "litlearn|gate|disp"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "setup gate",
+  "noticed": "Gate step 3 'an inducement within 1 ATR, <= 36 bars' is mixed: +$4,567 / +$3,693 / $-91 (Jan-Jun / Jul-Oct / 2021-25); it blocked 254 trades: missed winners $47,746, avoided losers $47,476",
+  "evidence": {
+   "usd": 8169,
+   "h1": 4567,
+   "h2": 3693,
+   "y21_25": -91
+  },
+  "status": "watching",
+  "key": "litlearn|gate|inducement"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "setup gate",
+  "noticed": "Gate step 7 'the limit lives 6 bars (30 min)' earns: +$4 / +$444 / +$8,786 (Jan-Jun / Jul-Oct / 2021-25); it blocked 32 trades: missed winners $544, avoided losers $7,628",
+  "evidence": {
+   "usd": 9234,
+   "h1": 4,
+   "h2": 444,
+   "y21_25": 8786
+  },
+  "status": "confirmed",
+  "key": "litlearn|gate|limit_wait"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "setup gate",
+  "noticed": "Gate step 9 'the Monday rule' is mixed: +$2,113 / +$302 / $-3,749 (Jan-Jun / Jul-Oct / 2021-25); it blocked 43 trades: missed winners $7,038, avoided losers $6,495",
+  "evidence": {
+   "usd": -1334,
+   "h1": 2113,
+   "h2": 302,
+   "y21_25": -3749
+  },
+  "status": "watching",
+  "key": "litlearn|gate|monday"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "setup gate",
+  "noticed": "Gate step 9 'one trade a day' is mixed: +$4,958 / $-2,565 / +$5,626 (Jan-Jun / Jul-Oct / 2021-25); it blocked 119 trades: missed winners $16,619, avoided losers $21,485",
+  "evidence": {
+   "usd": 8019,
+   "h1": 4958,
+   "h2": -2565,
+   "y21_25": 5626
+  },
+  "status": "watching",
+  "key": "litlearn|gate|one_a_day"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "setup gate",
+  "noticed": "Gate step 6 'stop 8-80 points' earns: +$628 / +$116 / +$3,597 (Jan-Jun / Jul-Oct / 2021-25); it blocked 28 trades: missed winners $7,533, avoided losers $9,084",
+  "evidence": {
+   "usd": 4341,
+   "h1": 628,
+   "h2": 116,
+   "y21_25": 3597
+  },
+  "status": "confirmed",
+  "key": "litlearn|gate|stop_size"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "setup gate",
+  "noticed": "Gate step 6 'a VIX-band target >= 1.5R away' is mixed: $-353 / +$398 / $-1,052 (Jan-Jun / Jul-Oct / 2021-25); it blocked 9 trades: missed winners $1,917, avoided losers $846",
+  "evidence": {
+   "usd": -1007,
+   "h1": -353,
+   "h2": 398,
+   "y21_25": -1052
+  },
+  "status": "watching",
+  "key": "litlearn|gate|target"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "setup gate",
+  "noticed": "Gate step 0 'entry hours 02:00-15:30 ET' is mixed: +$5,412 / $-660 / +$8,525 (Jan-Jun / Jul-Oct / 2021-25); it blocked 86 trades: missed winners $12,022, avoided losers $24,037",
+  "evidence": {
+   "usd": 13277,
+   "h1": 5412,
+   "h2": -660,
+   "y21_25": 8525
+  },
+  "status": "watching",
+  "key": "litlearn|gate|window"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "setup gate",
+  "noticed": "Gate step 9 'the weekly stop (2 losses -> half size)' is mixed: $-1,453 / +$233 / +$621 (Jan-Jun / Jul-Oct / 2021-25); it blocked 0 trades: missed winners $0, avoided losers $0",
+  "evidence": {
+   "usd": -599,
+   "h1": -1453,
+   "h2": 233,
+   "y21_25": 621
+  },
+  "status": "watching",
+  "key": "litlearn|gate|wk_stop"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "setup suggestion",
+  "noticed": "Suggestion '1m CISD within 15 bars': Jan-Jun -10,565 $, Jul-Oct -1,504 $, 2021-25 -2,815 $, walk-forward 2/7 vs live; failed: pick_h1, check_jul_oct, y2021_25, walk_forward",
+  "evidence": {
+   "usd": -1504,
+   "h1": -10565,
+   "y21_25": -2815,
+   "walk": 2,
+   "tested": 13
+  },
+  "status": "watching",
+  "key": "litlearn|prop|cisd1m_15"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "setup suggestion",
+  "noticed": "Suggestion 'sweep >= 0.3 ATR (looser)': Jan-Jun +1 $, Jul-Oct -617 $, 2021-25 -1,337 $, walk-forward 2/7 vs live; failed: check_jul_oct, y2021_25, walk_forward",
+  "evidence": {
+   "usd": -617,
+   "h1": 1,
+   "y21_25": -1337,
+   "walk": 2,
+   "tested": 13
+  },
+  "status": "watching",
+  "key": "litlearn|prop|depth_0.3"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "setup suggestion",
+  "noticed": "Suggestion 'sweep >= 0.75 ATR (stricter)': Jan-Jun +1,029 $, Jul-Oct -4 $, 2021-25 -3,662 $, walk-forward 4/7 vs live; failed: check_jul_oct, y2021_25, walk_forward",
+  "evidence": {
+   "usd": -4,
+   "h1": 1029,
+   "y21_25": -3662,
+   "walk": 4,
+   "tested": 13
+  },
+  "status": "watching",
+  "key": "litlearn|prop|depth_0.75"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "setup suggestion",
+  "noticed": "Suggestion 'displacement >= 0.6 ATR (looser)': Jan-Jun +1,615 $, Jul-Oct -3,413 $, 2021-25 -16,195 $, walk-forward 1/7 vs live; failed: pick_h1, check_jul_oct, y2021_25, walk_forward",
+  "evidence": {
+   "usd": -3413,
+   "h1": 1615,
+   "y21_25": -16195,
+   "walk": 1,
+   "tested": 13
+  },
+  "status": "watching",
+  "key": "litlearn|prop|disp_0.6"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "setup suggestion",
+  "noticed": "Suggestion 'displacement >= 1.0 ATR (stricter)': Jan-Jun -10,211 $, Jul-Oct -6,672 $, 2021-25 -14,512 $, walk-forward 1/7 vs live; failed: pick_h1, check_jul_oct, y2021_25, walk_forward",
+  "evidence": {
+   "usd": -6672,
+   "h1": -10211,
+   "y21_25": -14512,
+   "walk": 1,
+   "tested": 13
+  },
+  "status": "watching",
+  "key": "litlearn|prop|disp_1.0"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "setup suggestion",
+  "noticed": "Suggestion '2 inducements needed': Jan-Jun -19,514 $, Jul-Oct -4,880 $, 2021-25 -2,105 $, walk-forward 3/7 vs live; failed: pick_h1, check_jul_oct, y2021_25, walk_forward, trades_week",
+  "evidence": {
+   "usd": -4880,
+   "h1": -19514,
+   "y21_25": -2105,
+   "walk": 3,
+   "tested": 13
+  },
+  "status": "watching",
+  "key": "litlearn|prop|idm_2"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "setup suggestion",
+  "noticed": "Suggestion 'no inducement needed': Jan-Jun -4,567 $, Jul-Oct -3,693 $, 2021-25 +90 $, walk-forward 2/7 vs live; failed: pick_h1, check_jul_oct, walk_forward",
+  "evidence": {
+   "usd": -3693,
+   "h1": -4567,
+   "y21_25": 90,
+   "walk": 2,
+   "tested": 13
+  },
+  "status": "watching",
+  "key": "litlearn|prop|no_idm"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "setup suggestion",
+  "noticed": "Suggestion 'no Monday rule': Jan-Jun -2,113 $, Jul-Oct -302 $, 2021-25 +3,749 $, walk-forward 2/7 vs live; failed: pick_h1, check_jul_oct, walk_forward",
+  "evidence": {
+   "usd": -302,
+   "h1": -2113,
+   "y21_25": 3749,
+   "walk": 2,
+   "tested": 13
+  },
+  "status": "watching",
+  "key": "litlearn|prop|no_monday"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "setup suggestion",
+  "noticed": "Suggestion 'only Silver Bullet hours (03-04, 10-11, 14-15 ET)': Jan-Jun -29,754 $, Jul-Oct -9,139 $, 2021-25 -3,346 $, walk-forward 3/7 vs live; failed: pick_h1, check_jul_oct, y2021_25, walk_forward, trades_week",
+  "evidence": {
+   "usd": -9139,
+   "h1": -29754,
+   "y21_25": -3346,
+   "walk": 3,
+   "tested": 13
+  },
+  "status": "watching",
+  "key": "litlearn|prop|sb_only"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "setup suggestion",
+  "noticed": "Suggestion 'no trade when the prior VIX close >= 25': Jan-Jun -4,065 $, Jul-Oct +0 $, 2021-25 -10,009 $, walk-forward 4/7 vs live; failed: pick_h1, check_jul_oct, y2021_25, walk_forward",
+  "evidence": {
+   "usd": 0,
+   "h1": -4065,
+   "y21_25": -10009,
+   "walk": 4,
+   "tested": 13
+  },
+  "status": "watching",
+  "key": "litlearn|prop|skip_vix25"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "setup suggestion",
+  "noticed": "Suggestion 'only on the True Day Open side (longs below, shorts above)': Jan-Jun -7,708 $, Jul-Oct -2,344 $, 2021-25 +4,133 $, walk-forward 3/7 vs live; failed: pick_h1, check_jul_oct, walk_forward",
+  "evidence": {
+   "usd": -2344,
+   "h1": -7708,
+   "y21_25": 4133,
+   "walk": 3,
+   "tested": 13
+  },
+  "status": "watching",
+  "key": "litlearn|prop|tdo_side"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "setup suggestion",
+  "noticed": "Suggestion 'a 2nd trade a day': Jan-Jun -4,958 $, Jul-Oct +2,565 $, 2021-25 -5,626 $, walk-forward 3/7 vs live; failed: pick_h1, y2021_25, walk_forward",
+  "evidence": {
+   "usd": 2565,
+   "h1": -4958,
+   "y21_25": -5626,
+   "walk": 3,
+   "tested": 13
+  },
+  "status": "watching",
+  "key": "litlearn|prop|two_a_day"
+ },
+ {
+  "date": "2026-11-26",
+  "pillar": "lit",
+  "lens": "setup suggestion",
+  "noticed": "Suggestion 'the limit lives 12 bars (60 min)': Jan-Jun -4 $, Jul-Oct -444 $, 2021-25 -8,787 $, walk-forward 0/7 vs live; failed: pick_h1, check_jul_oct, y2021_25, walk_forward",
+  "evidence": {
+   "usd": -444,
+   "h1": -4,
+   "y21_25": -8787,
+   "walk": 0,
+   "tested": 13
+  },
+  "status": "watching",
+  "key": "litlearn|prop|wait_12"
  }
 ]

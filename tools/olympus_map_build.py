@@ -190,7 +190,8 @@ def shown_part(apps, zones):
 
 CAT_JS = r"""
 const C = require(process.argv[1]);
-const o = { arenas: C.arenas.map((x) => ({ id: x.id, name: x.name, front: x.front, line: x.line, count: x.count })), app: {}, label: {}, replace: {}, facts: {}, retired: C.RETIRED };
+const o = { arenas: C.arenas.map((x) => ({ id: x.id, name: x.name, front: x.front, line: x.line, count: x.count })), app: {}, label: {}, replace: {}, facts: {}, retired: C.RETIRED,
+  archived: (C.ARCHIVED || []).map((id) => [id, C.ARCHIVE_INTO[id]]) };
 C.apps.forEach((a) => { const x = C.arenaOf(a.id); o.app[a.id] = x ? x.id : 'else'; o.label[a.id] = a.label; });
 C.RETIRED.forEach((id) => { const r = C.replacementOf(id); if (r) o.replace[id] = r.id; });
 Object.keys(C.FACTS).forEach((k) => { o.facts[k] = { app: C.FACTS[k].app, path: C.FACTS[k].path || '', name: C.FACTS[k].name || '', label: C.FACTS[k].label, also: C.FACTS[k].also }; });
@@ -224,6 +225,13 @@ def arena_parts(apps, cat):
             "| Retired | Opens |", "|---|---|"]
     for i in sorted(cat["replace"]):
         out.append(f"| {names.get(i, i)} (`{i}`) | {nm(cat['replace'][i])} (`{cat['replace'][i]}`) |")
+    if cat.get("archived"):     # day-site5: the Archive door (no redirect: the host page still links them)
+        out += ["", "## Archived: the Archive door (`hub/arena.html?a=archive`)", "",
+                "Not on Home, in search (their words find the page that holds them now) or in A to Z. Unlike retired apps they do NOT redirect: every old link "
+                "still opens the page. The door also lists every retired app (opened with `?stay=1`). Evidence: `research/handoff/2026-11-26/site5/ARCHIVE_LIST.md`.", "",
+                "| Archived | Its content lives on |", "|---|---|"]
+        for i, into in cat["archived"]:
+            out.append(f"| {names.get(i, i)} (`{i}`) | {nm(into)} (`{into}`) |")
     out += ["", "## One place per fact", "", "| Fact | The one place | Also shown on (a 'Main copy' chip links back) |", "|---|---|---|"]
     for k, f in cat["facts"].items():
         out.append(f"| {f['label']} | {f.get('name') or nm(f['app'])} (`{f.get('path') or f['app']}`) | {', '.join(sorted(f['also']))} |")

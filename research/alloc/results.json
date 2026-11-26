@@ -1,0 +1,2443 @@
+{
+ "n": 1000,
+ "len": 126,
+ "accounts": {
+  "Z50": {
+   "plan": "mffu_builder_50k",
+   "stage": "eval",
+   "bal": -822.0,
+   "room": 1009.0,
+   "s": 27,
+   "dtr": 14,
+   "today": "B01 LIT only",
+   "name": "Zlarior Builder 50K eval"
+  },
+  "Z25": {
+   "plan": "mffu_builder_25k",
+   "stage": "eval",
+   "bal": 19.0,
+   "room": 996.0,
+   "s": 4,
+   "dtr": 1,
+   "today": "B01 LIT only",
+   "name": "Zlarior 25K #2 eval"
+  },
+  "R25": {
+   "plan": "mffu_rapid_eod_25k",
+   "stage": "eval",
+   "bal": -5.0,
+   "room": 995.0,
+   "s": 4,
+   "dtr": 1,
+   "today": "B03 LIT + ATLAS first-come",
+   "name": "Rapid EOD 25K eval"
+  },
+  "A25": {
+   "plan": "mffu_builder_25k",
+   "stage": "funded",
+   "bal": 401.0,
+   "room": 1000.0,
+   "s": 7,
+   "dtr": 6,
+   "today": "B02 ATLAS only",
+   "name": "ATLAS Builder 25K funded"
+  }
+ },
+ "books": [
+  "B01 LIT only",
+  "B02 ATLAS only",
+  "B03 LIT + ATLAS first-come",
+  "B04 LIT priority budget (ATLAS <= 50% of the day)",
+  "B05 time split: ATLAS NY only (from 09:30)",
+  "B06 time split: ATLAS London only (before 09:30)",
+  "B07 strict windows: LIT before 09:30, ATLAS from 09:30",
+  "B08 ATLAS x0.5 in the eval, full funded",
+  "B09 LIT eval, LIT + ATLAS once funded",
+  "B10 size split: LIT x0.75 eval + funded",
+  "B11 size split: LIT x0.5 in the eval",
+  "B12 LIT + ATLAS + BLITZ $300",
+  "B13 LIT + ATLAS, ATLAS lane x2"
+ ],
+ "cells": {
+  "Z50|B01 LIT only": {
+   "H1": {
+    "mean": 3585,
+    "p10": -92,
+    "p50": 3200,
+    "owner": 3635,
+    "fees": 51,
+    "no_pay": 24.8,
+    "lost": 9.0,
+    "first_pay": 57.0
+   },
+   "H2": {
+    "mean": 4097,
+    "p10": 0,
+    "p50": 4708,
+    "owner": 4150,
+    "fees": 53,
+    "no_pay": 13.5,
+    "lost": 9.3,
+    "first_pay": 53.0
+   },
+   "REF": {
+    "mean": -87,
+    "p10": -275,
+    "p50": -184,
+    "owner": 110,
+    "fees": 198,
+    "no_pay": 93.7,
+    "lost": 29.2,
+    "first_pay": 89.0
+   },
+   "2025": {
+    "mean": -40,
+    "p10": -275,
+    "p50": -184,
+    "owner": 112,
+    "fees": 152,
+    "no_pay": 93.6,
+    "lost": 16.0,
+    "first_pay": 88.0
+   }
+  },
+  "Z50|B02 ATLAS only": {
+   "H1": {
+    "mean": 4786,
+    "p10": 1407,
+    "p50": 4800,
+    "owner": 4853,
+    "fees": 67,
+    "no_pay": 9.4,
+    "lost": 16.4,
+    "first_pay": 52.0
+   },
+   "H2": {
+    "mean": 2088,
+    "p10": -92,
+    "p50": 1600,
+    "owner": 2139,
+    "fees": 52,
+    "no_pay": 37.2,
+    "lost": 14.2,
+    "first_pay": 73.0
+   },
+   "REF": {
+    "mean": -432,
+    "p10": -734,
+    "p50": -551,
+    "owner": 98,
+    "fees": 529,
+    "no_pay": 94.6,
+    "lost": 55.0,
+    "first_pay": 67.0
+   },
+   "2025": {
+    "mean": -332,
+    "p10": -643,
+    "p50": -459,
+    "owner": 134,
+    "fees": 466,
+    "no_pay": 93.6,
+    "lost": 59.1,
+    "first_pay": 81.0
+   }
+  },
+  "Z50|B03 LIT + ATLAS first-come": {
+   "H1": {
+    "mean": 7098,
+    "p10": 4616,
+    "p50": 7816,
+    "owner": 7208,
+    "fees": 110,
+    "no_pay": 0.5,
+    "lost": 18.3,
+    "first_pay": 37.0
+   },
+   "H2": {
+    "mean": 7075,
+    "p10": 3108,
+    "p50": 7816,
+    "owner": 7186,
+    "fees": 111,
+    "no_pay": 1.8,
+    "lost": 17.6,
+    "first_pay": 39.0
+   },
+   "REF": {
+    "mean": -523,
+    "p10": -918,
+    "p50": -734,
+    "owner": 179,
+    "fees": 702,
+    "no_pay": 89.9,
+    "lost": 77.5,
+    "first_pay": 72.0
+   },
+   "2025": {
+    "mean": -422,
+    "p10": -826,
+    "p50": -643,
+    "owner": 174,
+    "fees": 597,
+    "no_pay": 90.8,
+    "lost": 73.6,
+    "first_pay": 80.5
+   }
+  },
+  "Z50|B04 LIT priority budget (ATLAS <= 50% of the day)": {
+   "H1": {
+    "mean": 5966,
+    "p10": 3108,
+    "p50": 6400,
+    "owner": 6058,
+    "fees": 92,
+    "no_pay": 1.5,
+    "lost": 18.0,
+    "first_pay": 41.0
+   },
+   "H2": {
+    "mean": 5534,
+    "p10": 1600,
+    "p50": 6308,
+    "owner": 5622,
+    "fees": 89,
+    "no_pay": 4.6,
+    "lost": 18.5,
+    "first_pay": 45.0
+   },
+   "REF": {
+    "mean": -497,
+    "p10": -918,
+    "p50": -643,
+    "owner": 162,
+    "fees": 658,
+    "no_pay": 90.8,
+    "lost": 74.6,
+    "first_pay": 74.0
+   },
+   "2025": {
+    "mean": -432,
+    "p10": -826,
+    "p50": -551,
+    "owner": 146,
+    "fees": 578,
+    "no_pay": 92.2,
+    "lost": 69.5,
+    "first_pay": 81.0
+   }
+  },
+  "Z50|B05 time split: ATLAS NY only (from 09:30)": {
+   "H1": {
+    "mean": 6617,
+    "p10": 3200,
+    "p50": 6400,
+    "owner": 6683,
+    "fees": 66,
+    "no_pay": 1.2,
+    "lost": 3.4,
+    "first_pay": 46.0
+   },
+   "H2": {
+    "mean": 5371,
+    "p10": 1416,
+    "p50": 6216,
+    "owner": 5453,
+    "fees": 82,
+    "no_pay": 6.3,
+    "lost": 15.7,
+    "first_pay": 49.0
+   },
+   "REF": {
+    "mean": -154,
+    "p10": -459,
+    "p50": -275,
+    "owner": 166,
+    "fees": 321,
+    "no_pay": 91.3,
+    "lost": 47.7,
+    "first_pay": 79.0
+   },
+   "2025": {
+    "mean": -94,
+    "p10": -367,
+    "p50": -275,
+    "owner": 163,
+    "fees": 258,
+    "no_pay": 91.3,
+    "lost": 39.9,
+    "first_pay": 85.0
+   }
+  },
+  "Z50|B06 time split: ATLAS London only (before 09:30)": {
+   "H1": {
+    "mean": 5755,
+    "p10": 2824,
+    "p50": 6308,
+    "owner": 5861,
+    "fees": 106,
+    "no_pay": 2.3,
+    "lost": 24.6,
+    "first_pay": 41.0
+   },
+   "H2": {
+    "mean": 6153,
+    "p10": 3108,
+    "p50": 6400,
+    "owner": 6230,
+    "fees": 78,
+    "no_pay": 2.0,
+    "lost": 9.9,
+    "first_pay": 44.0
+   },
+   "REF": {
+    "mean": -461,
+    "p10": -826,
+    "p50": -643,
+    "owner": 131,
+    "fees": 592,
+    "no_pay": 92.7,
+    "lost": 68.8,
+    "first_pay": 70.0
+   },
+   "2025": {
+    "mean": -360,
+    "p10": -734,
+    "p50": -459,
+    "owner": 146,
+    "fees": 505,
+    "no_pay": 92.0,
+    "lost": 64.5,
+    "first_pay": 81.5
+   }
+  },
+  "Z50|B07 strict windows: LIT before 09:30, ATLAS from 09:30": {
+   "H1": {
+    "mean": 6267,
+    "p10": 3108,
+    "p50": 6400,
+    "owner": 6333,
+    "fees": 66,
+    "no_pay": 2.4,
+    "lost": 4.6,
+    "first_pay": 47.5
+   },
+   "H2": {
+    "mean": 4548,
+    "p10": -92,
+    "p50": 4800,
+    "owner": 4634,
+    "fees": 86,
+    "no_pay": 12.0,
+    "lost": 20.3,
+    "first_pay": 53.0
+   },
+   "REF": {
+    "mean": -147,
+    "p10": -459,
+    "p50": -275,
+    "owner": 152,
+    "fees": 299,
+    "no_pay": 91.9,
+    "lost": 44.2,
+    "first_pay": 80.0
+   },
+   "2025": {
+    "mean": -122,
+    "p10": -367,
+    "p50": -275,
+    "owner": 133,
+    "fees": 255,
+    "no_pay": 92.7,
+    "lost": 35.1,
+    "first_pay": 83.0
+   }
+  },
+  "Z50|B08 ATLAS x0.5 in the eval, full funded": {
+   "H1": {
+    "mean": 6703,
+    "p10": 3200,
+    "p50": 6400,
+    "owner": 6792,
+    "fees": 89,
+    "no_pay": 1.5,
+    "lost": 19.0,
+    "first_pay": 40.0
+   },
+   "H2": {
+    "mean": 6709,
+    "p10": 3108,
+    "p50": 7816,
+    "owner": 6805,
+    "fees": 96,
+    "no_pay": 3.1,
+    "lost": 15.4,
+    "first_pay": 43.0
+   },
+   "REF": {
+    "mean": -272,
+    "p10": -551,
+    "p50": -367,
+    "owner": 112,
+    "fees": 384,
+    "no_pay": 93.8,
+    "lost": 54.9,
+    "first_pay": 72.0
+   },
+   "2025": {
+    "mean": -211,
+    "p10": -459,
+    "p50": -275,
+    "owner": 106,
+    "fees": 316,
+    "no_pay": 94.5,
+    "lost": 51.3,
+    "first_pay": 83.0
+   }
+  },
+  "Z50|B09 LIT eval, LIT + ATLAS once funded": {
+   "H1": {
+    "mean": 5008,
+    "p10": -92,
+    "p50": 6308,
+    "owner": 5083,
+    "fees": 76,
+    "no_pay": 23.3,
+    "lost": 13.1,
+    "first_pay": 44.0
+   },
+   "H2": {
+    "mean": 6091,
+    "p10": 1416,
+    "p50": 6400,
+    "owner": 6184,
+    "fees": 93,
+    "no_pay": 9.4,
+    "lost": 14.8,
+    "first_pay": 45.0
+   },
+   "REF": {
+    "mean": -148,
+    "p10": -367,
+    "p50": -275,
+    "owner": 98,
+    "fees": 246,
+    "no_pay": 94.8,
+    "lost": 48.8,
+    "first_pay": 69.0
+   },
+   "2025": {
+    "mean": -118,
+    "p10": -275,
+    "p50": -184,
+    "owner": 72,
+    "fees": 190,
+    "no_pay": 96.4,
+    "lost": 38.7,
+    "first_pay": 75.5
+   }
+  },
+  "Z50|B10 size split: LIT x0.75 eval + funded": {
+   "H1": {
+    "mean": 6540,
+    "p10": 3200,
+    "p50": 6400,
+    "owner": 6616,
+    "fees": 76,
+    "no_pay": 1.9,
+    "lost": 9.9,
+    "first_pay": 41.0
+   },
+   "H2": {
+    "mean": 5485,
+    "p10": 1508,
+    "p50": 6400,
+    "owner": 5557,
+    "fees": 72,
+    "no_pay": 8.5,
+    "lost": 12.7,
+    "first_pay": 53.0
+   },
+   "REF": {
+    "mean": -445,
+    "p10": -826,
+    "p50": -643,
+    "owner": 149,
+    "fees": 594,
+    "no_pay": 92.1,
+    "lost": 63.1,
+    "first_pay": 75.0
+   },
+   "2025": {
+    "mean": -368,
+    "p10": -734,
+    "p50": -551,
+    "owner": 144,
+    "fees": 512,
+    "no_pay": 92.0,
+    "lost": 60.2,
+    "first_pay": 84.0
+   }
+  },
+  "Z50|B11 size split: LIT x0.5 in the eval": {
+   "H1": {
+    "mean": 6625,
+    "p10": 3108,
+    "p50": 7725,
+    "owner": 6714,
+    "fees": 88,
+    "no_pay": 2.4,
+    "lost": 17.6,
+    "first_pay": 41.0
+   },
+   "H2": {
+    "mean": 6045,
+    "p10": 1508,
+    "p50": 6400,
+    "owner": 6128,
+    "fees": 83,
+    "no_pay": 6.6,
+    "lost": 17.9,
+    "first_pay": 50.0
+   },
+   "REF": {
+    "mean": -429,
+    "p10": -734,
+    "p50": -551,
+    "owner": 150,
+    "fees": 580,
+    "no_pay": 91.9,
+    "lost": 59.1,
+    "first_pay": 70.0
+   },
+   "2025": {
+    "mean": -353,
+    "p10": -734,
+    "p50": -551,
+    "owner": 155,
+    "fees": 508,
+    "no_pay": 91.7,
+    "lost": 61.5,
+    "first_pay": 81.0
+   }
+  },
+  "Z50|B12 LIT + ATLAS + BLITZ $300": {
+   "H1": {
+    "mean": 8105,
+    "p10": 4800,
+    "p50": 7816,
+    "owner": 8243,
+    "fees": 138,
+    "no_pay": 0.2,
+    "lost": 21.5,
+    "first_pay": 32.0
+   },
+   "H2": {
+    "mean": 8569,
+    "p10": 4800,
+    "p50": 7908,
+    "owner": 8693,
+    "fees": 124,
+    "no_pay": 0.6,
+    "lost": 17.9,
+    "first_pay": 34.0
+   },
+   "REF": {
+    "mean": -566,
+    "p10": -1010,
+    "p50": -826,
+    "owner": 218,
+    "fees": 783,
+    "no_pay": 88.5,
+    "lost": 82.3,
+    "first_pay": 64.0
+   },
+   "2025": {
+    "mean": -324,
+    "p10": -918,
+    "p50": -643,
+    "owner": 309,
+    "fees": 633,
+    "no_pay": 84.5,
+    "lost": 77.6,
+    "first_pay": 76.0
+   }
+  },
+  "Z50|B13 LIT + ATLAS, ATLAS lane x2": {
+   "H1": {
+    "mean": 5508,
+    "p10": 2925,
+    "p50": 6216,
+    "owner": 5595,
+    "fees": 88,
+    "no_pay": 2.0,
+    "lost": 20.6,
+    "first_pay": 43.0
+   },
+   "H2": {
+    "mean": 4780,
+    "p10": 1508,
+    "p50": 4800,
+    "owner": 4851,
+    "fees": 71,
+    "no_pay": 4.4,
+    "lost": 18.7,
+    "first_pay": 44.0
+   },
+   "REF": {
+    "mean": -592,
+    "p10": -918,
+    "p50": -734,
+    "owner": 133,
+    "fees": 724,
+    "no_pay": 92.5,
+    "lost": 77.8,
+    "first_pay": 75.0
+   },
+   "2025": {
+    "mean": -493,
+    "p10": -826,
+    "p50": -643,
+    "owner": 131,
+    "fees": 624,
+    "no_pay": 93.0,
+    "lost": 72.1,
+    "first_pay": 81.5
+   }
+  },
+  "Z25|B01 LIT only": {
+   "H1": {
+    "mean": 1922,
+    "p10": 0,
+    "p50": 1600,
+    "owner": 1944,
+    "fees": 22,
+    "no_pay": 21.5,
+    "lost": 12.4,
+    "first_pay": 49.0
+   },
+   "H2": {
+    "mean": 1873,
+    "p10": -63,
+    "p50": 1600,
+    "owner": 1901,
+    "fees": 27,
+    "no_pay": 20.9,
+    "lost": 16.8,
+    "first_pay": 48.0
+   },
+   "REF": {
+    "mean": -43,
+    "p10": -126,
+    "p50": -63,
+    "owner": 42,
+    "fees": 85,
+    "no_pay": 95.1,
+    "lost": 30.3,
+    "first_pay": 75.0
+   },
+   "2025": {
+    "mean": -3,
+    "p10": -126,
+    "p50": -63,
+    "owner": 58,
+    "fees": 60,
+    "no_pay": 93.9,
+    "lost": 19.5,
+    "first_pay": 81.0
+   }
+  },
+  "Z25|B02 ATLAS only": {
+   "H1": {
+    "mean": 2147,
+    "p10": 0,
+    "p50": 2400,
+    "owner": 2174,
+    "fees": 27,
+    "no_pay": 20.1,
+    "lost": 8.0,
+    "first_pay": 42.0
+   },
+   "H2": {
+    "mean": 748,
+    "p10": -63,
+    "p50": 0,
+    "owner": 766,
+    "fees": 17,
+    "no_pay": 55.1,
+    "lost": 10.1,
+    "first_pay": 64.0
+   },
+   "REF": {
+    "mean": -200,
+    "p10": -315,
+    "p50": -252,
+    "owner": 42,
+    "fees": 241,
+    "no_pay": 95.5,
+    "lost": 46.7,
+    "first_pay": 66.0
+   },
+   "2025": {
+    "mean": -172,
+    "p10": -315,
+    "p50": -189,
+    "owner": 40,
+    "fees": 212,
+    "no_pay": 96.0,
+    "lost": 44.8,
+    "first_pay": 66.0
+   }
+  },
+  "Z25|B03 LIT + ATLAS first-come": {
+   "H1": {
+    "mean": 3393,
+    "p10": 1537,
+    "p50": 3874,
+    "owner": 3449,
+    "fees": 56,
+    "no_pay": 2.7,
+    "lost": 20.8,
+    "first_pay": 35.0
+   },
+   "H2": {
+    "mean": 2990,
+    "p10": 674,
+    "p50": 3200,
+    "owner": 3049,
+    "fees": 59,
+    "no_pay": 8.6,
+    "lost": 23.3,
+    "first_pay": 37.0
+   },
+   "REF": {
+    "mean": -261,
+    "p10": -441,
+    "p50": -315,
+    "owner": 66,
+    "fees": 328,
+    "no_pay": 93.2,
+    "lost": 66.3,
+    "first_pay": 70.5
+   },
+   "2025": {
+    "mean": -213,
+    "p10": -378,
+    "p50": -252,
+    "owner": 62,
+    "fees": 274,
+    "no_pay": 93.5,
+    "lost": 60.0,
+    "first_pay": 68.0
+   }
+  },
+  "Z25|B04 LIT priority budget (ATLAS <= 50% of the day)": {
+   "H1": {
+    "mean": 2758,
+    "p10": 737,
+    "p50": 3137,
+    "owner": 2805,
+    "fees": 46,
+    "no_pay": 5.5,
+    "lost": 23.8,
+    "first_pay": 40.0
+   },
+   "H2": {
+    "mean": 2280,
+    "p10": -63,
+    "p50": 2400,
+    "owner": 2324,
+    "fees": 44,
+    "no_pay": 12.3,
+    "lost": 23.2,
+    "first_pay": 44.0
+   },
+   "REF": {
+    "mean": -250,
+    "p10": -441,
+    "p50": -315,
+    "owner": 60,
+    "fees": 310,
+    "no_pay": 93.1,
+    "lost": 61.9,
+    "first_pay": 74.0
+   },
+   "2025": {
+    "mean": -218,
+    "p10": -378,
+    "p50": -252,
+    "owner": 46,
+    "fees": 265,
+    "no_pay": 95.0,
+    "lost": 58.2,
+    "first_pay": 85.5
+   }
+  },
+  "Z25|B05 time split: ATLAS NY only (from 09:30)": {
+   "H1": {
+    "mean": 3237,
+    "p10": 1537,
+    "p50": 3874,
+    "owner": 3277,
+    "fees": 40,
+    "no_pay": 4.7,
+    "lost": 7.7,
+    "first_pay": 39.0
+   },
+   "H2": {
+    "mean": 2255,
+    "p10": -63,
+    "p50": 2400,
+    "owner": 2295,
+    "fees": 40,
+    "no_pay": 17.8,
+    "lost": 20.5,
+    "first_pay": 46.0
+   },
+   "REF": {
+    "mean": -66,
+    "p10": -189,
+    "p50": -126,
+    "owner": 61,
+    "fees": 127,
+    "no_pay": 93.6,
+    "lost": 39.7,
+    "first_pay": 67.0
+   },
+   "2025": {
+    "mean": -32,
+    "p10": -126,
+    "p50": -63,
+    "owner": 62,
+    "fees": 93,
+    "no_pay": 93.5,
+    "lost": 33.0,
+    "first_pay": 73.0
+   }
+  },
+  "Z25|B06 time split: ATLAS London only (before 09:30)": {
+   "H1": {
+    "mean": 2775,
+    "p10": 737,
+    "p50": 3168,
+    "owner": 2822,
+    "fees": 47,
+    "no_pay": 5.6,
+    "lost": 22.2,
+    "first_pay": 39.0
+   },
+   "H2": {
+    "mean": 2738,
+    "p10": 674,
+    "p50": 3200,
+    "owner": 2782,
+    "fees": 44,
+    "no_pay": 8.4,
+    "lost": 17.4,
+    "first_pay": 41.0
+   },
+   "REF": {
+    "mean": -233,
+    "p10": -378,
+    "p50": -315,
+    "owner": 53,
+    "fees": 286,
+    "no_pay": 94.0,
+    "lost": 59.8,
+    "first_pay": 68.5
+   },
+   "2025": {
+    "mean": -190,
+    "p10": -315,
+    "p50": -252,
+    "owner": 49,
+    "fees": 239,
+    "no_pay": 94.7,
+    "lost": 52.4,
+    "first_pay": 83.0
+   }
+  },
+  "Z25|B07 strict windows: LIT before 09:30, ATLAS from 09:30": {
+   "H1": {
+    "mean": 3091,
+    "p10": 800,
+    "p50": 3200,
+    "owner": 3129,
+    "fees": 38,
+    "no_pay": 5.9,
+    "lost": 8.0,
+    "first_pay": 40.0
+   },
+   "H2": {
+    "mean": 1803,
+    "p10": -63,
+    "p50": 1600,
+    "owner": 1841,
+    "fees": 38,
+    "no_pay": 25.5,
+    "lost": 25.3,
+    "first_pay": 52.0
+   },
+   "REF": {
+    "mean": -67,
+    "p10": -189,
+    "p50": -126,
+    "owner": 53,
+    "fees": 120,
+    "no_pay": 94.3,
+    "lost": 37.6,
+    "first_pay": 68.0
+   },
+   "2025": {
+    "mean": -35,
+    "p10": -126,
+    "p50": -63,
+    "owner": 53,
+    "fees": 88,
+    "no_pay": 94.5,
+    "lost": 28.4,
+    "first_pay": 69.0
+   }
+  },
+  "Z25|B08 ATLAS x0.5 in the eval, full funded": {
+   "H1": {
+    "mean": 3276,
+    "p10": 800,
+    "p50": 3874,
+    "owner": 3328,
+    "fees": 52,
+    "no_pay": 4.9,
+    "lost": 21.5,
+    "first_pay": 36.0
+   },
+   "H2": {
+    "mean": 2716,
+    "p10": -63,
+    "p50": 3200,
+    "owner": 2763,
+    "fees": 48,
+    "no_pay": 14.1,
+    "lost": 21.8,
+    "first_pay": 38.0
+   },
+   "REF": {
+    "mean": -102,
+    "p10": -189,
+    "p50": -126,
+    "owner": 36,
+    "fees": 138,
+    "no_pay": 96.1,
+    "lost": 41.4,
+    "first_pay": 55.0
+   },
+   "2025": {
+    "mean": -61,
+    "p10": -189,
+    "p50": -63,
+    "owner": 38,
+    "fees": 99,
+    "no_pay": 96.6,
+    "lost": 40.1,
+    "first_pay": 71.0
+   }
+  },
+  "Z25|B09 LIT eval, LIT + ATLAS once funded": {
+   "H1": {
+    "mean": 2742,
+    "p10": 0,
+    "p50": 3200,
+    "owner": 2786,
+    "fees": 44,
+    "no_pay": 18.3,
+    "lost": 18.2,
+    "first_pay": 36.0
+   },
+   "H2": {
+    "mean": 2604,
+    "p10": -63,
+    "p50": 3200,
+    "owner": 2650,
+    "fees": 46,
+    "no_pay": 17.1,
+    "lost": 19.8,
+    "first_pay": 38.0
+   },
+   "REF": {
+    "mean": -60,
+    "p10": -189,
+    "p50": -126,
+    "owner": 48,
+    "fees": 108,
+    "no_pay": 95.0,
+    "lost": 44.2,
+    "first_pay": 51.0
+   },
+   "2025": {
+    "mean": -30,
+    "p10": -126,
+    "p50": -63,
+    "owner": 48,
+    "fees": 78,
+    "no_pay": 94.9,
+    "lost": 34.9,
+    "first_pay": 71.0
+   }
+  },
+  "Z25|B10 size split: LIT x0.75 eval + funded": {
+   "H1": {
+    "mean": 3005,
+    "p10": 737,
+    "p50": 3200,
+    "owner": 3041,
+    "fees": 36,
+    "no_pay": 8.7,
+    "lost": 3.7,
+    "first_pay": 38.0
+   },
+   "H2": {
+    "mean": 1633,
+    "p10": -63,
+    "p50": 1600,
+    "owner": 1658,
+    "fees": 25,
+    "no_pay": 35.2,
+    "lost": 10.4,
+    "first_pay": 47.0
+   },
+   "REF": {
+    "mean": -208,
+    "p10": -378,
+    "p50": -252,
+    "owner": 47,
+    "fees": 256,
+    "no_pay": 94.8,
+    "lost": 48.1,
+    "first_pay": 65.5
+   },
+   "2025": {
+    "mean": -171,
+    "p10": -315,
+    "p50": -252,
+    "owner": 50,
+    "fees": 221,
+    "no_pay": 94.6,
+    "lost": 44.0,
+    "first_pay": 75.5
+   }
+  },
+  "Z25|B11 size split: LIT x0.5 in the eval": {
+   "H1": {
+    "mean": 3174,
+    "p10": 737,
+    "p50": 3874,
+    "owner": 3226,
+    "fees": 52,
+    "no_pay": 7.4,
+    "lost": 19.8,
+    "first_pay": 36.0
+   },
+   "H2": {
+    "mean": 2371,
+    "p10": -63,
+    "p50": 2400,
+    "owner": 2416,
+    "fees": 45,
+    "no_pay": 22.0,
+    "lost": 19.7,
+    "first_pay": 43.0
+   },
+   "REF": {
+    "mean": -216,
+    "p10": -378,
+    "p50": -252,
+    "owner": 51,
+    "fees": 267,
+    "no_pay": 94.8,
+    "lost": 49.3,
+    "first_pay": 59.5
+   },
+   "2025": {
+    "mean": -183,
+    "p10": -315,
+    "p50": -252,
+    "owner": 47,
+    "fees": 230,
+    "no_pay": 94.9,
+    "lost": 44.9,
+    "first_pay": 68.0
+   }
+  },
+  "Z25|B12 LIT + ATLAS + BLITZ $300": {
+   "H1": {
+    "mean": 4086,
+    "p10": 1600,
+    "p50": 3937,
+    "owner": 4165,
+    "fees": 78,
+    "no_pay": 3.4,
+    "lost": 27.8,
+    "first_pay": 31.0
+   },
+   "H2": {
+    "mean": 3434,
+    "p10": 737,
+    "p50": 3874,
+    "owner": 3504,
+    "fees": 70,
+    "no_pay": 7.6,
+    "lost": 24.6,
+    "first_pay": 34.0
+   },
+   "REF": {
+    "mean": -280,
+    "p10": -504,
+    "p50": -378,
+    "owner": 82,
+    "fees": 362,
+    "no_pay": 91.2,
+    "lost": 68.0,
+    "first_pay": 64.5
+   },
+   "2025": {
+    "mean": -174,
+    "p10": -378,
+    "p50": -315,
+    "owner": 119,
+    "fees": 293,
+    "no_pay": 89.3,
+    "lost": 64.7,
+    "first_pay": 66.0
+   }
+  },
+  "Z25|B13 LIT + ATLAS, ATLAS lane x2": {
+   "H1": {
+    "mean": 2682,
+    "p10": 737,
+    "p50": 3137,
+    "owner": 2724,
+    "fees": 42,
+    "no_pay": 4.8,
+    "lost": 22.3,
+    "first_pay": 39.0
+   },
+   "H2": {
+    "mean": 2172,
+    "p10": 0,
+    "p50": 2400,
+    "owner": 2212,
+    "fees": 40,
+    "no_pay": 10.3,
+    "lost": 24.3,
+    "first_pay": 39.0
+   },
+   "REF": {
+    "mean": -282,
+    "p10": -441,
+    "p50": -315,
+    "owner": 53,
+    "fees": 335,
+    "no_pay": 94.2,
+    "lost": 62.6,
+    "first_pay": 67.0
+   },
+   "2025": {
+    "mean": -245,
+    "p10": -378,
+    "p50": -315,
+    "owner": 45,
+    "fees": 290,
+    "no_pay": 95.3,
+    "lost": 61.2,
+    "first_pay": 70.0
+   }
+  },
+  "R25|B01 LIT only": {
+   "H1": {
+    "mean": 1416,
+    "p10": 0,
+    "p50": 0,
+    "owner": 1421,
+    "fees": 5,
+    "no_pay": 55.2,
+    "lost": 5.4,
+    "first_pay": 92.0
+   },
+   "H2": {
+    "mean": 1240,
+    "p10": -97,
+    "p50": 182,
+    "owner": 1254,
+    "fees": 14,
+    "no_pay": 50.0,
+    "lost": 14.1,
+    "first_pay": 91.0
+   },
+   "REF": {
+    "mean": -32,
+    "p10": -97,
+    "p50": 0,
+    "owner": 8,
+    "fees": 40,
+    "no_pay": 99.2,
+    "lost": 3.5,
+    "first_pay": 109.0
+   },
+   "2025": {
+    "mean": 1,
+    "p10": 0,
+    "p50": 0,
+    "owner": 11,
+    "fees": 10,
+    "no_pay": 99.2,
+    "lost": 1.8,
+    "first_pay": 80.5
+   }
+  },
+  "R25|B02 ATLAS only": {
+   "H1": {
+    "mean": 4320,
+    "p10": 0,
+    "p50": 3350,
+    "owner": 4327,
+    "fees": 8,
+    "no_pay": 32.3,
+    "lost": 4.3,
+    "first_pay": 77.0
+   },
+   "H2": {
+    "mean": 944,
+    "p10": -97,
+    "p50": 0,
+    "owner": 956,
+    "fees": 12,
+    "no_pay": 62.4,
+    "lost": 8.7,
+    "first_pay": 76.0
+   },
+   "REF": {
+    "mean": -188,
+    "p10": -292,
+    "p50": -194,
+    "owner": 14,
+    "fees": 203,
+    "no_pay": 98.7,
+    "lost": 12.0,
+    "first_pay": 72.0
+   },
+   "2025": {
+    "mean": -133,
+    "p10": -292,
+    "p50": -194,
+    "owner": 29,
+    "fees": 162,
+    "no_pay": 98.5,
+    "lost": 12.0,
+    "first_pay": 77.0
+   }
+  },
+  "R25|B03 LIT + ATLAS first-come": {
+   "H1": {
+    "mean": 11359,
+    "p10": 1369,
+    "p50": 11394,
+    "owner": 11389,
+    "fees": 30,
+    "no_pay": 7.6,
+    "lost": 27.4,
+    "first_pay": 53.0
+   },
+   "H2": {
+    "mean": 4893,
+    "p10": -97,
+    "p50": 4717,
+    "owner": 4940,
+    "fees": 47,
+    "no_pay": 15.1,
+    "lost": 38.0,
+    "first_pay": 56.0
+   },
+   "REF": {
+    "mean": -202,
+    "p10": -389,
+    "p50": -292,
+    "owner": 68,
+    "fees": 271,
+    "no_pay": 96.8,
+    "lost": 18.4,
+    "first_pay": 67.5
+   },
+   "2025": {
+    "mean": -114,
+    "p10": -292,
+    "p50": -194,
+    "owner": 86,
+    "fees": 200,
+    "no_pay": 96.2,
+    "lost": 16.6,
+    "first_pay": 76.5
+   }
+  },
+  "R25|B04 LIT priority budget (ATLAS <= 50% of the day)": {
+   "H1": {
+    "mean": 9331,
+    "p10": 0,
+    "p50": 9261,
+    "owner": 9364,
+    "fees": 32,
+    "no_pay": 10.2,
+    "lost": 29.3,
+    "first_pay": 56.0
+   },
+   "H2": {
+    "mean": 3554,
+    "p10": -97,
+    "p50": 3095,
+    "owner": 3604,
+    "fees": 50,
+    "no_pay": 20.7,
+    "lost": 40.8,
+    "first_pay": 61.0
+   },
+   "REF": {
+    "mean": -194,
+    "p10": -389,
+    "p50": -292,
+    "owner": 60,
+    "fees": 254,
+    "no_pay": 96.8,
+    "lost": 17.1,
+    "first_pay": 71.0
+   },
+   "2025": {
+    "mean": -110,
+    "p10": -292,
+    "p50": -194,
+    "owner": 79,
+    "fees": 190,
+    "no_pay": 96.4,
+    "lost": 16.8,
+    "first_pay": 76.5
+   }
+  },
+  "R25|B05 time split: ATLAS NY only (from 09:30)": {
+   "H1": {
+    "mean": 5310,
+    "p10": 849,
+    "p50": 5393,
+    "owner": 5314,
+    "fees": 4,
+    "no_pay": 7.2,
+    "lost": 4.2,
+    "first_pay": 67.0
+   },
+   "H2": {
+    "mean": 2169,
+    "p10": -97,
+    "p50": 1414,
+    "owner": 2198,
+    "fees": 29,
+    "no_pay": 36.5,
+    "lost": 23.7,
+    "first_pay": 74.0
+   },
+   "REF": {
+    "mean": -97,
+    "p10": -194,
+    "p50": -97,
+    "owner": 28,
+    "fees": 126,
+    "no_pay": 98.0,
+    "lost": 13.8,
+    "first_pay": 71.0
+   },
+   "2025": {
+    "mean": -37,
+    "p10": -97,
+    "p50": -97,
+    "owner": 41,
+    "fees": 77,
+    "no_pay": 97.0,
+    "lost": 12.6,
+    "first_pay": 88.5
+   }
+  },
+  "R25|B06 time split: ATLAS London only (before 09:30)": {
+   "H1": {
+    "mean": 5331,
+    "p10": -97,
+    "p50": 3515,
+    "owner": 5360,
+    "fees": 28,
+    "no_pay": 36.6,
+    "lost": 23.1,
+    "first_pay": 75.0
+   },
+   "H2": {
+    "mean": 4097,
+    "p10": -97,
+    "p50": 3862,
+    "owner": 4127,
+    "fees": 30,
+    "no_pay": 17.9,
+    "lost": 28.6,
+    "first_pay": 67.0
+   },
+   "REF": {
+    "mean": -119,
+    "p10": -292,
+    "p50": -194,
+    "owner": 35,
+    "fees": 155,
+    "no_pay": 97.9,
+    "lost": 8.8,
+    "first_pay": 84.0
+   },
+   "2025": {
+    "mean": -51,
+    "p10": -194,
+    "p50": -97,
+    "owner": 42,
+    "fees": 94,
+    "no_pay": 98.5,
+    "lost": 6.6,
+    "first_pay": 81.0
+   }
+  },
+  "R25|B07 strict windows: LIT before 09:30, ATLAS from 09:30": {
+   "H1": {
+    "mean": 5009,
+    "p10": 482,
+    "p50": 5132,
+    "owner": 5014,
+    "fees": 5,
+    "no_pay": 9.4,
+    "lost": 5.5,
+    "first_pay": 68.0
+   },
+   "H2": {
+    "mean": 1684,
+    "p10": -97,
+    "p50": 792,
+    "owner": 1716,
+    "fees": 32,
+    "no_pay": 43.4,
+    "lost": 26.5,
+    "first_pay": 77.0
+   },
+   "REF": {
+    "mean": -87,
+    "p10": -194,
+    "p50": -97,
+    "owner": 31,
+    "fees": 118,
+    "no_pay": 97.8,
+    "lost": 11.4,
+    "first_pay": 74.5
+   },
+   "2025": {
+    "mean": -46,
+    "p10": -97,
+    "p50": -97,
+    "owner": 32,
+    "fees": 78,
+    "no_pay": 97.5,
+    "lost": 11.7,
+    "first_pay": 82.0
+   }
+  },
+  "R25|B08 ATLAS x0.5 in the eval, full funded": {
+   "H1": {
+    "mean": 9366,
+    "p10": 0,
+    "p50": 9339,
+    "owner": 9390,
+    "fees": 24,
+    "no_pay": 16.2,
+    "lost": 22.8,
+    "first_pay": 62.0
+   },
+   "H2": {
+    "mean": 4176,
+    "p10": -97,
+    "p50": 3979,
+    "owner": 4215,
+    "fees": 39,
+    "no_pay": 23.1,
+    "lost": 36.5,
+    "first_pay": 64.0
+   },
+   "REF": {
+    "mean": -104,
+    "p10": -194,
+    "p50": -97,
+    "owner": 16,
+    "fees": 121,
+    "no_pay": 99.0,
+    "lost": 8.2,
+    "first_pay": 73.0
+   },
+   "2025": {
+    "mean": -58,
+    "p10": -97,
+    "p50": -97,
+    "owner": 16,
+    "fees": 74,
+    "no_pay": 99.2,
+    "lost": 6.2,
+    "first_pay": 75.5
+   }
+  },
+  "R25|B09 LIT eval, LIT + ATLAS once funded": {
+   "H1": {
+    "mean": 4922,
+    "p10": 0,
+    "p50": 2233,
+    "owner": 4935,
+    "fees": 13,
+    "no_pay": 41.0,
+    "lost": 13.2,
+    "first_pay": 84.0
+   },
+   "H2": {
+    "mean": 2584,
+    "p10": -97,
+    "p50": 1416,
+    "owner": 2610,
+    "fees": 26,
+    "no_pay": 43.1,
+    "lost": 25.8,
+    "first_pay": 78.0
+   },
+   "REF": {
+    "mean": -31,
+    "p10": -97,
+    "p50": 0,
+    "owner": 13,
+    "fees": 44,
+    "no_pay": 99.3,
+    "lost": 7.7,
+    "first_pay": 93.0
+   },
+   "2025": {
+    "mean": 25,
+    "p10": -97,
+    "p50": 0,
+    "owner": 39,
+    "fees": 14,
+    "no_pay": 98.3,
+    "lost": 6.6,
+    "first_pay": 86.0
+   }
+  },
+  "R25|B10 size split: LIT x0.75 eval + funded": {
+   "H1": {
+    "mean": 8691,
+    "p10": 455,
+    "p50": 8810,
+    "owner": 8696,
+    "fees": 5,
+    "no_pay": 9.9,
+    "lost": 3.1,
+    "first_pay": 59.0
+   },
+   "H2": {
+    "mean": 2693,
+    "p10": -97,
+    "p50": 1965,
+    "owner": 2705,
+    "fees": 12,
+    "no_pay": 37.8,
+    "lost": 9.9,
+    "first_pay": 62.0
+   },
+   "REF": {
+    "mean": -183,
+    "p10": -389,
+    "p50": -194,
+    "owner": 51,
+    "fees": 234,
+    "no_pay": 97.2,
+    "lost": 14.5,
+    "first_pay": 65.0
+   },
+   "2025": {
+    "mean": -109,
+    "p10": -292,
+    "p50": -194,
+    "owner": 70,
+    "fees": 179,
+    "no_pay": 96.9,
+    "lost": 12.6,
+    "first_pay": 73.0
+   }
+  },
+  "R25|B11 size split: LIT x0.5 in the eval": {
+   "H1": {
+    "mean": 10649,
+    "p10": 547,
+    "p50": 10768,
+    "owner": 10677,
+    "fees": 29,
+    "no_pay": 9.3,
+    "lost": 26.7,
+    "first_pay": 57.0
+   },
+   "H2": {
+    "mean": 4666,
+    "p10": -97,
+    "p50": 4278,
+    "owner": 4708,
+    "fees": 43,
+    "no_pay": 18.3,
+    "lost": 36.8,
+    "first_pay": 57.0
+   },
+   "REF": {
+    "mean": -174,
+    "p10": -389,
+    "p50": -194,
+    "owner": 57,
+    "fees": 232,
+    "no_pay": 97.2,
+    "lost": 15.4,
+    "first_pay": 65.0
+   },
+   "2025": {
+    "mean": -103,
+    "p10": -292,
+    "p50": -194,
+    "owner": 75,
+    "fees": 179,
+    "no_pay": 97.2,
+    "lost": 13.9,
+    "first_pay": 72.0
+   }
+  },
+  "R25|B12 LIT + ATLAS + BLITZ $300": {
+   "H1": {
+    "mean": 15348,
+    "p10": 2092,
+    "p50": 15828,
+    "owner": 15391,
+    "fees": 42,
+    "no_pay": 6.9,
+    "lost": 33.5,
+    "first_pay": 44.0
+   },
+   "H2": {
+    "mean": 8780,
+    "p10": 1412,
+    "p50": 8568,
+    "owner": 8837,
+    "fees": 58,
+    "no_pay": 7.8,
+    "lost": 46.4,
+    "first_pay": 46.0
+   },
+   "REF": {
+    "mean": -248,
+    "p10": -486,
+    "p50": -389,
+    "owner": 109,
+    "fees": 357,
+    "no_pay": 94.7,
+    "lost": 36.0,
+    "first_pay": 66.0
+   },
+   "2025": {
+    "mean": -106,
+    "p10": -389,
+    "p50": -292,
+    "owner": 171,
+    "fees": 277,
+    "no_pay": 92.9,
+    "lost": 33.7,
+    "first_pay": 73.0
+   }
+  },
+  "R25|B13 LIT + ATLAS, ATLAS lane x2": {
+   "H1": {
+    "mean": 13310,
+    "p10": 895,
+    "p50": 12738,
+    "owner": 13358,
+    "fees": 48,
+    "no_pay": 8.4,
+    "lost": 43.4,
+    "first_pay": 53.0
+   },
+   "H2": {
+    "mean": 4395,
+    "p10": -97,
+    "p50": 3895,
+    "owner": 4456,
+    "fees": 60,
+    "no_pay": 19.1,
+    "lost": 49.6,
+    "first_pay": 57.0
+   },
+   "REF": {
+    "mean": -183,
+    "p10": -389,
+    "p50": -292,
+    "owner": 89,
+    "fees": 271,
+    "no_pay": 96.7,
+    "lost": 18.9,
+    "first_pay": 66.0
+   },
+   "2025": {
+    "mean": -104,
+    "p10": -292,
+    "p50": -194,
+    "owner": 98,
+    "fees": 202,
+    "no_pay": 96.4,
+    "lost": 17.5,
+    "first_pay": 74.0
+   }
+  },
+  "A25|B01 LIT only": {
+   "H1": {
+    "mean": 2939,
+    "p10": 1537,
+    "p50": 3200,
+    "owner": 2972,
+    "fees": 33,
+    "no_pay": 2.7,
+    "lost": 13.1,
+    "first_pay": 24.0
+   },
+   "H2": {
+    "mean": 2738,
+    "p10": 737,
+    "p50": 3200,
+    "owner": 2770,
+    "fees": 32,
+    "no_pay": 5.6,
+    "lost": 17.1,
+    "first_pay": 24.0
+   },
+   "REF": {
+    "mean": 177,
+    "p10": -126,
+    "p50": -63,
+    "owner": 257,
+    "fees": 80,
+    "no_pay": 73.5,
+    "lost": 78.0,
+    "first_pay": 49.0
+   },
+   "2025": {
+    "mean": 223,
+    "p10": -126,
+    "p50": -63,
+    "owner": 278,
+    "fees": 55,
+    "no_pay": 71.5,
+    "lost": 67.1,
+    "first_pay": 47.0
+   }
+  },
+  "A25|B02 ATLAS only": {
+   "H1": {
+    "mean": 2984,
+    "p10": 737,
+    "p50": 3200,
+    "owner": 3020,
+    "fees": 36,
+    "no_pay": 8.2,
+    "lost": 11.0,
+    "first_pay": 19.0
+   },
+   "H2": {
+    "mean": 1665,
+    "p10": -63,
+    "p50": 1600,
+    "owner": 1679,
+    "fees": 15,
+    "no_pay": 23.3,
+    "lost": 15.5,
+    "first_pay": 31.0
+   },
+   "REF": {
+    "mean": -108,
+    "p10": -315,
+    "p50": -252,
+    "owner": 124,
+    "fees": 232,
+    "no_pay": 87.6,
+    "lost": 96.8,
+    "first_pay": 20.0
+   },
+   "2025": {
+    "mean": -42,
+    "p10": -315,
+    "p50": -189,
+    "owner": 155,
+    "fees": 197,
+    "no_pay": 84.5,
+    "lost": 94.2,
+    "first_pay": 18.0
+   }
+  },
+  "A25|B03 LIT + ATLAS first-come": {
+   "H1": {
+    "mean": 4083,
+    "p10": 2400,
+    "p50": 3937,
+    "owner": 4150,
+    "fees": 67,
+    "no_pay": 0.6,
+    "lost": 22.7,
+    "first_pay": 15.0
+   },
+   "H2": {
+    "mean": 3762,
+    "p10": 2268,
+    "p50": 3937,
+    "owner": 3828,
+    "fees": 66,
+    "no_pay": 2.4,
+    "lost": 25.0,
+    "first_pay": 16.0
+   },
+   "REF": {
+    "mean": -144,
+    "p10": -441,
+    "p50": -315,
+    "owner": 175,
+    "fees": 319,
+    "no_pay": 81.7,
+    "lost": 96.3,
+    "first_pay": 22.0
+   },
+   "2025": {
+    "mean": -89,
+    "p10": -378,
+    "p50": -252,
+    "owner": 178,
+    "fees": 267,
+    "no_pay": 82.2,
+    "lost": 94.9,
+    "first_pay": 23.5
+   }
+  },
+  "A25|B04 LIT priority budget (ATLAS <= 50% of the day)": {
+   "H1": {
+    "mean": 3454,
+    "p10": 1600,
+    "p50": 3874,
+    "owner": 3506,
+    "fees": 52,
+    "no_pay": 1.2,
+    "lost": 21.4,
+    "first_pay": 20.0
+   },
+   "H2": {
+    "mean": 3007,
+    "p10": 1474,
+    "p50": 3200,
+    "owner": 3056,
+    "fees": 49,
+    "no_pay": 4.4,
+    "lost": 24.6,
+    "first_pay": 20.0
+   },
+   "REF": {
+    "mean": -126,
+    "p10": -441,
+    "p50": -315,
+    "owner": 171,
+    "fees": 297,
+    "no_pay": 82.4,
+    "lost": 95.3,
+    "first_pay": 25.0
+   },
+   "2025": {
+    "mean": -101,
+    "p10": -378,
+    "p50": -252,
+    "owner": 154,
+    "fees": 255,
+    "no_pay": 83.7,
+    "lost": 94.1,
+    "first_pay": 26.0
+   }
+  },
+  "A25|B05 time split: ATLAS NY only (from 09:30)": {
+   "H1": {
+    "mean": 4091,
+    "p10": 3200,
+    "p50": 3937,
+    "owner": 4146,
+    "fees": 55,
+    "no_pay": 0.3,
+    "lost": 6.7,
+    "first_pay": 18.0
+   },
+   "H2": {
+    "mean": 3118,
+    "p10": 737,
+    "p50": 3200,
+    "owner": 3168,
+    "fees": 50,
+    "no_pay": 5.1,
+    "lost": 26.1,
+    "first_pay": 22.0
+   },
+   "REF": {
+    "mean": 108,
+    "p10": -189,
+    "p50": -126,
+    "owner": 242,
+    "fees": 133,
+    "no_pay": 76.2,
+    "lost": 93.0,
+    "first_pay": 30.0
+   },
+   "2025": {
+    "mean": 196,
+    "p10": -189,
+    "p50": -126,
+    "owner": 298,
+    "fees": 101,
+    "no_pay": 72.7,
+    "lost": 86.5,
+    "first_pay": 35.0
+   }
+  },
+  "A25|B06 time split: ATLAS London only (before 09:30)": {
+   "H1": {
+    "mean": 3476,
+    "p10": 1600,
+    "p50": 3874,
+    "owner": 3532,
+    "fees": 56,
+    "no_pay": 1.3,
+    "lost": 23.3,
+    "first_pay": 19.0
+   },
+   "H2": {
+    "mean": 3521,
+    "p10": 2337,
+    "p50": 3937,
+    "owner": 3573,
+    "fees": 51,
+    "no_pay": 1.5,
+    "lost": 16.7,
+    "first_pay": 19.0
+   },
+   "REF": {
+    "mean": -113,
+    "p10": -378,
+    "p50": -315,
+    "owner": 164,
+    "fees": 277,
+    "no_pay": 82.6,
+    "lost": 95.9,
+    "first_pay": 24.0
+   },
+   "2025": {
+    "mean": -68,
+    "p10": -315,
+    "p50": -252,
+    "owner": 161,
+    "fees": 229,
+    "no_pay": 82.7,
+    "lost": 93.7,
+    "first_pay": 31.0
+   }
+  },
+  "A25|B07 strict windows: LIT before 09:30, ATLAS from 09:30": {
+   "H1": {
+    "mean": 3956,
+    "p10": 2400,
+    "p50": 3937,
+    "owner": 4009,
+    "fees": 52,
+    "no_pay": 0.5,
+    "lost": 7.7,
+    "first_pay": 18.0
+   },
+   "H2": {
+    "mean": 2689,
+    "p10": 674,
+    "p50": 3200,
+    "owner": 2735,
+    "fees": 46,
+    "no_pay": 8.3,
+    "lost": 28.7,
+    "first_pay": 24.0
+   },
+   "REF": {
+    "mean": 109,
+    "p10": -189,
+    "p50": -126,
+    "owner": 234,
+    "fees": 124,
+    "no_pay": 76.9,
+    "lost": 91.0,
+    "first_pay": 33.0
+   },
+   "2025": {
+    "mean": 162,
+    "p10": -189,
+    "p50": -126,
+    "owner": 263,
+    "fees": 101,
+    "no_pay": 75.5,
+    "lost": 88.8,
+    "first_pay": 35.0
+   }
+  },
+  "A25|B08 ATLAS x0.5 in the eval, full funded": {
+   "H1": {
+    "mean": 4038,
+    "p10": 2400,
+    "p50": 3937,
+    "owner": 4103,
+    "fees": 66,
+    "no_pay": 1.3,
+    "lost": 22.4,
+    "first_pay": 15.0
+   },
+   "H2": {
+    "mean": 3695,
+    "p10": 1600,
+    "p50": 3937,
+    "owner": 3757,
+    "fees": 62,
+    "no_pay": 3.3,
+    "lost": 24.0,
+    "first_pay": 16.0
+   },
+   "REF": {
+    "mean": -18,
+    "p10": -252,
+    "p50": -189,
+    "owner": 150,
+    "fees": 168,
+    "no_pay": 84.3,
+    "lost": 96.3,
+    "first_pay": 18.0
+   },
+   "2025": {
+    "mean": 29,
+    "p10": -189,
+    "p50": -126,
+    "owner": 157,
+    "fees": 128,
+    "no_pay": 84.2,
+    "lost": 94.9,
+    "first_pay": 20.5
+   }
+  },
+  "A25|B09 LIT eval, LIT + ATLAS once funded": {
+   "H1": {
+    "mean": 3862,
+    "p10": 2400,
+    "p50": 3937,
+    "owner": 3926,
+    "fees": 64,
+    "no_pay": 3.7,
+    "lost": 21.5,
+    "first_pay": 15.0
+   },
+   "H2": {
+    "mean": 3675,
+    "p10": 1600,
+    "p50": 3937,
+    "owner": 3737,
+    "fees": 62,
+    "no_pay": 3.9,
+    "lost": 24.0,
+    "first_pay": 16.0
+   },
+   "REF": {
+    "mean": 7,
+    "p10": -189,
+    "p50": -126,
+    "owner": 146,
+    "fees": 140,
+    "no_pay": 84.9,
+    "lost": 96.3,
+    "first_pay": 17.0
+   },
+   "2025": {
+    "mean": 52,
+    "p10": -189,
+    "p50": -126,
+    "owner": 166,
+    "fees": 114,
+    "no_pay": 83.5,
+    "lost": 94.9,
+    "first_pay": 22.0
+   }
+  },
+  "A25|B10 size split: LIT x0.75 eval + funded": {
+   "H1": {
+    "mean": 3780,
+    "p10": 2400,
+    "p50": 3937,
+    "owner": 3829,
+    "fees": 49,
+    "no_pay": 3.4,
+    "lost": 4.8,
+    "first_pay": 16.0
+   },
+   "H2": {
+    "mean": 2617,
+    "p10": 0,
+    "p50": 3200,
+    "owner": 2650,
+    "fees": 33,
+    "no_pay": 15.5,
+    "lost": 14.0,
+    "first_pay": 22.0
+   },
+   "REF": {
+    "mean": -107,
+    "p10": -378,
+    "p50": -252,
+    "owner": 137,
+    "fees": 244,
+    "no_pay": 86.2,
+    "lost": 97.0,
+    "first_pay": 20.0
+   },
+   "2025": {
+    "mean": -33,
+    "p10": -315,
+    "p50": -189,
+    "owner": 170,
+    "fees": 203,
+    "no_pay": 82.8,
+    "lost": 92.4,
+    "first_pay": 25.5
+   }
+  },
+  "A25|B11 size split: LIT x0.5 in the eval": {
+   "H1": {
+    "mean": 3992,
+    "p10": 2400,
+    "p50": 3937,
+    "owner": 4058,
+    "fees": 65,
+    "no_pay": 2.0,
+    "lost": 21.8,
+    "first_pay": 15.0
+   },
+   "H2": {
+    "mean": 3603,
+    "p10": 1537,
+    "p50": 3937,
+    "owner": 3664,
+    "fees": 61,
+    "no_pay": 4.2,
+    "lost": 23.1,
+    "first_pay": 16.0
+   },
+   "REF": {
+    "mean": -115,
+    "p10": -378,
+    "p50": -252,
+    "owner": 156,
+    "fees": 271,
+    "no_pay": 83.6,
+    "lost": 96.3,
+    "first_pay": 19.0
+   },
+   "2025": {
+    "mean": -71,
+    "p10": -315,
+    "p50": -252,
+    "owner": 162,
+    "fees": 234,
+    "no_pay": 83.5,
+    "lost": 94.9,
+    "first_pay": 22.0
+   }
+  },
+  "A25|B12 LIT + ATLAS + BLITZ $300": {
+   "H1": {
+    "mean": 4949,
+    "p10": 3811,
+    "p50": 4737,
+    "owner": 5034,
+    "fees": 84,
+    "no_pay": 0.7,
+    "lost": 25.5,
+    "first_pay": 13.0
+   },
+   "H2": {
+    "mean": 4198,
+    "p10": 2337,
+    "p50": 3937,
+    "owner": 4274,
+    "fees": 76,
+    "no_pay": 2.5,
+    "lost": 28.5,
+    "first_pay": 15.0
+   },
+   "REF": {
+    "mean": -170,
+    "p10": -504,
+    "p50": -378,
+    "owner": 182,
+    "fees": 352,
+    "no_pay": 81.7,
+    "lost": 96.6,
+    "first_pay": 20.0
+   },
+   "2025": {
+    "mean": 44,
+    "p10": -441,
+    "p50": -315,
+    "owner": 322,
+    "fees": 279,
+    "no_pay": 73.4,
+    "lost": 92.3,
+    "first_pay": 20.0
+   }
+  },
+  "A25|B13 LIT + ATLAS, ATLAS lane x2": {
+   "H1": {
+    "mean": 3257,
+    "p10": 1600,
+    "p50": 3200,
+    "owner": 3306,
+    "fees": 49,
+    "no_pay": 1.5,
+    "lost": 23.1,
+    "first_pay": 21.0
+   },
+   "H2": {
+    "mean": 2783,
+    "p10": 1474,
+    "p50": 3200,
+    "owner": 2822,
+    "fees": 39,
+    "no_pay": 3.4,
+    "lost": 23.9,
+    "first_pay": 20.0
+   },
+   "REF": {
+    "mean": -206,
+    "p10": -441,
+    "p50": -315,
+    "owner": 125,
+    "fees": 331,
+    "no_pay": 87.1,
+    "lost": 96.4,
+    "first_pay": 27.0
+   },
+   "2025": {
+    "mean": -174,
+    "p10": -378,
+    "p50": -315,
+    "owner": 109,
+    "fees": 282,
+    "no_pay": 88.4,
+    "lost": 95.1,
+    "first_pay": 29.0
+   }
+  }
+ },
+ "pick": {
+  "Z50": "B05 time split: ATLAS NY only (from 09:30)",
+  "Z25": "B08 ATLAS x0.5 in the eval, full funded",
+  "R25": "B12 LIT + ATLAS + BLITZ $300",
+  "A25": "B12 LIT + ATLAS + BLITZ $300"
+ },
+ "joint": {
+  "today": {
+   "routing": {
+    "Z50": "B01 LIT only",
+    "Z25": "B01 LIT only",
+    "R25": "B03 LIT + ATLAS first-come",
+    "A25": "B02 ATLAS only"
+   },
+   "H1": {
+    "mean": 19850,
+    "p10": 7011,
+    "p_neg": 0.2,
+    "p50": 19719
+   },
+   "H2": {
+    "mean": 12528,
+    "p10": 3254,
+    "p_neg": 1.1,
+    "p50": 12255
+   },
+   "REF": {
+    "mean": -441,
+    "p10": -1071,
+    "p_neg": 82.6,
+    "p50": -756
+   },
+   "2025": {
+    "mean": -198,
+    "p10": -853,
+    "p_neg": 76.4,
+    "p50": -567
+   }
+  },
+  "pick": {
+   "routing": {
+    "Z50": "B05 time split: ATLAS NY only (from 09:30)",
+    "Z25": "B08 ATLAS x0.5 in the eval, full funded",
+    "R25": "B12 LIT + ATLAS + BLITZ $300",
+    "A25": "B12 LIT + ATLAS + BLITZ $300"
+   },
+   "H1": {
+    "mean": 30191,
+    "p10": 13554,
+    "p_neg": 0.0,
+    "p50": 30712
+   },
+   "H2": {
+    "mean": 21064,
+    "p10": 7858,
+    "p_neg": 0.3,
+    "p50": 21171
+   },
+   "REF": {
+    "mean": -674,
+    "p10": -1541,
+    "p_neg": 83.4,
+    "p50": -1100
+   },
+   "2025": {
+    "mean": -218,
+    "p10": -1197,
+    "p_neg": 73.8,
+    "p50": -848
+   }
+  },
+  "pick_no_blitz": {
+   "routing": {
+    "Z50": "B05 time split: ATLAS NY only (from 09:30)",
+    "Z25": "B08 ATLAS x0.5 in the eval, full funded",
+    "R25": "B03 LIT + ATLAS first-come",
+    "A25": "B03 LIT + ATLAS first-come"
+   },
+   "H1": {
+    "mean": 25336,
+    "p10": 12480,
+    "p_neg": 0.0,
+    "p50": 25560
+   },
+   "H2": {
+    "mean": 16741,
+    "p10": 5454,
+    "p_neg": 0.2,
+    "p50": 16855
+   },
+   "REF": {
+    "mean": -602,
+    "p10": -1415,
+    "p_neg": 83.6,
+    "p50": -1003
+   },
+   "2025": {
+    "mean": -359,
+    "p10": -1134,
+    "p_neg": 79.3,
+    "p50": -785
+   }
+  },
+  "switches_only": {
+   "routing": {
+    "Z50": "B08 ATLAS x0.5 in the eval, full funded",
+    "Z25": "B08 ATLAS x0.5 in the eval, full funded",
+    "R25": "B03 LIT + ATLAS first-come",
+    "A25": "B02 ATLAS only"
+   },
+   "H1": {
+    "mean": 24323,
+    "p10": 10468,
+    "p_neg": 0.1,
+    "p50": 24440
+   },
+   "H2": {
+    "mean": 15982,
+    "p10": 5283,
+    "p_neg": 0.9,
+    "p50": 16037
+   },
+   "REF": {
+    "mean": -685,
+    "p10": -1375,
+    "p_neg": 88.8,
+    "p50": -988
+   },
+   "2025": {
+    "mean": -428,
+    "p10": -1123,
+    "p_neg": 83.4,
+    "p50": -779
+   }
+  }
+ },
+ "delta": {
+  "H1": 10341,
+  "H2": 8536,
+  "REF": -233,
+  "2025": -20
+ },
+ "card": true,
+ "top_by_regime": {
+  "Z50": {
+   "H1": "B12 LIT + ATLAS + BLITZ $300",
+   "H2": "B12 LIT + ATLAS + BLITZ $300",
+   "REF": "B01 LIT only",
+   "2025": "B01 LIT only"
+  },
+  "Z25": {
+   "H1": "B12 LIT + ATLAS + BLITZ $300",
+   "H2": "B12 LIT + ATLAS + BLITZ $300",
+   "REF": "B01 LIT only",
+   "2025": "B01 LIT only"
+  },
+  "R25": {
+   "H1": "B12 LIT + ATLAS + BLITZ $300",
+   "H2": "B12 LIT + ATLAS + BLITZ $300",
+   "REF": "B09 LIT eval, LIT + ATLAS once funded",
+   "2025": "B09 LIT eval, LIT + ATLAS once funded"
+  },
+  "A25": {
+   "H1": "B12 LIT + ATLAS + BLITZ $300",
+   "H2": "B12 LIT + ATLAS + BLITZ $300",
+   "REF": "B01 LIT only",
+   "2025": "B01 LIT only"
+  }
+ },
+ "deltas": {
+  "today": {
+   "H1": 0,
+   "H2": 0,
+   "REF": 0,
+   "2025": 0
+  },
+  "pick": {
+   "H1": 10341,
+   "H2": 8536,
+   "REF": -233,
+   "2025": -20
+  },
+  "pick_no_blitz": {
+   "H1": 5486,
+   "H2": 4213,
+   "REF": -161,
+   "2025": -161
+  },
+  "switches_only": {
+   "H1": 4473,
+   "H2": 3454,
+   "REF": -244,
+   "2025": -230
+  }
+ },
+ "note": "pick = the pre-registered rule; pick_no_blitz + switches_only = labelled constraints (BLITZ retire study; no new code)"
+}
