@@ -370,3 +370,8 @@ data/journal/
 data/journal_build.json
 # day-ops2 2026-11-26: the backup settings (engine/pc_backup.py: target dir, code_saved)
 data/pc_backup.json
+# day-oflearn 2026-11-26: the Order Flow pillar's paper bot (engine/of_paper.py), PC-local, never tracked
+data/of_paper.json
+data/of_paper.json.tmp
+data/of_paper_cache/
+data/of_paper_off
