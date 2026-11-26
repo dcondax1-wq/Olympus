@@ -1,0 +1,498 @@
+{
+ "design": "research/payout/DESIGN.md",
+ "n": 600,
+ "sessions": 252,
+ "rows": {
+  "25K ATLAS": {
+   "2026-like": {
+    "asap": {
+     "cash_12m": 2936,
+     "cash_p25": 2994,
+     "cash_p75": 3200,
+     "lost_pct": 5.0,
+     "no_pay_pct": 4.0,
+     "payouts": 3.81,
+     "first_med": 19.5,
+     "four_pct": 94.7
+    },
+    "half": {
+     "cash_12m": 2972,
+     "cash_p25": 3058,
+     "cash_p75": 3200,
+     "lost_pct": 5.2,
+     "no_pay_pct": 4.0,
+     "payouts": 3.8,
+     "first_med": 20.0,
+     "four_pct": 94.5
+    },
+    "today = max": {
+     "cash_12m": 3047,
+     "cash_p25": 3200,
+     "cash_p75": 3200,
+     "lost_pct": 4.8,
+     "no_pay_pct": 4.0,
+     "payouts": 3.81,
+     "first_med": 23.0,
+     "four_pct": 94.7
+    },
+    "max + cushion": {
+     "cash_12m": 3059,
+     "cash_p25": 3200,
+     "cash_p75": 3200,
+     "lost_pct": 4.3,
+     "no_pay_pct": 4.0,
+     "payouts": 3.82,
+     "first_med": 26.0,
+     "four_pct": 95.2
+    },
+    "cycle-timed": {
+     "cash_12m": 2941,
+     "cash_p25": 2999,
+     "cash_p75": 3200,
+     "lost_pct": 5.0,
+     "no_pay_pct": 4.0,
+     "payouts": 3.81,
+     "first_med": 20.0,
+     "four_pct": 94.7
+    }
+   },
+   "25% mix": {
+    "asap": {
+     "cash_12m": 725,
+     "cash_p25": 0,
+     "cash_p75": 800,
+     "lost_pct": 83.5,
+     "no_pay_pct": 59.7,
+     "payouts": 0.95,
+     "first_med": 20.0,
+     "four_pct": 13.3
+    },
+    "half": {
+     "cash_12m": 718,
+     "cash_p25": 0,
+     "cash_p75": 800,
+     "lost_pct": 84.0,
+     "no_pay_pct": 60.0,
+     "payouts": 0.93,
+     "first_med": 20.5,
+     "four_pct": 13.2
+    },
+    "today = max": {
+     "cash_12m": 751,
+     "cash_p25": 0,
+     "cash_p75": 800,
+     "lost_pct": 81.8,
+     "no_pay_pct": 62.8,
+     "payouts": 0.94,
+     "first_med": 25.0,
+     "four_pct": 14.3
+    },
+    "max + cushion": {
+     "cash_12m": 773,
+     "cash_p25": 0,
+     "cash_p75": 1600,
+     "lost_pct": 80.2,
+     "no_pay_pct": 64.2,
+     "payouts": 0.97,
+     "first_med": 29.0,
+     "four_pct": 15.0
+    },
+    "cycle-timed": {
+     "cash_12m": 724,
+     "cash_p25": 0,
+     "cash_p75": 800,
+     "lost_pct": 83.7,
+     "no_pay_pct": 59.7,
+     "payouts": 0.95,
+     "first_med": 20.0,
+     "four_pct": 13.3
+    }
+   },
+   "2021-25": {
+    "asap": {
+     "cash_12m": 298,
+     "cash_p25": 0,
+     "cash_p75": 0,
+     "lost_pct": 95.7,
+     "no_pay_pct": 75.8,
+     "payouts": 0.4,
+     "first_med": 17.0,
+     "four_pct": 2.7
+    },
+    "half": {
+     "cash_12m": 297,
+     "cash_p25": 0,
+     "cash_p75": 0,
+     "lost_pct": 95.7,
+     "no_pay_pct": 76.2,
+     "payouts": 0.39,
+     "first_med": 17.0,
+     "four_pct": 2.7
+    },
+    "today = max": {
+     "cash_12m": 284,
+     "cash_p25": 0,
+     "cash_p75": 0,
+     "lost_pct": 95.7,
+     "no_pay_pct": 79.0,
+     "payouts": 0.35,
+     "first_med": 19.0,
+     "four_pct": 2.5
+    },
+    "max + cushion": {
+     "cash_12m": 268,
+     "cash_p25": 0,
+     "cash_p75": 0,
+     "lost_pct": 95.0,
+     "no_pay_pct": 81.3,
+     "payouts": 0.34,
+     "first_med": 22.0,
+     "four_pct": 2.8
+    },
+    "cycle-timed": {
+     "cash_12m": 298,
+     "cash_p25": 0,
+     "cash_p75": 0,
+     "lost_pct": 95.7,
+     "no_pay_pct": 75.8,
+     "payouts": 0.4,
+     "first_med": 17.0,
+     "four_pct": 2.7
+    }
+   }
+  },
+  "25K LIT + ATLAS": {
+   "2026-like": {
+    "asap": {
+     "cash_12m": 2877,
+     "cash_p25": 3119,
+     "cash_p75": 3200,
+     "lost_pct": 8.7,
+     "no_pay_pct": 7.3,
+     "payouts": 3.67,
+     "first_med": 16.0,
+     "four_pct": 91.3
+    },
+    "half": {
+     "cash_12m": 2905,
+     "cash_p25": 3152,
+     "cash_p75": 3200,
+     "lost_pct": 8.5,
+     "no_pay_pct": 7.5,
+     "payouts": 3.67,
+     "first_med": 16.0,
+     "four_pct": 91.5
+    },
+    "today = max": {
+     "cash_12m": 2947,
+     "cash_p25": 3200,
+     "cash_p75": 3200,
+     "lost_pct": 8.0,
+     "no_pay_pct": 7.7,
+     "payouts": 3.68,
+     "first_med": 17.0,
+     "four_pct": 92.0
+    },
+    "max + cushion": {
+     "cash_12m": 2944,
+     "cash_p25": 3200,
+     "cash_p75": 3200,
+     "lost_pct": 8.2,
+     "no_pay_pct": 7.7,
+     "payouts": 3.68,
+     "first_med": 18.0,
+     "four_pct": 91.8
+    },
+    "cycle-timed": {
+     "cash_12m": 2882,
+     "cash_p25": 3128,
+     "cash_p75": 3200,
+     "lost_pct": 8.7,
+     "no_pay_pct": 7.3,
+     "payouts": 3.67,
+     "first_med": 16.0,
+     "four_pct": 91.3
+    }
+   },
+   "25% mix": {
+    "asap": {
+     "cash_12m": 780,
+     "cash_p25": 0,
+     "cash_p75": 1556,
+     "lost_pct": 78.5,
+     "no_pay_pct": 62.3,
+     "payouts": 1.0,
+     "first_med": 22.0,
+     "four_pct": 15.8
+    },
+    "half": {
+     "cash_12m": 789,
+     "cash_p25": 0,
+     "cash_p75": 1599,
+     "lost_pct": 78.2,
+     "no_pay_pct": 62.3,
+     "payouts": 1.0,
+     "first_med": 23.0,
+     "four_pct": 15.8
+    },
+    "today = max": {
+     "cash_12m": 799,
+     "cash_p25": 0,
+     "cash_p75": 1600,
+     "lost_pct": 77.8,
+     "no_pay_pct": 62.8,
+     "payouts": 1.0,
+     "first_med": 24.0,
+     "four_pct": 16.0
+    },
+    "max + cushion": {
+     "cash_12m": 816,
+     "cash_p25": 0,
+     "cash_p75": 1600,
+     "lost_pct": 76.5,
+     "no_pay_pct": 63.7,
+     "payouts": 1.02,
+     "first_med": 25.0,
+     "four_pct": 16.7
+    },
+    "cycle-timed": {
+     "cash_12m": 780,
+     "cash_p25": 0,
+     "cash_p75": 1556,
+     "lost_pct": 78.5,
+     "no_pay_pct": 62.3,
+     "payouts": 1.0,
+     "first_med": 22.0,
+     "four_pct": 15.8
+    }
+   },
+   "2021-25": {
+    "asap": {
+     "cash_12m": 224,
+     "cash_p25": 0,
+     "cash_p75": 0,
+     "lost_pct": 94.3,
+     "no_pay_pct": 82.8,
+     "payouts": 0.29,
+     "first_med": 19.0,
+     "four_pct": 1.3
+    },
+    "half": {
+     "cash_12m": 224,
+     "cash_p25": 0,
+     "cash_p75": 0,
+     "lost_pct": 94.3,
+     "no_pay_pct": 82.8,
+     "payouts": 0.29,
+     "first_med": 19.0,
+     "four_pct": 1.3
+    },
+    "today = max": {
+     "cash_12m": 221,
+     "cash_p25": 0,
+     "cash_p75": 0,
+     "lost_pct": 94.3,
+     "no_pay_pct": 83.5,
+     "payouts": 0.28,
+     "first_med": 21.0,
+     "four_pct": 1.2
+    },
+    "max + cushion": {
+     "cash_12m": 217,
+     "cash_p25": 0,
+     "cash_p75": 0,
+     "lost_pct": 94.3,
+     "no_pay_pct": 83.8,
+     "payouts": 0.27,
+     "first_med": 23.0,
+     "four_pct": 1.2
+    },
+    "cycle-timed": {
+     "cash_12m": 224,
+     "cash_p25": 0,
+     "cash_p75": 0,
+     "lost_pct": 94.3,
+     "no_pay_pct": 82.8,
+     "payouts": 0.29,
+     "first_med": 19.0,
+     "four_pct": 1.3
+    }
+   }
+  },
+  "50K LIT": {
+   "2026-like": {
+    "asap": {
+     "cash_12m": 5945,
+     "cash_p25": 6190,
+     "cash_p75": 6400,
+     "lost_pct": 4.5,
+     "no_pay_pct": 3.5,
+     "payouts": 3.79,
+     "first_med": 26.0,
+     "four_pct": 92.5
+    },
+    "half": {
+     "cash_12m": 5980,
+     "cash_p25": 6227,
+     "cash_p75": 6400,
+     "lost_pct": 4.3,
+     "no_pay_pct": 3.5,
+     "payouts": 3.78,
+     "first_med": 26.0,
+     "four_pct": 92.3
+    },
+    "today = max": {
+     "cash_12m": 6059,
+     "cash_p25": 6400,
+     "cash_p75": 6400,
+     "lost_pct": 4.2,
+     "no_pay_pct": 3.7,
+     "payouts": 3.79,
+     "first_med": 29.0,
+     "four_pct": 92.7
+    },
+    "max + cushion": {
+     "cash_12m": 6040,
+     "cash_p25": 6400,
+     "cash_p75": 6400,
+     "lost_pct": 4.0,
+     "no_pay_pct": 4.0,
+     "payouts": 3.77,
+     "first_med": 33.0,
+     "four_pct": 92.2
+    },
+    "cycle-timed": {
+     "cash_12m": 5981,
+     "cash_p25": 6235,
+     "cash_p75": 6400,
+     "lost_pct": 4.3,
+     "no_pay_pct": 3.5,
+     "payouts": 3.78,
+     "first_med": 26.0,
+     "four_pct": 92.3
+    }
+   },
+   "25% mix": {
+    "asap": {
+     "cash_12m": 1920,
+     "cash_p25": 0,
+     "cash_p75": 3200,
+     "lost_pct": 64.0,
+     "no_pay_pct": 48.7,
+     "payouts": 1.23,
+     "first_med": 50.5,
+     "four_pct": 14.2
+    },
+    "half": {
+     "cash_12m": 1924,
+     "cash_p25": 0,
+     "cash_p75": 3200,
+     "lost_pct": 64.0,
+     "no_pay_pct": 48.7,
+     "payouts": 1.22,
+     "first_med": 51.0,
+     "four_pct": 14.0
+    },
+    "today = max": {
+     "cash_12m": 1944,
+     "cash_p25": 0,
+     "cash_p75": 3200,
+     "lost_pct": 63.3,
+     "no_pay_pct": 50.0,
+     "payouts": 1.22,
+     "first_med": 57.0,
+     "four_pct": 13.8
+    },
+    "max + cushion": {
+     "cash_12m": 1891,
+     "cash_p25": 0,
+     "cash_p75": 3200,
+     "lost_pct": 59.8,
+     "no_pay_pct": 51.8,
+     "payouts": 1.18,
+     "first_med": 62.0,
+     "four_pct": 13.2
+    },
+    "cycle-timed": {
+     "cash_12m": 1920,
+     "cash_p25": 0,
+     "cash_p75": 3200,
+     "lost_pct": 63.8,
+     "no_pay_pct": 48.7,
+     "payouts": 1.22,
+     "first_med": 50.5,
+     "four_pct": 14.2
+    }
+   },
+   "2021-25": {
+    "asap": {
+     "cash_12m": 495,
+     "cash_p25": 0,
+     "cash_p75": 0,
+     "lost_pct": 90.8,
+     "no_pay_pct": 79.7,
+     "payouts": 0.32,
+     "first_med": 50.0,
+     "four_pct": 0.7
+    },
+    "half": {
+     "cash_12m": 495,
+     "cash_p25": 0,
+     "cash_p75": 0,
+     "lost_pct": 90.8,
+     "no_pay_pct": 79.7,
+     "payouts": 0.32,
+     "first_med": 50.0,
+     "four_pct": 0.7
+    },
+    "today = max": {
+     "cash_12m": 477,
+     "cash_p25": 0,
+     "cash_p75": 0,
+     "lost_pct": 90.7,
+     "no_pay_pct": 81.0,
+     "payouts": 0.3,
+     "first_med": 56.0,
+     "four_pct": 0.7
+    },
+    "max + cushion": {
+     "cash_12m": 443,
+     "cash_p25": 0,
+     "cash_p75": 0,
+     "lost_pct": 88.7,
+     "no_pay_pct": 82.3,
+     "payouts": 0.28,
+     "first_med": 64.5,
+     "four_pct": 0.3
+    },
+    "cycle-timed": {
+     "cash_12m": 495,
+     "cash_p25": 0,
+     "cash_p75": 0,
+     "lost_pct": 90.8,
+     "no_pay_pct": 79.7,
+     "payouts": 0.32,
+     "first_med": 50.0,
+     "four_pct": 0.7
+    }
+   }
+  }
+ },
+ "pick": {
+  "25K ATLAS": {
+   "best": "today = max",
+   "gain_vs_today_25mix": 0,
+   "adopt": "today = max"
+  },
+  "25K LIT + ATLAS": {
+   "best": "max + cushion",
+   "gain_vs_today_25mix": 17,
+   "adopt": "today = max"
+  },
+  "50K LIT": {
+   "best": "today = max",
+   "gain_vs_today_25mix": 0,
+   "adopt": "today = max"
+  }
+ }
+}

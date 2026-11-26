@@ -352,6 +352,8 @@ data/orderflow_battery_note.json
 data/orderflow_journal.jsonl
 data/tickrec_tiny.json
 data/tickrec_ingested.json
+data/payout_tile.json
+data/payout_tile.json.tmp
 data/orderflow_*.json.tmp
 # red team 2026-11-25: the order-flow autopilot lock and the state files' .tmp copies (written by the PC)
 data/tickrec_autopilot.lock
