@@ -127,10 +127,37 @@ def where_stuck(since: float, path: str = STACKS) -> str:
 
 
 def all_flat_reason(root: str = ROOT) -> str | None:
+<<<<<<< HEAD
     """Flat on EVERY account (red team #22): engine/autoupdate.files_flat_reason now checks LIT's files AND every
     data/ninjatrader_state_<x>.json (accounts_flat_reason, unreadable = not flat). One helper for the update and this guard."""
     from .autoupdate import files_flat_reason
     return files_flat_reason(root)
+=======
+    """red team 2026-11-26: flat on EVERY account, not only LIT's. engine/autoupdate.files_flat_reason reads data/live_state.json +
+    data/ninjatrader_state.json (LIT's adapter); ATLAS (acctb), account C, the combo / fleet / extra accounts each keep their open
+    legs in their own data/ninjatrader_state_<x>.json. Any open leg there, or a file it cannot read = NOT flat (fails closed)."""
+    from .autoupdate import files_flat_reason
+    why = files_flat_reason(root)
+    if why:
+        return why
+    import glob
+    for p in sorted(glob.glob(os.path.join(root, "data", "ninjatrader_state_*.json"))):
+        name = os.path.basename(p)
+        if name in SKIP_STATE:
+            continue
+        try:
+            with open(p, encoding="utf-8") as fh:
+                d = json.load(fh)
+        except FileNotFoundError:
+            continue
+        except Exception:
+            return f"data/{name} unreadable: a trade may be open"
+        legs = d.get("legs") if isinstance(d, dict) else None
+        for lg in legs or []:
+            if isinstance(lg, dict) and lg.get("status") in OPEN_LEG:
+                return f"an open {lg.get('instrument') or 'MNQ'} leg in data/{name} ({lg.get('status')})"
+    return None
+>>>>>>> 10b4d528703a7e479edc086c049c8875d52d5781
 
 
 def recent_kills(path: str = STATE_PATH, now: float | None = None) -> int:
