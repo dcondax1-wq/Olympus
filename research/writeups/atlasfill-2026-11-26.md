@@ -65,3 +65,29 @@ PAPER RESEARCH ONLY: no live file, size, arming or routing change. The pre-regis
 - **The report.** `--report` back-fills from the PC ledger: today 4 ATLAS fills, mean 14 ticks, 3.75 s signal-to-ack.
 - **The Sim101 week.** Turn fast_entry and atlas_exec on, collect at least 10 fills, then re-run forensics + entries. If the measured give-away comes in at 7 ticks or less in 2026-like minutes, fast send becomes the live proposal (owner yes).
 - Tests: 11/11.
+
+## Update (same day): every-lane timing audit. The "routes last" lead was mostly wrong
+Instrumented replay: `research/atlasfill/lane_offsets.py` → `lane_offsets.json`.
+- It runs the real LiveBot, paper, on Nov 17 with ATLAS on account B. There were 768 polls, 0 errors and 2 ATLAS trades.
+- Each lane's start is stamped in ms after the poll begins, on 5m-close polls, on this machine.
+
+| lane | median start | p90 |
+|---|---|---|
+| LIT (50K + the extra accounts' LIT lanes) | 252 ms | 305 ms |
+| BLITZ account C / Rapid BLITZ / Brain | 254 ms | 307 ms |
+| second route (LIT account) | 257 ms | 311 ms |
+| **ATLAS account B + Rapid ATLAS + combo lanes** | **257 ms** | **311 ms** |
+| fleet / paper second strategies | 517 ms | 634 ms |
+
+**Reading.** The read-only work between LIT and ATLAS costs about 5 ms here: account C and the Brain are quick when off, and the ES refresh has already run. So moving ATLAS forward (engine/atlas_exec) gains milliseconds, not seconds. That leaves three causes of the 3-5 s:
+1. **The fixed +2 s wake after the boundary.** engine/fast_entry, built and OFF, wakes on NinjaTrader's first tick instead and saves up to ~1.8 s. It moves LIT too, and LIT also lost 3 ticks.
+2. **ATLAS's own tick, about 0.26 s here.** That includes second.run on the closed bars, and the PC is slower.
+3. **The order-file → NinjaTrader → Tradovate round trip and the fill confirmation** before the ledger row is written.
+
+The real ledger agrees: Zlarior, which routes first, was 4 s after its open, and ATLAS was 3-5 s.
+
+**Revised recommendation.**
+- The Sim101 week should measure **fast_entry ON**, together with the zeroerr send / ack / fill times. That is the lever.
+- atlas_exec stays as the measuring tool: the `--report` line, the fill rows and the Sim-only refusals. Its reorder is harmless but worth only milliseconds.
+- **On the other lanes in the real ledger:** the pulled PC days hold 5 live entries (ATLAS 4, Zlarior 50K 1). There are **0 for the 25K #2, the Rapid (LIT + ATLAS) and the keep-alive**, so their send times cannot be measured yet.
+- In the replay every account lane starts within ~5 ms of LIT. Nothing else is routed materially late in the poll order.
