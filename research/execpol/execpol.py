@@ -203,7 +203,7 @@ def calibration(B1):
             row["limit_at_model_trade_through_ticks"] = [round((P - x) * d / TICK, 1) for x in best]   # >0 = traded through P
             row["limit_at_model_fills_min1"] = bool((P - best[0]) * d / TICK >= 3)                    # q 1 + 2 on the entry bar
             row["limit_at_model_fills_by_min2_next"] = bool(len(best) > 1 and (P - best[1]) * d / TICK >= 1)
-            row["ticks_saved_vs_real"] = round((f["fill"] - P) * -d / TICK, 1) if row["limit_at_model_fills_min1"] else None
+            row["ticks_saved_vs_real"] = round((f["fill"] - P) * d / TICK, 1) if row["limit_at_model_fills_min1"] else None
         out.append(row)
     return out
 

@@ -18,7 +18,7 @@
    ],
    "limit_at_model_fills_min1": true,
    "limit_at_model_fills_by_min2_next": true,
-   "ticks_saved_vs_real": -9.0
+   "ticks_saved_vs_real": 9.0
   },
   {
    "day": "2026-11-16",
@@ -36,7 +36,7 @@
    ],
    "limit_at_model_fills_min1": true,
    "limit_at_model_fills_by_min2_next": false,
-   "ticks_saved_vs_real": -3.0
+   "ticks_saved_vs_real": 3.0
   },
   {
    "day": "2026-11-17",
@@ -54,7 +54,7 @@
    ],
    "limit_at_model_fills_min1": true,
    "limit_at_model_fills_by_min2_next": true,
-   "ticks_saved_vs_real": -11.0
+   "ticks_saved_vs_real": 11.0
   },
   {
    "day": "2026-11-18",
@@ -72,7 +72,7 @@
    ],
    "limit_at_model_fills_min1": true,
    "limit_at_model_fills_by_min2_next": true,
-   "ticks_saved_vs_real": -15.0
+   "ticks_saved_vs_real": 15.0
   }
  ],
  "results": {
@@ -331,6 +331,105 @@
      "winners": 61,
      "missed_winner_share": 0.295
     },
+    "MKT|s1|base": {
+     "n": 112,
+     "filled": 112,
+     "fill_rate": 1.0,
+     "net_usd": 25237,
+     "usd_per_signal": 225.33,
+     "pf": 2.92,
+     "missed_winners": 0,
+     "winners": 61,
+     "missed_winner_share": 0.0
+    },
+    "ML2|s1|base": {
+     "n": 112,
+     "filled": 112,
+     "fill_rate": 1.0,
+     "net_usd": 25237,
+     "usd_per_signal": 225.33,
+     "pf": 2.92,
+     "missed_winners": 0,
+     "winners": 61,
+     "missed_winner_share": 0.0
+    },
+    "ML2|s1|next": {
+     "n": 112,
+     "filled": 112,
+     "fill_rate": 1.0,
+     "net_usd": 25237,
+     "usd_per_signal": 225.33,
+     "pf": 2.92,
+     "missed_winners": 0,
+     "winners": 61,
+     "missed_winner_share": 0.0
+    },
+    "ML4|s1|base": {
+     "n": 112,
+     "filled": 112,
+     "fill_rate": 1.0,
+     "net_usd": 25237,
+     "usd_per_signal": 225.33,
+     "pf": 2.92,
+     "missed_winners": 0,
+     "winners": 61,
+     "missed_winner_share": 0.0
+    },
+    "ML4|s1|next": {
+     "n": 112,
+     "filled": 112,
+     "fill_rate": 1.0,
+     "net_usd": 25237,
+     "usd_per_signal": 225.33,
+     "pf": 2.92,
+     "missed_winners": 0,
+     "winners": 61,
+     "missed_winner_share": 0.0
+    },
+    "ML8|s1|base": {
+     "n": 112,
+     "filled": 112,
+     "fill_rate": 1.0,
+     "net_usd": 25237,
+     "usd_per_signal": 225.33,
+     "pf": 2.92,
+     "missed_winners": 0,
+     "winners": 61,
+     "missed_winner_share": 0.0
+    },
+    "ML8|s1|next": {
+     "n": 112,
+     "filled": 112,
+     "fill_rate": 1.0,
+     "net_usd": 25237,
+     "usd_per_signal": 225.33,
+     "pf": 2.92,
+     "missed_winners": 0,
+     "winners": 61,
+     "missed_winner_share": 0.0
+    },
+    "HYB-2|s1|base": {
+     "n": 112,
+     "filled": 105,
+     "fill_rate": 0.938,
+     "net_usd": 25370,
+     "usd_per_signal": 226.52,
+     "pf": 3.02,
+     "missed_winners": 5,
+     "winners": 61,
+     "missed_winner_share": 0.082
+    },
+    "HYB-2|s1|next": {
+     "n": 112,
+     "filled": 90,
+     "fill_rate": 0.804,
+     "net_usd": 16083,
+     "usd_per_signal": 143.59,
+     "pf": 2.31,
+     "missed_winners": 18,
+     "winners": 61,
+     "missed_winner_share": 0.295
+    },
     "MKT|s2|base": {
      "n": 112,
      "filled": 112,
@@ -443,14 +542,14 @@
     },
     "ML2|s4|base": {
      "n": 112,
-     "filled": 110,
-     "fill_rate": 0.982,
-     "net_usd": 24554,
-     "usd_per_signal": 219.23,
-     "pf": 2.86,
-     "missed_winners": 2,
+     "filled": 107,
+     "fill_rate": 0.955,
+     "net_usd": 24868,
+     "usd_per_signal": 222.03,
+     "pf": 2.92,
+     "missed_winners": 4,
      "winners": 61,
-     "missed_winner_share": 0.033
+     "missed_winner_share": 0.066
     },
     "ML2|s4|next": {
      "n": 112,
@@ -529,6 +628,105 @@
      "winners": 61,
      "missed_winner_share": 0.295
     },
+    "MKT|s6|base": {
+     "n": 112,
+     "filled": 112,
+     "fill_rate": 1.0,
+     "net_usd": 24210,
+     "usd_per_signal": 216.16,
+     "pf": 2.76,
+     "missed_winners": 0,
+     "winners": 61,
+     "missed_winner_share": 0.0
+    },
+    "ML2|s6|base": {
+     "n": 112,
+     "filled": 107,
+     "fill_rate": 0.955,
+     "net_usd": 24868,
+     "usd_per_signal": 222.03,
+     "pf": 2.92,
+     "missed_winners": 4,
+     "winners": 61,
+     "missed_winner_share": 0.066
+    },
+    "ML2|s6|next": {
+     "n": 112,
+     "filled": 92,
+     "fill_rate": 0.821,
+     "net_usd": 14579,
+     "usd_per_signal": 130.17,
+     "pf": 2.18,
+     "missed_winners": 17,
+     "winners": 61,
+     "missed_winner_share": 0.279
+    },
+    "ML4|s6|base": {
+     "n": 112,
+     "filled": 108,
+     "fill_rate": 0.964,
+     "net_usd": 24473,
+     "usd_per_signal": 218.51,
+     "pf": 2.86,
+     "missed_winners": 3,
+     "winners": 61,
+     "missed_winner_share": 0.049
+    },
+    "ML4|s6|next": {
+     "n": 112,
+     "filled": 93,
+     "fill_rate": 0.83,
+     "net_usd": 14243,
+     "usd_per_signal": 127.17,
+     "pf": 2.13,
+     "missed_winners": 16,
+     "winners": 61,
+     "missed_winner_share": 0.262
+    },
+    "ML8|s6|base": {
+     "n": 112,
+     "filled": 112,
+     "fill_rate": 1.0,
+     "net_usd": 24210,
+     "usd_per_signal": 216.16,
+     "pf": 2.76,
+     "missed_winners": 0,
+     "winners": 61,
+     "missed_winner_share": 0.0
+    },
+    "ML8|s6|next": {
+     "n": 112,
+     "filled": 112,
+     "fill_rate": 1.0,
+     "net_usd": 24210,
+     "usd_per_signal": 216.16,
+     "pf": 2.76,
+     "missed_winners": 0,
+     "winners": 61,
+     "missed_winner_share": 0.0
+    },
+    "HYB-2|s6|base": {
+     "n": 112,
+     "filled": 105,
+     "fill_rate": 0.938,
+     "net_usd": 25335,
+     "usd_per_signal": 226.2,
+     "pf": 3.01,
+     "missed_winners": 5,
+     "winners": 61,
+     "missed_winner_share": 0.082
+    },
+    "HYB-2|s6|next": {
+     "n": 112,
+     "filled": 90,
+     "fill_rate": 0.804,
+     "net_usd": 15939,
+     "usd_per_signal": 142.31,
+     "pf": 2.29,
+     "missed_winners": 18,
+     "winners": 61,
+     "missed_winner_share": 0.295
+    },
     "MKT|s8|base": {
      "n": 112,
      "filled": 112,
@@ -542,14 +740,14 @@
     },
     "ML2|s8|base": {
      "n": 112,
-     "filled": 110,
-     "fill_rate": 0.982,
-     "net_usd": 24554,
-     "usd_per_signal": 219.23,
-     "pf": 2.86,
-     "missed_winners": 2,
+     "filled": 107,
+     "fill_rate": 0.955,
+     "net_usd": 24868,
+     "usd_per_signal": 222.03,
+     "pf": 2.92,
+     "missed_winners": 4,
      "winners": 61,
-     "missed_winner_share": 0.033
+     "missed_winner_share": 0.066
     },
     "ML2|s8|next": {
      "n": 112,
@@ -564,14 +762,14 @@
     },
     "ML4|s8|base": {
      "n": 112,
-     "filled": 112,
-     "fill_rate": 1.0,
-     "net_usd": 24621,
-     "usd_per_signal": 219.83,
-     "pf": 2.82,
-     "missed_winners": 0,
+     "filled": 108,
+     "fill_rate": 0.964,
+     "net_usd": 24473,
+     "usd_per_signal": 218.51,
+     "pf": 2.86,
+     "missed_winners": 3,
      "winners": 61,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.049
     },
     "ML4|s8|next": {
      "n": 112,
@@ -641,14 +839,14 @@
     },
     "ML2|s12|base": {
      "n": 112,
-     "filled": 110,
-     "fill_rate": 0.982,
-     "net_usd": 24554,
-     "usd_per_signal": 219.23,
-     "pf": 2.86,
-     "missed_winners": 2,
+     "filled": 107,
+     "fill_rate": 0.955,
+     "net_usd": 24868,
+     "usd_per_signal": 222.03,
+     "pf": 2.92,
+     "missed_winners": 4,
      "winners": 61,
-     "missed_winner_share": 0.033
+     "missed_winner_share": 0.066
     },
     "ML2|s12|next": {
      "n": 112,
@@ -663,14 +861,14 @@
     },
     "ML4|s12|base": {
      "n": 112,
-     "filled": 112,
-     "fill_rate": 1.0,
-     "net_usd": 24621,
-     "usd_per_signal": 219.83,
-     "pf": 2.82,
-     "missed_winners": 0,
+     "filled": 108,
+     "fill_rate": 0.964,
+     "net_usd": 24473,
+     "usd_per_signal": 218.51,
+     "pf": 2.86,
+     "missed_winners": 3,
      "winners": 61,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.049
     },
     "ML4|s12|next": {
      "n": 112,
@@ -685,14 +883,14 @@
     },
     "ML8|s12|base": {
      "n": 112,
-     "filled": 112,
-     "fill_rate": 1.0,
-     "net_usd": 23799,
-     "usd_per_signal": 212.49,
-     "pf": 2.69,
-     "missed_winners": 0,
+     "filled": 110,
+     "fill_rate": 0.982,
+     "net_usd": 23377,
+     "usd_per_signal": 208.73,
+     "pf": 2.67,
+     "missed_winners": 2,
      "winners": 61,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.033
     },
     "ML8|s12|next": {
      "n": 112,
@@ -740,14 +938,14 @@
     },
     "ML2|s16|base": {
      "n": 112,
-     "filled": 110,
-     "fill_rate": 0.982,
-     "net_usd": 24554,
-     "usd_per_signal": 219.23,
-     "pf": 2.86,
-     "missed_winners": 2,
+     "filled": 107,
+     "fill_rate": 0.955,
+     "net_usd": 24868,
+     "usd_per_signal": 222.03,
+     "pf": 2.92,
+     "missed_winners": 4,
      "winners": 61,
-     "missed_winner_share": 0.033
+     "missed_winner_share": 0.066
     },
     "ML2|s16|next": {
      "n": 112,
@@ -762,14 +960,14 @@
     },
     "ML4|s16|base": {
      "n": 112,
-     "filled": 112,
-     "fill_rate": 1.0,
-     "net_usd": 24621,
-     "usd_per_signal": 219.83,
-     "pf": 2.82,
-     "missed_winners": 0,
+     "filled": 108,
+     "fill_rate": 0.964,
+     "net_usd": 24473,
+     "usd_per_signal": 218.51,
+     "pf": 2.86,
+     "missed_winners": 3,
      "winners": 61,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.049
     },
     "ML4|s16|next": {
      "n": 112,
@@ -784,14 +982,14 @@
     },
     "ML8|s16|base": {
      "n": 112,
-     "filled": 112,
-     "fill_rate": 1.0,
-     "net_usd": 23799,
-     "usd_per_signal": 212.49,
-     "pf": 2.69,
-     "missed_winners": 0,
+     "filled": 110,
+     "fill_rate": 0.982,
+     "net_usd": 23377,
+     "usd_per_signal": 208.73,
+     "pf": 2.67,
+     "missed_winners": 2,
      "winners": 61,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.033
     },
     "ML8|s16|next": {
      "n": 112,
@@ -1125,6 +1323,105 @@
      "winners": 29,
      "missed_winner_share": 0.172
     },
+    "MKT|s1|base": {
+     "n": 51,
+     "filled": 51,
+     "fill_rate": 1.0,
+     "net_usd": 8021,
+     "usd_per_signal": 157.27,
+     "pf": 2.63,
+     "missed_winners": 0,
+     "winners": 29,
+     "missed_winner_share": 0.0
+    },
+    "ML2|s1|base": {
+     "n": 51,
+     "filled": 51,
+     "fill_rate": 1.0,
+     "net_usd": 8021,
+     "usd_per_signal": 157.27,
+     "pf": 2.63,
+     "missed_winners": 0,
+     "winners": 29,
+     "missed_winner_share": 0.0
+    },
+    "ML2|s1|next": {
+     "n": 51,
+     "filled": 51,
+     "fill_rate": 1.0,
+     "net_usd": 8021,
+     "usd_per_signal": 157.27,
+     "pf": 2.63,
+     "missed_winners": 0,
+     "winners": 29,
+     "missed_winner_share": 0.0
+    },
+    "ML4|s1|base": {
+     "n": 51,
+     "filled": 51,
+     "fill_rate": 1.0,
+     "net_usd": 8021,
+     "usd_per_signal": 157.27,
+     "pf": 2.63,
+     "missed_winners": 0,
+     "winners": 29,
+     "missed_winner_share": 0.0
+    },
+    "ML4|s1|next": {
+     "n": 51,
+     "filled": 51,
+     "fill_rate": 1.0,
+     "net_usd": 8021,
+     "usd_per_signal": 157.27,
+     "pf": 2.63,
+     "missed_winners": 0,
+     "winners": 29,
+     "missed_winner_share": 0.0
+    },
+    "ML8|s1|base": {
+     "n": 51,
+     "filled": 51,
+     "fill_rate": 1.0,
+     "net_usd": 8021,
+     "usd_per_signal": 157.27,
+     "pf": 2.63,
+     "missed_winners": 0,
+     "winners": 29,
+     "missed_winner_share": 0.0
+    },
+    "ML8|s1|next": {
+     "n": 51,
+     "filled": 51,
+     "fill_rate": 1.0,
+     "net_usd": 8021,
+     "usd_per_signal": 157.27,
+     "pf": 2.63,
+     "missed_winners": 0,
+     "winners": 29,
+     "missed_winner_share": 0.0
+    },
+    "HYB-2|s1|base": {
+     "n": 51,
+     "filled": 46,
+     "fill_rate": 0.902,
+     "net_usd": 5798,
+     "usd_per_signal": 113.68,
+     "pf": 2.26,
+     "missed_winners": 4,
+     "winners": 29,
+     "missed_winner_share": 0.138
+    },
+    "HYB-2|s1|next": {
+     "n": 51,
+     "filled": 42,
+     "fill_rate": 0.824,
+     "net_usd": 5886,
+     "usd_per_signal": 115.41,
+     "pf": 2.48,
+     "missed_winners": 5,
+     "winners": 29,
+     "missed_winner_share": 0.172
+    },
     "MKT|s2|base": {
      "n": 51,
      "filled": 51,
@@ -1323,6 +1620,105 @@
      "winners": 29,
      "missed_winner_share": 0.172
     },
+    "MKT|s6|base": {
+     "n": 51,
+     "filled": 51,
+     "fill_rate": 1.0,
+     "net_usd": 7592,
+     "usd_per_signal": 148.87,
+     "pf": 2.46,
+     "missed_winners": 0,
+     "winners": 29,
+     "missed_winner_share": 0.0
+    },
+    "ML2|s6|base": {
+     "n": 51,
+     "filled": 47,
+     "fill_rate": 0.922,
+     "net_usd": 5394,
+     "usd_per_signal": 105.76,
+     "pf": 2.09,
+     "missed_winners": 4,
+     "winners": 29,
+     "missed_winner_share": 0.138
+    },
+    "ML2|s6|next": {
+     "n": 51,
+     "filled": 41,
+     "fill_rate": 0.804,
+     "net_usd": 5559,
+     "usd_per_signal": 108.99,
+     "pf": 2.34,
+     "missed_winners": 7,
+     "winners": 29,
+     "missed_winner_share": 0.241
+    },
+    "ML4|s6|base": {
+     "n": 51,
+     "filled": 47,
+     "fill_rate": 0.922,
+     "net_usd": 5233,
+     "usd_per_signal": 102.62,
+     "pf": 2.03,
+     "missed_winners": 4,
+     "winners": 29,
+     "missed_winner_share": 0.138
+    },
+    "ML4|s6|next": {
+     "n": 51,
+     "filled": 42,
+     "fill_rate": 0.824,
+     "net_usd": 5130,
+     "usd_per_signal": 100.59,
+     "pf": 2.13,
+     "missed_winners": 7,
+     "winners": 29,
+     "missed_winner_share": 0.241
+    },
+    "ML8|s6|base": {
+     "n": 51,
+     "filled": 51,
+     "fill_rate": 1.0,
+     "net_usd": 7592,
+     "usd_per_signal": 148.87,
+     "pf": 2.46,
+     "missed_winners": 0,
+     "winners": 29,
+     "missed_winner_share": 0.0
+    },
+    "ML8|s6|next": {
+     "n": 51,
+     "filled": 51,
+     "fill_rate": 1.0,
+     "net_usd": 7592,
+     "usd_per_signal": 148.87,
+     "pf": 2.46,
+     "missed_winners": 0,
+     "winners": 29,
+     "missed_winner_share": 0.0
+    },
+    "HYB-2|s6|base": {
+     "n": 51,
+     "filled": 46,
+     "fill_rate": 0.902,
+     "net_usd": 5793,
+     "usd_per_signal": 113.6,
+     "pf": 2.26,
+     "missed_winners": 4,
+     "winners": 29,
+     "missed_winner_share": 0.138
+    },
+    "HYB-2|s6|next": {
+     "n": 51,
+     "filled": 42,
+     "fill_rate": 0.824,
+     "net_usd": 5852,
+     "usd_per_signal": 114.75,
+     "pf": 2.46,
+     "missed_winners": 5,
+     "winners": 29,
+     "missed_winner_share": 0.172
+    },
     "MKT|s8|base": {
      "n": 51,
      "filled": 51,
@@ -1358,14 +1754,14 @@
     },
     "ML4|s8|base": {
      "n": 51,
-     "filled": 51,
-     "fill_rate": 1.0,
-     "net_usd": 7763,
-     "usd_per_signal": 152.23,
-     "pf": 2.53,
-     "missed_winners": 0,
+     "filled": 47,
+     "fill_rate": 0.922,
+     "net_usd": 5233,
+     "usd_per_signal": 102.62,
+     "pf": 2.03,
+     "missed_winners": 4,
      "winners": 29,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.138
     },
     "ML4|s8|next": {
      "n": 51,
@@ -1457,14 +1853,14 @@
     },
     "ML4|s12|base": {
      "n": 51,
-     "filled": 51,
-     "fill_rate": 1.0,
-     "net_usd": 7763,
-     "usd_per_signal": 152.23,
-     "pf": 2.53,
-     "missed_winners": 0,
+     "filled": 47,
+     "fill_rate": 0.922,
+     "net_usd": 5233,
+     "usd_per_signal": 102.62,
+     "pf": 2.03,
+     "missed_winners": 4,
      "winners": 29,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.138
     },
     "ML4|s12|next": {
      "n": 51,
@@ -1479,14 +1875,14 @@
     },
     "ML8|s12|base": {
      "n": 51,
-     "filled": 51,
-     "fill_rate": 1.0,
-     "net_usd": 7421,
-     "usd_per_signal": 145.51,
-     "pf": 2.4,
-     "missed_winners": 0,
+     "filled": 48,
+     "fill_rate": 0.941,
+     "net_usd": 4904,
+     "usd_per_signal": 96.16,
+     "pf": 1.93,
+     "missed_winners": 3,
      "winners": 29,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.103
     },
     "ML8|s12|next": {
      "n": 51,
@@ -1556,14 +1952,14 @@
     },
     "ML4|s16|base": {
      "n": 51,
-     "filled": 51,
-     "fill_rate": 1.0,
-     "net_usd": 7763,
-     "usd_per_signal": 152.23,
-     "pf": 2.53,
-     "missed_winners": 0,
+     "filled": 47,
+     "fill_rate": 0.922,
+     "net_usd": 5233,
+     "usd_per_signal": 102.62,
+     "pf": 2.03,
+     "missed_winners": 4,
      "winners": 29,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.138
     },
     "ML4|s16|next": {
      "n": 51,
@@ -1578,14 +1974,14 @@
     },
     "ML8|s16|base": {
      "n": 51,
-     "filled": 51,
-     "fill_rate": 1.0,
-     "net_usd": 7421,
-     "usd_per_signal": 145.51,
-     "pf": 2.4,
-     "missed_winners": 0,
+     "filled": 48,
+     "fill_rate": 0.941,
+     "net_usd": 4904,
+     "usd_per_signal": 96.16,
+     "pf": 1.93,
+     "missed_winners": 3,
      "winners": 29,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.103
     },
     "ML8|s16|next": {
      "n": 51,
@@ -1919,6 +2315,105 @@
      "winners": 420,
      "missed_winner_share": 0.46
     },
+    "MKT|s1|base": {
+     "n": 1125,
+     "filled": 1125,
+     "fill_rate": 1.0,
+     "net_usd": 6748,
+     "usd_per_signal": 6.0,
+     "pf": 1.04,
+     "missed_winners": 0,
+     "winners": 420,
+     "missed_winner_share": 0.0
+    },
+    "ML2|s1|base": {
+     "n": 1125,
+     "filled": 1125,
+     "fill_rate": 1.0,
+     "net_usd": 6748,
+     "usd_per_signal": 6.0,
+     "pf": 1.04,
+     "missed_winners": 0,
+     "winners": 420,
+     "missed_winner_share": 0.0
+    },
+    "ML2|s1|next": {
+     "n": 1125,
+     "filled": 1125,
+     "fill_rate": 1.0,
+     "net_usd": 6748,
+     "usd_per_signal": 6.0,
+     "pf": 1.04,
+     "missed_winners": 0,
+     "winners": 420,
+     "missed_winner_share": 0.0
+    },
+    "ML4|s1|base": {
+     "n": 1125,
+     "filled": 1125,
+     "fill_rate": 1.0,
+     "net_usd": 6748,
+     "usd_per_signal": 6.0,
+     "pf": 1.04,
+     "missed_winners": 0,
+     "winners": 420,
+     "missed_winner_share": 0.0
+    },
+    "ML4|s1|next": {
+     "n": 1125,
+     "filled": 1125,
+     "fill_rate": 1.0,
+     "net_usd": 6748,
+     "usd_per_signal": 6.0,
+     "pf": 1.04,
+     "missed_winners": 0,
+     "winners": 420,
+     "missed_winner_share": 0.0
+    },
+    "ML8|s1|base": {
+     "n": 1125,
+     "filled": 1125,
+     "fill_rate": 1.0,
+     "net_usd": 6748,
+     "usd_per_signal": 6.0,
+     "pf": 1.04,
+     "missed_winners": 0,
+     "winners": 420,
+     "missed_winner_share": 0.0
+    },
+    "ML8|s1|next": {
+     "n": 1125,
+     "filled": 1125,
+     "fill_rate": 1.0,
+     "net_usd": 6748,
+     "usd_per_signal": 6.0,
+     "pf": 1.04,
+     "missed_winners": 0,
+     "winners": 420,
+     "missed_winner_share": 0.0
+    },
+    "HYB-2|s1|base": {
+     "n": 1125,
+     "filled": 1074,
+     "fill_rate": 0.955,
+     "net_usd": -2560,
+     "usd_per_signal": -2.28,
+     "pf": 0.99,
+     "missed_winners": 37,
+     "winners": 420,
+     "missed_winner_share": 0.088
+    },
+    "HYB-2|s1|next": {
+     "n": 1125,
+     "filled": 824,
+     "fill_rate": 0.732,
+     "net_usd": -1299,
+     "usd_per_signal": -1.15,
+     "pf": 0.99,
+     "missed_winners": 193,
+     "winners": 420,
+     "missed_winner_share": 0.46
+    },
     "MKT|s2|base": {
      "n": 1125,
      "filled": 1125,
@@ -2031,14 +2526,14 @@
     },
     "ML2|s4|base": {
      "n": 1125,
-     "filled": 1090,
-     "fill_rate": 0.969,
-     "net_usd": -5036,
-     "usd_per_signal": -4.48,
-     "pf": 0.97,
-     "missed_winners": 23,
+     "filled": 1049,
+     "fill_rate": 0.932,
+     "net_usd": -10863,
+     "usd_per_signal": -9.66,
+     "pf": 0.94,
+     "missed_winners": 46,
      "winners": 420,
-     "missed_winner_share": 0.055
+     "missed_winner_share": 0.11
     },
     "ML2|s4|next": {
      "n": 1125,
@@ -2117,6 +2612,105 @@
      "winners": 420,
      "missed_winner_share": 0.46
     },
+    "MKT|s6|base": {
+     "n": 1125,
+     "filled": 1125,
+     "fill_rate": 1.0,
+     "net_usd": -8595,
+     "usd_per_signal": -7.64,
+     "pf": 0.96,
+     "missed_winners": 0,
+     "winners": 420,
+     "missed_winner_share": 0.0
+    },
+    "ML2|s6|base": {
+     "n": 1125,
+     "filled": 1049,
+     "fill_rate": 0.932,
+     "net_usd": -10863,
+     "usd_per_signal": -9.66,
+     "pf": 0.94,
+     "missed_winners": 46,
+     "winners": 420,
+     "missed_winner_share": 0.11
+    },
+    "ML2|s6|next": {
+     "n": 1125,
+     "filled": 0,
+     "fill_rate": 0.0,
+     "net_usd": 0,
+     "usd_per_signal": 0.0,
+     "pf": null,
+     "missed_winners": 420,
+     "winners": 420,
+     "missed_winner_share": 1.0
+    },
+    "ML4|s6|base": {
+     "n": 1125,
+     "filled": 1049,
+     "fill_rate": 0.932,
+     "net_usd": -16502,
+     "usd_per_signal": -14.67,
+     "pf": 0.91,
+     "missed_winners": 46,
+     "winners": 420,
+     "missed_winner_share": 0.11
+    },
+    "ML4|s6|next": {
+     "n": 1125,
+     "filled": 0,
+     "fill_rate": 0.0,
+     "net_usd": 0,
+     "usd_per_signal": 0.0,
+     "pf": null,
+     "missed_winners": 420,
+     "winners": 420,
+     "missed_winner_share": 1.0
+    },
+    "ML8|s6|base": {
+     "n": 1125,
+     "filled": 1125,
+     "fill_rate": 1.0,
+     "net_usd": -8595,
+     "usd_per_signal": -7.64,
+     "pf": 0.96,
+     "missed_winners": 0,
+     "winners": 420,
+     "missed_winner_share": 0.0
+    },
+    "ML8|s6|next": {
+     "n": 1125,
+     "filled": 1125,
+     "fill_rate": 1.0,
+     "net_usd": -8595,
+     "usd_per_signal": -7.64,
+     "pf": 0.96,
+     "missed_winners": 0,
+     "winners": 420,
+     "missed_winner_share": 0.0
+    },
+    "HYB-2|s6|base": {
+     "n": 1125,
+     "filled": 1074,
+     "fill_rate": 0.955,
+     "net_usd": -2897,
+     "usd_per_signal": -2.57,
+     "pf": 0.98,
+     "missed_winners": 37,
+     "winners": 420,
+     "missed_winner_share": 0.088
+    },
+    "HYB-2|s6|next": {
+     "n": 1125,
+     "filled": 824,
+     "fill_rate": 0.732,
+     "net_usd": -12296,
+     "usd_per_signal": -10.93,
+     "pf": 0.9,
+     "missed_winners": 193,
+     "winners": 420,
+     "missed_winner_share": 0.46
+    },
     "MKT|s8|base": {
      "n": 1125,
      "filled": 1125,
@@ -2130,14 +2724,14 @@
     },
     "ML2|s8|base": {
      "n": 1125,
-     "filled": 1090,
-     "fill_rate": 0.969,
-     "net_usd": -5036,
-     "usd_per_signal": -4.48,
-     "pf": 0.97,
-     "missed_winners": 23,
+     "filled": 1049,
+     "fill_rate": 0.932,
+     "net_usd": -10863,
+     "usd_per_signal": -9.66,
+     "pf": 0.94,
+     "missed_winners": 46,
      "winners": 420,
-     "missed_winner_share": 0.055
+     "missed_winner_share": 0.11
     },
     "ML2|s8|next": {
      "n": 1125,
@@ -2152,14 +2746,14 @@
     },
     "ML4|s8|base": {
      "n": 1125,
-     "filled": 1125,
-     "fill_rate": 1.0,
-     "net_usd": -2458,
-     "usd_per_signal": -2.18,
-     "pf": 0.99,
-     "missed_winners": 0,
+     "filled": 1049,
+     "fill_rate": 0.932,
+     "net_usd": -16502,
+     "usd_per_signal": -14.67,
+     "pf": 0.91,
+     "missed_winners": 46,
      "winners": 420,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.11
     },
     "ML4|s8|next": {
      "n": 1125,
@@ -2229,14 +2823,14 @@
     },
     "ML2|s12|base": {
      "n": 1125,
-     "filled": 1090,
-     "fill_rate": 0.969,
-     "net_usd": -5036,
-     "usd_per_signal": -4.48,
-     "pf": 0.97,
-     "missed_winners": 23,
+     "filled": 1049,
+     "fill_rate": 0.932,
+     "net_usd": -10863,
+     "usd_per_signal": -9.66,
+     "pf": 0.94,
+     "missed_winners": 46,
      "winners": 420,
-     "missed_winner_share": 0.055
+     "missed_winner_share": 0.11
     },
     "ML2|s12|next": {
      "n": 1125,
@@ -2251,14 +2845,14 @@
     },
     "ML4|s12|base": {
      "n": 1125,
-     "filled": 1125,
-     "fill_rate": 1.0,
-     "net_usd": -2458,
-     "usd_per_signal": -2.18,
-     "pf": 0.99,
-     "missed_winners": 0,
+     "filled": 1049,
+     "fill_rate": 0.932,
+     "net_usd": -16502,
+     "usd_per_signal": -14.67,
+     "pf": 0.91,
+     "missed_winners": 46,
      "winners": 420,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.11
     },
     "ML4|s12|next": {
      "n": 1125,
@@ -2273,14 +2867,14 @@
     },
     "ML8|s12|base": {
      "n": 1125,
-     "filled": 1125,
-     "fill_rate": 1.0,
-     "net_usd": -14732,
-     "usd_per_signal": -13.09,
-     "pf": 0.93,
-     "missed_winners": 0,
+     "filled": 1049,
+     "fill_rate": 0.932,
+     "net_usd": -27780,
+     "usd_per_signal": -24.69,
+     "pf": 0.85,
+     "missed_winners": 46,
      "winners": 420,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.11
     },
     "ML8|s12|next": {
      "n": 1125,
@@ -2328,14 +2922,14 @@
     },
     "ML2|s16|base": {
      "n": 1125,
-     "filled": 1090,
-     "fill_rate": 0.969,
-     "net_usd": -5036,
-     "usd_per_signal": -4.48,
-     "pf": 0.97,
-     "missed_winners": 23,
+     "filled": 1049,
+     "fill_rate": 0.932,
+     "net_usd": -10863,
+     "usd_per_signal": -9.66,
+     "pf": 0.94,
+     "missed_winners": 46,
      "winners": 420,
-     "missed_winner_share": 0.055
+     "missed_winner_share": 0.11
     },
     "ML2|s16|next": {
      "n": 1125,
@@ -2350,14 +2944,14 @@
     },
     "ML4|s16|base": {
      "n": 1125,
-     "filled": 1125,
-     "fill_rate": 1.0,
-     "net_usd": -2458,
-     "usd_per_signal": -2.18,
-     "pf": 0.99,
-     "missed_winners": 0,
+     "filled": 1049,
+     "fill_rate": 0.932,
+     "net_usd": -16502,
+     "usd_per_signal": -14.67,
+     "pf": 0.91,
+     "missed_winners": 46,
      "winners": 420,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.11
     },
     "ML4|s16|next": {
      "n": 1125,
@@ -2372,14 +2966,14 @@
     },
     "ML8|s16|base": {
      "n": 1125,
-     "filled": 1125,
-     "fill_rate": 1.0,
-     "net_usd": -14732,
-     "usd_per_signal": -13.09,
-     "pf": 0.93,
-     "missed_winners": 0,
+     "filled": 1049,
+     "fill_rate": 0.932,
+     "net_usd": -27780,
+     "usd_per_signal": -24.69,
+     "pf": 0.85,
+     "missed_winners": 46,
      "winners": 420,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.11
     },
     "ML8|s16|next": {
      "n": 1125,
@@ -2671,6 +3265,105 @@
      "winners": 16,
      "missed_winner_share": 0.188
     },
+    "MKT|s1|base": {
+     "n": 85,
+     "filled": 85,
+     "fill_rate": 1.0,
+     "net_usd": 30210,
+     "usd_per_signal": 355.42,
+     "pf": 3.44,
+     "missed_winners": 0,
+     "winners": 16,
+     "missed_winner_share": 0.0
+    },
+    "ML2|s1|base": {
+     "n": 85,
+     "filled": 85,
+     "fill_rate": 1.0,
+     "net_usd": 30210,
+     "usd_per_signal": 355.42,
+     "pf": 3.44,
+     "missed_winners": 0,
+     "winners": 16,
+     "missed_winner_share": 0.0
+    },
+    "ML2|s1|next": {
+     "n": 85,
+     "filled": 85,
+     "fill_rate": 1.0,
+     "net_usd": 30210,
+     "usd_per_signal": 355.42,
+     "pf": 3.44,
+     "missed_winners": 0,
+     "winners": 16,
+     "missed_winner_share": 0.0
+    },
+    "ML4|s1|base": {
+     "n": 85,
+     "filled": 85,
+     "fill_rate": 1.0,
+     "net_usd": 30210,
+     "usd_per_signal": 355.42,
+     "pf": 3.44,
+     "missed_winners": 0,
+     "winners": 16,
+     "missed_winner_share": 0.0
+    },
+    "ML4|s1|next": {
+     "n": 85,
+     "filled": 85,
+     "fill_rate": 1.0,
+     "net_usd": 30210,
+     "usd_per_signal": 355.42,
+     "pf": 3.44,
+     "missed_winners": 0,
+     "winners": 16,
+     "missed_winner_share": 0.0
+    },
+    "ML8|s1|base": {
+     "n": 85,
+     "filled": 85,
+     "fill_rate": 1.0,
+     "net_usd": 30210,
+     "usd_per_signal": 355.42,
+     "pf": 3.44,
+     "missed_winners": 0,
+     "winners": 16,
+     "missed_winner_share": 0.0
+    },
+    "ML8|s1|next": {
+     "n": 85,
+     "filled": 85,
+     "fill_rate": 1.0,
+     "net_usd": 30210,
+     "usd_per_signal": 355.42,
+     "pf": 3.44,
+     "missed_winners": 0,
+     "winners": 16,
+     "missed_winner_share": 0.0
+    },
+    "HYB-2|s1|base": {
+     "n": 85,
+     "filled": 82,
+     "fill_rate": 0.965,
+     "net_usd": 26772,
+     "usd_per_signal": 314.97,
+     "pf": 3.18,
+     "missed_winners": 1,
+     "winners": 16,
+     "missed_winner_share": 0.062
+    },
+    "HYB-2|s1|next": {
+     "n": 85,
+     "filled": 78,
+     "fill_rate": 0.918,
+     "net_usd": 20960,
+     "usd_per_signal": 246.58,
+     "pf": 2.69,
+     "missed_winners": 3,
+     "winners": 16,
+     "missed_winner_share": 0.188
+    },
     "MKT|s2|base": {
      "n": 85,
      "filled": 85,
@@ -2783,14 +3476,14 @@
     },
     "ML2|s4|base": {
      "n": 85,
-     "filled": 82,
-     "fill_rate": 0.965,
-     "net_usd": 29207,
-     "usd_per_signal": 343.61,
-     "pf": 3.35,
-     "missed_winners": 1,
+     "filled": 77,
+     "fill_rate": 0.906,
+     "net_usd": 24890,
+     "usd_per_signal": 292.83,
+     "pf": 3.03,
+     "missed_winners": 3,
      "winners": 16,
-     "missed_winner_share": 0.062
+     "missed_winner_share": 0.188
     },
     "ML2|s4|next": {
      "n": 85,
@@ -2869,6 +3562,105 @@
      "winners": 16,
      "missed_winner_share": 0.188
     },
+    "MKT|s6|base": {
+     "n": 85,
+     "filled": 85,
+     "fill_rate": 1.0,
+     "net_usd": 28913,
+     "usd_per_signal": 340.15,
+     "pf": 3.17,
+     "missed_winners": 0,
+     "winners": 16,
+     "missed_winner_share": 0.0
+    },
+    "ML2|s6|base": {
+     "n": 85,
+     "filled": 77,
+     "fill_rate": 0.906,
+     "net_usd": 24890,
+     "usd_per_signal": 292.83,
+     "pf": 3.03,
+     "missed_winners": 3,
+     "winners": 16,
+     "missed_winner_share": 0.188
+    },
+    "ML2|s6|next": {
+     "n": 85,
+     "filled": 68,
+     "fill_rate": 0.8,
+     "net_usd": 15300,
+     "usd_per_signal": 180.0,
+     "pf": 2.27,
+     "missed_winners": 6,
+     "winners": 16,
+     "missed_winner_share": 0.375
+    },
+    "ML4|s6|base": {
+     "n": 85,
+     "filled": 79,
+     "fill_rate": 0.929,
+     "net_usd": 25320,
+     "usd_per_signal": 297.88,
+     "pf": 3.0,
+     "missed_winners": 2,
+     "winners": 16,
+     "missed_winner_share": 0.125
+    },
+    "ML4|s6|next": {
+     "n": 85,
+     "filled": 70,
+     "fill_rate": 0.824,
+     "net_usd": 15772,
+     "usd_per_signal": 185.56,
+     "pf": 2.28,
+     "missed_winners": 5,
+     "winners": 16,
+     "missed_winner_share": 0.312
+    },
+    "ML8|s6|base": {
+     "n": 85,
+     "filled": 85,
+     "fill_rate": 1.0,
+     "net_usd": 28913,
+     "usd_per_signal": 340.15,
+     "pf": 3.17,
+     "missed_winners": 0,
+     "winners": 16,
+     "missed_winner_share": 0.0
+    },
+    "ML8|s6|next": {
+     "n": 85,
+     "filled": 85,
+     "fill_rate": 1.0,
+     "net_usd": 28913,
+     "usd_per_signal": 340.15,
+     "pf": 3.17,
+     "missed_winners": 0,
+     "winners": 16,
+     "missed_winner_share": 0.0
+    },
+    "HYB-2|s6|base": {
+     "n": 85,
+     "filled": 82,
+     "fill_rate": 0.965,
+     "net_usd": 26712,
+     "usd_per_signal": 314.26,
+     "pf": 3.17,
+     "missed_winners": 1,
+     "winners": 16,
+     "missed_winner_share": 0.062
+    },
+    "HYB-2|s6|next": {
+     "n": 85,
+     "filled": 78,
+     "fill_rate": 0.918,
+     "net_usd": 20797,
+     "usd_per_signal": 244.67,
+     "pf": 2.67,
+     "missed_winners": 3,
+     "winners": 16,
+     "missed_winner_share": 0.188
+    },
     "MKT|s8|base": {
      "n": 85,
      "filled": 85,
@@ -2882,14 +3674,14 @@
     },
     "ML2|s8|base": {
      "n": 85,
-     "filled": 82,
-     "fill_rate": 0.965,
-     "net_usd": 29207,
-     "usd_per_signal": 343.61,
-     "pf": 3.35,
-     "missed_winners": 1,
+     "filled": 77,
+     "fill_rate": 0.906,
+     "net_usd": 24890,
+     "usd_per_signal": 292.83,
+     "pf": 3.03,
+     "missed_winners": 3,
      "winners": 16,
-     "missed_winner_share": 0.062
+     "missed_winner_share": 0.188
     },
     "ML2|s8|next": {
      "n": 85,
@@ -2904,14 +3696,14 @@
     },
     "ML4|s8|base": {
      "n": 85,
-     "filled": 85,
-     "fill_rate": 1.0,
-     "net_usd": 29432,
-     "usd_per_signal": 346.26,
-     "pf": 3.27,
-     "missed_winners": 0,
+     "filled": 79,
+     "fill_rate": 0.929,
+     "net_usd": 25320,
+     "usd_per_signal": 297.88,
+     "pf": 3.0,
+     "missed_winners": 2,
      "winners": 16,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.125
     },
     "ML4|s8|next": {
      "n": 85,
@@ -2981,14 +3773,14 @@
     },
     "ML2|s12|base": {
      "n": 85,
-     "filled": 82,
-     "fill_rate": 0.965,
-     "net_usd": 29207,
-     "usd_per_signal": 343.61,
-     "pf": 3.35,
-     "missed_winners": 1,
+     "filled": 77,
+     "fill_rate": 0.906,
+     "net_usd": 24890,
+     "usd_per_signal": 292.83,
+     "pf": 3.03,
+     "missed_winners": 3,
      "winners": 16,
-     "missed_winner_share": 0.062
+     "missed_winner_share": 0.188
     },
     "ML2|s12|next": {
      "n": 85,
@@ -3003,14 +3795,14 @@
     },
     "ML4|s12|base": {
      "n": 85,
-     "filled": 85,
-     "fill_rate": 1.0,
-     "net_usd": 29432,
-     "usd_per_signal": 346.26,
-     "pf": 3.27,
-     "missed_winners": 0,
+     "filled": 79,
+     "fill_rate": 0.929,
+     "net_usd": 25320,
+     "usd_per_signal": 297.88,
+     "pf": 3.0,
+     "missed_winners": 2,
      "winners": 16,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.125
     },
     "ML4|s12|next": {
      "n": 85,
@@ -3025,14 +3817,14 @@
     },
     "ML8|s12|base": {
      "n": 85,
-     "filled": 85,
-     "fill_rate": 1.0,
-     "net_usd": 28394,
-     "usd_per_signal": 334.04,
-     "pf": 3.07,
-     "missed_winners": 0,
+     "filled": 81,
+     "fill_rate": 0.953,
+     "net_usd": 25173,
+     "usd_per_signal": 296.15,
+     "pf": 2.87,
+     "missed_winners": 1,
      "winners": 16,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.062
     },
     "ML8|s12|next": {
      "n": 85,
@@ -3080,14 +3872,14 @@
     },
     "ML2|s16|base": {
      "n": 85,
-     "filled": 82,
-     "fill_rate": 0.965,
-     "net_usd": 29207,
-     "usd_per_signal": 343.61,
-     "pf": 3.35,
-     "missed_winners": 1,
+     "filled": 77,
+     "fill_rate": 0.906,
+     "net_usd": 24890,
+     "usd_per_signal": 292.83,
+     "pf": 3.03,
+     "missed_winners": 3,
      "winners": 16,
-     "missed_winner_share": 0.062
+     "missed_winner_share": 0.188
     },
     "ML2|s16|next": {
      "n": 85,
@@ -3102,14 +3894,14 @@
     },
     "ML4|s16|base": {
      "n": 85,
-     "filled": 85,
-     "fill_rate": 1.0,
-     "net_usd": 29432,
-     "usd_per_signal": 346.26,
-     "pf": 3.27,
-     "missed_winners": 0,
+     "filled": 79,
+     "fill_rate": 0.929,
+     "net_usd": 25320,
+     "usd_per_signal": 297.88,
+     "pf": 3.0,
+     "missed_winners": 2,
      "winners": 16,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.125
     },
     "ML4|s16|next": {
      "n": 85,
@@ -3124,14 +3916,14 @@
     },
     "ML8|s16|base": {
      "n": 85,
-     "filled": 85,
-     "fill_rate": 1.0,
-     "net_usd": 28394,
-     "usd_per_signal": 334.04,
-     "pf": 3.07,
-     "missed_winners": 0,
+     "filled": 81,
+     "fill_rate": 0.953,
+     "net_usd": 25173,
+     "usd_per_signal": 296.15,
+     "pf": 2.87,
+     "missed_winners": 1,
      "winners": 16,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.062
     },
     "ML8|s16|next": {
      "n": 85,
@@ -3465,6 +4257,105 @@
      "winners": 14,
      "missed_winner_share": 0.071
     },
+    "MKT|s1|base": {
+     "n": 42,
+     "filled": 42,
+     "fill_rate": 1.0,
+     "net_usd": 8060,
+     "usd_per_signal": 191.9,
+     "pf": 2.15,
+     "missed_winners": 0,
+     "winners": 14,
+     "missed_winner_share": 0.0
+    },
+    "ML2|s1|base": {
+     "n": 42,
+     "filled": 42,
+     "fill_rate": 1.0,
+     "net_usd": 8060,
+     "usd_per_signal": 191.9,
+     "pf": 2.15,
+     "missed_winners": 0,
+     "winners": 14,
+     "missed_winner_share": 0.0
+    },
+    "ML2|s1|next": {
+     "n": 42,
+     "filled": 42,
+     "fill_rate": 1.0,
+     "net_usd": 8060,
+     "usd_per_signal": 191.9,
+     "pf": 2.15,
+     "missed_winners": 0,
+     "winners": 14,
+     "missed_winner_share": 0.0
+    },
+    "ML4|s1|base": {
+     "n": 42,
+     "filled": 42,
+     "fill_rate": 1.0,
+     "net_usd": 8060,
+     "usd_per_signal": 191.9,
+     "pf": 2.15,
+     "missed_winners": 0,
+     "winners": 14,
+     "missed_winner_share": 0.0
+    },
+    "ML4|s1|next": {
+     "n": 42,
+     "filled": 42,
+     "fill_rate": 1.0,
+     "net_usd": 8060,
+     "usd_per_signal": 191.9,
+     "pf": 2.15,
+     "missed_winners": 0,
+     "winners": 14,
+     "missed_winner_share": 0.0
+    },
+    "ML8|s1|base": {
+     "n": 42,
+     "filled": 42,
+     "fill_rate": 1.0,
+     "net_usd": 8060,
+     "usd_per_signal": 191.9,
+     "pf": 2.15,
+     "missed_winners": 0,
+     "winners": 14,
+     "missed_winner_share": 0.0
+    },
+    "ML8|s1|next": {
+     "n": 42,
+     "filled": 42,
+     "fill_rate": 1.0,
+     "net_usd": 8060,
+     "usd_per_signal": 191.9,
+     "pf": 2.15,
+     "missed_winners": 0,
+     "winners": 14,
+     "missed_winner_share": 0.0
+    },
+    "HYB-2|s1|base": {
+     "n": 42,
+     "filled": 42,
+     "fill_rate": 1.0,
+     "net_usd": 8068,
+     "usd_per_signal": 192.09,
+     "pf": 2.16,
+     "missed_winners": 0,
+     "winners": 14,
+     "missed_winner_share": 0.0
+    },
+    "HYB-2|s1|next": {
+     "n": 42,
+     "filled": 41,
+     "fill_rate": 0.976,
+     "net_usd": 7362,
+     "usd_per_signal": 175.28,
+     "pf": 2.06,
+     "missed_winners": 1,
+     "winners": 14,
+     "missed_winner_share": 0.071
+    },
     "MKT|s2|base": {
      "n": 42,
      "filled": 42,
@@ -3663,6 +4554,105 @@
      "winners": 14,
      "missed_winner_share": 0.071
     },
+    "MKT|s6|base": {
+     "n": 42,
+     "filled": 42,
+     "fill_rate": 1.0,
+     "net_usd": 7630,
+     "usd_per_signal": 181.66,
+     "pf": 2.04,
+     "missed_winners": 0,
+     "winners": 14,
+     "missed_winner_share": 0.0
+    },
+    "ML2|s6|base": {
+     "n": 42,
+     "filled": 41,
+     "fill_rate": 0.976,
+     "net_usd": 7493,
+     "usd_per_signal": 178.4,
+     "pf": 2.06,
+     "missed_winners": 1,
+     "winners": 14,
+     "missed_winner_share": 0.071
+    },
+    "ML2|s6|next": {
+     "n": 42,
+     "filled": 37,
+     "fill_rate": 0.881,
+     "net_usd": 5147,
+     "usd_per_signal": 122.54,
+     "pf": 1.75,
+     "missed_winners": 4,
+     "winners": 14,
+     "missed_winner_share": 0.286
+    },
+    "ML4|s6|base": {
+     "n": 42,
+     "filled": 41,
+     "fill_rate": 0.976,
+     "net_usd": 7323,
+     "usd_per_signal": 174.35,
+     "pf": 2.02,
+     "missed_winners": 1,
+     "winners": 14,
+     "missed_winner_share": 0.071
+    },
+    "ML4|s6|next": {
+     "n": 42,
+     "filled": 37,
+     "fill_rate": 0.881,
+     "net_usd": 4984,
+     "usd_per_signal": 118.66,
+     "pf": 1.71,
+     "missed_winners": 4,
+     "winners": 14,
+     "missed_winner_share": 0.286
+    },
+    "ML8|s6|base": {
+     "n": 42,
+     "filled": 42,
+     "fill_rate": 1.0,
+     "net_usd": 7630,
+     "usd_per_signal": 181.66,
+     "pf": 2.04,
+     "missed_winners": 0,
+     "winners": 14,
+     "missed_winner_share": 0.0
+    },
+    "ML8|s6|next": {
+     "n": 42,
+     "filled": 42,
+     "fill_rate": 1.0,
+     "net_usd": 7630,
+     "usd_per_signal": 181.66,
+     "pf": 2.04,
+     "missed_winners": 0,
+     "winners": 14,
+     "missed_winner_share": 0.0
+    },
+    "HYB-2|s6|base": {
+     "n": 42,
+     "filled": 42,
+     "fill_rate": 1.0,
+     "net_usd": 8058,
+     "usd_per_signal": 191.85,
+     "pf": 2.16,
+     "missed_winners": 0,
+     "winners": 14,
+     "missed_winner_share": 0.0
+    },
+    "HYB-2|s6|next": {
+     "n": 42,
+     "filled": 41,
+     "fill_rate": 0.976,
+     "net_usd": 7307,
+     "usd_per_signal": 173.97,
+     "pf": 2.05,
+     "missed_winners": 1,
+     "winners": 14,
+     "missed_winner_share": 0.071
+    },
     "MKT|s8|base": {
      "n": 42,
      "filled": 42,
@@ -3698,14 +4688,14 @@
     },
     "ML4|s8|base": {
      "n": 42,
-     "filled": 42,
-     "fill_rate": 1.0,
-     "net_usd": 7802,
-     "usd_per_signal": 185.76,
-     "pf": 2.09,
-     "missed_winners": 0,
+     "filled": 41,
+     "fill_rate": 0.976,
+     "net_usd": 7323,
+     "usd_per_signal": 174.35,
+     "pf": 2.02,
+     "missed_winners": 1,
      "winners": 14,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.071
     },
     "ML4|s8|next": {
      "n": 42,
@@ -3797,14 +4787,14 @@
     },
     "ML4|s12|base": {
      "n": 42,
-     "filled": 42,
-     "fill_rate": 1.0,
-     "net_usd": 7802,
-     "usd_per_signal": 185.76,
-     "pf": 2.09,
-     "missed_winners": 0,
+     "filled": 41,
+     "fill_rate": 0.976,
+     "net_usd": 7323,
+     "usd_per_signal": 174.35,
+     "pf": 2.02,
+     "missed_winners": 1,
      "winners": 14,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.071
     },
     "ML4|s12|next": {
      "n": 42,
@@ -3896,14 +4886,14 @@
     },
     "ML4|s16|base": {
      "n": 42,
-     "filled": 42,
-     "fill_rate": 1.0,
-     "net_usd": 7802,
-     "usd_per_signal": 185.76,
-     "pf": 2.09,
-     "missed_winners": 0,
+     "filled": 41,
+     "fill_rate": 0.976,
+     "net_usd": 7323,
+     "usd_per_signal": 174.35,
+     "pf": 2.02,
+     "missed_winners": 1,
      "winners": 14,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.071
     },
     "ML4|s16|next": {
      "n": 42,
@@ -4259,6 +5249,105 @@
      "winners": 98,
      "missed_winner_share": 0.163
     },
+    "MKT|s1|base": {
+     "n": 535,
+     "filled": 533,
+     "fill_rate": 0.996,
+     "net_usd": 743,
+     "usd_per_signal": 1.39,
+     "pf": 1.01,
+     "missed_winners": 0,
+     "winners": 98,
+     "missed_winner_share": 0.0
+    },
+    "ML2|s1|base": {
+     "n": 535,
+     "filled": 533,
+     "fill_rate": 0.996,
+     "net_usd": 743,
+     "usd_per_signal": 1.39,
+     "pf": 1.01,
+     "missed_winners": 0,
+     "winners": 98,
+     "missed_winner_share": 0.0
+    },
+    "ML2|s1|next": {
+     "n": 535,
+     "filled": 533,
+     "fill_rate": 0.996,
+     "net_usd": 743,
+     "usd_per_signal": 1.39,
+     "pf": 1.01,
+     "missed_winners": 0,
+     "winners": 98,
+     "missed_winner_share": 0.0
+    },
+    "ML4|s1|base": {
+     "n": 535,
+     "filled": 533,
+     "fill_rate": 0.996,
+     "net_usd": 743,
+     "usd_per_signal": 1.39,
+     "pf": 1.01,
+     "missed_winners": 0,
+     "winners": 98,
+     "missed_winner_share": 0.0
+    },
+    "ML4|s1|next": {
+     "n": 535,
+     "filled": 533,
+     "fill_rate": 0.996,
+     "net_usd": 743,
+     "usd_per_signal": 1.39,
+     "pf": 1.01,
+     "missed_winners": 0,
+     "winners": 98,
+     "missed_winner_share": 0.0
+    },
+    "ML8|s1|base": {
+     "n": 535,
+     "filled": 533,
+     "fill_rate": 0.996,
+     "net_usd": 743,
+     "usd_per_signal": 1.39,
+     "pf": 1.01,
+     "missed_winners": 0,
+     "winners": 98,
+     "missed_winner_share": 0.0
+    },
+    "ML8|s1|next": {
+     "n": 535,
+     "filled": 533,
+     "fill_rate": 0.996,
+     "net_usd": 743,
+     "usd_per_signal": 1.39,
+     "pf": 1.01,
+     "missed_winners": 0,
+     "winners": 98,
+     "missed_winner_share": 0.0
+    },
+    "HYB-2|s1|base": {
+     "n": 535,
+     "filled": 518,
+     "fill_rate": 0.968,
+     "net_usd": -9344,
+     "usd_per_signal": -17.47,
+     "pf": 0.92,
+     "missed_winners": 5,
+     "winners": 98,
+     "missed_winner_share": 0.051
+    },
+    "HYB-2|s1|next": {
+     "n": 535,
+     "filled": 466,
+     "fill_rate": 0.871,
+     "net_usd": 4774,
+     "usd_per_signal": 8.92,
+     "pf": 1.05,
+     "missed_winners": 16,
+     "winners": 98,
+     "missed_winner_share": 0.163
+    },
     "MKT|s2|base": {
      "n": 535,
      "filled": 533,
@@ -4371,14 +5460,14 @@
     },
     "ML2|s4|base": {
      "n": 535,
-     "filled": 519,
-     "fill_rate": 0.97,
-     "net_usd": -4902,
-     "usd_per_signal": -9.16,
-     "pf": 0.96,
-     "missed_winners": 2,
+     "filled": 499,
+     "fill_rate": 0.933,
+     "net_usd": -12763,
+     "usd_per_signal": -23.86,
+     "pf": 0.88,
+     "missed_winners": 8,
      "winners": 98,
-     "missed_winner_share": 0.02
+     "missed_winner_share": 0.082
     },
     "ML2|s4|next": {
      "n": 535,
@@ -4457,6 +5546,105 @@
      "winners": 98,
      "missed_winner_share": 0.163
     },
+    "MKT|s6|base": {
+     "n": 535,
+     "filled": 533,
+     "fill_rate": 0.996,
+     "net_usd": -9757,
+     "usd_per_signal": -18.24,
+     "pf": 0.92,
+     "missed_winners": 0,
+     "winners": 98,
+     "missed_winner_share": 0.0
+    },
+    "ML2|s6|base": {
+     "n": 535,
+     "filled": 499,
+     "fill_rate": 0.933,
+     "net_usd": -12763,
+     "usd_per_signal": -23.86,
+     "pf": 0.88,
+     "missed_winners": 8,
+     "winners": 98,
+     "missed_winner_share": 0.082
+    },
+    "ML2|s6|next": {
+     "n": 535,
+     "filled": 0,
+     "fill_rate": 0.0,
+     "net_usd": 0,
+     "usd_per_signal": 0.0,
+     "pf": null,
+     "missed_winners": 98,
+     "winners": 98,
+     "missed_winner_share": 1.0
+    },
+    "ML4|s6|base": {
+     "n": 535,
+     "filled": 499,
+     "fill_rate": 0.933,
+     "net_usd": -16666,
+     "usd_per_signal": -31.15,
+     "pf": 0.85,
+     "missed_winners": 8,
+     "winners": 98,
+     "missed_winner_share": 0.082
+    },
+    "ML4|s6|next": {
+     "n": 535,
+     "filled": 0,
+     "fill_rate": 0.0,
+     "net_usd": 0,
+     "usd_per_signal": 0.0,
+     "pf": null,
+     "missed_winners": 98,
+     "winners": 98,
+     "missed_winner_share": 1.0
+    },
+    "ML8|s6|base": {
+     "n": 535,
+     "filled": 533,
+     "fill_rate": 0.996,
+     "net_usd": -9757,
+     "usd_per_signal": -18.24,
+     "pf": 0.92,
+     "missed_winners": 0,
+     "winners": 98,
+     "missed_winner_share": 0.0
+    },
+    "ML8|s6|next": {
+     "n": 535,
+     "filled": 533,
+     "fill_rate": 0.996,
+     "net_usd": -9757,
+     "usd_per_signal": -18.24,
+     "pf": 0.92,
+     "missed_winners": 0,
+     "winners": 98,
+     "missed_winner_share": 0.0
+    },
+    "HYB-2|s6|base": {
+     "n": 535,
+     "filled": 518,
+     "fill_rate": 0.968,
+     "net_usd": -9731,
+     "usd_per_signal": -18.19,
+     "pf": 0.91,
+     "missed_winners": 5,
+     "winners": 98,
+     "missed_winner_share": 0.051
+    },
+    "HYB-2|s6|next": {
+     "n": 535,
+     "filled": 466,
+     "fill_rate": 0.871,
+     "net_usd": -4391,
+     "usd_per_signal": -8.21,
+     "pf": 0.96,
+     "missed_winners": 16,
+     "winners": 98,
+     "missed_winner_share": 0.163
+    },
     "MKT|s8|base": {
      "n": 535,
      "filled": 533,
@@ -4470,14 +5658,14 @@
     },
     "ML2|s8|base": {
      "n": 535,
-     "filled": 519,
-     "fill_rate": 0.97,
-     "net_usd": -4902,
-     "usd_per_signal": -9.16,
-     "pf": 0.96,
-     "missed_winners": 2,
+     "filled": 499,
+     "fill_rate": 0.933,
+     "net_usd": -12763,
+     "usd_per_signal": -23.86,
+     "pf": 0.88,
+     "missed_winners": 8,
      "winners": 98,
-     "missed_winner_share": 0.02
+     "missed_winner_share": 0.082
     },
     "ML2|s8|next": {
      "n": 535,
@@ -4492,14 +5680,14 @@
     },
     "ML4|s8|base": {
      "n": 535,
-     "filled": 533,
-     "fill_rate": 0.996,
-     "net_usd": -5557,
-     "usd_per_signal": -10.39,
-     "pf": 0.95,
-     "missed_winners": 0,
+     "filled": 499,
+     "fill_rate": 0.933,
+     "net_usd": -16666,
+     "usd_per_signal": -31.15,
+     "pf": 0.85,
+     "missed_winners": 8,
      "winners": 98,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.082
     },
     "ML4|s8|next": {
      "n": 535,
@@ -4569,14 +5757,14 @@
     },
     "ML2|s12|base": {
      "n": 535,
-     "filled": 519,
-     "fill_rate": 0.97,
-     "net_usd": -4902,
-     "usd_per_signal": -9.16,
-     "pf": 0.96,
-     "missed_winners": 2,
+     "filled": 499,
+     "fill_rate": 0.933,
+     "net_usd": -12763,
+     "usd_per_signal": -23.86,
+     "pf": 0.88,
+     "missed_winners": 8,
      "winners": 98,
-     "missed_winner_share": 0.02
+     "missed_winner_share": 0.082
     },
     "ML2|s12|next": {
      "n": 535,
@@ -4591,14 +5779,14 @@
     },
     "ML4|s12|base": {
      "n": 535,
-     "filled": 533,
-     "fill_rate": 0.996,
-     "net_usd": -5557,
-     "usd_per_signal": -10.39,
-     "pf": 0.95,
-     "missed_winners": 0,
+     "filled": 499,
+     "fill_rate": 0.933,
+     "net_usd": -16666,
+     "usd_per_signal": -31.15,
+     "pf": 0.85,
+     "missed_winners": 8,
      "winners": 98,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.082
     },
     "ML4|s12|next": {
      "n": 535,
@@ -4613,14 +5801,14 @@
     },
     "ML8|s12|base": {
      "n": 535,
-     "filled": 533,
-     "fill_rate": 0.996,
-     "net_usd": -13957,
-     "usd_per_signal": -26.09,
-     "pf": 0.89,
-     "missed_winners": 0,
+     "filled": 499,
+     "fill_rate": 0.933,
+     "net_usd": -24472,
+     "usd_per_signal": -45.74,
+     "pf": 0.8,
+     "missed_winners": 8,
      "winners": 98,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.082
     },
     "ML8|s12|next": {
      "n": 535,
@@ -4668,14 +5856,14 @@
     },
     "ML2|s16|base": {
      "n": 535,
-     "filled": 519,
-     "fill_rate": 0.97,
-     "net_usd": -4902,
-     "usd_per_signal": -9.16,
-     "pf": 0.96,
-     "missed_winners": 2,
+     "filled": 499,
+     "fill_rate": 0.933,
+     "net_usd": -12763,
+     "usd_per_signal": -23.86,
+     "pf": 0.88,
+     "missed_winners": 8,
      "winners": 98,
-     "missed_winner_share": 0.02
+     "missed_winner_share": 0.082
     },
     "ML2|s16|next": {
      "n": 535,
@@ -4690,14 +5878,14 @@
     },
     "ML4|s16|base": {
      "n": 535,
-     "filled": 533,
-     "fill_rate": 0.996,
-     "net_usd": -5557,
-     "usd_per_signal": -10.39,
-     "pf": 0.95,
-     "missed_winners": 0,
+     "filled": 499,
+     "fill_rate": 0.933,
+     "net_usd": -16666,
+     "usd_per_signal": -31.15,
+     "pf": 0.85,
+     "missed_winners": 8,
      "winners": 98,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.082
     },
     "ML4|s16|next": {
      "n": 535,
@@ -4712,14 +5900,14 @@
     },
     "ML8|s16|base": {
      "n": 535,
-     "filled": 533,
-     "fill_rate": 0.996,
-     "net_usd": -13957,
-     "usd_per_signal": -26.09,
-     "pf": 0.89,
-     "missed_winners": 0,
+     "filled": 499,
+     "fill_rate": 0.933,
+     "net_usd": -24472,
+     "usd_per_signal": -45.74,
+     "pf": 0.8,
+     "missed_winners": 8,
      "winners": 98,
-     "missed_winner_share": 0.0
+     "missed_winner_share": 0.082
     },
     "ML8|s16|next": {
      "n": 535,
