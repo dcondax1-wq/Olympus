@@ -212,6 +212,14 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   likewise). Ledger rows booked before stay at $1.40 (finished paper trades are never rewritten); refresh the anchor
   (`python -m engine.eval_life --anchor`). On the eval the room / need now see the true balance, so a two_week size can be
   1 micro smaller in a rare case (A4: room overstated by up to $33 per 10 sessions before).
+- **Research / money costs in one place (2026-11-26, `engine/costs.py`, `research/writeups/exitreal-2026-11-26.md`):** COMM_RT
+  $1.90, STOP_SLIP_TICKS 2 (stop / market exits; stored trades carry 1), ENTRY_SLIP_TICKS LIT 1 / ATLAS 12 (measured entry
+  fills), TARGET_THR_TICKS 1, GAP_FILLS_AT_OPEN. Read by `tools/account4_sim` (LIT trades get the extra stop tick:
+  `costs.extra_exit_pts`), `tools/money/stack_one_account`, `research/plans/rank.py` and `tools/forecast.py` (ATLAS via
+  `tools/atlas_risk.T_costs`: 12 entry / 2 exit ticks, was 10 / 10). NOT read by the live loop (`engine/lit.py`, `lit_live`,
+  `live`, `second`, `account_*`, `sizing` keep their own constants: `tests.test_lit_live` 0 diffs, `tools/update_gate.py` SAME).
+  `lit.COMM` $1.40 stays the research backtest's booking; code that UN-books it must keep using `lit.COMM`. The 116 + 57 other
+  copies: `research/exitreal/cost_sites.txt` (migrate only with a check that each is a cost, not an un-booking).
 - **Shadow:** the cloud monitor also runs the old engine (`live_model_engine.json`) as a paper ledger, state key `shadow`,
   README "Old strategy (shadow, paper)", no alerts. The PC bot runs the old engine with `"model": "engine"` in its start cfg.
 - **Apps on LIT (2026-10-18):** both dashboards show LIT everywhere; `tools/lit_dash_data.py` rebuilds the LIT Monte Carlo
