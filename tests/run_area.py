@@ -99,6 +99,7 @@ AREAS["pc"].append("tickrec_cs")       # day-ofprogram 2026-11-23: LE_TickRec.cs
 AREAS["pc"].append("tickrec")          # day-orderflow 2026-11-23: read-only tick recorder (engine/tickrec.py, ninjatrader/LE_TickRec.cs, OFF)
 AREAS["pc"].append("tickrec_auto_rt")   # red team 2026-11-23: no autopilot start 01:40-16:05 ET, study stopped before 02:00, an unfinished study never counts
 AREAS["nq"].append("nq_live")           # day-livedash 2026-11-26: the NQ live screen (nq/live.html + livecore.js); its own line
+AREAS["nq"].append("lit_setups_learn")  # day-litlearn 2026-11-26: LIT learns from live (tools/lit_setups_learn.py, --nightly --litlearn); its own line
 AREAS["nq"].append("why_page")          # night-anatomy 2026-11-18: why we win / lose (tools/win_loss_anatomy.py, tools/web_public/why/); its own line
 AREAS["nq"].append("learn_night")       # night-learnloop 2026-11-19: ZEUS learned (engine/zeus_learn.py) + tools/learn_night.py + metals feed + speed; its own line
 AREAS["nq"].append("combo_50k")         # night-combolive 2026-11-19: ATLAS + Zlarior on ONE 50K (engine/combo50k.py, OFF) + its LiveBot parity replay

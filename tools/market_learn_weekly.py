@@ -9,6 +9,7 @@ Research only: hashes the live files before and after and fails loudly if one ch
     python -X utf8 tools/market_learn_weekly.py --nightly     # LIGHT (< 2 min, no numba, no backtest): journal + brain state only
     python -X utf8 tools/market_learn_weekly.py --nightly --out logs/learning   # the PC: write outside the git tree
     python -X utf8 tools/market_learn_weekly.py --nightly --ideamill 200        # + 200 new idea-mill ideas (tools/ideamill.py)
+    python -X utf8 tools/market_learn_weekly.py --nightly --litlearn            # + LIT learns from live (tools/lit_setups_learn.py, ~15 s)
 Outputs: research/learn/lessons.jsonl.gz, knowledge.json, insights.json, trials.json, WHAT_WE_KNOW.md, weekly/<date>.json,
 journal.json + brain_state.json (the Brain app feed, shape in research/learn/BRAIN_FEED.md; every run, weekly and nightly).
 Tests: python -X utf8 -m tests.test_market_learn
@@ -154,6 +155,9 @@ def nightly(a, say=print, root: str = ROOT) -> dict:
         except Exception as ex:  # noqa: BLE001
             say(f"health bands skipped ({ex.__class__.__name__}: {str(ex)[:120]})")
     br = M.nightly(root, out_dir=a.out, rows=rows, live_rows=live(book, say=say))
+    if getattr(a, "litlearn", False):                   # optional: LIT learns from live (tools/lit_setups_learn.py; ~15 s with the replay cache)
+        from tools import lit_setups_learn as LL              # after M.nightly: it adds its journal lines + the Brain's LIT room on top
+        LL.step(a.out, say=say)
     if M.hashes(root) != before:
         raise SystemExit("A LIVE FILE CHANGED during the nightly run")
     brain_words(br, say)
@@ -173,6 +177,8 @@ def main(argv=None) -> int:
     ap.add_argument("--ideamill-cap", type=float, default=20, help="minutes cap for the idea-mill step")
     ap.add_argument("--forecast", action="store_true", help="--nightly: also rebuild research/forecast/forecast.json")
     ap.add_argument("--health", action="store_true", help="--nightly: also rebuild research/health/bands.json")
+    ap.add_argument("--litlearn", action="store_true", help="--nightly: also LIT learns from live (tools/lit_setups_learn.py: setup funnel, gate ledger, "
+                    "setups like today's, gated suggestions -> lit_setups.json + journal + the Brain's LIT room)")
     a = ap.parse_args(argv)
     if a.out:
         a.out = os.path.join(ROOT, a.out) if not os.path.isabs(a.out) else a.out
