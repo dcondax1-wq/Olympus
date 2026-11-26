@@ -81,6 +81,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 ## Tested and rejected
 
+> [!failure]- LIT entry refinement on 1m
+> 5 versions vs today (limit at the 5m CISD level, then the 1m CISD; H1 / H2 / 2021-25 $5,562 / $2,670 / $25 a month, 2-week 44.5 / 39.1). Tap 1 tick through $5,280 / $2,227 / -$171; tap at 50% of the zone 1.2 trades/wk, 2-week 37.8 / 29.0; expiry 20 min $5,266 / $2,506 / -$37; plain limit at 50% no 1m CISD $402 / $4,714 / $1,397, 2-week 16.8 / 29.0; plain limit filled only 1 tick through (touch = no fill) $3,036 / $2,087 / -$305. 0 pass: the 1m CISD confirmation carries the edge.
+> Write-ups: [[entry-fine-2026-11-26|LIT entry refinement on 1m bars]]
+
 > [!failure]- Personal futures account vs MFFU
 > LIT + ATLAS, fixed-fractional, $1.24 RT, whole micros. $25k at 0.5%: +$49 / +$103 / +$3,001 / +$1,078 a month (2021-25 / 2025 / Jan-Jun / Jul-Oct), DD -24%; at 1%: +$243 / +$357 / +$10,922 / +$3,652, DD -50% (-$24k, 40 months); 2% = -83%. MFFU 50K slot: -$98 / -$78 / +$1,202 / +$1,228. LIT needs ~$14.4k (1% risk) for 90% of its 1-micro stops. Research only, owner's call.
 > Write-ups: [[ownacct-2026-11-24|A personal futures account vs the MFFU prop path]]
@@ -228,6 +232,7 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-26 | [[entry-fine-2026-11-26\|LIT entry refinement on 1m bars]] | research |
 | 2026-11-25 | [[more-trades-2026-11-25\|More trades]] | research |
 | 2026-11-24 | [[proedge-2026-11-24\|Pro / institutional edges]] | rejected |
 | 2026-11-24 | [[lit-vix-downtrend-2026-11-24\|LIT in high-VIX falling markets]] | research |
@@ -267,9 +272,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-11-14 | [[account-4-2026-11-14\|Account #4]] | adopt-candidate |
 | 2026-11-13 | [[millionaire-plan-2026-11-13\|The millionaire plan]] | adopt-candidate |
 | 2026-11-13 | [[eval-guard-2026-11-13\|Eval guard]] | research |
-| 2026-11-13 | [[es-and-sessions-2026-11-13\|Same edge, more markets]] | rejected |
 
-... and 78 older (see the families).
+... and 79 older (see the families).
 
 ## Links
 

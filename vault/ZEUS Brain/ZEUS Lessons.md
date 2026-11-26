@@ -71,8 +71,9 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-82 entries from docs/TESTED_AND_REJECTED.md, newest first.
+83 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
+- **LIT entry refinement on 1m** · [[Zlarior (LIT)]] · [[entry-fine-2026-11-26|LIT entry refinement on 1m bars]]
 - **Idea mill v3, family-first** · [[ideamill-v3-2026-11-25|IDEA MILL v3]]
 - **Idea mill v2, 38,880 grammar ideas** · [[ideamill-2026-11-25|IDEA MILL]]
 - **Personal futures account vs MFFU** · [[Zlarior (LIT)]], [[ATLAS]] · [[ownacct-2026-11-24|A personal futures account vs the MFFU prop path]]

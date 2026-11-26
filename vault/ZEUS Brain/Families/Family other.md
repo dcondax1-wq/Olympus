@@ -7,11 +7,12 @@ type: "family"
 
 # Research family: other
 
-> [!abstract] 122 write-ups
-> adopt-candidate 16, finding 14, info 17, promising 14, rejected 36, research 25
+> [!abstract] 123 write-ups
+> adopt-candidate 16, finding 14, info 17, promising 14, rejected 36, research 26
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-26 | [[entry-fine-2026-11-26\|LIT entry refinement on 1m bars]] | research |
 | 2026-11-25 | [[more-trades-2026-11-25\|More trades]] | research |
 | 2026-11-25 | [[ideamill-v3-2026-11-25\|IDEA MILL v3]] | research |
 | 2026-11-25 | [[ideamill-2026-11-25\|IDEA MILL]] | research |
