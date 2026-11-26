@@ -3,7 +3,9 @@ fake NinjaTrader (engine/ninjatrader._FakeNT on a temp folder; Sim101 = Zlarior'
 the PC bot's schedule. Nothing real is read, written or armed (the start cfg "lit25" / "account_b" drive the harness).
 
     python -X utf8 -m tests.test_lit25_replay             # 3 sessions ON + the same sessions OFF (~6-10 min)
-    python -X utf8 -m tests.test_lit25_replay --days 2026-09-02,2026-09-04
+    python -X utf8 -m tests.test_lit25_replay --days 2026-09-02,2026-09-04 [--restart-days 2026-09-09]
+    + (red team #18) restarts of the bot mid-trade with ONE lane open, until both cases ran: LIT open -> restart -> ATLAS stays
+      blocked; ATLAS open -> restart -> LIT's entry closes ATLAS first
 
 Checks (ON): the LIT lane + SharedAtlas exist on Sim107; NEVER both lanes holding a position on Sim107 at the same poll and no
 entry of either lane while the other's entry is open (ledger order); every LIT-lane entry is one of LIT's own entries of that
@@ -43,10 +45,10 @@ def lane_of(b):
     return next((a for a in (getattr(b.accts, "accounts", None) or []) if a.spec.get("lane") == "lit25"), None)
 
 
-def day_bot(H, tag, day, on):
+def day_bot(H, tag, day, on, fake=None, start_t=None):
     d = os.path.join(H.tmp, tag, day)
     folder = os.path.join(d, "NinjaTrader 8")
-    fake = nt._FakeNT(folder, price=25000.0)
+    fake = fake or nt._FakeNT(folder, price=25000.0)     # a restart keeps the same NinjaTrader folder (positions, orders)
     clock = H.clock
 
     def nt_sleep(s_, fake=fake):
@@ -62,7 +64,7 @@ def day_bot(H, tag, day, on):
         return ad
     MA.ADAPTER_FACTORY = fac
     AB.ADAPTER_FACTORY = fac
-    b, fake = H.bot(os.path.join(tag, day), [], at(day, 1, 45), fake=fake,
+    b, fake = H.bot(os.path.join(tag, day), [], start_t or at(day, 1, 45), fake=fake,
                     cfg_extra={"account_b": dict(FUNDED_B), "lit25": {"on": bool(on)}, "accounts_parallel": False, "account_c": None,
                                "fleet": None, "rapid": None, "eval_start": "2026-08-03"})
     return b, fake
@@ -93,6 +95,65 @@ def order_bad(objs):
         elif et_ == open_:
             open_ = None
     return bad
+
+
+RESTART_DAYS = ["2026-09-09", "2026-10-06", "2026-10-07", "2026-09-18", "2026-10-13", "2026-09-04", "2026-10-02"]
+
+
+def restart_day(H, day, keys, seen):
+    """Red team #18: the PC bot RESTARTED mid-trade with ONE lane open on the shared funded 25K. The bot is stopped at the first
+    poll where LIT's lane or ATLAS holds a position and started again on the same state file + the same NinjaTrader folder
+    (positions and brackets survive), then the session goes on. seen = {"lit": n, "atlas_then_lit": n} coverage."""
+    wakes = H.times(day, keys)
+    b, fake = day_bot(H, "rs", day, True)
+    errs, both, restarted = [], [], None
+
+    def watch(bot, w):
+        l_, a_ = lane_of(bot), bot.acct_b
+        if l_ is not None and a_ is not None and l_.open_t is not None and getattr(a_, "open_t", None) is not None:
+            both.append((hm(int(bot.clock())), hm(int(l_.open_t)), hm(int(a_.open_t))))
+    for i, w in enumerate(wakes):
+        H.run(b, fake, [w], errs, on_poll=watch)
+        if restarted is None:
+            l_, a_ = lane_of(b), b.acct_b
+            who = "lit" if (l_ is not None and l_.open_t is not None) else ("atlas" if getattr(a_, "open_t", None) is not None else None)
+            if who:
+                open_t = int(l_.open_t) if who == "lit" else int(a_.open_t)
+                b.stop()
+                b, fake = day_bot(H, "rs", day, True, fake=fake, start_t=int(w) + 30)
+                l2, a2 = lane_of(b), b.acct_b
+                kept = (l2 is not None and l2.open_t is not None and int(l2.open_t) == open_t) if who == "lit" else \
+                    (a2 is not None and getattr(a2, "open_t", None) is not None and int(a2.open_t) == open_t)
+                check(f"{day} restart with {'LIT' if who == 'lit' else 'ATLAS'} open ({hm(open_t)}): the open trade is known again after the restart",
+                      kept, (who, hm(open_t), l2 and l2.open_t, getattr(a2, "open_t", None)))
+                restarted = (who, int(w), open_t)
+    L, A = lane_of(b), b.acct_b
+    objs = [o for o in (L, A) if o is not None]
+    check(f"{day} restart: never both lanes holding at one poll, no entry while the other is open (before + after the restart)",
+          not both and not order_bad(objs), (both[:3], order_bad(objs)[:3]))
+    check(f"{day} restart: no live-loop error", not errs, errs[:3])
+    if restarted:
+        who, w_r, open_t = restarted
+        if who == "lit":
+            seen["lit"] += 1
+            a_after = [t for t in entries(A, day) if t >= w_r] if A is not None else []
+            lane_exit = [int(r["t"]) for r in (L.ledger if L else []) if r.get("side") == "exit" and r.get("entry_t") == open_t]
+            ok = all(lane_exit and t >= min(lane_exit) for t in a_after)
+            check(f"{day} restart with LIT open: ATLAS stays blocked until LIT's trade is out ({len(a_after)} ATLAS entries after)",
+                  ok, (a_after, lane_exit))
+        else:
+            lane_after = [t for t in (entries(L, day) if L else []) if t >= w_r]
+            a_exit = [(int(r["t"]), r.get("reason")) for r in (A.ledger if A else []) if r.get("side") == "exit" and r.get("entry_t") == open_t]
+            if lane_after:
+                seen["atlas_then_lit"] += 1
+                first_lane = min(int(r["t"]) for r in L.ledger if r.get("side") in ("buy", "sell") and r.get("entry_t") in lane_after)
+                ok = bool(a_exit) and a_exit[0][0] <= first_lane
+                check(f"{day} restart with ATLAS open, then LIT enters: ATLAS is closed first ({a_exit[:1]}), then LIT's lane routes",
+                      ok, (a_exit, hm(first_lane)))
+            else:
+                seen["atlas_only"] = seen.get("atlas_only", 0) + 1
+    b.stop()
+    print(f"   restart {day}: {restarted and restarted[0]} open at {restarted and hm(restarted[2])}, coverage {seen}", flush=True)
 
 
 def main(argv=None) -> int:
@@ -144,6 +205,14 @@ def main(argv=None) -> int:
                 print("     ATLAS not routed: " + " | ".join(why[-4:])[:600], flush=True)
         check(f"not vacuous: >= 1 LIT-lane entry and >= 1 ATLAS entry over {len(days)} sessions (lane {n_lane}, ATLAS {n_atlas}, LIT {n_lit})",
               n_lane >= 1 and n_atlas >= 1)
+        # ---- red team #18: restarts mid-trade (until both cases are covered)
+        seen = {"lit": 0, "atlas_then_lit": 0}
+        for day in (RESTART_DAYS if "--restart-days" not in argv else argv[argv.index("--restart-days") + 1].split(",")):
+            if seen["lit"] and seen["atlas_then_lit"]:
+                break
+            restart_day(H, day, keys, seen)
+        check(f"restart coverage: a restart with LIT open AND a restart with ATLAS open followed by a LIT entry ({seen})",
+              seen["lit"] >= 1 and seen["atlas_then_lit"] >= 1)
     finally:
         MA.ADAPTER_FACTORY = None
         AB.ADAPTER_FACTORY = None
