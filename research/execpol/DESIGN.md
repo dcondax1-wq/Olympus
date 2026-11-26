@@ -50,3 +50,10 @@ Ties -> keep the simpler order (MKT). Otherwise the answer is "no": keep market 
 Pre-registered expectation (the hypothesis, not a result): ATLAS's 5m-close signals coincide with everybody's 5m-close signals,
 so the first seconds overshoot and revert; a limit at P for a few minutes should fill most trades about s ticks better. LIT
 enters after a CISD with little slippage, so a limit gains little there and misses runners.
+
+## Amendment 1 (after the first run, before any decision; 2026-11-26)
+- Bug in the fill rule found on the first run: on the ENTRY bar a limit WORSE than P (MLk) was "filled" by the bar's own open,
+  which trades before the order rests (ML4 filled 100% at P + 4 while the price was at P + 12). Fixed: on the entry bar a
+  passive fill needs a trade q + 2 ticks beyond the LOWER of the limit and P. Limits at or better than P are unchanged.
+- The slippage grid lacked the pre-registered "half the measured" value (ATLAS 6, LIT 1): added 1 and 6.
+- Nothing else changed (policies, spans, costs, judgement rules as above).
