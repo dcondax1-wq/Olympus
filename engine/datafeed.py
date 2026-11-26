@@ -528,6 +528,10 @@ def build_of(since: str, now=None, dp_work: str | None = None, max_zip: int = MA
 def send(blob: bytes, meta: dict, env=None, http_fn=None) -> tuple:
     """PUT the zip as ONE ntfy attachment (message = the meta JSON). -> (ok, why, ntfy's answer dict)."""
     base, topic = feed_cfg(env)
+    if http_fn is None:
+        from . import pc_identity                    # day-noleak: only the owner's PC answers for real
+        if not pc_identity.may_post("data-feed answer", env=env, url=base):
+            return False, "dry run: not the owner's PC (engine/pc_identity)", {}
     msg = json.dumps(meta, separators=(",", ":"), sort_keys=True, default=str)
     if len(msg.encode("utf-8")) > 3900:
         msg = json.dumps({k: meta.get(k) for k in ("v", "kind", "req", "made_t", "since", "days", "from", "to", "more",

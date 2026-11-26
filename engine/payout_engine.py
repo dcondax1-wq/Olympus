@@ -188,7 +188,16 @@ def today_line(rows: list | None = None) -> str:
     ready = [r for r in rows if r.get("ready")]
     head = (f"Payouts: {len(ready)} ready today" if ready else "Payouts: none ready today") + \
         (f" ({usd(sum(r.get('to_you') or 0 for r in ready))} to you)" if ready else "")
-    return "\n".join([head] + [f"- {r['name']}: {r['line']}" for r in rows])
+    return _mask("\n".join([head] + [f"- {r['name']}: {r['line']}" for r in rows]))
+
+
+def _mask(s: str) -> str:
+    """red team 2026-11-26: a tracker's "name" can be the NinjaTrader account Name (an MFFU id): masked like every alert."""
+    try:
+        from . import notify
+        return notify.mask_ids(s)
+    except Exception:  # noqa: BLE001
+        return s
 
 
 def tile(rows: list | None = None, now: float | None = None) -> dict:
@@ -198,11 +207,11 @@ def tile(rows: list | None = None, now: float | None = None) -> dict:
     out = {"v": 1, "t": int(now or time.time()), "n": len(rows),
            "ready_today": sum(1 for r in rows if r.get("ready")),
            "ready_to_you": round(sum(r.get("to_you") or 0 for r in rows if r.get("ready")), 2),
-           "next": ({"name": nxt[0]["name"], "date": nxt[0]["next_date"], "amount": nxt[0].get("next_amount"),
+           "next": ({"name": _mask(nxt[0]["name"]), "date": nxt[0]["next_date"], "amount": nxt[0].get("next_amount"),
                      "to_you": nxt[0].get("to_you")} if nxt else None),
-           "rows": [{"name": r["name"], "kind": r["kind"], "ready": bool(r.get("ready")), "amount": r.get("next_amount"),
+           "rows": [{"name": _mask(r["name"]), "kind": r["kind"], "ready": bool(r.get("ready")), "amount": r.get("next_amount"),
                      "to_you": r.get("to_you"), "date": r.get("next_date"), "keep": r.get("keep_balance"),
-                     "blocks": (r.get("blocks") or [])[:2], "line": str(r.get("line"))[:160], "habit": r.get("habit")} for r in rows],
+                     "blocks": (r.get("blocks") or [])[:2], "line": _mask(str(r.get("line")))[:160], "habit": r.get("habit")} for r in rows],
            "note": "read-only plan: the owner requests in the MFFU dashboard; dates are estimates at each account's own pace"}
     return out
 

@@ -352,6 +352,13 @@ AREAS["privacy"].append("cross_site")   # day-security 2026-11-20: the bot serve
 AREAS["pc"].append("cross_site")
 AREAS["pc"].append("redteam2_live")       # day-redteam2 2026-11-20: half-day halt alarm + TRADE HAS NO STOP alarm (engine/fast_alarm.py)
 AREAS["pc"].append("alert_bus")         # day-alerts 2026-11-21: engine/alert_bus.py (Telegram / Discord first, ntfy + Web Push fallbacks)
+AREAS["pc"].append("noleak")           # day-noleak 2026-11-26: only the owner's PC posts to the real phone channels (engine/pc_identity.py)
+AREAS["privacy"].append("noleak")
+AREAS["board"].append("noleak")
+AREAS["pc"].append("noleak_rt"); AREAS["privacy"].append("noleak_rt")   # red team 2026-11-26: the real PC never goes dark (fail-open on Windows)
+AREAS["pc"].append("guard2")           # day-guard2 2026-11-26: risk-distance alarms, signed status feed + key rotation, /today
+AREAS["board"].append("guard2")
+AREAS["privacy"].append("guard2")
 AREAS["pc"].append("alert_drill")       # day-alerts 2026-11-21: end-to-end alert drill (telegram / ntfy / off set-ups)
 AREAS["pc"].append("alerts_box")        # alerts-phone 2026-11-21: /alerts/ = ALERTS_SETUP Telegram from the phone (engine/alerts_box.py); its own line
 AREAS["pc"].append("alerts_start_code")   # day-security3 2026-11-21: the /alerts/ page's one-time START code; its own line
@@ -391,6 +398,7 @@ AREAS["pc"].append("tickrec_tiny")        # day-pillars 2026-11-24: engine.tickr
 AREAS["pc"].append("ofready")             # day-ofready 2026-11-24: engine/ofsum.py day summaries + research/orderflow/of_battery.py (synthetic only)
 AREAS["pc"].append("of_send")             # day-ofmax 2026-11-26: the owner's one order-flow line, rehearsed end to end (fake ntfy)
 AREAS["pc"].append("payout_engine")       # big-payout 2026-11-26: read-only payout planner, /today, the Money tile
+AREAS["pc"].append("today_merge_rt")   # red team 2026-11-26: one /today (guard2 + big-payout), key line last
 AREAS["cities"].append("research_hub2")   # night-hub2 2026-11-22: the Research Hub (cities/hub.html, data tools/build_research_hub.py); its own line
 AREAS["cities"].append("strategy_lab")    # day-mind 2026-11-23: Strategy Lab data (tools/build_strategy_lab.py) + the Research Hub tab
 AREAS["olympus"].append("brain3d")       # day-arenas 2026-11-21: the bot brain in 3D (olympus/brain3d.js + brain3d-scene.js, brain3d-lab.html); its own line

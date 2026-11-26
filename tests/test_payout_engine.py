@@ -71,7 +71,9 @@ def main():
     PE.today_line = lambda rows=None: "Payouts: test line"
     try:
         c, say = TG.parse_text("/today")
-        check("Telegram /today: a read-only answer (nothing runs on the PC)", c is None and say == "Payouts: test line", (c, say))
+        txt = TG.today_reply(1795700000, live_fn=lambda: None)   # red team 2026-11-26: ONE /today with guard2 (owner-only tick path)
+        check("Telegram /today: a read-only answer (nothing runs on the PC), the payout plan in it",
+              c == {"cmd": "today"} and say is None and "Payouts: test line" in txt, (c, say, txt))
         c, say = TG.parse_text("/today please")
         check("/today with words: not run", c is None and say != "Payouts: test line", say)
     finally:

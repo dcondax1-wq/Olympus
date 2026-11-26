@@ -413,6 +413,9 @@ def _http(method, url, body=None, headers=None, timeout=TIMEOUT_S) -> tuple:
     """(status, text). Never raises: a timeout / refused connection = (0, the error's name)."""
     if _HTTP is not None:
         return _HTTP(method, url, body, headers or {}, timeout)
+    from . import pc_identity                        # day-noleak: Telegram / Discord / tg_cmd only from the owner's PC (or Actions)
+    if not pc_identity.may_post("alert / telegram", url=url):
+        return 0, "dry run: not the owner's PC"
     try:
         req = urllib.request.Request(url, data=body, headers=headers or {}, method=method)
         with urllib.request.urlopen(req, timeout=timeout) as r:

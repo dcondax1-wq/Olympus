@@ -158,8 +158,17 @@ def part_c():
         from tools import board as T
         msgs = [{"event": "message", "time": NOW, "message": json.dumps(x)} for x in [*exts, core]]
         nd = "\n".join(json.dumps(m) for m in msgs)
-        got = T.fetch_lite(get=lambda url: (200, nd))
-        old = T.fetch_lite(get=lambda url: (200, json.dumps({"event": "message", "time": NOW, "message": json.dumps(lt)})))
+        from tools import status_sign as _S                  # the merge, with no key pinned (day-guard2 pinned the PC's vk; these
+        _real_vk = _S.feed_vk                                # test posts are unsigned and would be dropped, as they should)
+        _S.feed_vk = lambda path=None: None
+        try:
+            got = T.fetch_lite(get=lambda url: (200, nd))
+            old = T.fetch_lite(get=lambda url: (200, json.dumps({"event": "message", "time": NOW, "message": json.dumps(lt)})))
+            pinned_drop = None
+        finally:
+            _S.feed_vk = _real_vk
+        pinned_drop = T.fetch_lite(get=lambda url: (200, nd))
+        check("c. with the PC's vk pinned (status_feed.json), the same unsigned posts are NOT believed", pinned_drop is None, pinned_drop)
         check("c. tools/board.py fetch_lite: core + ext merged ('brd' back at the top); the old single post still read as it was",
               got and got.get("brd") == lt["brd"] and got["t"] == core["t"] and old == lt and T.fetch_lite(get=lambda url: (500, "")) is None,
               (list(got or {}), list(old or {})))
