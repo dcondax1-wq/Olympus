@@ -30,7 +30,9 @@ import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PATH = os.path.join(ROOT, "data", "pc_identity.json")
-PC_FILES = ("accounts.json", "account_b.json", "auto_resume.json", "autostart.json")
+PC_FILES = ("accounts.json", "account_b.json", "auto_resume.json", "autostart.json",
+            # red team 2026-11-26: START BOT's own config (go.CFG) and the account-name files every set-up PC has
+            "start_bot.json", "nt_accounts_allow.json", "eval_anchor.json")
 _CACHE: dict = {}
 _SAID: set = set()
 _IS_NT = os.name == "nt"                     # tests flip these (never the real machine)
@@ -54,6 +56,22 @@ def fingerprint() -> str:
     g = _machine_guid()                      # MachineGuid alone when Windows gives it (a renamed PC keeps posting); else the name
     raw = f"guid|{g}" if g else f"node|{platform.node().lower()}"
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
+
+
+def node_fingerprint() -> str:
+    """The computer-name fingerprint, kept beside fp: a MachineGuid read that fails ONCE (registry busy, a locked-down
+    account) must match it instead of silencing the real PC (red team 2026-11-26)."""
+    return hashlib.sha256(f"node|{platform.node().lower()}".encode("utf-8")).hexdigest()[:16]
+
+
+def _owner_profile() -> bool:
+    """The owner's alert set-up lives in the Windows USER profile (ALERTS_SETUP.bat -> ~/.olympus/alerts.json), not in the bot
+    folder: a copied / synced bot folder does not bring it. With it, a fingerprint change (Windows reinstall, a new MachineGuid,
+    a OneDrive copy of pc_identity.json from another machine) re-adopts instead of going dark."""
+    try:
+        return os.path.isfile(os.path.join(os.path.expanduser("~"), ".olympus", "alerts.json"))
+    except Exception:  # noqa: BLE001
+        return False
 
 
 def _nt_folder() -> str | None:
@@ -82,7 +100,7 @@ def adopt(root: str = ROOT, how: str = "adopt") -> dict:
     """Write data/pc_identity.json for THIS machine (Windows only). -> the record, or {} when refused. Never raises."""
     if not _IS_NT:
         return {}
-    rec = {"v": 1, "fp": fingerprint(), "t": int(time.time()), "how": how}
+    rec = {"v": 1, "fp": fingerprint(), "fpn": node_fingerprint(), "t": int(time.time()), "how": how}
     p = os.path.join(root, "data", "pc_identity.json")
     try:
         os.makedirs(os.path.dirname(p), exist_ok=True)
@@ -122,14 +140,21 @@ def _check(root: str) -> tuple:
         if rec:
             if rec.get("fp") == fp:
                 return True, "the owner's PC"
+            if not _machine_guid() and (rec.get("fpn") in (None, node_fingerprint())):
+                return True, "the owner's PC (MachineGuid not readable now: matched by name / fail-open)"
+            if _owner_profile() and (_evidence(root) or _nt_folder()):
+                adopt(root, how="re-adopted: fingerprint changed, owner profile + set-up files here")
+                return True, "the owner's PC (fingerprint changed: re-adopted)"
             return False, "data/pc_identity.json is another machine's (a copied bot folder): run `python -m engine.pc_identity --adopt` on the real PC"
-        ev = _evidence(root)
+        ev = _evidence(root) or (["NinjaTrader folder"] if _nt_folder() else [])
         if ev:                                        # Windows + the bot's own local account files (gitignored, made by START /
             adopt(root, how="first run: " + ("NinjaTrader folder + " if _nt_folder() else "") + ",".join(ev))   # ADD_ACCOUNT)
             return True, "the owner's PC (identity adopted now)"
         return False, "no data/pc_identity.json and none of the bot's account files here (not set up by START / ADD_ACCOUNT)"
     except Exception as e:  # noqa: BLE001
-        return False, f"identity check failed ({e.__class__.__name__})"
+        # red team 2026-11-26: on Windows an unknown error POSTS (a missed alarm costs more than a sandbox's stray line);
+        # sandboxes are Linux and never get here
+        return bool(_IS_NT), f"identity check failed ({e.__class__.__name__}){': fail-open on Windows' if _IS_NT else ''}"
 
 
 def local(url) -> bool:

@@ -267,7 +267,7 @@ def _may_post(kind: str, url=None) -> bool:
         from engine import pc_identity
         return pc_identity.may_post(kind, url=url)
     except Exception:  # noqa: BLE001
-        return False
+        return os.name == "nt"                       # red team 2026-11-26: fail-OPEN on Windows (the PC), closed elsewhere
 
 
 def default_http(method, url, body=None, headers=None, timeout=HTTP_TIMEOUT_S):

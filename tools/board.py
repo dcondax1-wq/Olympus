@@ -79,6 +79,7 @@ FOREIGN = {"n": 0, "last_t": None}                 # status posts dropped by onl
 
 
 PC_KEY_MIN_POSTS, PC_KEY_MIN_SPAN_S = 3, 30 * 60
+PC_KEY_WINDOW_S = 3 * 3600
 
 
 def only_pc_key(msgs) -> list:
@@ -89,7 +90,11 @@ def only_pc_key(msgs) -> list:
     the messages exactly as before. Never raises."""
     try:
         from tools import status_sign as S
-        cnt = S.svk_counts(msgs)
+        # red team 2026-11-26: count only the newest PC_KEY_WINDOW_S of posts, so a NEW PC key (key file re-made after a reinstall)
+        # takes over within ~1.5 h instead of the old key's long history out-voting the real PC for half a day
+        ts = [float((m or {}).get("time") or 0) for m in msgs or [] if isinstance(m, dict)]
+        newest = max(ts) if ts else 0.0
+        cnt = S.svk_counts([m for m in msgs or [] if isinstance(m, dict) and float(m.get("time") or 0) >= newest - PC_KEY_WINDOW_S])
         main = max(cnt.items(), key=lambda kv: kv[1]["n"]) if cnt else None
         if not main or main[1]["n"] < PC_KEY_MIN_POSTS or main[1]["last"] - main[1]["first"] < PC_KEY_MIN_SPAN_S:
             return list(msgs or [])
