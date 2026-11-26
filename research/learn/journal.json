@@ -1075,6 +1075,19 @@
  },
  {
   "date": "2026-11-26",
+  "pillar": "atlas",
+  "lens": "forward hold-out",
+  "noticed": "S1 forward test (ATLAS only when the 20-day range is above its 1-year median): 0/60 sessions, re-judge 2027-02-26; twin ATLAS on S1-ON days 0 trades 0R, on S1-OFF days 0 trades 0R",
+  "evidence": {
+   "n": 0,
+   "on_n": 0,
+   "off_n": 0
+  },
+  "status": "watching",
+  "key": "regime2026|s1_forward"
+ },
+ {
+  "date": "2026-11-26",
   "pillar": "blitz",
   "lens": "context",
   "noticed": "BLITZ does worse when: Tuesdays. avg R 0.059 / 0.016 / -0.042 (Jan-Jun / Jul-Oct / 2021-25) vs its own average",

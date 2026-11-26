@@ -1,0 +1,27 @@
+{
+ "design": "research/regime2026/DESIGN_forward.md",
+ "fwd_from": "2026-11-23",
+ "costs": "atlas_twin_r = calibrated fills (entry 12 ticks, stop / market exit 2, target 0, $1.90), JUDGED; atlas_twin_r_1tick = recorded only",
+ "rejudge": "2027-02-26",
+ "need_sessions": 60,
+ "sessions": 0,
+ "progress": "0 / 60 sessions",
+ "due": false,
+ "atlas_twin": {
+  "on_n": 0,
+  "on_sum_r": 0,
+  "on_mean_r": null,
+  "off_n": 0,
+  "off_sum_r": 0,
+  "off_mean_r": null,
+  "ungated_sum_r": 0
+ },
+ "checks": {
+  "off_trades_ge_10": false,
+  "off_sum_lt_0": false,
+  "on_mean_gt_off_mean": false,
+  "keeps_80pct": true
+ },
+ "verdict": "watching",
+ "rows": []
+}
