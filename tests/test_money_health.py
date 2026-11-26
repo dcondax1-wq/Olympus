@@ -123,7 +123,14 @@ def node():
           and h["few"][0] == "too few trades" and h["streak"][0] == "outside the band" and h["streak"][4] == 7 and o["h"]["noband"] == "no band yet", h)
     check("n. health counts only the real (live) trades of that bot", o["liveOnly"] == 1, o["liveOnly"])
     check("n. today's real health: LIT 2 and ATLAS 3 live trades -> 'too few trades' (honest)", o["real"] == [["lit", "too few trades", 2], ["atlas", "too few trades", 3]], o["real"])
-    check("n. the published band = an independent count of every 10-trade backtest stretch (n, p5, p50, p95)", all(a[0] == b[0] and all(abs(x - y) <= 0.002 for x, y in zip(a[1:], b[1:])) for a, b in zip(o["indep"], o["bandsPub"])), (o["indep"], o["bandsPub"]))
+    import json as _j
+    _src = _j.load(open(os.path.join(ROOT, "tools", "web_public", "trading", "bands.json"), encoding="utf-8"))
+    if _src.get("provisional"):
+        check("n. the published band = an independent count of every 10-trade backtest stretch (n, p5, p50, p95)", all(a[0] == b[0] and all(abs(x - y) <= 0.002 for x, y in zip(a[1:], b[1:])) for a, b in zip(o["indep"], o["bandsPub"])), (o["indep"], o["bandsPub"]))
+    else:  # lead 2026-11-26: research/health/bands.json landed: p5/p50/p95 = its 2026 band, exactly
+        _rs = _j.load(open(os.path.join(ROOT, "research", "health", "bands.json"), encoding="utf-8"))["bots"]
+        _want = [[_rs[k]["bands"]["2026"]["p5"], _rs[k]["bands"]["2026"]["p50"], _rs[k]["bands"]["2026"]["p95"]] for k in ("LIT", "ATLAS")]
+        check("n. the published band = research/health/bands.json's 2026 band (p5, p50, p95)", all(all(abs(x - y) <= 0.002 for x, y in zip(a, b[1:])) for a, b in zip(_want, o["bandsPub"])), (_want, o["bandsPub"]))
 
 
 class _Quiet(http.server.SimpleHTTPRequestHandler):
@@ -187,8 +194,8 @@ def browser():
           any("Payday plan" in m["fc"] or "forecaster" in m["fc"] for m in M.get("mv", [])) and (not any(m["g"] == "payout" for m in M.get("mv", [])) or any(m["next"] for m in M["mv"] if m["g"] == "payout"))
           and M.get("wide") is False, M)
     T = o.get("health") or {}
-    check("b. Trading: the Strategy health card, LIT + ATLAS 'too few trades' today, the band drawn with the live marker, the PROVISIONAL source said",
-          T.get("rows") == ["lit:too few trades", "atlas:too few trades"] and T.get("bars") == 2 and T.get("live") == 2 and "PROVISIONAL" in T.get("src", "") and T.get("wide") is False, T)
+    check("b. Trading: the Strategy health card, LIT + ATLAS 'too few trades' today, the band drawn with the live marker, its source said",
+          T.get("rows") == ["lit:too few trades", "atlas:too few trades"] and T.get("bars") == 2 and T.get("live") == 2 and ("PROVISIONAL" in T.get("src", "") or "research/health/bands.json" in T.get("src", "")) and T.get("wide") is False, T)
 
 
 def main():

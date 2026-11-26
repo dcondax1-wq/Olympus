@@ -71,9 +71,29 @@ def band_of(rs: list[float], window: int) -> dict | None:
 
 def bands() -> dict:
     src = _load(BANDS_SRC)
-    if isinstance(src, dict) and isinstance(src.get("bots"), dict):
-        return {**src, "src": "research/health/bands.json", "provisional": False}
     file = _load(TRADES) or {}
+    if isinstance(src, dict) and isinstance(src.get("bots"), dict):
+        # research/health/bands.json (day-batch5): bots.<BOT>.bands.{"2026","2021-25"}.{p5,p50,p95} over a rolling `window`;
+        # the page wants avg_r p5..p95 + streaks: p5/p50/p95 from the research file (the 2026 band), p25/p75 + streaks from the
+        # backtest trades at the same window (labelled), the 2021-25 band kept for the 'normal years' line.
+        w = int(src.get("window") or WINDOW)
+        out = {"v": 1, "made": str(src.get("made") or "")[:10], "provisional": False, "window": w,
+               "src": "research/health/bands.json (2026 band; quarter lines + streaks from the backtest trades)", "bots": {}}
+        for bot in ("lit", "atlas"):
+            rb = (src["bots"].get(bot.upper()) or {}) if isinstance(src["bots"].get(bot.upper()), dict) else {}
+            b26 = ((rb.get("bands") or {}).get("2026") or {}) if isinstance(rb.get("bands"), dict) else {}
+            if not all(isinstance(b26.get(k), (int, float)) for k in ("p5", "p50", "p95")):
+                continue
+            rows = sorted((t for t in file.get("trades") or [] if isinstance(t, dict) and str(t.get("bot", "")).lower() == bot and t.get("src") == "backtest"
+                           and isinstance(t.get("r"), (int, float)) and isinstance(t.get("t"), (int, float))), key=lambda t: t["t"])
+            pb = band_of([float(t["r"]) for t in rows], w) or {}
+            q = dict(pb.get("avg_r") or {})
+            q.update({k: round(float(b26[k]), 3) for k in ("p5", "p50", "p95")})
+            out["bots"][bot] = {"name": NAMES[bot], "window": w, "avg_r": q, "streak_p75": pb.get("streak_p75"), "streak_p95": pb.get("streak_p95"),
+                                "band_2021_25": (rb.get("bands") or {}).get("2021-25"), "n_backtest": int(b26.get("trades") or 0)}
+        if out["bots"]:
+            return out
+
     out = {"v": 1, "made": str(file.get("built_from") or "")[:10], "provisional": True, "window": WINDOW,
            "src": "PROVISIONAL: measured on the backtest trades in trading/trades.json (research/health/bands.json has not landed)", "bots": {}}
     for bot in ("lit", "atlas"):
