@@ -40,6 +40,7 @@ MISS_EVERY_S = 60
 ARM_SLOTS = ((1, 55), (9, 0))      # ET
 ARM_SLOT_MIN = 15                  # the slot's check runs once inside [slot, slot + 15 min)
 STUCK_S = 3600                  # day-handsfree: 1 h (was 3 h): the fix is now one Telegram reply
+STUCK_FLAT_S = 30 * 3600         # red team #23: 'not flat' this long = a leftover open leg, not a trade
 STUCK_REASONS = ("local changes in tracked files", "not on branch", "git fetch failed", "git status failed",
                  "is not a fast-forward", "fast-forward refused", "could not be set", "unknown", "auto-update is off")
 
@@ -428,6 +429,25 @@ def update_stuck(state: dict | None, au: dict | None, now) -> tuple:
     last = (au or {}).get("last") or {}
     status, reason = str(last.get("status") or ""), str(last.get("reason") or "")
     stuck = (status in ("skipped", "failed", "off") and any(w in reason for w in STUCK_REASONS))
+    # red team #23 (2026-11-26): "not flat" for 30 h+ is stuck too. Every lane is flat by 15:55 ET and no position lives a day, so a
+    # "not flat" that long is a leftover open leg in a state file (a removed / renamed account's data/ninjatrader_state_<x>.json)
+    # that would hold every update back forever, silently. The reason names the file.
+    flatwait = status == "skipped" and "flat" in reason.lower() and not stuck
+    if flatwait:                                           # its own clock ("flat_since"): an earlier stuck clock is kept as it was
+        if not st.get("flat_since") or st.get("flat_reason", "")[:40] != reason[:40]:
+            st["flat_since"], st["flat_reason"] = int(last.get("t") or now), reason[:300]
+        if now - float(st["flat_since"]) < STUCK_FLAT_S:
+            return st, None
+        day = _et(now).date().isoformat()
+        if st.get("flat_sent_day") == day:
+            return st, None
+        st["flat_sent_day"] = day
+        hrs = (now - float(st["flat_since"])) / 3600.0
+        return st, {"key": f"guard:updflat:{day}", "code": "update_stuck", "soft": True, "tags": "warning",
+                    "title": f"Bot update stuck for {hrs:.0f} h"[:120],
+                    "body": (f"The PC is still on its old code: {reason[:220]}. No trade lasts {hrs:.0f} h, so the file it names is most "
+                             "likely a leftover of an account the bot no longer runs. If NinjaTrader shows no open position there, send "
+                             "Claude this line (Claude retires the file; nothing is closed or sent).")[:600]}
     if not stuck:
         if status in ("updated", "up_to_date"):
             return {}, None

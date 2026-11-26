@@ -6,6 +6,10 @@ Owner wants SHORT replies ("be simple and to the point. You send too much info."
 docs/BOARD.md). 2. Read this file. 3. Answer owner notes with `python tools/board.py note "..." --answers all`.
 Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7; bot checks green: lit_live --quick OK, NT selftest OK, ATLAS 47/47).
 
+- Error sweep (big-zeroerr2 2026-11-26, docs/ERROR_SWEEP_2026-11-26.md): the 11-25 server hang (17:22-00:36 ET, nobody told)
+  can no longer last > 5 min silently: engine/hang_guard.py (separate process) restarts a hung server when flat + one Telegram
+  line; a frozen loop dumps its stacks to logs/hang_stacks.txt so the next hang names its cause. Other clusters were already
+  fixed in pc and wait for the PC's held-back update (owner's one line). tests.test_zeroerr2 20/20. Branch big-zeroerr2.
 - Ops 2 (day-ops2 2026-11-26): the Dec 10 roll hands-free once LE_Feed verifies (shadow from Nov 26, 2 equal days -> live, one
   'Roll done' line; tick recorder now rolls Dec 10 like the orders, was Dec 11); START names the OneDrive folder (tools/bat/
   tools/bat/NT_OFF_ONEDRIVE.bat) and syncs / fixes the clock (8.4 s behind: FIX_CLOCK with one Windows Yes); weekly encrypted backup of

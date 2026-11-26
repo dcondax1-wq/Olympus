@@ -372,6 +372,10 @@ data/journal/
 data/journal_build.json
 # day-ops2 2026-11-26: the backup settings (engine/pc_backup.py: target dir, code_saved)
 data/pc_backup.json
+# big-zeroerr2 2026-11-26: the hang guard state + its per-server lock (engine/hang_guard.py)
+data/hang_guard.json
+data/hang_guard.json.tmp
+data/hang_guard_*.lock
 # day-oflearn 2026-11-26: the Order Flow pillar's paper bot (engine/of_paper.py), PC-local, never tracked
 data/of_paper.json
 data/of_paper.json.tmp
