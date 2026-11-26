@@ -14,6 +14,11 @@ Owner wants SHORT replies ("be simple and to the point. You send too much info."
 docs/BOARD.md). 2. Read this file. 3. Answer owner notes with `python tools/board.py note "..." --answers all`.
 Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7; bot checks green: lit_live --quick OK, NT selftest OK, ATLAS 47/47).
 
+- Ops 2 (day-ops2 2026-11-26): the Dec 10 roll hands-free once LE_Feed verifies (shadow from Nov 26, 2 equal days -> live, one
+  'Roll done' line; tick recorder now rolls Dec 10 like the orders, was Dec 11); START names the OneDrive folder (tools/bat/
+  tools/bat/NT_OFF_ONEDRIVE.bat) and syncs / fixes the clock (8.4 s behind: FIX_CLOCK with one Windows Yes); weekly encrypted backup of
+  the PC's private state to OneDrive\Olympus Backup + tools/bat/RESTORE_NEW_PC.bat (recovery code shown once by START).
+  tests.test_ops2 43/43. Branch day-ops2.
 - Hands-free (day-handsfree 2026-11-25, docs/HANDS_FREE.md; owner: "I don't want to go on my PC and restart it every single time"):
   Telegram replies to the alert bot = /status /update /update force /restart /pause /resume (owner's private chat only, same gates
   as the phone, receipts as replies, "PC is back up" after a restart; never kill/stop/flatten/start/arm). Writers sandbox test: the
@@ -43,6 +48,7 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
 ## Order flow (2026-11-24 night, pc 00ce6255a)
 - Landed (red team #5 CLEAR): LE_TickRec year backfill fix (Sep 14 wall = expired 09-26 contract read as end of history), market depth top-10 forward recording, OF idea mill (294 variants, forward protocol), live OF room + nightly 'flow said / happened' line, datafeed 'of' paging. Installs with the owner's one line.
 - day-oflearn 2026-11-26 (branch day-oflearn, research only, owner: "I want order flow to be perfect"): research/orderflow/LITERATURE.md (what published work says OF predicts: mostly seconds, so for us = execution first, LIT sweep absorbed-vs-cascade filter second, volatility read third), DESIGN3.md frozen before data (13 v3 features: Kyle lambda / impact residual, VPIN proxy, sign persistence, stop-run K1-K4, queue imbalance + CKS OFI on depth; mill 24 -> 36 families), of_learn.py nightly learner (OF state at every LIT/ATLAS signal + outcome -> Wilson / permutation / BH / placebo -> journal lines "OF said absorbed at the sweep: 7 of 9 won, too few to act"; PC: tickrec.oflearn_kick -> logs/orderflow, cloud: learn_night step oflearn), of_sim.py planted-tick simulator, tests.test_oflearn (pc area). Nothing changes a bot.
+- day-oflearn 2026-11-26 (lead job 2): **Order Flow pillar PAPER bot** engine/of_paper.py (rules frozen first: research/orderflow/DESIGN_paper.md 76396849). PAPER ONLY, nothing in the bot imports it, no live-loop change: started detached every 5 min 09:25-16:10 ET by the ops task (engine/ops_checks.of_paper_kick, 4-min lock, LE_OFPAPER=0 / data/of_paper_off = off), reads the live le_ticks CSV through the research chain (tickrec.read_rec_csv -> ofsum.summarize -> v2+v3 features). Lane A = level fade (prior-day / Globex / opening-range high-low) taken only when the sweep bar was ABSORBED (OF1); skipped ones tracked as if taken. Lane B = OF1 read at each real Zlarior entry (what the filter would have done). Lane C = depth: "wait up to 60 s for the queue" vs the fill. Owner's kill flag = no new paper entry. Writes data/of_paper.json (gitignored) -> Brain OF room + EOD line ("OF paper Dec 01: 2 trades, +1.0R (1 micro +$48) ..."). Replay of a recorded day: `python -X utf8 -m engine.of_paper replay --day <day>`. tests.test_of_paper (pc area). RED TEAM: ops_checks hook + brain_feed THINK_N of 3->5.
 - OPTIONAL owner step for the C# part: NinjaTrader > New > NinjaScript Editor > F5 (once). With it: first real OF result ~Nov 26-27; without: ~Dec 18, no depth. data/depth parquet ~3 GB/yr: add a disk_clean cap later.
 
 ## 2026-11-26 landings (midday, 5-hour session)

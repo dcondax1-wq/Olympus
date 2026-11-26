@@ -244,6 +244,7 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-26 | [[litasia-2026-11-26\|LIT's Asia slot at real Asia costs]] | research |
 | 2026-11-26 | [[lit-learns-live-2026-11-26\|LIT learns from live]] | research |
 | 2026-11-26 | [[lit-fragility-2026-11-26\|How fragile is LIT]] | research |
 | 2026-11-26 | [[execpol-2026-11-26\|Entry execution policy for LIT and ATLAS]] | research |
@@ -283,9 +284,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-11-17 | [[drift-switch-2026-11-17\|"Edge stopped working" switch]] | rejected |
 | 2026-11-16 | [[stack-one-account-2026-11-16\|More strategies on ONE MFFU account]] | promising |
 | 2026-11-15 | [[2026-11-15-s2-edge\|S2 edge]] | promising |
-| 2026-11-15 | [[2026-11-15-lit-deep\|LIT deep edge]] | rejected |
 
-... and 82 older (see the families).
+... and 83 older (see the families).
 
 ## Links
 
