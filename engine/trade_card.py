@@ -63,27 +63,31 @@ def bars(t_from: int, t_to: int, bot=None) -> list:
     """[(t, o, h, l, c)] 1-minute bars in [t_from, t_to] from the running bot's history (data/<sym>_1m.csv, the PC's bars), else
     NinjaTrader's feed files. [] when none. Never raises."""
     bot = bot if bot is not None else _bot()
-    dfs = []
-    try:
-        sym = (getattr(bot, "cfg", None) or {}).get("sym") or "NQ"
-        dfs.append(bot._read_hist(sym, "1m"))
-    except Exception:
-        pass
-    try:
-        from .ninjatrader import NinjaTraderBars
-        r = NinjaTraderBars((getattr(bot, "cfg", None) or {}).get("nt_folder")).recent_bars("NQ", "1m")
-        df = r[0] if isinstance(r, tuple) else r          # recent_bars -> (df | None, error, flag)
-        if df is not None:
-            dfs.append(df)
-    except Exception:
-        pass
-    for df in dfs:
+
+    def _cut(df):
         try:
             d = df[(df["time"] >= t_from) & (df["time"] <= t_to)]
             if len(d) >= 5:
                 return [(int(r.time), float(r.open), float(r.high), float(r.low), float(r.close)) for r in d.itertuples()]
         except Exception:
-            continue
+            pass
+        return None
+
+    try:                                                   # the bot's own (cached) history first
+        sym = (getattr(bot, "cfg", None) or {}).get("sym") or "NQ"
+        got = _cut(bot._read_hist(sym, "1m"))
+        if got:
+            return got
+    except Exception:
+        pass
+    try:                                                   # red team 2026-11-26: NinjaTrader's files only when the history has no bars
+        from .ninjatrader import NinjaTraderBars           # (each extra read delays the alert, never the order: a worker thread)
+        r = NinjaTraderBars((getattr(bot, "cfg", None) or {}).get("nt_folder")).recent_bars("NQ", "1m")
+        df = r[0] if isinstance(r, tuple) else r          # recent_bars -> (df | None, error, flag)
+        if df is not None:
+            return _cut(df) or []
+    except Exception:
+        pass
     return []
 
 
