@@ -377,6 +377,17 @@ def evening_extra(day: str, pa_path=None, digest_path=None, fleet=None) -> str:
             out.append("Tomorrow: " + fleet)
     except Exception:
         pass
+    try:                                        # big-shadow: the buy gate + the shadow eval (display only; OFF unless switched on)
+        from tools import morning_brief as _mb
+        bg = _mb.buy_gate_line()
+        if bg:
+            out.append(bg)
+            from engine import buy_gate as _bg
+            sh = str((_bg.SE._read(_bg.OUT, {}) or {}).get("shadow") or "")
+            if sh:
+                out.append(sh)
+    except Exception:
+        pass
     try:
         from engine import alert_bus as AB
         dg = [x for x in AB.digest_peek(day, digest_path) if x][:4]

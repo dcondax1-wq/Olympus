@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import datetime as dt
 import os
+import time
 import re
 from zoneinfo import ZoneInfo
 
@@ -643,6 +644,19 @@ def _room(r: dict):
     return _f(_d(src.get("eval")).get("room")) if room is None else room
 
 
+def buy_gate_line(path: str | None = None) -> str:
+    """big-shadow: the buy gate's last line (engine/buy_gate, logs/buy_gate.json) when its switch shows it and it is under 2 days
+    old, else ''. Display only. Never raises."""
+    try:
+        from engine import buy_gate as _bg
+        g = _bg.SE._read(path or _bg.OUT, None)
+        if isinstance(g, dict) and g.get("shown") and time.time() - float(g.get("t") or 0) <= 2 * 86400:
+            return str(g.get("line") or "")[:300]
+    except Exception:  # noqa: BLE001
+        pass
+    return ""
+
+
 def build(snap: dict, now: int | None = None, plan_doc=None, events=None, root: str | None = None, fleet: str | None = None,
           waiting: int | None = None, lvb: dict | None = None) -> dict:
     """THE pushed brief (night-briefv2 2026-11-23, owner: the day in 5 lines, money first). Same sources as build_full:
@@ -729,7 +743,8 @@ def build(snap: dict, now: int | None = None, plan_doc=None, events=None, root: 
     # integration 2026-11-23: night-payday's line ("REQUEST PAYOUT TODAY: ATLAS 25K $1,000 - ...") rides the 5-line brief too, first
     # (money in hand first), until the owner records the payout (TRADE_HOME -> P); the title says it, as in build_full
     pay = payday_line(rs) if fresh else ""
-    lines = [ln[:400] for ln in (*([pay] if pay else []), l1 + old, l2 + old, l3, l4, l5, *six)]
+    bg = buy_gate_line()                      # big-shadow: "Buy gate: OK to buy ..." (display only; '' unless data/buy_gate.json shows it)
+    lines = [ln[:400] for ln in (*([pay] if pay else []), l1 + old, l2 + old, l3, l4, l5, *six, *([bg] if bg else []))]
     title = f"ZEUS - {e:%a %b} {e.day} - {word}" + (f" - {signed(tot)} yesterday" if parts else "") + (" - REQUEST PAYOUT TODAY" if pay else "")
     return {"title": title, "body": "\n".join(lines)[:3900], "lines": lines, "day": e.date().isoformat(), "needs": len(needs)}
 

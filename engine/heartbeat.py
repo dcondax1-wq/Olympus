@@ -649,6 +649,16 @@ def _ai(bot):
         return None
 
 
+def _bg():
+    """The buy gate's tiny block (engine/buy_gate.tiny: "OK to buy" / "STOP buying" + the shadow eval line, < 400 bytes), read
+    from logs/buy_gate.json (computed by the PC report, never here). None unless data/buy_gate.json shows it. Never raises."""
+    try:
+        from . import buy_gate
+        return buy_gate.tiny()
+    except Exception:
+        return None
+
+
 def _board(bot):
     """The Board (engine/board_events.hb_block: account rows, newest events, open owner notes; privacy-passed, <= 6 KB; also notes
     bot_started / bot_stopped). Never raises."""
@@ -796,6 +806,7 @@ class Heartbeat:
                 **_opt("mind", _mind(self.bot)),             # Mind (engine/mind.py, read-only): only once it has computed
                 **_opt("selftest", _selftest()),             # PC self-test (engine/pc_selftest.py): only after its first run
                 **_opt("pc_health", _pc_health()),           # PC health watchdog (engine/pc_health.py): once it has sampled
+                **_opt("bg", _bg()),                         # buy gate + shadow eval (engine/buy_gate.tiny): display only, OFF by default
                 **_opt("board", _board(self.bot))}           # the Board (engine/board_events.hb_block): public, <= 6 KB
 
     def beat(self) -> dict:

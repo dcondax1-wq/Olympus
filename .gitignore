@@ -362,3 +362,8 @@ data/lanes/
 # day-handsfree 2026-11-25: Telegram command state (engine/tg_cmd.py: getUpdates offset, last poll) + its .tmp copies
 data/tg_cmd.json
 data/tg_cmd.json.*.tmp
+
+# big-shadow (engine/shadow_eval.py, engine/buy_gate.py): the switch, the shadow start day, the eval fees ledger (machine-local)
+data/buy_gate.json
+data/shadow_eval.json
+data/eval_buys.json
