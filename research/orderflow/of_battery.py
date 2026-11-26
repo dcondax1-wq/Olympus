@@ -162,7 +162,7 @@ def filter_report(rows, keep, H, rng):
         res["skip_placebo_p"] = round((ge + 1) / (N_PLACEBO + 1), 3)
     else:
         res["skip_placebo_p"] = None
-    ok = ok and (res["skip_placebo_p"] or 1) < 0.10
+    ok = ok and (1 if res["skip_placebo_p"] is None else res["skip_placebo_p"]) < 0.10  # day-oflearn fix: p 0.0 was read as 1
     res["skipped"] = nskip
     res["verdict"] = "TOO FEW" if few else ("PASS (candidate)" if ok else "REJECTED")
     return res
@@ -185,7 +185,7 @@ def standalone_report(sig, H, rng):
         res["placebo_p"] = round(float((np.array(dr) >= act.sum()).mean()), 3)
     else:
         res["placebo_p"] = None
-    ok = ok and (res["placebo_p"] or 1) < 0.10
+    ok = ok and (1 if res["placebo_p"] is None else res["placebo_p"]) < 0.10
     res["all_net$"] = round(float(act.sum()))
     res["verdict"] = "TOO FEW" if few else ("PASS (candidate)" if ok else "REJECTED")
     return res

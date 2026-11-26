@@ -34,6 +34,7 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
 
 ## Order flow (2026-11-24 night, pc 00ce6255a)
 - Landed (red team #5 CLEAR): LE_TickRec year backfill fix (Sep 14 wall = expired 09-26 contract read as end of history), market depth top-10 forward recording, OF idea mill (294 variants, forward protocol), live OF room + nightly 'flow said / happened' line, datafeed 'of' paging. Installs with the owner's one line.
+- day-oflearn 2026-11-26 (branch day-oflearn, research only, owner: "I want order flow to be perfect"): research/orderflow/LITERATURE.md (what published work says OF predicts: mostly seconds, so for us = execution first, LIT sweep absorbed-vs-cascade filter second, volatility read third), DESIGN3.md frozen before data (13 v3 features: Kyle lambda / impact residual, VPIN proxy, sign persistence, stop-run K1-K4, queue imbalance + CKS OFI on depth; mill 24 -> 36 families), of_learn.py nightly learner (OF state at every LIT/ATLAS signal + outcome -> Wilson / permutation / BH / placebo -> journal lines "OF said absorbed at the sweep: 7 of 9 won, too few to act"; PC: tickrec.oflearn_kick -> logs/orderflow, cloud: learn_night step oflearn), of_sim.py planted-tick simulator, tests.test_oflearn (pc area). Nothing changes a bot.
 - OPTIONAL owner step for the C# part: NinjaTrader > New > NinjaScript Editor > F5 (once). With it: first real OF result ~Nov 26-27; without: ~Dec 18, no depth. data/depth parquet ~3 GB/yr: add a disk_clean cap later.
 
 ## 2026-11-25 landings (after hours)
