@@ -58,7 +58,8 @@ from engine import firms as FM  # noqa: E402
 from engine import sizing as SZ  # noqa: E402
 from engine.lit import qty_for  # noqa: E402
 
-PV, COMM, SLIP = U.PV, U.COMM, U.SLIP
+from engine import costs as C  # noqa: E402  big-exitreal 2026-11-26: the one place for costs (research / money only)
+PV, COMM, SLIP = C.PV_MNQ, C.COMM_RT, U.SLIP          # SLIP = the shared sizing allowance (parity); exits carry costs.py
 OUT = os.path.join(ROOT, "research", "lab", "stack_one_account.json")
 SPANS = ("H1", "H2", "REF")
 LEN, GAP, H_EVAL, MO = U.LEN, U.GAP, 60, U.LEN / 21.0

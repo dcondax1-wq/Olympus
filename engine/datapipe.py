@@ -571,7 +571,8 @@ def _book(tag: str) -> str:
 # execution helpers' latency logging uses these names too (one place):
 FILL_FIELDS = ("order_id", "lane", "book", "leg", "account", "instrument", "side", "action", "qty", "order_type", "intended_px",
                "model_px", "fill_px", "slip_ticks", "filled", "state", "signal_t", "send_t", "ack_t", "fill_t", "fill_seen_t",
-               "ack_s_after_send", "entry_t",
+               "ack_s_after_send", "entry_t", "stop_px", "target_px", "exit_order", "exit_fill_px", "exit_fill_t", "exit_filled",
+               "exit_slip_ticks",
                # kept for the older readers (tools/fill_speed.py, tools/reconcile_live.py): the same values under the old names
                "sent_t", "leg_sent_t", "sent_s_after_open", "fill_s_after_sent")
 #   lane        whose order: "zlarior" (the main LIT 50K log), "atlas" (account B), "blitz" (account C), an extra account's id
@@ -588,6 +589,9 @@ FILL_FIELDS = ("order_id", "lane", "book", "leg", "account", "instrument", "side
 #   fill_t      NinjaTrader's fill report: the FILLED state's file time (else the leg's fill_mtime)
 #   model_px    entries only: the SAME value as intended_px under big-execution's name (an alias, never a second source)
 #   ack_s_after_send   ack_t - send_t
+#   stop_px / target_px / exit_order / exit_fill_px / exit_fill_t / exit_filled / exit_slip_ticks   (big-exitreal, 2026-11-26) on
+#               each ENTRY row: a per-entry summary of the same entry's stop / target rows (exit_columns: their intended_px,
+#               fill_px, fill_t, filled, slip_ticks; one source, never a second computation)
 _OID = re.compile(r"^LE(\d{9,11})([A-Za-z0-9]*?)([EST])$")
 _LOG_LINE = re.compile(r"^\S+ \S+ ET\s+(\S+)\s+(oif_le_\S+\.txt)\s+(.+)$")
 LEGS = {"E": "entry", "S": "stop", "T": "target"}
@@ -680,7 +684,7 @@ def day_fills(day: str, root: str | None = None, exec_store: str | None = None, 
         states.setdefault(oid, []).append(r)
     legs = {k: v for k, v in (_read_json(os.path.join(es, "legs.json"), {}) or {}).items() if isinstance(v, dict)}
     try:
-        return _fill_rows(rows, states, legs, names) + [scrub(c, names) for c in sorted(closes, key=lambda c: c["send_t"])]
+        return exit_columns(_fill_rows(rows, states, legs, names)) + [scrub(c, names) for c in sorted(closes, key=lambda c: c["send_t"])]
     except Exception:                                    # a bad state / leg value: the day packs without fill rows
         return []
 
@@ -717,6 +721,10 @@ def _fill_rows(rows, states, legs, names) -> list:
             if r.get("side") is None and lg.get("dir") is not None:
                 r["side"] = "BUY" if int(lg["dir"]) > 0 else "SELL"
                 r["action"] = r["side"]
+        if not ent and r.get("intended_px") is None and _num(lg.get(r["leg"])) is not None:
+            r["intended_px"] = _num(lg.get(r["leg"]))           # no PLACE line seen: the leg's own level (stop / target)
+        if not ent and r.get("action") is None and lg.get("dir") is not None:
+            r["action"] = r["side"] = "SELL" if int(lg["dir"]) > 0 else "BUY"     # an exit is the other way
         r["slip_ticks"] = _slip(r.get("action") or r.get("side"), r.get("intended_px"), r.get("fill_px"))
         sent = r.get("sent_t") if r.get("sent_t") is not None else r.get("leg_sent_t")
         r["send_t"] = r.get("send_t") if r.get("send_t") is not None else sent
@@ -726,6 +734,35 @@ def _fill_rows(rows, states, legs, names) -> list:
             r["ack_s_after_send"] = round(r["ack_t"] - r["send_t"], 3)
         out.append(scrub(r, names))
     return sorted(out, key=lambda r: (r["entry_t"], str(r.get("book")), str(r.get("order_id"))))
+
+
+def exit_columns(rows: list) -> list:
+    """big-exitreal's per-entry exit columns on each ENTRY row, derived from this entry's own stop / target rows (one source: the
+    same order states; never a second computation): stop_px / target_px = those rows' intended_px; when one of them FILLED:
+    exit_order ("stop" | "target"), exit_fill_px / exit_fill_t / exit_filled / exit_slip_ticks = that row's fill_px / fill_t /
+    filled / slip_ticks (+ = worse, the same sign rule). Never raises."""
+    try:
+        by = {}
+        for r in rows:
+            oid = str(r.get("order_id") or "")
+            if r.get("leg") in ("stop", "target") and oid:
+                by.setdefault(oid[:-1], {})[r["leg"]] = r
+        for r in rows:
+            if r.get("leg") != "entry":
+                continue
+            ex = by.get(str(r.get("order_id") or "")[:-1]) or {}
+            for k in ("stop", "target"):
+                if ex.get(k) and ex[k].get("intended_px") is not None:
+                    r[f"{k}_px"] = ex[k]["intended_px"]
+            for k in ("stop", "target"):
+                x = ex.get(k)
+                if x and str(x.get("state")) == "FILLED" and x.get("fill_px") is not None:
+                    r.update(exit_order=k, exit_fill_px=x["fill_px"], exit_fill_t=x.get("fill_t"), exit_filled=x.get("filled"),
+                             exit_slip_ticks=x.get("slip_ticks"))
+                    break
+    except Exception:
+        pass
+    return rows
 
 
 # ================================================================================================ decisions + twin

@@ -48,7 +48,10 @@ from engine import firms as FM  # noqa: E402
 from engine import sizing as SZ  # noqa: E402
 from engine.lit import qty_for  # noqa: E402
 
-PV, COMM, SLIP = U.PV, U.COMM, U.SLIP
+from engine import costs as C  # noqa: E402  big-exitreal 2026-11-26: the one place for costs (research / money only)
+# SLIP stays the sizing engines' shared 1-tick allowance (risk + SLIP, the DLL cut), identical to uprisk / combo_account /
+# rapid_levers / account_b (tests.test_combo_account part f parity); the realistic 2-tick stop is in the trades' exit (trades())
+PV, COMM, SLIP = C.PV_MNQ, C.COMM_RT, U.SLIP
 OUT = os.environ.get("A4_OUT") or os.path.join(ROOT, "research", "lab", "account4_sim.json")
 SPANS = ("H1", "H2", "REF")
 LEN, GAP, H_EVAL, MO = U.LEN, U.GAP, 60, U.LEN / 21.0
@@ -80,6 +83,17 @@ def trades():
 
 
 _D = {}
+
+
+def apply_costs():
+    """Opt-in (research/plans/rank.py, tools/forecast.py): LIT's trades at engine/costs.py exit costs (a stop / market exit
+    carries STOP_SLIP_TICKS instead of the stored 1 tick; targets unchanged). The default load() stays the stored trades: the
+    reference that tools/money/combo_account and engine/combo50k / combo25 are checked against."""
+    S, BY = load()
+    if not _D.get("costs"):
+        _D["BY"] = [[{**t, "pts": t["pts"] - C.extra_exit_pts(t.get("exit"))} for t in ts] for ts in BY]
+        _D["costs"] = True
+    return _D["S"], _D["BY"]
 
 
 def load():
