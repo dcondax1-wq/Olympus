@@ -470,3 +470,11 @@
   2021-25 losses (weekly bias on LIT +$7.7k, ATLAS near the daily open +$12.3k) costs money in both 2026 halves. Paper watch only: MMBM with
   the weekly bias (green 5/5 years, +$11.6k, 0.35 trades/wk, p 0.11). TDO x0.5 on FUNDED accounts (real engine): funded losses roughly
   halved (50K H2 13.1% -> 6.9%) but the owner's 2026 Jul-Oct payouts drop on every plan (-$106 .. -$467 / 6 months): rejected again.
+- 2026-11-26 Eval sizing POLICY (big-evalsizer, research/evalsizer/, design pre-registered first): 18 state-dependent LIT eval sizers x
+  Builder 50K / 25K / Rapid EOD 25K (room cap 25-60%, fixed 10-30% of room, quarter / half Kelly, bold near the target, protect near
+  the floor, bold+protect, two DP-optimal policies on the 2026 H1 and the all-history LIT R pools), real engine, every MFFU rule,
+  1,000 paths, 4 markets. Pick on H1 = today (two_week room_f 0.4) on both Builders; Rapid pick R60 fails 2021-25. NO variant beats
+  today in all 4 markets on any plan. One trade-off line: a bigger room cap = more $ in 2026 markets (R50 50K +$116/+$199, 25K
+  +$130/+$180 a slot / 6 mo, fails +3-7 pts), less in bad ones (-$32/-$35); a smaller cap / protect / DP = fewer fails (50K PR1 fail
+  16.2 -> 10.5%) but slower passes, -$106..-$1,470 in 2026 markets for +$30..+$98 in bad ones (still negative). Bold play near the
+  target = today exactly (the one-winner need cap already binds). Today stays. research/writeups/evalsizer-2026-11-26.md
