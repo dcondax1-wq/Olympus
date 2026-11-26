@@ -31,6 +31,7 @@ an area; the old long brief is its last section).
 ## Where things are
 - Live strategy LIT: `engine/lit.py`, `engine/lit_live.py`, `STRATEGY.md`. PC bot: `server.py` + `engine/live.py` -> NinjaTrader
   via `engine/ninjatrader.py`. ATLAS: `engine/second.py`, `engine/account_b.py`. Apps: `tools/web_public/<id>/` (map: `docs/OLYMPUS_MAP.md`).
+- Owner rule 2026-11-26: Everything must reach the dashboard automatically: every landing ends with ship + publish; the owner never touches code or CMD (except the one-time unblock line on old PC code).
 - Home (owner 2026-11-20): **`dcondax1-wq/Olympus` branch `pc`** is the one main repo. Commit and push only there (`git push
   https://github.com/dcondax1-wq/Olympus HEAD:pc`, or `python tools/ship.py`); the PC updates itself from it (`docs/AUTO_UPDATE.md`). Never use the old
   `demetrades2000-coder/nq-liquidity-engine` repo or its `claude/clever-heisenberg-51zwcr` branch.
