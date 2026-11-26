@@ -575,7 +575,7 @@ def _record_sent(w: str, now: int, out: dict, rids: list) -> None:
     _write_json(os.path.join(w, "state.json"), st)
 
 
-def _answer_of(req: dict, now: int, w: str, env, http_fn, dp_work, max_zip: int, also: list, sleep=None) -> dict:
+def _answer_of(req: dict, now: int, w: str, env, http_fn, dp_work, max_zip: int, also: list, sleep=None, pages: int | None = None) -> dict:
     """day-ofmax: ONE "of" ask -> up to OF_PAGES answers (newest days first, each <= max_zip), never past DAILY_CAP minus
     OF_RESERVE answers today. Each page carries "page" (1..) and "more"; the cloud collects them by the ask's id."""
     sleep = sleep or time.sleep
@@ -583,7 +583,7 @@ def _answer_of(req: dict, now: int, w: str, env, http_fn, dp_work, max_zip: int,
     out = {"ok": False, "req": req.get("id"), "days": 0, "pages": 0}
     day = _et(now).date().isoformat()
     used = sum(1 for s_ in (_state(w).get("sent") or []) if s_.get("day") == day)
-    budget = max(1, min(OF_PAGES, DAILY_CAP - OF_RESERVE - used))
+    budget = max(1, min(pages or OF_PAGES, DAILY_CAP - OF_RESERVE - used))   # pages: the owner's push (tools/of_send_now) uses all free
     first = last = None
     t_start = time.time()
     for page in range(1, budget + 1):

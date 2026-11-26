@@ -303,7 +303,7 @@ def battery_kick_checks():
     B = importlib.util.module_from_spec(sp); sp.loader.exec_module(B)
     line = B.phone_line({"look": 1, "tick_days": 41, "first": "2026-09-14", "last": "2026-11-20",
                          "verdicts": {"OF1 LIT": "REJECTED", "OF5 abs": "TOO FEW"}})
-    check("battery phone line: plain, says LIT stays", "OF1 REJECTED" in line and "LIT stays" in line and len(line) < 300, line)
+    check("battery phone line: plain, says LIT stays", "OF1 rejected" in line and "OF5 too few" in line and "LIT stays" in line and len(line) < 300, line)
     check("battery looks 40 / 60 / 120 / 250", B.LOOK_AT == (40, 60, 120, 250) and T.BATTERY_LOOKS == B.LOOK_AT)
 
 

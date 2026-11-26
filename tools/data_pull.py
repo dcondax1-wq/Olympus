@@ -600,6 +600,15 @@ def latest_of(a, sleep=None) -> int:
     except Exception:
         last = {}
     night = _et_str(time.time())[:10]
+    pushed = pull_pushed(a, last)                               # day-ofmax: pages the PC pushed (tools/of_send_now.py)
+    if pushed:
+        last.update(night=night, rid=last.get("rid") if last.get("night") == night else "pushed", t=int(time.time()))
+        try:
+            json.dump(last, open(mark, "w", encoding="utf-8"))
+        except OSError:
+            pass
+        print(f"order-flow days here now: {len(of_days(a.out))}")
+        return 0
     rid = last.get("rid") if last.get("night") == night else None
     t0 = int(last.get("t") or time.time())
     if rid is None:
@@ -655,6 +664,33 @@ def latest_of(a, sleep=None) -> int:
         sleep(15)
 
 
+def pull_pushed(a, mark: dict) -> int:
+    """day-ofmax: the order-flow pages the PC PUSHED (tools/of_send_now.py: signed "of" answers with a "push..." id) still on
+    the topic (ntfy keeps an attachment 3 h). Each page once (mark["seen"]: message ids). Returns the days written."""
+    from engine import datafeed as DF
+    base, topic = DF.feed_cfg()
+    ok, msgs = DF.poll(base, topic, "3h")
+    if not ok:
+        return 0
+    seen = set(mark.get("seen") or [])
+    now, n = int(time.time()), 0
+    for m in msgs:
+        x = DF.parse_answer(m, now, base)
+        if not x or x.get("what") != "of" or not str(x.get("req") or "").startswith("push") or x.get("mid") in seen:
+            continue
+        if x.get("days"):
+            try:
+                wrote = DF.extract(fetch_bundle(x), a.out)
+                n += len(wrote)
+                print(f"Received a pushed page {x.get('page')}: order-flow summaries of {len(wrote)} day(s) {x['from']} .. {x['to']}.")
+            except ValueError as e:
+                print(f"A pushed page was not usable: {e}.")
+                continue
+        seen.add(x.get("mid"))
+    mark["seen"] = sorted(seen)[-200:]
+    return n
+
+
 def run_battery(out_dir: str = OUT) -> None:
     """W4 (day-ofready): the pre-registered order-flow battery (research/orderflow/of_battery.py) on the pulled days. It
     prints "waiting: N of 40" until there are 40 tick days and runs each look (40 / 60 / 120) once. Never fails the pull."""
@@ -692,7 +728,8 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Pull the PC's days (futures bars, trades, review): --latest over ntfy, else the "
                                              "backup repo branch data.")
     ap.add_argument("--latest", action="store_true", help="ask the PC over ntfy and import (engine/datafeed.py)")
-    ap.add_argument("--of", action="store_true", help="--latest: also ask for the order-flow summaries (up to 400 days back)")
+    ap.add_argument("--of", action="store_true", help="the order-flow summaries: pages the PC pushed (tools/of_send_now.py) or one ask "
+                    "a night (up to 400 days back), then the battery; with --latest also the bars")
     ap.add_argument("--no-battery", action="store_true", help="--latest: skip the order-flow battery run")
     ap.add_argument("--since", default=None, help="--latest: first CME day to ask for (default: the newest day in data/)")
     ap.add_argument("--wait", type=float, default=None, help="--latest: minutes to wait for the PC (default 9; 0 = only ask)")
@@ -713,6 +750,11 @@ def main(argv=None) -> int:
     a = ap.parse_args(argv)
     if a.feed_status:
         return feed_status()
+    if a.of and not a.latest:                                   # day-ofmax: `--of` alone = the order-flow pages + the battery
+        rc = latest_of(a)
+        if not a.no_battery and not a.dry_run:
+            run_battery(a.out)
+        return 0 if rc in (0, 3) else rc
     if a.latest:
         rc = latest(a)
         if rc not in (0, 3):
