@@ -183,7 +183,7 @@ def test_pc_checklist():
         os.symlink(real, link)
         check("B1. OneDrive check reads the REAL place: a junction out of OneDrive is fine, a folder inside it is not",
               OC.check_onedrive(link)["level"] == OC.OK and OC.check_onedrive(os.path.join(od, "x"))["level"] == OC.WARN)
-        check("B2. its fix names the one-click tools\\bat\\NT_OFF_ONEDRIVE.bat", "NT_OFF_ONEDRIVE.bat" in OC.check_onedrive(od + "/x")["fix"])
+        check("B2. its fix names the one-click tools\\bat\\NT_OFF_ONEDRIVE.bat", "tools\\bat\\NT_OFF_ONEDRIVE.bat" in OC.check_onedrive(od + "/x")["fix"])
         lines = G.pc_warn_lines(nt_folder=os.path.join(od, "x"), net={"up": True, "drift_s": 8.4}, sync=lambda: {"ok": False},
                                      inp=lambda q: "", elevate=lambda: True)
         check("B3. START: OneDrive [FIX] line + the clock 8.4 s behind: sync tried, then the FIX_CLOCK line (Enter = later)",

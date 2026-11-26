@@ -17,7 +17,7 @@ and automatic, then lets the roll happen by itself:
      within 3 minutes; orders (nt_instrument), the keep-alive (it trades through the account's own adapter) and the order-flow
      recorder (engine/tickrec.front_names, now the same day) move by the date.
   4. FALLBACK: live mode with the add-on's status older than STALE_S while NinjaTrader runs -> "shadow" again (the chart, still
-     open, writes again by itself) + one alert. Before the roll, with nothing verified by the eve: the old path (ROLL.bat, the
+     open, writes again by itself) + one alert. Before the roll, with nothing verified by the eve: the old path (tools/bat/ROLL.bat, the
      existing reminders) stays exactly as it was.
   5. DONE: on the roll day after 00:05 ET, once le_feed\\<ROOT>_instrument.txt names the new contract: ONE Telegram line
      "Roll done: orders, bars and the order-flow recorder on MNQ 03-27".
@@ -261,7 +261,7 @@ def _tick(root, nt, now, flat, notify, apply) -> list:
                 st["fallback"] = int(now)
                 st["run"] = 0
                 notify("Bars: back on your chart", "The LE_Feed add-on stopped writing, so your NinjaTrader chart feeds the bot again "
-                       "(nothing to do; the roll then needs ROLL.bat as before).", f"roll:fallback:{int(now) // 3600}")
+                       "(nothing to do; the roll then needs tools/bat/ROLL.bat as before).", f"roll:fallback:{int(now) // 3600}")
             out.append({"status": "fixed", "text": "LE_Feed silent in live mode: back to the chart (shadow)"})
             _save(root, st) if apply else None
             return out
