@@ -14,6 +14,10 @@ Owner wants SHORT replies ("be simple and to the point. You send too much info."
 docs/BOARD.md). 2. Read this file. 3. Answer owner notes with `python tools/board.py note "..." --answers all`.
 Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7; bot checks green: lit_live --quick OK, NT selftest OK, ATLAS 47/47).
 
+- Error sweep (big-zeroerr2 2026-11-26, docs/ERROR_SWEEP_2026-11-26.md): the 11-25 server hang (17:22-00:36 ET, nobody told)
+  can no longer last > 5 min silently: engine/hang_guard.py (separate process) restarts a hung server when flat + one Telegram
+  line; a frozen loop dumps its stacks to logs/hang_stacks.txt so the next hang names its cause. Other clusters were already
+  fixed in pc and wait for the PC's held-back update (owner's one line). tests.test_zeroerr2 20/20. Branch big-zeroerr2.
 - Ops 2 (day-ops2 2026-11-26): the Dec 10 roll hands-free once LE_Feed verifies (shadow from Nov 26, 2 equal days -> live, one
   'Roll done' line; tick recorder now rolls Dec 10 like the orders, was Dec 11); START names the OneDrive folder (tools/bat/
   tools/bat/NT_OFF_ONEDRIVE.bat) and syncs / fixes the clock (8.4 s behind: FIX_CLOCK with one Windows Yes); weekly encrypted backup of
@@ -58,6 +62,7 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
 - day-proedge-rt14 (OF one-line send tools/of_send_now.py + quota/priority fixes, red team #14 CLEAR) landed too.
 - Also landed: day-ops2-rt (Dec roll_auto, LE_Feed.cs shadow + hub heartbeat, NT_OFF_ONEDRIVE.bat M 42, RESTORE_NEW_PC.bat M 43, weekly encrypted pc_backup), day-oflearn-rt16 (Order Flow PAPER bot engine/of_paper.py, own process, BELOW_NORMAL), big-litasia (LIT Asia rejected again, research), big-execution-rt (order latency log ON; socket transport OFF, Sim-only factory). Update gate SAME 7,680 polls (base 0b5505cdc).
 - Second landing (11-26 evening): big-regime2026 (ATLAS S1 forward flag in forward_paper; engine/atlas_exec.py NEW, unwired, OFF/Sim-only; the live_py_fast_lane.patch NOT applied), big-regime setup score (display only), big-consfix, day-proedge-rt20 payout engine + one /today, big-shadow-rt2 shadow eval + buy gate (display OFF until data/buy_gate.json show), big-ofpipe (+ big-ofreal: real-day verdict runner + of_room builder on pc). Update gate SAME 7,680 polls (base 3eff6763e).
+- Third landing (11-26 evening): day-alloc (Card 2 LIT on the funded ATLAS 25K via engine/lit25 + Card 3 atlas_from_et 09:30: both built, both OFF; Decide cards alloc-lit-funded25 + alloc-atlas-from-930, owner's call), big-zeroerr2-rt5 (hang guard + all-lane flat check + /api/health/alive + 30 h stuck line + 24 h stale skip). The hang guard needs NO owner step: it comes with the update.
 - Helpers re-assigned: evalsizer -> big-shadow (Sim shadow eval + buy gate), regime -> big-setupscore (live setup score, display only), proedge -> big-payout (payout engine, read-only).
 
 ## 2026-11-25 landings (after hours)
