@@ -1,0 +1,86 @@
+{
+ "ict_ote_dol": {
+  "n_bt": 240,
+  "mu": 0.1749,
+  "sd": 1.8761,
+  "sum_bt": 41.98,
+  "days": [
+   "2021-11-02",
+   "2026-10-22"
+  ],
+  "sig": "b1ebb78a832e00c5|ICT OTE 70.5% of the 09:30-10:00 leg, only when the PDH/PDL draw agrees (ICT lab G3)",
+  "built": "2026-11-26"
+ },
+ "ict_mmbm_week": {
+  "n_bt": 92,
+  "mu": 0.2182,
+  "sd": 1.7841,
+  "sum_bt": 20.08,
+  "days": [
+   "2021-11-26",
+   "2026-11-16"
+  ],
+  "sig": "aeb9e30dfe4b75d0|MMBM / MMSM only with the weekly bias",
+  "built": "2026-11-26"
+ },
+ "atlas_skip_news": {
+  "n_bt": 100,
+  "mu": 0.0952,
+  "sd": 1.8513,
+  "sum_bt": 9.52,
+  "days": [
+   "2021-11-03",
+   "2026-10-02"
+  ],
+  "sig": "5b16ccca5af31ec3|skip ATLAS on Tier-1 days (FOMC / CPI / PPI / NFP)",
+  "built": "2026-11-26"
+ },
+ "atlas_half_off_sb": {
+  "n_bt": 687,
+  "mu": 0.0263,
+  "sd": 0.9499,
+  "sum_bt": 18.09,
+  "days": [
+   "2021-11-02",
+   "2026-10-13"
+  ],
+  "sig": "e3b0c44298fc1c14|ATLAS x0.5 outside Silver Bullet hours (03 / 10 / 14 ET)",
+  "built": "2026-11-26"
+ },
+ "blitz_v1_noise": {
+  "n_bt": 1059,
+  "mu": 0.1507,
+  "sd": 1.5978,
+  "sum_bt": 159.59,
+  "days": [
+   "2021-11-23",
+   "2026-11-20"
+  ],
+  "sig": "812aa335f893e89a|BLITZ V1 noise-area exit (band / VWAP, no clock, no trail), 5m",
+  "built": "2026-11-26"
+ },
+ "lit_second_after_stop": {
+  "n_bt": 64,
+  "mu": -0.009,
+  "sd": 1.5442,
+  "sum_bt": -0.58,
+  "days": [
+   "2021-11-11",
+   "2026-10-28"
+  ],
+  "sig": "3d8bd1e2e5149fa5|LIT L11: the extra 2nd trade of a day, only after a STOP",
+  "built": "2026-11-26"
+ },
+ "lit_x15_extreme": {
+  "n_bt": 118,
+  "mu": 0.265,
+  "sd": 1.1109,
+  "sum_bt": 31.27,
+  "days": [
+   "2021-11-26",
+   "2026-11-16"
+  ],
+  "sig": "56859decfa73fde5|LIT x1.5 when the entry sits in the 20% of the day's range on its side (structure F3)",
+  "built": "2026-11-26"
+ }
+}
