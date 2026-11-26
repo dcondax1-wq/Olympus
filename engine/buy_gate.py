@@ -127,7 +127,11 @@ def tiny(g: dict | None = None) -> dict | None:
     g = g if g is not None else SE._read(OUT, None)
     if not isinstance(g, dict) or not g.get("shown"):
         return None
-    return {"s": g["verdict"], "l": str(g.get("line") or "")[:180], "sh": str(g.get("shadow") or "")[:190], "t": g.get("t")}
+    # red team 2026-11-26: cut by UTF-8 BYTES ("·" is 2), so the block really stays < 400 B in the ext post (it was up to ~420)
+    cut = lambda s, n: str(s or "").encode("utf-8")[:n].decode("utf-8", "ignore")
+    if g.get("verdict") not in ("OK", "STOP"):
+        return None                                      # an unknown / damaged verdict shows nothing (never a stray "OK to buy")
+    return {"s": g["verdict"], "l": cut(g.get("line"), 170), "sh": cut(g.get("shadow"), 170), "t": g.get("t")}
 
 
 def record_buy(plan: str, price: float, day: str | None = None, path: str | None = None) -> dict:
