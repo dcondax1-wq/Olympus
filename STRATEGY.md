@@ -152,6 +152,11 @@ Every one of these counts as liquidity:
 - Costs in every number: $1.40 per micro round trip, 1 tick slippage on market entries and on stop / breakeven / end-of-day
   exits; limit fills and targets fill at their price. The bots book the real $1.90 a micro (MFFU / Tradovate, since
   2026-10-26): about $0.50 a micro less, $318 over 2026 ($33 a month; Jul–Oct +$9,919 → +$9,836), same trades.
+- **At the realistic costs of `engine/costs.py`** (2026-11-26, `research/writeups/exitreal-2026-11-26.md`: $1.90 a micro, stop /
+  market exits 2 ticks instead of 1, targets unchanged: none of 298 stored targets was touch-only), run `lit_live` restated
+  trade by trade (`research/exitreal/lit_live_restated.json`): **H1 PF 4.84, +$33,494** (was 4.98, +$33,901), **Jul–Oct PF 2.85,
+  +$9,773** (2.91, +$9,919), 2026 PF 4.09 +$43,266 (4.19 +$43,820), max DD −$2,230; **2021–25 PF 0.98, −$2,409 = break-even**
+  (1.01, +$1,265). The table below keeps the research engine's costs ($1.40, 1 tick); read every $ about 1.5% lower.
 
 ## 10. Loss rules (adopted 2026-10-18, `research/writeups/lit-losses.md`)
 Both were picked on Jan–Jun 2026 and helped Jul–Oct too (`engine/lit.py` options `monday` and `wk_stop`, on in `live_model.json`).
@@ -196,7 +201,7 @@ scale-in). Settings in `live_model.json` `"lit"`; the 15-minute check and the sc
 | Monte Carlo 2-week pass / fail (eval path) | 50.5% / 7.0% | 52.8% / 2.6% | 51.9% / 3.2% | 54.0% / 6.8% | 55.1% / 3.5% | 58.1% / 3.2% |
 
 2021–25 reference (5m entries, only the breakeven + costs acts): PF 1.01, +$1,211, max DD −$19,436 (before: PF 1.01, +$1,275,
-−$20,462).
+−$20,462). At `engine/costs.py` costs ($1.90, 2-tick stops): **PF 0.98, −$2,409: break-even**, not slightly positive.
 
 **Read this honestly:** the live pair adds little money on the LIT size rule (+$1.1k H1, +$0.5k H2); what it buys is fewer
 eval fails in H1 (2-week fails 9.2% → 5.9%) and a higher 2-week pass rate (52.9% → 57.1% H1, 50.7% → 52.2% H2). On the eval
@@ -261,7 +266,7 @@ Same months, old strategy: 2026 PF 3.94, +$20,487 (H1 +$4,919, H2 +$15,568), max
 **Read this honestly:**
 - **Expect the H2 rate (about $2,550 a month live now; $4,100 with scale-in; $2,400 before), not the full-year $4,423.** H1 was tuned, H2 was
   not; the old bot did better in H2.
-- **2021–25 shows no edge** (PF 1.01, drawdown −$19.4k). Those years have no 1m data, so the 1m entry, the 15-minute check and
+- **2021–25 shows no edge: break-even** (PF 1.01 at the research costs, **0.98 at `engine/costs.py`**; drawdown −$19.4k). Those years have no 1m data, so the 1m entry, the 15-minute check and
   the scale-in cannot be checked there. On 5m candles only, the same rules (LIT final) make +$6.6k in 2026: **the edge needs
   1-minute bars.**
 - **A few trades carry it:** the top 3 are 37% of 2026's net; the longest run without a 1R+ winner is 12 trades.

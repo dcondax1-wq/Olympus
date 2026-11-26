@@ -552,5 +552,7 @@ AREAS["nq"].append("trade_cards_rt"); AREAS["pc"].append("trade_cards_rt")   # r
 AREAS["pc"].append("buy_gate"); AREAS["money"].append("buy_gate")   # big-shadow 2026-11-26: shadow eval + buy gate (display only)
 AREAS["pc"].append("buy_gate_rt")   # red team 2026-11-26: bg < 400 B, a damaged verdict shows nothing
 
+AREAS["nq"].append("fill_log"); AREAS["pc"].append("fill_log")   # day-zeroerr 2026-11-26: every real fill (entry + exit, every lane) in fills.jsonl.gz, BLITZ paper rows, extra accounts in the day summary
+
 if __name__ == "__main__":
     sys.exit(main())

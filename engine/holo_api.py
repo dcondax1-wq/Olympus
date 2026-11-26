@@ -537,7 +537,7 @@ def _legs(accts, bot) -> dict:
                     seen[lg["entry_id"]] = lg
         if key == "lit":
             for eid, lg in (_rjson(os.path.join(_store(), "legs.json"), {}) or {}).items():
-                if isinstance(lg, dict) and eid not in seen:
+                if isinstance(lg, dict) and eid not in seen and not lg.get("lane"):   # "lane": another account's leg (fill log)
                     seen[eid] = {**lg, "entry_id": eid}
         for lg in seen.values():
             if lg.get("entry_t") is not None:

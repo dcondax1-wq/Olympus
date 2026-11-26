@@ -134,6 +134,11 @@ def cards(snap: dict) -> list:
     return out
 
 
+def owner_cards(snap: dict) -> list:
+    """cards() without BLITZ (hidden from the owner, paper: owner 2026-11-16): the day summary and the week report."""
+    return [(k, c) for k, c in cards(snap) if k != "blitz"]
+
+
 def label(k: str, c: dict) -> str:
     import re
     size = re.search(r"(\d+K)", str(c.get("plan") or ""))
@@ -419,6 +424,43 @@ def month_pnl(snap: dict, k: str, now) -> float | None:
         return None
 
 
+def extra_lines(snap: dict, now) -> tuple:
+    """day-zeroerr (lead 2026-11-26): the extra accounts (Zlarior 25K #2, the Rapid EOD lanes ...) from the heartbeat's acct.accounts
+    rows: ([line], total today). $ today, week (Mon..today of its eval days), month, trades today, $ to pass. Never raises."""
+    out, tot = [], 0.0
+    try:
+        e = dt.datetime.fromtimestamp(int(now), ET)
+        today = trading_day(now)
+        mon = (e.date() - dt.timedelta(days=e.weekday())).isoformat()
+        mo = e.strftime("%Y-%m")
+        for a in _d(_d(snap.get("hb")).get("acct")).get("accounts") or []:
+            if not isinstance(a, dict) or a.get("error") or a.get("id") is None:
+                continue
+            if str(_d(a.get("account")).get("adapter") or "") == "paper":
+                continue
+            days = {str(k): _f(v) or 0.0 for k, v in _d(_d(a.get("eval")).get("days")).items()}
+            t = _f(a.get("day_pnl"))
+            if t is None:
+                t = days.get(today, 0.0)
+            tot += t or 0.0
+            wk = round(sum(v for d, v in days.items() if mon <= d <= today), 2)
+            mth = round(sum(v for d, v in days.items() if d.startswith(mo)), 2)
+            n = sum(1 for x in a.get("trades") or [] if isinstance(x, dict) and str(x.get("day")) == today)
+            R = _d(a.get("plan_rules"))
+            prof = sum(days.values())
+            tgt, start = _f(R.get("target")), _f(R.get("start"))
+            to_pass = None
+            if tgt is not None and a.get("kind") != "funded":
+                to_pass = (tgt - ((start or 0.0) + prof)) if (start and tgt > start / 2) else (tgt - prof)
+            live = str(_d(a.get("account")).get("kind") or "") == "live"
+            out.append(f"{extra_name(a)}: {signed(t)} today, {signed(wk)} week, {signed(mth)} month, {n} trade{'s' if n != 1 else ''}"
+                       + (f", {money(to_pass)} to pass" if to_pass is not None and to_pass > 0 else ", target reached" if to_pass is not None else "")
+                       + ("" if live else " (Sim / paper)"))
+    except Exception:
+        pass
+    return out, tot
+
+
 def near_setups(snap: dict, n: int = 3) -> str:
     """day-cards: today's LIT setups that got close and why they did not fire (the Brain's own words: rejected / no fill /
     blocked), ' Close but no trade: ...' or ''. Never raises."""
@@ -480,7 +522,7 @@ def day_summary(snap: dict, now: int, sent: dict | None = None) -> list:
         news = " " + notify.news_line(now) if notify else ""
     except Exception:
         news = ""
-    cs = cards(snap)
+    cs = owner_cards(snap)
     age = snap.get("hb_age")
     if not cs:
         why = "the bot has not reported" if age is None else f"no account numbers in the last report ({int(age) // 60} min ago)"
@@ -501,6 +543,9 @@ def day_summary(snap: dict, now: int, sent: dict | None = None) -> list:
                      + (f", {money(tt)} to pass" if tt is not None and tt > 0 else ", target reached" if tt is not None else "")
                      + (f", room {money(room)} of {money(c.get('mll'))}" if room is not None else "")
                      + ("" if real(k, c, snap) else " (Sim / paper)"))
+    xl, xt = extra_lines(snap, now)           # day-zeroerr: the extra accounts (25K #2, Rapid EOD ...) as lines too
+    lines += xl
+    tot += xt
     stale = age is None or age > HB_FRESH_S
     head = f"Day {e:%a %b %d}: {signed(tot)}" + (" (last report old)" if stale else "")
     body = ("; ".join(lines) + "." + (f" These are the numbers of the last report, {int(age) // 60} min ago." if stale and age is not None else "")
@@ -532,7 +577,7 @@ def weekly_report(snap: dict, now: int, sent: dict | None = None, reviews_path: 
         recs = LL._jl_read(reviews_path or LL._p(None, "reviews.jsonl"))
         W = LL.weekly_summary([r for r in recs if isinstance(r, dict) and r.get("day") and r.get("bot")], mon.isoformat())
         parts = []
-        cs = cards(snap)
+        cs = owner_cards(snap)
         money_rows = [f"{label(k, c)} {signed(_f(c.get('week_pnl')))}" for k, c in cs if _f(c.get("week_pnl")) is not None]
         tot = sum(_f(c.get("week_pnl")) or 0.0 for k, c in cs)
         if money_rows:

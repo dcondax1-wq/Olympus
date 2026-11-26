@@ -29,7 +29,7 @@ def real_fills():
     extra = 0
     for p in glob.glob(os.path.join(ROOT, "data", "pc_days", "*", "fills.jsonl.gz")):
         for r in (json.loads(x) for x in gzip.open(p, "rt")):
-            if r.get("book") in ("atlas", "acctb") and r.get("fill_px") is not None:
+            if r.get("book") in ("atlas", "acctb") and r.get("fill_px") is not None and r.get("leg", "entry") == "entry":   # red team #25: the file has exit rows now
                 extra += 1
     return rows, extra
 

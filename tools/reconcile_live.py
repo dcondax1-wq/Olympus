@@ -124,7 +124,8 @@ MANUAL = re.compile(r"\b(closed|flatten|flattened|moved (the|my) stop|by hand|ma
 
 def trades_of_day(folder):
     rows = _jl(os.path.join(folder, "trades.jsonl.gz"))
-    fills = {int(r["entry_t"]): r for r in _jl(os.path.join(folder, "fills.jsonl.gz")) if r.get("entry_t") is not None}
+    fills = {int(r["entry_t"]): r for r in _jl(os.path.join(folder, "fills.jsonl.gz")) if r.get("entry_t") is not None
+             and r.get("leg", "entry") == "entry" and r.get("lane", "zlarior") in ("zlarior", None)}   # entries of the main account
     tw = _js(os.path.join(folder, "twin.json.gz")) or {}
     twin = {}
     for r in ((tw.get("nightly") or {}).get("rows") or []):
