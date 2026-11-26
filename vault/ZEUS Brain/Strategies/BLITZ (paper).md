@@ -93,6 +93,7 @@ _No trades in the published trade list._
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-26 | [[batch5-2026-11-26\|Batch 5]] | research |
 | 2026-11-23 (night, run 2026-11-24 early ET) | [[four-pillars-2026-11-23\|The four pillars]] | research |
 | 2026-11-22 | [[one-account-book-2026-11-22\|One account, combined book]] | research |
 | 2026-11-19 | [[one-account-combo-2026-11-19\|ONE account, several bots]] | research |
