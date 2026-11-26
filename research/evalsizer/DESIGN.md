@@ -24,7 +24,7 @@ q x loss1 < room (strict), q x loss1 <= soft day + cum, q <= maxq, no trade once
 1-micro trade as today. q = 0 when 1 micro does not fit. After session two_week_until (80) every family keeps its own rule
 (the 60-session eval window never reaches it; the 6-month slot rarely does).
 
-## Variants (pre-registered, 19 per plan, 57 counted)
+## Variants (pre-registered, 18 per plan, 54 counted; count typo "19 / 57" fixed before the scored run, no variant changed)
 | id | family | rule (B = $ risk budget) |
 |---|---|---|
 | T0 | today | engine/sizing two_week, room_f 0.4 (the real call, untouched) |
@@ -57,4 +57,4 @@ p10 net, payouts / month, evals bought. Also the DP policy table (fraction of ro
 3. Card (needs-owner-yes) only if the pick beats T0 on 6-month slot net $ in ALL of H2, REF and Y25 AND its 60-session
    pass % is >= T0's - 2 points in every market (must not blow up in a bad market). Otherwise: today stays, REJECTED line.
 4. Secondary (reported, not a pick): the "robust" variant = the max over variants of min over the 4 markets of
-   (net $ - T0 net $), and the per-market best. 57 variants: a win in one market of one variant is noise.
+   (net $ - T0 net $), and the per-market best. 54 variants: a win in one market of one variant is noise.
