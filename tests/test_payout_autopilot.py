@@ -134,12 +134,12 @@ def part_d():
     check("d. Rapid 25K: $27,300 -> $700 (keeps $26,600), 90% = $630", adv["ready"] and adv["request"] == 700 and adv["to_you"] == 630, adv)
     adv = R.payout_advice(27300.0, 25000.0, ("2026-11-20",), "2026-11-24", 1100.0, 500.0, 250.0, 120.0)
     check("d. Rapid 25K: only $120 net since the last payout: not ready ($130 short)", not adv["ready"] and adv["since_short"] == 130, adv)
-    # night-payday: the first request waits 24 h after the first funded trade (third-party wording: needs MFFU confirm)
+    # night-payday: the first request waits 24 h after the first funded trade (MFFU's Payout Policy Overview, confirmed 2026-11-26)
     adv = R.payout_advice(27300.0, 25000.0, (), "2026-11-24", 1100.0, 500.0, first_trade="2026-11-24")
     adv2 = R.payout_advice(27300.0, 25000.0, (), "2026-11-25", 1100.0, 500.0, first_trade="2026-11-24")
     adv3 = R.payout_advice(27300.0, 25000.0, ("2026-11-25",), "2026-11-26", 1100.0, 500.0, 250.0, 600.0, first_trade="2026-11-26")
-    check("d. Rapid first payout: not on the first funded trading day ('needs MFFU confirm'), ready the next day; a later payout never waits",
-          not adv["ready"] and "needs MFFU confirm" in adv.get("wait", "") and adv2["ready"] and adv2["request"] == 700 and adv3["ready"],
+    check("d. Rapid first payout: not on the first funded trading day ('MFFU payout policy'), ready the next day; a later payout never waits",
+          not adv["ready"] and "MFFU payout policy" in adv.get("wait", "") and adv2["ready"] and adv2["request"] == 700 and adv3["ready"],
           (adv, adv2, adv3))
     v = PA.rapid(rap(), "rapid")
     a = PA.alerts([v], AFTER)

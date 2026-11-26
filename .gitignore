@@ -361,3 +361,6 @@ data/lanes/
 # day-handsfree 2026-11-25: Telegram command state (engine/tg_cmd.py: getUpdates offset, last poll) + its .tmp copies
 data/tg_cmd.json
 data/tg_cmd.json.*.tmp
+# day-batch7 2026-11-26: the PC's nightly trade journal (tools/journal_build.py maybe_run)
+data/journal/
+data/journal_build.json

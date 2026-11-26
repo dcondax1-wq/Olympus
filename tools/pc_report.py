@@ -2547,6 +2547,11 @@ def after_run(quiet: bool = True) -> None:
         _rw.maybe_run()
     except Exception:
         pass
+    try:                           # the auto trade journal (tools/journal_build.py): weekdays from 17:20 ET, once a day, into data/journal/ (gitignored)
+        from tools import journal_build as _jb
+        _jb.maybe_run()
+    except Exception:
+        pass
     # the Sunday money report (tools/weekly_money_report.py): once a week, Sunday from 17:00 ET, on your private topic; soft, never stops this run
     try:
         from tools import weekly_money_report as _wmr

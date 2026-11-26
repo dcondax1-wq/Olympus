@@ -95,6 +95,16 @@ def tracker_checks():
     check("25K +$2,300: ready, request $1,000 ($800 to you), one 'PAYOUT READY: request $1,000' push",
           t["status"] == "ready" and t["max_request"] == 1000 and t["to_you"] == 800 and len(n) == 1
           and n[0]["title"] == "PAYOUT READY: request $1,000" and "WAIT" not in n[0]["body"], (t, n))
+    # MFFU (Builder guides, re-check 2026-11-26): payouts 2-5 need $250 (25K) / $500 (50K) MADE since the last payout
+    big = {"2026-11-03": 700.0, "2026-11-04": 650.0, "2026-11-05": 600.0, "2026-11-06": 650.0, "2026-11-09": 400.0}   # +3,000
+    small = {"2026-11-11": 60.0, "2026-11-12": 50.0, "2026-11-13": 50.0}                                              # +160 since
+    ts = FL.track({**big, **small}, {"2026-11-10": 1000.0}, "builder25k", today="2026-11-13")
+    more = {"2026-11-11": 100.0, "2026-11-12": 90.0, "2026-11-13": 80.0}                                               # +270 since
+    tm = FL.track({**big, **more}, {"2026-11-10": 1000.0}, "builder25k", today="2026-11-13")
+    check("25K payout #2: $1,060 above the buffer but only $160 made since payout #1 -> NOT ready (MFFU needs $250 since); "
+          "$270 since -> ready",
+          ts["status"] != "ready" and not ts["eligible"] and any("since the last payout" in w for w in ts["why"])
+          and tm["status"] == "ready", (ts["status"], ts["why"], tm["status"], tm["why"]))
     t = FL.track({**d, "2026-11-09": 300.0}, {f"2026-10-0{i}": 0.01 for i in range(1, 5)}, "builder25k", today="2026-11-09")
     n = FL.notices(t, 1)
     check("payout #5 never offered (fleet plan 2026-11-22): 4 taken -> status 'stop', no PAYOUT READY push, the text says close it "
