@@ -61,6 +61,10 @@ _No trades in the published trade list._
 
 ## Tested and rejected
 
+> [!failure]- BLITZ v2 rebuild
+> 8 structural versions (noise-area band/VWAP exit, no time exit, cost gate stop >= 0.25% of price, opening-drive checks, limit at the band, first break only, 2 combos) vs today $912 / $688 / $89 a month (H1 / Jul-Nov / 2021-25). Best = V1 noise-area exit: 2021-25 PF 1.34, $352/mo, every year +, walk-forward 14/19, but 2026 $671 / $231 and on the shared 50K with LIT + ATLAS the 2026 pass falls 95 -> 87 / 88 -> 82. BLITZ today on the shared 50K: Jul-Nov pass 88.2 -> 82.5. Correlation ~0 does not help. 25K at $400: fail 43-76%; Rapid pass 0-28%. Verdict: retire BLITZ as a pillar; V1 is the only base worth reviving.
+> Write-ups: [[blitz-v2-2026-11-26|BLITZ v2]]
+
 > [!failure]- Market Learn weekly trial #1
 > BLITZ half size when the prior-day level sits 4R+ ahead (picked on even ISO weeks, find z -1.46): hold-out odd weeks -$633 (p 0.51), 2021-25 net -$1,112, PF 1.06 -> 1.05. Rejected; trials.json keeps it so it is never re-tried. Seed (4,184 backtest trades, 3 pillars): strong lessons LIT 0 / ATLAS 1 / BLITZ 2 vs 0.5 / 0.5 / 1.3 by chance (p 1.0 / 0.34 / 0.31) - no context bucket beats chance.
 
@@ -93,6 +97,7 @@ _No trades in the published trade list._
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-26 | [[blitz-v2-2026-11-26\|BLITZ v2]] | research |
 | 2026-11-26 | [[batch5-2026-11-26\|Batch 5]] | research |
 | 2026-11-23 (night, run 2026-11-24 early ET) | [[four-pillars-2026-11-23\|The four pillars]] | research |
 | 2026-11-22 | [[one-account-book-2026-11-22\|One account, combined book]] | research |
