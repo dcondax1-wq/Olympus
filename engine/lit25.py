@@ -8,7 +8,7 @@ vs 5.0% / 5.5% and 2021-25 is a little worse ($35 vs $48 a month): the owner's c
 ON / OFF: data/lit25.json (local, gitignored, never the phrase): {"on": true}. Missing / anything else = OFF = the bot is
 exactly today's. It acts only while ATLAS's account_b block is in its FUNDED stage (engine/account_b --to-funded, or the
 Start page "Passed -> funded"); in the eval stage nothing changes.
-    python -X utf8 -m engine.lit25 --on | --off | --status
+    python -X utf8 -m engine.lit25 --on | --off | --status      (--on asks for I ACCEPT LIVE RISK + a passing NT self-test)
     python -X utf8 -m engine.lit25 --funded "<funded Name>" --start yyyy-mm-dd   (= Start page "Passed -> funded" for ATLAS)
 Arming: nothing here arms. LIT's lane on the 25K is armed exactly when ATLAS's 25K is (engine/go.step_arm -> arm_b, only
 after the owner typed I ACCEPT LIVE RISK), with the phrase typed at that start; a real account also needs NINJATRADER_LIVE=1
@@ -292,6 +292,25 @@ def to_funded(funded_name: str, start: str) -> dict:
     return go.to_funded(cur, funded_name, start)
 
 
+def set_on(phrase: str, p: str | None = None, selftest=None) -> dict:
+    """The owner's switch ON (day-alloc 2026-11-26, research/writeups/alloc-2026-11-26.md card 2): refused without the typed live
+    phrase or with a failing NinjaTrader self-test; the file never holds the phrase. OFF never needs it (save(False))."""
+    from .go import LIVE_PHRASE, typed_phrase
+    if typed_phrase(phrase) != LIVE_PHRASE:
+        return {"ok": False, "error": "the live phrase was not typed: nothing switched on"}
+    try:
+        if selftest is None:
+            from .second import _selftest_ok as selftest
+        ok, line = selftest()
+    except Exception as e:  # noqa: BLE001
+        ok, line = False, f"{e.__class__.__name__}"
+    if not ok:
+        return {"ok": False, "error": f"engine.ninjatrader --selftest failed ({line}): nothing switched on"}
+    fp = save(True, p)
+    return {"ok": True, "path": fp, "say": "LIT on ATLAS's funded 25K: ON (takes effect at the next START BOT, after hours; arming follows "
+                                            "ATLAS's 25K, nothing is armed here)"}
+
+
 def main(argv=None) -> int:
     import argparse
     ap = argparse.ArgumentParser(prog="python -m engine.lit25", description="LIT also trades ATLAS's funded Builder 25K (OFF by default)")
@@ -308,10 +327,18 @@ def main(argv=None) -> int:
         r = to_funded(a.funded, a.start)
         print(r.get("say") if r.get("ok") else f"NOT switched: {r.get('error')}")
         return 0 if r.get("ok") else 1
-    if a.on or a.off:
-        save(bool(a.on))
-        print("LIT on the funded 25K: " + ("ON (takes effect at the next START BOT; nothing is armed)" if a.on
-                                           else "OFF (after the next START BOT: ATLAS alone, as before)"))
+    if a.on:
+        print(" Zlarior (LIT) will ALSO trade ATLAS's FUNDED 25K, next to ATLAS (one position at a time, LIT first).")
+        try:
+            phrase = input(" Type  I ACCEPT LIVE RISK  then Enter (anything else stops here, nothing switched on): ")
+        except EOFError:
+            phrase = ""
+        r = set_on(phrase)
+        print(" " + (r["say"] if r.get("ok") else "NOT switched on: " + str(r.get("error"))))
+        return 0 if r.get("ok") else 1
+    if a.off:
+        save(False)
+        print("LIT on the funded 25K: OFF (after the next START BOT: ATLAS alone, as before)")
         return 0
     print(status()["text"])
     return 0
