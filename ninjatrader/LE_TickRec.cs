@@ -69,7 +69,7 @@ namespace NinjaTrader.NinjaScript.AddOns
     {
         // day-handsfree 2026-11-25: the build id in the status line (",v=") lets the PC see whether NinjaTrader compiled THIS file
         // (engine/ns_sync.py). `python -m engine.ns_sync --stamp` writes it after every edit; tests.test_handsfree checks it.
-        public const string LE_BUILD = "b4b6e8afaa";
+        public const string LE_BUILD = "167b434137";
         private static readonly object RunLock = new object();
         private static LE_TickRec running;
         private static readonly long EpochTicks = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks;
@@ -421,7 +421,7 @@ namespace NinjaTrader.NinjaScript.AddOns
             return !(m >= 100 && m < 120);
         }
 
-        // NinjaTrader name of the front quarterly contract on an ET date ("NQ 12-26"); rolls 8 days before the 3rd Friday
+        // NinjaTrader name of the front quarterly contract on an ET date ("NQ 12-26"); rolls ON the day 8 days before the 3rd Friday (= engine/ninjatrader.nt_instrument)
         // (the same rule as engine/tickrec.front_names)
         public static string FrontName(string root, DateTime d)
         {
@@ -432,7 +432,7 @@ namespace NinjaTrader.NinjaScript.AddOns
                 {
                     DateTime first = new DateTime(y, m, 1);
                     DateTime fri3 = first.AddDays(((int)DayOfWeek.Friday - (int)first.DayOfWeek + 7) % 7 + 14);
-                    if (d.Date <= fri3.AddDays(-8))
+                    if (d.Date < fri3.AddDays(-8))       // day-ops2: ON the bot's roll day (was one day late)
                         break;
                 }
                 if (m == 12) { m = 1; y++; } else m++;

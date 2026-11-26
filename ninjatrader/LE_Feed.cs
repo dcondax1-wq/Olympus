@@ -26,6 +26,12 @@
 // writes nothing (bars, 1m open, instrument, accounts), so the owner may keep the old chart open. LE_BarFeed finds the hub
 // by reflection, so LE_BarFeed.cs still compiles and behaves exactly as before when this file is not installed.
 //
+// SHADOW MODE (day-ops2 2026-11-26, the hands-free December roll): le_feed\le_feed_mode.txt = "shadow" -> every bar file,
+// the instrument file and the status line go to le_feed\shadow\ instead, the hub covers NO root and accounts.csv is not
+// written: the LE_BarFeed chart stays the bot's only bar source while the PC compares both (engine/roll_auto.py). "live" (or no
+// file: the old behaviour) = this add-on writes le_feed\ itself and the chart defers to it. Re-read every 15 s; a change
+// re-requests every series into the new folder.
+//
 // READ-ONLY: it never places, changes or cancels an order. Every NinjaTrader call sits in try/catch: a failure is written
 // to le_feed_log.txt and can never take NinjaTrader down. C# 5 syntax only (no $"..." strings, no ?., no => members).
 //
@@ -78,6 +84,22 @@ namespace NinjaTrader.NinjaScript.AddOns
     {
         public static volatile bool HeadlessOn;       // the LE_Feed add-on is running
         public static volatile bool AccountsOn;       // ... and writes accounts.csv
+        // red team 2026-11-26: a heartbeat from the add-on's own timer. A chart defers ONLY while it is fresh: an add-on that is
+        // loaded but stalled (its timer stuck, so it never reads le_feed_mode.txt again) can no longer silence the chart, which
+        // then writes the bars again by itself within BeatMaxSeconds, without waiting for the PC's hourly fallback.
+        public const int BeatMaxSeconds = 180;
+        private static long beatTicks;
+
+        public static void Beat()
+        {
+            System.Threading.Interlocked.Exchange(ref beatTicks, DateTime.UtcNow.Ticks);
+        }
+
+        public static bool Fresh()
+        {
+            long t = System.Threading.Interlocked.Read(ref beatTicks);
+            return t > 0 && (DateTime.UtcNow.Ticks - t) < BeatMaxSeconds * TimeSpan.TicksPerSecond;
+        }
         private static readonly object Sync = new object();
         private static readonly HashSet<string> roots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -100,7 +122,7 @@ namespace NinjaTrader.NinjaScript.AddOns
 
         public static bool Covers(string root)
         {
-            if (!HeadlessOn || string.IsNullOrEmpty(root))
+            if (!HeadlessOn || !Fresh() || string.IsNullOrEmpty(root))
                 return false;
             lock (Sync)
                 return roots.Contains(root);
@@ -108,12 +130,14 @@ namespace NinjaTrader.NinjaScript.AddOns
 
         public static bool WritesAccounts()
         {
-            return HeadlessOn && AccountsOn;
+            return HeadlessOn && AccountsOn && Fresh();
         }
     }
 
     public class LE_Feed : AddOnBase
     {
+        // day-ops2: the build id in the status line (",v="): `python -m engine.ns_sync --stamp` after every edit
+        public const string LE_BUILD = "40d47424c8";
         private const string Header = "time,open,high,low,close,volume";
         private const string DefaultInstrument = "MNQ 12-26";
         private const string TradingHoursName = "CME US Index Futures ETH";   // the chart's trading hours (SETUP.md step 4)
@@ -181,6 +205,9 @@ namespace NinjaTrader.NinjaScript.AddOns
         }
 
         private string folder;
+        private string barFolder;                          // folder ("live") or folder\shadow ("shadow")
+        private string modePath;
+        private volatile bool shadow;
         private string listPath;
         private string statusPath;
         private string logPath;
@@ -297,7 +324,9 @@ namespace NinjaTrader.NinjaScript.AddOns
                 return;
             }
             listPath = Path.Combine(folder, "feed_instruments.txt");
-            statusPath = Path.Combine(folder, "le_feed_status.txt");
+            modePath = Path.Combine(folder, "le_feed_mode.txt");
+            ReadMode(false);
+            statusPath = Path.Combine(barFolder, "le_feed_status.txt");
             logPath = Path.Combine(folder, "le_feed_log.txt");
             accountsPath = Path.Combine(folder, "accounts.csv");
             ownerPath = Path.Combine(folder, "le_feed_owner.txt");
@@ -311,8 +340,9 @@ namespace NinjaTrader.NinjaScript.AddOns
             {
                 eastern = null;                            // then every minute counts as "market open" for the self-heal
             }
-            LE_FeedHub.HeadlessOn = true;
-            LE_FeedHub.AccountsOn = true;
+            LE_FeedHub.Beat();
+            LE_FeedHub.HeadlessOn = !shadow;
+            LE_FeedHub.AccountsOn = !shadow;
             try
             {
                 NinjaTrader.Cbi.Connection.ConnectionStatusUpdate += OnConnectionStatus;
@@ -440,12 +470,15 @@ namespace NinjaTrader.NinjaScript.AddOns
             try
             {
                 DateTime now = DateTime.UtcNow;
+                LE_FeedHub.Beat();                         // red team 2026-11-26: proof of life for the hub (see LE_FeedHub.Fresh)
                 if (Superseded())
                 {
                     Say("LE_Feed: a newer LE_Feed took over (NinjaScript recompiled): this older copy stops");
                     Stop();
                     return;
                 }
+                if (ReadMode(true))
+                    listText = null;                       // the mode changed: every series again, into the new folder
                 if ((now - lastListRead).TotalSeconds >= ListEverySeconds || listText == null)
                 {
                     lastListRead = now;
@@ -495,7 +528,7 @@ namespace NinjaTrader.NinjaScript.AddOns
                     lastStatus = now;
                     WriteStatus(now, connected);
                 }
-                if ((now - lastAcctWrite).TotalSeconds >= 60 || (acctDue && (now - lastAcctWrite).TotalSeconds >= 5))
+                if (!shadow && ((now - lastAcctWrite).TotalSeconds >= 60 || (acctDue && (now - lastAcctWrite).TotalSeconds >= 5)))
                 {
                     acctDue = false;
                     lastAcctWrite = now;
@@ -584,6 +617,44 @@ namespace NinjaTrader.NinjaScript.AddOns
         }
 
         // ------------------------------------------------------------------ the instrument list
+        // le_feed_mode.txt: "shadow" or "live" (missing / anything else = live). Returns true when the mode changed (only with
+        // apply: the hub, the status path and the bar folder follow it).
+        private bool ReadMode(bool apply)
+        {
+            bool sh = false;
+            try
+            {
+                if (File.Exists(modePath))
+                    sh = File.ReadAllText(modePath).Trim().ToLowerInvariant() == "shadow";
+            }
+            catch (Exception)
+            {
+                sh = shadow;                               // unreadable a moment (the PC writing it): keep the current mode
+            }
+            bool changed = apply && sh != shadow;
+            if (apply && !changed)
+                return false;
+            shadow = sh;
+            barFolder = sh ? Path.Combine(folder, "shadow") : folder;
+            try
+            {
+                Directory.CreateDirectory(barFolder);
+            }
+            catch (Exception)
+            {
+            }
+            if (apply)
+            {
+                statusPath = Path.Combine(barFolder, "le_feed_status.txt");
+                if (sh)
+                    LE_FeedHub.Clear();
+                LE_FeedHub.HeadlessOn = !sh;
+                LE_FeedHub.AccountsOn = !sh;
+                LogLine("mode: " + (sh ? "shadow (bars to le_feed\\shadow, the chart stays the source)" : "live (this add-on writes le_feed)"));
+            }
+            return changed;
+        }
+
         private void ReadInstruments()
         {
             string text = "";
@@ -614,6 +685,15 @@ namespace NinjaTrader.NinjaScript.AddOns
             string key = string.Join("\n", names.ToArray());
             if (key == listText)
                 return;
+            if (listText == null && insts.Count > 0 && !string.Equals(insts[0].S1.FilePath, Path.Combine(barFolder, insts[0].Root + "_1m.csv"),
+                                                                     StringComparison.OrdinalIgnoreCase))
+            {
+                for (int k = insts.Count - 1; k >= 0; k--)  // the mode changed: every series again, into the new folder
+                {
+                    Unsubscribe(insts[k]);
+                    insts.RemoveAt(k);
+                }
+            }
             listText = key;
             LogLine("instruments: " + string.Join(", ", names.ToArray()));
             // drop the ones no longer listed (or replaced by another contract of the same root: the roll)
@@ -660,11 +740,11 @@ namespace NinjaTrader.NinjaScript.AddOns
                 }
                 FeedInst it = new FeedInst { Feed = this, Name = n, Root = root, Instrument = ins };
                 it.S5 = new FeedSeries { Feed = this, Owner = it, Minutes = 5, Days = Days5m, MaxBars = MaxBars5m };
-                it.S5.FilePath = Path.Combine(folder, root + "_5m.csv");
+                it.S5.FilePath = Path.Combine(barFolder, root + "_5m.csv");
                 it.S1 = new FeedSeries { Feed = this, Owner = it, Minutes = 1, Days = Days1m, MaxBars = MaxBars1m };
-                it.S1.FilePath = Path.Combine(folder, root + "_1m.csv");
-                it.OpenPath = Path.Combine(folder, root + "_1m_open.csv");
-                it.InstPath = Path.Combine(folder, root + "_instrument.txt");
+                it.S1.FilePath = Path.Combine(barFolder, root + "_1m.csv");
+                it.OpenPath = Path.Combine(barFolder, root + "_1m_open.csv");
+                it.InstPath = Path.Combine(barFolder, root + "_instrument.txt");
                 insts.Add(it);
             }
         }
@@ -865,7 +945,8 @@ namespace NinjaTrader.NinjaScript.AddOns
                         s.Ready = true;
                         if (s.Minutes == 1)
                             s.Owner.LastNew1mUtc = DateTime.UtcNow;
-                        LE_FeedHub.Cover(s.Owner.Root);
+                        if (!shadow)
+                            LE_FeedHub.Cover(s.Owner.Root);
                     }
                     else
                         s.Failed = true;
@@ -1093,7 +1174,8 @@ namespace NinjaTrader.NinjaScript.AddOns
                 string line = ((now.Ticks - EpochTicks) / TimeSpan.TicksPerSecond).ToString(c) + ",source=addon,instruments="
                             + string.Join(";", names.ToArray()) + ",last_1m=" + (last1 == long.MinValue ? "" : last1.ToString(c))
                             + ",resubs=" + resubs.ToString(c) + ",connected=" + (connected ? "1" : "0")
-                            + ",started=" + ((startedUtc.Ticks - EpochTicks) / TimeSpan.TicksPerSecond).ToString(c) + "\n";
+                            + ",started=" + ((startedUtc.Ticks - EpochTicks) / TimeSpan.TicksPerSecond).ToString(c)
+                            + ",mode=" + (shadow ? "shadow" : "live") + ",v=" + LE_BUILD + "\n";
                 lock (FileLock)
                     SwapSmall(statusPath, line);
             }

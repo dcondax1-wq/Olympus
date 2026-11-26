@@ -36,7 +36,14 @@ from zoneinfo import ZoneInfo
 
 ET = ZoneInfo("America/New_York")
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FILES = ("LE_TickRec.cs",)                       # the add-ons this sync keeps current (LE_BarFeed is a chart indicator: by hand)
+# the NinjaScript files this sync keeps current: {name: (folder under bin\Custom, the status files that carry ",v=<LE_BUILD>")}.
+# day-ops2: + LE_Feed.cs (the no-chart bar add-on: its status is in le_feed\ or le_feed\shadow\) and LE_BarFeed.cs (the chart
+# indicator; no status line of its own: copied when it differs, never proved). A file is only UPDATED when it is installed;
+# install() puts a missing one in (engine/roll_auto.py does that for LE_Feed + LE_BarFeed before a roll, in shadow mode first).
+SPEC = {"LE_TickRec.cs": ("AddOns", (os.path.join("le_ticks", "le_tickrec_status.txt"),)),
+        "LE_Feed.cs": ("AddOns", (os.path.join("le_feed", "le_feed_status.txt"), os.path.join("le_feed", "shadow", "le_feed_status.txt"))),
+        "LE_BarFeed.cs": ("Indicators", ())}
+FILES = tuple(SPEC)
 BUILD_RX = re.compile(r'(public\s+const\s+string\s+LE_BUILD\s*=\s*")([0-9a-f]*)(")')
 STATUS_REL = os.path.join("le_ticks", "le_tickrec_status.txt")
 FRESH_S = 5 * 60                                 # the add-on writes its status line every 15 s
@@ -75,13 +82,23 @@ def _in_trading(now) -> bool:
     return e.weekday() < 5 and 110 <= m < 960
 
 
-def running_build(nt: str, now=None) -> tuple:
-    """(build | "" for a status line without one, fresh?) from the add-on's status line; (None, False) without the file."""
+def running_build(nt: str, now=None, name: str = "LE_TickRec.cs") -> tuple:
+    """(build | "" for a status line without one, fresh?) from the add-on's newest status line; (None, False) without one."""
     now = time.time() if now is None else now
-    p = os.path.join(nt, STATUS_REL)
+    best = None
+    for rel in SPEC.get(name, ("", ()))[1]:
+        p = os.path.join(nt, rel)
+        try:
+            m = os.path.getmtime(p)
+        except OSError:
+            continue
+        if best is None or m > best[0]:
+            best = (m, p)
+    if best is None:
+        return None, False
     try:
-        line = open(p, encoding="utf-8").read().strip()
-        age = now - os.path.getmtime(p)
+        line = open(best[1], encoding="utf-8").read().strip()
+        age = now - best[0]
     except OSError:
         return None, False
     v = ""
@@ -130,9 +147,37 @@ def check(root: str, nt: str | None, now=None, apply: bool = True, flat=None) ->
     return out
 
 
+def dest(nt: str, name: str) -> str:
+    return os.path.join(nt, "bin", "Custom", SPEC.get(name, ("AddOns",))[0], name)
+
+
+def install(root: str, nt: str, name: str, now=None, flat=None) -> dict:
+    """Put a NOT installed NinjaScript file in (same rules as an update: never 01:50-16:00 ET on a weekday, only flat).
+    {"ok", "why"}. An installed file is left to check()."""
+    now = time.time() if now is None else float(now)
+    src, dst = os.path.join(root, "ninjatrader", name), dest(nt, name)
+    if os.path.exists(dst):
+        return {"ok": True, "why": "already installed"}
+    if not os.path.isfile(src):
+        return {"ok": False, "why": f"{name} not in the bot folder"}
+    if _in_trading(now):
+        return {"ok": False, "why": "trading hours"}
+    why = flat() if callable(flat) else None
+    if why:
+        return {"ok": False, "why": why}
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
+    shutil.copyfile(src, dst + ".le_new")
+    from .fsutil import replace as _replace
+    _replace(dst + ".le_new", dst)
+    st = _state(root)
+    st.setdefault(name, {}).update(copied=int(now), build=build_id(_read(src) or ""), installed=int(now))
+    _save(root, st)
+    return {"ok": True, "why": "installed"}
+
+
 def _one(root, nt, name, now, apply, flat, st) -> dict:
     src = os.path.join(root, "ninjatrader", name)
-    dst = os.path.join(nt, "bin", "Custom", "AddOns", name)
+    dst = dest(nt, name)
     repo = _read(src)
     if repo is None:
         return {"file": name, "status": "skip", "text": f"{name} not in the bot folder"}
@@ -148,14 +193,20 @@ def _one(root, nt, name, now, apply, flat, st) -> dict:
         if why:
             return {"file": name, "status": "wait", "text": f"new {name} waits: {why}"}
         if not apply:
-            return {"file": name, "status": "would", "text": f"would copy the new {name} ({want}) into NinjaTrader's AddOns"}
+            return {"file": name, "status": "would", "text": f"would copy the new {name} ({want}) into NinjaTrader's {SPEC[name][0]}"}
+        if name == "LE_Feed.cs":                       # day-ops2: a new LE_Feed never takes over the bars unverified
+            from . import roll_auto
+            if roll_auto.read_mode(nt) is None and not roll_auto.live_fresh(nt, now):
+                roll_auto.write_mode(nt, "shadow")
         tmp = dst + ".le_new"
         shutil.copyfile(src, tmp)
         from .fsutil import replace as _replace
         _replace(tmp, dst)
         rec.update(copied=int(now), build=want)
         return {"file": name, "status": "copied", "text": f"copied the new {name} ({want}) into NinjaTrader (it compiles by itself)"}
-    run, fresh = running_build(nt, now)
+    if not SPEC.get(name, ("", ()))[1]:
+        return {"file": name, "status": "ok", "text": f"{name} {want} installed (no status line to prove the compile)"}
+    run, fresh = running_build(nt, now, name)
     if run is None or not fresh:
         return {"file": name, "status": "info", "text": f"{name} {want} installed; NinjaTrader is not running it right now"}
     if run == want:

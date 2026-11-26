@@ -368,3 +368,5 @@ data/pc_identity.json.tmp
 # day-batch7 2026-11-26: the PC's nightly trade journal (tools/journal_build.py maybe_run)
 data/journal/
 data/journal_build.json
+# day-ops2 2026-11-26: the backup settings (engine/pc_backup.py: target dir, code_saved)
+data/pc_backup.json

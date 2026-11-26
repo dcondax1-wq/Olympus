@@ -518,6 +518,8 @@ MORE_TOOLS = (
     ("39", "Email autopilot stop", "tools/bat/EMAIL_STOP.bat"),
     ("40", "Postcards setup", "tools/bat/POSTCARD_SETUP.bat"),
     ("41", "Postcards stop", "tools/bat/POSTCARD_STOP.bat"),
+    ("42", "NinjaTrader folder out of OneDrive", "tools/bat/NT_OFF_ONEDRIVE.bat"),   # day-ops2: the health check's OneDrive WARN
+    ("43", "Restore on a new PC (from the weekly backup)", "tools/bat/RESTORE_NEW_PC.bat"),   # day-ops2: disaster recovery
 )
 
 
