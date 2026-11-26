@@ -71,9 +71,11 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-84 entries from docs/TESTED_AND_REJECTED.md, newest first.
+86 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
+- **News-day playbook** · [[news-playbook-2026-11-26|News-day playbook]]
 - **BLITZ v2 rebuild** · [[BLITZ (paper)]], [[50K combo]] · [[blitz-v2-2026-11-26|BLITZ v2]]
+- **Day-type classifier + playbook routing** · [[BLITZ (paper)]] · [[day-type-2026-11-26|Day-type classifier + playbook routing]]
 - **LIT entry refinement on 1m** · [[Zlarior (LIT)]] · [[entry-fine-2026-11-26|LIT entry refinement on 1m bars]]
 - **Idea mill v3, family-first** · [[ideamill-v3-2026-11-25|IDEA MILL v3]]
 - **Idea mill v2, 38,880 grammar ideas** · [[ideamill-2026-11-25|IDEA MILL]]
