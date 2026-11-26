@@ -550,7 +550,10 @@ def _one(ch: str, cfg: dict, ev: dict, title: str, body: str, silent: bool) -> t
         if ch == "telegram":
             if ev.get("photo"):                         # day-cards: the chart; a failed photo falls back to the text message
                 cap = f"{title}\n{body}" + (f"\n{ev['legend']}" if ev.get("legend") else "")
-                r, why = send_telegram_photo(cfg["telegram"], str(ev["photo"]), cap, silent)
+                try:
+                    r, why = send_telegram_photo(cfg["telegram"], str(ev["photo"]), cap, silent)
+                except Exception:  # noqa: BLE001 (any photo trouble: the text message below, never a lost alert)
+                    r = None
                 if r:
                     return r, why
             return send_telegram(cfg["telegram"], title, body, silent)

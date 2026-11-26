@@ -17,6 +17,7 @@ import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CARD_DIR = os.path.join(ROOT, "logs", "cards")
+_DEFAULT_DIR = CARD_DIR
 TYPE = "trade_cards"
 BEFORE_S = 2 * 3600
 KEEP = 60
@@ -192,6 +193,12 @@ def attach(ev: dict, p: dict, what: str, now=None, bot=None) -> dict:
     try:
         if not enabled():
             return ev
+        try:                                # a test's fake alert transport (alert_bus._HTTP) never draws into the repo's logs/
+            from . import alert_bus as _AB
+            if _AB._HTTP is not None and CARD_DIR == _DEFAULT_DIR:
+                return ev
+        except Exception:
+            pass
         c = build(p, what, now=now, bot=bot)
         if not c:
             return ev
