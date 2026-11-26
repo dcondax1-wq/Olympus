@@ -51,6 +51,10 @@ _No period table published for this one yet; see the write-ups._
 > 2026-11-24 BLITZ on the Rapid EOD 25K eval (research/writeups/four-pillars-2026-11-23.md, research/pillars/DESIGN.md pre-registered, 2,000 eval paths, real fills): the BUILT $300 lane fails the eval 0.5% -> 3.1% Jan-Jun (fails the +1 point bar). REJECTED: V2 no BLITZ from a LIT entry to 30 min after its exit (3.3%; LIT is done before 11:00, removes 2 of 207 trades), V3 half size once the day is at 50% of the best-day cap (3.2%), V4 one BLITZ loser and done (1.3% but lower pass than V5). PICK (paper, owner yes/no): V5 BLITZ at $150: fail 1.2 / 2.5 / 79.8%, pass 83.0 / 91.2 / 13.0%, slot +$45 / +$91 / -$1 a month vs today; noise-sized gain.
 > Write-ups: [[four-pillars-2026-11-23|The four pillars]]
 
+> [!failure]- 2026-11-26 Eval sizing POLICY
+> 2026-11-26 Eval sizing POLICY (big-evalsizer, research/evalsizer/, design pre-registered first): 18 state-dependent LIT eval sizers x Builder 50K / 25K / Rapid EOD 25K (room cap 25-60%, fixed 10-30% of room, quarter / half Kelly, bold near the target, protect near the floor, bold+protect, two DP-optimal policies on the 2026 H1 and the all-history LIT R pools), real engine, every MFFU rule, 1,000 paths, 4 markets. Pick on H1 = today (two_week room_f 0.4) on both Builders; Rapid pick R60 fails 2021-25. NO variant beats today in all 4 markets on any plan. One trade-off line: a bigger room cap = more $ in 2026 markets (R50 50K +$116/+$199, 25K +$130/+$180 a slot / 6 mo, fails +3-7 pts), less ...
+> Write-ups: [[evalsizer-2026-11-26|Optimal eval sizing policy]]
+
 
 ## Write-ups
 

@@ -1,0 +1,180 @@
+
+mffu_builder_50k D1: 38 LIT trades left; rows = profit now, cols = room to the floor; cell = % of room risked
+profit\room    300    600   1000   1500   2000   3000
+      -1500    17%      -      -      -      -      -
+       -750    17%    17%    15%      -      -      -
+          0    17%    17%    15%    13%    15%      -
+        750      -      -    10%    13%    15%      -
+       1500      -      -      -    10%    10%      -
+       2250      -      -      -      -      -     3%
+       2700      -      -      -      -      -     2%
+
+mffu_builder_50k D1: 10 LIT trades left; rows = profit now, cols = room to the floor; cell = % of room risked
+profit\room    300    600   1000   1500   2000   3000
+      -1500    50%      -      -      -      -      -
+       -750    50%    33%    50%      -      -      -
+          0    33%    33%    50%    37%    28%      -
+        750      -      -    40%    27%    20%      -
+       1500      -      -      -    20%    15%      -
+       2250      -      -      -      -      -    10%
+       2700      -      -      -      -      -     5%
+
+mffu_builder_50k D1: 3 LIT trades left; rows = profit now, cols = room to the floor; cell = % of room risked
+profit\room    300    600   1000   1500   2000   3000
+      -1500    83%      -      -      -      -      -
+       -750    83%    83%    70%      -      -      -
+          0    83%    92%    70%    47%    45%      -
+        750      -      -    50%    60%    45%      -
+       1500      -      -      -    40%    38%      -
+       2250      -      -      -      -      -    18%
+       2700      -      -      -      -      -     8%
+
+mffu_builder_50k D2: 30 LIT trades left; rows = profit now, cols = room to the floor; cell = % of room risked
+profit\room    300    600   1000   1500   2000   3000
+      -1500    33%      -      -      -      -      -
+       -750    17%    25%    20%      -      -      -
+          0    17%    17%    15%    33%    28%      -
+        750      -      -    20%    33%    25%      -
+       1500      -      -      -    13%    15%      -
+       2250      -      -      -      -      -     7%
+       2700      -      -      -      -      -     2%
+
+mffu_builder_50k D2: 10 LIT trades left; rows = profit now, cols = room to the floor; cell = % of room risked
+profit\room    300    600   1000   1500   2000   3000
+      -1500    67%      -      -      -      -      -
+       -750    67%    83%    90%      -      -      -
+          0    67%    83%    70%    47%    45%      -
+        750      -      -    50%    40%    30%      -
+       1500      -      -      -    27%    25%      -
+       2250      -      -      -      -      -    10%
+       2700      -      -      -      -      -     5%
+
+mffu_builder_50k D2: 3 LIT trades left; rows = profit now, cols = room to the floor; cell = % of room risked
+profit\room    300    600   1000   1500   2000   3000
+      -1500    83%      -      -      -      -      -
+       -750    83%    92%    95%      -      -      -
+          0    83%    92%    95%    63%    50%      -
+        750      -      -    90%    43%    50%      -
+       1500      -      -      -    50%    50%      -
+       2250      -      -      -      -      -    33%
+       2700      -      -      -      -      -    17%
+
+mffu_builder_25k D1: 38 LIT trades left; rows = profit now, cols = room to the floor; cell = % of room risked
+profit\room    150    300    500    750   1000   1500
+       -750    17%      -      -      -      -      -
+       -375    17%    17%    15%      -      -      -
+          0    17%    17%    15%    13%    15%      -
+        375      -    17%    10%    13%    15%      -
+        750      -      -      -    10%    10%      -
+       1125      -      -      -      -      -     3%
+       1350      -      -      -      -      -     2%
+
+mffu_builder_25k D1: 10 LIT trades left; rows = profit now, cols = room to the floor; cell = % of room risked
+profit\room    150    300    500    750   1000   1500
+       -750    50%      -      -      -      -      -
+       -375    50%    33%    50%      -      -      -
+          0    33%    33%    50%    37%    28%      -
+        375      -    33%    40%    27%    20%      -
+        750      -      -      -    20%    15%      -
+       1125      -      -      -      -      -    10%
+       1350      -      -      -      -      -     5%
+
+mffu_builder_25k D1: 3 LIT trades left; rows = profit now, cols = room to the floor; cell = % of room risked
+profit\room    150    300    500    750   1000   1500
+       -750    83%      -      -      -      -      -
+       -375    83%    83%    70%      -      -      -
+          0    83%    92%    70%    47%    45%      -
+        375      -    83%    50%    60%    45%      -
+        750      -      -      -    40%    38%      -
+       1125      -      -      -      -      -    18%
+       1350      -      -      -      -      -     8%
+
+mffu_builder_25k D2: 30 LIT trades left; rows = profit now, cols = room to the floor; cell = % of room risked
+profit\room    150    300    500    750   1000   1500
+       -750    33%      -      -      -      -      -
+       -375    17%    25%    20%      -      -      -
+          0    17%    17%    15%    33%    28%      -
+        375      -    17%    15%    33%    25%      -
+        750      -      -      -    17%    15%      -
+       1125      -      -      -      -      -     7%
+       1350      -      -      -      -      -     2%
+
+mffu_builder_25k D2: 10 LIT trades left; rows = profit now, cols = room to the floor; cell = % of room risked
+profit\room    150    300    500    750   1000   1500
+       -750    67%      -      -      -      -      -
+       -375    67%    83%    90%      -      -      -
+          0    67%    83%    70%    47%    45%      -
+        375      -    83%    50%    40%    30%      -
+        750      -      -      -    27%    25%      -
+       1125      -      -      -      -      -    10%
+       1350      -      -      -      -      -     5%
+
+mffu_builder_25k D2: 3 LIT trades left; rows = profit now, cols = room to the floor; cell = % of room risked
+profit\room    150    300    500    750   1000   1500
+       -750    83%      -      -      -      -      -
+       -375    83%    92%    95%      -      -      -
+          0    83%    92%    95%    63%    50%      -
+        375      -    92%    90%    43%    50%      -
+        750      -      -      -    50%    50%      -
+       1125      -      -      -      -      -    33%
+       1350      -      -      -      -      -    17%
+
+mffu_rapid_eod_25k D1: 38 LIT trades left; rows = profit now, cols = room to the floor; cell = % of room risked
+profit\room    150    300    500    750   1000   1500
+       -750    17%      -      -      -      -      -
+       -375    17%    17%    15%      -      -      -
+          0    17%    17%    15%    13%    15%      -
+        375      -    17%    10%    13%    15%      -
+        750      -      -      -    10%    10%      -
+       1125      -      -      -      -      -     3%
+       1350      -      -      -      -      -     2%
+
+mffu_rapid_eod_25k D1: 10 LIT trades left; rows = profit now, cols = room to the floor; cell = % of room risked
+profit\room    150    300    500    750   1000   1500
+       -750    50%      -      -      -      -      -
+       -375    50%    33%    50%      -      -      -
+          0    33%    33%    50%    37%    28%      -
+        375      -    33%    40%    27%    20%      -
+        750      -      -      -    20%    15%      -
+       1125      -      -      -      -      -    10%
+       1350      -      -      -      -      -     5%
+
+mffu_rapid_eod_25k D1: 3 LIT trades left; rows = profit now, cols = room to the floor; cell = % of room risked
+profit\room    150    300    500    750   1000   1500
+       -750    83%      -      -      -      -      -
+       -375    83%    83%    70%      -      -      -
+          0    83%    92%    70%    47%    45%      -
+        375      -    83%    50%    60%    45%      -
+        750      -      -      -    40%    38%      -
+       1125      -      -      -      -      -    18%
+       1350      -      -      -      -      -     8%
+
+mffu_rapid_eod_25k D2: 30 LIT trades left; rows = profit now, cols = room to the floor; cell = % of room risked
+profit\room    150    300    500    750   1000   1500
+       -750    33%      -      -      -      -      -
+       -375    17%    25%    20%      -      -      -
+          0    17%    17%    15%    33%    28%      -
+        375      -    17%    15%    33%    25%      -
+        750      -      -      -    17%    15%      -
+       1125      -      -      -      -      -     7%
+       1350      -      -      -      -      -     2%
+
+mffu_rapid_eod_25k D2: 10 LIT trades left; rows = profit now, cols = room to the floor; cell = % of room risked
+profit\room    150    300    500    750   1000   1500
+       -750    67%      -      -      -      -      -
+       -375    67%    83%    90%      -      -      -
+          0    67%    83%    70%    47%    45%      -
+        375      -    83%    50%    40%    30%      -
+        750      -      -      -    27%    25%      -
+       1125      -      -      -      -      -    10%
+       1350      -      -      -      -      -     5%
+
+mffu_rapid_eod_25k D2: 3 LIT trades left; rows = profit now, cols = room to the floor; cell = % of room risked
+profit\room    150    300    500    750   1000   1500
+       -750    83%      -      -      -      -      -
+       -375    83%    92%    95%      -      -      -
+          0    83%    92%    95%    63%    50%      -
+        375      -    92%    90%    43%    50%      -
+        750      -      -      -    50%    50%      -
+       1125      -      -      -      -      -    33%
+       1350      -      -      -      -      -    17%

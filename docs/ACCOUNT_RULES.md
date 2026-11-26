@@ -3,7 +3,7 @@
 Owner 2026-11-20: "make sure you have all the rules for each account memorized". One page per account, plain words.
 Source of truth: `research/lit/mffu_rules.json` (MFFU's public help center + plan pages, each value with its URL and the
 date checked). `python -X utf8 -m tests.test_account_rules` fails if a number the bot uses drifts from it.
-Last full check: **2026-11-20**. Re-check anything older than 7 days before a buy or a payout.
+Last full check: **2026-11-26** (`docs/MFFU_RULES_RECHECK_2026-11-26.md`: 46/46 watched rules unchanged, 5 notes). Re-check anything older than 7 days before a buy or a payout.
 **Daily watcher** (tools/rules_watch.py, 2026-11-23): every weekday after 17:05 ET the PC reads MFFU's own help pages (46 rules: DLL,
 MLL, consistency, buffers, payout min / max, accounts per user, inactivity, news window, the Rapid $10,000 live day) and compares them
 with this file. A real change = ONE phone alert "MFFU rule changed: <rule> was X, now Y (source); the bot still uses X until Claude
@@ -20,6 +20,8 @@ Common to every MFFU account
 | Copy trading | allowed between your own accounts only | rulebook `multi_account` |
 | Account limits | 10 evals at once; sim funded: Builder 50K x1, Builder 25K x2, Rapid EOD 25K x3, Rapid EOD 50K x3, **5 in all**; 1 live | [eval to funded](https://help.myfundedfutures.com/en/articles/16498635) |
 | Limit conflict | the Builder 50K guide (2026-10-21) says "Only one Sim Funded account may be active per user at any time on the Builder Plan" | [Builder 50K guide](https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide) |
+| Live breach cooldown | a LIVE account breached = **21 calendar days** with no sim funded trading and no new evals / resets on ANY MFFU account (Builder guides, 2026-11-26) | [Builder 25K guide](https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look) |
+| Payouts after the first | Builder: **$250 (25K) / $500 (50K) made since the last payout**; Rapid EOD: $250 / $500 since the last payout (the bot checks Rapid; Builder tracker: card in the 2026-11-26 re-check) | Builder / Rapid EOD guides |
 
 ## 1. Zlarior: Builder 50K EVAL (LIT)
 | Rule | Value | Checked |

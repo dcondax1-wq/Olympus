@@ -1,0 +1,323 @@
+{
+ "made": "2026-11-26T16:10",
+ "bars_to": "2026-11-20",
+ "pc_days_pulled": 0,
+ "last_day": "2026-11-20",
+ "totals_usd_by_kind": {
+  "MISSED": 1729.77,
+  "SLIPPED": -51.14,
+  "SIZE": -630.6
+ },
+ "accounts": {
+  "z50k": "Zlarior 50K (LIT, Builder 50K eval)",
+  "atlas25": "ATLAS (Builder 25K: eval Nov 6-17, funded from Nov 18)",
+  "z25k2": "Zlarior 25K #2 (LIT, Builder 25K eval)",
+  "rapid25k": "Rapid EOD 25K (LIT + ATLAS <= $250, eval)"
+ },
+ "rows": [
+  {
+   "account": "z50k",
+   "day": "2026-10-26",
+   "twin_trades": 1,
+   "twin_usd": 0.5,
+   "live_trades": 0,
+   "live_usd": 0.0,
+   "gap_usd": -0.5,
+   "diffs": [
+    {
+     "account": "z50k",
+     "day": "2026-10-26",
+     "when": "Mon Oct 26 08:37",
+     "kind": "MISSED",
+     "usd": -0.5,
+     "bot": "LIT",
+     "side": "SHORT",
+     "detail": "MISSED: bot / feed gap: the model entered during it, never routed"
+    }
+   ]
+  },
+  {
+   "account": "z50k",
+   "day": "2026-10-27",
+   "twin_trades": 1,
+   "twin_usd": -689.5,
+   "live_trades": 0,
+   "live_usd": 0.0,
+   "gap_usd": 689.5,
+   "diffs": [
+    {
+     "account": "z50k",
+     "day": "2026-10-27",
+     "when": "Tue Oct 27 06:12",
+     "kind": "MISSED",
+     "usd": 689.5,
+     "bot": "LIT",
+     "side": "SHORT",
+     "detail": "MISSED: every MFFU order went to an account Name without the 'R': NinjaTrader refused (fixed) (the bot booked 6 MNQ -827 that was voided)"
+    }
+   ]
+  },
+  {
+   "account": "z50k",
+   "day": "2026-10-28",
+   "twin_trades": 1,
+   "twin_usd": -437.0,
+   "live_trades": 1,
+   "live_usd": -437.0,
+   "gap_usd": 0.0,
+   "diffs": []
+  },
+  {
+   "account": "z50k",
+   "day": "2026-11-03",
+   "twin_trades": 1,
+   "twin_usd": 54.2,
+   "live_trades": 0,
+   "live_usd": 0.0,
+   "gap_usd": -54.2,
+   "diffs": [
+    {
+     "account": "z50k",
+     "day": "2026-11-03",
+     "when": "Tue Nov 03 15:39",
+     "kind": "MISSED",
+     "usd": -54.2,
+     "bot": "LIT",
+     "side": "LONG",
+     "detail": "MISSED: bot re-set up and re-armed by hand 20:51-21:06 ET; no record of the 15:39 signal"
+    }
+   ]
+  },
+  {
+   "account": "atlas25",
+   "day": "2026-11-06",
+   "twin_trades": 1,
+   "twin_usd": -177.25,
+   "live_trades": 1,
+   "live_usd": -168.81,
+   "gap_usd": 8.44,
+   "diffs": [
+    {
+     "account": "atlas25",
+     "day": "2026-11-06",
+     "when": "Fri Nov 06 04:00",
+     "kind": "SLIPPED",
+     "usd": 8.44,
+     "bot": "EMA",
+     "side": "SHORT",
+     "detail": "live $-168.81 vs twin at the live size; entry slip $n/a"
+    }
+   ]
+  },
+  {
+   "account": "atlas25",
+   "day": "2026-11-10",
+   "twin_trades": 1,
+   "twin_usd": -176.56,
+   "live_trades": 0,
+   "live_usd": 0.0,
+   "gap_usd": 176.56,
+   "diffs": [
+    {
+     "account": "atlas25",
+     "day": "2026-11-10",
+     "when": "Tue Nov 10 03:55",
+     "kind": "MISSED",
+     "usd": 176.56,
+     "bot": "EMA",
+     "side": "LONG",
+     "detail": "MISSED: PC BOT OFF: no uptime sample from Nov 9 15:55 ET to Sun Nov 15 20:39 ET (the day folders' gaps.json; the report task was not installed either, so nobody saw it)"
+    }
+   ]
+  },
+  {
+   "account": "z50k",
+   "day": "2026-11-10",
+   "twin_trades": 1,
+   "twin_usd": -347.7,
+   "live_trades": 0,
+   "live_usd": 0.0,
+   "gap_usd": 347.7,
+   "diffs": [
+    {
+     "account": "z50k",
+     "day": "2026-11-10",
+     "when": "Tue Nov 10 03:33",
+     "kind": "MISSED",
+     "usd": 347.7,
+     "bot": "LIT",
+     "side": "LONG",
+     "detail": "MISSED: PC BOT OFF: no uptime sample from Nov 9 15:55 ET to Sun Nov 15 20:39 ET (the day folders' gaps.json; the report task was not installed either, so nobody saw it)"
+    }
+   ]
+  },
+  {
+   "account": "atlas25",
+   "day": "2026-11-11",
+   "twin_trades": 1,
+   "twin_usd": -175.18,
+   "live_trades": 0,
+   "live_usd": 0.0,
+   "gap_usd": 175.18,
+   "diffs": [
+    {
+     "account": "atlas25",
+     "day": "2026-11-11",
+     "when": "Wed Nov 11 09:40",
+     "kind": "MISSED",
+     "usd": 175.18,
+     "bot": "MACD",
+     "side": "SHORT",
+     "detail": "MISSED: PC BOT OFF: no uptime sample from Nov 9 15:55 ET to Sun Nov 15 20:39 ET (the day folders' gaps.json; the report task was not installed either, so nobody saw it)"
+    }
+   ]
+  },
+  {
+   "account": "z50k",
+   "day": "2026-11-11",
+   "twin_trades": 1,
+   "twin_usd": -42.4,
+   "live_trades": 0,
+   "live_usd": 0.0,
+   "gap_usd": 42.4,
+   "diffs": [
+    {
+     "account": "z50k",
+     "day": "2026-11-11",
+     "when": "Wed Nov 11 03:56",
+     "kind": "MISSED",
+     "usd": 42.4,
+     "bot": "LIT",
+     "side": "SHORT",
+     "detail": "MISSED: PC BOT OFF: no uptime sample from Nov 9 15:55 ET to Sun Nov 15 20:39 ET (the day folders' gaps.json; the report task was not installed either, so nobody saw it)"
+    }
+   ]
+  },
+  {
+   "account": "atlas25",
+   "day": "2026-11-12",
+   "twin_trades": 1,
+   "twin_usd": -175.53,
+   "live_trades": 0,
+   "live_usd": 0.0,
+   "gap_usd": 175.53,
+   "diffs": [
+    {
+     "account": "atlas25",
+     "day": "2026-11-12",
+     "when": "Thu Nov 12 09:45",
+     "kind": "MISSED",
+     "usd": 175.53,
+     "bot": "SR",
+     "side": "SHORT",
+     "detail": "MISSED: PC BOT OFF: no uptime sample from Nov 9 15:55 ET to Sun Nov 15 20:39 ET (the day folders' gaps.json; the report task was not installed either, so nobody saw it)"
+    }
+   ]
+  },
+  {
+   "account": "atlas25",
+   "day": "2026-11-13",
+   "twin_trades": 2,
+   "twin_usd": -177.6,
+   "live_trades": 0,
+   "live_usd": 0.0,
+   "gap_usd": 177.6,
+   "diffs": [
+    {
+     "account": "atlas25",
+     "day": "2026-11-13",
+     "when": "Fri Nov 13 03:40",
+     "kind": "MISSED",
+     "usd": 177.77,
+     "bot": "MACD",
+     "side": "LONG",
+     "detail": "MISSED: PC BOT OFF: no uptime sample from Nov 9 15:55 ET to Sun Nov 15 20:39 ET (the day folders' gaps.json; the report task was not installed either, so nobody saw it)"
+    },
+    {
+     "account": "atlas25",
+     "day": "2026-11-13",
+     "when": "Fri Nov 13 08:05",
+     "kind": "MISSED",
+     "usd": -0.17,
+     "bot": "EMA",
+     "side": "LONG",
+     "detail": "MISSED: PC BOT OFF: no uptime sample from Nov 9 15:55 ET to Sun Nov 15 20:39 ET (the day folders' gaps.json; the report task was not installed either, so nobody saw it)"
+    }
+   ]
+  },
+  {
+   "account": "z50k",
+   "day": "2026-11-16",
+   "twin_trades": 1,
+   "twin_usd": -129.4,
+   "live_trades": 1,
+   "live_usd": -129.4,
+   "gap_usd": 0.0,
+   "diffs": []
+  },
+  {
+   "account": "atlas25",
+   "day": "2026-11-17",
+   "twin_trades": 1,
+   "twin_usd": 1182.53,
+   "live_trades": 1,
+   "live_usd": 1791.89,
+   "gap_usd": 609.36,
+   "diffs": [
+    {
+     "account": "atlas25",
+     "day": "2026-11-17",
+     "when": "Tue Nov 17 08:20",
+     "kind": "SLIPPED",
+     "usd": -74.78,
+     "bot": "EMA",
+     "side": "SHORT",
+     "detail": "live $1791.89 vs twin at the live size; entry slip $n/a"
+    }
+   ]
+  },
+  {
+   "account": "atlas25",
+   "day": "2026-11-18",
+   "twin_trades": 1,
+   "twin_usd": -179.83,
+   "live_trades": 1,
+   "live_usd": -112.8,
+   "gap_usd": 67.03,
+   "diffs": [
+    {
+     "account": "atlas25",
+     "day": "2026-11-18",
+     "when": "Wed Nov 18 04:50",
+     "kind": "SLIPPED",
+     "usd": 15.2,
+     "bot": "MACD",
+     "side": "SHORT",
+     "detail": "live $-112.8 vs twin at the live size; entry slip $n/a"
+    }
+   ]
+  },
+  {
+   "account": "atlas25",
+   "day": "2026-11-20",
+   "twin_trades": 1,
+   "twin_usd": 1142.91,
+   "live_trades": 1,
+   "live_usd": 512.31,
+   "gap_usd": -630.6,
+   "diffs": [
+    {
+     "account": "atlas25",
+     "day": "2026-11-20",
+     "when": "Fri Nov 20 03:45",
+     "kind": "SIZE",
+     "usd": -630.6,
+     "bot": "EMA",
+     "side": "SHORT",
+     "detail": "traded (confirmed by the day folder): SIZE vs the usual risk"
+    }
+   ]
+  }
+ ],
+ "note": "gap_usd = live - twin; MISSED $ = minus the twin's $; EXTRA $ = the live trade's $. Read only."
+}

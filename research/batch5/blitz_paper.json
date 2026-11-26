@@ -1,0 +1,26 @@
+{
+ "made": "2026-11-26",
+ "start_assumed": "2026-10-19",
+ "last_day": "2026-11-20",
+ "source": "engine/blitz.replay_2026 on data/NQ_1m.csv (the PC's bars after Oct 16); the PC's real paper ledger is NOT in the cloud",
+ "paper": {
+  "n": 67,
+  "win_pct": 50.7,
+  "mean_r": 0.06,
+  "sum_r": 4.0,
+  "usd_150": 600,
+  "last20_mean_r": 0.05
+ },
+ "backtest_2026_before_start": {
+  "n": 330,
+  "mean_r": 0.157,
+  "win_pct": 55.5
+ },
+ "band_2026_rolling20": {
+  "p5": -0.234,
+  "p50": 0.127,
+  "p95": 0.496
+ },
+ "pct_of_same_size_backtest_samples_at_or_below": 17.6,
+ "verdict": "BEHAVING LIKE THE BACKTEST (last-20 mean R inside the 2026 5-95% band)"
+}

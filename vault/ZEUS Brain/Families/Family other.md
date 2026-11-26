@@ -7,11 +7,20 @@ type: "family"
 
 # Research family: other
 
-> [!abstract] 122 write-ups
-> adopt-candidate 16, finding 14, info 17, promising 14, rejected 36, research 25
+> [!abstract] 131 write-ups
+> adopt-candidate 16, finding 14, info 17, promising 14, rejected 36, research 34
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-26 | [[news-playbook-2026-11-26\|News-day playbook]] | research |
+| 2026-11-26 | [[lit-fragility-2026-11-26\|How fragile is LIT]] | research |
+| 2026-11-26 | [[execution-2026-11-26\|A sturdier execution path for the MFFU accounts]] | research |
+| 2026-11-26 | [[evalsizer-2026-11-26\|Optimal eval sizing policy]] | research |
+| 2026-11-26 | [[entry-fine-2026-11-26\|LIT entry refinement on 1m bars]] | research |
+| 2026-11-26 | [[day-type-2026-11-26\|Day-type classifier + playbook routing]] | research |
+| 2026-11-26 | [[blitz-v2-2026-11-26\|BLITZ v2]] | research |
+| 2026-11-26 | [[batch5-2026-11-26\|Batch 5]] | research |
+| 2026-11-26 | [[alloc-2026-11-26\|Which signals go to which account]] | research |
 | 2026-11-25 | [[more-trades-2026-11-25\|More trades]] | research |
 | 2026-11-25 | [[ideamill-v3-2026-11-25\|IDEA MILL v3]] | research |
 | 2026-11-25 | [[ideamill-2026-11-25\|IDEA MILL]] | research |

@@ -13,6 +13,8 @@ Heavy steps (edge, anatomy, lab) load the full backtests: run the whole command 
 Steps (each soft and its own process with a time limit: one failing never stops the rest):
   1 pull     tools/data_pull.py --latest [--wait N]: the PC's days -> data/pc_days/, newer NQ / ES bars -> data/, GC / SI around the
              K8 windows -> data/metals/, the PC's proposals -> research/zeus_queue.jsonl
+  + livegap  tools/livegap_daily.py: the backtest twin vs the live fills per account and day -> research/livegap/daily.json and one
+             research/livegap/journal.jsonl line per difference (MISSED / SLIPPED $ / SIZE / EXTRA), so drift shows the next morning
   2 edge     tools/edge_health.py [--fetch]: the edge light -> research/lab/edge_health.json + tools/web_public/edge.json
   3 anatomy  tools/win_loss_anatomy.py build / explain / page (+ rules with --full) -> research/anatomy/, tools/web_public/why/why.json
   4 lab      tools/zeus_lab.py run --publish -> tools/web_public/business/lab.json (the Lab page)
@@ -53,8 +55,8 @@ WHY = os.path.join(ROOT, "tools", "web_public", "why", "why.json")
 LAB = os.path.join(ROOT, "tools", "web_public", "business", "lab.json")
 REPORT = os.path.join(ROOT, "research", "learn", "night_cloud.json")
 PROTECTED = ("live_model.json", "live_model_lit.json", "live_model_engine.json", "second_model.json", "data/account_b.json")
-STEPS = ("pull", "edge", "costs", "anatomy", "lab", "learned", "decide", "hub", "blitz")
-LIMIT_S = {"pull": 1500, "edge": 1200, "costs": 900, "anatomy": 2400, "lab": 2400, "blitz": 3600}
+STEPS = ("pull", "livegap", "edge", "costs", "anatomy", "lab", "learned", "decide", "hub", "blitz")
+LIMIT_S = {"pull": 1500, "livegap": 600, "edge": 1200, "costs": 900, "anatomy": 2400, "lab": 2400, "blitz": 3600}
 CARD_MAX_BYTES = 6000
 DECIDE_MAX_NEW = 3                       # proposals added per night at most (the owner's card stays short)
 _ID = re.compile(r"[a-z0-9][a-z0-9_-]{1,39}")
@@ -163,6 +165,8 @@ def plan(a) -> list:
     out = []
     if "pull" not in skip and not a.no_pull:
         out.append(("pull", [["tools/data_pull.py", "--latest"] + (["--wait", str(a.wait)] if a.wait is not None else [])]))
+    if "livegap" not in skip:              # day-batch6 2026-11-26: live vs twin per account / day -> research/livegap/daily.json + journal.jsonl
+        out.append(("livegap", [["tools/livegap_daily.py"]]))   # read only: never trades, sizes or edits a live file
     if "edge" not in skip:
         out.append(("edge", [["tools/edge_health.py"] + (["--fetch"] if a.fetch else [])]))
     if "costs" not in skip:                # day-atlasedge (TOP25 #8 + #14): still profitable at the real measured fill costs? ALARM ONLY
