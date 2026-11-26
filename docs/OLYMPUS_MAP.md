@@ -121,7 +121,7 @@ Retired apps are not on Home, in search or in A to Z. Their old links open the r
 | Labyrinth (`labyrinth`) | NQ Bot | trading | The risk maze: size your eval | `../odeon/trades.json`, `../home.json`, `fixture.json` | `tests.test_labyrinth_page` |
 | Moirai (`moirai`) | NQ Bot | trading | The three fates: pass, bust and time of | `fixture.json`, `../ledger/rules.json` | `tests.test_moirai_page` |
 | Nemesis (`nemesis`) | NQ Bot | trading | The fallen trades: what went wrong | `../odeon/trades.json`, `../home.json`, `fixture.json` | `tests.test_nemesis_page` |
-| NQ (`nq`) | NQ Bot | trading | The NQ bots, right now: status, drawdown left | `../home.json`, `../business/accounts.json`, `../business/payday.json`, `../odeon/trades.json`, `fixture.json`, ... | `tests.test_nq_page` |
+| NQ (`nq`) | NQ Bot | trading | The NQ bots, right now: status, drawdown left | `../home.json`, `../business/accounts.json`, `../business/payday.json`, `../status_feed.json`, `../odeon/trades.json`, ... | `tests.test_nq_page` |
 | Odeon (`odeon`) | NQ Bot | trading | Every trade, replayed in 3D | `trades.json` | `tests.test_odeon_page` |
 | Oracle (`oracle`) | NQ Bot | trading | The market radar, live | bundled fixture / its own files | `tests.test_oracle_page` |
 | Pantheon (`pantheon`) | NQ Bot | trading | The data gods: rates, liquidity, fear | `jarvis.json`, `pantheon.json`, `fixture.json` | `tests.test_pantheon` |
