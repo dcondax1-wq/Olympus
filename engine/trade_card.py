@@ -70,7 +70,10 @@ def bars(t_from: int, t_to: int, bot=None) -> list:
         pass
     try:
         from .ninjatrader import NinjaTraderBars
-        dfs.append(NinjaTraderBars((getattr(bot, "cfg", None) or {}).get("nt_folder")).recent_bars("NQ", "1m", period="2d"))
+        r = NinjaTraderBars((getattr(bot, "cfg", None) or {}).get("nt_folder")).recent_bars("NQ", "1m")
+        df = r[0] if isinstance(r, tuple) else r          # recent_bars -> (df | None, error, flag)
+        if df is not None:
+            dfs.append(df)
     except Exception:
         pass
     for df in dfs:

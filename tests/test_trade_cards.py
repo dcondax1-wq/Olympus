@@ -83,6 +83,24 @@ def t_card(tmp):
     finally:
         TC.bars = TC_bars
     check("no bars -> no picture, the reason line still added (text message)", "photo" not in ev and "London low" in ev.get("more", ""), ev)
+    import pandas as pd
+    import engine.ninjatrader as NTm
+    keep = NTm.NinjaTraderBars
+
+    class FakeNTB:
+        def __init__(self, *a, **k):
+            pass
+
+        def recent_bars(self, sym, interval="5m", period="5d", now=None):
+            b = fake_bars(ET0 - 7200, ET0 + 600)
+            return pd.DataFrame(b, columns=["time", "open", "high", "low", "close"]), None, True
+    NTm.NinjaTraderBars = FakeNTB
+    try:
+        got = TC.bars(ET0 - 3600, ET0, bot=SimpleNamespace(cfg={}))   # no _read_hist on this bot: the NinjaTrader feed answers
+    finally:
+        NTm.NinjaTraderBars = keep
+    check("bars from NinjaTrader's feed (recent_bars returns (df, error, flag)) when the bot's history has none",
+          len(got) >= 50 and got[0][0] >= ET0 - 3600, len(got))
     os.environ["LE_TRADE_CARDS"] = "0"
     try:
         ev0 = {"kind": "entry", "key": "x"}
