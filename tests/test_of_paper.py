@@ -71,11 +71,12 @@ def main():
         mine = [r for r in S["rows"] if r.get("usd_500") is not None]
         n_ref += len(ref); n_mine += len(mine)
         bad += sum(1 for a, b in zip(ref, mine) if abs(a[4] - b["usd_500"]) > 0.02 or a[3] != b["d"]) + abs(len(ref) - len(mine))
-        for r in S["rows"]:
-            if r.get("R") is not None:
-                (taken if r["taken"] else skipped).append(r["R"])
+        for r in S["rows"]:                     # the planted sweeps: the opening-range level at the 10:00 bar
+            if r.get("R") is not None and r["level"] in ("orh", "orl") and P._mod(r["t_sig"]) == 600:
+                (taken if r["absorbed"] else skipped).append(r["R"])
     check(f"a. replay = research LVL entries + _sim_df over {len(days) - 1} days, trade for trade", bad == 0 and n_ref > 40, (n_ref, n_mine, bad))
-    check("c. planted edge: taken (absorbed) mean R > skipped mean R", len(taken) >= 10 and np.mean(taken) > np.mean(skipped) + 0.3,
+    check("c. planted sweeps: absorbed mean R > not absorbed mean R (the gate sees the planted effect)",
+          len(taken) >= 10 and len(skipped) >= 5 and np.mean(taken) > np.mean(skipped) + 0.5,
           (len(taken), round(float(np.mean(taken)), 2), len(skipped), round(float(np.mean(skipped)), 2)))
     one = all(sum(1 for r in rows if r["taken"] and r["t_sig"] < q["t_sig"] and (r.get("exit_t") or 1e12) > q["t_sig"]) == 0
               for rows in allrows.values() for q in rows if q["taken"])
