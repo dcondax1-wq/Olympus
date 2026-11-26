@@ -66,6 +66,8 @@ def fetch_lite(get=None) -> dict | None:
     from tools import pc_feed                      # the core post + its newest ext post(s) merged (the old single post as it was)
     from tools import status_sign as S             # day-security 2026-11-20: anyone can post to the public topic
     vk = S.feed_vk(STATUS_FEED)
+    if ok and not vk:
+        msgs = only_pc_key(msgs)                   # day-noleak: no pinned vk yet -> the key that signed the PC's posts for hours wins
     lite = pc_feed.pick(S.filter_msgs(msgs, vk)) if ok else None    # never a future-dated post; with a pinned vk only signed ones
     if isinstance(lite, dict) and vk:
         _SIGNED[id(lite)] = lite                   # kept beside the post, never in it (the post's own keys stay exactly as posted)
@@ -73,6 +75,45 @@ def fetch_lite(get=None) -> dict | None:
 
 
 _SIGNED: dict = {}                                 # posts fetch_lite checked against the pinned vk (held, so an id is never reused)
+FOREIGN = {"n": 0, "last_t": None}                 # status posts dropped by only_pc_key (another machine's key), this process
+
+
+PC_KEY_MIN_POSTS, PC_KEY_MIN_SPAN_S = 3, 30 * 60
+
+
+def only_pc_key(msgs) -> list:
+    """day-noleak 2026-11-26 (a cloud sandbox posted a real-looking "DISABLED: bot stopped" to the public topic, read as the PC's):
+    with no pinned vk, the key that signed the most posts (at least 3, over 30+ min: the PC posts every 15 min for hours) is the
+    PC's; a core status post (kind le-live) NOT signed by it (unsigned, as a Linux sandbox posts, or another key) and any post
+    signed by another key are dropped and counted in FOREIGN (gather() says so). No such key (an unsigned PC, or a quiet topic) =
+    the messages exactly as before. Never raises."""
+    try:
+        from tools import status_sign as S
+        cnt = S.svk_counts(msgs)
+        main = max(cnt.items(), key=lambda kv: kv[1]["n"]) if cnt else None
+        if not main or main[1]["n"] < PC_KEY_MIN_POSTS or main[1]["last"] - main[1]["first"] < PC_KEY_MIN_SPAN_S:
+            return list(msgs or [])
+        keep, drop = [], []
+        for m in msgs or []:
+            txt = (m or {}).get("message") if isinstance(m, dict) else None
+            txt = txt if isinstance(txt, str) else ""
+            try:
+                kind = (json.loads(txt) or {}).get("kind") if txt.startswith("{") else None
+            except (ValueError, AttributeError):
+                kind = None
+            mine = bool(txt) and S.verify_text(txt, main[0])
+            # the core status post (kind le-live) is always signed by the PC (it carries svk): unsigned or another key = not the PC.
+            # ext / bars posts may go unsigned when too big: only a post signed by ANOTHER key is dropped there.
+            if not mine and (kind == "le-live" or '"sg":"' in txt):
+                drop.append(m)
+            else:
+                keep.append(m)
+        if drop:
+            FOREIGN["n"] += len(drop)
+            FOREIGN["last_t"] = max(float((d or {}).get("time") or 0) for d in drop)
+        return keep
+    except Exception:  # noqa: BLE001
+        return list(msgs or [])
 
 
 def signed(lite) -> bool:
@@ -168,6 +209,9 @@ def gather(offline: bool = False, hb=None, lite=None, now=None) -> dict:
     if lite is not None and not signed(lite):
         ev_nt = _unsigned(ev_nt)
         notes.append(UNSIGNED_NOTE)
+    if FOREIGN["n"]:
+        notes.append(f"ignored {FOREIGN['n']} status post(s) NOT signed by the PC's key (newest "
+                     f"{B.et_text(FOREIGN['last_t']) if FOREIGN['last_t'] else '?'}): a sandbox / copy of the repo, NOT the owner's PC")
     live = {}
     for r in pcb.get("accounts") or []:                     # the PC's own rows (its emit()s), as of its heartbeat
         if isinstance(r, dict) and r.get("key") and r.get("src") in ("PC", "PC live") and B._f(r.get("balance")) is not None:

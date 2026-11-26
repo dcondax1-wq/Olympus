@@ -170,6 +170,9 @@ class Keeper:
             return False
         if self._thread and self._thread.is_alive():
             return True
+        from . import pc_identity                    # day-noleak 2026-11-26: a sandbox's keeper posted a real status
+        if not pc_identity.may_post("report keeper", log=self.log):
+            return False
         self._thread = threading.Thread(target=self._loop, name="report-keeper", daemon=True)
         self._thread.start()
         return True

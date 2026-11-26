@@ -261,10 +261,21 @@ def mark_tested(cfg: dict):
 
 
 # ------------------------------------------------------------------------------------------------ network (one place, fakeable)
+def _may_post(kind: str, url=None) -> bool:
+    """day-noleak 2026-11-26: only the owner's PC posts for real (a sandbox's report reached the public topic). Never raises."""
+    try:
+        from engine import pc_identity
+        return pc_identity.may_post(kind, url=url)
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def default_http(method, url, body=None, headers=None, timeout=HTTP_TIMEOUT_S):
     """-> (status, text). Never raises."""
     if os.environ.get("LE_PR_NO_NET") == "1":
         return 0, "network off (LE_PR_NO_NET=1)"
+    if method != "GET" and not _may_post("pc_report post", url):
+        return 0, "dry run: not the owner's PC (engine/pc_identity)"
     req = urllib.request.Request(url, data=body, method=method)
     req.add_header("User-Agent", UA)
     for k, v in (headers or {}).items():
