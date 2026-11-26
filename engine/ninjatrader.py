@@ -1357,8 +1357,9 @@ class NinjaTraderAdapter:
         w = self._write_oif(lines, label)
         if not w["ok"]:
             return w
+        w["written_at"] = self.clock()                 # big-execution 2026-11-26 latency log: the file is in incoming\ now
         if self._wait(lambda: not os.path.exists(w["path"]), self.ack_wait):
-            return {**w, "picked_up": True}
+            return {**w, "picked_up": True, "picked_at": self.clock()}   # NinjaTrader took the file (seen by the 50 ms check)
         if self._withdraw(w["path"]):
             msg = (f"NinjaTrader did not pick up {w['file']} within {self.ack_wait:.0f}s, so it was withdrawn and NOT executed. "
                    "Is NinjaTrader running, connected, with Tools > Options > Automated trading interface > AT Interface ticked?")
@@ -1656,6 +1657,8 @@ class NinjaTraderAdapter:
                 self.withdrawn += [{"entry_id": lg["entry_id"], "leg": lg, "t": self.clock()} for lg in legs]
             self._save()
             return {"ok": False, "adapter": self.name, "account": self.account, "error": r["error"], "oif": r.get("file")}
+        for lg in legs:                                # latency log only (fills.jsonl.gz): never read by a decision
+            lg["send_at"], lg["ack_at"] = r.get("written_at"), r.get("picked_at")
         self._save()
         self._wait(lambda: all(self._entry_settled(lg) for lg in legs), self.fill_wait)
         out, errors, locked = [], [], None
@@ -1772,6 +1775,7 @@ class NinjaTraderAdapter:
             lg["fill_px"] = st["avg"]
             lg["fill_mtime"] = st.get("mtime")
             if first:
+                lg["fill_seen_at"] = self.clock()      # latency log only: when the bot saw NinjaTrader's fill report
                 self._push_fill(lg)
 
     def _protect(self, lg) -> dict:
@@ -3454,6 +3458,9 @@ def selftest(verbose=True) -> bool:
         check("bracket: NinjaTrader shows LONG 2 MNQ, stop + target WORKING, leg protected",
               ad.position_for("MNQ 12-26")["side"] == "LONG" and ad.position_for("MNQ 12-26")["qty"] == 2
               and ad.read_order(S)["state"] == "WORKING" and ad.read_order(TG)["state"] == "WORKING" and lg["status"] == "protected")
+        check("latency log: the leg keeps send_at <= ack_at <= fill_seen_at (file in incoming, NinjaTrader took it, fill seen)",
+              lg.get("send_at") is not None and lg.get("ack_at") is not None and lg.get("fill_seen_at") is not None
+              and lg["sent_at"] <= lg["send_at"] <= lg["ack_at"] <= lg["fill_seen_at"], {k: lg.get(k) for k in ("sent_at", "send_at", "ack_at", "fill_seen_at")})
         check("bracket: one position at a time (a second entry is refused while the bracket is open)",
               "still open" in ad.send({"sym": "NQ", "side": "buy", "qty": 1, "stop": 24990, "target": 25080, "entry": 25020})["error"])
         # ---- 2. breakeven: CHANGE the stop
