@@ -79,8 +79,12 @@ def static():
     check("s. the Brain links here: footer + every room's learning card", 'href="learned.html"' in read("brain", "index.html")
           and "learned.html#${r.id}" in read("brain", "brain.js"))
     check("s. no secrets / account ids", not re.search(r"(api[_-]?key|token|secret|password)\s*[:=]\s*['\"][^'\"]{6,}|\b(MFFU|FFN|APEX)[A-Z]*-?\d{3,}|ntfy\.sh/", src + read("brain", "learn.json"), re.I))
-    r = subprocess.run(["git", "diff", "--name-only", "origin/pc", "--", *FORBIDDEN], cwd=ROOT, capture_output=True, text=True, timeout=60)
-    check("s. forbidden files untouched against origin/pc", r.returncode == 0 and not r.stdout.strip(), r.stdout + r.stderr)
+    has_pc = subprocess.run(["git", "rev-parse", "--verify", "-q", "origin/pc"], cwd=ROOT, capture_output=True, text=True, timeout=60).returncode == 0
+    if not has_pc:   # a helper-branch guard: a checkout without origin/pc (the lead's landing tree, the PC) has nothing to compare
+        print("  (s. forbidden-files guard skipped: no origin/pc in this checkout)")
+    else:
+        r = subprocess.run(["git", "diff", "--name-only", "origin/pc", "--", *FORBIDDEN], cwd=ROOT, capture_output=True, text=True, timeout=60)
+        check("s. forbidden files untouched against origin/pc", r.returncode == 0 and not r.stdout.strip(), r.stdout + r.stderr)
 
 
 class _Quiet(http.server.SimpleHTTPRequestHandler):
