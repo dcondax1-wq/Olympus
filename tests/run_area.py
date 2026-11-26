@@ -124,6 +124,7 @@ AREAS["nq"].append("fill_cost")          # night-atlasfills 2026-11-20: "real sl
 AREAS["nq"].append("market_learn")       # day-marketlearn 2026-11-24: shared Market Learn (engine/market_learn.py, tools/market_learn_weekly.py); its own line
 AREAS["nq"].append("batch5")             # day-batch5 2026-11-26: health bands + forecast shape
 AREAS["nq"].append("ideamill")            # day-ideamill 2026-11-25: the idea mill (tools/ideamill.py, research/ideamill/grammar.py)
+AREAS["nq"].append("atlas2")              # day-atlas2 2026-11-26: ATLAS v2 at real fills (research/atlas2/atlas2.py: switch, fixed scoring, gate)
 # night-webpush 2026-11-19: Olympus phone notifications from the PC (engine/push.py: own key, relay intake, phone first / ntfy backup;
 # docs/NOTIFICATIONS.md); the browser half (the card, the button, push-sw.js) runs with the jarvis suites
 AREAS["pc"] += ["push", "webpush"]
