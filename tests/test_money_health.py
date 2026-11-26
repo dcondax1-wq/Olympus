@@ -76,21 +76,35 @@ o.h = { normal: w([1, -1, 2, 0.5, 1, -1, 1.5, 0.2, 0.8, 1]), cold: w([1, -1, -1,
   hot: w([3, 4, 2, 3, 2.5, 1, 3, 2, 4, 3]), few: w([1, -1]), streak: w([2, 3, 2, 1.5, 2, -1, -1, -1, -1, -1, -1, -1]), noband: H.health({}, mk([1, 1, 1, 1, 1])).bots[0].word };
 o.real = H.health(bands, file).bots.map((b) => [b.id, b.word, b.n]);
 o.liveOnly = H.liveTrades({ trades: [{ bot: 'LIT', src: 'backtest', r: 1, t: 1 }, { bot: 'LIT', src: 'paper', r: 1, t: 2 }, { bot: 'LIT', src: 'live', r: -1, t: 3 }, { bot: 'ATLAS', src: 'live', r: 1, t: 4 }] }, 'lit').length;
-// the band, counted again here (independent of the builder)
-o.indep = ['lit', 'atlas'].map((bot) => {
+// the real published files (research/health/bands.json, research/forecast/forecast.json via the builder) or the provisional band
+const FCR = (() => { try { return JSON.parse(fs.readFileSync('%(fcpub)s', 'utf8')); } catch (e) { return null; } })();
+const acc = [{ key: 'x', name: 'Zlarior 50K', plan: 'MFFU Builder 50K evaluation', funded: false }, { key: 'y', name: 'Zlarior 25K #2', plan: 'MFFU Builder 25K evaluation', funded: false },
+  { key: 'r', name: 'Rapid EOD 25K', plan: 'MFFU Rapid EOD 25K evaluation', funded: false }, { key: 'a', name: 'ATLAS 25K', plan: 'MFFU Builder 25K sim funded', funded: true }];
+o.fcReal = FCR ? acc.map((a) => { const F = MV.forecastFor(a, FCR, pd); return F && [F.src, F.p_pass, F.days_med, F.p_payout, F.payout_sessions, F.ref_pass]; }) : null;
+o.fcLine = FCR ? MV.gauge({ ...evalA, plan: 'MFFU Builder 50K evaluation', funded: false }, { today: '2026-11-26', payday: pd, forecast: FCR }).forecast : null;
+o.fcFund = FCR ? MV.gauge({ ...funded({ coach: coach({}) }), plan: 'MFFU Builder 25K sim funded', funded: true }, { today: '2026-11-26', payday: pd, forecast: FCR }).forecast : null;
+o.fcRaw = FCR ? Object.fromEntries(Object.entries(FCR.accounts).map(([k, v]) => [k, v['2026-like'] || null])) : null;
+o.bandsProv = !!bands.provisional; o.bandsWin = bands.window;
+o.bandsPub = ['lit', 'atlas'].map((b) => [bands.bots[b].n_backtest, bands.bots[b].avg_r.p5, bands.bots[b].avg_r.p50, bands.bots[b].avg_r.p95, (bands.bots[b].live || []).length]);
+o.realH = H.health(bands, file).bots.map((b) => [b.id, b.word, b.n, b.ref ? b.ref.span : null]);
+o.indep = bands.provisional ? ['lit', 'atlas'].map((bot) => {
   const rs = file.trades.filter((t) => String(t.bot).toLowerCase() === bot && t.src === 'backtest' && typeof t.r === 'number').sort((a, b) => a.t - b.t).map((t) => t.r);
   const av = []; for (let i = 0; i + 10 <= rs.length; i++) av.push(rs.slice(i, i + 10).reduce((s, x) => s + x, 0) / 10);
   av.sort((a, b) => a - b); const q = (p) => { const k = (av.length - 1) * p; const lo = Math.floor(k), hi = Math.min(lo + 1, av.length - 1); return av[lo] + (av[hi] - av[lo]) * (k - lo); };
   return [rs.length, Math.round(q(0.05) * 1000) / 1000, Math.round(q(0.5) * 1000) / 1000, Math.round(q(0.95) * 1000) / 1000];
-});
-o.bandsPub = ['lit', 'atlas'].map((b) => [bands.bots[b].n_backtest, bands.bots[b].avg_r.p5, bands.bots[b].avg_r.p50, bands.bots[b].avg_r.p95]);
+}) : null;
+// a p5 / p50 / p95 band (the health study's shape): cold = under halfway from p5 to the median
+const b3 = { bots: { lit: { window: 20, avg_r: { p5: 0.14, p50: 0.61, p95: 1.54 } } } };
+const w3 = (rs) => { const b = H.health(b3, mk(rs)).bots[0]; return b.word; };
+o.h3 = [w3([1, 0.5, 0.8, 0.6, 0.7]), w3([0.3, 0.2, 0.4, 0.3, 0.2]), w3([-1, -1, 0.5, -0.5, 0.2]), w3([3, 2, 2.5, 2, 3]), w3([2, 2, 1, -1, -1, -1, -1])];
+o.bandLive = H.health({ bots: { lit: { window: 20, avg_r: { p5: 0.14, p50: 0.61, p95: 1.54 }, live: [{ day: '2026-11-01', r: 1 }, { day: '2026-11-02', r: 1 }, { day: '2026-11-03', r: 1 }] } } }, mk([1])).bots[0].n;
 console.log(JSON.stringify(o));
 """
 
 
 def node():
     js = NODE % {"mv": os.path.join(PUB, "business", "moneyview.js"), "hc": os.path.join(PUB, "trading", "healthcore.js"), "pd": os.path.join(PUB, "business", "payday.json"),
-                 "fc": json.dumps(FC_FIXTURE), "tr": os.path.join(PUB, "trading", "trades.json"), "bands": os.path.join(PUB, "trading", "bands.json")}
+                 "fc": json.dumps(FC_FIXTURE), "tr": os.path.join(PUB, "trading", "trades.json"), "bands": os.path.join(PUB, "trading", "bands.json"), "fcpub": os.path.join(PUB, "business", "forecast.json")}
     r = subprocess.run(["node", "-e", js], capture_output=True, text=True, timeout=60)
     try:
         o = json.loads(r.stdout.strip().splitlines()[-1])
@@ -122,8 +136,30 @@ def node():
           h["normal"][0] == "normal" and h["cold"][0:2] == ["cold streak", "warn"] and h["out"][0:2] == ["outside the band", "bad"] and h["hot"][0:2] == ["outside the band", "hot"]
           and h["few"][0] == "too few trades" and h["streak"][0] == "outside the band" and h["streak"][4] == 7 and o["h"]["noband"] == "no band yet", h)
     check("n. health counts only the real (live) trades of that bot", o["liveOnly"] == 1, o["liveOnly"])
-    check("n. today's real health: LIT 2 and ATLAS 3 live trades -> 'too few trades' (honest)", o["real"] == [["lit", "too few trades", 2], ["atlas", "too few trades", 3]], o["real"])
-    check("n. the published band = an independent count of every 10-trade backtest stretch (n, p5, p50, p95)", all(a[0] == b[0] and all(abs(x - y) <= 0.002 for x, y in zip(a[1:], b[1:])) for a, b in zip(o["indep"], o["bandsPub"])), (o["indep"], o["bandsPub"]))
+    research = os.path.join(ROOT, "research", "health", "bands.json")
+    if os.path.exists(research):
+        R = json.load(open(research, encoding="utf-8"))
+        want = [[R["bots"][k]["bands"]["2026"]["trades"], R["bots"][k]["bands"]["2026"]["p5"], R["bots"][k]["bands"]["2026"]["p50"], R["bots"][k]["bands"]["2026"]["p95"], len(R["bots"][k]["live"]["trades"])] for k in ("LIT", "ATLAS")]
+        check("n. the published band = research/health/bands.json (2026: trades, p5 / p50 / p95, its live trades), not provisional", not o["bandsProv"] and o["bandsPub"] == want and o["bandsWin"] == R["window"], (o["bandsPub"], want))
+        zones = [R["bots"][k]["live"]["zone"] for k in ("LIT", "ATLAS")]
+        check("n. today's real health agrees with the study: < 5 live trades = 'too few trades' (LIT 2, ATLAS 4), the 2021-25 band rides along",
+              [x[1] for x in o["realH"]] == ["too few trades" if "too few" in z else x[1] for z, x in zip(zones, o["realH"])] and [x[2] for x in o["realH"]] == [r[4] for r in want]
+              and all(x[3] == "2021-25" for x in o["realH"]), (o["realH"], zones))
+    else:
+        check("n. the published band = an independent count of every 10-trade backtest stretch (n, p5, p50, p95)", o["bandsProv"] and o["indep"] is not None
+              and all(a[0] == b[0] and all(abs(x - y) <= 0.002 for x, y in zip(a[1:4], b[1:4])) for a, b in zip(o["indep"], o["bandsPub"])), (o["indep"], o["bandsPub"]))
+    check("n. a p5 / p50 / p95 band: normal, cold (under halfway to the median), outside (bad), outside (hot), cold (4 losses in a row); the band's own live list wins when longer",
+          o["h3"] == ["normal", "cold streak", "outside the band", "outside the band", "cold streak"] and o["bandLive"] == 3, (o["h3"], o["bandLive"]))
+    fr = os.path.join(ROOT, "research", "forecast", "forecast.json")
+    if os.path.exists(fr):
+        raw = o["fcRaw"]
+        check("n. the real forecast (research/forecast/forecast.json): each card finds ITS row (50K -> zlarior, 25K #2 -> fresh25, Rapid -> rapid1, ATLAS funded -> atlas)",
+              o["fcReal"] and [x[1] for x in o["fcReal"][:3]] == [round(raw[k]["pass_pct"] / 100, 6) if raw[k] else None for k in ("zlarior", "fresh25", "rapid1")]
+              and all(x[0] == "forecast" for x in o["fcReal"]) and abs(o["fcReal"][3][3] - raw["atlas"]["first_payout_pct"] / 100) < 1e-9 and o["fcReal"][3][4] == raw["atlas"]["first_payout_med_sessions"], (o["fcReal"], raw))
+        check("n. the real forecast lines: 'Pass 61% · fail 31% · about 16 trading days (2021-25-like market: pass 13%)'; ATLAS 'First payout 82% · about 22 trading days · lost first 10%'",
+              o["fcLine"]["line"].startswith("Pass ") and "trading days" in o["fcLine"]["line"] and "2021-25-like market: pass" in o["fcLine"]["line"] and "Pass forecaster" in o["fcLine"]["src"]
+              and o["fcFund"]["line"].startswith("First payout ") and "lost first" in o["fcFund"]["line"], (o["fcLine"], o["fcFund"]))
+
 
 
 class _Quiet(http.server.SimpleHTTPRequestHandler):
@@ -150,7 +186,7 @@ const [, , BASE, SHOTS] = process.argv; const out = {};
     ({ p, ctx } = await page('/trading/'));
     await p.waitForFunction(() => document.getElementById('healthCard') && document.getElementById('healthCard').dataset.ready === '1', null, { timeout: 30000 });
     out.health = await p.evaluate(() => ({ rows: [...document.querySelectorAll('#healthList .hb')].map((r) => r.dataset.bot + ':' + r.dataset.word), src: document.getElementById('healthSrc').textContent,
-      bars: document.querySelectorAll('#healthList .hb-bar i.mid').length, live: document.querySelectorAll('#healthList .hb-bar i.live').length, wide: document.documentElement.scrollWidth > innerWidth + 1 }));
+      bars: document.querySelectorAll('#healthList .hb-bar i.mid, #healthList .hb-bar i.med').length, live: document.querySelectorAll('#healthList .hb-bar i.live').length, wide: document.documentElement.scrollWidth > innerWidth + 1 }));
     if (SHOTS) { await p.evaluate(() => { const e = document.getElementById('healthCard'); window.scrollTo(0, e.getBoundingClientRect().top + scrollY - 10); }); await p.waitForTimeout(500); await p.screenshot({ path: SHOTS + '/12_strategy_health.png' }); }
     await ctx.close();
   } catch (e) { out.fatal = String(e && e.stack || e).slice(0, 500); }
@@ -187,8 +223,8 @@ def browser():
           any("Payday plan" in m["fc"] or "forecaster" in m["fc"] for m in M.get("mv", [])) and (not any(m["g"] == "payout" for m in M.get("mv", [])) or any(m["next"] for m in M["mv"] if m["g"] == "payout"))
           and M.get("wide") is False, M)
     T = o.get("health") or {}
-    check("b. Trading: the Strategy health card, LIT + ATLAS 'too few trades' today, the band drawn with the live marker, the PROVISIONAL source said",
-          T.get("rows") == ["lit:too few trades", "atlas:too few trades"] and T.get("bars") == 2 and T.get("live") == 2 and "PROVISIONAL" in T.get("src", "") and T.get("wide") is False, T)
+    check("b. Trading: the Strategy health card, LIT + ATLAS 'too few trades' today, the band drawn with the live marker, its source said",
+          T.get("rows") == ["lit:too few trades", "atlas:too few trades"] and T.get("bars") == 2 and T.get("live") == 2 and ("PROVISIONAL" in T.get("src", "") or "health study" in T.get("src", "")) and T.get("wide") is False, T)
 
 
 def main():

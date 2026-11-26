@@ -69,10 +69,32 @@ def band_of(rs: list[float], window: int) -> dict | None:
             "streak_p75": int(round(pct(streaks, 75) or 0)), "streak_p95": int(round(pct(streaks, 95) or 0))}
 
 
+def from_research(src: dict) -> dict:
+    """research/health/bands.json (day-batch5: {made, window, bots: {LIT|ATLAS|BLITZ: {bands: {"2026"|"2021-25": {p5, p50, p95, n_windows,
+    trades}}, live: {n, trades: [{day, r, usd}], mean_r, zone}}}}) -> the page's shape (lit / atlas only: BLITZ never on the Trading page).
+    The 2026 band is the one the words use; the 2021-25 band rides along as a second line."""
+    w = int(src.get("window") or WINDOW)
+    out = {"v": 2, "made": str(src.get("made") or "")[:10], "provisional": False, "window": w, "src": "research/health/bands.json", "bots": {}}
+    for k, b in (src.get("bots") or {}).items():
+        bot = str(k).lower()
+        if bot not in NAMES or not isinstance(b, dict):
+            continue
+        bands_ = b.get("bands") or {}
+        main, ref = bands_.get("2026") or {}, bands_.get("2021-25") or {}
+        if not all(isinstance(main.get(q), (int, float)) for q in ("p5", "p50", "p95")):
+            continue
+        live = b.get("live") or {}
+        out["bots"][bot] = {"name": NAMES[bot], "window": w, "avg_r": {q: main[q] for q in ("p5", "p50", "p95")}, "n_backtest": main.get("trades"), "n_windows": main.get("n_windows"),
+                            "span": "2026", "ref": {"span": "2021-25", **{q: ref.get(q) for q in ("p5", "p50", "p95")}} if ref else None,
+                            "live": [{"day": str(t.get("day") or "")[:10], "r": t.get("r"), "usd": t.get("usd")} for t in live.get("trades") or [] if isinstance(t, dict) and isinstance(t.get("r"), (int, float))],
+                            "zone": str(live.get("zone") or "")[:80]}
+    return out
+
+
 def bands() -> dict:
     src = _load(BANDS_SRC)
     if isinstance(src, dict) and isinstance(src.get("bots"), dict):
-        return {**src, "src": "research/health/bands.json", "provisional": False}
+        return from_research(src)
     file = _load(TRADES) or {}
     out = {"v": 1, "made": str(file.get("built_from") or "")[:10], "provisional": True, "window": WINDOW,
            "src": "PROVISIONAL: measured on the backtest trades in trading/trades.json (research/health/bands.json has not landed)", "bots": {}}
