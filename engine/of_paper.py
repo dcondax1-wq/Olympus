@@ -86,7 +86,8 @@ def _wj(p, obj):
     tmp = p + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(obj, fh, separators=(",", ":"), default=float)
-    os.replace(tmp, p)
+    from engine import fsutil   # retries on a Windows / OneDrive lock (test_selfheal); fsutil trades nothing
+    fsutil.replace(tmp, p)
 
 
 # ------------------------------------------------------------------------------------------------ market read
