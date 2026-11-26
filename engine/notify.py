@@ -233,7 +233,7 @@ def kind_of(key: str) -> str:
         return "account_status"
     if k.startswith("guard:goal:"):                 # tools/pc_guard.py: 25 / 50 / 75 % = progress; 100 % = the target reached
         return "account_status" if k.rstrip().endswith(":100") else "eval_milestones"
-    if k.startswith(("guard:dd:", "guard:dll:")):
+    if k.startswith(("guard:dd:", "guard:dll:", "guard:risk:")):    # guard:risk: engine/risk_alarm $500 / $300 / $150 left
         return "room_low"
     if k.startswith("guard:day:"):
         return "daily_summary"

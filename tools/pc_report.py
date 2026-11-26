@@ -324,8 +324,8 @@ def _signed(body, core: bool = False, real: bool = True) -> str:
             SIGN_STATE["why"] = "too big to sign"
             return b
         SIGN_STATE["why"] = None
-        pin = _ss.feed_vk() if real else None
-        if pin and _ss.vk_of(k) != pin:
+        pins = _ss.feed_vks() if real else []
+        if pins and _ss.vk_of(k) not in pins and not _ss.rotation_pending():
             # redteam 2026-11-21: a new key (new PC / Windows profile) under a pinned vk: every post is signed but the phone and
             # board.py drop them all. Still posted; the run record says why (rec["unsigned"]).
             SIGN_STATE["why"] = "this PC's key is not the pinned vk: the phone drops these posts (re-pin: python tools/status_sign.py check)"
@@ -2363,6 +2363,15 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
                 posted += 1
             else:
                 rec["errors"].append("status: " + why)
+            if http is None:                          # day-guard2: a key change's hand-over post (status_sign rotate), every 6 h for 14 days
+                try:
+                    from tools import status_sign as _ss
+                    rt = _ss.rotation_due()
+                    if rt:
+                        ok2, why2 = ntfy_post(cfg["ntfy"], cfg["status_topic"], rt, priority="min")
+                        rec["key_handover"] = "posted" if ok2 else why2
+                except Exception:  # noqa: BLE001
+                    pass
     elif not status.get("t"):
         rec["errors"].append("status: the bot has never reported on this PC (nothing to show)")
     write_json(os.path.join(work, "status.json"), status, compact=True)
