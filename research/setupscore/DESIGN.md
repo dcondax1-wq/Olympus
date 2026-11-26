@@ -39,3 +39,8 @@ Even a "separates" verdict changes nothing about which trades are taken: a rule 
 off the order thread: `engine/setup_progress` (watchdog, every 30 s) and `engine/notify.entry_message` (the daemon thread of
 `engine/push.pc_notify`), each inside try/except. Checks: `python -X utf8 -m tests.test_lit_live` (live loop = backtest, 0 diffs)
 and `tools/update_gate.py` (SAME).
+
+## Addendum after the holdout (2026-11-26, the lead): verdict "info only" -> no bot hook
+The score did not separate winners from losers in either holdout, so it is kept OUT of the owner's pushes (it would read like a
+signal): the setup-progress and entry-push hooks were removed before landing. It stays on the Brain "Learned" page with the
+warning, and the nightly rebuild keeps scoring it so a change would show.

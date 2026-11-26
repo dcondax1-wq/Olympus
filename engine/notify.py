@@ -915,16 +915,9 @@ def entry_message(p: dict, now=None, s: dict | None = None) -> dict:
     when = _f(p.get("t"))
     if when:
         body = " · ".join(x for x in (body, _et(when).strftime("%I:%M %p ET").lstrip("0")) if x)
-    sl = ""
-    if when and "ATLAS" not in name.upper():      # big-setupscore 2026-11-26: LIT's "similar setups" line, display only, never raises
-        try:
-            from . import setup_score
-            sl = setup_score.entry_line(side, when, risk)
-        except Exception:
-            sl = ""
     s = s or settings()
     night = quiet(now if now is not None else time.time(), s) and not rings("trade_opened", s)
-    return {"title": mask_ids(title), "body": mask_ids((body or "Entered") + "." + (f"\n{sl}" if sl else "")), "priority": "low" if night else "high",
+    return {"title": mask_ids(title), "body": mask_ids((body or "Entered") + "."), "priority": "low" if night else "high",
             "tags": "chart_with_upwards_trend" if side == "LONG" else "chart_with_downwards_trend", "risk": risk, "gain": gain}
 
 

@@ -4,7 +4,8 @@ outcome (taken R, or what it would have made with every gate open): k nearest ne
 displacement, inducements and the prior VIX close, same side only, standardised, k = 50, only setups dated before today.
 
 Pure and safe: no network, no orders, no numpy; every public function returns None / "" on any problem instead of raising.
-Called only off the order thread: engine/setup_progress (watchdog) and engine/notify.entry_message (push daemon thread).
+No bot hook (lead 2026-11-26: it does not predict, so it stays out of the owner's pushes): only tools/build_brain_learn (the Brain
+"Learned" page card, with its "not a predictor" warning) and tools/setupscore_build (nightly pool) read it.
 Pool file: research/setupscore/pool.json (tools/setupscore_build.py, nightly); its "verdict" says whether the score separated
 winners from losers out of sample ("separates") or not ("info only": the line then says so).
 Tests: python -X utf8 -m tests.test_setup_score

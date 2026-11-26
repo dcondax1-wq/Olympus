@@ -2,8 +2,7 @@
   a. the kNN: same side only, only setups dated before the day, nearest first, missing facts left out, N / won / avg R
   b. the line: '$ at this size', 'history only, not a predictor' unless the pool's verdict is 'separates'; '' on nothing
   c. never raises: junk pool / junk rows / no file -> None or ''
-  d. the hooks: a Brain row (bar CLOSE stamp -> the bar's open minute), the setup ping adds the line (not to a cancel), the entry push
-     reuses the ping's score with the $ at the real size, ATLAS entries get no line
+  d. a Brain row (bar CLOSE stamp -> the bar's open minute); NOT in the owner's pushes (lead 2026-11-26: it does not predict)
   e. display only: no order / route / size call in the module; the real pool + eval: verdict = the pre-registered holdout result
     python -X utf8 -m tests.test_setup_score
 """
@@ -67,16 +66,9 @@ def main():
         row = {"id": "1:1", "t": t_close, "dir": 1, "checks": [{"key": "depth", "value": 1.0}, {"key": "disp", "value": 1.0}, {"key": "idm", "value": 1}]}
         x = SS.from_brain_row(row)
         check("d. a Brain row: the bar close stamp -> its open minute (03:00 = 3.0 h), its facts", x and abs(x[0]["h"] - 3.0) < 1e-9 and x[0]["depth"] == 1.0 and x[1] == 1, x)
-        from engine import setup_progress as SP
-        br = {"setups": [row]}
-        ln = SP.score_line(br, {"step": 5, "sid": "1:1"})
-        check("d. the setup ping adds the line under its text; a cancel line gets none", ln.startswith("\nSimilar setups: 50") and SP.score_line(br, {"step": 0, "sid": "1:1"}) == "", ln)
-        from engine import notify as N
-        m = N.entry_message({"who": "Zlarior 50K", "side": "LONG", "qty": 2, "entry": 25000, "stop": 24950, "target": 25200, "t": t_close + 600}, now=t_close)
-        check("d. the LIT entry push reuses the ping's score with $ at the real size (2 MNQ x 50 pts = $200 risk)",
-              ln.strip().split(" · ")[0].split(" (")[0] in m["body"] and "Similar setups: 50, won 98%, avg -0.02R (-$4 at this size)" in m["body"], (ln, m["body"]))
-        a = N.entry_message({"who": "ATLAS 25K", "side": "LONG", "qty": 2, "entry": 25000, "stop": 24950, "target": 25200, "t": t_close + 600}, now=t_close)
-        check("d. ATLAS entries get no LIT line", "Similar setups" not in a["body"], a["body"])
+        nsrc = open(os.path.join(ROOT, "engine", "notify.py"), encoding="utf-8").read() + open(os.path.join(ROOT, "engine", "setup_progress.py"), encoding="utf-8").read()
+        check("d. NOT in the owner's pushes (it does not predict): notify / setup_progress never import it", "setup_score" not in nsrc)
+        check("d. entry_line still works for the page (remembered score reused, $ at the size)", SS.brain_score(row) and "at this size" in SS.entry_line("LONG", t_close + 600, 200))
     finally:
         SS.POOL_PATH = keep
     src = open(os.path.join(ROOT, "engine", "setup_score.py"), encoding="utf-8").read()
