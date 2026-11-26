@@ -409,7 +409,7 @@ def part_g(tmp, dd_c):
     c = ZL._read_json(card, {})
     check("g. fake steps run in order (pull, edge, costs, 3 anatomy, lab, hub); the card learned.json = the PC's line + date, no BLITZ",
           [x[0] for x in calls] == ["tools/data_pull.py", "tools/edge_health.py", "tools/cost_alarm.py"] + ["tools/win_loss_anatomy.py"] * 3
-          + ["tools/zeus_lab.py", "tools/research_hub.py", "research/blitz/learn.py"]
+          + ["tools/zeus_lab.py", "tools/research_hub.py", "research/blitz/learn.py", "research/orderflow/of_learn.py"]
           and c.get("day") == DAY and c.get("line", "").startswith("ZEUS learned Nov 19") and "blitz" not in json.dumps(c).lower()
           and len(json.dumps(c).encode()) <= LN.CARD_MAX_BYTES, (calls, c.get("line")))
     D = ZL._read_json(dec, {})
@@ -433,7 +433,7 @@ def part_g(tmp, dd_c):
                 card_path=card, decisions=dec, report=rep)
     check("g. dry run: the plan only, nothing run or written", o3.get("plan") and os.path.getmtime(dec) == mt)
     skip = LN.plan(argparse.Namespace(**{**vars(a), "no_pull": True, "skip": "lab,anatomy", "full": True}))
-    check("g. --no-pull --skip lab,anatomy: edge, costs, learned, decide, hub only", [s for s, _ in skip] == ["edge", "costs", "learned", "decide", "hub", "blitz"], skip)
+    check("g. --no-pull --skip lab,anatomy: edge, costs, learned, decide, hub only", [s for s, _ in skip] == ["edge", "costs", "learned", "decide", "hub", "blitz", "oflearn"], skip)
     it = LN.decide_item({"id": "Bad Id!", "question": "q", "why": "w"})
     check("g. a proposal with a bad id never reaches the card", it is None)
 

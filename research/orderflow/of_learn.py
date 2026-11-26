@@ -117,7 +117,12 @@ def log(rows, path):
     """Append rows whose (bot, t) is not logged yet. -> the full log."""
     have = _jl(path)
     keys = {(r["bot"], int(r["t"])) for r in have}
-    new = [r for r in rows if (r["bot"], int(r["t"])) not in keys]
+    new = []
+    for r in rows:                                                       # also once within tonight's batch
+        k = (r["bot"], int(r["t"]))
+        if k not in keys:
+            keys.add(k)
+            new.append(r)
     if new:
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "a", encoding="utf-8") as fh:

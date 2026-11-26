@@ -72,3 +72,9 @@ A 4th look at **250 tick days** is added (looks 40 / 60 / 120 / 250; `--final` =
 done). This can only make a PASS harder: a test that passed earlier must still pass at every later look. The PC also runs the
 battery itself at each look (`engine/tickrec.autopilot`, results under `logs/orderflow/`, one phone line), so the first look
 happens the night the 40th day is in, not when the cloud next pulls.
+
+## Note added 2026-11-26 (day-oflearn, before any tick data reached the cloud; code bug, no rule changed)
+`filter_report` / `standalone_report` (and `of_study.prereg`) read the placebo p as `(p or 1) < 0.10`. With 3,000 draws a very
+strong result rounds to p = 0.0, which that test read as 1, so the strongest possible pass was REJECTED. Found by the planted-tick
+proof (`of_sim.py`, `tests/test_oflearn.py`): OF1 kept +$9.9k / +$6.3k in both halves with p 0.0 and still said REJECTED. Now
+`p is None` alone means "no placebo". The frozen rule (p < 0.10) is unchanged.
