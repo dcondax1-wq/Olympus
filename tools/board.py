@@ -65,9 +65,12 @@ def fetch_lite(get=None) -> dict | None:
         return None
     from tools import pc_feed                      # the core post + its newest ext post(s) merged (the old single post as it was)
     from tools import status_sign as S             # day-security 2026-11-20: anyone can post to the public topic
-    vk = S.feed_vk(STATUS_FEED)
+    vk = S.feed_vks(STATUS_FEED)                  # day-guard2: every pinned key ("vk" + "vks"); a signed rotation post adds its new key
     if ok and not vk:
         msgs = only_pc_key(msgs)                   # day-noleak: no pinned vk yet -> the key that signed the PC's posts for hours wins
+    KEY_CANDIDATE.clear()
+    if ok and vk:
+        KEY_CANDIDATE.update(S.candidate(msgs, S.accepted(msgs, vk)) or {})   # the 3-hour window: a new PC key, never trusted alone
     lite = pc_feed.pick(S.filter_msgs(msgs, vk)) if ok else None    # never a future-dated post; with a pinned vk only signed ones
     if isinstance(lite, dict) and vk:
         _SIGNED[id(lite)] = lite                   # kept beside the post, never in it (the post's own keys stay exactly as posted)
@@ -76,6 +79,7 @@ def fetch_lite(get=None) -> dict | None:
 
 _SIGNED: dict = {}                                 # posts fetch_lite checked against the pinned vk (held, so an id is never reused)
 FOREIGN = {"n": 0, "last_t": None}                 # status posts dropped by only_pc_key (another machine's key), this process
+KEY_CANDIDATE: dict = {}                           # status_sign.candidate: no pinned key for 3 h+, one other key steady for 3 h+
 
 
 PC_KEY_MIN_POSTS, PC_KEY_MIN_SPAN_S = 3, 30 * 60
@@ -214,6 +218,10 @@ def gather(offline: bool = False, hb=None, lite=None, now=None) -> dict:
     if lite is not None and not signed(lite):
         ev_nt = _unsigned(ev_nt)
         notes.append(UNSIGNED_NOTE)
+    if KEY_CANDIDATE.get("vk"):
+        notes.append(f"NO pinned key signed a PC post for 3 h+, but key {KEY_CANDIDATE['vk'][:6]}... signed {KEY_CANDIDATE['n']} posts over "
+                     f"{(KEY_CANDIDATE['last'] - KEY_CANDIDATE['first']) / 3600:.1f} h: if the owner reinstalled / changed the PC, pin it "
+                     f"(python tools/status_sign.py pin {KEY_CANDIDATE['vk'][:12]}, commit, publish); until then its posts are NOT believed")
     if FOREIGN["n"]:
         notes.append(f"ignored {FOREIGN['n']} status post(s) NOT signed by the PC's key (newest "
                      f"{B.et_text(FOREIGN['last_t']) if FOREIGN['last_t'] else '?'}): a sandbox / copy of the repo, NOT the owner's PC")

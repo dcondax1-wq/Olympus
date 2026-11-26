@@ -350,6 +350,9 @@ AREAS["pc"].append("noleak")           # day-noleak 2026-11-26: only the owner's
 AREAS["privacy"].append("noleak")
 AREAS["board"].append("noleak")
 AREAS["pc"].append("noleak_rt"); AREAS["privacy"].append("noleak_rt")   # red team 2026-11-26: the real PC never goes dark (fail-open on Windows)
+AREAS["pc"].append("guard2")           # day-guard2 2026-11-26: risk-distance alarms, signed status feed + key rotation, /today
+AREAS["board"].append("guard2")
+AREAS["privacy"].append("guard2")
 AREAS["pc"].append("alert_drill")       # day-alerts 2026-11-21: end-to-end alert drill (telegram / ntfy / off set-ups)
 AREAS["pc"].append("alerts_box")        # alerts-phone 2026-11-21: /alerts/ = ALERTS_SETUP Telegram from the phone (engine/alerts_box.py); its own line
 AREAS["pc"].append("alerts_start_code")   # day-security3 2026-11-21: the /alerts/ page's one-time START code; its own line

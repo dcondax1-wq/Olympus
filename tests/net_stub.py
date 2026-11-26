@@ -37,11 +37,34 @@ def _log():                # NET_STUB_LOG=<file>: one line per process, "<script
             pass
 
 
+FEED = "**/status_feed.json"
+
+
+def _unpinned(r):
+    """day-guard2 2026-11-26: the site's status_feed.json pins the PC's real signing key ("vk"); a suite's ntfy fixtures are unsigned,
+    so the test copy is served WITHOUT vk / vks (the signature path itself: tests/test_status_sign.py + test_guard2.py in node).
+    NET_STUB_KEEP_VK=1 keeps it. A suite's own later route of status_feed.json still wins."""
+    import json as _json
+    try:
+        resp = r.fetch()
+        d = _json.loads(resp.text())
+        if isinstance(d, dict) and os.environ.get("NET_STUB_KEEP_VK") != "1":
+            d.pop("vk", None)
+            d.pop("vks", None)
+        r.fulfill(response=resp, body=_json.dumps(d), content_type="application/json")
+    except Exception:  # noqa: BLE001
+        try:
+            r.fallback()
+        except Exception:  # noqa: BLE001
+            pass
+
+
 def stub(target, body: str = EMPTY):
-    """route ntfy.sh on a BrowserContext or Page to `body` (default "{}"), CORS open, for GET and POST alike"""
+    """route ntfy.sh on a BrowserContext or Page to `body` (default "{}"), CORS open, for GET and POST alike; status_feed.json unpinned"""
     def answer(r):
         HITS.append(r.request.url)
         r.fulfill(status=200, content_type="application/json", headers={"Access-Control-Allow-Origin": "*"}, body=body)
+    target.route(FEED, _unpinned)
     target.route(NTFY, answer)
     return target
 
