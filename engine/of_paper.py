@@ -179,8 +179,12 @@ def step(S: dict, day: str, R_today: dict, R_prev: dict | None, prev_day: str | 
     # the day is over once the 15:55 bar is closed by the clock (16:00:30 ET), or on a later day
     end_of_day = (et_day(now) == day and now >= _et(now).replace(hour=16, minute=0, second=30).timestamp()) or et_day(now) > day
     L = B.levels(D, days, len(days) - 1)
+    S["levels"] = [{"name": nm, "px": round(float(lv), 2), "side": int(sd)} for nm, lv, sd in L]
     rth_i = [i for i in range(n_closed) if 570 <= bars["mod"].iat[i] < 960]
     orb = [i for i in rth_i if bars["mod"].iat[i] < 600]
+    if len(orb) == 6 and any(bars["mod"].iat[i] >= 600 for i in rth_i):     # the opening range, once it is complete
+        S["levels"] += [{"name": "orh", "px": round(float(bars.high.iloc[orb].max()), 2), "side": 1},
+                        {"name": "orl", "px": round(float(bars.low.iloc[orb].min()), 2), "side": -1}]
     used = set(S.get("used") or [])
     rows = S["rows"]
     done = S.get("done_t")
@@ -469,6 +473,21 @@ def replay_frame(x, day: str, R_prev=None, prev_day=None, lit=None, depth=None, 
         R = summary_of(x[m], day, depth[depth.t_ms <= now * 1000] if depth is not None else None)
         S = step(S, day, R, R_prev, prev_day, tt_all[m], px_all[m], now, kill=bool(kill_at and now >= kill_at), lit=lit, depth=depth)
     return S
+
+
+def replay_summary(R_today: dict, day: str, R_prev=None, prev_day=None, lit=None) -> dict:
+    """A recorded day from its 5m SUMMARY only (what the cloud receives; raw ticks stay on the PC) through the same step():
+    decisions at each bar close, fills at the next bar's open + 1 tick (= replay_frame / of_study._sim_df). Lane C needs the raw
+    depth snapshots, so it is empty here."""
+    b = R_today["bars"]
+    if not len(b):
+        return new_state(day)
+    tt = b.t.to_numpy(np.int64) * 1000
+    px = b.o.to_numpy(float)
+    now = int(b.t.iloc[-1]) + 600
+    if et_day(now) == day and _mod(now) < 16 * 60 + 1:
+        now = int(_et(now).replace(hour=16, minute=1).timestamp())
+    return step(new_state(day), day, R_today, R_prev, prev_day, tt, px, now, lit=lit)
 
 
 def replay(day: str, root: str = ROOT) -> dict:
