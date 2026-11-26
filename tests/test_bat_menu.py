@@ -63,7 +63,7 @@ def menu_files():
 def part_a():
     top = sorted(f for f in os.listdir(ROOT) if f.lower().endswith(".bat"))
     check("a. the top folder holds exactly the 13 kept .bat files", set(top) == KEEP, sorted(set(top) ^ KEEP))
-    check("a. 42 files live in tools/bat/", len(moved()) == 42, len(moved()))
+    check("a. 44 files live in tools/bat/", len(moved()) == 44, len(moved()))   # day-ops2: + NT_OFF_ONEDRIVE, RESTORE_NEW_PC
 
 
 def part_b():

@@ -567,10 +567,18 @@ def check_windows_update(now, reg=_reg, key_exists=_reg_key_exists, is_windows=N
               "Settings > Windows Update > Pause updates (up to 5 weeks); install them on a weekend.")
 
 
+ONEDRIVE_FIX = ("Double-click tools\\bat\\NT_OFF_ONEDRIVE.bat once (after 16:00 ET, NinjaTrader closed, type Y): it pins the "
+                "folder and moves it out of OneDrive (backup kept; to undo, run it with the word undo).")
+
+
 def check_onedrive(folder: str) -> dict:
-    if "onedrive" in folder.lower():
-        return _c("onedrive", "OneDrive", WARN, "the NinjaTrader folder is inside OneDrive (syncing can lock order files)",
-                  "Click the OneDrive cloud by the clock > gear > Settings > Sync and backup > Manage back up > turn Documents off.")
+    # day-ops2: the REAL place (a junction made by tools/bat/NT_OFF_ONEDRIVE.bat points out of OneDrive: then it is fine)
+    try:
+        real = os.path.realpath(folder)
+    except Exception:  # noqa: BLE001
+        real = folder
+    if "onedrive" in str(real).lower():
+        return _c("onedrive", "OneDrive", WARN, "the NinjaTrader folder is inside OneDrive (syncing can lock order files)", ONEDRIVE_FIX)
     return _c("onedrive", "OneDrive", OK, "NinjaTrader folder is not synced by OneDrive")
 
 

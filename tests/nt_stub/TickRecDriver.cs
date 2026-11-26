@@ -29,7 +29,7 @@ public static class TickRecDriver
         SetStatic("MinFreeBytes", 0L);
         // pure helpers
         Ok(LE_TickRec.FrontName("NQ", new DateTime(2026, 11, 23)) == "NQ 12-26", "front Nov 23 = NQ 12-26");
-        Ok(LE_TickRec.FrontName("NQ", new DateTime(2026, 12, 10)) == "NQ 12-26" && LE_TickRec.FrontName("NQ", new DateTime(2026, 12, 11)) == "NQ 03-27", "roll 8 days before the 3rd Friday (Dec 18): Dec 10 = 12-26, Dec 11 = 03-27");
+        Ok(LE_TickRec.FrontName("NQ", new DateTime(2026, 12, 9)) == "NQ 12-26" && LE_TickRec.FrontName("NQ", new DateTime(2026, 12, 10)) == "NQ 03-27", "roll ON the bot's roll day, 8 days before the 3rd Friday (Dec 18): Dec 9 = 12-26, Dec 10 = 03-27 (day-ops2)");
         Ok(LE_TickRec.FrontName("ES", new DateTime(2026, 6, 12)) == "ES 09-26", "front Jun 12 2026 = ES 09-26");
         Ok(!LE_TickRec.InWindow(new DateTime(2026, 11, 23, 9, 30, 0)) && !LE_TickRec.InWindow(new DateTime(2026, 11, 23, 2, 0, 0))
            && !LE_TickRec.InWindow(new DateTime(2026, 11, 23, 16, 4, 0)), "no requests Mon 02:00-16:05 ET");
@@ -133,7 +133,8 @@ public static class TickRecDriver
         Ok(LE_TickRec.Candidates("NQ", new DateTime(2026, 11, 23)).Count == 1, "Nov 23: one contract to try");
         System.Collections.Generic.List<string> cs = LE_TickRec.Candidates("NQ", new DateTime(2026, 12, 14));
         Ok(cs.Count == 2 && cs[0] == "NQ 03-27" && cs[1] == "NQ 12-26", "Dec 14 (expiry week): front 03-27, then the expiring 12-26: " + string.Join(",", cs.ToArray()));
-        Ok(LE_TickRec.Candidates("NQ", new DateTime(2026, 9, 10))[0] == "NQ 09-26" && LE_TickRec.Candidates("NQ", new DateTime(2026, 9, 10)).Count == 1, "Sep 10 = NQ 09-26 only");
+        Ok(LE_TickRec.Candidates("NQ", new DateTime(2026, 9, 9))[0] == "NQ 09-26" && LE_TickRec.Candidates("NQ", new DateTime(2026, 9, 9)).Count == 1, "Sep 9 = NQ 09-26 only");
+        Ok(LE_TickRec.Candidates("NQ", new DateTime(2026, 9, 10))[0] == "NQ 12-26" && LE_TickRec.Candidates("NQ", new DateTime(2026, 9, 10)).Count == 2, "Sep 10 (the bot's roll day) = NQ 12-26 first, then the expiring 09-26");
         // 9. disable: no more requests
         File.Delete(Path.Combine(lt, "enabled.txt"));
         Run(r, 1);

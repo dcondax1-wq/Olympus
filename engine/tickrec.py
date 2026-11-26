@@ -97,14 +97,16 @@ def nt_dir() -> str | None:
 
 
 def front_names(roots, today: dt.date | None = None) -> list[str]:
-    """NinjaTrader names of the front quarterly contract ('NQ 12-26'); rolls 8 days before the 3rd Friday."""
+    """NinjaTrader names of the front quarterly contract ('NQ 12-26'); rolls ON the day 8 days before the 3rd Friday, the same
+    day as the bot's orders (engine/ninjatrader.nt_instrument: Dec 2026 -> Mar 2027 on Thu 2026-12-10). day-ops2 2026-11-26:
+    this said `<=` and rolled the order-flow recorder one day AFTER the bot (Dec 11)."""
     d = today or dt.datetime.now(ET).date()
     y, m = d.year, d.month
     for _ in range(5):
         if m % 3 == 0:
             first = dt.date(y, m, 1)
             fri3 = first + dt.timedelta(days=(4 - first.weekday()) % 7 + 14)
-            if d <= fri3 - dt.timedelta(days=8):
+            if d < fri3 - dt.timedelta(days=8):
                 break
         m, y = (1, y + 1) if m == 12 else (m + 1, y)
     return ["%s %02d-%02d" % (r, m, y % 100) for r in roots]

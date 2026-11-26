@@ -1302,8 +1302,36 @@ def fix_ninjascript(ctx) -> list:
             for r in rows if r.get("status") in st]
 
 
+def fix_roll(ctx) -> list:
+    """day-ops2: the hands-free quarterly roll (engine/roll_auto.py): LE_Feed in shadow mode before the roll, compared with the
+    chart, switched over only when equal, back to the chart when it goes silent, one 'Roll done' line. Off: LE_ROLL_AUTO=0."""
+    if not ctx.nt:
+        return []
+    from . import roll_auto
+    rows = roll_auto.tick(ctx.root, ctx.nt, ctx.now, flat=lambda: trade_open(ctx) or None, env=ctx.env, apply=ctx.apply)
+    return [item("roll", "roll", r["status"], r["text"]) for r in rows if r.get("status") in ("fixed", "would", "need")]
+
+
+def fix_backup(ctx) -> list:
+    """day-ops2: the weekly encrypted backup of the PC's private state (engine/pc_backup.py), outside trading hours."""
+    if str(ctx.env.get("LE_PC_BACKUP", "1")) == "0" or not ctx.is_windows and str(ctx.env.get("LE_PC_BACKUP", "")) != "1":
+        return []
+    from . import pc_backup
+    r = pc_backup.weekly(ctx.root, ctx.env, ctx.now, apply=ctx.apply)
+    if r is None:
+        return []
+    if r.get("would"):
+        return [item("backup", "backup", "would", "would make the weekly encrypted backup")]
+    if not r.get("ok"):
+        return [item("backup", "backup", "need", f"weekly backup failed: {r.get('error')}", "python -X utf8 -m engine.pc_backup --now")]
+    txt = f"weekly encrypted backup made ({r.get('files')} files)"
+    return [item("backup", "backup", "need" if r.get("first") else "fixed",
+                 txt + ("; START shows your recovery code once: save it in your phone's notes" if r.get("first") else ""))]
+
+
 REMEDIES = (("git_lock", fix_git_locks), ("update", fix_update), ("oif", fix_oif), ("pid", fix_pids), ("server", fix_server),
-            ("nt", fix_nt), ("pip", fix_pip), ("clock", fix_clock), ("site", fix_site), ("ninjascript", fix_ninjascript))
+            ("nt", fix_nt), ("pip", fix_pip), ("clock", fix_clock), ("site", fix_site), ("roll", fix_roll), ("backup", fix_backup),
+            ("ninjascript", fix_ninjascript))
 
 
 def run(ctx, state: dict | None = None, force_clean: bool = False, only=None, disk_free=None) -> dict:
