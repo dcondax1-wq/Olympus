@@ -262,9 +262,13 @@ def test_backup():
         if not rr.get("ok"):
             print("   restore said:", rr)
         same = all(open(os.path.join(new, rel)).read() == files[rel] for rel in
-                   ("data/accounts.json", "data/start_bot.json", "data/rapid.json", "data/lanes/x.json", ".env.local.ps1"))
-        check("C6. restore on the new PC: accounts, switches, lanes, the live switch file + alerts.json back byte for byte",
-              rr.get("ok") and same and json.load(open(os.path.join(nh, "alerts.json")))["telegram"]["token"] == secret, rr)
+                   ("data/accounts.json", "data/start_bot.json", "data/rapid.json", "data/lanes/x.json"))
+        # red team 2026-11-26: the live-switch LINE of .env.local.ps1 is taken out of every backup (engine/pc_backup.disarm): the
+        # new PC's START phrase writes it again; the file itself comes back without it
+        env_back = open(os.path.join(new, ".env.local.ps1")).read() if os.path.exists(os.path.join(new, ".env.local.ps1")) else ""
+        check("C6. restore on the new PC: accounts, switches, lanes, alerts.json back byte for byte; the live-switch line NOT restored",
+              rr.get("ok") and same and "NINJATRADER_LIVE" not in env_back.upper()
+              and json.load(open(os.path.join(nh, "alerts.json")))["telegram"]["token"] == secret, rr)
         check("C7. the arming proofs (auto_resume, autostart) and transient files are NOT restored: START + your phrase arms",
               not any(os.path.exists(os.path.join(new, "data", f)) for f in ("auto_resume.json", "autostart.json", "remote_done.json")))
         check("C8. a tracked file is never written (data/NQ_5m.csv comes from GitHub)",

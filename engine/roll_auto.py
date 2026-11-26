@@ -121,16 +121,19 @@ def bars(path: str) -> dict:
 def compare(chart: dict, shadow: dict, before: int | None = None) -> dict:
     """{ET day: (overlapping bars, different bars)} of the closed bars both files hold (the newest bar of each is skipped:
     it may be the one still being written). before: only bars that opened before this time."""
-    common = sorted(set(chart) & set(shadow))
-    if common:
-        common = common[:-1]
+    # red team 2026-11-26: a chart bar the shadow MISSED counts as different (a feed with gaps must never verify), within the
+    # shadow's own span only (it starts later than the chart: before its first bar nothing is held against it)
+    if not chart or not shadow:
+        return {}
+    lo, hi = min(shadow), max(shadow)
+    common = sorted(t for t in chart if lo <= t < hi and t < max(chart))
     days: dict = {}
     for t in common:
         if before is not None and t >= before:
             continue
         d = _et(t).date().isoformat()
         n, bad = days.get(d, (0, 0))
-        days[d] = (n + 1, bad + (chart[t] != shadow[t]))
+        days[d] = (n + 1, bad + (shadow.get(t) != chart[t]))
     return days
 
 

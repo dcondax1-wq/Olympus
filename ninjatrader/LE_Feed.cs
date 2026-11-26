@@ -84,6 +84,22 @@ namespace NinjaTrader.NinjaScript.AddOns
     {
         public static volatile bool HeadlessOn;       // the LE_Feed add-on is running
         public static volatile bool AccountsOn;       // ... and writes accounts.csv
+        // red team 2026-11-26: a heartbeat from the add-on's own timer. A chart defers ONLY while it is fresh: an add-on that is
+        // loaded but stalled (its timer stuck, so it never reads le_feed_mode.txt again) can no longer silence the chart, which
+        // then writes the bars again by itself within BeatMaxSeconds, without waiting for the PC's hourly fallback.
+        public const int BeatMaxSeconds = 180;
+        private static long beatTicks;
+
+        public static void Beat()
+        {
+            System.Threading.Interlocked.Exchange(ref beatTicks, DateTime.UtcNow.Ticks);
+        }
+
+        public static bool Fresh()
+        {
+            long t = System.Threading.Interlocked.Read(ref beatTicks);
+            return t > 0 && (DateTime.UtcNow.Ticks - t) < BeatMaxSeconds * TimeSpan.TicksPerSecond;
+        }
         private static readonly object Sync = new object();
         private static readonly HashSet<string> roots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -106,7 +122,7 @@ namespace NinjaTrader.NinjaScript.AddOns
 
         public static bool Covers(string root)
         {
-            if (!HeadlessOn || string.IsNullOrEmpty(root))
+            if (!HeadlessOn || !Fresh() || string.IsNullOrEmpty(root))
                 return false;
             lock (Sync)
                 return roots.Contains(root);
@@ -114,14 +130,14 @@ namespace NinjaTrader.NinjaScript.AddOns
 
         public static bool WritesAccounts()
         {
-            return HeadlessOn && AccountsOn;
+            return HeadlessOn && AccountsOn && Fresh();
         }
     }
 
     public class LE_Feed : AddOnBase
     {
         // day-ops2: the build id in the status line (",v="): `python -m engine.ns_sync --stamp` after every edit
-        public const string LE_BUILD = "63d0d3563e";
+        public const string LE_BUILD = "40d47424c8";
         private const string Header = "time,open,high,low,close,volume";
         private const string DefaultInstrument = "MNQ 12-26";
         private const string TradingHoursName = "CME US Index Futures ETH";   // the chart's trading hours (SETUP.md step 4)
@@ -324,6 +340,7 @@ namespace NinjaTrader.NinjaScript.AddOns
             {
                 eastern = null;                            // then every minute counts as "market open" for the self-heal
             }
+            LE_FeedHub.Beat();
             LE_FeedHub.HeadlessOn = !shadow;
             LE_FeedHub.AccountsOn = !shadow;
             try
@@ -453,6 +470,7 @@ namespace NinjaTrader.NinjaScript.AddOns
             try
             {
                 DateTime now = DateTime.UtcNow;
+                LE_FeedHub.Beat();                         // red team 2026-11-26: proof of life for the hub (see LE_FeedHub.Fresh)
                 if (Superseded())
                 {
                     Say("LE_Feed: a newer LE_Feed took over (NinjaScript recompiled): this older copy stops");
