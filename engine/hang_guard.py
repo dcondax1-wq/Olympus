@@ -6,7 +6,8 @@ the server's own alarms were inside the hung process, and the cloud's PC-silent 
 02:00 ET, London's entries would have been missed. The supervisor (scripts/run_bot.ps1) only restarts a server that EXITS.
 
 This guard is a separate small process (so whatever froze the server cannot freeze it), started by server.py on the supervised
-PC server (LE_SUPERVISED=1). Every CHECK_S it asks GET /api/health/ping (PING_TIMEOUT_S). No answer for HANG_S in a row:
+PC server (LE_SUPERVISED=1). Every CHECK_S it asks GET /api/health/alive (async, answered by the event loop itself; no
+heartbeat / health block that could be slow for its own reasons) (PING_TIMEOUT_S). No answer for HANG_S in a row:
   * flat (engine/autoupdate.files_flat_reason: LIT's live_state + every NinjaTrader leg file) -> the server's process tree is
     killed; run_bot.ps1 starts it again in ~5 s and the auto-resume brings an opted-in eval back armed. ONE Telegram line
     (engine/alert_bus, else the PC's ntfy notice): "PC server hung N min: restarted (flat)" + where it was stuck.
@@ -53,7 +54,7 @@ def enabled(env=None) -> bool:
 
 def ping(port: int, timeout: float = PING_TIMEOUT_S) -> bool:
     try:
-        req = urllib.request.Request(f"http://127.0.0.1:{port}/api/health/ping", headers={"User-Agent": "olympus-hang-guard/1"})
+        req = urllib.request.Request(f"http://127.0.0.1:{port}/api/health/alive", headers={"User-Agent": "olympus-hang-guard/1"})
         with urllib.request.urlopen(req, timeout=timeout) as r:
             return r.status == 200
     except Exception:
@@ -126,30 +127,10 @@ def where_stuck(since: float, path: str = STACKS) -> str:
 
 
 def all_flat_reason(root: str = ROOT) -> str | None:
-    """red team 2026-11-26: flat on EVERY account, not only LIT's. engine/autoupdate.files_flat_reason reads data/live_state.json +
-    data/ninjatrader_state.json (LIT's adapter); ATLAS (acctb), account C, the combo / fleet / extra accounts each keep their open
-    legs in their own data/ninjatrader_state_<x>.json. Any open leg there, or a file it cannot read = NOT flat (fails closed)."""
+    """Flat on EVERY account (red team #22): engine/autoupdate.files_flat_reason now checks LIT's files AND every
+    data/ninjatrader_state_<x>.json (accounts_flat_reason, unreadable = not flat). One helper for the update and this guard."""
     from .autoupdate import files_flat_reason
-    why = files_flat_reason(root)
-    if why:
-        return why
-    import glob
-    for p in sorted(glob.glob(os.path.join(root, "data", "ninjatrader_state_*.json"))):
-        name = os.path.basename(p)
-        if name in SKIP_STATE:
-            continue
-        try:
-            with open(p, encoding="utf-8") as fh:
-                d = json.load(fh)
-        except FileNotFoundError:
-            continue
-        except Exception:
-            return f"data/{name} unreadable: a trade may be open"
-        legs = d.get("legs") if isinstance(d, dict) else None
-        for lg in legs or []:
-            if isinstance(lg, dict) and lg.get("status") in OPEN_LEG:
-                return f"an open {lg.get('instrument') or 'MNQ'} leg in data/{name} ({lg.get('status')})"
-    return None
+    return files_flat_reason(root)
 
 
 def recent_kills(path: str = STATE_PATH, now: float | None = None) -> int:

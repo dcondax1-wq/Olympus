@@ -201,6 +201,43 @@ def test_clusters():
           SH.ALERT_EVERY_S >= 24 * 3600)
 
 
+def test_rt22_followups(tmp):
+    """red team #22 follow-ups: one flat check for every account (the update and the guard), and the guard's bare async ping."""
+    from engine import autoupdate as AU
+    root = os.path.join(tmp, "flat")
+    os.makedirs(os.path.join(root, "data"))
+    check("f1. no state files: flat", AU.files_flat_reason(root) is None)
+    open(os.path.join(root, "data", "ninjatrader_state_acctb.json"), "w").write(json.dumps({"legs": [
+        {"status": "protected", "instrument": "MNQ 12-26"}]}))
+    why = AU.files_flat_reason(root)
+    check("f2. an open ATLAS leg (data/ninjatrader_state_acctb.json) = NOT flat for the update, the remote restart, auto-park and "
+          "the guard alike", why and "acctb" in why and HG.all_flat_reason(root) == why, why)
+    open(os.path.join(root, "data", "ninjatrader_state_acctb.json"), "w").write(json.dumps({"legs": [{"status": "closed"}]}))
+    open(os.path.join(root, "data", "ninjatrader_state_rapid.json"), "w").write("{not json")
+    why = AU.files_flat_reason(root)
+    check("f3. a state file it cannot read = NOT flat (fails closed)", why and "unreadable" in why, why)
+    os.remove(os.path.join(root, "data", "ninjatrader_state_rapid.json"))
+    open(os.path.join(root, "data", "ninjatrader_state_simcheck.json"), "w").write(json.dumps({"legs": [{"status": "protected"}]}))
+    check("f4. closed legs + the self-test's simcheck file: flat", AU.files_flat_reason(root) is None)
+    src = open(os.path.join(ROOT, "server.py"), encoding="utf-8").read()
+    al = src[src.index('@app.get("/api/health/alive")'):src.index('@app.get("/api/health/ping")')]
+    check("f5. GET /api/health/alive is async and reads nothing (no HEARTBEAT / health block / lock)",
+          "async def health_alive" in al and "HEARTBEAT" not in al and "WATCHDOG" not in al and 'return {"ok": True}' in al)
+    hg = open(os.path.join(ROOT, "engine", "hang_guard.py"), encoding="utf-8").read()
+    check("f6. the guard pings /api/health/alive (not the heavier /api/health/ping)", "/api/health/alive\"" in hg
+          and "/api/health/ping\", headers" not in hg)
+    try:
+        from fastapi.testclient import TestClient
+        import importlib
+        os.environ.setdefault("LE_NO_AUTOSTART", "1")
+        srv = importlib.import_module("server")
+        r = TestClient(srv.app, client=("127.0.0.1", 50000)).get("/api/health/alive")
+        check("f7. the real app answers /api/health/alive with {'ok': true}", r.status_code == 200 and r.json().get("ok") is True,
+              (r.status_code, r.text[:100]))
+    except Exception as e:  # noqa: BLE001
+        check("f7. the real app answers /api/health/alive", False, f"{e.__class__.__name__}: {e}")
+
+
 def main() -> int:
     tmp = tempfile.mkdtemp(prefix="le_zeroerr2_")
     try:
@@ -208,6 +245,7 @@ def main() -> int:
         test_real(tmp)
         test_wiring()
         test_clusters()
+        test_rt22_followups(tmp)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print(f"\n{sum(RES)}/{len(RES)} passed")

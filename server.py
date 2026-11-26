@@ -1065,6 +1065,13 @@ except Exception as _pa_err:
 # ---- END REMOTE CONTROL ----
 
 
+@app.get("/api/health/alive")
+async def health_alive():
+    """red team #22: the hang guard's ping (engine/hang_guard.py). async = answered by the event loop itself (a frozen loop = no
+    answer), nothing else read: no heartbeat status, health block or lock that could be slow on its own."""
+    return {"ok": True}
+
+
 @app.get("/api/health/ping")
 def health_ping():
     return J({"ok": True, "t": int(time.time()), "uptime_s": int(time.time() - WATCHDOG.server_started_at),

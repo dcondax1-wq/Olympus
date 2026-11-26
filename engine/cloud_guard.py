@@ -17,7 +17,7 @@ import os
 
 from fastapi.responses import JSONResponse, Response
 
-OPEN_PATHS = ("/api/health/ping", "/api/tv/webhook")
+OPEN_PATHS = ("/api/health/ping", "/api/health/alive", "/api/tv/webhook")   # alive: the hang guard's bare ping (big-zeroerr2)
 # the Start page's arm / start / account writes (engine/start_api.py): also refused off this PC by local_only() below
 START_WRITES = ("/api/next/start/names", "/api/next/start/nt", "/api/next/start/setup", "/api/next/start/sims",
                 "/api/next/start/arm", "/api/next/start/go", "/api/next/start/resume", "/api/next/start/clock",
