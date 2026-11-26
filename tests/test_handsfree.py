@@ -328,6 +328,7 @@ def test_writers_sandbox():
 READ_ONLY = {
     "research/scalp/na_best_trades.json": "account C scores (cloud research)",
     "research/lit/mffu_rules.json": "MFFU rules (tools/mffu_rules build, cloud)",
+    "research/payout/results.json": "12-month payout policy study (tools/money/payout_year.py, cloud)",
     "research/lit/lucid_rules.json": "Lucid rules (cloud)",
     "research/lit/structure_results.json": "advisor research (cloud)",
     "research/lit/advisor_backtest.json": "advisor backtest (cloud)",
