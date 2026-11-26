@@ -19,6 +19,12 @@ OUT = os.path.join(ROOT, "tools", "web_public", "brain", "learn.json")
 JOURNAL = "research/learn/journal.json"
 STATE = "research/learn/brain_state.json"
 INSIGHTS = "research/learn/insights.json"
+FORWARD = "research/forward/forward.json"           # big-forward 2026-11-26: the watched leads on new sessions (tools/forward_paper.py)
+IDEAMILL = "research/ideamill/summary.json"
+LIVEGAP = "research/livegap/daily.json"
+HEALTH = "research/health/bands.json"
+OF_LEARN = "research/orderflow/learner.json"        # the order-flow learner's lines when it lands ({lines: [{date, text}]})
+PROMOTE_N = 20
 PILLARS = ("lit", "atlas", "blitz", "of", "learn", "risk")
 ALIAS = {"orderflow": "of", "order_flow": "of", "zlarior": "lit", "market": "learn", "shared": "learn", "accounts": "risk"}
 
@@ -47,7 +53,9 @@ def _num(v):
 
 
 def _s(v, n=280):
-    return " ".join(str(v if v is not None else "").replace("->", "→").replace("<", "").replace(">", "").split())[:n]
+    t = str(v if v is not None else "").replace("->", "→").replace(">=", "≥").replace("<=", "≤")
+    t = t.replace("<", " under ").replace(">", " over ")    # the page writes text only; keep the meaning of a < / > (big-learnview)
+    return " ".join(t.split()).replace("( ", "(")[:n]
 
 
 def journal_rows(j):
@@ -120,6 +128,129 @@ def from_insights(ins):
     return rows, state
 
 
+# ================================================================================================ the learning view (big-learnview 2026-11-26)
+def _weekdays(a, z):
+    import datetime as dt
+    try:
+        d0, d1 = dt.date.fromisoformat(a), dt.date.fromisoformat(z)
+    except (TypeError, ValueError):
+        return None
+    n, d = 0, d0
+    while d <= d1:
+        n += d.weekday() < 5
+        d += dt.timedelta(days=1)
+    return n
+
+
+def forward_rows(f):
+    """Each watched rule: how many new trades, forward R vs its own backtest, how close to the promotion bar."""
+    out = []
+    for rid, r in ((f or {}).get("rules") or {}).items():
+        if not isinstance(r, dict):
+            continue
+        b = r.get("band") or {}
+        n = int(r.get("n") or 0)
+        days = b.get("days") or [None, None]
+        bd = _weekdays(days[0], days[1]) if days and days[0] else None
+        rate = (b.get("n_bt") or 0) / bd if bd else None            # events a session in its backtest
+        need = max(0, PROMOTE_N - n)
+        eta = None if not rate else int(round(need / rate))
+        st = _s(r.get("status") or "watching", 12)
+        if st == "promote":
+            word = "ready: the lead writes your yes/no card"
+        elif st == "demoted":
+            word = "dropped: worse on new days than in its backtest"
+        elif st == "error":
+            word = "could not be scored tonight"
+        else:
+            word = f"needs {need} more new trades" + (f" (~{eta} trading days at its usual pace)" if eta is not None else "")
+        out.append({"id": _s(rid, 60), "what": _s(r.get("desc"), 160), "bot": _s(r.get("bot"), 10), "kind": _s(r.get("kind"), 16),
+                    "n": n, "need": PROMOTE_N, "fwd_r": _num(r.get("mean")), "fwd_sum": _num(r.get("sum")), "band_r": _num(b.get("mu")),
+                    "band_n": b.get("n_bt"), "z": _num(r.get("z")), "status": st, "eta_days": eta, "word": word,
+                    "progress": round(min(1.0, n / PROMOTE_N), 3)})
+    out.sort(key=lambda x: (-x["progress"], x["eta_days"] if x["eta_days"] is not None else 10 ** 6, x["id"]))
+    return {"from": _s((f or {}).get("fwd_from"), 10) or None, "data_end": _s((f or {}).get("data_end"), 10) or None,
+            "sessions": (f or {}).get("forward_sessions"), "rules": out} if f else None
+
+
+def ideamill_block(m, st):
+    if not isinstance(m, dict):
+        return None
+    c = m.get("counts") or {}
+    bi = (st or {}).get("ideamill") or {}
+    return {"tested": c.get("trials_total"), "scored": c.get("scored"), "families": c.get("v3_families"),
+            "passed_discovery": c.get("G1_bh"), "passed_haircut": c.get("G2_dsr"), "passed_holdouts": c.get("G3_holdouts"),
+            "survivors": len(m.get("v3_survivors") or []), "lucky_expected": c.get("expected_raw_p05_by_luck"),
+            "data_end": _s(m.get("data_end"), 10) or None, "best": _s(bi.get("best"), 80) or None}
+
+
+def livegap_block(d):
+    if not isinstance(d, dict):
+        return None
+    diffs = []
+    for r in d.get("rows") or []:
+        for x in r.get("diffs") or []:
+            diffs.append({"day": _s(x.get("day"), 10), "when": _s(x.get("when"), 24), "kind": _s(x.get("kind"), 10), "bot": _s(x.get("bot"), 8),
+                          "usd": _num(x.get("usd")), "detail": _s(x.get("detail"), 140)})
+    diffs.sort(key=lambda x: (x["day"], x["when"]), reverse=True)
+    return {"to": _s(d.get("bars_to") or d.get("last_day"), 10) or None,
+            "totals": {k: _num(v) for k, v in (d.get("totals_usd_by_kind") or {}).items()}, "recent": diffs[:6], "count": len(diffs)}
+
+
+def health_block(h):
+    if not isinstance(h, dict):
+        return None
+    out = {}
+    for bot, b in (h.get("bots") or {}).items():
+        if not isinstance(b, dict):
+            continue
+        lv, bd = b.get("live") or {}, b.get("bands") or {}
+        tw = b.get("twin_live_window") or {}
+        out[_s(bot, 10)] = {"live_n": lv.get("n"), "live_r": _num(lv.get("mean_r")), "zone": _s(lv.get("zone"), 80) or None,
+                            "band_2026": [_num((bd.get("2026") or {}).get(k)) for k in ("p5", "p50", "p95")],
+                            "twin_n": tw.get("n"), "twin_r": _num(tw.get("mean_r")),
+                            "twin_pct_2026": _num((tw.get("pct_of_same_length_windows") or {}).get("2026"))}
+    return {"window": h.get("window"), "bots": out}
+
+
+def lit_setups(st):
+    x = (((st or {}).get("pillars") or {}).get("lit") or {}).get("setups")
+    if not isinstance(x, dict):
+        return None
+    return {"data_end": _s(x.get("data_end"), 10) or None, "setups": x.get("setups"), "taken": x.get("taken"),
+            "funnel": [{"step": int(f[0]), "why": _s(f[1], 40), "n": int(f[2])} for f in (x.get("funnel") or []) if isinstance(f, list) and len(f) == 3],
+            "costs_most": [_s(v, 120) for v in (x.get("costs_most") or [])][:3], "earns_most": [_s(v, 120) for v in (x.get("earns_most") or [])][:3],
+            "recent": [_s(v, 220) for v in (x.get("recent") or [])][:6]}
+
+
+def of_lines(o, st):
+    rows = []
+    for r in ((o or {}).get("lines") or []) if isinstance(o, dict) else []:
+        if isinstance(r, dict) and r.get("text"):
+            rows.append({"date": _s(r.get("date"), 10), "text": _s(r.get("text"), 240)})
+    p = (((st or {}).get("pillars") or {}).get("orderflow") or {})
+    return {"lines": sorted(rows, key=lambda r: r["date"], reverse=True)[:8], "next": _s(p.get("testing_next"), 200) or None}
+
+
+def next_tests(st):
+    out = []
+    for k, v in (((st or {}).get("pillars") or {}).items()):
+        pid = _pid(k)
+        if pid and isinstance(v, dict) and v.get("testing_next"):
+            tn = v["testing_next"]
+            for t in (tn if isinstance(tn, list) else [tn])[:2]:
+                out.append({"pillar": pid, "text": _s(t, 220)})
+    return out
+
+
+def learning(st):
+    f, m, d, h, o = _load(FORWARD), _load(IDEAMILL), _load(LIVEGAP), _load(HEALTH), _load(OF_LEARN)
+    src = [p for p, x in ((FORWARD, f), (IDEAMILL, m), (LIVEGAP, d), (HEALTH, h), (OF_LEARN, o)) if x is not None]
+    return {"sources": src, "forward": forward_rows(f), "ideamill": ideamill_block(m, st), "livegap": livegap_block(d),
+            "health": health_block(h), "lit_setups": lit_setups(st), "of": of_lines(o, st), "next": next_tests(st),
+            "promote_bar": f"{PROMOTE_N} new trades, holding near its own backtest, money made overall"}
+
+
 def build():
     j, s, ins = _load(JOURNAL), _load(STATE), _load(INSIGHTS)
     src, rows, state = [], [], {}
@@ -140,7 +271,7 @@ def build():
         src.append(INSIGHTS)
     return {"v": 1, "kind": "brain-learn", "built_from": built, "sources": src, "journal_landed": j is not None, "state_landed": s is not None,
             "paper_only": True, "note": "What each brain learned. Research only: nothing here changes a live rule.",
-            "current": cur, "line": line, "journal": rows, "state": state}
+            "current": cur, "line": line, "journal": rows, "state": state, "learning": learning(s)}
 
 
 def main(argv):
