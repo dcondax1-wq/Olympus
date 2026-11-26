@@ -62,7 +62,7 @@
       const h = Math.round((c.last - c.first) / 360) / 10;
       d.innerHTML = '<b style="color:#f1c14b">Your PC\'s signing key changed?</b><br>The usual key has been silent for 3 h+ and a NEW key ('
         + '<code>' + c.vk.slice(0, 6) + '</code>) sent ' + c.n + ' posts over ' + h + ' h. Trust it ONLY if you reinstalled Windows or changed '
-        + 'the PC; otherwise it may be someone else.<div style="display:flex;gap:8px;margin-top:10px">'
+        + 'the PC AND Telegram /today shows <b>PC signing key: ' + c.vk.slice(0, 6) + '</b>; otherwise it may be someone else.<div style="display:flex;gap:8px;margin-top:10px">'
         + '<button id="pcKeyYes" style="flex:1;min-height:44px;border-radius:10px;border:0;background:#77db89;color:#000;font-weight:600">Trust new key</button>'
         + '<button id="pcKeyNo" style="flex:1;min-height:44px;border-radius:10px;border:1px solid #3e255e;background:#000;color:#eee">Not now</button></div>';
       document.body.appendChild(d);

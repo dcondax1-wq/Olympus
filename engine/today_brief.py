@@ -58,6 +58,13 @@ def _news_today(now, root=None) -> str:
 
 
 def text(live, now=None, views=None, root=None) -> str:
+    """The /today reply + the PC's key line (red team 2026-11-26, key_line). Never raises."""
+    out = _text(live, now, views, root)
+    kl = key_line()
+    return (out[:MAX_CHARS - len(kl) - 1] + "\n" + kl) if kl else out
+
+
+def _text(live, now=None, views=None, root=None) -> str:
     """The /today reply. live = the server's live view (None = the bot server has no numbers). Never raises."""
     import time
     now = int(now or time.time())
@@ -139,3 +146,20 @@ def text(live, now=None, views=None, root=None) -> str:
     except Exception:  # noqa: BLE001
         pass
     return out[:MAX_CHARS]
+
+
+def key_line() -> str:
+    """red team 2026-11-26: this PC's status-signing key, first 6 letters (public, never the private key). The phone's 'Your PC's
+    signing key changed?' banner (tools/web_public/pc_key_trust.js) names a new key by the same 6 letters: /today comes from the
+    owner's own Telegram chat, so it is the one place an attacker cannot fake to compare. '' when the PC has no key."""
+    try:
+        import os
+        import sys
+        root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if root not in sys.path:
+            sys.path.insert(0, root)
+        from tools import status_sign as S
+        k = S.load_key()
+        return f"PC signing key: {S.vk_of(k)[:6]}" if k else ""
+    except Exception:  # noqa: BLE001
+        return ""
