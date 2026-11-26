@@ -250,7 +250,7 @@ def main(argv=None):
             for r in ST.pillar_rows() if r["pillar"] == "blitz" and r.get("span") in SP3]
     BOT = {"lit": lit_T, "atlas": atl_T, "blitz": bz_T}
     acc = json.load(open(os.path.join(HERE, "accuracy.json")))
-    gate_ck = {ck: acc[ck]["kill_gate_pass"] for ck in ("C0", "C1", "C2", "C3")}
+    gate_ck = {ck: acc[ck]["kill_gate_pass"] for ck in acc}
 
     def evaluate(bot, M):
         T = BOT[bot]

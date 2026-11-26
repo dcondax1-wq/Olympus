@@ -23,6 +23,8 @@ C1 = C0 + ["c1_on_rng", "c1_vs_close", "c1_pos_prior", "c1_on_dir"]
 C2 = C0 + ["c2_on_rng", "c2_gap", "c2_open_prior", "c2_open_vwap", "c2_pre_move", "c2_open_on"]
 C3 = C2 + ["c3_ib_rng", "c3_ib_loc", "c3_ib_move", "c3_odrive", "c3_brk_hi", "c3_brk_lo", "c3_disp_n", "c3_disp_net", "c3_ib_vol"]
 CHECK = {"C0": C0, "C1": C1, "C2": C2, "C3": C3, "C2es": C2 + ["es_on_same"], "C3es": C3 + ["es_on_same", "es_ib_same"]}
+LATE = ["_rng", "_move", "_loc", "_vwap", "_first", "_since_ib", "_eff"]
+CHECK.update({c.upper(): C3 + [c + x for x in LATE] for c in ("c4", "c5", "c6")})     # round 2 (DESIGN.md addendum)
 LAM = 1.0
 MIN_TRAIN = 150
 

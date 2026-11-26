@@ -144,6 +144,18 @@ def build(es=True):
             f["c3_disp_net"] = float(sum(dsp))
             pib = [p["ibv"] for p in prev[-20:] if p.get("ibv")]
             f["c3_ib_vol"] = v_[ib].sum() / np.mean(pib) if pib else 1.0
+            # ---- round 2: C4 11:30 / C5 12:30 / C6 13:30 (bars that opened before T - 5 min closed by T)
+            for tag, T_ in (("c4", 690), ("c5", 750), ("c6", 810)):
+                s = np.nonzero((m >= 570) & (m < T_))[0]
+                sh, sl, px = h_[s].max(), l_[s].min(), c_[s[-1]]
+                rs = sh - sl
+                f[tag + "_rng"] = rs / ratr
+                f[tag + "_move"] = (px - ro) / ratr
+                f[tag + "_loc"] = (px - sl) / rs if rs > 0 else 0.5
+                f[tag + "_vwap"] = (px - float((c_[s] * v_[s]).sum() / max(1, v_[s].sum()))) / ratr
+                f[tag + "_first"] = 1.0 if s[np.argmin(l_[s])] < s[np.argmax(h_[s])] else -1.0
+                f[tag + "_since_ib"] = (px - ibc) / ratr
+                f[tag + "_eff"] = abs(px - ro) / rs if rs > 0 else 0.0
             # ---- ES (2025-04+)
             if E is not None and day in E:
                 eg = E[day]
