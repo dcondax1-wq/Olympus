@@ -107,7 +107,8 @@ def adopt(root: str = ROOT, how: str = "adopt") -> dict:
         tmp = p + ".tmp"
         with open(tmp, "w", encoding="utf-8") as fh:
             json.dump(rec, fh)
-        os.replace(tmp, p)
+        from engine import fsutil   # retries on a Windows / OneDrive lock (test_selfheal: no bare os.replace on state files)
+        fsutil.replace(tmp, p)
     except Exception:  # noqa: BLE001
         return {}
     _CACHE.clear()

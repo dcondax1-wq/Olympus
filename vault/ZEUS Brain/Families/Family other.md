@@ -7,8 +7,8 @@ type: "family"
 
 # Research family: other
 
-> [!abstract] 134 write-ups
-> adopt-candidate 16, finding 14, info 17, promising 14, rejected 36, research 37
+> [!abstract] 136 write-ups
+> adopt-candidate 16, finding 14, info 17, promising 14, rejected 36, research 39
 
 | Date | Write-up | Verdict |
 |---|---|---|
@@ -21,8 +21,10 @@ type: "family"
 | 2026-11-26 | [[evalsizer-2026-11-26\|Optimal eval sizing policy]] | research |
 | 2026-11-26 | [[entry-fine-2026-11-26\|LIT entry refinement on 1m bars]] | research |
 | 2026-11-26 | [[day-type-2026-11-26\|Day-type classifier + playbook routing]] | research |
+| 2026-11-26 | [[business-planner-2026-11-26\|Business planner]] | research |
 | 2026-11-26 | [[blitz-v2-2026-11-26\|BLITZ v2]] | research |
 | 2026-11-26 | [[batch5-2026-11-26\|Batch 5]] | research |
+| 2026-11-26 | [[atlas2-2026-11-26\|ATLAS v2]] | research |
 | 2026-11-26 | [[alloc-2026-11-26\|Which signals go to which account]] | research |
 | 2026-11-25 | [[more-trades-2026-11-25\|More trades]] | research |
 | 2026-11-25 | [[ideamill-v3-2026-11-25\|IDEA MILL v3]] | research |

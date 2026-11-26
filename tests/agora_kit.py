@@ -172,6 +172,16 @@ def serve(overrides=None):
     ov = dict(overrides or {})
     if "/odeon/trades.json" in ov and "/odeon/trades_lite.json" not in ov:      # the apps read the slim copy first (dogfood 2026-11-20)
         ov["/odeon/trades_lite.json"] = ov["/odeon/trades.json"]
+    if "/status_feed.json" not in ov and os.environ.get("NET_STUB_KEEP_VK") != "1":   # day-guard2: the site pins the PC's real key
+        try:                                                     # (vk); the suites' fixture posts are unsigned -> serve it unpinned,
+            with open(os.path.join(WEB, "status_feed.json"), encoding="utf-8") as fh:   # as tests/net_stub does for ntfy-stubbed pages
+                d = json.load(fh)
+            if isinstance(d, dict):
+                d.pop("vk", None)
+                d.pop("vks", None)
+                ov["/status_feed.json"] = json.dumps(d)
+        except (OSError, ValueError):
+            pass
     handler = type("H", (Handler,), {"overrides": ov})
     srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(handler, directory=WEB))
     threading.Thread(target=srv.serve_forever, daemon=True).start()
