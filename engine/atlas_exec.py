@@ -10,6 +10,8 @@ decision (a poll is a pure function of the bars), same order: only earlier. Back
 
 Switch (any one; absent everywhere = OFF = exactly today's order):
   env LE_ATLAS_EXEC=1 | data/atlas_exec.json {"on": true}      python -X utf8 -m engine.atlas_exec --on | --off | --status
+  The owner's one command: python -X utf8 -m engine.atlas_exec --sim-week on | off   (refuses unless every ATLAS lane is Sim)
+  The EOD summary: python -X utf8 -m engine.atlas_exec --report [--json]   (report(): fills n, avg ticks worse vs 14)
 PAPER_ONLY: refused for any account whose name does not start with "Sim" (a real account keeps today's order), even when ON.
 
 The lead wires two lines in engine/live.py (not done here; research/handoff/2026-11-26/big-atlasfill/LEAD_WIRES.md):
@@ -100,7 +102,7 @@ def early(bot, df5, df1, sym, now, path: str | None = None) -> str:
             ra_acct = account_of(type("B", (), {"acct_b": ra})())
             if not sim_only(ra_acct):                    # _account_b_tick also runs the Rapid ATLAS lanes: all must be Sim
                 return f"refused: Rapid ATLAS {ra_acct} is not Sim"
-        bot._atlas_exec_done = int(now) - int(now) % 60
+        bot._atlas_exec_done = int(now)                 # this poll only
         bot._account_b_tick(df5, df1, sym, now)
         return "ran"
     except Exception as e:  # noqa: BLE001
@@ -112,8 +114,9 @@ def early(bot, df5, df1, sym, now, path: str | None = None) -> str:
 
 
 def done(bot, now) -> bool:
-    """True when the early lane already ran account B in this minute (the regular call then skips: one poll per minute)."""
-    return getattr(bot, "_atlas_exec_done", None) == int(now) - int(now) % 60
+    """True when the early lane already ran account B in THIS poll (same `now`): the regular call then skips it once. A later
+    poll (the +32 s one, the next minute) runs account B as usual."""
+    return getattr(bot, "_atlas_exec_done", None) == int(now)
 
 
 def fill_row(lane, side, qty, intended, filled, order_type="MARKET", signal_t=None, send_t=None, ack_t=None, fill_t=None,
@@ -170,17 +173,100 @@ def summary(rows: list) -> dict:
     return out
 
 
+BASELINE_TICKS = 14.0            # the 4 real market fills before the fast lane (research/atlasfill/forensics.json)
+
+
+def lanes() -> list:
+    """[(what, NinjaTrader Name | None)] of every ATLAS lane the PC would run, from its own switch files (read only)."""
+    out = []
+    try:
+        from . import account_b as AB
+        ab = AB.raw_cfg()
+        if ab:
+            out.append(("ATLAS account B", str(ab.get("account") or "").strip() or None))
+    except Exception as e:  # noqa: BLE001
+        out.append((f"ATLAS account B (unreadable: {e.__class__.__name__})", None))
+    try:
+        from . import rapid as RP
+        for sl, b in RP.read_all():
+            out.append((f"ATLAS on the Rapid ({sl})", b.get("account")))
+    except Exception as e:  # noqa: BLE001
+        out.append((f"Rapid (unreadable: {e.__class__.__name__})", None))
+    try:
+        cp = os.path.join(ROOT, "data", "combo_50k.json")
+        if os.path.exists(cp):
+            for a in (json.load(open(cp, encoding="utf-8")) or {}).get("accounts") or []:
+                out.append(("ATLAS combo lane on an extra Builder account", (a.get("account") if isinstance(a, dict) else a) or None))
+    except (OSError, ValueError) as e:
+        out.append((f"combo lanes (unreadable: {e.__class__.__name__})", None))
+    return out
+
+
+def sim_week(on: bool, path: str | None = None, lane_list=None) -> tuple:
+    """(ok, plain-words lines). ON only when there is an ATLAS account B and EVERY ATLAS lane is a Sim account."""
+    L = lanes() if lane_list is None else lane_list
+    if not on:
+        set_on(False, path)
+        return True, ["ATLAS fast lane: OFF. ATLAS's entry goes out in today's order again (after the read-only work)."]
+    bad = [f"{w}: {n or 'no Name'}" for w, n in L if not sim_only(n)]
+    if not any(w == "ATLAS account B" and n for w, n in L):
+        return False, ["Refused: no ATLAS account B is set up on this PC, so there is nothing to measure."]
+    if bad:
+        return False, ["Refused: the Sim101 week needs EVERY ATLAS lane on a Sim account. Not Sim:"] + [f"  - {b}" for b in bad] + \
+            ["Nothing was changed."]
+    set_on(True, path)
+    return True, ["ATLAS fast lane: ON for the Sim101 week.",
+                  "What changed: on each 5-minute close, ATLAS's order now goes out right after Zlarior's, before the slower "
+                  "background work. Same signals, same sizes, same stops and targets: only sooner.",
+                  "Accounts: " + ", ".join(f"{n} ({w})" for w, n in L),
+                  "Real accounts are never touched: the lane refuses any account that is not Sim.",
+                  "Not changed: engine/fast_entry (it also moves Zlarior's real-account timing, so it is its own yes).",
+                  "Check after 10+ ATLAS fills: python -X utf8 -m engine.atlas_exec --report",
+                  "Undo: python -X utf8 -m engine.atlas_exec --sim-week off"]
+
+
+def report(rows=None, log_path: str | None = None) -> dict:
+    """The EOD summary block: ATLAS fills n, average ticks worse than the signal, vs the 14-tick baseline."""
+    if rows is None:
+        rows = from_ledger()
+        lp = log_path or LOG
+        if os.path.exists(lp):
+            seen = {(r.get("signal_t"), r.get("lane")) for r in rows}
+            rows += [r for r in (json.loads(x) for x in open(lp, encoding="utf-8") if x.strip())
+                     if (r.get("signal_t"), r.get("lane")) not in seen]
+    s = summary(rows).get("atlas")
+    if not s:
+        return {"n": 0, "words": "ATLAS fills: none yet"}
+    avg = s["mean_ticks"]
+    better = round(BASELINE_TICKS - avg, 2)
+    usd = round(better * 0.5, 2)
+    return {"n": s["n"], "avg_ticks_worse": avg, "baseline_ticks": BASELINE_TICKS, "vs_baseline_ticks": better,
+            "usd_per_micro_saved": usd, "on": is_on(), "decision": s["decision"],
+            "words": (f"ATLAS fills: {s['n']}, on average {avg} ticks worse than the signal (before the fast lane: "
+                      f"{BASELINE_TICKS:g}); " + (f"{better:g} ticks = ${usd:g} a micro better" if better > 0 else
+                                                   "the same as before" if better == 0 else f"{-better:g} ticks worse than before") + f". {s['decision']}.")}
+
+
 def main(argv=None):
     a = list(argv if argv is not None else sys.argv[1:])
+    if "--sim-week" in a:
+        i = a.index("--sim-week")
+        v = (a[i + 1] if i + 1 < len(a) else "").lower()
+        if v not in ("on", "off"):
+            print("use: --sim-week on | --sim-week off")
+            return 2
+        ok, lines = sim_week(v == "on")
+        print("\n".join(lines))
+        return 0 if ok else 1
     if "--on" in a:
         print(set_on(True))
     elif "--off" in a:
         print(set_on(False))
     elif "--report" in a:
-        rows = from_ledger()
-        if os.path.exists(LOG):
-            rows += [json.loads(x) for x in open(LOG, encoding="utf-8") if x.strip()]
-        print(json.dumps(summary(rows), indent=1))
+        r = report()
+        print(r["words"])
+        if "--json" in a:
+            print(json.dumps(r, indent=1))
     else:
         print(json.dumps({"on": is_on(), "file": PATH, "window_s": WINDOW_S, "paper_only": "Sim accounts only"}, indent=1))
     return 0
