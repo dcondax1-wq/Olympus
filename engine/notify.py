@@ -923,6 +923,9 @@ def entry_message(p: dict, now=None, s: dict | None = None) -> dict:
 
 def _post(base, topic, msg, timeout=8) -> bool:
     import urllib.request
+    from . import pc_identity                        # day-noleak: only the owner's PC (or the cloud monitor in Actions)
+    if not pc_identity.may_post("ntfy alert", url=base):
+        return False
     h = {"Content-Type": "text/plain; charset=utf-8", "Title": msg["title"].encode("ascii", "replace").decode("ascii"),
          "Priority": msg["priority"], "Tags": msg["tags"]}
     req = urllib.request.Request(f"{base}/{topic}", data=msg["body"].encode("utf-8"), headers=h, method="POST")
