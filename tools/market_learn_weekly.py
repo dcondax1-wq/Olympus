@@ -137,6 +137,22 @@ def nightly(a, say=print, root: str = ROOT) -> dict:
                      journal=os.path.join(a.out or M.OUT, "journal.json"))
         except Exception as ex:  # noqa: BLE001
             say(f"idea mill skipped ({ex.__class__.__name__}: {str(ex)[:120]})")
+    if getattr(a, "forecast", False):                   # optional: eval pass forecaster (tools/forecast.py; numba + the board)
+        try:
+            from tools import forecast as FC
+            if a.out:
+                FC.OUT = os.path.join(a.out, "forecast.json")
+            FC.run(n=1000, say=say)
+        except Exception as ex:  # noqa: BLE001
+            say(f"forecast skipped ({ex.__class__.__name__}: {str(ex)[:120]})")
+    if getattr(a, "health", False):                     # optional: strategy health bands (tools/health_bands.py)
+        try:
+            from tools import health_bands as HB
+            if a.out:
+                HB.OUT = os.path.join(a.out, "bands.json")
+            HB.run(say=say)
+        except Exception as ex:  # noqa: BLE001
+            say(f"health bands skipped ({ex.__class__.__name__}: {str(ex)[:120]})")
     br = M.nightly(root, out_dir=a.out, rows=rows, live_rows=live(book, say=say))
     if M.hashes(root) != before:
         raise SystemExit("A LIVE FILE CHANGED during the nightly run")
@@ -155,6 +171,8 @@ def main(argv=None) -> int:
     ap.add_argument("--out", default=None, help="folder for journal.json + brain_state.json (default research/learn)")
     ap.add_argument("--ideamill", type=int, default=0, help="--nightly: also score N new idea-mill ideas (0 = off)")
     ap.add_argument("--ideamill-cap", type=float, default=20, help="minutes cap for the idea-mill step")
+    ap.add_argument("--forecast", action="store_true", help="--nightly: also rebuild research/forecast/forecast.json")
+    ap.add_argument("--health", action="store_true", help="--nightly: also rebuild research/health/bands.json")
     a = ap.parse_args(argv)
     if a.out:
         a.out = os.path.join(ROOT, a.out) if not os.path.isabs(a.out) else a.out

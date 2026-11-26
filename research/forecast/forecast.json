@@ -1,0 +1,140 @@
+{
+ "made": "2026-11-26 16:13 UTC",
+ "data_to": "2026-10-16",
+ "n_paths": 1000,
+ "state_source": "board (PC live)",
+ "markets": {
+  "2026-like": "Jan-Oct 2026 sessions",
+  "2021-25-like": "Nov 2021 - Dec 2025 sessions"
+ },
+ "engine": "research/plans/rank.py (two_week eval sizing, ATLAS lane at 10 ticks a side, MFFU funded payout rules)",
+ "accounts": {
+  "zlarior": {
+   "name": "Zlarior",
+   "plan": "mffu_builder_50k",
+   "stage": "eval",
+   "strategies": [
+    "LIT"
+   ],
+   "state": {
+    "balance": 49177.52,
+    "floor": 48168.2,
+    "room": 1009.32,
+    "profit": -822.48,
+    "sessions_done": 28
+   },
+   "2026-like": {
+    "pass_pct": 61.0,
+    "fail_pct": 31.1,
+    "open_pct": 7.9,
+    "pass_med_sessions": 16.0,
+    "first_payout_med_sessions": 50.5,
+    "first_payout_60_pct": 34.7
+   },
+   "2021-25-like": {
+    "pass_pct": 13.3,
+    "fail_pct": 86.1,
+    "open_pct": 0.6,
+    "pass_med_sessions": 24.0,
+    "first_payout_med_sessions": 72.5,
+    "first_payout_60_pct": 0.5
+   }
+  },
+  "fresh25": {
+   "name": "Zlarior 25K #2",
+   "plan": "mffu_builder_25k",
+   "stage": "eval",
+   "strategies": [
+    "LIT"
+   ],
+   "state": {
+    "balance": 25019.24,
+    "floor": 24023.62,
+    "room": 995.62,
+    "profit": 19.24,
+    "sessions_done": 6
+   },
+   "2026-like": {
+    "pass_pct": 78.9,
+    "fail_pct": 10.9,
+    "open_pct": 10.2,
+    "pass_med_sessions": 10.0,
+    "first_payout_med_sessions": 49.0,
+    "first_payout_60_pct": 42.4
+   },
+   "2021-25-like": {
+    "pass_pct": 30.4,
+    "fail_pct": 67.4,
+    "open_pct": 2.2,
+    "pass_med_sessions": 16.0,
+    "first_payout_med_sessions": 71.0,
+    "first_payout_60_pct": 1.7
+   }
+  },
+  "rapid1": {
+   "name": "Rapid EOD 25K",
+   "plan": "mffu_rapid_eod_25k",
+   "stage": "eval",
+   "strategies": [
+    "LIT",
+    "ATLAS"
+   ],
+   "state": {
+    "balance": 24995.24,
+    "floor": 24000.0,
+    "room": 995.24,
+    "profit": -4.76,
+    "sessions_done": 4
+   },
+   "2026-like": {
+    "pass_pct": 95.6,
+    "fail_pct": 2.9,
+    "open_pct": 1.5,
+    "pass_med_sessions": 36.0,
+    "first_payout_med_sessions": 54.0,
+    "first_payout_60_pct": 50.0
+   },
+   "2021-25-like": {
+    "pass_pct": 8.2,
+    "fail_pct": 91.6,
+    "open_pct": 0.2,
+    "pass_med_sessions": 29.0,
+    "first_payout_med_sessions": 52.0,
+    "first_payout_60_pct": 0.5
+   }
+  },
+  "atlas": {
+   "name": "ATLAS",
+   "plan": "mffu_builder_25k",
+   "stage": "funded",
+   "strategies": [
+    "ATLAS"
+   ],
+   "state": {
+    "balance": 25401.38,
+    "floor": 24401.38,
+    "room": 1000.0,
+    "profit": 401.38,
+    "sessions_done": 0
+   },
+   "2026-like": {
+    "first_payout_pct": 82.4,
+    "first_payout_med_sessions": 22.0,
+    "first_payout_60_pct": 73.1,
+    "lost_pct": 10.2
+   },
+   "2021-25-like": {
+    "first_payout_pct": 9.8,
+    "first_payout_med_sessions": 13.0,
+    "first_payout_60_pct": 9.6,
+    "lost_pct": 90.1
+   }
+  }
+ },
+ "words": {
+  "zlarior": "Zlarior: pass 61.0% / fail 31.1% in a 2026-like market (median 16.0 sessions), 13.3% / 86.1% in a 2021-25-like one",
+  "fresh25": "Zlarior 25K #2: pass 78.9% / fail 10.9% in a 2026-like market (median 10.0 sessions), 30.4% / 67.4% in a 2021-25-like one",
+  "rapid1": "Rapid EOD 25K: pass 95.6% / fail 2.9% in a 2026-like market (median 36.0 sessions), 8.2% / 91.6% in a 2021-25-like one",
+  "atlas": "ATLAS: first payout 82.4% within 6 months in a 2026-like market (median 22.0 sessions), 9.8% in a 2021-25-like one"
+ }
+}
