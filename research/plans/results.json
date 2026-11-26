@@ -6,65 +6,65 @@
    "price": 63.0,
    "H1": {
     "eval": {
-     "pass": 89.2,
-     "fail": 5.7,
-     "med_days": 7.5
+     "pass": 87.8,
+     "fail": 6.5,
+     "med_days": 8.0
     },
     "slot": {
-     "owner_6m": 3519,
-     "fees_6m": 120.5,
-     "net_6m": 3399,
+     "owner_6m": 3365,
+     "fees_6m": 121.4,
+     "net_6m": 3243,
      "net_p10": 1474,
      "net_p50": 3811,
-     "per_dollar": 29.22,
-     "no_pay": 3.3,
-     "evals": 1.91,
-     "lost": 0.23,
-     "p_lost": 20.2,
-     "pays": 4.4,
-     "first_pay_med": 34.0
+     "per_dollar": 27.72,
+     "no_pay": 3.7,
+     "evals": 1.93,
+     "lost": 0.26,
+     "p_lost": 22.3,
+     "pays": 4.21,
+     "first_pay_med": 36.0
     }
    },
    "H2": {
     "eval": {
-     "pass": 83.9,
-     "fail": 8.1,
+     "pass": 82.0,
+     "fail": 8.6,
      "med_days": 8.0
     },
     "slot": {
-     "owner_6m": 3126,
-     "fees_6m": 120.8,
-     "net_6m": 3005,
+     "owner_6m": 3010,
+     "fees_6m": 121.1,
+     "net_6m": 2889,
      "net_p10": 611,
      "net_p50": 3137,
-     "per_dollar": 25.87,
-     "no_pay": 8.7,
+     "per_dollar": 24.86,
+     "no_pay": 8.5,
      "evals": 1.92,
-     "lost": 0.25,
-     "p_lost": 21.0,
-     "pays": 3.91,
-     "first_pay_med": 36.0
+     "lost": 0.26,
+     "p_lost": 22.2,
+     "pays": 3.76,
+     "first_pay_med": 37.0
     }
    },
    "REF": {
     "eval": {
-     "pass": 21.9,
-     "fail": 77.0,
+     "pass": 18.8,
+     "fail": 80.4,
      "med_days": 5.0
     },
     "slot": {
-     "owner_6m": 93,
-     "fees_6m": 359.2,
-     "net_6m": -266,
+     "owner_6m": 58,
+     "fees_6m": 404.1,
+     "net_6m": -346,
      "net_p10": -504,
      "net_p50": -378,
-     "per_dollar": 0.26,
-     "no_pay": 90.4,
-     "evals": 5.7,
-     "lost": 0.96,
-     "p_lost": 65.0,
-     "pays": 0.12,
-     "first_pay_med": 72.5
+     "per_dollar": 0.14,
+     "no_pay": 93.9,
+     "evals": 6.41,
+     "lost": 0.93,
+     "p_lost": 64.2,
+     "pays": 0.07,
+     "first_pay_med": 70.0
     }
    },
    "buy_ok": false
@@ -74,65 +74,65 @@
    "price": 91.8,
    "H1": {
     "eval": {
-     "pass": 86.1,
-     "fail": 13.8,
+     "pass": 83.1,
+     "fail": 16.8,
      "med_days": 7.0
     },
     "slot": {
-     "owner_6m": 7646,
-     "fees_6m": 190.9,
-     "net_6m": 7455,
-     "net_p10": 4616,
+     "owner_6m": 7224,
+     "fees_6m": 192.6,
+     "net_6m": 7031,
+     "net_p10": 4515,
      "net_p50": 7725,
-     "per_dollar": 40.05,
-     "no_pay": 0.0,
-     "evals": 2.08,
-     "lost": 0.18,
-     "p_lost": 17.2,
-     "pays": 4.78,
-     "first_pay_med": 32.0
+     "per_dollar": 37.51,
+     "no_pay": 0.4,
+     "evals": 2.1,
+     "lost": 0.22,
+     "p_lost": 19.1,
+     "pays": 4.51,
+     "first_pay_med": 33.0
     }
    },
    "H2": {
     "eval": {
-     "pass": 86.6,
-     "fail": 12.6,
+     "pass": 83.3,
+     "fail": 15.8,
      "med_days": 7.0
     },
     "slot": {
-     "owner_6m": 7874,
-     "fees_6m": 195.7,
-     "net_6m": 7678,
-     "net_p10": 4616,
-     "net_p50": 7816,
-     "per_dollar": 40.23,
-     "no_pay": 1.0,
-     "evals": 2.13,
-     "lost": 0.19,
-     "p_lost": 17.5,
-     "pays": 4.92,
-     "first_pay_med": 32.0
+     "owner_6m": 7418,
+     "fees_6m": 196.4,
+     "net_6m": 7221,
+     "net_p10": 3108,
+     "net_p50": 7725,
+     "per_dollar": 37.78,
+     "no_pay": 1.6,
+     "evals": 2.14,
+     "lost": 0.22,
+     "p_lost": 19.8,
+     "pays": 4.64,
+     "first_pay_med": 34.0
     }
    },
    "REF": {
     "eval": {
-     "pass": 20.8,
-     "fail": 79.1,
+     "pass": 18.8,
+     "fail": 81.2,
      "med_days": 5.0
     },
     "slot": {
-     "owner_6m": 232,
-     "fees_6m": 703.5,
-     "net_6m": -471,
-     "net_p10": -918,
-     "net_p50": -734,
-     "per_dollar": 0.33,
-     "no_pay": 87.9,
-     "evals": 7.66,
-     "lost": 1.28,
+     "owner_6m": 192,
+     "fees_6m": 794.8,
+     "net_6m": -603,
+     "net_p10": -1010,
+     "net_p50": -826,
+     "per_dollar": 0.24,
+     "no_pay": 89.8,
+     "evals": 8.66,
+     "lost": 1.34,
      "p_lost": 78.7,
-     "pays": 0.14,
-     "first_pay_med": 72.0
+     "pays": 0.12,
+     "first_pay_med": 64.5
     }
    },
    "buy_ok": false
@@ -142,64 +142,64 @@
    "price": 97.2,
    "H1": {
     "eval": {
-     "pass": 81.4,
+     "pass": 78.4,
      "fail": 0.4,
      "med_days": 33.0
     },
     "slot": {
-     "owner_6m": 12021,
-     "fees_6m": 124.2,
-     "net_6m": 11897,
-     "net_p10": 2137,
-     "net_p50": 12025,
-     "per_dollar": 96.77,
-     "no_pay": 6.6,
-     "evals": 1.28,
-     "lost": 0.26,
-     "p_lost": 24.4,
-     "pays": 11.05,
-     "first_pay_med": 53.0
+     "owner_6m": 10912,
+     "fees_6m": 130.7,
+     "net_6m": 10781,
+     "net_p10": 508,
+     "net_p50": 10849,
+     "per_dollar": 83.47,
+     "no_pay": 9.2,
+     "evals": 1.34,
+     "lost": 0.32,
+     "p_lost": 30.5,
+     "pays": 10.11,
+     "first_pay_med": 54.0
     }
    },
    "H2": {
     "eval": {
-     "pass": 86.9,
-     "fail": 1.8,
+     "pass": 85.0,
+     "fail": 2.2,
      "med_days": 26.0
     },
     "slot": {
-     "owner_6m": 5250,
-     "fees_6m": 139.6,
-     "net_6m": 5110,
+     "owner_6m": 4764,
+     "fees_6m": 146.4,
+     "net_6m": 4618,
      "net_p10": -194,
-     "net_p50": 4956,
-     "per_dollar": 37.61,
-     "no_pay": 14.5,
-     "evals": 1.44,
-     "lost": 0.4,
-     "p_lost": 36.1,
-     "pays": 7.27,
-     "first_pay_med": 55.0
+     "net_p50": 4490,
+     "per_dollar": 32.55,
+     "no_pay": 16.5,
+     "evals": 1.51,
+     "lost": 0.46,
+     "p_lost": 40.3,
+     "pays": 6.65,
+     "first_pay_med": 56.0
     }
    },
    "REF": {
     "eval": {
-     "pass": 8.2,
-     "fail": 72.9,
-     "med_days": 34.5
+     "pass": 6.5,
+     "fail": 79.3,
+     "med_days": 30.0
     },
     "slot": {
-     "owner_6m": 84,
-     "fees_6m": 344.6,
-     "net_6m": -260,
+     "owner_6m": 53,
+     "fees_6m": 378.0,
+     "net_6m": -325,
      "net_p10": -486,
      "net_p50": -389,
-     "per_dollar": 0.25,
-     "no_pay": 95.9,
-     "evals": 3.54,
-     "lost": 0.21,
-     "p_lost": 20.2,
-     "pays": 0.08,
+     "per_dollar": 0.14,
+     "no_pay": 97.3,
+     "evals": 3.89,
+     "lost": 0.19,
+     "p_lost": 18.2,
+     "pays": 0.05,
      "first_pay_med": 66.0
     }
    },
@@ -210,65 +210,65 @@
    "price": 165.0,
    "H1": {
     "eval": {
-     "pass": 95.4,
-     "fail": 1.9,
-     "med_days": 23.0
+     "pass": 93.7,
+     "fail": 2.9,
+     "med_days": 24.0
     },
     "slot": {
-     "owner_6m": 31774,
-     "fees_6m": 224.1,
-     "net_6m": 31550,
-     "net_p10": 11887,
-     "net_p50": 31279,
-     "per_dollar": 141.8,
-     "no_pay": 1.4,
-     "evals": 1.36,
-     "lost": 0.32,
-     "p_lost": 29.7,
-     "pays": 16.59,
-     "first_pay_med": 39.0
+     "owner_6m": 29271,
+     "fees_6m": 235.8,
+     "net_6m": 29035,
+     "net_p10": 9527,
+     "net_p50": 28986,
+     "per_dollar": 124.14,
+     "no_pay": 1.5,
+     "evals": 1.43,
+     "lost": 0.37,
+     "p_lost": 33.8,
+     "pays": 15.51,
+     "first_pay_med": 40.0
     }
    },
    "H2": {
     "eval": {
-     "pass": 92.5,
-     "fail": 4.0,
-     "med_days": 22.0
+     "pass": 91.0,
+     "fail": 5.1,
+     "med_days": 23.0
     },
     "slot": {
-     "owner_6m": 14724,
-     "fees_6m": 229.7,
-     "net_6m": 14495,
-     "net_p10": 2539,
-     "net_p50": 14464,
-     "per_dollar": 64.11,
-     "no_pay": 6.9,
-     "evals": 1.39,
-     "lost": 0.34,
-     "p_lost": 31.6,
-     "pays": 12.52,
-     "first_pay_med": 45.0
+     "owner_6m": 13346,
+     "fees_6m": 246.3,
+     "net_6m": 13100,
+     "net_p10": 1057,
+     "net_p50": 12875,
+     "per_dollar": 54.18,
+     "no_pay": 7.8,
+     "evals": 1.49,
+     "lost": 0.42,
+     "p_lost": 38.5,
+     "pays": 11.55,
+     "first_pay_med": 47.0
     }
    },
    "REF": {
     "eval": {
-     "pass": 12.1,
-     "fail": 80.4,
+     "pass": 10.0,
+     "fail": 84.6,
      "med_days": 25.0
     },
     "slot": {
-     "owner_6m": 309,
-     "fees_6m": 740.9,
-     "net_6m": -432,
-     "net_p10": -990,
-     "net_p50": -660,
-     "per_dollar": 0.42,
-     "no_pay": 92.5,
-     "evals": 4.49,
-     "lost": 0.37,
-     "p_lost": 34.0,
-     "pays": 0.19,
-     "first_pay_med": 68.0
+     "owner_6m": 214,
+     "fees_6m": 820.4,
+     "net_6m": -607,
+     "net_p10": -1155,
+     "net_p50": -825,
+     "per_dollar": 0.26,
+     "no_pay": 94.4,
+     "evals": 4.97,
+     "lost": 0.32,
+     "p_lost": 29.2,
+     "pays": 0.13,
+     "first_pay_med": 72.0
     }
    },
    "buy_ok": false
@@ -278,65 +278,65 @@
    "price": 126.0,
    "H1": {
     "eval": {
-     "pass": 86.1,
-     "fail": 13.8,
+     "pass": 83.1,
+     "fail": 16.8,
      "med_days": 7.0
     },
     "slot": {
-     "owner_6m": 8067,
-     "fees_6m": 211.7,
-     "net_6m": 7855,
-     "net_p10": 3924,
-     "net_p50": 8424,
-     "per_dollar": 38.11,
-     "no_pay": 0.1,
-     "evals": 1.68,
-     "lost": 0.14,
-     "p_lost": 13.7,
-     "pays": 3.8,
-     "first_pay_med": 37.0
+     "owner_6m": 7600,
+     "fees_6m": 216.2,
+     "net_6m": 7383,
+     "net_p10": 3798,
+     "net_p50": 8298,
+     "per_dollar": 35.15,
+     "no_pay": 0.8,
+     "evals": 1.72,
+     "lost": 0.18,
+     "p_lost": 15.9,
+     "pays": 3.58,
+     "first_pay_med": 39.0
     }
    },
    "H2": {
     "eval": {
-     "pass": 86.6,
-     "fail": 12.6,
+     "pass": 83.3,
+     "fail": 15.8,
      "med_days": 7.0
     },
     "slot": {
-     "owner_6m": 8668,
-     "fees_6m": 228.4,
-     "net_6m": 8439,
-     "net_p10": 3924,
+     "owner_6m": 8139,
+     "fees_6m": 229.2,
+     "net_6m": 7910,
+     "net_p10": 3798,
      "net_p50": 8424,
-     "per_dollar": 37.94,
-     "no_pay": 1.3,
-     "evals": 1.81,
-     "lost": 0.15,
-     "p_lost": 14.1,
-     "pays": 4.07,
-     "first_pay_med": 35.0
+     "per_dollar": 35.51,
+     "no_pay": 2.3,
+     "evals": 1.82,
+     "lost": 0.18,
+     "p_lost": 16.8,
+     "pays": 3.83,
+     "first_pay_med": 37.0
     }
    },
    "REF": {
     "eval": {
-     "pass": 20.8,
-     "fail": 79.1,
+     "pass": 18.8,
+     "fail": 81.2,
      "med_days": 5.0
     },
     "slot": {
-     "owner_6m": 160,
-     "fees_6m": 966.0,
-     "net_6m": -806,
-     "net_p10": -1260,
-     "net_p50": -1008,
-     "per_dollar": 0.17,
-     "no_pay": 92.1,
-     "evals": 7.67,
-     "lost": 1.29,
-     "p_lost": 78.5,
-     "pays": 0.09,
-     "first_pay_med": 72.0
+     "owner_6m": 124,
+     "fees_6m": 1090.4,
+     "net_6m": -966,
+     "net_p10": -1386,
+     "net_p50": -1134,
+     "per_dollar": 0.11,
+     "no_pay": 93.6,
+     "evals": 8.65,
+     "lost": 1.33,
+     "p_lost": 78.6,
+     "pays": 0.07,
+     "first_pay_med": 66.0
     }
    },
    "buy_ok": false
@@ -346,65 +346,65 @@
    "price": 134.4,
    "H1": {
     "eval": {
-     "pass": 96.0,
-     "fail": 3.2,
-     "med_days": 16.0
+     "pass": 94.8,
+     "fail": 4.4,
+     "med_days": 17.0
     },
     "slot": {
-     "owner_6m": 8797,
-     "fees_6m": 276.1,
-     "net_6m": 8521,
-     "net_p10": 5266,
+     "owner_6m": 8440,
+     "fees_6m": 277.1,
+     "net_6m": 8163,
+     "net_p10": 5131,
      "net_p50": 8731,
-     "per_dollar": 31.87,
-     "no_pay": 0.7,
-     "evals": 2.05,
-     "lost": 0.2,
-     "p_lost": 17.5,
-     "pays": 4.89,
-     "first_pay_med": 37.0
+     "per_dollar": 30.46,
+     "no_pay": 1.2,
+     "evals": 2.06,
+     "lost": 0.24,
+     "p_lost": 20.7,
+     "pays": 4.69,
+     "first_pay_med": 38.0
     }
    },
    "H2": {
     "eval": {
-     "pass": 90.1,
-     "fail": 9.3,
+     "pass": 89.0,
+     "fail": 9.9,
      "med_days": 17.0
     },
     "slot": {
-     "owner_6m": 7925,
-     "fees_6m": 257.8,
-     "net_6m": 7668,
-     "net_p10": 3466,
-     "net_p50": 8731,
-     "per_dollar": 30.74,
-     "no_pay": 2.3,
-     "evals": 1.92,
-     "lost": 0.17,
-     "p_lost": 15.9,
-     "pays": 4.4,
-     "first_pay_med": 40.0
+     "owner_6m": 7636,
+     "fees_6m": 260.2,
+     "net_6m": 7375,
+     "net_p10": 3331,
+     "net_p50": 8597,
+     "per_dollar": 29.35,
+     "no_pay": 3.0,
+     "evals": 1.94,
+     "lost": 0.2,
+     "p_lost": 17.8,
+     "pays": 4.24,
+     "first_pay_med": 42.0
     }
    },
    "REF": {
     "eval": {
-     "pass": 14.5,
-     "fail": 83.9,
+     "pass": 11.5,
+     "fail": 86.9,
      "med_days": 20.0
     },
     "slot": {
-     "owner_6m": 187,
-     "fees_6m": 734.9,
-     "net_6m": -548,
-     "net_p10": -941,
-     "net_p50": -672,
-     "per_dollar": 0.25,
-     "no_pay": 92.2,
-     "evals": 5.47,
-     "lost": 0.52,
-     "p_lost": 44.3,
-     "pays": 0.1,
-     "first_pay_med": 74.0
+     "owner_6m": 135,
+     "fees_6m": 812.3,
+     "net_6m": -677,
+     "net_p10": -1075,
+     "net_p50": -806,
+     "per_dollar": 0.17,
+     "no_pay": 94.5,
+     "evals": 6.04,
+     "lost": 0.48,
+     "p_lost": 41.0,
+     "pays": 0.07,
+     "first_pay_med": 81.0
     }
    },
    "buy_ok": false
@@ -414,65 +414,65 @@
    "price": 149.99,
    "H1": {
     "eval": {
-     "pass": 86.1,
-     "fail": 13.8,
+     "pass": 83.1,
+     "fail": 16.8,
      "med_days": 7.0
     },
     "slot": {
-     "owner_6m": 12794,
-     "fees_6m": 615.7,
-     "net_6m": 12178,
-     "net_p10": 6810,
-     "net_p50": 11430,
-     "per_dollar": 20.78,
-     "no_pay": 0.0,
-     "evals": 4.11,
-     "lost": 0.45,
-     "p_lost": 38.9,
-     "pays": 11.85,
-     "first_pay_med": 22.0
+     "owner_6m": 12152,
+     "fees_6m": 625.6,
+     "net_6m": 11527,
+     "net_p10": 5880,
+     "net_p50": 10350,
+     "per_dollar": 19.42,
+     "no_pay": 0.1,
+     "evals": 4.17,
+     "lost": 0.54,
+     "p_lost": 43.2,
+     "pays": 11.25,
+     "first_pay_med": 23.0
     }
    },
    "H2": {
     "eval": {
-     "pass": 86.6,
-     "fail": 12.6,
+     "pass": 83.3,
+     "fail": 15.8,
      "med_days": 7.0
     },
     "slot": {
-     "owner_6m": 10821,
-     "fees_6m": 535.0,
-     "net_6m": 10286,
-     "net_p10": 4950,
+     "owner_6m": 10178,
+     "fees_6m": 536.7,
+     "net_6m": 9641,
+     "net_p10": 4800,
      "net_p50": 10200,
-     "per_dollar": 20.22,
-     "no_pay": 0.7,
-     "evals": 3.57,
-     "lost": 0.36,
-     "p_lost": 32.9,
-     "pays": 10.02,
-     "first_pay_med": 26.0
+     "per_dollar": 18.97,
+     "no_pay": 1.1,
+     "evals": 3.58,
+     "lost": 0.4,
+     "p_lost": 35.4,
+     "pays": 9.42,
+     "first_pay_med": 28.0
     }
    },
    "REF": {
     "eval": {
-     "pass": 20.8,
-     "fail": 79.1,
+     "pass": 18.8,
+     "fail": 81.2,
      "med_days": 5.0
     },
     "slot": {
-     "owner_6m": 772,
-     "fees_6m": 1195.4,
-     "net_6m": -423,
-     "net_p10": -1500,
-     "net_p50": -1200,
-     "per_dollar": 0.65,
-     "no_pay": 70.6,
-     "evals": 7.97,
-     "lost": 1.35,
-     "p_lost": 81.6,
-     "pays": 0.71,
-     "first_pay_med": 60.0
+     "owner_6m": 649,
+     "fees_6m": 1341.1,
+     "net_6m": -692,
+     "net_p10": -1650,
+     "net_p50": -1350,
+     "per_dollar": 0.48,
+     "no_pay": 74.6,
+     "evals": 8.94,
+     "lost": 1.4,
+     "p_lost": 80.7,
+     "pays": 0.6,
+     "first_pay_med": 63.5
     }
    },
    "buy_ok": false
@@ -482,8 +482,8 @@
   "mffu_rapid_eod_50k",
   "fn_rapid_daily_50k",
   "lucid_pro_50k",
-  "mffu_builder_50k",
   "lucid_flex_50k",
+  "mffu_builder_50k",
   "mffu_rapid_eod_25k",
   "mffu_builder_25k"
  ],

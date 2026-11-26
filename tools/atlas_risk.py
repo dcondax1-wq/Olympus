@@ -70,10 +70,10 @@ def _AM():
 
 
 def T_costs():
-    """ATLAS at engine/costs.py: ENTRY_SLIP_TICKS["ATLAS"] on the entry, STOP_SLIP_TICKS on every non-target exit."""
+    """ATLAS at engine/costs.py: ENTRY_SLIP_TICKS["ATLAS"] on the entry, stop_slip_ticks("ATLAS") on every non-target exit."""
     from engine import costs as C
     AF = _AF()
-    return AF.to_T([AF.priced(u, C.ENTRY_SLIP_TICKS["ATLAS"], C.STOP_SLIP_TICKS) for u in AF.units()])
+    return AF.to_T([AF.priced(u, C.ENTRY_SLIP_TICKS["ATLAS"], C.stop_slip_ticks("ATLAS")) for u in AF.units()])
 
 
 def T_at(n):

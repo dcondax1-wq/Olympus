@@ -15,12 +15,20 @@ PV_MNQ = 2.0                # $ per point per micro
 COMM_RT = 1.90              # $ per micro round turn (MFFU list price; one broker fill so far implies $1.82: keep 1.90 until 10)
 ENTRY_SLIP_TICKS = {"LIT": 1, "ATLAS": 12}   # market entries vs the model's price: LIT 3 / 0 (n=2), ATLAS 9 / 11 / 15 (n=3)
 STOP_SLIP_TICKS = 2         # stop-market and market exits (breakeven, time, end of day, flatten); the backtests store 1
+# per bot (lead 2026-11-26: no number may go UP on an unmeasured assumption): ATLAS keeps the old pessimistic 10 ticks until
+# ~10 of its real stop fills are logged (fills.jsonl.gz exit_slip_ticks); LIT uses the study's 2
+STOP_SLIP_TICKS_BY = {"LIT": 2, "ATLAS": 10}
 TARGET_THR_TICKS = 1        # a limit target needs a trade this many ticks through it (no stored trade was touch-only)
 GAP_FILLS_AT_OPEN = True    # a bar that opens through the stop fills near that open, not at the stop
 
 STOP_SLIP = STOP_SLIP_TICKS * TICK          # points
 BACKTEST_STOP_SLIP_TICKS = 1                # what the stored LIT / ATLAS trades already carry on a stop / market exit
 BACKTEST_LIT_COMM = 1.40                    # what engine/lit.py's research backtest books ($ per micro round turn)
+
+
+def stop_slip_ticks(bot: str) -> int:
+    """Ticks on a stop / market exit for a bot ("LIT" / "ATLAS"); unknown bots get STOP_SLIP_TICKS."""
+    return STOP_SLIP_TICKS_BY.get(str(bot).upper(), STOP_SLIP_TICKS)
 
 
 def entry_slip(bot: str) -> float:
@@ -33,4 +41,4 @@ def extra_exit_pts(exit_kind: str) -> float:
     (a limit), the extra ticks for every stop / market exit."""
     if str(exit_kind or "").upper().startswith("TARGET"):
         return 0.0
-    return max(0, STOP_SLIP_TICKS - BACKTEST_STOP_SLIP_TICKS) * TICK
+    return max(0, STOP_SLIP_TICKS_BY["LIT"] - BACKTEST_STOP_SLIP_TICKS) * TICK
