@@ -180,8 +180,12 @@ def step(S: dict, day: str, R_today: dict, R_prev: dict | None, prev_day: str | 
     # the day is over once the 15:55 bar is closed by the clock (16:00:30 ET), or on a later day
     end_of_day = (et_day(now) == day and now >= _et(now).replace(hour=16, minute=0, second=30).timestamp()) or et_day(now) > day
     L = B.levels(D, days, len(days) - 1)
+    S["levels"] = [{"name": nm, "px": round(float(lv), 2), "side": int(sd)} for nm, lv, sd in L]
     rth_i = [i for i in range(n_closed) if 570 <= bars["mod"].iat[i] < 960]
     orb = [i for i in rth_i if bars["mod"].iat[i] < 600]
+    if len(orb) == 6 and any(bars["mod"].iat[i] >= 600 for i in rth_i):     # the opening range, once it is complete
+        S["levels"] += [{"name": "orh", "px": round(float(bars.high.iloc[orb].max()), 2), "side": 1},
+                        {"name": "orl", "px": round(float(bars.low.iloc[orb].min()), 2), "side": -1}]
     used = set(S.get("used") or [])
     rows = S["rows"]
     done = S.get("done_t")
@@ -448,9 +452,34 @@ def tick(now: float | None = None, root: str = ROOT, nd: str | None = None, forc
         tt = (x.t_ns.to_numpy(np.int64) // 1_000_000)
         S = step(S, day, R, Rp, pday, tt, x.price.to_numpy(float), now, kill=_kill(root), lit=lit, depth=dp)
         _wj(sp, S)
+        export_day(S, root)
         return {"ok": True, "line": line(S), "today": S["today"]}
     except Exception as e:  # noqa: BLE001
         return {"error": f"{e.__class__.__name__}: {str(e)[:160]}"}
+
+
+EXPORT_NAME = "NQ_paper.json.gz"
+
+
+def export_day(S: dict, root: str = ROOT) -> str | None:
+    """The day's PAPER state, gzip'd, next to the order-flow summary (logs/datapipe/days/<day>/of/NQ_paper.json.gz): the nightly
+    signed 'of' answer (engine/datafeed.build_of) carries it to the cloud with the summaries. Paper-labelled, market data + paper
+    rows only (no account, no balance). Never raises."""
+    try:
+        import gzip
+        d = os.path.join(root, "logs", "datapipe", "days", S["day"], "of")
+        os.makedirs(d, exist_ok=True)
+        keep = {k: S.get(k) for k in ("v", "paper", "never_routed", "label", "day", "t", "runs", "levels", "rows", "today", "line", "kill_seen")}
+        keep["lit"] = [{k: r.get(k) for k in ("id", "t", "d", "absorbed", "decision")} | {"result": None if r.get("pnl") is None else ("won" if r["pnl"] > 0 else "lost")}
+                       for r in S.get("lit") or []]
+        raw = json.dumps(keep, separators=(",", ":"), default=float).encode("utf-8")
+        p = os.path.join(d, EXPORT_NAME)
+        with open(p + ".tmp", "wb") as f0, gzip.GzipFile(fileobj=f0, mode="wb", compresslevel=9, mtime=0) as fh:
+            fh.write(raw)
+        os.replace(p + ".tmp", p)
+        return p
+    except Exception:  # noqa: BLE001
+        return None
 
 
 def replay_frame(x, day: str, R_prev=None, prev_day=None, lit=None, depth=None, kill_at: float | None = None) -> dict:
@@ -470,6 +499,21 @@ def replay_frame(x, day: str, R_prev=None, prev_day=None, lit=None, depth=None, 
         R = summary_of(x[m], day, depth[depth.t_ms <= now * 1000] if depth is not None else None)
         S = step(S, day, R, R_prev, prev_day, tt_all[m], px_all[m], now, kill=bool(kill_at and now >= kill_at), lit=lit, depth=depth)
     return S
+
+
+def replay_summary(R_today: dict, day: str, R_prev=None, prev_day=None, lit=None) -> dict:
+    """A recorded day from its 5m SUMMARY only (what the cloud receives; raw ticks stay on the PC) through the same step():
+    decisions at each bar close, fills at the next bar's open + 1 tick (= replay_frame / of_study._sim_df). Lane C needs the raw
+    depth snapshots, so it is empty here."""
+    b = R_today["bars"]
+    if not len(b):
+        return new_state(day)
+    tt = b.t.to_numpy(np.int64) * 1000
+    px = b.o.to_numpy(float)
+    now = int(b.t.iloc[-1]) + 600
+    if et_day(now) == day and _mod(now) < 16 * 60 + 1:
+        now = int(_et(now).replace(hour=16, minute=1).timestamp())
+    return step(new_state(day), day, R_today, R_prev, prev_day, tt, px, now, lit=lit)
 
 
 def replay(day: str, root: str = ROOT) -> dict:
@@ -522,6 +566,11 @@ def main(argv=None) -> int:
     ap.add_argument("--day")
     ap.add_argument("--force", action="store_true")
     a = ap.parse_args(argv)
+    if a.cmd in ("tick", "loop") and hasattr(os, "nice"):
+        try:
+            os.nice(5)                                                     # below the bot (Windows: BELOW_NORMAL from the ops task)
+        except OSError:
+            pass
     if a.cmd == "selftest":
         return 0 if selftest() else 1
     if a.cmd == "tick":

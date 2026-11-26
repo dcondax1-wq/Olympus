@@ -406,6 +406,8 @@ AREAS["pc"].append("of_paper")            # day-oflearn 2026-11-26: the Order Fl
 AREAS["pc"].append("of_paper_rt")   # red team 2026-11-26: the paper child BELOW_NORMAL
 AREAS["pc"].append("payout_engine")       # big-payout 2026-11-26: read-only payout planner, /today, the Money tile
 AREAS["pc"].append("today_merge_rt")   # red team 2026-11-26: one /today (guard2 + big-payout), key line last
+AREAS["pc"].append("ofreal")              # big-ofreal 2026-11-26: tools/of_realday_verdict.py + tools/build_of_room.py (sim pulled days, ~1 min)
+AREAS["pc"].append("ofpipe")              # big-ofpipe 2026-11-26: OF paper state PC -> cloud (ext "ofp" + the of answer) + oflive.setup_of
 AREAS["cities"].append("research_hub2")   # night-hub2 2026-11-22: the Research Hub (cities/hub.html, data tools/build_research_hub.py); its own line
 AREAS["cities"].append("strategy_lab")    # day-mind 2026-11-23: Strategy Lab data (tools/build_strategy_lab.py) + the Research Hub tab
 AREAS["olympus"].append("brain3d")       # day-arenas 2026-11-21: the bot brain in 3D (olympus/brain3d.js + brain3d-scene.js, brain3d-lab.html); its own line
