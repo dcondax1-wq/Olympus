@@ -117,7 +117,7 @@ def spec(plan):
     E = {**E, "stuck": 200.0 if big else 100.0}
     has_cons = bool(E.get("cons"))
     if not has_cons:
-        E["cons"] = 1.0                                     # no eval consistency rule: the pass check never binds
+        E["cons"] = 1.0                                     # no eval consistency rule: RL.Ev treats cons >= 1 as no rule (big-consfix)
     ec = A4.ecfg({**E, "dll": min(E["dll"], soft)})
     ec["two_week"]["acct"]["dll"] = min(E["dll"], soft)
     ec["_dll"] = min(E["dll"], soft)
