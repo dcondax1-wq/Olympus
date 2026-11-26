@@ -82,3 +82,15 @@ p_with / p_against = predicted P(trend in / against the trade's direction); top 
 5. Placebo: the same number of trades per span hit at random (2,000 draws, same multiplier) -> the 2026 H1+H2 $ gain must beat
    >= 99.67% of draws (0.05 / 15).
 A version that passes every line becomes a needs-owner-yes card with exact rules. Otherwise rejected with the numbers.
+
+## Round 2 addendum (written 2026-11-26 after round 1 = 0/15 pass, BEFORE any round-2 run)
+Why: round 1's ORACLE rows (true label, not tradeable) show day type matters a lot for BLITZ only (skip true range days:
+H2 $3.4k -> $6.7k, 2021-25 $4.6k -> $20.6k, H1 flat), and BLITZ enters 10:00-15:00, when more of the day is already seen.
+LIT (01:00-09:00) and ATLAS (02:00-10:30) trade before any later checkpoint, and their ORACLE rows already fail 2026
+(LIT skip true trend-against days: H1 $33.9k -> $29.2k), so round 2 is BLITZ only.
+- New checkpoints C4 11:30, C5 12:30, C6 13:30 = C3 features + (bars closed before the time) RTH range so far / RATR,
+  (price - RTH open) / RATR, price location in the range so far, (price - RTH VWAP so far) / RATR, which extreme printed
+  first (+1 low first / -1 high first), move since 10:30 / RATR, |price - open| / range so far. Same model, same walk-forward,
+  same kill-gate. A BLITZ trade sees the latest checkpoint <= its entry (10:30-11:29 -> C3, as in round 1).
+- Versions (4): R2-B1 skip when top = range; R2-B2 x0.5 when top = range; R2-B3 skip when P(range) >= 0.60;
+  R2-B4 x1.5 when top = trend with. Same money / 25K eval / placebo gates; placebo bar 0.05 / 19 (rounds 1 + 2 counted).
