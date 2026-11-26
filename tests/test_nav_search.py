@@ -55,7 +55,7 @@ CASES = {
     # the rest of the site
     "my accounts": "business/accounts.html", "zeus": "hub/zeus.html", "board": "board/", "kalshi": "kalshi/", "journal": "journal/",
     "news today": "pythia/", "how many micros": "pnyx/index.html", "change theme": "gate/index.html#lookSec", "dark mode": "gate/index.html#lookSec",
-    "all apps": "gate/index.html#az", "weekly review": "apollo/",
+    "all apps": "gate/index.html#az", "weekly review": "journal/",   # day-site5: Apollo is archived; its week review lives on the Journal
     # what's new (2026-11-20 lead follow-up)
     "what's new": "hub/whatsnew.html", "what changed": "hub/whatsnew.html", "whats new this week": "hub/whatsnew.html",
 }

@@ -25,12 +25,12 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 
 | Arena | Front page (the Home tile) | Live apps | Its page |
 |---|---|---|---|
-| **NQ Bot** | Bots right now (`nq/`) | 27 | `hub/arena.html?a=nq` |
+| **NQ Bot** | Bots right now (`nq/`) | 19 | `hub/arena.html?a=nq` |
 | **Jarvis** | Jarvis (`jarvis/`) | 4 | `hub/arena.html?a=jarvis` |
 | **Websites** | Website business (`agency/`) | 1 | `hub/arena.html?a=agency` |
-| **Data City** | Cities and Hellas (`cities/`) | 8 | `hub/arena.html?a=data` |
+| **Data City** | Cities and Hellas (`cities/`) | 6 | `hub/arena.html?a=data` |
 | **Money** | All my businesses (`business/`) | 8 | `hub/arena.html?a=money` |
-| **Kalshi** | Kalshi bot (`kalshi/`) | 4 | `hub/arena.html?a=kalshi` |
+| **Kalshi** | Kalshi bot (`kalshi/`) | 3 | `hub/arena.html?a=kalshi` |
 | **Everything else** | - | 11 | `hub/arena.html?a=else` |
 
 ## Retired: where each old app sends you now
@@ -67,6 +67,24 @@ Retired apps are not on Home, in search or in A to Z. Their old links open the r
 | Polis (`polis`) | Cities and Hellas (`cities`) |
 | Stoa (`stoa`) | What to do next (`compass`) |
 | Symposium (`symposium`) | Jarvis (`jarvis`) |
+
+## Archived: the Archive door (`hub/arena.html?a=archive`)
+
+Not on Home, in search (their words find the page that holds them now) or in A to Z. Unlike retired apps they do NOT redirect: every old link still opens the page. The door also lists every retired app (opened with `?stay=1`). Evidence: `research/handoff/2026-11-26/site5/ARCHIVE_LIST.md`.
+
+| Archived | Its content lives on |
+|---|---|
+| Forum (`forum`) | Morning briefing (`helios`) |
+| Epilogue (`epilogue`) | Trade journal (`journal`) |
+| Apollo (`apollo`) | Trade journal (`journal`) |
+| Kratos (`kratos`) | Trade journal (`journal`) |
+| Nemesis (`nemesis`) | Trade journal (`journal`) |
+| Labyrinth (`labyrinth`) | Rules and risk calculator (`pnyx`) |
+| Why (`why`) | Every trade (`trading`) |
+| Sibyl (`sibyl`) | Kalshi desk (`dionysus`) |
+| Demeter (`demeter`) | Risk guard (`aegis`) |
+| Athena (`athena`) | Everything we tested (`archive`) |
+| Colosseum (`colosseum`) | Everything we tested (`archive`) |
 
 ## One place per fact
 
