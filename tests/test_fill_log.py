@@ -111,6 +111,12 @@ def t_fills(root):
     check("ATLAS Nov 20 entry (was missing): lane atlas, SELL filled 26,380.75 vs 26,382 = +5 ticks worse",
           a.get("lane") == "atlas" and a.get("fill_px") == 26380.75 and a.get("slip_ticks") == 5.0, a)
     check("ATLAS exit fill (target)", by.get(f"{A}T", {}).get("fill_px") == 26124.0 and by[f"{A}T"].get("lane") == "atlas")
+    check("big-exitreal's per-entry columns come from the same stop / target rows (one source): LIT entry stop_px = the moved stop "
+          "27,786.25, target_px 28,174, exit_order target filled 28,174, 0 ticks; ATLAS's target exit too",
+          e.get("stop_px") == 27786.25 and e.get("target_px") == 28174.0 and e.get("exit_order") == "target"
+          and e.get("exit_fill_px") == t.get("fill_px") == 28174.0 and e.get("exit_slip_ticks") == t.get("slip_ticks")
+          and e.get("exit_fill_t") == t.get("fill_t") and a.get("exit_order") == "target" and a.get("exit_fill_px") == 26124.0
+          and "exit_order" not in t, (e, a))
     cl = [r for r in rows if r.get("leg") == "close"]
     check("the 25K #2's CLOSEPOSITION at 15:55 is a row (lane b25k_2, no price: NinjaTrader has none)",
           len(cl) == 1 and cl[0]["lane"] == "b25k_2" and cl[0].get("fill_px") is None and cl[0]["order_type"] == "CLOSEPOSITION", cl)
