@@ -8,9 +8,7 @@ Oct 19 - Nov 20: -$858 (1.4 trades a week).
 ## Verdict
 **LIT sits on a plateau, not a knife-edge, but its 2026 money is mostly the 2026 market.** Trust about a quarter of the
 2026 rate: about $1,000-1,400 a month forward per 50K at the LIT size, not $4,250. Plan evals for a 2021-25-like market
-too. In that market today's 40% room size fails about half the evals. **Sizing: 30% of the room (room_f 0.3) passes the
-same share of evals as 40% in every mix of markets tested, with 1/3 to 1/2 fewer fails, at ~1-2 trades (2-3 sessions)
-slower.** Sent to big-evalsizer. room_f is owner-approved at 0.4, so a change is the owner's call.
+too. In that market today's 40% room size fails about half the evals. **Sizing: keep today's 40% (room_f 0.4).** My simplified sim (below, section 5) suggested 0.3 cuts fails, but big-evalsizer re-checked it in the real eval engine (research/plans/rank.py: every MFFU rule, the soft day stop, the one-winner need cap, the ATLAS lane): 0.3 does NOT cut fails there, and 0.4 earns more in every market mix (branch big-evalsizer, research/evalsizer/mix_check.json).
 
 ## 1. Parameter surface (each knob alone at -20 / -10 / +10 / +20%, $/month)
 | Knob | Jan-Jun | Jul-Oct | 2021-25 | 2-week pass H1 / H2 | Neighbours keeping >= 80% of today's $ (H1 / H2) |
@@ -62,7 +60,7 @@ since Oct 19 is a 1-in-25-ish event, not proof the edge is gone. Win rate is onl
 tried variants would show. Over 2021-26 as a whole, the live LIT is not distinguishable from the best of many tries (it was
 picked on 2026). Daily $ is heavily skewed (skew 3.9, kurtosis 20): a few big winners carry it.
 
-## 5. What it means for eval sizing (`sizing.py`: 20,000 evals, 40 trades ~ 70 sessions, pools mixing 2026 and 2021-25 trades)
+## 5. Eval sizing: SUPERSEDED, my simplified sim (`sizing.py`: 20,000 evals, 40 trades ~ 70 sessions, pools mixing 2026 and 2021-25 trades)
 | Market mix (share of 2026-like trades) | room 0.25 | **room 0.30** | room 0.40 (today) | room 0.50 | room 0.60 |
 |---|---|---|---|---|---|
 | 100% 2026 | 90.2 / 0.5 (12) | **90.4 / 1.2 (11)** | 89.5 / 4.1 (10) | 87.7 / 7.7 (9) | 85.5 / 12.0 (8) |
@@ -72,3 +70,5 @@ picked on 2026). Daily $ is heavily skewed (skew 3.9, kurtosis 20): a few big wi
 (pass % / fail % (median trades to pass)). Going from 0.4 to 0.3 keeps the pass rate within 0-4 points in every mix and cuts
 fails by a third to a half, for ~2 more trades. Above 0.4 adds fails, not passes. At $91.80 an eval, at the 25% mix that is
 ~11 fewer failed evals per 100 bought.
+
+**Correction (same day):** in the real engine (rank.py, 1,000 paths, 60 sessions) 0.3 does not cut fails. 50K at a 50% 2026 mix: 0.4 $1,913 / 52 / 48 vs 0.3 $1,746 / 54 / 46; at a 25% mix: 0.4 $387 / 34 / 65 vs 0.3 $329 / 34 / 66 ($ a slot over 6 months, pass / fail). My sim left out the soft daily loss cap, the one-winner need cap and the ATLAS lane. Those bind before the room cap on most trades, so the table above overstates the gain. Keep 0.4.
