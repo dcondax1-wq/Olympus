@@ -67,15 +67,24 @@ def main():
     with tempfile.TemporaryDirectory() as td:
         p = os.path.join(td, "tile.json")
         check("write_tile writes plain JSON", PE.write_tile(p, rows) and json.load(open(p))["n"] == 2)
-    keep = PE.today_line
-    PE.today_line = lambda rows=None: "Payouts: test line"
+    c, say = TG.parse_text("/today")
+    check("Telegram /today: guard2's read-only command (answered in the poll loop, never the control path)", c == {"cmd": "today"} and say is None, (c, say))
+    c, say = TG.parse_text("/today please")
+    check("/today with words: not run", c is None and "no words" in str(say), say)
+    from engine import today_brief as TB
+    nr = PE.builder_row(FL.track({"2026-11-24": 200.0, "2026-11-25": 200.0, "2026-11-27": 200.0}, plan="builder25k", today=T,
+                                 start="2026-11-24", name="ATLAS 25K"), "atlas", T)
+    keep_kl = TB.key_line
+    TB.key_line = lambda: "PC signing key: abc123"
     try:
-        c, say = TG.parse_text("/today")
-        check("Telegram /today: a read-only answer (nothing runs on the PC)", c is None and say == "Payouts: test line", (c, say))
-        c, say = TG.parse_text("/today please")
-        check("/today with words: not run", c is None and say != "Payouts: test line", say)
+        txt = TB.text(None, now=1795000000, views=[], plan_rows=[nr])
     finally:
-        PE.today_line = keep
+        TB.key_line = keep_kl
+    check("ONE /today: the brief + the payout forecast (next $, date, keep, blocker) + the PC key line, in that order",
+          "Next payout ATLAS 25K: $1,000 about" in txt and "keep $26,100" in txt and txt.rstrip().endswith("PC signing key: abc123")
+          and len(txt) <= TB.MAX_CHARS, txt)
+    check("a ready account is not repeated in the forecast (the brief already says 'requestable now')",
+          TB.payout_forecast([{**nr, "ready": True}]) == "")
     check("/today is in the help text", "/today" in TG.HELP)
     check("no funded account: says so", PE.today_line([]) == "Payouts: no funded account yet.")
     # 9. read-only: nothing that requests / trades
