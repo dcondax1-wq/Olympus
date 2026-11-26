@@ -1,0 +1,448 @@
+{
+ "made": "2026-11-25",
+ "papers": [
+  {
+   "src": "export.arxiv.org",
+   "title": "Do Candlestick Charts Suffice? The Incremental Economic Value of Technical Indicators in Stock Return Prediction",
+   "abstract": "Although technical analysis remains widely used in practice, the need for manually constructed indicators is increasingly questioned as deep learning models can extract features directly from OHLC price data. This paper examines the standalone economic value of trading volume and manually constructed technical-indicator groups and whether adding these groups to OHLC candlestick charts provides incremental economic value. Using daily data for 1,707 Chinese A-share stocks from 2013 to 2025, we construct approximately 3.36 million stock-window samples and encode them as multi-channel images containing candlestick charts, trading volume, and seven widely used manually constructed technical indicators. The primary analysis uses a 2D CNN on these images; complementary tests apply a logistic regression, a 1D CNN, and an LSTM to numerical representations of the same samples. Out-of-sample performance from 2021 to 2025 is evaluated using decile portfolios, Sharpe ratios, Fama--French alphas, and formal pairwise tests. Our empirical results yield two central findings. First, specifications based separately on OHLC, trading volume, and each technical-indicator group produce significantly positive high-minus-low returns and factor-adjusted alphas, together with economically meaningful Sharpe ratios; the OHLC-only specifications generally perform best under the nonlinear models. Second, adding these technical-indicator groups to OHLC does not systematically improve any of these performanc",
+   "link": "http://arxiv.org/abs/2611.30584v1",
+   "date": "2026-11-23T12:26",
+   "families": [
+    "volume"
+   ],
+   "grammar_triggers": [
+    "vol_spike"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "Neckpinches in a Positively Curved Market: Ricci Flow with Surgery on the Nikkei-225",
+   "abstract": "We study the intrinsic geometry of the Nikkei-225 through the discrete Ollivier-Ricci curvature (ORC) of its empirical correlation graph, using the graph Ricci flow and surgery methodology of arXiv:2510.15942. The 226-node correlation graph, built from daily returns between January 2020 and June 2026, is ORC-spherical: every edge has strictly positive curvature before any flow, close to the equal-weight value $\u03ba\\approx0.502$. Under a fixed 20-iteration Ricci flow the curvature distribution polarises into a high-curvature bulk and a low-curvature minority, and cutting the low-curvature edges splits the graph into components of 184 and 42 nodes. The recursive ARCUS procedure (Adaptive Ricci Curvature Unsupervised Surgery) stops the flow at each node once a curvature gap ratio $G$ exceeds $G_{\\min}$ and the surgery set is stable. With $G_{\\min}=10$ and a minimum cluster size of 15, ARCUS performs 28 surgeries over 13 levels and ends in 29 terminal clusters of 2-14 nodes. The stopping rule fires at every node, with $G$ between 10.0 and 92.4, and the top-level split reproduces the fixed-schedule 184/42 partition exactly. Eight small subgraphs stop with $G<15$, so the deeper levels are conditional on $G_{\\min}$. Many terminal clusters are single industries by inspection, among them nine banks, five insurers, five general trading companies, three steelmakers and three shipping lines. Two delisted stocks without price data enter as zero-correlation placeholders; with them excluded, e",
+   "link": "http://arxiv.org/abs/2611.25860v1",
+   "date": "2026-11-19T10:10",
+   "families": [
+    "gap"
+   ],
+   "grammar_triggers": [
+    "gap"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "Which Past Matters? Training History and Multi-Forecast Horizon in Equity Transformers",
+   "abstract": "More historical data can improve estimation while introducing relationships that transfer poorly to current market conditions. We therefore examine how training quantity and historical selection interact with forecast horizon in intraday equity prediction. We deploy twelve configurations which combine four sampling and validation policies with 6, 12 and 24 month training quantities under a fixed cross-sectional Transformer and feature set. A monthly walk-forward experiment produces 264 refits and eight cumulative return forecasts from 5 to 120 minutes. Evaluation covers January 2025 through 20 October 2026 and uses cross-sectional Spearman information coefficients against future five-factor residual returns. Six-month recency sampling leads individual models at 5-15 minutes, while multi recency configurations lead at 20-30 minutes and uniform configurations at 60-120 minutes. Increasing training quantity does not uniformly improve accuracy while an equal-weight ensemble of all twelve models exceeds every individual mean at 15, 20 and 25 minutes, but not at the remaining horizons. These findings support evaluating historical selection jointly with forecast horizon without identifying a universal policy or a causal benefit from recency.",
+   "link": "http://arxiv.org/abs/2611.23126v1",
+   "date": "2026-11-17T17:44",
+   "families": [
+    "overnight"
+   ],
+   "grammar_triggers": [
+    "gap",
+    "on_sweep"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "Beyond Strike Remapping: Conditional-Gamma Pricing of Leveraged ETF Options under Local Volatility",
+   "abstract": "Options on leveraged ETFs (LETFs) are priced and hedged off the LETF volatility surface, but path-dependent variance drag makes that surface difficult to build consistently with the underlying index smile. We study three methods for constructing it: a closed-form first-order strike remapping, a new conditional-Gamma method, and a two-dimensional joint-law PDE that makes no distributional assumption and serves as the benchmark. The conditional-Gamma method is our main contribution. It conditions on the terminal underlying return, which preserves the state dependence of variance drag that a single remapped strike discards. Three one-dimensional forward PDEs under a calibrated local-volatility model give the conditional mean and variance of integrated variance, and a Gamma law matched to these moments keeps realised variance non-negative and prices the option in closed form. A shifted-Gamma variant that also matches the conditional third moment gives its clearest gains for inverse products at longer maturities, and a Gamma-mixture extension covers the full range of conditional skewness compatible with non-negative realised variance. On S&P 500 and Nikkei 225 surfaces the conditional-Gamma smile tracks the benchmark closely at every leverage tested, including the wings where the strike remapping drifts. A full LETF smile takes 0.85-1.42 seconds against 197-224 seconds for the benchmark, a 158- to 236-fold speed-up. Against listed TQQQ quotes the conditional-Gamma smile lies insid",
+   "link": "http://arxiv.org/abs/2611.22604v1",
+   "date": "2026-11-17T11:21",
+   "families": [
+    "volatility",
+    "gamma"
+   ],
+   "grammar_triggers": [
+    "displacement"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "Revisiting Equity-Bond Diversification under Tail Risk and Structural Market Change: Evidence from Global ETFs and Model-Implied Option Prices",
+   "abstract": "This study examines thirty equity--bond and multi-asset exchange-traded funds (ETFs) listed in the United States, Canada, and Australia using daily U.S.-dollar returns over 2020--2024. A rolling-window framework compares minimum-variance and Conditional Value-at-Risk (CVaR) portfolio optimization under long-only and long--short constraints against an equally weighted benchmark. Performance is assessed using risk-adjusted measures, downside risk, extreme-tail estimation, and conditional volatility models. Optimized portfolios exhibit lower empirical VaR and CVaR than the benchmark, with long--short strategies generally providing greater downside-risk reduction. However, the equally weighted benchmark achieves the highest reported Sharpe, Sortino, and Rachev ratios. GARCH and FIGARCH comparisons favor GARCH based on information criteria. A historically estimated Normal Inverse Gaussian model further generates European option prices and model-implied volatility surfaces under a martingale-corrected pricing specification. The findings highlight trade-offs between risk reduction, risk-adjusted performance, and practical implementation costs.",
+   "link": "http://arxiv.org/abs/2611.21897v1",
+   "date": "2026-11-16T21:09",
+   "families": [
+    "volatility"
+   ],
+   "grammar_triggers": [
+    "displacement"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "EWMA Principal Eigenportfolios of Equity Returns: Market Representation and Beta-Hedging Performance",
+   "abstract": "This study examines whether an adaptively estimated principal eigenportfolio improves equity beta hedging relative to capitalisation-weighted and equal-weighted market benchmarks. Using stock returns from a historically changing S&P 500 universe, it constructs a portfolio from the leading principal component of an exponentially weighted second-moment matrix of volatility-standardised returns. The resulting portfolio, EWMA-PC1, is compared with SPY and RSP under a common beta-hedging procedure across randomly generated portfolios of varying sizes and weighting schemes. Evaluation considers variance reduction and average pairwise residual correlation, with paired blockbootstrap inference. EWMA-PC1 exhibits broad market participation and achieves greater mean variance reduction and lower average residual correlation than SPY across all tested configurations. Its incremental advantage over RSP is smaller and mixed. For 50-stock Dirichlet portfolios, mean variance reduction is 92.17% under PC1, compared with 79.03% under SPY and 91.93% under RSP; RSP instead achieves greater mean variance reduction for multistock liquidity-tilted portfolios. Statistical evidence of improvement is more consistent against SPY than against RSP. These findings distinguish the extraction of a market-like component from incremental hedge effectiveness and highlight the importance of benchmark weighting and targetportfolio composition. The results concern gross statistical risk reduction and exclude addi",
+   "link": "http://arxiv.org/abs/2611.20363v1",
+   "date": "2026-11-16T00:43",
+   "families": [
+    "volume",
+    "volatility"
+   ],
+   "grammar_triggers": [
+    "displacement",
+    "vol_spike"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "Markets for Compute and Inference: Structure, Financing, and Risk Transfer",
+   "abstract": "Capacity to run large language models is rented by the accelerator-hour, and their output is sold by the million tokens. Both goods now have published price indices, an over-the-counter forward has traded on one, compute futures are listed offshore, and CME and ICE have specified futures on rental indices that await the United States regulator. We ask what in these two markets can be hedged, by whom, and at what price. Three findings stand out. First, the price that exchange contracts settle on is not the price that drives operators' revenue. The contracts on CME and ICE reference published short-dated rental rates, while most revenue, and with it credit quality, comes from private multi-year contracts whose prices are largely undisclosed. Second, the token price and the rental rate are linked by an identity through throughput and margin, but they are different exposures, so a hedge on the rental rate does not hedge the cost of inference. Third, the demand for hedging already sits in credit agreements, as the years by which operators' debt outlives their contracted revenue. Filings cannot measure that gap, because debt is scheduled year by year while contracted revenue rarely is, and the one loan that prices it settles the risk by cash prepayment against a model only the parties see. We design a reverse convertible note through which leveraged operators could buy protection against falling rental rates. Its coupon depends steeply on the annualised volatility of the rental rat",
+   "link": "http://arxiv.org/abs/2611.20242v3",
+   "date": "2026-11-15T20:47",
+   "families": [
+    "volatility",
+    "gap"
+   ],
+   "grammar_triggers": [
+    "displacement",
+    "gap"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "Local Stochastic Volatility Iterations",
+   "abstract": "We propose a calibration method for local stochastic volatility models that determines the leverage factor by a fixed-point iteration. Each iteration simulates the model with the current leverage factor and approximates the conditional expectation of the stochastic variance given the spot by a single regression in time and state, with a quasi-likelihood loss for positive responses. The resulting leverage factor is a smooth function of time and spot with relatively few parameters, which can in addition be refined directly against option quotes. We recalibrate the leverage factor to S&P 500 index options on the day of an interest rate announcement, keeping the parameters of a two-factor Bergomi model calibrated four weeks earlier. After five iterations, leverage factors with 63 and 143 coefficients reproduce the implied volatility surface fitted to the quotes within a few basis points over the quoted strikes, the smaller one except in the left wing, and further iterations change them little. A few regularized Gauss-Newton steps against the quotes then bring 87% and 95% of the liquid quotes inside their bid-ask intervals.",
+   "link": "http://arxiv.org/abs/2611.18214v1",
+   "date": "2026-11-13T14:18",
+   "families": [
+    "volatility"
+   ],
+   "grammar_triggers": [
+    "displacement"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "Global Seasonality Factor Investing",
+   "abstract": "We study seasonality as a factor for predicting risk-adjusted returns across global futures markets. We document five seasonality anomalies that, in aggregate, are pervasive across bond, commodity and equity markets. We demonstrate that each seasonality factor produces excess returns that are not reasonably explained by established global time series carry, momentum and skewness factors. We apply recent innovations in statistical learning and fit nonlinear seasonality models at the individual market level, thereby allowing each feature-market pair to express its unique seasonal prediction pattern. We discuss candidate economic rationales for the existence and persistence of each seasonality anomaly. Walk-forward out-of-sample testing demonstrates that fast-moving seasonal patterns, such as day-of-week and day-of-month, produce strong gross performance but with extremely high turnover, resulting in negative performance net of transaction costs. In contrast, slower-moving seasonal patterns, such as day-of-quarter, day-of-half-year and day-of-year, produce positive gross performance and, with the exception of day-of-quarter, positive net performance. An equal-weight ensemble of seasonality models produces an out-of-sample Sharpe ratio that is competitive with, and uncorrelated to, established global time series factor portfolios. Empirical results demonstrate that adding seasonality to a global factor portfolio increases the out-of-sample Sharpe ratio by approximately $30\\%$ ove",
+   "link": "http://arxiv.org/abs/2611.15657v1",
+   "date": "2026-11-11T16:06",
+   "families": [
+    "momentum",
+    "calendar"
+   ],
+   "grammar_triggers": [
+    "displacement",
+    "ema_cross",
+    "or_break",
+    "pd_break"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "Retrospective Analysis of Team-Following Trading Profitability in Pumpfun Meme Coins Using Funding Networks",
+   "abstract": "If the right token-creation teams had been known, how much could following them have returned, and what is left when only information available before each launch is used? We study ten separately recorded Pumpfun windows (April 2024 to September 2026), each reconstructed independently from real-SOL reserve states and finite-capital accounts that start with one SOL. Teams are directed funding groups ranked in hindsight. When every team exits at its own best reserve threshold, chosen in hindsight, the main account ends above one SOL in all 8 windows that have a qualifying team (1.10 to 11.32 SOL), but free cash exceeds one SOL in only 5, and marks of positions that never reached their threshold make up 17--94% of equity. If teams are recognised online, from tokens whose first hour has completed, 9 of 19 teams become identifiable only after their last launch; the remaining 10 end above one SOL in 10 cases, with free cash above one SOL in 7; funding links in this step still come from the full window, so even these results are not a fully realisable signal. A large model balance, a result above random cohorts that repeat the threshold search, and a statistical rejection in the selection-matched nulls (3 of 40 tests after Holm adjustment) are three different statements, and these nulls condition on the discovered funding graph, so they do not calibrate the whole selection procedure. Midpoint tests describe a further source of apparent opportunity. A detailed analysis of the best an",
+   "link": "http://arxiv.org/abs/2611.11436v1",
+   "date": "2026-11-08T14:58",
+   "families": [
+    "opening range"
+   ],
+   "grammar_triggers": [
+    "nr7_or_break",
+    "or_break"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "Risk-Sensitive Reinforcement Learning for an Options Market Maker: An Empirical Study with Real S&P 500 Options",
+   "abstract": "Options market makers absorb client order flow and must hedge the resulting inventory risk under trading frictions. We study whether an option hedging reinforcement learning (RL) agent trained on historical market data outperforms three alternatives in tail-risk protection: (i) traditional delta hedging, (ii) simple hedge-ratio rules, and (iii) the same agent trained in simulated markets. Most RL hedging agents are trained in model-generated markets that do not capture the crashes and volatility regimes present in real data. We introduce an empirical replay environment using S&P 500 option data from 1996 to 2017 and compare against a matched geometric Brownian motion (GBM) environment, a stochastic-volatility (SABR) simulator, and a hybrid that values historical paths with Black-Scholes, all sharing the same portfolio mechanics, stochastic arrivals, costs, and test period. We train a distributional Twin Delayed Deep Deterministic Policy Gradient (TD3) agent and evaluate it out of sample over 2018-2023. The agent trained on empirical data reduces Conditional Value-at-Risk (CVaR) tail loss by 3.1% compared to delta hedging and outperforms every hedge-ratio rule chosen during the training period and every alternative training environment. The reduction reaches 8.9% in volatile and falling markets, but reverses to a cost of 7-10% in rising markets. Empirical training induces a state-dependent short net delta: the policy under-hedges negative-delta books, most strongly after price",
+   "link": "http://arxiv.org/abs/2611.10956v1",
+   "date": "2026-11-07T20:41",
+   "families": [
+    "volume",
+    "volatility",
+    "gamma"
+   ],
+   "grammar_triggers": [
+    "displacement",
+    "vol_spike"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "The Logic of Factor Portfolios: Boolean Rules, Interactions, and Trading Costs",
+   "abstract": "Investors turn signals into holdings through decision rules: buy the top decile, hold stocks with high momentum and low volatility, exclude stocks that fail a screen. Many such rules are Boolean functions of threshold statements about signal ranks, and writing them this way shows both what a rule holds and how often it trades. A Walsh decomposition splits the return of any rule into exposures to individual signals and to interactions among signals; an intersection and a union of the same two screens, for example, have opposite interaction exposures. The same coefficients, together with the persistence of the underlying statements, determine turnover. Interactions are less persistent than their components, so rules that load on higher-order interactions trade more, and thresholds discard information, so at equal risk threshold implementations of interactions trade more than smooth ones. In U.S. stocks from 1973 to 2024, these predictions hold closely: predicted and realized persistence have correlations of at least 0.999, predicted turnover matches realized turnover with a slope of 1.02, and the same interactions are more persistent as products of ranks than as threshold rules. Trading costs rise with order, and because premia fall with order, 58% of single-signal portfolios have absolute premia above their quoted-spread costs over 1995-2024, against 24% of two-signal and 6% of three-signal interaction portfolios. Out of sample, interaction portfolios raise the Sharpe ratio of",
+   "link": "http://arxiv.org/abs/2611.09834v1",
+   "date": "2026-11-06T18:17",
+   "families": [
+    "momentum",
+    "volatility"
+   ],
+   "grammar_triggers": [
+    "displacement",
+    "ema_cross",
+    "or_break",
+    "pd_break"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "The End-of-Day Reversal After 2019: A Pre-Registered Test on S&P 500 Stocks Excluding Heavily Traded Names",
+   "abstract": "Baltussen, Da and Soebhag (2025) document an end-of-day reversal in U.S. stocks through December 2019: intraday losers outperform intraday winners over the last half hour of trading. We test it on later data, on point-in-time S&P 500 members excluding about 80 heavily traded stocks we had examined in earlier, unpublished work. Under a private pre-registration, the 2016-2019 data had to reproduce the published sign before any statistic linking the sort to the outcome was computed on later primary-sample data. Measured to the last trade before the closing auction, the dollar-volume-weighted reversal is 3.13 bps per day (t = 7.5) in 2016-2019 and 3.05 bps (t = 3.0) in 2023-2026, with a one-sided 95% bound on the decline of 61%. The result depends on the window: the reversal is indistinguishable from zero in 2020-2022, 2023 carries much of the later estimate, and from 2020 onward it is 1.69 bps (t = 2.3), with a bound of 91%. A proxy sample, added after the run, gives 2.81 and 3.86 bps. On the full index the reversal falls from 3.40 to 0.74 bps (t of the change -1.83, short of the registered bar of -3); descriptive comparisons concentrate this weakness in the very largest stocks. No pre-registered mechanism test passes.",
+   "link": "http://arxiv.org/abs/2611.09286v1",
+   "date": "2026-11-06T10:40",
+   "families": [
+    "reversal",
+    "overnight",
+    "vwap",
+    "volume"
+   ],
+   "grammar_triggers": [
+    "gap",
+    "on_sweep",
+    "pd_sweep",
+    "rsi_rev",
+    "vol_spike",
+    "vwap_band",
+    "vwap_cross"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "Does a Trading Policy Need to Know What It Trades? Microstructure Invariance and Zero-Shot Transfer of Execution Policies",
+   "abstract": "Execution algorithms are calibrated asset by asset, because the queues, trade rates and bid-ask spreads they face differ by orders of magnitude across assets. For reinforcement learning this is zero-shot generalisation across contexts of very different scales, and microstructure invariance proposes a normalisation fixed by theory: measured in each asset's own units of time, size and price, markets look alike. In an exact order-by-order replay of public Nasdaq data, we train policies once, on 954 stocks in 2019, to choose between waiting in the queue and crossing the spread, and evaluate them unchanged on 1,964 unseen stocks in 2020-21, 2,629 stocks in 2025-26, crypto pairs and a second exchange. First, a policy that sees a stock only through its recent trade rate, trade size, spread and price increment (tick) costs within 0.015 spreads per share (a fifth of what learning saves) of a policy whose training data included the stock, and the stock's own history does not help it; it comes within a similar margin of policies trained on the second exchange when every episode counts equally, and within a wider one on crypto. Second, in mean cost before fees, invariant units beat raw units, z-scores and asset descriptors, but by under a basis point: most of their advantage is information and a common cost scale that a learner can also take as plain inputs, and none of the representations tested extrapolates to unseen spread regimes. Third, a near-zero transfer gap to a pooled comparato",
+   "link": "http://arxiv.org/abs/2611.08701v1",
+   "date": "2026-11-05T21:00",
+   "families": [
+    "gap"
+   ],
+   "grammar_triggers": [
+    "gap"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "Constrained defined-contribution pension management: A reparameterized neural network approach",
+   "abstract": "This paper studies constrained defined contribution (DC) pension management under a two-factor financial market model. The pension participant is allowed to invest in cash, two nominal bonds, an inflation-linked bond, and a stock index. Moreover, they can also purchase term life insurance to manage pre-retirement death risk. Unlike traditional literature, we consider a pension member restricted to a general non-empty, closed, and convex trading constraint set that includes no short-selling, no borrowing, and portfolio-mix constraints as special cases. Such restrictions reflect common limits on pension-account trading. To solve the problem, we construct a family of unconstrained artificial markets, in which the original trading constraints are satisfied by adjusting the drift terms of the risky assets. Using a duality transformation, we derive the Lagrangian dual problem and propose a reparameterized neural network method to compute lower and upper bounds on the primal value function. We calibrate our model with U.S. data using a Kalman filter method, and find that our method produces a smaller duality gap than the benchmark methods. We also compare the constrained results with the unconstrained explicit solution and find that trading constraints substantially change wealth accumulation, portfolio strategies, and insurance demand. This highlights that unconstrained solutions may provide misleading guidance for pension management in practice.",
+   "link": "http://arxiv.org/abs/2611.06495v1",
+   "date": "2026-11-04T13:30",
+   "families": [
+    "gap"
+   ],
+   "grammar_triggers": [
+    "gap"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "Mitigating Return Drag and Regime Whipsaws in Sector Rotation: An Asymmetric Downside-Aware Nested Clustered Optimization Framework",
+   "abstract": "Hierarchical clustering and Nested Clustered Optimization (NCO) mitigate the mathematical ill-conditioning of classical Markowitz covariance matrices. However, two structural vulnerabilities persist in equity markets: (1) symmetric variance penalizes upside and downside return dispersion identically, inducing acute return drag against soaring momentum sectors; and (2) unconstrained Hidden Markov Models (HMM) exhibit hyper-active regime switching (whipsaw instability), incurring excessive turnover and transaction drag. We propose Asymmetric Downside-Risk Nested Clustered Optimization with Sticky Regime Dynamics (Asym-Sticky-NCO) for tactical sector rotation across all 11 S&P 500 GICS sectors. The framework substitutes symmetric covariance with the Bawa-Lindenberg downside semi-covariance matrix across both hierarchical tree clustering and two-stage allocation. Furthermore, we introduce a Sticky Gaussian HMM incorporating a diagonal self-transition persistence prior (\\k{appa}) and confidence-adaptive boundaries (\u03b4) to enforce macroeconomic persistence. Strictly non-anticipative walk-forward backtesting across 65 out-of-sample months (August 2020 to December 2025) demonstrates that the architecture elevates CAGR from 10.65% (Plain NCO) to 13.41% (+276 bps/year), delivers a 97.74% total return versus 72.99%, suppresses maximum drawdown to 14.22% (versus 23.93% for the S&P 500), and achieves a Calmar ratio of 0.94 (+38.2% over S&P 500; +84.3% over Baseline Regime-NCO). Crucially, ",
+   "link": "http://arxiv.org/abs/2611.05310v1",
+   "date": "2026-11-03T18:19",
+   "families": [
+    "momentum"
+   ],
+   "grammar_triggers": [
+    "displacement",
+    "ema_cross",
+    "or_break",
+    "pd_break"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "How market volatility responds to a preceding price trend: a lag-resolved measurement in cryptocurrencies and equities",
+   "abstract": "We quantify the response of market volatility to a preceding price trend as a function of lag at minute resolution. The asymmetry of the response is investigated. The sample consists of trades in three of the largest cryptocurrencies on a single exchange and in three large US stocks and the S&P 500 exchange-traded fund between 2020 and 2026. For the cryptocurrencies the asymmetry is positive, matching the sign of the leverage effect. It follows the trend: it is greatest at the first measurable lag, 20 minutes, and weak at negative lags, where the trend follows the volatility. At those lags a scan over window lengths resolves a small component of opposite sign that has not yet been disentangled from what the statistic itself generates. For Bitcoin and Ether the asymmetry decays to one half by a lag of roughly an hour and a half. Decomposition under time reversal divides the asymmetry into a T-even part and a T-odd part. Only the latter carries an arrow of time. For Bitcoin and Ether the T-odd part is detected. At the first lag it is between 0.4 and 0.9 of the T-even part at windows of 10 and 20 minutes. At 20 minutes this is the ratio produced by a purely one-sided response in this statistic: at that window the response is consistent with being wholly one-sided in time. None of the equities exhibits a detectable T-odd part at 20 minutes in the straight-line fit over 2.5 trend scales. This fit is the shared instrument of comparison. The fund's return-variance correlation displa",
+   "link": "http://arxiv.org/abs/2611.04533v1",
+   "date": "2026-11-03T09:03",
+   "families": [
+    "reversal",
+    "volatility"
+   ],
+   "grammar_triggers": [
+    "displacement",
+    "on_sweep",
+    "pd_sweep",
+    "rsi_rev",
+    "vwap_band"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "Aggregate Calibration Can Mask Stress-State Undercoverage: Bounded-Memory Forecast Intervals under Recurrent Financial Stress",
+   "abstract": "Sequential forecast intervals are often evaluated by aggregate coverage even when calibration memory is bounded. This can be misleading when economically important states recur after long absences: a recent-only buffer may satisfy its overall coverage target while no longer containing errors from earlier episodes of the returning state. We study this problem in next-day financial range forecasting, holding the forecasting model, conformity score, adaptive update, and memory budget constant while varying the historical residual information available at each query. Recent-only first-in, first-out (FIFO) calibration is near nominal in aggregate but undercovers substantially during high-volatility states in both an exchange-traded fund development panel and a fixed stock panel. An unbounded state-history reference yields a lower observed stress-period interval score; Rare replay yields lower high-VIX interval scores than the matched Recent-n and Hybrid-n controls in both panels, and the state-structured versus recent-only contrast is largest near stress re-entry. Bounded calibration memory is therefore part of the forecasting information design, and aggregate calibration alone can conceal state-specific reliability failures.",
+   "link": "http://arxiv.org/abs/2611.04223v1",
+   "date": "2026-11-03T03:04",
+   "families": [
+    "volatility"
+   ],
+   "grammar_triggers": [
+    "displacement"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "PanelGP: A Probabilistic Factor Model for Asset-Return Panels",
+   "abstract": "We develop PanelGP, a conditional factor model for large panels of stock returns in which firm characteristics determine the factor loadings and economic conditions determine the expected factors. Both relations are estimated nonparametrically with Gaussian-process priors. The kernel choice nests instrumented principal component analysis (IPCA) as well as smooth nonlinear maps. Asset-specific loading innovations and common factor innovations separate idiosyncratic from systematic risk, so one estimated model forecasts both expected returns and their covariance matrix. Estimation uses sparse variational inference with a joint posterior over loadings and factors. Because each predicted return is bilinear in a Gaussian state, the predictive covariance matrix and the cumulants of any portfolio have closed forms. In simulations, the estimator recovers the nonlinear maps and the variance parameters. For S&P 500 constituents over 1995-2024, nonlinear loadings rank stocks better than affine loadings and improve the Gaussian log score. Relative to IPCA, the resulting portfolios have higher Sharpe ratios, also net of trading costs, and the minimum-variance portfolio has lower volatility. The predicted variances rank stocks and months by risk but are too compressed.",
+   "link": "http://arxiv.org/abs/2611.04040v1",
+   "date": "2026-11-02T22:35",
+   "families": [
+    "volatility"
+   ],
+   "grammar_triggers": [
+    "displacement"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "Thinking Fast, Trading Late: System One Decision Models vs the Market",
+   "abstract": "Large language models (LLMs) read company news at scale, and backtests suggest that their readings predict stock returns. We ask how much of that predictability survives a test that rules out look-ahead, memorization and selection. We propose OLIVIA, a protocol for such tests: point-in-time inputs with company identities masked, selection on validation data only, an analysis plan frozen by cryptographic hash, and a test period unblinded once through a logged lock. We apply it to AI decision models, non-generative language models that return probabilities for typed questions, reading news about S&P 500 stocks: an open-weights model we fine-tuned on 2024-2025 data, three commercial models and standard baselines. The fine-tuned model's signal replicated on two validation quarters (daily information coefficients 0.055 and 0.065) but fell to 0.020 (t = 1.7) on the blinded January-July 2026 test. The commercial models' readings line up with the overnight move to the open (information coefficient 0.074 to 0.077) but not with the move after it, so the news is priced by the time a trader can act on it at the open. No model can tell over- from under-reaction, and no pre-registered strategy survives costs and a deflated Sharpe ratio. Commercial models identify masked companies in 62% to 74% of cases against a 28% baseline: masking hides names, not companies. The market reads the news first.",
+   "link": "http://arxiv.org/abs/2611.03985v1",
+   "date": "2026-11-02T21:24",
+   "families": [
+    "overnight"
+   ],
+   "grammar_triggers": [
+    "gap",
+    "on_sweep"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "Interpretable Allocation and Model-Predictive Rebalancing of Equity Portfolios, Tested on Real and Synthetic Markets",
+   "abstract": "A live equity portfolio poses three problems: which stocks to hold, when to trade, and whether the strategy holds up beyond the observed market. We built one system for all three and tested it on 373 US equities, calibrated on 2014-2024 and traded from January 2025 to September 2026. A selection rule chose stocks by score, by a bandit, or at random, and one of seven weighting rules, four consumer-theory utilities, and three standard portfolios, set share counts under limits on budget, single-stock weight, portfolio volatility, and turnover, with each stock's preference weight a bounded score of its trend, market beta, and the market's recent direction. A model-predictive controller forecasts portfolio value with a multi-asset geometric Brownian motion and re-planned at its horizon, when the value left its forecast band, or at a drawdown stop. To probe deeper declines than the real window held, we also ran the system on simulated markets from per-asset hidden Markov generators with jumps, linked by market and sector factors. On real prices, the stocks chosen mattered more to terminal wealth than the weighting rule, and the early re-plans shrank the worst drawdown in most rule combinations against a fixed calendar without consistently raising wealth. In the deepest simulated declines, every combination, random picks included, ended above simulated SPY and the equal-weight universe in the median, even without early re-plans, so the margin came from shared parts of the system, no",
+   "link": "http://arxiv.org/abs/2611.03022v1",
+   "date": "2026-11-02T12:20",
+   "families": [
+    "volatility",
+    "calendar"
+   ],
+   "grammar_triggers": [
+    "displacement"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "Herding or Racing? Decomposing Cross-Account Order-Flow Persistence in On-Chain Markets",
+   "abstract": "Most of the autocorrelation in trade signs on decentralized exchanges comes from pairs of trades sent by different wallets. For Uniswap v3, this has been read as herding dominating order splitting -- the reverse of what equity markets show. We show that this herding share mixes two quantities: the probability $p$ that consecutive orders come from the same account, which is small when thousands of wallets are trading, and the ratio $\u03ba$ of cross-account to same-account sign correlation. For any $p$, $\u03ba$ equals one under the public-signal benchmark of T\u00f3th et al. and zero under independent order splitting. On Uniswap v3 USDC-WETH (one week each in 2023 and 2024), the herding share is 0.65-0.86, but $\u03ba$ is only 0.05-0.10. On a fully on-chain EVM limit order book, the herding share is similar (0.61-0.87), but $\u03ba$ is 0.72-0.76; among Uniswap swaps above USD 100k, it is 0.34-0.52. Where $\u03ba$ is high, cross-account co-movement is mostly a race for the price on a centralized exchange. It is concentrated in orders a few blocks apart, and a cross-fitted gradient-boosted filter that sees only Binance data removes about three quarters or more of it. This race flow accounts for most of the losses of liquidity providers. We recommend reporting $\u03ba$ alongside the herding share and modeling on-chain order flow as splitting traders plus arbitrageurs who respond to the centralized-exchange price.",
+   "link": "http://arxiv.org/abs/2611.02616v2",
+   "date": "2026-11-02T06:43",
+   "families": [
+    "volume"
+   ],
+   "grammar_triggers": [
+    "vol_spike"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "What Language Models Add to Healthcare-Equity Rankings, and What They Could Have Known",
+   "abstract": "In healthcare equities, much of what moves a single name arrives as text: filings, trial and regulatory records, news and analyst commentary. We evaluate how screened non-market features and language-model representations improve market-based equity rankings for US healthcare firms over 2020-2025. Adding balance-sheet and attention features improves the resulting hybrid's price- and liquidity-neutral rank information coefficient (IC) at one, three and twelve months. At twelve months, neutral IC rises from 0.063 to 0.093, a 48% increase, while raw IC rises from 0.289 to 0.298. Language models contribute most clearly at three months: among company-months with scientific-text coverage, a current embedding model raises the hybrid's neutral IC from 0.046 to 0.056. This increment is nominally significant (t = 2.8; paired 95% bootstrap interval [+0.006, +0.015]) and remains exploratory. A larger post hoc gain occurs in months containing trial or regulatory records, consistent with text complementing prices and financial statements at that horizon. Across all text, pre-2020 and current representations yield small positive three-month increments in both neutral and raw IC but no established twelve-month gain. Much of their ranking performance survives within-company time shuffling, consistent with a persistent company component. Rater-cutoff comparisons find negligible pre-cutoff advantages for current models over the pre-2020 rater at one and three months that do not shrink after the",
+   "link": "http://arxiv.org/abs/2610.38056v1",
+   "date": "2026-10-27T23:11",
+   "families": [
+    "volume"
+   ],
+   "grammar_triggers": [
+    "vol_spike"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "Contemporaneous Transmission Networks and Systemic Risk in European Banking",
+   "abstract": "We study how contemporaneous equity-return transmission shapes systemic exposure among 51 listed European banks. Using a recursive non-Gaussian network model on volatility-standardized returns, we construct two market-capitalization-weighted measures based on direct and indirect transmission effects: the Systemic Impact Score (SIS), capturing a bank's potential influence on other institutions, and the Systemic Vulnerability Score (SVS), capturing its exposure to disturbances originating elsewhere. The fitted network reveals distinct transmitting and receiving roles, highlighting differences between institutions with substantial outward influence and those with high incoming sensitivity. Receiving roles are generally more reproducible than transmitting roles across repeated network discovery, and selected connections remain informative about lower-tail dependence in subsequent observations. Volatility standardization substantially reduces detected dependence among recovered shocks, although the full-sample model does not satisfy the designated criterion for supporting shock independence. Alternative recursive orderings also yield comparable directional tail asymmetries, limiting the extent to which these patterns validate a particular ordering. The results provide complementary measures of model-implied systemic transmission and vulnerability, with explicit attention to uncertainty and identification limits",
+   "link": "http://arxiv.org/abs/2610.37487v1",
+   "date": "2026-10-27T16:14",
+   "families": [
+    "volatility"
+   ],
+   "grammar_triggers": [
+    "displacement"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "Weekend Crypto Volatility and Monday Market Risk",
+   "abstract": "Cryptocurrencies trade continuously while major traditional markets close over the weekend. We examine whether weekend cryptocurrency volatility predicts Monday variance in equity, commodity and fixed-income markets. Using daily range-based variance measures for Bitcoin, Ether, XRP, the S&P 500, gold and a US Treasury ETF over 2017-2026, we augment heterogeneous autoregressive models with a common weekend cryptocurrency factor. Predictive content is weak before 2024 but significant thereafter. In the post-2024 sample, a one-standard-deviation increase in the factor is associated with 27-54% higher fitted Monday variance. Adding the factor reduces out-of-sample QLIKE losses by 11-22%, although statistical evidence varies across markets. Friday cryptocurrency volatility does not reproduce the result, and coin-specific variation adds no significant predictive information beyond the common factor. An endogenous procedure estimates a break in late 2023, during growing anticipation of US spot-Bitcoin ETF approval. However, ETF-flow interactions provide no evidence of amplification through greater measured Monday flow activity, leaving the mechanism unresolved. The findings suggest that calendar-specific volatility measures reveal predictive information that aggregate connectedness measures may obscure.",
+   "link": "http://arxiv.org/abs/2610.35702v1",
+   "date": "2026-10-26T16:27",
+   "families": [
+    "volatility",
+    "calendar"
+   ],
+   "grammar_triggers": [
+    "displacement"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "Do Round Numbers Hold Prices? Occupation Densities and Depth-Conditioned Hazards in the Limit Order Book",
+   "abstract": "Prices cluster at round numbers, a pattern often interpreted as evidence that these levels act as price barriers. This pattern also admits a mechanical explanation: more liquidity rests there, and prices take longer to leave deeper queues. Limit order book data allow us to distinguish these mechanisms through a tick-grid framework in which local time counts departures and level-wise volatility reflects the departure hazard. Using data for five Nasdaq stocks throughout 2025, we find that round levels attract more liquidity but do not exhibit longer depth-adjusted durations. Intel and SoFi show directional effects, with departures biased away from round levels.",
+   "link": "http://arxiv.org/abs/2610.34787v1",
+   "date": "2026-10-26T03:31",
+   "families": [
+    "volume",
+    "volatility"
+   ],
+   "grammar_triggers": [
+    "displacement",
+    "vol_spike"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "Compiling and forecasting implied volatility surfaces via survey sampling, tempered inverse-probability sequence learning, and causal activity clocks",
+   "abstract": "Compiling implied volatility (IV) surfaces and forecasting derivative risk from high-frequency equity and options feeds requires addressing contract heterogeneity, schema shifts, volatility clustering, and non-stationary trading activity. Using a split-adjusted NVIDIA (NVDA) equity and options panel (2018-2025), this study integrates finite-population survey sampling, tempered inverse-probability sequence learning, and causal activity clocks. Four findings emerge. First, cross-sectional surface accuracy depends on matching the sampling design to the target functional: plug-in stratified allocations using lagged cell dispersion improve equal-weighted surface reconstruction with full grid coverage, whereas liquidity-weighted probability proportional to size (PPS) sampling excels on liquidity-weighted targets by construction yet inflates error when misapplied. Second, in longitudinal LSTM sequence training, PPS and Neyman designs retain more tail-volatility windows than simple random sampling (SRS); all three designs are equivalent to full-census training within chosen margins while cutting training time, though incremental forecasting gains of informative selection over SRS are not established. Third, out-of-sample evaluation shows a predictability contrast: short-horizon prices are not forecastable beyond a random walk with drift among tested models, whereas forward IV shows descriptive mean-reversion skill concentrated in a few post-shock reversal sessions (insignificant unde",
+   "link": "http://arxiv.org/abs/2610.33438v1",
+   "date": "2026-10-24T04:27",
+   "families": [
+    "reversal",
+    "volume",
+    "volatility"
+   ],
+   "grammar_triggers": [
+    "displacement",
+    "on_sweep",
+    "pd_sweep",
+    "rsi_rev",
+    "vol_spike",
+    "vwap_band"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "Tracking High-Frequency Trading Activity in China and Its Effects on Market Quality",
+   "abstract": "We develop a new order-level proxy for high-frequency trading (HFT) activity based on precise order placement and study its effects on market quality. With quotes updating multiple times per second, millisecond-level order-book access makes high-frequency traders more likely to submit active exact-match orders, defined as limit orders priced exactly at the prevailing best opposite-side quote. Using Shenzhen Stock Exchange data, we validate the proxy: active exact-match orders respond faster to quote updates, cancel more rapidly, concentrate when depth imbalance is favorable and spreads are narrow, and predict mid-quote returns from 100 milliseconds through ten minutes. A difference-in-differences design exploiting cross-channel variation in order dissemination latency at the market open shows that lower latency increases active exact-match shares. This variation yields plausibly causal evidence that latency-induced HFT raises short-horizon price variation, wide-spread incidence, and adverse-selection exposure, while realized spreads decline and pricing error falls modestly. Unlike developed markets, China's T+1 constraint, absence of maker-taker rebates, and limits on rapid quote revision tilt speed advantages toward directional liquidity taking, highlighting how market design shapes the channel through which speed affects market quality.",
+   "link": "http://arxiv.org/abs/2610.33400v2",
+   "date": "2026-10-24T02:22",
+   "families": [
+    "opening range",
+    "volume"
+   ],
+   "grammar_triggers": [
+    "nr7_or_break",
+    "or_break",
+    "vol_spike"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "Financial Context-Rich Strategy for Actor-Critic based Agents: A Deep Reinforcement Learning Approach for Stock Trading",
+   "abstract": "In modern financial markets, more than 3/4th of the large volume trade is executed by algorithmic trading based on advanced trading strategies to attain higher precision and speed than traditional human traders. The conventional strategies focused on price-based indicators are inadequate in capturing the market dynamism arising from real-world events such as social sentiments, political instability, or sudden economic shifts. With the rise of Deep Reinforcement Learning (DRL) and data availability, there is a requirement for more efficient algorithms that can incorporate these external factors in trading strategies. DRL has shown potential in simulating real-world scenarios and in simplifying complex decision-making since DRL agents can automate the trading process i.e. executing trades in a manner comparable to human traders. They have shown reliable performance since they can update their policies based on risk and quantitative factors. In this paper, we propose a DRL approach based on partial and deep-infusion of sentimental analysis. It features distinct policy designs of actor-critic-based agents: only policy optimization (A2C & PPO) and policy optimization along with Q-learning principles (DDPG, TD3 & SAC). Our findings reveal, that the agents based on policy optimization combined with Q-learning, significantly and consistently demonstrate improved performance upon sentiment deep-infusion in profit maximization as well as risk-averse trading.",
+   "link": "http://arxiv.org/abs/2610.32237v1",
+   "date": "2026-10-23T06:46",
+   "families": [
+    "volume"
+   ],
+   "grammar_triggers": [
+    "vol_spike"
+   ]
+  },
+  {
+   "src": "export.arxiv.org",
+   "title": "Intraday Forecasting Ability and Liquidity Provision of Institutional Traders",
+   "abstract": "This study uses a high-frequency dataset from a stock exchange to examine how forecasting ability and liquidity provision relate to institutional traders' proprietary intraday profitability. We discover persistent forecasting abilities among traders. Specifically, we demonstrate that hypothetical flow-following strategies based on the execution flows of these skillful traders yield annualized Sharpe ratios ranging from 16 to 63 across various trading frequencies. We match buy and sell executions into positions, linking realized profit and loss (P&L) to horizon-matched forecasting proxies and the liquidity roles of both executions. Our findings indicate a direct correlation between improved forecasting ability and profitability, where a one-standard-deviation increase in the forecasting ability proxy is associated with 1.02 -- 1.19 currency units higher P&L per matched position. Additionally, we measure liquidity-provision intensity within a matched position by its number of passive executions: zero, one, or two. In these regressions, P&L is 1.28 -- 1.31 currency units higher for one passive execution than for none, and a further 3.79 -- 3.82 higher for two than for one, underscoring the significant financial benefits of liquidity provision.",
+   "link": "http://arxiv.org/abs/2610.31141v1",
+   "date": "2026-10-22T12:00",
+   "families": [
+    "overnight",
+    "volume"
+   ],
+   "grammar_triggers": [
+    "gap",
+    "on_sweep",
+    "vol_spike"
+   ]
+  }
+ ]
+}

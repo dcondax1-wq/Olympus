@@ -1,0 +1,688 @@
+{
+ "made": "2026-11-25 01:21 UTC",
+ "data_end": "2026-11-20",
+ "design": "research/ideamill/DESIGN.md",
+ "counts": {
+  "trials_total": 56160,
+  "scored": 31724,
+  "too_few": 22276,
+  "untestable": 2160,
+  "discovery_mean_positive": 5385,
+  "raw_p_below_0.05": 410,
+  "G1_bh": 0,
+  "G2_dsr": 0,
+  "G3_holdouts": 0,
+  "G4_forward": 0,
+  "placebo_G1": 0,
+  "placebo_G2": 0,
+  "placebo_G3": 0,
+  "expected_false_G1_bh_bound": 0.0,
+  "expected_raw_p05_by_luck": 1586.0,
+  "v3_families": 52,
+  "v3_stageA": 0,
+  "v3_stageB": 0,
+  "v3_stageC": 0,
+  "v3_stageD": 0,
+  "v3_placebo": [
+   0,
+   0,
+   0,
+   0
+  ],
+  "confirm_track": "rejected",
+  "tested_this_run": 0,
+  "seconds": 8
+ },
+ "families": [
+  {
+   "family": "atr_band|with",
+   "variants": 968,
+   "simes_p": 0.05808,
+   "stageA": false,
+   "best_p": 0.0002,
+   "positive": 303
+  },
+  {
+   "family": "vwap_band|fade",
+   "variants": 1080,
+   "simes_p": 0.108,
+   "stageA": false,
+   "best_p": 0.00027,
+   "positive": 298
+  },
+  {
+   "family": "rsi_rev|fade",
+   "variants": 240,
+   "simes_p": 0.3768,
+   "stageA": false,
+   "best_p": 0.00157,
+   "positive": 70
+  },
+  {
+   "family": "nr7_or_break|with",
+   "variants": 32,
+   "simes_p": 0.433562,
+   "stageA": false,
+   "best_p": 0.04087,
+   "positive": 31
+  },
+  {
+   "family": "pm_sweep|with",
+   "variants": 100,
+   "simes_p": 0.526759,
+   "stageA": false,
+   "best_p": 0.02294,
+   "positive": 65
+  },
+  {
+   "family": "displacement|with",
+   "variants": 896,
+   "simes_p": 0.552262,
+   "stageA": false,
+   "best_p": 0.0017,
+   "positive": 348
+  },
+  {
+   "family": "three_bar_rev|with",
+   "variants": 616,
+   "simes_p": 0.678832,
+   "stageA": false,
+   "best_p": 0.00162,
+   "positive": 171
+  },
+  {
+   "family": "pw_break|with",
+   "variants": 384,
+   "simes_p": 0.799877,
+   "stageA": false,
+   "best_p": 0.00372,
+   "positive": 200
+  },
+  {
+   "family": "pm_break|with",
+   "variants": 64,
+   "simes_p": 0.810112,
+   "stageA": false,
+   "best_p": 0.08293,
+   "positive": 37
+  },
+  {
+   "family": "pw_sweep|fade",
+   "variants": 436,
+   "simes_p": 0.96792,
+   "stageA": false,
+   "best_p": 0.00222,
+   "positive": 115
+  },
+  {
+   "family": "open_drive|with",
+   "variants": 48,
+   "simes_p": 0.98936,
+   "stageA": false,
+   "best_p": 0.13581,
+   "positive": 16
+  },
+  {
+   "family": "or_break|with",
+   "variants": 432,
+   "simes_p": 0.99731,
+   "stageA": false,
+   "best_p": 0.00675,
+   "positive": 170
+  },
+  {
+   "family": "nr7_or_break|fade",
+   "variants": 16,
+   "simes_p": 0.99921,
+   "stageA": false,
+   "best_p": 0.70902,
+   "positive": 0
+  },
+  {
+   "family": "open_drive|fade",
+   "variants": 32,
+   "simes_p": 0.99994,
+   "stageA": false,
+   "best_p": 0.25285,
+   "positive": 8
+  },
+  {
+   "family": "rsi_rev|with",
+   "variants": 296,
+   "simes_p": 0.99997,
+   "stageA": false,
+   "best_p": 0.09606,
+   "positive": 55
+  },
+  {
+   "family": "pw_sweep|with",
+   "variants": 472,
+   "simes_p": 0.99998,
+   "stageA": false,
+   "best_p": 0.03532,
+   "positive": 107
+  },
+  {
+   "family": "asia_break|fade",
+   "variants": 860,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.03898,
+   "positive": 159
+  },
+  {
+   "family": "asia_break|with",
+   "variants": 864,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.01123,
+   "positive": 126
+  },
+  {
+   "family": "atr_band|fade",
+   "variants": 952,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.15518,
+   "positive": 73
+  },
+  {
+   "family": "displacement|fade",
+   "variants": 848,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.04346,
+   "positive": 38
+  },
+  {
+   "family": "ema_cross|fade",
+   "variants": 700,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.07556,
+   "positive": 62
+  },
+  {
+   "family": "ema_cross|with",
+   "variants": 716,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.04013,
+   "positive": 56
+  },
+  {
+   "family": "exhaustion|fade",
+   "variants": 212,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.07861,
+   "positive": 31
+  },
+  {
+   "family": "exhaustion|with",
+   "variants": 256,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.04955,
+   "positive": 69
+  },
+  {
+   "family": "fvg_retest|fade",
+   "variants": 1080,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.0192,
+   "positive": 108
+  },
+  {
+   "family": "fvg_retest|with",
+   "variants": 1080,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.00929,
+   "positive": 177
+  },
+  {
+   "family": "gap|fade",
+   "variants": 288,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.08866,
+   "positive": 30
+  },
+  {
+   "family": "gap|with",
+   "variants": 288,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.05277,
+   "positive": 82
+  },
+  {
+   "family": "inside_break|fade",
+   "variants": 1008,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.00622,
+   "positive": 119
+  },
+  {
+   "family": "inside_break|with",
+   "variants": 1024,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.01201,
+   "positive": 104
+  },
+  {
+   "family": "london_break|fade",
+   "variants": 864,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.01273,
+   "positive": 128
+  },
+  {
+   "family": "london_break|with",
+   "variants": 864,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.0297,
+   "positive": 201
+  },
+  {
+   "family": "on_sweep|fade",
+   "variants": 648,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.00245,
+   "positive": 74
+  },
+  {
+   "family": "on_sweep|with",
+   "variants": 648,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.00664,
+   "positive": 121
+  },
+  {
+   "family": "or_break|fade",
+   "variants": 432,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.11793,
+   "positive": 36
+  },
+  {
+   "family": "pd_break|fade",
+   "variants": 912,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.03848,
+   "positive": 120
+  },
+  {
+   "family": "pd_break|with",
+   "variants": 1056,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.01123,
+   "positive": 281
+  },
+  {
+   "family": "pd_sweep|fade",
+   "variants": 1000,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.02691,
+   "positive": 100
+  },
+  {
+   "family": "pd_sweep|with",
+   "variants": 1056,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.02571,
+   "positive": 221
+  },
+  {
+   "family": "pm_break|fade",
+   "variants": 36,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.29179,
+   "positive": 7
+  },
+  {
+   "family": "pm_sweep|fade",
+   "variants": 88,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.32116,
+   "positive": 3
+  },
+  {
+   "family": "pw_break|fade",
+   "variants": 324,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.07517,
+   "positive": 33
+  },
+  {
+   "family": "round100|fade",
+   "variants": 1080,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.03582,
+   "positive": 98
+  },
+  {
+   "family": "round100|with",
+   "variants": 1080,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.03225,
+   "positive": 141
+  },
+  {
+   "family": "three_bar_rev|fade",
+   "variants": 420,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.0875,
+   "positive": 10
+  },
+  {
+   "family": "vol_spike|fade",
+   "variants": 840,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.03455,
+   "positive": 83
+  },
+  {
+   "family": "vol_spike|with",
+   "variants": 848,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.0175,
+   "positive": 158
+  },
+  {
+   "family": "vwap_band|with",
+   "variants": 1080,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.00952,
+   "positive": 132
+  },
+  {
+   "family": "vwap_cross|fade",
+   "variants": 1080,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.01345,
+   "positive": 96
+  },
+  {
+   "family": "vwap_cross|with",
+   "variants": 1080,
+   "simes_p": 1.0,
+   "stageA": false,
+   "best_p": 0.0127,
+   "positive": 114
+  }
+ ],
+ "placebo_families": [
+  {
+   "family": "gap|with",
+   "variants": 288,
+   "simes_p": 0.0432,
+   "stageA": false,
+   "best_p": 0.00015,
+   "positive": 50
+  },
+  {
+   "family": "pm_break|with",
+   "variants": 64,
+   "simes_p": 0.17184,
+   "stageA": false,
+   "best_p": 0.00334,
+   "positive": 19
+  },
+  {
+   "family": "nr7_or_break|fade",
+   "variants": 16,
+   "simes_p": 0.36816,
+   "stageA": false,
+   "best_p": 0.02301,
+   "positive": 4
+  },
+  {
+   "family": "exhaustion|fade",
+   "variants": 212,
+   "simes_p": 0.4452,
+   "stageA": false,
+   "best_p": 0.0021,
+   "positive": 58
+  },
+  {
+   "family": "open_drive|with",
+   "variants": 48,
+   "simes_p": 0.66432,
+   "stageA": false,
+   "best_p": 0.01384,
+   "positive": 18
+  },
+  {
+   "family": "fvg_retest|with",
+   "variants": 1080,
+   "simes_p": 0.6804,
+   "stageA": false,
+   "best_p": 0.00063,
+   "positive": 137
+  },
+  {
+   "family": "pm_break|fade",
+   "variants": 36,
+   "simes_p": 0.937874,
+   "stageA": false,
+   "best_p": 0.07747,
+   "positive": 11
+  },
+  {
+   "family": "open_drive|fade",
+   "variants": 32,
+   "simes_p": 0.948213,
+   "stageA": false,
+   "best_p": 0.04113,
+   "positive": 16
+  },
+  {
+   "family": "nr7_or_break|with",
+   "variants": 32,
+   "simes_p": 0.99307,
+   "stageA": false,
+   "best_p": 0.11474,
+   "positive": 14
+  },
+  {
+   "family": "pw_break|with",
+   "variants": 384,
+   "simes_p": 0.99929,
+   "stageA": false,
+   "best_p": 0.02139,
+   "positive": 119
+  }
+ ],
+ "v3_survivors": [],
+ "confirm_track": {
+  "family": "1h|vwap_band|fade|nypm|",
+  "named": "1h|vwap_band|fade|nypm|none|atr|T12",
+  "C1_named": {
+   "2025": {
+    "n": 96,
+    "mean_r": -0.0667,
+    "pf": 0.837,
+    "sum_r": -6.4
+   },
+   "2026 H1": {
+    "n": 39,
+    "mean_r": -0.0787,
+    "pf": 0.772,
+    "sum_r": -3.07
+   },
+   "2026 Jul-Oct": {
+    "n": 21,
+    "mean_r": -0.2485,
+    "pf": 0.2,
+    "sum_r": -5.22
+   }
+  },
+  "C1_pass": false,
+  "C2_family_avg_r": {
+   "2025": -0.0566,
+   "2026 H1": -0.0898,
+   "2026 Jul-Oct": -0.188
+  },
+  "C2_pass": false,
+  "verdict": "rejected"
+ },
+ "top": [],
+ "best_raw_p": [
+  {
+   "id": "1h|atr_band|with|nypm|no_fri|atr|R3",
+   "disc": {
+    "n": 155,
+    "mean_r": 0.349,
+    "pf": 2.274,
+    "sum_r": 54.09,
+    "days": 819,
+    "p": 0.0002,
+    "sr": 0.12245
+   }
+  },
+  {
+   "id": "1h|atr_band|with|nypm|no_fri|atr|T12",
+   "disc": {
+    "n": 155,
+    "mean_r": 0.4436,
+    "pf": 2.619,
+    "sum_r": 68.76,
+    "days": 819,
+    "p": 0.00022,
+    "sr": 0.12135
+   }
+  },
+  {
+   "id": "1h|atr_band|with|nypm|none|atr|T12",
+   "disc": {
+    "n": 179,
+    "mean_r": 0.3883,
+    "pf": 2.404,
+    "sum_r": 69.51,
+    "days": 819,
+    "p": 0.00024,
+    "sr": 0.11951
+   }
+  },
+  {
+   "id": "1h|atr_band|with|nypm|none|atr|R3",
+   "disc": {
+    "n": 179,
+    "mean_r": 0.3064,
+    "pf": 2.107,
+    "sum_r": 54.84,
+    "days": 819,
+    "p": 0.00026,
+    "sr": 0.11899
+   }
+  },
+  {
+   "id": "1h|vwap_band|fade|nypm|none|atr|T12",
+   "disc": {
+    "n": 392,
+    "mean_r": 0.2266,
+    "pf": 1.62,
+    "sum_r": 88.83,
+    "days": 819,
+    "p": 0.00027,
+    "sr": 0.11288
+   }
+  },
+  {
+   "id": "1h|atr_band|with|nypm|no_mon|atr|R3",
+   "disc": {
+    "n": 143,
+    "mean_r": 0.3395,
+    "pf": 2.29,
+    "sum_r": 48.55,
+    "days": 819,
+    "p": 0.0003,
+    "sr": 0.11685
+   }
+  },
+  {
+   "id": "1h|vwap_band|fade|nypm|no_fri|atr|T12",
+   "disc": {
+    "n": 313,
+    "mean_r": 0.2622,
+    "pf": 1.718,
+    "sum_r": 82.06,
+    "days": 819,
+    "p": 0.00032,
+    "sr": 0.11143
+   }
+  },
+  {
+   "id": "1h|vwap_band|fade|nypm|no_fri|atr|R3",
+   "disc": {
+    "n": 313,
+    "mean_r": 0.2196,
+    "pf": 1.606,
+    "sum_r": 68.73,
+    "days": 819,
+    "p": 0.00037,
+    "sr": 0.11022
+   }
+  },
+  {
+   "id": "1h|atr_band|with|nypm|no_mon|atr|T12",
+   "disc": {
+    "n": 143,
+    "mean_r": 0.4284,
+    "pf": 2.627,
+    "sum_r": 61.26,
+    "days": 819,
+    "p": 0.00039,
+    "sr": 0.11445
+   }
+  },
+  {
+   "id": "1h|vwap_band|fade|nypm|none|atr|R3",
+   "disc": {
+    "n": 392,
+    "mean_r": 0.191,
+    "pf": 1.526,
+    "sum_r": 74.88,
+    "days": 819,
+    "p": 0.0004,
+    "sr": 0.11005
+   }
+  }
+ ],
+ "week": {
+  "week_from": "2026-11-23",
+  "tested_this_week": 56160,
+  "tested_total": 56160,
+  "survived_total": 0
+ },
+ "of": {
+  "state": "off",
+  "tick_days": 0,
+  "design": "research/orderflow/DESIGN_forward.md",
+  "why": "waiting: 0 of 60 tick days (the battery covers 40-60)"
+ }
+}

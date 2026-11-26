@@ -117,6 +117,7 @@ AREAS["nq"] += ["faults"]; AREAS["pc"] += ["faults"]   # night-faults 2026-11-23
 AREAS["pc"] += ["nq_live_reliability", "account_b_min_room"]   # the same suite (fast alarm, autoupdate flat, datafeed gaps) + ATLAS min_room CLI
 AREAS["nq"].append("fill_cost")          # night-atlasfills 2026-11-20: "real slippage so far" per bot (tools/fill_cost.py + learn_night card)
 AREAS["nq"].append("market_learn")       # day-marketlearn 2026-11-24: shared Market Learn (engine/market_learn.py, tools/market_learn_weekly.py); its own line
+AREAS["nq"].append("ideamill")            # day-ideamill 2026-11-25: the idea mill (tools/ideamill.py, research/ideamill/grammar.py)
 # night-webpush 2026-11-19: Olympus phone notifications from the PC (engine/push.py: own key, relay intake, phone first / ntfy backup;
 # docs/NOTIFICATIONS.md); the browser half (the card, the button, push-sw.js) runs with the jarvis suites
 AREAS["pc"] += ["push", "webpush"]
@@ -160,6 +161,7 @@ PARTS = {"olympus_kit": [("a", ["datacity", "mind", "tree"]), ("b", ["oracle", "
                          ("power", ["power", "tiers"]), ("more", ["more"])]}
 PARTS["combo_50k"] = [("sep", ["--seg", "2026-09-02"]), ("oct", ["--seg", "2026-10-02", "--scenario"])]   # night-combolive: one eval segment each
 AREAS["nq"] += ["combo_25k", "combo25_rt"]   # day-combo25 2026-11-23 + red team: ATLAS + Zlarior on the 25K #2 (OFF), parity replay, switch writer, keep-alive lane
+AREAS["nq"].append("time_size")   # day-sbhalf 2026-11-25: ATLAS x0.5 outside SB hours on the Builder eval combo lanes (OFF)
 PARTS["combo_25k"] = [("sep", ["--seg", "2026-09-02"]), ("oct", ["--seg", "2026-10-02"])]   # day-combo25: one eval segment each
 AREAS["fleet"].append("rapid_launch")       # day-rapid 2026-11-20: Rapid EOD 25K launch check (tools/money/rapid25_launch.py)
 AREAS["fleet"] += ["rapid_blitz", "rapid_blitz_rt"]     # day-rapidsize 2026-11-23 + red team: BLITZ on the Rapid EOD 25K eval (OFF until --blitz on + phrase)
@@ -473,6 +475,8 @@ AREAS["pc"].append("bat_shortcuts")     # red team 2026-11-23: a shortcut to a m
 AREAS["pc"] += ["zerotouch"]      # night-zerotouch 2026-11-22: START phrase = keep-alive consent, MONDAY_SETUP.bat, recovery matrix, NinjaTrader reopen
 AREAS["pc"].append("zerotouch_rt")      # red team 2026-11-23: an old explicit keep-alive OFF sticks, NinjaTrader reopen back-off, no-console start
 AREAS["pc"] += ["zerotouch2", "zerotouch2_rt"]   # day-zerotouch2 2026-11-24 + red team: auto-park, phone inbox (newest by time), PC checklist
+AREAS["pc"].append("handsfree")   # day-handsfree 2026-11-25: Telegram commands, writers sandbox (git status stays clean), NinjaScript sync, reboot chain
+AREAS["pc"].append("handsfree_rt")   # red team 2026-11-25: forwarded Telegram = no command, force-park receipt names strategy files
 AREAS["nq"] += ["roll_dec_audit", "nt_roll_guard", "dec_roll", "roll"]   # night-roll 2026-11-23: the December roll (ROLL.md): audit with fakes + the three roll suites (were in no area)
 AREAS["nq"].append("roll_rt")           # red team 2026-11-23: TRADE_HOME R reports what tools/bat/ROLL.bat found (exit 2 = not now)
 AREAS["pc"] += ["post_update_check"]   # night-verify 2026-11-23: the read-only check after an update restart, one phone message
@@ -504,6 +508,12 @@ AREAS["nq"].append("accounts_screen"); AREAS["pc"].append("accounts_screen")   #
 AREAS["pc"].append("remote_notice")     # day-notifyfix 2026-11-23: a remote command's phone notice goes through every channel; its receipt rides the feed ("rc")
 AREAS["nq"].append("chaos_live"); AREAS["pc"].append("chaos_live")   # day-zeroerr 2026-11-24: failure map chaos harness (engine/live_guard + fast_alarm stop_missing)
 AREAS["pc"].append("live_guard_rt")   # red team 2026-11-24: an account the owner disabled never gets MISSED TRADE / NOT READY
+
+AREAS["nq"].append("ledgerfix"); AREAS["pc"].append("ledgerfix")   # day-ledgerfix 2026-11-24: no order for an un-routed model entry of an ended session / a flat broker; no row before an account's eval start (+ repair); armed record
+AREAS["nq"].append("ledgerfix_rt"); AREAS["pc"].append("ledgerfix_rt")   # red team 2026-11-24: a future eval_start never drops a held position's exit or today's real closes
+
+AREAS["nq"].append("setup_progress"); AREAS["pc"].append("setup_progress")   # day-closer 2026-11-25: setup progress pushes (engine/setup_progress.py, read-only)
+AREAS["nq"].append("setup_progress_rt"); AREAS["pc"].append("setup_progress_rt")   # red team 2026-11-25: no re-send on a moving EMA, ATLAS cap 8
 
 if __name__ == "__main__":
     sys.exit(main())

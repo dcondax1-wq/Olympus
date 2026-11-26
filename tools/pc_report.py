@@ -547,7 +547,9 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
     except Exception:  # noqa: BLE001
         snap["bf_bars"], snap["bf_root"] = None, root
     # the order-flow study's one result line (engine/tickrec autopilot writes data/orderflow_note.json; plain JSON, no import)
-    snap["research"] = [x for x in [read_json(os.path.join(root, "data", "orderflow_note.json"), None)] if isinstance(x, dict) and x.get("key")]
+    snap["research"] = [x for x in [read_json(os.path.join(root, "data", "orderflow_note.json"), None),
+                                    read_json(os.path.join(root, "data", "orderflow_battery_note.json"), None)]   # day-ofmax: the battery's look line
+                        if isinstance(x, dict) and x.get("key")]
     snap["tr"] = read_json(os.path.join(root, "data", "tickrec_tiny.json"), None)   # day-pillars 2026-11-24: the order-flow tick count (engine/tickrec.write_tiny; plain JSON, no import)
     try:                                    # the Kalshi rewards PAPER card (tools/kalshi_rewards_paper.py public summary, < 1 KB)
         from engine import live_publish as _lpk
@@ -737,6 +739,13 @@ def full(snap: dict) -> dict:
         out["life"] = life
     if isinstance(snap.get("sh"), dict):     # self-heal's one line (engine/self_heal.read_tiny): rides an ext post, after EXT_ORDER
         out["sh"] = snap["sh"]
+    try:                                     # day-ledgerfix: the last 01:55 / 09:00 ET armed + routed check (engine/live_guard.arm_tiny)
+        from engine import live_guard as _lg
+        arm = _lg.arm_tiny()
+        if arm:
+            out["arm"] = arm
+    except Exception:  # noqa: BLE001
+        pass
     if isinstance(snap.get("tr"), dict):     # the order-flow tick count (engine/tickrec.tiny): gathered since day-pillars but never posted
         out["tr"] = {k: snap["tr"].get(k) for k in ("on", "d", "of", "bf", "o", "l")}
         out["tr"].update({k: snap["tr"][k] for k in ("h", "e") if snap["tr"].get(k) is not None})   # day-ofready: tick-day holes, bf_errors

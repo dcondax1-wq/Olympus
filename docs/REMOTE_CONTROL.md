@@ -95,3 +95,8 @@ Anyone with **write access to the repo** can write this file, so treat repo writ
   (`engine/live.py`), the heartbeat's `remote` block (`engine/heartbeat.py`, with `via`), the phone page `VIEWS.remote`
   (`tools/web_public/main.js`). Tests: `python -X utf8 -m tests.test_remote_ctl` (local bare git repos, fake NinjaTrader;
   the backup-repo path in `olympus_tests`).
+
+## Telegram (day-handsfree 2026-11-25)
+Reply to the Olympus alert bot: `/status`, `/update`, `/update force`, `/restart`, `/pause [HH:MM|tomorrow]`, `/resume`, `/help`.
+Only the owner's private chat (alerts.json chat_id); the same gates and done ids as this file's commands (engine/remote_ctl.RemoteControl.run_external);
+the receipt is a Telegram reply; never kill / stop / flatten / start / arming. Code: engine/tg_cmd.py, tests: tests.test_handsfree a. Overview: docs/HANDS_FREE.md.

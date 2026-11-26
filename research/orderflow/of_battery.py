@@ -35,7 +35,7 @@ TICK = 0.25
 # frozen (DESIGN.md / PREREG_ticks.md)
 ZONE, ABS_SHARE, BLOCK_PCT, BLOCK_DAYS = 8, 0.20, 99.5, 5
 MIN_DAYS, MIN_ROWS, FLOOR = 40, 50_000, 8
-LOOK_AT = (40, 60, 120)
+LOOK_AT = (40, 60, 120, 250)            # day-ofmax: + 250 (DESIGN.md note 2026-11-25); a PASS must hold at every later look
 OF5_S, OF6_G = (0.20, 0.35), (6, 12)
 ATLAS_USD = 250.0
 N_PLACEBO = 3000
@@ -62,6 +62,7 @@ class Day:
         b = b.rename(columns={"o": "open", "h": "high", "l": "low", "c": "close", "vol": "volume"})
         self.bars = b.reset_index(drop=True)
         self.fp = R["fp"]
+        self.depth = R.get("depth")                                     # day-ofmax: per-5m depth summary (None before depth)
         self.row_of_t = {int(t): i for i, t in enumerate(b.t)}
         self.fp_by_bar = {int(k): g for k, g in self.fp.groupby("bar")}
 
@@ -422,7 +423,11 @@ def quality(D, days):
             "label": "quote-rule sides" if q and np.mean(q) >= 0.5 else "tick-rule sides (NinjaTrader history: side guessed from up/down ticks)"}, fwd
 
 
-def run(src=None, ticks=False, force=False, final=False, raw=None, lit=None, atlas=None, write=True, seed=20261124):
+def run(src=None, ticks=False, force=False, final=False, raw=None, lit=None, atlas=None, write=True, seed=20261124, out_dir=None):
+    global OUT, LOOKS
+    if out_dir:                                                           # the PC: logs/orderflow (never a tracked repo file)
+        os.makedirs(out_dir, exist_ok=True)
+        OUT, LOOKS = os.path.join(out_dir, "battery_results.json"), os.path.join(out_dir, "battery_looks.json")
     R = raw if raw is not None else find_days(src, ticks)
     dropped = sorted(d for d, x in R.items() if int(x["meta"].get("rows", 0)) < MIN_ROWS)
     days = sorted(d for d in R if d not in dropped)
@@ -430,12 +435,17 @@ def run(src=None, ticks=False, force=False, final=False, raw=None, lit=None, atl
               "dropped_thin": dropped, "need": MIN_DAYS, "first": days[0] if days else None, "last": days[-1] if days else None}
     if len(days) < MIN_DAYS:
         status["state"] = f"waiting: {len(days)} of {MIN_DAYS} tick days"
-        if write:
-            json.dump(status, open(OUT, "w"), indent=1)
+        if write:                                                         # only when more than the time changed (clean tree)
+            try:
+                old = json.load(open(OUT, encoding="utf-8"))
+            except Exception:  # noqa: BLE001
+                old = {}
+            if {k: v for k, v in old.items() if k != "made"} != {k: v for k, v in status.items() if k != "made"}:
+                json.dump(status, open(OUT, "w"), indent=1)
         print(status["state"])
         return status
     looks = json.load(open(LOOKS)) if (write and os.path.exists(LOOKS)) else []
-    look_no = 3 if final else sum(1 for a in LOOK_AT if len(days) >= a)
+    look_no = len(LOOK_AT) if final else sum(1 for a in LOOK_AT if len(days) >= a)
     if write and not force and any(x.get("look") == look_no for x in looks):
         print(f"look {look_no} already done ({len(days)} days); --force to re-print, --final for the last look")
         return status
@@ -487,12 +497,32 @@ def run(src=None, ticks=False, force=False, final=False, raw=None, lit=None, atl
         if out["OF1 LIT only when absorbed"]["verdict"].startswith("PASS") and g1 <= 0:
             out["OF1 LIT only when absorbed"]["verdict"] = "REJECTED (sides disagree)"
     out["verdicts"] = {k: v["verdict"] for k, v in out.items() if isinstance(v, dict) and "verdict" in v and "(info)" not in k}
+    if write:                                                             # day-ofmax: the DESIGN2 idea mill at the same look
+        try:
+            M = _mod("of_mill.py", "of_mill")
+            mr = M.run_look(D, days, H, T, units, os.path.dirname(OUT), look_no, days[-1])
+            out["mill"] = {"counts": mr["counts"], "candidates": [v["id"] for v in mr["candidates"]], "near_misses": mr["near_misses"]}
+        except Exception as e:  # noqa: BLE001
+            out["mill"] = {"error": f"{e.__class__.__name__}: {str(e)[:120]}"}
     if write:
         json.dump(out, open(OUT, "w"), indent=1, default=str)
         looks.append({"look": look_no, "made": out["made"], "days": len(days), "verdicts": out["verdicts"]})
         json.dump(looks, open(LOOKS, "w"), indent=1)
     show(out)
     return out
+
+
+def phone_line(out) -> str:
+    """One line for the owner's phone: days, each test's verdict, the honest bottom line."""
+    v = out.get("verdicts") or {}
+    short = {k.split(" ")[0]: (x.split(" ")[0] if x else "?") for k, x in v.items()}
+    bits = ", ".join(f"{k} {x}" for k, x in short.items())
+    anyp = any(x.startswith("PASS") for x in v.values())
+    mc = (out.get("mill") or {}).get("counts") or {}
+    mill = f" Idea mill: {mc.get('g1g2g3', 0)} of {mc.get('scored', 0)} ideas passed 3 gates (forward paper next)." if mc else ""
+    return (f"Order-flow battery look {out.get('look')} on {out.get('tick_days')} tick days ({out.get('first')}..{out.get('last')}): {bits}.{mill} "
+            + ("A PASS is a candidate only: forward paper next, nothing live changes without your yes." if anyp
+               else "Nothing passed: LIT stays as it is."))
 
 
 def show(out):
@@ -576,7 +606,13 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--src"); ap.add_argument("--ticks", action="store_true"); ap.add_argument("--force", action="store_true")
     ap.add_argument("--final", action="store_true"); ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--out-dir", help="write results / looks here (the PC: logs/orderflow) instead of research/orderflow")
+    ap.add_argument("--line", help="also write the phone line JSON here (the PC's autopilot)")
     a = ap.parse_args()
     if a.selftest:
         sys.exit(0 if selftest() else 1)
-    run(a.src, a.ticks, a.force, a.final)
+    res = run(a.src, a.ticks, a.force, a.final, out_dir=a.out_dir)
+    if a.line and isinstance(res, dict) and res.get("state") == "ran":
+        with open(a.line, "w", encoding="utf-8") as fh:
+            json.dump({"key": "research:ofbattery:%s" % res.get("look"), "t": int(__import__("time").time()),
+                       "title": "Order flow: battery look %s" % res.get("look"), "body": phone_line(res)}, fh)

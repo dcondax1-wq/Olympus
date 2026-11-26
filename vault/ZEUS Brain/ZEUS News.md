@@ -28,7 +28,6 @@ type: "hub"
 
 ## Next on the calendar
 
-- 2026-11-24 10:00 ET · [[News Consumer sentiment|CB Consumer Confidence (Nov)]]
 - 2026-11-25 08:30 ET · [[News GDP|GDP Q3 second estimate]]
 - 2026-11-25 08:30 ET · [[News PCE inflation|Personal Income & Outlays / Core PCE (Oct)]]
 - 2026-12-04 08:30 ET · [[News Jobs report (NFP)|Non-Farm Payrolls (jobs report)]]
@@ -48,5 +47,6 @@ type: "hub"
 - 2027-03-17 14:00 ET · [[News FOMC rate decision|FOMC rate decision]]
 - 2027-03-17 14:30 ET · [[News FOMC press conference|FOMC press conference]]
 - 2027-04-02 08:30 ET · [[News Jobs report (NFP)|Non-Farm Payrolls (jobs report)]]
+- 2027-04-07 14:00 ET · [[News FOMC minutes|FOMC minutes (Mar meeting)]]
 
 Back to [[ZEUS Home]]

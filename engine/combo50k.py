@@ -259,8 +259,10 @@ def build(bot):
         # a test harness / Sim rehearsal with its own state file: ONLY its start cfg counts (never the PC's switch file)
         if not over:
             return None
-        rules = normalize(over if isinstance(over, dict) else {})
+        rules = normalize({k: v for k, v in over.items() if k != "time_size"} if isinstance(over, dict) else {})
         src = "start cfg (test harness)"
+        from .account_b import time_size_norm
+        tsz = time_size_norm(over.get("time_size")) if isinstance(over, dict) else None
     else:
         sw = read_switch()
         if not sw.get("on"):
@@ -269,11 +271,16 @@ def build(bot):
             return {"off_why": f"the switch is for {', '.join(sw.get('accounts') or []) or '?'}, this bot trades {own or 'paper'}: OFF"}
         rules = load_rules()
         src = SWITCH_REL
+        from .account_b import read_time_size
+        tsz = read_time_size()
     if rules.get("problem"):
         return {"off_why": f"combo rules not usable ({rules['problem']}): OFF"}
-    return {"on": True, "account": own, "conflict": rules["conflict"], "atlas_size_factor": dict(rules["atlas_size_factor"]),
-            "guards": dict(rules["guards"]), "unknown": list(rules.get("unknown") or []), "keys": list(MEMBERS),
-            "label": LABEL, "src": src, "max_micros": 40}
+    out = {"on": True, "account": own, "conflict": rules["conflict"], "atlas_size_factor": dict(rules["atlas_size_factor"]),
+           "guards": dict(rules["guards"]), "unknown": list(rules.get("unknown") or []), "keys": list(MEMBERS),
+           "label": LABEL, "src": src, "max_micros": 40}
+    if tsz:
+        out["time_size"] = tsz                         # absent = OFF = today's spec byte for byte
+    return out
 
 
 def ab_spec(combo: dict, eval_start: str | None, stage: str = "eval", funded: dict | None = None) -> dict:
@@ -323,6 +330,11 @@ def atlas_qty(combo: dict, trade: dict, state: dict | None, eval_start: str | No
         q = int(AB.dll_guard({"qty": q, "reasons": []}, risk, spec["rules"], state).get("qty") or 0)
         q = max(q, q0)                                   # never below the base size, never above the caps it passed
         reasons.append(f"atlas_size_factor {stage} {f:g}: {q0} -> {q}")
+    ts = combo.get("time_size")
+    if stage == "eval" and ts and q > 0:             # owner switch (engine/account_b time_size, OFF = absent): eval only
+        q, why = AB.apply_time_size(q, ts, trade.get("entry_t"))
+        if why:
+            reasons.append(why)
     if q > maxq:
         reasons.append(f"max {maxq} micros")
         q = maxq

@@ -83,6 +83,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 > 1,983 runs, 508 pass the PICK rule (2021-24 + Jan-Jun 2026; corr with LIT / ATLAS < 0.3), greedy-Sharpe adds 6 at 25% of LIT's swing. Hold-outs vs LIT + ATLAS: 2025 +$5,453 vs +$4,480 but PF 1.09 vs 1.13, DD -$10.6k vs -$7.6k; Jul-Oct +$19,324 vs +$16,311 but PF 2.49 vs 3.36, 50K pass/fail 64/36 vs 100/0; +15 trades/week. Fails. Coverage: 02:00-15:30 ET covered every weekday, 18:00-02:00 (Asia) empty (Asia ideas already rejected).
 > Write-ups: [[portfolio-2026-11-24|24-hour coverage + a walk-forward portfolio of everything built]]
 
+> [!failure]- More trades: frequency vs edge
+> 19 LIT versions (depth 0.4/0.3, no inducement, disp 0.7/0.6, limit 45/60 min, 1m CISD 30, no 1m CISD step, 2 a day, 2nd after a stop, 2nd opposite side, + Asia, 6 pairs) + 7 ATLAS loosenings + ES. Single gates add 1-3% trades; the frequency levers (Asia +54%, 2 a day +23%, no idm + 2 a day +59%) lose 2021-25 (+$25 -> -$85..-$316/mo, 50K 40-session fail 54 -> 61-78%). Nearest miss Asia: 2-week pass 48.7/55.1 vs 44.5/39.1 but 2021-25 -$12.2k, walk-forward 4/18. 2nd-after-stop: +10% trades, eval same, paper lead. ATLAS: every loosening loses a 2026 half (A4 MACD hist H1 25K pass 94 -> 76). ES LIT alone PF 0.50 in 2025. 0 pass; LIT/ATLAS unchanged.
+> Write-ups: [[more-trades-2026-11-25|More trades]]
+
 > [!failure]- 2026-11-22 Regime guard round 3
 > (research/regime/guard3.py, regime-guard3-2026-11-22.md): shadow-setup hit rate R1, intraday variance ratio R2, trend-day share R3, thin volume R4, NQ-VIX co-movement R5, 2-of-5 vote R6; half / out; LIT and ATLAS. **0 of 22 pass, all fail the stage-0 kill-gate.** R1 sweeps pay worse in 2026 than in 2021-25 (flags 2026 87.5/80.8% vs OLD 70.4%). R5 flags LIT's best days. Best placebo 47.5% / 68.5% (95 needed). Closes the regime lever for market-weather and market-wide sweep signals, not every possible signal. ATLAS funded baseline moved 8.5/9.2/94.5 -> 8.2/8.3/94.2 because of a code change after 153552591; verdict unaffected.
 
@@ -174,6 +178,7 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-25 | [[more-trades-2026-11-25\|More trades]] | research |
 | 2026-11-24 | [[atlas-funded-150-2026-11-24\|ATLAS funded 25K at ~$150 a trade, on the LIVE sizing code]] | research |
 | 2026-11-23 (night, run 2026-11-24 early ET) | [[four-pillars-2026-11-23\|The four pillars]] | research |
 | 2026-11-22 | [[rapid25-slot-2026-11-22\|Rapid 25K slot]] | rejected |
@@ -213,9 +218,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-11-03 | [[2026-11-03-slippage\|How much slippage each bot survives]] | info |
 | 2026-11-03 | [[2026-11-03-fates\|FATES]] | info |
 | 2026-10-31 | [[atlas-funded-one-a-day-2026-10-31\|ATLAS funded 25K]] | rejected |
-| 2026-10-30 | [[discretion-score-2026-10-30\|Discretion score for ATLAS and BLITZ]] | rejected |
 
-... and 27 older (see the families).
+... and 28 older (see the families).
 
 ## Links
 

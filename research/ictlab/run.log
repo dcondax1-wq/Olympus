@@ -1,0 +1,215 @@
+sessions 1318 2021-10-18 2026-11-20
+standalone done {'S_QT_TDO': 873, 'S_QT_TSO': 800, 'S_QT_225': 486, 'S_MAC_ALL': 1311, 'S_MAC_RTH': 1291, 'S_MAC_LDN': 1045, 'S_SB_03': 895, 'S_SB_10': 868, 'S_SB_14': 850, 'S_SB_ALL': 1260, 'S_JUD': 591, 'S_PO3': 96, 'S_SMT': 147, 'S_IPDA20': 819, 'S_IPDA40': 798, 'S_IPDA60': 782, 'S_DOL': 373, 'S_NWOG': 57, 'S_NDOG': 52, 'S_OTE': 481, 'S_KZ': 785, 'S_CBDR': 161, 'S_ASIA': 419}
+LIT_BASE               works most years (4 of 5)    yrs+4 wf   40639 p None tot    45085
+LIT_F_MAC_ONLY         never                        yrs+0 wf    5840 p 0.812 tot   -43663
+LIT_F_MAC_UP           2026 only                    yrs+1 wf    1433 p 0.826 tot      711
+LIT_F_SB_ONLY          mixed (2024 up)              yrs+1 wf  -12787 p 0.456 tot   -33326
+LIT_F_SB_UP            mixed (2024 up)              yrs+1 wf    4475 p 0.46 tot     5879
+LIT_F_KZ_ONLY          mixed (2024, 2025 up)        yrs+2 wf   -2719 p 0.414 tot   -15580
+LIT_F_KZ_UP            mixed (2024, 2025, 2026 up)  yrs+3 wf   16721 p 0.354 tot    14753
+LIT_F_QT90_ONLY        mixed (2023, 2024 up)        yrs+2 wf    4460 p 0.484 tot   -12386
+LIT_F_QT90_UP          mixed (2024 up)              yrs+1 wf   11409 p 0.446 tot    16349
+LIT_F_QT225_ONLY       never (only 2024)            yrs+1 wf   -3721 p 0.846 tot   -33914
+LIT_F_QT225_UP         mixed (2024, 2026 up)        yrs+2 wf    4395 p 0.852 tot     5585
+LIT_F_TDO_ONLY         mixed (2024, 2025 up)        yrs+2 wf    6399 p 0.0 tot    10605
+LIT_F_TDO_UP           works most years (4 of 5)    yrs+4 wf   26917 p 0.0 tot    27845
+LIT_F_TSO_ONLY         mixed (2024 up)              yrs+1 wf     811 p 0.084 tot   -10342
+LIT_F_TSO_UP           mixed (2022, 2024, 2026 up)  yrs+3 wf   16714 p 0.082 tot    17371
+LIT_F_PO3_ONLY         never (only 2024)            yrs+1 wf   -3916 p 0.428 tot   -15484
+LIT_F_PO3_UP           mixed (2024, 2026 up)        yrs+2 wf   18857 p 0.418 tot    14801
+LIT_F_IPDA20_ONLY      mixed (2024 up)              yrs+1 wf  -10116 p 0.596 tot   -23391
+LIT_F_IPDA20_UP        mixed (2022, 2024 up)        yrs+2 wf    4822 p 0.628 tot    10847
+LIT_F_IPDA40_ONLY      mixed (2024 up)              yrs+1 wf   -3914 p 0.62 tot   -24751
+LIT_F_IPDA40_UP        mixed (2022, 2024 up)        yrs+2 wf    5966 p 0.614 tot    10167
+LIT_F_IPDA60_ONLY      mixed (2024 up)              yrs+1 wf     465 p 0.856 tot   -33437
+LIT_F_IPDA60_UP        mixed (2024 up)              yrs+1 wf    3857 p 0.914 tot     5824
+LIT_F_DOL_ONLY         mixed (2023, 2025 up)        yrs+2 wf   -3536 p 0.36 tot   -20175
+LIT_F_DOL_UP           mixed (2022, 2025, 2026 up)  yrs+3 wf   12805 p 0.36 tot    12455
+LIT_F_NWOG_ONLY        mixed (2024 up)              yrs+1 wf   -3499 p 0.514 tot   -24403
+LIT_F_NWOG_UP          mixed (2024 up)              yrs+1 wf    5076 p 0.51 tot    10341
+LIT_F_OTE_ONLY         never                        yrs+0 wf   -2270 p 0.512 tot   -33974
+LIT_F_OTE_UP           2026 only                    yrs+1 wf    2414 p 0.524 tot     5556
+LIT_F_CBDR_ONLY        never (only 2023)            yrs+1 wf    3469 p 0.802 tot   -46463
+LIT_F_CBDR_UP          never                        yrs+0 wf    -276 p 0.8 tot     -689
+LIT_F_SMT_ONLY         never (only 2025)            yrs+1 wf  -13473 p 1.0 tot   -45717
+LIT_F_SMT_UP           mixed (2022, 2024, 2025 up)  yrs+3 wf    4790 p 1.0 tot     -316
+LIT_C1_ONLY            never                        yrs+0 wf    7716 p 0.642 tot   -42145
+LIT_C1_UP              2026 only                    yrs+1 wf    1104 p 0.634 tot     1470
+LIT_C2_ONLY            mixed (2023, 2024 up)        yrs+2 wf   -6191 p 0.276 tot   -35486
+LIT_C2_UP              mixed (2024, 2025 up)        yrs+2 wf      49 p 0.308 tot     4800
+LIT_C3_ONLY            mixed (2025 up)              yrs+1 wf    1114 p 0.274 tot   -26764
+LIT_C3_UP              mixed (2025, 2026 up)        yrs+2 wf    8625 p 0.26 tot     9160
+LIT_C4_ONLY            never (only 2023)            yrs+1 wf    4950 p 0.716 tot   -43543
+LIT_C4_UP              never                        yrs+0 wf    1625 p 0.72 tot      771
+LIT_C5_ONLY            mixed (2024 up)              yrs+1 wf     161 p 0.1 tot   -21027
+LIT_C5_UP              mixed (2024, 2025, 2026 up)  yrs+3 wf   12123 p 0.08 tot    12029
+LIT_C6_ONLY            never                        yrs+0 wf    4178 p 0.116 tot   -38245
+LIT_C6_UP              mixed (2025, 2026 up)        yrs+2 wf    3051 p 0.116 tot     3420
+LIT_C7_ONLY            never                        yrs+0 wf   -3147 p 0.47 tot   -43891
+LIT_C7_UP              mixed (2025, 2026 up)        yrs+2 wf    1159 p 0.504 tot      597
+LIT_C8_ONLY            mixed (2024, 2025 up)        yrs+2 wf   -6628 p 0.984 tot   -49428
+LIT_C8_UP              mixed (2024, 2025 up)        yrs+2 wf    1466 p 0.974 tot    -2172
+LIT_C9_ONLY            mixed (2024 up)              yrs+1 wf   -6814 p 0.464 tot   -29700
+LIT_C9_UP              mixed (2022, 2024, 2026 up)  yrs+3 wf    4630 p 0.454 tot     7692
+LIT_C10_ONLY           mixed (2023, 2024 up)        yrs+2 wf     -17 p 0.092 tot   -34902
+LIT_C10_UP             works most years (4 of 5)    yrs+4 wf    5826 p 0.07 tot     5091
+ATLAS_BASE             works most years (4 of 5)    yrs+4 wf   11824 p None tot    34011
+ATLAS_F_MAC_ONLY       never (only 2024)            yrs+1 wf  -14035 p 0.826 tot   -32799
+ATLAS_F_MAC_UP         mixed (2024, 2025 up)        yrs+2 wf      43 p 0.828 tot      606
+ATLAS_F_SB_ONLY        works most years (4 of 5)    yrs+4 wf   10569 p 0.0 tot     9439
+ATLAS_F_SB_UP          works every year             yrs+5 wf   19089 p 0.0 tot    21725
+ATLAS_F_KZ_ONLY        works most years (4 of 5)    yrs+4 wf   10992 p 0.0 tot    13932
+ATLAS_F_KZ_UP          works every year             yrs+5 wf   17314 p 0.0 tot    23971
+ATLAS_F_QT90_ONLY      mixed (2022, 2023, 2024 up)  yrs+3 wf    1524 p 0.008 tot     8182
+ATLAS_F_QT90_UP        works every year             yrs+5 wf    7574 p 0.002 tot    21096
+ATLAS_F_QT225_ONLY     mixed (2023, 2024 up)        yrs+2 wf   -1351 p 0.464 tot   -15202
+ATLAS_F_QT225_UP       works most years (4 of 5)    yrs+4 wf    3274 p 0.47 tot     9404
+ATLAS_F_TDO_ONLY       mixed (2022, 2023, 2024, 2025 up) yrs+4 wf   -4740 p 0.004 tot     1155
+ATLAS_F_TDO_UP         works every year             yrs+5 wf   10258 p 0.008 tot    17583
+ATLAS_F_TSO_ONLY       mixed (2023, 2024 up)        yrs+2 wf    3781 p 0.148 tot   -10542
+ATLAS_F_TSO_UP         mixed (2023, 2024, 2026 up)  yrs+3 wf    6175 p 0.176 tot    11734
+ATLAS_F_PO3_ONLY       mixed (2023, 2024 up)        yrs+2 wf  -10920 p 0.03 tot    -2321
+ATLAS_F_PO3_UP         works every year             yrs+5 wf    9220 p 0.032 tot    15845
+ATLAS_F_IPDA20_ONLY    mixed (2022, 2024 up)        yrs+2 wf   -6032 p 0.232 tot   -14923
+ATLAS_F_IPDA20_UP      mixed (2022, 2024, 2026 up)  yrs+3 wf    2376 p 0.236 tot     9544
+ATLAS_F_IPDA40_ONLY    mixed (2022, 2024 up)        yrs+2 wf   -4635 p 0.21 tot   -13824
+ATLAS_F_IPDA40_UP      mixed (2022, 2024, 2026 up)  yrs+3 wf    2424 p 0.212 tot    10093
+ATLAS_F_IPDA60_ONLY    mixed (2023, 2024 up)        yrs+2 wf   -3985 p 0.328 tot   -15548
+ATLAS_F_IPDA60_UP      mixed (2023, 2024, 2026 up)  yrs+3 wf    3941 p 0.294 tot     9231
+ATLAS_F_DOL_ONLY       mixed (2023, 2024 up)        yrs+2 wf     326 p 0.434 tot   -10740
+ATLAS_F_DOL_UP         mixed (2023, 2024 up)        yrs+2 wf    5393 p 0.436 tot    11635
+ATLAS_F_NWOG_ONLY      mixed (2023, 2024 up)        yrs+2 wf   -5195 p 0.262 tot   -18856
+ATLAS_F_NWOG_UP        mixed (2022, 2023, 2024, 2026 up) yrs+4 wf     -54 p 0.248 tot     7577
+ATLAS_F_OTE_ONLY       mixed (2023, 2024 up)        yrs+2 wf   -6671 p 0.252 tot   -20938
+ATLAS_F_OTE_UP         mixed (2023, 2024, 2025 up)  yrs+3 wf    4859 p 0.256 tot     6536
+ATLAS_F_CBDR_ONLY      never (only 2024)            yrs+1 wf  -13449 p 0.66 tot   -33645
+ATLAS_F_CBDR_UP        mixed (2024 up)              yrs+1 wf     145 p 0.682 tot      183
+ATLAS_F_SMT_ONLY       never                        yrs+0 wf   -9215 p 0.994 tot   -22513
+ATLAS_F_SMT_UP         mixed (2022, 2023 up)        yrs+2 wf    -737 p 0.992 tot     5749
+ATLAS_C1_ONLY          never (only 2024)            yrs+1 wf  -12226 p 0.272 tot   -26874
+ATLAS_C1_UP            mixed (2024, 2025 up)        yrs+2 wf    1375 p 0.278 tot     3568
+ATLAS_C2_ONLY          mixed (2022, 2024 up)        yrs+2 wf   -9727 p 0.008 tot   -16042
+ATLAS_C2_UP            works most years (4 of 5)    yrs+4 wf    7196 p 0.02 tot     8984
+ATLAS_C3_ONLY          mixed (2022, 2023, 2024 up)  yrs+3 wf    3756 p 0.01 tot    -1318
+ATLAS_C3_UP            works every year             yrs+5 wf    8027 p 0.014 tot    16346
+ATLAS_C4_ONLY          never (only 2023)            yrs+1 wf  -12169 p 0.298 tot   -27139
+ATLAS_C4_UP            mixed (2022, 2023, 2026 up)  yrs+3 wf    3300 p 0.284 tot     3436
+ATLAS_C5_ONLY          mixed (2023, 2024 up)        yrs+2 wf    -858 p 0.008 tot    -5635
+ATLAS_C5_UP            mixed (2023, 2024, 2026 up)  yrs+3 wf    8240 p 0.006 tot    14188
+ATLAS_C6_ONLY          never (only 2024)            yrs+1 wf  -14976 p 0.324 tot   -30365
+ATLAS_C6_UP            works most years (4 of 5)    yrs+4 wf    1927 p 0.32 tot     1823
+ATLAS_C7_ONLY          never (only 2024)            yrs+1 wf  -12882 p 0.366 tot   -32364
+ATLAS_C7_UP            mixed (2024 up)              yrs+2 wf    1025 p 0.434 tot      823
+ATLAS_C8_ONLY          mixed (2022, 2023, 2024 up)  yrs+3 wf    1902 p 0.264 tot    -9215
+ATLAS_C8_UP            works most years (4 of 5)    yrs+4 wf    5007 p 0.218 tot    12398
+ATLAS_C9_ONLY          never                        yrs+0 wf   -6828 p 0.372 tot   -25198
+ATLAS_C9_UP            2026 only                    yrs+1 wf    1905 p 0.44 tot     4406
+ATLAS_C10_ONLY         mixed (2023, 2024 up)        yrs+2 wf   -1571 p 0.0 tot    -8559
+ATLAS_C10_UP           works every year             yrs+5 wf    9902 p 0.0 tot    12726
+LIT_R_SB_shift-120_ONLY never                        yrs+0 wf   -7299 p 0.802 tot   -46072
+LIT_R_SB_shift-120_UP  never                        yrs+0 wf     459 p 0.786 tot     -494
+LIT_R_KZ_shift-120_ONLY never                        yrs+0 wf   -3768 p 0.616 tot   -34218
+LIT_R_KZ_shift-120_UP  mixed (2022 up)              yrs+1 wf    7633 p 0.654 tot     5433
+LIT_R_MAC_shift-120_ONLY mixed (2025 up)              yrs+1 wf      64 p 0.504 tot   -40037
+LIT_R_MAC_shift-120_UP mixed (2022, 2025 up)        yrs+2 wf    2254 p 0.506 tot     2524
+LIT_R_SB_shift-60_ONLY never                        yrs+0 wf    2188 p 0.432 tot   -36854
+LIT_R_SB_shift-60_UP   mixed (2022, 2025 up)        yrs+2 wf      -1 p 0.412 tot     4115
+LIT_R_KZ_shift-60_ONLY mixed (2024, 2025 up)        yrs+2 wf   -4296 p 0.53 tot   -24504
+LIT_R_KZ_shift-60_UP   mixed (2024, 2025 up)        yrs+2 wf    9041 p 0.552 tot    10291
+LIT_R_MAC_shift-60_ONLY mixed (2024 up)              yrs+1 wf   -3666 p 0.6 tot   -39584
+LIT_R_MAC_shift-60_UP  mixed (2024 up)              yrs+1 wf     277 p 0.584 tot     2750
+LIT_R_SB_shift+60_ONLY never                        yrs+0 wf    2001 p 0.48 tot   -35590
+LIT_R_SB_shift+60_UP   2026 only                    yrs+1 wf    5045 p 0.466 tot     4748
+LIT_R_KZ_shift+60_ONLY mixed (2023, 2024, 2025 up)  yrs+3 wf    9558 p 0.23 tot   -13421
+LIT_R_KZ_shift+60_UP   mixed (2024, 2025, 2026 up)  yrs+3 wf   11400 p 0.27 tot    15832
+LIT_R_MAC_shift+60_ONLY never (only 2023)            yrs+1 wf    6991 p 0.548 tot   -37137
+LIT_R_MAC_shift+60_UP  mixed (2023, 2025 up)        yrs+2 wf     771 p 0.526 tot     3974
+LIT_R_SB_shift+120_ONLY mixed (2023, 2025 up)        yrs+2 wf    2209 p 0.484 tot   -39650
+LIT_R_SB_shift+120_UP  mixed (2022, 2025 up)        yrs+2 wf     571 p 0.506 tot     2718
+LIT_R_KZ_shift+120_ONLY never (only 2023)            yrs+1 wf     231 p 0.446 tot   -28653
+LIT_R_KZ_shift+120_UP  2026 only                    yrs+1 wf    7174 p 0.452 tot     8216
+LIT_R_MAC_shift+120_ONLY never (only 2023)            yrs+1 wf    6002 p 0.314 tot   -33481
+LIT_R_MAC_shift+120_UP mixed (2022, 2023, 2026 up)  yrs+3 wf     917 p 0.336 tot     5802
+LIT_R_OPEN_2100_ONLY   never (only 2024)            yrs+1 wf   -5559 p 0.1 tot    -4998
+LIT_R_OPEN_2100_UP     mixed (2022, 2024, 2026 up)  yrs+3 wf   23294 p 0.126 tot    20043
+LIT_R_OPEN_2200_ONLY   mixed (2024 up)              yrs+1 wf    1393 p 0.1 tot    -4758
+LIT_R_OPEN_2200_UP     mixed (2024, 2026 up)        yrs+2 wf   20704 p 0.142 tot    20163
+LIT_R_OPEN_2300_ONLY   mixed (2024 up)              yrs+1 wf    7026 p 0.03 tot     1331
+LIT_R_OPEN_2300_UP     mixed (2024, 2026 up)        yrs+2 wf   23596 p 0.048 tot    23208
+LIT_R_OPEN_0100_ONLY   mixed (2024 up)              yrs+1 wf    3704 p 0.09 tot    -1996
+LIT_R_OPEN_0100_UP     mixed (2024, 2026 up)        yrs+2 wf   18521 p 0.056 tot    21544
+LIT_R_OPEN_0200_ONLY   mixed (2023, 2024 up)        yrs+2 wf    6933 p 0.09 tot    -5836
+LIT_R_OPEN_0200_UP     mixed (2022, 2024, 2026 up)  yrs+3 wf   16895 p 0.064 tot    19624
+LIT_R_OPEN_0300_ONLY   never                        yrs+0 wf   -2098 p 0.44 tot   -24020
+LIT_R_OPEN_0300_UP     mixed (2022, 2026 up)        yrs+2 wf    9324 p 0.458 tot    10533
+LIT_R_OPEN_0600_ONLY   never (only 2023)            yrs+1 wf   -3693 p 0.734 tot   -39731
+LIT_R_OPEN_0600_UP     never                        yrs+0 wf   -2534 p 0.75 tot     2677
+ATLAS_R_SB_shift-120_ONLY never                        yrs+0 wf  -13785 p 0.954 tot   -37412
+ATLAS_R_SB_shift-120_UP never                        yrs+0 wf    -230 p 0.944 tot    -1701
+ATLAS_R_KZ_shift-120_ONLY never                        yrs+0 wf  -16172 p 0.998 tot   -40834
+ATLAS_R_KZ_shift-120_UP never (only 2025)            yrs+1 wf   -2732 p 1.0 tot    -3412
+ATLAS_R_MAC_shift-120_ONLY never (only 2024)            yrs+1 wf  -14994 p 0.946 tot   -37554
+ATLAS_R_MAC_shift-120_UP mixed (2025 up)              yrs+1 wf     563 p 0.962 tot    -1772
+ATLAS_R_SB_shift-60_ONLY never                        yrs+0 wf  -15426 p 0.868 tot   -33616
+ATLAS_R_SB_shift-60_UP never                        yrs+0 wf   -1621 p 0.84 tot      197
+ATLAS_R_KZ_shift-60_ONLY mixed (2023, 2024, 2025 up)  yrs+3 wf   10460 p 0.004 tot     7817
+ATLAS_R_KZ_shift-60_UP works every year             yrs+5 wf   16285 p 0.004 tot    20914
+ATLAS_R_MAC_shift-60_ONLY mixed (2023, 2024 up)        yrs+2 wf   -5538 p 0.012 tot   -14548
+ATLAS_R_MAC_shift-60_UP works most years (4 of 5)    yrs+4 wf    7611 p 0.008 tot     9731
+ATLAS_R_SB_shift+60_ONLY never (only 2024)            yrs+1 wf   -1997 p 0.848 tot   -32476
+ATLAS_R_SB_shift+60_UP mixed (2022, 2024 up)        yrs+2 wf    -126 p 0.83 tot      767
+ATLAS_R_KZ_shift+60_ONLY mixed (2022, 2023, 2024 up)  yrs+3 wf   -2039 p 0.032 tot    -2020
+ATLAS_R_KZ_shift+60_UP works most years (4 of 5)    yrs+4 wf    5086 p 0.036 tot    15995
+ATLAS_R_MAC_shift+60_ONLY mixed (2024, 2025 up)        yrs+2 wf   -6705 p 0.228 tot   -20481
+ATLAS_R_MAC_shift+60_UP mixed (2024, 2025, 2026 up)  yrs+3 wf    5276 p 0.236 tot     6765
+ATLAS_R_SB_shift+120_ONLY never (only 2024)            yrs+1 wf  -15948 p 0.94 tot   -36858
+ATLAS_R_SB_shift+120_UP never (only 2024)            yrs+1 wf    -595 p 0.932 tot    -1424
+ATLAS_R_KZ_shift+120_ONLY never (only 2022)            yrs+1 wf   -5808 p 0.982 tot   -39919
+ATLAS_R_KZ_shift+120_UP mixed (2022 up)              yrs+1 wf      22 p 0.994 tot    -2954
+ATLAS_R_MAC_shift+120_ONLY never                        yrs+0 wf   -3988 p 0.98 tot   -38466
+ATLAS_R_MAC_shift+120_UP mixed (2022 up)              yrs+1 wf    -862 p 0.958 tot    -2228
+ATLAS_R_OPEN_2100_ONLY mixed (2022, 2024 up)        yrs+2 wf   -1716 p 0.022 tot    -1070
+ATLAS_R_OPEN_2100_UP   works most years (4 of 5)    yrs+4 wf   10428 p 0.026 tot    16470
+ATLAS_R_OPEN_2200_ONLY mixed (2022, 2024 up)        yrs+2 wf   -5609 p 0.01 tot     -207
+ATLAS_R_OPEN_2200_UP   works most years (4 of 5)    yrs+4 wf   11027 p 0.02 tot    16902
+ATLAS_R_OPEN_2300_ONLY never (only 2024)            yrs+1 wf   -3893 p 0.104 tot    -7453
+ATLAS_R_OPEN_2300_UP   mixed (2024, 2026 up)        yrs+2 wf   11128 p 0.13 tot    13279
+ATLAS_R_OPEN_0100_ONLY mixed (2023, 2024 up)        yrs+2 wf   -2276 p 0.058 tot    -4968
+ATLAS_R_OPEN_0100_UP   works most years (4 of 5)    yrs+4 wf   10878 p 0.046 tot    14521
+ATLAS_R_OPEN_0200_ONLY mixed (2023, 2024, 2025 up)  yrs+3 wf   -4181 p 0.026 tot    -4525
+ATLAS_R_OPEN_0200_UP   works most years (4 of 5)    yrs+4 wf    9439 p 0.024 tot    14743
+ATLAS_R_OPEN_0300_ONLY never (only 2024)            yrs+1 wf   -2197 p 0.838 tot   -27109
+ATLAS_R_OPEN_0300_UP   mixed (2024 up)              yrs+1 wf    2855 p 0.814 tot     3451
+ATLAS_R_OPEN_0600_ONLY never (only 2024)            yrs+1 wf  -12315 p 0.856 tot   -31147
+ATLAS_R_OPEN_0600_UP   mixed (2024 up)              yrs+1 wf     676 p 0.878 tot     1432
+S_QT_TDO               never (only 2023)            yrs+1 wf  -10221 p 0.672 tot    -7776
+S_QT_TSO               never (only 2023)            yrs+1 wf  -14846 p 0.764 tot   -15011
+S_QT_225               mixed (2024, 2025, 2026 up)  yrs+3 wf   -3684 p 0.336 tot     1366
+S_MAC_ALL              never (only 2024)            yrs+1 wf  -26651 p 0.444 tot   -60657
+S_MAC_RTH              never                        yrs+0 wf  -27375 p 0.724 tot   -49581
+S_MAC_LDN              never (only 2025)            yrs+1 wf  -21813 p 0.558 tot   -57083
+S_SB_03                2026 only                    yrs+1 wf  -23651 p 0.542 tot   -42940
+S_SB_10                mixed (2022, 2025 up)        yrs+2 wf    3854 p 0.392 tot    -4213
+S_SB_14                mixed (2023, 2024, 2026 up)  yrs+3 wf      36 p 0.156 tot     1919
+S_SB_ALL               2026 H2 only                 yrs+1 wf  -30686 p 0.402 tot   -36265
+S_JUD                  mixed (2023, 2024, 2026 up)  yrs+3 wf   -7219 p 0.25 tot     2126
+S_PO3                  mixed (2022, 2023, 2025, 2026 up) yrs+4 wf    -782 p 0.44 tot      370
+S_SMT                  never                        yrs+0 wf   -2108 p 0.862 tot   -10632
+S_IPDA20               never                        yrs+0 wf       0 p 1.0 tot  -100790
+S_IPDA40               never                        yrs+0 wf       0 p 1.0 tot   -88717
+S_IPDA60               never                        yrs+0 wf       0 p 1.0 tot   -80518
+S_DOL                  never (only 2024)            yrs+1 wf   -5521 p 0.86 tot   -37372
+S_NWOG                 never                        yrs+0 wf   -1959 p 0.958 tot    -9384
+S_NDOG                 mixed (2024, 2026 up)        yrs+2 wf   -1093 p 0.986 tot   -10934
+S_OTE                  mixed (2023, 2024, 2025 up)  yrs+3 wf   28328 p 0.016 tot    35646
+S_KZ                   never (only 2025)            yrs+1 wf   -7610 p 0.674 tot   -31270
+S_CBDR                 mixed (2024, 2025 up)        yrs+2 wf    -168 p 0.834 tot    -1264
+S_ASIA                 never                        yrs+0 wf   -2346 p 0.908 tot    -6888
+G1_S_SB_10             mixed (2022, 2023, 2024 up)  yrs+3 wf   -7701 p 0.388 tot     -253
+G2_S_MAC_RTH           never (only 2024)            yrs+1 wf   -4977 p 0.498 tot   -15996
+G3_S_OTE               works every year             yrs+5 wf    9708 p 0.056 tot    21062
+G4_S_KZ                never (only 2024)            yrs+1 wf   -7640 p 0.916 tot   -25449
+G5_S_QT_TSO            never                        yrs+0 wf   -8955 p 0.854 tot   -11001
+G6_S_CBDR              mixed (2024, 2025 up)        yrs+2 wf    -168 p 0.746 tot     -827
+{"variants": 133, "cards_real": 9, "cards_expected_by_luck": 1.8, "years4_wf_real": 16, "years4_wf_expected": 8.3, "p05_real": 21, "p05_expected": 6.7}
+done

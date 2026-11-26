@@ -38,6 +38,20 @@
 //     display time zone) and Bars.GetBid(i) / GetAsk(i) give the quote at that trade (NT8 Help: Bars.GetBid / GetAsk). If
 //     they come back 0 Python falls back to the tick rule. How far back the server goes and whether it serves expired
 //     contracts ("NQ 09-25") through Instrument.GetInstrument are NinjaTrader's choice: the add-on simply stops where it ends.
+// DAY-OFMAX (2026-11-25):
+//  * ROLL FIX: the backfill asked for the front contract of each date; at the September 2026 roll the expired "NQ 09-26" came back
+//    unknown / empty and those days counted toward "7 empty weekdays = end of history", so every pass stopped at 2026-09-14.
+//    Now an UNKNOWN contract never counts toward the end (it is marked and skipped); an empty answer first tries the other
+//    quarterly contract alive that day (the expiring one in its last week); the end marker is bf_<ROOT>_end2.txt (the old
+//    bf_<ROOT>_end.txt is ignored) and an old-format .none (before this version) is asked once more. Status adds bf_unknown=N.
+//  * DEPTH (market depth, forward only: NinjaTrader keeps no depth history): for the roots in le_ticks\depth.txt (default NQ;
+//    le_ticks\depth_off.txt turns it off) the add-on subscribes NinjaTrader's MarketDepth for the recorded contract and writes
+//    the top 10 levels each side, ON CHANGE, at most 4 snapshots a second, to le_ticks\depth\<ROOT>_<YYYY-MM-DD>.csv:
+//        t_ms,bp,bd1..bd10,bs1..bs10,ad1..ad10,as1..as10
+//    bp = best bid price; bdN / adN = ticks below / above bp of bid / ask level N; bsN / asN = size at that level (0 = no level).
+//    Every MarketDepth call goes through REFLECTION (type found by name, event bound with Delegate.CreateDelegate): if this
+//    NinjaTrader build has other member names, depth is simply "unavailable" in the status line and the add-on still COMPILES
+//    (a compile error would block F5 for every script). Status adds depth=on|off|unavailable,depth_rows=N.
 #region Using declarations
 using System;
 using System.Collections.Generic;
@@ -53,6 +67,9 @@ namespace NinjaTrader.NinjaScript.AddOns
 {
     public class LE_TickRec : AddOnBase
     {
+        // day-handsfree 2026-11-25: the build id in the status line (",v=") lets the PC see whether NinjaTrader compiled THIS file
+        // (engine/ns_sync.py). `python -m engine.ns_sync --stamp` writes it after every edit; tests.test_handsfree checks it.
+        public const string LE_BUILD = "b4b6e8afaa";
         private static readonly object RunLock = new object();
         private static LE_TickRec running;
         private static readonly long EpochTicks = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks;
@@ -68,6 +85,19 @@ namespace NinjaTrader.NinjaScript.AddOns
             public void OnMarketData(object sender, MarketDataEventArgs e)
             {
                 Rec.SafeTick(this, e);
+            }
+            // depth (day-ofmax): all through reflection, see the header
+            public object DepthObj;
+            public System.Reflection.EventInfo DepthEvent;
+            public Delegate DepthHandler;
+            public double TickSize = 0.25;
+            public DateTime LastSnap = DateTime.MinValue;
+            public bool DepthDirty;
+            public string LastBook = "";
+            public readonly object DepthLock = new object();
+            public void OnDepthRaw(object sender, EventArgs e)
+            {
+                Rec.SafeDepth(this, false);
             }
         }
 
@@ -107,6 +137,16 @@ namespace NinjaTrader.NinjaScript.AddOns
         private string bfState = "idle";
         private bool bfWriting;                                                 // SafeBackfilled is reading the Bars: never dispose them
         private int bfErrors;
+        private int bfUnknown;                                                  // days whose contract NinjaTrader did not know
+        private int bfReqTry;                                                   // 0 = first contract of the day, 1 = the other one
+        private string bfReqName = "";
+        // depth (day-ofmax)
+        private const int DepthLevels = 10;
+        private const int DepthMinMs = 250;                                     // at most 4 snapshots a second per instrument
+        private string depthState = "off";
+        private long depthRows;
+        private static Type depthType;                                          // NinjaTrader.Data.MarketDepth`1[MarketDepthRow]
+        private static bool depthLooked;
 
         protected override void OnStateChange()
         {
@@ -236,7 +276,7 @@ namespace NinjaTrader.NinjaScript.AddOns
                 }
                 File.WriteAllText(statusPath, DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)
                     + ",on=" + (on ? "1" : "0") + ",instruments=" + names + ",rows=" + rows.ToString(CultureInfo.InvariantCulture)
-                    + BackfillStatus() + "\n");
+                    + BackfillStatus() + ",v=" + LE_BUILD + "\n");
             }
             catch (Exception)
             {
@@ -268,6 +308,8 @@ namespace NinjaTrader.NinjaScript.AddOns
                     i.Md = new MarketData(ins);
                     i.Md.Update += i.OnMarketData;
                     insts.Add(i);
+                    if (DepthWanted(i.Root))
+                        DepthSubscribe(i, ins);
                 }
                 catch (Exception)
                 {
@@ -294,6 +336,7 @@ namespace NinjaTrader.NinjaScript.AddOns
                         if (d != null)
                             d.Dispose();
                     }
+                    DepthUnsubscribe(i);
                 }
                 catch (Exception)
                 {
@@ -405,7 +448,16 @@ namespace NinjaTrader.NinjaScript.AddOns
         private bool BfHave(string root, DateTime day)
         {
             string b = BfBase(root, day);
-            return File.Exists(b + ".csv") || File.Exists(b + ".done") || File.Exists(b + ".none");
+            if (File.Exists(b + ".csv") || File.Exists(b + ".done"))
+                return true;
+            try
+            {
+                return File.Exists(b + ".none") && File.ReadAllText(b + ".none").StartsWith("v2 ");     // older .none: ask once more
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         private List<string> Roots()
@@ -437,7 +489,7 @@ namespace NinjaTrader.NinjaScript.AddOns
                 {
                     try
                     {
-                        string p = Path.Combine(folder, "bf_" + root + "_end.txt");
+                        string p = Path.Combine(folder, "bf_" + root + "_end2.txt");   // day-ofmax: end.txt (roll bug) ignored
                         if (File.Exists(p))
                             bfEnd[root] = DateTime.ParseExact(File.ReadAllText(p).Trim().Substring(0, 10), "yyyy-MM-dd", CultureInfo.InvariantCulture);
                     }
@@ -498,8 +550,9 @@ namespace NinjaTrader.NinjaScript.AddOns
                                 continue;                                       // ... found on an earlier pass
                             if (BfHave(root, bfCursor))
                                 continue;
-                            Send(root, bfCursor);
-                            return;
+                            if (Send(root, bfCursor, 0))
+                                return;                                         // a request went out (or failed): next tick
+                            continue;                                           // unknown contract: marked, try the next day now
                         }
                     }
                     bfCursor = bfCursor.AddDays(-1);
@@ -510,16 +563,27 @@ namespace NinjaTrader.NinjaScript.AddOns
         }
 
         // called under BfLock
-        private void Send(string root, DateTime day)
+        // tryIx = which of Candidates(root, day) to ask
+        private bool Send(string root, DateTime day, int tryIx)
         {
+            List<string> cands = Candidates(root, day);
             NinjaTrader.Cbi.Instrument ins = null;
-            try { ins = NinjaTrader.Cbi.Instrument.GetInstrument(FrontName(root, day)); } catch (Exception) { }
+            string name = "";
+            while (tryIx < cands.Count && ins == null)
+            {
+                name = cands[tryIx];
+                try { ins = NinjaTrader.Cbi.Instrument.GetInstrument(name); } catch (Exception) { }
+                if (ins == null)
+                    tryIx++;
+            }
             bfLastSent = UtcNow();
             if (ins == null)
             {
-                NoTicks(root, day);                                             // NinjaTrader does not know that contract
-                return;
+                Unknown(root, day, cands[0]);                                    // NinjaTrader knows none of them: skip, not "end"
+                return false;
             }
+            bfReqTry = tryIx;
+            bfReqName = name;
             TimeZoneInfo disp = NinjaTrader.Core.Globals.GeneralOptions.TimeZoneInfo;
             DateTime fromUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(day, DateTimeKind.Unspecified), eastern);
             DateTime toUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(day.AddDays(1), DateTimeKind.Unspecified), eastern);
@@ -536,7 +600,7 @@ namespace NinjaTrader.NinjaScript.AddOns
             {
                 bfErrors++;
                 bfCursor = bfCursor.AddDays(-1);
-                return;
+                return true;
             }
             bfReq = req;
             bfReqStarted = UtcNow();
@@ -555,11 +619,46 @@ namespace NinjaTrader.NinjaScript.AddOns
                 bfErrors++;
                 bfCursor = bfCursor.AddDays(-1);
             }
+            return true;
+        }
+
+        // the contracts to try for a day: the front one, then (in the expiring contract's last 8 days) the expiring one
+        public static List<string> Candidates(string root, DateTime d)
+        {
+            List<string> c = new List<string>();
+            c.Add(FrontName(root, d));
+            string exp = FrontName(root, d.AddDays(-9));                         // 9 days earlier the front was still the old one
+            if (!c.Contains(exp) && ExpiryOf(exp) >= d.Date)
+                c.Add(exp);
+            return c;
+        }
+
+        public static DateTime ExpiryOf(string name)
+        {
+            try
+            {
+                string mmyy = name.Split(' ')[1];
+                int m = int.Parse(mmyy.Substring(0, 2), CultureInfo.InvariantCulture);
+                int y = 2000 + int.Parse(mmyy.Substring(3, 2), CultureInfo.InvariantCulture);
+                DateTime first = new DateTime(y, m, 1);
+                return first.AddDays(((int)DayOfWeek.Friday - (int)first.DayOfWeek + 7) % 7 + 14);
+            }
+            catch (Exception)
+            {
+                return DateTime.MinValue;
+            }
+        }
+
+        // a day whose contract NinjaTrader does not know: marked, NEVER counted toward the end of history (the roll bug)
+        private void Unknown(string root, DateTime day, string name)
+        {
+            bfUnknown++;
+            try { File.WriteAllText(BfBase(root, day) + ".none", "v2 unknown contract " + name + " " + UtcNow().ToString("u", CultureInfo.InvariantCulture) + "\n"); } catch (Exception) { }
         }
 
         private void NoTicks(string root, DateTime day)
         {
-            try { File.WriteAllText(BfBase(root, day) + ".none", "no ticks from the server " + UtcNow().ToString("u", CultureInfo.InvariantCulture) + "\n"); } catch (Exception) { }
+            try { File.WriteAllText(BfBase(root, day) + ".none", "v2 no ticks from the server " + bfReqName + " " + UtcNow().ToString("u", CultureInfo.InvariantCulture) + "\n"); } catch (Exception) { }
             if (day.DayOfWeek != DayOfWeek.Sunday)
             {
                 int e;
@@ -567,7 +666,7 @@ namespace NinjaTrader.NinjaScript.AddOns
                 bfEmpty[root] = e + 1;
                 if (e + 1 >= BfEmptyStop)
                 {
-                    try { File.WriteAllText(Path.Combine(folder, "bf_" + root + "_end.txt"), day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "\n"); } catch (Exception) { }
+                    try { File.WriteAllText(Path.Combine(folder, "bf_" + root + "_end2.txt"), day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "\n"); } catch (Exception) { }
                 }
             }
         }
@@ -610,6 +709,11 @@ namespace NinjaTrader.NinjaScript.AddOns
                     return;                                                     // no marker: the day is asked again on a later pass
                 if (!ok)
                     bfErrors++;                                                 // an error is retried on the next pass
+                else if (n == 0 && bfReqTry + 1 < Candidates(root, day).Count)
+                {
+                    Send(root, day, bfReqTry + 1);                              // empty: the other contract alive that day
+                    return;
+                }
                 else if (n == 0)
                     NoTicks(root, day);
                 else
@@ -712,11 +816,235 @@ namespace NinjaTrader.NinjaScript.AddOns
                 err = bfErrors;
             }
             return ",backfill=" + st + ",backfill_days=" + have.ToString(CultureInfo.InvariantCulture) + ",oldest=" + oldest
-                + ",bf_errors=" + err.ToString(CultureInfo.InvariantCulture) + ",low_disk=" + (lowDisk ? "1" : "0");
+                + ",bf_errors=" + err.ToString(CultureInfo.InvariantCulture) + ",low_disk=" + (lowDisk ? "1" : "0")
+                + ",bf_unknown=" + bfUnknown.ToString(CultureInfo.InvariantCulture)
+                + ",depth=" + depthState + ",depth_rows=" + depthRows.ToString(CultureInfo.InvariantCulture);
+        }
+
+        // ================================================================================================ depth (day-ofmax)
+        private bool DepthWanted(string root)
+        {
+            try
+            {
+                if (File.Exists(Path.Combine(folder, "depth_off.txt")))
+                    return false;
+                string p = Path.Combine(folder, "depth.txt");
+                string list = File.Exists(p) ? File.ReadAllText(p) : "NQ";
+                foreach (string raw in list.Split(new char[] { '\n', ',', ';' }))
+                    if (raw.Trim().ToUpperInvariant() == root)
+                        return true;
+            }
+            catch (Exception)
+            {
+            }
+            return false;
+        }
+
+        private static Type FindType(string fullName)
+        {
+            foreach (System.Reflection.Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                try
+                {
+                    Type t = a.GetType(fullName, false);
+                    if (t != null)
+                        return t;
+                }
+                catch (Exception)
+                {
+                }
+            }
+            return null;
+        }
+
+        private static Type DepthType()
+        {
+            if (depthLooked)
+                return depthType;
+            depthLooked = true;
+            try
+            {
+                Type gen = FindType("NinjaTrader.Data.MarketDepth`1");
+                Type row = FindType("NinjaTrader.Data.MarketDepthRow");
+                if (gen != null && row != null)
+                    depthType = gen.MakeGenericType(row);
+            }
+            catch (Exception)
+            {
+                depthType = null;
+            }
+            return depthType;
+        }
+
+        private void DepthSubscribe(RecInst i, NinjaTrader.Cbi.Instrument ins)
+        {
+            try
+            {
+                Type t = DepthType();
+                if (t == null) { depthState = "unavailable"; return; }
+                try
+                {
+                    object ts = Member(Member(ins, "MasterInstrument"), "TickSize");
+                    if (ts != null)
+                        i.TickSize = Convert.ToDouble(ts, CultureInfo.InvariantCulture);
+                }
+                catch (Exception)
+                {
+                }
+                if (!(i.TickSize > 0))
+                    i.TickSize = 0.25;
+                object md = Activator.CreateInstance(t, new object[] { ins });
+                System.Reflection.EventInfo ev = t.GetEvent("Update");
+                if (md == null || ev == null) { depthState = "unavailable"; return; }
+                Delegate h = Delegate.CreateDelegate(ev.EventHandlerType, i, typeof(RecInst).GetMethod("OnDepthRaw"));
+                ev.AddEventHandler(md, h);
+                i.DepthObj = md;
+                i.DepthEvent = ev;
+                i.DepthHandler = h;
+                depthState = "on";
+            }
+            catch (Exception)
+            {
+                depthState = "unavailable";
+                i.DepthObj = null;
+            }
+        }
+
+        private void DepthUnsubscribe(RecInst i)
+        {
+            try
+            {
+                if (i.DepthObj != null && i.DepthEvent != null && i.DepthHandler != null)
+                    i.DepthEvent.RemoveEventHandler(i.DepthObj, i.DepthHandler);
+                IDisposable d = i.DepthObj as IDisposable;
+                if (d != null)
+                    d.Dispose();
+            }
+            catch (Exception)
+            {
+            }
+            i.DepthObj = null;
+        }
+
+        public static string DepthHeader()
+        {
+            StringBuilder h = new StringBuilder("t_ms,bp");
+            string[] grp = new string[] { "bd", "bs", "ad", "as" };
+            foreach (string g in grp)
+                for (int k = 1; k <= DepthLevels; k++)
+                    h.Append("," + g + k.ToString(CultureInfo.InvariantCulture));
+            return h.Append("\n").ToString();
+        }
+
+        // a property OR a field by name (NinjaTrader's builds differ; null when neither exists)
+        private static object Member(object o, string name)
+        {
+            if (o == null)
+                return null;
+            System.Reflection.PropertyInfo p = o.GetType().GetProperty(name);
+            if (p != null)
+                return p.GetValue(o, null);
+            System.Reflection.FieldInfo f = o.GetType().GetField(name);
+            return f == null ? null : f.GetValue(o);
+        }
+
+        // the first DepthLevels rows of MarketDepth.Bids / .Asks (each row: .Price, .Volume) through reflection
+        private static List<double[]> Side(object md, string name)
+        {
+            List<double[]> res = new List<double[]>();
+            System.Collections.IEnumerable en = Member(md, name) as System.Collections.IEnumerable;
+            if (en == null)
+                return res;
+            foreach (object r in en)
+            {
+                if (r == null)
+                    continue;
+                object op = Member(r, "Price"), ov = Member(r, "Volume");
+                if (op == null || ov == null)
+                    continue;
+                double px = Convert.ToDouble(op, CultureInfo.InvariantCulture);
+                double v = Convert.ToDouble(ov, CultureInfo.InvariantCulture);
+                if (px > 0 && v > 0)
+                    res.Add(new double[] { px, v });
+                if (res.Count >= DepthLevels)
+                    break;
+            }
+            return res;
+        }
+
+        // one top-10 snapshot as the CSV tail after t_ms ("" when a side is empty); public for the test driver
+        public static string BookLine(List<double[]> b, List<double[]> a, double tick)
+        {
+            if (b.Count == 0 || a.Count == 0 || !(tick > 0))
+                return "";
+            double bp = b[0][0];
+            StringBuilder sb = new StringBuilder();
+            sb.Append(bp.ToString("0.########", CultureInfo.InvariantCulture));
+            for (int s2 = 0; s2 < 2; s2++)
+            {
+                List<double[]> lv = s2 == 0 ? b : a;
+                for (int k = 0; k < DepthLevels; k++)                           // offsets in ticks from bp ("" = no level)
+                    sb.Append(",").Append(k < lv.Count ? Math.Round((s2 == 0 ? bp - lv[k][0] : lv[k][0] - bp) / tick).ToString("0", CultureInfo.InvariantCulture) : "");
+                for (int k = 0; k < DepthLevels; k++)                           // sizes (0 = no level)
+                    sb.Append(",").Append(k < lv.Count ? lv[k][1].ToString("0", CultureInfo.InvariantCulture) : "0");
+            }
+            return sb.ToString();
+        }
+
+        // a depth event (or the 1 s timer for a change inside the 250 ms gap): one snapshot line when the top 10 changed
+        private void SafeDepth(RecInst i, bool fromTimer)
+        {
+            try
+            {
+                if (!on || terminated || lowDisk || i.DepthObj == null)
+                    return;
+                DateTime now = UtcNow();
+                lock (i.DepthLock)
+                {
+                    if ((now - i.LastSnap).TotalMilliseconds < DepthMinMs)
+                    {
+                        i.DepthDirty = true;
+                        return;
+                    }
+                    i.DepthDirty = false;
+                    string book = BookLine(Side(i.DepthObj, "Bids"), Side(i.DepthObj, "Asks"), i.TickSize);
+                    if (book.Length == 0 || book == i.LastBook)
+                        return;                                                 // empty or nothing changed in the top 10
+                    i.LastBook = book;
+                    i.LastSnap = now;
+                    long ms = (now.Ticks - EpochTicks) / TimeSpan.TicksPerMillisecond;
+                    string day = TimeZoneInfo.ConvertTimeFromUtc(now, eastern).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                    string path = Path.Combine(Path.Combine(folder, "depth"), i.Root + "_" + day + ".csv");
+                    string line = ms.ToString(CultureInfo.InvariantCulture) + "," + book + "\n";
+                    lock (BufLock)
+                    {
+                        StringBuilder w;
+                        if (!buf.TryGetValue(path, out w))
+                        {
+                            w = new StringBuilder();
+                            buf[path] = w;
+                        }
+                        w.Append(line);
+                        depthRows++;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
         }
 
         private void Flush(object state)
         {
+            List<RecInst> snap = new List<RecInst>();
+            lock (InstLock)
+            {
+                foreach (RecInst i in insts)
+                    if (i.DepthObj != null && i.DepthDirty)
+                        snap.Add(i);
+            }
+            foreach (RecInst i in snap)
+                SafeDepth(i, true);                                             // a change that came inside the 250 ms gap
             Dictionary<string, string> todo = new Dictionary<string, string>();
             lock (BufLock)
             {
@@ -732,7 +1060,10 @@ namespace NinjaTrader.NinjaScript.AddOns
                 try
                 {
                     bool fresh = !File.Exists(kv.Key);
-                    File.AppendAllText(kv.Key, (fresh ? "t_ms,price,size,bid,ask\n" : "") + kv.Value);
+                    bool depth = Path.GetFileName(Path.GetDirectoryName(kv.Key)) == "depth";
+                    if (depth && fresh)
+                        Directory.CreateDirectory(Path.GetDirectoryName(kv.Key));
+                    File.AppendAllText(kv.Key, (fresh ? (depth ? DepthHeader() : "t_ms,price,size,bid,ask\n") : "") + kv.Value);
                 }
                 catch (Exception)
                 {

@@ -577,6 +577,17 @@ class Account:
         bot = getattr(self.router, "bot", None)          # the 2nd Rapid's lane ("slot": "rapid2") shares only its own ATLAS
         return getattr(bot, "acct_r2" if self.spec.get("slot") == "rapid2" else "acct_r", None)
 
+    def _holds_entry(self, entry_t) -> bool:
+        """This account really holds this entry: its open trade, or an open NinjaTrader leg of ours for it. Never raises."""
+        try:
+            if self.open_t is not None and int(self.open_t) == int(entry_t):
+                return True
+            from .ninjatrader import OPEN_STATUSES
+            return any(isinstance(lg, dict) and lg.get("status") in OPEN_STATUSES and int(lg.get("entry_t") or 0) == int(entry_t)
+                       for lg in list(getattr(self.adapter, "legs", None) or []))
+        except Exception:  # noqa: BLE001
+            return True                                   # unknown: keep the old path (the exit is handled)
+
     def sharers(self) -> list:
         """Every other strategy on this SAME account: shared() + BLITZ's lane on the Rapid EOD 25K eval
         (engine/rapid_blitz.py; LIT > ATLAS > BLITZ, one position on the account)."""
@@ -1075,8 +1086,15 @@ class Account:
         # that ended before this account joined is skipped; an exit of an entry this account never routed books $0 (as
         # LiveBot does since 2026-10-26: "a missed 08:37 BE trade booked +$0.10 on the 50K").
         start_x = max(int(start or 0), int(getattr(self, "added_t", 0) or 0))
+        es = str(self.spec.get("eval_start") or "")
         for tr in res["trades"]:
             if tr["exit_t"] < start - secs or tr["exit_t"] < start_x - secs or ("exit", tr["entry_t"]) in self.seen:
+                continue
+            if es and trading_day(tr["entry_t"]) < es and not self._holds_entry(tr["entry_t"]):
+                # day-ledgerfix: a trade before this account's eval started is never its row (25K #2, Nov 16 -$129.40). Red team
+                # 2026-11-24: unless the account really HOLDS it (its open trade, or an open NinjaTrader leg of ours for that entry):
+                # an eval_start typed in the future must never skip the exit (and the flatten) of a real position. "seen" alone
+                # is not proof (the Nov 16 bug copied it)
                 continue
             self.seen.add(("exit", tr["entry_t"]))
             if tr["entry_t"] in self.blocked:
@@ -1095,6 +1113,13 @@ class Account:
                 self.log("risk", f"exit {tr['exit_reason']} for the entry at {_et(tr['entry_t']):%H:%M} ET this account never routed: "
                                  f"no flatten ({held}; it would close that trade)")
                 continue
+            if not routed:
+                from .live import unrouted_exit_skip     # day-ledgerfix: an entry of an ended session / a flat broker: no order
+                skip = unrouted_exit_skip(self.adapter, tr["entry_t"], now)
+                if skip:
+                    self.log("risk", f"exit {tr['exit_reason']} for the entry at {_et(tr['entry_t']):%H:%M} ET this account never routed: "
+                                     f"no flatten ({skip})")
+                    continue
             qty = tr["qty"]
             if self.open_t == tr["entry_t"]:
                 self.open_t = None
@@ -1176,6 +1201,16 @@ class Account:
         if not b or b.get("nt_account") != self.spec.get("nt_account"):
             return
         self.closes = [list(c) for c in (b.get("closes") or []) if isinstance(c, (list, tuple)) and len(c) >= 3]
+        es = str(self.spec.get("eval_start") or "")
+        if es and str(today or "") and es > str(today):
+            es = ""                  # red team 2026-11-24: an eval_start in the future is a typo, never proof: no close is dropped
+        if es:                       # day-ledgerfix one-time repair: a close of a trade from before this account's eval started was
+            bad = [c for c in self.closes if len(c) > 3 and c[3] is not None and trading_day(int(c[3])) < es]
+            # (a close of a trade before this eval began is never this eval's: the old hot-add bug copied the main account's)
+            if bad:
+                self.closes = [c for c in self.closes if c not in bad]
+                self.log("risk", "removed " + ", ".join(f"{_et(int(c[3])):%b %d %H:%M} ET {float(c[2]):+.2f}" for c in bad[:3])
+                         + f" from this account's book: the trade came before its eval started ({es}); it was never its trade")
         try:                         # engine/keepalive: the saved ledger's CONFIRMED fill days outlive an earlier day's ledger
             from . import keepalive as _ka
             self._ka_seed = _ka.seed_days(b.get("ledger") or [])

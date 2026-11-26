@@ -183,6 +183,34 @@ def trading_day(ts) -> str:
     return (_et(ts) + _dt.timedelta(hours=6)).strftime("%Y-%m-%d")
 
 
+def unrouted_exit_skip(adapter, entry_t, now) -> str | None:
+    """day-ledgerfix 2026-11-24 (livegap: a MODEL entry of Nov 16 06:20 ET the bot never routed was carried to Nov 20 10:44 ET, then
+    a flatten 'in case a broker position exists' went to the live account + a $0 exit row): the model's exit of an entry THIS
+    process never routed sends NO order when (1) that entry is from an earlier trading day (the session ended: no position of
+    ours can be left from it; a real leg is the adapter's own reconcile) or (2) NinjaTrader shows every position of the account
+    FLAT (a non-empty set of position files: none at all never proves flat) and no bracket of ours is open. Else None = the
+    old "in case" flatten stays (today's entry, broker state unknown). Read-only, never raises."""
+    try:
+        if trading_day(int(entry_t)) != trading_day(int(now)):
+            return f"the model entry is from the {trading_day(int(entry_t))} session (ended): dropped, nothing to flatten"
+        pf = getattr(adapter, "positions", None)
+        if callable(pf):
+            ps = (pf() or {}).get("positions")
+            try:                                  # red team 2026-11-24: ANY open leg of ours (unprotected / pending / closing too) blocks the skip
+                from engine.ninjatrader import OPEN_STATUSES as _OPEN
+            except Exception:  # noqa: BLE001
+                return None
+            open_leg = any(isinstance(lg, dict) and lg.get("status") in _OPEN for lg in (getattr(adapter, "legs", None) or []))
+            hob = getattr(adapter, "has_open_bracket", None)
+            open_leg = open_leg or bool(callable(hob) and hob())
+            if isinstance(ps, list) and ps and all(str((p or {}).get("side") or "").upper() == "FLAT" for p in ps) \
+                    and not open_leg:
+                return "NinjaTrader shows the account flat: nothing to flatten"
+    except Exception:
+        return None
+    return None
+
+
 def market_open(ts) -> bool:
     """Is CME Globex expected to be printing bars at `ts`? Sun 18:00 ET -> Fri 17:00 ET, daily break 17:00-18:00, CME
     holiday closures / early halts (engine/cme_calendar.halted)."""
@@ -2264,7 +2292,8 @@ class LiveBot:
             mr = g.get("atlas_eval_min_room_usd")
             if stage == "eval" and mr is not None and room is not None and float(room) < float(mr):
                 return 0, [f"guard atlas_eval_min_room_usd: room ${float(room):,.0f} < ${float(mr):,.0f}"], room
-            r = combo50k.atlas_qty(self.combo, {"risk_pts": risk, "tgt_pts": tgt}, st, self.eval_start(), base=lsz or None,
+            r = combo50k.atlas_qty(self.combo, {"risk_pts": risk, "tgt_pts": tgt, "entry_t": t.get("entry_t")}, st,
+                                   self.eval_start(), base=lsz or None,
                                    stage=stage, key=k)
             return int(r["qty"]), list(r.get("reasons") or []), room
         except Exception as e:
@@ -3476,6 +3505,11 @@ class LiveBot:
                                           "nothing to flatten on paper")
                         continue
                     if not unplaced:
+                        skip = unrouted_exit_skip(self.adapter, tr["entry_t"], int(self.clock()))
+                        if skip:
+                            self._log("warn", f"Exit {tr['exit_reason']} for an entry this process never routed (model entered {_et(tr['entry_t']):%H:%M} ET during a gap): "
+                                              f"no order, no ledger row ({skip})")
+                            continue
                         self._log("warn", f"Exit {tr['exit_reason']} for an entry this process never routed (model entered {_et(tr['entry_t']):%H:%M} ET during a gap): "
                                           "flatten sent in case a broker position exists - verify by hand")
                 qty = tr["qty"]

@@ -71,8 +71,10 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-77 entries from docs/TESTED_AND_REJECTED.md, newest first.
+82 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
+- **Idea mill v3, family-first** · [[ideamill-v3-2026-11-25|IDEA MILL v3]]
+- **Idea mill v2, 38,880 grammar ideas** · [[ideamill-2026-11-25|IDEA MILL]]
 - **Personal futures account vs MFFU** · [[Zlarior (LIT)]], [[ATLAS]] · [[ownacct-2026-11-24|A personal futures account vs the MFFU prop path]]
 - **ATLAS funded 25K at ~$150 a trade, live sizing path** · [[ATLAS]] · [[atlas-funded-150-2026-11-24|ATLAS funded 25K at ~$150 a trade, on the LIVE sizing code]]
 - **Bad-case plan** · [[Zlarior (LIT)]] · [[badcase-2026-11-24|The BAD case]]
@@ -84,6 +86,7 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 - **Stops x targets x TIME** · [[Zlarior (LIT)]] · [[stops-targets-time-2026-11-24|"Stops x targets x TIME]]
 - **Market Learn weekly trial #1** · [[BLITZ (paper)]]
 - **Pro / institutional edges** · [[proedge-2026-11-24|Pro / institutional edges]]
+- **More trades: frequency vs edge** · [[Zlarior (LIT)]], [[ATLAS]] · [[more-trades-2026-11-25|More trades]]
 - **Edge hunt lane B, cross-asset triggers** · [[edge-b-cross-2026-11-22|Edge hunt lane B]]
 - **Edge hunt lane D: small meta-labeled SIZE + re-entry on LIT** · [[Zlarior (LIT)]] · [[edge-d-meta-2026-11-22|Edge hunt lane D]], [[meta-labeling|Meta-labeling]]
 - **Edge hunt C, calendar / money-flow timing** · [[Zlarior (LIT)]] · [[edge-c-calendar-2026-11-22|Edge hunt lane C]]
@@ -150,6 +153,8 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 - **2026-11-22 Lucid accounts on a $300 a month fleet** · [[Zlarior (LIT)]], [[Rapid lanes]] · [[fleet-v2-2026-11-22|Fleet v2]]
 - **Popular ICT/SMC strategies as taught** · [[Zlarior (LIT)]] · [[popular-ict-2026-11-23|Popular ICT / SMC strategies on CME NQ, run exactly as taught]]
 - **2026-11-24 BLITZ on the Rapid EOD 25K eval ...** · [[BLITZ (paper)]], [[Rapid lanes]] · [[four-pillars-2026-11-23|The four pillars]]
+- **ICT lab, every popular ICT / time-price concept tested the other ways** · [[ict-lab-2026-11-25|ICT lab 2026-11-25]], [[ict-lab-proof-2026-11-25|ICT lab proof 2026-11-25]]
+- **ICT lab round 2** · [[ict-lab2-2026-11-25|ICT lab round 2]]
 
 ## Rejected in the write-ups
 

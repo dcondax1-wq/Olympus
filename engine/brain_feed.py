@@ -300,8 +300,35 @@ def _rj(p):
         return None
 
 
-def of_bot(root: str | None = None) -> dict:
-    """The order-flow lane: not a trading bot yet (research, engine/tickrec.py). Plain JSON reads + one listdir, no tickrec import."""
+def _of_live(br: dict | None) -> list:
+    """day-ofmax: the live PAPER read (engine/oflive, stdlib only): delta of the last 5 / 15 minutes and, when LIT has an armed
+    setup, OF1's zone read at its sweep extreme (the plan's stop is 1 tick beyond it). [] when there is no live tick file."""
+    try:
+        from engine import oflive
+    except Exception:  # noqa: BLE001
+        return []
+    lvl, d = None, 0
+    s = _lit_setup(_d(br)) if br else None
+    if s and s.get("status") in ARMED:
+        st = _f(_d(s.get("plan")).get("stop"))
+        d = 1 if str(s.get("side", "")).upper().startswith("L") else -1 if str(s.get("side", "")).upper().startswith("S") else 0
+        if st is not None and d:
+            lvl = st + d * 0.25
+    r = oflive.live_read(lvl, d)
+    if not r or r.get("age_s", 9999) > 900:
+        return []
+    who = lambda x: "buyers" if x > 0 else "sellers" if x < 0 else "even"
+    out = [_line(_hm(r["t"]), f"flow 5m {r['d5']:+,} of {r['v5']:,} ({who(r['d5'])}), 15m {r['d15']:+,}")]
+    lv = r.get("level")
+    if lv:
+        side = "long" if lv["d"] == 1 else "short"
+        out.append(_line(_hm(r["t"]), f"LIT {side} lvl {_num(lv['px'])}: {lv['vz']:,} lots, delta {lv['dz']:+,}: {lv['read']}"))
+    return out
+
+
+def of_bot(root: str | None = None, br: dict | None = None) -> dict:
+    """The order-flow lane: not a trading bot yet (research, engine/tickrec.py). Plain JSON reads + one listdir, no tickrec import.
+    day-ofmax: + the live paper read (engine/oflive) and the newest journal line (data/orderflow_journal.jsonl)."""
     root = root or ROOT
     on = bool(_d(_rj(os.path.join(root, "data", "tickrec.json"))).get("enabled")) or os.environ.get("OLYMPUS_TICKREC") == "1"
     auto = _d(_rj(os.path.join(root, "data", "orderflow_auto.json")))
@@ -313,7 +340,15 @@ def of_bot(root: str | None = None) -> dict:
     runs = [r for r in _l(auto.get("runs")) if isinstance(r, dict)]
     if not on and not days and not runs and not note:
         return {}
-    think = [_line("", f"tick recorder {'on' if on else 'off'}, {days} tick days stored (study at 60)")]
+    live = _of_live(br) if on else []
+    think = live + [_line("", f"tick recorder {'on' if on else 'off'}, {days} tick days stored (study at 60)")]
+    try:
+        from engine import oflive
+        tl = oflive.journal_tally(os.path.join(root, "data", "orderflow_journal.jsonl"))
+        if tl.get("last"):
+            think.insert(len(live), _line("", _plain(tl["last"]) + (f" | flow right {tl['right']} of {tl['judged']}" if tl["judged"] else "")))
+    except Exception:  # noqa: BLE001
+        pass
     if runs:
         think.append(_line("", f"study looks done: {len(runs)} of 2, last at {runs[-1].get('days')} days"))
     if note.get("body"):
@@ -393,7 +428,7 @@ def build(hb: dict | None, bars=None, root: str | None = None, now=None, max_byt
             mk = {"err": e.__class__.__name__}
         bots = {}
         for bid, fn in (("lit", lambda: lit_bot(br, mk)), ("atlas", lambda: atlas_bot(hb.get("second"), px)),
-                        ("blitz", lambda: blitz_bot(hb.get("blitz"), px)), ("of", lambda: of_bot(root))):
+                        ("blitz", lambda: blitz_bot(hb.get("blitz"), px)), ("of", lambda: of_bot(root, br))):
             try:
                 b = fn()
             except Exception as e:  # noqa: BLE001

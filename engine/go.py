@@ -971,7 +971,33 @@ def _step_arm(cfg, phrase, dry=False, open_page=True, inp=None) -> int:
         _open()
     shortcut()
     keepalive_consent(phrase)              # the same typed phrase: keep-alive ON for exactly the accounts armed above
+    for ln in pending_apply(phrase, inp):  # day-zerotouch2 + red team #7: each queued switch asked on its own line (default NO)
+        print(f" {ln}")
     return _summary([AR.row(z_lbl, True)] + rows, 0)
+
+
+def _ps_path() -> str:
+    """data/pending_switches.json next to the start config (CFG): a test harness's temp CFG never reads the owner's queue."""
+    return os.path.join(os.path.dirname(CFG), "pending_switches.json")
+
+
+def pending_first_line() -> str:
+    try:
+        from . import pending_switch
+        return pending_switch.first_line(_ps_path())
+    except Exception:  # noqa: BLE001
+        return ""
+
+
+def pending_apply(phrase, inp=None) -> list:
+    """The phone's queued switches after the phrase: each one shown and asked 'Type Y ...' (default NO; red team #7)."""
+    try:
+        from . import pending_switch
+        def no_console(_q):                # the Start page / a job cannot ask: nothing is switched on, the queue stays
+            raise EOFError
+        return pending_switch.apply_all(phrase, _ps_path(), confirm=inp or no_console)
+    except Exception as e:  # noqa: BLE001
+        return [f"[..] Phone switches not applied ({e.__class__.__name__}): START again"]
 
 
 def armed_accounts(main_on=True) -> list:
@@ -1162,6 +1188,9 @@ def run(dry=False, inp=input, py=sys.executable, pull=True) -> int:
         return 1
 
     # 3. the owner arms (typed, never by the bot)
+    ps = pending_first_line()               # day-zerotouch2: switches the phone queued come FIRST, the same phrase applies them
+    if ps:
+        print(f"\n {ps}")
     print("\n 3/4 Real money:")
     print(f"       Zlarior (LIT)  ->  50K  {cfg['lit']}")
     print(f"       ATLAS          ->  25K  {cfg['atlas']}")

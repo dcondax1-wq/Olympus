@@ -109,6 +109,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 > 19 pre-registered variants on the live LIT trades, risk-matched $ + 3 MFFU evals, Bonferroni p < 0.0026. Tighter stops (1m CISD candle 7 pts, 1m entry swing 14-17, 3m FVG 15-22) x live price / 2R / 3R: every one loses Jul-Oct ($8.3k-$14.0k under live); 40-58% stopped, 28-41% of those were live winners (wicked out); the 1m swing's Jan-Jun +$75k is the size rule risking more $ (same $: +$8.8k / -$8.3k / 2021-25 -$23.0k). Targets 15m / 1h liquidity, opposing session high, 1h FVG, fixed 1.5 / 2 / 3R: hit up to 2x as often, all lose Jan-Jun $8-25k (1h FVG H2 +$235, p 0.50; 3R 2021-25 +$19k but both 2026 halves lose). TIME: winners +0.5R median 10 min, target median 180 min; N = 26 min from ...
 > Write-ups: [[stops-targets-time-2026-11-24|"Stops x targets x TIME]]
 
+> [!failure]- More trades: frequency vs edge
+> 19 LIT versions (depth 0.4/0.3, no inducement, disp 0.7/0.6, limit 45/60 min, 1m CISD 30, no 1m CISD step, 2 a day, 2nd after a stop, 2nd opposite side, + Asia, 6 pairs) + 7 ATLAS loosenings + ES. Single gates add 1-3% trades; the frequency levers (Asia +54%, 2 a day +23%, no idm + 2 a day +59%) lose 2021-25 (+$25 -> -$85..-$316/mo, 50K 40-session fail 54 -> 61-78%). Nearest miss Asia: 2-week pass 48.7/55.1 vs 44.5/39.1 but 2021-25 -$12.2k, walk-forward 4/18. 2nd-after-stop: +10% trades, eval same, paper lead. ATLAS: every loosening loses a 2026 half (A4 MACD hist H1 25K pass 94 -> 76). ES LIT alone PF 0.50 in 2025. 0 pass; LIT/ATLAS unchanged.
+> Write-ups: [[more-trades-2026-11-25|More trades]]
+
 > [!failure]- Edge hunt lane D: small meta-labeled SIZE + re-entry on LIT
 > 31 pre-registered versions. 16 walk-forward size rules (logistic / depth-2 tree x 7 or 13 facts known at the fill x 0.5 / 1.5, 0.75 / 1.25, down-only 0.5, up-only 1.5; monthly refit, purged + embargoed, MFFU caps on the eval path): all 12 that cut size lose 2026 H1 (-$1.6k..-$15.7k) and pass fewer 2-week evals (6.7-37% vs 44.5%); the 4 up-only ones are leverage (a flat x1.25 with no model makes more in H1); the only one through the money gate (tree 13 facts, up-only 1.5: +$5.7k / +$3.2k / +$0.5k, eval +$3.1k / +$0.2k) is chance (shuffled multipliers beat it 29% / 45%, shuffled labels 23% / 15%, in-sample H1 +$12.4k vs +$5.7k), funded +$15-18 a month with more account loss (1.7 -> 1.9%, 3.0 ...
 > Write-ups: [[edge-d-meta-2026-11-22|Edge hunt lane D]], [[meta-labeling|Meta-labeling]]
@@ -224,6 +228,7 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-25 | [[more-trades-2026-11-25\|More trades]] | research |
 | 2026-11-24 | [[proedge-2026-11-24\|Pro / institutional edges]] | rejected |
 | 2026-11-24 | [[lit-vix-downtrend-2026-11-24\|LIT in high-VIX falling markets]] | research |
 | 2026-11-23 (night, run 2026-11-24 early ET) | [[four-pillars-2026-11-23\|The four pillars]] | research |
@@ -263,9 +268,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-11-13 | [[millionaire-plan-2026-11-13\|The millionaire plan]] | adopt-candidate |
 | 2026-11-13 | [[eval-guard-2026-11-13\|Eval guard]] | research |
 | 2026-11-13 | [[es-and-sessions-2026-11-13\|Same edge, more markets]] | rejected |
-| 2026-11-04 | [[2026-11-04_second_strategies_night\|Second strategies night]] | research |
 
-... and 77 older (see the families).
+... and 78 older (see the families).
 
 ## Links
 
