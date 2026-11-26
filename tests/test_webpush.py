@@ -233,6 +233,11 @@ def part_b():
 
 
 # ------------------------------------------------------------------------------------------------ c. send to a mocked endpoint
+def _PI_reset():
+    from engine import pc_identity as _PI
+    _PI.FORCE = None
+
+
 def part_c():
     sb = Sandbox()
     import urllib.request
@@ -256,6 +261,8 @@ def part_c():
             seen.append(req)
             return Resp()
         urllib.request.urlopen = fake_urlopen
+        from engine import pc_identity as _PI         # day-noleak: this test fakes urlopen itself, so the identity gate is lifted
+        _PI.FORCE = True
         p = P.app_payload(P.entry_payload("Zlarior 50K", "LONG", 6, 1795050000, src="pc", entry=24980.25, stop=24955, target=25360))
         r = P.send(p, cfg=cfg, sender=P._send_builtin)
         req = seen[0] if seen else None
@@ -285,6 +292,7 @@ def part_c():
               and got.get("tag") == P.app_trade_tag(p) and got.get("url") == "#nq" and got.get("kind") == "fill", got)
         check("c. under the 4 KB push limit", len(req.data) < 4096, len(req.data))
     finally:
+        _PI_reset()
         urllib.request.urlopen = real
         sb.close()
 

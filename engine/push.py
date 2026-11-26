@@ -243,6 +243,10 @@ class Relay:
             return self.http(method, url, body)
         if SEALED:
             raise RuntimeError("PC self-test child: the relay is not called")
+        if method != "GET":
+            from . import pc_identity                # day-noleak: only the owner's PC posts to the relay
+            if not pc_identity.may_post("push relay", url=url):
+                raise RuntimeError("dry run: not the owner's PC (engine/pc_identity)")
         req = urllib.request.Request(url, data=body, method=method, headers={"User-Agent": "LiquidityEngine/1.0"})
         with urllib.request.urlopen(req, timeout=self.timeout) as r:
             return r.read().decode("utf-8", "replace")
@@ -549,6 +553,9 @@ def vapid_header(endpoint: str, priv_b64: str, pub_b64: str | None = None, subje
 
 
 def _send_builtin(sub: dict, data: bytes, priv: str, pub: str, ttl: int = TTL_S, urgency: str = "high") -> int:
+    from . import pc_identity                        # day-noleak: Web Push only from the owner's PC (or the cloud monitor)
+    if not pc_identity.may_post("web push", url=sub.get("endpoint")):
+        return 0
     body = encrypt(data, sub["keys"]["p256dh"], sub["keys"]["auth"])
     req = urllib.request.Request(sub["endpoint"], data=body, method="POST", headers={
         "Content-Encoding": "aes128gcm", "Content-Type": "application/octet-stream", "TTL": str(int(ttl)),
