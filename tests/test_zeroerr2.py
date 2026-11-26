@@ -219,6 +219,22 @@ def test_rt22_followups(tmp):
     os.remove(os.path.join(root, "data", "ninjatrader_state_rapid.json"))
     open(os.path.join(root, "data", "ninjatrader_state_simcheck.json"), "w").write(json.dumps({"legs": [{"status": "protected"}]}))
     check("f4. closed legs + the self-test's simcheck file: flat", AU.files_flat_reason(root) is None)
+    stale = os.path.join(root, "data", "ninjatrader_state_fleet_old.json")
+    open(stale, "w").write(json.dumps({"legs": [{"status": "protected", "instrument": "MNQ 12-26"}]}))
+    old_t = time.time() - 30 * 86400
+    os.utime(stale, (old_t, old_t))
+    check("f8. a 30-day-old state file with an open leg (an account the bot no longer runs) no longer blocks every update",
+          AU.files_flat_reason(root) is None and HG.all_flat_reason(root) is None, AU.files_flat_reason(root))
+    os.utime(stale, None)
+    why = AU.files_flat_reason(root)
+    check("f9. the same open leg in a FRESH file still blocks (and names the file)", why and "fleet_old" in why, why)
+    os.utime(stale, (old_t, old_t))
+    bad = os.path.join(root, "data", "ninjatrader_state_bad.json")
+    open(bad, "w").write("{broken")
+    why = AU.files_flat_reason(root)
+    check("f10. a fresh unreadable state file still fails closed, naming the file", why and "ninjatrader_state_bad.json" in why
+          and "unreadable" in why, why)
+    os.remove(bad)
     src = open(os.path.join(ROOT, "server.py"), encoding="utf-8").read()
     al = src[src.index('@app.get("/api/health/alive")'):src.index('@app.get("/api/health/ping")')]
     check("f5. GET /api/health/alive is async and reads nothing (no HEARTBEAT / health block / lock)",

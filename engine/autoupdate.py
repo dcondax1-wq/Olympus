@@ -347,6 +347,11 @@ def accounts_flat_reason(root: str = ROOT) -> str | None:
         name = os.path.basename(p)
         if name in SKIP_STATE:
             continue
+        try:                                # red team #23: untouched for 24 h = a leftover of an account the bot no longer runs
+            if time.time() - os.path.getmtime(p) > 24 * 3600:     # (a live adapter rewrites its state file every poll)
+                continue
+        except OSError:
+            continue                        # gone between the glob and here
         try:
             with open(p, encoding="utf-8") as fh:
                 d = json.load(fh)
