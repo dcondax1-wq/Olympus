@@ -66,14 +66,36 @@ def from_replay(root: str):
     return None, None
 
 
+def shipped(root: str):
+    """(state, day) of the newest PAPER state the PC shipped (data/pc_days/<day>/of/NQ_paper.json.gz, engine/of_paper.export_day)."""
+    import gzip
+    for base in (os.path.join(root, "data", "pc_days"), os.path.join(root, "logs", "datapipe", "days")):
+        if not os.path.isdir(base):
+            continue
+        for d in sorted(os.listdir(base), reverse=True):
+            p = os.path.join(base, d, "of", "NQ_paper.json.gz")
+            if len(d) == 10 and os.path.exists(p):
+                try:
+                    with gzip.open(p, "rt", encoding="utf-8") as fh:
+                        S = json.load(fh)
+                    if S.get("paper") and S.get("day") == d:
+                        return S, d
+                except (OSError, ValueError):
+                    continue
+    return None, None
+
+
 def build(root: str = ROOT, now: float | None = None, state: dict | None = None) -> dict:
     now = now or dt.datetime.now(dt.timezone.utc).timestamp()
     today = dt.datetime.fromtimestamp(now, ET).strftime("%Y-%m-%d")
     S = state if state is not None else _rj(os.path.join(root, "data", "of_paper.json"))
     source = "live"
     if not S or S.get("day") != today:
-        S, _ = from_replay(root)
-        source = "last recorded day (replay)" if S else "none"
+        S, sday = shipped(root)
+        source = f"PC paper bot ({sday}, shipped)" if S else None
+        if S is None:
+            S, _ = from_replay(root)
+            source = "last recorded day (replay)" if S else "none"
     out = {"v": 1, "made": int(now), "paper": True, "source": source, "day": (S or {}).get("day"),
            "what": "Order Flow pillar (paper): level sweeps read for absorption; Zlarior's entries read the same way. Nothing here trades."}
     if S:
@@ -93,7 +115,8 @@ def build(root: str = ROOT, now: float | None = None, state: dict | None = None)
                          "state": "open" if r.get("fill") is not None and not r.get("exit_t") else ("waiting for fill" if r.get("fill") is None and not r.get("exit_t") else "done")}
                         for r in rows]
         out["lit"] = [{"t": _hm(r["t"]), "dir": "long" if r["d"] == 1 else "short", "flow_says": r["decision"],
-                       "result": None if r.get("pnl") is None else ("won" if r["pnl"] > 0 else "lost")} for r in S.get("lit") or []]
+                       "result": r.get("result") if "result" in r else (None if r.get("pnl") is None else ("won" if r["pnl"] > 0 else "lost"))}
+                      for r in S.get("lit") or []]
         out["today"] = {k: (S.get("today") or {}).get(k) for k in ("taken", "open", "R", "usd_1", "skipped", "skipped_R")}
     V = _rj(os.path.join(root, "research", "orderflow", "real_verdict.json"))
     if V:

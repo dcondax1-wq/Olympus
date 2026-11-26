@@ -91,7 +91,7 @@ _DAY = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 # EVERY PC answer from Nov 20 on ("unexpected file in the bundle") and no bar after Nov 19 arrived. tests/test_datafeed_names.py
 # keeps this list = every name pack_day can write.
 DAY_FILE = re.compile(r"^days/(\d{4}-\d{2}-\d{2})/(manifest\.json|trades\.jsonl\.gz|fills\.jsonl\.gz|review\.json|proposals\.jsonl|learn\.json|gaps\.json|"
-                      r"of/NQ_(?:bars5m|fp5m|depth5m)\.csv\.gz|of/NQ_meta\.json|of/manifest\.json|"     # day-ofready (engine/ofsum.py)
+                      r"of/NQ_(?:bars5m|fp5m|depth5m)\.csv\.gz|of/NQ_meta\.json|of/manifest\.json|of/NQ_paper\.json\.gz|"     # day-ofready (engine/ofsum.py)
                       r"bars/(?:MNQ|NQ|MES|ES|GC|MGC|SI|SIL)_(?:1m|5m)\.csv\.gz)$")
 
 
@@ -496,7 +496,7 @@ def build_of(since: str, now=None, dp_work: str | None = None, max_zip: int = MA
     packed, size, more = {}, 22, False
     for d in days:
         fs = {}
-        for f in OF_FILES + ("NQ_depth5m.csv.gz",):                 # day-ofmax: the depth summary when the day has one
+        for f in OF_FILES + ("NQ_depth5m.csv.gz", "NQ_paper.json.gz"):   # day-ofmax: depth when the day has one; big-ofpipe: the PAPER bot
             fp_ = os.path.join(base, d, "of", f)
             if f not in OF_FILES and not os.path.exists(fp_):
                 continue

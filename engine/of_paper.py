@@ -451,9 +451,34 @@ def tick(now: float | None = None, root: str = ROOT, nd: str | None = None, forc
         tt = (x.t_ns.to_numpy(np.int64) // 1_000_000)
         S = step(S, day, R, Rp, pday, tt, x.price.to_numpy(float), now, kill=_kill(root), lit=lit, depth=dp)
         _wj(sp, S)
+        export_day(S, root)
         return {"ok": True, "line": line(S), "today": S["today"]}
     except Exception as e:  # noqa: BLE001
         return {"error": f"{e.__class__.__name__}: {str(e)[:160]}"}
+
+
+EXPORT_NAME = "NQ_paper.json.gz"
+
+
+def export_day(S: dict, root: str = ROOT) -> str | None:
+    """The day's PAPER state, gzip'd, next to the order-flow summary (logs/datapipe/days/<day>/of/NQ_paper.json.gz): the nightly
+    signed 'of' answer (engine/datafeed.build_of) carries it to the cloud with the summaries. Paper-labelled, market data + paper
+    rows only (no account, no balance). Never raises."""
+    try:
+        import gzip
+        d = os.path.join(root, "logs", "datapipe", "days", S["day"], "of")
+        os.makedirs(d, exist_ok=True)
+        keep = {k: S.get(k) for k in ("v", "paper", "never_routed", "label", "day", "t", "runs", "levels", "rows", "today", "line", "kill_seen")}
+        keep["lit"] = [{k: r.get(k) for k in ("id", "t", "d", "absorbed", "decision")} | {"result": None if r.get("pnl") is None else ("won" if r["pnl"] > 0 else "lost")}
+                       for r in S.get("lit") or []]
+        raw = json.dumps(keep, separators=(",", ":"), default=float).encode("utf-8")
+        p = os.path.join(d, EXPORT_NAME)
+        with open(p + ".tmp", "wb") as f0, gzip.GzipFile(fileobj=f0, mode="wb", compresslevel=9, mtime=0) as fh:
+            fh.write(raw)
+        os.replace(p + ".tmp", p)
+        return p
+    except Exception:  # noqa: BLE001
+        return None
 
 
 def replay_frame(x, day: str, R_prev=None, prev_day=None, lit=None, depth=None, kill_at: float | None = None) -> dict:
@@ -540,6 +565,11 @@ def main(argv=None) -> int:
     ap.add_argument("--day")
     ap.add_argument("--force", action="store_true")
     a = ap.parse_args(argv)
+    if a.cmd in ("tick", "loop") and hasattr(os, "nice"):
+        try:
+            os.nice(5)                                                     # below the bot (Windows: BELOW_NORMAL from the ops task)
+        except OSError:
+            pass
     if a.cmd == "selftest":
         return 0 if selftest() else 1
     if a.cmd == "tick":

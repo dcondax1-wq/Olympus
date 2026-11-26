@@ -278,3 +278,75 @@ def journal_tally(path: str | None = None) -> dict:
     ag = [t["agree"] for r in rows for t in r.get("trades") or [] if t.get("agree") is not None]
     return {"days": len(rows), "right": sum(1 for a in ag if a), "judged": len(ag),
             "last": rows[-1].get("line") if rows else None}
+
+
+# ------------------------------------------------------------------------------------------------ big-ofpipe 2026-11-26
+PAPER_STATE = os.path.join(ROOT, "data", "of_paper.json")
+OFP_MAX = 300
+_READ_CODE = {True: "a", False: "n"}
+
+
+def paper_tiny(root: str = ROOT, now: float | None = None) -> dict | None:
+    """The Order Flow pillar's PAPER bot (engine/of_paper.py) for the 15-minute status ext post, <= OFP_MAX bytes (stdlib only):
+    {"d": day, "t": last run, "ln": plain line, "n": paper trades taken, "o": open, "R": day R, "lv": [[level, price, a|n|u]],
+     "lb": [[hh:mm, take|skip|no read, won|lost|open]]}. PAPER: nothing here is a real trade. Today's state only, else None."""
+    try:
+        S = _read_json(os.path.join(root, "data", "of_paper.json"), None)
+        now = now or time.time()
+        if not isinstance(S, dict) or S.get("day") != _et_day(now) or not S.get("paper"):
+            return None
+        td = S.get("today") or {}
+        rows = [r for r in S.get("rows") or [] if r.get("lane") == "A" and r.get("day") == S["day"]]
+        lv = []
+        for L in S.get("levels") or []:
+            hit = next((r for r in rows if r.get("level") == L.get("name")), None)
+            lv.append([str(L.get("name"))[:4], L.get("px"), _READ_CODE.get(hit.get("absorbed"), "n") if hit else "u"])
+        hm = lambda t: dt.datetime.fromtimestamp(int(t), ET).strftime("%H:%M") if ET else ""
+        lb = [[hm(r["t"]), r.get("decision"), None if r.get("pnl") is None else ("won" if r["pnl"] > 0 else "lost")] for r in S.get("lit") or []]
+        out = {"p": 1, "d": S["day"], "t": S.get("t"), "n": td.get("taken"), "o": td.get("open"), "R": td.get("R"), "lv": lv[:8], "lb": lb[:4],
+               "ln": str(S.get("line") or "")[:160]}
+        while len(json.dumps(out, separators=(",", ":"))) > OFP_MAX and (out["ln"] or out["lb"] or out["lv"]):
+            if out["ln"]:
+                out["ln"] = out["ln"][: max(0, len(out["ln"]) - 40)]
+            elif out["lb"]:
+                out["lb"].pop()
+            else:
+                out["lv"].pop()
+        return out
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def setup_of(setup: dict, now: float | None = None, nd: str | None = None) -> dict:
+    """The OF input field for a LIT setup (for the live setup score, big-setupscore): OF1's read at the setup's sweep extreme from
+    the live tick file. setup = {"side": "LONG"|"SHORT", "plan": {"stop": price}} (the Brain's setup row; the plan's stop is 1 tick
+    beyond the sweep extreme). -> {"of1": "absorbed"|"not absorbed"|"not tested yet"|None, "of_vz", "of_dz", "of_d15", "of_age_s",
+    "of_level"}. of1 None = no live tick file / stale (> 15 min) / no stop: score it as 'no OF read', never as a no.
+    PAPER / read only. Research basis: research/orderflow/LITERATURE.md (#2 sweep context), PREREG_ticks OF1 constants."""
+    out = {"of1": None, "of_vz": None, "of_dz": None, "of_d15": None, "of_age_s": None, "of_level": None}
+    try:
+        side = str((setup or {}).get("side", "")).upper()
+        d = 1 if side.startswith("L") else -1 if side.startswith("S") else 0
+        st = ((setup or {}).get("plan") or {}).get("stop")
+        if not d or st is None:
+            return out
+        lvl = float(st) + d * TICK
+        r = live_read(lvl, d, now=now, nd=nd)
+        if not r or r.get("age_s", 9999) > 900:
+            return out
+        lv = r.get("level") or {}
+        out.update(of1=lv.get("read"), of_vz=lv.get("vz"), of_dz=lv.get("dz"), of_d15=r.get("d15"), of_age_s=r.get("age_s"), of_level=lvl)
+        return out
+    except Exception:  # noqa: BLE001
+        return out
+
+
+def setup_of_hist(day: str, t_entry: int, d: int, stop: float, root: str = ROOT) -> dict:
+    """The same field for a PAST setup from the day's order-flow summary (said_at), for backtesting the score."""
+    S = _summary(day, root)
+    if S is None:
+        return {"of1": None}
+    s = said_at(S, int(t_entry), int(d), float(stop))
+    rd = s.get("read")
+    return {"of1": rd if rd in ("absorbed", "not absorbed", "not tested") else None, "of_vz": s.get("vz"), "of_dz": s.get("dz"),
+            "of_d15": s.get("d15")}
