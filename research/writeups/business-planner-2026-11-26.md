@@ -28,7 +28,7 @@ should keep for fees: ~$1,500** (p90 deepest dip in the mix; $2,000 if 2021-25-l
 2. **Stop buying (card):** when LIT's last 40 trades sum < 0R. Existing accounts keep trading. **Restart** when a free Sim
    eval (Builder 50K rules, same bot, paper) passes. Today: last 40 = +30R, not near the line.
 3. **How many:** at most 5 funded-capable lanes (MFFU: 5 sim funded in all). Today uses 4.
-4. **Expect:** plan on the 25% mix: ~$1,400 median in 12 months, 34% chance of a losing year (38% with the tripwire: it
+4. **Expect:** plan on the 25% mix: ~$1,400 median in 12 months, 34% chance of a losing year (37% with the tripwire: it
    stops some re-buys that would have paid); the 2026-like $38k is the upside, not the plan.
 
 ## Tripwires (pre-registered bar: 2021-25 loss cut >= 50%, better when the market turns, >= 90% of 2026-like $, mix not >10% worse)
@@ -46,7 +46,13 @@ W2 / W3 / W5 all pass. W5 is the simplest and cheapest in a good market; W3 won 
 ## Post-hoc (NOT pre-registered, flagged): a 2nd Rapid 25K + a tripwire
 K2 + W5: 2026-like $60,336 (+$21,937 vs today), turns bad $9,273 (+$2,785), 2021-25 -$311 (better than today's -$667),
 mix $2,604 (-$47). With the $300-drawdown gate the 2nd Rapid's bad-market cost goes away. This is the best money idea found,
-but it was chosen after seeing the numbers: re-check on fresh paths (new seeds) before any card.
+but it was chosen after seeing the numbers. **Fresh-path check** (new seeds 101-104, `fresh_check.py` -> `fresh_check.json`):
+| 12 months | 2026-like | 25% mix | 2021-25 | turns bad | cash to keep (p90, mix / 2021-25) |
+|---|---|---|---|---|---|
+| today | $37,598 | $2,425 | -$705 | $6,514 | $1,517 / $2,040 |
+| today + W3 | $37,140 | $2,378 | -$207 | $6,890 | $1,134 / $1,323 |
+| **2nd Rapid 25K + W5** | **$58,813** | **$2,480** | **-$279** | **$9,394** | $1,271 / $1,334 |
+It beats today in all 4 markets on fresh paths -> second card (labelled post-hoc: same history, new paths only).
 
 Caveats: block bootstrap; 2026 is LIT's pick period (hence the 25% mix); ATLAS funded on its research lane; the Sim shadow eval
 needs building (paper); Builder 50K funded vs ATLAS 25K funded conflict read per the limits article; K3 = K2 by the 5-lane cap.
