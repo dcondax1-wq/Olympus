@@ -51,7 +51,7 @@
      trip, ~0.5 s on 4G); preloading the exact URL fetches both at once and the @import takes it from the cache */
   var wp = d.createElement('link'); wp.rel = 'preload'; wp.as = 'style'; wp.href = b + 'olympus/warp.css?v=w3'; h.appendChild(wp);
   var k = d.createElement('link'); k.rel = 'stylesheet'; k.setAttribute('blocking', 'render'); k.href = b + 'olympus/agora.css?v=a11'; h.appendChild(k);
-  var l = d.createElement('link'); l.rel = 'stylesheet'; l.setAttribute('blocking', 'render'); l.href = b + 'gate/gate.css?v=g26'; h.appendChild(l);
+  var l = d.createElement('link'); l.rel = 'stylesheet'; l.setAttribute('blocking', 'render'); l.href = b + 'gate/gate.css?v=g27'; h.appendChild(l);
   var o = d.createElement('link'); o.rel = 'stylesheet'; o.setAttribute('blocking', 'render'); o.href = b + 'olympus/shell.css?v=s6'; h.appendChild(o);   /* night-revamp-main: the one design layer, last */
   var x = d.createElement('link'); x.rel = 'stylesheet'; x.setAttribute('blocking', 'render'); x.href = b + 'olympus/home-fx.css?v=x2'; h.appendChild(x);
   var nf = d.createElement('link'); nf.rel = 'stylesheet'; nf.setAttribute('blocking', 'render'); nf.href = b + 'hub/navfx.css?v=5'; h.appendChild(nf); d.documentElement.className += ' nfx';   /* NAV FX 2026-11-20: navy + cyan / blue / violet, no gold, from the first frame (no colour flash) */
@@ -81,7 +81,7 @@
       <div class="ph-stage" aria-hidden="true"></div>
       <nav class="ph-chips" aria-label="The four pillars"><a class="pc" data-p="lit" data-to="pillars/#lit" href="../pillars/#lit" style="--c:#f1c14b"><b>LIT</b><span><i class="ok"></i>LIVE</span><small>Zlarior</small></a><a class="pc" data-p="atlas" data-to="pillars/#atlas" href="../pillars/#atlas" style="--c:#77db89"><b>ATLAS</b><span><i class="ok"></i>LIVE</span><small>EMA · MACD · S/R</small></a><a class="pc" data-p="blitz" data-to="pillars/#blitz" href="../pillars/#blitz" style="--c:#9d59ee"><b>BLITZ</b><span><i class="off"></i>OFF</span><small>built · OFF</small></a><a class="pc" data-p="of" data-to="pillars/#of" href="../pillars/#of" style="--c:#c9a7ff"><b>ORDER FLOW</b><span><i class="warn"></i>NOT READY</span><small>ticks</small></a></nav>
     </section>
-      <nav class="g-today" id="todayStrip" aria-label="Today: $ today, the accounts, the open trade, the next setup" style="height:24px;margin:0 0 -26px"></nav><!-- day-pillars4: the Today strip (pillars/today.js); no height of its own -->
+      <nav class="g-today" id="todayStrip" aria-label="Today: $ today, the accounts, the open trade, the next setup" style="height:44px;margin:-2px 0 -26px"></nav><!-- day-pillars4: the Today strip (pillars/today.js); no height of its own -->
   </header>
 
 
@@ -214,7 +214,7 @@
 })();</script>
 <script>(function () { /* day-pillars2: the Four Pillars hero's look + live module (after the page; GATE_BASE = the site root here or at olympus-live.html) */
   var b = window.GATE_BASE || '', d = document, l = d.createElement('link'); l.rel = 'stylesheet'; l.href = b + 'pillars/hero.css?v=c2'; d.head.appendChild(l);
-  addEventListener('load', function () { setTimeout(function () { import(b + 'pillars/hero.js?v=c4').catch(function () {}); import(b + 'pillars/today.js?v=t1').catch(function () {}); import(b + 'pillars/livefx.js?v=h1').then(function (m) { m.watch(); }).catch(function () {}); }, 200); });
+  addEventListener('load', function () { setTimeout(function () { import(b + 'pillars/hero.js?v=c4').catch(function () {}); import(b + 'pillars/today.js?v=t2').catch(function () {}); import(b + 'pillars/livefx.js?v=h1').then(function (m) { m.watch(); }).catch(function () {}); }, 200); });
 })();</script>
 <script src="install-hint.js?v=h1" defer></script>
 </body>
