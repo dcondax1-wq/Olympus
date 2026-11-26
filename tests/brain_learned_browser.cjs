@@ -20,9 +20,9 @@ const { chromium } = require('playwright');
       tiles: document.querySelectorAll('#hero .tile').length, ideas: document.querySelectorAll('#grad .idea').length,
       tl: document.querySelectorAll('#tl li.x').length, next: document.querySelectorAll('#next li').length,
       funnel: document.querySelectorAll('#funnel .fn').length, mill: document.querySelectorAll('#mill .fn').length,
-      health: document.querySelectorAll('#health .band').length, text: document.body.innerText,
+      health: document.querySelectorAll('#health .band').length, scores: document.querySelectorAll('#score .idea').length, text: document.body.innerText,
       bg: getComputedStyle(document.body).backgroundColor }));
-    if (shots) { await p.screenshot({ path: `${shots}/learned_top.png` }); await p.screenshot({ path: `${shots}/learned_full.png`, fullPage: true }); }
+    if (shots) { await p.locator('#sScore').screenshot({ path: `${shots}/learned_setup_scores.png` }); await p.screenshot({ path: `${shots}/learned_top.png` }); await p.screenshot({ path: `${shots}/learned_full.png`, fullPage: true }); }
     await p.click('#filt button[data-f="lit"]');
     await p.waitForTimeout(150);
     o.lit = await p.evaluate(() => ({ chips: [...document.querySelectorAll('#tl li.x small')].map((x) => x.textContent), pressed: document.querySelector('#filt button[data-f="lit"]').getAttribute('aria-pressed') }));

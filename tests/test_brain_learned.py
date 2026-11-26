@@ -130,6 +130,10 @@ def browser():
     check("b. 4 tiles, every idea on trial drawn, the timeline, next, LIT funnel, idea mill steps, health bands",
           P.get("tiles") == 4 and P.get("ideas") == n_rules and P.get("tl", 0) >= 1 and P.get("next", 0) >= 1 and P.get("funnel", 0) >= 3
           and P.get("mill") == 5 and P.get("health", 0) >= 1, {k: P.get(k) for k in ("tiles", "ideas", "tl", "next", "funnel", "mill", "health")})
+    ss = L.get("setup_scores") or {}
+    check("b. the latest LIT setups with their scores; 'not a predictor' shown while the holdout verdict is not 'separates'",
+          P.get("scores") == len(ss.get("rows") or []) and (ss.get("verdict") == "separates" or "not a predictor" in (P.get("text") or "")),
+          (P.get("scores"), ss.get("verdict")))
     t = P.get("text") or ""
     check("b. plain words on the page: graduates / yes / no card / nothing switches on by itself", "graduates" in t and "yes / no card" in t and "nothing switches on by itself" in t)
     li = o.get("lit") or {}
