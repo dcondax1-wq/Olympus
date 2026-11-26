@@ -1,0 +1,1855 @@
+{
+ "made": "2026-11-26",
+ "design": "research/entryfine/DESIGN.md",
+ "sessions": [
+  "2021-11-08",
+  "2026-11-20"
+ ],
+ "variants": {
+  "E0 live": {
+   "cfg": {
+    "tap": null,
+    "post_pts": 0.0
+   },
+   "spans": {
+    "2021-25": {
+     "sess": 1072,
+     "trades": 511,
+     "tpw": 2.38,
+     "pf": 1.01,
+     "net": 1265,
+     "per_month": 25,
+     "max_dd": -19426,
+     "zero_weeks": "8/217",
+     "evals": {
+      "50K": {
+       "pass": 23.2,
+       "fail": 53.9,
+       "med": 18.0
+      },
+      "25K": {
+       "pass": 22.7,
+       "fail": 53.6,
+       "med": 18.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 57.1,
+       "med": null
+      }
+     }
+    },
+    "H1 2026": {
+     "sess": 128,
+     "trades": 80,
+     "tpw": 3.12,
+     "pf": 4.98,
+     "net": 33901,
+     "per_month": 5562,
+     "max_dd": -2196,
+     "zero_weeks": "1/27",
+     "evals": {
+      "50K": {
+       "pass": 83.7,
+       "fail": 16.3,
+       "med": 10.0
+      },
+      "25K": {
+       "pass": 83.7,
+       "fail": 16.3,
+       "med": 10.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 19.1,
+       "med": null
+      }
+     }
+    },
+    "H2 2026": {
+     "sess": 78,
+     "trades": 40,
+     "tpw": 2.56,
+     "pf": 2.91,
+     "net": 9919,
+     "per_month": 2670,
+     "max_dd": -1396,
+     "zero_weeks": "0/16",
+     "evals": {
+      "50K": {
+       "pass": 76.0,
+       "fail": 0.0,
+       "med": 17.0
+      },
+      "25K": {
+       "pass": 76.0,
+       "fail": 0.0,
+       "med": 17.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "med": null
+      }
+     }
+    },
+    "fresh Oct19-Nov20": {
+     "sess": 25,
+     "trades": 7,
+     "tpw": 1.4,
+     "pf": 0.03,
+     "net": -858,
+     "per_month": -721,
+     "max_dd": -859,
+     "zero_weeks": "1/5",
+     "evals": {
+      "50K": {
+       "pass": null,
+       "fail": null,
+       "med": null
+      },
+      "25K": {
+       "pass": null,
+       "fail": null,
+       "med": null
+      },
+      "Rapid25K": {
+       "pass": null,
+       "fail": null,
+       "med": null
+      }
+     }
+    },
+    "2021": {
+     "sess": 39,
+     "trades": 22,
+     "tpw": 2.82,
+     "pf": 0.16,
+     "net": -3526,
+     "per_month": -1898,
+     "max_dd": -3535,
+     "zero_weeks": "0/8",
+     "evals": {
+      "50K": {
+       "pass": 0.0,
+       "fail": 100.0,
+       "med": null
+      },
+      "25K": {
+       "pass": 0.0,
+       "fail": 100.0,
+       "med": null
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 100.0,
+       "med": null
+      }
+     }
+    },
+    "2022": {
+     "sess": 258,
+     "trades": 116,
+     "tpw": 2.25,
+     "pf": 1.91,
+     "net": 13933,
+     "per_month": 1134,
+     "max_dd": -1541,
+     "zero_weeks": "1/52",
+     "evals": {
+      "50K": {
+       "pass": 30.8,
+       "fail": 18.4,
+       "med": 20.0
+      },
+      "25K": {
+       "pass": 28.7,
+       "fail": 18.7,
+       "med": 22.5
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 20.8,
+       "med": null
+      }
+     }
+    },
+    "2023": {
+     "sess": 258,
+     "trades": 124,
+     "tpw": 2.4,
+     "pf": 0.62,
+     "net": -13025,
+     "per_month": -1060,
+     "max_dd": -13273,
+     "zero_weeks": "3/52",
+     "evals": {
+      "50K": {
+       "pass": 7.7,
+       "fail": 91.5,
+       "med": 4.0
+      },
+      "25K": {
+       "pass": 7.7,
+       "fail": 90.3,
+       "med": 4.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 99.2,
+       "med": null
+      }
+     }
+    },
+    "2024": {
+     "sess": 259,
+     "trades": 135,
+     "tpw": 2.61,
+     "pf": 1.02,
+     "net": 671,
+     "per_month": 54,
+     "max_dd": -8305,
+     "zero_weeks": "1/53",
+     "evals": {
+      "50K": {
+       "pass": 23.8,
+       "fail": 59.4,
+       "med": 19.0
+      },
+      "25K": {
+       "pass": 23.8,
+       "fail": 59.4,
+       "med": 19.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 63.2,
+       "med": null
+      }
+     }
+    },
+    "2025": {
+     "sess": 258,
+     "trades": 114,
+     "tpw": 2.21,
+     "pf": 1.19,
+     "net": 3210,
+     "per_month": 261,
+     "max_dd": -7071,
+     "zero_weeks": "4/53",
+     "evals": {
+      "50K": {
+       "pass": 33.8,
+       "fail": 44.3,
+       "med": 15.0
+      },
+      "25K": {
+       "pass": 33.8,
+       "fail": 44.3,
+       "med": 15.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 44.3,
+       "med": null
+      }
+     }
+    },
+    "2026": {
+     "sess": 231,
+     "trades": 127,
+     "tpw": 2.75,
+     "pf": 3.94,
+     "net": 42961,
+     "per_month": 3906,
+     "max_dd": -2196,
+     "zero_weeks": "1/47",
+     "evals": {
+      "50K": {
+       "pass": 73.9,
+       "fail": 8.4,
+       "med": 12.5
+      },
+      "25K": {
+       "pass": 73.9,
+       "fail": 8.4,
+       "med": 12.5
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 8.9,
+       "med": null
+      }
+     }
+    }
+   },
+   "eval_path": {
+    "H1": {
+     "n": 66,
+     "pf": 3.27,
+     "net": 15791,
+     "per_month": 2591,
+     "dd": -1822,
+     "p10": 44.5,
+     "f10": 0.0,
+     "p20": 70.6,
+     "f20": 0.0,
+     "pass_med": 6.0,
+     "mc_p10": 47.7
+    },
+    "H2": {
+     "n": 15,
+     "pf": 0.29,
+     "net": -1869,
+     "per_month": -503,
+     "dd": -1869,
+     "p10": 39.1,
+     "f10": 0.0,
+     "p20": 45.8,
+     "f20": 0.0,
+     "pass_med": 4.0,
+     "mc_p10": 46.4
+    }
+   },
+   "walk_forward": "-"
+  },
+  "E1 tap 1 tick through": {
+   "cfg": {
+    "tap": "through",
+    "post_pts": 0.0
+   },
+   "spans": {
+    "2021-25": {
+     "sess": 1072,
+     "trades": 499,
+     "tpw": 2.33,
+     "pf": 0.91,
+     "net": -8730,
+     "per_month": -171,
+     "max_dd": -24912,
+     "zero_weeks": "9/217",
+     "evals": {
+      "50K": {
+       "pass": 17.3,
+       "fail": 58.2,
+       "med": 18.0
+      },
+      "25K": {
+       "pass": 17.1,
+       "fail": 57.4,
+       "med": 17.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 60.2,
+       "med": null
+      }
+     }
+    },
+    "H1 2026": {
+     "sess": 128,
+     "trades": 81,
+     "tpw": 3.16,
+     "pf": 4.5,
+     "net": 32186,
+     "per_month": 5280,
+     "max_dd": -2196,
+     "zero_weeks": "1/27",
+     "evals": {
+      "50K": {
+       "pass": 82.5,
+       "fail": 17.5,
+       "med": 10.0
+      },
+      "25K": {
+       "pass": 82.5,
+       "fail": 17.5,
+       "med": 10.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 20.2,
+       "med": null
+      }
+     }
+    },
+    "H2 2026": {
+     "sess": 78,
+     "trades": 39,
+     "tpw": 2.5,
+     "pf": 2.56,
+     "net": 8271,
+     "per_month": 2227,
+     "max_dd": -1396,
+     "zero_weeks": "0/16",
+     "evals": {
+      "50K": {
+       "pass": 64.0,
+       "fail": 0.0,
+       "med": 17.0
+      },
+      "25K": {
+       "pass": 64.0,
+       "fail": 0.0,
+       "med": 17.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "med": null
+      }
+     }
+    },
+    "fresh Oct19-Nov20": {
+     "sess": 25,
+     "trades": 7,
+     "tpw": 1.4,
+     "pf": 0.03,
+     "net": -858,
+     "per_month": -721,
+     "max_dd": -859,
+     "zero_weeks": "1/5",
+     "evals": {
+      "50K": {
+       "pass": null,
+       "fail": null,
+       "med": null
+      },
+      "25K": {
+       "pass": null,
+       "fail": null,
+       "med": null
+      },
+      "Rapid25K": {
+       "pass": null,
+       "fail": null,
+       "med": null
+      }
+     }
+    },
+    "2021": {
+     "sess": 39,
+     "trades": 21,
+     "tpw": 2.69,
+     "pf": 0.16,
+     "net": -3535,
+     "per_month": -1904,
+     "max_dd": -3535,
+     "zero_weeks": "0/8",
+     "evals": {
+      "50K": {
+       "pass": 0.0,
+       "fail": 100.0,
+       "med": null
+      },
+      "25K": {
+       "pass": 0.0,
+       "fail": 100.0,
+       "med": null
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 100.0,
+       "med": null
+      }
+     }
+    },
+    "2022": {
+     "sess": 258,
+     "trades": 114,
+     "tpw": 2.21,
+     "pf": 1.91,
+     "net": 13923,
+     "per_month": 1133,
+     "max_dd": -1541,
+     "zero_weeks": "1/52",
+     "evals": {
+      "50K": {
+       "pass": 30.8,
+       "fail": 18.4,
+       "med": 20.0
+      },
+      "25K": {
+       "pass": 28.7,
+       "fail": 18.7,
+       "med": 22.5
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 20.8,
+       "med": null
+      }
+     }
+    },
+    "2023": {
+     "sess": 258,
+     "trades": 119,
+     "tpw": 2.31,
+     "pf": 0.52,
+     "net": -15688,
+     "per_month": -1277,
+     "max_dd": -15931,
+     "zero_weeks": "3/52",
+     "evals": {
+      "50K": {
+       "pass": 4.5,
+       "fail": 93.9,
+       "med": 6.0
+      },
+      "25K": {
+       "pass": 4.5,
+       "fail": 91.9,
+       "med": 6.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 96.7,
+       "med": null
+      }
+     }
+    },
+    "2024": {
+     "sess": 259,
+     "trades": 135,
+     "tpw": 2.61,
+     "pf": 0.9,
+     "net": -2822,
+     "per_month": -229,
+     "max_dd": -11308,
+     "zero_weeks": "2/53",
+     "evals": {
+      "50K": {
+       "pass": 5.7,
+       "fail": 70.1,
+       "med": 5.5
+      },
+      "25K": {
+       "pass": 7.0,
+       "fail": 68.9,
+       "med": 12.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 74.0,
+       "med": null
+      }
+     }
+    },
+    "2025": {
+     "sess": 258,
+     "trades": 110,
+     "tpw": 2.13,
+     "pf": 0.96,
+     "net": -608,
+     "per_month": -49,
+     "max_dd": -8990,
+     "zero_weeks": "4/53",
+     "evals": {
+      "50K": {
+       "pass": 29.7,
+       "fail": 49.8,
+       "med": 17.0
+      },
+      "25K": {
+       "pass": 29.7,
+       "fail": 49.8,
+       "med": 17.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 49.8,
+       "med": null
+      }
+     }
+    },
+    "2026": {
+     "sess": 231,
+     "trades": 127,
+     "tpw": 2.75,
+     "pf": 3.57,
+     "net": 39598,
+     "per_month": 3600,
+     "max_dd": -2196,
+     "zero_weeks": "1/47",
+     "evals": {
+      "50K": {
+       "pass": 68.5,
+       "fail": 8.9,
+       "med": 11.0
+      },
+      "25K": {
+       "pass": 68.5,
+       "fail": 8.9,
+       "med": 11.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 9.4,
+       "med": null
+      }
+     }
+    }
+   },
+   "eval_path": {
+    "H1": {
+     "n": 65,
+     "pf": 2.86,
+     "net": 12559,
+     "per_month": 2061,
+     "dd": -1822,
+     "p10": 43.7,
+     "f10": 0.0,
+     "p20": 67.9,
+     "f20": 0.0,
+     "pass_med": 6.0,
+     "mc_p10": 45.5
+    },
+    "H2": {
+     "n": 15,
+     "pf": 0.29,
+     "net": -1869,
+     "per_month": -503,
+     "dd": -1869,
+     "p10": 39.1,
+     "f10": 0.0,
+     "p20": 40.7,
+     "f20": 0.0,
+     "pass_med": 5.0,
+     "mc_p10": 41.2
+    }
+   },
+   "walk_forward": "3/18"
+  },
+  "E2 tap at 50% of the zone": {
+   "cfg": {
+    "tap": "half",
+    "post_pts": 0.0
+   },
+   "spans": {
+    "2021-25": {
+     "sess": 1072,
+     "trades": 168,
+     "tpw": 0.78,
+     "pf": 1.18,
+     "net": 6841,
+     "per_month": 134,
+     "max_dd": -8378,
+     "zero_weeks": "87/217",
+     "evals": {
+      "50K": {
+       "pass": 18.3,
+       "fail": 22.6,
+       "med": 20.0
+      },
+      "25K": {
+       "pass": 17.7,
+       "fail": 21.7,
+       "med": 19.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 24.2,
+       "med": null
+      }
+     }
+    },
+    "H1 2026": {
+     "sess": 128,
+     "trades": 30,
+     "tpw": 1.17,
+     "pf": 6.26,
+     "net": 19336,
+     "per_month": 3172,
+     "max_dd": -1555,
+     "zero_weeks": "5/27",
+     "evals": {
+      "50K": {
+       "pass": 90.3,
+       "fail": 0.0,
+       "med": 11.0
+      },
+      "25K": {
+       "pass": 90.3,
+       "fail": 0.0,
+       "med": 11.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "med": null
+      }
+     }
+    },
+    "H2 2026": {
+     "sess": 78,
+     "trades": 18,
+     "tpw": 1.15,
+     "pf": 2.68,
+     "net": 5741,
+     "per_month": 1546,
+     "max_dd": -1648,
+     "zero_weeks": "5/16",
+     "evals": {
+      "50K": {
+       "pass": 74.6,
+       "fail": 25.4,
+       "med": 14.0
+      },
+      "25K": {
+       "pass": 76.1,
+       "fail": 23.9,
+       "med": 15.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 34.8,
+       "med": null
+      }
+     }
+    },
+    "fresh Oct19-Nov20": {
+     "sess": 25,
+     "trades": 2,
+     "tpw": 0.4,
+     "pf": null,
+     "net": 16,
+     "per_month": 14,
+     "max_dd": 0,
+     "zero_weeks": "3/5",
+     "evals": {
+      "50K": {
+       "pass": null,
+       "fail": null,
+       "med": null
+      },
+      "25K": {
+       "pass": null,
+       "fail": null,
+       "med": null
+      },
+      "Rapid25K": {
+       "pass": null,
+       "fail": null,
+       "med": null
+      }
+     }
+    },
+    "2021": {
+     "sess": 39,
+     "trades": 6,
+     "tpw": 0.77,
+     "pf": 0.86,
+     "net": -112,
+     "per_month": -60,
+     "max_dd": -434,
+     "zero_weeks": "3/8",
+     "evals": {
+      "50K": {
+       "pass": null,
+       "fail": null,
+       "med": null
+      },
+      "25K": {
+       "pass": null,
+       "fail": null,
+       "med": null
+      },
+      "Rapid25K": {
+       "pass": null,
+       "fail": null,
+       "med": null
+      }
+     }
+    },
+    "2022": {
+     "sess": 258,
+     "trades": 41,
+     "tpw": 0.79,
+     "pf": 0.75,
+     "net": -1985,
+     "per_month": -162,
+     "max_dd": -5784,
+     "zero_weeks": "20/52",
+     "evals": {
+      "50K": {
+       "pass": 0.0,
+       "fail": 14.4,
+       "med": null
+      },
+      "25K": {
+       "pass": 0.0,
+       "fail": 14.4,
+       "med": null
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 14.4,
+       "med": null
+      }
+     }
+    },
+    "2023": {
+     "sess": 258,
+     "trades": 37,
+     "tpw": 0.72,
+     "pf": 1.18,
+     "net": 1798,
+     "per_month": 146,
+     "max_dd": -8378,
+     "zero_weeks": "23/52",
+     "evals": {
+      "50K": {
+       "pass": 31.9,
+       "fail": 23.5,
+       "med": 20.5
+      },
+      "25K": {
+       "pass": 31.9,
+       "fail": 23.1,
+       "med": 20.5
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 32.0,
+       "med": null
+      }
+     }
+    },
+    "2024": {
+     "sess": 259,
+     "trades": 44,
+     "tpw": 0.85,
+     "pf": 1.78,
+     "net": 8048,
+     "per_month": 653,
+     "max_dd": -2670,
+     "zero_weeks": "20/53",
+     "evals": {
+      "50K": {
+       "pass": 27.0,
+       "fail": 19.7,
+       "med": 18.5
+      },
+      "25K": {
+       "pass": 24.6,
+       "fail": 17.6,
+       "med": 17.5
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 24.2,
+       "med": null
+      }
+     }
+    },
+    "2025": {
+     "sess": 258,
+     "trades": 40,
+     "tpw": 0.78,
+     "pf": 0.9,
+     "net": -908,
+     "per_month": -74,
+     "max_dd": -6967,
+     "zero_weeks": "22/53",
+     "evals": {
+      "50K": {
+       "pass": 12.3,
+       "fail": 35.6,
+       "med": 14.0
+      },
+      "25K": {
+       "pass": 12.3,
+       "fail": 34.2,
+       "med": 14.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 35.6,
+       "med": null
+      }
+     }
+    },
+    "2026": {
+     "sess": 231,
+     "trades": 50,
+     "tpw": 1.08,
+     "pf": 4.54,
+     "net": 25094,
+     "per_month": 2281,
+     "max_dd": -1648,
+     "zero_weeks": "12/47",
+     "evals": {
+      "50K": {
+       "pass": 75.0,
+       "fail": 8.0,
+       "med": 13.0
+      },
+      "25K": {
+       "pass": 77.0,
+       "fail": 8.0,
+       "med": 13.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 8.3,
+       "med": null
+      }
+     }
+    }
+   },
+   "eval_path": {
+    "H1": {
+     "n": 30,
+     "pf": 5.16,
+     "net": 12688,
+     "per_month": 2082,
+     "dd": -994,
+     "p10": 37.8,
+     "f10": 0.0,
+     "p20": 55.0,
+     "f20": 0.0,
+     "pass_med": 6.5,
+     "mc_p10": 33.1
+    },
+    "H2": {
+     "n": 18,
+     "pf": 3.94,
+     "net": 5803,
+     "per_month": 1562,
+     "dd": -724,
+     "p10": 29.0,
+     "f10": 0.0,
+     "p20": 30.5,
+     "f20": 0.0,
+     "pass_med": 7.0,
+     "mc_p10": 26.4
+    }
+   },
+   "walk_forward": "5/18"
+  },
+  "E3 limit expiry 20 min": {
+   "cfg": {
+    "tap": null,
+    "wait": 4,
+    "post_pts": 0.0
+   },
+   "spans": {
+    "2021-25": {
+     "sess": 1072,
+     "trades": 494,
+     "tpw": 2.3,
+     "pf": 0.98,
+     "net": -1864,
+     "per_month": -37,
+     "max_dd": -20722,
+     "zero_weeks": "13/217",
+     "evals": {
+      "50K": {
+       "pass": 23.1,
+       "fail": 56.3,
+       "med": 19.0
+      },
+      "25K": {
+       "pass": 23.1,
+       "fail": 55.9,
+       "med": 19.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 59.4,
+       "med": null
+      }
+     }
+    },
+    "H1 2026": {
+     "sess": 128,
+     "trades": 76,
+     "tpw": 2.97,
+     "pf": 4.86,
+     "net": 32095,
+     "per_month": 5266,
+     "max_dd": -2659,
+     "zero_weeks": "2/27",
+     "evals": {
+      "50K": {
+       "pass": 86.5,
+       "fail": 13.5,
+       "med": 10.0
+      },
+      "25K": {
+       "pass": 86.5,
+       "fail": 13.5,
+       "med": 10.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 15.7,
+       "med": null
+      }
+     }
+    },
+    "H2 2026": {
+     "sess": 78,
+     "trades": 37,
+     "tpw": 2.37,
+     "pf": 2.92,
+     "net": 9310,
+     "per_month": 2506,
+     "max_dd": -1396,
+     "zero_weeks": "0/16",
+     "evals": {
+      "50K": {
+       "pass": 76.0,
+       "fail": 0.0,
+       "med": 18.0
+      },
+      "25K": {
+       "pass": 76.0,
+       "fail": 0.0,
+       "med": 18.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 0.0,
+       "med": null
+      }
+     }
+    },
+    "fresh Oct19-Nov20": {
+     "sess": 25,
+     "trades": 7,
+     "tpw": 1.4,
+     "pf": 0.03,
+     "net": -858,
+     "per_month": -721,
+     "max_dd": -859,
+     "zero_weeks": "1/5",
+     "evals": {
+      "50K": {
+       "pass": null,
+       "fail": null,
+       "med": null
+      },
+      "25K": {
+       "pass": null,
+       "fail": null,
+       "med": null
+      },
+      "Rapid25K": {
+       "pass": null,
+       "fail": null,
+       "med": null
+      }
+     }
+    },
+    "2021": {
+     "sess": 39,
+     "trades": 22,
+     "tpw": 2.82,
+     "pf": 0.22,
+     "net": -2929,
+     "per_month": -1577,
+     "max_dd": -3101,
+     "zero_weeks": "0/8",
+     "evals": {
+      "50K": {
+       "pass": 0.0,
+       "fail": 100.0,
+       "med": null
+      },
+      "25K": {
+       "pass": 0.0,
+       "fail": 100.0,
+       "med": null
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 100.0,
+       "med": null
+      }
+     }
+    },
+    "2022": {
+     "sess": 258,
+     "trades": 112,
+     "tpw": 2.17,
+     "pf": 2.07,
+     "net": 14935,
+     "per_month": 1216,
+     "max_dd": -1541,
+     "zero_weeks": "3/52",
+     "evals": {
+      "50K": {
+       "pass": 38.8,
+       "fail": 18.4,
+       "med": 24.0
+      },
+      "25K": {
+       "pass": 36.7,
+       "fail": 18.7,
+       "med": 24.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 20.8,
+       "med": null
+      }
+     }
+    },
+    "2023": {
+     "sess": 258,
+     "trades": 120,
+     "tpw": 2.33,
+     "pf": 0.61,
+     "net": -13094,
+     "per_month": -1066,
+     "max_dd": -13342,
+     "zero_weeks": "3/52",
+     "evals": {
+      "50K": {
+       "pass": 7.7,
+       "fail": 92.3,
+       "med": 4.0
+      },
+      "25K": {
+       "pass": 8.5,
+       "fail": 91.5,
+       "med": 5.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 99.6,
+       "med": null
+      }
+     }
+    },
+    "2024": {
+     "sess": 259,
+     "trades": 130,
+     "tpw": 2.51,
+     "pf": 0.99,
+     "net": -299,
+     "per_month": -24,
+     "max_dd": -8780,
+     "zero_weeks": "2/53",
+     "evals": {
+      "50K": {
+       "pass": 23.0,
+       "fail": 62.7,
+       "med": 18.5
+      },
+      "25K": {
+       "pass": 24.2,
+       "fail": 61.5,
+       "med": 18.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 66.5,
+       "med": null
+      }
+     }
+    },
+    "2025": {
+     "sess": 258,
+     "trades": 110,
+     "tpw": 2.13,
+     "pf": 0.97,
+     "net": -477,
+     "per_month": -39,
+     "max_dd": -9877,
+     "zero_weeks": "6/53",
+     "evals": {
+      "50K": {
+       "pass": 25.1,
+       "fail": 51.1,
+       "med": 15.0
+      },
+      "25K": {
+       "pass": 25.1,
+       "fail": 51.1,
+       "med": 15.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 51.1,
+       "med": null
+      }
+     }
+    },
+    "2026": {
+     "sess": 231,
+     "trades": 120,
+     "tpw": 2.6,
+     "pf": 3.89,
+     "net": 40546,
+     "per_month": 3686,
+     "max_dd": -2659,
+     "zero_weeks": "2/47",
+     "evals": {
+      "50K": {
+       "pass": 75.4,
+       "fail": 6.9,
+       "med": 13.0
+      },
+      "25K": {
+       "pass": 75.4,
+       "fail": 6.9,
+       "med": 13.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 7.3,
+       "med": null
+      }
+     }
+    }
+   },
+   "eval_path": {
+    "H1": {
+     "n": 48,
+     "pf": 3.43,
+     "net": 11191,
+     "per_month": 1836,
+     "dd": -1902,
+     "p10": 44.5,
+     "f10": 0.0,
+     "p20": 68.8,
+     "f20": 0.0,
+     "pass_med": 6.0,
+     "mc_p10": 46.6
+    },
+    "H2": {
+     "n": 37,
+     "pf": 2.58,
+     "net": 9359,
+     "per_month": 2520,
+     "dd": -1672,
+     "p10": 37.7,
+     "f10": 0.0,
+     "p20": 44.1,
+     "f20": 0.0,
+     "pass_med": 4.0,
+     "mc_p10": 44.2
+    }
+   },
+   "walk_forward": "8/18"
+  },
+  "E4 plain limit at 50%, no 1m CISD": {
+   "cfg": {
+    "tap": "half",
+    "cisd1m": null,
+    "post_pts": 0.0
+   },
+   "spans": {
+    "2021-25": {
+     "sess": 1072,
+     "trades": 596,
+     "tpw": 2.78,
+     "pf": 1.35,
+     "net": 71297,
+     "per_month": 1397,
+     "max_dd": -25467,
+     "zero_weeks": "5/217",
+     "evals": {
+      "50K": {
+       "pass": 22.0,
+       "fail": 78.0,
+       "med": 5.0
+      },
+      "25K": {
+       "pass": 22.0,
+       "fail": 78.0,
+       "med": 5.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 85.3,
+       "med": null
+      }
+     }
+    },
+    "H1 2026": {
+     "sess": 128,
+     "trades": 62,
+     "tpw": 2.42,
+     "pf": 1.11,
+     "net": 2451,
+     "per_month": 402,
+     "max_dd": -11031,
+     "zero_weeks": "0/27",
+     "evals": {
+      "50K": {
+       "pass": 18.3,
+       "fail": 81.7,
+       "med": 6.0
+      },
+      "25K": {
+       "pass": 18.3,
+       "fail": 81.7,
+       "med": 6.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 81.7,
+       "med": null
+      }
+     }
+    },
+    "H2 2026": {
+     "sess": 78,
+     "trades": 27,
+     "tpw": 1.73,
+     "pf": 3.02,
+     "net": 17510,
+     "per_month": 4714,
+     "max_dd": -5574,
+     "zero_weeks": "2/16",
+     "evals": {
+      "50K": {
+       "pass": 28.6,
+       "fail": 71.4,
+       "med": 5.5
+      },
+      "25K": {
+       "pass": 28.6,
+       "fail": 71.4,
+       "med": 5.5
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 100.0,
+       "med": null
+      }
+     }
+    },
+    "fresh Oct19-Nov20": {
+     "sess": 25,
+     "trades": 11,
+     "tpw": 2.2,
+     "pf": 0.0,
+     "net": -5555,
+     "per_month": -4666,
+     "max_dd": -5569,
+     "zero_weeks": "1/5",
+     "evals": {
+      "50K": {
+       "pass": 0.0,
+       "fail": 100.0,
+       "med": null
+      },
+      "25K": {
+       "pass": 0.0,
+       "fail": 100.0,
+       "med": null
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 100.0,
+       "med": null
+      }
+     }
+    },
+    "2021": {
+     "sess": 39,
+     "trades": 22,
+     "tpw": 2.82,
+     "pf": 0.75,
+     "net": -2060,
+     "per_month": -1109,
+     "max_dd": -5891,
+     "zero_weeks": "0/8",
+     "evals": {
+      "50K": {
+       "pass": 24.3,
+       "fail": 75.7,
+       "med": 5.0
+      },
+      "25K": {
+       "pass": 24.3,
+       "fail": 75.7,
+       "med": 5.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 100.0,
+       "med": null
+      }
+     }
+    },
+    "2022": {
+     "sess": 258,
+     "trades": 143,
+     "tpw": 2.77,
+     "pf": 1.43,
+     "net": 22379,
+     "per_month": 1822,
+     "max_dd": -19600,
+     "zero_weeks": "2/52",
+     "evals": {
+      "50K": {
+       "pass": 21.5,
+       "fail": 78.5,
+       "med": 4.0
+      },
+      "25K": {
+       "pass": 21.6,
+       "fail": 78.4,
+       "med": 4.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 89.9,
+       "med": null
+      }
+     }
+    },
+    "2023": {
+     "sess": 258,
+     "trades": 156,
+     "tpw": 3.02,
+     "pf": 1.18,
+     "net": 9736,
+     "per_month": 792,
+     "max_dd": -20001,
+     "zero_weeks": "0/52",
+     "evals": {
+      "50K": {
+       "pass": 20.9,
+       "fail": 79.1,
+       "med": 5.0
+      },
+      "25K": {
+       "pass": 20.2,
+       "fail": 79.8,
+       "med": 5.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 86.9,
+       "med": null
+      }
+     }
+    },
+    "2024": {
+     "sess": 259,
+     "trades": 136,
+     "tpw": 2.63,
+     "pf": 1.28,
+     "net": 12321,
+     "per_month": 999,
+     "max_dd": -9432,
+     "zero_weeks": "1/53",
+     "evals": {
+      "50K": {
+       "pass": 17.4,
+       "fail": 82.6,
+       "med": 3.5
+      },
+      "25K": {
+       "pass": 19.4,
+       "fail": 80.6,
+       "med": 4.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 94.4,
+       "med": null
+      }
+     }
+    },
+    "2025": {
+     "sess": 258,
+     "trades": 139,
+     "tpw": 2.69,
+     "pf": 1.62,
+     "net": 28920,
+     "per_month": 2354,
+     "max_dd": -20062,
+     "zero_weeks": "2/53",
+     "evals": {
+      "50K": {
+       "pass": 30.2,
+       "fail": 69.8,
+       "med": 6.5
+      },
+      "25K": {
+       "pass": 28.6,
+       "fail": 71.4,
+       "med": 6.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 71.8,
+       "med": null
+      }
+     }
+    },
+    "2026": {
+     "sess": 231,
+     "trades": 100,
+     "tpw": 2.16,
+     "pf": 1.39,
+     "net": 14406,
+     "per_month": 1310,
+     "max_dd": -16590,
+     "zero_weeks": "3/47",
+     "evals": {
+      "50K": {
+       "pass": 18.7,
+       "fail": 81.3,
+       "med": 6.0
+      },
+      "25K": {
+       "pass": 18.7,
+       "fail": 81.3,
+       "med": 6.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 82.4,
+       "med": null
+      }
+     }
+    }
+   },
+   "eval_path": {
+    "H1": {
+     "n": 54,
+     "pf": 0.39,
+     "net": -3642,
+     "per_month": -598,
+     "dd": -3824,
+     "p10": 16.8,
+     "f10": 0.0,
+     "p20": 36.7,
+     "f20": 0.0,
+     "pass_med": 10.5,
+     "mc_p10": 14.9
+    },
+    "H2": {
+     "n": 27,
+     "pf": 1.63,
+     "net": 2089,
+     "per_month": 562,
+     "dd": -1819,
+     "p10": 29.0,
+     "f10": 0.0,
+     "p20": 22.0,
+     "f20": 0.0,
+     "pass_med": 6.0,
+     "mc_p10": 26.1
+    }
+   },
+   "walk_forward": "8/18"
+  },
+  "E5 plain limit at the level, fill only 1 tick through": {
+   "cfg": {
+    "tap": "through",
+    "cisd1m": null,
+    "post_pts": 0.25
+   },
+   "spans": {
+    "2021-25": {
+     "sess": 1072,
+     "trades": 860,
+     "tpw": 4.01,
+     "pf": 0.93,
+     "net": -15551,
+     "per_month": -305,
+     "max_dd": -31027,
+     "zero_weeks": "0/217",
+     "evals": {
+      "50K": {
+       "pass": 21.1,
+       "fail": 78.9,
+       "med": 4.0
+      },
+      "25K": {
+       "pass": 20.8,
+       "fail": 79.2,
+       "med": 4.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 87.7,
+       "med": null
+      }
+     }
+    },
+    "H1 2026": {
+     "sess": 128,
+     "trades": 94,
+     "tpw": 3.67,
+     "pf": 2.17,
+     "net": 18503,
+     "per_month": 3036,
+     "max_dd": -5160,
+     "zero_weeks": "0/27",
+     "evals": {
+      "50K": {
+       "pass": 52.1,
+       "fail": 47.9,
+       "med": 6.0
+      },
+      "25K": {
+       "pass": 52.1,
+       "fail": 47.9,
+       "med": 6.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 53.3,
+       "med": null
+      }
+     }
+    },
+    "H2 2026": {
+     "sess": 78,
+     "trades": 49,
+     "tpw": 3.14,
+     "pf": 2.09,
+     "net": 7753,
+     "per_month": 2087,
+     "max_dd": -2042,
+     "zero_weeks": "0/16",
+     "evals": {
+      "50K": {
+       "pass": 29.9,
+       "fail": 40.3,
+       "med": 10.5
+      },
+      "25K": {
+       "pass": 17.9,
+       "fail": 53.7,
+       "med": 6.5
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 57.4,
+       "med": null
+      }
+     }
+    },
+    "fresh Oct19-Nov20": {
+     "sess": 25,
+     "trades": 15,
+     "tpw": 3.0,
+     "pf": 0.13,
+     "net": -2664,
+     "per_month": -2238,
+     "max_dd": -2664,
+     "zero_weeks": "0/5",
+     "evals": {
+      "50K": {
+       "pass": 0.0,
+       "fail": 100.0,
+       "med": null
+      },
+      "25K": {
+       "pass": 0.0,
+       "fail": 100.0,
+       "med": null
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 100.0,
+       "med": null
+      }
+     }
+    },
+    "2021": {
+     "sess": 39,
+     "trades": 35,
+     "tpw": 4.49,
+     "pf": 0.01,
+     "net": -10182,
+     "per_month": -5483,
+     "max_dd": -10182,
+     "zero_weeks": "0/8",
+     "evals": {
+      "50K": {
+       "pass": 0.0,
+       "fail": 100.0,
+       "med": null
+      },
+      "25K": {
+       "pass": 0.0,
+       "fail": 100.0,
+       "med": null
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 100.0,
+       "med": null
+      }
+     }
+    },
+    "2022": {
+     "sess": 258,
+     "trades": 210,
+     "tpw": 4.07,
+     "pf": 1.34,
+     "net": 16332,
+     "per_month": 1329,
+     "max_dd": -11105,
+     "zero_weeks": "0/52",
+     "evals": {
+      "50K": {
+       "pass": 32.2,
+       "fail": 67.8,
+       "med": 5.0
+      },
+      "25K": {
+       "pass": 30.5,
+       "fail": 69.5,
+       "med": 5.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 81.4,
+       "med": null
+      }
+     }
+    },
+    "2023": {
+     "sess": 258,
+     "trades": 214,
+     "tpw": 4.15,
+     "pf": 0.79,
+     "net": -15228,
+     "per_month": -1240,
+     "max_dd": -28689,
+     "zero_weeks": "0/52",
+     "evals": {
+      "50K": {
+       "pass": 19.9,
+       "fail": 80.1,
+       "med": 4.0
+      },
+      "25K": {
+       "pass": 20.3,
+       "fail": 79.7,
+       "med": 4.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 93.1,
+       "med": null
+      }
+     }
+    },
+    "2024": {
+     "sess": 259,
+     "trades": 201,
+     "tpw": 3.88,
+     "pf": 0.94,
+     "net": -3128,
+     "per_month": -254,
+     "max_dd": -16550,
+     "zero_weeks": "0/53",
+     "evals": {
+      "50K": {
+       "pass": 20.7,
+       "fail": 79.3,
+       "med": 4.5
+      },
+      "25K": {
+       "pass": 20.7,
+       "fail": 79.3,
+       "med": 4.5
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 84.1,
+       "med": null
+      }
+     }
+    },
+    "2025": {
+     "sess": 258,
+     "trades": 200,
+     "tpw": 3.88,
+     "pf": 0.93,
+     "net": -3345,
+     "per_month": -272,
+     "max_dd": -19005,
+     "zero_weeks": "0/53",
+     "evals": {
+      "50K": {
+       "pass": 13.5,
+       "fail": 86.5,
+       "med": 3.0
+      },
+      "25K": {
+       "pass": 13.4,
+       "fail": 86.6,
+       "med": 3.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 93.5,
+       "med": null
+      }
+     }
+    },
+    "2026": {
+     "sess": 231,
+     "trades": 158,
+     "tpw": 3.42,
+     "pf": 1.91,
+     "net": 23592,
+     "per_month": 2145,
+     "max_dd": -5160,
+     "zero_weeks": "0/47",
+     "evals": {
+      "50K": {
+       "pass": 33.0,
+       "fail": 56.5,
+       "med": 7.0
+      },
+      "25K": {
+       "pass": 29.2,
+       "fail": 60.8,
+       "med": 6.0
+      },
+      "Rapid25K": {
+       "pass": 0.0,
+       "fail": 59.2,
+       "med": null
+      }
+     }
+    }
+   },
+   "eval_path": {
+    "H1": {
+     "n": 39,
+     "pf": 1.26,
+     "net": 1288,
+     "per_month": 211,
+     "dd": -1934,
+     "p10": 31.1,
+     "f10": 0.0,
+     "p20": 43.1,
+     "f20": 0.0,
+     "pass_med": 3.5,
+     "mc_p10": 37.0
+    },
+    "H2": {
+     "n": 49,
+     "pf": 1.83,
+     "net": 6183,
+     "per_month": 1665,
+     "dd": -1415,
+     "p10": 21.7,
+     "f10": 0.0,
+     "p20": 33.9,
+     "f20": 0.0,
+     "pass_med": 10.0,
+     "mc_p10": 26.8
+    }
+   },
+   "walk_forward": "5/18"
+  }
+ }
+}
