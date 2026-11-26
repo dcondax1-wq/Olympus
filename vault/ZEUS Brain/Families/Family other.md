@@ -7,11 +7,12 @@ type: "family"
 
 # Research family: other
 
-> [!abstract] 138 write-ups
-> adopt-candidate 16, finding 14, info 17, promising 14, rejected 36, research 41
+> [!abstract] 141 write-ups
+> adopt-candidate 16, finding 14, info 17, promising 14, rejected 36, research 44
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-26 | [[regime2026-2026-11-26\|Is there a trustworthy "market is 2026-like" switch?]] | research |
 | 2026-11-26 | [[news-playbook-2026-11-26\|News-day playbook]] | research |
 | 2026-11-26 | [[litasia-2026-11-26\|LIT's Asia slot at real Asia costs]] | research |
 | 2026-11-26 | [[lit-learns-live-2026-11-26\|LIT learns from live]] | research |
@@ -23,9 +24,11 @@ type: "family"
 | 2026-11-26 | [[evalsizer-2026-11-26\|Optimal eval sizing policy]] | research |
 | 2026-11-26 | [[entry-fine-2026-11-26\|LIT entry refinement on 1m bars]] | research |
 | 2026-11-26 | [[day-type-2026-11-26\|Day-type classifier + playbook routing]] | research |
+| 2026-11-26 | [[consfix-2026-11-26\|Research-engine fix]] | research |
 | 2026-11-26 | [[business-planner-2026-11-26\|Business planner]] | research |
 | 2026-11-26 | [[blitz-v2-2026-11-26\|BLITZ v2]] | research |
 | 2026-11-26 | [[batch5-2026-11-26\|Batch 5]] | research |
+| 2026-11-26 | [[atlasfill-2026-11-26\|ATLAS fill forensics + the cheapest entry]] | research |
 | 2026-11-26 | [[atlas2-2026-11-26\|ATLAS v2]] | research |
 | 2026-11-26 | [[alloc-2026-11-26\|Which signals go to which account]] | research |
 | 2026-11-25 | [[more-trades-2026-11-25\|More trades]] | research |

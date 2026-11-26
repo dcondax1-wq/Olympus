@@ -180,6 +180,7 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 |---|---|---|
 | 2026-11-26 | [[execpol-2026-11-26\|Entry execution policy for LIT and ATLAS]] | research |
 | 2026-11-26 | [[batch5-2026-11-26\|Batch 5]] | research |
+| 2026-11-26 | [[atlasfill-2026-11-26\|ATLAS fill forensics + the cheapest entry]] | research |
 | 2026-11-26 | [[atlas2-2026-11-26\|ATLAS v2]] | research |
 | 2026-11-25 | [[more-trades-2026-11-25\|More trades]] | research |
 | 2026-11-24 | [[atlas-funded-150-2026-11-24\|ATLAS funded 25K at ~$150 a trade, on the LIVE sizing code]] | research |
@@ -217,9 +218,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-11-13 | [[es-and-sessions-2026-11-13\|Same edge, more markets]] | rejected |
 | 2026-11-04 | [[2026-11-04_second_strategies_night\|Second strategies night]] | research |
 | 2026-11-04 | [[2026-11-04_lit_ideas_night\|LIT ideas night]] | rejected |
-| 2026-11-04 | [[2026-11-04_atlas_round3\|ATLAS round 3]] | research |
 
-... and 31 older (see the families).
+... and 32 older (see the families).
 
 ## Links
 

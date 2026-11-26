@@ -60,3 +60,4 @@ WATCH (not actionable yet), REFUTED (checked, not real). Already-known ideas: re
 - 2026-11-26 13:31 ET finder round skipped: landing in progress.
 - 2026-11-26 LIT Asia slot REJECTED again (big-litasia 83adb055): 2021-25 -$21.7k at +2 ticks cost; the H1 2026 gain is gone at realistic costs. An eval-only variant is being tested.
 - 2026-11-26 LIT on ES REJECTED again: no edge before costs; no 2021-24 ES data to check it on.
+- 2026-11-26 Builder consistency bug fixed (consfix): earlier Builder pass% slightly pessimistic, no decision flips.
