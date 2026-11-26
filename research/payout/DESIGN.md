@@ -42,3 +42,8 @@ For each account: the policy with the most mean cash per 12 months in the **25% 
 <= today's + 0.5 points and whose P(no payout) is <= today's + 2 points in EVERY market. Ties: the sooner first payout. If no policy
 beats today's cash in the 25% mix by more than $25 a year, keep today's. The result is a request HABIT (an owner yes/no), never
 an automatic request.
+
+## Erratum 2026-11-26 (before the run; the baseline only)
+`engine/funded_life` today asks at the MAX (ask_above 25K $1,000, 50K $2,000), not $750 / $1,500. So policy 3 "today" = policy 4
+"max"; it is run once, under the name **today = max**, and is the baseline of the pick rule. Rules re-read on MFFU's pages today
+(Builder 25K / 50K guides, Rapid EOD 25K / 50K): every payout number in research/lit/mffu_rules.json still matches.
