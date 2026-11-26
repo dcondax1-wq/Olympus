@@ -41,6 +41,9 @@ PING_TIMEOUT_S = 10
 HANG_S = 150                 # 2.5 min of no answer -> act (detected <= 2.5 min + one check, restarted within ~5 min)
 DUMP_S = 120                 # server.py: the event loop frozen this long -> stacks to logs/hang_stacks.txt
 START_GRACE_S = 120          # a server that is still starting (imports, the auto-resume) is not "hung"
+MAX_KILLS, KILL_WINDOW_S = 3, 2 * 3600   # red team 2026-11-26: a server that hangs again and again is not killed a 4th time in 2 h
+OPEN_LEG = ("entry_sent", "pending", "cancel_pending", "protected", "unprotected", "closing")   # = engine/ninjatrader.OPEN_STATUSES
+SKIP_STATE = ("ninjatrader_state_simcheck.json", "_nt_probe_state.json")
 
 
 def enabled(env=None) -> bool:
@@ -57,15 +60,32 @@ def ping(port: int, timeout: float = PING_TIMEOUT_S) -> bool:
         return False
 
 
+def _image(pid: int) -> str | None:
+    """Windows: the image name of EXACTLY this pid ("python.exe"), "" when no such process, None when it cannot tell.
+    red team 2026-11-26: the old substring test ("123" in a line for pid 1234) and pid reuse could aim a kill at another program."""
+    try:
+        r = subprocess.run(["tasklist", "/FI", f"PID eq {int(pid)}", "/FO", "CSV", "/NH"], capture_output=True, text=True, timeout=20)
+    except Exception:
+        return None
+    for ln in (r.stdout or "").splitlines():
+        parts = [x.strip().strip('"') for x in ln.split('","')]
+        if len(parts) >= 2 and parts[1].strip('"') == str(int(pid)):
+            return parts[0].strip('"').lower()
+    return ""
+
+
+def is_python(img) -> bool:
+    return bool(img) and os.path.basename(str(img)).lower().startswith(("python", "pythonw"))
+
+
 def alive(pid: int) -> bool:
     if not pid:
         return False
     if os.name == "nt":
-        try:
-            r = subprocess.run(["tasklist", "/FI", f"PID eq {int(pid)}", "/NH"], capture_output=True, text=True, timeout=20)
-            return str(int(pid)) in (r.stdout or "")
-        except Exception:
+        img = _image(pid)
+        if img is None:
             return True                            # cannot tell: never treated as gone
+        return is_python(img)                      # gone, or the pid now belongs to another program: the server is gone
     try:
         os.kill(int(pid), 0)
         return True
@@ -78,6 +98,8 @@ def alive(pid: int) -> bool:
 def kill_tree(pid: int) -> bool:
     try:
         if os.name == "nt":
+            if not is_python(_image(pid)):         # red team 2026-11-26: never a kill aimed at a pid that is not a Python process
+                return False
             r = subprocess.run(["taskkill", "/PID", str(int(pid)), "/T", "/F"], capture_output=True, text=True, timeout=30)
             return r.returncode == 0
         os.kill(int(pid), signal.SIGKILL)
@@ -101,6 +123,42 @@ def where_stuck(since: float, path: str = STACKS) -> str:
     pick = next((f for f in frames if "site-packages" not in f and "lib" + os.sep + "python" not in f.lower()
                  and "\\lib\\" not in f.lower()), frames[0])
     return pick.replace('File "', "").replace('", line ', ":")[:160]
+
+
+def all_flat_reason(root: str = ROOT) -> str | None:
+    """red team 2026-11-26: flat on EVERY account, not only LIT's. engine/autoupdate.files_flat_reason reads data/live_state.json +
+    data/ninjatrader_state.json (LIT's adapter); ATLAS (acctb), account C, the combo / fleet / extra accounts each keep their open
+    legs in their own data/ninjatrader_state_<x>.json. Any open leg there, or a file it cannot read = NOT flat (fails closed)."""
+    from .autoupdate import files_flat_reason
+    why = files_flat_reason(root)
+    if why:
+        return why
+    import glob
+    for p in sorted(glob.glob(os.path.join(root, "data", "ninjatrader_state_*.json"))):
+        name = os.path.basename(p)
+        if name in SKIP_STATE:
+            continue
+        try:
+            with open(p, encoding="utf-8") as fh:
+                d = json.load(fh)
+        except FileNotFoundError:
+            continue
+        except Exception:
+            return f"data/{name} unreadable: a trade may be open"
+        legs = d.get("legs") if isinstance(d, dict) else None
+        for lg in legs or []:
+            if isinstance(lg, dict) and lg.get("status") in OPEN_LEG:
+                return f"an open {lg.get('instrument') or 'MNQ'} leg in data/{name} ({lg.get('status')})"
+    return None
+
+
+def recent_kills(path: str = STATE_PATH, now: float | None = None) -> int:
+    try:
+        hist = list((json.load(open(path, encoding="utf-8")) or {}).get("hist") or [])
+    except Exception:  # noqa: BLE001
+        return 0
+    now = time.time() if now is None else now
+    return sum(1 for r in hist if isinstance(r, dict) and r.get("killed") and now - float(r.get("t") or 0) < KILL_WINDOW_S)
 
 
 def default_notify(title: str, body: str, key: str) -> None:
@@ -144,8 +202,7 @@ class Guard:
         self.kill_fn = kill_fn or (lambda: kill_tree(self.pid))
         if flat_fn is None:
             def flat_fn():
-                from .autoupdate import files_flat_reason
-                return files_flat_reason(self.root)
+                return all_flat_reason(self.root)
         self.flat_fn = flat_fn
         self.notify = notify or default_notify
         self.state_path, self.stacks = state_path, stacks
@@ -187,6 +244,15 @@ class Guard:
                             f"{why}: it is not restarted while a trade may be open (the stop and target sit at the broker). It "
                             "restarts by itself as soon as it is flat." + (f" Stuck at {where}." if where else ""),
                             f"hang:open:{int(self.down_since)}")
+            return "open"
+        n_k = recent_kills(self.state_path, now)
+        if n_k >= MAX_KILLS:                       # red team 2026-11-26: no kill-restart loop; ONE line, a human looks
+            if not self.told_open:
+                self.told_open = True
+                self.notify("PC server hangs again: NOT restarted", f"The bot server has not answered since {_hm(self.down_since)} ET "
+                            f"and was already restarted {n_k} times in the last 2 h, so it is left as it is (no restart loop). On the PC: "
+                            "STOP_BOT.bat, then START_BOT.bat, and send Claude logs/hang_stacks.txt." + (f" Stuck at {where}." if where else ""),
+                            f"hang:loop:{int(self.down_since)}")
             return "open"
         self._keep(where)
         ok = self.kill_fn()
