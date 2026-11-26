@@ -80,6 +80,7 @@ AREAS["pc"] += [m for m in ("start_api", "launch_checklist", "nt_outgoing", "nt_
 AREAS["pc"] += ["task_audit"]   # night-tasks 2026-11-23: one report runner (tools/task_audit.py, pc_report's 5-min gap)
 AREAS["pc"].append("brain_feed")    # day-brain-feed 2026-11-24: the Brain app feed on the PC report (engine/brain_feed.py, ext block bf)
 AREAS["pc"] += ["arm_report", "arm_rt"]   # day-armfix 2026-11-22 + red team 2026-11-23: START summary, ATLAS funded rename (keeps every number)
+AREAS["pc"] += ["nt_socket", "le_bridge_cs"]   # big-execution 2026-11-26: socket order bridge prototype (paper only; engine/nt_socket.py + ninjatrader/LE_Bridge.cs)
 AREAS["pc"].append("self_heal_pc")    # night-selfheal 2026-11-20: the PC self-heal (engine/self_heal.py, docs/SELF_HEAL.md); its own line
 AREAS["pc"].append("remote_ctl")      # night-phonectl 2026-11-20: phone remote through the backup repo (olympus/control, engine/remote_ctl.py)
 AREAS["pc"] += ["trading_home"]   # 2026-11-22: TRADE_HOME.bat menu (engine/trade_home.py), add-account prices, nq/trading_home.html at 390x844
