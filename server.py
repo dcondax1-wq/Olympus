@@ -916,6 +916,38 @@ def _poll_timing():
         print(f"[poll timing] off: {e.__class__.__name__}: {e}", flush=True)
 
 
+_HANG_FH = {}
+
+
+async def _hang_pet():
+    """big-zeroerr2: while the event loop runs, re-arm faulthandler every 30 s; frozen for hang_guard.DUMP_S = every thread's
+    stack goes to logs/hang_stacks.txt (a C thread writes it, no GIL needed), so the next hang names its own cause."""
+    import asyncio
+    import faulthandler
+    from engine import hang_guard as _hg
+    while True:
+        try:
+            faulthandler.dump_traceback_later(_hg.DUMP_S, repeat=False, file=_HANG_FH["fh"], exit=False)
+        except Exception:
+            return
+        await asyncio.sleep(30)
+
+
+def _hang_guard_start():
+    """The separate hang-guard process + the stack dump (only on the supervised PC server; LE_HANG_GUARD=0 = off). Never raises."""
+    try:
+        from engine import hang_guard as _hg
+        if not _hg.enabled() or os.environ.get("LE_SUPERVISED") != "1":
+            return
+        os.makedirs(os.path.dirname(_hg.STACKS), exist_ok=True)
+        _HANG_FH["fh"] = open(_hg.STACKS, "w", encoding="utf-8")
+        import asyncio
+        asyncio.get_event_loop().create_task(_hang_pet())
+        _hg.spawn(os.getpid(), int(os.environ.get("PORT", 8765)))
+    except Exception as e:
+        print(f"[hang guard] off: {e.__class__.__name__}: {e}", flush=True)
+
+
 def _autostart_startup():
     WATCHDOG.server_started_at = int(time.time())
     # the crash-loop net FIRST (engine/autoupdate.DailyUpdater.crash_start, redteam 2026-11-21): this start is counted before any
@@ -931,6 +963,7 @@ def _autostart_startup():
         _migrate_account_b()             # before the resume reads ATLAS's account
         threading.Thread(target=_autostart_resume, name="autostart", daemon=True).start()
         threading.Thread(target=_ensure_shortcuts, name="shortcuts", daemon=True).start()
+    _hang_guard_start()                  # big-zeroerr2: a hung server is restarted when flat within ~5 min (engine/hang_guard.py)
     WATCHDOG.start()
     HEARTBEAT.start()
     LIVEPUB.start()                      # phone live.json every minute (engine/live_publish.py)

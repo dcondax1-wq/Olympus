@@ -476,7 +476,8 @@ AREAS["pc"] += ["zerotouch"]      # night-zerotouch 2026-11-22: START phrase = k
 AREAS["pc"].append("zerotouch_rt")      # red team 2026-11-23: an old explicit keep-alive OFF sticks, NinjaTrader reopen back-off, no-console start
 AREAS["pc"] += ["zerotouch2", "zerotouch2_rt"]   # day-zerotouch2 2026-11-24 + red team: auto-park, phone inbox (newest by time), PC checklist
 AREAS["pc"].append("handsfree")
-AREAS["pc"].append("ops2")   # day-ops2 2026-11-26: hands-free roll (LE_Feed shadow), OneDrive / clock in START, backup + restore sandbox   # day-handsfree 2026-11-25: Telegram commands, writers sandbox (git status stays clean), NinjaScript sync, reboot chain
+AREAS["pc"].append("ops2")
+AREAS["pc"].append("zeroerr2")   # big-zeroerr2 2026-11-26: hang guard (a hung server restarted when flat in < 5 min), the sweep's clusters   # day-ops2 2026-11-26: hands-free roll (LE_Feed shadow), OneDrive / clock in START, backup + restore sandbox   # day-handsfree 2026-11-25: Telegram commands, writers sandbox (git status stays clean), NinjaScript sync, reboot chain
 AREAS["pc"].append("handsfree_rt")   # red team 2026-11-25: forwarded Telegram = no command, force-park receipt names strategy files
 AREAS["nq"] += ["roll_dec_audit", "nt_roll_guard", "dec_roll", "roll"]   # night-roll 2026-11-23: the December roll (ROLL.md): audit with fakes + the three roll suites (were in no area)
 AREAS["nq"].append("roll_rt")           # red team 2026-11-23: TRADE_HOME R reports what tools/bat/ROLL.bat found (exit 2 = not now)

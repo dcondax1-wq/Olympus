@@ -363,3 +363,7 @@ data/tg_cmd.json
 data/tg_cmd.json.*.tmp
 # day-ops2 2026-11-26: the backup settings (engine/pc_backup.py: target dir, code_saved)
 data/pc_backup.json
+# big-zeroerr2 2026-11-26: the hang guard state + its per-server lock (engine/hang_guard.py)
+data/hang_guard.json
+data/hang_guard.json.tmp
+data/hang_guard_*.lock
