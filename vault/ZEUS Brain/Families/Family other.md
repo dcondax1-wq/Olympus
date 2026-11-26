@@ -7,8 +7,8 @@ type: "family"
 
 # Research family: other
 
-> [!abstract] 141 write-ups
-> adopt-candidate 16, finding 14, info 17, promising 14, rejected 36, research 44
+> [!abstract] 142 write-ups
+> adopt-candidate 16, finding 14, info 17, promising 14, rejected 36, research 45
 
 | Date | Write-up | Verdict |
 |---|---|---|
@@ -19,6 +19,7 @@ type: "family"
 | 2026-11-26 | [[lit-fragility-2026-11-26\|How fragile is LIT]] | research |
 | 2026-11-26 | [[latency-2026-11-26\|Order latency]] | research |
 | 2026-11-26 | [[forward-paper-2026-11-26\|Forward-paper harness]] | research |
+| 2026-11-26 | [[exitreal-2026-11-26\|Exit + backtest realism]] | research |
 | 2026-11-26 | [[execution-2026-11-26\|A sturdier execution path for the MFFU accounts]] | research |
 | 2026-11-26 | [[execpol-2026-11-26\|Entry execution policy for LIT and ATLAS]] | research |
 | 2026-11-26 | [[evalsizer-2026-11-26\|Optimal eval sizing policy]] | research |

@@ -71,8 +71,9 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-89 entries from docs/TESTED_AND_REJECTED.md, newest first.
+90 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
+- **Exit realism / touch-not-fill** · [[Zlarior (LIT)]], [[ATLAS]] · [[exitreal-2026-11-26|Exit + backtest realism]]
 - **LIT fragility audit** · [[Zlarior (LIT)]] · [[lit-fragility-2026-11-26|How fragile is LIT]]
 - **News-day playbook** · [[news-playbook-2026-11-26|News-day playbook]]
 - **LIT gate tweaks via the setup-learning loop** · [[Zlarior (LIT)]] · [[lit-learns-live-2026-11-26|LIT learns from live]]
