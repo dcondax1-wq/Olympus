@@ -62,9 +62,12 @@ def main():
             fh.write(json.dumps({"id": ida, "state": "FILLED", "filled": 1, "avg": 26375.5, "mtime": ET_ + 2.731, "seen": ET_ + 60}) + "\n")
             fh.write(json.dumps({"id": ida, "state": "WORKING", "filled": 0, "avg": None, "mtime": ET_ + 2.5, "seen": ET_ + 61}) + "\n")
             fh.write(json.dumps({"id": idz, "state": "FILLED", "filled": 3, "avg": 27001.25, "mtime": EZ + 2.6, "seen": EZ + 60}) + "\n")
+            fh.write(json.dumps({"id": idz[:-1] + "S", "state": "FILLED", "filled": 3, "avg": 26989.5, "mtime": EZ + 900, "seen": EZ + 960}) + "\n")
+            fh.write(json.dumps({"id": idz[:-1] + "T", "state": "CANCELLED", "filled": 0, "avg": None, "mtime": EZ + 900, "seen": EZ + 960}) + "\n")
         with open(os.path.join(tmp, "logs", "exec_audit", "legs.json"), "w", encoding="utf-8") as fh:
             json.dump({idz: {"entry_id": idz, "entry_t": EZ, "sent_at": EZ + 2.249, "fill_mtime": EZ + 2.6, "fill_px": 27001.25, "filled": 3,
-                             "send_at": EZ + 2.25, "ack_at": EZ + 2.31, "fill_seen_at": EZ + 2.7, "ref": 27000.5}}, fh)
+                             "send_at": EZ + 2.25, "ack_at": EZ + 2.31, "fill_seen_at": EZ + 2.7, "ref": 27000.5,
+                             "dir": 1, "stop": 26990.0, "target": 27050.0}}, fh)
         names = {"MFFUFUND25K6017", "MFFUEVAL50K1234"}
         rows = DP.day_fills("2026-11-20", root=tmp, names=names)
         by = {r["order_id"]: r for r in rows}
@@ -85,6 +88,10 @@ def main():
               z.get("signal_t") == EZ and z.get("send_t") == EZ + 2.25 and z.get("ack_t") == EZ + 2.31 and z.get("fill_seen_t") == EZ + 2.7
               and z.get("model_px") == 27000.5 and z.get("ack_s_after_send") == 0.06 and a.get("signal_t") == a.get("entry_t")
               and "send_t" not in a, str(z))
+        check("c3. big-exitreal: the real exit (stop filled 2 ticks below its 26,990 level) next to the levels; none for ATLAS",
+              z.get("exit_order") == "stop" and z.get("exit_fill_px") == 26989.5 and z.get("exit_slip_ticks") == 2.0
+              and z.get("stop_px") == 26990.0 and z.get("target_px") == 27050.0 and z.get("exit_fill_t") == EZ + 900
+              and "exit_fill_px" not in a, str(z))
         files = DP.pack_day("2026-11-20", {}, [], names, root=tmp, exec_store=os.path.join(tmp, "logs", "exec_audit"),
                             build_twin=False, now=ET_ + 86400)
         back = [json.loads(x) for x in gzip.decompress(files["fills.jsonl.gz"]).decode().splitlines() if x]

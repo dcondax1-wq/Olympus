@@ -2,6 +2,9 @@
 
     python -X utf8 research/exitreal/exitreal.py [--n 1000] [--no-eval]   -> research/exitreal/results.json + tables
 
+results.json was made BEFORE engine/costs.py was adopted (commit 3bdf53d3). Since then tools/account4_sim already carries the
+2-tick stop on LIT's trades, so a re-run of the eval part here would count that tick twice (E0 is no longer "as stored").
+
 Per stored trade (LIT: the research ledger tools/account4_sim reads; ATLAS: tools/atlas_fills.units, the units the eval
 engines use), on NQ bars (1m for 2026, 5m before), in direction space (higher = better for the trade):
   target:  the exit bar must trade THROUGH the target by thr ticks; a touch-only target is re-walked from the next bar

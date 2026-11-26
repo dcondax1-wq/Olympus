@@ -593,14 +593,23 @@ def day_fills(day: str, root: str | None = None, exec_store: str | None = None, 
             if old is None or str(r.get("state")) == "FILLED" or str(old.get("state")) != "FILLED":
                 states[oid] = r
     legs = {k: v for k, v in (_read_json(os.path.join(es, "legs.json"), {}) or {}).items() if isinstance(v, dict)}
+    # big-exitreal 2026-11-26: the stop / target order states of the same entries (id stem ...S / ...T), for real exit fills
+    want = {oid[:-1] + k for oid in set(rows) | set(states) for k in ("S", "T")}
+    exits = {}
+    for r in _jl_read(os.path.join(es, "orders.jsonl")):
+        oid = r.get("id")
+        if oid in want:
+            old = exits.get(oid)
+            if old is None or str(r.get("state")) == "FILLED" or str(old.get("state")) != "FILLED":
+                exits[oid] = r
     out = []
     try:
-        return _fill_rows(rows, states, legs, names)
+        return _fill_rows(rows, states, legs, names, exits)
     except Exception:                                    # a bad state / leg value: the day packs without fill rows
         return out
 
 
-def _fill_rows(rows, states, legs, names) -> list:
+def _fill_rows(rows, states, legs, names, exits=None) -> list:
     out = []
     for oid in sorted(set(rows) | set(states)):
         r = dict(rows.get(oid) or {"order_id": oid, "entry_t": int(_ENTRY_ID.match(oid).group(1))})
@@ -621,6 +630,19 @@ def _fill_rows(rows, states, legs, names) -> list:
         r["fill_s_after_sent"] = None if sent is None or r.get("fill_t") is None else round(float(r["fill_t"]) - float(sent), 3)
         if r.get("send_t") is not None and r.get("ack_t") is not None:
             r["ack_s_after_send"] = round(r["ack_t"] - r["send_t"], 3)
+        # big-exitreal 2026-11-26: the real exit of this entry (the bracket's stop or target, NinjaTrader's own fill), next to
+        # the levels it was placed at; exit_slip_ticks > 0 = filled worse than the level (a stop's slippage)
+        for k in ("stop", "target"):
+            if lg.get(k) is not None:
+                r[f"{k}_px"] = float(lg[k])
+        for k, sfx in (("stop", "S"), ("target", "T")):
+            xs = (exits or {}).get(lg.get(f"{k}_id") or (str(oid)[:-1] + sfx))
+            if xs and str(xs.get("state")) == "FILLED" and xs.get("avg"):
+                d = 1 if (lg.get("dir") == 1 or str(r.get("action") or "").upper() == "BUY") else -1
+                r.update(exit_order=k, exit_fill_px=float(xs["avg"]), exit_fill_t=xs.get("mtime"), exit_filled=xs.get("filled"))
+                if r.get(f"{k}_px") is not None:
+                    r["exit_slip_ticks"] = round((r[f"{k}_px"] - float(xs["avg"])) * d / 0.25, 1)   # long stop filled below = +
+                break
         out.append(scrub(r, names))
     return sorted(out, key=lambda r: (r["entry_t"], str(r.get("book")), str(r.get("order_id"))))
 
