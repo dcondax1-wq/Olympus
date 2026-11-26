@@ -499,6 +499,7 @@ AREAS["pc"].append("ops2")   # day-ops2 2026-11-26: hands-free roll (LE_Feed sha
 AREAS["pc"].append("ops2_rt"); AREAS["pc"].append("le_feed_hub_rt")   # red team 2026-11-26: gappy shadow never verifies, backups disarmed, LE_FeedHub heartbeat
 AREAS["pc"].append("zeroerr2")   # big-zeroerr2 2026-11-26: hang guard (a hung server restarted when flat in < 5 min), the sweep's clusters
 AREAS["pc"].append("hang_guard_rt")   # red team 2026-11-26: every account flat, python-only kill, no restart loop
+AREAS["pc"].append("flat_stuck_rt")   # red team #23: 30 h of 'not flat' = one 'update stuck' line naming the leftover file
 AREAS["pc"].append("handsfree_rt")   # red team 2026-11-25: forwarded Telegram = no command, force-park receipt names strategy files
 AREAS["nq"] += ["roll_dec_audit", "nt_roll_guard", "dec_roll", "roll"]   # night-roll 2026-11-23: the December roll (ROLL.md): audit with fakes + the three roll suites (were in no area)
 AREAS["nq"].append("roll_rt")           # red team 2026-11-23: TRADE_HOME R reports what tools/bat/ROLL.bat found (exit 2 = not now)
