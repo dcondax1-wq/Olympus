@@ -11,7 +11,11 @@ const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/jav
 const srv = http.createServer((q, r) => {
   let p = decodeURIComponent(q.url.split('?')[0]); if (p.endsWith('/')) p += 'index.html';
   const f = path.join(ROOT, p);
-  fs.readFile(f, (e, b) => { if (e) { r.writeHead(404); r.end(); return; } r.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); r.end(b); });
+  fs.readFile(f, (e, b) => { if (e) { r.writeHead(404); r.end(); return; }
+    if (p === '/status_feed.json' && process.env.NET_STUB_KEEP_VK !== '1') {   // day-guard2 pins the PC's key; the fixture feed is unsigned
+      try { const d = JSON.parse(b.toString('utf8')); delete d.vk; delete d.vks; b = Buffer.from(JSON.stringify(d)); } catch (x) { /* as is */ }
+    }
+    r.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); r.end(b); });
 }).listen(0);
 const port = srv.address().port, origin = `http://127.0.0.1:${port}`;
 const br = await chromium.launch();

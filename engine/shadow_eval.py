@@ -53,7 +53,8 @@ def _write(path, obj):
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(obj, fh, indent=1)
-    os.replace(tmp, path)
+    from engine import fsutil   # retries on a Windows / OneDrive lock (test_selfheal)
+    fsutil.replace(tmp, path)
 
 
 def shown(path: str | None = None) -> bool:

@@ -81,9 +81,13 @@ def main():
     row = X.fill_row("atlas", "sell", 2, 27037.75, 27035.5, signal_t=1, send_t=2, ack_t=3, fill_t=3)
     ok(tuple(k for k in row if k in X.FIELDS) == X.FIELDS and row["ticks"] == 9.0, f"c zeroerr field names, sell 2.25 pts lower = 9 ticks worse")
     ok(X.fill_row("lit", "buy", 1, 100.0, 100.5)["ticks"] == 2.0, "c buy 0.5 higher = 2 ticks worse")
-    L = X.from_ledger()
-    s = X.summary(L)
-    ok(s.get("atlas", {}).get("n", 0) >= 4 and s["atlas"]["mean_ticks"] >= 9, f"c the ledger back-fill sees the real ATLAS fills: {s.get('atlas')}")
+    import glob as _glob
+    if not _glob.glob(os.path.join(X.ROOT, "data", "pc_days", "*", "trades.jsonl.gz")):   # the PC's day folders come from data_pull
+        print("skip c the ledger back-fill: no data/pc_days in this checkout (python tools/data_pull.py --latest)")
+    else:
+        L = X.from_ledger()
+        s = X.summary(L)
+        ok(s.get("atlas", {}).get("n", 0) >= 4 and s["atlas"]["mean_ticks"] >= 9, f"c the ledger back-fill sees the real ATLAS fills: {s.get('atlas')}")
     print("ALL OK" if not FAILS else f"{len(FAILS)} FAILED")
     return 1 if FAILS else 0
 

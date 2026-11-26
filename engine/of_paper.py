@@ -476,7 +476,8 @@ def export_day(S: dict, root: str = ROOT) -> str | None:
         p = os.path.join(d, EXPORT_NAME)
         with open(p + ".tmp", "wb") as f0, gzip.GzipFile(fileobj=f0, mode="wb", compresslevel=9, mtime=0) as fh:
             fh.write(raw)
-        os.replace(p + ".tmp", p)
+        from engine import fsutil   # retries on a Windows / OneDrive lock (test_selfheal)
+        fsutil.replace(p + ".tmp", p)
         return p
     except Exception:  # noqa: BLE001
         return None
