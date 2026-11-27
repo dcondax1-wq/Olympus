@@ -1,0 +1,200 @@
+{
+ "v3": {
+  "k": 0.1952,
+  "es_trades": 8,
+  "es_net": 724,
+  "wide_days": 58,
+  "spans": {
+   "H1": {
+    "live": {
+     "n": 79,
+     "tpw": 3.11,
+     "pf": 5.2,
+     "net": 34261,
+     "per_month": 5665,
+     "dd": -2196,
+     "win": 59.5,
+     "pass_rate": 83.5,
+     "wide": 0,
+     "wide_net": 0
+    },
+    "V3_es_detect": {
+     "n": 83,
+     "tpw": 3.27,
+     "pf": 5.04,
+     "net": 33646,
+     "per_month": 5564,
+     "dd": -2196,
+     "win": 59.0,
+     "pass_rate": 83.5,
+     "wide": 5,
+     "wide_net": 622
+    },
+    "V3b_cap_by_ratio": {
+     "n": 83,
+     "tpw": 3.27,
+     "pf": 5.04,
+     "net": 33646,
+     "per_month": 5564,
+     "dd": -2196,
+     "win": 59.0,
+     "pass_rate": 83.5,
+     "wide": 5,
+     "wide_net": 622
+    }
+   },
+   "JulNov": {
+    "live": {
+     "n": 47,
+     "tpw": 2.2,
+     "pf": 2.49,
+     "net": 9060,
+     "per_month": 1778,
+     "dd": -1396,
+     "win": 46.8,
+     "pass_rate": 100.0,
+     "wide": 0,
+     "wide_net": 0
+    },
+    "V3_es_detect": {
+     "n": 50,
+     "tpw": 2.34,
+     "pf": 2.48,
+     "net": 9162,
+     "per_month": 1798,
+     "dd": -1396,
+     "win": 48.0,
+     "pass_rate": 100.0,
+     "wide": 3,
+     "wide_net": 102
+    },
+    "V3b_cap_by_ratio": {
+     "n": 50,
+     "tpw": 2.34,
+     "pf": 2.48,
+     "net": 9162,
+     "per_month": 1798,
+     "dd": -1396,
+     "win": 48.0,
+     "pass_rate": 100.0,
+     "wide": 3,
+     "wide_net": 102
+    }
+   },
+   "JulOct14": {
+    "live": {
+     "n": 40,
+     "tpw": 2.63,
+     "pf": 2.91,
+     "net": 9919,
+     "per_month": 2741,
+     "dd": -1396,
+     "win": 50.0,
+     "pass_rate": 100.0,
+     "wide": 0,
+     "wide_net": 0
+    },
+    "V3_es_detect": {
+     "n": 42,
+     "tpw": 2.76,
+     "pf": 2.85,
+     "net": 9814,
+     "per_month": 2712,
+     "dd": -1396,
+     "win": 50.0,
+     "pass_rate": 100.0,
+     "wide": 2,
+     "wide_net": -105
+    },
+    "V3b_cap_by_ratio": {
+     "n": 42,
+     "tpw": 2.76,
+     "pf": 2.85,
+     "net": 9814,
+     "per_month": 2712,
+     "dd": -1396,
+     "win": 50.0,
+     "pass_rate": 100.0,
+     "wide": 2,
+     "wide_net": -105
+    }
+   },
+   "Drought": {
+    "live": {
+     "n": 7,
+     "tpw": 1.13,
+     "pf": 0.03,
+     "net": -858,
+     "per_month": -581,
+     "dd": -859,
+     "win": 28.6,
+     "pass_rate": null,
+     "wide": 0,
+     "wide_net": 0
+    },
+    "V3_es_detect": {
+     "n": 8,
+     "tpw": 1.29,
+     "pf": 0.27,
+     "net": -652,
+     "per_month": -441,
+     "dd": -859,
+     "win": 37.5,
+     "pass_rate": null,
+     "wide": 1,
+     "wide_net": 207
+    },
+    "V3b_cap_by_ratio": {
+     "n": 8,
+     "tpw": 1.29,
+     "pf": 0.27,
+     "net": -652,
+     "per_month": -441,
+     "dd": -859,
+     "win": 37.5,
+     "pass_rate": null,
+     "wide": 1,
+     "wide_net": 207
+    }
+   },
+   "2021-25": {
+    "live": {
+     "n": 87,
+     "tpw": 2.34,
+     "pf": 0.95,
+     "net": -684,
+     "per_month": -77,
+     "dd": -5635,
+     "win": 58.6,
+     "pass_rate": 25.5,
+     "wide": 0,
+     "wide_net": 0
+    },
+    "V3_es_detect": {
+     "n": 87,
+     "tpw": 2.34,
+     "pf": 0.95,
+     "net": -684,
+     "per_month": -77,
+     "dd": -5635,
+     "win": 58.6,
+     "pass_rate": 25.5,
+     "wide": 0,
+     "wide_net": 0
+    },
+    "V3b_cap_by_ratio": {
+     "n": 87,
+     "tpw": 2.34,
+     "pf": 0.95,
+     "net": -684,
+     "per_month": -77,
+     "dd": -5635,
+     "win": 58.6,
+     "pass_rate": 25.5,
+     "wide": 0,
+     "wide_net": 0
+    }
+   }
+  }
+ }
+}
