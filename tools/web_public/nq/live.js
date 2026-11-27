@@ -23,7 +23,9 @@ async function getText(url, ms) {
   const ac = typeof AbortController === 'function' ? new AbortController() : null, timer = ac ? setTimeout(() => ac.abort(), ms || 8000) : 0;
   try { const r = await fetch(url, { cache: 'no-store', ...(ac ? { signal: ac.signal } : {}) }); return r.ok ? await r.text() : null; } catch (_) { return null; } finally { clearTimeout(timer); }
 }
-async function getPost() {
+async function getPost(force) {
+  const Q = window.NQ_FEED;                                  // the shared NQ feed (nqfeed.js): one read for every widget / tab
+  if (Q && Q.latest) { try { return await Promise.race([Q.latest({ force: !!force }), new Promise((r) => setTimeout(() => r(null), 15000))]); } catch (_) { /* the old path */ } }
   const F = window.PC_FEED;
   if (!F || !F.fetchLatest) return null;
   try { return await Promise.race([F.fetchLatest({ feedUrl: new URL('../status_feed.json', import.meta.url).href }), new Promise((r) => setTimeout(() => r(null), 15000))]); } catch (_) { return null; }
@@ -346,14 +348,14 @@ function render() {
   S.ready = true;
 }
 
-async function load(first) {
+async function load(first, force) {
   if (first) {
     const [home, biz, payday] = await Promise.all([getJSON('../home.json'), getJSON('../business/accounts.json'), getJSON('../business/payday.json')]);
     S.home = home; S.biz = biz; S.payday = payday;
     render();
   }
   const wantBars = first || Date.now() - S.barsAt > BARS_MS - 1000;
-  const [lite, bars] = await Promise.all([getPost(), wantBars ? getBars() : Promise.resolve(undefined)]);
+  const [lite, bars] = await Promise.all([getPost(force), wantBars ? getBars() : Promise.resolve(undefined)]);
   if (lite) S.lite = lite;
   if (bars) S.bars = bars;
   if (wantBars) S.barsAt = Date.now();
@@ -361,7 +363,12 @@ async function load(first) {
   render();
 }
 
-window.NQ_LIVE = { S, model, ready: () => S.ready && S.loaded === true, refresh: () => load(false) };
+window.NQ_LIVE = { S, model, ready: () => S.ready && S.loaded === true, refresh: () => load(false, true) };
+const NQF = window.NQ_FEED;                                  // instant first paint from the kept post (shown with its real age), then every newer one
+if (NQF) {
+  try { const c = NQF.cached(); if (c && !S.lite) S.lite = c; } catch (_) { /* none */ }
+  NQF.on((l) => { if (l && (!S.lite || +l.t >= +S.lite.t)) { S.lite = l; if (S.home) { try { render(); } catch (_) { /* keeps the last screen */ } } } });
+}
 load(true).then(() => { S.loaded = true; }).catch(() => { S.loaded = true; try { render(); } catch (_) { /* nothing */ } });
 setInterval(() => { if (document.visibilityState !== 'hidden') { try { render(); } catch (_) { /* keeps the last screen */ } } }, 5000);   // ages + time in trade move on
 setInterval(() => { if (document.visibilityState !== 'hidden') load(false).catch(() => {}); }, L.POLL_MS);

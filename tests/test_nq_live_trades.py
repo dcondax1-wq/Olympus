@@ -68,7 +68,7 @@ def part_a():
           "prefers-reduced-motion: reduce" in f["live.css"] and "animation: none !important" in f["live.css"])
     check("a. still read only: no innerHTML / storage / POST; versions bumped (live.js / live.css / livecore v2)",
           not re.search(r"innerHTML|insertAdjacentHTML|localStorage|sessionStorage|method:\s*['\"]POST|sendBeacon", f["live.js"] + f["livecore.js"])
-          and "live.js?v=2" in f["live.html"] and "live.css?v=2" in f["live.html"] and "livecore.js?v=2" in f["live.js"])
+          and "live.js?v=3" in f["live.html"] and "nqfeed.js?v=1" in f["live.html"] and "live.css?v=2" in f["live.html"] and "livecore.js?v=2" in f["live.js"])
 
 
 # ------------------------------------------------------------------------------------------------ b. node
@@ -236,7 +236,7 @@ def part_c():
     try:
         nd = NL.ndjson
         runs = shots_runs("after", shots)
-        runs.append({"name": "pulse", "feed": nd(journal_post(), NL.bars_post()), "feed2": nd(journal_post(extra_closed=True)), "w": 390, "h": 844})
+        runs.append({"name": "pulse", "feed": nd(journal_post(), NL.bars_post()), "feed2": nd(journal_post(t=NL.T + 60, extra_closed=True)), "w": 390, "h": 844})
         runs.append({"name": "reduced", "feed": nd(journal_post(), NL.bars_post()), "w": 390, "h": 844, "reduced": True})
         out = browser_run(origin, runs)
     finally:
