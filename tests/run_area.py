@@ -609,3 +609,4 @@ AREAS["money"].append("nq_now"); AREAS["nq"].append("nq_now")   # day-widget 202
 
 if __name__ == "__main__":
     sys.exit(main())
+AREAS["nq"].append("nq_brainview")   # day-brains 2026-11-27: the strategy brains (nq/brainviewcore.js, brainview.js, brains.html)
