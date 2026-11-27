@@ -1,0 +1,6535 @@
+{
+ "made": "2026-11-27T05:24:36+00:00",
+ "design": "research/orderflow/DESIGN_exec.md",
+ "days": 51,
+ "first": "2026-09-27",
+ "last": "2026-11-26",
+ "signals": 93,
+ "used": 93,
+ "dropped": [],
+ "offsets": {
+  "2026-09-27": 0.0,
+  "2026-09-28": 0.0,
+  "2026-09-29": 0.0,
+  "2026-09-30": 0.0,
+  "2026-10-01": 0.0,
+  "2026-10-02": 0.0,
+  "2026-10-05": 0.0,
+  "2026-10-06": 0.0,
+  "2026-10-07": 0.0,
+  "2026-10-08": 0.0,
+  "2026-10-09": 0.0,
+  "2026-10-12": 0.0,
+  "2026-10-13": 0.0,
+  "2026-10-14": 0.0,
+  "2026-10-15": 0.0,
+  "2026-10-16": 0.0,
+  "2026-10-18": 0.0,
+  "2026-10-19": 0.0,
+  "2026-10-20": 0.0,
+  "2026-10-21": 0.0,
+  "2026-10-22": 0.0,
+  "2026-10-23": 0.0,
+  "2026-10-25": 0.25,
+  "2026-10-26": 0.0,
+  "2026-10-27": 0.0,
+  "2026-10-28": 0.0,
+  "2026-10-29": 0.0,
+  "2026-10-30": 0.0,
+  "2026-11-01": 0.0,
+  "2026-11-02": 0.0,
+  "2026-11-03": 0.0,
+  "2026-11-04": 0.0,
+  "2026-11-05": -0.25,
+  "2026-11-06": 0.0,
+  "2026-11-08": -0.25,
+  "2026-11-09": 0.0,
+  "2026-11-10": 0.0,
+  "2026-11-11": 0.0,
+  "2026-11-12": 0.0,
+  "2026-11-13": 0.0,
+  "2026-11-15": -0.5,
+  "2026-11-16": 0.0,
+  "2026-11-17": 0.0,
+  "2026-11-18": 0.0,
+  "2026-11-19": 0.0,
+  "2026-11-20": 0.0,
+  "2026-11-22": 0.25,
+  "2026-11-23": 0.0,
+  "2026-11-24": 0.0,
+  "2026-11-25": 0.0,
+  "2026-11-26": -0.25
+ },
+ "grid": {
+  "E0+X0": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": 0.95,
+    "mean_R": 0.495,
+    "win%": 50.0,
+    "net_usd_1": 1562.5,
+    "usd_per_signal": 39.06,
+    "usd_per_signal_halves": [
+     47.03,
+     29.32
+    ],
+    "net_usd_500": 8950.0,
+    "usd_500_per_signal": 223.75,
+    "usd_500_per_signal_halves": [
+     350.81,
+     68.46
+    ],
+    "net_usd_1_lane_comm": 1582.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1100.5,
+    "exits": {
+     "stop": 20,
+     "target": 20,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 0.19,
+    "mean_R": -0.322,
+    "win%": 24.5,
+    "net_usd_1": -1966.7,
+    "usd_per_signal": -37.11,
+    "usd_per_signal_halves": [
+     -56.94,
+     -14.9
+    ],
+    "net_usd_500": -6761.5,
+    "usd_500_per_signal": -127.58,
+    "usd_500_per_signal_halves": [
+     -282.33,
+     45.75
+    ],
+    "net_usd_1_lane_comm": -1940.2,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2085.2,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0055,
+   "sep_halves_R": [
+    1.399,
+    0.138
+   ],
+   "lane_verdict": "YES"
+  },
+  "E1a+X0": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": 11.22,
+    "mean_R": 0.42,
+    "win%": 47.5,
+    "net_usd_1": 1332.5,
+    "usd_per_signal": 33.31,
+    "usd_per_signal_halves": [
+     52.26,
+     10.16
+    ],
+    "net_usd_500": 7709.3,
+    "usd_500_per_signal": 192.73,
+    "usd_500_per_signal_halves": [
+     347.18,
+     3.96
+    ],
+    "net_usd_1_lane_comm": 1352.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1134.5,
+    "exits": {
+     "stop": 21,
+     "target": 19,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 11.92,
+    "mean_R": -0.322,
+    "win%": 24.5,
+    "net_usd_1": -1926.7,
+    "usd_per_signal": -36.35,
+    "usd_per_signal_halves": [
+     -59.4,
+     -10.54
+    ],
+    "net_usd_500": -7960.2,
+    "usd_500_per_signal": -150.19,
+    "usd_500_per_signal_halves": [
+     -302.29,
+     20.16
+    ],
+    "net_usd_1_lane_comm": -1900.2,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2131.7,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0092,
+   "sep_halves_R": [
+    1.4,
+    -0.029
+   ],
+   "lane_verdict": "NO"
+  },
+  "E1b+X0": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": 18.23,
+    "mean_R": 0.27,
+    "win%": 42.5,
+    "net_usd_1": 1128.5,
+    "usd_per_signal": 28.21,
+    "usd_per_signal_halves": [
+     42.78,
+     10.41
+    ],
+    "net_usd_500": 4574.8,
+    "usd_500_per_signal": 114.37,
+    "usd_500_per_signal_halves": [
+     227.34,
+     -23.71
+    ],
+    "net_usd_1_lane_comm": 1148.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1155.5,
+    "exits": {
+     "stop": 23,
+     "target": 17,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 20.42,
+    "mean_R": -0.322,
+    "win%": 24.5,
+    "net_usd_1": -1925.2,
+    "usd_per_signal": -36.32,
+    "usd_per_signal_halves": [
+     -61.28,
+     -8.38
+    ],
+    "net_usd_500": -7928.1,
+    "usd_500_per_signal": -149.59,
+    "usd_500_per_signal_halves": [
+     -297.05,
+     15.57
+    ],
+    "net_usd_1_lane_comm": -1898.7,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2183.2,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.027,
+   "sep_halves_R": [
+    1.127,
+    -0.029
+   ],
+   "lane_verdict": "NO"
+  },
+  "E1c+X0": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": 21.85,
+    "mean_R": 0.233,
+    "win%": 42.5,
+    "net_usd_1": 832.0,
+    "usd_per_signal": 20.8,
+    "usd_per_signal_halves": [
+     44.19,
+     -7.79
+    ],
+    "net_usd_500": 3610.1,
+    "usd_500_per_signal": 90.25,
+    "usd_500_per_signal_halves": [
+     224.64,
+     -74.0
+    ],
+    "net_usd_1_lane_comm": 852.0,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1168.0,
+    "exits": {
+     "stop": 23,
+     "target": 16,
+     "flat": 1
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 24.75,
+    "mean_R": -0.36,
+    "win%": 22.6,
+    "net_usd_1": -2473.7,
+    "usd_per_signal": -46.67,
+    "usd_per_signal_halves": [
+     -62.2,
+     -29.28
+    ],
+    "net_usd_500": -8157.0,
+    "usd_500_per_signal": -153.91,
+    "usd_500_per_signal_halves": [
+     -291.77,
+     0.51
+    ],
+    "net_usd_1_lane_comm": -2447.2,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2760.2,
+    "exits": {
+     "stop": 40,
+     "target": 10,
+     "flat": 3
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0202,
+   "sep_halves_R": [
+    1.127,
+    -0.032
+   ],
+   "lane_verdict": "NO"
+  },
+  "E2-5+X0": {
+   "taken": {
+    "signals": 40,
+    "filled": 29,
+    "fill%": 72.5,
+    "given_ticks_mean": -77.93,
+    "mean_R": 0.542,
+    "win%": 51.7,
+    "net_usd_1": 27.4,
+    "usd_per_signal": 0.69,
+    "usd_per_signal_halves": [
+     4.25,
+     -3.68
+    ],
+    "net_usd_500": 7179.8,
+    "usd_500_per_signal": 179.5,
+    "usd_500_per_signal_halves": [
+     296.11,
+     36.96
+    ],
+    "net_usd_1_lane_comm": 41.9,
+    "trades_per_week": 2.84,
+    "max_dd_usd_1": 489.8,
+    "exits": {
+     "stop": 14,
+     "target": 15,
+     "flat": 0
+    },
+    "missed": 11,
+    "missed_winners": 7,
+    "missed_winner_usd": 2793.7,
+    "missed_net_usd": 2241.1
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 24,
+    "fill%": 45.3,
+    "given_ticks_mean": -78.12,
+    "mean_R": -0.138,
+    "win%": 29.2,
+    "net_usd_1": -222.1,
+    "usd_per_signal": -4.19,
+    "usd_per_signal_halves": [
+     -18.29,
+     11.6
+    ],
+    "net_usd_500": -1605.4,
+    "usd_500_per_signal": -30.29,
+    "usd_500_per_signal_halves": [
+     -61.97,
+     5.19
+    ],
+    "net_usd_1_lane_comm": -210.1,
+    "trades_per_week": 2.35,
+    "max_dd_usd_1": 560.3,
+    "exits": {
+     "stop": 17,
+     "target": 7,
+     "flat": 0
+    },
+    "missed": 29,
+    "missed_winners": 10,
+    "missed_winner_usd": 2717.5,
+    "missed_net_usd": -241.1
+   },
+   "sep_p": 0.0575,
+   "sep_halves_R": [
+    1.191,
+    0.06
+   ],
+   "lane_verdict": "YES"
+  },
+  "E2-15+X0": {
+   "taken": {
+    "signals": 40,
+    "filled": 32,
+    "fill%": 80.0,
+    "given_ticks_mean": -84.41,
+    "mean_R": 0.488,
+    "win%": 50.0,
+    "net_usd_1": 64.7,
+    "usd_per_signal": 1.62,
+    "usd_per_signal_halves": [
+     6.38,
+     -4.2
+    ],
+    "net_usd_500": 7144.3,
+    "usd_500_per_signal": 178.61,
+    "usd_500_per_signal_halves": [
+     311.59,
+     16.07
+    ],
+    "net_usd_1_lane_comm": 80.7,
+    "trades_per_week": 3.14,
+    "max_dd_usd_1": 499.2,
+    "exits": {
+     "stop": 16,
+     "target": 16,
+     "flat": 0
+    },
+    "missed": 8,
+    "missed_winners": 7,
+    "missed_winner_usd": 2793.7,
+    "missed_net_usd": 2560.3
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 36,
+    "fill%": 67.9,
+    "given_ticks_mean": -92.14,
+    "mean_R": -0.184,
+    "win%": 27.8,
+    "net_usd_1": -302.9,
+    "usd_per_signal": -5.72,
+    "usd_per_signal_halves": [
+     -20.16,
+     10.46
+    ],
+    "net_usd_500": -3169.7,
+    "usd_500_per_signal": -59.81,
+    "usd_500_per_signal_halves": [
+     -82.07,
+     -34.87
+    ],
+    "net_usd_1_lane_comm": -284.9,
+    "trades_per_week": 3.53,
+    "max_dd_usd_1": 624.0,
+    "exits": {
+     "stop": 26,
+     "target": 10,
+     "flat": 0
+    },
+    "missed": 17,
+    "missed_winners": 9,
+    "missed_winner_usd": 2435.4,
+    "missed_net_usd": 613.2
+   },
+   "sep_p": 0.0427,
+   "sep_halves_R": [
+    1.094,
+    0.131
+   ],
+   "lane_verdict": "YES"
+  },
+  "E3-2+X0": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": -2.15,
+    "mean_R": 0.495,
+    "win%": 50.0,
+    "net_usd_1": 1525.5,
+    "usd_per_signal": 38.14,
+    "usd_per_signal_halves": [
+     45.8,
+     28.77
+    ],
+    "net_usd_500": 8528.3,
+    "usd_500_per_signal": 213.21,
+    "usd_500_per_signal_halves": [
+     333.64,
+     66.02
+    ],
+    "net_usd_1_lane_comm": 1545.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1094.5,
+    "exits": {
+     "stop": 20,
+     "target": 20,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": -2.62,
+    "mean_R": -0.322,
+    "win%": 24.5,
+    "net_usd_1": -1928.2,
+    "usd_per_signal": -36.38,
+    "usd_per_signal_halves": [
+     -55.99,
+     -14.42
+    ],
+    "net_usd_500": -7049.1,
+    "usd_500_per_signal": -133.0,
+    "usd_500_per_signal_halves": [
+     -290.16,
+     43.01
+    ],
+    "net_usd_1_lane_comm": -1901.7,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2044.2,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0055,
+   "sep_halves_R": [
+    1.398,
+    0.138
+   ],
+   "lane_verdict": "YES"
+  },
+  "E3-4+X0": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": -4.0,
+    "mean_R": 0.494,
+    "win%": 50.0,
+    "net_usd_1": 1505.5,
+    "usd_per_signal": 37.64,
+    "usd_per_signal_halves": [
+     45.1,
+     28.52
+    ],
+    "net_usd_500": 8615.0,
+    "usd_500_per_signal": 215.38,
+    "usd_500_per_signal_halves": [
+     336.7,
+     67.09
+    ],
+    "net_usd_1_lane_comm": 1525.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1090.5,
+    "exits": {
+     "stop": 20,
+     "target": 20,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": -4.17,
+    "mean_R": -0.322,
+    "win%": 24.5,
+    "net_usd_1": -1915.7,
+    "usd_per_signal": -36.15,
+    "usd_per_signal_halves": [
+     -55.42,
+     -14.56
+    ],
+    "net_usd_500": -7075.8,
+    "usd_500_per_signal": -133.51,
+    "usd_500_per_signal_halves": [
+     -290.18,
+     41.97
+    ],
+    "net_usd_1_lane_comm": -1889.2,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2028.7,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0057,
+   "sep_halves_R": [
+    1.397,
+    0.137
+   ],
+   "lane_verdict": "YES"
+  },
+  "E4+X0": {
+   "taken": {
+    "signals": 40,
+    "filled": 37,
+    "fill%": 92.5,
+    "given_ticks_mean": 3.08,
+    "mean_R": 0.536,
+    "win%": 51.4,
+    "net_usd_1": 1754.2,
+    "usd_per_signal": 43.85,
+    "usd_per_signal_halves": [
+     41.32,
+     46.95
+    ],
+    "net_usd_500": 8730.5,
+    "usd_500_per_signal": 218.26,
+    "usd_500_per_signal_halves": [
+     303.59,
+     113.97
+    ],
+    "net_usd_1_lane_comm": 1772.7,
+    "trades_per_week": 3.63,
+    "max_dd_usd_1": 791.7,
+    "exits": {
+     "stop": 18,
+     "target": 19,
+     "flat": 0
+    },
+    "missed": 3,
+    "missed_winners": 1,
+    "missed_winner_usd": 148.1,
+    "missed_net_usd": -204.2
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 52,
+    "fill%": 98.1,
+    "given_ticks_mean": 3.13,
+    "mean_R": -0.308,
+    "win%": 25.0,
+    "net_usd_1": -1946.8,
+    "usd_per_signal": -36.73,
+    "usd_per_signal_halves": [
+     -57.85,
+     -13.08
+    ],
+    "net_usd_500": -6452.5,
+    "usd_500_per_signal": -121.75,
+    "usd_500_per_signal_halves": [
+     -287.16,
+     63.52
+    ],
+    "net_usd_1_lane_comm": -1920.8,
+    "trades_per_week": 5.1,
+    "max_dd_usd_1": 2062.8,
+    "exits": {
+     "stop": 39,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 1,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": -42.9
+   },
+   "sep_p": 0.004,
+   "sep_halves_R": [
+    1.34,
+    0.241
+   ],
+   "lane_verdict": "YES"
+  },
+  "E5+X0": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": -20.15,
+    "mean_R": 0.622,
+    "win%": 55.0,
+    "net_usd_1": 3135.5,
+    "usd_per_signal": 78.39,
+    "usd_per_signal_halves": [
+     74.67,
+     82.93
+    ],
+    "net_usd_500": 10369.6,
+    "usd_500_per_signal": 259.24,
+    "usd_500_per_signal_halves": [
+     366.03,
+     128.72
+    ],
+    "net_usd_1_lane_comm": 3155.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 505.2,
+    "exits": {
+     "stop": 18,
+     "target": 21,
+     "flat": 1
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 13.34,
+    "mean_R": -0.346,
+    "win%": 22.6,
+    "net_usd_1": -3179.7,
+    "usd_per_signal": -59.99,
+    "usd_per_signal_halves": [
+     -68.94,
+     -49.98
+    ],
+    "net_usd_500": -7594.4,
+    "usd_500_per_signal": -143.29,
+    "usd_500_per_signal_halves": [
+     -263.71,
+     -8.42
+    ],
+    "net_usd_1_lane_comm": -3153.2,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 3179.7,
+    "exits": {
+     "stop": 38,
+     "target": 10,
+     "flat": 5
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0015,
+   "sep_halves_R": [
+    1.443,
+    0.41
+   ],
+   "lane_verdict": "YES"
+  },
+  "E0+X1": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": 0.95,
+    "mean_R": 0.491,
+    "win%": 50.0,
+    "net_usd_1": 1552.5,
+    "usd_per_signal": 38.81,
+    "usd_per_signal_halves": [
+     46.83,
+     29.02
+    ],
+    "net_usd_500": 8882.5,
+    "usd_500_per_signal": 222.06,
+    "usd_500_per_signal_halves": [
+     348.9,
+     67.04
+    ],
+    "net_usd_1_lane_comm": 1572.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1106.5,
+    "exits": {
+     "stop": 20,
+     "target": 20,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 0.19,
+    "mean_R": -0.328,
+    "win%": 24.5,
+    "net_usd_1": -1987.7,
+    "usd_per_signal": -37.5,
+    "usd_per_signal_halves": [
+     -57.38,
+     -15.24
+    ],
+    "net_usd_500": -6900.0,
+    "usd_500_per_signal": -130.19,
+    "usd_500_per_signal_halves": [
+     -285.64,
+     43.91
+    ],
+    "net_usd_1_lane_comm": -1961.2,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2104.7,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0055,
+   "sep_halves_R": [
+    1.402,
+    0.139
+   ],
+   "lane_verdict": "YES"
+  },
+  "E1a+X1": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": 11.22,
+    "mean_R": 0.416,
+    "win%": 47.5,
+    "net_usd_1": 1322.0,
+    "usd_per_signal": 33.05,
+    "usd_per_signal_halves": [
+     52.05,
+     9.82
+    ],
+    "net_usd_500": 7643.3,
+    "usd_500_per_signal": 191.08,
+    "usd_500_per_signal_halves": [
+     345.32,
+     2.57
+    ],
+    "net_usd_1_lane_comm": 1342.0,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1140.5,
+    "exits": {
+     "stop": 21,
+     "target": 19,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 11.92,
+    "mean_R": -0.328,
+    "win%": 24.5,
+    "net_usd_1": -1947.7,
+    "usd_per_signal": -36.75,
+    "usd_per_signal_halves": [
+     -59.85,
+     -10.88
+    ],
+    "net_usd_500": -8093.7,
+    "usd_500_per_signal": -152.71,
+    "usd_500_per_signal_halves": [
+     -305.47,
+     18.38
+    ],
+    "net_usd_1_lane_comm": -1921.2,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2151.2,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0092,
+   "sep_halves_R": [
+    1.401,
+    -0.028
+   ],
+   "lane_verdict": "NO"
+  },
+  "E1b+X1": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": 18.23,
+    "mean_R": 0.265,
+    "win%": 42.5,
+    "net_usd_1": 1117.0,
+    "usd_per_signal": 27.93,
+    "usd_per_signal_halves": [
+     42.53,
+     10.07
+    ],
+    "net_usd_500": 4500.3,
+    "usd_500_per_signal": 112.51,
+    "usd_500_per_signal_halves": [
+     225.07,
+     -25.07
+    ],
+    "net_usd_1_lane_comm": 1137.0,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1161.5,
+    "exits": {
+     "stop": 23,
+     "target": 17,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 20.42,
+    "mean_R": -0.328,
+    "win%": 24.5,
+    "net_usd_1": -1946.2,
+    "usd_per_signal": -36.72,
+    "usd_per_signal_halves": [
+     -61.72,
+     -8.72
+    ],
+    "net_usd_500": -8056.1,
+    "usd_500_per_signal": -152.0,
+    "usd_500_per_signal_halves": [
+     -300.1,
+     13.87
+    ],
+    "net_usd_1_lane_comm": -1919.7,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2202.7,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.027,
+   "sep_halves_R": [
+    1.127,
+    -0.028
+   ],
+   "lane_verdict": "NO"
+  },
+  "E1c+X1": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": 21.85,
+    "mean_R": 0.228,
+    "win%": 42.5,
+    "net_usd_1": 820.0,
+    "usd_per_signal": 20.5,
+    "usd_per_signal_halves": [
+     43.94,
+     -8.15
+    ],
+    "net_usd_500": 3535.6,
+    "usd_500_per_signal": 88.39,
+    "usd_500_per_signal_halves": [
+     222.39,
+     -75.39
+    ],
+    "net_usd_1_lane_comm": 840.0,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1174.0,
+    "exits": {
+     "stop": 23,
+     "target": 16,
+     "flat": 1
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 24.75,
+    "mean_R": -0.366,
+    "win%": 22.6,
+    "net_usd_1": -2495.2,
+    "usd_per_signal": -47.08,
+    "usd_per_signal_halves": [
+     -62.65,
+     -29.64
+    ],
+    "net_usd_500": -8283.5,
+    "usd_500_per_signal": -156.29,
+    "usd_500_per_signal_halves": [
+     -294.77,
+     -1.19
+    ],
+    "net_usd_1_lane_comm": -2468.7,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2780.2,
+    "exits": {
+     "stop": 40,
+     "target": 10,
+     "flat": 3
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0212,
+   "sep_halves_R": [
+    1.128,
+    -0.031
+   ],
+   "lane_verdict": "NO"
+  },
+  "E2-5+X1": {
+   "taken": {
+    "signals": 40,
+    "filled": 29,
+    "fill%": 72.5,
+    "given_ticks_mean": -77.93,
+    "mean_R": 0.428,
+    "win%": 48.3,
+    "net_usd_1": -154.6,
+    "usd_per_signal": -3.86,
+    "usd_per_signal_halves": [
+     -3.84,
+     -3.9
+    ],
+    "net_usd_500": 5673.3,
+    "usd_500_per_signal": 141.83,
+    "usd_500_per_signal_halves": [
+     230.73,
+     33.18
+    ],
+    "net_usd_1_lane_comm": -140.1,
+    "trades_per_week": 2.84,
+    "max_dd_usd_1": 493.3,
+    "exits": {
+     "stop": 15,
+     "target": 14,
+     "flat": 0
+    },
+    "missed": 11,
+    "missed_winners": 7,
+    "missed_winner_usd": 2793.7,
+    "missed_net_usd": 2241.1
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 24,
+    "fill%": 45.3,
+    "given_ticks_mean": -78.12,
+    "mean_R": -0.151,
+    "win%": 29.2,
+    "net_usd_1": -230.6,
+    "usd_per_signal": -4.35,
+    "usd_per_signal_halves": [
+     -18.47,
+     11.46
+    ],
+    "net_usd_500": -1719.4,
+    "usd_500_per_signal": -32.44,
+    "usd_500_per_signal_halves": [
+     -64.45,
+     3.41
+    ],
+    "net_usd_1_lane_comm": -218.6,
+    "trades_per_week": 2.35,
+    "max_dd_usd_1": 565.3,
+    "exits": {
+     "stop": 17,
+     "target": 7,
+     "flat": 0
+    },
+    "missed": 29,
+    "missed_winners": 10,
+    "missed_winner_usd": 2717.5,
+    "missed_net_usd": -241.1
+   },
+   "sep_p": 0.086,
+   "sep_halves_R": [
+    1.011,
+    0.056
+   ],
+   "lane_verdict": "NO"
+  },
+  "E2-15+X1": {
+   "taken": {
+    "signals": 40,
+    "filled": 32,
+    "fill%": 80.0,
+    "given_ticks_mean": -84.41,
+    "mean_R": 0.381,
+    "win%": 46.9,
+    "net_usd_1": -118.3,
+    "usd_per_signal": -2.96,
+    "usd_per_signal_halves": [
+     -1.74,
+     -4.45
+    ],
+    "net_usd_500": 5597.8,
+    "usd_500_per_signal": 139.94,
+    "usd_500_per_signal_halves": [
+     245.3,
+     11.18
+    ],
+    "net_usd_1_lane_comm": -102.3,
+    "trades_per_week": 3.14,
+    "max_dd_usd_1": 503.2,
+    "exits": {
+     "stop": 17,
+     "target": 15,
+     "flat": 0
+    },
+    "missed": 8,
+    "missed_winners": 7,
+    "missed_winner_usd": 2793.7,
+    "missed_net_usd": 2560.3
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 36,
+    "fill%": 67.9,
+    "given_ticks_mean": -92.14,
+    "mean_R": -0.201,
+    "win%": 27.8,
+    "net_usd_1": -315.9,
+    "usd_per_signal": -5.96,
+    "usd_per_signal_halves": [
+     -20.43,
+     10.24
+    ],
+    "net_usd_500": -3400.2,
+    "usd_500_per_signal": -64.15,
+    "usd_500_per_signal_halves": [
+     -87.04,
+     -38.53
+    ],
+    "net_usd_1_lane_comm": -297.9,
+    "trades_per_week": 3.53,
+    "max_dd_usd_1": 632.0,
+    "exits": {
+     "stop": 26,
+     "target": 10,
+     "flat": 0
+    },
+    "missed": 17,
+    "missed_winners": 9,
+    "missed_winner_usd": 2435.4,
+    "missed_net_usd": 613.2
+   },
+   "sep_p": 0.066,
+   "sep_halves_R": [
+    0.937,
+    0.128
+   ],
+   "lane_verdict": "NO"
+  },
+  "E3-2+X1": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": -2.15,
+    "mean_R": 0.49,
+    "win%": 50.0,
+    "net_usd_1": 1515.5,
+    "usd_per_signal": 37.89,
+    "usd_per_signal_halves": [
+     45.6,
+     28.46
+    ],
+    "net_usd_500": 8458.3,
+    "usd_500_per_signal": 211.46,
+    "usd_500_per_signal_halves": [
+     331.64,
+     64.57
+    ],
+    "net_usd_1_lane_comm": 1535.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1100.5,
+    "exits": {
+     "stop": 20,
+     "target": 20,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": -2.62,
+    "mean_R": -0.329,
+    "win%": 24.5,
+    "net_usd_1": -1949.2,
+    "usd_per_signal": -36.78,
+    "usd_per_signal_halves": [
+     -56.44,
+     -14.76
+    ],
+    "net_usd_500": -7191.6,
+    "usd_500_per_signal": -135.69,
+    "usd_500_per_signal_halves": [
+     -293.53,
+     41.09
+    ],
+    "net_usd_1_lane_comm": -1922.7,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2063.7,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0055,
+   "sep_halves_R": [
+    1.4,
+    0.139
+   ],
+   "lane_verdict": "YES"
+  },
+  "E3-4+X1": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": -4.0,
+    "mean_R": 0.488,
+    "win%": 50.0,
+    "net_usd_1": 1495.5,
+    "usd_per_signal": 37.39,
+    "usd_per_signal_halves": [
+     44.9,
+     28.21
+    ],
+    "net_usd_500": 8544.5,
+    "usd_500_per_signal": 213.61,
+    "usd_500_per_signal_halves": [
+     334.68,
+     65.64
+    ],
+    "net_usd_1_lane_comm": 1515.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1096.5,
+    "exits": {
+     "stop": 20,
+     "target": 20,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": -4.17,
+    "mean_R": -0.329,
+    "win%": 24.5,
+    "net_usd_1": -1936.7,
+    "usd_per_signal": -36.54,
+    "usd_per_signal_halves": [
+     -55.86,
+     -14.9
+    ],
+    "net_usd_500": -7219.8,
+    "usd_500_per_signal": -136.22,
+    "usd_500_per_signal_halves": [
+     -293.61,
+     40.05
+    ],
+    "net_usd_1_lane_comm": -1910.2,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2048.2,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0055,
+   "sep_halves_R": [
+    1.399,
+    0.138
+   ],
+   "lane_verdict": "YES"
+  },
+  "E4+X1": {
+   "taken": {
+    "signals": 40,
+    "filled": 37,
+    "fill%": 92.5,
+    "given_ticks_mean": 3.08,
+    "mean_R": 0.532,
+    "win%": 51.4,
+    "net_usd_1": 1745.2,
+    "usd_per_signal": 43.63,
+    "usd_per_signal_halves": [
+     41.12,
+     46.7
+    ],
+    "net_usd_500": 8666.5,
+    "usd_500_per_signal": 216.66,
+    "usd_500_per_signal_halves": [
+     301.7,
+     112.72
+    ],
+    "net_usd_1_lane_comm": 1763.7,
+    "trades_per_week": 3.63,
+    "max_dd_usd_1": 796.7,
+    "exits": {
+     "stop": 18,
+     "target": 19,
+     "flat": 0
+    },
+    "missed": 3,
+    "missed_winners": 1,
+    "missed_winner_usd": 148.1,
+    "missed_net_usd": -204.2
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 52,
+    "fill%": 98.1,
+    "given_ticks_mean": 3.13,
+    "mean_R": -0.314,
+    "win%": 25.0,
+    "net_usd_1": -1967.3,
+    "usd_per_signal": -37.12,
+    "usd_per_signal_halves": [
+     -58.29,
+     -13.4
+    ],
+    "net_usd_500": -6579.0,
+    "usd_500_per_signal": -124.13,
+    "usd_500_per_signal_halves": [
+     -290.43,
+     62.12
+    ],
+    "net_usd_1_lane_comm": -1941.3,
+    "trades_per_week": 5.1,
+    "max_dd_usd_1": 2081.8,
+    "exits": {
+     "stop": 39,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 1,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": -42.9
+   },
+   "sep_p": 0.0042,
+   "sep_halves_R": [
+    1.342,
+    0.241
+   ],
+   "lane_verdict": "YES"
+  },
+  "E5+X1": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": -20.15,
+    "mean_R": 0.538,
+    "win%": 52.5,
+    "net_usd_1": 2951.0,
+    "usd_per_signal": 73.78,
+    "usd_per_signal_halves": [
+     66.51,
+     82.66
+    ],
+    "net_usd_500": 8845.6,
+    "usd_500_per_signal": 221.14,
+    "usd_500_per_signal_halves": [
+     300.03,
+     124.72
+    ],
+    "net_usd_1_lane_comm": 2971.0,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 567.1,
+    "exits": {
+     "stop": 19,
+     "target": 20,
+     "flat": 1
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 13.34,
+    "mean_R": -0.354,
+    "win%": 22.6,
+    "net_usd_1": -3201.2,
+    "usd_per_signal": -60.4,
+    "usd_per_signal_halves": [
+     -69.38,
+     -50.34
+    ],
+    "net_usd_500": -7762.9,
+    "usd_500_per_signal": -146.47,
+    "usd_500_per_signal_halves": [
+     -267.58,
+     -10.82
+    ],
+    "net_usd_1_lane_comm": -3174.7,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 3201.2,
+    "exits": {
+     "stop": 38,
+     "target": 10,
+     "flat": 5
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0017,
+   "sep_halves_R": [
+    1.31,
+    0.406
+   ],
+   "lane_verdict": "YES"
+  },
+  "E0+X2": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": 0.95,
+    "mean_R": 0.447,
+    "win%": 50.0,
+    "net_usd_1": 1449.5,
+    "usd_per_signal": 36.24,
+    "usd_per_signal_halves": [
+     44.96,
+     25.57
+    ],
+    "net_usd_500": 8282.5,
+    "usd_500_per_signal": 207.06,
+    "usd_500_per_signal_halves": [
+     332.33,
+     53.96
+    ],
+    "net_usd_1_lane_comm": 1469.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1165.5,
+    "exits": {
+     "stop": 20,
+     "target": 20,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 0.19,
+    "mean_R": -0.364,
+    "win%": 24.5,
+    "net_usd_1": -2101.2,
+    "usd_per_signal": -39.65,
+    "usd_per_signal_halves": [
+     -59.49,
+     -17.42
+    ],
+    "net_usd_500": -7607.0,
+    "usd_500_per_signal": -143.53,
+    "usd_500_per_signal_halves": [
+     -303.15,
+     35.25
+    ],
+    "net_usd_1_lane_comm": -2074.7,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2213.7,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0065,
+   "sep_halves_R": [
+    1.396,
+    0.13
+   ],
+   "lane_verdict": "YES"
+  },
+  "E1a+X2": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": 11.22,
+    "mean_R": 0.37,
+    "win%": 47.5,
+    "net_usd_1": 1202.5,
+    "usd_per_signal": 30.06,
+    "usd_per_signal_halves": [
+     50.19,
+     5.46
+    ],
+    "net_usd_500": 7010.3,
+    "usd_500_per_signal": 175.26,
+    "usd_500_per_signal_halves": [
+     328.75,
+     -12.34
+    ],
+    "net_usd_1_lane_comm": 1222.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1199.5,
+    "exits": {
+     "stop": 21,
+     "target": 19,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 11.92,
+    "mean_R": -0.359,
+    "win%": 24.5,
+    "net_usd_1": -2061.2,
+    "usd_per_signal": -38.89,
+    "usd_per_signal_halves": [
+     -61.95,
+     -13.06
+    ],
+    "net_usd_500": -8789.7,
+    "usd_500_per_signal": -165.84,
+    "usd_500_per_signal_halves": [
+     -322.49,
+     9.6
+    ],
+    "net_usd_1_lane_comm": -2034.7,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2260.2,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0102,
+   "sep_halves_R": [
+    1.387,
+    -0.043
+   ],
+   "lane_verdict": "NO"
+  },
+  "E1b+X2": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": 18.23,
+    "mean_R": 0.218,
+    "win%": 42.5,
+    "net_usd_1": 992.0,
+    "usd_per_signal": 24.8,
+    "usd_per_signal_halves": [
+     40.42,
+     5.71
+    ],
+    "net_usd_500": 3812.3,
+    "usd_500_per_signal": 95.31,
+    "usd_500_per_signal_halves": [
+     205.89,
+     -39.84
+    ],
+    "net_usd_1_lane_comm": 1012.0,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1220.5,
+    "exits": {
+     "stop": 23,
+     "target": 17,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 20.42,
+    "mean_R": -0.357,
+    "win%": 24.5,
+    "net_usd_1": -2059.7,
+    "usd_per_signal": -38.86,
+    "usd_per_signal_halves": [
+     -63.83,
+     -10.9
+    ],
+    "net_usd_500": -8728.6,
+    "usd_500_per_signal": -164.69,
+    "usd_500_per_signal_halves": [
+     -316.62,
+     5.47
+    ],
+    "net_usd_1_lane_comm": -2033.2,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2311.7,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0267,
+   "sep_halves_R": [
+    1.107,
+    -0.043
+   ],
+   "lane_verdict": "NO"
+  },
+  "E1c+X2": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": 21.85,
+    "mean_R": 0.181,
+    "win%": 42.5,
+    "net_usd_1": 695.0,
+    "usd_per_signal": 17.38,
+    "usd_per_signal_halves": [
+     41.83,
+     -12.51
+    ],
+    "net_usd_500": 2847.6,
+    "usd_500_per_signal": 71.19,
+    "usd_500_per_signal_halves": [
+     203.21,
+     -90.17
+    ],
+    "net_usd_1_lane_comm": 715.0,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1233.0,
+    "exits": {
+     "stop": 23,
+     "target": 16,
+     "flat": 1
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 24.75,
+    "mean_R": -0.394,
+    "win%": 22.6,
+    "net_usd_1": -2608.7,
+    "usd_per_signal": -49.22,
+    "usd_per_signal_halves": [
+     -64.76,
+     -31.82
+    ],
+    "net_usd_500": -8949.0,
+    "usd_500_per_signal": -168.85,
+    "usd_500_per_signal_halves": [
+     -311.15,
+     -9.47
+    ],
+    "net_usd_1_lane_comm": -2582.2,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2889.2,
+    "exits": {
+     "stop": 40,
+     "target": 10,
+     "flat": 3
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0257,
+   "sep_halves_R": [
+    1.106,
+    -0.045
+   ],
+   "lane_verdict": "NO"
+  },
+  "E2-5+X2": {
+   "taken": {
+    "signals": 40,
+    "filled": 29,
+    "fill%": 72.5,
+    "given_ticks_mean": -77.93,
+    "mean_R": 0.312,
+    "win%": 48.3,
+    "net_usd_1": -241.1,
+    "usd_per_signal": -6.03,
+    "usd_per_signal_halves": [
+     -5.31,
+     -6.9
+    ],
+    "net_usd_500": 4383.8,
+    "usd_500_per_signal": 109.59,
+    "usd_500_per_signal_halves": [
+     205.93,
+     -8.15
+    ],
+    "net_usd_1_lane_comm": -226.6,
+    "trades_per_week": 2.84,
+    "max_dd_usd_1": 537.8,
+    "exits": {
+     "stop": 15,
+     "target": 14,
+     "flat": 0
+    },
+    "missed": 11,
+    "missed_winners": 7,
+    "missed_winner_usd": 2793.7,
+    "missed_net_usd": 2241.1
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 24,
+    "fill%": 45.3,
+    "given_ticks_mean": -78.12,
+    "mean_R": -0.232,
+    "win%": 29.2,
+    "net_usd_1": -279.1,
+    "usd_per_signal": -5.27,
+    "usd_per_signal_halves": [
+     -19.49,
+     10.66
+    ],
+    "net_usd_500": -2346.9,
+    "usd_500_per_signal": -44.28,
+    "usd_500_per_signal_halves": [
+     -77.43,
+     -7.15
+    ],
+    "net_usd_1_lane_comm": -267.1,
+    "trades_per_week": 2.35,
+    "max_dd_usd_1": 593.8,
+    "exits": {
+     "stop": 17,
+     "target": 7,
+     "flat": 0
+    },
+    "missed": 29,
+    "missed_winners": 10,
+    "missed_winner_usd": 2717.5,
+    "missed_net_usd": -241.1
+   },
+   "sep_p": 0.1087,
+   "sep_halves_R": [
+    1.01,
+    -0.02
+   ],
+   "lane_verdict": "NO"
+  },
+  "E2-15+X2": {
+   "taken": {
+    "signals": 40,
+    "filled": 32,
+    "fill%": 80.0,
+    "given_ticks_mean": -84.41,
+    "mean_R": 0.265,
+    "win%": 46.9,
+    "net_usd_1": -207.3,
+    "usd_per_signal": -5.18,
+    "usd_per_signal_halves": [
+     -3.21,
+     -7.59
+    ],
+    "net_usd_500": 4208.3,
+    "usd_500_per_signal": 105.21,
+    "usd_500_per_signal_halves": [
+     220.5,
+     -35.71
+    ],
+    "net_usd_1_lane_comm": -191.3,
+    "trades_per_week": 3.14,
+    "max_dd_usd_1": 550.2,
+    "exits": {
+     "stop": 17,
+     "target": 15,
+     "flat": 0
+    },
+    "missed": 8,
+    "missed_winners": 7,
+    "missed_winner_usd": 2793.7,
+    "missed_net_usd": 2560.3
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 36,
+    "fill%": 67.9,
+    "given_ticks_mean": -92.14,
+    "mean_R": -0.296,
+    "win%": 27.8,
+    "net_usd_1": -379.4,
+    "usd_per_signal": -7.16,
+    "usd_per_signal_halves": [
+     -21.64,
+     9.06
+    ],
+    "net_usd_500": -4545.2,
+    "usd_500_per_signal": -85.76,
+    "usd_500_per_signal_halves": [
+     -105.52,
+     -63.63
+    ],
+    "net_usd_1_lane_comm": -361.4,
+    "trades_per_week": 3.53,
+    "max_dd_usd_1": 672.0,
+    "exits": {
+     "stop": 26,
+     "target": 10,
+     "flat": 0
+    },
+    "missed": 17,
+    "missed_winners": 9,
+    "missed_winner_usd": 2435.4,
+    "missed_net_usd": 613.2
+   },
+   "sep_p": 0.0817,
+   "sep_halves_R": [
+    0.938,
+    0.08
+   ],
+   "lane_verdict": "NO"
+  },
+  "E3-2+X2": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": -2.15,
+    "mean_R": 0.439,
+    "win%": 50.0,
+    "net_usd_1": 1412.5,
+    "usd_per_signal": 35.31,
+    "usd_per_signal_halves": [
+     43.74,
+     25.02
+    ],
+    "net_usd_500": 7851.8,
+    "usd_500_per_signal": 196.3,
+    "usd_500_per_signal_halves": [
+     314.77,
+     51.49
+    ],
+    "net_usd_1_lane_comm": 1432.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1159.5,
+    "exits": {
+     "stop": 20,
+     "target": 20,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": -2.62,
+    "mean_R": -0.367,
+    "win%": 24.5,
+    "net_usd_1": -2062.7,
+    "usd_per_signal": -38.92,
+    "usd_per_signal_halves": [
+     -58.54,
+     -16.94
+    ],
+    "net_usd_500": -7924.6,
+    "usd_500_per_signal": -149.52,
+    "usd_500_per_signal_halves": [
+     -311.42,
+     31.81
+    ],
+    "net_usd_1_lane_comm": -2036.2,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2172.7,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0067,
+   "sep_halves_R": [
+    1.387,
+    0.13
+   ],
+   "lane_verdict": "YES"
+  },
+  "E3-4+X2": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": -4.0,
+    "mean_R": 0.43,
+    "win%": 50.0,
+    "net_usd_1": 1392.5,
+    "usd_per_signal": 34.81,
+    "usd_per_signal_halves": [
+     43.03,
+     24.77
+    ],
+    "net_usd_500": 7938.0,
+    "usd_500_per_signal": 198.45,
+    "usd_500_per_signal_halves": [
+     317.81,
+     52.56
+    ],
+    "net_usd_1_lane_comm": 1412.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1155.5,
+    "exits": {
+     "stop": 20,
+     "target": 20,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": -4.17,
+    "mean_R": -0.371,
+    "win%": 24.5,
+    "net_usd_1": -2050.2,
+    "usd_per_signal": -38.68,
+    "usd_per_signal_halves": [
+     -57.97,
+     -17.08
+    ],
+    "net_usd_500": -7956.3,
+    "usd_500_per_signal": -150.12,
+    "usd_500_per_signal_halves": [
+     -311.63,
+     30.77
+    ],
+    "net_usd_1_lane_comm": -2023.7,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2157.2,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0067,
+   "sep_halves_R": [
+    1.379,
+    0.129
+   ],
+   "lane_verdict": "YES"
+  },
+  "E4+X2": {
+   "taken": {
+    "signals": 40,
+    "filled": 37,
+    "fill%": 92.5,
+    "given_ticks_mean": 3.08,
+    "mean_R": 0.49,
+    "win%": 51.4,
+    "net_usd_1": 1652.2,
+    "usd_per_signal": 41.3,
+    "usd_per_signal_halves": [
+     39.25,
+     43.81
+    ],
+    "net_usd_500": 8100.5,
+    "usd_500_per_signal": 202.51,
+    "usd_500_per_signal_halves": [
+     285.14,
+     101.53
+    ],
+    "net_usd_1_lane_comm": 1670.7,
+    "trades_per_week": 3.63,
+    "max_dd_usd_1": 845.7,
+    "exits": {
+     "stop": 18,
+     "target": 19,
+     "flat": 0
+    },
+    "missed": 3,
+    "missed_winners": 1,
+    "missed_winner_usd": 148.1,
+    "missed_net_usd": -204.2
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 52,
+    "fill%": 98.1,
+    "given_ticks_mean": 3.13,
+    "mean_R": -0.344,
+    "win%": 25.0,
+    "net_usd_1": -2074.3,
+    "usd_per_signal": -39.14,
+    "usd_per_signal_halves": [
+     -60.4,
+     -15.32
+    ],
+    "net_usd_500": -7191.0,
+    "usd_500_per_signal": -135.68,
+    "usd_500_per_signal_halves": [
+     -307.82,
+     57.12
+    ],
+    "net_usd_1_lane_comm": -2048.3,
+    "trades_per_week": 5.1,
+    "max_dd_usd_1": 2184.3,
+    "exits": {
+     "stop": 39,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 1,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": -42.9
+   },
+   "sep_p": 0.005,
+   "sep_halves_R": [
+    1.335,
+    0.226
+   ],
+   "lane_verdict": "YES"
+  },
+  "E5+X2": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": -20.15,
+    "mean_R": 0.452,
+    "win%": 52.5,
+    "net_usd_1": 2850.5,
+    "usd_per_signal": 71.26,
+    "usd_per_signal_halves": [
+     64.65,
+     79.35
+    ],
+    "net_usd_500": 7510.1,
+    "usd_500_per_signal": 187.75,
+    "usd_500_per_signal_halves": [
+     274.07,
+     82.25
+    ],
+    "net_usd_1_lane_comm": 2870.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 595.5,
+    "exits": {
+     "stop": 19,
+     "target": 20,
+     "flat": 1
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 13.34,
+    "mean_R": -0.401,
+    "win%": 22.6,
+    "net_usd_1": -3305.7,
+    "usd_per_signal": -62.37,
+    "usd_per_signal_halves": [
+     -71.38,
+     -52.28
+    ],
+    "net_usd_500": -8640.9,
+    "usd_500_per_signal": -163.04,
+    "usd_500_per_signal_halves": [
+     -286.05,
+     -25.26
+    ],
+    "net_usd_1_lane_comm": -3279.2,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 3305.7,
+    "exits": {
+     "stop": 38,
+     "target": 10,
+     "flat": 5
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0027,
+   "sep_halves_R": [
+    1.29,
+    0.343
+   ],
+   "lane_verdict": "YES"
+  },
+  "E0+X3": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": 0.95,
+    "mean_R": 0.443,
+    "win%": 50.0,
+    "net_usd_1": 1439.5,
+    "usd_per_signal": 35.99,
+    "usd_per_signal_halves": [
+     44.67,
+     25.38
+    ],
+    "net_usd_500": 8200.0,
+    "usd_500_per_signal": 205.0,
+    "usd_500_per_signal_halves": [
+     329.63,
+     52.68
+    ],
+    "net_usd_1_lane_comm": 1459.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1167.0,
+    "exits": {
+     "stop": 20,
+     "target": 20,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 0.19,
+    "mean_R": -0.365,
+    "win%": 24.5,
+    "net_usd_1": -2106.7,
+    "usd_per_signal": -39.75,
+    "usd_per_signal_halves": [
+     -59.54,
+     -17.58
+    ],
+    "net_usd_500": -7631.0,
+    "usd_500_per_signal": -143.98,
+    "usd_500_per_signal_halves": [
+     -303.37,
+     34.53
+    ],
+    "net_usd_1_lane_comm": -2080.2,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2218.2,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0065,
+   "sep_halves_R": [
+    1.391,
+    0.129
+   ],
+   "lane_verdict": "YES"
+  },
+  "E1a+X3": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": 11.22,
+    "mean_R": 0.366,
+    "win%": 47.5,
+    "net_usd_1": 1193.0,
+    "usd_per_signal": 29.83,
+    "usd_per_signal_halves": [
+     49.9,
+     5.29
+    ],
+    "net_usd_500": 6939.8,
+    "usd_500_per_signal": 173.5,
+    "usd_500_per_signal_halves": [
+     326.41,
+     -13.4
+    ],
+    "net_usd_1_lane_comm": 1213.0,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1201.0,
+    "exits": {
+     "stop": 21,
+     "target": 19,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 11.92,
+    "mean_R": -0.36,
+    "win%": 24.5,
+    "net_usd_1": -2066.7,
+    "usd_per_signal": -38.99,
+    "usd_per_signal_halves": [
+     -62.01,
+     -13.22
+    ],
+    "net_usd_500": -8810.2,
+    "usd_500_per_signal": -166.23,
+    "usd_500_per_signal_halves": [
+     -322.67,
+     8.98
+    ],
+    "net_usd_1_lane_comm": -2040.2,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2264.7,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0105,
+   "sep_halves_R": [
+    1.383,
+    -0.044
+   ],
+   "lane_verdict": "NO"
+  },
+  "E1b+X3": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": 18.23,
+    "mean_R": 0.215,
+    "win%": 42.5,
+    "net_usd_1": 983.5,
+    "usd_per_signal": 24.59,
+    "usd_per_signal_halves": [
+     40.17,
+     5.54
+    ],
+    "net_usd_500": 3757.8,
+    "usd_500_per_signal": 93.94,
+    "usd_500_per_signal_halves": [
+     204.18,
+     -40.79
+    ],
+    "net_usd_1_lane_comm": 1003.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1222.0,
+    "exits": {
+     "stop": 23,
+     "target": 17,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 20.42,
+    "mean_R": -0.358,
+    "win%": 24.5,
+    "net_usd_1": -2065.2,
+    "usd_per_signal": -38.97,
+    "usd_per_signal_halves": [
+     -63.88,
+     -11.06
+    ],
+    "net_usd_500": -8747.6,
+    "usd_500_per_signal": -165.05,
+    "usd_500_per_signal_halves": [
+     -316.8,
+     4.91
+    ],
+    "net_usd_1_lane_comm": -2038.7,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2316.2,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0267,
+   "sep_halves_R": [
+    1.103,
+    -0.043
+   ],
+   "lane_verdict": "NO"
+  },
+  "E1c+X3": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": 21.85,
+    "mean_R": 0.216,
+    "win%": 42.5,
+    "net_usd_1": 1016.0,
+    "usd_per_signal": 25.4,
+    "usd_per_signal_halves": [
+     41.58,
+     5.63
+    ],
+    "net_usd_500": 3454.6,
+    "usd_500_per_signal": 86.37,
+    "usd_500_per_signal_halves": [
+     201.57,
+     -54.44
+    ],
+    "net_usd_1_lane_comm": 1036.0,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1234.5,
+    "exits": {
+     "stop": 23,
+     "target": 17,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 24.75,
+    "mean_R": -0.395,
+    "win%": 22.6,
+    "net_usd_1": -2613.7,
+    "usd_per_signal": -49.32,
+    "usd_per_signal_halves": [
+     -64.81,
+     -31.96
+    ],
+    "net_usd_500": -8967.5,
+    "usd_500_per_signal": -169.2,
+    "usd_500_per_signal_halves": [
+     -311.33,
+     -10.01
+    ],
+    "net_usd_1_lane_comm": -2587.2,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2893.2,
+    "exits": {
+     "stop": 40,
+     "target": 10,
+     "flat": 3
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.018,
+   "sep_halves_R": [
+    1.102,
+    0.038
+   ],
+   "lane_verdict": "YES"
+  },
+  "E2-5+X3": {
+   "taken": {
+    "signals": 40,
+    "filled": 29,
+    "fill%": 72.5,
+    "given_ticks_mean": -77.93,
+    "mean_R": 0.411,
+    "win%": 51.7,
+    "net_usd_1": -67.1,
+    "usd_per_signal": -1.68,
+    "usd_per_signal_halves": [
+     2.71,
+     -7.04
+    ],
+    "net_usd_500": 5713.3,
+    "usd_500_per_signal": 142.83,
+    "usd_500_per_signal_halves": [
+     268.0,
+     -10.15
+    ],
+    "net_usd_1_lane_comm": -52.6,
+    "trades_per_week": 2.84,
+    "max_dd_usd_1": 537.8,
+    "exits": {
+     "stop": 14,
+     "target": 15,
+     "flat": 0
+    },
+    "missed": 11,
+    "missed_winners": 7,
+    "missed_winner_usd": 2793.7,
+    "missed_net_usd": 2241.1
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 24,
+    "fill%": 45.3,
+    "given_ticks_mean": -78.12,
+    "mean_R": -0.235,
+    "win%": 29.2,
+    "net_usd_1": -282.6,
+    "usd_per_signal": -5.33,
+    "usd_per_signal_halves": [
+     -19.54,
+     10.58
+    ],
+    "net_usd_500": -2383.4,
+    "usd_500_per_signal": -44.97,
+    "usd_500_per_signal_halves": [
+     -78.24,
+     -7.71
+    ],
+    "net_usd_1_lane_comm": -270.6,
+    "trades_per_week": 2.35,
+    "max_dd_usd_1": 594.8,
+    "exits": {
+     "stop": 17,
+     "target": 7,
+     "flat": 0
+    },
+    "missed": 29,
+    "missed_winners": 10,
+    "missed_winner_usd": 2717.5,
+    "missed_net_usd": -241.1
+   },
+   "sep_p": 0.068,
+   "sep_halves_R": [
+    1.198,
+    -0.023
+   ],
+   "lane_verdict": "NO"
+  },
+  "E2-15+X3": {
+   "taken": {
+    "signals": 40,
+    "filled": 32,
+    "fill%": 80.0,
+    "given_ticks_mean": -84.41,
+    "mean_R": 0.354,
+    "win%": 50.0,
+    "net_usd_1": -33.8,
+    "usd_per_signal": -0.84,
+    "usd_per_signal_halves": [
+     4.79,
+     -7.73
+    ],
+    "net_usd_500": 5530.3,
+    "usd_500_per_signal": 138.26,
+    "usd_500_per_signal_halves": [
+     282.23,
+     -37.71
+    ],
+    "net_usd_1_lane_comm": -17.8,
+    "trades_per_week": 3.14,
+    "max_dd_usd_1": 550.2,
+    "exits": {
+     "stop": 16,
+     "target": 16,
+     "flat": 0
+    },
+    "missed": 8,
+    "missed_winners": 7,
+    "missed_winner_usd": 2793.7,
+    "missed_net_usd": 2560.3
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 36,
+    "fill%": 67.9,
+    "given_ticks_mean": -92.14,
+    "mean_R": -0.3,
+    "win%": 27.8,
+    "net_usd_1": -384.4,
+    "usd_per_signal": -7.25,
+    "usd_per_signal_halves": [
+     -21.73,
+     8.96
+    ],
+    "net_usd_500": -4611.2,
+    "usd_500_per_signal": -87.0,
+    "usd_500_per_signal_halves": [
+     -107.25,
+     -64.33
+    ],
+    "net_usd_1_lane_comm": -366.4,
+    "trades_per_week": 3.53,
+    "max_dd_usd_1": 674.0,
+    "exits": {
+     "stop": 26,
+     "target": 10,
+     "flat": 0
+    },
+    "missed": 17,
+    "missed_winners": 9,
+    "missed_winner_usd": 2435.4,
+    "missed_net_usd": 613.2
+   },
+   "sep_p": 0.0512,
+   "sep_halves_R": [
+    1.106,
+    0.077
+   ],
+   "lane_verdict": "NO"
+  },
+  "E3-2+X3": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": -2.15,
+    "mean_R": 0.434,
+    "win%": 50.0,
+    "net_usd_1": 1402.5,
+    "usd_per_signal": 35.06,
+    "usd_per_signal_halves": [
+     43.44,
+     24.82
+    ],
+    "net_usd_500": 7765.3,
+    "usd_500_per_signal": 194.13,
+    "usd_500_per_signal_halves": [
+     312.0,
+     50.07
+    ],
+    "net_usd_1_lane_comm": 1422.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1161.0,
+    "exits": {
+     "stop": 20,
+     "target": 20,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": -2.62,
+    "mean_R": -0.368,
+    "win%": 24.5,
+    "net_usd_1": -2068.2,
+    "usd_per_signal": -39.02,
+    "usd_per_signal_halves": [
+     -58.6,
+     -17.1
+    ],
+    "net_usd_500": -7949.1,
+    "usd_500_per_signal": -149.98,
+    "usd_500_per_signal_halves": [
+     -311.64,
+     31.07
+    ],
+    "net_usd_1_lane_comm": -2041.7,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2177.2,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0067,
+   "sep_halves_R": [
+    1.381,
+    0.128
+   ],
+   "lane_verdict": "YES"
+  },
+  "E3-4+X3": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": -4.0,
+    "mean_R": 0.425,
+    "win%": 50.0,
+    "net_usd_1": 1382.5,
+    "usd_per_signal": 34.56,
+    "usd_per_signal_halves": [
+     42.74,
+     24.57
+    ],
+    "net_usd_500": 7848.5,
+    "usd_500_per_signal": 196.21,
+    "usd_500_per_signal_halves": [
+     314.97,
+     51.06
+    ],
+    "net_usd_1_lane_comm": 1402.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1157.0,
+    "exits": {
+     "stop": 20,
+     "target": 20,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": -4.17,
+    "mean_R": -0.372,
+    "win%": 24.5,
+    "net_usd_1": -2055.7,
+    "usd_per_signal": -38.79,
+    "usd_per_signal_halves": [
+     -58.02,
+     -17.24
+    ],
+    "net_usd_500": -7980.8,
+    "usd_500_per_signal": -150.58,
+    "usd_500_per_signal_halves": [
+     -311.84,
+     30.03
+    ],
+    "net_usd_1_lane_comm": -2029.2,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2161.7,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.007,
+   "sep_halves_R": [
+    1.373,
+    0.128
+   ],
+   "lane_verdict": "YES"
+  },
+  "E4+X3": {
+   "taken": {
+    "signals": 40,
+    "filled": 37,
+    "fill%": 92.5,
+    "given_ticks_mean": 3.08,
+    "mean_R": 0.486,
+    "win%": 51.4,
+    "net_usd_1": 1642.7,
+    "usd_per_signal": 41.07,
+    "usd_per_signal_halves": [
+     38.98,
+     43.62
+    ],
+    "net_usd_500": 8024.5,
+    "usd_500_per_signal": 200.61,
+    "usd_500_per_signal_halves": [
+     282.7,
+     100.28
+    ],
+    "net_usd_1_lane_comm": 1661.2,
+    "trades_per_week": 3.63,
+    "max_dd_usd_1": 847.2,
+    "exits": {
+     "stop": 18,
+     "target": 19,
+     "flat": 0
+    },
+    "missed": 3,
+    "missed_winners": 1,
+    "missed_winner_usd": 148.1,
+    "missed_net_usd": -204.2
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 52,
+    "fill%": 98.1,
+    "given_ticks_mean": 3.13,
+    "mean_R": -0.345,
+    "win%": 25.0,
+    "net_usd_1": -2079.8,
+    "usd_per_signal": -39.24,
+    "usd_per_signal_halves": [
+     -60.45,
+     -15.48
+    ],
+    "net_usd_500": -7214.5,
+    "usd_500_per_signal": -136.12,
+    "usd_500_per_signal_halves": [
+     -308.04,
+     56.42
+    ],
+    "net_usd_1_lane_comm": -2053.8,
+    "trades_per_week": 5.1,
+    "max_dd_usd_1": 2188.8,
+    "exits": {
+     "stop": 39,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 1,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": -42.9
+   },
+   "sep_p": 0.005,
+   "sep_halves_R": [
+    1.33,
+    0.225
+   ],
+   "lane_verdict": "YES"
+  },
+  "E5+X3": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": -20.15,
+    "mean_R": 0.523,
+    "win%": 55.0,
+    "net_usd_1": 3021.5,
+    "usd_per_signal": 75.54,
+    "usd_per_signal_halves": [
+     72.6,
+     79.13
+    ],
+    "net_usd_500": 8835.6,
+    "usd_500_per_signal": 220.89,
+    "usd_500_per_signal_halves": [
+     336.05,
+     80.14
+    ],
+    "net_usd_1_lane_comm": 3041.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 529.6,
+    "exits": {
+     "stop": 18,
+     "target": 21,
+     "flat": 1
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 13.34,
+    "mean_R": -0.402,
+    "win%": 22.6,
+    "net_usd_1": -3310.7,
+    "usd_per_signal": -62.47,
+    "usd_per_signal_halves": [
+     -71.44,
+     -52.42
+    ],
+    "net_usd_500": -8682.9,
+    "usd_500_per_signal": -163.83,
+    "usd_500_per_signal_halves": [
+     -286.85,
+     -26.04
+    ],
+    "net_usd_1_lane_comm": -3284.2,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 3310.7,
+    "exits": {
+     "stop": 38,
+     "target": 10,
+     "flat": 5
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0025,
+   "sep_halves_R": [
+    1.425,
+    0.34
+   ],
+   "lane_verdict": "YES"
+  },
+  "E0+X4": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": 0.95,
+    "mean_R": 0.313,
+    "win%": 50.0,
+    "net_usd_1": 1162.5,
+    "usd_per_signal": 29.06,
+    "usd_per_signal_halves": [
+     38.85,
+     17.1
+    ],
+    "net_usd_500": 6250.0,
+    "usd_500_per_signal": 156.25,
+    "usd_500_per_signal_halves": [
+     274.45,
+     11.79
+    ],
+    "net_usd_1_lane_comm": 1182.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1340.5,
+    "exits": {
+     "stop": 20,
+     "target": 20,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 0.19,
+    "mean_R": -0.574,
+    "win%": 24.5,
+    "net_usd_1": -2767.7,
+    "usd_per_signal": -52.22,
+    "usd_per_signal_halves": [
+     -74.1,
+     -27.72
+    ],
+    "net_usd_500": -12243.0,
+    "usd_500_per_signal": -231.0,
+    "usd_500_per_signal_halves": [
+     -413.08,
+     -27.07
+    ],
+    "net_usd_1_lane_comm": -2741.2,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2826.2,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0065,
+   "sep_halves_R": [
+    1.504,
+    0.173
+   ],
+   "lane_verdict": "YES"
+  },
+  "E1a+X4": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": 11.22,
+    "mean_R": 0.241,
+    "win%": 47.5,
+    "net_usd_1": 912.5,
+    "usd_per_signal": 22.81,
+    "usd_per_signal_halves": [
+     44.08,
+     -3.18
+    ],
+    "net_usd_500": 5069.3,
+    "usd_500_per_signal": 126.73,
+    "usd_500_per_signal_halves": [
+     272.64,
+     -51.59
+    ],
+    "net_usd_1_lane_comm": 932.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1374.5,
+    "exits": {
+     "stop": 21,
+     "target": 19,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 11.92,
+    "mean_R": -0.548,
+    "win%": 24.5,
+    "net_usd_1": -2727.7,
+    "usd_per_signal": -51.47,
+    "usd_per_signal_halves": [
+     -76.56,
+     -23.36
+    ],
+    "net_usd_500": -13241.7,
+    "usd_500_per_signal": -249.84,
+    "usd_500_per_signal_halves": [
+     -428.04,
+     -50.26
+    ],
+    "net_usd_1_lane_comm": -2701.2,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2872.7,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0132,
+   "sep_halves_R": [
+    1.465,
+    -0.0
+   ],
+   "lane_verdict": "NO"
+  },
+  "E1b+X4": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": 18.23,
+    "mean_R": 0.078,
+    "win%": 42.5,
+    "net_usd_1": 668.5,
+    "usd_per_signal": 16.71,
+    "usd_per_signal_halves": [
+     32.78,
+     -2.93
+    ],
+    "net_usd_500": 1594.8,
+    "usd_500_per_signal": 39.87,
+    "usd_500_per_signal_halves": [
+     136.43,
+     -78.15
+    ],
+    "net_usd_1_lane_comm": 688.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1395.5,
+    "exits": {
+     "stop": 23,
+     "target": 17,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 20.42,
+    "mean_R": -0.536,
+    "win%": 24.5,
+    "net_usd_1": -2726.2,
+    "usd_per_signal": -51.44,
+    "usd_per_signal_halves": [
+     -78.44,
+     -21.2
+    ],
+    "net_usd_500": -12989.6,
+    "usd_500_per_signal": -245.09,
+    "usd_500_per_signal_halves": [
+     -417.8,
+     -51.65
+    ],
+    "net_usd_1_lane_comm": -2699.7,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2924.2,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.03,
+   "sep_halves_R": [
+    1.146,
+    0.001
+   ],
+   "lane_verdict": "YES"
+  },
+  "E1c+X4": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": 21.85,
+    "mean_R": 0.043,
+    "win%": 42.5,
+    "net_usd_1": 371.5,
+    "usd_per_signal": 9.29,
+    "usd_per_signal_halves": [
+     34.19,
+     -21.15
+    ],
+    "net_usd_500": 669.1,
+    "usd_500_per_signal": 16.73,
+    "usd_500_per_signal_halves": [
+     134.64,
+     -127.39
+    ],
+    "net_usd_1_lane_comm": 391.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1408.0,
+    "exits": {
+     "stop": 23,
+     "target": 16,
+     "flat": 1
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 24.75,
+    "mean_R": -0.568,
+    "win%": 22.6,
+    "net_usd_1": -3275.2,
+    "usd_per_signal": -61.8,
+    "usd_per_signal_halves": [
+     -79.36,
+     -42.12
+    ],
+    "net_usd_500": -13139.0,
+    "usd_500_per_signal": -247.91,
+    "usd_500_per_signal_halves": [
+     -410.38,
+     -65.93
+    ],
+    "net_usd_1_lane_comm": -3248.7,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 3501.7,
+    "exits": {
+     "stop": 40,
+     "target": 10,
+     "flat": 3
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0282,
+   "sep_halves_R": [
+    1.14,
+    -0.002
+   ],
+   "lane_verdict": "NO"
+  },
+  "E2-5+X4": {
+   "taken": {
+    "signals": 40,
+    "filled": 29,
+    "fill%": 72.5,
+    "given_ticks_mean": -77.93,
+    "mean_R": 0.034,
+    "win%": 48.3,
+    "net_usd_1": -447.1,
+    "usd_per_signal": -11.18,
+    "usd_per_signal_halves": [
+     -10.04,
+     -12.57
+    ],
+    "net_usd_500": 1363.8,
+    "usd_500_per_signal": 34.1,
+    "usd_500_per_signal_halves": [
+     155.39,
+     -114.15
+    ],
+    "net_usd_1_lane_comm": -432.6,
+    "trades_per_week": 2.84,
+    "max_dd_usd_1": 647.3,
+    "exits": {
+     "stop": 15,
+     "target": 14,
+     "flat": 0
+    },
+    "missed": 11,
+    "missed_winners": 7,
+    "missed_winner_usd": 2793.7,
+    "missed_net_usd": 2241.1
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 24,
+    "fill%": 45.3,
+    "given_ticks_mean": -78.12,
+    "mean_R": -0.65,
+    "win%": 29.2,
+    "net_usd_1": -562.1,
+    "usd_per_signal": -10.61,
+    "usd_per_signal_halves": [
+     -25.44,
+     6.0
+    ],
+    "net_usd_500": -6165.4,
+    "usd_500_per_signal": -116.33,
+    "usd_500_per_signal_halves": [
+     -161.25,
+     -66.01
+    ],
+    "net_usd_1_lane_comm": -550.1,
+    "trades_per_week": 2.35,
+    "max_dd_usd_1": 760.3,
+    "exits": {
+     "stop": 17,
+     "target": 7,
+     "flat": 0
+    },
+    "missed": 29,
+    "missed_winners": 10,
+    "missed_winner_usd": 2717.5,
+    "missed_net_usd": -241.1
+   },
+   "sep_p": 0.109,
+   "sep_halves_R": [
+    1.318,
+    -0.08
+   ],
+   "lane_verdict": "NO"
+  },
+  "E2-15+X4": {
+   "taken": {
+    "signals": 40,
+    "filled": 32,
+    "fill%": 80.0,
+    "given_ticks_mean": -84.41,
+    "mean_R": -0.114,
+    "win%": 46.9,
+    "net_usd_1": -449.8,
+    "usd_per_signal": -11.25,
+    "usd_per_signal_halves": [
+     -8.83,
+     -14.2
+    ],
+    "net_usd_500": -271.7,
+    "usd_500_per_signal": -6.79,
+    "usd_500_per_signal_halves": [
+     134.5,
+     -179.48
+    ],
+    "net_usd_1_lane_comm": -433.8,
+    "trades_per_week": 3.14,
+    "max_dd_usd_1": 676.7,
+    "exits": {
+     "stop": 17,
+     "target": 15,
+     "flat": 0
+    },
+    "missed": 8,
+    "missed_winners": 7,
+    "missed_winner_usd": 2793.7,
+    "missed_net_usd": 2560.3
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 36,
+    "fill%": 67.9,
+    "given_ticks_mean": -92.14,
+    "mean_R": -0.867,
+    "win%": 27.8,
+    "net_usd_1": -822.9,
+    "usd_per_signal": -15.53,
+    "usd_per_signal_halves": [
+     -30.87,
+     1.66
+    ],
+    "net_usd_500": -12389.7,
+    "usd_500_per_signal": -233.77,
+    "usd_500_per_signal_halves": [
+     -280.64,
+     -181.27
+    ],
+    "net_usd_1_lane_comm": -804.9,
+    "trades_per_week": 3.53,
+    "max_dd_usd_1": 944.0,
+    "exits": {
+     "stop": 26,
+     "target": 10,
+     "flat": 0
+    },
+    "missed": 17,
+    "missed_winners": 9,
+    "missed_winner_usd": 2435.4,
+    "missed_net_usd": 613.2
+   },
+   "sep_p": 0.083,
+   "sep_halves_R": [
+    1.335,
+    0.012
+   ],
+   "lane_verdict": "NO"
+  },
+  "E3-2+X4": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": -2.15,
+    "mean_R": 0.286,
+    "win%": 50.0,
+    "net_usd_1": 1125.5,
+    "usd_per_signal": 28.14,
+    "usd_per_signal_halves": [
+     37.62,
+     16.54
+    ],
+    "net_usd_500": 5728.3,
+    "usd_500_per_signal": 143.21,
+    "usd_500_per_signal_halves": [
+     253.64,
+     8.24
+    ],
+    "net_usd_1_lane_comm": 1145.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1334.5,
+    "exits": {
+     "stop": 20,
+     "target": 20,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": -2.62,
+    "mean_R": -0.589,
+    "win%": 24.5,
+    "net_usd_1": -2729.2,
+    "usd_per_signal": -51.49,
+    "usd_per_signal_halves": [
+     -73.15,
+     -27.24
+    ],
+    "net_usd_500": -12690.6,
+    "usd_500_per_signal": -239.45,
+    "usd_500_per_signal_halves": [
+     -423.76,
+     -33.01
+    ],
+    "net_usd_1_lane_comm": -2702.7,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2785.2,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0085,
+   "sep_halves_R": [
+    1.482,
+    0.174
+   ],
+   "lane_verdict": "YES"
+  },
+  "E3-4+X4": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": -4.0,
+    "mean_R": 0.259,
+    "win%": 50.0,
+    "net_usd_1": 1105.5,
+    "usd_per_signal": 27.64,
+    "usd_per_signal_halves": [
+     36.92,
+     16.29
+    ],
+    "net_usd_500": 5795.0,
+    "usd_500_per_signal": 144.88,
+    "usd_500_per_signal_halves": [
+     255.79,
+     9.31
+    ],
+    "net_usd_1_lane_comm": 1125.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 1330.5,
+    "exits": {
+     "stop": 20,
+     "target": 20,
+     "flat": 0
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": -4.17,
+    "mean_R": -0.607,
+    "win%": 24.5,
+    "net_usd_1": -2716.7,
+    "usd_per_signal": -51.26,
+    "usd_per_signal_halves": [
+     -72.58,
+     -27.38
+    ],
+    "net_usd_500": -12777.3,
+    "usd_500_per_signal": -241.08,
+    "usd_500_per_signal_halves": [
+     -425.93,
+     -34.05
+    ],
+    "net_usd_1_lane_comm": -2690.2,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 2769.7,
+    "exits": {
+     "stop": 40,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0112,
+   "sep_halves_R": [
+    1.466,
+    0.173
+   ],
+   "lane_verdict": "YES"
+  },
+  "E4+X4": {
+   "taken": {
+    "signals": 40,
+    "filled": 37,
+    "fill%": 92.5,
+    "given_ticks_mean": 3.08,
+    "mean_R": 0.36,
+    "win%": 51.4,
+    "net_usd_1": 1394.2,
+    "usd_per_signal": 34.85,
+    "usd_per_signal_halves": [
+     33.14,
+     36.95
+    ],
+    "net_usd_500": 6170.5,
+    "usd_500_per_signal": 154.26,
+    "usd_500_per_signal_halves": [
+     228.14,
+     63.97
+    ],
+    "net_usd_1_lane_comm": 1412.7,
+    "trades_per_week": 3.63,
+    "max_dd_usd_1": 991.7,
+    "exits": {
+     "stop": 18,
+     "target": 19,
+     "flat": 0
+    },
+    "missed": 3,
+    "missed_winners": 1,
+    "missed_winner_usd": 148.1,
+    "missed_net_usd": -204.2
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 52,
+    "fill%": 98.1,
+    "given_ticks_mean": 3.13,
+    "mean_R": -0.534,
+    "win%": 25.0,
+    "net_usd_1": -2727.8,
+    "usd_per_signal": -51.47,
+    "usd_per_signal_halves": [
+     -75.01,
+     -25.1
+    ],
+    "net_usd_500": -11454.0,
+    "usd_500_per_signal": -216.11,
+    "usd_500_per_signal_halves": [
+     -416.48,
+     8.3
+    ],
+    "net_usd_1_lane_comm": -2701.8,
+    "trades_per_week": 5.1,
+    "max_dd_usd_1": 2783.8,
+    "exits": {
+     "stop": 39,
+     "target": 11,
+     "flat": 2
+    },
+    "missed": 1,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": -42.9
+   },
+   "sep_p": 0.006,
+   "sep_halves_R": [
+    1.429,
+    0.25
+   ],
+   "lane_verdict": "YES"
+  },
+  "E5+X4": {
+   "taken": {
+    "signals": 40,
+    "filled": 40,
+    "fill%": 100.0,
+    "given_ticks_mean": -20.15,
+    "mean_R": 0.22,
+    "win%": 52.5,
+    "net_usd_1": 2580.5,
+    "usd_per_signal": 64.51,
+    "usd_per_signal_halves": [
+     58.53,
+     71.82
+    ],
+    "net_usd_500": 3931.6,
+    "usd_500_per_signal": 98.29,
+    "usd_500_per_signal_halves": [
+     204.3,
+     -31.28
+    ],
+    "net_usd_1_lane_comm": 2600.5,
+    "trades_per_week": 3.92,
+    "max_dd_usd_1": 696.5,
+    "exits": {
+     "stop": 19,
+     "target": 20,
+     "flat": 1
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "skipped": {
+    "signals": 53,
+    "filled": 53,
+    "fill%": 100.0,
+    "given_ticks_mean": 13.34,
+    "mean_R": -0.661,
+    "win%": 22.6,
+    "net_usd_1": -3942.2,
+    "usd_per_signal": -74.38,
+    "usd_per_signal_halves": [
+     -84.7,
+     -62.82
+    ],
+    "net_usd_500": -14178.4,
+    "usd_500_per_signal": -267.52,
+    "usd_500_per_signal_halves": [
+     -414.53,
+     -102.86
+    ],
+    "net_usd_1_lane_comm": -3915.7,
+    "trades_per_week": 5.2,
+    "max_dd_usd_1": 3942.2,
+    "exits": {
+     "stop": 38,
+     "target": 10,
+     "flat": 5
+    },
+    "missed": 0,
+    "missed_winners": 0,
+    "missed_winner_usd": 0,
+    "missed_net_usd": 0
+   },
+   "sep_p": 0.0082,
+   "sep_halves_R": [
+    1.427,
+    0.248
+   ],
+   "lane_verdict": "YES"
+  }
+ },
+ "x4_stop_ticks": 41,
+ "check_E0X0_vs_lane": {
+  "n": 93,
+  "lane_taken_R": 0.495,
+  "1m_taken_R": 0.495,
+  "same_exit_kind": 92
+ },
+ "stop_room": {
+  "n": 63,
+  "beyond_ticks_median": 41.0,
+  "beyond_ticks_p75": 74.5,
+  "x2_slip_mean": 9.57
+ },
+ "target_touch_only": {
+  "n": 28,
+  "touch_only": 0
+ },
+ "rows": [
+  {
+   "id": "A|2026-09-28|onl",
+   "taken": false,
+   "d": 1,
+   "c": 30571.5,
+   "level": 30531.0,
+   "stop": 30520.25,
+   "E0+X0": {
+    "fill": 30571.5,
+    "why": "stop",
+    "R": -1.005,
+    "usd_1": -104.9
+   },
+   "E1b+X2": {
+    "fill": 30575.0,
+    "why": "stop",
+    "R": -1.023,
+    "usd_1": -113.9
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 30588.0,
+    "why": "stop",
+    "R": -1.018,
+    "usd_1": -139.9
+   }
+  },
+  {
+   "id": "A|2026-09-28|orl",
+   "taken": true,
+   "d": 1,
+   "c": 30586.5,
+   "level": 30583.0,
+   "stop": 30553.25,
+   "E0+X0": {
+    "fill": 30587.25,
+    "why": "stop",
+    "R": -1.007,
+    "usd_1": -70.4
+   },
+   "E1b+X2": {
+    "fill": 30588.0,
+    "why": "stop",
+    "R": -1.058,
+    "usd_1": -75.4
+   },
+   "E2-15+X2": {
+    "fill": 30583.0,
+    "why": "stop",
+    "R": -1.067,
+    "usd_1": -65.4
+   },
+   "E5+X2": {
+    "fill": 30583.0,
+    "why": "stop",
+    "R": -1.067,
+    "usd_1": -65.4
+   }
+  },
+  {
+   "id": "A|2026-09-29|orl",
+   "taken": true,
+   "d": 1,
+   "c": 30555.0,
+   "level": 30545.5,
+   "stop": 30531.0,
+   "E0+X0": {
+    "fill": 30555.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 96.1
+   },
+   "E1b+X2": {
+    "fill": 30558.75,
+    "why": "stop",
+    "R": -1.018,
+    "usd_1": -58.4
+   },
+   "E2-15+X2": {
+    "fill": 30545.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 56.1
+   },
+   "E5+X2": {
+    "fill": 30545.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 56.1
+   }
+  },
+  {
+   "id": "A|2026-09-30|onh",
+   "taken": true,
+   "d": -1,
+   "c": 30770.75,
+   "level": 30779.5,
+   "stop": 30785.25,
+   "E0+X0": {
+    "fill": 30770.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 58.1
+   },
+   "E1b+X2": {
+    "fill": 30766.0,
+    "why": "stop",
+    "R": -1.169,
+    "usd_1": -46.9
+   },
+   "E2-15+X2": {
+    "fill": 30779.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 21.1
+   },
+   "E5+X2": {
+    "fill": 30779.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 21.1
+   }
+  },
+  {
+   "id": "A|2026-09-30|orh",
+   "taken": false,
+   "d": -1,
+   "c": 30830.5,
+   "level": 30843.75,
+   "stop": 30856.25,
+   "E0+X0": {
+    "fill": 30830.75,
+    "why": "stop",
+    "R": -1.01,
+    "usd_1": -53.4
+   },
+   "E1b+X2": {
+    "fill": 30829.75,
+    "why": "stop",
+    "R": -1.066,
+    "usd_1": -58.4
+   },
+   "E2-15+X2": {
+    "fill": 30843.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 48.1
+   },
+   "E5+X2": {
+    "fill": 30843.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 48.1
+   }
+  },
+  {
+   "id": "A|2026-10-01|pdl",
+   "taken": true,
+   "d": 1,
+   "c": 30704.75,
+   "level": 30680.75,
+   "stop": 30589.75,
+   "E0+X0": {
+    "fill": 30704.5,
+    "why": "stop",
+    "R": -1.002,
+    "usd_1": -231.9
+   },
+   "E1b+X2": {
+    "fill": 30705.0,
+    "why": "stop",
+    "R": -1.028,
+    "usd_1": -238.9
+   },
+   "E2-15+X2": {
+    "fill": 30680.75,
+    "why": "stop",
+    "R": -1.036,
+    "usd_1": -190.4
+   },
+   "E5+X2": {
+    "fill": 30680.75,
+    "why": "stop",
+    "R": -1.036,
+    "usd_1": -190.4
+   }
+  },
+  {
+   "id": "A|2026-10-01|onl",
+   "taken": false,
+   "d": 1,
+   "c": 30704.75,
+   "level": 30684.5,
+   "stop": 30589.75,
+   "E0+X0": {
+    "fill": 30704.5,
+    "why": "stop",
+    "R": -1.002,
+    "usd_1": -231.9
+   },
+   "E1b+X2": {
+    "fill": 30705.0,
+    "why": "stop",
+    "R": -1.028,
+    "usd_1": -238.9
+   },
+   "E2-15+X2": {
+    "fill": 30684.5,
+    "why": "stop",
+    "R": -1.034,
+    "usd_1": -197.9
+   },
+   "E5+X2": {
+    "fill": 30684.5,
+    "why": "stop",
+    "R": -1.034,
+    "usd_1": -197.9
+   }
+  },
+  {
+   "id": "A|2026-10-01|orl",
+   "taken": false,
+   "d": 1,
+   "c": 30704.75,
+   "level": 30700.5,
+   "stop": 30589.75,
+   "E0+X0": {
+    "fill": 30704.5,
+    "why": "stop",
+    "R": -1.002,
+    "usd_1": -231.9
+   },
+   "E1b+X2": {
+    "fill": 30705.0,
+    "why": "stop",
+    "R": -1.028,
+    "usd_1": -238.9
+   },
+   "E2-15+X2": {
+    "fill": 30700.5,
+    "why": "stop",
+    "R": -1.029,
+    "usd_1": -229.9
+   },
+   "E5+X2": {
+    "fill": 30700.5,
+    "why": "stop",
+    "R": -1.029,
+    "usd_1": -229.9
+   }
+  },
+  {
+   "id": "A|2026-10-01|orh",
+   "taken": false,
+   "d": -1,
+   "c": 30843.0,
+   "level": 30856.0,
+   "stop": 30866.75,
+   "E0+X0": {
+    "fill": 30843.5,
+    "why": "stop",
+    "R": -1.011,
+    "usd_1": -48.9
+   },
+   "E1b+X2": {
+    "fill": 30836.25,
+    "why": "stop",
+    "R": -1.016,
+    "usd_1": -63.9
+   },
+   "E2-15+X2": {
+    "fill": 30856.0,
+    "why": "stop",
+    "R": -1.047,
+    "usd_1": -24.4
+   },
+   "E5+X2": {
+    "fill": 30817.5,
+    "why": "stop",
+    "R": -1.01,
+    "usd_1": -101.4
+   }
+  },
+  {
+   "id": "A|2026-10-02|onh",
+   "taken": true,
+   "d": -1,
+   "c": 31209.5,
+   "level": 31222.25,
+   "stop": 31259.75,
+   "E0+X0": {
+    "fill": 31209.5,
+    "why": "stop",
+    "R": -1.005,
+    "usd_1": -102.9
+   },
+   "E1b+X2": {
+    "fill": 31208.0,
+    "why": "stop",
+    "R": -1.01,
+    "usd_1": -106.4
+   },
+   "E2-15+X2": {
+    "fill": 31222.25,
+    "why": "stop",
+    "R": -1.013,
+    "usd_1": -77.9
+   },
+   "E5+X2": {
+    "fill": 31222.25,
+    "why": "stop",
+    "R": -1.013,
+    "usd_1": -77.9
+   }
+  },
+  {
+   "id": "A|2026-10-02|orh",
+   "taken": false,
+   "d": -1,
+   "c": 31166.0,
+   "level": 31201.5,
+   "stop": 31236.75,
+   "E0+X0": {
+    "fill": 31165.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 284.1
+   },
+   "E1b+X2": {
+    "fill": 31163.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 290.1
+   },
+   "E2-15+X2": {
+    "fill": 31201.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 139.1
+   },
+   "E5+X2": {
+    "fill": 31201.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 139.1
+   }
+  },
+  {
+   "id": "A|2026-10-02|orl",
+   "taken": false,
+   "d": 1,
+   "c": 31074.0,
+   "level": 31056.25,
+   "stop": 31036.75,
+   "E0+X0": {
+    "fill": 31074.0,
+    "why": "stop",
+    "R": -1.007,
+    "usd_1": -76.9
+   },
+   "E1b+X2": {
+    "fill": 31080.25,
+    "why": "stop",
+    "R": -1.098,
+    "usd_1": -97.4
+   },
+   "E2-15+X2": {
+    "fill": 31056.25,
+    "why": "stop",
+    "R": -1.218,
+    "usd_1": -49.4
+   },
+   "E5+X2": {
+    "fill": 31056.25,
+    "why": "stop",
+    "R": -1.218,
+    "usd_1": -49.4
+   }
+  },
+  {
+   "id": "A|2026-10-05|orh",
+   "taken": false,
+   "d": -1,
+   "c": 31203.0,
+   "level": 31229.5,
+   "stop": 31237.0,
+   "E0+X0": {
+    "fill": 31203.75,
+    "why": "stop",
+    "R": -1.008,
+    "usd_1": -68.9
+   },
+   "E1b+X2": {
+    "fill": 31202.75,
+    "why": "stop",
+    "R": -1.015,
+    "usd_1": -71.4
+   },
+   "E2-15+X2": {
+    "fill": 31229.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 28.1
+   },
+   "E5+X2": {
+    "fill": 31208.75,
+    "why": "stop",
+    "R": -1.018,
+    "usd_1": -59.4
+   }
+  },
+  {
+   "id": "A|2026-10-05|pdh",
+   "taken": true,
+   "d": -1,
+   "c": 31275.75,
+   "level": 31282.5,
+   "stop": 31288.5,
+   "E0+X0": {
+    "fill": 31275.5,
+    "why": "stop",
+    "R": -1.019,
+    "usd_1": -28.4
+   },
+   "E1b+X2": {
+    "fill": 31272.75,
+    "why": "stop",
+    "R": -1.032,
+    "usd_1": -34.4
+   },
+   "E2-15+X2": {
+    "fill": 31282.5,
+    "why": "stop",
+    "R": -1.083,
+    "usd_1": -14.9
+   },
+   "E5+X2": {
+    "fill": 31276.5,
+    "why": "stop",
+    "R": -1.042,
+    "usd_1": -26.9
+   }
+  },
+  {
+   "id": "A|2026-10-06|orh",
+   "taken": true,
+   "d": -1,
+   "c": 31552.25,
+   "level": 31567.0,
+   "stop": 31584.0,
+   "E0+X0": {
+    "fill": 31551.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 127.1
+   },
+   "E1b+X2": {
+    "fill": 31551.0,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 130.1
+   },
+   "E2-15+X2": {
+    "fill": 31567.0,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 66.1
+   },
+   "E5+X2": {
+    "fill": 31567.0,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 66.1
+   }
+  },
+  {
+   "id": "A|2026-10-06|onh",
+   "taken": false,
+   "d": -1,
+   "c": 31501.25,
+   "level": 31539.0,
+   "stop": 31542.0,
+   "E0+X0": {
+    "fill": 31500.75,
+    "why": "stop",
+    "R": -1.006,
+    "usd_1": -84.9
+   },
+   "E1b+X2": {
+    "fill": 31494.75,
+    "why": "stop",
+    "R": -1.037,
+    "usd_1": -99.9
+   },
+   "E2-15+X2": {
+    "fill": 31539.0,
+    "why": "stop",
+    "R": -1.583,
+    "usd_1": -11.4
+   },
+   "E5+X2": {
+    "fill": 31514.25,
+    "why": "stop",
+    "R": -1.063,
+    "usd_1": -60.9
+   }
+  },
+  {
+   "id": "A|2026-10-07|onl",
+   "taken": true,
+   "d": 1,
+   "c": 31213.75,
+   "level": 31206.25,
+   "stop": 31174.5,
+   "E0+X0": {
+    "fill": 31214.0,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 156.1
+   },
+   "E1b+X2": {
+    "fill": 31215.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 163.1
+   },
+   "E2-15+X2": {
+    "fill": 31206.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 125.1
+   },
+   "E5+X2": {
+    "fill": 31206.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 125.1
+   }
+  },
+  {
+   "id": "A|2026-10-07|orh",
+   "taken": false,
+   "d": -1,
+   "c": 31254.75,
+   "level": 31275.5,
+   "stop": 31288.5,
+   "E0+X0": {
+    "fill": 31254.5,
+    "why": "stop",
+    "R": -1.007,
+    "usd_1": -70.4
+   },
+   "E1b+X2": {
+    "fill": 31248.5,
+    "why": "stop",
+    "R": -1.075,
+    "usd_1": -87.9
+   },
+   "E2-15+X2": {
+    "fill": 31275.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 50.1
+   },
+   "E5+X2": {
+    "fill": 31238.5,
+    "why": "stop",
+    "R": -1.06,
+    "usd_1": -107.9
+   }
+  },
+  {
+   "id": "A|2026-10-08|orh",
+   "taken": true,
+   "d": -1,
+   "c": 31254.5,
+   "level": 31275.5,
+   "stop": 31291.25,
+   "E0+X0": {
+    "fill": 31253.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 148.1
+   },
+   "E1b+X2": {
+    "fill": 31253.0,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 151.1
+   },
+   "E2-15+X2": {
+    "fill": 31275.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 61.1
+   },
+   "E5+X2": {
+    "fill": 31275.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 61.1
+   }
+  },
+  {
+   "id": "A|2026-10-09|orl",
+   "taken": true,
+   "d": 1,
+   "c": 31026.0,
+   "level": 30995.5,
+   "stop": 30990.75,
+   "E0+X0": {
+    "fill": 31028.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 148.1
+   },
+   "E1b+X2": {
+    "fill": 31028.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 148.1
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 31046.0,
+    "why": "flat",
+    "R": 1.19,
+    "usd_1": 129.6
+   }
+  },
+  {
+   "id": "A|2026-10-12|orl",
+   "taken": false,
+   "d": 1,
+   "c": 30937.75,
+   "level": 30936.0,
+   "stop": 30909.25,
+   "E0+X0": {
+    "fill": 30938.25,
+    "why": "stop",
+    "R": -1.009,
+    "usd_1": -60.4
+   },
+   "E1b+X2": {
+    "fill": 30941.0,
+    "why": "stop",
+    "R": -1.016,
+    "usd_1": -66.4
+   },
+   "E2-15+X2": {
+    "fill": 30936.0,
+    "why": "stop",
+    "R": -1.019,
+    "usd_1": -56.4
+   },
+   "E5+X2": {
+    "fill": 30936.0,
+    "why": "stop",
+    "R": -1.019,
+    "usd_1": -56.4
+   }
+  },
+  {
+   "id": "A|2026-10-13|orh",
+   "taken": true,
+   "d": -1,
+   "c": 30804.5,
+   "level": 30806.25,
+   "stop": 30815.0,
+   "E0+X0": {
+    "fill": 30804.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 39.1
+   },
+   "E1b+X2": {
+    "fill": 30800.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 55.1
+   },
+   "E2-15+X2": {
+    "fill": 30806.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 33.1
+   },
+   "E5+X2": {
+    "fill": 30806.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 33.1
+   }
+  },
+  {
+   "id": "A|2026-10-14|pdl",
+   "taken": true,
+   "d": 1,
+   "c": 30647.5,
+   "level": 30591.25,
+   "stop": 30578.25,
+   "E0+X0": {
+    "fill": 30648.25,
+    "why": "stop",
+    "R": -1.004,
+    "usd_1": -142.4
+   },
+   "E1b+X2": {
+    "fill": 30648.25,
+    "why": "stop",
+    "R": -1.089,
+    "usd_1": -154.4
+   },
+   "E2-15+X2": {
+    "fill": 30591.25,
+    "why": "stop",
+    "R": -1.481,
+    "usd_1": -40.4
+   },
+   "E5+X2": {
+    "fill": 30591.25,
+    "why": "stop",
+    "R": -1.481,
+    "usd_1": -40.4
+   }
+  },
+  {
+   "id": "A|2026-10-14|orl",
+   "taken": false,
+   "d": 1,
+   "c": 30491.5,
+   "level": 30465.75,
+   "stop": 30457.25,
+   "E0+X0": {
+    "fill": 30492.25,
+    "why": "stop",
+    "R": -1.007,
+    "usd_1": -72.4
+   },
+   "E1b+X2": {
+    "fill": 30502.5,
+    "why": "stop",
+    "R": -1.011,
+    "usd_1": -93.4
+   },
+   "E2-15+X2": {
+    "fill": 30465.75,
+    "why": "stop",
+    "R": -1.059,
+    "usd_1": -19.9
+   },
+   "E5+X2": {
+    "fill": 30483.75,
+    "why": "stop",
+    "R": -1.019,
+    "usd_1": -55.9
+   }
+  },
+  {
+   "id": "A|2026-10-15|onl",
+   "taken": true,
+   "d": 1,
+   "c": 29788.25,
+   "level": 29711.0,
+   "stop": 29682.75,
+   "E0+X0": {
+    "fill": 29788.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 420.1
+   },
+   "E1b+X2": {
+    "fill": 29796.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 452.1
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 29836.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 613.1
+   }
+  },
+  {
+   "id": "A|2026-10-15|orh",
+   "taken": false,
+   "d": -1,
+   "c": 29792.0,
+   "level": 29859.5,
+   "stop": 29871.25,
+   "E0+X0": {
+    "fill": 29790.75,
+    "why": "stop",
+    "R": -1.003,
+    "usd_1": -163.4
+   },
+   "E1b+X2": {
+    "fill": 29788.0,
+    "why": "stop",
+    "R": -1.027,
+    "usd_1": -172.9
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 29824.0,
+    "why": "stop",
+    "R": -1.048,
+    "usd_1": -100.9
+   }
+  },
+  {
+   "id": "A|2026-10-16|orl",
+   "taken": true,
+   "d": 1,
+   "c": 29865.75,
+   "level": 29802.25,
+   "stop": 29786.5,
+   "E0+X0": {
+    "fill": 29866.0,
+    "why": "stop",
+    "R": -1.003,
+    "usd_1": -161.4
+   },
+   "E1b+X2": {
+    "fill": 29870.0,
+    "why": "stop",
+    "R": -1.057,
+    "usd_1": -178.4
+   },
+   "E2-15+X2": {
+    "fill": 29802.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 61.1
+   },
+   "E5+X2": {
+    "fill": 29861.25,
+    "why": "stop",
+    "R": -1.064,
+    "usd_1": -160.9
+   }
+  },
+  {
+   "id": "A|2026-10-16|pdl",
+   "taken": false,
+   "d": 1,
+   "c": 29644.0,
+   "level": 29622.5,
+   "stop": 29608.75,
+   "E0+X0": {
+    "fill": 29644.25,
+    "why": "stop",
+    "R": -1.007,
+    "usd_1": -73.4
+   },
+   "E1b+X2": {
+    "fill": 29645.25,
+    "why": "stop",
+    "R": -1.021,
+    "usd_1": -76.4
+   },
+   "E2-15+X2": {
+    "fill": 29622.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 53.1
+   },
+   "E5+X2": {
+    "fill": 29622.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 53.1
+   }
+  },
+  {
+   "id": "A|2026-10-19|orl",
+   "taken": false,
+   "d": 1,
+   "c": 29707.5,
+   "level": 29683.25,
+   "stop": 29668.75,
+   "E0+X0": {
+    "fill": 29707.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 154.1
+   },
+   "E1b+X2": {
+    "fill": 29716.0,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 187.1
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 29813.25,
+    "why": "flat",
+    "R": -0.595,
+    "usd_1": -173.9
+   }
+  },
+  {
+   "id": "A|2026-10-19|orh",
+   "taken": true,
+   "d": -1,
+   "c": 29806.75,
+   "level": 29807.0,
+   "stop": 29809.75,
+   "E0+X0": {
+    "fill": 29806.5,
+    "why": "stop",
+    "R": -1.077,
+    "usd_1": -8.9
+   },
+   "E1b+X2": {
+    "fill": 29806.25,
+    "why": "stop",
+    "R": -2.0,
+    "usd_1": -15.9
+   },
+   "E2-15+X2": {
+    "fill": 29807.0,
+    "why": "stop",
+    "R": -2.273,
+    "usd_1": -14.4
+   },
+   "E5+X2": {
+    "fill": 29807.0,
+    "why": "stop",
+    "R": -2.273,
+    "usd_1": -14.4
+   }
+  },
+  {
+   "id": "A|2026-10-19|onh",
+   "taken": false,
+   "d": -1,
+   "c": 29778.75,
+   "level": 29813.5,
+   "stop": 29845.0,
+   "E0+X0": {
+    "fill": 29778.5,
+    "why": "stop",
+    "R": -1.004,
+    "usd_1": -135.4
+   },
+   "E1b+X2": {
+    "fill": 29777.75,
+    "why": "stop",
+    "R": -1.022,
+    "usd_1": -139.4
+   },
+   "E2-15+X2": {
+    "fill": 29813.5,
+    "why": "stop",
+    "R": -1.048,
+    "usd_1": -67.9
+   },
+   "E5+X2": {
+    "fill": 29789.0,
+    "why": "stop",
+    "R": -1.027,
+    "usd_1": -116.9
+   }
+  },
+  {
+   "id": "A|2026-10-20|onl",
+   "taken": true,
+   "d": 1,
+   "c": 29525.0,
+   "level": 29478.5,
+   "stop": 29391.5,
+   "E0+X0": {
+    "fill": 29525.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 533.1
+   },
+   "E1b+X2": {
+    "fill": 29525.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 535.1
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 29537.0,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 580.1
+   }
+  },
+  {
+   "id": "A|2026-10-20|pdl",
+   "taken": false,
+   "d": 1,
+   "c": 29717.75,
+   "level": 29653.75,
+   "stop": 29636.75,
+   "E0+X0": {
+    "fill": 29717.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 322.1
+   },
+   "E1b+X2": {
+    "fill": 29723.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 344.1
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 29741.5,
+    "why": "flat",
+    "R": -0.556,
+    "usd_1": -118.4
+   }
+  },
+  {
+   "id": "A|2026-10-20|onh",
+   "taken": false,
+   "d": -1,
+   "c": 29743.5,
+   "level": 29803.5,
+   "stop": 29852.75,
+   "E0+X0": {
+    "fill": 29743.0,
+    "why": "flat",
+    "R": 0.538,
+    "usd_1": 116.1
+   },
+   "E1b+X2": {
+    "fill": 29737.5,
+    "why": "flat",
+    "R": 0.462,
+    "usd_1": 104.6
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 29778.0,
+    "why": "flat",
+    "R": 1.254,
+    "usd_1": 185.6
+   }
+  },
+  {
+   "id": "A|2026-10-21|pdh",
+   "taken": true,
+   "d": -1,
+   "c": 29897.0,
+   "level": 29903.5,
+   "stop": 29917.75,
+   "E0+X0": {
+    "fill": 29898.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 74.1
+   },
+   "E1b+X2": {
+    "fill": 29890.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 108.1
+   },
+   "E2-15+X2": {
+    "fill": 29903.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 55.1
+   },
+   "E5+X2": {
+    "fill": 29903.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 55.1
+   }
+  },
+  {
+   "id": "A|2026-10-21|orh",
+   "taken": false,
+   "d": -1,
+   "c": 29883.25,
+   "level": 29917.5,
+   "stop": 29934.5,
+   "E0+X0": {
+    "fill": 29883.25,
+    "why": "stop",
+    "R": -1.005,
+    "usd_1": -104.9
+   },
+   "E1b+X2": {
+    "fill": 29870.75,
+    "why": "stop",
+    "R": -1.027,
+    "usd_1": -132.9
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 29825.75,
+    "why": "stop",
+    "R": -1.016,
+    "usd_1": -222.9
+   }
+  },
+  {
+   "id": "A|2026-10-21|onh",
+   "taken": false,
+   "d": -1,
+   "c": 30001.0,
+   "level": 30010.25,
+   "stop": 30015.75,
+   "E0+X0": {
+    "fill": 30001.0,
+    "why": "stop",
+    "R": -1.017,
+    "usd_1": -31.9
+   },
+   "E1b+X2": {
+    "fill": 30000.0,
+    "why": "stop",
+    "R": -1.063,
+    "usd_1": -35.4
+   },
+   "E2-15+X2": {
+    "fill": 30010.25,
+    "why": "stop",
+    "R": -1.182,
+    "usd_1": -14.9
+   },
+   "E5+X2": {
+    "fill": 29999.0,
+    "why": "stop",
+    "R": -1.06,
+    "usd_1": -37.4
+   }
+  },
+  {
+   "id": "A|2026-10-22|orh",
+   "taken": true,
+   "d": -1,
+   "c": 29558.5,
+   "level": 29570.25,
+   "stop": 29595.0,
+   "E0+X0": {
+    "fill": 29558.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 143.1
+   },
+   "E1b+X2": {
+    "fill": 29548.0,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 186.1
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 29493.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 404.1
+   }
+  },
+  {
+   "id": "A|2026-10-22|orl",
+   "taken": false,
+   "d": 1,
+   "c": 29454.5,
+   "level": 29436.0,
+   "stop": 29426.5,
+   "E0+X0": {
+    "fill": 29455.0,
+    "why": "stop",
+    "R": -1.009,
+    "usd_1": -59.4
+   },
+   "E1b+X2": {
+    "fill": 29455.0,
+    "why": "stop",
+    "R": -1.018,
+    "usd_1": -59.9
+   },
+   "E2-15+X2": {
+    "fill": 29436.0,
+    "why": "stop",
+    "R": -1.053,
+    "usd_1": -21.9
+   },
+   "E5+X2": {
+    "fill": 29436.0,
+    "why": "stop",
+    "R": -1.053,
+    "usd_1": -21.9
+   }
+  },
+  {
+   "id": "A|2026-10-23|orh",
+   "taken": true,
+   "d": -1,
+   "c": 29169.25,
+   "level": 29175.5,
+   "stop": 29193.75,
+   "E0+X0": {
+    "fill": 29168.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 98.1
+   },
+   "E1b+X2": {
+    "fill": 29161.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 126.1
+   },
+   "E2-15+X2": {
+    "fill": 29175.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 71.1
+   },
+   "E5+X2": {
+    "fill": 29175.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 71.1
+   }
+  },
+  {
+   "id": "A|2026-10-23|onh",
+   "taken": false,
+   "d": -1,
+   "c": 29278.0,
+   "level": 29279.0,
+   "stop": 29281.25,
+   "E0+X0": {
+    "fill": 29278.0,
+    "why": "stop",
+    "R": -1.077,
+    "usd_1": -8.9
+   },
+   "E1b+X2": {
+    "fill": 29276.0,
+    "why": "stop",
+    "R": -1.524,
+    "usd_1": -17.9
+   },
+   "E2-15+X2": {
+    "fill": 29279.0,
+    "why": "stop",
+    "R": -2.222,
+    "usd_1": -11.9
+   },
+   "E5+X2": {
+    "fill": 29279.0,
+    "why": "stop",
+    "R": -2.222,
+    "usd_1": -11.9
+   }
+  },
+  {
+   "id": "A|2026-10-26|onh",
+   "taken": true,
+   "d": -1,
+   "c": 29340.75,
+   "level": 29354.0,
+   "stop": 29383.0,
+   "E0+X0": {
+    "fill": 29340.75,
+    "why": "stop",
+    "R": -1.006,
+    "usd_1": -86.9
+   },
+   "E1b+X2": {
+    "fill": 29338.5,
+    "why": "stop",
+    "R": -1.084,
+    "usd_1": -98.4
+   },
+   "E2-15+X2": {
+    "fill": 29354.0,
+    "why": "stop",
+    "R": -1.129,
+    "usd_1": -67.4
+   },
+   "E5+X2": {
+    "fill": 29354.0,
+    "why": "stop",
+    "R": -1.129,
+    "usd_1": -67.4
+   }
+  },
+  {
+   "id": "A|2026-10-26|orh",
+   "taken": false,
+   "d": -1,
+   "c": 29318.25,
+   "level": 29334.25,
+   "stop": 29352.25,
+   "E0+X0": {
+    "fill": 29319.0,
+    "why": "stop",
+    "R": -1.008,
+    "usd_1": -68.9
+   },
+   "E1b+X2": {
+    "fill": 29316.75,
+    "why": "stop",
+    "R": -1.021,
+    "usd_1": -74.4
+   },
+   "E2-15+X2": {
+    "fill": 29334.25,
+    "why": "stop",
+    "R": -1.042,
+    "usd_1": -39.4
+   },
+   "E5+X2": {
+    "fill": 29334.25,
+    "why": "stop",
+    "R": -1.042,
+    "usd_1": -39.4
+   }
+  },
+  {
+   "id": "A|2026-10-27|pdh",
+   "taken": true,
+   "d": -1,
+   "c": 29552.75,
+   "level": 29572.0,
+   "stop": 29678.0,
+   "E0+X0": {
+    "fill": 29552.0,
+    "why": "stop",
+    "R": -1.002,
+    "usd_1": -254.4
+   },
+   "E1b+X2": {
+    "fill": 29548.75,
+    "why": "stop",
+    "R": -1.004,
+    "usd_1": -261.4
+   },
+   "E2-15+X2": {
+    "fill": 29572.0,
+    "why": "stop",
+    "R": -1.005,
+    "usd_1": -214.9
+   },
+   "E5+X2": {
+    "fill": 29572.0,
+    "why": "stop",
+    "R": -1.005,
+    "usd_1": -214.9
+   }
+  },
+  {
+   "id": "A|2026-10-27|onh",
+   "taken": false,
+   "d": -1,
+   "c": 29552.75,
+   "level": 29628.75,
+   "stop": 29678.0,
+   "E0+X0": {
+    "fill": 29552.0,
+    "why": "stop",
+    "R": -1.002,
+    "usd_1": -254.4
+   },
+   "E1b+X2": {
+    "fill": 29548.75,
+    "why": "stop",
+    "R": -1.004,
+    "usd_1": -261.4
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 29554.0,
+    "why": "stop",
+    "R": -1.004,
+    "usd_1": -250.9
+   }
+  },
+  {
+   "id": "A|2026-10-27|orl",
+   "taken": false,
+   "d": 1,
+   "c": 29524.25,
+   "level": 29523.75,
+   "stop": 29507.25,
+   "E0+X0": {
+    "fill": 29523.75,
+    "why": "stop",
+    "R": -1.015,
+    "usd_1": -35.4
+   },
+   "E1b+X2": {
+    "fill": 29527.0,
+    "why": "stop",
+    "R": -1.101,
+    "usd_1": -45.4
+   },
+   "E2-15+X2": {
+    "fill": 29523.5,
+    "why": "stop",
+    "R": -1.123,
+    "usd_1": -38.4
+   },
+   "E5+X2": {
+    "fill": 29523.5,
+    "why": "stop",
+    "R": -1.123,
+    "usd_1": -38.4
+   }
+  },
+  {
+   "id": "A|2026-10-28|onl",
+   "taken": true,
+   "d": 1,
+   "c": 29787.5,
+   "level": 29783.75,
+   "stop": 29767.0,
+   "E0+X0": {
+    "fill": 29787.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 81.1
+   },
+   "E1b+X2": {
+    "fill": 29793.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 103.1
+   },
+   "E2-15+X2": {
+    "fill": 29783.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 65.1
+   },
+   "E5+X2": {
+    "fill": 29783.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 65.1
+   }
+  },
+  {
+   "id": "A|2026-10-28|pdh",
+   "taken": false,
+   "d": -1,
+   "c": 29858.5,
+   "level": 29881.25,
+   "stop": 29889.75,
+   "E0+X0": {
+    "fill": 29858.0,
+    "why": "stop",
+    "R": -1.008,
+    "usd_1": -65.9
+   },
+   "E1b+X2": {
+    "fill": 29856.5,
+    "why": "stop",
+    "R": -1.158,
+    "usd_1": -78.9
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 29850.0,
+    "why": "stop",
+    "R": -1.132,
+    "usd_1": -91.9
+   }
+  },
+  {
+   "id": "A|2026-10-28|onh",
+   "taken": false,
+   "d": -1,
+   "c": 29915.25,
+   "level": 29989.25,
+   "stop": 30004.25,
+   "E0+X0": {
+    "fill": 29914.5,
+    "why": "stop",
+    "R": -1.003,
+    "usd_1": -181.9
+   },
+   "E1b+X2": {
+    "fill": 29909.25,
+    "why": "stop",
+    "R": -1.011,
+    "usd_1": -193.9
+   },
+   "E2-15+X2": {
+    "fill": 29989.25,
+    "why": "stop",
+    "R": -1.067,
+    "usd_1": -33.9
+   },
+   "E5+X2": {
+    "fill": 29989.25,
+    "why": "stop",
+    "R": -1.067,
+    "usd_1": -33.9
+   }
+  },
+  {
+   "id": "A|2026-10-28|orh",
+   "taken": false,
+   "d": -1,
+   "c": 29915.25,
+   "level": 29952.75,
+   "stop": 30004.25,
+   "E0+X0": {
+    "fill": 29914.5,
+    "why": "stop",
+    "R": -1.003,
+    "usd_1": -181.9
+   },
+   "E1b+X2": {
+    "fill": 29909.25,
+    "why": "stop",
+    "R": -1.011,
+    "usd_1": -193.9
+   },
+   "E2-15+X2": {
+    "fill": 29952.75,
+    "why": "stop",
+    "R": -1.019,
+    "usd_1": -106.9
+   },
+   "E5+X2": {
+    "fill": 29952.75,
+    "why": "stop",
+    "R": -1.019,
+    "usd_1": -106.9
+   }
+  },
+  {
+   "id": "A|2026-10-29|onl",
+   "taken": true,
+   "d": 1,
+   "c": 29547.0,
+   "level": 29482.5,
+   "stop": 29445.25,
+   "E0+X0": {
+    "fill": 29548.5,
+    "why": "stop",
+    "R": -1.002,
+    "usd_1": -208.9
+   },
+   "E1b+X2": {
+    "fill": 29559.0,
+    "why": "stop",
+    "R": -1.018,
+    "usd_1": -233.4
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 29622.0,
+    "why": "stop",
+    "R": -1.011,
+    "usd_1": -359.4
+   }
+  },
+  {
+   "id": "A|2026-10-29|orh",
+   "taken": false,
+   "d": -1,
+   "c": 29593.25,
+   "level": 29630.5,
+   "stop": 29635.0,
+   "E0+X0": {
+    "fill": 29593.0,
+    "why": "stop",
+    "R": -1.006,
+    "usd_1": -86.4
+   },
+   "E1b+X2": {
+    "fill": 29593.0,
+    "why": "stop",
+    "R": -1.083,
+    "usd_1": -92.9
+   },
+   "E2-15+X2": {
+    "fill": 29630.5,
+    "why": "stop",
+    "R": -1.778,
+    "usd_1": -17.9
+   },
+   "E5+X2": {
+    "fill": 29607.25,
+    "why": "stop",
+    "R": -1.126,
+    "usd_1": -64.4
+   }
+  },
+  {
+   "id": "A|2026-10-30|onl",
+   "taken": true,
+   "d": 1,
+   "c": 28800.0,
+   "level": 28756.25,
+   "stop": 28742.75,
+   "E0+X0": {
+    "fill": 28799.5,
+    "why": "stop",
+    "R": -1.004,
+    "usd_1": -115.9
+   },
+   "E1b+X2": {
+    "fill": 28800.75,
+    "why": "stop",
+    "R": -1.03,
+    "usd_1": -121.4
+   },
+   "E2-15+X2": {
+    "fill": 28756.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 52.1
+   },
+   "E5+X2": {
+    "fill": 28756.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 52.1
+   }
+  },
+  {
+   "id": "A|2026-10-30|orl",
+   "taken": false,
+   "d": 1,
+   "c": 28672.75,
+   "level": 28668.25,
+   "stop": 28614.5,
+   "E0+X0": {
+    "fill": 28673.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 233.1
+   },
+   "E1b+X2": {
+    "fill": 28677.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 249.1
+   },
+   "E2-15+X2": {
+    "fill": 28668.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 213.1
+   },
+   "E5+X2": {
+    "fill": 28668.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 213.1
+   }
+  },
+  {
+   "id": "A|2026-11-02|onh",
+   "taken": true,
+   "d": -1,
+   "c": 28834.5,
+   "level": 28844.0,
+   "stop": 28889.5,
+   "E0+X0": {
+    "fill": 28834.0,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 220.1
+   },
+   "E1b+X2": {
+    "fill": 28833.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 221.1
+   },
+   "E2-15+X2": {
+    "fill": 28844.0,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 180.1
+   },
+   "E5+X2": {
+    "fill": 28844.0,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 180.1
+   }
+  },
+  {
+   "id": "A|2026-11-02|orh",
+   "taken": false,
+   "d": -1,
+   "c": 28725.75,
+   "level": 28749.5,
+   "stop": 28771.25,
+   "E0+X0": {
+    "fill": 28726.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 177.1
+   },
+   "E1b+X2": {
+    "fill": 28724.0,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 187.1
+   },
+   "E2-15+X2": {
+    "fill": 28749.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 85.1
+   },
+   "E5+X2": {
+    "fill": 28749.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 85.1
+   }
+  },
+  {
+   "id": "A|2026-11-02|orl",
+   "taken": false,
+   "d": 1,
+   "c": 28656.5,
+   "level": 28639.0,
+   "stop": 28633.75,
+   "E0+X0": {
+    "fill": 28656.5,
+    "why": "stop",
+    "R": -1.011,
+    "usd_1": -47.9
+   },
+   "E1b+X2": {
+    "fill": 28664.25,
+    "why": "stop",
+    "R": -1.066,
+    "usd_1": -66.9
+   },
+   "E2-15+X2": {
+    "fill": 28639.0,
+    "why": "stop",
+    "R": -1.381,
+    "usd_1": -16.4
+   },
+   "E5+X2": {
+    "fill": 28658.25,
+    "why": "stop",
+    "R": -1.082,
+    "usd_1": -54.9
+   }
+  },
+  {
+   "id": "A|2026-11-03|orh",
+   "taken": true,
+   "d": -1,
+   "c": 28345.75,
+   "level": 28385.75,
+   "stop": 28389.25,
+   "E0+X0": {
+    "fill": 28344.75,
+    "why": "stop",
+    "R": -1.006,
+    "usd_1": -91.4
+   },
+   "E1b+X2": {
+    "fill": 28338.75,
+    "why": "stop",
+    "R": -1.035,
+    "usd_1": -106.4
+   },
+   "E2-15+X2": {
+    "fill": 28385.75,
+    "why": "stop",
+    "R": -1.5,
+    "usd_1": -12.4
+   },
+   "E5+X2": {
+    "fill": 28356.75,
+    "why": "stop",
+    "R": -1.054,
+    "usd_1": -70.4
+   }
+  },
+  {
+   "id": "A|2026-11-03|onh",
+   "taken": false,
+   "d": -1,
+   "c": 28406.75,
+   "level": 28426.5,
+   "stop": 28431.25,
+   "E0+X0": {
+    "fill": 28405.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 100.1
+   },
+   "E1b+X2": {
+    "fill": 28398.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 128.1
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 28394.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 144.1
+   }
+  },
+  {
+   "id": "A|2026-11-04|orh",
+   "taken": true,
+   "d": -1,
+   "c": 28859.75,
+   "level": 28868.5,
+   "stop": 28889.0,
+   "E0+X0": {
+    "fill": 28859.5,
+    "why": "stop",
+    "R": -1.008,
+    "usd_1": -61.4
+   },
+   "E1b+X2": {
+    "fill": 28855.75,
+    "why": "stop",
+    "R": -1.068,
+    "usd_1": -72.9
+   },
+   "E2-15+X2": {
+    "fill": 28868.5,
+    "why": "stop",
+    "R": -1.11,
+    "usd_1": -47.4
+   },
+   "E5+X2": {
+    "fill": 28868.5,
+    "why": "stop",
+    "R": -1.11,
+    "usd_1": -47.4
+   }
+  },
+  {
+   "id": "A|2026-11-04|onh",
+   "taken": false,
+   "d": -1,
+   "c": 28632.0,
+   "level": 28662.0,
+   "stop": 28696.5,
+   "E0+X0": {
+    "fill": 28632.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 254.1
+   },
+   "E1b+X2": {
+    "fill": 28625.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 282.1
+   },
+   "E2-15+X2": {
+    "fill": 28662.0,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 136.1
+   },
+   "E5+X2": {
+    "fill": 28619.0,
+    "why": "stop",
+    "R": -1.016,
+    "usd_1": -159.4
+   }
+  },
+  {
+   "id": "A|2026-11-05|orl",
+   "taken": true,
+   "d": 1,
+   "c": 27467.0,
+   "level": 27457.5,
+   "stop": 27433.5,
+   "E0+X0": {
+    "fill": 27467.25,
+    "why": "stop",
+    "R": -1.007,
+    "usd_1": -69.9
+   },
+   "E1b+X2": {
+    "fill": 27471.5,
+    "why": "stop",
+    "R": -1.184,
+    "usd_1": -91.9
+   },
+   "E2-15+X2": {
+    "fill": 27457.5,
+    "why": "stop",
+    "R": -1.292,
+    "usd_1": -63.9
+   },
+   "E5+X2": {
+    "fill": 27457.5,
+    "why": "stop",
+    "R": -1.292,
+    "usd_1": -63.9
+   }
+  },
+  {
+   "id": "A|2026-11-06|onh",
+   "taken": true,
+   "d": -1,
+   "c": 27227.25,
+   "level": 27251.5,
+   "stop": 27281.25,
+   "E0+X0": {
+    "fill": 27227.75,
+    "why": "stop",
+    "R": -1.005,
+    "usd_1": -109.4
+   },
+   "E1b+X2": {
+    "fill": 27226.75,
+    "why": "stop",
+    "R": -1.073,
+    "usd_1": -118.9
+   },
+   "E2-15+X2": {
+    "fill": 27251.5,
+    "why": "stop",
+    "R": -1.134,
+    "usd_1": -69.4
+   },
+   "E5+X2": {
+    "fill": 27251.5,
+    "why": "stop",
+    "R": -1.134,
+    "usd_1": -69.4
+   }
+  },
+  {
+   "id": "A|2026-11-06|orl",
+   "taken": false,
+   "d": 1,
+   "c": 27088.0,
+   "level": 27037.75,
+   "stop": 27005.25,
+   "E0+X0": {
+    "fill": 27088.25,
+    "why": "stop",
+    "R": -1.003,
+    "usd_1": -168.4
+   },
+   "E1b+X2": {
+    "fill": 27093.75,
+    "why": "stop",
+    "R": -1.008,
+    "usd_1": -180.4
+   },
+   "E2-15+X2": {
+    "fill": 27037.75,
+    "why": "stop",
+    "R": -1.023,
+    "usd_1": -68.4
+   },
+   "E5+X2": {
+    "fill": 27097.5,
+    "why": "stop",
+    "R": -1.008,
+    "usd_1": -187.9
+   }
+  },
+  {
+   "id": "A|2026-11-10|orh",
+   "taken": true,
+   "d": -1,
+   "c": 27964.75,
+   "level": 28016.75,
+   "stop": 28021.25,
+   "E0+X0": {
+    "fill": 27964.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 226.1
+   },
+   "E1b+X2": {
+    "fill": 27959.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 246.1
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 27896.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 497.1
+   }
+  },
+  {
+   "id": "A|2026-11-10|orl",
+   "taken": false,
+   "d": 1,
+   "c": 27658.25,
+   "level": 27637.25,
+   "stop": 27615.0,
+   "E0+X0": {
+    "fill": 27657.5,
+    "why": "stop",
+    "R": -1.006,
+    "usd_1": -87.4
+   },
+   "E1b+X2": {
+    "fill": 27657.75,
+    "why": "stop",
+    "R": -1.023,
+    "usd_1": -89.4
+   },
+   "E2-15+X2": {
+    "fill": 27637.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 87.1
+   },
+   "E5+X2": {
+    "fill": 27637.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 87.1
+   }
+  },
+  {
+   "id": "A|2026-11-10|onl",
+   "taken": false,
+   "d": 1,
+   "c": 27608.5,
+   "level": 27590.0,
+   "stop": 27559.75,
+   "E0+X0": {
+    "fill": 27606.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 184.1
+   },
+   "E1b+X2": {
+    "fill": 27614.0,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 215.1
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 27637.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 309.1
+   }
+  },
+  {
+   "id": "A|2026-11-11|onh",
+   "taken": true,
+   "d": -1,
+   "c": 28392.0,
+   "level": 28406.25,
+   "stop": 28411.25,
+   "E0+X0": {
+    "fill": 28392.0,
+    "why": "stop",
+    "R": -1.013,
+    "usd_1": -40.9
+   },
+   "E1b+X2": {
+    "fill": 28386.25,
+    "why": "stop",
+    "R": -1.02,
+    "usd_1": -52.9
+   },
+   "E2-15+X2": {
+    "fill": 28406.25,
+    "why": "stop",
+    "R": -1.1,
+    "usd_1": -12.9
+   },
+   "E5+X2": {
+    "fill": 28406.25,
+    "why": "stop",
+    "R": -1.1,
+    "usd_1": -12.9
+   }
+  },
+  {
+   "id": "A|2026-11-12|onh",
+   "taken": true,
+   "d": -1,
+   "c": 28289.5,
+   "level": 28368.75,
+   "stop": 28374.25,
+   "E0+X0": {
+    "fill": 28290.75,
+    "why": "stop",
+    "R": -1.003,
+    "usd_1": -169.4
+   },
+   "E1b+X2": {
+    "fill": 28280.5,
+    "why": "stop",
+    "R": -1.056,
+    "usd_1": -199.9
+   },
+   "E2-15+X2": {
+    "fill": 28368.75,
+    "why": "stop",
+    "R": -1.955,
+    "usd_1": -23.4
+   },
+   "E5+X2": {
+    "fill": 28368.75,
+    "why": "stop",
+    "R": -1.955,
+    "usd_1": -23.4
+   }
+  },
+  {
+   "id": "A|2026-11-12|orh",
+   "taken": false,
+   "d": -1,
+   "c": 28380.75,
+   "level": 28398.5,
+   "stop": 28434.0,
+   "E0+X0": {
+    "fill": 28381.0,
+    "why": "stop",
+    "R": -1.005,
+    "usd_1": -108.4
+   },
+   "E1b+X2": {
+    "fill": 28380.5,
+    "why": "stop",
+    "R": -1.019,
+    "usd_1": -110.9
+   },
+   "E2-15+X2": {
+    "fill": 28398.5,
+    "why": "stop",
+    "R": -1.028,
+    "usd_1": -74.9
+   },
+   "E5+X2": {
+    "fill": 28398.5,
+    "why": "stop",
+    "R": -1.028,
+    "usd_1": -74.9
+   }
+  },
+  {
+   "id": "A|2026-11-13|pdl",
+   "taken": false,
+   "d": 1,
+   "c": 28045.25,
+   "level": 28044.5,
+   "stop": 27999.0,
+   "E0+X0": {
+    "fill": 28045.75,
+    "why": "stop",
+    "R": -1.005,
+    "usd_1": -95.9
+   },
+   "E1b+X2": {
+    "fill": 28046.75,
+    "why": "stop",
+    "R": -1.021,
+    "usd_1": -99.4
+   },
+   "E2-15+X2": {
+    "fill": 28044.5,
+    "why": "stop",
+    "R": -1.022,
+    "usd_1": -94.9
+   },
+   "E5+X2": {
+    "fill": 28044.5,
+    "why": "stop",
+    "R": -1.022,
+    "usd_1": -94.9
+   }
+  },
+  {
+   "id": "A|2026-11-16|orl",
+   "taken": false,
+   "d": 1,
+   "c": 27500.25,
+   "level": 27485.75,
+   "stop": 27426.5,
+   "E0+X0": {
+    "fill": 27500.25,
+    "why": "stop",
+    "R": -1.003,
+    "usd_1": -149.9
+   },
+   "E1b+X2": {
+    "fill": 27511.5,
+    "why": "stop",
+    "R": -1.006,
+    "usd_1": -172.9
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 27556.25,
+    "why": "stop",
+    "R": -1.004,
+    "usd_1": -262.4
+   }
+  },
+  {
+   "id": "A|2026-11-16|onl",
+   "taken": false,
+   "d": 1,
+   "c": 27563.75,
+   "level": 27554.0,
+   "stop": 27546.0,
+   "E0+X0": {
+    "fill": 27563.0,
+    "why": "stop",
+    "R": -1.015,
+    "usd_1": -36.4
+   },
+   "E1b+X2": {
+    "fill": 27562.75,
+    "why": "stop",
+    "R": -1.224,
+    "usd_1": -42.9
+   },
+   "E2-15+X2": {
+    "fill": 27554.0,
+    "why": "stop",
+    "R": -1.469,
+    "usd_1": -25.4
+   },
+   "E5+X2": {
+    "fill": 27554.0,
+    "why": "stop",
+    "R": -1.469,
+    "usd_1": -25.4
+   }
+  },
+  {
+   "id": "A|2026-11-17|pdl",
+   "taken": true,
+   "d": 1,
+   "c": 27270.0,
+   "level": 27234.75,
+   "stop": 27224.5,
+   "E0+X0": {
+    "fill": 27269.75,
+    "why": "stop",
+    "R": -1.006,
+    "usd_1": -92.9
+   },
+   "E1b+X2": {
+    "fill": 27269.5,
+    "why": "stop",
+    "R": -1.067,
+    "usd_1": -97.9
+   },
+   "E2-15+X2": {
+    "fill": 27234.75,
+    "why": "stop",
+    "R": -1.293,
+    "usd_1": -28.4
+   },
+   "E5+X2": {
+    "fill": 27234.75,
+    "why": "stop",
+    "R": -1.293,
+    "usd_1": -28.4
+   }
+  },
+  {
+   "id": "A|2026-11-17|orl",
+   "taken": false,
+   "d": 1,
+   "c": 27201.0,
+   "level": 27197.0,
+   "stop": 27145.5,
+   "E0+X0": {
+    "fill": 27199.5,
+    "why": "stop",
+    "R": -1.005,
+    "usd_1": -110.4
+   },
+   "E1b+X2": {
+    "fill": 27204.5,
+    "why": "stop",
+    "R": -1.03,
+    "usd_1": -123.4
+   },
+   "E2-15+X2": {
+    "fill": 27197.0,
+    "why": "stop",
+    "R": -1.034,
+    "usd_1": -108.4
+   },
+   "E5+X2": {
+    "fill": 27197.0,
+    "why": "stop",
+    "R": -1.034,
+    "usd_1": -108.4
+   }
+  },
+  {
+   "id": "A|2026-11-18|onl",
+   "taken": true,
+   "d": 1,
+   "c": 27113.25,
+   "level": 27093.0,
+   "stop": 26951.5,
+   "E0+X0": {
+    "fill": 27113.5,
+    "why": "stop",
+    "R": -1.002,
+    "usd_1": -326.4
+   },
+   "E1b+X2": {
+    "fill": 27114.5,
+    "why": "stop",
+    "R": -1.023,
+    "usd_1": -335.4
+   },
+   "E2-15+X2": {
+    "fill": 27093.0,
+    "why": "stop",
+    "R": -1.027,
+    "usd_1": -292.4
+   },
+   "E5+X2": {
+    "fill": 27093.0,
+    "why": "stop",
+    "R": -1.027,
+    "usd_1": -292.4
+   }
+  },
+  {
+   "id": "A|2026-11-18|orh",
+   "taken": false,
+   "d": -1,
+   "c": 27202.0,
+   "level": 27317.75,
+   "stop": 27325.75,
+   "E0+X0": {
+    "fill": 27201.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 495.1
+   },
+   "E1b+X2": {
+    "fill": 27191.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 534.1
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 27168.75,
+    "why": "flat",
+    "R": -0.156,
+    "usd_1": -50.9
+   }
+  },
+  {
+   "id": "A|2026-11-18|orl",
+   "taken": false,
+   "d": 1,
+   "c": 27077.25,
+   "level": 26951.75,
+   "stop": 26921.5,
+   "E0+X0": {
+    "fill": 27077.0,
+    "why": "flat",
+    "R": 0.743,
+    "usd_1": 229.1
+   },
+   "E1b+X2": {
+    "fill": 27076.75,
+    "why": "flat",
+    "R": 0.744,
+    "usd_1": 229.1
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 27023.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 407.1
+   }
+  },
+  {
+   "id": "A|2026-11-19|onh",
+   "taken": true,
+   "d": -1,
+   "c": 27666.5,
+   "level": 27830.5,
+   "stop": 27838.25,
+   "E0+X0": {
+    "fill": 27666.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 685.1
+   },
+   "E1b+X2": {
+    "fill": 27657.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 720.1
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 27671.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 664.1
+   }
+  },
+  {
+   "id": "A|2026-11-19|pdh",
+   "taken": false,
+   "d": -1,
+   "c": 27224.25,
+   "level": 27325.5,
+   "stop": 27353.25,
+   "E0+X0": {
+    "fill": 27223.0,
+    "why": "stop",
+    "R": -1.002,
+    "usd_1": -262.9
+   },
+   "E1b+X2": {
+    "fill": 27211.75,
+    "why": "stop",
+    "R": -1.032,
+    "usd_1": -293.9
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 27098.25,
+    "why": "stop",
+    "R": -1.018,
+    "usd_1": -520.9
+   }
+  },
+  {
+   "id": "A|2026-11-19|onl",
+   "taken": false,
+   "d": 1,
+   "c": 27198.0,
+   "level": 27169.0,
+   "stop": 27065.0,
+   "E0+X0": {
+    "fill": 27199.5,
+    "why": "stop",
+    "R": -1.002,
+    "usd_1": -271.4
+   },
+   "E1b+X2": {
+    "fill": 27198.25,
+    "why": "stop",
+    "R": -1.056,
+    "usd_1": -283.4
+   },
+   "E2-15+X2": {
+    "fill": 27169.0,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 414.1
+   },
+   "E5+X2": {
+    "fill": 27169.0,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 414.1
+   }
+  },
+  {
+   "id": "A|2026-11-19|pdl",
+   "taken": false,
+   "d": 1,
+   "c": 27014.5,
+   "level": 26921.75,
+   "stop": 26743.5,
+   "E0+X0": {
+    "fill": 27014.75,
+    "why": "stop",
+    "R": -1.001,
+    "usd_1": -544.9
+   },
+   "E1b+X2": {
+    "fill": 27038.75,
+    "why": "stop",
+    "R": -1.005,
+    "usd_1": -595.4
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 27078.0,
+    "why": "stop",
+    "R": -1.004,
+    "usd_1": -673.9
+   }
+  },
+  {
+   "id": "A|2026-11-20|orh",
+   "taken": true,
+   "d": -1,
+   "c": 26395.25,
+   "level": 26451.25,
+   "stop": 26504.5,
+   "E0+X0": {
+    "fill": 26395.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 435.1
+   },
+   "E1b+X2": {
+    "fill": 26377.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 506.1
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 26298.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 821.1
+   }
+  },
+  {
+   "id": "A|2026-11-20|onl",
+   "taken": false,
+   "d": 1,
+   "c": 26049.5,
+   "level": 26000.0,
+   "stop": 25954.75,
+   "E0+X0": {
+    "fill": 26050.25,
+    "why": "stop",
+    "R": -1.003,
+    "usd_1": -193.4
+   },
+   "E1b+X2": {
+    "fill": 26049.75,
+    "why": "stop",
+    "R": -1.029,
+    "usd_1": -197.4
+   },
+   "E2-15+X2": {
+    "fill": 26000.0,
+    "why": "stop",
+    "R": -1.061,
+    "usd_1": -97.9
+   },
+   "E5+X2": {
+    "fill": 26000.0,
+    "why": "stop",
+    "R": -1.061,
+    "usd_1": -97.9
+   }
+  },
+  {
+   "id": "A|2026-11-23|onh",
+   "taken": true,
+   "d": -1,
+   "c": 26859.75,
+   "level": 26878.5,
+   "stop": 26967.25,
+   "E0+X0": {
+    "fill": 26859.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 429.1
+   },
+   "E1b+X2": {
+    "fill": 26858.0,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 435.1
+   },
+   "E2-15+X2": {
+    "fill": 26878.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 353.1
+   },
+   "E5+X2": {
+    "fill": 26878.5,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 353.1
+   }
+  },
+  {
+   "id": "A|2026-11-24|orh",
+   "taken": false,
+   "d": -1,
+   "c": 26426.75,
+   "level": 26501.75,
+   "stop": 26510.0,
+   "E0+X0": {
+    "fill": 26427.0,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 330.1
+   },
+   "E1b+X2": {
+    "fill": 26402.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 427.1
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 26317.25,
+    "why": "flat",
+    "R": 0.141,
+    "usd_1": 52.6
+   }
+  },
+  {
+   "id": "A|2026-11-24|onl",
+   "taken": true,
+   "d": 1,
+   "c": 26167.5,
+   "level": 26142.25,
+   "stop": 26109.75,
+   "E0+X0": {
+    "fill": 26168.0,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 231.1
+   },
+   "E1b+X2": {
+    "fill": 26175.75,
+    "why": "stop",
+    "R": -1.133,
+    "usd_1": -151.4
+   },
+   "E2-15+X2": {
+    "fill": 26142.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 128.1
+   },
+   "E5+X2": {
+    "fill": 26142.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 128.1
+   }
+  },
+  {
+   "id": "A|2026-11-24|orl",
+   "taken": false,
+   "d": 1,
+   "c": 26236.5,
+   "level": 26192.0,
+   "stop": 26139.0,
+   "E0+X0": {
+    "fill": 26235.5,
+    "why": "stop",
+    "R": -1.003,
+    "usd_1": -195.4
+   },
+   "E1b+X2": {
+    "fill": 26243.0,
+    "why": "stop",
+    "R": -1.026,
+    "usd_1": -215.4
+   },
+   "E2-15+X2": {
+    "fill": 26192.0,
+    "why": "stop",
+    "R": -1.052,
+    "usd_1": -113.4
+   },
+   "E5+X2": {
+    "fill": 26192.0,
+    "why": "stop",
+    "R": -1.052,
+    "usd_1": -113.4
+   }
+  },
+  {
+   "id": "A|2026-11-25|onl",
+   "taken": true,
+   "d": 1,
+   "c": 25459.5,
+   "level": 25393.75,
+   "stop": 25238.5,
+   "E0+X0": {
+    "fill": 25459.5,
+    "why": "stop",
+    "R": -1.001,
+    "usd_1": -444.4
+   },
+   "E1b+X2": {
+    "fill": 25475.0,
+    "why": "stop",
+    "R": -1.022,
+    "usd_1": -485.4
+   },
+   "E2-15+X2": {
+    "fill": 25393.75,
+    "why": "stop",
+    "R": -1.034,
+    "usd_1": -322.9
+   },
+   "E5+X2": {
+    "fill": 25393.75,
+    "why": "stop",
+    "R": -1.034,
+    "usd_1": -322.9
+   }
+  },
+  {
+   "id": "A|2026-11-25|orh",
+   "taken": false,
+   "d": -1,
+   "c": 25462.0,
+   "level": 25477.25,
+   "stop": 25510.0,
+   "E0+X0": {
+    "fill": 25461.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 191.1
+   },
+   "E1b+X2": {
+    "fill": 25443.0,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 266.1
+   },
+   "E2-15+X2": null,
+   "E5+X2": {
+    "fill": 25335.25,
+    "why": "stop",
+    "R": -1.024,
+    "usd_1": -359.9
+   }
+  },
+  {
+   "id": "A|2026-11-25|pdl",
+   "taken": false,
+   "d": 1,
+   "c": 26055.75,
+   "level": 25998.0,
+   "stop": 25962.75,
+   "E0+X0": {
+    "fill": 26055.75,
+    "why": "stop",
+    "R": -1.003,
+    "usd_1": -188.4
+   },
+   "E1b+X2": {
+    "fill": 26063.75,
+    "why": "stop",
+    "R": -1.005,
+    "usd_1": -204.9
+   },
+   "E2-15+X2": {
+    "fill": 25998.0,
+    "why": "stop",
+    "R": -1.014,
+    "usd_1": -73.4
+   },
+   "E5+X2": {
+    "fill": 26037.25,
+    "why": "stop",
+    "R": -1.007,
+    "usd_1": -151.9
+   }
+  },
+  {
+   "id": "A|2026-11-26|orh",
+   "taken": true,
+   "d": -1,
+   "c": 26314.5,
+   "level": 26316.0,
+   "stop": 26322.25,
+   "E0+X0": {
+    "fill": 26313.75,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 32.1
+   },
+   "E1b+X2": {
+    "fill": 26311.25,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 42.1
+   },
+   "E2-15+X2": {
+    "fill": 26316.0,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 23.1
+   },
+   "E5+X2": {
+    "fill": 26316.0,
+    "why": "target",
+    "R": 2.0,
+    "usd_1": 23.1
+   }
+  },
+  {
+   "id": "A|2026-11-26|orl",
+   "taken": false,
+   "d": 1,
+   "c": 26226.0,
+   "level": 26223.75,
+   "stop": 26216.25,
+   "E0+X0": {
+    "fill": 26224.5,
+    "why": "stop",
+    "R": -1.03,
+    "usd_1": -18.9
+   },
+   "E1b+X2": {
+    "fill": 26225.25,
+    "why": "stop",
+    "R": -1.056,
+    "usd_1": -20.9
+   },
+   "E2-15+X2": {
+    "fill": 26223.75,
+    "why": "stop",
+    "R": -1.067,
+    "usd_1": -17.9
+   },
+   "E5+X2": {
+    "fill": 26223.75,
+    "why": "stop",
+    "R": -1.067,
+    "usd_1": -17.9
+   }
+  }
+ ]
+}

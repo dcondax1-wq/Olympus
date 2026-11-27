@@ -29,6 +29,8 @@ COMM = 1.90                      # engine/costs.COMM_RT (the decision); the lane
 COMM_LANE = 1.40
 S_ATLAS, L_ATLAS = 0.363, 4.0    # atlasfill-2026-11-26: give-away share of the first minute's run at ~4 s
 RR = 2.0
+MEASURED_STOP_TICKS = 2      # X4 = DESIGN_exec rule 3 by the letter: set to the measured median run beyond the stop
+RISK_USD, MAXQ = 500.0, 40   # the lane's research size (size follows the stop): micros = 500 // (risk x $2), 1..40
 LAST_MIN = 15 * 60 + 59          # flat at the close of the 1m bar opening 15:59 (= the 15:55 5m bar's close)
 
 
@@ -149,6 +151,8 @@ def stop_ticks(xs: str, run_beyond_ticks: float) -> int:
         return 1
     if xs == "X1":
         return 2
+    if xs == "X4":
+        return int(MEASURED_STOP_TICKS)
     return max(2, round(s_of(1.0) * run_beyond_ticks))
 
 
@@ -161,7 +165,7 @@ def walk(sig: dict, fill, M: Min1, off: float, xs: str) -> dict:
         return {"no_risk": True}
     tgt = px + RR * risk * d
     tgt_use = tgt + (-d * TICK if xs == "X3" else 0)
-    need_through = xs in ("X1", "X2")
+    need_through = xs in ("X1", "X2", "X4")
     O, H, L, C = M.o + off, M.h + off, M.l + off, M.c + off
     last = None
     for j in range(j0, len(O)):
@@ -199,13 +203,16 @@ def _book(sig, px, ex, why, j, M, extra=None):
     r = {"fill": round(px, 2), "exit": round(ex, 2), "why": why, "exit_t": int(M.t[j]), "R": round(pts / risk, 3),
          "risk_ticks": round(risk / TICK, 1), "usd_1": round(pts * PV - COMM, 2), "usd_1_lane": round(pts * PV - COMM_LANE, 2),
          "given_ticks": round((px - sig["c"]) * d / TICK, 2)}
+    q = int(min(MAXQ, RISK_USD // (risk * PV))) if risk > 0 else 0
+    r["q500"] = q
+    r["usd_500"] = round((pts * PV - COMM) * q, 2) if q >= 1 else 0.0
     r.update(extra or {})
     return r
 
 
 # ------------------------------------------------------------------------------------------------ the study
 ENTRIES = ["E0", "E1a", "E1b", "E1c", "E2-5", "E2-15", "E3-2", "E3-4", "E4", "E5"]
-EXITS = ["X0", "X1", "X2", "X3"]
+EXITS = ["X0", "X1", "X2", "X3", "X4"]
 
 
 def signals(src=None):
@@ -256,6 +263,11 @@ def summarize(res: list, sigs: list, days: list, base: dict | None = None) -> di
         U = np.array([res[i]["usd_1"] for i in got], float)
         Rr = np.array([res[i]["R"] for i in got], float)
         per_sig = float(U.sum()) / len(ii) if ii else 0.0
+        U5 = np.array([res[i]["usd_500"] for i in got], float)
+        hv5 = []
+        for m in (lambda s: s["day"] <= half, lambda s: s["day"] > half):
+            jj = [i for i in ii if m(sigs[i])]
+            hv5.append(round(sum(res[i]["usd_500"] for i in jj if res[i] is not None and "R" in res[i]) / len(jj), 2) if jj else None)
         hv = []
         for m in (lambda s: s["day"] <= half, lambda s: s["day"] > half):
             jj = [i for i in ii if m(sigs[i])]
@@ -268,6 +280,8 @@ def summarize(res: list, sigs: list, days: list, base: dict | None = None) -> di
              "given_ticks_mean": round(float(np.mean([res[i]["given_ticks"] for i in got])), 2) if got else None,
              "mean_R": round(float(Rr.mean()), 3) if got else None, "win%": round(100 * float((Rr > 0).mean()), 1) if got else None,
              "net_usd_1": round(float(U.sum()), 2), "usd_per_signal": round(per_sig, 2), "usd_per_signal_halves": hv,
+             "net_usd_500": round(float(U5.sum()), 2), "usd_500_per_signal": round(float(U5.sum()) / len(ii), 2) if ii else 0.0,
+             "usd_500_per_signal_halves": hv5,
              "net_usd_1_lane_comm": round(float(sum(res[i]["usd_1_lane"] for i in got)), 2),
              "trades_per_week": round(len(got) / weeks, 2), "max_dd_usd_1": round(dd, 2),
              "exits": {w: sum(1 for i in got if res[i]["why"] == w) for w in ("stop", "target", "flat")}}
@@ -317,6 +331,11 @@ def run(src=None, write=True, say=print) -> dict:
            "days": len(days), "first": days[0], "last": days[-1], "signals": len(sigs), "used": len(use),
            "dropped": [s["id"] for s in sigs if s.get("dropped")], "offsets": {d: v[0] for d, v in offs.items()}, "grid": {}}
     fills = {e: [entry(e, s, M, s["off"]) for s in use] for e in ENTRIES}
+    global MEASURED_STOP_TICKS
+    pre = [walk(s, f, M, s["off"], "X1") for f, s in zip(fills["E1b"], use) if f is not None]
+    bt = [r["beyond_ticks"] for r in pre if r.get("why") == "stop"]
+    MEASURED_STOP_TICKS = max(2, int(round(float(np.median(bt))))) if bt else 2
+    out["x4_stop_ticks"] = MEASURED_STOP_TICKS
     res = {}
     for xs in EXITS:
         for e in ENTRIES:
