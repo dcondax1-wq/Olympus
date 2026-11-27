@@ -74,11 +74,17 @@
     if (!nt) add('nt', 'NinjaTrader', rep.nt === false ? 'red' : rep.nt ? 'green' : 'grey', rep.nt === false ? 'NinjaTrader is not running.' : rep.nt ? 'NinjaTrader is running.' : 'The PC did not say.', rep.nt === false ? 'Open NinjaTrader and log in.' : null);
     else {
       const [run, conn, auto] = nt;
-      add('nt', 'NinjaTrader', run === 0 || conn === 0 ? 'red' : auto === 0 ? 'amber' : 'green',
+      const armedN = Array.isArray(ck.acc) ? ck.acc.filter((r) => Array.isArray(r) && r[1]).length : 0;
+      // lead 2026-11-27: connect-on-startup OFF = after a restart (Windows Update, power cut) nothing trades until someone logs in:
+      // red while accounts are armed (money waits on it), amber otherwise. Menu wording from docs/ONE_TIME_SETUP.md + docs/HANDS_FREE.md.
+      add('nt', auto === 0 && run !== 0 && conn !== 0 ? 'NinjaTrader connect-on-startup OFF' : 'NinjaTrader',
+        run === 0 || conn === 0 ? 'red' : auto === 0 ? (armedN ? 'red' : 'amber') : 'green',
         run === 0 ? 'NinjaTrader is closed.' : conn === 0 ? 'NinjaTrader runs but is not connected.' :
-          'Running and connected.' + (auto === 0 ? ' "Connect on startup" is off: after a PC restart it will not log in by itself.' : ''),
+          'Running and connected now, but after a restart (Windows Update, power cut) nothing trades until you log in by hand' +
+            (auto === 0 ? (armedN ? ': ' + armedN + ' armed account(s) would sit idle.' : '.') : '') ,
         run === 0 ? 'Open NinjaTrader and log in.' : conn === 0 ? 'NinjaTrader: Connections, connect your account.' :
-          auto === 0 ? 'Once: NinjaTrader, Connections > Configure, tick "Connect on startup".' : null);
+          auto === 0 ? 'Once, 3 clicks: NinjaTrader Control Center > Connections > Configure > your MFFU connection > tick "Connect on startup" > OK.' : null);
+      if (auto !== 0 && run !== 0 && conn !== 0) out[out.length - 1].say = 'Running and connected; it logs in by itself after a restart.';
     }
     // 4 code version + the hourly auto-update
     const up = isObj(ck.up) ? ck.up : {};
