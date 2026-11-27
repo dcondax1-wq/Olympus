@@ -43,3 +43,34 @@ nqgoals*), of (orderflow*), brain (brain*/braincore), home (trading_home*/pcheal
 - The PC's board line "Self-heal could not fix: weekly encrypted backup made (5 files)" (23:47 ET): a SUCCESS reported as "could
   not fix" (engine/self_heal.fix_backup returns "need" on the first backup so START shows the recovery code). Mine (day-ops2):
   fix = status "fixed" + the code line stays in START. Engine change, not web: separate tiny branch on request.
+
+## Second sweep (2026-11-27 ~04:25 ET): the live site after tonight's landing (pc 27e55f77 = live, all night-nq-* branches merged)
+
+Same audit (`shots2/`), truth at 04:15 ET: balances unchanged ($49,177.52 / $25,019.24 / +$401.38 / $24,995.24), PC on 7c812f6,
+NQ 26,837.75, readiness rd = ok. Clean again: 0 small taps, 0 cyan / brown, 0 NaN, 0 http errors, console = browser WebGL notes only.
+
+| # | First-sweep finding | Now |
+|---|---|---|
+| 1 | Trading Home "ATLAS 25K is not armed" | **FIXED** (night-atlasarmed live on the PC at 01:01; Trading Home now leads with a real step: NinjaTrader connect-on-startup OFF) |
+| 2 | chart 26,249 frozen vs brain 26,745 | **FIXED** on the chart ("LIVE · last bar 7 min ago", 26,832) and the brain (26,837.75); **NEW gap, see N1** |
+| 3 | ATLAS first payout: empty black box | **STILL** (shots2/phone-nq_index_7) |
+| 4 | payout $800 vs ~$747 | nq/ now "$800 to you at 80% ... earliest $250 at $1,350"; Accounts no longer shows the ATLAS ~$747 line: **mostly fixed** (one wording now) |
+| 5 | nq/ 14 screens, accounts 4x | **PARTLY**: 3 blocks folded (Account details, Drawdown per account, Checks/replays), but the battle plan, odds and a calendar were added: still ~13 phone screens (11,199 px) |
+| 6 | stale data (learned, replay) | learned **FIXED** (4 new days scored, Nov 23-26); Replay still "Loading when you get here..." inside the folded Checks block |
+| 7 | GO/WAIT ATLAS row says "LIT" | moved into the folded Account details (not seen by default); text not re-checked |
+| 8 | "flat by 15:55" on a half day | **STILL** in "The plan for today" ("...flat by 15:55 ET. entry window open until 13:00 ET"); the new battle plan says "the CME halts at 13:15 ET; every bot is flat before it" (the two cards now disagree on one screen) |
+| 9 | floating round controls | **STILL**: the gold ring (left, mid-height) overlaps account cards on the phone; desktop still has a ring at the left and an "O" at the right edge |
+| 10 | nav wraps into 3 rows | **FIXED** (one scrolling row); "Main copy:" pill still there |
+| 11 | 312/60 tick days | brain **FIXED** ("Ready · 313 tick days collected (needed 60)"); nq/ pillar chip **STILL** "313/60 tick d..." |
+| 12 | Accounts 411 px wide | **FIXED** (390) |
+| 13 | desktop 600 px column | **FIXED** (wide hero + 4 account cards in a row) |
+| 14 | 404 hub/learned.json | **FIXED** |
+| 15 | tiny / cut text | **WORSE on live + accounts**: text runs < 11.5 px nq/ 33 -> 37, live 18 -> 33, accounts 8 -> 38 (10.5 px labels: "Today, all accounts", "Room left, all", "Balance", "ARMED"); learned 77 -> 0 |
+
+### New since the first sweep
+| # | Page | What the owner sees | Cause | Owner |
+|---|---|---|---|---|
+| N1 | nq/ Today's battle plan + What the bots are thinking | **"Price 26,228.75 — now"** while NQ is 26,837 (609 pts off, labelled now); **PWH 28,279 (+2,050 pts)** is implausible (NQ never traded there last week) | the levels table reads the cloud brief (bars to 2026-11-26 12:55) and calls its last close "now"; PWH looks like a bad weekly bar | main (battle plan) + chart/brief data |
+| N2 | desktop nq/ | the new **bottom dock + "PC 8m · 4 armed" pill float in the MIDDLE of the hero card** (over the 4 account cards) | the dock is position:fixed bottom inside a short desktop viewport (900 px) and overlays content | main (nqtheme / dock) |
+| N3 | phone, every NQ page | three floating things stacked at the bottom: the dock, the "PC 11m · 4 armed" pill above it, and the Olympus "Home" button (44x44 at 328,738) next to the pill | three separate fixed layers | main + lead (oly-home is the shared shell) |
+| N4 | nq/ hero | "LONDON ENTRIES · Next: New York morning 08:00 in 3 h 38 min" while the London window is open | the next-window line ignores the window that is open now | main |
