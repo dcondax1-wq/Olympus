@@ -170,16 +170,46 @@ def control(root: str = ROOT) -> dict:
     cfg, lst = _rj(os.path.join(root, "data", "of_lane.json")), _rj(os.path.join(root, "data", "of_lane_state.json"))
     if isinstance(cfg, dict) or isinstance(lst, dict):        # only where the lane lives (the PC); the phone reads the live post
         out["lane"] = lane_block(cfg if isinstance(cfg, dict) else {}, lst if isinstance(lst, dict) else {})
+    else:                                                     # the cloud: the day file the PC ships nightly (engine/of_lane.public_view)
+        sh = shipped_lane(root)
+        if sh:
+            out["lane"] = sh
     return out
+
+
+def shipped_lane(root: str):
+    """The newest data/pc_days/<day>/of/NQ_lane.json.gz (engine/of_lane.public_view: R only, no $) in the page's lane shape, or None."""
+    import gzip
+    base = os.path.join(root, "data", "pc_days")
+    if not os.path.isdir(base):
+        return None
+    for d in sorted(os.listdir(base), reverse=True):
+        p = os.path.join(base, d, "of", "NQ_lane.json.gz")
+        if len(d) != 10 or not os.path.exists(p):
+            continue
+        try:
+            with gzip.open(p, "rt", encoding="utf-8") as fh:
+                V = json.load(fh)
+        except (OSError, ValueError):
+            continue
+        tr = [{"t": x.get("t"), "dir": x.get("dir"), "status": x.get("status"), "why": x.get("why"), "R": x.get("R"), "how": x.get("how"),
+               "level": x.get("level")} for x in V.get("trades") or [] if isinstance(x, dict)]
+        td = V.get("today") or {}
+        return {"on": V.get("on") is True, "account": str(V.get("account") or "Sim102")[:12], "cap": 1,
+                "used": td.get("filled") if isinstance(td.get("filled"), int) else sum(1 for x in tr if x["status"] in ("open", "closed")),
+                "day": V.get("day") or d, "trades": tr[-6:], "line": V.get("line")}
+    return None
 
 
 def lane_block(cfg: dict, S: dict) -> dict:
     """The practice lane in plain fields (engine/of_lane.py files). Sim only; no account id beyond its Sim name."""
     day = S.get("day")
     tr = [t for t in S.get("trades") or [] if t.get("day") == day]
+    # engine/of_lane trade keys (day-ofready2): est / limit / fill_px / stop / target / exit_px, qty, d, status, why, pnl, R, how
     rows = [{"t": _hm(t.get("entry_t") or t.get("t")), "dir": "long" if t.get("d") == 1 else "short", "qty": t.get("qty"),
-             "status": t.get("status"), "why": str(t.get("why") or "")[:120], "pnl": t.get("pnl"), "entry": t.get("entry"),
-             "stop": t.get("stop"), "target": t.get("target"), "exit": t.get("exit")} for t in tr]
+             "status": t.get("status"), "why": str(t.get("why") or "")[:120], "pnl": t.get("pnl"), "R": t.get("R"), "how": t.get("how"),
+             "entry": t.get("fill_px") if t.get("fill_px") is not None else (t.get("limit") if t.get("limit") is not None else t.get("est")),
+             "stop": t.get("stop"), "target": t.get("target"), "exit": t.get("exit_px")} for t in tr]
     cap = cfg.get("max_per_day", 1)
     used = sum(1 for t in tr if t.get("status") in ("sending", "open", "closed") and t.get("filled", True))
     return {"on": cfg.get("on") is True, "account": str(cfg.get("account") or "Sim102")[:12], "cap": cap if isinstance(cap, int) and cap >= 1 else 1,

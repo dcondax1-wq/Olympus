@@ -123,6 +123,7 @@ const lane = { on: true, account: 'Sim102', cap: 1, used: 1, day: today, trades:
 out.lane = O.model({ room: { ...room, control: ctl }, lite: { t: now - 60, ofl: lane }, nowS: now });
 out.laneStale = O.model({ room: { ...room, control: { ...ctl, lane: { ...lane, on: false } } }, lite: { t: now - 6 * 3600, ofl: lane }, nowS: now });
 out.kinds2 = ['pass', 'fail', 'weak'].map(O.verdictKind);
+out.why2 = [O.whyWords({ status: 'refused', why: 'skipped: news' }), O.whyWords({ status: 'refused', why: 'no fill: the stop traded first' })];
 out.why = O.whyWords({ status: 'refused', why: 'day cap: 1 entry a day already used' });
 out.realroom = %(realroom)s ? O.model({ room: %(realroom)s, lite: null, nowS: now }) : null;
 out.fmt = [O.fmtR(1.25), O.fmtR(-0.5), O.fmtUsd(-48.3), O.fmtPx(25665)];
@@ -172,6 +173,7 @@ def part_b(room, now):
           and ln["account"] == "Sim102" and ln["used"] == 1 and ln["cap"] == 1 and ln["today"] and len(ln["trades"]) == 2, ln)
     check("b. a stale live lane (6 h) falls back to the room's copy", o["laneStale"]["lane"]["src"] == "room" and not o["laneStale"]["lane"]["on"], o["laneStale"]["lane"])
     check("b. full-year verdict words: pass -> yes, fail -> no, weak -> few", o["kinds2"] == ["yes", "no", "few"], o["kinds2"])
+    check("b. the lane's own short words pass through unchanged (engine/oflive._short_why)", o["why2"] == ["skipped: news", "no fill: the stop traded first"], o["why2"])
     check("b. refused for the day cap reads 'skipped: day cap (1 a day)'", o["why"] == "skipped: day cap (1 a day)", o["why"])
     check("b. formats: +1.3R / −0.5R / −$48 / 25,665.00", o["fmt"] == ["+1.3R", "−0.5R", "−$48", "25,665.00"], o["fmt"])
 

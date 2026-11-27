@@ -137,6 +137,7 @@ export function laneOf(L, roomLane, pcT, now, today) {
 }
 export function whyWords(t) {
   const w = String((t && t.why) || '').toLowerCase();
+  if (t && t.status === 'refused' && /^(skipped|no fill)/.test(w)) return String(t.why);   // the lane's own short words (engine/oflive)
   if (t && t.status === 'refused') {
     if (w.includes('day cap')) return 'skipped: day cap (1 a day)';
     if (w.includes('late')) return 'skipped: too late to act';
@@ -325,7 +326,9 @@ function drawLane(M) {
     const li = el('li'); li.dataset.status = t.status || '';
     const head = el('span', 'of-lt-h', `${t.t || ''} ${String(t.dir || '').toUpperCase()}${t.qty ? ` ${t.qty} MNQ` : ''}`);
     const res = t.status === 'refused' ? el('span', 'of-lt-r skip', whyWords(t))
-      : num(t.pnl) !== null ? el('span', `of-lt-r ${t.pnl >= 0 ? 'up' : 'dn'}`, `${fmtUsd(t.pnl)} (sim)`) : el('span', 'of-lt-r open', t.status === 'open' ? 'OPEN' : (t.status || ''));
+      : num(t.pnl) !== null ? el('span', `of-lt-r ${t.pnl >= 0 ? 'up' : 'dn'}`, `${fmtUsd(t.pnl)} (sim)`)
+        : num(t.R) !== null ? el('span', `of-lt-r ${t.R >= 0 ? 'up' : 'dn'}`, fmtR(t.R))
+          : el('span', 'of-lt-r open', t.status === 'open' ? 'OPEN' : t.status === 'sending' ? 'SENDING' : (t.status || ''));
     li.append(head, res);
     const why = t.status !== 'refused' && t.why ? el('span', 'of-lt-why', String(t.why)) : null;
     if (why) li.append(why);
