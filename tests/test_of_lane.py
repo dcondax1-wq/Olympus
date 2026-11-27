@@ -129,7 +129,7 @@ def main():
     for k in range(1, len(days)):
         d0, d1 = days[k - 1], days[k]
         with tempfile.TemporaryDirectory() as td:
-            g = Rig(td, W, d0, d1)
+            g = Rig(td, W, d0, d1, cfg={"max_per_day": 9})   # every taken row routed (the day cap: tests.test_of_daycap)
             outs = g.run(g.hm(9, 25), g.hm(16, 6))
             S = g.S()
             ref = P.replay_frame(W["ticks"][d1][0], d1, W["R"][d0], d0)
