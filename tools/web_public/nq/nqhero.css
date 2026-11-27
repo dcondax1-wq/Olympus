@@ -99,3 +99,11 @@ main#app > .gn-facts .gn-fchip{min-height:44px;display:inline-flex;align-items:c
 .hx-how{min-height:44px;justify-self:start;}
 .hx-acc.none{gap:4px;animation:none;}
 .hx-bot-age{display:block;margin-top:4px;font-size:11px;color:var(--hx-faint)}
+.hx-jump{position:sticky;top:calc(env(safe-area-inset-top,0px) + 54px);z-index:20;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:6px;margin:0 -4px;border-radius:16px;border:1px solid var(--ag-line);background:rgba(6,4,11,.78);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.hx-jump::-webkit-scrollbar{display:none}
+.hx-jump a{flex:none;min-height:44px;display:inline-flex;align-items:center;padding:0 14px;border-radius:12px;font-size:14px;font-weight:700;color:var(--nq-cyan-hi);text-decoration:none;border:1px solid transparent}
+.hx-jump a:hover,.hx-jump a:focus-visible{border-color:var(--hx-line2);color:var(--ag-gold);outline:none;background:rgba(157,89,238,.12)}
+html{scroll-padding-top:124px}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+html[data-oly-scheme="light"] .hx-jump{background:rgba(255,255,255,.9)}
+@media (min-width:1100px){#app>.hx-jump{grid-column:1/-1}}

@@ -18,3 +18,8 @@ nqland.js, the NEW nq/nqhero.css, and tests/test_nq_desk.py (hero checks). Web o
    - test_nq_goals 23/25: 2 date / VIX checks on live data.
    - tests/test_nqfx needs Python Playwright, which is absent in this container.
    - nqdesk.css's 7-day-clock rules had bare hex colours that broke test_nq_desk's token check; fixed here (tokens with fallbacks).
+5. **Two "to payout" numbers for ATLAS on the same page (pre-existing).**
+   - The hero tile and the vault follow the owner rule: the first payout = the $1,000 ask at $2,100, so $1,890 to go at $210.
+   - The older Accounts card (nqdesk.accounts goalText) shows the board's own `to_target` ($1,290 in the DEMO).
+   - Suggest the Accounts card reads the same goals model (nqgoals.goals) so one number shows. I left that card's logic alone.
+6. **New: a sticky "jump to" bar under the hero** (Chart / Goals / Accounts / Bots / Trades / News / Checks), 44 px taps, below the kit's compact bar.
