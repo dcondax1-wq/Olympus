@@ -112,6 +112,35 @@ def main():
     check("d R_e5 from fill_e5 (short: higher fill = better)", abs(L.r_e5(r[2]) - (2.0 + 1.2)) < 1e-9, L.r_e5(r[2]))
     d = L.evaluate(r)
     check("d judged = the worse of the two", d["stats"]["won"] == 14 and d["stats"]["e5_n"] == 2, d["stats"])
+    # g. night-of-monfix: gate 0 judges the FIRST trade of each day; later ones are reported, capped after 15 if mean R < 0
+    base = rows("WL" * 15)
+    for x in base:
+        x["t_sig"] = 1000
+
+    def later(pat, n):
+        out = []
+        for i in range(n):
+            w = pat[i % len(pat)] == "W"
+            out.append({"id": f"A|late{i}", "day": base[i]["day"], "level": "orh", "d": 1, "taken": True, "t_sig": 5000,
+                        "R": 2.0 if w else -1.0, "usd_1": 100.0 if w else -50.0})
+        return out
+    d = L.evaluate(later("L", 20) + base)
+    check("g first-of-day judged: 30 first trades pass gate 0 despite 20 losing later ones",
+          d["passed_gate"] == 0 and d["stats"]["n"] == 30 and d["stats_later"]["n"] == 20 and d["stats_all"]["n"] == 50, d["why"])
+    check("g 20 later trades at -1R -> 'cap the lane at 1 trade a day'", d["cap_one_a_day"] and L.CAP_TEXT in d["why"] and L.CAP_TEXT in d["line"], d["line"])
+    d = L.evaluate(base + later("L", 14))
+    check("g 14 later trades: too few to judge, no cap", not d["cap_one_a_day"] and L.CAP_TEXT not in d["why"] and "Later-in-the-day trades" in d["line"], d["line"])
+    d = L.evaluate(base + later("WLL", 15))
+    check("g 15 later trades at mean 0R: no cap", not d["cap_one_a_day"], d["stats_later"])
+    d = L.evaluate(base + later("LLLLLLLLLLLLLLW", 15))
+    check("g 15 later trades mean < 0: cap", d["cap_one_a_day"], d["stats_later"])
+    lr = later("WLL", 15)                              # red team #35: +R but -$ (tight-stop winners, wide-stop losers)
+    for x in lr:
+        x["usd_1"] = 20.0 if x["R"] > 0 else -60.0
+    d = L.evaluate(base + lr)
+    check("g rt 15 later trades mean R >= 0 but $ < 0: cap (in $ too)", d["cap_one_a_day"] and "-$" in d["why"], d["why"])
+    fd = L.split_first([dict(base[0], id="z", t_sig=9000), dict(base[0], id="y", t_sig=10)])
+    check("g split_first orders by signal time within a day", [x["id"] for x in fd[0]] == ["y"] and [x["id"] for x in fd[1]] == ["z"])
     print(f"\nof_ladder: {'ALL PASS' if not FAILS else str(len(FAILS)) + ' FAIL'}")
     return 1 if FAILS else 0
 

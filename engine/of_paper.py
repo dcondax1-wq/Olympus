@@ -248,6 +248,8 @@ def step(S: dict, day: str, R_today: dict, R_prev: dict | None, prev_day: str | 
     if R_prev is not None and prev_day:
         D[prev_day] = B.Day(prev_day, R_prev)
         days = [prev_day, day]
+        for xd, xR in R_prev.get("extra") or []:          # night-of-monfix: Globex-only files after the prior RTH day
+            D[xd] = B.Day(xd, xR)
     Dy = D[day]
     bars = Dy.bars
     last_ms = int(ticks_t[-1]) if len(ticks_t) else 0
@@ -459,38 +461,56 @@ def _read_depth(day: str, nd: str):
     return None
 
 
-def _prev_summary(day: str, nd: str | None, root: str):
-    """The previous tick day's summary (levels), cached once a day under data/of_paper_cache/."""
+def _load_summary(p: str, nd: str | None, cdir: str):
+    """One tick day's summary (levels), cached once a day under data/of_paper_cache/. None when there is no file."""
     from . import tickrec
+    cp = os.path.join(cdir, f"{p}.json")
+    if os.path.exists(cp):
+        import pandas as pd
+        c = _rj(cp)
+        if c:
+            return {"bars": pd.DataFrame(c["bars"]), "fp": pd.DataFrame(c["fp"]), "meta": c["meta"], "depth": None}
+    x = None
+    if nd:
+        x = _read_live(p, nd)
+    if x is None:
+        try:
+            x = tickrec.read_day(p)
+        except Exception:  # noqa: BLE001
+            x = None
+    if x is None or not len(x):
+        return None
+    R = summary_of(x, p)
+    if R:
+        os.makedirs(cdir, exist_ok=True)
+        _wj(cp, {"bars": R["bars"].to_dict("list"), "fp": R["fp"].to_dict("list"), "meta": R["meta"]})
+        for f in sorted(os.listdir(cdir))[:-6]:
+            try:
+                os.remove(os.path.join(cdir, f))
+            except OSError:
+                pass
+    return R
+
+
+def _prev_summary(day: str, nd: str | None, root: str):
+    """The previous tick day WITH a regular session (its RTH high / low = pdh / pdl), within 4 calendar days.
+    night-of-monfix 2026-11-27: a Globex-only file in between (the Sunday evening before a Monday) is no longer taken as the
+    previous day; it rides along in R["extra"] = [(day, summary), ...] (oldest first) so its bars join the overnight range."""
+    B, _, _ = _mods()
     cdir = os.path.join(root, "data", CACHE_NAME)
     d0 = dt.date.fromisoformat(day)
+    extra = []
     for back in range(1, 5):
         p = (d0 - dt.timedelta(days=back)).isoformat()
-        cp = os.path.join(cdir, f"{p}.json")
-        if os.path.exists(cp):
-            import pandas as pd
-            c = _rj(cp)
-            if c:
-                return p, {"bars": pd.DataFrame(c["bars"]), "fp": pd.DataFrame(c["fp"]), "meta": c["meta"], "depth": None}
-        x = None
-        if nd:
-            x = _read_live(p, nd)
-        if x is None:
-            try:
-                x = tickrec.read_day(p)
-            except Exception:  # noqa: BLE001
-                x = None
-        if x is not None and len(x):
-            R = summary_of(x, p)
-            if R:
-                os.makedirs(cdir, exist_ok=True)
-                _wj(cp, {"bars": R["bars"].to_dict("list"), "fp": R["fp"].to_dict("list"), "meta": R["meta"]})
-                for f in sorted(os.listdir(cdir))[:-5]:
-                    try:
-                        os.remove(os.path.join(cdir, f))
-                    except OSError:
-                        pass
-                return p, R
+        R = _load_summary(p, nd, cdir)
+        if not R:
+            continue
+        if B.has_rth(B.Day(p, R)):
+            R["extra"] = list(reversed(extra))
+            return p, R
+        extra.append((p, R))
+    if extra:                                  # no RTH day in reach (data starts on a Sunday): the Globex files still count
+        return extra[0][0], dict(extra[0][1], extra=list(reversed(extra[1:])))
     return None, None
 
 
