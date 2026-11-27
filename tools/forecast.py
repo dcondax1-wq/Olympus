@@ -35,6 +35,8 @@ ACCTS = {   # board key -> plan, start balance, strategy mix, eval start (sessio
     "atlas": {"plan": "mffu_builder_25k", "start": 25000.0, "mix": ("ATLAS",), "funded": True},
 }
 HORIZON = 126
+CUM = 40            # night-of-december: research/forecast/forecast_cum.json = % passed / failed / paid by session k = 1..40
+OUT_CUM = os.path.join(ROOT, "research", "forecast", "forecast_cum.json")
 
 
 def board_state(offline=False):
@@ -67,6 +69,7 @@ def run(n=1000, offline=False, say=print):
            "state_source": src, "markets": {"2026-like": "Jan-Oct 2026 sessions", "2021-25-like": "Nov 2021 - Dec 2025 sessions"},
            "engine": "research/plans/rank.py (two_week eval sizing, ATLAS lane at 10 ticks a side, MFFU funded payout rules)",
            "accounts": {}, "words": {}}
+    CUMS = {}
     PATHS = {m: U.mc_paths(S, key, n, length=HORIZON + 40, seed=7) for m, (key, _) in MARKETS.items()}
     for key, A in ACCTS.items():
         st = (state or {}).get(key)
@@ -124,6 +127,7 @@ def run(n=1000, offline=False, say=print):
                 row[m] = {"first_payout_pct": round(100 * len(fp) / len(res), 1), "first_payout_med_sessions": float(np.median(fp)) if fp else None,
                           "first_payout_60_pct": round(100 * sum(1 for x in fp if x <= 60) / len(res), 1),
                           "lost_pct": round(100 * sum(1 for r in res if r[2]) / len(res), 1)}
+                CUMS.setdefault(key, {})[m] = {"payout_cum": [round(100 * sum(1 for x in fp if x <= k) / len(res), 1) for k in range(1, CUM + 1)]}
             else:
                 ps = [r[1] for r in res if r[0] == "pass"]
                 fp = [r[2] for r in res if r[2]]
@@ -132,6 +136,9 @@ def run(n=1000, offline=False, say=print):
                           "pass_med_sessions": float(np.median(ps)) if ps else None,
                           "first_payout_med_sessions": float(np.median(fp)) if fp else None,
                           "first_payout_60_pct": round(100 * sum(1 for x in fp if x <= 60) / len(res), 1)}
+                CUMS.setdefault(key, {})[m] = {
+                    "pass_cum": [round(100 * sum(1 for x in ps if x <= k) / len(res), 1) for k in range(1, CUM + 1)],
+                    "fail_cum": [round(100 * sum(1 for r in res if r[0] == "fail" and r[1] <= k) / len(res), 1) for k in range(1, CUM + 1)]}
         out["accounts"][key] = row
         a, b = row["2026-like"], row["2021-25-like"]
         if A.get("funded"):
@@ -143,6 +150,10 @@ def run(n=1000, offline=False, say=print):
         say(out["words"][key])
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     json.dump(out, open(OUT, "w", encoding="utf-8"), indent=1, default=float)
+    json.dump({"made": out["made"], "note": "% by session k = 1..40 counted from the run day's first unfinished session (tools/december_plan.py)",
+               "accounts": {k: {m: {**out["accounts"][k][m], **c} for m, c in v.items()} | {"stage": out["accounts"][k]["stage"],
+                                                                                         "state": out["accounts"][k]["state"]}
+                            for k, v in CUMS.items()}}, open(OUT_CUM, "w", encoding="utf-8"), default=float)
     return out
 
 
