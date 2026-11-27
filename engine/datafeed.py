@@ -73,6 +73,9 @@ OF_FILES = ("NQ_bars5m.csv.gz", "NQ_fp5m.csv.gz", "NQ_meta.json")
 OF_PAGES = 4                                    # day-ofmax: one "of" ask a night is answered with up to 4 pages (<= 1.85 MB each)
 OF_PAGE_GAP_S = 20                              # between two pages of one answer
 OF_RESERVE = 2                                  # answers kept free today for normal bar / trade pulls
+OF_DEDUP_S = 20 * 3600                          # night-of-asks: one cloud "of" ask answered per 20 h (any session's); duplicates
+                                                # in that time are ignored here and reused by the cloud (tools/data_pull.shared_of_ask).
+                                                # 20 h, not 24: the PC answers only 16:00-01:50 ET, so 24 h could skip a night.
 STALE_LOCK_S = 1800
 BLACKOUT = (110, 960)                           # weekdays 01:50-16:00 ET (engine/datapipe.BLACKOUT): the session, nothing runs
 HTTP_TIMEOUT_S = 8.0
@@ -719,6 +722,17 @@ def pending(msgs: list, now, st: dict) -> list:
     return out
 
 
+def of_answered_recently(st: dict, now) -> bool:
+    """night-of-asks: a page answering a CLOUD "of" ask (not the owner's push, req "push...") went out within OF_DEDUP_S, so
+    a newer "of" ask is a duplicate (several cloud sessions asking the same night) and is not answered: the cloud reuses the
+    pages already on the topic. Never raises."""
+    try:
+        return any("page" in s_ and not str(s_.get("req") or "").startswith("push") and int(now) - int(_num(s_.get("t"))) < OF_DEDUP_S
+                   for s_ in (st.get("sent") or []))
+    except Exception:
+        return False
+
+
 def maybe_answer(now=None, env=None, say=print, work: str | None = None, spawn_fn=None, http_fn=None) -> dict | None:
     """The ops task's hook (every 5 min, from engine/datapipe.maybe_run): outside the session, one GET of the topic; a new
     request starts the child once (limits: DAILY_CAP a day, MIN_GAP_S apart, MAX_TRIES per request). Never raises."""
@@ -741,8 +755,8 @@ def maybe_answer(now=None, env=None, say=print, work: str | None = None, spawn_f
         st["tries"] = {k: v for k, v in (st.get("tries") or {}).items() if k in visible}   # forget asks gone from the topic
         todo = pending(msgs, now, st) if ok else []
         today = _et(now).date().isoformat()                         # day-ofmax: ONE "of" ask answered a night (red team)
-        if any(s_.get("day") == today and "page" in s_ for s_ in (st.get("sent") or [])):
-            todo = [r for r in todo if r.get("what") != "of"]
+        if any(s_.get("day") == today and "page" in s_ for s_ in (st.get("sent") or [])) or of_answered_recently(st, now):
+            todo = [r for r in todo if r.get("what") != "of"]       # night-of-asks: + no 2nd cloud ask within OF_DEDUP_S
         if sum(1 for s_ in (st.get("sent") or []) if s_.get("day") == today) >= DAILY_CAP - OF_RESERVE:
             todo = [r for r in todo if r.get("what") != "of"]       # red team 2026-11-25: an "of" ask never eats the reserve
         why = None

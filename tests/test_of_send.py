@@ -114,10 +114,13 @@ def main():
 
         def cloud_pull():
             DF.post_request = lambda *a, **k: (posted.append(a) or (True, "ok"))
+            keep_clock = DPL._clock
+            DPL._clock = fake.clock                                    # night-of-asks: the cloud reads the fake night, not the wall clock
             try:
                 return DPL.latest_of(ns, sleep=lambda *_: None)
             finally:
                 DF.post_request = keep_post
+                DPL._clock = keep_clock
         rc2 = cloud_pull()
         got = DPL.of_days(pc)
         check("cloud: pushed pages taken, no new ask sent", rc2 == 0 and not posted and len(got) == n_sent, (rc2, posted, len(got), n_sent))
@@ -164,13 +167,14 @@ def main():
         print("   battery: " + BB.phone_line(r))
         # 5. --of alone runs the battery after the pull (cloud W4)
         calls = []
-        keep_rb, keep_lo = DPL.run_battery, DPL.latest_of
+        keep_rb, keep_lo, keep_v4 = DPL.run_battery, DPL.latest_of, DPL.run_v4
         DPL.run_battery = lambda out_dir=None: calls.append(out_dir)
+        DPL.run_v4 = lambda out_dir=None: None                         # night-of-asks: v4 writes research/ files; not in a test
         DPL.latest_of = lambda a, sleep=None: 0
         try:
             DPL.main(["--of", "--out", pc])
         finally:
-            DPL.run_battery, DPL.latest_of = keep_rb, keep_lo
+            DPL.run_battery, DPL.latest_of, DPL.run_v4 = keep_rb, keep_lo, keep_v4
         check("`data_pull --of` alone: pull, then the battery", calls == [pc], calls)
     finally:
         T.TICK_DIR, T.CFG_PATH, T.DEPTH_DIR = keep
