@@ -60,16 +60,71 @@ def _real(a: dict) -> bool:
         and a.get("id") != "acct_c" and "blitz" not in str(a.get("id")).lower()
 
 
-def compact(L: dict | None, n: int = N_TRADES) -> dict | None:
-    """The "at" block of the ntfy ext post. Never raises; None when no real account has a trade."""
+LANE_ACCT = {"r": "rapid", "r2": "rapid2"}          # ATLAS lane state file -> the account id it trades on ("x:<id>" -> <id>)
+
+
+def lane_trades(data_dir: str | None = None) -> dict:
+    """day-moneyaudit (2026-11-27): {account id: [trade dicts]} of the ATLAS lanes that trade ON another account (the Rapid EOD's
+    ATLAS lane, the combo lane on an extra Builder): their trades live in their own state file (engine/account_b ledger + closes),
+    not in the account's ledger, so today's Rapid +$304 (ATLAS S/R) never reached the "at" block. Account B ("b") is its own
+    account (board.trades). Refused / never-placed entries are left out. Never raises."""
+    import json as _json
+    out = {}
+    try:
+        from . import account_b as AB
+        files = AB.lane_files(data_dir)
+    except Exception:
+        return out
+    for lane, p in files:
+        if lane == "b":
+            continue
+        aid = LANE_ACCT.get(lane) or (lane[2:] if lane.startswith("x:") else None)
+        if not aid:
+            continue
+        try:
+            b = _json.load(open(p, encoding="utf-8"))
+        except Exception:
+            continue
+        led = [r for r in _l(b.get("ledger")) if isinstance(r, dict)]
+        closes = {_i(c[3]): c for c in _l(b.get("closes")) if isinstance(c, list) and len(c) > 3}
+        prov = _d(b.get("prov"))
+        for r in led:
+            if r.get("side") not in ("buy", "sell") or r.get("entry_t") is None or _d(r.get("result")).get("ok") is False:
+                continue
+            et = _i(r["entry_t"])
+            pv = _d(prov.get(str(et)))
+            if pv.get("not_placed"):
+                continue
+            ex = next((x for x in reversed(led) if x.get("side") == "exit" and _i(x.get("entry_t")) == et), {})
+            c = closes.get(et)
+            t = {"entry_t": et, "side": "LONG" if r["side"] == "buy" else "SHORT", "qty": r.get("qty"),
+                 "entry": pv.get("fill") or r.get("entry"), "stop": r.get("stop"), "target": r.get("target")}
+            if c is not None:
+                t.update(exit_t=c[1], pnl=c[2], exit=str(ex.get("reason") or (pv.get("flat") or {}).get("reason") or "CLOSED"))
+            elif _i(b.get("open_t")) == et:
+                t["open"] = True
+            else:
+                continue                                   # neither closed nor open: a record the lane dropped
+            out.setdefault(aid, []).append(t)
+    return out
+
+
+def compact(L: dict | None, n: int = N_TRADES, data_dir: str | None = None) -> dict | None:
+    """The "at" block of the ntfy ext post. Never raises; None when no real account has a trade. data_dir: the lane state files
+    (engine/account_b.lane_files; default the bot's data/)."""
     try:
         L = _d(L)
         rows = []
+        lanes = lane_trades(data_dir)
         for a in _l(L.get("accounts")):
             a = _d(a)
             if not _real(a):
                 continue
             tr = [x for x in (_row(_d(t)) for t in _l(a.get("trades"))) if x]
+            for t in lanes.pop(str(a["id"]), []):          # the ATLAS lane trading on this account (day-moneyaudit)
+                x = _row(t, open_=bool(t.get("open")))
+                if x and not any(y[0] == x[0] for y in tr):
+                    tr.append(x)
             pos = _d(a.get("position"))
             if pos.get("entry_t") and not any(x[0] == _i(pos.get("entry_t")) for x in tr):
                 x = _row(pos, open_=True)
@@ -82,6 +137,10 @@ def compact(L: dict | None, n: int = N_TRADES) -> dict | None:
             if l4:
                 row["l4"] = l4
             rows.append(row)
+        for aid, ts in lanes.items():                      # a lane whose account has no row of its own yet
+            tr = [x for x in (_row(t, open_=bool(t.get("open"))) for t in ts) if x]
+            if tr:
+                rows.append({"id": str(aid)[:24], "tr": sorted(tr, key=lambda x: x[0])[-n:]})
         bd = _d(L.get("board"))
         if not any(r["id"] == "atlas" for r in rows):
             tr = [x for x in (_row(_d(t)) for t in _l(bd.get("trades"))

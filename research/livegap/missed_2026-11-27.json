@@ -405,11 +405,12 @@
     "qty": null,
     "usd": 0.0
    },
-   "kind": "MISSED",
-   "live_minus_twin_usd": -1658.75,
-   "cause": "not armed: the Rapid EOD 25K was added DISARMED (Nov 19) and the owner's arm step ('START BOT + I ACCEPT LIVE RISK; check Rapid EOD 25K ... armed') is still waiting",
+   "kind": "NOT A GAP",
+   "live_minus_twin_usd": 0.0,
+   "cause": "size 0 by the Rapid lane's own 30% best-day rule (engine/rapid.best_day_cap: a winner pays <= $427.50; 1 micro of this +6.6R target = $512.30), armed or not",
    "evidence": "board (tools/board.py read, Nov 27 00:38 ET): Rapid EOD 25K balance $24,995 = never traded; WAITING ON THE OWNER: 'At the PC: STOP BOT, then START_BOT.bat, type I ACCEPT LIVE RISK; check Rapid EOD 25K ... armed'; Nov 19 20:24 note 'Added disarmed; START BOT + your phrase'",
-   "bug": false
+   "bug": false,
+   "corrected": "day-moneyaudit 2026-11-27: was -$1,658.75 'not armed' (R x $250 ignored the lane's own rules); research/moneyaudit/AUDIT.json"
   }
  ],
  "unexplained_balance": [
@@ -432,11 +433,12 @@
  "usd_by_cause": {
   "feed / bot gap": -0.5,
   "order refused": 689.5,
-  "not armed": -1712.95,
+  "not armed": -54.2,
   "bot not running": 1094.97,
   "slippage": -51.14,
   "sizing by design (funded max_win cap)": -516.0
  },
- "left_on_table_usd": -2304.4,
- "saved_by_misses_usd": 1784.64
+ "left_on_table_usd": -645.65,
+ "saved_by_misses_usd": 1784.64,
+ "correction": "day-moneyaudit 2026-11-27: the Rapid EOD 25K Nov 20 row is NOT A GAP (its best-day rule sizes it 0); 'not armed' -$1,712.95 -> -$54.20, left on the table -$2,304.40 -> -$645.65. The every-lane audit (incl. ATLAS's Oct 27 refusal -$1,656.67 and Nov 27): research/moneyaudit/AUDIT.json, research/writeups/money-audit-2026-11-27.md"
 }

@@ -11,6 +11,8 @@ folders said whether the 25K #2's ATLAS lane was even on, or why any non-B lane 
   5. live_guard (the instant MISSED push): a stuck record of an EARLIER day no longer silences it (it silenced today's ATLAS
      funded miss: _in_trade_at counted the Nov 20 record as "in a trade"); a late check pushes; a same-day real position and a real
      rule hold stay quiet; the combo's ATLAS lanes (acct_x) are checked and listed at 01:55 / 09:00
+  6. feed_trades ("at", the Trading page + Week in Review): the Rapid's ATLAS lane trades (its own state file) reach the Rapid's row
+     (today's S/R +$304 was missing: "1 live trade +$304" for a +$608 day); a combo lane's open trade; refused entries never
   4. trade_watch: a twin entry the Rapid's lane checked with no reason -> "ATLAS on the Rapid EOD vs backtest: missed", its own key;
      the combo lane's stuck record -> missed; account B's keys and texts unchanged
 """
@@ -153,11 +155,33 @@ def part5(root):
     check("5. ... and it is one of the armed-check accounts (01:55 / 09:00 lines)", combo in LG.atlas_accounts(b))
 
 
+def part6(root):
+    from engine import feed_trades as FT
+    d = os.path.join(root, "f6", "data")
+    os.makedirs(d, exist_ok=True)
+    led = [{"t": TB + 5, "sym": "NQ", "side": "buy", "qty": 1, "stop": 26210.75, "target": 26440.25, "entry": 26289.5, "entry_t": TB,
+            "src": "sr_nyreclaim", "result": {"ok": True}},
+           {"t": TB - 895, "sym": "NQ", "side": "sell", "qty": 1, "stop": 1, "target": 1, "entry": 1, "entry_t": TB - 900, "result": {"ok": False}}]
+    json.dump({"ledger": led, "closes": [["2026-11-27", TB + 900, 304.0, TB]], "prov": {str(TB): {"fill": 26287.25}}, "open_t": None},
+              open(os.path.join(d, "live_state_acctr.json"), "w"))
+    json.dump({"ledger": [{**led[0], "entry_t": TB + 3600}], "closes": [], "prov": {}, "open_t": TB + 3600},
+              open(os.path.join(d, "live_state_acctb25k_2x.json"), "w"))
+    L = {"accounts": [{"id": "rapid", "kind": "eval", "trades": [], "broker_account": "MFFUEVRREOD60206020"}]}
+    at = FT.compact(L, data_dir=d)
+    by = {r["id"]: r for r in at["a"]}
+    r = by["rapid"]["tr"]
+    check("6. the Rapid's ATLAS lane trade reaches its row: 10:10 LONG 1 @ the fill, closed +$304; the refused one left out",
+          len(r) == 1 and r[0][0] == TB and r[0][2] == 1 and r[0][3] == 1 and r[0][4] == 26287.25 and r[0][8] == 304.0 and r[0][1] == TB + 900, at)
+    x = by.get("b25k_2", {}).get("tr") or []
+    check("6. the combo lane's open trade on the 25K #2 (no row of its own): a new row, open", len(x) == 1 and x[0][1] is None and x[0][7] is None, at)
+    check("6. no lane files: the old block", FT.compact({"accounts": []}, data_dir=os.path.join(root, "none")) is None)
+
+
 def main():
     root = tempfile.mkdtemp(prefix="moneyaudit_")
     try:
         setup(root)
-        for fn in (part1, part2, part3, part4, part5):
+        for fn in (part1, part2, part3, part4, part5, part6):
             try:
                 fn(root)
             except Exception as e:  # noqa: BLE001
