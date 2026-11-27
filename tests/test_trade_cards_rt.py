@@ -124,14 +124,25 @@ def main():
     op, ot = AB.send_telegram_photo, AB.send_telegram
     AB.send_telegram_photo = lambda c, p, cap, s: (calls.append(("photo", len(cap))), ("telegram:1", "ok"))[1]
     AB.send_telegram = lambda c, t, b, s: (calls.append(("text", len(t) + len(b))), ("telegram:2", "ok"))[1]
+    os.environ["LE_TG_PRETTY"] = "0"            # day-tgpretty: the old one-photo-with-caption path stays behind its switch
     try:
         cfg = {"telegram": {"token": "x", "chat_id": "1"}}
         ev = {"photo": "p.png", "legend": "L" * 100}
         AB._one("telegram", cfg, ev, "T", "b" * 500, False)
         AB._one("telegram", cfg, ev, "T", "b" * 960, False)
         AB._one("telegram", cfg, ev, "T", "b" * 1100, False)
+        os.environ.pop("LE_TG_PRETTY", None)
+        new = []
+        AB.send_telegram_photo = lambda c, p, cap, s: (new.append(("photo", cap)), ("telegram:1", "ok"))[1]
+        AB.send_telegram = lambda c, t, b, s: (new.append(("text", t + "\n" + b)), ("telegram:2", "ok"))[1]
+        AB._one("telegram", cfg, {"kind": "exit", "account": "Zlarior 50K", "usd": 1240.0, "reason": "target", "photo": "p.png"},
+                "T", "b" * 1100, False)
+        AB.drain(10)
     finally:
+        os.environ.pop("LE_TG_PRETTY", None)
         AB.send_telegram_photo, AB.send_telegram = op, ot
+    check("day-tgpretty: the short text first (the $ line is in it), then the photo with a one-line caption (never cut)",
+          [k for k, _ in new] == ["text", "photo"] and "+$1,240" in new[0][1] and len(new[1][1]) < 200, new)
     check("short: the photo with the legend", calls[0] == ("photo", 1 + 1 + 500 + 1 + 100), calls)
     check("over 1024 with the legend: the photo WITHOUT the legend", calls[1] == ("photo", 1 + 1 + 960), calls)
     check("over 1024 without it: the full text message (no cut $ lines)", calls[2][0] == "text", calls)

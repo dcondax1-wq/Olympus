@@ -451,7 +451,7 @@ def _json(txt) -> dict:
 
 def send_telegram(c: dict, title: str, body: str, silent: bool) -> tuple:
     """(receipt | None, why)."""
-    data = json.dumps({"chat_id": c["chat_id"], "text": f"{title}\n{body}"[:4000], "disable_notification": bool(silent),
+    data = json.dumps({"chat_id": c["chat_id"], "text": (f"{title}\n{body}" if body else f"{title}")[:4000], "disable_notification": bool(silent),
                        "disable_web_page_preview": True}).encode("utf-8")
     st, txt = _http("POST", f"{TG_API}/bot{c['token']}/sendMessage", data, {"Content-Type": "application/json"})
     j = _json(txt)
@@ -557,22 +557,106 @@ def channels(cfg: dict) -> list:
     return out
 
 
+PHOTO_TIMEOUT_S = 45                  # day-tgpretty: the chart thread gives up after this (the text already went)
+PRETTY_OFF = "LE_TG_PRETTY"           # =0: the old long Telegram text (title + body), exactly
+
+
+def _pretty_on() -> bool:
+    return str(os.environ.get(PRETTY_OFF, "1")).strip() != "0"
+
+
+def tg_text(ev: dict, title: str, body: str) -> str:
+    """day-tgpretty: the short emoji text for Telegram (engine/tg_pretty.fmt); the old title + body when off / any trouble."""
+    if _pretty_on():
+        try:
+            from . import tg_pretty
+            return tg_pretty.fmt(ev, title, body)
+        except Exception:
+            pass
+    return f"{title}\n{body}"
+
+
+def _photo_later(cfg: dict, ev: dict, silent: bool) -> None:
+    """day-tgpretty: the chart picture AFTER the text, on its own daemon thread (never delays or drops the alert). The picture is
+    ev["photo"] (a path) or ev["photo_fn"]() (draws it now: engine/trade_card). Any trouble = no picture, logged. Never raises."""
+    if ev.get("_photo_started") or not (ev.get("photo") or callable(ev.get("photo_fn"))):
+        return
+    ev["_photo_started"] = True
+
+    def run():
+        try:
+            path = ev.get("photo")
+            if not path and callable(ev.get("photo_fn")):
+                box = {}
+
+                def _draw():
+                    try:
+                        box["p"] = ev["photo_fn"]()
+                    except Exception as e:  # noqa: BLE001 (a chart crash = no picture, never a lost alert)
+                        box["e"] = e.__class__.__name__
+
+                drawer = threading.Thread(target=_draw, name="alert-chart", daemon=True)
+                drawer.start()
+                drawer.join(PHOTO_TIMEOUT_S)                  # a slow / stuck chart: no picture (the text went long ago)
+                if drawer.is_alive():
+                    log_fail({"key": str(ev.get("key") or ""), "kind": ev.get("kind"), "channel": "telegram_photo",
+                              "why": f"chart took over {PHOTO_TIMEOUT_S} s: skipped"}, cfg)
+                    return
+                path = box.get("p")
+                if box.get("e"):
+                    log_fail({"key": str(ev.get("key") or ""), "kind": ev.get("kind"), "channel": "telegram_photo",
+                              "why": f"chart failed: {box['e']}"}, cfg)
+            if not path:
+                return
+            try:
+                from . import tg_pretty
+                cap = tg_pretty.caption(ev)
+            except Exception:
+                cap = "Chart"
+            r, why = send_telegram_photo(cfg["telegram"], str(path), cap, True)    # silent: the text already rang
+            if not r:
+                log_fail({"key": str(ev.get("key") or ""), "kind": ev.get("kind"), "channel": "telegram_photo", "why": why}, cfg)
+        except Exception as e:  # noqa: BLE001
+            log_fail({"key": str(ev.get("key") or ""), "kind": ev.get("kind"), "channel": "telegram_photo",
+                      "why": f"chart failed: {e.__class__.__name__}"}, cfg)
+
+    th = threading.Thread(target=run, name="alert-photo", daemon=True)
+    with _LOCK:
+        _THREADS[:] = [x for x in _THREADS if x.is_alive()]
+        _THREADS.append(th)
+    th.start()
+
+
 def _one(ch: str, cfg: dict, ev: dict, title: str, body: str, silent: bool) -> tuple:
     try:
         if ch == "telegram":
-            if ev.get("photo"):                         # day-cards: the chart; a failed photo falls back to the text message
-                cap = f"{title}\n{body}" + (f"\n{ev['legend']}" if ev.get("legend") else "")
-                if len(cap) > 1024:                     # red team 2026-11-26: Telegram cuts a caption at 1024; never lose the $ lines
-                    cap = f"{title}\n{body}"           # the legend goes first; still too long = the full text message below
-                r = None
+            try:
+                from . import tg_pretty
+                if tg_pretty.is_paper(ev):
+                    return "telegram:skipped (paper / sim / BLITZ never on Telegram)", "ok"
+                if _pretty_on() and not tg_pretty.allow(ev):
+                    digest_add(title, body, key=str(ev.get("key") or ""))
+                    return "telegram:later (rate limit: in the daily digest)", "ok"
+            except Exception:
+                pass
+            if not _pretty_on() and ev.get("photo") and not ev.get("photo_fn"):
+                cap = f"{title}\n{body}" + (f"\n{ev['legend']}" if ev.get("legend") else "")    # the old way: one photo + caption
+                if len(cap) > 1024:
+                    cap = f"{title}\n{body}"
                 try:
                     if len(cap) <= 1024:
                         r, why = send_telegram_photo(cfg["telegram"], str(ev["photo"]), cap, silent)
-                except Exception:  # noqa: BLE001 (any photo trouble: the text message below, never a lost alert)
-                    r = None
-                if r:
-                    return r, why
-            return send_telegram(cfg["telegram"], title, body, silent)
+                        if r:
+                            return r, why
+                except Exception:  # noqa: BLE001
+                    pass
+                return send_telegram(cfg["telegram"], title, body, silent)
+            txt = tg_text(ev, title, body)
+            head, _, rest = txt.partition("\n")
+            r, why = send_telegram(cfg["telegram"], head, rest, silent)
+            if r and _pretty_on():
+                _photo_later(cfg, ev, silent)                # text first; the chart follows on its own thread
+            return r, why
         if ch == "discord":
             return send_discord(cfg["discord"], title, body, silent)
         if ch == "ntfy":
@@ -613,6 +697,7 @@ def deliver(ev: dict, cfg: dict | None = None, path=None, log_path=None, now=Non
     {channel: why}, "tries", "ok"}. Never raises."""
     res = {"key": str(_d(ev).get("key") or ""), "receipts": {}, "failed": {}, "tries": 0, "ok": False}
     try:
+        ev = dict(_d(ev))                                  # this delivery's own copy (the chart thread's "started" flag stays here)
         cfg = cfg if cfg is not None else config()
         title, body = text(ev)
         silent = is_silent(ev, now=now, s=s)

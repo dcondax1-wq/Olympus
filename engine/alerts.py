@@ -91,6 +91,19 @@ def _push_system(text: str, kind: str):
         pass
 
 
+def _short(text: str, kind: str) -> str:
+    """day-tgpretty: the short emoji Telegram text (engine/tg_pretty; LE_TG_PRETTY=0 or any trouble: the text as it was)."""
+    try:
+        if str(os.environ.get("LE_TG_PRETTY", "1")).strip() == "0":
+            return text
+        from . import tg_pretty
+        first, _, rest = str(text).partition(". ")
+        return tg_pretty.fmt({"kind": "report", "key": f"{kind}:", "notify_type": "problems" if kind in ("error", "system") else kind},
+                             first, rest)
+    except Exception:
+        return text
+
+
 def send(text: str, kind: str = "signal", force: bool = False) -> dict:
     """Send to every configured channel when this kind of alert is enabled and chat alerts are switched on. Never raises."""
     _push_system(text, kind)
@@ -103,7 +116,7 @@ def send(text: str, kind: str = "signal", force: bool = False) -> dict:
     if cfg["telegram_token"] and cfg["telegram_chat"]:
         try:
             res["telegram"] = _post(f"https://api.telegram.org/bot{cfg['telegram_token']}/sendMessage",
-                                    {"chat_id": cfg["telegram_chat"], "text": text, "disable_web_page_preview": True})
+                                    {"chat_id": cfg["telegram_chat"], "text": _short(text, kind), "disable_web_page_preview": True})
         except Exception as e:
             res["telegram"] = f"error: {e.__class__.__name__}"
     if cfg["discord_webhook"]:
