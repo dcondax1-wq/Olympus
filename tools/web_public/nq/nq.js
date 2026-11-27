@@ -167,6 +167,14 @@ function loadPlan() {
   if (card && 'IntersectionObserver' in window) { const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); go(); } }, { rootMargin: '600px 0px' }); io.observe(card); }
   (window.requestIdleCallback || ((f) => setTimeout(f, 1500)))(go, { timeout: 4000 });
 }
+// the December card (december.js + decore.js): code-split like plan.js, added near its card or when idle
+function loadDec() {
+  if (S.decAsked) return; S.decAsked = true;
+  const go = () => { if (S.decIn) return; S.decIn = true; const t = document.createElement('script'); t.type = 'module'; t.src = new URL('./december.js?v=1', import.meta.url).href; document.head.appendChild(t); };
+  const card = $('decCard');
+  if (card && 'IntersectionObserver' in window) { const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); go(); } }, { rootMargin: '600px 0px' }); io.observe(card); }
+  (window.requestIdleCallback || ((f) => setTimeout(f, 2000)))(go, { timeout: 5000 });
+}
 // BRIEF ME (briefme.js + briefcore.js, lazy: idle or the first tap) and SUNLIGHT MODE (sun.css, html.sun; the head script applies it before paint)
 function loadBrief() {
   if (S.briefIn) return; S.briefIn = true;
@@ -352,7 +360,7 @@ function render() {
   try {                                  // night-nq-main: the battle plan + alert history (plan.js) read the SAME merged PC state, never a 2nd feed read
     window.NQ_HOME = { home: deskHome(), lite: S.lite || null, demo: S.demo };
     dispatchEvent(new CustomEvent('nq-home', { detail: window.NQ_HOME }));
-    loadPlan();
+    loadPlan(); loadDec();
   } catch (_) { /* the plan keeps its last draw */ }
   try { if (O && O.ready) O.ready(); } catch (_) { /* the veil lifts by itself */ }
   tryScene(); tryLand();

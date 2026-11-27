@@ -81,3 +81,10 @@ nqland.js, the NEW nq/nqhero.css, and tests/test_nq_desk.py (hero checks). Web o
   `window.NQ_BRIEF.text()` for the same spoken summary.
 - Also fixed: tests/test_nq_live.py + tests/test_accounts_screen.py harnesses copy goals_model.js (nqdesk.js imports it since 39a3f555's parent;
   both were red on HEAD).
+
+## 20. The December card (2026-11-27)
+- Needs `tools/web_public/nq/december.json` from night-of-december f118818a (not on this branch: you land both). Until it is there the card
+  shows "NOT PUBLISHED" + an honest line. Fixture copy for the test: tests/fixtures/december/december_2026-12.json.
+- sw.js precache (lead only): add `nq/decore.js`, `nq/december.js`, `nq/december.css` (+ `nq/december.json` once landed).
+- tests/run_area.py: both branches append one line under the `AREAS["nq"]` block (nq_december here, december_plan there): keep both.
+- tests/test_nq_page.py: the kit's "no browser storage" check now allows exactly one key, `nq.sun` (SUNLIGHT MODE), and checks the try/catch.
