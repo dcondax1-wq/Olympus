@@ -61,11 +61,17 @@ def ping(port: int, timeout: float = PING_TIMEOUT_S) -> bool:
         return False
 
 
+# owner 2026-11-26: the guard runs DETACHED (no console), so every tasklist/taskkill opened its own console window: a
+# black window flashed on the screen every 20 s. CREATE_NO_WINDOW keeps them invisible.
+_NO_WINDOW = {"creationflags": 0x08000000} if os.name == "nt" else {}
+
+
 def _image(pid: int) -> str | None:
     """Windows: the image name of EXACTLY this pid ("python.exe"), "" when no such process, None when it cannot tell.
     red team 2026-11-26: the old substring test ("123" in a line for pid 1234) and pid reuse could aim a kill at another program."""
     try:
-        r = subprocess.run(["tasklist", "/FI", f"PID eq {int(pid)}", "/FO", "CSV", "/NH"], capture_output=True, text=True, timeout=20)
+        r = subprocess.run(["tasklist", "/FI", f"PID eq {int(pid)}", "/FO", "CSV", "/NH"], capture_output=True, text=True, timeout=20,
+                           **_NO_WINDOW)
     except Exception:
         return None
     for ln in (r.stdout or "").splitlines():
@@ -101,7 +107,7 @@ def kill_tree(pid: int) -> bool:
         if os.name == "nt":
             if not is_python(_image(pid)):         # red team 2026-11-26: never a kill aimed at a pid that is not a Python process
                 return False
-            r = subprocess.run(["taskkill", "/PID", str(int(pid)), "/T", "/F"], capture_output=True, text=True, timeout=30)
+            r = subprocess.run(["taskkill", "/PID", str(int(pid)), "/T", "/F"], capture_output=True, text=True, timeout=30, **_NO_WINDOW)
             return r.returncode == 0
         os.kill(int(pid), signal.SIGKILL)
         return True
