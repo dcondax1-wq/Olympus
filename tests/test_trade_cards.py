@@ -51,9 +51,9 @@ def t_png():
     b = fake_bars(ET0 - 7200, ET0 + 600)
     png = PC.render(b, [(25530, PC.GREEN, ET0, False), (25480, PC.RED, ET0, False), (25500, PC.WHITE, ET0, True)],
                     [(ET0, 25500, PC.GOLD)])
-    ok = png and png[:8] == b"\x89PNG\r\n\x1a\n" and struct.unpack(">II", png[16:24]) == (800, 450)
-    check("a valid 800 x 450 PNG", ok, png[:30] if png else None)
-    check("small (< 120 KB)", png and len(png) < 120_000, len(png or b""))
+    ok = png and png[:8] == b"\x89PNG\r\n\x1a\n" and struct.unpack(">II", png[16:24]) == (1280, 720)
+    check("a valid 1280 x 720 PNG (Telegram's own photo size: retina on a phone)", ok, png[:30] if png else None)
+    check("small (< 300 KB)", png and len(png) < 300_000, len(png or b""))
     check("fewer than 2 bars -> None (text-only card)", PC.render(b[:1]) is None)
     import importlib.util
     check("no new package: matplotlib is not needed on the PC", importlib.util.find_spec("engine.png_chart") is not None
@@ -75,7 +75,7 @@ def t_card(tmp):
            "t": ET0 + 1800}
     c2 = TC.build(out, "exit", now=ET0 + 1810, bot=SimpleNamespace(brain={}, second={}, cfg={}), bars_fn=fake_bars)
     check("exit card: stop / target from the entry's card, 'Result +3.00R', the reason kept", c2 and "Result +3.00R" in c2["extra"]
-          and "London low" in c2["why"] and "blue = exit" in c2["legend"], c2)
+          and "London low" in c2["why"] and "white ring = exit" in c2["legend"], c2)
     TC_bars = TC.bars
     TC.bars = lambda *a, **k: []
     try:
@@ -178,6 +178,58 @@ def _snap(now):
                                         {"hm": "06:16", "side": "LONG", "status": "filled", "status_text": "Filled"}]}}}
 
 
+def t_summary_cards(tmp):
+    print("7. the day summary and week report as pictures (night-nq-cards)", flush=True)
+    from tools import pc_guard as G
+    from engine import trade_card as TC, alert_bus as AB
+    TC.CARD_DIR = os.path.join(tmp, "cards")
+    n2 = ts(2026, 11, 24, 16, 21)
+    m = G.day_summary(_snap(n2), n2, {})
+    cd = m[0].get("card") if m else None
+    check("the day summary carries a card: total, one row per account, the last trading days",
+          cd and cd["type"] == "day" and cd["total"] == 120.0 and [r["name"] for r in cd["rows"]] == ["Zlarior 50K", "ATLAS 25K"]
+          and cd["rows"][0]["room"] == 1500 and len(cd["days"]) == 3, cd)
+    ev = AB.from_report(m[0])
+    check("alert_bus.from_report: the day summary goes as a photo (title / body unchanged)",
+          ev.get("photo") and os.path.exists(ev["photo"]) and ev["title"] == m[0]["title"] and ev["body"] == m[0]["body"], ev)
+    png = open(ev["photo"], "rb").read() if ev.get("photo") else b""
+    check("day card: a PNG under 300 KB", png[:4] == b"\x89PNG" and len(png) < 300_000, len(png))
+    rp = os.path.join(tmp, "reviews2.jsonl")
+    with open(rp, "w") as fh:
+        fh.write(json.dumps({"bot": "lit", "day": "2026-11-23", "status": "matched", "live": {"usd": 240.0}, "twin": {"usd": 250.0}}) + "\n")
+    fr = ts(2026, 11, 27, 17, 5)
+    w = G.weekly_report(_snap(fr), fr, {}, reviews_path=rp)
+    wc = w[0].get("card") if w else None
+    check("the week report carries a card: $ per account, live vs backtest per bot, Mon-Fri bars",
+          wc and wc["type"] == "week" and len(wc["daily"]) == 5 and wc["daily"][0] == ("MON", 240.0, 250.0)
+          and wc["bots"] and wc["bots"][0]["live"] == 1, wc)
+    ev2 = AB.from_report(w[0])
+    check("...and goes as a photo", ev2.get("photo") and os.path.exists(ev2["photo"]), ev2)
+    seen = []
+    from engine import png_chart as PC
+    keep = PC.render_day
+    PC.render_day = lambda spec: seen.append(spec) or keep(spec)
+    try:
+        TC.summary_photo({"type": "day", "date": "X", "total": 1, "rows": [{"name": "Acct MFFUEVBLDR123456", "today": 1}]}, "k")
+    finally:
+        PC.render_day = keep
+    check("account ids are masked before they are drawn", seen and "MFFUEVBLDR123456" not in json.dumps(seen)
+          and "...3456" in json.dumps(seen), seen)
+    PC.render_day = lambda spec: (_ for _ in ()).throw(RuntimeError("boom"))
+    try:
+        ev3 = AB.from_report(m[0])
+    finally:
+        PC.render_day = keep
+    check("a broken picture -> no photo, the text message exactly", "photo" not in ev3 and ev3["body"] == m[0]["body"], ev3)
+    os.environ["LE_TRADE_CARDS"] = "0"
+    try:
+        check("trade cards off -> no summary picture either", "photo" not in AB.from_report(m[0]))
+    finally:
+        os.environ.pop("LE_TRADE_CARDS", None)
+    m_nocard = {k: v for k, v in m[0].items() if k != "card"}
+    check("a report push without a card: unchanged event", "photo" not in AB.from_report(m_nocard))
+
+
 def t_day():
     print("5. the day summary: 16:20 ET (half days 13:20), week / month, trades, close setups, 7-day", flush=True)
     from tools import pc_guard as G
@@ -241,7 +293,7 @@ def main():
     tmp = tempfile.mkdtemp(prefix="cards_")
     try:
         card = None
-        for f in (t_png, lambda: t_card(tmp), None, t_hook, t_day, lambda: t_week(tmp)):
+        for f in (t_png, lambda: t_card(tmp), None, t_hook, t_day, lambda: t_week(tmp), lambda: t_summary_cards(tmp)):
             try:
                 if f is None:
                     if card:
