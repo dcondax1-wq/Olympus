@@ -7,9 +7,9 @@ import * as C from './nqcore.js?v=d6';   // d6 (night-seedata): today's $ in the
 import * as T from '../olympus/truth.js';
 import * as D from './nqdesk.js?v=14';
 import * as GM from './goals_model.js?v=1';             // night-nq-main: ONE goals model (QA #4)
-import { unpack as unpackBars } from './nqbars.js?v=b1';     // nqdash3: the accounts strip, the bots' thinking, the quality checks
+import { unpack as unpackBars } from './nqbars.js?v=b2';     // nqdash3: the accounts strip, the bots' thinking, the quality checks
 import * as G from './nqgoals.js?v=10';
-import * as K7 from './clock7.js?v=2';                          // day-nqops: the MFFU 7-day clock card + window.NQ_K7 for Jarvis                       // v4: the goals strip, the numbers card, the bursts
+import * as K7 from './clock7.js?v=3';                          // day-nqops: the MFFU 7-day clock card + window.NQ_K7 for Jarvis                       // v4: the goals strip, the numbers card, the bursts
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -388,7 +388,7 @@ function renderV4(home, file, nowS) {
     else if (!V4.payP) {
       V4.payP = true;
       window.addEventListener('nq-payready', () => { V4.pay = window.NQ_PAYREADY || null; if (S.ready) renderDesk(); }, { once: true });
-      const t = document.createElement('script'); t.type = 'module'; t.src = new URL('./payready_late.js?v=1', import.meta.url).href; document.head.appendChild(t);
+      const t = document.createElement('script'); t.type = 'module'; t.src = new URL('./payready_late.js?v=2', import.meta.url).href; document.head.appendChild(t);
     }
   }
   const rows = (S.lite && S.lite.mf && Array.isArray(S.lite.mf.a)) ? S.lite.mf.a : [], eq = {};
@@ -460,7 +460,7 @@ function fxKit() {
   fxP = new Promise((res) => {
     if (window.OLYMPUS_NQFX) { res(window.OLYMPUS_NQFX); return; }
     later(() => {
-      const t = document.createElement('script'); t.src = '../olympus/nqfx.js?v=n5'; t.async = true;
+      const t = document.createElement('script'); t.src = '../olympus/nqfx.js?v=n6'; t.async = true;
       t.onload = () => { const F = window.OLYMPUS_NQFX; if (!F || !F.ready) { res(null); return; } F.ready().then(() => res(F), () => res(null)); };
       t.onerror = () => res(null);
       document.head.appendChild(t);

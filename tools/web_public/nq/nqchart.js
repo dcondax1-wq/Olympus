@@ -6,7 +6,7 @@
 // the page is open. The chart: TradingView Lightweight Charts 5.2.1 (Apache-2.0), vendored in vendor/ (no CDN: it works offline),
 // loaded after the page. Its own module and card: a failure here never touches the rest of the NQ page. Text only through textContent.
 // Read only: it sends nothing, stores nothing, places nothing. window.NQCHART is the test hook. ?acct=z50k opens on one account.
-import * as B from './nqbars.js?v=b1';
+import * as B from './nqbars.js?v=b2';
 
 const LIB = 'vendor/lightweight-charts.standalone.production.js?v=5.2.1';
 const POLL_MS = 120000, TIMEOUT_MS = 7000;
