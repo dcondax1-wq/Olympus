@@ -74,7 +74,9 @@ EXT_ORDER = ("rc", "ck", "rd", "fl", "brd", "life", "mf", "k7", "board_trades", 
 EXT_LAST = ("bf", "glog")   # bf: the Brain app feed (engine/brain_feed, day-brain-feed 2026-11-24; <= 2 KB, cut 1400/900, then out)     # red-team 2026-11-21: the Brain's long thought stream takes only the room every other block left (cut 5/3, then out)
 # "zl": ZEUS learned, the nightly line (engine/zeus_learn.read_tiny, <= 220 bytes) -> the ZEUS page's "ZEUS learned" card
 CORE_KEYS = ("eh", "v", "kind", "lite", "src", "t", "every_s", "host", "model_state", "price", "day_pnl", "pc_verdict", "pc", "reporter",
-             "board", "accounts", "trimmed", "wp", "ar", "pulse", "p4")   # wp: the phone app's push set-up (engine/push.app_block: public keys, ~230 bytes)
+             "board", "accounts", "trimmed", "wp", "ar", "pulse", "p4", "ab")   # wp: the phone app's push set-up (engine/push.app_block: public keys, ~230 bytes)
+# ab (day-atlasmiss 2026-11-27): ATLAS's account B position record + today's skip reasons (engine/account_b.status_tiny, <= ~320 bytes)
+#   in the CORE, so every 15-minute post says why ATLAS's own account did not take a member's signal
 # p4 (day-zerotouch2): the four pillars' states [LIT, ATLAS, BLITZ, Order Flow] in the CORE (~40 bytes: the phone always knows what runs)
 # ar: {glance bot id: [on, armed]} in the CORE (split(): the glance itself rides the ext, up to 44 min old); pulse: the time of a state-change post (engine/state_pulse.py)
 BRD_BYTES = 1200
@@ -763,6 +765,13 @@ def full(snap: dict) -> dict:
         out["life"] = life
     if isinstance(snap.get("sh"), dict):     # self-heal's one line (engine/self_heal.read_tiny): rides an ext post, after EXT_ORDER
         out["sh"] = snap["sh"]
+    try:                                     # day-atlasmiss: account B's position record + today's skip reasons (core, every post)
+        from engine import account_b as _ab
+        ab = _ab.status_tiny(snap.get("ab_path"), now=snap.get("t"))
+        if ab:
+            out["ab"] = ab
+    except Exception:  # noqa: BLE001
+        pass
     try:                                     # day-ledgerfix: the last 01:55 / 09:00 ET armed + routed check (engine/live_guard.arm_tiny)
         from engine import live_guard as _lg
         arm = _lg.arm_tiny()

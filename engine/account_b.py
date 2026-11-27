@@ -98,6 +98,13 @@ PLANS = {
 SIZINGS = ("need", "safe")
 MAX_PER_DAY = 2
 MAX_AGE_S = 45                  # a 5m open seen later than this is not probed (the research fills at the open)
+# day-atlasmiss (2026-11-27, S/R 10:10 ET LONG traded on Zlarior + Rapid, nothing on ATLAS's funded 25K and no reason anywhere):
+# a stuck position record (open_t kept with NinjaTrader FLAT and no working order) blocked every entry SILENTLY. heal_stale
+# clears it only when NinjaTrader CONFIRMS the account flat twice, STALE_CONFIRM_S apart, on an entry older than STALE_OPEN_S
+# (the never-mark-flat-on-unconfirmed rule: a position file missing / not FLAT, or any leg still working = kept).
+STALE_OPEN_S = 1800
+STALE_CONFIRM_S = 120
+STUCK_HOLD_S = 4 * 3600         # a "one position" hold whose position is older than this reads as stuck (tools/trade_watch.py)
 MIN_ROOM = 100.0
 ZOMBIE_ON = {"eval_min_room": 200.0, "last_bullet": 0.8}      # owner "Fix atlas" 2026-11-15 (atlas-deep.md)
 # ATLAS funded-stage switches (2026-11-20), OFF = None. The lead flips one value after the owner's YES on its Decide card:
@@ -1344,6 +1351,7 @@ class AccountB:
             sub = {**scfg, "strategies": {k: {**scfg["strategies"][k], "route": True} for k in mk if k in (scfg.get("strategies") or {})}}
             last5 = int(df5["time"].max())
             self.settle_closing(sym, now)                 # unconfirmed closes first (re-sent / confirmed)
+            self.heal_stale(now)                          # day-atlasmiss: a stuck position record NinjaTrader shows flat
             # the strategies' view is only needed while a B trade is live (fill check, stop moves, cuts, exits); a flat
             # account B only probes at each 5m open (entry below)
             if live_prov:
@@ -1379,9 +1387,25 @@ class AccountB:
         from . import second as _second
         tb = int(df5["time"].max()) + 300
         age = int(now) - tb
-        if age < 0 or age > MAX_AGE_S:
+        if age < 0:
             return
-        if self.open_t is not None or ("probe", tb) in self.seen or getattr(self.bot, "kill", False):
+        if ("probe", tb) in self.seen:
+            return
+        # day-atlasmiss: every way this 5m open goes unchecked leaves its reason (soft: a later real check overwrites it)
+        if age > MAX_AGE_S:
+            if age < 300:
+                self._hold(tb, None, f"late: this 5m open was first checked {age} s after it (max {MAX_AGE_S} s): not probed",
+                           code="late")
+            return
+        if getattr(self.bot, "kill", False):
+            self._hold(tb, None, "kill switch engaged: no entry", code="kill")
+            return
+        if self.open_t is not None:
+            pv = self.prov.get(int(self.open_t)) or {}
+            cl = (pv.get("closing") or {}) and not (pv.get("closing") or {}).get("done")
+            self._hold(tb, None, f"one position: {pv.get('short') or pv.get('key') or '?'} {_et(int(self.open_t)):%a %m-%d %H:%M} ET "
+                                 + ("still closing (close not confirmed)" if cl else "still open") + " on account B",
+                       code="open", since=int(self.open_t))
             return
         self.seen.add(("probe", tb))
         px, est = self.mark(sym, now, bar_t=tb)
@@ -1493,11 +1517,21 @@ class AccountB:
         """Micros for one entry (module qty(); engine/rapid.RapidAtlas sizes its own way)."""
         return qty(self.spec, trade, state, base=getattr(self.bot, "_lit_sizing", None), key=key)
 
-    def _hold(self, tb, key, why):
-        """Remember why a signal at this 5m open was not routed (read-only for tools/trade_watch.py; never affects trading)."""
+    def _hold(self, tb, key, why, code=None, since=None):
+        """Remember why a signal at this 5m open was not routed (read-only for tools/trade_watch.py; never affects trading).
+        code (day-atlasmiss) = "late" / "kill" / "open" for an open B never checked: soft, a later real check's reason wins;
+        since = the open position's entry time (code "open")."""
         try:
             with self.mx:
-                self.held.setdefault(str(int(tb)), {"key": key, "why": str(why)[:160]})
+                k = str(int(tb))
+                old = self.held.get(k)
+                if old is None or (old.get("code") and not code):
+                    row = {"key": key, "why": str(why)[:160]}
+                    if code:
+                        row["code"] = code
+                    if since is not None:
+                        row["since"] = int(since)
+                    self.held[k] = row
                 if len(self.held) > 200:
                     for k in sorted(self.held, key=int)[:-200]:
                         self.held.pop(k, None)
@@ -1895,6 +1929,82 @@ class AccountB:
             except Exception as e:
                 self.log("error", f"close settle failed: {e.__class__.__name__}: {e}")
 
+    def stale_flat(self, now):
+        """Why B's open position record is provably stale (None = keep it): the entry is older than STALE_OPEN_S, the adapter
+        is a broker one (paper keeps its own book: never), NO leg of this account is working (entry sent, pending, protected,
+        closing ...) and NinjaTrader's position file of EVERY order contract exists and says FLAT. Anything unclear = None."""
+        if self.open_t is None or self.adapter is None:
+            return None
+        legs = getattr(self.adapter, "legs", None)
+        if not isinstance(legs, list) or not callable(getattr(self.adapter, "position_for", None)) \
+                or not callable(getattr(self.adapter, "_instruments", None)):
+            return None
+        et_ = int(self.open_t)
+        if int(now) - et_ < STALE_OPEN_S:
+            return None
+        from .ninjatrader import OPEN_STATUSES
+        if any(isinstance(lg, dict) and lg.get("status") in OPEN_STATUSES for lg in legs):
+            return None
+        try:
+            insts = sorted({str(v) for v in (self.adapter._instruments() or {}).values() if v})
+            if not insts:
+                return None
+            for inst in insts:
+                p = self.adapter.position_for(inst)
+                if not p or p.get("side") != "FLAT" or int(p.get("qty") or 0) != 0:
+                    return None                       # no file never proves flat (NinjaTrader wipes outgoing\ on a restart)
+        except Exception:
+            return None
+        return f"NinjaTrader shows {', '.join(insts)} FLAT on this account and no order working"
+
+    def heal_stale(self, now):
+        """day-atlasmiss (2026-11-27): B kept a position record NinjaTrader no longer has, so every new entry was skipped with no
+        reason. Cleared only on two stale_flat() reads STALE_CONFIRM_S apart for the same entry: open_t freed, the record
+        final (its P&L is not booked here: the MFFU tracker reads NinjaTrader's own balance), one log line + one Board event.
+        Never raises."""
+        try:
+            why = self.stale_flat(now)
+            if why is None:
+                self._stale_seen = None
+                return False
+            et_ = int(self.open_t)
+            seen = getattr(self, "_stale_seen", None)
+            if not seen or int(seen[0]) != et_:
+                self._stale_seen = (et_, int(now))
+                return False
+            if int(now) - int(seen[1]) < STALE_CONFIRM_S:
+                return False
+            pv = self.prov.get(et_) or {}
+            pv["final"] = True
+            pv["stale_cleared"] = {"t": int(now), "why": why[:160]}
+            if (pv.get("closing") or {}) and not pv["closing"].get("done"):
+                pv["closing"]["done"] = True
+            self.prov[et_] = pv
+            self.open_t = None
+            self._stale_seen = None
+            self.stale_cleared = {"t": int(now), "entry_t": et_}
+            nm = pv.get("short") or pv.get("key") or "?"
+            head = f"{self.stale_title()}: cleared a stuck position record"
+            body = (f"its {nm} entry of {_et(et_):%a %m-%d %H:%M} ET was still marked open, but {why} (checked twice, "
+                    f"{STALE_CONFIRM_S // 60} min apart). New entries are allowed again; the trade's P&L is NinjaTrader's own.")
+            self.log("risk", f"{head}: {body}")
+            try:
+                from . import board_events
+                key = self.life_key()
+                board_events.emit("risk_alert", "atlas" if key == "atlas" else key, head, {"entry_t": et_, "why": why[:120]})
+            except Exception:
+                pass
+            self.save()
+            return True
+        except Exception as e:
+            self.log("error", f"stuck-position check failed: {e.__class__.__name__}: {e} (the record is kept)")
+            return False
+
+    def stale_title(self) -> str:
+        if self.life_key() != "atlas":
+            return f"ATLAS ({self.label})"
+        return "ATLAS funded" if self.funded() else "ATLAS eval"
+
     def closing_open(self) -> list:
         """B's closes not confirmed yet [(entry_t, pv)] (the PC's critical alert, engine/alerts_plus.pc_conditions)."""
         return [(et_, pv) for et_, pv in sorted(self.prov.items()) if (pv.get("closing") or {}) and not pv["closing"].get("done")]
@@ -2026,7 +2136,7 @@ class AccountB:
                    "saved_at": int(self.clock()), "ledger": self.ledger[-400:], "closes": list(self.closes),
                    "prov": {str(k): v for k, v in self.prov.items()}, "open_t": self.open_t,
                    "seen": [list(x) for x in sorted(self.seen, key=_seen_t)[-600:]], "lock": self.lock, "notified": self.notified[-50:],
-                   "held": dict(self.held)}
+                   "held": dict(self.held), "stale_cleared": getattr(self, "stale_cleared", None)}
             if self.funded():
                 out.update(stage="funded", funded_start=(self.spec.get("funded") or {}).get("start"))
             return out
@@ -2083,6 +2193,7 @@ class AccountB:
         self.seen = {tuple(x) for x in b.get("seen") or []}
         self.notified = list(b.get("notified") or [])
         self.held = dict(b.get("held") or {}) if isinstance(b.get("held"), dict) else {}
+        self.stale_cleared = b.get("stale_cleared") if isinstance(b.get("stale_cleared"), dict) else None
         lk = b.get("lock")
         self.lock = lk if lk and lk.get("day") == trading_day(self.clock()) else None
         if pause:
@@ -2167,6 +2278,32 @@ def compact_tracker(t: dict | None) -> dict | None:
     out = {k: t.get(k) for k in TRACKER_KEYS if k in t}
     out["why"] = [str(w)[:160] for w in (t.get("why") or [])][:6]
     return out
+
+
+def status_tiny(path: str | None = None, now=None) -> dict | None:
+    """day-atlasmiss: account B's position record and today's skip reasons for the 15-minute status (tools/pc_report.py core,
+    <= ~320 bytes). {"o": open entry_t or None, "oc": 1 = its close not confirmed, "h": [[entry_t, member, why], ...] today's
+    newest 3, "hn": today's count, "sc": the last stuck record cleared [t, entry_t]}. None = no state file. Never raises."""
+    try:
+        p = path or os.path.join(ROOT, "data", "live_state_acctb.json")
+        b = json.load(open(p, encoding="utf-8"))
+        if not isinstance(b, dict):
+            return None
+        day = trading_day(int(now or _time.time()))
+        ot = b.get("open_t")
+        pv = (b.get("prov") or {}).get(str(ot)) or {} if ot is not None else {}
+        H = b.get("held") if isinstance(b.get("held"), dict) else {}
+        rows = sorted((int(k), v) for k, v in H.items() if str(k).isdigit() and isinstance(v, dict) and trading_day(int(k)) == day)
+        out = {"o": int(ot) if ot is not None else None,
+               "hn": len(rows), "h": [[t, str(v.get("key") or "")[:14], str(v.get("why") or "")[:70]] for t, v in rows[-3:]]}
+        if (pv.get("closing") or {}) and not (pv.get("closing") or {}).get("done"):
+            out["oc"] = 1
+        sc = b.get("stale_cleared")
+        if isinstance(sc, dict) and sc.get("t"):
+            out["sc"] = [int(sc["t"]), int(sc.get("entry_t") or 0)]
+        return out
+    except Exception:
+        return None
 
 
 def _state_path_for(bot_state_path: str | None) -> str:

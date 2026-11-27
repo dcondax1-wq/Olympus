@@ -219,8 +219,9 @@ def _atlas_flags(root, now, twin):
     for r in ledger:
         if r.get("side") in ("buy", "sell") and r.get("entry_t") is not None:
             entries[int(r["entry_t"])] = r                 # the last row for an open = the one that counts
-    from engine.account_b import _tick, trading_day
-    days = sorted({trading_day(t) for t in list(probed) + list(entries) if 0 <= now - t <= MAX_AGE_S})[-TWIN_DAYS:]
+    from engine.account_b import STUCK_HOLD_S, _tick, trading_day
+    hk = [int(k) for k in held if str(k).isdigit()]           # day-atlasmiss: a day B only held (never probed: a stuck record) counts too
+    days = sorted({trading_day(t) for t in list(probed) + list(entries) + hk if 0 <= now - t <= MAX_AGE_S})[-TWIN_DAYS:]
     keys = _atlas_keys(root, ledger) if days else []
     if not keys:
         return []
@@ -235,9 +236,24 @@ def _atlas_flags(root, now, twin):
                 continue
             e = entries.get(tb)
             if e is None:
-                if tb not in probed or str(tb) in held:
-                    continue                               # PC off / B already in a trade / B's own rule said why
+                h = held.get(str(tb)) if isinstance(held.get(str(tb)), dict) else None
+                stuck = bool(h and h.get("code") == "open" and h.get("since") and tb - int(h["since"]) > STUCK_HOLD_S)
+                silent = h is None and tb not in probed and int(st.get("saved_at") or 0) >= tb + 60
+                if not stuck and not silent and (tb not in probed or h is not None):
+                    continue                               # PC off / B in a real trade / B's own rule said why
                 t = ts[0]
+                if stuck or silent:                        # day-atlasmiss 2026-11-27: B never checked the open, or its position record is stuck
+                    side = "LONG" if t["dir"] == 1 else "SHORT"
+                    usd = t.get("usd")
+                    why = (f"account B still marks its {_hm(int(h['since']))} ET entry of {trading_day(int(h['since']))} open (a stuck "
+                           "position record?): every new entry is skipped until it clears" if stuck else
+                           "account B never checked that open (no reason recorded) while the bot was running")
+                    out.append({"key": f"watch:atlas:{tb}:missed", "t": tb, "code": "missed", "entry_t": tb,
+                                "title": f"ATLAS vs backtest: missed {side} {_hm(tb)} ET",
+                                "body": (f"{t.get('short') or t['key']} {side} at the {_hm(tb)} ET open: the backtest twin entered, {why}."
+                                         + (f" Twin result {'+' if float(usd) >= 0 else '-'}${abs(float(usd)):,.0f}." if usd is not None else "")
+                                         + " The bot clears a stuck record itself once NinjaTrader shows the account flat.")})
+                    continue
                 side = "LONG" if t["dir"] == 1 else "SHORT"
                 usd = t.get("usd")
                 out.append({"key": f"watch:atlas:{tb}:missed", "t": tb, "code": "missed", "entry_t": tb,
