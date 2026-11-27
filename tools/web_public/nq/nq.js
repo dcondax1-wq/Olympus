@@ -158,6 +158,15 @@ export function shortDay(text) {
   const end = +m[4] * 60 + +m[5];
   return end < 930 ? { day: m[1] || '', end: `${m[4]}:${m[5]}` } : null;
 }
+// weight pass: plan.js (the battle plan + alert history) is code-split: added when its card nears the screen or the browser is idle,
+// never in the first paint's way (it reads window.NQ_HOME at start, then the 'nq-home' events)
+function loadPlan() {
+  if (S.planAsked) return; S.planAsked = true;
+  const go = () => { if (S.planIn) return; S.planIn = true; const t = document.createElement('script'); t.type = 'module'; t.src = new URL('./plan.js?v=3', import.meta.url).href; document.head.appendChild(t); };
+  const card = $('battle');
+  if (card && 'IntersectionObserver' in window) { const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); go(); } }, { rootMargin: '600px 0px' }); io.observe(card); }
+  (window.requestIdleCallback || ((f) => setTimeout(f, 1500)))(go, { timeout: 4000 });
+}
 // QA #5: a jump-bar link (or any #hash) into a folded section opens the fold first
 function openFoldFor(hash) {
   try { const t = hash && document.getElementById(hash.slice(1)); const f = t && (t.matches('details') ? t : t.closest('details')); if (f && !f.open) f.open = true; } catch (_) { /* nothing */ }
@@ -316,6 +325,7 @@ function render() {
   try {                                  // night-nq-main: the battle plan + alert history (plan.js) read the SAME merged PC state, never a 2nd feed read
     window.NQ_HOME = { home: deskHome(), lite: S.lite || null, demo: S.demo };
     dispatchEvent(new CustomEvent('nq-home', { detail: window.NQ_HOME }));
+    loadPlan();
   } catch (_) { /* the plan keeps its last draw */ }
   try { if (O && O.ready) O.ready(); } catch (_) { /* the veil lifts by itself */ }
   tryScene(); tryLand();

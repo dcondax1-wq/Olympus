@@ -62,3 +62,14 @@ nqland.js, the NEW nq/nqhero.css, and tests/test_nq_desk.py (hero checks). Web o
 16. **The battle plan uses nq/brief.json** (tools/premarket_brief.py).
     - Tonight's brief is Thu's, so the card says "Plan from Thu, Nov 26 - today's (Fri, Nov 27) is not built yet".
     - When the PC glance has live levels, the ladder uses them and the market read is labelled "From the brief of ..." so two prices never pose as one.
+
+## Weight pass (2026-11-27 ~02:00 ET)
+17. **nq block 310 -> 262 KB** (perf_sweep --static).
+    - `../pc_feed.js` and `../business/payoutcoach.js` are now `defer` on nq/. Only nq.js (a module, after them in document order) and pillars/hero.js (imported after load) use them.
+    - plan.js is code-split: nq.js adds it near its card or when the browser is idle.
+    - **nqfeed.js stays `defer`:** it must run after pc_feed.js (it wraps PC_FEED), so it cannot be blocking while pc_feed is deferred. Making all three blocking again = 262 + 37.5 + 15 = 315 KB.
+    - What is left blocking is the kit: themes.js 77, agora.css 50, olympus.js 47, olympus.css 14 = 188 KB of the 262.
+    - Further cuts need the kit (not mine): split themes.js, lazy-load agora.css's below-the-fold parts.
+    - Timings (Chromium, CPU x4, 4G-like 150 ms + 500 KB/s per file, served from disk, DEMO, median of 5): first $ on screen 2,049 -> 1,995 ms, first paint 1,032 -> 1,008 ms.
+    - The wall-clock gain is small because the blocking files load in parallel and the kit dominates. The byte budget headroom is the real win: 48 KB.
+18. **Tablet / landscape.** 768x1024: an odd last account tile spans the row. 900-1099 px: page 960 px wide, the accounts 3 across. No sideways scroll at 768 / 1024.

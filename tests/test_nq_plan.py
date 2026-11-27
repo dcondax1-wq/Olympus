@@ -32,8 +32,10 @@ def read(p):
 
 def static():
     core, js, css, html = (read(os.path.join(NQ, n)) for n in ("plancore.js", "plan.js", "plan.css", "index.html"))
-    check("a. plan.js = its own module tag after nq.js; plan.css media=print onload (never render-blocking); #battle + #alertsDrawer on the page",
-          html.index('src="nq.js') < html.index('src="plan.js') and re.search(r'plan\.css\?v=\d+" media="print" onload=', html) and 'id="battle"' in html and 'id="alertsDrawer"' in html)
+    nqjs = read(os.path.join(NQ, "nq.js"))
+    check("a. plan.js is code-split (nq.js adds it near its card or when idle, never a page tag); plan.css media=print onload; #battle + #alertsDrawer on the page",
+          'src="plan.js' not in html and "./plan.js?v=" in nqjs and "requestIdleCallback" in nqjs and re.search(r'plan\.css\?v=\d+" media="print" onload=', html)
+          and 'id="battle"' in html and 'id="alertsDrawer"' in html)
     check("a. plancore.js is pure and Safari-16 safe (no document / window / fetch / storage / lookbehind / .at())",
           not re.search(r"\bdocument\.|\bwindow\.|\bfetch\(|localStorage|\(\?<[=!]|\.at\(", re.sub(r"//[^\n]*", "", core)))
     check("a. plan.js draws text only (no innerHTML / eval / dynamic import), reads only published files",

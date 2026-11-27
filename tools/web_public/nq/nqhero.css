@@ -103,7 +103,7 @@ html{scroll-padding-top:124px}
 @media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
 html[data-oly-scheme="light"] .hx-jump{background:rgba(255,255,255,.9)}
 @media (min-width:1100px){#app>.hx-jump{grid-column:1/-1}}
-@media (max-width:759px){.hx-acc:last-child:nth-child(odd){grid-column:1/-1}}
+@media (max-width:1099px){.hx-acc:last-child:nth-child(odd){grid-column:1/-1}}
 body .oly-ask-btn,body .oly-home{background:rgba(6,4,11,.82)!important;border:1px solid var(--hx-line2)!important;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 6px 18px rgba(0,0,0,.6),0 0 12px rgba(157,89,238,.25)!important}
 .nq-fold{border:1px solid var(--ag-line);border-radius:18px;background:linear-gradient(180deg,rgba(22,19,30,.9),rgba(2,2,4,.9));overflow:hidden}
 .nq-fold>summary{list-style:none;cursor:pointer;min-height:56px;display:grid;align-content:center;gap:2px;padding:10px 44px 10px 16px;position:relative}
@@ -147,3 +147,4 @@ main#app{--ag-fs-cap:12px}
 .hx-acc-nm{overflow-wrap:normal;word-break:normal;hyphens:none}
 .hx-acc-st{letter-spacing:.05em;padding:1px 6px;font-size:12px}
 @media (max-width:420px){.hx-acc-nm{font-size:13.5px}.hx-acc-st{letter-spacing:.02em;padding:1px 5px}}
+@media (min-width:900px) and (max-width:1099px){#app{max-width:960px}#hero .hx-accts{grid-template-columns:repeat(3,minmax(0,1fr))}#hero .hx-acc:last-child:nth-child(odd){grid-column:auto}}
