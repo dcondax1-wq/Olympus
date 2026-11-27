@@ -36,7 +36,7 @@
 <link rel="stylesheet" href="nqtheme.css?v=9">
 <link rel="stylesheet" href="../olympus/brain3d.css?v=b1">
 <link rel="stylesheet" href="brain.css?v=3">
-<link rel="stylesheet" href="brainmind.css?v=m2">
+<link rel="stylesheet" href="brainmind.css?v=m3">
 <script src="../olympus/brain3d.js?v=b1"></script><!-- DESIGN's brain (window.Brain3D): in <head>, NOT defer, so the body mounts it before the first paint (no shift); three.js comes later, only on this page -->
 </head>
 <body>
@@ -56,6 +56,13 @@
     <h2 id="mNowH"><span class="mthink" aria-hidden="true"><i></i><i></i><i></i></span>Thinking right now</h2>
     <div id="mNowBody"><p class="mnone">Reading the PC's report...</p></div>
     <p class="mmeta" id="mNowMeta"></p>
+  </section>
+
+  <section class="ag-card card" id="askCard" aria-labelledby="askH">
+    <h2 id="askH">Ask WHY</h2>
+    <p class="mnote">Tap a question: the answer is built only from your PC's report and the bots' own files, with how old that data is.</p>
+    <div class="askqs" id="askQs" role="group" aria-label="Questions"></div>
+    <div class="aska" id="askA" aria-live="polite"></div>
   </section>
 
   <section class="ag-card card" id="brainCard" aria-labelledby="brainH">
@@ -117,5 +124,6 @@
 </section>
 <script type="module" src="brain.js?v=7"></script>
 <script type="module" src="brainmind.js?v=m4"></script>
+<script type="module" src="ask.js?v=a1"></script>
 </body>
 </html>

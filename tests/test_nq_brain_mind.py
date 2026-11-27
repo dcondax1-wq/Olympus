@@ -8,6 +8,7 @@ On the PC's real post (tests/fixtures/truth/pc_post.json) + the site's brain/lea
               bands; BLITZ nowhere; no sideways scroll, taps >= 44 px, no console error, nothing off the origin
   c. 1440     a two-column dashboard: the 3D brain beside its steps, ATLAS's members beside the lessons, the ideas full width
   d. reduced motion: the pipeline drawn without a running animation; no learn.json: every card says why, no error
+  f. Ask WHY (nq/ask.js): five questions answered only from the page's data, each with its data age
   e. nq/nqfeed.js (the shared fast feed): its kept post paints the page at once when the network has nothing, with the post's age
     python -X utf8 -m tests.test_nq_brain_mind [--static]
 """
@@ -41,6 +42,15 @@ def test_static():
     check("a. text only, no storage, GET of ../brain/learn.json only, reduced motion handled",
           "innerHTML" not in code and "eval(" not in code and "localStorage" not in code and "POST" not in code
           and code.count("fetch(") == 1 and "'../brain/learn.json'" in js and "prefers-reduced-motion" in js and "prefers-reduced-motion" in css)
+
+
+def test_ask_static():
+    html = open(os.path.join(NQ, "brain.html"), encoding="utf-8").read()
+    js = open(os.path.join(NQ, "ask.js"), encoding="utf-8").read()
+    code = re.sub(r"/\*.*?\*/|(?<![:'\"])//[^\n]*", "", js, flags=re.S)
+    check("f. Ask WHY: brain.html loads nq/ask.js + the card; data only (no fetch of its own, no AI call), text only, no storage",
+          'src="ask.js?v=' in html and 'id="askCard"' in html and 'id="askQs"' in html and "fetch(" not in code and "innerHTML" not in code
+          and "localStorage" not in code and not re.search(r"anthropic|openai|/v1/", code, re.I))
 
 
 SNAP = """() => { const t = (id) => (document.getElementById(id) || {}).textContent || '';
@@ -142,6 +152,33 @@ def test_page():
             ctx.close()
     finally:
         srv.shutdown()
+    # Ask WHY: every question answered from the page's data, each with its data age
+    srv, origin = AK.serve({"/status_feed.json": NC.FEED, "/home.json": home})
+    try:
+        with AK.browser() as br:
+            ctx, p, errs, seen, off = AK.page(br, origin, mock={f"/{NC.TOPIC}/json": core})
+            p.clock.set_fixed_time(dt.datetime.fromtimestamp(T.NOW, dt.timezone.utc))
+            open_brain(p)
+            p.wait_for_function("window.NQASK && window.NQASK.ready() && document.querySelector('#bStatus').textContent.startsWith('From your PC')", timeout=30000)
+            A = {}
+            for q in ("notrade", "next", "accounts", "learned", "pc"):
+                p.locator(f'#askQs button[data-q="{q}"]').click()
+                p.wait_for_timeout(150)
+                A[q] = p.evaluate("document.getElementById('askA').innerText")
+            check("f. why no trade: Zlarior at step 5 of 10 (5m CISD) + only setups up to now; ATLAS DID trade today (its 03:45 short)",
+                  "step 5 of 10 (5m CISD)" in A["notrade"] and "15:50" not in A["notrade"] and "It DID trade today: short at 3:45 AM" in A["notrade"], A["notrade"])
+            check("f. next trade: the open window, the 5m CISD's next rule, ATLAS's armed MACD", "window open" in A["next"].lower() and "What moves it on" in A["next"]
+                  and "MACD is ARMED" in A["next"], A["next"])
+            check("f. accounts: Zlarior 50K needs $3,807 more to pass; funded ATLAS by its payout line (no contradicting eval line)",
+                  "Zlarior 50K: needs $3,807 more to pass" in A["accounts"] and "ATLAS payout" in A["accounts"] and "ATLAS: needs" not in A["accounts"], A["accounts"])
+            check("f. learned: this week's lessons from learn.json; PC: 'Nothing wrong' when every check is green",
+                  "lessons in the 7 days" in A["learned"] and "Nothing wrong: every check the PC sends is green" in A["pc"], (A["learned"][:200], A["pc"][:200]))
+            check("f. every answer ends with its data age; BLITZ never; no console error; taps >= 44 px",
+                  all("Data:" in v for v in A.values()) and "PC report" in A["notrade"] and "BLITZ" not in " ".join(A.values()).upper()
+                  and not errs and not AK.taps(p), ([v[-120:] for v in A.values()], errs[:2], AK.taps(p)[:3]))
+            ctx.close()
+    finally:
+        srv.shutdown()
     srv, origin = AK.serve({"/status_feed.json": NC.FEED, "/home.json": home, "/brain/learn.json": None})
     try:
         with AK.browser() as br:
@@ -159,6 +196,7 @@ def test_page():
 
 def main():
     test_static()
+    test_ask_static()
     if "--static" not in sys.argv:
         test_page()
     AK.finish()
