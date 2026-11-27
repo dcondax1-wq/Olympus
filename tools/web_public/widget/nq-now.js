@@ -9,10 +9,12 @@
 // whole file > name it "NQ NOW"; 3. long-press the Home Screen > + > Scriptable > pick a size > Add > tap the widget > Script: NQ NOW.
 // Lock screen: long-press the lock screen > Customize > Lock Screen > tap the widget row > Scriptable > Script: NQ NOW.
 // Optional Parameter: small / medium / large / rect / inline / circle forces a layout.
+// Siri (one more paste of the SAME file): name a copy "NQ status" -> "Hey Siri, NQ status" speaks 2-3 sentences (price, each bot,
+// today's trades + $, the next event); name a copy "Why no trade" -> the newest rejected setup from the PC's log in plain words.
 //
 // Also a CommonJS module (node tests: tests/test_nq_now.py via tests/nq_now_harness.cjs): the pure part (parse / model / words) has
 // no Scriptable calls; the drawing runs only when Scriptable's globals exist.
-/* global ListWidget, Request, Color, Font, FileManager, Script, config, args, LinearGradient, Point */
+/* global ListWidget, Request, Color, Font, FileManager, Script, config, args, LinearGradient, Point, Speech, QuickLook */
 (function (root) {
   'use strict';
   const SITE = 'https://dcondax1-wq.github.io/';
@@ -108,12 +110,13 @@
     const pos = positionOf(lite, id);
     if (pos) {
       const v = pos.usd !== null ? pos.usd : okN(price) ? (price - pos.entry) * pos.dir * pos.qty * MNQ_USD : null;
-      return { id, name, emoji: '🟢', text: 'in trade ' + (v === null ? (pos.dir < 0 ? 'SHORT' : 'LONG') : usd(v, true)), lvl: 'good', usd: v };
+      return { id, name, emoji: '🟢', text: 'in trade ' + (v === null ? (pos.dir < 0 ? 'SHORT' : 'LONG') : usd(v, true)), lvl: 'good', usd: v, side: pos.dir < 0 ? 'short' : 'long' };
     }
     if (b.on === false) return { id, name, emoji: '⏸️', text: 'off', lvl: 'soft' };
-    const st = stageOf(b.stage);
-    if (st && st.n >= 2 && st.n < st.of) return { id, name, emoji: '👀', text: 'setup ' + st.n + '/' + st.of, lvl: 'warn' };
-    if (Array.isArray(b.arm) && b.arm.length && b.armed) return { id, name, emoji: '👀', text: 'setup forming', lvl: 'warn' };
+    const st = stageOf(b.stage), arm0 = Array.isArray(b.arm) && b.arm.length && isObj(b.arm[0]) ? b.arm[0] : null;
+    const side = arm0 && /short/i.test(String(arm0.side)) ? 'short' : arm0 && /long/i.test(String(arm0.side)) ? 'long' : '';
+    if (st && st.n >= 2 && st.n < st.of) return { id, name, emoji: '👀', text: 'setup ' + st.n + '/' + st.of, lvl: 'warn', side, stage: st };
+    if (arm0 && b.armed) return { id, name, emoji: '👀', text: 'setup forming', lvl: 'warn', side, armed: true };
     return { id, name, emoji: '⏸️', text: 'waiting', lvl: 'soft' };
   }
   function todayUsd(lite) {
@@ -179,6 +182,7 @@
       src: 'PC', t, age, asOf: etHM(t), stale: age > FRESH_S, silent, price, chg, chgPct: chg !== null && ref ? chg / ref * 100 : null, refWhat,
       arrow: chg === null ? '' : chg > 0 ? '▲' : chg < 0 ? '▼' : '▶',
       chips: botsOf(lite).map((b) => chip(b, lite, price, silent)), today: todayUsd(lite), next: nextEvent(ports, now), last: lastDay(lite, now),
+      trades: tradesToday(lite), why: whyNot(lite),
       verdict: isObj(lite.pc_verdict) ? String(lite.pc_verdict.label || '').slice(0, 26) : '',
     };
   }
@@ -212,7 +216,78 @@
     return model(lite, ports, o.cache || null, now);
   }
 
-  const API = { VERSION, SITE, FRESH_S, SILENT_S, usd, px, span, etHM, parseLite, model, chip, nextEvent, lastDay, todayUsd, statusLine, feedUrls, zoneEpoch, load };
+  // ------------------------------------------------------------------ Siri: "Hey Siri, NQ status" / "Hey Siri, why no trade" (spoken words, pure)
+  function tradesToday(lite) {
+    const b = isObj(lite.board) ? lite.board : {};
+    const n = ['lit', 'atlas'].map((k) => num(isObj(b[k]) ? b[k].trades_today : null)).filter((v) => v !== null);
+    return n.length ? n.reduce((x, y) => x + y, 0) : null;
+  }
+  const REJECT = /✗|BLOCKED|: no\b|no - |rejected|skip|too (small|far|late|early|shallow)|outside/i;
+  function plain(s) {                                          // the log's shorthand in plain spoken words
+    return String(s || '').replace(/^Now:\s*/, '').replace(/…$/, '').replace(/\s*\(\s*/g, ', ').replace(/\)\s*/g, ' ')
+      .replace(/;\s*✗\s*/g, ', but ').replace(/✗\s*/g, 'not OK: ').replace(/✓\s*/g, '').replace(/\bATR\b/g, 'A T R').replace(/>=/g, 'at least ')
+      .replace(/\bCISD\b/g, 'C I S D').replace(/MACD-div/g, 'MACD divergence').replace(/\s+/g, ' ').replace(/[\s,;:]+$/, '').trim();
+  }
+  function whyNot(lite) {                                       // the newest rejection in the PC's glog (newest first per bot), BLITZ never
+    const g = isObj(lite.glog) ? lite.glog : null;
+    if (!g) return null;
+    let best = null;
+    for (const id of Object.keys(g)) {
+      if (HIDDEN.includes(id.toLowerCase()) || !Array.isArray(g[id])) continue;
+      for (const row of g[id]) {
+        if (!Array.isArray(row) || row.length < 2 || !REJECT.test(String(row[1]))) continue;
+        const hm = String(row[0]);
+        if (!best || hm > best.hm) best = { id, name: BOT_NAME[id] || id, hm, text: plain(row[1]) };
+        break;
+      }
+    }
+    return best;
+  }
+  function spokenTime(hm) {                                     // "13:15" -> "1:15"
+    const m = /^(\d{1,2}):(\d{2})/.exec(String(hm || ''));
+    if (!m) return String(hm || '');
+    const h = +m[1] % 12 || 12;
+    return h + (m[2] === '00' ? '' : ':' + m[2]) + (+m[1] < 12 ? ' in the morning' : +m[1] >= 18 ? ' in the evening' : '');
+  }
+  function dollars(v) {
+    if (!okN(v)) return 'unknown dollars';
+    const a = Math.round(Math.abs(v));
+    return a === 0 ? 'zero dollars' : (v < 0 ? 'down ' : 'up ') + a.toLocaleString('en-US') + ' dollar' + (a === 1 ? '' : 's');
+  }
+  function sayBot(c) {
+    if (c.emoji === '🔴') return c.name + ' has no fresh report';
+    if (c.emoji === '🟢') return c.name + ' is in a ' + (c.side || '') + ' trade, ' + dollars(c.usd);
+    if (c.stage) return c.name + ' is forming a ' + (c.side ? c.side + ' ' : '') + 'setup at stage ' + c.stage.n + ' of ' + c.stage.of;
+    if (c.armed) return c.name + ' is armed' + (c.side ? ' ' + c.side : '');
+    if (c.text === 'off') return c.name + ' is off';
+    return c.name + ' is waiting';
+  }
+  function sayNext(n) {
+    if (!n) return '';
+    if (n.kind === 'half') return 'Next: the market halts at ' + spokenTime(n.t) + (n.in.indexOf('d') > 0 ? ' on ' + n.when.split(' ')[0] : '') + '.';
+    if (n.kind === 'closed') return 'Next: the market is closed ' + (n.in === 'today' ? 'today' : 'on ' + n.when.split(' ').slice(0, 2).join(' ')) + '.';
+    if (n.kind === 'roll') return 'Next: the contract roll, in ' + n.in.replace('d', ' days').replace('h', ' hours') + '.';
+    return 'Next: ' + n.what + ' at ' + spokenTime(n.t) + (/d/.test(n.in) ? ', ' + n.when.split(' ')[0] : ' today') + '.';
+  }
+  function sayStatus(m) {
+    if (m.src === 'NONE') return 'I have no numbers from the PC yet. ' + sayNext(m.next);
+    const lead = m.src === 'CACHED' || m.silent ? 'The PC has been quiet since ' + spokenTime(m.asOf) + '. As of then, '
+      : m.stale ? 'As of ' + spokenTime(m.asOf) + ', ' : '';
+    const pct = okN(m.chgPct) ? ', ' + (m.chgPct >= 0 ? 'up ' : 'down ') + Math.abs(m.chgPct).toFixed(1) + ' percent' : '';
+    const s1 = lead + 'NQ ' + (okN(m.price) ? Math.round(m.price).toLocaleString('en-US') : 'has no price') + pct + '.';
+    const bots = (m.chips || []).filter((c) => c.id !== 'rapid' && c.id !== 'rapid2' && c.id !== 'b25k_2').map(sayBot);
+    const tr = m.trades === 0 ? 'no trades today' : okN(m.trades) ? m.trades + ' trade' + (m.trades === 1 ? '' : 's') + ' today' : 'today';
+    const s2 = (bots.length ? bots.join(', ') + ', ' : '') + tr + ', ' + dollars(m.today) + '.';
+    return [s1, s2.charAt(0).toUpperCase() + s2.slice(1), sayNext(m.next)].filter(Boolean).join(' ');
+  }
+  function sayWhy(m) {
+    if (m.src === 'NONE') return 'I have no report from the PC yet, so I cannot say why.';
+    const w = m.why;
+    if (!w) return 'The PC report has no rejected setup in its log right now' + (m.trades ? ', and there ' + (m.trades === 1 ? 'was 1 trade' : 'were ' + m.trades + ' trades') + ' today.' : '.');
+    return 'At ' + spokenTime(w.hm) + ', ' + w.name + ' skipped a setup: ' + w.text + '.' + (m.stale ? ' That is from the report of ' + spokenTime(m.asOf) + '.' : '');
+  }
+
+  const API = { VERSION, SITE, FRESH_S, SILENT_S, usd, px, span, etHM, parseLite, model, chip, nextEvent, lastDay, todayUsd, statusLine, feedUrls, zoneEpoch, load, sayStatus, sayWhy, whyNot, plain, spokenTime };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   root.NQ_NOW = API;
   if (!IS_SCRIPTABLE) return;
@@ -344,6 +419,15 @@
   (async () => {
     const m = await load({ cache: readCache() });
     writeCache(m);
+    const who = String((typeof Script.name === 'function' ? Script.name() : '') + ' ' + ((args && args.shortcutParameter) || '') + ' ' + PARAM).toLowerCase();
+    const voice = /why/.test(who) ? sayWhy(m) : (config.runsWithSiri || /status|siri/.test(who)) ? sayStatus(m) : null;
+    if (voice) {                                                   // "Hey Siri, NQ status" / "Hey Siri, why no trade": speak, hand the text to Shortcuts
+      if (typeof Speech !== 'undefined') Speech.speak(voice);
+      if (typeof Script.setShortcutOutput === 'function') Script.setShortcutOutput(voice);
+      if (!config.runsWithSiri && !config.runsInWidget && typeof QuickLook !== 'undefined') await QuickLook.present(voice);
+      Script.complete();
+      return;
+    }
     const w = build(m);
     if (config.runsInWidget || config.runsInAccessoryWidget) Script.setWidget(w);
     else if (FAM === 'small') await w.presentSmall(); else if (FAM === 'large') await w.presentLarge(); else await w.presentMedium();

@@ -24,3 +24,11 @@ The old `olympus-widget.js` is untouched (tests.test_widget 56/56).
 - Age honesty: <= 20 min "live · HH:MM ET"; 20-60 min "as of HH:MM ET" gold; > 60 min "PC silent" red + every chip 🔴;
   no network = the last real post saved in Scriptable's Documents as "Saved copy · as of HH:MM ET".
 - Refresh: asks iOS for 5 min (refreshAfterDate); iOS decides the real pace.
+
+## Siri (job 2, same file)
+
+- The SAME nq-now.js, pasted under another name, speaks instead of drawing: a script named "NQ status" (or run by Siri) -> sayStatus
+  (price + % vs close, each bot in words, today's trades + $, the next event); a script named "Why no trade" -> sayWhy (the newest
+  rejection in the PC's glog, plain words, BLITZ never). Speech.speak + Script.setShortcutOutput (so a Shortcut can use the text too).
+- setup.html: "Siri" card with the one-tap copy + the two names. tests.test_nq_now part f (spoken text from the real 11-22 post, stale /
+  silent / no-post words).

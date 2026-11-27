@@ -7,6 +7,9 @@
               no post, nothing saved -> "No PC numbers yet", nothing made up
   d. draw     small / medium / large / lock-screen rectangular / inline / circular inside a fake Scriptable: the right lines, no
               undefined / NaN, tap -> nq/, refresh asked in 5 min, the cache written only from a real PC post
+  f. Siri     a copy named "NQ status" run by Siri SPEAKS: "NQ 25,665, down 1.3 percent. Zlarior is forming a long setup at stage 4 of 10,
+              ATLAS is waiting, no trades today, zero dollars. Next: the market halts at 1:15." (+ Shortcuts output); stale / silent /
+              no-post words honest; "Why no trade" speaks the newest rejection of the PC's glog in plain words; the widget is not drawn
   e. setup    the one-paste NQ NOW steps (Home Screen + lock screen), the old Olympus widget kept; files: no account id / email,
               read only (no POST, no key)
 Run: python -X utf8 -m tests.test_nq_now
@@ -123,13 +126,37 @@ def part_d():
     check("d. run inside the app = the medium preview", r4["presented"] == "medium", r4["presented"])
 
 
+def part_f():
+    p = post(240)
+    r = node("draw", p, PORTS, NOW, "siri:NQ status")
+    want = ("NQ 25,665, down 1.3 percent. Zlarior is forming a long setup at stage 4 of 10, ATLAS is waiting, no trades today, zero dollars. "
+            "Next: the market halts at 1:15.")
+    check("f. 'Hey Siri, NQ status': speaks the 3 sentences, hands the same text to Shortcuts, draws no widget",
+          r["spoken"] == [want] and r["output"] == want and not r["texts"] and r["url"] is None, r["spoken"])
+    r = node("draw", p, PORTS, NOW, "siri:Why no trade")
+    w = "At 9:15 in the evening, Zlarior skipped a setup: Swept equal lows 25,765.75, 0.22 A T R deep, but LIT needs 0.5."
+    check("f. 'Hey Siri, why no trade': the newest rejection in the PC's glog (Zlarior 21:15) in plain words", r["spoken"] == [w], r["spoken"])
+    r = node("draw", post(45 * 60), PORTS, NOW, "siri:NQ status")
+    check("f. a 45-min-old post starts with 'As of 9:45 in the morning,'", r["spoken"][0].startswith("As of 9:45 in the morning, NQ 25,665"), r["spoken"])
+    r = node("draw", post(3 * 3600), PORTS, NOW, "siri:NQ status")
+    check("f. a 3-h-old post: 'The PC has been quiet since 7:30 in the morning' and every bot 'has no fresh report'",
+          r["spoken"][0].startswith("The PC has been quiet since 7:30 in the morning.") and "Zlarior has no fresh report, ATLAS has no fresh report" in r["spoken"][0], r["spoken"])
+    r = node("draw", "-", PORTS, NOW, "siri:NQ status")
+    r2 = node("draw", "-", PORTS, NOW, "siri:Why no trade")
+    check("f. no PC post: says so (status + why), nothing made up",
+          r["spoken"] == ["I have no numbers from the PC yet. Next: the market halts at 1:15."] and r2["spoken"] == ["I have no report from the PC yet, so I cannot say why."], (r["spoken"], r2["spoken"]))
+    with open(os.path.join(WEB, "nq-now.js"), encoding="utf-8") as fh:
+        js = fh.read()
+    check("f. BLITZ never spoken (glog / chips skip hidden bots)", "HIDDEN.includes(id.toLowerCase())" in js)
+
+
 def part_e():
     with open(os.path.join(WEB, "setup.html"), encoding="utf-8") as fh:
         sp = fh.read()
     with open(os.path.join(WEB, "nq-now.js"), encoding="utf-8") as fh:
         js = fh.read()
     check("e. setup page: one-tap NQ NOW copy (nq-now.js), Home Screen + lock screen steps, the old Olympus widget kept, honest refresh",
-          'data-src="nq-now.js"' in sp and "oneTap('goNq', 'nq-now.js')" in sp and "Lock screen" in sp and "olympus-widget.js" in sp and "5-15 min" in sp, "")
+          'data-src="nq-now.js"' in sp and "Hey Siri, NQ status" in sp and "Why no trade" in sp and "oneTap('goNq', 'nq-now.js')" in sp and "Lock screen" in sp and "olympus-widget.js" in sp and "5-15 min" in sp, "")
     found = re.findall(r"[\w.+-]+@[\w-]+\.[\w.]+|MFFU[A-Z]{3,}\w*\d{3,}|\bAPEX-\d+", js + sp)
     check("e. no email / broker account id in the widget files", not found, found)
     check("e. read only: no POST, no key, no Authorization; BLITZ hidden; OLYMPUS NIGHT colours (no cyan)",
@@ -140,6 +167,7 @@ def part_e():
 def main():
     part_a_c()
     part_d()
+    part_f()
     part_e()
     bad = RES.count(False)
     print(f"\n{len(RES) - bad}/{len(RES)} passed", flush=True)

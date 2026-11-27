@@ -1,6 +1,7 @@
 // Node harness for tools/web_public/widget/nq-now.js (tests/test_nq_now.py).
 //   node tests/nq_now_harness.cjs pure <post.json|-> <ports.json|-> <now>                 -> JSON: the model + words for that post
 //   node tests/nq_now_harness.cjs draw <post.json|-> <ports.json|-> <now> <family> [cache.json] -> JSON: every text drawn, url, refresh
+//   family 'siri:<script name>' = run by Siri under that name ('NQ status' / 'Why no trade'): spoken + Shortcuts output
 // "draw" runs the whole script in a fake Scriptable (ListWidget, Request, Color, Font, FileManager ...) with the clock fixed at <now>.
 'use strict';
 const fs = require('fs');
@@ -21,7 +22,9 @@ if (mode === 'pure') {
   process.stdout.write(JSON.stringify({ m, status: W.statusLine(m), junk: W.parseLite('{"message":"{bad"}\n[]\n'),
     usd: [W.usd(-807.2), W.usd(1500, true), W.usd(0, true), W.usd(null)], span: [W.span(600), W.span(7500), W.span(3 * 86400 + 4000)] }));
 } else if (mode === 'draw') {
-  const texts = [], urls = [];
+  const texts = [], urls = [], spoken = [];
+  const siri = String(fam || '').startsWith('siri:') ? fam.slice(5) : null;
+  let output = null;
   let widget = null, presented = null;
   const files = {};
   if (cacheP && cacheP !== '-') files['/docs/nq-now-cache.json'] = fs.readFileSync(cacheP, 'utf8');
@@ -52,12 +55,13 @@ if (mode === 'pure') {
     LinearGradient: class {}, Point: class { constructor(x, y) { this.x = x; this.y = y; } },
     FileManager: { local: () => ({ documentsDirectory: () => '/docs', joinPath: (a, b) => a + '/' + b, fileExists: (p) => p in files,
       readString: (p) => files[p], writeString: (p, s) => { files[p] = s; } }) },
-    Script: { setWidget: (w) => { widget = w; }, complete: () => {
+    Speech: { speak: (t) => { spoken.push(String(t)); } },
+    Script: { name: () => siri || 'NQ NOW', setShortcutOutput: (t) => { output = String(t); }, setWidget: (w) => { widget = w; }, complete: () => {
       const w = widget || null;
-      process.stdout.write(JSON.stringify({ texts, urls, url: w && w.url, presented, cached: '/docs/nq-now-cache.json' in files ? JSON.parse(files['/docs/nq-now-cache.json']) : null,
+      process.stdout.write(JSON.stringify({ spoken, output, texts, urls, url: w && w.url, presented, cached: '/docs/nq-now-cache.json' in files ? JSON.parse(files['/docs/nq-now-cache.json']) : null,
         refresh: w && w.refreshAfterDate ? (w.refreshAfterDate.getTime() - NOW * 1000) / 1000 : null }));
     } },
-    config: { runsInWidget: fam !== 'app', widgetFamily: fam === 'app' ? undefined : fam },
+    config: siri ? { runsInWidget: false, runsWithSiri: true } : { runsInWidget: fam !== 'app', widgetFamily: fam === 'app' ? undefined : fam },
     args: { widgetParameter: null },
     Intl, Date: FixedDate, JSON, Math, Promise, setTimeout, encodeURIComponent,
   };

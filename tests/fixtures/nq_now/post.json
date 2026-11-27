@@ -385,5 +385,47 @@
    ],
    "trimmed": true
   }
+ },
+ "glog": {
+  "lit": [
+   [
+    "21:15",
+    "Swept equal lows 25,765.75 (0.22 ATR deep; \u2717 LIT needs 0.5)"
+   ],
+   [
+    "21:05",
+    "Swept equal lows 25,787.25 (0.09 ATR deep; \u2717 LIT needs 0.5)"
+   ],
+   [
+    "20:15",
+    "Swept equal highs 25,898 (0.15 ATR deep; \u2717 LIT needs 0.5)"
+   ],
+   [
+    "19:55",
+    "Swept equal highs 25,890 (0.10 ATR deep; \u2717 LIT needs 0.5)"
+   ],
+   [
+    "19:40",
+    "Now: Sweep - Before 02:00 ET (no entries yet): Waiting for price to sweep a level by >= 0.5 ATR (= 43.3 pts). Nearest:\u2026"
+   ],
+   [
+    "18:25",
+    "Now: Displacement - Before 02:00 ET (no entries yet): Short setup forming: swept equal highs (3.88 ATR, ok), inducement\u2026"
+   ],
+   [
+    "18:10",
+    "Now: 5m CISD - Before 02:00 ET (no entries yet): 5m CISD already closed through 25,292.00: see the setup card. BLOCKED:\u2026"
+   ],
+   [
+    "18:05",
+    "Now: Inducement - Before 02:00 ET (no entries yet): Swept equal highs by 3.40 ATR (ok), but no inducement swing was tak\u2026"
+   ]
+  ],
+  "atlas": [
+   [
+    "20:25",
+    "MACD: 20:25 MACD-div short: no - fill"
+   ]
+  ]
  }
 }
