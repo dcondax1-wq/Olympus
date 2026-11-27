@@ -10,9 +10,10 @@ and the Rapid EOD 25K (+$304 each, 1 micro), nothing on ATLAS's own funded accou
      "ab"), trade_watch pushes "missed" naming the stuck record
   3. the self-heal (heal_stale): cleared only on two FLAT reads >= 2 min apart, then one log line + one Board event "ATLAS funded:
      cleared a stuck position record", and the same 10:10 open routes 1 MNQ; NEVER cleared when NinjaTrader shows a position, a
-     leg is working, the position file is missing, the entry is under 30 min old, or the adapter is paper
+     leg is working, the position file is missing, the entry is under 30 min old or its day's 15:55 flat has not come, or the
+     adapter is paper
   4. every other silent skip leaves its reason: late (> 45 s), kill switch; a soft reason never overwrites a real one
-  5. trade_watch: B never checked the open while running (no probe, no reason, state saved after it) -> "missed"; PC off -> nothing
+  5. trade_watch: a held "one position" of TODAY's trade is B's rule (no push); B never checked the open while running (no probe, no reason, state saved after it) -> "missed"; PC off -> nothing
 """
 from __future__ import annotations
 
@@ -231,6 +232,8 @@ def part3(tmp):
         never("the paper adapter (it keeps its own book)", Paper())
         never("an entry under 30 min old", NTStub(), now0=TB + 60, setup=lambda Bx: (setattr(Bx, "open_t", TB),
               Bx.prov.__setitem__(TB, {"key": KEY, "short": "S/R", "qty": 1, "dir": 1, "day": "2026-11-27"})))
+        never("a same-day entry before its 15:55 flat (the model's exit books it)", NTStub(), now0=TB + 3600, setup=lambda Bx: (
+              setattr(Bx, "open_t", TB), Bx.prov.__setitem__(TB, {"key": KEY, "short": "S/R", "qty": 1, "dir": 1, "day": "2026-11-27"})))
         _, Bc = make(tmp, NTStub())
         stick(Bc)
         Bc.prov[OLD]["closing"] = {"reason": "NO TRADE", "done": False, "t": OLD + 600}
@@ -275,6 +278,14 @@ def part5(tmp):
     check("5. B never checked the 10:10 open while running (no probe, no reason, saved after it): 'missed'",
           len(f) == 1 and "never checked that open" in f[0]["body"], f)
     check("5. PC off at 10:10 (state last saved before it): nothing", flags(TB - 600, [TB - 300]) == [])
+    root = tempfile.mkdtemp(dir=tmp)
+    keys_file(root)
+    st = {"v": 1, "ledger": [], "seen": [], "saved_at": TB + 900,
+          "held": {str(TB): {"key": None, "why": "one position: EMA Fri 11-27 03:00 ET still open on account B", "code": "open",
+                             "since": TB - 25800}}}
+    json.dump(st, open(os.path.join(root, "data", "live_state_acctb.json"), "w"))
+    check("5. B holds today's 03:00 trade (a real position, 7 h old): its own rule, no push",
+          TW.atlas_flags(root, now=TB + 3600, twin=lambda days, keys: tw) == [])
 
 
 def main():

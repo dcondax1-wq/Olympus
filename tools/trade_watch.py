@@ -219,7 +219,7 @@ def _atlas_flags(root, now, twin):
     for r in ledger:
         if r.get("side") in ("buy", "sell") and r.get("entry_t") is not None:
             entries[int(r["entry_t"])] = r                 # the last row for an open = the one that counts
-    from engine.account_b import STUCK_HOLD_S, _tick, trading_day
+    from engine.account_b import _tick, trading_day
     hk = [int(k) for k in held if str(k).isdigit()]           # day-atlasmiss: a day B only held (never probed: a stuck record) counts too
     days = sorted({trading_day(t) for t in list(probed) + list(entries) + hk if 0 <= now - t <= MAX_AGE_S})[-TWIN_DAYS:]
     keys = _atlas_keys(root, ledger) if days else []
@@ -237,7 +237,7 @@ def _atlas_flags(root, now, twin):
             e = entries.get(tb)
             if e is None:
                 h = held.get(str(tb)) if isinstance(held.get(str(tb)), dict) else None
-                stuck = bool(h and h.get("code") == "open" and h.get("since") and tb - int(h["since"]) > STUCK_HOLD_S)
+                stuck = bool(h and h.get("code") == "open" and h.get("since") and trading_day(int(h["since"])) < trading_day(tb))
                 silent = h is None and tb not in probed and int(st.get("saved_at") or 0) >= tb + 60
                 if not stuck and not silent and (tb not in probed or h is not None):
                     continue                               # PC off / B in a real trade / B's own rule said why

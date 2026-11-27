@@ -104,7 +104,6 @@ MAX_AGE_S = 45                  # a 5m open seen later than this is not probed (
 # (the never-mark-flat-on-unconfirmed rule: a position file missing / not FLAT, or any leg still working = kept).
 STALE_OPEN_S = 1800
 STALE_CONFIRM_S = 120
-STUCK_HOLD_S = 4 * 3600         # a "one position" hold whose position is older than this reads as stuck (tools/trade_watch.py)
 MIN_ROOM = 100.0
 ZOMBIE_ON = {"eval_min_room": 200.0, "last_bullet": 0.8}      # owner "Fix atlas" 2026-11-15 (atlas-deep.md)
 # ATLAS funded-stage switches (2026-11-20), OFF = None. The lead flips one value after the owner's YES on its Decide card:
@@ -1930,7 +1929,8 @@ class AccountB:
                 self.log("error", f"close settle failed: {e.__class__.__name__}: {e}")
 
     def stale_flat(self, now):
-        """Why B's open position record is provably stale (None = keep it): the entry is older than STALE_OPEN_S, the adapter
+        """Why B's open position record is provably stale (None = keep it): the entry is older than STALE_OPEN_S and past its
+        day's 15:55 flat (a same-day record waits for the model's exit, so its P&L is booked as before), the adapter
         is a broker one (paper keeps its own book: never), NO leg of this account is working (entry sent, pending, protected,
         closing ...) and NinjaTrader's position file of EVERY order contract exists and says FLAT. Anything unclear = None."""
         if self.open_t is None or self.adapter is None:
@@ -1940,8 +1940,9 @@ class AccountB:
                 or not callable(getattr(self.adapter, "_instruments", None)):
             return None
         et_ = int(self.open_t)
-        if int(now) - et_ < STALE_OPEN_S:
-            return None
+        pv = self.prov.get(et_) or {}
+        if int(now) - et_ < STALE_OPEN_S or not self._past_flat({"day": pv.get("day") or trading_day(et_)}, now):
+            return None                               # its own day still runs: the model's exit / the 15:55 flat books it
         from .ninjatrader import OPEN_STATUSES
         if any(isinstance(lg, dict) and lg.get("status") in OPEN_STATUSES for lg in legs):
             return None
