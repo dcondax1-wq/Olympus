@@ -57,6 +57,18 @@ def et_day(t: float) -> str:
     return dt.datetime.fromtimestamp(t, ET).strftime("%Y-%m-%d")
 
 
+def nt_dir() -> str | None:
+    """Documents\\NinjaTrader 8 (engine/tickrec.nt_dir's rule, copied: nothing may import engine.tickrec, test_tickrec)."""
+    o = os.environ.get("OLYMPUS_NT_DIR")
+    if o:
+        return o
+    home = os.path.expanduser("~")
+    for p in (os.path.join(home, "Documents", "NinjaTrader 8"), os.path.join(home, "OneDrive", "Documents", "NinjaTrader 8")):
+        if os.path.isdir(p):
+            return p
+    return None
+
+
 def tick_file(day: str, nd: str | None) -> str | None:
     if not nd:
         return None
@@ -209,8 +221,7 @@ def build(nd: str | None = None, out_dir: str = OUT_DIR, now: float | None = Non
     now = time.time() if now is None else now
     day = et_day(now)
     if nd is None:
-        from engine import tickrec
-        nd = tickrec.nt_dir()
+        nd = nt_dir()
     path = tick_file(day, nd)
     os.makedirs(out_dir, exist_ok=True)
     sp, fpp = os.path.join(out_dir, "state.json"), os.path.join(out_dir, "fp.json")
