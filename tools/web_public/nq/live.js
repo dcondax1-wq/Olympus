@@ -87,7 +87,7 @@ function drawTrade(M) {
   side.append(el('span', O.side === 'LONG' ? 'long' : 'short', O.side), document.createTextNode(`\u00a0 ${O.qty || '?'} MNQ · ${O.botName}`));
   $('tradeWho').textContent = `${O.accounts.map((a) => a.name + (a.qty ? ` (${a.qty})` : '')).join(' · ')}${O.others ? ` · +${O.others} other open` : ''} · in for ${L.dur(O.inFor)}`;
   const u = $('tradeUsd'); u.textContent = O.usd === null ? '-' : L.usd(O.usd, true); u.className = signCls(O.usd);
-  $('tradeR').textContent = O.r === null ? '' : `${L.rTxt(O.r)} · ${O.pts === null ? '' : (O.pts >= 0 ? '+' : '-') + L.ptsTxt(O.pts)}`;
+  $('tradeR').textContent = O.r === null ? '' : `${L.rTxt(O.r)} · ${O.pts === null ? '' : ((O.pts >= 0 ? '+' : '-') + L.ptsTxt(O.pts)).replace(/ /g, '\u00a0')}`;   // "+18 pts" never splits
   const g = $('tradeGrid'); g.textContent = '';
   const cell = (k, v, cls) => { const d = el('div'); d.append(el('dt', null, k), el('dd', cls || null, v)); g.appendChild(d); };
   cell('Entry', L.pxTxt(O.entry));

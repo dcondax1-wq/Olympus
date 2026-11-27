@@ -68,7 +68,7 @@ def part_a():
           "prefers-reduced-motion: reduce" in f["live.css"] and "animation: none !important" in f["live.css"])
     check("a. still read only: no innerHTML / storage / POST; versions bumped (live.js / live.css / livecore v2)",
           not re.search(r"innerHTML|insertAdjacentHTML|localStorage|sessionStorage|method:\s*['\"]POST|sendBeacon", f["live.js"] + f["livecore.js"])
-          and "live.js?v=3" in f["live.html"] and "nqfeed.js?v=1" in f["live.html"] and "live.css?v=2" in f["live.html"] and "livecore.js?v=2" in f["live.js"])
+          and "live.js?v=4" in f["live.html"] and "nqfeed.js?v=1" in f["live.html"] and "live.css?v=3" in f["live.html"] and "livecore.js?v=2" in f["live.js"])
 
 
 # ------------------------------------------------------------------------------------------------ b. node
@@ -150,6 +150,7 @@ const TAPS = `(${C.taps})()`, SIDE = `(${C.side})()`;
       opensHidden: document.getElementById('opens') ? document.getElementById('opens').hidden : null,
       jr: [...document.querySelectorAll('#jr li')].map((e) => e.textContent), streak: [...document.querySelectorAll('.lv-sk b')].map((e) => e.textContent),
       pins: document.querySelectorAll('#tl circle').length, tlText: [...document.querySelectorAll('#tl text')].map((e) => e.textContent),
+      wide: [...document.querySelectorAll('#app *')].filter((e) => e.offsetParent && e.getBoundingClientRect().right > innerWidth + 0.5).map((e) => e.className + ':' + Math.round(e.getBoundingClientRect().right)),
       fresh: document.querySelectorAll('.lv-new').length, flat: !document.getElementById('flat').hidden,
       anim: document.querySelector('.lv-prog .now') ? getComputedStyle(document.querySelector('.lv-prog .now')).animationName : null,
       txt: document.getElementById('app').textContent }));
@@ -237,6 +238,9 @@ def part_c():
         nd = NL.ndjson
         runs = shots_runs("after", shots)
         runs.append({"name": "pulse", "feed": nd(journal_post(), NL.bars_post()), "feed2": nd(journal_post(t=NL.T + 60, extra_closed=True)), "w": 390, "h": 844})
+        runs.append({"name": "real-390", "feed": nd(NL.retime(NL.real(), NL.T)), "w": 390, "h": 844})
+        runs.append({"name": "trade-360", "feed": nd(journal_post(), NL.bars_post()), "w": 360, "h": 780})
+        runs.append({"name": "old-390", "feed": nd(journal_post(t=NL.T - 2 * 86400 - 3 * 3600 - 7 * 60)), "w": 390, "h": 844})   # long age words in every chip
         runs.append({"name": "reduced", "feed": nd(journal_post(), NL.bars_post()), "w": 390, "h": 844, "reduced": True})
         out = browser_run(origin, runs)
     finally:
@@ -262,6 +266,7 @@ def part_c():
     check("c. first paint: nothing pulses; the next poll brings a closed trade -> its journal row pulses once (.lv-new), the cards are gone",
           P["fresh"] == 0 and P["after"]["fresh"] >= 1 and "+$654" in P["after"]["jr"][0] and P["after"]["opensHidden"] is True, (P["fresh"], P["after"]["fresh"], P["after"]["jr"][:1]))
     for name, o in out.items():
+        check(f"c. {name}: every chip / card inside the screen (no zoom-out on a phone)", not o["wide"], o["wide"][:5])
         check(f"c. {name}: taps >= 44 px, no sideways scroll, nothing off the site, no console error",
               not o["taps"] and o["side"] and not o["off"] and not o["errs"], (o["taps"][:4], o["off"][:3], o["errs"][:3]))
 

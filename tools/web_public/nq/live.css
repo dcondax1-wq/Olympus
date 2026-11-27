@@ -177,3 +177,10 @@ main[data-live="1"] .lv-dot { background: var(--mint); box-shadow: 0 0 12px var(
 
 @media (max-width: 340px) { .lv-accts { grid-template-columns: 1fr; } .lv-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; } }
+/* phone fit (nav helper 2026-11-27: chips overflowed 9-15 px at 390): rows wrap, chips shrink + ellipsis, flex children may shrink */
+.lv-trow, .lv-af, .lv-ofoot, .lv-meta { flex-wrap: wrap; min-width: 0; }
+.lv-trow > *, .lv-af > *, .lv-ofoot > *, .lv-meta > *, .lv-top > * { min-width: 0; }
+.lv-chip, .lv-pc { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.lv-chip { display: inline-block; line-height: 20px; }
+.lv-chip::before { display: inline-block; margin-right: 6px; vertical-align: 0; }
+.lv-af .lv-chip { line-height: 18px; }
