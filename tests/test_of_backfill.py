@@ -367,8 +367,31 @@ def safety_checks():
     check("i. no live-loop file imports the backfill", users == "", users)
 
 
+def real_checks(td):
+    """5 REAL tick-summary days from branch of-days (market data only; skipped when this clone does not have it)."""
+    from engine import ofpack
+    r = subprocess.run(["git", "archive", "origin/of-days", "research/orderflow/real_days"], cwd=ROOT, capture_output=True)
+    if r.returncode != 0:
+        print("[SKIP] j. real days: branch of-days not fetched here")
+        return
+    import io
+    import tarfile
+    files = {}
+    with tarfile.open(fileobj=io.BytesIO(r.stdout)) as tf:
+        for m in tf.getmembers():
+            parts = m.name.split("/")
+            if m.isfile() and len(parts) >= 5 and parts[-1] != "manifest.json" and parts[3] < "2026-10-04":
+                files[f"days/{parts[3]}/of/{parts[-1]}"] = tf.extractfile(m).read()
+    blob = ofpack.pack(files)
+    back = ofpack.contents(blob)
+    gz = sum(len(b) for b in files.values())
+    check("j. REAL days (of-days): lossless and <= 0.5 of gzip", files and all(back[p] == (gzip.decompress(b) if p.endswith(".gz") else b)
+                                                                     for p, b in files.items()) and len(blob) <= 0.5 * gz, (len(blob), gz))
+
+
 def main():
     with tempfile.TemporaryDirectory() as td:
+        real_checks(td)
         pack_checks(td)
         bitmap_checks()
         budget_checks()
