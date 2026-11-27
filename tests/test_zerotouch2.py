@@ -232,6 +232,13 @@ def test_checklist(tmp):
            "nt_conn": True, "nt_auto": None, "clk": [1, 0.3]}
     b = CK.block(loc, glance=GLANCE, blitz={"off": True}, tr={"on": True, "d": 12, "of": 60}, sh={}, nt_running=True, server=True, running=True)
     check("c. all green: need = None (nothing at the PC)", b.get("need") is None and b["srv"] == 1 and b["nt"] == [1, 1, None], b)
+    # day-healthqa 2026-11-27: 'Connect on startup' OFF (nt[2] == 0) is the LAST item: shown only when nothing else is open; None stays quiet
+    na = CK.need({"srv": 1, "nt": [1, 1, 0], "acc": [["Zlarior 50K", 1, 1, 1]], "pl": [["LIT", "run", ""]]})
+    check("c. Connect on startup OFF (and nothing else): need = nt_auto with the click path", (na or {}).get("k") == "nt_auto" and "Connect on startup" in na["t"], na)
+    nb = CK.need({"srv": 1, "nt": [1, 1, 0], "acc": [["Zlarior 50K", 1, 1, 0]], "pl": [["LIT", "run", ""]]})
+    check("c. a keep-alive that is OFF still comes first (Connect on startup is the last item)", (nb or {}).get("k") == "keepalive", nb)
+    nc = CK.need({"srv": 1, "nt": [1, 1, None], "acc": [["Zlarior 50K", 1, 1, 1]], "pl": [["LIT", "run", ""]]})
+    check("c. Connect on startup unknown (None): nothing", nc is None, nc)
     check("c. one line per pillar: LIT, ATLAS, BLITZ, Order Flow", CK.pillar_lines(b) == [
         "LIT: running, armed (LIVE)", "ATLAS: running, armed", "BLITZ: off (hidden, paper only)", "Order Flow: recording ticks: 12 of 60 study days"],
         CK.pillar_lines(b))
