@@ -286,6 +286,39 @@ def compact(root: str = ROOT) -> dict | None:
 # ------------------------------------------------------------------------------------------------ the runner
 def loop(root: str = ROOT, clock=time.time, sleep=time.sleep, max_runs: int | None = None) -> int:
     """Every 30 s until 16:10 ET (or the stop flag, off, kill with nothing open). Heartbeat in data/blitz_paper_run.json."""
+    lk = run_lock(root)
+    if lk is None:                                     # red team #40: a 2nd runner (a slow run let the 2-min heartbeat age) exits at once,
+        return 0                                       # writing nothing (not the 1st one's heartbeat, state or trade log)
+    try:
+        return _loop(root, clock, sleep, max_runs)
+    finally:
+        lk.close()                                     # the OS lock goes with the handle (and with the process if it dies)
+
+
+RUN_LOCK = "run.lock"
+
+
+def run_lock(root: str = ROOT):
+    """ONE BLITZ paper runner per repo: an OS lock on data/blitz_paper/run.lock held for the runner's life (freed by the OS on a crash,
+    never stale; the same pattern as engine/of_lane.run_lock). The open handle, or None when another runner holds it."""
+    d = _d(root)
+    os.makedirs(d, exist_ok=True)
+    fh = open(os.path.join(d, RUN_LOCK), "a+")
+    try:
+        if os.name == "nt":
+            import msvcrt
+            fh.seek(0)
+            msvcrt.locking(fh.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(fh.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        fh.close()
+        return None
+    return fh
+
+
+def _loop(root, clock, sleep, max_runs) -> int:
     runs = 0
     while True:
         now = int(clock())
