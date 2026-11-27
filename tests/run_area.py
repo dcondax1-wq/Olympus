@@ -431,6 +431,8 @@ AREAS["pc"].append("of_paper")            # day-oflearn 2026-11-26: the Order Fl
 AREAS["pc"].append("of_paper_rt")   # red team 2026-11-26: the paper child BELOW_NORMAL
 AREAS["pc"].append("of_paper_e5")   # night-of-paperv2 2026-11-27: the E5 second fill (DESIGN_paper_v2.md)
 AREAS["pc"].append("of_lane")             # night-of-lane 2026-11-27: the order-flow LANE on Sim101, OFF (engine/of_lane.py; fake NinjaTrader, ~6 min)
+AREAS["pc"].append("livefp")             # day-livefp 2026-11-27: GET /api/live/footprint (private), the BELOW_NORMAL builder
+AREAS["pc"].append("livefp_rt")          # red team #44: replaced file restarts, a stuck child is killed, data/livefp/ ignored
 AREAS["pc"].append("of_lane_ready")       # night-of-lane-ready 2026-11-27: /oflane Telegram, the 09:20 runner, Sim102 -> Sim101 fallback, the card (fake TG / NT, ~5 s)
 AREAS["pc"].append("blitz_paper")          # day-blitzready 2026-11-27: the BLITZ paper lane (never an order), paper = backtest, the kick, p4 BLITZ = paper (~30 s)
 AREAS["pc"].append("blitz_paper_rt")   # red team #40: one BLITZ paper runner (OS lock), nothing that can trade is imported

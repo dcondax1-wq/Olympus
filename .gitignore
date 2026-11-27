@@ -412,3 +412,5 @@ data/blitz_paper_start.json
 data/blitz_paper_stop
 data/blitz_paper_kill
 data/blitz_paper_off
+# red team #44 (day-livefp): the live footprint's state + strip (rebuilt on the PC)
+data/livefp/
