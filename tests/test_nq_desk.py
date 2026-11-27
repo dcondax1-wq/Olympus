@@ -181,6 +181,9 @@ def test_core():
     try:
         m = os.path.join(tmp, "nqdesk.mjs")
         shutil.copy(MOD, m)
+        shutil.copy(os.path.join(WEB, "nq", "goals_model.js"), os.path.join(tmp, "goals_model.js"))   # nqdesk imports the ONE goals model
+        with open(os.path.join(tmp, "package.json"), "w", encoding="utf-8") as fh:
+            fh.write('{"type": "module"}')
         h = os.path.join(tmp, "h.cjs")
         with open(h, "w", encoding="utf-8") as fh:
             fh.write(HARNESS)
@@ -267,9 +270,10 @@ def test_core():
     check("e. junk input never throws", all(isinstance(j, list) for j in o["junk"]), o["junk"])
     h = o["hero"]
     check("hero: today = the sum of the accounts with numbers (-$50 + $0 + $0 + $100 = +$50, the 25K #2 stale one counted), its tone, the worst age wins (the 3-h-old 25K -> red); "
-          "rings from the goals (Zlarior 25%, ATLAS 40%), none for an account without a goal; no BLITZ anywhere",
+          "rings + $ to go from the ONE goals model (goals_model.js: Zlarior below its start = 0% / $3,807, ATLAS funded at MFFU -$113 = $2,213 to $2,100, the 50K #3 +$100 = 3%); no BLITZ anywhere",
           h["today"] == 50 and h["todayText"] == "+$50" and h["tone"] == "up" and h["level"] == "bad" and h["nAcc"] == 4
-          and ["zlarior", 0.25, "$3,807", 1025] in h["accts"] and ["atlas", 0.4, "$1,213", 887] in h["accts"] and not h["blitz"] and h["honest"] == "", h)
+          and ["zlarior", 0, "$3,807", 1025] in h["accts"] and ["atlas", 0, "$2,213", 887] in h["accts"] and ["xtra9", 0.033, "$2,900", 2000] in [[a[0], round(a[1], 3) if a[1] is not None else None, a[2], a[3]] for a in h["accts"]]
+          and not h["blitz"] and h["honest"] == "", h)
     check("hero: LIT / ATLAS in one word: the chart's open ATLAS short = IN TRADE (hot); Zlarior traded today = DONE TODAY; Fri 10:30 ET = NY morning, next = last new entries 15:30 in 5 h",
           h["bots"] == [["lit", "DONE TODAY", "up"], ["atlas", "IN TRADE", "hot"]] and h["phase"] == "nyam" and h["next"] == "Last new entries 15:30 in 5 h 0 min", h)
     check("hero: no report = no $, a red age, the honest line, both bots NO REPORT; the DEMO says example numbers",

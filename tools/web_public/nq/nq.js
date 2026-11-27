@@ -5,7 +5,8 @@
 // ?demo=1 the example; ?demo=1&silent=4d (or 90m, 5h) the example with a silent PC; ?flat=1 the 2D columns; ?howto=1 opens the sheet.
 import * as C from './nqcore.js?v=d6';   // d6 (night-seedata): today's $ in the first line; d1 (polish2 2026-11-19): the CME trading day
 import * as T from '../olympus/truth.js';
-import * as D from './nqdesk.js?v=10';
+import * as D from './nqdesk.js?v=11';
+import * as GM from './goals_model.js?v=1';             // night-nq-main: ONE goals model (QA #4)
 import { unpack as unpackBars } from './nqbars.js?v=b1';     // nqdash3: the accounts strip, the bots' thinking, the quality checks
 import * as G from './nqgoals.js?v=10';
 import * as K7 from './clock7.js?v=2';                          // day-nqops: the MFFU 7-day clock card + window.NQ_K7 for Jarvis                       // v4: the goals strip, the numbers card, the bursts
@@ -362,7 +363,7 @@ function drawVault(g) {
   $('vaultCard').hidden = false;
   const label = `${G.usd(g.balance)} of ${G.usd(g.goalAt)}`;
   if (pill) { pill.textContent = g.left <= 0 ? 'READY' : `${Math.round(g.frac * 100)}%`; pill.className = 'pill ' + (g.left <= 0 ? 'ok' : 'warn'); }
-  if (note) note.textContent = `MFFU shows ${G.usd(g.balance)} of profit. Goal: ask $1,000 at ${G.usd(g.goalAt)} ($800 to you), ${G.usd(g.left)} to go. ${g.when}.`;
+  if (note) note.textContent = GM.goal({ name: g.name, key: g.key, stage: 'Funded', balance: g.balance }).line;   // QA #4: the one goals model; no hard-coded date
   V4.vaultArgs = [g.frac, label];
   if (V4.vault) { try { V4.vault.call('set', g.frac, label); } catch (_) { /* the note says it */ } return; }
   // perf (sweep 2026-11-20: the kit's 3D vault pulled three.js in on load: a 1.7 s long task at 4x CPU): the kit and its vault only when the card

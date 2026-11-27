@@ -10,6 +10,7 @@
 // engine/brain_glance, live.reporter), ./news_week.json, ../trading/trades.json. A field that is not there says so; nothing is made up. BLITZ never shows.
 // Read only: it sends nothing. Node-tested (tests/test_nq_desk.py).
 
+import * as GM from './goals_model.js?v=1';   // night-nq-main: ONE goals model (to pass / to payout, the owner rule)
 export const FRESH_S = 20 * 60;          // the PC posts every 15 minutes: older than 20 = stale (pc_feed.js FRESH_S)
 export const BEAT_STALE_S = 15 * 60;      // the bot beats every 5 minutes (tools/pc_report.py HB_STALE_S)
 const isObj = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
@@ -537,7 +538,7 @@ export function botState(b) {
   return { word: 'WATCHING', tone: 'calm', line: (b.before && b.before.waiting) || 'Waiting for its setup.' };
 }
 export function hero(accts, goalList, bots, home, nowS, demo) {
-  const A = arr(accts).filter((a) => isObj(a) && a.dot !== 'plan'), G = arr(goalList).filter(isObj), fa = feedAge(home, nowS);
+  const A = arr(accts).filter((a) => isObj(a) && a.dot !== 'plan'), fa = feedAge(home, nowS);   // goalList: kept for callers, unused (goals_model.js)
   const withNum = A.filter((a) => a.has && num(a.today) !== null);
   const today = withNum.length ? withNum.reduce((s, a) => s + num(a.today), 0) : null;
   const ages = A.filter((a) => a.has && num(a.ageS) !== null).map((a) => a.ageS);
@@ -545,10 +546,9 @@ export function hero(accts, goalList, bots, home, nowS, demo) {
   const level = demo ? 'warn' : age === null ? 'bad' : ageLevel(age, 'pc');
   const ph = phase(nowS), nx = nextUp(nowS);
   const acc = A.map((a) => {
-    const g = G.find((x) => x.key === a.key) || null;
+    const g = GM.goal({ key: a.key, name: a.name, plan: a.plan, stage: a.stage, balance: a.balance });   // the one goals model (QA #4)
     return { key: a.key, name: a.name, stage: a.stage, has: a.has, dot: a.dot, ageText: a.ageText, today: num(a.today), room: num(a.room), mll: num(a.mll),
-      roomFrac: a.roomFrac, frac: g && g.has !== false ? Math.max(0, Math.min(1, num(g.frac) || 0)) : null,
-      goalBig: g ? g.big : a.goalText, goalUnit: g ? g.unit : a.goalLabel.toLowerCase(), goalKind: g ? g.kind : (a.stage === 'Funded' ? 'payout' : 'pass'),
+      roomFrac: a.roomFrac, frac: g.has ? g.frac : null, goalBig: g.big, goalUnit: g.unit, goalKind: g.kind, goalLine: g.line,
       open: a.open ? { side: a.open.side, now: num(a.open.now) } : null };
   });
   return {
@@ -603,6 +603,7 @@ function drawHero(box, H) {
       }
       t.dataset.key = a.key; t.tabIndex = 0;
       t.setAttribute('aria-label', `${a.name}: ${a.has ? `${a.goalBig} ${a.goalUnit}, ${money(a.room)} room left, today ${money(a.today, true)}` : 'no PC numbers yet'}; ${a.ageText}`);
+      if (a.goalLine) t.title = a.goalLine;
       const top = el('div', 'hx-acc-top');
       const d = el('i', 'dk-dot ' + a.dot); d.title = DOT[a.dot] || ''; top.appendChild(d);
       top.appendChild(el('b', 'hx-acc-nm', a.name)); top.appendChild(el('span', 'hx-acc-st', a.stage));
