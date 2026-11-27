@@ -41,7 +41,7 @@
 <link rel="stylesheet" href="nqdesk.css?v=13">
 <link rel="stylesheet" href="nqhero.css?v=10">
 <link rel="stylesheet" href="plan.css?v=4" media="print" onload="this.media='all'"><link rel="stylesheet" href="december.css?v=1" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="nqgoals.css?v=9" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="nqgoals.css?v=10" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="nqtheme.css?v=11">
 <link rel="stylesheet" href="sun.css?v=2" id="sunCss" media="(prefers-contrast: more)"><!-- SUNLIGHT MODE: off = not render-blocking; on (saved, or prefers-contrast: more) = applied before the first paint -->
 <script>(function () { var d = document.documentElement, v = null; try { v = localStorage.getItem('nq.sun'); } catch (e) { /* private mode */ }
@@ -54,7 +54,7 @@
 <main id="app">
   <header class="top">
     <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">NQ</h1><p class="sub">Are the bots on, and how much $ each account can still lose before it fails.</p></div></div>
-    <div class="tags"><a class="btn primary brainlink" href="live.html">Live</a><a class="btn brainlink" href="../warroom/" aria-label="Open the War Room: every bot, every step, live">War Room</a><a class="btn brainlink" href="../brain/" aria-label="Open the Brain: one living 3D brain of every bot">3D Brain</a><a class="btn brainlink" href="../pillars/" aria-label="Open the four pillars: LIT, ATLAS, BLITZ, ORDER FLOW">Pillars</a><a class="btn brainlink" href="accounts.html" aria-label="Open every account on one screen">Accounts</a><a class="btn brainlink" href="brain.html" aria-label="Open the bots' brains">Brain</a><span id="demo" class="tag demo" hidden>DEMO</span><span id="lite" class="tag" hidden>LITE</span></div>
+    <div class="tags"><a class="btn primary brainlink" href="live.html">Live</a><a class="btn brainlink" href="../warroom/" aria-label="Open the War Room: every bot, every step, live">War Room</a><a class="btn brainlink" href="../brain/" aria-label="Open the Brain: one living 3D brain of every bot">3D Brain</a><a class="btn brainlink" href="../pillars/" aria-label="Open the four pillars: LIT, ATLAS, BLITZ, ORDER FLOW">Pillars</a><a class="btn brainlink" href="accounts.html" aria-label="Open every account on one screen">Accounts</a><a class="btn brainlink" href="orderflow.html" aria-label="Open the Order Flow room: levels, absorption reads, paper trades">Order Flow</a><a class="btn brainlink" href="replay.html" aria-label="Replay any recent trading day with the bots' decisions">Replay</a><a class="btn brainlink" href="pchealth.html" aria-label="Open PC health: every check in one plain sentence">PC health</a><a class="btn brainlink" href="brain.html" aria-label="Open the bots' brains">Brain</a><span id="demo" class="tag demo" hidden>DEMO</span><span id="lite" class="tag" hidden>LITE</span></div>
   </header>
   <!-- night-nq-main 2026-11-27: the hero (nqdesk.js hero / drawHero / heroScene; nqhero.css) -->
   <section class="hx" id="hero" aria-labelledby="hxTitle" data-tone="none">
@@ -249,7 +249,7 @@
 </section>
 <script src="../nqdeep.js?v=1" defer></script>
 <script type="module" src="nq.js?v=r43"></script>
-<script type="module" src="nqchart.js?v=c9"></script>
+<script type="module" src="nqchart.js?v=d1"></script>
 <!-- QA round 6: the 3D loads after the first paint, and not at all on LITE (olympus/lazy3d.js) -->
 <script src="../olympus/lazy3d.js?v=l2" data-src="nqscene.js?v=q7" data-near="#sceneCard" data-skip="lite" data-event="nq3d" defer></script>
 <script src="../olympus/lazy3d.js?v=l2" data-src="nqland.js?v=4" data-near="#landCard" data-skip="lite" data-event="nqland" defer></script>
