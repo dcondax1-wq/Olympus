@@ -196,7 +196,7 @@ def t_bus(tmp):
         fake.calls.clear()
         r = AB.deliver({"kind": "entry", "key": "fill:13:acctc", "account": "BLITZ paper", "side": "LONG"}, **kw)
         r2 = AB.deliver({"kind": "exit", "key": "out:14", "account": "Sim101", "usd": 5}, **kw)
-        check("Paper / Sim / BLITZ never on Telegram (the money channel)", not fake.calls and "skipped" in str(r["receipts"]) and "skipped" in str(r2["receipts"]),
+        check("Paper / Sim / BLITZ never on Telegram (the money channel)", not fake.calls and "skipped" in str(r.get("held")) and "skipped" in str(r2.get("held")),
               (fake.ops(), r, r2))
 
         fake.calls.clear()

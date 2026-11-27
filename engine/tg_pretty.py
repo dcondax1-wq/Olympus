@@ -96,9 +96,24 @@ def is_paper(ev: dict) -> bool:
         web = ev.get("web") if isinstance(ev.get("web"), dict) else {}
         words = " ".join(str(x or "") for x in (ev.get("account"), web.get("account"), web.get("strategy"), ev.get("key"),
                                                 web.get("key"))).lower()
-        return any(w in words for w in PAPER_WORDS)
+        return _paper_words(words)
     except Exception:
         return False
+
+
+_FUNDED = re.compile(r"sim[\s_-]*funded")
+_NT_SIM = re.compile(r"^(sim|playback)\d+$")
+
+
+def _paper_words(words: str) -> bool:
+    """red team #39: whole words only. Before, a substring match made an MFFU 'Sim Funded' account (the real payout accounts:
+    'Builder 25K SIM FUNDED', the preset 'builder_25k_sim_funded') or a name like 'Simon' count as paper, and its entry / exit
+    alerts vanished. 'Sim funded' is never paper; NinjaTrader's own Sim101 / Playback101 accounts are."""
+    w = _FUNDED.sub(" ", str(words or "").lower())
+    if re.search(r"(?<![a-z0-9])acct_?c(?![a-z0-9])", w):
+        return True
+    toks = [t for t in re.split(r"[^a-z0-9]+", w) if t]
+    return any(t in PAPER_WORDS or _NT_SIM.match(t) for t in toks)
 
 
 # ------------------------------------------------------------------------------------------------ one message per kind

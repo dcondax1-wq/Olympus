@@ -557,6 +557,7 @@ def channels(cfg: dict) -> list:
     return out
 
 
+HELD = ("telegram:skipped", "telegram:later")   # red team #39: _one's "not sent on purpose" answers (not a receipt)
 PHOTO_TIMEOUT_S = 45                  # day-tgpretty: the chart thread gives up after this (the text already went)
 PRETTY_OFF = "LE_TG_PRETTY"           # =0: the old long Telegram text (title + body), exactly
 
@@ -713,9 +714,14 @@ def deliver(ev: dict, cfg: dict | None = None, path=None, log_path=None, now=Non
             for ch in order:
                 if len(res["receipts"]) >= need:
                     break
-                if ch in res["receipts"]:
+                if ch in res["receipts"] or ch in res.get("held", {}):
                     continue
                 rid, why = _one(ch, cfg, ev, title, body, silent)
+                if rid and str(rid).startswith(HELD):
+                    # red team #39: a Telegram skip (paper) / hold (rate limit) is no delivery: the other channels still get it
+                    res.setdefault("held", {})[ch] = rid
+                    res["failed"].pop(ch, None)
+                    continue
                 if rid:
                     res["receipts"][ch] = rid
                     res["failed"].pop(ch, None)
@@ -725,7 +731,9 @@ def deliver(ev: dict, cfg: dict | None = None, path=None, log_path=None, now=Non
                 break
             if res["receipts"] and not dual:
                 break
-        res["ok"] = bool(res["receipts"])
+            if all(c in res["receipts"] or c in res.get("held", {}) for c in order):
+                break                                      # nothing left to try (a held Telegram is not retried)
+        res["ok"] = bool(res["receipts"]) or bool(res.get("held") and not res["failed"])
         for ch, why in res["failed"].items():
             log_fail({"key": res["key"], "kind": ev.get("kind"), "channel": ch, "why": why, "tries": res["tries"]}, cfg, log_path)
         if not res["ok"]:
