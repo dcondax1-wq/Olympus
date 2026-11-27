@@ -431,6 +431,7 @@ AREAS["pc"].append("of_lane")             # night-of-lane 2026-11-27: the order-
 AREAS["pc"].append("of_lane_ready")       # night-of-lane-ready 2026-11-27: /oflane Telegram, the 09:20 runner, Sim102 -> Sim101 fallback, the card (fake TG / NT, ~5 s)
 AREAS["pc"].append("of_lane_ready_rt")    # red team #34 2026-11-27: one runner (OS lock), no start from 16:00, never a real account, /oflane owner-only, Sim101 only when free (~10 s)
 AREAS["pc"].append("of_monfix")           # night-of-monfix 2026-11-27: lane A prior day = last RTH file; Sunday evening joins the overnight
+AREAS["pc"].append("of_daycap")            # night-of-daycap 2026-11-27: the lane's max_per_day entry cap (default 1 = the tested first-of-day book; ~4 min)
 AREAS["pc"].append("payout_engine")       # big-payout 2026-11-26: read-only payout planner, /today, the Money tile
 AREAS["pc"].append("today_merge_rt")   # red team 2026-11-26: one /today (guard2 + big-payout), key line last
 AREAS["pc"].append("ofreal")              # big-ofreal 2026-11-26: tools/of_realday_verdict.py + tools/build_of_room.py (sim pulled days, ~1 min)

@@ -306,13 +306,26 @@ def card(doc):
                               if money else "The pre-set gate passed on new days and Sim101 costs nothing."), "answered": None}
 
 
+def lane_day_cap(lane) -> int:
+    """data/of_lane.json max_per_day read the way engine.of_lane.day_cap reads it (kept in step by tests.test_of_daycap):
+    a whole number >= 1; missing / unreadable / below 1 = 1."""
+    v = lane.get("max_per_day", 1) if isinstance(lane, dict) else 1
+    try:
+        if isinstance(v, bool):
+            return 1
+        n = int(v)
+        return n if n >= 1 and float(v) == n else 1
+    except (TypeError, ValueError):
+        return 1
+
+
 def run(out=None, card_path=None, say=print, today=None):
     out, card_path = out or OUT, card_path or CARD
     rows, src = forward_rows()
     sim = _read(SIM_ROWS, []) or []
     prev = _read(out, {}) or {}
     lane = _read(os.path.join(ROOT, "data", "of_lane.json"), {}) or {}
-    capped = isinstance(lane, dict) and str(lane.get("max_per_day", "")) == "1"   # data/of_lane.json max_per_day: 1 = capped
+    capped = lane_day_cap(lane) == 1                  # night-of-daycap: missing key = engine.of_lane's default 1 = capped
     doc = evaluate(rows, sim if isinstance(sim, list) else [], prev, today or dt.date.today().isoformat(), skipped=forward_skipped(),
                    lane_capped=capped)
     doc["sources"] = src

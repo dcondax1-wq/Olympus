@@ -19,6 +19,9 @@ Guards, in order (any one = not routed, logged in plain words; the paper row is 
   late          the decision is acted on only within MAX_LATE_S of the signal bar's close (a stale signal is never chased)
   news          no entry within news_min (2) minutes of a Tier-1 release (engine.guards.news_hit)
   one position  the lane's own open trade, or ANY position NinjaTrader shows on the account's NQ instruments
+  day cap       max_per_day entries a trading day (data/of_lane.json, default 1 = the tested book: the FIRST absorbed signal of
+                the day; night-of-daycap 2026-11-27, later trades lost after the Monday fix). Counted from today's lane trade log
+                (+ the adapter's saved history), never from memory, so a runner restart cannot reset it. Exits are never capped.
   hedge         another account (any account in NinjaTrader's outgoing folder) holds the opposite NQ side (engine.firms)
   size          engine.sizing.second_qty at a fixed $ risk (risk_usd, default $200; 1 micro's stop-out above it = skip)
   firm rules    engine.firms.check with the plan the lane is held to (default the MFFU Builder 50K eval): the soft daily
@@ -61,7 +64,7 @@ ACCOUNT_HOWTO = "Accounts tab > Add Sim account"
 RUN_NAME, STOP_NAME = "of_lane_run.json", "of_lane_stop"   # the loop's heartbeat / the 16:15 stop flag (engine/ops_checks.of_lane_kick)
 FALLBACK = "Sim101"
 DEFAULT_CFG = {"on": False, "account": "Sim102", "auto_account": True, "risk_usd": 200.0, "max_micros": 10, "plan": "mffu_builder_50k",
-               "stage": "eval", "news_min": 2}
+               "stage": "eval", "news_min": 2, "max_per_day": 1}
 E5_WAIT_S = 300             # E5 entry (research/writeups/ofexec-2026-11-27.md, engine/of_paper._fill_e5 on night-of-paperv2):
 E5_RR = 2.0                 # a resting limit AT the swept level for 300 s, cancelled if the stop trades first, else market; 2R from the fill
 MAX_LATE_S = 120            # act on a decision only within 2 min of the signal bar's close
@@ -313,7 +316,7 @@ def other_positions(ad) -> list:
 
 
 # ------------------------------------------------------------------------------------------------ guards
-def entry_guards(S, cfg, ad, row, now, est, killed, news_events=None, skip_late: bool = False) -> tuple[list, int, dict]:
+def entry_guards(S, cfg, ad, row, now, est, killed, news_events=None, skip_late: bool = False, self_entry_t=None) -> tuple[list, int, dict]:
     """(reasons not to route, micros, the firm check) for one taken paper row. Pure reads."""
     from . import cme_calendar as CAL, firms, guards, sizing
     why = []
@@ -347,6 +350,10 @@ def entry_guards(S, cfg, ad, row, now, est, killed, news_events=None, skip_late:
     open_tr = [t for t in S["trades"] if t["status"] in ("sending", "open")]
     if open_tr:
         why.append("the lane already has an open trade")
+    cap = day_cap(cfg)
+    used = day_entries(S, day, ad, exclude=self_entry_t)
+    if used >= cap:
+        why.insert(0, f"skipped: day cap ({used} of {cap} entr{'y' if cap == 1 else 'ies'} today; data/of_lane.json max_per_day)")
     try:
         pos = other_positions(ad)
     except Exception as ex:  # noqa: BLE001
@@ -378,6 +385,45 @@ def entry_guards(S, cfg, ad, row, now, est, killed, news_events=None, skip_late:
         if q < 1:
             why.append("the firm rules leave no size")
     return why, q, fc
+
+
+def day_cap(cfg: dict) -> int:
+    """max_per_day from data/of_lane.json: a whole number >= 1; missing / unreadable / below 1 = 1 (the tested book)."""
+    try:
+        v = cfg.get("max_per_day", 1)
+        if isinstance(v, bool):
+            return 1
+        n = int(v)
+        return n if n >= 1 and float(v) == n else 1
+    except (TypeError, ValueError):
+        return 1
+
+
+ENTRY_STATUSES = ("sending", "open", "fallback", "unknown")   # live / pending / unclear = an entry used (fail closed)
+
+
+def _ekey(entry_t) -> int:
+    return int(entry_t) // 300                     # the signal's 5m slot: a market fallback (entry_t + 1) is the same entry
+
+
+def day_entries(S: dict, day: str, ad=None, exclude=None) -> int:
+    """Entries the lane used on `day`: today's trades that filled, or are still live / pending / unclear (a cancelled limit
+    that never filled is no entry), plus the adapter's saved legs / history that filled that day. exclude = one trade's
+    entry_t (its own market fallback is not a second entry)."""
+    keys = set()
+    for t in S.get("trades") or []:
+        if t.get("day") == day and (t.get("filled") or t.get("status") in ENTRY_STATUSES) and t.get("entry_t") is not None:
+            keys.add(_ekey(t["entry_t"]))
+    for lg in list(getattr(ad, "legs", None) or []) + list(getattr(ad, "history", None) or []):
+        try:
+            et_ = int(lg.get("entry_t") or 0)
+        except (TypeError, ValueError):
+            continue
+        if et_ and OP.et_day(et_) == day and (lg.get("filled") or lg in (getattr(ad, "legs", None) or [])):
+            keys.add(_ekey(et_))
+    if exclude is not None:
+        keys.discard(_ekey(exclude))
+    return len(keys)
 
 
 # ------------------------------------------------------------------------------------------------ one run
@@ -532,7 +578,7 @@ def tick(now: float | None = None, root: str = ROOT, nd: str | None = None, ad=N
         if row is None or last_px is None:
             continue
         est = round(float(last_px) + OP.SLIP * tr["d"], 2)
-        why, q, _fc = entry_guards(S, cfg, ad, row, now, est, killed, news_events, skip_late=True)
+        why, q, _fc = entry_guards(S, cfg, ad, row, now, est, killed, news_events, skip_late=True, self_entry_t=tr["entry_t"])
         risk = (est - float(tr["stop"])) * tr["d"]
         if why:
             tr.update(status="refused", why="market fallback not sent: " + "; ".join(why))
@@ -601,7 +647,8 @@ def status_text(root: str = ROOT) -> str:
     lines = [f"Order-flow lane: {'ON' if cfg['on'] else 'OFF'} | account {cfg['account']}"
              + (" (simulation)" if not bad else " (REFUSED: not a simulation account)"),
              f"Risk ${float(cfg['risk_usd']):,.0f} a trade, max {cfg['max_micros']} micros, held to {cfg['plan']} {cfg['stage']} rules, "
-             f"news blackout {cfg['news_min']} min.",
+             f"news blackout {cfg['news_min']} min, day cap {day_cap(cfg)} entr{'y' if day_cap(cfg) == 1 else 'ies'} a day"
+             + (f" ({day_entries(S, S['day'])} used today)." if S.get("day") else "."),
              f"All lane trades so far: {len(allc)}, {'+' if tot >= 0 else '-'}${abs(tot):,.0f} (simulation money)."]
     if S.get("day"):
         lines.append(line(S, cfg))
