@@ -173,6 +173,39 @@ def note_stale(rows: list, path: str | None = None, now=None, write=True) -> lis
     return [rec]
 
 
+def note_fresh(rows: list, path: str | None = None, now=None, write=True) -> list:
+    """day-healthqa 2026-11-27: the stale note never got an "all clear", so an old "Data stale ..." stayed the newest data event on
+    the Board for days (the 00:02 note on Nov 27 named files that were fresh again a few hours later). When EVERY file is fresh and
+    the newest data note is a stale one, ONE note says so (keys ["data_fresh:<newest day>"]; never twice for the same day). -> [note] | []."""
+    if not rows or any(r.get("stale") for r in rows):
+        return []
+    from engine import board_events as B
+    path = path or B.shared_file()
+    last = None
+    try:
+        with open(path, encoding="utf-8") as fh:
+            for ln in fh:
+                try:
+                    d = json.loads(ln)
+                except ValueError:
+                    continue
+                ks = [k for k in ((d.get("data") or {}).get("keys") or []) if isinstance(k, str)]
+                if any(k.startswith(("data_stale:", "data_fresh:")) for k in ks):
+                    last = ks
+    except OSError:
+        return []
+    if not last or not any(k.startswith("data_stale:") for k in last):
+        return []
+    newest = max(str(r["day"]) for r in rows)
+    text = f"Data fresh again: all {len(rows)} price files within {STALE_SESSIONS} sessions (newest {newest}). The earlier 'Data stale' note no longer applies."
+    rec = B.make("claude_note", "", text, {"keys": [f"data_fresh:{newest}"]}, src="claude", t=now)
+    if rec is None:
+        return []
+    if write:
+        B.append(rec, path)
+    return [rec]
+
+
 def main(argv=None) -> int:
     rows = check()
     for r in rows:

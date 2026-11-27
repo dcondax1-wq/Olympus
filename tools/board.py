@@ -400,6 +400,8 @@ def main(argv=None) -> int:
             posted = DH.note_stale(dh_rows, write=not getattr(a, "no_data_notes", False))
             if posted and not getattr(a, "no_data_notes", False):
                 dh_line += f" (Board note posted for {len(posted)} newly stale file{'s' if len(posted) > 1 else ''})"
+            elif not posted and DH.note_fresh(dh_rows, write=not getattr(a, "no_data_notes", False)) and not getattr(a, "no_data_notes", False):
+                dh_line += " (Board note: data fresh again, the stale note is cleared)"
         except Exception as e:  # noqa: BLE001
             dh_line = f"DATA  health check failed ({e.__class__.__name__})"
         if getattr(a, "json", False):
