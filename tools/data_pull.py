@@ -763,8 +763,13 @@ def run_battery(out_dir: str = OUT) -> None:
     """W4 (day-ofready): the pre-registered order-flow battery (research/orderflow/of_battery.py) on the pulled days. It
     prints "waiting: N of 40" until there are 40 tick days and runs each look (40 / 60 / 120) once. Never fails the pull."""
     try:
-        r = subprocess.run([sys.executable, "-X", "utf8", os.path.join(ROOT, "research", "orderflow", "of_battery.py"),
-                            "--src", out_dir], cwd=ROOT, capture_output=True, text=True, timeout=3600)
+        argv = [sys.executable, "-X", "utf8", os.path.join(ROOT, "research", "orderflow", "of_battery.py"), "--src", out_dir]
+        if os.path.abspath(out_dir) != os.path.abspath(OUT):
+            # red team 2026-11-27: a pull into another folder (tests/test_datafeed's temp dir) wrote its EMPTY battery run over the
+            # tracked research/orderflow/battery_results.json (51 real days -> "tick_days": 0); helpers then committed it. Its
+            # results now stay in that folder.
+            argv += ["--out-dir", os.path.join(out_dir, "_battery")]
+        r = subprocess.run(argv, cwd=ROOT, capture_output=True, text=True, timeout=3600)
         for ln in (r.stdout or "").strip().splitlines()[-14:]:
             print("  order flow: " + ln)
         if r.returncode:
