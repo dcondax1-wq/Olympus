@@ -104,6 +104,7 @@ AREAS["nq"].append("lit_setups_learn")  # day-litlearn 2026-11-26: LIT learns fr
 AREAS["nq"].append("why_page")          # night-anatomy 2026-11-18: why we win / lose (tools/win_loss_anatomy.py, tools/web_public/why/); its own line
 AREAS["nq"].append("learn_night")       # night-learnloop 2026-11-19: ZEUS learned (engine/zeus_learn.py) + tools/learn_night.py + metals feed + speed; its own line
 AREAS["nq"].append("forward_paper")     # big-forward 2026-11-26: tools/forward_paper.py (watched leads scored on new sessions); its own line
+AREAS["nq"].append("december_plan")    # night-of-december 2026-11-27: tools/december_plan.py -> nq/december.json + docs/DECEMBER_PLAN.md
 AREAS["nq"].append("combo_50k")         # night-combolive 2026-11-19: ATLAS + Zlarior on ONE 50K (engine/combo50k.py, OFF) + its LiveBot parity replay
 AREAS["pc"].append("learn_night")       # the same suite: the PC side (data pipe hook, status ext "zl", datafeed metals, the 15-minute report's imports)
 AREAS["kalshi"].append("kalshi_adapt")  # night-kadapt 2026-11-19: the K8 weekly re-test (engine/kalshi_adapt.py, tools/kalshi_adapt.py); its own line
