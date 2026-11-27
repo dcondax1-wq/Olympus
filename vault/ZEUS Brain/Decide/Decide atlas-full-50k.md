@@ -5,16 +5,23 @@ tags:
 type: "decide"
 id: "atlas-full-50k"
 status: "later"
+added: "2026-11-27"
+usd_month: 150
+recommend: "later"
 ---
 
 # Decide: ATLAS at full size (x1.0 instead of x0.5) on the Zlarior 50K eval?
 
-> [!note] LATER · no $ estimate
+> [!note] LATER · +$150 a month
 > Answer it on the Decide card (Business app): YES / NO / LATER.
 
 |  |  |
 |---|---|
 | Status | later |
+| Added | 2026-11-27 |
+| $ a month | +$150 |
+| Claude recommends | later |
+| Changes | Zlarior 50K eval (ATLAS combo lane) |
 
 ## Why
 
@@ -23,6 +30,14 @@ day-50ksize (research/lit/size50k-2026-11-27/RESULT.md): ATLAS x1.0 on the 50K c
 ## Impact
 
 +$110 to +$180 a month vs more eval fails ($91.80 + ~3 weeks each)
+
+## Risk
+
+Fails 6 -> 15% (Jan-Jun-like) and 14 -> 20% (Jul-Oct-like) from today's room; each fail $91.80 + ~3 weeks.
+
+## Why Claude recommends that
+
+With $1,313 of room one full-size ATLAS loss (~$700) is half the room; ask again above $2,000.
 
 ## Links
 
