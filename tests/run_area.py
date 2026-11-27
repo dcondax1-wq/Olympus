@@ -427,6 +427,7 @@ AREAS["pc"].append("of_paper")            # day-oflearn 2026-11-26: the Order Fl
 AREAS["pc"].append("of_paper_rt")   # red team 2026-11-26: the paper child BELOW_NORMAL
 AREAS["pc"].append("of_paper_e5")   # night-of-paperv2 2026-11-27: the E5 second fill (DESIGN_paper_v2.md)
 AREAS["pc"].append("of_lane")             # night-of-lane 2026-11-27: the order-flow LANE on Sim101, OFF (engine/of_lane.py; fake NinjaTrader, ~6 min)
+AREAS["pc"].append("of_monfix")           # night-of-monfix 2026-11-27: lane A prior day = last RTH file; Sunday evening joins the overnight
 AREAS["pc"].append("payout_engine")       # big-payout 2026-11-26: read-only payout planner, /today, the Money tile
 AREAS["pc"].append("today_merge_rt")   # red team 2026-11-26: one /today (guard2 + big-payout), key line last
 AREAS["pc"].append("ofreal")              # big-ofreal 2026-11-26: tools/of_realday_verdict.py + tools/build_of_room.py (sim pulled days, ~1 min)

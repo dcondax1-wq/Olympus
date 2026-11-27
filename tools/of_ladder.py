@@ -51,6 +51,12 @@ COMM_ADJ = 1.90 - 1.40                            # the paper row's usd_1 is at 
 G1_N, G1_GAP, S1_GAP = 10, 2.0, 4.0
 G2_N, G2_WON = 40, 17
 RATE = 40 / 43                                   # lane A trades a session on the 43 real tick days (research/evalplan/PLAN.md)
+# night-of-monfix 2026-11-27 (of-v5 review): the 40-trade backtest behind gate 0 only ever took the FIRST absorbed signal of each
+# day (replay_summary resolved exits after the signal loop); the live bot is one position at a time and takes later signals too
+# (in-sample ~3/week more, about flat). So gate 0 is judged on the first-of-day trades only; the later ones are reported, and if
+# after LATER_N of them their mean R < 0 the ladder says to cap the lane at 1 trade a day.
+LATER_N = 15
+CAP_TEXT = "cap the lane at 1 trade a day"
 
 
 def _read(p, default=None):
@@ -106,8 +112,26 @@ def forward_rows(pc_days=None, verdict=None):
             out.append(dict(r, src="replay"))
     if len(out) > n0:
         src.append("cloud replay (real_verdict.json)")
-    out.sort(key=lambda r: (r["day"], r.get("t") or 0))
+    out.sort(key=lambda r: (r["day"], r.get("t_sig") or r.get("t") or 0))
     return out, src
+
+
+def split_first(rows):
+    """(first, later): the first taken trade of each day (what the backtest measured) and every later one, oldest first."""
+    first, later, seen = [], [], set()
+    for r in sorted(rows, key=lambda r: (r["day"], r.get("t_sig") or r.get("t") or 0)):
+        (later if r["day"] in seen else first).append(r)
+        seen.add(r["day"])
+    return first, later
+
+
+def later_check(later):
+    """None until LATER_N later-in-the-day trades; then (cap?, mean R)."""
+    if len(later) < LATER_N:
+        return None
+    J = [min(float(r["R"]), x) if (x := r_e5(r)) is not None else float(r["R"]) for r in later]
+    m = sum(J) / len(J)
+    return m < 0, round(m, 3)
 
 
 def forward_skipped(pc_days=None, verdict=None):
@@ -215,6 +239,8 @@ def gate1(sim):
 def evaluate(rows, sim=None, prev=None, today=None, skipped=None):
     """The ladder state. A stop is sticky (prev['stopped'] stays). Steps >= 2 need the owner's yes: the ladder only says 'ask'."""
     prev = prev or {}
+    all_rows = rows
+    rows, later = split_first(all_rows)               # gate 0 judges the first-of-day trades (night-of-monfix)
     st = _stats(rows)
     g0, why0 = gate0(rows, skipped)
     step, status, why, passed, gwhy = 0, g0, why0, -1, None   # passed = the highest gate passed; step = the one being scored now
@@ -233,18 +259,25 @@ def evaluate(rows, sim=None, prev=None, today=None, skipped=None):
     stopped = prev.get("stopped") or ({"step": step, "why": why, "on": today} if status == "stopped" else None)
     nxt = STEPS[min(step + 1, len(STEPS) - 1)]
     card_due = passed >= 0 and not stopped
+    lc = later_check(later)
+    cap = bool(lc and lc[0])
+    if cap:
+        why = f"{why}; {CAP_TEXT} (the {len(later)} later-in-the-day trades average {lc[1]:+.2f}R)"
     return {"v": 1, "paper_only": True, "plan": PLAN, "fwd_from": FWD_FROM, "step": step, "step_name": STEPS[step]["name"],
             "status": status, "why": why, "stats": st, "gate": STEPS[step]["gate"], "stop_rule": STEPS[step]["stop"],
             "next": {"step": nxt["step"], "name": nxt["name"], "gate": nxt["gate"], "stop": nxt["stop"]},
             "stopped": stopped, "card_due": card_due, "passed_gate": passed, "passed_why": gwhy, "steps": STEPS,
-            "line": line(step, status, st, why)}
+            "judged_on": "first trade of each day", "stats_later": _stats(later) if later else None,
+            "stats_all": _stats(all_rows), "cap_one_a_day": cap, "later_need": LATER_N,
+            "line": line(step, status, st, why, later)}
 
 
-def line(step, status, st, why):
+def line(step, status, st, why, later=None):
     head = {"watching": "watching", "passed": "GATE PASSED", "ask_owner": "GATE PASSED - your yes needed", "stopped": "STOPPED",
             "waiting": "waiting"}.get(status, status)
     return (f"Order flow ladder step {step} ({STEPS[step]['name']}): {head}. {why}."
-            f" Forward so far: {st['n']} trades, {st['won']} won, {st['sum_R']:+.1f}R (1 micro ${st['usd_1']:+,.0f}).")
+            f" Forward so far: {st['n']} trades, {st['won']} won, {st['sum_R']:+.1f}R (1 micro ${st['usd_1']:+,.0f})."
+            + (f" Later-in-the-day trades (not judged): {len(later)}, {sum(float(r['R']) for r in later):+.1f}R." if later else ""))
 
 
 def card(doc):
@@ -275,7 +308,9 @@ def run(out=None, card_path=None, say=print, today=None):
     doc = evaluate(rows, sim if isinstance(sim, list) else [], prev, today or dt.date.today().isoformat(), skipped=forward_skipped())
     doc["sources"] = src
     doc["built"] = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-    doc["rows"] = [{k: r.get(k) for k in ("id", "day", "level", "d", "R", "usd_1", "src")} | {"R_e5": r_e5(r)} for r in rows][-60:]
+    fi = {id(r) for r in split_first(rows)[0]}
+    doc["rows"] = [{k: r.get(k) for k in ("id", "day", "level", "d", "R", "usd_1", "src")} | {"R_e5": r_e5(r), "first": id(r) in fi}
+                   for r in rows][-60:]
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, "w", encoding="utf-8") as fh:
         json.dump(doc, fh, indent=1)

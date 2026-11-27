@@ -215,7 +215,7 @@ def of12(D, days, trades, block):
     rows, k1, k2, k1p, approx = [], [], [], [], False
     for t in trades:
         ed = et_day(t["te"])
-        if ed not in D:
+        if ed not in D or ed not in days:                             # night-of-monfix: D also holds thin Globex-only files
             continue
         z = D[ed].zone(t["te"], t["dir"])
         if z is None:
@@ -259,11 +259,11 @@ def atlas_md():
         return [], f"unavailable ({e.__class__.__name__})"
 
 
-def of4(D, units):
+def of4(D, units, days=None):
     rows, keep, keep_p = [], [], []
     for u in units:
         ed = et_day(u["entry_t"])
-        if ed not in D:
+        if ed not in D or (days is not None and ed not in days):      # night-of-monfix: D also holds thin files
             continue
         b = D[ed].bars
         w = b[(b.t >= u["entry_t"] - 1800) & (b.t < u["entry_t"])]
@@ -327,18 +327,34 @@ def of3(D, days):
     return sig
 
 
+def has_rth(Dy):
+    """True when the day file holds any regular-session bar (09:30-16:00 ET). A Sunday-evening file is Globex only."""
+    m = Dy.bars["mod"]
+    return bool(((m >= 570) & (m < 960)).any())
+
+
 def levels(D, days, i):
-    """prior-day RTH high/low (previous tick day within 4 calendar days) + Globex 18:00-09:30 high/low."""
+    """prior-day RTH high/low + Globex high/low from the prior RTH day's 18:00 to today's 09:30.
+    night-of-monfix 2026-11-27: the 'prior day' is the last file WITH RTH bars (within 4 calendar days). A Globex-only file in
+    between (the Sunday evening before a Monday, kept or dropped as thin: any file in D) adds all its bars to the overnight
+    range instead of standing in as the prior day (before: 7 of 9 Mondays had no pdh/pdl, and a thin Sunday lost 18:00-24:00)."""
     d = days[i]
     out = []
     b = D[d].bars
-    on = b[b["mod"] < 570]
-    if i > 0 and (dt.date.fromisoformat(d) - dt.date.fromisoformat(days[i - 1])).days <= 4:
-        pb = D[days[i - 1]].bars
+    on = [b[b["mod"] < 570]]
+    d0 = dt.date.fromisoformat(d)
+    prev = set(days[:i]) | {k for k in D if k < d and k not in days and not has_rth(D[k])}
+    for p in sorted(prev, reverse=True):
+        if (d0 - dt.date.fromisoformat(p)).days > 4:
+            break
+        pb = D[p].bars
         pr = pb[(pb["mod"] >= 570) & (pb["mod"] < 960)]
         if len(pr):
             out += [("pdh", float(pr.high.max()), 1), ("pdl", float(pr.low.min()), -1)]
-        on = pd.concat([pb[pb["mod"] >= 1080], on])
+            on.append(pb[pb["mod"] >= 1080])
+            break
+        on.append(pb)                                                     # Globex-only file (Sunday evening): overnight
+    on = pd.concat(on)
     if len(on):
         out += [("onh", float(on.high.max()), 1), ("onl", float(on.low.min()), -1)]
     return out
@@ -450,7 +466,7 @@ def run(src=None, ticks=False, force=False, final=False, raw=None, lit=None, atl
         print(f"look {look_no} already done ({len(days)} days); --force to re-print, --final for the last look")
         return status
     rng = np.random.default_rng(seed)
-    D = {d: Day(d, R[d]) for d in days}
+    D = {d: Day(d, R[d]) for d in sorted(R)}                      # night-of-monfix: thin Globex-only files feed overnight levels
     H = halves(days)
     out = {**status, "state": "ran", "look": look_no, "design": "research/orderflow/DESIGN.md @ bc2e5e68f",
            "split": {k: [v[0], v[-1], len(v)] for k, v in H.items()}}
@@ -466,7 +482,7 @@ def run(src=None, ticks=False, force=False, final=False, raw=None, lit=None, atl
         out["OF2 LIT skip blocks against"]["note"] = "check: on some days the PC's block threshold used other prior days than the cloud has (or the 200+ bucket)"
     out["OF1 bar-proxy twin (info)"] = filter_report(rows, k1p, H, rng)
     units, md_to = atlas if atlas is not None else atlas_md()
-    r4, k4, k4p = of4(D, units)
+    r4, k4, k4p = of4(D, units, days)
     out["OF4 ATLAS MD only when absorbed"] = filter_report(r4, k4, H, rng)
     out["OF4 ATLAS MD only when absorbed"]["md_trades_to"] = md_to
     out["OF4 bar-proxy twin (info)"] = filter_report(r4, k4p, H, rng)
