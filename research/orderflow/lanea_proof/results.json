@@ -1,0 +1,928 @@
+{
+ "design": "research/orderflow/DESIGN_lanea_proof.md",
+ "days": 51,
+ "first": "2026-09-27",
+ "last": "2026-11-26",
+ "span_days": 61,
+ "costs": "$1.9 rt per micro, stop fill 1 tick worse (FS: 2)",
+ "resim_check": {
+  "n": 93,
+  "same_R": 93
+ },
+ "fill_models": {
+  "F1": {
+   "taken": {
+    "n": 40,
+    "per_week": 4.59,
+    "won": 50.0,
+    "mean_R": 0.495,
+    "sum_R": 19.82,
+    "PF": 1.55,
+    "net_1": 1562.5,
+    "per_month_1": 779.71,
+    "maxdd_1": 1100.5,
+    "maxdd_R": 6.06
+   },
+   "skipped": {
+    "n": 53,
+    "per_week": 6.08,
+    "won": 24.5,
+    "mean_R": -0.31,
+    "sum_R": -16.45,
+    "PF": 0.61,
+    "net_1": -1956.2,
+    "per_month_1": -976.18,
+    "maxdd_1": 2084.7,
+    "maxdd_R": 18.7
+   },
+   "gap_R": 0.805,
+   "missed": 0
+  },
+  "F2": {
+   "taken": {
+    "n": 40,
+    "per_week": 4.59,
+    "won": 50.0,
+    "mean_R": 0.496,
+    "sum_R": 19.82,
+    "PF": 1.56,
+    "net_1": 1572.5,
+    "per_month_1": 784.7,
+    "maxdd_1": 1103.5,
+    "maxdd_R": 6.06
+   },
+   "skipped": {
+    "n": 53,
+    "per_week": 6.08,
+    "won": 24.5,
+    "mean_R": -0.311,
+    "sum_R": -16.46,
+    "PF": 0.61,
+    "net_1": -1966.2,
+    "per_month_1": -981.17,
+    "maxdd_1": 2095.2,
+    "maxdd_R": 18.7
+   },
+   "gap_R": 0.807,
+   "missed": 0
+  },
+  "F3": {
+   "taken": {
+    "n": 40,
+    "per_week": 4.59,
+    "won": 50.0,
+    "mean_R": 0.496,
+    "sum_R": 19.83,
+    "PF": 1.56,
+    "net_1": 1582.5,
+    "per_month_1": 789.69,
+    "maxdd_1": 1106.5,
+    "maxdd_R": 6.06
+   },
+   "skipped": {
+    "n": 53,
+    "per_week": 6.08,
+    "won": 24.5,
+    "mean_R": -0.311,
+    "sum_R": -16.48,
+    "PF": 0.61,
+    "net_1": -1976.2,
+    "per_month_1": -986.16,
+    "maxdd_1": 2105.7,
+    "maxdd_R": 18.69
+   },
+   "gap_R": 0.807,
+   "missed": 0
+  },
+  "FS": {
+   "taken": {
+    "n": 40,
+    "per_week": 4.59,
+    "won": 50.0,
+    "mean_R": 0.491,
+    "sum_R": 19.64,
+    "PF": 1.55,
+    "net_1": 1552.5,
+    "per_month_1": 774.72,
+    "maxdd_1": 1106.5,
+    "maxdd_R": 6.13
+   },
+   "skipped": {
+    "n": 53,
+    "per_week": 6.08,
+    "won": 24.5,
+    "mean_R": -0.316,
+    "sum_R": -16.75,
+    "PF": 0.61,
+    "net_1": -1975.7,
+    "per_month_1": -985.91,
+    "maxdd_1": 2103.2,
+    "maxdd_R": 18.94
+   },
+   "gap_R": 0.807,
+   "missed": 0
+  },
+  "FL": {
+   "taken": {
+    "n": 31,
+    "per_week": 3.56,
+    "won": 45.2,
+    "mean_R": 0.341,
+    "sum_R": 10.56,
+    "PF": 0.97,
+    "net_1": -35.4,
+    "per_month_1": -17.67,
+    "maxdd_1": 499.2,
+    "maxdd_R": 8.22
+   },
+   "skipped": {
+    "n": 36,
+    "per_week": 4.13,
+    "won": 22.2,
+    "mean_R": -0.333,
+    "sum_R": -12.0,
+    "PF": 0.74,
+    "net_1": -414.4,
+    "per_month_1": -206.79,
+    "maxdd_1": 697.4,
+    "maxdd_R": 12.51
+   },
+   "gap_R": 0.674,
+   "missed": 9
+  }
+ },
+ "splits": {
+  "level": {
+   "glob": {
+    "taken": {
+     "n": 18,
+     "per_week": 2.07,
+     "won": 50.0,
+     "mean_R": 0.498,
+     "sum_R": 8.96,
+     "PF": 1.75,
+     "net_1": 1208.8,
+     "per_month_1": 603.21,
+     "maxdd_1": 756.6,
+     "maxdd_R": 4.03
+    },
+    "skipped": {
+     "n": 15,
+     "per_week": 1.72,
+     "won": 26.7,
+     "mean_R": -0.306,
+     "sum_R": -4.59,
+     "PF": 0.43,
+     "net_1": -880.5,
+     "per_month_1": -439.38,
+     "maxdd_1": 917.6,
+     "maxdd_R": 7.58
+    }
+   },
+   "orb": {
+    "taken": {
+     "n": 16,
+     "per_week": 1.84,
+     "won": 62.5,
+     "mean_R": 0.868,
+     "sum_R": 13.89,
+     "PF": 3.22,
+     "net_1": 1029.6,
+     "per_month_1": 513.79,
+     "maxdd_1": 222.7,
+     "maxdd_R": 3.02
+    },
+    "skipped": {
+     "n": 31,
+     "per_week": 3.56,
+     "won": 25.8,
+     "mean_R": -0.252,
+     "sum_R": -7.82,
+     "PF": 0.93,
+     "net_1": -166.4,
+     "per_month_1": -83.04,
+     "maxdd_1": 1207.5,
+     "maxdd_R": 13.14
+    }
+   },
+   "pd": {
+    "taken": {
+     "n": 6,
+     "per_week": 0.69,
+     "won": 16.7,
+     "mean_R": -0.505,
+     "sum_R": -3.03,
+     "PF": 0.1,
+     "net_1": -675.9,
+     "per_month_1": -337.29,
+     "maxdd_1": 675.9,
+     "maxdd_R": 3.03
+    },
+    "skipped": {
+     "n": 7,
+     "per_week": 0.8,
+     "won": 14.3,
+     "mean_R": -0.575,
+     "sum_R": -4.03,
+     "PF": 0.26,
+     "net_1": -909.3,
+     "per_month_1": -453.76,
+     "maxdd_1": 1158.0,
+     "maxdd_R": 5.02
+    }
+   }
+  },
+  "level_name": {
+   "onh": {
+    "taken": {
+     "n": 9,
+     "per_week": 1.03,
+     "won": 44.4,
+     "mean_R": 0.33,
+     "sum_R": 2.97,
+     "PF": 2.73,
+     "net_1": 882.9,
+     "per_month_1": 440.58,
+     "maxdd_1": 319.7,
+     "maxdd_R": 3.03
+    },
+    "skipped": {
+     "n": 9,
+     "per_week": 1.03,
+     "won": 33.3,
+     "mean_R": -0.174,
+     "sum_R": -1.57,
+     "PF": 0.68,
+     "net_1": -226.6,
+     "per_month_1": -113.08,
+     "maxdd_1": 580.8,
+     "maxdd_R": 5.57
+    }
+   },
+   "onl": {
+    "taken": {
+     "n": 9,
+     "per_week": 1.03,
+     "won": 55.6,
+     "mean_R": 0.666,
+     "sum_R": 5.99,
+     "PF": 1.3,
+     "net_1": 325.9,
+     "per_month_1": 162.63,
+     "maxdd_1": 864.5,
+     "maxdd_R": 3.01
+    },
+    "skipped": {
+     "n": 6,
+     "per_week": 0.69,
+     "won": 16.7,
+     "mean_R": -0.504,
+     "sum_R": -3.03,
+     "PF": 0.22,
+     "net_1": -653.9,
+     "per_month_1": -326.31,
+     "maxdd_1": 653.9,
+     "maxdd_R": 3.03
+    }
+   },
+   "orh": {
+    "taken": {
+     "n": 11,
+     "per_week": 1.26,
+     "won": 72.7,
+     "mean_R": 1.174,
+     "sum_R": 12.91,
+     "PF": 7.72,
+     "net_1": 1087.1,
+     "per_month_1": 542.48,
+     "maxdd_1": 152.8,
+     "maxdd_R": 2.01
+    },
+    "skipped": {
+     "n": 15,
+     "per_week": 1.72,
+     "won": 33.3,
+     "mean_R": -0.004,
+     "sum_R": -0.06,
+     "PF": 1.55,
+     "net_1": 522.0,
+     "per_month_1": 260.49,
+     "maxdd_1": 744.8,
+     "maxdd_R": 7.06
+    }
+   },
+   "orl": {
+    "taken": {
+     "n": 5,
+     "per_week": 0.57,
+     "won": 40.0,
+     "mean_R": 0.196,
+     "sum_R": 0.98,
+     "PF": 0.81,
+     "net_1": -57.5,
+     "per_month_1": -28.69,
+     "maxdd_1": 231.3,
+     "maxdd_R": 2.01
+    },
+    "skipped": {
+     "n": 16,
+     "per_week": 1.84,
+     "won": 18.8,
+     "mean_R": -0.485,
+     "sum_R": -7.76,
+     "PF": 0.47,
+     "net_1": -688.4,
+     "per_month_1": -343.52,
+     "maxdd_1": 713.2,
+     "maxdd_R": 7.76
+    }
+   },
+   "pdh": {
+    "taken": {
+     "n": 3,
+     "per_week": 0.34,
+     "won": 33.3,
+     "mean_R": -0.007,
+     "sum_R": -0.02,
+     "PF": 0.26,
+     "net_1": -208.7,
+     "per_month_1": -104.14,
+     "maxdd_1": 254.4,
+     "maxdd_R": 1.02
+    },
+    "skipped": {
+     "n": 2,
+     "per_week": 0.23,
+     "won": 0.0,
+     "mean_R": -1.005,
+     "sum_R": -2.01,
+     "PF": 0.0,
+     "net_1": -328.8,
+     "per_month_1": -164.08,
+     "maxdd_1": 328.8,
+     "maxdd_R": 2.01
+    }
+   },
+   "pdl": {
+    "taken": {
+     "n": 3,
+     "per_week": 0.34,
+     "won": 0.0,
+     "mean_R": -1.004,
+     "sum_R": -3.01,
+     "PF": 0.0,
+     "net_1": -467.2,
+     "per_month_1": -233.14,
+     "maxdd_1": 467.2,
+     "maxdd_R": 3.01
+    },
+    "skipped": {
+     "n": 5,
+     "per_week": 0.57,
+     "won": 20.0,
+     "mean_R": -0.403,
+     "sum_R": -2.02,
+     "PF": 0.36,
+     "net_1": -580.5,
+     "per_month_1": -289.68,
+     "maxdd_1": 829.2,
+     "maxdd_R": 3.01
+    }
+   }
+  },
+  "time": {
+   "09:45-10:30": {
+    "taken": {
+     "n": 32,
+     "per_week": 3.67,
+     "won": 46.9,
+     "mean_R": 0.402,
+     "sum_R": 12.86,
+     "PF": 1.3,
+     "net_1": 797.7,
+     "per_month_1": 398.07,
+     "maxdd_1": 1188.3,
+     "maxdd_R": 6.05
+    },
+    "skipped": {
+     "n": 20,
+     "per_week": 2.3,
+     "won": 30.0,
+     "mean_R": -0.104,
+     "sum_R": -2.08,
+     "PF": 0.97,
+     "net_1": -45.5,
+     "per_month_1": -22.71,
+     "maxdd_1": 1013.2,
+     "maxdd_R": 8.07
+    }
+   },
+   "10:30-12:00": {
+    "taken": {
+     "n": 7,
+     "per_week": 0.8,
+     "won": 71.4,
+     "mean_R": 1.14,
+     "sum_R": 7.98,
+     "PF": 7.0,
+     "net_1": 793.2,
+     "per_month_1": 395.82,
+     "maxdd_1": 132.3,
+     "maxdd_R": 2.02
+    },
+    "skipped": {
+     "n": 19,
+     "per_week": 2.18,
+     "won": 31.6,
+     "mean_R": -0.204,
+     "sum_R": -3.87,
+     "PF": 0.79,
+     "net_1": -308.6,
+     "per_month_1": -154.0,
+     "maxdd_1": 729.7,
+     "maxdd_R": 6.58
+    }
+   },
+   "12:00-15:00": {
+    "taken": {
+     "n": 1,
+     "per_week": 0.11,
+     "won": 0.0,
+     "mean_R": -1.019,
+     "sum_R": -1.02,
+     "PF": 0.0,
+     "net_1": -28.4,
+     "per_month_1": -14.17,
+     "maxdd_1": 28.4,
+     "maxdd_R": 1.02
+    },
+    "skipped": {
+     "n": 14,
+     "per_week": 1.61,
+     "won": 7.1,
+     "mean_R": -0.75,
+     "sum_R": -10.5,
+     "PF": 0.1,
+     "net_1": -1602.1,
+     "per_month_1": -799.47,
+     "maxdd_1": 1602.1,
+     "maxdd_R": 10.5
+    }
+   }
+  },
+  "side": {
+   "long": {
+    "taken": {
+     "n": 17,
+     "per_week": 1.95,
+     "won": 41.2,
+     "mean_R": 0.233,
+     "sum_R": 3.96,
+     "PF": 0.89,
+     "net_1": -198.8,
+     "per_month_1": -99.2,
+     "maxdd_1": 1027.3,
+     "maxdd_R": 5.02
+    },
+    "skipped": {
+     "n": 27,
+     "per_week": 3.1,
+     "won": 18.5,
+     "mean_R": -0.474,
+     "sum_R": -12.8,
+     "PF": 0.37,
+     "net_1": -1922.8,
+     "per_month_1": -959.51,
+     "maxdd_1": 1922.8,
+     "maxdd_R": 12.8
+    }
+   },
+   "short": {
+    "taken": {
+     "n": 23,
+     "per_week": 2.64,
+     "won": 56.5,
+     "mean_R": 0.689,
+     "sum_R": 15.86,
+     "PF": 2.85,
+     "net_1": 1761.3,
+     "per_month_1": 878.92,
+     "maxdd_1": 383.4,
+     "maxdd_R": 3.04
+    },
+    "skipped": {
+     "n": 26,
+     "per_week": 2.98,
+     "won": 30.8,
+     "mean_R": -0.14,
+     "sum_R": -3.64,
+     "PF": 0.98,
+     "net_1": -33.4,
+     "per_month_1": -16.67,
+     "maxdd_1": 1391.5,
+     "maxdd_R": 13.64
+    }
+   }
+  },
+  "absorption_strength": {
+   "weak (|dz|/vz <= 0.37)": {
+    "n": 13,
+    "per_week": 1.49,
+    "won": 53.8,
+    "mean_R": 0.613,
+    "sum_R": 7.97,
+    "PF": 2.13,
+    "net_1": 836.3,
+    "per_month_1": 417.33,
+    "maxdd_1": 306.5,
+    "maxdd_R": 2.02
+   },
+   "strong (> 0.58)": {
+    "n": 13,
+    "per_week": 1.49,
+    "won": 46.2,
+    "mean_R": 0.376,
+    "sum_R": 4.89,
+    "PF": 0.94,
+    "net_1": -62.7,
+    "per_month_1": -31.29,
+    "maxdd_1": 444.4,
+    "maxdd_R": 3.03
+   },
+   "mid": {
+    "n": 14,
+    "per_week": 1.61,
+    "won": 50.0,
+    "mean_R": 0.497,
+    "sum_R": 6.96,
+    "PF": 1.8,
+    "net_1": 788.9,
+    "per_month_1": 393.67,
+    "maxdd_1": 765.7,
+    "maxdd_R": 5.04
+   }
+  }
+ },
+ "weeks": {
+  "2026-W40": {
+   "n": 5,
+   "sum_R": 0.99,
+   "mean_R": 0.197
+  },
+  "2026-W41": {
+   "n": 5,
+   "sum_R": 6.98,
+   "mean_R": 1.396
+  },
+  "2026-W42": {
+   "n": 4,
+   "sum_R": 1.99,
+   "mean_R": 0.498
+  },
+  "2026-W43": {
+   "n": 5,
+   "sum_R": 6.92,
+   "mean_R": 1.385
+  },
+  "2026-W44": {
+   "n": 5,
+   "sum_R": -2.01,
+   "mean_R": -0.403
+  },
+  "2026-W45": {
+   "n": 5,
+   "sum_R": -2.03,
+   "mean_R": -0.405
+  },
+  "2026-W46": {
+   "n": 3,
+   "sum_R": -0.02,
+   "mean_R": -0.005
+  },
+  "2026-W47": {
+   "n": 4,
+   "sum_R": 1.99,
+   "mean_R": 0.498
+  },
+  "2026-W48": {
+   "n": 4,
+   "sum_R": 5.0,
+   "mean_R": 1.25
+  }
+ },
+ "weeks_pos": "6 of 9",
+ "bootstrap_taken_F1": {
+  "mean": 0.493,
+  "ci90": [
+   0.108,
+   0.89
+  ],
+  "ci95": [
+   0.026,
+   0.969
+  ],
+  "p_le0": 0.0181
+ },
+ "bootstrap_taken_F2": {
+  "mean": 0.493,
+  "ci90": [
+   0.108,
+   0.89
+  ],
+  "ci95": [
+   0.026,
+   0.969
+  ],
+  "p_le0": 0.0181
+ },
+ "halves": {
+  "older": {
+   "days": 25,
+   "from": "2026-09-27",
+   "to": "2026-10-27",
+   "candidates_per_day": 1.84,
+   "taken_share": 0.46,
+   "taken": {
+    "n": 21,
+    "per_week": 4.74,
+    "won": 57.1,
+    "mean_R": 0.708,
+    "sum_R": 14.87,
+    "PF": 1.88,
+    "net_1": 953.6,
+    "per_month_1": 936.37,
+    "maxdd_1": 363.2,
+    "maxdd_R": 3.03
+   },
+   "skipped_mean_R": -0.587,
+   "risk_ticks_mean": 199.8,
+   "rth_range_pts_mean": 375.9,
+   "trend_day_share": 0.32,
+   "exits": {
+    "stop": 9,
+    "target": 12
+   },
+   "levels": {
+    "orb": 10,
+    "glob": 6,
+    "pd": 5
+   },
+   "sides": {
+    "long": 9,
+    "short": 12
+   }
+  },
+  "newer": {
+   "days": 26,
+   "from": "2026-10-28",
+   "to": "2026-11-26",
+   "candidates_per_day": 1.81,
+   "taken_share": 0.4,
+   "taken": {
+    "n": 19,
+    "per_week": 4.43,
+    "won": 42.1,
+    "mean_R": 0.26,
+    "sum_R": 4.94,
+    "PF": 1.35,
+    "net_1": 608.9,
+    "per_month_1": 617.83,
+    "maxdd_1": 840.3,
+    "maxdd_R": 6.06
+   },
+   "skipped_mean_R": -0.063,
+   "risk_ticks_mean": 303.4,
+   "rth_range_pts_mean": 667.1,
+   "trend_day_share": 0.27,
+   "exits": {
+    "target": 8,
+    "stop": 11
+   },
+   "levels": {
+    "glob": 12,
+    "orb": 6,
+    "pd": 1
+   },
+   "sides": {
+    "long": 8,
+    "short": 11
+   }
+  }
+ },
+ "lit_atlas": {
+  "lit_trades": 18,
+  "atlas_trades": 5,
+  "atlas_cache_to": "2026-10-09"
+ },
+ "overlap": {
+  "overlapping": 3,
+  "overlap_mean_R": 0.999,
+  "not_overlapping": 37,
+  "free_mean_R": 0.455
+ },
+ "engines": {
+  "MFFU Builder 50K": {
+   "lane A alone": {
+    "eval": {
+     "pass": 78.7,
+     "fail": 7.2,
+     "open": 14.2,
+     "med_days": 14.0,
+     "maxdd_med": 1188.0,
+     "maxdd_p90": 1813.0
+    },
+    "slot": {
+     "owner_6m": 5634,
+     "fees_6m": 160.0,
+     "net_6m": 5474,
+     "net_p10": -92,
+     "p_lost": 13.7,
+     "no_pay": 18.8,
+     "first_pay_med": 53.0
+    },
+    "net_per_month": 912.3,
+    "price": 91.8
+   },
+   "LIT + ATLAS (today)": {
+    "eval": {
+     "pass": 76.0,
+     "fail": 14.2,
+     "open": 9.8,
+     "med_days": 11.0,
+     "maxdd_med": 1099.0,
+     "maxdd_p90": 1820.0
+    },
+    "slot": {
+     "owner_6m": 3318,
+     "fees_6m": 127.5,
+     "net_6m": 3190,
+     "net_p10": -184,
+     "p_lost": 7.1,
+     "no_pay": 18.9,
+     "first_pay_med": 59.0
+    },
+    "net_per_month": 531.7,
+    "price": 91.8
+   },
+   "LIT + ATLAS + lane A": {
+    "eval": {
+     "pass": 81.7,
+     "fail": 16.6,
+     "open": 1.6,
+     "med_days": 9.0,
+     "maxdd_med": 1131.0,
+     "maxdd_p90": 1838.0
+    },
+    "slot": {
+     "owner_6m": 7736,
+     "fees_6m": 206.1,
+     "net_6m": 7530,
+     "net_p10": 3016,
+     "p_lost": 21.0,
+     "no_pay": 3.0,
+     "first_pay_med": 38.0
+    },
+    "net_per_month": 1255.0,
+    "price": 91.8
+   }
+  },
+  "MFFU Builder 25K": {
+   "lane A alone": {
+    "eval": {
+     "pass": 79.1,
+     "fail": 1.2,
+     "open": 19.6,
+     "med_days": 15.0,
+     "maxdd_med": 580.0,
+     "maxdd_p90": 849.0
+    },
+    "slot": {
+     "owner_6m": 2647,
+     "fees_6m": 96.7,
+     "net_6m": 2551,
+     "net_p10": -63,
+     "p_lost": 3.4,
+     "no_pay": 21.9,
+     "first_pay_med": 54.0
+    },
+    "net_per_month": 425.2,
+    "price": 63.0
+   },
+   "LIT + ATLAS (today)": {
+    "eval": {
+     "pass": 73.0,
+     "fail": 0.0,
+     "open": 27.1,
+     "med_days": 13.0,
+     "maxdd_med": 545.0,
+     "maxdd_p90": 848.0
+    },
+    "slot": {
+     "owner_6m": 1307,
+     "fees_6m": 77.2,
+     "net_6m": 1230,
+     "net_p10": -126,
+     "p_lost": 8.6,
+     "no_pay": 31.8,
+     "first_pay_med": 63.0
+    },
+    "net_per_month": 205.0,
+    "price": 63.0
+   },
+   "LIT + ATLAS + lane A": {
+    "eval": {
+     "pass": 88.0,
+     "fail": 3.1,
+     "open": 8.8,
+     "med_days": 10.0,
+     "maxdd_med": 557.0,
+     "maxdd_p90": 876.0
+    },
+    "slot": {
+     "owner_6m": 3637,
+     "fees_6m": 124.4,
+     "net_6m": 3513,
+     "net_p10": 737,
+     "p_lost": 20.6,
+     "no_pay": 6.3,
+     "first_pay_med": 40.0
+    },
+    "net_per_month": 585.5,
+    "price": 63.0
+   }
+  },
+  "MFFU Rapid EOD 25K": {
+   "lane A alone": {
+    "eval": {
+     "pass": 74.7,
+     "fail": 1.2,
+     "open": 24.1,
+     "med_days": 22.0,
+     "maxdd_med": 597.0,
+     "maxdd_p90": 850.0
+    },
+    "slot": {
+     "owner_6m": 3664,
+     "fees_6m": 102.4,
+     "net_6m": 3562,
+     "net_p10": -97,
+     "p_lost": 2.5,
+     "no_pay": 25.3,
+     "first_pay_med": 61.0
+    },
+    "net_per_month": 593.7,
+    "price": 97.2
+   },
+   "LIT + ATLAS (today)": {
+    "eval": {
+     "pass": 12.5,
+     "fail": 0.0,
+     "open": 87.5,
+     "med_days": 47.0,
+     "maxdd_med": 144.0,
+     "maxdd_p90": 287.0
+    },
+    "slot": {
+     "owner_6m": 165,
+     "fees_6m": 100.9,
+     "net_6m": 64,
+     "net_p10": -97,
+     "p_lost": 3.9,
+     "no_pay": 87.5,
+     "first_pay_med": 106.0
+    },
+    "net_per_month": 10.7,
+    "price": 97.2
+   },
+   "LIT + ATLAS + lane A": {
+    "eval": {
+     "pass": 84.7,
+     "fail": 0.8,
+     "open": 14.6,
+     "med_days": 20.0,
+     "maxdd_med": 515.0,
+     "maxdd_p90": 832.0
+    },
+    "slot": {
+     "owner_6m": 4959,
+     "fees_6m": 139.4,
+     "net_6m": 4819,
+     "net_p10": -194,
+     "p_lost": 36.6,
+     "no_pay": 16.4,
+     "first_pay_med": 55.0
+    },
+    "net_per_month": 803.2,
+    "price": 97.2
+   }
+  }
+ },
+ "engines_note": "2000 day-block bootstrap paths of the 51 real days only; LIT = frozen model replay, ATLAS MD from tools/second_mix (cache to 2026-10-09); lane A at stack_q $250 (25K) / $500 (50K).",
+ "bars": {
+  "1 F2 taken mean R > 0": true,
+  "2 F1 bootstrap 90% CI low > 0": true,
+  "3 both halves taken mean R > 0": true,
+  "4 adding lane A costs <= 2 pts of eval pass": true
+ },
+ "forward_worthy": true
+}

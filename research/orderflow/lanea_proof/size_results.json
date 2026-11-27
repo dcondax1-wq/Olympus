@@ -1,0 +1,2976 @@
+{
+ "design": "research/orderflow/DESIGN_lanea_size.md",
+ "paths": 1000,
+ "measured_mean_R": 0.495,
+ "lane_a_trades": 40,
+ "stop_usd_per_micro_median": 92.2,
+ "cap_share_with_1_micro": {
+  "C50": 0.2,
+  "C100": 0.53,
+  "C150": 0.7
+ },
+ "rows": {
+  "Builder 50K": {
+   "base": {
+    "a measured": {
+     "pass": 74.7,
+     "fail": 15.2,
+     "days": 12.0,
+     "net6": 3309,
+     "per_month": 551.5,
+     "blown": 7.4,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 74.7,
+     "fail": 15.2,
+     "days": 12.0,
+     "net6": 3309,
+     "per_month": 551.5,
+     "blown": 7.4,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 74.7,
+     "fail": 15.2,
+     "days": 12.0,
+     "net6": 3309,
+     "per_month": 551.5,
+     "blown": 7.4,
+     "p10": -184,
+     "fee": 91.8
+    }
+   },
+   "Q1 / none": {
+    "a measured": {
+     "pass": 73.7,
+     "fail": 25.0,
+     "days": 12.0,
+     "net6": 5069,
+     "per_month": 844.8,
+     "blown": 14.9,
+     "p10": 1416,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 65.5,
+     "fail": 33.3,
+     "days": 11.0,
+     "net6": 3849,
+     "per_month": 641.5,
+     "blown": 29.8,
+     "p10": -275,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 56.9,
+     "fail": 42.4,
+     "days": 10.0,
+     "net6": 2778,
+     "per_month": 463.0,
+     "blown": 47.7,
+     "p10": -459,
+     "fee": 91.8
+    }
+   },
+   "Q1 / UP": {
+    "a measured": {
+     "pass": 75.4,
+     "fail": 15.7,
+     "days": 11.0,
+     "net6": 4440,
+     "per_month": 740.0,
+     "blown": 8.4,
+     "p10": -92,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 74.3,
+     "fail": 15.8,
+     "days": 11.0,
+     "net6": 3770,
+     "per_month": 628.3,
+     "blown": 10.5,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 73.3,
+     "fail": 16.1,
+     "days": 10.0,
+     "net6": 3082,
+     "per_month": 513.7,
+     "blown": 15.8,
+     "p10": -184,
+     "fee": 91.8
+    }
+   },
+   "Q1 / FLOOR": {
+    "a measured": {
+     "pass": 75.2,
+     "fail": 17.8,
+     "days": 12.0,
+     "net6": 4662,
+     "per_month": 777.0,
+     "blown": 10.7,
+     "p10": -92,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 70.8,
+     "fail": 18.2,
+     "days": 12.0,
+     "net6": 3604,
+     "per_month": 600.7,
+     "blown": 13.0,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 65.7,
+     "fail": 22.3,
+     "days": 13.0,
+     "net6": 2742,
+     "per_month": 457.0,
+     "blown": 21.2,
+     "p10": -184,
+     "fee": 91.8
+    }
+   },
+   "Q1 / UP+FLOOR": {
+    "a measured": {
+     "pass": 75.4,
+     "fail": 15.7,
+     "days": 11.0,
+     "net6": 4435,
+     "per_month": 739.2,
+     "blown": 8.2,
+     "p10": -92,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 74.3,
+     "fail": 15.7,
+     "days": 11.0,
+     "net6": 3772,
+     "per_month": 628.7,
+     "blown": 10.6,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 73.3,
+     "fail": 16.2,
+     "days": 10.0,
+     "net6": 3114,
+     "per_month": 519.0,
+     "blown": 14.9,
+     "p10": -184,
+     "fee": 91.8
+    }
+   },
+   "Q2 / none": {
+    "a measured": {
+     "pass": 66.2,
+     "fail": 33.5,
+     "days": 9.5,
+     "net6": 6056,
+     "per_month": 1009.3,
+     "blown": 42.9,
+     "p10": 1325,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 53.0,
+     "fail": 46.9,
+     "days": 9.0,
+     "net6": 4092,
+     "per_month": 682.0,
+     "blown": 59.5,
+     "p10": -459,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 44.8,
+     "fail": 55.2,
+     "days": 9.0,
+     "net6": 2365,
+     "per_month": 394.2,
+     "blown": 78.1,
+     "p10": -734,
+     "fee": 91.8
+    }
+   },
+   "Q2 / UP": {
+    "a measured": {
+     "pass": 74.5,
+     "fail": 15.7,
+     "days": 11.0,
+     "net6": 4978,
+     "per_month": 829.7,
+     "blown": 15.5,
+     "p10": -92,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 73.6,
+     "fail": 16.4,
+     "days": 12.0,
+     "net6": 3859,
+     "per_month": 643.2,
+     "blown": 24.8,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 71.8,
+     "fail": 17.4,
+     "days": 12.0,
+     "net6": 2841,
+     "per_month": 473.5,
+     "blown": 33.8,
+     "p10": -184,
+     "fee": 91.8
+    }
+   },
+   "Q2 / FLOOR": {
+    "a measured": {
+     "pass": 73.0,
+     "fail": 21.4,
+     "days": 11.0,
+     "net6": 5214,
+     "per_month": 869.0,
+     "blown": 20.9,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 63.9,
+     "fail": 26.8,
+     "days": 11.0,
+     "net6": 3510,
+     "per_month": 585.0,
+     "blown": 31.7,
+     "p10": -275,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 56.9,
+     "fail": 33.6,
+     "days": 11.0,
+     "net6": 2343,
+     "per_month": 390.5,
+     "blown": 41.7,
+     "p10": -275,
+     "fee": 91.8
+    }
+   },
+   "Q2 / UP+FLOOR": {
+    "a measured": {
+     "pass": 74.4,
+     "fail": 15.7,
+     "days": 11.0,
+     "net6": 4971,
+     "per_month": 828.5,
+     "blown": 13.5,
+     "p10": -92,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 73.8,
+     "fail": 16.3,
+     "days": 12.0,
+     "net6": 3857,
+     "per_month": 642.8,
+     "blown": 21.6,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 71.9,
+     "fail": 17.0,
+     "days": 12.0,
+     "net6": 2879,
+     "per_month": 479.8,
+     "blown": 29.5,
+     "p10": -184,
+     "fee": 91.8
+    }
+   },
+   "Q3 / none": {
+    "a measured": {
+     "pass": 61.1,
+     "fail": 38.9,
+     "days": 7.0,
+     "net6": 6735,
+     "per_month": 1122.5,
+     "blown": 55.6,
+     "p10": 2649,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 51.8,
+     "fail": 48.2,
+     "days": 8.0,
+     "net6": 4273,
+     "per_month": 712.2,
+     "blown": 73.5,
+     "p10": -643,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 42.5,
+     "fail": 57.5,
+     "days": 7.0,
+     "net6": 2411,
+     "per_month": 401.8,
+     "blown": 84.0,
+     "p10": -826,
+     "fee": 91.8
+    }
+   },
+   "Q3 / UP": {
+    "a measured": {
+     "pass": 74.7,
+     "fail": 16.4,
+     "days": 12.0,
+     "net6": 5169,
+     "per_month": 861.5,
+     "blown": 19.8,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 73.0,
+     "fail": 16.9,
+     "days": 11.0,
+     "net6": 3926,
+     "per_month": 654.3,
+     "blown": 31.5,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 71.6,
+     "fail": 17.9,
+     "days": 11.5,
+     "net6": 2794,
+     "per_month": 465.7,
+     "blown": 40.6,
+     "p10": -184,
+     "fee": 91.8
+    }
+   },
+   "Q3 / FLOOR": {
+    "a measured": {
+     "pass": 69.9,
+     "fail": 23.9,
+     "days": 8.0,
+     "net6": 5505,
+     "per_month": 917.5,
+     "blown": 30.8,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 62.1,
+     "fail": 31.5,
+     "days": 10.0,
+     "net6": 3490,
+     "per_month": 581.7,
+     "blown": 42.5,
+     "p10": -275,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 57.9,
+     "fail": 32.7,
+     "days": 12.0,
+     "net6": 2144,
+     "per_month": 357.3,
+     "blown": 50.2,
+     "p10": -367,
+     "fee": 91.8
+    }
+   },
+   "Q3 / UP+FLOOR": {
+    "a measured": {
+     "pass": 74.8,
+     "fail": 16.3,
+     "days": 12.0,
+     "net6": 5145,
+     "per_month": 857.5,
+     "blown": 18.1,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 73.2,
+     "fail": 16.4,
+     "days": 11.5,
+     "net6": 3944,
+     "per_month": 657.3,
+     "blown": 27.7,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 71.4,
+     "fail": 17.8,
+     "days": 11.5,
+     "net6": 2839,
+     "per_month": 473.2,
+     "blown": 36.2,
+     "p10": -184,
+     "fee": 91.8
+    }
+   },
+   "C50 / none": {
+    "a measured": {
+     "pass": 76.9,
+     "fail": 12.7,
+     "days": 13.0,
+     "net6": 3509,
+     "per_month": 584.8,
+     "blown": 5.1,
+     "p10": -92,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 76.0,
+     "fail": 13.5,
+     "days": 13.0,
+     "net6": 3437,
+     "per_month": 572.8,
+     "blown": 6.3,
+     "p10": -92,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 74.3,
+     "fail": 17.0,
+     "days": 12.0,
+     "net6": 3416,
+     "per_month": 569.3,
+     "blown": 7.1,
+     "p10": -184,
+     "fee": 91.8
+    }
+   },
+   "C50 / UP": {
+    "a measured": {
+     "pass": 74.7,
+     "fail": 15.2,
+     "days": 12.0,
+     "net6": 3370,
+     "per_month": 561.7,
+     "blown": 7.6,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 74.6,
+     "fail": 15.1,
+     "days": 12.0,
+     "net6": 3333,
+     "per_month": 555.5,
+     "blown": 8.1,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 74.6,
+     "fail": 15.2,
+     "days": 12.0,
+     "net6": 3312,
+     "per_month": 552.0,
+     "blown": 8.1,
+     "p10": -184,
+     "fee": 91.8
+    }
+   },
+   "C50 / FLOOR": {
+    "a measured": {
+     "pass": 75.2,
+     "fail": 13.4,
+     "days": 12.0,
+     "net6": 3424,
+     "per_month": 570.7,
+     "blown": 6.8,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 74.8,
+     "fail": 14.0,
+     "days": 12.0,
+     "net6": 3384,
+     "per_month": 564.0,
+     "blown": 7.1,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 73.8,
+     "fail": 14.6,
+     "days": 12.0,
+     "net6": 3335,
+     "per_month": 555.8,
+     "blown": 7.9,
+     "p10": -184,
+     "fee": 91.8
+    }
+   },
+   "C50 / UP+FLOOR": {
+    "a measured": {
+     "pass": 74.7,
+     "fail": 15.2,
+     "days": 12.0,
+     "net6": 3369,
+     "per_month": 561.5,
+     "blown": 7.5,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 74.6,
+     "fail": 15.1,
+     "days": 12.0,
+     "net6": 3333,
+     "per_month": 555.5,
+     "blown": 8.2,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 74.6,
+     "fail": 15.2,
+     "days": 12.0,
+     "net6": 3314,
+     "per_month": 552.3,
+     "blown": 8.1,
+     "p10": -184,
+     "fee": 91.8
+    }
+   },
+   "C100 / none": {
+    "a measured": {
+     "pass": 80.3,
+     "fail": 14.2,
+     "days": 12.0,
+     "net6": 4135,
+     "per_month": 689.2,
+     "blown": 4.7,
+     "p10": -92,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 77.0,
+     "fail": 18.9,
+     "days": 12.0,
+     "net6": 3811,
+     "per_month": 635.2,
+     "blown": 9.5,
+     "p10": -92,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 73.2,
+     "fail": 22.6,
+     "days": 12.0,
+     "net6": 3479,
+     "per_month": 579.8,
+     "blown": 14.4,
+     "p10": -184,
+     "fee": 91.8
+    }
+   },
+   "C100 / UP": {
+    "a measured": {
+     "pass": 74.8,
+     "fail": 15.6,
+     "days": 12.0,
+     "net6": 3723,
+     "per_month": 620.5,
+     "blown": 6.9,
+     "p10": -101,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 74.4,
+     "fail": 15.5,
+     "days": 12.0,
+     "net6": 3552,
+     "per_month": 592.0,
+     "blown": 8.2,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 74.0,
+     "fail": 15.7,
+     "days": 12.0,
+     "net6": 3355,
+     "per_month": 559.2,
+     "blown": 9.6,
+     "p10": -184,
+     "fee": 91.8
+    }
+   },
+   "C100 / FLOOR": {
+    "a measured": {
+     "pass": 75.5,
+     "fail": 13.7,
+     "days": 11.0,
+     "net6": 3935,
+     "per_month": 655.8,
+     "blown": 5.8,
+     "p10": -92,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 73.8,
+     "fail": 14.9,
+     "days": 11.0,
+     "net6": 3614,
+     "per_month": 602.3,
+     "blown": 6.9,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 72.8,
+     "fail": 17.0,
+     "days": 12.0,
+     "net6": 3340,
+     "per_month": 556.7,
+     "blown": 8.5,
+     "p10": -184,
+     "fee": 91.8
+    }
+   },
+   "C100 / UP+FLOOR": {
+    "a measured": {
+     "pass": 74.8,
+     "fail": 15.5,
+     "days": 12.0,
+     "net6": 3721,
+     "per_month": 620.2,
+     "blown": 7.0,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 74.4,
+     "fail": 15.5,
+     "days": 12.0,
+     "net6": 3546,
+     "per_month": 591.0,
+     "blown": 7.9,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 74.0,
+     "fail": 15.8,
+     "days": 12.0,
+     "net6": 3360,
+     "per_month": 560.0,
+     "blown": 9.1,
+     "p10": -184,
+     "fee": 91.8
+    }
+   },
+   "C150 / none": {
+    "a measured": {
+     "pass": 84.2,
+     "fail": 9.5,
+     "days": 13.0,
+     "net6": 4712,
+     "per_month": 785.3,
+     "blown": 1.9,
+     "p10": 1508,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 77.3,
+     "fail": 17.7,
+     "days": 13.0,
+     "net6": 4077,
+     "per_month": 679.5,
+     "blown": 8.5,
+     "p10": -92,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 71.1,
+     "fail": 25.4,
+     "days": 12.0,
+     "net6": 3414,
+     "per_month": 569.0,
+     "blown": 16.9,
+     "p10": -184,
+     "fee": 91.8
+    }
+   },
+   "C150 / UP": {
+    "a measured": {
+     "pass": 74.8,
+     "fail": 15.4,
+     "days": 12.0,
+     "net6": 4057,
+     "per_month": 676.2,
+     "blown": 6.3,
+     "p10": -92,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 74.3,
+     "fail": 15.6,
+     "days": 12.0,
+     "net6": 3669,
+     "per_month": 611.5,
+     "blown": 7.4,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 73.5,
+     "fail": 15.6,
+     "days": 12.0,
+     "net6": 3241,
+     "per_month": 540.2,
+     "blown": 9.8,
+     "p10": -184,
+     "fee": 91.8
+    }
+   },
+   "C150 / FLOOR": {
+    "a measured": {
+     "pass": 76.5,
+     "fail": 14.1,
+     "days": 12.0,
+     "net6": 4433,
+     "per_month": 738.8,
+     "blown": 3.8,
+     "p10": -92,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 74.5,
+     "fail": 15.5,
+     "days": 12.0,
+     "net6": 3812,
+     "per_month": 635.3,
+     "blown": 6.1,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 71.2,
+     "fail": 18.4,
+     "days": 12.0,
+     "net6": 3212,
+     "per_month": 535.3,
+     "blown": 10.3,
+     "p10": -184,
+     "fee": 91.8
+    }
+   },
+   "C150 / UP+FLOOR": {
+    "a measured": {
+     "pass": 74.8,
+     "fail": 15.4,
+     "days": 12.0,
+     "net6": 4052,
+     "per_month": 675.3,
+     "blown": 6.5,
+     "p10": -92,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 74.4,
+     "fail": 15.4,
+     "days": 12.0,
+     "net6": 3652,
+     "per_month": 608.7,
+     "blown": 7.4,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 73.5,
+     "fail": 15.6,
+     "days": 12.0,
+     "net6": 3228,
+     "per_month": 538.0,
+     "blown": 9.2,
+     "p10": -184,
+     "fee": 91.8
+    }
+   },
+   "REF / none": {
+    "a measured": {
+     "pass": 81.8,
+     "fail": 16.5,
+     "days": 10.0,
+     "net6": 7552,
+     "per_month": 1258.7,
+     "blown": 18.8,
+     "p10": 3016,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 68.3,
+     "fail": 30.2,
+     "days": 10.0,
+     "net6": 4775,
+     "per_month": 795.8,
+     "blown": 42.1,
+     "p10": -275,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 51.6,
+     "fail": 48.0,
+     "days": 10.0,
+     "net6": 2354,
+     "per_month": 392.3,
+     "blown": 69.3,
+     "p10": -459,
+     "fee": 91.8
+    }
+   },
+   "REF / UP": {
+    "a measured": {
+     "pass": 74.0,
+     "fail": 16.3,
+     "days": 11.0,
+     "net6": 5708,
+     "per_month": 951.3,
+     "blown": 11.3,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 72.0,
+     "fail": 17.2,
+     "days": 12.0,
+     "net6": 4119,
+     "per_month": 686.5,
+     "blown": 17.9,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 70.6,
+     "fail": 17.8,
+     "days": 11.0,
+     "net6": 2651,
+     "per_month": 441.8,
+     "blown": 29.9,
+     "p10": -184,
+     "fee": 91.8
+    }
+   },
+   "REF / FLOOR": {
+    "a measured": {
+     "pass": 72.9,
+     "fail": 20.0,
+     "days": 9.0,
+     "net6": 6438,
+     "per_month": 1073.0,
+     "blown": 15.7,
+     "p10": -92,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 64.3,
+     "fail": 26.1,
+     "days": 10.0,
+     "net6": 3947,
+     "per_month": 657.8,
+     "blown": 24.4,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 53.6,
+     "fail": 33.3,
+     "days": 12.0,
+     "net6": 2187,
+     "per_month": 364.5,
+     "blown": 34.7,
+     "p10": -275,
+     "fee": 91.8
+    }
+   },
+   "REF / UP+FLOOR": {
+    "a measured": {
+     "pass": 74.1,
+     "fail": 16.2,
+     "days": 11.0,
+     "net6": 5714,
+     "per_month": 952.3,
+     "blown": 10.9,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "b half": {
+     "pass": 72.4,
+     "fail": 17.0,
+     "days": 12.0,
+     "net6": 4115,
+     "per_month": 685.8,
+     "blown": 16.3,
+     "p10": -184,
+     "fee": 91.8
+    },
+    "c zero": {
+     "pass": 70.7,
+     "fail": 17.8,
+     "days": 11.0,
+     "net6": 2711,
+     "per_month": 451.8,
+     "blown": 27.2,
+     "p10": -184,
+     "fee": 91.8
+    }
+   }
+  },
+  "Builder 25K": {
+   "base": {
+    "a measured": {
+     "pass": 70.3,
+     "fail": 0.0,
+     "days": 13.0,
+     "net6": 1318,
+     "per_month": 219.7,
+     "blown": 8.7,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 70.3,
+     "fail": 0.0,
+     "days": 13.0,
+     "net6": 1318,
+     "per_month": 219.7,
+     "blown": 8.7,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 70.3,
+     "fail": 0.0,
+     "days": 13.0,
+     "net6": 1318,
+     "per_month": 219.7,
+     "blown": 8.7,
+     "p10": -126,
+     "fee": 63.0
+    }
+   },
+   "Q1 / none": {
+    "a measured": {
+     "pass": 65.4,
+     "fail": 34.6,
+     "days": 9.0,
+     "net6": 2917,
+     "per_month": 486.2,
+     "blown": 43.1,
+     "p10": 611,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 53.6,
+     "fail": 46.2,
+     "days": 8.0,
+     "net6": 1839,
+     "per_month": 306.5,
+     "blown": 62.2,
+     "p10": -378,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 43.6,
+     "fail": 56.4,
+     "days": 8.0,
+     "net6": 923,
+     "per_month": 153.8,
+     "blown": 78.0,
+     "p10": -504,
+     "fee": 63.0
+    }
+   },
+   "Q1 / UP": {
+    "a measured": {
+     "pass": 72.3,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 2100,
+     "per_month": 350.0,
+     "blown": 18.5,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 70.8,
+     "fail": 0.3,
+     "days": 12.0,
+     "net6": 1536,
+     "per_month": 256.0,
+     "blown": 29.3,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 68.5,
+     "fail": 0.7,
+     "days": 12.0,
+     "net6": 1062,
+     "per_month": 177.0,
+     "blown": 40.5,
+     "p10": -126,
+     "fee": 63.0
+    }
+   },
+   "Q1 / FLOOR": {
+    "a measured": {
+     "pass": 73.9,
+     "fail": 0.2,
+     "days": 11.0,
+     "net6": 2128,
+     "per_month": 354.7,
+     "blown": 26.3,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 68.0,
+     "fail": 1.3,
+     "days": 12.0,
+     "net6": 1385,
+     "per_month": 230.8,
+     "blown": 39.5,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 62.6,
+     "fail": 3.7,
+     "days": 13.0,
+     "net6": 823,
+     "per_month": 137.2,
+     "blown": 43.8,
+     "p10": -189,
+     "fee": 63.0
+    }
+   },
+   "Q1 / UP+FLOOR": {
+    "a measured": {
+     "pass": 72.1,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 2107,
+     "per_month": 351.2,
+     "blown": 16.5,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 71.4,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 1568,
+     "per_month": 261.3,
+     "blown": 24.6,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 68.4,
+     "fail": 0.3,
+     "days": 12.0,
+     "net6": 1092,
+     "per_month": 182.0,
+     "blown": 35.5,
+     "p10": -126,
+     "fee": 63.0
+    }
+   },
+   "Q2 / none": {
+    "a measured": {
+     "pass": 60.7,
+     "fail": 39.3,
+     "days": 7.0,
+     "net6": 3442,
+     "per_month": 573.7,
+     "blown": 60.5,
+     "p10": 1279,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 50.7,
+     "fail": 49.3,
+     "days": 6.0,
+     "net6": 1998,
+     "per_month": 333.0,
+     "blown": 77.0,
+     "p10": -441,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 40.3,
+     "fail": 59.7,
+     "days": 7.0,
+     "net6": 753,
+     "per_month": 125.5,
+     "blown": 90.2,
+     "p10": -693,
+     "fee": 63.0
+    }
+   },
+   "Q2 / UP": {
+    "a measured": {
+     "pass": 71.1,
+     "fail": 0.5,
+     "days": 12.0,
+     "net6": 2152,
+     "per_month": 358.7,
+     "blown": 23.9,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 69.7,
+     "fail": 1.1,
+     "days": 12.0,
+     "net6": 1457,
+     "per_month": 242.8,
+     "blown": 39.4,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 64.8,
+     "fail": 3.5,
+     "days": 12.0,
+     "net6": 835,
+     "per_month": 139.2,
+     "blown": 51.2,
+     "p10": -126,
+     "fee": 63.0
+    }
+   },
+   "Q2 / FLOOR": {
+    "a measured": {
+     "pass": 71.5,
+     "fail": 0.5,
+     "days": 8.0,
+     "net6": 2265,
+     "per_month": 377.5,
+     "blown": 32.4,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 64.4,
+     "fail": 5.8,
+     "days": 8.0,
+     "net6": 1350,
+     "per_month": 225.0,
+     "blown": 46.3,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 53.8,
+     "fail": 7.7,
+     "days": 9.0,
+     "net6": 586,
+     "per_month": 97.7,
+     "blown": 53.2,
+     "p10": -189,
+     "fee": 63.0
+    }
+   },
+   "Q2 / UP+FLOOR": {
+    "a measured": {
+     "pass": 71.5,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 2180,
+     "per_month": 363.3,
+     "blown": 20.4,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 70.3,
+     "fail": 0.4,
+     "days": 12.0,
+     "net6": 1500,
+     "per_month": 250.0,
+     "blown": 33.3,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 66.8,
+     "fail": 1.4,
+     "days": 12.0,
+     "net6": 907,
+     "per_month": 151.2,
+     "blown": 44.3,
+     "p10": -126,
+     "fee": 63.0
+    }
+   },
+   "Q3 / none": {
+    "a measured": {
+     "pass": 60.5,
+     "fail": 39.5,
+     "days": 5.0,
+     "net6": 3580,
+     "per_month": 596.7,
+     "blown": 68.7,
+     "p10": 1285,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 46.3,
+     "fail": 53.7,
+     "days": 6.0,
+     "net6": 1826,
+     "per_month": 304.3,
+     "blown": 85.6,
+     "p10": -630,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 37.6,
+     "fail": 62.4,
+     "days": 5.0,
+     "net6": 588,
+     "per_month": 98.0,
+     "blown": 95.5,
+     "p10": -882,
+     "fee": 63.0
+    }
+   },
+   "Q3 / UP": {
+    "a measured": {
+     "pass": 70.7,
+     "fail": 0.5,
+     "days": 12.0,
+     "net6": 2108,
+     "per_month": 351.3,
+     "blown": 26.5,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 66.6,
+     "fail": 2.6,
+     "days": 12.0,
+     "net6": 1281,
+     "per_month": 213.5,
+     "blown": 44.8,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 64.1,
+     "fail": 3.7,
+     "days": 12.0,
+     "net6": 664,
+     "per_month": 110.7,
+     "blown": 59.5,
+     "p10": -189,
+     "fee": 63.0
+    }
+   },
+   "Q3 / FLOOR": {
+    "a measured": {
+     "pass": 70.5,
+     "fail": 0.5,
+     "days": 6.0,
+     "net6": 2116,
+     "per_month": 352.7,
+     "blown": 39.9,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 60.3,
+     "fail": 3.0,
+     "days": 8.0,
+     "net6": 1169,
+     "per_month": 194.8,
+     "blown": 49.7,
+     "p10": -189,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 45.3,
+     "fail": 13.8,
+     "days": 6.0,
+     "net6": 475,
+     "per_month": 79.2,
+     "blown": 57.2,
+     "p10": -189,
+     "fee": 63.0
+    }
+   },
+   "Q3 / UP+FLOOR": {
+    "a measured": {
+     "pass": 71.2,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 2087,
+     "per_month": 347.8,
+     "blown": 24.3,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 68.0,
+     "fail": 0.6,
+     "days": 12.0,
+     "net6": 1333,
+     "per_month": 222.2,
+     "blown": 39.4,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 65.3,
+     "fail": 1.2,
+     "days": 12.0,
+     "net6": 768,
+     "per_month": 128.0,
+     "blown": 50.4,
+     "p10": -126,
+     "fee": 63.0
+    }
+   },
+   "C50 / none": {
+    "a measured": {
+     "pass": 77.2,
+     "fail": 2.6,
+     "days": 13.0,
+     "net6": 1592,
+     "per_month": 265.3,
+     "blown": 7.3,
+     "p10": -63,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 75.9,
+     "fail": 3.6,
+     "days": 13.0,
+     "net6": 1544,
+     "per_month": 257.3,
+     "blown": 9.3,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 74.0,
+     "fail": 6.4,
+     "days": 13.0,
+     "net6": 1476,
+     "per_month": 246.0,
+     "blown": 9.6,
+     "p10": -126,
+     "fee": 63.0
+    }
+   },
+   "C50 / UP": {
+    "a measured": {
+     "pass": 70.9,
+     "fail": 0.0,
+     "days": 13.0,
+     "net6": 1393,
+     "per_month": 232.2,
+     "blown": 8.6,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 70.8,
+     "fail": 0.0,
+     "days": 13.0,
+     "net6": 1364,
+     "per_month": 227.3,
+     "blown": 8.5,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 70.5,
+     "fail": 0.0,
+     "days": 13.0,
+     "net6": 1336,
+     "per_month": 222.7,
+     "blown": 8.7,
+     "p10": -126,
+     "fee": 63.0
+    }
+   },
+   "C50 / FLOOR": {
+    "a measured": {
+     "pass": 72.3,
+     "fail": 0.0,
+     "days": 13.0,
+     "net6": 1446,
+     "per_month": 241.0,
+     "blown": 8.4,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 72.2,
+     "fail": 0.0,
+     "days": 13.0,
+     "net6": 1399,
+     "per_month": 233.2,
+     "blown": 8.8,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 71.1,
+     "fail": 0.0,
+     "days": 13.0,
+     "net6": 1350,
+     "per_month": 225.0,
+     "blown": 8.6,
+     "p10": -126,
+     "fee": 63.0
+    }
+   },
+   "C50 / UP+FLOOR": {
+    "a measured": {
+     "pass": 70.9,
+     "fail": 0.0,
+     "days": 13.0,
+     "net6": 1388,
+     "per_month": 231.3,
+     "blown": 8.6,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 70.8,
+     "fail": 0.0,
+     "days": 13.0,
+     "net6": 1358,
+     "per_month": 226.3,
+     "blown": 8.7,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 70.6,
+     "fail": 0.0,
+     "days": 13.0,
+     "net6": 1335,
+     "per_month": 222.5,
+     "blown": 8.9,
+     "p10": -126,
+     "fee": 63.0
+    }
+   },
+   "C100 / none": {
+    "a measured": {
+     "pass": 82.3,
+     "fail": 13.8,
+     "days": 13.0,
+     "net6": 2176,
+     "per_month": 362.7,
+     "blown": 10.5,
+     "p10": 674,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 75.3,
+     "fail": 21.0,
+     "days": 12.0,
+     "net6": 1899,
+     "per_month": 316.5,
+     "blown": 18.3,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 68.7,
+     "fail": 29.3,
+     "days": 10.0,
+     "net6": 1579,
+     "per_month": 263.2,
+     "blown": 26.1,
+     "p10": -189,
+     "fee": 63.0
+    }
+   },
+   "C100 / UP": {
+    "a measured": {
+     "pass": 71.4,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 1637,
+     "per_month": 272.8,
+     "blown": 8.2,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 70.7,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 1500,
+     "per_month": 250.0,
+     "blown": 10.0,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 70.1,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 1335,
+     "per_month": 222.5,
+     "blown": 13.8,
+     "p10": -126,
+     "fee": 63.0
+    }
+   },
+   "C100 / FLOOR": {
+    "a measured": {
+     "pass": 76.4,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 1869,
+     "per_month": 311.5,
+     "blown": 7.7,
+     "p10": -63,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 71.5,
+     "fail": 0.0,
+     "days": 11.0,
+     "net6": 1558,
+     "per_month": 259.7,
+     "blown": 11.4,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 68.9,
+     "fail": 0.0,
+     "days": 11.0,
+     "net6": 1284,
+     "per_month": 214.0,
+     "blown": 15.9,
+     "p10": -126,
+     "fee": 63.0
+    }
+   },
+   "C100 / UP+FLOOR": {
+    "a measured": {
+     "pass": 71.3,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 1632,
+     "per_month": 272.0,
+     "blown": 7.7,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 70.5,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 1498,
+     "per_month": 249.7,
+     "blown": 9.6,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 70.2,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 1339,
+     "per_month": 223.2,
+     "blown": 12.4,
+     "p10": -126,
+     "fee": 63.0
+    }
+   },
+   "C150 / none": {
+    "a measured": {
+     "pass": 87.0,
+     "fail": 11.4,
+     "days": 13.0,
+     "net6": 2802,
+     "per_month": 467.0,
+     "blown": 7.9,
+     "p10": 737,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 76.7,
+     "fail": 21.6,
+     "days": 12.0,
+     "net6": 2164,
+     "per_month": 360.7,
+     "blown": 19.7,
+     "p10": 611,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 64.1,
+     "fail": 34.1,
+     "days": 11.0,
+     "net6": 1521,
+     "per_month": 253.5,
+     "blown": 36.6,
+     "p10": -252,
+     "fee": 63.0
+    }
+   },
+   "C150 / UP": {
+    "a measured": {
+     "pass": 72.0,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 1971,
+     "per_month": 328.5,
+     "blown": 8.8,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 70.9,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 1572,
+     "per_month": 262.0,
+     "blown": 12.0,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 69.6,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 1220,
+     "per_month": 203.3,
+     "blown": 17.7,
+     "p10": -126,
+     "fee": 63.0
+    }
+   },
+   "C150 / FLOOR": {
+    "a measured": {
+     "pass": 79.3,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 2359,
+     "per_month": 393.2,
+     "blown": 8.1,
+     "p10": -63,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 67.3,
+     "fail": 0.0,
+     "days": 11.0,
+     "net6": 1621,
+     "per_month": 270.2,
+     "blown": 14.6,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 62.6,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 1072,
+     "per_month": 178.7,
+     "blown": 20.9,
+     "p10": -126,
+     "fee": 63.0
+    }
+   },
+   "C150 / UP+FLOOR": {
+    "a measured": {
+     "pass": 71.8,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 1960,
+     "per_month": 326.7,
+     "blown": 8.9,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 70.8,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 1574,
+     "per_month": 262.3,
+     "blown": 11.0,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 69.6,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 1225,
+     "per_month": 204.2,
+     "blown": 16.3,
+     "p10": -126,
+     "fee": 63.0
+    }
+   },
+   "REF / none": {
+    "a measured": {
+     "pass": 87.3,
+     "fail": 3.7,
+     "days": 11.0,
+     "net6": 3510,
+     "per_month": 585.0,
+     "blown": 20.4,
+     "p10": 674,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 74.2,
+     "fail": 11.0,
+     "days": 11.0,
+     "net6": 2232,
+     "per_month": 372.0,
+     "blown": 41.6,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 62.4,
+     "fail": 20.2,
+     "days": 10.5,
+     "net6": 1199,
+     "per_month": 199.8,
+     "blown": 56.0,
+     "p10": -189,
+     "fee": 63.0
+    }
+   },
+   "REF / UP": {
+    "a measured": {
+     "pass": 72.4,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 2464,
+     "per_month": 410.7,
+     "blown": 14.2,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 70.0,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 1831,
+     "per_month": 305.2,
+     "blown": 22.2,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 65.1,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 1195,
+     "per_month": 199.2,
+     "blown": 32.1,
+     "p10": -126,
+     "fee": 63.0
+    }
+   },
+   "REF / FLOOR": {
+    "a measured": {
+     "pass": 76.0,
+     "fail": 0.0,
+     "days": 9.0,
+     "net6": 2938,
+     "per_month": 489.7,
+     "blown": 17.8,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 65.1,
+     "fail": 0.0,
+     "days": 10.0,
+     "net6": 1800,
+     "per_month": 300.0,
+     "blown": 26.8,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 57.1,
+     "fail": 0.0,
+     "days": 11.0,
+     "net6": 975,
+     "per_month": 162.5,
+     "blown": 36.6,
+     "p10": -126,
+     "fee": 63.0
+    }
+   },
+   "REF / UP+FLOOR": {
+    "a measured": {
+     "pass": 72.4,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 2457,
+     "per_month": 409.5,
+     "blown": 13.7,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "b half": {
+     "pass": 70.1,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 1852,
+     "per_month": 308.7,
+     "blown": 19.5,
+     "p10": -126,
+     "fee": 63.0
+    },
+    "c zero": {
+     "pass": 65.2,
+     "fail": 0.0,
+     "days": 12.0,
+     "net6": 1219,
+     "per_month": 203.2,
+     "blown": 27.8,
+     "p10": -126,
+     "fee": 63.0
+    }
+   }
+  },
+  "Rapid EOD 25K": {
+   "base": {
+    "a measured": {
+     "pass": 13.2,
+     "fail": 0.0,
+     "days": 48.0,
+     "net6": 79,
+     "per_month": 13.2,
+     "blown": 3.6,
+     "p10": -97,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 13.2,
+     "fail": 0.0,
+     "days": 48.0,
+     "net6": 79,
+     "per_month": 13.2,
+     "blown": 3.6,
+     "p10": -97,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 13.2,
+     "fail": 0.0,
+     "days": 48.0,
+     "net6": 79,
+     "per_month": 13.2,
+     "blown": 3.6,
+     "p10": -97,
+     "fee": 97.2
+    }
+   },
+   "Q1 / none": {
+    "a measured": {
+     "pass": 64.1,
+     "fail": 5.1,
+     "days": 36.0,
+     "net6": 1696,
+     "per_month": 282.7,
+     "blown": 47.2,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 36.0,
+     "fail": 23.5,
+     "days": 39.5,
+     "net6": 339,
+     "per_month": 56.5,
+     "blown": 48.7,
+     "p10": -292,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 13.4,
+     "fail": 49.3,
+     "days": 43.5,
+     "net6": -159,
+     "per_month": -26.5,
+     "blown": 27.3,
+     "p10": -389,
+     "fee": 97.2
+    }
+   },
+   "Q1 / UP": {
+    "a measured": {
+     "pass": 32.7,
+     "fail": 0.0,
+     "days": 43.0,
+     "net6": 573,
+     "per_month": 95.5,
+     "blown": 17.0,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 21.4,
+     "fail": 0.0,
+     "days": 46.0,
+     "net6": 111,
+     "per_month": 18.5,
+     "blown": 16.8,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 11.2,
+     "fail": 0.0,
+     "days": 47.0,
+     "net6": -45,
+     "per_month": -7.5,
+     "blown": 9.9,
+     "p10": -97,
+     "fee": 97.2
+    }
+   },
+   "Q1 / FLOOR": {
+    "a measured": {
+     "pass": 61.6,
+     "fail": 0.0,
+     "days": 35.0,
+     "net6": 1334,
+     "per_month": 222.3,
+     "blown": 35.5,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 34.2,
+     "fail": 0.0,
+     "days": 39.0,
+     "net6": 269,
+     "per_month": 44.8,
+     "blown": 31.8,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 13.2,
+     "fail": 0.0,
+     "days": 44.0,
+     "net6": -45,
+     "per_month": -7.5,
+     "blown": 14.9,
+     "p10": -194,
+     "fee": 97.2
+    }
+   },
+   "Q1 / UP+FLOOR": {
+    "a measured": {
+     "pass": 32.5,
+     "fail": 0.0,
+     "days": 43.0,
+     "net6": 546,
+     "per_month": 91.0,
+     "blown": 15.6,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 21.4,
+     "fail": 0.0,
+     "days": 46.0,
+     "net6": 112,
+     "per_month": 18.7,
+     "blown": 15.3,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 11.5,
+     "fail": 0.0,
+     "days": 47.0,
+     "net6": -50,
+     "per_month": -8.3,
+     "blown": 8.2,
+     "p10": -97,
+     "fee": 97.2
+    }
+   },
+   "Q2 / none": {
+    "a measured": {
+     "pass": 73.2,
+     "fail": 19.5,
+     "days": 26.0,
+     "net6": 3139,
+     "per_month": 523.2,
+     "blown": 71.1,
+     "p10": -389,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 48.3,
+     "fail": 45.1,
+     "days": 28.0,
+     "net6": 804,
+     "per_month": 134.0,
+     "blown": 76.1,
+     "p10": -486,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 27.0,
+     "fail": 67.0,
+     "days": 28.0,
+     "net6": -184,
+     "per_month": -30.7,
+     "blown": 61.0,
+     "p10": -583,
+     "fee": 97.2
+    }
+   },
+   "Q2 / UP": {
+    "a measured": {
+     "pass": 37.7,
+     "fail": 0.0,
+     "days": 41.0,
+     "net6": 755,
+     "per_month": 125.8,
+     "blown": 25.8,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 25.7,
+     "fail": 0.0,
+     "days": 42.0,
+     "net6": 219,
+     "per_month": 36.5,
+     "blown": 24.7,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 16.6,
+     "fail": 0.0,
+     "days": 43.5,
+     "net6": -18,
+     "per_month": -3.0,
+     "blown": 18.6,
+     "p10": -194,
+     "fee": 97.2
+    }
+   },
+   "Q2 / FLOOR": {
+    "a measured": {
+     "pass": 68.6,
+     "fail": 0.0,
+     "days": 25.0,
+     "net6": 2145,
+     "per_month": 357.5,
+     "blown": 50.6,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 47.7,
+     "fail": 0.0,
+     "days": 28.0,
+     "net6": 520,
+     "per_month": 86.7,
+     "blown": 47.3,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 25.7,
+     "fail": 0.0,
+     "days": 28.0,
+     "net6": -16,
+     "per_month": -2.7,
+     "blown": 31.8,
+     "p10": -194,
+     "fee": 97.2
+    }
+   },
+   "Q2 / UP+FLOOR": {
+    "a measured": {
+     "pass": 37.1,
+     "fail": 0.0,
+     "days": 40.0,
+     "net6": 711,
+     "per_month": 118.5,
+     "blown": 23.5,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 25.4,
+     "fail": 0.0,
+     "days": 40.0,
+     "net6": 225,
+     "per_month": 37.5,
+     "blown": 21.4,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 16.6,
+     "fail": 0.0,
+     "days": 43.0,
+     "net6": -21,
+     "per_month": -3.5,
+     "blown": 15.8,
+     "p10": -194,
+     "fee": 97.2
+    }
+   },
+   "Q3 / none": {
+    "a measured": {
+     "pass": 72.8,
+     "fail": 24.2,
+     "days": 22.0,
+     "net6": 3692,
+     "per_month": 615.3,
+     "blown": 86.1,
+     "p10": -389,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 51.0,
+     "fail": 47.0,
+     "days": 24.0,
+     "net6": 957,
+     "per_month": 159.5,
+     "blown": 87.2,
+     "p10": -583,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 30.4,
+     "fail": 67.1,
+     "days": 25.0,
+     "net6": -183,
+     "per_month": -30.5,
+     "blown": 72.9,
+     "p10": -680,
+     "fee": 97.2
+    }
+   },
+   "Q3 / UP": {
+    "a measured": {
+     "pass": 37.3,
+     "fail": 0.0,
+     "days": 39.0,
+     "net6": 724,
+     "per_month": 120.7,
+     "blown": 30.9,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 27.3,
+     "fail": 0.0,
+     "days": 42.0,
+     "net6": 157,
+     "per_month": 26.2,
+     "blown": 27.8,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 16.2,
+     "fail": 0.3,
+     "days": 40.0,
+     "net6": -44,
+     "per_month": -7.3,
+     "blown": 22.4,
+     "p10": -194,
+     "fee": 97.2
+    }
+   },
+   "Q3 / FLOOR": {
+    "a measured": {
+     "pass": 71.1,
+     "fail": 0.0,
+     "days": 22.0,
+     "net6": 2220,
+     "per_month": 370.0,
+     "blown": 65.3,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 50.6,
+     "fail": 0.0,
+     "days": 24.0,
+     "net6": 567,
+     "per_month": 94.5,
+     "blown": 53.6,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 28.8,
+     "fail": 0.0,
+     "days": 25.0,
+     "net6": 6,
+     "per_month": 1.0,
+     "blown": 39.0,
+     "p10": -194,
+     "fee": 97.2
+    }
+   },
+   "Q3 / UP+FLOOR": {
+    "a measured": {
+     "pass": 36.8,
+     "fail": 0.0,
+     "days": 39.0,
+     "net6": 658,
+     "per_month": 109.7,
+     "blown": 28.3,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 27.0,
+     "fail": 0.0,
+     "days": 40.0,
+     "net6": 143,
+     "per_month": 23.8,
+     "blown": 24.6,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 15.5,
+     "fail": 0.0,
+     "days": 40.0,
+     "net6": -44,
+     "per_month": -7.3,
+     "blown": 19.0,
+     "p10": -194,
+     "fee": 97.2
+    }
+   },
+   "C50 / none": {
+    "a measured": {
+     "pass": 25.3,
+     "fail": 0.0,
+     "days": 46.0,
+     "net6": 302,
+     "per_month": 50.3,
+     "blown": 5.7,
+     "p10": -97,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 22.0,
+     "fail": 0.0,
+     "days": 46.0,
+     "net6": 230,
+     "per_month": 38.3,
+     "blown": 6.5,
+     "p10": -97,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 19.0,
+     "fail": 0.0,
+     "days": 46.0,
+     "net6": 169,
+     "per_month": 28.2,
+     "blown": 6.3,
+     "p10": -97,
+     "fee": 97.2
+    }
+   },
+   "C50 / UP": {
+    "a measured": {
+     "pass": 18.5,
+     "fail": 0.0,
+     "days": 47.0,
+     "net6": 152,
+     "per_month": 25.3,
+     "blown": 6.2,
+     "p10": -97,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 16.1,
+     "fail": 0.0,
+     "days": 47.0,
+     "net6": 131,
+     "per_month": 21.8,
+     "blown": 5.7,
+     "p10": -97,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 14.8,
+     "fail": 0.0,
+     "days": 47.0,
+     "net6": 108,
+     "per_month": 18.0,
+     "blown": 5.0,
+     "p10": -97,
+     "fee": 97.2
+    }
+   },
+   "C50 / FLOOR": {
+    "a measured": {
+     "pass": 25.3,
+     "fail": 0.0,
+     "days": 46.0,
+     "net6": 286,
+     "per_month": 47.7,
+     "blown": 7.0,
+     "p10": -97,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 22.0,
+     "fail": 0.0,
+     "days": 46.0,
+     "net6": 224,
+     "per_month": 37.3,
+     "blown": 7.3,
+     "p10": -97,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 19.0,
+     "fail": 0.0,
+     "days": 46.0,
+     "net6": 168,
+     "per_month": 28.0,
+     "blown": 6.2,
+     "p10": -97,
+     "fee": 97.2
+    }
+   },
+   "C50 / UP+FLOOR": {
+    "a measured": {
+     "pass": 18.5,
+     "fail": 0.0,
+     "days": 47.0,
+     "net6": 151,
+     "per_month": 25.2,
+     "blown": 6.2,
+     "p10": -97,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 16.1,
+     "fail": 0.0,
+     "days": 47.0,
+     "net6": 131,
+     "per_month": 21.8,
+     "blown": 5.7,
+     "p10": -97,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 14.8,
+     "fail": 0.0,
+     "days": 47.0,
+     "net6": 108,
+     "per_month": 18.0,
+     "blown": 5.0,
+     "p10": -97,
+     "fee": 97.2
+    }
+   },
+   "C100 / none": {
+    "a measured": {
+     "pass": 69.2,
+     "fail": 0.3,
+     "days": 35.0,
+     "net6": 1518,
+     "per_month": 253.0,
+     "blown": 10.0,
+     "p10": -97,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 52.4,
+     "fail": 2.9,
+     "days": 37.0,
+     "net6": 864,
+     "per_month": 144.0,
+     "blown": 17.7,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 35.7,
+     "fail": 8.8,
+     "days": 39.0,
+     "net6": 395,
+     "per_month": 65.8,
+     "blown": 22.0,
+     "p10": -194,
+     "fee": 97.2
+    }
+   },
+   "C100 / UP": {
+    "a measured": {
+     "pass": 32.2,
+     "fail": 0.0,
+     "days": 43.0,
+     "net6": 487,
+     "per_month": 81.2,
+     "blown": 9.8,
+     "p10": -97,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 26.6,
+     "fail": 0.0,
+     "days": 46.0,
+     "net6": 310,
+     "per_month": 51.7,
+     "blown": 8.7,
+     "p10": -97,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 19.1,
+     "fail": 0.0,
+     "days": 45.0,
+     "net6": 173,
+     "per_month": 28.8,
+     "blown": 7.9,
+     "p10": -97,
+     "fee": 97.2
+    }
+   },
+   "C100 / FLOOR": {
+    "a measured": {
+     "pass": 68.3,
+     "fail": 0.0,
+     "days": 35.0,
+     "net6": 1415,
+     "per_month": 235.8,
+     "blown": 13.2,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 51.8,
+     "fail": 0.0,
+     "days": 37.0,
+     "net6": 798,
+     "per_month": 133.0,
+     "blown": 16.1,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 35.6,
+     "fail": 0.0,
+     "days": 38.5,
+     "net6": 378,
+     "per_month": 63.0,
+     "blown": 15.2,
+     "p10": -194,
+     "fee": 97.2
+    }
+   },
+   "C100 / UP+FLOOR": {
+    "a measured": {
+     "pass": 32.2,
+     "fail": 0.0,
+     "days": 43.0,
+     "net6": 484,
+     "per_month": 80.7,
+     "blown": 9.4,
+     "p10": -97,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 26.6,
+     "fail": 0.0,
+     "days": 46.0,
+     "net6": 306,
+     "per_month": 51.0,
+     "blown": 8.7,
+     "p10": -97,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 19.0,
+     "fail": 0.0,
+     "days": 45.0,
+     "net6": 170,
+     "per_month": 28.3,
+     "blown": 7.9,
+     "p10": -97,
+     "fee": 97.2
+    }
+   },
+   "C150 / none": {
+    "a measured": {
+     "pass": 85.9,
+     "fail": 4.2,
+     "days": 29.0,
+     "net6": 2791,
+     "per_month": 465.2,
+     "blown": 12.7,
+     "p10": -97,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 67.2,
+     "fail": 12.9,
+     "days": 33.0,
+     "net6": 1265,
+     "per_month": 210.8,
+     "blown": 30.1,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 38.2,
+     "fail": 30.6,
+     "days": 38.0,
+     "net6": 288,
+     "per_month": 48.0,
+     "blown": 36.1,
+     "p10": -292,
+     "fee": 97.2
+    }
+   },
+   "C150 / UP": {
+    "a measured": {
+     "pass": 31.4,
+     "fail": 0.0,
+     "days": 41.0,
+     "net6": 567,
+     "per_month": 94.5,
+     "blown": 10.8,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 19.6,
+     "fail": 0.0,
+     "days": 43.5,
+     "net6": 241,
+     "per_month": 40.2,
+     "blown": 8.5,
+     "p10": -97,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 10.8,
+     "fail": 0.0,
+     "days": 48.0,
+     "net6": 12,
+     "per_month": 2.0,
+     "blown": 5.3,
+     "p10": -97,
+     "fee": 97.2
+    }
+   },
+   "C150 / FLOOR": {
+    "a measured": {
+     "pass": 80.8,
+     "fail": 0.0,
+     "days": 28.0,
+     "net6": 2324,
+     "per_month": 387.3,
+     "blown": 16.8,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 58.6,
+     "fail": 0.0,
+     "days": 31.0,
+     "net6": 932,
+     "per_month": 155.3,
+     "blown": 23.9,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 33.0,
+     "fail": 0.0,
+     "days": 36.0,
+     "net6": 206,
+     "per_month": 34.3,
+     "blown": 20.0,
+     "p10": -194,
+     "fee": 97.2
+    }
+   },
+   "C150 / UP+FLOOR": {
+    "a measured": {
+     "pass": 31.4,
+     "fail": 0.0,
+     "days": 41.0,
+     "net6": 557,
+     "per_month": 92.8,
+     "blown": 10.7,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 19.5,
+     "fail": 0.0,
+     "days": 43.0,
+     "net6": 239,
+     "per_month": 39.8,
+     "blown": 8.2,
+     "p10": -97,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 10.7,
+     "fail": 0.0,
+     "days": 48.0,
+     "net6": 8,
+     "per_month": 1.3,
+     "blown": 4.7,
+     "p10": -97,
+     "fee": 97.2
+    }
+   },
+   "REF / none": {
+    "a measured": {
+     "pass": 84.9,
+     "fail": 1.0,
+     "days": 20.0,
+     "net6": 5091,
+     "per_month": 848.5,
+     "blown": 35.7,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 62.5,
+     "fail": 5.9,
+     "days": 22.0,
+     "net6": 1774,
+     "per_month": 295.7,
+     "blown": 50.0,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 36.0,
+     "fail": 16.7,
+     "days": 26.0,
+     "net6": 228,
+     "per_month": 38.0,
+     "blown": 41.3,
+     "p10": -292,
+     "fee": 97.2
+    }
+   },
+   "REF / UP": {
+    "a measured": {
+     "pass": 26.9,
+     "fail": 0.0,
+     "days": 40.0,
+     "net6": 878,
+     "per_month": 146.3,
+     "blown": 13.9,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 15.0,
+     "fail": 0.0,
+     "days": 41.0,
+     "net6": 218,
+     "per_month": 36.3,
+     "blown": 11.0,
+     "p10": -97,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 8.6,
+     "fail": 0.0,
+     "days": 39.5,
+     "net6": -30,
+     "per_month": -5.0,
+     "blown": 7.6,
+     "p10": -97,
+     "fee": 97.2
+    }
+   },
+   "REF / FLOOR": {
+    "a measured": {
+     "pass": 66.6,
+     "fail": 0.0,
+     "days": 17.0,
+     "net6": 3678,
+     "per_month": 613.0,
+     "blown": 29.0,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 48.5,
+     "fail": 0.0,
+     "days": 19.0,
+     "net6": 989,
+     "per_month": 164.8,
+     "blown": 33.5,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 23.4,
+     "fail": 0.0,
+     "days": 20.0,
+     "net6": 110,
+     "per_month": 18.3,
+     "blown": 20.7,
+     "p10": -194,
+     "fee": 97.2
+    }
+   },
+   "REF / UP+FLOOR": {
+    "a measured": {
+     "pass": 26.3,
+     "fail": 0.0,
+     "days": 41.0,
+     "net6": 846,
+     "per_month": 141.0,
+     "blown": 13.1,
+     "p10": -194,
+     "fee": 97.2
+    },
+    "b half": {
+     "pass": 14.9,
+     "fail": 0.0,
+     "days": 40.0,
+     "net6": 188,
+     "per_month": 31.3,
+     "blown": 10.4,
+     "p10": -97,
+     "fee": 97.2
+    },
+    "c zero": {
+     "pass": 8.3,
+     "fail": 0.0,
+     "days": 39.0,
+     "net6": -32,
+     "per_month": -5.3,
+     "blown": 6.7,
+     "p10": -97,
+     "fee": 97.2
+    }
+   }
+  }
+ },
+ "scored": {
+  "Q1 / none": {
+   "safe_zero_edge": false,
+   "sum_add_a": 4976,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "Q1 / UP": {
+   "safe_zero_edge": false,
+   "sum_add_a": 2407,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "Q1 / FLOOR": {
+   "safe_zero_edge": false,
+   "sum_add_a": 3418,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "Q1 / UP+FLOOR": {
+   "safe_zero_edge": false,
+   "sum_add_a": 2382,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "Q2 / none": {
+   "safe_zero_edge": false,
+   "sum_add_a": 7931,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "Q2 / UP": {
+   "safe_zero_edge": false,
+   "sum_add_a": 3179,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "Q2 / FLOOR": {
+   "safe_zero_edge": false,
+   "sum_add_a": 4918,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "Q2 / UP+FLOOR": {
+   "safe_zero_edge": false,
+   "sum_add_a": 3156,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "Q3 / none": {
+   "safe_zero_edge": false,
+   "sum_add_a": 9301,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "Q3 / UP": {
+   "safe_zero_edge": false,
+   "sum_add_a": 3295,
+   "plans_up_a": 3,
+   "half_no_loss": false
+  },
+  "Q3 / FLOOR": {
+   "safe_zero_edge": false,
+   "sum_add_a": 5135,
+   "plans_up_a": 3,
+   "half_no_loss": false
+  },
+  "Q3 / UP+FLOOR": {
+   "safe_zero_edge": false,
+   "sum_add_a": 3184,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "C50 / none": {
+   "safe_zero_edge": false,
+   "sum_add_a": 697,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "C50 / UP": {
+   "safe_zero_edge": true,
+   "sum_add_a": 209,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "C50 / FLOOR": {
+   "safe_zero_edge": true,
+   "sum_add_a": 450,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "C50 / UP+FLOOR": {
+   "safe_zero_edge": true,
+   "sum_add_a": 202,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "C100 / none": {
+   "safe_zero_edge": false,
+   "sum_add_a": 3123,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "C100 / UP": {
+   "safe_zero_edge": false,
+   "sum_add_a": 1141,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "C100 / FLOOR": {
+   "safe_zero_edge": false,
+   "sum_add_a": 2513,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "C100 / UP+FLOOR": {
+   "safe_zero_edge": false,
+   "sum_add_a": 1131,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "C150 / none": {
+   "safe_zero_edge": false,
+   "sum_add_a": 5599,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "C150 / UP": {
+   "safe_zero_edge": false,
+   "sum_add_a": 1889,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "C150 / FLOOR": {
+   "safe_zero_edge": false,
+   "sum_add_a": 4410,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "C150 / UP+FLOOR": {
+   "safe_zero_edge": false,
+   "sum_add_a": 1863,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "REF / none": {
+   "safe_zero_edge": false,
+   "sum_add_a": 11447,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "REF / UP": {
+   "safe_zero_edge": false,
+   "sum_add_a": 4344,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "REF / FLOOR": {
+   "safe_zero_edge": false,
+   "sum_add_a": 8348,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  },
+  "REF / UP+FLOOR": {
+   "safe_zero_edge": false,
+   "sum_add_a": 4311,
+   "plans_up_a": 3,
+   "half_no_loss": true
+  }
+ },
+ "pick": "C50 / FLOOR",
+ "pick_line": "pick C50 / FLOOR"
+}
