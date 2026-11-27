@@ -20,14 +20,14 @@ import re
 import threading
 import time
 
-LINE_MAX = 120
+LINE_MAX = 150
 MAX_LINES = 3
 RATE_N = 6                       # chatty messages ...
 RATE_S = 10 * 60                 # ... per 10 minutes
 CHATTY = ("setup_progress", "eval_milestones", "other")      # the only kinds the rate limit may hold back (+ kind "setup")
 ALWAYS = ("entry", "exit", "bot_stopped", "pc_silent", "hedge_risk", "test", "channel_down", "daily", "payout_ready")
 PAPER_WORDS = ("paper", "sim", "demo", "playback", "replay", "blitz", "acctc", "acct_c")
-MINUS = "−"                 # a real minus: "−$310"
+MINUS = "-"                      # the same minus as every other channel ("-$310": searchable, never a look-alike)
 
 E_LONG, E_SHORT = "\U0001F7E2", "\U0001F7E2"          # 🟢 an entry (the side word says long / short)
 E_TARGET, E_STOP, E_BE, E_WIN, E_LOSS = "✅", "\U0001F6D1", "⚖️", "✅", "\U0001F53B"   # ✅ 🛑 ⚖️ ✅ 🔻
@@ -123,18 +123,21 @@ def _why(ev) -> str:
 
 def _exit(ev) -> list:
     v, r = _f(ev.get("usd")), _f(ev.get("R"))
-    why = str(ev.get("reason") or "").strip().lower()
+    why_txt = str(ev.get("reason") or "").strip()
+    why = why_txt.lower()
     who = _clean(ev.get("account") or "", 40)
     if "target" in why or why == "banked" or why.startswith("banked"):
         head = f"{E_TARGET} Target hit {usd(v, True)}" if v is not None else f"{E_TARGET} Target hit"
+        if why not in ("target",):
+            head += f" ({why_txt})"
     elif why in ("stop",) or "stop" in why and "time" not in why:
         head = f"{E_STOP} Stopped {usd(v, True)}" if v is not None else f"{E_STOP} Stopped out"
     elif "breakeven" in why or (v is not None and abs(v) < 0.5):
         head = f"{E_BE} Break-even {usd(v, True) or '$0'}"
     elif v is not None:
-        head = f"{E_WIN if v > 0 else E_LOSS} Closed {usd(v, True)}" + (f" ({why})" if why else "")
+        head = f"{E_WIN if v > 0 else E_LOSS} Closed {usd(v, True)}" + (f" ({why_txt})" if why_txt else "")
     else:
-        head = f"{E_INFO} Trade closed" + (f" ({why})" if why else "")
+        head = f"{E_INFO} Trade closed" + (f" ({why_txt})" if why_txt else "")
     l1 = _join(head, who)
     side = str(ev.get("side") or "").upper()
     l2 = _join(f"{r:+.1f}R".replace("-", MINUS) if r is not None else "", side, str(ev.get("after") or ""))
@@ -204,15 +207,55 @@ def _emoji_for(ev, title, body) -> str:
     return E_INFO
 
 
+_SENT_RX = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9$(\-+])")
+ACTION_RX = re.compile(r"\b(place|press|request|run|wait|check|open|type|restart|start bot|stop bot|trade by|call|log in|tap)\b", re.I)
+
+
+def _sentences(body) -> list:
+    out = []
+    for ln in _lines(body):
+        out += [x.strip() for x in _SENT_RX.split(ln) if x.strip()]
+    return out
+
+
+def _action(body, have: str = "") -> str:
+    """The sentence that tells the owner what to DO (or, else, the next one with a $ amount), not already shown."""
+    ss = [x for x in _sentences(body) if _clean(x) and _clean(x) not in have]
+    for x in ss:
+        if ACTION_RX.search(x):
+            return _clean(x)
+    for x in ss:
+        if "$" in x and re.search(r"\b(at most|max|worst|up to)\b", x, re.I):
+            return _clean(x)                              # the cap ("at most -$23") before any other $ line
+    for x in ss:
+        if "$" in x:
+            return _clean(x)
+    return ""
+
+
+def _repeats(x: str, title: str) -> bool:
+    """A sentence that mostly says the title again ("No 50K trade for 5 days" under "50K: no trade for 5 days")."""
+    w = set(re.findall(r"[a-z0-9]+", x.lower()))
+    t = set(re.findall(r"[a-z0-9]+", str(title or "").lower()))
+    return bool(w) and len(w & t) / len(w) >= 0.5
+
+
 def _generic(ev, title, body) -> list:
     e = _emoji_for(ev, title, body)
     t = _clean(title) or _first(body)
-    rest = [ln for ln in _lines(body) if _clean(ln) and _clean(ln) != t]
+    ss = [x for x in _sentences(body) if _clean(x) and _clean(x) != t]
+    ss = [x for x in ss if not _repeats(x, t)] or ss
     out = [f"{e} {t}"]
-    if rest:
-        out.append(_clean(rest[0]))
-    if len(rest) > 1 and ev.get("kind") in ("brief", "daily") or (len(rest) > 1 and str(ev.get("key") or "").startswith(("guard:day:", "guard:week:"))):
-        out.append(_clean(rest[1]))
+    if ss:
+        out.append(_clean(ss[0]))
+    k = str(ev.get("key") or "")
+    if ev.get("kind") in ("brief", "daily") or k.startswith(("guard:day:", "guard:week:")):
+        if len(ss) > 1:
+            out.append(_clean(ss[1]))                    # a summary: its second line
+    elif len(ss) > 1:
+        act = _action("\n".join(ss[1:]), out[-1])
+        if act:
+            out.append(act)                              # what to do / the $ (never dropped by the cut)
     return out
 
 
@@ -241,6 +284,8 @@ def fmt(ev: dict, title: str = "", body: str = "") -> str:
     try:
         ev = ev if isinstance(ev, dict) else {}
         k = ev.get("kind")
+        if k == "test":                                   # TEST_ALERT / the Alerts box: its own words, exactly (+ nothing in front)
+            return mask(f"{title}\n{body}".strip())
         if k == "entry" and not ev.get("report"):
             ls = _entry(ev)
         elif k == "exit" and not ev.get("report"):
@@ -257,7 +302,9 @@ def fmt(ev: dict, title: str = "", body: str = "") -> str:
                   "Request it on MFFU today."]
         elif k == "hedge_risk":
             nf = [str(x) for x in ev.get("not_flat") or []]
-            ls = [f"{E_HAND} Hand trade: wait", f"Not flat: {', '.join(nf)}." if nf else _first(body)]
+            t0 = _clean(title) if title and not str(title).startswith(("Hand trade", "Olympus")) else "Hand trade: wait"
+            ls = [f"{E_HAND} {t0}", f"Not flat: {', '.join(nf)}. Wait until every account is flat." if nf else _first(body),
+                  *([_action(body, _first(body))] if not nf else [])]
         elif k == "channel_down":
             ls = [f"{E_DISH} Alerts: {_clean(title).replace('Alerts: ', '')}", _first(body)]
         elif k == "setup":

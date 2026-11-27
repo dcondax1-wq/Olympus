@@ -169,13 +169,13 @@ def expect(b, name, got, words, dual=False, trade=False, both=False, soft=False)
     c = chans(got)
     if soft and b.mode == "ntfy":                # night-alertproof: a soft (one-channel) notice tries the Olympus app first
         check(f"[{b.mode}] {name}: ONE channel, the Olympus app first (a phone that accepted it)", c == ["app"], c)
-        miss = [w for w in words if not all(w in g[1] for g in got)]
+        miss = [w for w in words if not all(w.lower() in g[1].lower() for g in got)]
         check(f"[{b.mode}] {name}: the words {words}", got and not miss, (miss, [g[1] for g in got]))
         return
     if both and b.mode == "ntfy":
         ok_ch = bool(c) and c[0] == "ntfy" and set(c) == {"app", "ntfy"} and len(c) == 2
         check(f"[{b.mode}] {name}: arrives (ntfy first) AND on the Olympus app, once per channel", ok_ch, c)
-        miss = [w for w in words if not all(w in g[1] for g in got)]
+        miss = [w for w in words if not all(w.lower() in g[1].lower() for g in got)]
         check(f"[{b.mode}] {name}: the words {words}", got and not miss, (miss, [g[1] for g in got]))
         return
     if b.mode == "telegram":
@@ -186,7 +186,7 @@ def expect(b, name, got, words, dual=False, trade=False, both=False, soft=False)
         ok_ch = bool(c) and "telegram" not in c and len(set(c)) == len(c) and (set(c) == {"app", "ntfy"} if trade else c == ["ntfy"])
     check(f"[{b.mode}] {name}: arrives ({want_first} first), once per channel{' , on 2 channels' if dual and b.mode == 'telegram' else ''}",
           ok_ch, c)
-    miss = [w for w in words if not all(w in g[1] for g in got)]
+    miss = [w for w in words if not all(w.lower() in g[1].lower() for g in got)]
     check(f"[{b.mode}] {name}: the words {words}", got and not miss, (miss, [g[1] for g in got]))
 
 

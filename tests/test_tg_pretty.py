@@ -88,7 +88,7 @@ def t_format():
     s = T.fmt(*events()[1][1:])
     check("target: '✅ Target hit +$1,240'", s.startswith("✅ Target hit +$1,240"), s)
     s = T.fmt(*events()[2][1:])
-    check("stop: '🛑 Stopped −$310'", s.startswith("\U0001F6D1 Stopped −$310"), s)
+    check("stop: '🛑 Stopped -$310'", s.startswith("\U0001F6D1 Stopped -$310"), s)
     s = T.fmt(*events()[4][1:])
     check("setup: '👀 Setup forming LONG: swept London low (4/10)'", s.startswith("\U0001F440 Setup forming LONG: swept London low (4/10)"), s)
     s = T.fmt(*events()[6][1:])
