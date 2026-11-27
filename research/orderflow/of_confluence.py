@@ -1,6 +1,7 @@
 """Order flow as CONFLUENCE on LIT / ATLAS trades (pre-registered: research/orderflow/DESIGN_confluence.md, 2026-11-27).
 
     python -X utf8 research/orderflow/of_confluence.py          # run -> confluence_results.json + confluence_results.md
+    python -X utf8 research/orderflow/of_confluence.py --forward   # the PC's forward rows (engine/of_conflog) -> running score
 
 Research only, paper: imports no broker / live module, edits no engine / live_model file. Twin engines: LIT trades re-walked
 by `walk_lit` (must equal the engine's $ for every baseline trade), ATLAS through tools/second_md.sim_one itself.
@@ -313,7 +314,7 @@ def score(rows, key, rng):
     g = np.array([by[d] for d in days])
     boot = rng.choice(g, size=(NBOOT, len(g)), replace=True).sum(1) if len(g) else np.zeros(1)
     allD = sorted(set(OB_DAYS))
-    half = allD[(len(allD) + 1) // 2] if allD else "9999"
+    half = allD[min(len(allD) - 1, (len(allD) + 1) // 2)] if allD else "9999"   # frozen split (51 days: index 26)
     h1 = float(sum(by[d] for d in days if d < half)); h2 = float(sum(by[d] for d in days if d >= half))
     changed = int((np.abs(gain) > 0.005).sum())
     top = int(np.argmax(gain)) if len(gain) else 0
@@ -400,7 +401,117 @@ def write_md(o):
     open(OUT_M, "w", encoding="utf-8").write("\n".join(s) + "\n")
 
 
+# ------------------------------------------------------------------------------------------------ FORWARD score (night-of-conflog)
+FWD_FROM = "2026-11-28"                     # forward days only: the first session after this pre-registration
+JUDGE = {"lit": 30, "atlas": 20}            # LEAD_WIRES: judge at ~30 LIT / ~20 ATLAS forward trades
+OUT_F = os.path.join(HERE, "confluence_forward.json")
+ATLAS_P = {"be_r": None, "flat_mod": 955, "be_off": 0.0, "t_check": {"at": 15, "x": 0.3, "mfe": 0.5}}   # MD: no BE, T15, flat 15:55
+
+
+def forward_rows(src=None):
+    """The PC's nightly rows (engine/of_conflog.py) from data/pc_days/<day>/of/NQ_conflog.json.gz, days >= FWD_FROM."""
+    import glob
+    import gzip
+    base = src or os.path.join(ROOT, "data", "pc_days")
+    out = []
+    for p in sorted(glob.glob(os.path.join(base, "*", "of", "NQ_conflog.json.gz"))):
+        day = os.path.basename(os.path.dirname(os.path.dirname(p)))
+        if day < FWD_FROM:
+            continue
+        try:
+            with gzip.open(p, "rt", encoding="utf-8") as fh:
+                doc = json.load(fh)
+        except (OSError, ValueError):
+            continue
+        out += [r for r in doc.get("rows") or [] if isinstance(r, dict) and not r.get("error") and r.get("pnl") is not None]
+    return out
+
+
+def _gains(r, B1, P):
+    """{idea: $ gain vs the real trade} for one forward row (None = idea not applicable / not computable)."""
+    d, q, pnl = int(r["d"]), int(r.get("qty") or 0), float(r["pnl"])
+    g = {}
+    if q >= 1:
+        q2 = min(lit.MAX_MICROS, int(q * SIZE_UP)) if r.get("sweep_read") == "absorbed" else q
+        g["b"] = pnl * (q2 - q) / q
+    entry = float(r.get("fill") or r.get("entry") or 0) * d
+    stop, tg = float(r["stop"]) * d, (float(r["target"]) * d if r.get("target") else None)
+    if B1 is None or not entry or tg is None or q < 1:
+        return g
+    PP = P if r["bot"] == "lit" else {**P, **ATLAS_P}
+    k0 = int(np.searchsorted(B1.t, int(r.get("tf") or r["t"])))
+    if k0 >= B1.n:
+        return g
+    base = walk_lit(B1, d, k0, entry, stop, tg, q, PP, False)
+    if base is None:
+        return g
+    if r.get("hard1_t"):                     # C-c: leave at the first 1m open at / after the hard-flip bar's close, before BE
+        ft = int(r["hard1_t"])
+        c = walk_lit(B1, d, k0, entry, stop, tg, q, PP, False, exit_at=lambda k, be: (not be) and int(B1.t[k]) >= ft > int(B1.t[k - 1]))
+        g["c"] = (c["pnl"] if c else base["pnl"]) - base["pnl"]
+    else:
+        g["c"] = 0.0
+    key, tt = ("a", r.get("abs1_t")) if r["bot"] == "lit" else ("d", r.get("nonadv1_t"))
+    if r["bot"] == "atlas" and r.get("sig_delta") is not None and float(r["sig_delta"]) * d >= 0:
+        g["d"] = 0.0                          # signal bar already non-adverse: unchanged
+    elif not tt:
+        g[key] = -base["pnl"]                 # no confirming bar in the window: the trade is MISSED
+    else:
+        k1 = int(np.searchsorted(B1.t, int(tt)))
+        hi_d, lo_d, _c, o_d = B1.dirs(d)
+        if k1 >= B1.n or (k1 > k0 and (lo_d[k0:k1].min() <= stop or hi_d[k0:k1].max() >= tg)):
+            g[key] = -base["pnl"]
+        else:
+            e2 = float(o_d[k1]) + lit.SLIP
+            risk = e2 - stop
+            q2 = lit.qty_for(risk) if r["bot"] == "lit" else max(0, min(40, int(500.0 / (risk * PV)))) if risk > 0 else 0
+            v = walk_lit(B1, d, k1, e2, stop, tg, q2, PP, False) if risk > 0 and q2 >= 1 and tg - e2 >= 1.0 * risk else None
+            g[key] = (v["pnl"] if v else 0.0) - base["pnl"]
+    return g
+
+
+def forward(say=print, src=None, write=True):
+    """The running forward score per idea vs the LEAD_WIRES judge rule. Paper research; writes confluence_forward.json."""
+    rows = forward_rows(src)
+    B1 = P = None
+    if rows:
+        try:
+            from tools import lit_final as F
+            from tools import lit_adopt_combo as AC
+            P = {**lit.DEFAULTS, **AC.LIVE, "t_check": AC.T15, "be_off": AC.BE_OFF}
+            M, _ = F.market(P["ref"], P["extra_boxes"])
+            B1 = F.bars(M, "1m")
+        except Exception as e:  # noqa: BLE001
+            say(f"confluence forward: no 1m bars ({e.__class__.__name__}): only C-b scored")
+    ideas = {"lit": ("a", "b", "c"), "atlas": ("b", "c", "d")}
+    names = {"a": "C-a absorbed-bar entry", "b": "C-b 1.5x when absorbed", "c": "C-c hard-flip exit", "d": "C-d non-adverse entry"}
+    out = {"fwd_from": FWD_FROM, "rows": len(rows), "ideas": {}}
+    G = [(r, _gains(r, B1, P or lit.DEFAULTS)) for r in rows]
+    for bot, keys in ideas.items():
+        mine = [(r, g) for r, g in G if r.get("bot") == bot]
+        days = sorted({r["day"] for r, _ in mine})
+        half = days[len(days) // 2] if days else "9999"          # older half = days before it (1 day: all "new")
+        for k in keys:
+            xs = [(r["day"], g[k]) for r, g in mine if g.get(k) is not None]
+            gs = [x for _, x in xs]
+            n, need = len(xs), JUDGE[bot]
+            tot = float(sum(gs)); wo = tot - max(gs) if gs else 0.0
+            h1 = float(sum(x for dd, x in xs if dd < half)); h2 = float(sum(x for dd, x in xs if dd >= half))
+            state = (f"logging ({n} of {need})" if n < need else
+                     "PASSES the judge rule: owner card" if (h1 > 0 and h2 > 0 and wo > 0) else "FAILS the judge rule")
+            out["ideas"][f"{bot}:{k}"] = {"name": names[k], "n": n, "need": need, "gain_usd": round(tot), "gain_wo_best": round(wo),
+                                         "half_old": round(h1), "half_new": round(h2), "state": state}
+            say(f"confluence {bot.upper():5s} {names[k]:26s} n {n:3d}/{need}  gain ${tot:+,.0f} (without best ${wo:+,.0f}; "
+                f"halves ${h1:+,.0f} / ${h2:+,.0f})  {state}")
+    if write:
+        json.dump(out, open(OUT_F, "w", encoding="utf-8"), indent=1)
+    return out
+
+
 if __name__ == "__main__":
+    if "--forward" in sys.argv:
+        forward()
+        sys.exit(0)
     o = run()
     if o:
         print(open(OUT_M, encoding="utf-8").read())

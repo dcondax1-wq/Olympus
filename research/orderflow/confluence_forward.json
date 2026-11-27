@@ -1,0 +1,66 @@
+{
+ "fwd_from": "2026-11-28",
+ "rows": 0,
+ "ideas": {
+  "lit:a": {
+   "name": "C-a absorbed-bar entry",
+   "n": 0,
+   "need": 30,
+   "gain_usd": 0,
+   "gain_wo_best": 0,
+   "half_old": 0,
+   "half_new": 0,
+   "state": "logging (0 of 30)"
+  },
+  "lit:b": {
+   "name": "C-b 1.5x when absorbed",
+   "n": 0,
+   "need": 30,
+   "gain_usd": 0,
+   "gain_wo_best": 0,
+   "half_old": 0,
+   "half_new": 0,
+   "state": "logging (0 of 30)"
+  },
+  "lit:c": {
+   "name": "C-c hard-flip exit",
+   "n": 0,
+   "need": 30,
+   "gain_usd": 0,
+   "gain_wo_best": 0,
+   "half_old": 0,
+   "half_new": 0,
+   "state": "logging (0 of 30)"
+  },
+  "atlas:b": {
+   "name": "C-b 1.5x when absorbed",
+   "n": 0,
+   "need": 20,
+   "gain_usd": 0,
+   "gain_wo_best": 0,
+   "half_old": 0,
+   "half_new": 0,
+   "state": "logging (0 of 20)"
+  },
+  "atlas:c": {
+   "name": "C-c hard-flip exit",
+   "n": 0,
+   "need": 20,
+   "gain_usd": 0,
+   "gain_wo_best": 0,
+   "half_old": 0,
+   "half_new": 0,
+   "state": "logging (0 of 20)"
+  },
+  "atlas:d": {
+   "name": "C-d non-adverse entry",
+   "n": 0,
+   "need": 20,
+   "gain_usd": 0,
+   "gain_wo_best": 0,
+   "half_old": 0,
+   "half_new": 0,
+   "state": "logging (0 of 20)"
+  }
+ }
+}

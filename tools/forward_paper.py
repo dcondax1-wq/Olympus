@@ -506,6 +506,12 @@ def run(only=None, bands=False, dry=False, say=print, rules=None, today=None):
                 doc["s1_forward"] = {k: v for k, v in s1_forward(fwd_days, say=say).items() if k != "rows"}
             except Exception as e:  # noqa: BLE001
                 say(f"s1_forward failed: {e.__class__.__name__}: {e}")
+        if rules is None and not only:     # night-of-conflog: the order-flow confluence forward score (paper research, soft)
+            try:
+                doc["of_confluence"] = of_confluence_forward(say=say)
+                _write(STATE, doc)
+            except Exception as e:  # noqa: BLE001
+                say(f"of_confluence forward failed: {e.__class__.__name__}: {e}")
         if rules is None:                  # the Brain's "What the bots learned" page reads it (big-learnview): rebuild, soft
             try:                           # big-setupscore: the LIT setup score's pool + holdout verdict first (soft, ~5 s)
                 import setupscore_build
@@ -544,6 +550,14 @@ def journal(doc, path=None):
     return new
 
 
+def of_confluence_forward(say=print):
+    """research/orderflow/of_confluence.forward (loaded by path: research/ is not a package): the running score per idea."""
+    import importlib.util
+    sp = importlib.util.spec_from_file_location("of_confluence", os.path.join(ROOT, "research", "orderflow", "of_confluence.py"))
+    m = importlib.util.module_from_spec(sp); sp.loader.exec_module(m)
+    return m.forward(say=say)
+
+
 def report(say=print):
     S = _read(STATE, None)
     if not S:
@@ -554,6 +568,8 @@ def report(say=print):
         b = r.get("band") or {}
         say(f"{rid:24s} {r.get('status'):9s} backtest {b.get('mu')}R x{b.get('n_bt')} | forward {r.get('mean')}R x{r.get('n')} "
             f"sum {r.get('sum')} z {r.get('z')}")
+    for k, x in ((S.get("of_confluence") or {}).get("ideas") or {}).items():
+        say(f"confluence {k:9s} {x['name']:26s} n {x['n']}/{x['need']} gain ${x['gain_usd']:+,} (without best ${x['gain_wo_best']:+,}) {x['state']}")
 
 
 def main(argv=None):

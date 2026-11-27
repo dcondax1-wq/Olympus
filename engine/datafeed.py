@@ -82,7 +82,8 @@ TFS = ("1m", "5m")
 SYM_TFS = {"GC": ("1m",), "SI": ("1m",)}        # metals (Kalshi K8 legs): 1-minute around 04:45-05:45 / 15:45-17:15 ET only
                                                 # (engine/datapipe.day_bars cuts them; ~150 bars a metal a day, a few KB)
 EXTRAS = ("review.json", "proposals.jsonl", "learn.json",
-          "of/NQ_bars5m.csv.gz", "of/NQ_fp5m.csv.gz", "of/NQ_meta.json", "of/NQ_depth5m.csv.gz")   # day-ofready: order-flow summaries (engine/ofsum.py)   # from the nightly run's local day folder (logs/datapipe/days/<day>/);
+          "of/NQ_bars5m.csv.gz", "of/NQ_fp5m.csv.gz", "of/NQ_meta.json", "of/NQ_depth5m.csv.gz",
+          "of/NQ_conflog.json.gz")   # night-of-conflog: confluence forward rows (engine/of_conflog.py); day-ofready: order-flow summaries (engine/ofsum.py)   # from the nightly run's local day folder (logs/datapipe/days/<day>/);
                                                 # learn.json = ZEUS learned's public cut (engine/zeus_learn.public)
 UA = "olympus-pc-data/1"
 _ID = re.compile(r"^[a-z0-9]{6,24}$")
@@ -91,7 +92,7 @@ _DAY = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 # EVERY PC answer from Nov 20 on ("unexpected file in the bundle") and no bar after Nov 19 arrived. tests/test_datafeed_names.py
 # keeps this list = every name pack_day can write.
 DAY_FILE = re.compile(r"^days/(\d{4}-\d{2}-\d{2})/(manifest\.json|trades\.jsonl\.gz|fills\.jsonl\.gz|review\.json|proposals\.jsonl|learn\.json|gaps\.json|"
-                      r"of/NQ_(?:bars5m|fp5m|depth5m)\.csv\.gz|of/NQ_meta\.json|of/manifest\.json|of/NQ_paper\.json\.gz|"     # day-ofready (engine/ofsum.py)
+                      r"of/NQ_(?:bars5m|fp5m|depth5m)\.csv\.gz|of/NQ_meta\.json|of/manifest\.json|of/NQ_paper\.json\.gz|of/NQ_conflog\.json\.gz|"     # day-ofready (engine/ofsum.py)
                       r"bars/(?:MNQ|NQ|MES|ES|GC|MGC|SI|SIL)_(?:1m|5m)\.csv\.gz)$")
 
 
@@ -496,7 +497,7 @@ def build_of(since: str, now=None, dp_work: str | None = None, max_zip: int = MA
     packed, size, more = {}, 22, False
     for d in days:
         fs = {}
-        for f in OF_FILES + ("NQ_depth5m.csv.gz", "NQ_paper.json.gz"):   # day-ofmax: depth when the day has one; big-ofpipe: the PAPER bot
+        for f in OF_FILES + ("NQ_depth5m.csv.gz", "NQ_paper.json.gz", "NQ_conflog.json.gz"):   # day-ofmax: depth when the day has one; big-ofpipe: the PAPER bot
             fp_ = os.path.join(base, d, "of", f)
             if f not in OF_FILES and not os.path.exists(fp_):
                 continue
