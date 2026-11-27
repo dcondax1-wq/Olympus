@@ -105,6 +105,13 @@ AREAS["nq"].append("lit_setups_learn")  # day-litlearn 2026-11-26: LIT learns fr
 AREAS["nq"].append("why_page")          # night-anatomy 2026-11-18: why we win / lose (tools/win_loss_anatomy.py, tools/web_public/why/); its own line
 AREAS["nq"].append("learn_night")       # night-learnloop 2026-11-19: ZEUS learned (engine/zeus_learn.py) + tools/learn_night.py + metals feed + speed; its own line
 AREAS["nq"].append("forward_paper")     # big-forward 2026-11-26: tools/forward_paper.py (watched leads scored on new sessions); its own line
+AREAS["nq"].append("nq_nav")            # night-nq-nav 2026-11-27: shared NQ dock + PC pill (nq/nqnav.js)
+AREAS["nq"].append("nq_of")             # night-nq-of 2026-11-27: the order-flow room (nq/orderflow.*)
+AREAS["nq"].append("nq_chart_pro")      # night-nq-chart 2026-11-27: chart levels / sweeps / honest age
+AREAS["nq"].append("nq_live_trades")    # night-nq-live 2026-11-27: live trades page (nq/live.*)
+AREAS["pc"].append("of_conflog")        # night-of-conflog 2026-11-27: per-trade order-flow confluence log (engine/of_conflog.py)
+AREAS["pc"].append("missed_alarm")      # night-missedalarm 2026-11-27: one "not armed" line a day + ~$ size hint (engine/live_guard)
+AREAS["pc"].append("atlas_armed")       # night-atlasarmed 2026-11-27: AccountB.info carries "armed" (readiness)
 AREAS["nq"].append("december_plan")    # night-of-december 2026-11-27: tools/december_plan.py -> nq/december.json + docs/DECEMBER_PLAN.md
 AREAS["nq"].append("of_ladder")         # night-of-ladder 2026-11-27: tools/of_ladder.py (order flow lane A gate ladder, research/evalplan/ladder.json)
 AREAS["nq"].append("combo_50k")         # night-combolive 2026-11-19: ATLAS + Zlarior on ONE 50K (engine/combo50k.py, OFF) + its LiveBot parity replay
