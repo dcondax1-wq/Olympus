@@ -33,4 +33,12 @@ adapter flat at 15:55 (5 min before an early close), kill flatten. Restart: the 
 Order lines `logs/ninjatrader_oif_oflane.log` -> `engine/datapipe.day_fills` lane "oflane" (unified fill log); the lane book
 `data/of_lane_state.json` (trades, refusals with why, closes, $ after $1.90/micro).
 
+Entry (E5, night-of-exec 2026-11-27): price already back at / beyond the swept level -> market; else a resting LIMIT at the level
+for 300 s (adapter opt-in keys entry_limit / entry_wait_s / target_rr; no key = the old MARKET path for every other bot),
+cancelled if the stop trades first (no trade), else one market entry at 300 s (guards re-checked). Target = 2R from the real fill.
+
+Real days (tools/of_lane_realcheck.py, 53 days 09-27..11-26, v1 paper fills): 40 taken -> 30 sent at $200 risk (10 skipped:
+stop > $200 on 1 micro, those averaged +0.50R too), +$2,513, 3.5 trades/week, max DD -$950. $300 risk: 37 sent, +$5,171, DD
+-$1,362. Owner picks the $ risk; Sim money either way.
+
 Tests: `python tests/run_area.py pc` (suite `of_lane`, ~6 min, fake NinjaTrader, synthetic tick days).

@@ -22,7 +22,10 @@ Guards, in order (any one = not routed, logged in plain words; the paper row is 
   size          engine.sizing.second_qty at a fixed $ risk (risk_usd, default $200; 1 micro's stop-out above it = skip)
   firm rules    engine.firms.check with the plan the lane is held to (default the MFFU Builder 50K eval): the soft daily
                 loss (DLL), the EOD trailing max-loss floor, contracts, flat time; the lane's own closed trades are its book
-Exits: the adapter's OCO bracket (stop 1 tick beyond the signal bar = the paper stop, target 2R from the estimated fill), its
+Entry = E5 (night-of-exec 2026-11-27: market at the real delay gives away ~18 ticks; a limit at the level keeps lane A): price
+already at / beyond the swept level -> market; else a resting LIMIT at the level for 300 s (the adapter's opt-in entry_limit),
+cancelled when the stop trades first (no trade), else at 300 s a market entry (guards checked again, never chased past the stop).
+Exits: the adapter's OCO bracket (stop 1 tick beyond the signal bar = the paper stop, target 2R from the ACTUAL fill), its
 flat-time close (15:55 ET, or 5 min before a CME early close), a kill flatten. One position at a time.
 
 Files: data/of_lane.json (switch), data/of_lane_state.json (lane book), data/ninjatrader_state_oflane.json (the adapter's
@@ -55,6 +58,8 @@ AUDIT_NAME = "ninjatrader_oif_oflane.log"           # engine.datapipe._lane_of -
 LANE = "oflane"
 DEFAULT_CFG = {"on": False, "account": "Sim101", "risk_usd": 200.0, "max_micros": 10, "plan": "mffu_builder_50k",
                "stage": "eval", "news_min": 2}
+E5_WAIT_S = 300             # E5 entry (research/writeups/ofexec-2026-11-27.md, engine/of_paper._fill_e5 on night-of-paperv2):
+E5_RR = 2.0                 # a resting limit AT the swept level for 300 s, cancelled if the stop trades first, else market; 2R from the fill
 MAX_LATE_S = 120            # act on a decision only within 2 min of the signal bar's close
 STEP_EVERY = 20             # s between two paper steps inside a 5m bar (a new bar close always steps)
 FLAT_MOD = 955
@@ -197,7 +202,7 @@ def other_positions(ad) -> list:
 
 
 # ------------------------------------------------------------------------------------------------ guards
-def entry_guards(S, cfg, ad, row, now, est, killed, news_events=None) -> tuple[list, int, dict]:
+def entry_guards(S, cfg, ad, row, now, est, killed, news_events=None, skip_late: bool = False) -> tuple[list, int, dict]:
     """(reasons not to route, micros, the firm check) for one taken paper row. Pure reads."""
     from . import cme_calendar as CAL, firms, guards, sizing
     why = []
@@ -219,7 +224,7 @@ def entry_guards(S, cfg, ad, row, now, est, killed, news_events=None) -> tuple[l
     if mod >= cut:
         why.append(f"after the entry cut {cut // 60:02d}:{cut % 60:02d} ET" + (" (CME early close)" if cut < FLAT_MOD else ""))
     late = now - (int(row["t_sig"]) + 300)
-    if late > MAX_LATE_S:
+    if late > MAX_LATE_S and not skip_late:
         why.append(f"decision {late:.0f} s after the signal bar closed (max {MAX_LATE_S} s): not chased")
     nm = cfg.get("news_min")
     if nm:
@@ -294,7 +299,12 @@ def _sync_trades(S, ad, now, last_px):
             if ent and ent.get("filled"):
                 tr["filled"], tr["fill_px"] = int(ent["filled"]), ent.get("avg")
         if not tr.get("filled"):
-            tr.update(status="closed", why=(h or {}).get("closed") or "entry never filled", pnl=0.0, exit_t=int(now))
+            if tr.get("how") == "limit" and not tr.get("stop_first"):
+                tr.update(status="fallback", why=f"limit at {tr.get('limit')} not filled in {E5_WAIT_S} s: market entry next")
+                _note(S, now, f"{tr['id']}: limit not filled in {E5_WAIT_S} s -> market entry")
+                continue
+            tr.update(status="closed", why="no fill: stopped before entry" if tr.get("stop_first")
+                      else (h or {}).get("closed") or "entry never filled", pnl=0.0, exit_t=int(now))
             continue
         ex, why, est = None, (h or {}).get("closed") or "closed", False
         for k, nm in (("stop_id", "stop"), ("target_id", "target")):
@@ -316,6 +326,7 @@ def tick(now: float | None = None, root: str = ROOT, nd: str | None = None, ad=N
     """One lane run. Returns {"S", "routed": [...], "ad"}. While OFF and flat it touches nothing (no adapter, no lock)."""
     now = float(now or time.time())
     cfg = load_cfg(root)
+    cfg["_root"] = root
     S = load_state(root)
     day = OP.et_day(now)
     if S.get("day") != day:
@@ -362,37 +373,82 @@ def tick(now: float | None = None, root: str = ROOT, nd: str | None = None, ad=N
             if row.get("lane") != "A" or row.get("day") != day or not row.get("taken") or row["id"] in done:
                 continue
             d = int(row["d"])
-            est = round(float(last_px) + OP.SLIP * d, 2)
+            lv = float(row["level_px"])
+            limit = (float(last_px) - lv) * d > 0          # not yet back at the level: rest a limit there (E5)
+            est = lv if limit else round(float(last_px) + OP.SLIP * d, 2)
             why, q, fc = entry_guards(S, cfg, ad, row, now, est, killed, news_events)
             risk = (est - float(row["stop"])) * d
             tr = {"id": f"L|{row['id']}", "row_id": row["id"], "day": day, "d": d, "t_sig": row["t_sig"],
                   "entry_t": int(row["t_sig"]) + 300, "level": row["level"], "stop": row["stop"], "est": est,
+                  "how": "limit" if limit else "market", "limit": lv if limit else None,
                   "target": round(est + OP.RR * risk * d, 2) if risk > 0 else None, "qty": q, "decided_t": int(now)}
             if why:
                 tr.update(status="refused", why="; ".join(why))
                 S["trades"].append(tr)
                 _note(S, now, f"not routed {row['id']}: {tr['why']}")
                 continue
-            tr["status"] = "sending"                        # write-ahead: a restart never sends it twice
-            S["trades"].append(tr)
-            save_state(S, root)
-            res = ad.send({"side": "buy" if d == 1 else "sell", "qty": q, "stop": row["stop"], "target": tr["target"],
-                           "entry": est, "sym": "NQ", "entry_t": tr["entry_t"]})
-            tr["send"] = {"ok": bool(res.get("ok")), "error": res.get("error")}
-            if not any(int(lg["entry_t"]) == tr["entry_t"] for lg in ad.legs) and not any(
-                    int(h.get("entry_t") or 0) == tr["entry_t"] for h in ad.history):
-                tr.update(status="refused", why="adapter: " + str(res.get("error") or "not placed"))
-                _note(S, now, f"adapter refused {row['id']}: {res.get('error')}")
-            else:
-                tr["status"] = "open"
-                _note(S, now, f"routed {row['id']}: {'BUY' if d == 1 else 'SELL'} {q} MNQ, stop {row['stop']}, target {tr['target']}"
-                              f" ({cfg['account']})")
-                out["routed"].append(tr)
+            S["trades"].append(tr)                          # _send saves it "sending" first: a restart never sends it twice
+            _send(S, ad, tr, cfg, now, out)
             _sync_trades(S, ad, now, last_px)
+    # E5: the stop traded before the resting limit filled -> cancel it (no trade); a timed-out limit -> one market entry
+    if x is not None and len(x):
+        tt_ms = x.t_ns.to_numpy(np.int64) // 1_000_000
+        pp = x.price.to_numpy(float)
+        for tr in S["trades"]:
+            if tr["status"] != "open" or tr.get("how") != "limit" or tr.get("filled") or tr.get("stop_first"):
+                continue
+            m = tt_ms >= int(tr["decided_t"]) * 1000
+            hit = (pp[m] >= float(tr["stop"])) if tr["d"] == -1 else (pp[m] <= float(tr["stop"]))
+            if hit.any():
+                tr["stop_first"] = True
+                r = ad.cancel_entry(tr["entry_t"], "stop traded before the limit filled")
+                _note(S, now, f"{tr['id']}: the stop traded before the limit at {tr['limit']} filled: cancelled "
+                              f"({'sent' if r.get('ok') else r.get('error')})")
+        _sync_trades(S, ad, now, last_px)
+    for tr in [t for t in S["trades"] if t["status"] == "fallback"]:
+        row = next((r for r in S["paper"]["rows"] if r["id"] == tr["row_id"]), None)
+        if row is None or last_px is None:
+            continue
+        est = round(float(last_px) + OP.SLIP * tr["d"], 2)
+        why, q, _fc = entry_guards(S, cfg, ad, row, now, est, killed, news_events, skip_late=True)
+        risk = (est - float(tr["stop"])) * tr["d"]
+        if why:
+            tr.update(status="refused", why="market fallback not sent: " + "; ".join(why))
+            _note(S, now, f"{tr['id']}: {tr['why']}")
+            continue
+        for k in ("entry_id", "stop_id", "target_id", "filled", "fill_px"):
+            tr.pop(k, None)
+        tr.update(how="market after limit", entry_t=int(tr["entry_t"]) + 1, est=est, qty=q, limit=None,
+                  target=round(est + OP.RR * risk * tr["d"], 2), status="sending")
+        _send(S, ad, tr, cfg, now, out)
+        _sync_trades(S, ad, now, last_px)
     S["t"] = int(now)
     S["line"] = line(S, cfg)
     save_state(S, root)
     return out
+
+
+def _send(S, ad, tr, cfg, now, out):
+    """One bracket through the adapter (write-ahead: the trade is saved 'sending' before the order file goes out)."""
+    d = tr["d"]
+    tr["status"] = "sending"
+    save_state(S, cfg.get("_root") or ROOT)
+    act = {"side": "buy" if d == 1 else "sell", "qty": tr["qty"], "stop": tr["stop"], "target": tr["target"], "entry": tr["est"],
+           "sym": "NQ", "entry_t": tr["entry_t"], "target_rr": E5_RR}
+    if tr.get("how") == "limit":
+        act.update(entry_limit=tr["limit"], entry_wait_s=E5_WAIT_S)
+    res = ad.send(act)
+    tr["send"] = {"ok": bool(res.get("ok")), "error": res.get("error")}
+    if not any(int(lg["entry_t"]) == tr["entry_t"] for lg in ad.legs) and not any(
+            int(h.get("entry_t") or 0) == tr["entry_t"] for h in ad.history):
+        tr.update(status="refused", why="adapter: " + str(res.get("error") or "not placed"))
+        _note(S, now, f"adapter refused {tr['id']}: {res.get('error')}")
+        return
+    tr["status"] = "open"
+    _note(S, now, f"routed {tr['id']}: {'BUY' if d == 1 else 'SELL'} {tr['qty']} MNQ "
+                  + (f"LIMIT {tr['limit']} ({E5_WAIT_S} s)" if tr.get("how") == "limit" else "market")
+                  + f", stop {tr['stop']}, target 2R from the fill ({cfg['account']})")
+    out["routed"].append(tr)
 
 
 # ------------------------------------------------------------------------------------------------ words

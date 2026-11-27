@@ -125,6 +125,7 @@ def main():
     # ---- a. whole days, same decisions as the paper bot
     n_taken = n_routed = n_closed = 0
     bad_dec, bad_route, bad_close, refusals, fill_rows = [], [], [], [], []
+    hows, bad_tgt, nofill = {}, [], 0
     for k in range(1, len(days)):
         d0, d1 = days[k - 1], days[k]
         with tempfile.TemporaryDirectory() as td:
@@ -144,8 +145,18 @@ def main():
                     bad_route.append((d1, tr))
                 if tr["status"] == "refused":
                     refusals.append(tr["why"])
+                elif tr["status"] == "closed" and not tr.get("filled") and str(tr.get("why")).startswith("no fill"):
+                    nofill += 1
+                    hows["limit, stop first (no trade)"] = hows.get("limit, stop first (no trade)", 0) + 1
                 elif tr.get("filled"):
                     n_routed += 1
+                    hows[tr["how"]] = hows.get(tr["how"], 0) + 1
+                    o = g.fake.orders.get(tr.get("target_id") or "")
+                    want = tr["fill_px"] + 2 * (tr["fill_px"] - tr["stop"])      # 2R from the fill
+                    if not o or abs(o["limit"] - want) > 0.25 + 1e-9:
+                        bad_tgt.append((tr["id"], o and o["limit"], want))
+                    if tr["how"] == "limit" and abs(tr["fill_px"] - tr["limit"]) > 1e-9:
+                        bad_tgt.append((tr["id"], "limit fill off the level", tr["fill_px"], tr["limit"]))
                     if tr["status"] == "closed" and tr.get("pnl") is not None and tr.get("why") in ("stop", "target", "flat time", "closed"):
                         n_closed += 1
                     else:
@@ -162,10 +173,12 @@ def main():
           not bad_route and n_taken >= 4, bad_route[:2])
     check(f"a. routed trades filled on Sim101 and closed by stop / target / 15:55 ({n_routed} routed, {n_closed} closed, "
           f"{len(refusals)} refused)", n_routed >= 3 and n_closed == n_routed and not bad_close, (bad_close[:2], refusals))
+    check(f"a. E5 entries: {hows}; every target = 2R from the ACTUAL fill, limit fills at the level", not bad_tgt
+          and hows.get("limit", 0) >= 1, bad_tgt[:3])
     check("a. refusals only for 'already an open trade' / one position (the real bracket can outlive the paper one)",
           all("open trade" in w or "one position" in w for w in refusals), refusals)
     check("e. unified fill log: the lane's entries / stops / targets are lane 'oflane' with fills",
-          fill_rows and all(r.get("fill_px") for r in fill_rows if r["leg"] == "entry")
+          fill_rows and all(r.get("fill_px") for r in fill_rows if r["leg"] == "entry" and r.get("state") == "FILLED")
           and any(r.get("exit_fill_px") for r in fill_rows if r["leg"] == "entry"), [r for r in fill_rows if r["leg"] == "entry"][:2])
     check("e. engine.fill_audit picks the lane's adapter state up (data/ninjatrader_state_*.json = a lane)",
           L.NT_STATE_NAME.startswith("ninjatrader_state_") and L.NT_STATE_NAME[len("ninjatrader_state_"):-5] == "oflane")
@@ -229,7 +242,8 @@ def main():
             open(os.path.join(g.root, "data", L.KILL_NAME), "w").close()
     g, S = guard_day(hook=kill_mid, until=t_dec + 300)
     tr = next((x for x in S["trades"] if x["row_id"] == first["id"]), {})
-    check("c. kill while in a trade: the lane flattens Sim101 and books the exit", tr.get("status") == "closed"
+    check("c. kill while in a trade (or its limit still working): the lane flattens / cancels on Sim101, nothing re-entered",
+          (tr.get("status") == "closed" or (tr.get("status") == "refused" and "kill switch" in tr.get("why", "")))
           and not any(v[0] for v in g.fake.pos.values()) and any("kill switch" in n["text"] for n in S["log"]), (tr, g.fake.pos))
     g.ad.release_lock()
 
@@ -326,18 +340,53 @@ def main():
         ad.release_lock()
     check("c. flat by 15:55: an open lane bracket is closed at the flat time; no new entry after it",
           r1.get("ok") and flat and not r2.get("ok") and "outside the session" in str(r2.get("error")), (r1, fk.pos, r2))
+    # ---- E5 on the adapter (opt-in keys): limit working, 2R from the fill, timeout cancel, cancel_entry; no key = MARKET as before
+    with tempfile.TemporaryDirectory() as td:
+        from engine.ninjatrader import _FakeNT
+        fk = _FakeNT(os.path.join(td, "nt"), price=20000.0)
+        now = [float(int(dt.datetime(2026, 11, 25, 10, 5, tzinfo=ET).timestamp()))]
+        ad = L.make_adapter({**L.DEFAULT_CFG, "on": True}, td, os.path.join(td, "nt"), clock=lambda: now[0])
+        ad._sleep = lambda s: (fk.process(), now.__setitem__(0, now[0] + s))
+        ad._alert_fn = lambda *_: None
+        base = {"side": "sell", "qty": 2, "stop": 20010.0, "target": 19990.0, "entry": 20005.0, "sym": "NQ", "target_rr": 2.0}
+        r = ad.send({**base, "entry_t": int(now[0]), "entry_limit": 20005.0, "entry_wait_s": 300})
+        lines = [ln for f in fk.files for ln in f[1]]
+        ok1 = r.get("ok") and ad.legs[0]["status"] == "pending" and any(";LIMIT;20005" in ln and ln.endswith(";;") or ";LIMIT;20005.00;" in ln for ln in lines)
+        fk.move(20005.0); ad.tick(); fk.process(); ad.tick()
+        lg = ad.legs[0]
+        ok2 = lg["status"] == "protected" and abs(fk.orders[lg["target_id"]]["limit"] - 19995.0) < 1e-9
+        ad.send({"side": "exit", "reason": "test"}); fk.process(); ad.tick()
+        now[0] += 60
+        r = ad.send({**base, "entry_t": int(now[0]), "entry_limit": 20008.0, "entry_wait_s": 300})
+        now[0] += 301; ad.tick(); fk.process(); ad.tick()
+        ok3 = not ad.legs and any(";20008" in ln or "CANCEL" in ln for f in fk.files for ln in f[1] if ln.startswith("CANCEL"))
+        now[0] += 60
+        r = ad.send({**base, "entry_t": int(now[0]), "entry_limit": 20008.0, "entry_wait_s": 300})
+        c = ad.cancel_entry(int(now[0]), "stop first"); fk.process(); ad.tick()
+        ok4 = c.get("ok") and not ad.legs
+        now[0] += 60
+        r = ad.send({k: v for k, v in base.items() if k != "target_rr"} | {"entry_t": int(now[0])})
+        lg = ad.legs[0] if ad.legs else {}
+        ok5 = r.get("ok") and lg.get("status") == "protected" and lg.get("target") == 19990.0 and "entry_limit" not in lg
+        ad.release_lock()
+    check("E5 adapter: a LIMIT entry rests (working, not an error)", ok1, lines[-2:])
+    check("E5 adapter: on its fill the target is re-priced 2R from the ACTUAL fill", ok2)
+    check("E5 adapter: an unfilled limit is cancelled after entry_wait_s (300 s), nothing left", ok3)
+    check("E5 adapter: cancel_entry (the stop traded first) cancels the working limit", ok4)
+    check("E5 adapter: no opt-in key = the MARKET entry + the given target, exactly as before", ok5)
     # ---- d. restart mid-trade
     g = Rig(tempfile.mkdtemp(prefix="oflane_"), W, d0, d1)
     g.run(g.hm(9, 25), t_dec + 61)
-    sent0 = [f for f in g.fake.files if any(";MARKET;" in ln and ln.startswith("PLACE") for ln in f[1])]
+    eid0 = next((x.get("entry_id") for x in g.S()["trades"] if x["row_id"] == first["id"]), None)
+    sent0 = [ln for f in g.fake.files for ln in f[1] if ln.startswith("PLACE") and eid0 and eid0 in ln]
     g.ad.release_lock()
     g.ad = None                                     # the process died: a fresh adapter restores from its write-ahead state
     g.run(t_dec + 61, g.hm(16, 6))
     S = g.S()
     tr = next(x for x in S["trades"] if x["row_id"] == first["id"])
-    sent1 = [f for f in g.fake.files if any(";MARKET;" in ln and ln.startswith("PLACE") and tr["entry_id"] in ln for ln in f[1])]
-    check("d. restart mid-trade: the open bracket is restored, the entry is never sent twice, the exit is booked",
-          len(sent0) >= 1 and len(sent1) == 1 and tr["status"] == "closed" and tr.get("pnl") is not None
+    sent1 = [ln for f in g.fake.files for ln in f[1] if ln.startswith("PLACE") and eid0 and eid0 in ln]
+    check("d. restart mid-trade: the open order is restored, the entry is never sent twice, the exit is booked",
+          len(sent0) == 1 and len(sent1) == 1 and tr["status"] == "closed" and tr.get("pnl") is not None
           and not any(v[0] for v in g.fake.pos.values()), (len(sent0), len(sent1), tr))
     g.ad.release_lock()
     # a crash between the write-ahead mark and the order file: the lane never resends it
