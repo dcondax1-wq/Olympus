@@ -39,8 +39,9 @@
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#c8a24a'); r.setProperty('--oly-accent-rgb', '241, 193, 75'); })();</script>
 <link rel="stylesheet" href="nq.css?v=a11">
 <link rel="stylesheet" href="../nqdeep.css?v=2" media="print" onload="this.media='all'"><!-- perf: the deep views (.nqd-*) are far below the first screen: not render-blocking -->
-<link rel="stylesheet" href="nqdesk.css?v=12">
-<link rel="stylesheet" href="nqgoals.css?v=9">
+<link rel="stylesheet" href="nqdesk.css?v=13">
+<link rel="stylesheet" href="nqhero.css?v=1"><!-- night-nq-main: the hero (this page only) -->
+<link rel="stylesheet" href="nqgoals.css?v=9" media="print" onload="this.media='all'"><!-- night-nq-main: the goals card is below the hero now: not render-blocking -->
 <link rel="stylesheet" href="nqtheme.css?v=10"><!-- the Olympus Night look (black, violet glows, gold accents, mint up; no cyan), last so it wins -->
 <style>/* the status lines above the chart fill in a moment after the page shows (3 + 2 lines on a phone): held from the start so the chart card never jumps (phone QA 2026-11-19) */
 @media (max-width: 520px) { #status { min-height: 3lh; } #src:empty { min-height: 2lh; } }</style>
@@ -52,9 +53,7 @@
     <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">NQ</h1><p class="sub">Are the bots on, and how much $ each account can still lose before it fails.</p></div></div>
     <div class="tags"><a class="btn primary brainlink" href="live.html">Live</a><a class="btn brainlink" href="../warroom/" aria-label="Open the War Room: every bot, every step, live">War Room</a><a class="btn brainlink" href="../brain/" aria-label="Open the Brain: one living 3D brain of every bot">3D Brain</a><a class="btn brainlink" href="../pillars/" aria-label="Open the four pillars: LIT, ATLAS, BLITZ, ORDER FLOW">Pillars</a><a class="btn brainlink" href="accounts.html" aria-label="Open every account on one screen">Accounts</a><a class="btn brainlink" href="brain.html" aria-label="Open the bots' brains">Brain</a><span id="demo" class="tag demo" hidden>DEMO</span><span id="lite" class="tag" hidden>LITE</span></div>
   </header>
-  <!-- night-nq-main 2026-11-27 (owner 00:00 ET: "make everything better, 3D, higher quality, effects"): the first screen. Today's $ with its age, each
-       account's way to pass / to payout + the room left, LIT and ATLAS in one word, where the trading day is and what comes next (nqdesk.js hero /
-       drawHero / heroScene: the scene's ribbon is today's real 5-minute closes from the PC's chart post, none = no ribbon). -->
+  <!-- night-nq-main 2026-11-27: the hero (nqdesk.js hero / drawHero / heroScene; nqhero.css) -->
   <section class="hx" id="hero" aria-labelledby="hxTitle" data-tone="none">
     <canvas class="hx-scene" id="heroScene" aria-hidden="true"></canvas>
     <div class="hx-in">
