@@ -139,6 +139,9 @@ def part_c():
           "el('button', 'ac-more'" in js and "aria-expanded" in js and "aria-controls" in js and "innerHTML" not in js and "if (REDUCED) return;" in js)
 
 
+FC_Z = json.load(open(os.path.join(ROOT, "tools", "web_public", "business", "forecast.json"), encoding="utf-8"))["accounts"]["zlarior"]["2026-like"]["pass_pct"]
+
+
 def post_rich(bg=True):
     core, exts = TA.post()
     for a in core["accounts"]:
@@ -176,14 +179,19 @@ def part_d():
                 biz: document.querySelectorAll('#biz .bz-row').length, k7segs: document.querySelectorAll('#acct-zlarior .k7-seg').length,
                 tot: document.getElementById('tot').hidden ? null : [...document.querySelectorAll('#tot .tt-cell b')].map((e) => e.textContent),
                 bal: document.querySelector('#acct-zlarior .ac-num.big b').textContent })""")
-            check("d. 390: a room ring on every card, Zlarior's pass forecast 61% and its daily loss $180 of $1,000, the 7-segment dial",
-                  o["rings"] == o["cards"] == 5 and o["fc"] == ["61%"] and o["dll"] == "$180 of $1,000" and o["k7segs"] == 7, o)
+            check("d. 390: a room ring on every card, Zlarior's pass forecast (= business/forecast.json) and its daily loss $180 of $1,000, the 7-segment dial",
+                  o["rings"] == o["cards"] == 5 and o["fc"] == [f"{round(FC_Z)}%"] and o["dll"] == "$180 of $1,000" and o["k7segs"] == 7, o)
             check("d. the totals strip: today over all accounts (+$22 - $35 = -$13), the room in all, 5 of 5 live; the balance counted up to the exact $49,214",
                   o["tot"] and o["tot"][0] == "-$13" and o["tot"][2] == "5 of 5" and o["bal"] == "$49,214", (o["tot"], o["bal"]))
             check("d. the buy light shows with the PC's 'bg' (OK, green), the 4 twelve-month rows under it",
                   o["light"] and "OK to buy new evals" in o["lightTxt"] and o["biz"] == 4, o)
             wide = p.evaluate("() => [document.documentElement.scrollWidth, document.documentElement.clientWidth]")
             check("d. QA #12: the page is exactly the phone's width (the 3D tilt / raised ring no longer widen it to ~411 px)", wide[0] <= wide[1], wide)
+            small = p.evaluate("""() => { const out = []; const w = document.createTreeWalker(document.getElementById('app'), NodeFilter.SHOW_TEXT);
+                for (let n = w.nextNode(); n; n = w.nextNode()) { const t = n.textContent.trim(); if (!t) continue; const e = n.parentElement;
+                  if (!e || !e.offsetParent && getComputedStyle(e).position !== 'fixed') continue;
+                  const fs = parseFloat(getComputedStyle(e).fontSize); if (fs < 12) out.push(t.slice(0, 30) + ' ' + fs); } return out; }""")
+            check("d. QA #15: no visible text on the accounts page under 12 px (was 38 runs of 10-11.5 px)", not small, small[:8])
             btn = "#acct-atlas .ac-more"
             p.click(btn)
             a1 = p.evaluate("() => ({ x: document.querySelector('#acct-atlas .ac-more').getAttribute('aria-expanded'), h: document.getElementById('hist-atlas').hidden, pl: !!document.querySelector('#hist-atlas polyline') })")

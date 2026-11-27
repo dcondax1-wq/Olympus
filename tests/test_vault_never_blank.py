@@ -8,6 +8,8 @@ no frame within 2 s, WebGL off, or a lost context = the 2D stays.
   b. Chromium --disable-webgl --disable-3d-apis: the drawn 2D vault, fully visible, no canvas
   c. WebGL that makes a context but never paints (drawArrays / drawElements stubbed out): after the 2 s watchdog the 3D is stopped,
      the 2D is fully visible again, data-nqfx-vault = 2d (before the fix: a black box)
+  d. the effects kit never loads (QA's second sweep: the box was EMPTY until the kit came): the CSS-drawn vault (nqgoals.css) shows at once
+  e. once the kit mounts (.nqfx-vault) the CSS vault steps aside
   every run: the vault box has a size and a visible picture, no console error
 """
 from __future__ import annotations
@@ -32,7 +34,11 @@ STATE = """() => { const h = document.getElementById('vault'); if (!h) return nu
   card: !document.getElementById('vaultCard').hidden }; }"""
 
 
-def run(pw, args, init=None, wait=6000):
+PRE = """() => { const h = document.getElementById('vault'); if (!h) return null; const b = getComputedStyle(h, '::before');
+  return { kit: h.classList.contains('nqfx-vault'), kids: h.children.length, content: b.content, w: parseFloat(b.width) || 0, bg: b.backgroundImage.slice(0, 40) }; }"""
+
+
+def run(pw, args, init=None, wait=6000, block_kit=False, probe=STATE):
     exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
     br = pw.chromium.launch(args=["--no-sandbox"] + args, **({"executable_path": exe} if exe else {}))
     try:
@@ -40,11 +46,13 @@ def run(pw, args, init=None, wait=6000):
         ctx, p, errs, seen, off = AK.page(br, ORIGIN, w=390, h=844, mock={"json?poll=1": TA.ndjson(*TA.post())})
         if init:
             p.add_init_script(init)
+        if block_kit:                                   # the effects kit never arrives (slow phone / a failed fetch): QA's second-sweep shot
+            p.route("**/olympus/nqfx.js*", lambda r: r.abort())
         p.goto(f"{ORIGIN}/nq/index.html?at={at}")
         p.wait_for_timeout(2500)
         p.evaluate("document.getElementById('vaultCard') && document.getElementById('vaultCard').scrollIntoView({block: 'center'})")
         p.wait_for_timeout(wait)
-        s = p.evaluate(STATE)
+        s = p.evaluate(probe)
         e = [x for x in errs if "WebGL" not in x and "webgl" not in x]
         ctx.close()
         return s, e
@@ -72,6 +80,11 @@ def main():
             s, e = run(pw, ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"], init=NOPAINT, wait=7000)
             check("c. WebGL that never paints: after the 2 s watchdog the 3D is gone and the 2D is fully visible (no black box)",
                   s and s["mode"] == "2d" and s["pic"] == 1 and s["picH"] > 100 and not s["canvas"] and not e, (s, e[:3]))
+            s, e = run(pw, ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"], block_kit=True, probe=PRE, wait=3000)
+            check("d. QA #3 second sweep: the effects kit never loads (blocked) -> the box still shows the CSS-drawn vault at once (never empty black)",
+                  s and not s["kit"] and s["kids"] == 0 and s["content"] not in ("none", "normal", "") and s["w"] > 100 and "gradient" in s["bg"], s)
+            s, e = run(pw, ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"], probe=PRE)
+            check("e. once the kit mounts, the CSS vault steps aside (no second door behind the 3D one)", s and s["kit"] and s["content"] in ("none", "normal"), s)
     finally:
         srv.shutdown()
     return AK.finish()
