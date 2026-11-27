@@ -256,8 +256,9 @@ def pc_checks(tmp, fake, env, root, nt, dpw, now):
     r = DF.maybe_answer(now=now, env={**env, "LE_DATAFEED": "0"}, say=lambda *a: None, work=w, spawn_fn=sp)
     check("a. PC: LE_DATAFEED=0 = off, no call", r is None and len(fake.calls) == c0)
     r = DF.maybe_answer(now=now, env=env, say=lambda *a: None, work=w, spawn_fn=sp)
-    check("a. PC: outside the session, no request: one GET, nothing started",
-          r is None and fake.n("GET", topic) == 1 and not spawned and len(fake.calls) == c0 + 1, fake.calls[c0:])
+    check("a. PC: outside the session, no request: one GET of the topic (+ at most one read of ntfy's count, night-of-backfill), "
+          "nothing started", r is None and fake.n("GET", topic) == 1 and not spawned and len(fake.calls) - c0 - 1 ==
+          sum(1 for m, p in fake.calls[c0:] if m == "GET" and p == "/v1/account") <= 1, fake.calls[c0:])
     for bad in ({"v": 1, "kind": "le-data-req", "id": "abc123", "since": "2026-11-1"},
                 {"v": 1, "kind": "le-data-req", "id": "AB", "since": "2026-11-16"},
                 {"v": 1, "kind": "le-live", "id": "abc123", "since": "2026-11-16"},

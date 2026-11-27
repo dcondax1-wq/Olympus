@@ -13,6 +13,9 @@ Heavy steps (edge, anatomy, lab) load the full backtests: run the whole command 
 Steps (each soft and its own process with a time limit: one failing never stops the rest):
   1 pull     tools/data_pull.py --latest [--wait N]: the PC's days -> data/pc_days/, newer NQ / ES bars -> data/, GC / SI around the
              K8 windows -> data/metals/, the PC's proposals -> research/zeus_queue.jsonl
+  + backfill tools/of_backfill.py --push (night-of-backfill): restore branch of-store, ask the PC for every order-flow summary
+             day the cloud lacks ("bf" + a bitmap of what it holds), collect the pages (as many as ntfy's own count allows the PC),
+             save + push the store (data/of_store -> branch of-store); research data only
   + livegap  tools/livegap_daily.py: the backtest twin vs the live fills per account and day -> research/livegap/daily.json and one
              research/livegap/journal.jsonl line per difference (MISSED / SLIPPED $ / SIZE / EXTRA), so drift shows the next morning
   2 edge     tools/edge_health.py [--fetch]: the edge light -> research/lab/edge_health.json + tools/web_public/edge.json
@@ -57,8 +60,8 @@ WHY = os.path.join(ROOT, "tools", "web_public", "why", "why.json")
 LAB = os.path.join(ROOT, "tools", "web_public", "business", "lab.json")
 REPORT = os.path.join(ROOT, "research", "learn", "night_cloud.json")
 PROTECTED = ("live_model.json", "live_model_lit.json", "live_model_engine.json", "second_model.json", "data/account_b.json")
-STEPS = ("pull", "livegap", "edge", "costs", "anatomy", "lab", "learned", "decide", "hub", "blitz", "forward")
-LIMIT_S = {"pull": 1500, "livegap": 600, "edge": 1200, "costs": 900, "anatomy": 2400, "lab": 2400, "blitz": 3600, "forward": 900}
+STEPS = ("pull", "backfill", "livegap", "edge", "costs", "anatomy", "lab", "learned", "decide", "hub", "blitz", "forward")
+LIMIT_S = {"pull": 1500, "backfill": 1800, "livegap": 600, "edge": 1200, "costs": 900, "anatomy": 2400, "lab": 2400, "blitz": 3600, "forward": 900}
 CARD_MAX_BYTES = 6000
 DECIDE_MAX_NEW = 3                       # proposals added per night at most (the owner's card stays short)
 _ID = re.compile(r"[a-z0-9][a-z0-9_-]{1,39}")
@@ -167,6 +170,8 @@ def plan(a) -> list:
     out = []
     if "pull" not in skip and not a.no_pull:
         out.append(("pull", [["tools/data_pull.py", "--latest"] + (["--wait", str(a.wait)] if a.wait is not None else [])]))
+    if "backfill" not in skip and not a.no_pull:   # night-of-backfill: the PC's missing order-flow days by ntfy's own count
+        out.append(("backfill", [["tools/of_backfill.py", "--push", "--wait", str(25 if a.wait is None else a.wait)]]))
     if "livegap" not in skip:              # day-batch6 2026-11-26: live vs twin per account / day -> research/livegap/daily.json + journal.jsonl
         out.append(("livegap", [["tools/livegap_daily.py"]]))   # read only: never trades, sizes or edits a live file
     if "edge" not in skip:

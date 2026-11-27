@@ -220,12 +220,17 @@ def parse_request(m, now) -> dict | None:
     t = _num(m.get("time")) or _num(j.get("t"))
     if not t or t < now - REQ_MAX_AGE_S or t > now + 600:
         return None
-    what = "of" if j.get("what") == "of" else "all"            # day-ofready: "of" = only the order-flow summaries, 400 days back
-    lo = (_et(now).date() - dt.timedelta(days=DAYS_BACK_OF if what == "of" else DAYS_BACK)).isoformat()
+    what = j.get("what") if j.get("what") in ("of", "bf") else "all"   # day-ofready: "of" = only the order-flow summaries, 400 days back
+    lo = (_et(now).date() - dt.timedelta(days=DAYS_BACK_OF if what in ("of", "bf") else DAYS_BACK)).isoformat()
     out = {"id": rid, "since": max(since, lo), "t": int(t), "what": what}
     until = str(j.get("until") or "")
     if what == "of" and _DAY.match(until):
         out["until"] = until
+    if what == "bf":                                               # night-of-backfill: the days the cloud holds (engine/ofbackfill)
+        hb, hb0 = str(j.get("hb") or ""), str(j.get("hb0") or "")
+        if re.fullmatch(r"[A-Za-z0-9_-]{0,200}", hb) and _DAY.match(hb0):
+            out.update(hb=hb, hb0=hb0)
+        out["pages"] = max(1, min(12, int(_num(j.get("pages")) or 12)))
     return out
 
 
@@ -288,15 +293,19 @@ def parse_answer(m, now=None, base: str | None = None, vk="pinned") -> dict | No
     return {**out, "url": url, "size": size, "expires": int(exp)}
 
 
-def post_request(rid: str, since: str, now=None, env=None, http_fn=None, what: str = "all", until: str | None = None) -> tuple:
-    """The cloud's ask. what="of" (day-ofready): only the order-flow summaries of the tick days since .. until. -> (ok, why)."""
+def post_request(rid: str, since: str, now=None, env=None, http_fn=None, what: str = "all", until: str | None = None,
+                 extra: dict | None = None) -> tuple:
+    """The cloud's ask. what="of" (day-ofready): only the order-flow summaries of the tick days since .. until; what="bf"
+    (night-of-backfill): the summaries the cloud does not hold yet (extra = {"hb0", "hb", "pages"}). -> (ok, why)."""
     base, topic = feed_cfg(env)
     req = {"v": VERSION, "kind": REQ_KIND, "id": rid, "since": since, "t": int(now or time.time()),
-           "want": ["of"] if what == "of" else ["bars", "trades"]}
-    if what == "of":
-        req["what"] = "of"
-        if until:
+           "want": ["of"] if what in ("of", "bf") else ["bars", "trades"]}
+    if what in ("of", "bf"):
+        req["what"] = what
+        if until and what == "of":
             req["until"] = until
+        if what == "bf":
+            req.update({k: v for k, v in (extra or {}).items() if k in ("hb0", "hb", "pages")})
     body = json.dumps(req, separators=(",", ":")).encode("utf-8")
     st, b = (http_fn or http)("POST", f"{base}/{topic}", body, {"Priority": "1", "Content-Type": "text/plain"}, HTTP_TIMEOUT_S)
     if 200 <= int(st or 0) < 300:
@@ -538,7 +547,8 @@ def send(blob: bytes, meta: dict, env=None, http_fn=None) -> tuple:
     msg = json.dumps(meta, separators=(",", ":"), sort_keys=True, default=str)
     if len(msg.encode("utf-8")) > 3900:
         msg = json.dumps({k: meta.get(k) for k in ("v", "kind", "req", "made_t", "since", "days", "from", "to", "more",
-                                                    "bytes", "sha256", "code", "what", "page", "more_tomorrow", "until")},
+                                                    "bytes", "sha256", "code", "what", "page", "more_tomorrow", "until", "enc", "gz",
+                                                    "ratio", "left", "held", "pc")},
                          separators=(",", ":"), sort_keys=True)
     msg = _sign_msg(msg)
     if blob:
@@ -634,6 +644,9 @@ def answer(req: dict, now=None, root: str = ROOT, work: str | None = None, folde
     try:
         if req.get("what") == "of":                                  # day-ofready: order-flow summaries only
             return _answer_of(req, now, w, env, http_fn, dp_work, max_zip, also, sleep)
+        if req.get("what") == "bf":                                  # night-of-backfill: the missing year, by ntfy's own count
+            from . import ofbackfill
+            return ofbackfill.answer_bf(req, now, w, env, http_fn, dp_work, max_zip, also, sleep)
         else:
             blob, meta = build(str(req.get("since")), now, root, folder, archive_root, exec_store, dp_work, max_zip)
         meta["req"] = str(req.get("id"))
@@ -760,6 +773,12 @@ def maybe_answer(now=None, env=None, say=print, work: str | None = None, spawn_f
         base, topic = feed_cfg(e)
         ok, msgs = poll(base, topic, int(now - POLL_WINDOW_S), http_fn)
         st["last_poll"] = {"t": now, "ok": ok, "n": len(msgs)}
+        if str(e.get("LE_DATAFEED_BF", "")).strip() != "0":        # night-of-backfill: learn this PC's real posts an hour (a GET)
+            try:
+                from . import ofbackfill
+                ofbackfill.sample(st, now, base, http_fn)
+            except Exception:  # noqa: BLE001
+                pass
         visible = {r["id"] for r in (parse_request(m, now) for m in msgs) if r}
         st["tries"] = {k: v for k, v in (st.get("tries") or {}).items() if k in visible}   # forget asks gone from the topic
         todo = pending(msgs, now, st) if ok else []

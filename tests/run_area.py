@@ -404,6 +404,7 @@ AREAS["pc"].append("ofready")             # day-ofready 2026-11-24: engine/ofsum
 AREAS["pc"].append("oflearn")             # day-oflearn 2026-11-26: DESIGN3 v3 features + nightly learner, proven on of_sim planted ticks (synthetic only, ~5 min)
 AREAS["pc"].append("of_send")             # day-ofmax 2026-11-26: the owner's one order-flow line, rehearsed end to end (fake ntfy)
 AREAS["pc"].append("of_asks")             # night-of-asks 2026-11-27: one order-flow ask a night across cloud sessions; the PC skips duplicates
+AREAS["pc"].append("of_backfill")         # night-of-backfill 2026-11-27: the order-flow year by ntfy's own count (fake ntfy + fake git)
 AREAS["pc"].append("of_paper")            # day-oflearn 2026-11-26: the Order Flow pillar PAPER bot (engine/of_paper.py; synthetic live CSVs, ~4 min)
 AREAS["pc"].append("of_paper_rt")   # red team 2026-11-26: the paper child BELOW_NORMAL
 AREAS["pc"].append("payout_engine")       # big-payout 2026-11-26: read-only payout planner, /today, the Money tile
