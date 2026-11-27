@@ -65,6 +65,9 @@ const C = window.NQCHART = { S, B, view: null, getText, pcPrice, refresh: (f) =>
 
 const a = new URLSearchParams(location.search).get('acct');
 if (a && /^[a-z0-9_]{1,24}$/.test(a)) S.acct = a;
+// day-strats: a strategy room (nq/strat.html sets window.NQ_STRAT before this module) shows one strategy's accounts only
+const ST = String(window.NQ_STRAT || ''), SB = { lit: 'LIT', atlas: 'ATLAS' };
+if (/^(lit|atlas|blitz|poseidon)$/.test(ST)) { S.strat = ST; S.acct = SB[ST] ? 'bot:' + SB[ST] : 'bot:NONE'; }
 refresh(true);
 setInterval(() => refresh(false), POLL_MS);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(false); });

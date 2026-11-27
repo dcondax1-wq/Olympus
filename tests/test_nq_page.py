@@ -250,9 +250,13 @@ def test_page():
                 pass
             bz = p.evaluate("""() => { const strip = document.getElementById('pillarsStrip'); const chip = strip && strip.querySelector('.pc[data-p="blitz"]');
                 const clone = document.body.cloneNode(true); const s2 = clone.querySelector('#pillarsStrip'); if (s2) s2.remove();
-                return { outside: clone.innerText.includes('BLITZ') || clone.textContent.includes('BLITZ'), chip: chip ? chip.textContent : null }; }""")
-            check("c. DEMO: BLITZ only as its pillar chip ('built · OFF', no $ or number), nowhere else on the page (hidden_bots still holds its data)",
-                  not bz["outside"] and bz["chip"] is not None and "built · OFF" in bz["chip"] and not re.search(r"[$\d]", bz["chip"]), bz)
+                const nav = clone.querySelector('#stratNav'), tile = nav && nav.querySelector('a[href="strat.html?s=blitz"]'); if (nav) nav.remove();
+                return { outside: clone.innerText.includes('BLITZ') || clone.textContent.includes('BLITZ'), chip: chip ? chip.textContent : null, tile: tile ? tile.textContent : null }; }""")
+            # day-strats 2026-11-27 (owner via the lead: "complete charts of each strategy: Zlarior, ATLAS, BLITZ and order flow"): the home's
+            # 4-room switcher links to BLITZ's PAPER room by name; like the pillar chip it carries no number and no live BLITZ data
+            check("c. DEMO: BLITZ only as its pillar chip ('built · OFF', no $ or number) and its room link ('paper', no $ or number), nowhere else on the page (hidden_bots still holds its data)",
+                  not bz["outside"] and bz["chip"] is not None and "built · OFF" in bz["chip"] and not re.search(r"[$\d]", bz["chip"])
+                  and bz["tile"] is not None and "paper" in bz["tile"] and not re.search(r"[$\d]", bz["tile"]), bz)
             check("c. DEMO: today's P&L in $ with R, the eval progress, ten trades each with $ (R) and its closing rule, the plan sentence, the three backtest facts under 'Backtest, not a promise'",
                   d["kv"][0] == demo_today() and d["kv"][1].startswith("$2,580 to go to the $3,000 target") and d["dt"][0] == "Today" and len(d["trades"]) == 10 and all(re.search(r"\$[\d,]+ \(~?[+-]?\d+\.\dR\)", x) for x in d["trades"])
                   and len(d["rules"]) == 10 and all(d["rules"]) and "02:00 and 15:30 ET" in d["plan"] and "flat by 15:55 ET" in d["plan"] and d["facts"][0] == "PF 2.91, +$9,919, about $2,670 a month" and len(d["facts"]) == 3
