@@ -1998,6 +1998,10 @@ class AccountB:
                  **_answer(r), **_fill_of(r)} for r in self.ledger if r.get("side") in ("buy", "sell", "exit")][-8:]
         out = {"label": self.label, "account": self.name, "plan": self.spec["plan"], "plan_label": self.spec["plan_label"],
                "kind": self.kind(), "sizing": self.spec["sizing"], "keys": list(self.spec["keys"]), "enabled": not self.disabled_reason(),
+               # night 2026-11-27: the owner-typed arm flag (the same spec["armed"] the adapter's live gate uses, see
+               # nt_config). Without it engine/preflight.arms read None and readiness said "ATLAS 25K is not armed" (NOT READY)
+               # while ATLAS traded live; brain_glance had worked around the missing key.
+               "armed": bool(self.spec.get("armed")),
                "disabled": self.disabled_reason(), "eval": self.eval_view(now), "open": self.position(), "routed": rows,
                "day_pnl": self.day_pnl(today), "entries_today": self.entries_today(today),
                "locked": (self.lock or {}).get("reason") if (self.lock or {}).get("day") == today else None, "size": self.last_size,
