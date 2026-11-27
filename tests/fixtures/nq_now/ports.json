@@ -1,0 +1,82 @@
+{
+ "v": 1,
+ "kind": "nq-ports",
+ "vol": {
+  "nq_close": 25999.25,
+  "nq_day": "2026-11-25",
+  "vix": 28.29,
+  "band": "elevated"
+ },
+ "cal": {
+  "from": "2026-11-27",
+  "days": 45,
+  "events": [
+   {
+    "day": "2026-11-27",
+    "kind": "half",
+    "what": "Half day: the CME halts at 13:15 ET (LIT flat 5 min before)",
+    "t": "13:15"
+   },
+   {
+    "day": "2026-12-04",
+    "kind": "news",
+    "what": "Non-Farm Payrolls (jobs report) 08:30 ET: LIT flat by 5 min before; Rapid lanes pause 2 min either side",
+    "t": "08:30"
+   },
+   {
+    "day": "2026-12-09",
+    "kind": "news",
+    "what": "FOMC rate decision + projections 14:00 ET: LIT flat by 5 min before; Rapid lanes pause 2 min either side",
+    "t": "14:00"
+   },
+   {
+    "day": "2026-12-09",
+    "kind": "news",
+    "what": "FOMC press conference 14:30 ET: LIT flat by 5 min before; Rapid lanes pause 2 min either side",
+    "t": "14:30"
+   },
+   {
+    "day": "2026-12-10",
+    "kind": "roll",
+    "what": "Contract roll: MNQ 12-26 -> MNQ 03-27 (the bot switches by itself)",
+    "t": "00:00"
+   },
+   {
+    "day": "2026-12-10",
+    "kind": "news",
+    "what": "CPI (consumer inflation) 08:30 ET: LIT flat by 5 min before; Rapid lanes pause 2 min either side",
+    "t": "08:30"
+   },
+   {
+    "day": "2026-12-24",
+    "kind": "half",
+    "what": "Half day: the CME halts at 13:15 ET (LIT flat 5 min before)",
+    "t": "13:15"
+   },
+   {
+    "day": "2026-12-25",
+    "kind": "closed",
+    "what": "CME closed: no session",
+    "t": null
+   },
+   {
+    "day": "2026-12-30",
+    "kind": "news",
+    "what": "FOMC minutes (Dec meeting) 14:00 ET: LIT flat by 5 min before; Rapid lanes pause 2 min either side",
+    "t": "14:00"
+   },
+   {
+    "day": "2027-01-01",
+    "kind": "closed",
+    "what": "CME closed: no session",
+    "t": null
+   },
+   {
+    "day": "2027-01-08",
+    "kind": "news",
+    "what": "Non-Farm Payrolls (jobs report) 08:30 ET: LIT flat by 5 min before; Rapid lanes pause 2 min either side",
+    "t": "08:30"
+   }
+  ]
+ }
+}
