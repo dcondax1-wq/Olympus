@@ -19,6 +19,10 @@ Telegram reply to the owner's message.
   /restart           restart the server (an opted-in eval comes back armed through engine/autoresume)
   /pause [HH:MM | tomorrow | YYYY-MM-DD]   no NEW entries until then (default: tomorrow); an open trade keeps its stop / target
   /resume            lift the pause
+  /oflane on|off|status   the order-flow lane on a NinjaTrader SIMULATION account (engine/of_lane; night-of-lane-ready
+                     2026-11-27): on = the switch for Sim102 (or Sim101 when Sim102 is missing and Sim101 is free) + today's paper
+                     stats, off = off, status = account, today's trades, the forward ladder step. Answered here (never the control
+                     path); a real / MFFU account is always refused (it takes no account name at all)
   /help              this list
 
 Never accepted from Telegram: kill, stop, flatten, start, add_account, switch, arming, anything about sizing or strategy. Unknown
@@ -45,7 +49,8 @@ ALLOW = ("status", "today", "update", "restart", "pause", "resume", "help")
 TO_CMD = {"status": "status", "update": "update", "restart": "restart", "pause": "pause", "resume": "resume_entries"}
 REFUSED_WORDS = ("kill", "stop", "flatten", "start", "arm", "add_account", "switch", "present", "buy", "sell", "long", "short")
 PAUSE_ARG = re.compile(r"^(tomorrow|\d{1,2}:\d{2}|\d{4}-\d{2}-\d{2})$")
-HELP = ("PC commands (reply here):\n/status - how the bot is doing\n/today - where are we: accounts, $ today, $ left, payouts, open trade, "
+HELP = ("PC commands (reply here):\n/status - how the bot is doing\n/oflane on|off|status - order flow on the practice (Sim) "
+        "account, no real money\n/today - where are we: accounts, $ today, $ left, payouts, open trade, "
         "setup, news\n/update - install the newest code now (outside 01:50-16:00 ET, "
         "flat)\n/restart - restart the PC server (your eval comes back armed by itself)\n/pause [HH:MM|tomorrow] - no new entries "
         "until then\n/resume - lift the pause\nTrading, arming, stop and flatten are never done from Telegram.")
@@ -87,6 +92,11 @@ def parse_text(text: str) -> tuple:
     args = [w.lower() for w in words[1:]]
     if head in ("help", "start", "commands") and len(words) == 1:   # Telegram's own /start opens a chat: answer with the list
         return None, HELP
+    if head == "oflane":
+        if len(args) > 1 or (args and args[0] not in ("on", "off", "status")):
+            return None, ("/oflane takes on, off or status. The account is chosen for you (Sim102, or Sim101 when it is free): "
+                          "a real or MFFU account is never used.")
+        return {"cmd": "oflane", "arg": args[0] if args else "status"}, None
     if head not in ALLOW:
         if head in REFUSED_WORDS:
             return None, f"'{head}' is never done from Telegram (only /status /update /restart /pause /resume)."
@@ -111,6 +121,15 @@ def parse_text(text: str) -> tuple:
     elif args:
         return None, f"/{head} takes no words after it."
     return c, None
+
+
+def oflane_reply(arg: str, root: str | None = None, now=None) -> str:
+    """/oflane on|off|status (engine/of_lane.tg_text: simulation accounts only). Never raises."""
+    try:
+        from . import of_lane
+        return of_lane.tg_text(arg, root or of_lane.ROOT, now)[:3500]
+    except Exception as e:  # noqa: BLE001
+        return f"/oflane: error {e.__class__.__name__} (nothing was changed)."
 
 
 def today_text() -> str:
@@ -208,6 +227,7 @@ class TgCommands:
                  today_live=None):
         self.rc = rc
         self.today_live = today_live                 # tests: a function -> the live view for /today
+        self.oflane_root = None                      # tests: a temp repo root for /oflane
         self.cfg_fn = cfg_fn
         self.http = http
         self.path = path
@@ -266,6 +286,9 @@ class TgCommands:
             if c is None:
                 if say:
                     send_reply(token, chat, say, mid, self.http)
+                continue
+            if c.get("cmd") == "oflane":             # the Sim lane's own switch file: answered here, never the control path
+                send_reply(token, chat, oflane_reply(c["arg"], self.oflane_root, now), mid, self.http)
                 continue
             if c.get("cmd") == "today":              # read-only: answered here, never through the control path
                 send_reply(token, chat, today_reply(now, self.today_live), mid, self.http)

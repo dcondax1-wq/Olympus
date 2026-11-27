@@ -58,7 +58,9 @@ CFG_NAME, STATE_NAME, NT_STATE_NAME, KILL_NAME = "of_lane.json", "of_lane_state.
 AUDIT_NAME = "ninjatrader_oif_oflane.log"           # engine.datapipe._lane_of -> lane "oflane"
 LANE = "oflane"
 ACCOUNT_HOWTO = "Accounts tab > Add Sim account"
-DEFAULT_CFG = {"on": False, "account": "Sim102", "risk_usd": 200.0, "max_micros": 10, "plan": "mffu_builder_50k",
+RUN_NAME, STOP_NAME = "of_lane_run.json", "of_lane_stop"   # the loop's heartbeat / the 16:15 stop flag (engine/ops_checks.of_lane_kick)
+FALLBACK = "Sim101"
+DEFAULT_CFG = {"on": False, "account": "Sim102", "auto_account": True, "risk_usd": 200.0, "max_micros": 10, "plan": "mffu_builder_50k",
                "stage": "eval", "news_min": 2}
 E5_WAIT_S = 300             # E5 entry (research/writeups/ofexec-2026-11-27.md, engine/of_paper._fill_e5 on night-of-paperv2):
 E5_RR = 2.0                 # a resting limit AT the swept level for 300 s, cancelled if the stop trades first, else market; 2R from the fill
@@ -100,7 +102,7 @@ def load_cfg(root: str = ROOT) -> dict:
     c = _rj(_p(root, "data", CFG_NAME))
     out = dict(DEFAULT_CFG)
     if isinstance(c, dict):
-        out.update({k: v for k, v in c.items() if k in DEFAULT_CFG or k in ("set_at", "nt_folder")})
+        out.update({k: v for k, v in c.items() if k in DEFAULT_CFG or k in ("set_at", "nt_folder", "account_note")})
     else:
         out["on"] = False                       # absent / unreadable = OFF
     out["on"] = out.get("on") is True
@@ -148,19 +150,90 @@ def account_words(account, folder: str | None = None, now=None) -> str | None:
     return None
 
 
+def sim101_holders(folder: str | None = None) -> list:
+    """Who else uses Sim101 now (then the lane never falls back to it): ATLAS's Sim101 week (engine/atlas_exec), an ATLAS / Rapid /
+    combo lane configured on Sim101, or a running process holding NinjaTrader's Sim101 account lock (START's Sim test, a bot)."""
+    out = []
+    try:
+        from . import atlas_exec as AX
+        if AX.is_on():
+            out.append("ATLAS's Sim101 week is on")
+        out += [f"{w} trades {n}" for w, n in AX.lanes() if str(n or "").strip().lower() == FALLBACK.lower()]
+    except Exception as e:  # noqa: BLE001
+        out.append(f"the ATLAS lanes are unreadable ({e.__class__.__name__})")
+    try:
+        from .ninjatrader import LOCK_DIR, default_folder
+        lp = os.path.join(folder or default_folder(), LOCK_DIR, f"{FALLBACK}.lock")
+        if os.path.exists(lp):
+            fh = open(lp, "a+")
+            try:
+                if os.name == "nt":
+                    import msvcrt
+                    fh.seek(0)
+                    msvcrt.locking(fh.fileno(), msvcrt.LK_NBLCK, 1)
+                    fh.seek(0)
+                    msvcrt.locking(fh.fileno(), msvcrt.LK_UNLCK, 1)
+                else:
+                    import fcntl
+                    fcntl.flock(fh.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
+            except OSError:
+                out.append("another bot process holds the Sim101 account lock")
+            finally:
+                fh.close()
+    except Exception:  # noqa: BLE001
+        pass
+    return out
+
+
+def pick_account(folder: str | None = None, now=None) -> tuple[str, str | None]:
+    """(account, plain words or None). Sim102 when NinjaTrader lists it; when NinjaTrader's fresh account list has NO Sim102 and
+    nothing else uses Sim101: Sim101 (said so), so the owner need not create an account first; else Sim102 + the how-to."""
+    seen = account_seen("Sim102", folder, now)
+    if seen is True:
+        return "Sim102", None
+    if seen is False:
+        busy = sim101_holders(folder)
+        if not busy:
+            return FALLBACK, (f"Sim102 is not in NinjaTrader, so the lane uses {FALLBACK} (nothing else uses it now). Its own account "
+                              f"later: NinjaTrader {ACCOUNT_HOWTO} > Sim102")
+        return "Sim102", f"Sim102 must exist in NinjaTrader ({ACCOUNT_HOWTO}); {FALLBACK} is busy ({'; '.join(busy)})"
+    return "Sim102", account_words("Sim102", folder, now)
+
+
+def refresh_account(root: str = ROOT, now=None) -> dict:
+    """Re-pick the automatic account (once a day before the runner starts) while the lane holds no trade. Returns the cfg."""
+    c = load_cfg(root)
+    if not c.get("auto_account") or not c.get("on"):
+        return c
+    S = load_state(root)
+    if any(t["status"] in ("sending", "open", "fallback") for t in S["trades"]) or _nt_open(root):
+        return c
+    acct, note = pick_account(c.get("nt_folder"), now)
+    if acct != c["account"] or note != c.get("account_note"):
+        c.update(account=acct, account_note=note)
+        _wj(_p(root, "data", CFG_NAME), {k: c[k] for k in list(DEFAULT_CFG) + ["set_at", "nt_folder", "account_note"] if k in c})
+    return c
+
+
 def set_switch(on: bool, account: str | None = None, root: str = ROOT) -> tuple[bool, str]:
     c = load_cfg(root)
+    note = None
     if account:
         c["account"] = str(account).strip()
+        c["auto_account"] = False
+    elif on and c.get("auto_account", True):
+        c["account"], note = pick_account(c.get("nt_folder"))
+    c["account_note"] = note
     if on:
         bad = sim_problem(c["account"])
         if bad:
             return False, "NOT switched on: " + bad + "."
     c["on"] = bool(on)
     c["set_at"] = _et(time.time()).strftime("%Y-%m-%d %H:%M ET")
-    _wj(_p(root, "data", CFG_NAME), {k: c[k] for k in list(DEFAULT_CFG) + ["set_at", "nt_folder"] if k in c})
+    _wj(_p(root, "data", CFG_NAME), {k: c[k] for k in list(DEFAULT_CFG) + ["set_at", "nt_folder", "account_note"] if k in c})
     if on:
-        aw = account_words(c["account"], c.get("nt_folder"))
+        aw = note or account_words(c["account"], c.get("nt_folder"))
         return True, (f"Order-flow lane ON for {c['account']} (simulation money)." + (f" Note: {aw}." if aw else "") + f" It trades the paper bot's absorbed level fades, "
                       f"${c['risk_usd']:,.0f} risk a trade, max {c['max_micros']} micros, one trade at a time, flat by 15:55 ET.")
     return True, "Order-flow lane OFF: no new trades. An open simulation trade keeps its stop and target and the 15:55 close."
@@ -532,7 +605,7 @@ def status_text(root: str = ROOT) -> str:
              f"All lane trades so far: {len(allc)}, {'+' if tot >= 0 else '-'}${abs(tot):,.0f} (simulation money)."]
     if S.get("day"):
         lines.append(line(S, cfg))
-    aw = account_words(cfg["account"], cfg.get("nt_folder"))
+    aw = cfg.get("account_note") or account_words(cfg["account"], cfg.get("nt_folder"))
     if aw and not bad:
         lines.append(aw[0].upper() + aw[1:] + ".")
     for n in (S.get("log") or [])[-3:]:
@@ -540,22 +613,92 @@ def status_text(root: str = ROOT) -> str:
     return "\n".join(lines)
 
 
-def loop(root: str = ROOT, every: float = 15.0):
+def _flat(root, ad) -> bool:
+    S = load_state(root)
+    return not (ad is not None and ad.legs) and not any(t["status"] in ("sending", "open", "fallback") for t in S["trades"])
+
+
+def loop_should_stop(root: str = ROOT, ad=None, now=None) -> str | None:
+    """Why the runner exits now (only ever when the lane holds nothing): after 16:10 ET, the 16:15 stop flag, the switch OFF,
+    the kill switch (after its flatten). None = keep going."""
+    if not _flat(root, ad):
+        return None
+    e = _et(now or time.time())
+    if e.hour * 60 + e.minute > 16 * 60 + 10:
+        return "after 16:10 ET"
+    if os.path.exists(_p(root, "data", STOP_NAME)):
+        return "stop flag (16:15)"
+    if not load_cfg(root)["on"]:
+        return "switched OFF"
+    if OP._kill(root) or os.path.exists(_p(root, "data", KILL_NAME)):
+        return "kill switch"
+    return None
+
+
+def heartbeat(root: str = ROOT, now=None, started=None):
+    try:
+        _wj(_p(root, "data", RUN_NAME), {"pid": os.getpid(), "t": int(now or time.time()), "started": int(started or now or time.time())})
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def loop(root: str = ROOT, every: float = 15.0, clock=time.time, sleep=time.sleep, tick_fn=None, max_runs=None):
+    """The runner (started detached by engine/ops_checks.of_lane_kick at 09:20 ET): one tick every 15 s, a heartbeat in
+    data/of_lane_run.json, exits only while flat (16:10 / the 16:15 flag / OFF / kill)."""
     ad = None
-    while True:
-        try:
-            r = tick(root=root, ad=ad)
-            ad = r.get("ad") or ad
-            for tr in r.get("routed") or []:
-                print(_et(time.time()).strftime("%H:%M:%S"), "routed", tr["id"], flush=True)
-        except Exception as e:  # noqa: BLE001
-            print("of_lane tick error:", e.__class__.__name__, str(e)[:200], flush=True)
-        e = _et(time.time())
-        if e.hour * 60 + e.minute > 16 * 60 + 10 and not (ad is not None and ad.legs):
-            if ad is not None:
-                ad.release_lock()
-            return
-        time.sleep(every)
+    t0 = clock()
+    n = 0
+    try:
+        while True:
+            now = clock()
+            heartbeat(root, now, t0)
+            try:
+                r = (tick_fn or tick)(now=now, root=root, ad=ad)
+                ad = r.get("ad") or ad
+                for tr in r.get("routed") or []:
+                    print(_et(now).strftime("%H:%M:%S"), "routed", tr["id"], flush=True)
+            except Exception as e:  # noqa: BLE001
+                print("of_lane tick error:", e.__class__.__name__, str(e)[:200], flush=True)
+            why = loop_should_stop(root, ad, now)
+            n += 1
+            if why or (max_runs and n >= max_runs):
+                return why
+            sleep(every)
+    finally:
+        if ad is not None:
+            ad.release_lock()
+        for nm in (RUN_NAME, STOP_NAME):
+            try:
+                os.remove(_p(root, "data", nm))
+            except OSError:
+                pass
+
+
+# ------------------------------------------------------------------------------------------------ Telegram /oflane
+def _today_paper(root, now) -> str:
+    S = _rj(_p(root, "data", OP.STATE_NAME))
+    if S and S.get("day") == OP.et_day(now) and S.get("line"):
+        return S["line"]
+    return "the order-flow paper bot has no trade yet today"
+
+
+def _ladder(root) -> str:
+    d = _rj(_p(root, "research", "evalplan", "ladder.json"))
+    return d["line"] if isinstance(d, dict) and d.get("line") else "the forward ladder has not been scored yet (tools/of_ladder.py, nightly)"
+
+
+def tg_text(arg: str, root: str = ROOT, now=None) -> str:
+    """Telegram /oflane on|off|status (engine/tg_cmd, the owner's private chat only). Simulation accounts only, always."""
+    now = now or time.time()
+    if arg == "on":
+        ok, msg = set_switch(True, root=root)
+        if not ok:
+            return msg
+        return (msg + f"\nStarts by itself at 09:20 ET on weekdays (the PC). Off: /oflane off\nToday: {_today_paper(root, now)}."
+                f"\n{_ladder(root)}")
+    if arg == "off":
+        return set_switch(False, root=root)[1]
+    return status_text(root) + f"\nPaper bot today: {_today_paper(root, now)}.\n{_ladder(root)}"
 
 
 def main(argv=None) -> int:

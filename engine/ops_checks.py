@@ -1552,6 +1552,74 @@ def of_paper_kick(now, real: bool = True, root: str | None = None, popen=None) -
         return f"error {e.__class__.__name__}"
 
 
+OF_LANE_FROM, OF_LANE_TO = 9 * 60 + 20, 16 * 60 + 15      # night-of-lane-ready: the order-flow lane runner's day (ET minutes)
+OF_LANE_BEAT_S, OF_LANE_START_S = 120, 180
+
+
+def of_lane_kick(now, real: bool = True, root: str | None = None, popen=None) -> str | None:
+    """night-of-lane-ready 2026-11-27: start the order-flow LANE runner (`-m engine.of_lane loop`, engine/of_lane.py) detached at
+    BELOW_NORMAL on weekdays 09:20-16:15 ET, ONLY when data/of_lane.json says on and names a NinjaTrader SIMULATION account; never
+    twice (its heartbeat data/of_lane_run.json < 2 min old, or a start < 3 min ago); not while the kill switch is on. At 16:15 ET
+    it leaves the stop flag data/of_lane_stop (the loop exits once flat; it also exits by itself at 16:10 / OFF / kill).
+    Plain JSON reads (no numpy here). Returns what it did (None = not due). Never raises."""
+    try:
+        import re as _re
+        root = root or ROOT
+        d = os.path.join(root, "data")
+
+        def rj(n):
+            try:
+                with open(os.path.join(d, n), encoding="utf-8") as fh:
+                    return json.load(fh)
+            except Exception:  # noqa: BLE001
+                return None
+        cfg = rj("of_lane.json") or {}
+        beat = rj("of_lane_run.json") or {}
+        alive = now - float(beat.get("t") or 0) < OF_LANE_BEAT_S
+        e = _et(now)
+        mod = e.hour * 60 + e.minute
+        if e.weekday() >= 5:
+            return None
+        if OF_LANE_TO <= mod < 18 * 60:
+            if alive and not os.path.exists(os.path.join(d, "of_lane_stop")):
+                with open(os.path.join(d, "of_lane_stop"), "w") as fh:
+                    fh.write(str(int(now)))
+                return "stop sent"
+            return None
+        if not (OF_LANE_FROM <= mod < OF_LANE_TO):
+            return None
+        if cfg.get("on") is not True:
+            return "off"
+        if not _re.match(r"^(Sim|Playback)\d+$", str(cfg.get("account") or "").strip()):
+            return "refused: not a simulation account"
+        if (rj("live_state.json") or {}).get("kill") or os.path.exists(os.path.join(d, "of_lane_kill")):
+            return "kill"
+        if alive:
+            return "running"
+        st = rj("of_lane_start.json") or {}
+        if now - float(st.get("t") or 0) < OF_LANE_START_S:
+            return "starting"
+        try:
+            os.remove(os.path.join(d, "of_lane_stop"))                # yesterday's flag must not stop today's run
+        except OSError:
+            pass
+        os.makedirs(d, exist_ok=True)
+        with open(os.path.join(d, "of_lane_start.json"), "w", encoding="utf-8") as fh:
+            json.dump({"t": int(now)}, fh)
+        if not real:
+            return "started (test)"
+        import subprocess
+        kw = {"cwd": root, "stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL, "stdin": subprocess.DEVNULL}
+        if os.name == "nt":
+            kw["creationflags"] = 0x00000008 | 0x00000200 | 0x08000000 | 0x00004000   # DETACHED | NEW_GROUP | NO_WINDOW | BELOW_NORMAL
+        elif hasattr(os, "nice"):
+            kw["preexec_fn"] = lambda: os.nice(5)
+        (popen or subprocess.Popen)([sys.executable, "-X", "utf8", "-m", "engine.of_lane", "loop"], **kw)
+        return "started"
+    except Exception as e:  # noqa: BLE001
+        return f"error {e.__class__.__name__}"
+
+
 def of_paper_line(now, root: str | None = None) -> str | None:
     """Today's OF paper line from data/of_paper.json (plain JSON read, no numpy), else None. Never raises."""
     try:
@@ -1567,6 +1635,7 @@ def tick(now=None, ctx=None, state=None, sender=None, state_path: str = STATE_PA
     now = time.time() if now is None else now
     if ctx is None:                          # day-oflearn: the OF paper bot (scheduled runs only, never a replay / test ctx)
         of_paper_kick(now)
+        of_lane_kick(now)                    # night-of-lane-ready: the order-flow lane runner (Sim only, OFF unless switched on)
     state = load_state(state_path) if state is None else state
     D = due(now)
     full = D["presession"] or D["weekly"]
