@@ -329,7 +329,8 @@ def _short_why(w) -> str | None:
     for key, say in (("day cap", "skipped: day cap (1 a day)"), ("news blackout", "skipped: news"), ("not chased", "skipped: late"),
                      ("entry cut", "skipped: after the entry cut"), ("kill switch", "skipped: kill switch"),
                      ("hedging", "skipped: another account holds the other side"), ("one position", "skipped: account already in a trade"),
-                     ("lane is OFF", "skipped: lane off"), ("stopped before entry", "no fill: the stop traded first"),
+                     ("lane is OFF", "skipped: lane off"), ("already has an open trade", "skipped: lane already in a trade"),
+                     ("through the stop", "skipped: price already past the stop"), ("stopped before entry", "no fill: the stop traded first"),
                      ("must exist in NinjaTrader", "skipped: Sim account missing in NinjaTrader"), ("skip: 1 micro", "skipped: stop too wide for the $ risk"),
                      ("daily loss", "skipped: daily loss limit"), ("floor", "skipped: max-loss floor"),
                      ("target", "target"), ("stop", "stop"), ("flat", "flat time")):

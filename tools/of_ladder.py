@@ -229,14 +229,16 @@ def gate1(sim):
         return "waiting", "no Sim lane A trades yet (the Sim route is built and OFF: /oflane on starts it)"
     if any(r.get("hedge_conflict") or r.get("one_position_conflict") for r in sim):
         return "stopped", "a hedge / one-position conflict on Sim101"
+    refused = sum(1 for r in sim if r.get("hedge_refused") or r.get("one_position_refused"))   # red team #38: guard refusals
     sim = [r for r in sim if r.get("R") is not None]          # the trades (conflict rows are flags only)
+    rnote = f", {refused} signal{'s' if refused != 1 else ''} refused by the hedge / one-position guard" if refused else ""
     gaps = [float(r["fill_gap_ticks"]) for r in sim if r.get("fill_gap_ticks") is not None]
     avg = sum(gaps) / len(gaps) if gaps else None
     if avg is not None and len(gaps) >= 3 and avg > S1_GAP:
-        return "stopped", f"Sim101 fills {avg:.1f} ticks worse than paper on average (> {S1_GAP})"
+        return "stopped", f"Sim101 fills {avg:.1f} ticks worse than paper on average (> {S1_GAP})" + rnote
     if len(sim) >= G1_N and avg is not None and avg <= G1_GAP:
-        return "passed", f"{len(sim)} Sim101 trades, fills {avg:.1f} ticks from paper, 0 conflicts"
-    return "watching", f"{len(sim)} / {G1_N} Sim101 trades" + (f", fills {avg:.1f} ticks from paper" if avg is not None else "")
+        return "passed", f"{len(sim)} Sim101 trades, fills {avg:.1f} ticks from paper, 0 conflicts" + rnote
+    return "watching", f"{len(sim)} / {G1_N} Sim101 trades" + (f", fills {avg:.1f} ticks from paper" if avg is not None else "") + rnote
 
 
 def evaluate(rows, sim=None, prev=None, today=None, skipped=None, lane_capped=False):
