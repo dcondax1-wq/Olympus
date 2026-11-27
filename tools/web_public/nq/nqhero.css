@@ -98,3 +98,4 @@ main#app > .gn-facts .gn-fchip{min-height:44px;display:inline-flex;align-items:c
 .hx-honestw .hx-honest{padding:0;border:0;background:none;}
 .hx-how{min-height:44px;justify-self:start;}
 .hx-acc.none{gap:4px;animation:none;}
+.hx-bot-age{display:block;margin-top:4px;font-size:11px;color:var(--hx-faint)}

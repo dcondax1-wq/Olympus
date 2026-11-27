@@ -555,7 +555,8 @@ export function hero(accts, goalList, bots, home, nowS, demo) {
     today, todayText: today === null ? '-' : money(today, true), tone: today === null ? 'none' : today > 0.5 ? 'up' : today < -0.5 ? 'down' : 'flat',
     ageText: demo ? 'example numbers (DEMO)' : age === null ? 'no PC report on this page yet' : updated(age), level,
     nAcc: withNum.length, phase: { id: ph.id, label: ph.label, who: ph.who }, next: nx, nextText: nx.label ? (nx.inS !== null ? `${nx.label} in ${mins(nx.inS)}` : nx.label) : '',
-    accts: acc, bots: arr(bots).filter((b) => isObj(b)).map((b) => ({ id: b.id, name: b.name, what: b.what, ...botState(b) })),
+    accts: acc, bots: arr(bots).filter((b) => isObj(b)).map((b) => ({ id: b.id, name: b.name, what: b.what, ...botState(b),
+      ageText: demo ? 'DEMO' : num(b.age) === null ? 'no report' : updated(b.age) })),
     honest: !acc.some((a) => a.has) ? (demo ? '' : "Waiting for your PC's report: no account numbers yet. Nothing here is made up.") : '',
   };
 }
@@ -569,11 +570,21 @@ function ring(frac, tone) {
   if (f > 0) s.appendChild(mk('hx-r1', { 'stroke-dasharray': `${(c * f).toFixed(2)} ${c.toFixed(2)}`, transform: 'rotate(-90 32 32)' }));
   return s;
 }
+function countUp(node, to, box) {
+  if (!node || to === null || typeof requestAnimationFrame !== 'function') { if (box) box._hxV = to; return; }
+  const from = typeof box._hxV === 'number' ? box._hxV : 0; box._hxV = to;
+  let still = false; try { still = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) { /* motion ok */ }
+  if (still || Math.abs(to - from) < 1) return;
+  const t0 = performance.now(), D = 900;
+  const step = (now) => { const k = Math.min(1, (now - t0) / D), e = 1 - Math.pow(1 - k, 3); node.textContent = money(from + (to - from) * e, true); if (k < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
 function drawHero(box, H) {
   if (!box || !isObj(H)) return;
   const q = (id) => box.querySelector('[data-hx="' + id + '"]');
   const set = (id, t, cls) => { const e = q(id); if (e) { e.textContent = t; if (cls !== undefined) e.className = cls; } };
   set('today', H.today === null ? 'No report yet' : H.todayText, 'hx-big ag-num ' + H.tone + (H.today === null ? ' none' : ''));
+  countUp(q('today'), H.today, box);
   set('todayK', H.nAcc ? `TODAY · ${H.nAcc} account${H.nAcc === 1 ? '' : 's'}` : 'TODAY');
   set('age', H.ageText, 'hx-age lv-' + H.level);
   set('phase', H.phase.label); set('who', H.phase.who || ''); set('next', H.nextText ? 'Next: ' + H.nextText : '');
@@ -619,7 +630,7 @@ function drawHero(box, H) {
     for (const b of H.bots) {
       const c = el('div', 'hx-bot tone-' + b.tone);
       const hd = el('div', 'hx-bot-h'); hd.appendChild(el('b', '', b.name)); hd.appendChild(el('span', 'hx-bot-w', b.word + (b.side ? ' · ' + b.side : '')));
-      c.appendChild(hd); c.appendChild(el('p', 'hx-bot-l', b.line || ''));
+      c.appendChild(hd); c.appendChild(el('p', 'hx-bot-l', b.line || '')); c.appendChild(el('span', 'hx-bot-age', b.ageText || ''));
       bb.appendChild(c);
     }
   }
