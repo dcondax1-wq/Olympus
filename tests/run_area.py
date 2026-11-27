@@ -587,3 +587,4 @@ if __name__ == "__main__":
 AREAS["nq"].append("nq_accounts_night")   # night-nq-accounts 2026-11-27: premium account cards + business view (web only)
 AREAS["nq"].append("vault_never_blank"); AREAS["olympus"].append("vault_never_blank")   # QA #3 night-nq-accounts: the payout vault is never a blank box
 AREAS["pc"].append("thoughtlog")   # day-thoughtlog 2026-11-27: every bot's thoughts of the day -> the day zip (engine/thoughtlog.py)
+AREAS["pc"].append("thoughtlog_rt")   # red team #43: always scrubbed, 45-day prune
