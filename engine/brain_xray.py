@@ -165,12 +165,13 @@ def fit(o: dict, max_bytes: int = MAX_BYTES) -> dict:
     if not isinstance(o, dict):
         return o
     L, A, B = _d(o.get("lit")), _d(o.get("atlas")), _d(o.get("blitz"))
-    steps = [lambda: _l(L.get("sz"))[4:5] and L["sz"].__setitem__(4, _t(L["sz"][4], 30)),
-             lambda: [c.__setitem__(0, _t(c[0], 20)) for x in _l(A.get("l")) for c in _l(x[3])],
-             lambda: [c.__setitem__(2, _t(c[2], 14)) for s in _l(L.get("s")) for c in _l(s[4]) if len(c) > 2],
-             lambda: L.__setitem__("s", _l(L.get("s"))[-2:]) if L else None,
-             lambda: [x.__setitem__(3, _l(x[3])[:3]) for x in _l(A.get("l"))],
+    steps = [lambda: _l(L.get("sz"))[4:5] and L["sz"].__setitem__(4, _t(L["sz"][4], 30)),   # the size's sentence first
+             lambda: L.__setitem__("s", _l(L.get("s"))[-3:]) if L else None,                  # then the oldest setup (the newest keep their numbers)
              lambda: B.__setitem__("sg", []) if B else None,
+             lambda: [c.__setitem__(0, _t(c[0], 24)) for x in _l(A.get("l")) for c in _l(x[3])],
+             lambda: L.__setitem__("s", _l(L.get("s"))[-2:]) if L else None,
+             lambda: [c.__setitem__(2, _t(c[2], 16)) for s in _l(L.get("s")) for c in _l(s[4]) if len(c) > 2],
+             lambda: [x.__setitem__(3, _l(x[3])[:3]) for x in _l(A.get("l"))],
              lambda: [c.__setitem__(2, "") for s in _l(L.get("s")) for c in _l(s[4]) if len(c) > 2],
              lambda: L.__setitem__("s", _l(L.get("s"))[-1:]) if L else None,
              lambda: [x.__setitem__(3, []) for x in _l(A.get("l"))],
