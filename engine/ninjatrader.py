@@ -1636,21 +1636,29 @@ class NinjaTraderAdapter:
         ts = int(action.get("entry_t") or self.clock())
         tag = _nonce()
         legs = []
+        # night-of-lane 2026-11-27, opt-in only (the order-flow lane, E5 entry): "entry_limit" = a resting LIMIT entry at that price, left
+        # "entry_wait_s" (then cancelled like an entry that never filled); "target_rr" = the target re-priced from the ACTUAL fill
+        # (fill + rr x risk) when the stop / target go in. No key = the MARKET entry exactly as before (every other bot).
+        lim = _tick(action["entry_limit"]) if action.get("entry_limit") else None
+        opt = {k: action[k] for k in ("entry_wait_s", "target_rr") if action.get(k)}
+        if lim:
+            opt["entry_limit"] = lim
         for inst, qty, kind in plan:
             base = f"LE{ts}{tag}{kind}"
             legs.append({"instrument": inst, "qty": qty, "side": side, "dir": d, "entry_t": ts, "stop": stop, "target": target,
                          "entry_id": base + "E", "stop_id": base + "S", "target_id": base + "T", "oco": base + "O",
                          "status": "entry_sent", "filled": 0, "fill_px": None, "fill_mtime": None, "bracket_qty": 0, "stop0": stop,
                          "sent_at": self.clock(), "ref": float(ref) if ref else None,
-                         **({"who": str(action["who"])[:40]} if action.get("who") else {})})   # engine/combo50k: which bot (only while on)
+                         **({"who": str(action["who"])[:40]} if action.get("who") else {}), **opt})   # engine/combo50k: which bot (only while on)
         # S1 2026-11-15, write-ahead: the legs are saved BEFORE the entry file goes out, so a crash between the order file
         # and the state save restores an "entry_sent" leg (the next tick finds its fill and places the stop / target)
         # instead of a position no bracket of the bot explains
         self.legs = legs
         self.entries_day["n"] += 1                     # counted before the file goes out (a crash right after still counts)
         self._save()
-        r = self._send_lines([place_line(self.account, lg["instrument"], side, lg["qty"], "MARKET", order_id=lg["entry_id"])
-                              for lg in legs], "ENTRY")
+        r = self._send_lines([place_line(self.account, lg["instrument"], side, lg["qty"], "LIMIT", limit=lim, order_id=lg["entry_id"])
+                              if lim else place_line(self.account, lg["instrument"], side, lg["qty"], "MARKET", order_id=lg["entry_id"])
+                              for lg in legs], "ENTRY" if not lim else "ENTRY (limit)")
         if not r["ok"]:
             self.legs = []
             if r.get("withdrawn"):
@@ -1660,7 +1668,7 @@ class NinjaTraderAdapter:
         for lg in legs:                                # latency log only (fills.jsonl.gz): never read by a decision
             lg["send_at"], lg["ack_at"] = r.get("written_at"), r.get("picked_at")
         self._save()
-        self._wait(lambda: all(self._entry_settled(lg) for lg in legs), self.fill_wait)
+        self._wait(lambda: all(self._entry_settled(lg) for lg in legs), self.fill_wait if not lim else 0.0)
         out, errors, locked = [], [], None
         for lg in legs:
             st = self.read_order(lg["entry_id"])
@@ -1684,6 +1692,10 @@ class NinjaTraderAdapter:
                 locked = locked or why
                 errors.append(f"{lg['instrument']}: entry {st['state']}" + (f" ({why})" if why else ""))
                 out.append({"instrument": lg["instrument"], "qty": lg["qty"], "ok": False, "state": st["state"]})
+            elif lim:                                  # a resting limit entry: working is the expected state, not an error
+                lg["status"] = "pending"
+                out.append({"instrument": lg["instrument"], "qty": lg["qty"], "ok": True, "state": st and st["state"],
+                            "note": f"limit entry working at {lim} for {int(lg.get('entry_wait_s') or self.pending_timeout)} s"})
             else:
                 lg["status"] = "pending"
                 note = "fill not reported yet: the stop and target go in the moment NinjaTrader reports it (next poll)"
@@ -1782,6 +1794,11 @@ class NinjaTraderAdapter:
         """Stop (STOPMARKET) + target (LIMIT) as one OCO pair for the filled quantity."""
         q = lg["filled"]
         opp = "SELL" if lg["side"] == "BUY" else "BUY"
+        if lg.get("target_rr") and lg.get("fill_px") and not lg.get("target_from_fill"):     # opt-in (order-flow lane E5): 2R from the fill
+            risk = (float(lg["fill_px"]) - float(lg["stop"])) * lg["dir"]
+            if risk > 0:
+                lg["target"] = _tick(float(lg["fill_px"]) + float(lg["target_rr"]) * risk * lg["dir"])
+                lg["target_from_fill"] = True
         if lg["status"] != "unprotected" and (self.read_order(lg["stop_id"]) is not None or self.read_order(lg["target_id"]) is not None):
             # S1 2026-11-15: this bracket already reached NinjaTrader (a crash after the bracket file, before the state
             # save): never send the same ids twice; the regular tick manages it (and resizes it to the filled quantity)
@@ -2129,6 +2146,18 @@ class NinjaTraderAdapter:
         """LiveBot asks this before sending a stop move: True once a stop of ours is working for that entry."""
         return any(lg["status"] == "protected" and (entry_t is None or lg["entry_t"] == int(entry_t)) for lg in self.legs)
 
+    def cancel_entry(self, entry_t, why: str = "cancel") -> dict:
+        """night-of-lane 2026-11-27 (order-flow lane): cancel the still-unfilled (limit) entry of one bracket; a fill meanwhile is protected as usual."""
+        with self.lock:
+            legs = [lg for lg in self.legs if int(lg["entry_t"]) == int(entry_t) and lg["status"] in ("pending", "entry_sent")]
+            if not legs or self.readonly:
+                return {"ok": False, "error": "no unfilled entry to cancel"}
+            self._send_lines([cancel_line(lg["entry_id"]) for lg in legs], f"CANCEL ({why})")
+            for lg in legs:
+                lg["status"], lg["cancel_sent"] = "cancel_pending", self.clock()
+            self._save()
+            return {"ok": True, "cancelled": [lg["entry_id"] for lg in legs]}
+
     def cancel_all(self) -> dict:
         if self.disabled or self.readonly:
             return {"ok": False, "error": "REFUSED: " + (self.disabled or "read-only")}
@@ -2423,7 +2452,13 @@ class NinjaTraderAdapter:
             elif st and st["state"] in DEAD:
                 self._retire([lg], f"entry {st['state'].lower()}")
                 self._log("risk", f"NinjaTrader: entry {lg['entry_id']} {st['state']}: nothing was opened")
-            elif now - lg["sent_at"] > self.pending_timeout:
+            elif lg.get("entry_limit") and now - lg["sent_at"] > float(lg.get("entry_wait_s") or self.pending_timeout):
+                self._send_lines([cancel_line(lg["entry_id"])], "CANCEL (limit entry not filled in time)")
+                lg["status"], lg["cancel_sent"] = "cancel_pending", now
+                self._save()
+                self._log("system", f"NinjaTrader: limit entry {lg['entry_id']} at {lg['entry_limit']} not filled in "
+                                    f"{float(lg.get('entry_wait_s') or self.pending_timeout):.0f} s: cancelled")
+            elif now - lg["sent_at"] > self.pending_timeout and not lg.get("entry_limit"):
                 self._send_lines([cancel_line(lg["entry_id"])], "CANCEL (entry never filled)")
                 lg["status"], lg["cancel_sent"] = "cancel_pending", now
                 self._save()
