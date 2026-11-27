@@ -70,6 +70,12 @@ def t_spec():
     sf = I.spec({"rows": [{"name": "ATLAS 25K Sim Funded", "today": 401.0, "trades": 1}, {"name": "Sim101", "today": 50.0}]}, DAY)
     check("red team #39: an MFFU 'Sim Funded' account is REAL (counted); NinjaTrader's Sim101 is not",
           sf and sf["total"] == 401.0 and [r["name"] for r in sf["rows"]] == ["ATLAS 25K Sim Funded"], sf)
+    lk = I.spec({"rows": [{"name": "Builder 50K FFN12345678", "today": 300.0, "trades": 1}, {"name": "acct 98765432", "today": 200.0},
+                          {"name": "MFFUEVBLDR1234567", "today": 100.0}, {"name": "Rapid-EOD 25K #2", "today": 50.0}]}, DAY)
+    txt = json.dumps(lk)
+    check("red team #45: no id-like run on the public card (FFN12345678, bare 98765432); an id-only name = 'Account', still counted",
+          lk and not any(x in txt for x in ("12345678", "98765432", "1234567", "FFN")) and lk["total"] == 650.0
+          and [r["name"] for r in lk["rows"]] == ["Builder 50K", "acct", "Account", "Rapid-EOD 25K #2"], lk and lk["rows"])
     check("flat day -> no card", I.spec({"rows": [{"name": "Zlarior 50K", "today": 0.0}]}, DAY) is None)
     check("bad input -> None", I.spec(None, DAY) is None and I.spec(GREEN, "today") is None)
 

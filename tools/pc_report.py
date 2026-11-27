@@ -2179,11 +2179,15 @@ def _bus_alerts(msgs, rec: dict, snap: dict, new_state: dict):
     except Exception:  # noqa: BLE001
         return None
     done: dict = {}
+    wait_s = 90
     for m in msgs:
-        r = AB.send(AB.from_report(m), on_done=lambda res, k=m["key"]: done.__setitem__(k, res))
+        ev = AB.from_report(m)
+        if ev.get("more_photos"):
+            wait_s = 150                              # red team #45: the 16:20 run waits for the Insta card too (text, summary, card)
+        r = AB.send(ev, on_done=lambda res, k=m["key"]: done.__setitem__(k, res))
         if r in ("dup", "sent"):
             done.setdefault(m["key"], {"ok": True, "receipts": {"bus": r}})
-    AB.drain(90)
+    AB.drain(wait_s)
     for m in msgs:
         res = done.get(m["key"]) or {}
         if res.get("ok"):

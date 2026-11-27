@@ -53,7 +53,9 @@ def _mask(s) -> str:
         s = notify.mask_ids(s)
     except Exception:
         pass
-    return re.sub(r"\.\.\.\d{2,}", "", str(s or "")).strip()       # a masked id adds nothing on a public picture: drop it
+    s = re.sub(r"\.\.\.\d{2,}", "", str(s or ""))              # a masked id adds nothing on a public picture: drop it
+    s = re.sub(r"[\w-]*\d{5,}[\w-]*", "", s)                    # red team #45: any other id-like run (FFN12345678, 98765432)
+    return re.sub(r"\s+", " ", s).strip()
 
 
 def enabled(env=None) -> bool:
@@ -111,9 +113,7 @@ def spec(card: dict, day: str, fills=None, bars=None) -> dict | None:
         if not isinstance(r, dict) or r.get("sim") or _paper(r.get("name")):
             continue
         t = _f(r.get("today"))
-        name = _mask(r.get("name"))[:24]
-        if not name:
-            continue
+        name = _mask(r.get("name"))[:24] or "Account"     # red team #45: a name that was only an id still counts
         rows.append({"name": name, "today": t or 0.0, "trades": int(_f(r.get("trades")) or 0)})
     tot = round(sum(r["today"] for r in rows), 2)
     if tot <= 0.5:
