@@ -49,6 +49,14 @@ def test_static():
     cols = re.findall(r"#[0-9a-fA-F]{3,8}\b", re.sub(r"var\(--[a-z0-9-]+,\s*#[0-9a-fA-F]{3,8}\)", "", css))
     check("a. every colour is a token (a hex only as a var() fallback); motion stops under prefers-reduced-motion", not cols and "prefers-reduced-motion: reduce" in css, cols)
     check("a. no BLITZ word on the cards", "BLITZ" not in js.replace("BLITZ never shows", ""))
+    # night-nq-main 2026-11-27: the hero on the NQ page only (its own CSS: Trading's render-blocking size unchanged), the jump bar's anchors exist
+    hero_css = read(os.path.join(WEB, "nq", "nqhero.css"))
+    ids = re.findall(r'<a href="#([A-Za-z0-9]+)">', nq[nq.find('id="jump"'):nq.find("</nav>", nq.find('id="jump"'))])
+    check("a. hero: id=hero with the today / phase / bots / accounts slots + the scene canvas, nqhero.css on nq only, every jump-bar link lands on a card, "
+          "the scene pauses (IntersectionObserver / visibilitychange) and stands still under prefers-reduced-motion",
+          all(f'data-hx="{k}"' in nq for k in ("today", "age", "phase", "next", "bots", "accts", "honest")) and 'id="heroScene"' in nq
+          and "nqhero.css?v=" in nq and "nqhero.css" not in tr and len(ids) >= 6 and all(f'id="{i}"' in nq for i in ids)
+          and "IntersectionObserver" in js and "visibilitychange" in js and "prefers-reduced-motion: reduce" in js and "prefers-reduced-motion" in hero_css, ids)
 
 
 HARNESS = r"""
