@@ -165,7 +165,78 @@
     return { age, fresh, lines: out, accounts: acctRows, left: out.filter((x) => x.ok !== true).length };
   }
 
-  const API = { today, nextStep, ageText, realAccounts, heldWhy, accountRows, rowText, FRESH_S, ALERT_OK_DAYS };
+
+  // night-nq-home 2026-11-27 (owner: "a clean launcher with live tiles"): one tile per place to go, each with ONE live number from the
+  // PC's report. Pure; never changes today(). o.news = news_week.json's events; o.health = window.PCHEALTH (optional).
+  const usd0 = (v) => { v = num(v); return v == null ? null : (v < 0 ? '-$' : '$') + Math.abs(Math.round(v)).toLocaleString('en-US'); };
+  const ET_OFF = (t) => { const d = new Date(t * 1000), y = d.getUTCFullYear();          // US Eastern offset (DST 2nd Sun Mar - 1st Sun Nov)
+    const sun = (m, n) => { const f = new Date(Date.UTC(y, m, 1)); return 1 + ((7 - f.getUTCDay()) % 7) + 7 * (n - 1); };
+    const a = Date.UTC(y, 2, sun(2, 2), 7), b = Date.UTC(y, 10, sun(10, 1), 6); return d >= a && d < b ? -4 : -5; };
+  function nextNews(events, now) {
+    const list = (Array.isArray(events) ? events : []).filter((e) => isObj(e) && e.date && e.title && String(e.impact || 'high') === 'high' && !/blitz/i.test(e.title));
+    let best = null;
+    for (const e of list) {
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(e.date), h = /^(\d{1,2}):(\d{2})$/.exec(e.time || '');
+      if (!m) continue;
+      const guess = Date.UTC(+m[1], +m[2] - 1, +m[3], h ? +h[1] : 0, h ? +h[2] : 0) / 1000;
+      const t = guess - ET_OFF(guess) * 3600;
+      if (t >= now - 600 && (!best || t < best.t)) best = { t, title: String(e.title), date: e.date, time: e.time || 'all day' };
+    }
+    return best;
+  }
+  function tiles(lite, o) {
+    o = o || {};
+    const now = num(o.now) != null ? +o.now : Date.now() / 1000;
+    const L = isObj(lite) ? lite : null, bd = L && isObj(L.board) ? L.board : {}, lit = isObj(bd.lit) ? bd.lit : null, at = isObj(bd.atlas) ? bd.atlas : null;
+    const ck = L && isObj(L.ck) ? L.ck : {}, pc = L && isObj(L.pc) ? L.pc : {}, gl = isObj(pc.glance) && Array.isArray(pc.glance.bots) ? pc.glance.bots : [];
+    const t = L ? num(L.ext_t) || num(isObj(L.reporter) ? L.reporter.t : null) || num(L.t) : null, age = t != null ? now - t : null;
+    const old = age == null || age > FRESH_S;
+    const out = [];
+    const add = (id, href, title, big, sub, tone) => out.push({ id, href, title, big: big == null ? '-' : String(big), sub: sub ? String(sub).slice(0, 140) : '', tone: tone || 'violet' });
+    // 1 today $ (every account; "day" per glance bot, else the board's today)
+    const days = gl.filter((b) => isObj(b) && !/blitz/i.test(String(b.id) + String(b.name)) && num(b.day) != null).map((b) => num(b.day));
+    const day = days.length ? days.reduce((a, b) => a + b, 0) : num(L && L.day_pnl);
+    add('today', 'live.html', 'Today', day == null ? 'no report' : usd0(day), lit && num(lit.week_pnl) != null ? 'Zlarior this week ' + usd0(lit.week_pnl) : (L ? 'all accounts' : ''),
+      day == null ? 'grey' : day > 0 ? 'mint' : day < 0 ? 'red' : 'violet');
+    // 2 accounts armed (the PC's checklist list)
+    const acc = Array.isArray(ck.acc) ? ck.acc.filter((r) => Array.isArray(r) && r[0] && !/blitz/i.test(r[0])) : [];
+    const on = acc.filter((r) => r[1]).length;
+    add('armed', 'accounts.html', 'Accounts armed', acc.length ? on + ' / ' + acc.length : '-',
+      acc.length ? (on === acc.length ? 'all armed' : acc.filter((r) => !r[1]).map((r) => r[0]).join(', ') + ' off') : 'the PC did not send its list', !acc.length ? 'grey' : on === acc.length ? 'mint' : 'gold');
+    // 3 open trade
+    const openT = (Array.isArray(bd.trades) ? bd.trades : []).filter((x) => isObj(x) && x.open && !/blitz/i.test(String(x.acct)));
+    const pos = isObj(pc.position) ? pc.position : null;
+    if (openT.length) { const x = openT[0]; add('trade', 'live.html', 'Open trade', (x.side || '') + ' ' + (num(x.qty) || 1), (x.acct === 'atlas' ? 'ATLAS ' : 'Zlarior ') + (x.member || '') + (num(x.usd) != null ? ' · ' + usd0(x.usd) : ''), 'gold'); }
+    else if (pos) add('trade', 'live.html', 'Open trade', String(pos.side || 'IN').toUpperCase() + ' ' + (num(pos.qty) || ''), 'the bot holds a position', 'gold');
+    else add('trade', 'live.html', 'Open trade', L ? 'Flat' : '-', L ? 'no position open' : 'no report', L ? 'violet' : 'grey');
+    // 4 next event: the next entry window + the next high-impact news
+    const wins = [lit, at].filter((c) => isObj(c) && isObj(c.window));
+    const openW = wins.find((c) => c.window.open);
+    const win = openW ? (openW.name || 'bot') + ' window OPEN' : wins.length ? String(wins[0].window.text || '').replace(/^next entry window\s*/i, '') : null;
+    const nw = nextNews(o.news, now);
+    add('event', 'brain.html', 'Next', openW ? 'Window open' : win ? win.replace(/-\d{2}:\d{2}\s*ET$/, ' ET') : nw ? nw.time + ' ET' : '-',
+      (win && !openW ? 'entry window' + (nw ? ' · ' : '') : '') + (nw ? 'news: ' + nw.title + ' (' + nw.date.slice(5) + ' ' + nw.time + ' ET)' : win ? '' : 'no window or news in the report'), openW ? 'gold' : 'violet');
+    // 5 order flow recorder
+    const tr = L && isObj(L.tr) ? L.tr : null;
+    add('of', 'index.html', 'Order flow', tr && num(tr.d) != null ? num(tr.d) + ' days' : '-',
+      tr ? (tr.on ? 'recording' : 'OFF') + (tr.o ? ' since ' + tr.o : '') + (tr.bf ? ', backfill ' + tr.bf : '') : 'the PC did not send it', !tr ? 'grey' : tr.on ? 'mint' : 'gold');
+    // 6 brain: Zlarior's stage + what it waits for
+    const zb = gl.find((b) => isObj(b) && b.id === 'lit');
+    add('brain', 'brain.html', 'Brain', zb && zb.stage ? String(zb.stage) : zb ? (zb.armed ? 'Waiting' : 'Off') : '-', zb && zb.wait ? zb.wait : 'no brain line in the report', zb ? 'violet' : 'grey');
+    // 7 eval target / payout room (real numbers from the board)
+    if (lit && num(lit.to_target) != null && lit.status !== 'funded')
+      add('target', 'accounts.html', 'To pass', usd0(lit.to_target), 'Zlarior needs this to pass · room ' + (usd0(lit.room) || '-'), 'gold');
+    // 8 PC health (pchealth_core)
+    const H = o.health && typeof o.health.checks === 'function' ? o.health.checks(L, { now }) : null;
+    if (H) add('health', 'pchealth.html', 'PC health', { green: 'All good', amber: 'Watch', red: 'Needs you', grey: 'Unknown' }[H.overall],
+      H.say, { green: 'mint', amber: 'gold', red: 'red', grey: 'grey' }[H.overall]);
+    if (old && L) for (const x of out) if (x.id !== 'health') { x.sub = 'Old report (' + ageText(age) + '): ' + x.sub; if (x.tone === 'mint') x.tone = 'grey'; }
+    for (const x of out) { x.big = mask(x.big); x.sub = mask(x.sub); }
+    return out;
+  }
+  function mask(t) { return String(t == null ? '' : t).replace(/\b[A-Z]{3,}[A-Z0-9_-]*?(?:…|\.\.\.)?(\d{4})\b/g, '…$1'); }
+
+  const API = { today, tiles, nextNews, nextStep, ageText, realAccounts, heldWhy, accountRows, rowText, FRESH_S, ALERT_OK_DAYS };
   root.TRADING_HOME = API;
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
 })(typeof window !== 'undefined' ? window : globalThis);
