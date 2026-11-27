@@ -1,0 +1,15 @@
+[
+ {
+  "look": 1,
+  "made": "2026-11-27T05:07:06+00:00",
+  "days": 51,
+  "verdicts": {
+   "OF1 LIT only when absorbed": "TOO FEW",
+   "OF2 LIT skip blocks against": "TOO FEW",
+   "OF4 ATLAS MD only when absorbed": "TOO FEW",
+   "OF3A LVN rejection + delta": "TOO FEW",
+   "OF5 absorption reversal at PD/Globex levels": "REJECTED",
+   "OF6 CVD divergence at new RTH high/low": "TOO FEW"
+  }
+ }
+]

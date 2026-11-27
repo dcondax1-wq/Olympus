@@ -304,6 +304,16 @@ def test_backup():
         w = PB.weekly(st, env, sat)
         check("C14. the weekly run makes one, tells START to show the code once, and is not due again the same week",
               w and w.get("ok") and w.get("first") is False and not PB.due(st, sat + 3600), w)
+        from engine import self_heal as SH
+        st2 = os.path.join(base, "st2")
+        os.makedirs(os.path.join(st2, "data"))
+        shutil.copy(os.path.join(ROOT, ".gitignore"), st2)
+        subprocess.run(["git", "init", "-q"], cwd=st2)
+        open(os.path.join(st2, "data", "pc_backup.json"), "w").write(json.dumps({"dir": os.path.join(base, "wk2")}))
+        env3 = {"OLYMPUS_HOME": os.path.join(base, "home3", ".olympus"), "USERPROFILE": os.path.join(base, "home3"), "LE_PC_BACKUP": "1"}
+        its = SH.fix_backup(SH.Ctx(root=st2, now=sat, apply=True, env=env3, git=lambda *a, **k: (0, "")))
+        check("C14b. the FIRST backup is reported as done ('fixed'), never 'could not fix' (the PC's board line of 11-26 23:47)",
+              len(its) == 1 and its[0]["status"] == "fixed" and "recovery code" in its[0]["text"], its)
         check("C15. START's code line shows the recovery code until 'code saved'", code in PB.code_line(old, env)
               and PB.code_line(st, {"OLYMPUS_HOME": os.path.join(base, "none")}) == "")
         check("C16. data/pc_backup.json and the backup key path are git-ignored / outside the repo",
