@@ -13,11 +13,15 @@ from __future__ import annotations
 TICK = 0.25                 # NQ / MNQ tick (points)
 PV_MNQ = 2.0                # $ per point per micro
 COMM_RT = 1.90              # $ per micro round turn (MFFU list price; one broker fill so far implies $1.82: keep 1.90 until 10)
-ENTRY_SLIP_TICKS = {"LIT": 1, "ATLAS": 12}   # market entries vs the model's price: LIT 3 / 0 (n=2), ATLAS 9 / 11 / 15 (n=3)
+ENTRY_SLIP_TICKS = {"LIT": 1, "ATLAS": 12, "OFA": 18}   # market entries vs the model's price: LIT 3 / 0 (n=2), ATLAS 9 / 11 / 15 (n=3);
+#   OFA = order-flow lane A (absorbed level fade) market at today's 2.75 s delay: MODELLED (ATLAS share x first-minute run),
+#   research/writeups/ofexec-2026-11-27.md; its recommended entry is OFA_ENTRY below, where only the fallback pays this
+OFA_ENTRY = "limit_at_level_5m_then_market"   # E5: resting limit at the swept level 300 s (fills 1 tick through), else market
+OFA_LIMIT_WAIT_S = 300
 STOP_SLIP_TICKS = 2         # stop-market and market exits (breakeven, time, end of day, flatten); the backtests store 1
 # per bot (lead 2026-11-26: no number may go UP on an unmeasured assumption): ATLAS keeps the old pessimistic 10 ticks until
 # ~10 of its real stop fills are logged (fills.jsonl.gz exit_slip_ticks); LIT uses the study's 2
-STOP_SLIP_TICKS_BY = {"LIT": 2, "ATLAS": 10}
+STOP_SLIP_TICKS_BY = {"LIT": 2, "ATLAS": 10, "OFA": 2}   # OFA: base 2 as LIT; stress 10 (ofexec X2); no real stop fill yet
 TARGET_THR_TICKS = 1        # a limit target needs a trade this many ticks through it (no stored trade was touch-only)
 GAP_FILLS_AT_OPEN = True    # a bar that opens through the stop fills near that open, not at the stop
 

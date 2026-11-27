@@ -44,6 +44,11 @@ VERSION = 1
 TICK, PV, COMM, SLIP = 0.25, 2.0, 1.40, 0.25            # of_study: MNQ $2 a point, $1.40 a micro round trip, 1 tick
 ZONE, ABS_SHARE, RR, RISK_USD, MAXQ = 8, 0.20, 2.0, 500.0, 40
 WAIT_S = 60
+try:                                                    # DESIGN_paper_v2: the E5 book pays the research cost ($1.90)
+    from .costs import COMM_RT as COMM_E5
+except Exception:  # noqa: BLE001
+    COMM_E5 = 1.90
+E5_WAIT_S, E5_MKT_TICKS = 300, 18                        # DESIGN_paper_v2.md: limit at the level 300 s, else market + 18 ticks
 MAX_ROWS = 600
 _M = {}
 
@@ -147,9 +152,10 @@ def _close(row, t, px, why):
     d, fill, stop = row["d"], row["fill"], row["stop"]
     risk = (fill - stop) * d
     q = _risk_q(risk)
+    cm = float(row.get("comm", COMM))                # v1 rows: $1.40 (frozen); the E5 shadow row: COMM_E5
     row.update(exit_t=int(t), exit=round(px, 2), why=why, R=round((px - fill) * d / risk, 3),
-               usd_1=round((px - fill) * d * PV - COMM, 2),
-               usd_500=round((px - fill) * d * PV * q - COMM * q, 2) if q >= 1 else None)
+               usd_1=round((px - fill) * d * PV - cm, 2),
+               usd_500=round((px - fill) * d * PV * q - cm * q, 2) if q >= 1 else None)
 
 
 def _kill_close(row, ticks_t, ticks_p, t_kill_ms):
@@ -158,6 +164,77 @@ def _kill_close(row, ticks_t, ticks_p, t_kill_ms):
         k = int(np.argmax(m))
         _close(row, int(ticks_t[k] // 1000), float(ticks_p[k]) - SLIP * row["d"], "KILL")
         row["why"] = "KILL (owner's kill switch)"
+
+
+def _fill_e5(row: dict, bars, ticks_t, ticks_p, coarse: bool):
+    """DESIGN_paper_v2 E5 fill for a lane A row: (fill, fill_t_ms, how) or ("none", why) or None while undecided."""
+    d, lv, stop, td = row["d"], row["level_px"], row["stop"], int(row["t_dec"])
+    if coarse:                                                  # 5m summary: the entry bar is the 300 s window
+        tt = bars.t.to_numpy(np.int64)
+        k = np.where(tt == td)[0]
+        if not len(k):
+            return None
+        i = int(k[0])
+        o, h, l = float(bars.open.iat[i]), float(bars.high.iat[i]), float(bars.low.iat[i])
+        if (o - lv) * d <= 0:
+            return (round(o, 2), td * 1000, "marketable")
+        if (d == -1 and h >= lv + TICK) or (d == 1 and l <= lv - TICK):
+            return (round(lv, 2), td * 1000, "level")
+        if (d == -1 and h >= stop) or (d == 1 and l <= stop):
+            return ("none", "no fill: stopped before entry")
+        k2 = np.where(tt == td + E5_WAIT_S)[0]
+        if not len(k2):
+            return None
+        j = int(k2[0])
+        o2 = float(bars.open.iat[j])
+        return (round(o2 + d * E5_MKT_TICKS * TICK, 2), (td + E5_WAIT_S) * 1000, "market+18")
+    t0, t1 = td * 1000, (td + E5_WAIT_S) * 1000
+    m = (ticks_t >= t0) & (ticks_t < t1)
+    idx = np.where(m)[0]
+    if len(idx):
+        p = ticks_p[idx]
+        if (p[0] - lv) * d <= 0:
+            return (round(float(p[0]), 2), int(ticks_t[idx[0]]), "marketable")
+        thr = np.where((p >= lv + TICK) if d == -1 else (p <= lv - TICK))[0]
+        hs = np.where((p >= stop) if d == -1 else (p <= stop))[0]
+        if len(thr) and (not len(hs) or thr[0] <= hs[0]):
+            return (round(lv, 2), int(ticks_t[idx[thr[0]]]), "level")
+        if len(hs):
+            return ("none", "no fill: stopped before entry")
+    after = np.where(ticks_t >= t1)[0]
+    if not len(after):
+        return None
+    k = int(after[0])
+    return (round(float(ticks_p[k]) + d * E5_MKT_TICKS * TICK, 2), int(ticks_t[k]), "market+18")
+
+
+E5_KEYS = ("exit_t", "exit", "why", "R", "usd_1", "usd_500", "target")
+
+
+def _e5(row: dict, bars, ticks_t, ticks_p, t_close_last, end_of_day, coarse: bool, kill_ms: int | None = None):
+    """Score the row a second time with the E5 entry (a shadow row through the lane's own _resolve); flat *_e5 fields."""
+    if row.get("how_e5") == "none" or row.get("R_e5") is not None or row.get("why_e5"):
+        return
+    sh = row.get("_e5")
+    if sh is None:
+        f = _fill_e5(row, bars, ticks_t, ticks_p, coarse)
+        if f is None:
+            return
+        if f[0] == "none":
+            row.update(how_e5="none", fill_e5=None, fill_t_e5=None, why_e5=f[1], R_e5=None, usd_1_e5=None, usd_500_e5=None)
+            return
+        sh = {"comm": COMM_E5, "d": row["d"], "stop": row["stop"], "fill": f[0], "fill_t_ms": f[1], "entry_bar_t": int(f[1] // 1000) // 300 * 300}
+        row.update(fill_e5=f[0], fill_t_e5=f[1], how_e5=f[2])
+        if (f[0] - row["stop"]) * row["d"] <= 0:
+            row.update(why_e5="no risk", R_e5=None, usd_1_e5=None, usd_500_e5=None)
+            return
+        row["_e5"] = sh
+    if kill_ms is not None and row.get("taken") and not sh.get("exit_t"):
+        _kill_close(sh, ticks_t, ticks_p, kill_ms)
+    _resolve(sh, bars, ticks_t, ticks_p, t_close_last, end_of_day)
+    if sh.get("exit_t"):
+        row.update({f"{k}_e5": sh.get(k) for k in E5_KEYS})
+        row.pop("_e5", None)
 
 
 def step(S: dict, day: str, R_today: dict, R_prev: dict | None, prev_day: str | None, ticks_t, ticks_p, now: float,
@@ -243,6 +320,8 @@ def step(S: dict, day: str, R_today: dict, R_prev: dict | None, prev_day: str | 
         if kill and row.get("taken") and row["fill"] is not None and not row.get("exit_t"):
             _kill_close(row, ticks_t, ticks_p, int(now * 1000) if S.get("live") else int(ticks_t[-1]))
         _resolve(row, bars, ticks_t, ticks_p, t_close_last, end_of_day)
+        _e5(row, bars, ticks_t, ticks_p, t_close_last, end_of_day, bool(S.get("coarse")),
+            kill_ms=(int(now * 1000) if S.get("live") else int(ticks_t[-1])) if (kill and len(ticks_t)) else None)
         if "f" not in row:
             i = Dy.row_of_t.get(row["t_sig"] + 300)
             if i is not None:
@@ -315,6 +394,9 @@ def day_summary(S: dict, day: str | None = None) -> dict:
     sk = [r for r in A if not r.get("taken")]
     return {"day": day, "candidates": len(A), "taken": len(tk), "open": sum(1 for r in tk if not r.get("exit_t")),
             "R": round(sum(r["R"] for r in done), 2), "usd_1": round(sum(r.get("usd_1") or 0 for r in done), 2),
+            "comm_v1": COMM, "comm_v1_label": "frozen v1 ($1.40)", "comm_e5": COMM_E5,
+            "R_e5": round(sum(r["R_e5"] for r in tk if r.get("R_e5") is not None), 2),
+            "usd_1_e5": round(sum(r.get("usd_1_e5") or 0 for r in tk if r.get("R_e5") is not None), 2),
             "skipped": len(sk), "skipped_R": round(sum(r["R"] for r in sk if r.get("R") is not None), 2),
             "lit": [{"decision": r["decision"], "pnl": r["pnl"]} for r in S.get("lit") or []]}
 
@@ -514,7 +596,9 @@ def replay_summary(R_today: dict, day: str, R_prev=None, prev_day=None, lit=None
     now = int(b.t.iloc[-1]) + 600
     if et_day(now) == day and _mod(now) < 16 * 60 + 1:
         now = int(_et(now).replace(hour=16, minute=1).timestamp())
-    return step(new_state(day), day, R_today, R_prev, prev_day, tt, px, now, lit=lit)
+    S0 = new_state(day)
+    S0["coarse"] = True                         # DESIGN_paper_v2: the E5 window is read from the entry bar's high / low
+    return step(S0, day, R_today, R_prev, prev_day, tt, px, now, lit=lit)
 
 
 def replay(day: str, root: str = ROOT) -> dict:
