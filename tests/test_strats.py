@@ -158,7 +158,7 @@ def test_page(shots=False):
                 p.wait_for_timeout(900)
                 b = p.evaluate("() => [document.getElementById('brainMount').textContent, window.__bv || null]")
                 if s == "atlas":
-                    check(f"{tag}: without brainview.js the Brain card says so in plain words", "not on this copy of the site yet" in b[0], b)
+                    check(f"{tag}: the real brainview.js (day-brains, landed 2026-11-27) mounts in the Brain card", "not on this copy of the site yet" not in b[0] and len(b[0]) > 80, b[0][:200])
                 else:
                     check(f"{tag}: the Brain mounts brainview.js lazily with s and getState (the PC's post)", b[1] and b[1]["s"] == s and b[1]["st"] and b[1]["st"]["lite"], b)
                 if shots and w == 390 and s in ("lit", "poseidon"):

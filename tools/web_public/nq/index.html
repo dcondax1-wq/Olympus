@@ -75,13 +75,6 @@
     </div>
   </section>
 
-  <!-- day-strats 2026-11-27 (owner: "complete charts of each strategy"): the 4 STRATEGY ROOMS (strat.html?s=...), plain links (no script) -->
-  <nav class="snav" id="stratNav" aria-label="Strategy rooms">
-    <a href="strat.html?s=lit" style="--c:#f1c14b"><b>Zlarior</b><small>LIT · live</small></a>
-    <a href="strat.html?s=atlas" style="--c:#b48cf2"><b>ATLAS</b><small>live</small></a>
-    <a href="strat.html?s=blitz" style="--c:#f472b6"><b>BLITZ</b><small>paper</small></a>
-    <a href="strat.html?s=poseidon" style="--c:#77db89"><b>POSEIDON</b><small>order flow · paper</small></a>
-  </nav>
   <!-- day-poseidon 2026-11-27: the live chart sits right under the hero (owner's #1 ask). Was: the live chart (owner 2026-11-18, nqchart.js + nqbars.js): the PC's NinjaTrader 5-minute bars w ... -->
   <section class="ag-card card" id="chartCard" aria-labelledby="chartH">
     <div class="row"><h2 id="chartH">Live chart</h2><span class="ctools"><button type="button" class="btn ctog" id="chart3dBtn" aria-pressed="false" hidden>3D</button><span class="pill" id="chartPill">Loading</span></span></div>
@@ -100,6 +93,13 @@
     <p class="note">The bars come from your PC's NinjaTrader about every hour while the bots trade (01:50-16:10 ET) and right after each entry or exit; it never shows made-up prices. Tap a trade to see it on the chart.</p>
     <a class="attrib" id="chartAttrib" href="https://www.tradingview.com/" target="_blank" rel="noopener">Chart: TradingView Lightweight Charts™, © TradingView, Inc.</a>
   </section>
+  <!-- day-strats 2026-11-27 (owner: "complete charts of each strategy"): the 4 STRATEGY ROOMS (strat.html?s=...), plain links (no script) -->
+  <nav class="snav" id="stratNav" aria-label="Strategy rooms">
+    <a href="strat.html?s=lit" style="--c:#f1c14b"><b>Zlarior</b><small>LIT · live</small></a>
+    <a href="strat.html?s=atlas" style="--c:#b48cf2"><b>ATLAS</b><small>live</small></a>
+    <a href="strat.html?s=blitz" style="--c:#f472b6"><b>BLITZ</b><small>paper</small></a>
+    <a href="strat.html?s=poseidon" style="--c:#77db89"><b>POSEIDON</b><small>order flow · paper</small></a>
+  </nav>
 
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
   <p id="src" class="note" data-truth="source"></p>
