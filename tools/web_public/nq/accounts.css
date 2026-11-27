@@ -11,18 +11,20 @@ html, body { margin: 0; background: var(--bg); color: var(--ink); }
 body { font: 15px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; -webkit-text-size-adjust: 100%; overflow-x: hidden;
   background: radial-gradient(120% 55% at 50% -12%, rgba(157, 89, 238, .26), transparent 60%), radial-gradient(80% 40% at 100% 100%, rgba(241, 193, 75, .06), transparent 70%), var(--bg);
   min-height: 100vh; }
-main { max-width: 560px; margin: 0 auto; padding: max(12px, env(safe-area-inset-top)) 16px calc(40px + env(safe-area-inset-bottom)); }
+main { max-width: 560px; margin: 0 auto; padding: max(12px, env(safe-area-inset-top)) 16px calc(40px + env(safe-area-inset-bottom));
+  overflow-x: clip; }   /* QA #12: the 3D tilt / raised ring reached past the screen and the phone zoomed out to ~411 px; clip (not hidden: no scroll box) */
+@supports not (overflow-x: clip) { main { overflow-x: hidden; } }
 .dim { color: var(--dim); }
 
 /* ---------------------------------------------------------------- top */
 .ac-top { display: flex; align-items: center; gap: 10px; margin: 4px 0 12px; }
-.ac-top h1 { flex: 1; margin: 0; font-size: 28px; letter-spacing: .6px; color: var(--gold);
+.ac-top h1 { flex: 1; min-width: 0; margin: 0; font-size: 28px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: .6px; color: var(--gold);
   background: linear-gradient(180deg, #fff2c4, var(--gold) 55%, #b98a1e); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 0 14px rgba(241, 193, 75, .35)); }
 .ac-back { display: inline-flex; align-items: center; justify-content: center; min-width: 52px; min-height: 44px; padding: 0 10px; border-radius: 12px;
   color: var(--ink); text-decoration: none; border: 1px solid var(--line); background: var(--card); font-weight: 600; }
 .ac-pc { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 4px 10px; border-radius: 999px; font-size: 13px; font-weight: 700;
-  border: 1px solid var(--line2); background: var(--card); white-space: nowrap; }
+  border: 1px solid var(--line2); background: var(--card); white-space: nowrap; max-width: 52vw; overflow: hidden; text-overflow: ellipsis; }
 .ac-pc::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--faint); }
 .ac-pc[data-level="ok"]::before { background: var(--mint); box-shadow: 0 0 10px var(--mint); animation: pulse 2.4s ease-in-out infinite; }
 .ac-pc[data-level="warn"] { color: var(--gold); } .ac-pc[data-level="warn"]::before { background: var(--gold); }
@@ -66,7 +68,7 @@ main { max-width: 560px; margin: 0 auto; padding: max(12px, env(safe-area-inset-
 .ac-stage { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; letter-spacing: .5px; border: 1px solid var(--line2); color: var(--ink);
   background: rgba(157, 89, 238, .12); white-space: nowrap; }
 .ac-stage.funded { color: #160f02; background: linear-gradient(180deg, #ffe08a, var(--gold)); border-color: var(--gold); box-shadow: 0 0 14px rgba(241, 193, 75, .55); }
-.ac-age { display: block; margin-top: 5px; font-size: 11.5px; color: var(--dim); white-space: nowrap; }
+.ac-age { display: block; margin-top: 5px; max-width: 150px; margin-left: auto; font-size: 11.5px; color: var(--dim); }
 .ac-age.warn { color: var(--gold); } .ac-age.bad { color: var(--red); }
 
 /* hero: the numbers + the room ring */

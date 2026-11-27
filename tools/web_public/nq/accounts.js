@@ -163,6 +163,7 @@ function drawCard(c) {
   hero.append(nums, ring(c)); box.appendChild(hero);
 
   box.appendChild(bar('goal', `${c.goal.label} (${c.goal.sub})`, c.goal.text, c.goal.frac));
+  if (c.goal.note) box.appendChild(el('p', 'ac-mini dim', c.goal.note));
   const dl = c.x.dll;
   box.appendChild(dl ? bar('dll ' + dl.lvl, 'Daily loss used (soft stop)', dl.text, dl.frac) : (() => { const p = el('p', 'ac-mini dim', c.has ? 'Daily loss used: the PC has not sent it yet' : 'Daily loss used: no PC numbers yet'); return p; })());
   box.appendChild(forecastChip(c));
@@ -235,6 +236,17 @@ function tiltOn() {
   box.addEventListener('pointerleave', () => { for (const c of box.querySelectorAll('.ac-card')) { c.style.removeProperty('--rx'); c.style.removeProperty('--ry'); } }, { passive: true });
 }
 
+// the shared NQ feed (nqfeed.js, night-nq-speed): the kept post paints at once (with its own age), every newer post re-renders
+function feedOn() {
+  const NQF = window.NQ_FEED;
+  if (!NQF) return;
+  try {
+    const f = NQF.cached();
+    if (f && !S.lite) S.lite = f;
+    NQF.on((lite) => { if (lite) { S.lite = lite; if (S.ready) { try { render(); } catch (_) { /* keeps the last screen */ } } } });
+  } catch (_) { /* the old path below still runs */ }
+}
+
 async function load(first) {
   const [home, biz, payday, fc, plan] = await Promise.all([getJSON('../home.json'), first || !S.biz ? getJSON('../business/accounts.json') : S.biz,
     first || !S.payday ? getJSON('../business/payday.json') : S.payday, getJSON('../business/forecast.json'), first || !S.plan ? getJSON('./plan12.json') : S.plan]);
@@ -246,6 +258,7 @@ async function load(first) {
 }
 
 window.NQ_ACCOUNTS = { S, model, ready: () => S.ready && S.loaded === true };
+feedOn();
 load(true).then(() => { S.loaded = true; }).catch(() => { S.loaded = true; try { render(); } catch (_) { /* nothing */ } });
 setInterval(() => { try { render(); } catch (_) { /* keeps the last screen */ } }, 60000);           // ages and day counts move on
 setInterval(() => { load(false).catch(() => {}); }, 5 * 60000);                                        // the PC posts every 15 min

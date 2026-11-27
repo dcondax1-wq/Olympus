@@ -145,6 +145,8 @@ def node_run(scen, days, acts):
         shutil.copy(os.path.join(WEB, "pc_feed.js"), os.path.join(tmp, "pc_feed.cjs"))
         for f in ("nqdesk", "clock7", "acctcore"):
             shutil.copy(os.path.join(NQ, f + ".js"), os.path.join(tmp, f + ".mjs"))
+        shutil.copy(os.path.join(NQ, "goals_model.js"), os.path.join(tmp, "goals_model.js"))   # acctcore imports the ONE goals model (QA #4)
+        open(os.path.join(tmp, "package.json"), "w").write('{"type": "module"}')               # ... a .js ES module next to the .mjs copies
         hp = os.path.join(tmp, "harness.cjs")
         open(hp, "w", encoding="utf-8").write(HARNESS)
         biz = json.load(open(os.path.join(WEB, "business", "accounts.json"), encoding="utf-8"))

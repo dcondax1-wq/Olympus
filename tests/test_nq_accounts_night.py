@@ -81,6 +81,32 @@ console.log(JSON.stringify({
           and "LIT last 40 trades" in o["b1"]["line"] and o["b2"] is None, o["b1"])
 
 
+def part_a2():
+    o = node("""
+import * as A from './acctcore.js';
+import * as GM from './goals_model.js';
+import fs from 'fs';
+const pd = JSON.parse(fs.readFileSync('../business/payday.json')), bz = JSON.parse(fs.readFileSync('../business/accounts.json'));
+const at = A.payoutEta('atlas', { name: 'ATLAS 25K', plan: 'MFFU Builder 25K', stage: 'Funded' }, bz, pd);
+const ca = A.card({ key: 'atlas', name: 'ATLAS 25K', plan: 'MFFU Builder 25K (funded)', stage: 'Funded', has: true, balance: 401, dot: 'live', mll: 1000, roomFrac: 1 },
+  { lite: null, biz: bz, payday: pd, k7: [], today: '2026-11-23', minuteET: 600, etDate: '2026-11-23', pcAge: 60 });
+const cr = A.card({ key: 'rapid1', name: 'Rapid EOD 25K', plan: 'MFFU Rapid EOD 25K', stage: 'Eval', has: true, balance: 24995, goal: 1505, dot: 'live', mll: 1000, roomFrac: 1 },
+  { lite: null, biz: bz, payday: pd, k7: [], today: '2026-11-23', minuteET: 600, etDate: '2026-11-23', pcAge: 60 });
+const g = GM.goal({ key: 'atlas', name: 'ATLAS 25K', stage: 'Funded', balance: 401 });
+console.log(JSON.stringify({ at, none: A.payoutEta('nope', { name: 'X', plan: '' }, bz, null), ca: { goal: ca.goal, eta: ca.eta }, cr: cr.goal, g }));
+""")
+    a = o["at"]
+    check("a2. QA #4: payoutEta = ONE forecast object (date + funded date + like) both pages can import; no payday file = null",
+          a and a["firstPay"] and a["firstPayText"] and a["note"].startswith("estimate") and o["none"] is None, a)
+    ca, g = o["ca"], o["g"]
+    check("a2. QA #4: the card's to-payout = the ONE goals model (+$1,699 to $2,100, ask $1,000) and the eta's $ = the model's $800, not a 2nd number",
+          ca["goal"]["text"] == "+$1,699" and g["left"] == 1699 and "$1,000 at $2,100" in ca["goal"]["sub"] and "($800 to you)" in ca["eta"]
+          and "MFFU allows the first $250 ask at $1,350" in ca["goal"]["note"], ca)
+    cr = o["cr"]
+    check("a2. the Rapid below its start says so plainly ($5 below the start: $1,505 to make back and reach +$1,500)",
+          cr["text"] == "$1,505" and cr["note"] == "$5 below the start: $1,505 to make back and reach +$1,500", cr)
+
+
 def part_b():
     P = json.load(open(os.path.join(NQ, "plan12.json"), encoding="utf-8"))
     R = json.load(open(os.path.join(ROOT, "research", "planner", "results.json"), encoding="utf-8"))["rows"]
@@ -149,6 +175,8 @@ def part_d():
                   o["rings"] == o["cards"] == 5 and o["fc"] == ["61%"] and o["dll"] == "$180 of $1,000" and o["k7segs"] == 7, o)
             check("d. the buy light shows with the PC's 'bg' (OK, green), the 4 twelve-month rows under it",
                   o["light"] and "OK to buy new evals" in o["lightTxt"] and o["biz"] == 4, o)
+            wide = p.evaluate("() => [document.documentElement.scrollWidth, document.documentElement.clientWidth]")
+            check("d. QA #12: the page is exactly the phone's width (the 3D tilt / raised ring no longer widen it to ~411 px)", wide[0] <= wide[1], wide)
             btn = "#acct-atlas .ac-more"
             p.click(btn)
             a1 = p.evaluate("() => ({ x: document.querySelector('#acct-atlas .ac-more').getAttribute('aria-expanded'), h: document.getElementById('hist-atlas').hidden, pl: !!document.querySelector('#hist-atlas polyline') })")
@@ -161,6 +189,14 @@ def part_d():
             check("d. an account with no history points says so (no made-up line)", "has not sent" in t, t)
             check("d. 390: taps >= 44 px, no sideways scroll, nothing fetched off the site, no console error",
                   not AK.taps(p) and AK.no_sideways(p) and not off and not errs and p.mocked, (AK.taps(p)[:4], off[:3], errs[:3]))
+            ctx.close()
+            ctx, p, errs, seen, off = AK.page(br, origin, w=390, h=844, mock={"json?poll=1": ""})      # loading / no PC post: plan rows only
+            p.goto(f"{origin}/nq/accounts.html?at={at}")
+            ws = []
+            for _ in range(6):
+                p.wait_for_timeout(250)
+                ws.append(p.evaluate("() => document.documentElement.scrollWidth - document.documentElement.clientWidth"))
+            check("d. QA #12 while it loads (no PC post yet, cards still tilting in): never wider than the phone", max(ws) <= 0, ws)
             ctx.close()
             core, exts = post_rich(False)
             ctx, p, errs, seen, off = AK.page(br, origin, w=1440, h=900, mock={"json?poll=1": TA.ndjson(core, exts)})
@@ -178,6 +214,7 @@ def part_d():
 
 def main():
     part_a()
+    part_a2()
     part_b()
     part_c()
     if "--static" not in sys.argv:

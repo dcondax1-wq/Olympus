@@ -8,6 +8,8 @@
 // -> { pc: {ageS, text, level}, banner: {level, title, text} | null, cards: [card], counts }
 // Never a broker id or name: only the last 4 digits (mf "l4"). Nothing here places, arms or changes anything.
 
+import * as GM from './goals_model.js?v=1';
+
 const isObj = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
 const arr = (x) => (Array.isArray(x) ? x : []);
 const num = (v) => (v === null || v === undefined || v === '' || !Number.isFinite(+v) ? null : +v);
@@ -155,18 +157,18 @@ export function card(a, ctx) {
   const rawK = arr(isObj(lite) && isObj(lite.k7) ? lite.k7.a : null).find((r) => isObj(r) && ids.includes(String(r.id)));
   const clock = a.has || a.dot !== 'plan' ? clockOf(arr(k7).find((r) => ids.includes(String(r.id))) || null, today, minuteET, rawK && rawK.act, etDate) : null;
   const roomLvl = a.roomFrac === null ? 'none' : a.roomFrac < 0.25 ? 'bad' : a.roomFrac < 0.5 ? 'warn' : 'ok';
-  let goal;
-  if (funded) {
-    const P = MFFU_PAY[size], b = num(a.balance), need = b === null ? null : Math.max(0, Math.ceil(P.at - b));
-    goal = { label: 'To first payout', text: need === null ? '-' : need === 0 ? 'Payout ready' : `+${money(need)}`,
-      sub: `ask the max ${money(P.ask)} at ${money(P.at)}`, frac: b === null ? null : Math.max(0, Math.min(1, b / P.at)) };
-  } else {
-    const tgt = size === '50K' ? 3000 : 1500, g = num(a.goal);
-    goal = { label: 'To pass', text: g === null ? '-' : g <= 0 ? 'Target reached' : money(g), sub: `target +${money(tgt)}`,
-      frac: g === null ? null : Math.max(0, Math.min(1, 1 - g / tgt)) };
-  }
+  // QA #4: ONE goals model for nq/ and nq/accounts (goals_model.js, night-nq-main): to pass = the plan's target; to payout = the max ask
+  // above the buffer (Builder 25K $1,000 at $2,100, 50K $2,000 at $4,100, Rapid $500 at $2,100 incl. the bot's $500 keep), earliest ask too
+  const G = GM.goal({ key: a.key, name: a.name, plan: a.plan, stage: a.stage, balance: a.has ? a.balance : null });
+  const goal = funded
+    ? { label: 'To first payout', text: G.left === null ? '-' : G.left <= 0 ? 'Payout ready' : `+${money(G.left)}`,
+      sub: G.ask !== null ? `ask the max ${money(G.ask)} at ${money(G.goalAt)}` : `the first ask at ${money(G.goalAt)}`, frac: G.frac,
+      note: G.earliestAt !== null && G.earliestAt < (G.goalAt || 0) && G.earliestLeft !== null ? (G.earliestLeft > 0 ? `MFFU allows the first ${money(G.earliestAt - (G.goalAt - G.ask))} ask at ${money(G.earliestAt)} (${money(G.earliestLeft)} to go)` : 'MFFU already allows a smaller first ask') : '' }
+    : { label: 'To pass', text: G.left === null ? '-' : G.left <= 0 ? 'Target reached' : money(G.left), sub: `target +${money(G.goalAt)}`, frac: G.frac,
+      note: G.profit !== null && G.profit < 0 ? `${money(-G.profit)} below the start: ${money(G.left)} to make back and reach +${money(G.goalAt)}` : '' };
   const P = paydayRow(a, ids, payday);
-  const eta = P ? (funded ? `1st payout ~${monDay(P.first_pay_med) || 'not in 6 months'} (~${money(P.first_pay_usd)} to you)`
+  // QA #4: the date from the forecast, the $ from the ONE goals model (the plan's ask x the split: $800 on a Builder 25K), never two different $
+  const eta = P ? (funded ? `1st payout ~${monDay(P.first_pay_med) || 'not in 6 months'} (${money(G.toYou ?? P.first_pay_usd)} to you)`
     : `Funded ~${monDay(P.funded_med) || '?'} · 1st payout ~${monDay(P.first_pay_med) || 'not in 6 months'}`) + (P.like ? ` (like ${P.like})` : '') : '';
   return {
     key: String(a.key), name: safeName(PLAN_IDS[a.key] || !mf || !mf.nm ? a.name : mf.nm), plan: a.plan || '', stage: funded ? 'Funded' : 'Eval', l4, has: !!a.has, dot: a.dot, ageS,
@@ -294,4 +296,16 @@ export function extras(c, ctx) {
   const funded = c.stage === 'Funded';
   return { ids, dll: c.has ? dllOf(ids, ctx.lite, null) : null, fc: forecastOf(c.key, ctx.forecast, funded), hist: historyOf(ids, ctx.lite),
     seg: k7Segments(c.clock), ring: ringDash(c.roomFrac, 34) };
+}
+
+/** QA #4: the ONE payout / funded date forecast both nq/ and nq/accounts show (business/payday.json, 1,000 replays, the Jul-Oct-like row).
+ *  key = the account key (zlarior | fresh25 | atlas | rapid1 | a new one: matched by plan like card()), acct = {name, plan, stage}.
+ *  -> { firstPay: 'YYYY-MM-DD' | null, firstPayText: 'Dec 17', toYou: $ to you at the first payout | null, funded: 'YYYY-MM-DD' | null,
+ *       fundedText, like: '' | 'Rapid EOD 25K' (a new account read off a like one), note: 'estimate from 1,000 replays, not a promise' } | null */
+export function payoutEta(key, acct, biz, payday) {
+  const a = { key: String(key), name: (acct && acct.name) || '', plan: (acct && acct.plan) || '', stage: (acct && acct.stage) || '', mll: acct && acct.mll };
+  const P = paydayRow(a, idsOf(a, biz), payday);
+  if (!P) return null;
+  return { firstPay: day(P.first_pay_med), firstPayText: monDay(P.first_pay_med), toYou: num(P.first_pay_usd), funded: day(P.funded_med), fundedText: monDay(P.funded_med),
+    like: P.like || '', note: 'estimate from 1,000 replays, not a promise' };
 }
