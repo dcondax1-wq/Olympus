@@ -53,28 +53,46 @@ The research reference numbers come from `pillars/pillars-data.json`.
 - `nqchartfeed.js`: reads `window.NQ_STRAT`.
 - The NQ home behaves exactly as before; `test_livechart` 48/48 and `test_nq_chart_pro` 28/28 confirm it.
 
+## Fresh backtests (lead's 2nd ask): `tools/refresh_backtests.py`
+
+The rooms now show backtest trades up to the newest bars (Nov 26), not mid-October.
+
+- **What it does:** re-runs each engine through the latest `data/` bars. It **never rewrites the stored research files** (other tools read them). It writes only the trades after each stored file's last day to `research/strats_refresh/<s>.json`. `build_strats` appends them (src backtest, why "Fresh replay ...", and `data_to.fresh` on the page).
+- **Parity gate:** a refresh whose re-run does not reproduce the stored trades writes `ok: false` with no trades, and the room keeps the stored research alone.
+
+| Bot | How it re-runs | Parity | New trades |
+|---|---|---|---|
+| LIT | `lit_final.run(live_model.json "lit")`, sessions = every weekday with bars in `data/NQ_5m.csv` from the stored first session (not `lit_final.SESS`) → `export_backtest.lit_row` | **631 / 631 byte-identical** to Oct 14; params = `live_model.json` | **7, -$858.40** (Oct 26 - Nov 16) = the drought study |
+| ATLAS | `engine/second.run` per session at 17:00 ET (as `atlas_more.py fresh`), the 3 members; book = `atlas.account_units`' rule (LIT's opposite open trade skips, LIT's opposite entry closes at that minute's close), $250 a trade | 5 overlap days: every stored member trade (entry, direction, exit) | 20, +$2,681.80. LIT's armed-setup block is not applied after the stored end (no record in the cloud), and the page says so. |
+| BLITZ | `blitz25k_lib.trades` "lit+atlas" (numba); the new days block on the refreshed LIT / ATLAS trades | **2,164 / 2,164** (floats within 0.001) | 67, +$1,381.47 (Oct 19 - Nov 20; the 1m bars end Nov 26) |
+| POSEIDON | nothing to refresh: its rows are the real-tick paper signals (`research/orderflow/*`) | | |
+
+- **Speed and needs:** 16 s for all three. It needs `numba` for BLITZ (pip, free); without it, run `refresh_backtests.py lit atlas`.
+- **Tests:** `tests/test_refresh_backtests.py` **12/12**. It covers each parity, LIT's -$858.40, that the stored files are untouched, a simulated broken parity writing no trades, and that `build_strats` appends the rows.
+
 ## Wires (lead only)
 
-1. **Site build:** run `python -X utf8 tools/build_strats.py` next to `tools/trading_export.py`. `--check` exits 1 when a room file is stale; it is fresh as committed.
+1. **Nightly run.** In `tools/learn_night.py`'s `nqsite` step, add `["tools/refresh_backtests.py"], ["tools/build_strats.py"]` after `roi_build.py`, in that order. Then add the same two to `tests/test_learn_night.py`'s nqsite list (line ~414).
+   - The auto-mode permission check refused this edit for the helper, so it is the lead's to make.
+   - `build_strats.py --check` exits 1 when a room file is stale. The files are fresh as committed, with data to Nov 26.
 2. **`sw.js`:**
    - Precache `nq/strat.html`, `nq/strat.js`, `nq/strat.css`, `nq/stratnav.css`, and optionally `nq/strats/*.json`.
    - Bump the cache name.
    - Also bump `nqchart.js` / `nqchartfeed.js` / `nqbars.js` if `bump_versions` does not.
-3. **`tests/run_area.py`:** add `strats` (`tests/test_strats.py`, about 3 minutes, uses the browser) to the `nq` area.
+3. **`tests/run_area.py`:** add `strats` (`tests/test_strats.py`, about 3 minutes, uses the browser) to the `nq` area, and `refresh_backtests` (about 30 s, research) to the area that runs `learn_night`.
 4. **The owner's BLITZ rule:**
    - I changed `tests/test_nq_page.py`'s "BLITZ only as its pillar chip" check so it also allows the home's BLITZ room link.
    - The link reads "BLITZ / paper", with no $ and no number, which the test checks.
    - `hidden_bots` still holds BLITZ's live data, so none is shown.
    - If you want the BLITZ tile gone from the home while `hidden_bots` holds it, delete one `<a>` in `#stratNav` and revert that test hunk.
 5. **Brain:** land `brainview.js` (session_01EwJ4kSrTyCdh7YYqkVYkfv) with this branch or after it; either order works.
-6. **Gaps, said plainly on the page:**
-   - The backtests end in mid-October: Zlarior Oct 14, ATLAS Oct 13, BLITZ Oct 16. "2026 Jul–<end>" uses that end date, and there is no Nov backtest until the research is re-run.
-   - `trading/trades.json` is built up to Nov 16 (Zlarior) and Nov 18 (ATLAS).
+6. **Gaps closed.** The backtests run to Nov 26 (the fresh replay), and "2026 Jul–Nov 26" counts quiet days too. `trading/trades.json` (real trades) is still built up to Nov 16 (Zlarior) and Nov 18 (ATLAS) by `trading_export.py`.
 
 ## Tests
 
 | Suite | Result |
 |---|---|
+| `tests/test_refresh_backtests.py` | **12/12** |
 | `tests/test_strats.py` | **58/58** (builder, static, Chromium at 390 for all 4 rooms + 1440 for Zlarior, and the home switcher) |
 | `test_livechart` | 48/48 |
 | `test_nq_chart_pro` | 28/28 |

@@ -259,9 +259,13 @@ function stats() {
   const src = x.src === 'paper' ? 'the real-tick paper signals' : x.k === 'Live (real)' ? 'the real accounts' : 'the backtest';
   $('statNote').textContent = `${dayW(x.from)} to ${dayW(x.to)}, from ${src}, the same math for every strategy.` +
     (ref ? ` The research file's own numbers (its sizing): PF ${ref.pf != null ? ref.pf : '-'}, ${moneyS(ref.usd_mo)} a month, ${ref.win != null ? ref.win + '% won' : ''}${ref.n ? ', ' + ref.n + ' trades' : ''}.` : '') +
-    (S.d && S.d.paper ? ' PAPER only: no real money.' : '');
+    (S.d && S.d.paper ? ' PAPER only: no real money.' : '') + freshW();
 }
 
+function freshW() {
+  const f = S.d && S.d.data_to && S.d.data_to.fresh;
+  return f ? ` The backtest after ${dayW(f.after)} is a fresh replay on the newest bars to ${dayW(f.to)} (${f.n} trade${f.n === 1 ? '' : 's'}), checked against the stored research.${f.note ? ' ' + f.note + '.' : ''}` : '';
+}
 // ------------------------------------------------------------------------------------------------ (5) the Brain (brainview.js, the brains helper's)
 function brain() {
   const card = $('brainCard'), mount = $('brainMount'); if (!card || !mount) return;

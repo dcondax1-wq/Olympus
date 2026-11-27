@@ -83,18 +83,35 @@ def site_rows(bot):
     return out, T.get("upto") or {}
 
 
+# ------------------------------------------------------------------------------------------------ the fresh replay (tools/refresh_backtests.py)
+FRESH_WHY = "Fresh replay on the newest bars (tools/refresh_backtests.py, parity with the stored research checked). "
+
+
+def fresh(s):
+    """research/strats_refresh/<s>.json when its parity held, else None (the stored research alone)"""
+    try:
+        f = load(f"research/strats_refresh/{s}.json")
+    except (OSError, ValueError):
+        return None
+    return f if f.get("ok") and f.get("trades") is not None else None
+
+
 # ------------------------------------------------------------------------------------------------ the four rooms
 def lit():
     bt = load("research/lab/backtest_live.json")
+    F = fresh("lit")
     rows = []
-    for x in bt["trades"]:
+    for x in bt["trades"] + (F["trades"] if F else []):
         rep = x.get("report") or {}
-        why = "; ".join(rep.get("why") or [])
+        why = ("" if x["day"] <= bt["trades"][-1]["day"] else FRESH_WHY) + "; ".join(rep.get("why") or [])
         rows.append(row("backtest", x["day"], x.get("entry_t"), x.get("exit_t"), x.get("side"), x.get("entry"), x.get("stop"), x.get("target"),
                         x.get("exit_price"), x.get("exit"), x.get("pnl"), x.get("r"), x.get("qty"), "", x.get("entry_kind") or "", why))
     live, upto = site_rows("LIT")
-    return rows + live, {"backtest": bt["trades"][-1]["day"], "live": upto.get("live_lit"), "paper": upto.get("paper_lit")}, \
-        ["research/lab/backtest_live.json (the live-settings replay, costs in)", "tools/web_public/trading/trades.json (live + the paper twin)"]
+    to = {"backtest": F["data_to"] if F else bt["trades"][-1]["day"], "live": upto.get("live_lit"), "paper": upto.get("paper_lit")}
+    if F:
+        to["fresh"] = {"after": F["stored_end"], "to": F["data_to"], "n": F["n_new"]}
+    return rows + live, to, ["research/lab/backtest_live.json (the live-settings replay, costs in)"] + \
+        (["research/strats_refresh/lit.json (the same replay on the newest bars)"] if F else []) + ["tools/web_public/trading/trades.json (live + the paper twin)"]
 
 
 def atlas():
@@ -112,8 +129,16 @@ def atlas():
         rows.append(row("backtest", g("day"), g("entry_t"), g("exit_t"), g("dir"), p and p.get("entry"), p and p.get("stop"), p and p.get("target"),
                         p and p.get("exit"), g("exit"), g("usd"), g("r"), p and p.get("qty"), "", g("member"),
                         (p or {}).get("setup") or g("s_setup") or ""))
+    n_st = len(rows)
+    F = fresh("atlas")
+    for x in (F["trades"] if F else []):
+        rows.append(row("backtest", x["day"], x["entry_t"], x["exit_t"], x["dir"], x.get("entry"), x.get("stop"), x.get("target"), x.get("exit"),
+                        x.get("exit_kind"), x.get("usd"), x.get("r"), None, "", x.get("member") or "", FRESH_WHY + (x.get("setup") or "")))
     live, upto = site_rows("ATLAS")
-    return rows + live, {"backtest": A["rows"][-1][c["day"]], "live": upto.get("live_atlas"), "prices_joined": f"{joined} of {len(rows)}"}, \
+    to = {"backtest": F["data_to"] if F else A["rows"][-1][c["day"]], "live": upto.get("live_atlas"), "prices_joined": f"{joined} of {n_st}"}
+    if F:
+        to["fresh"] = {"after": F["stored_end"], "to": F["data_to"], "n": F["n_new"], "note": F.get("armed_block")}
+    return rows + live, to, \
         ["research/anatomy/trades_atlas.json (the combined ATLAS book, costs in)", "research/second/{ema,md,sr}_best.json (the members' prices)",
          "tools/web_public/trading/trades.json (live)"]
 
@@ -127,8 +152,13 @@ def blitz():
         why = f"stop {g('risk_pts'):.1f} pts" if g("risk_pts") is not None else ""
         rows.append(row("backtest", g("day"), g("entry_t"), g("exit_t"), g("dir"), None, None, None, None, str(g("exit") or "").upper(),
                         g("pnl"), g("r"), g("qty"), "", "", why))
+    F = fresh("blitz")
+    for x in (F["trades"] if F else []):
+        g = lambda k: x[F["cols"].index(k)]  # noqa: E731
+        rows.append(row("backtest", g("day"), g("entry_t"), g("exit_t"), g("dir"), None, None, None, None, str(g("exit") or "").upper(),
+                        g("pnl"), g("r"), g("qty"), "", "", FRESH_WHY + (f"stop {g('risk_pts'):.1f} pts" if g("risk_pts") is not None else "")))
     P = load("research/batch5/blitz_paper.json")
-    return rows, {"backtest": B["trades"][-1][c["day"]], "paper": P.get("last_day"), "paper_summary": P.get("paper"),
+    return rows, {"backtest": F["data_to"] if F else B["trades"][-1][c["day"]], **({"fresh": {"after": F["stored_end"], "to": F["data_to"], "n": F["n_new"]}} if F else {}), "paper": P.get("last_day"), "paper_summary": P.get("paper"),
                   "paper_note": "The PC's own BLITZ paper ledger is not in the cloud: only this summary (" + str(P.get("source", ""))[:120] + ")"}, \
         ["research/runs/blitz_2026_backtest.json (no entry / stop prices: risk points only)", "research/batch5/blitz_paper.json (paper summary)"]
 
@@ -174,6 +204,9 @@ def spans(rows, data_to):
     out = []
     if bt:
         first, last = bt[0][1], bt[-1][1]
+        dto = (data_to or {}).get("backtest") if src == "backtest" else (data_to or {}).get("paper")
+        if isinstance(dto, str) and len(dto) == 10 and dto > last:
+            last = dto                          # quiet days count: the period runs to the data's end, not the last trade
         j0 = max(first, "2026-07-01")
         fmt = lambda d: dt.date.fromisoformat(d).strftime("%b %-d")  # noqa: E731
         jk = ("2026 Jul-" if j0 == "2026-07-01" else f"2026 {fmt(j0)}-") + fmt(max(last, j0))

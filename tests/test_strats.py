@@ -45,12 +45,13 @@ def test_builder():
     bad = [(s, i) for s, d in rooms.items() for i, x in enumerate(d["trades"]) if len(x) != 16 or x[0] not in ("live", "paper", "backtest", "skip")]
     check("a. the same 16 columns in every room, src only live / paper / backtest / skip", all(d["cols"] == cols for d in rooms.values()) and not bad, bad[:3])
     sp = {x["k"]: x for x in rooms["lit"]["spans"]}
-    check("a. Zlarior's periods = the research file's: 2026 H1 80 trades PF 4.98 max DD -$2,196; Jul-Oct 40 trades PF 2.91; 2021-25 511 trades PF 1.01",
+    fr = rooms["lit"]["data_to"].get("fresh") or {}
+    check("a. Zlarior's periods = the research file's: 2026 H1 80 trades PF 4.98 max DD -$2,196; 2021-25 511 trades PF 1.01; Jul-<end> = the stored 40 + the fresh replay's",
           sp.get("2026 H1", {}).get("n") == 80 and sp["2026 H1"]["pf"] == 4.98 and sp["2026 H1"]["max_dd"] == -2196
-          and any(k.startswith("2026 Jul") and v["n"] == 40 and v["pf"] == 2.91 for k, v in sp.items()) and sp.get("2021-25", {}).get("n") == 511 and sp["2021-25"]["pf"] == 1.01, sp)
+          and any(k.startswith("2026 Jul") and v["n"] == 40 + (fr.get("n") or 0) for k, v in sp.items()) and sp.get("2021-25", {}).get("n") == 511 and sp["2021-25"]["pf"] == 1.01, (sp, fr))
     at = rooms["atlas"]
     check("a. ATLAS: the combined book (1,288 backtest trades) with entry / stop / target / exit joined on every one + its real trades",
-          sum(1 for x in at["trades"] if x[0] == "backtest") == 1288 and all(x[5] is not None and x[6] is not None for x in at["trades"] if x[0] == "backtest")
+          sum(1 for x in at["trades"] if x[0] == "backtest") == 1288 + ((at["data_to"].get("fresh") or {}).get("n") or 0) and all(x[5] is not None and x[6] is not None for x in at["trades"] if x[0] == "backtest")
           and at["data_to"]["prices_joined"] == "1288 of 1288" and any(x[0] == "live" for x in at["trades"]))
     check("a. BLITZ and POSEIDON are PAPER; Zlarior and ATLAS are not", rooms["blitz"]["paper"] and rooms["poseidon"]["paper"] and not rooms["lit"]["paper"] and not rooms["atlas"]["paper"])
     po = rooms["poseidon"]["trades"]
