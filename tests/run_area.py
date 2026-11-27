@@ -586,6 +586,7 @@ AREAS["nq"].append("nq_accounts_night")   # night-nq-accounts 2026-11-27: premiu
 AREAS["nq"].append("vault_never_blank"); AREAS["olympus"].append("vault_never_blank")   # QA #3 night-nq-accounts: the payout vault is never a blank box
 AREAS["pc"].append("tg_pretty")   # day-tgpretty 2026-11-27: short emoji Telegram alerts, the chart after the text, /preview
 AREAS["pc"].append("insta_card")   # day-insta 2026-11-27: the green-day 1080 x 1350 Insta card after the day summary, /insta
+AREAS["pc"].append("tg_pretty_rt")   # red team #39: Sim Funded is never paper; a Telegram skip / hold still reaches ntfy + the app
 
 if __name__ == "__main__":
     sys.exit(main())
