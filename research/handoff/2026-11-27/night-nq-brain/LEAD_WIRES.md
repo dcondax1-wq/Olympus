@@ -3,6 +3,7 @@
 1. `tools/web_public/sw.js`: precache / version the two NEW files of the NQ Brain page:
    - `nq/brainmind.js?v=m4`
    - `nq/brainmind.css?v=m3`
+   - `nq/ask.js?v=a1` (the Ask WHY card, night 2026-11-27)
    (and bump the cache name so phones drop the old nq/brain.html). `brain.js` stays `?v=7` (tests/test_tgweek pins it).
 2. Nothing for `build_web_dashboard.py`, `jarvis/apps.js` or the `olympus.js` APPS table: no new app, the page is the same URL.
 3. Data: the page reads `brain/learn.json` (already built nightly by tools/forward_paper.py -> tools/build_brain_learn.py).
