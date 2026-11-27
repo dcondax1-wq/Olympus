@@ -86,6 +86,97 @@ def shipped(root: str):
     return None, None
 
 
+# ------------------------------------------------------------------------------------------------ day-ofroom2: the control room
+OOS_PATHS = (("research", "orderflow", "oos", "result.json"), ("research", "orderflow", "oos_result.json"))
+OOS_WHEN = "tonight 10:30 PM ET"
+
+
+def _num(x):
+    try:
+        return float(str(x).replace("$", "").replace(",", "").replace("+", "").strip())
+    except (TypeError, ValueError):
+        return None
+
+
+def v5_table(root: str = ROOT) -> list:
+    """The ranked v5 families from research/orderflow/v5/SUMMARY.md's table (+ each family's oos_results.json when it exists)."""
+    try:
+        txt = open(os.path.join(root, "research", "orderflow", "v5", "SUMMARY.md"), encoding="utf-8").read()
+    except OSError:
+        return []
+    out = []
+    for ln in txt.splitlines():
+        c = [x.strip() for x in ln.strip().strip("|").split("|")]
+        if len(c) < 10 or not c[0].isdigit():
+            continue
+        m = re.search(r"\*\*(.+?)\*\*", c[8])
+        verdict = (m.group(1) if m else c[8].split(".")[0]).rstrip(".")
+        usd = re.match(r"([+\-]?\$[\d,]+)", c[7].replace("−", "-"))
+        row = {"rank": int(c[0]), "family": c[1], "variant": c[2].split(":")[0], "what": c[2].split(":", 1)[-1].strip()[:90],
+               "per_week": _num(c[3]), "win_pct": _num(c[4]), "mean_R": _num(c[5]), "pf": _num(c[6]),
+               "usd_1": _num(usd.group(1)) if usd else None, "verdict": verdict, "watch": int(c[0]) <= 2,
+               "must": re.sub(r"\*\*", "", c[9])[:140] if len(c) > 9 else None}
+        oo = _rj(os.path.join(root, "research", "orderflow", "v5", c[1], "oos_results.json"))
+        if isinstance(oo, dict):
+            row["oos"] = {k: oo.get(k) for k in ("days", "verdict", "line", "n", "mean_R") if oo.get(k) is not None} or {"ran": True}
+        out.append(row)
+    return out
+
+
+def control(root: str = ROOT) -> dict:
+    """Monday's order-flow control room: the ladder, the honest backtest, tonight's full-year slot, the v5 table, the lane."""
+    out = {}
+    L = _rj(os.path.join(root, "research", "evalplan", "ladder.json"))
+    if isinstance(L, dict):
+        st = L.get("stats") or {}
+        sl = L.get("stats_later") or {}
+        out["ladder"] = {"step": L.get("step"), "step_name": L.get("step_name"), "status": L.get("status"), "why": L.get("why"),
+                         "n": st.get("n", 0), "need": 30, "won": st.get("won"), "mean_R": st.get("mean_R"), "pf": st.get("pf"),
+                         "sum_R": st.get("sum_R"), "usd_1": st.get("usd_1"), "judged_on": L.get("judged_on") or "first trade of each day",
+                         "later_n": sl.get("n"), "later_sum_R": sl.get("sum_R"), "cap_one_a_day": L.get("cap_one_a_day"),
+                         "gates": [{"k": "mean R", "need": ">= +0.20R", "v": st.get("mean_R")}, {"k": "PF ($)", "need": ">= 1.30", "v": st.get("pf")},
+                                   {"k": "both halves", "need": ">= 0R", "v": None}, {"k": "max drawdown", "need": "<= 6R", "v": None}],
+                         "stopped": bool(L.get("stopped")), "line": L.get("line")}
+    M = _rj(os.path.join(root, "research", "orderflow", "monfix", "results.json"))
+    if isinstance(M, dict) and isinstance(M.get("books"), dict):
+        b = M["books"].get("after|first|e5") or {}
+        lt = M["books"].get("after|onepos_later_only|e5") or {}
+        h = b.get("halves") or {}
+        out["backtest"] = {"label": "first trade of the day, E5 entry, after the Monday fix", "days": M.get("trading_days"),
+                           "weeks": M.get("weeks"), "trades": b.get("trades"), "per_week": b.get("per_week"), "win_pct": b.get("win_pct"),
+                           "mean_R": b.get("mean_R"), "pf": b.get("pf"), "usd_1": b.get("usd_1_micro"), "max_dd": b.get("max_dd_usd"),
+                           "half_old": (h.get("older") or {}).get("mean_R"), "half_new": (h.get("newer") or {}).get("mean_R"),
+                           "later": {"trades": lt.get("trades"), "mean_R": lt.get("mean_R"), "usd_1": lt.get("usd_1_micro")} if lt else None,
+                           "source": "research/orderflow/monfix/RESULT.md"}
+    oos = None
+    for parts in OOS_PATHS:
+        oos = _rj(os.path.join(root, *parts))
+        if isinstance(oos, dict):
+            break
+    out["oos"] = ({"pending": False, **{k: oos.get(k) for k in ("made", "days", "first", "last", "verdict", "line") if oos.get(k) is not None},
+                   "laneA": oos.get("laneA") if isinstance(oos.get("laneA"), dict) else None}
+                  if isinstance(oos, dict) else {"pending": True, "when": OOS_WHEN})
+    out["v5"] = v5_table(root)
+    out["v5_line"] = "No new order-flow edge: 8 families, none a YES-candidate. Lane A's absorbed level fade is still the only one that works."
+    cfg, lst = _rj(os.path.join(root, "data", "of_lane.json")), _rj(os.path.join(root, "data", "of_lane_state.json"))
+    if isinstance(cfg, dict) or isinstance(lst, dict):        # only where the lane lives (the PC); the phone reads the live post
+        out["lane"] = lane_block(cfg if isinstance(cfg, dict) else {}, lst if isinstance(lst, dict) else {})
+    return out
+
+
+def lane_block(cfg: dict, S: dict) -> dict:
+    """The practice lane in plain fields (engine/of_lane.py files). Sim only; no account id beyond its Sim name."""
+    day = S.get("day")
+    tr = [t for t in S.get("trades") or [] if t.get("day") == day]
+    rows = [{"t": _hm(t.get("entry_t") or t.get("t")), "dir": "long" if t.get("d") == 1 else "short", "qty": t.get("qty"),
+             "status": t.get("status"), "why": str(t.get("why") or "")[:120], "pnl": t.get("pnl"), "entry": t.get("entry"),
+             "stop": t.get("stop"), "target": t.get("target"), "exit": t.get("exit")} for t in tr]
+    cap = cfg.get("max_per_day", 1)
+    used = sum(1 for t in tr if t.get("status") in ("sending", "open", "closed") and t.get("filled", True))
+    return {"on": cfg.get("on") is True, "account": str(cfg.get("account") or "Sim102")[:12], "cap": cap if isinstance(cap, int) and cap >= 1 else 1,
+            "used": used, "day": day, "trades": rows[-6:]}
+
+
 def build(root: str = ROOT, now: float | None = None, state: dict | None = None) -> dict:
     now = now or dt.datetime.now(dt.timezone.utc).timestamp()
     today = dt.datetime.fromtimestamp(now, ET).strftime("%Y-%m-%d")
@@ -136,6 +227,10 @@ def build(root: str = ROOT, now: float | None = None, state: dict | None = None)
         out["verdict"]["b"] = {"trades": B.get("trades"), "need": B.get("need"), "verdict": B.get("verdict")}
     else:
         out["forward"] = {"n": 0, "need": 20, "line": "forward score 0 of 20 paper trades (no real day scored yet)"}
+    try:
+        out["control"] = control(root)                       # day-ofroom2: never breaks the room if a research file is odd
+    except Exception as e:  # noqa: BLE001
+        out["control"] = {"error": f"{e.__class__.__name__}"}
     return out
 
 

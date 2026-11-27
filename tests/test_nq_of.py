@@ -73,9 +73,11 @@ def real_room():
     try:
         room = json.load(open(os.path.join(NQ, "of_room.json"), encoding="utf-8"))
         RB = load("tools/build_of_room.py", "nqof_rb_real")
-        v = RB.build(ROOT).get("verdict")
+        b = RB.build(ROOT)
+        v = b.get("verdict")
         if v and v.get("label") == "real":
             room["verdict"] = v
+        room["control"] = b.get("control")
         return room
     except (OSError, ValueError):
         return None
@@ -112,6 +114,15 @@ out.kinds = ['YES: x', 'NO: y', 'TOO FEW: 3 of 40 resolved', 'REJECTED', 'PASS (
 const real = { ...room, verdict: { ...room.verdict, label: 'real', days: 3, absorption: 'TOO FEW: 12 of 40 resolved level signals', of1_lit: 'TOO FEW' } };
 out.real = O.model({ room: real, lite: null, nowS: now });
 out.scrub = O.model({ room: { ...room, line: 'OF paper: 1 trade, +2.0R (1 micro +$96); Zlarior: flow says SKIP -> won $934' }, lite: null, nowS: now }).line;
+const ctl = { ladder: { step: 0, step_name: 'paper forward', status: 'watching', n: 0, need: 30, gates: [{ k: 'mean R', need: '>= +0.20R', v: null }] },
+  backtest: { days: 43, per_week: 4.53, win_pct: 51.3, mean_R: 0.51, pf: 2.4, usd_1: 2931, max_dd: 542, half_old: 0.905, half_new: 0.095, later: { trades: 26, usd_1: -561 } },
+  oos: { pending: true, when: 'tonight 10:30 PM ET' }, v5: [{ rank: 1, family: 'targets', variant: 'T3R', verdict: 'Weak', watch: true }] };
+out.ctl = O.model({ room: { ...room, control: ctl }, lite: null, nowS: now });
+const lane = { on: true, account: 'Sim102', cap: 1, used: 1, day: today, trades: [{ t: '10:05', dir: 'long', qty: 2, status: 'closed', pnl: 96.5 },
+  { t: '11:40', dir: 'short', status: 'refused', why: 'day cap: 1 entry a day already used' }] };
+out.lane = O.model({ room: { ...room, control: ctl }, lite: { t: now - 60, ofl: lane }, nowS: now });
+out.laneStale = O.model({ room: { ...room, control: { ...ctl, lane: { ...lane, on: false } } }, lite: { t: now - 6 * 3600, ofl: lane }, nowS: now });
+out.why = O.whyWords({ status: 'refused', why: 'day cap: 1 entry a day already used' });
 out.realroom = %(realroom)s ? O.model({ room: %(realroom)s, lite: null, nowS: now }) : null;
 out.fmt = [O.fmtR(1.25), O.fmtR(-0.5), O.fmtUsd(-48.3), O.fmtPx(25665)];
 console.log(JSON.stringify(out));
@@ -152,6 +163,14 @@ def part_b(room, now):
               and v["rows"][1]["cls"] == "few" and "of 20 trades" in v["rows"][1]["v"] and v["a"]["taken"]["n"] > 0, v)
     else:
         check("b. (no real verdict in this checkout: skipped)", True)
+    c = o["ctl"]
+    check("b. control room: ring = ladder 0 of 30 first-of-day trades; backtest + oos pending + v5 carried", c["ring"]["need"] == 30 and c["ring"]["n"] == 0
+          and c["ring"]["label"] == "first-of-day trades" and c["backtest"]["pf"] == 2.4 and c["oos"]["pending"] and c["v5"][0]["watch"], c["ring"])
+    ln = o["lane"]["lane"]
+    check("b. practice lane from the live post 'ofl': ON Sim102, day cap 1 of 1, today's trade + the refused one", ln["src"] == "live" and ln["on"]
+          and ln["account"] == "Sim102" and ln["used"] == 1 and ln["cap"] == 1 and ln["today"] and len(ln["trades"]) == 2, ln)
+    check("b. a stale live lane (6 h) falls back to the room's copy", o["laneStale"]["lane"]["src"] == "room" and not o["laneStale"]["lane"]["on"], o["laneStale"]["lane"])
+    check("b. refused for the day cap reads 'skipped: day cap (1 a day)'", o["why"] == "skipped: day cap (1 a day)", o["why"])
     check("b. formats: +1.3R / −0.5R / −$48 / 25,665.00", o["fmt"] == ["+1.3R", "−0.5R", "−$48", "25,665.00"], o["fmt"])
 
 
@@ -171,7 +190,10 @@ def part_c(room, now):
     lv = [[x["name"], x["px"], {"absorbed": "a", "not absorbed": "n"}.get(x["read"], "u")] for x in live_room["levels"]]
     lite = {"v": 1, "kind": "le-live", "lite": True, "src": "pc_report", "t": now - 140, "reporter": {"t": now - 140}, "price": (live_room["levels"][len(lv) // 2]["px"] + 2.0) if lv else 25000.0,
             "ofp": {"p": 1, "d": today, "t": now - 140, "n": sum(1 for r in room["rows"] if r["taken"]), "o": 0, "R": (room.get("today") or {}).get("R"),
-                    "lv": lv, "lb": [[x["t"], x["flow_says"], x["result"]] for x in room["lit"]], "ln": room.get("line") or ""}}
+                    "lv": lv, "lb": [[x["t"], x["flow_says"], x["result"]] for x in room["lit"]], "ln": room.get("line") or ""},
+            "ofl": {"on": True, "account": "Sim102", "cap": 1, "used": 1, "day": today,
+                    "trades": [{"t": "10:05", "dir": "long", "qty": 2, "status": "closed", "pnl": 96.5, "why": "target"},
+                               {"t": "11:40", "dir": "short", "status": "refused", "why": "day cap: 1 entry a day already used"}]}}
     shots = "--shots" in sys.argv
     read = """() => ({ state: document.getElementById('app').dataset.state, chip: document.getElementById('src').textContent, rungs: document.querySelectorAll('.rung').length,
         now: !!document.querySelector('.now-line'), reads: [...document.querySelectorAll('.rung-read')].map((e) => e.textContent), tape: document.querySelectorAll('.tape-dot, .tape-take').length, lanes: document.querySelectorAll('.tape-lane').length,
@@ -194,10 +216,22 @@ def part_c(room, now):
                 p.evaluate("document.getAnimations().forEach((a) => { try { a.finish(); } catch (e) {} })")
                 o = p.evaluate(read)
                 if name.startswith("live"):
+                    lt = p.evaluate("() => ({ chip: document.getElementById('laneChip').textContent, rows: [...document.querySelectorAll('#laneTrades li')].map((e) => e.textContent), on: document.getElementById('lane').dataset.on })")
+                    check(f"c. {name}: practice lane ON · Sim102, today's trade (+$97 sim) and 'skipped: day cap (1 a day)'", lt["chip"] == "ON · Sim102" and lt["on"] == "1"
+                          and len(lt["rows"]) == 2 and "+$97" in lt["rows"][0] and "skipped: day cap" in lt["rows"][1], lt)
                     check(f"c. {name}: LIVE chip, ladder rungs with reads + the gold NOW line, tape dots, lane B rows, verdict (sim = test)",
                           o["state"] == "live" and o["chip"].startswith("LIVE") and o["rungs"] == len(lv) and o["now"] and o["tape"] == len(room["rows"])
                           and o["lit"] == len(room["lit"]) and "test" in o["verChip"] and o["lanes"] == len(lv), o)
                 elif name.startswith("real"):
+                    ctl = p.evaluate("""() => ({ gate: document.getElementById('gateTxt').textContent, checks: document.querySelectorAll('#gateChecks li').length,
+                        tiles: [...document.querySelectorAll('#btTiles .of-tile b')].map((e) => e.textContent), later: document.getElementById('btLater').textContent,
+                        oos: document.getElementById('oosBig').textContent, v5: document.querySelectorAll('#v5List li').length, watch: document.querySelectorAll('#v5List li[data-watch="1"]').length,
+                        lane: document.getElementById('laneTrades').textContent, ring: document.getElementById('ringOf').textContent })""")
+                    check(f"c. {name}: control room: ladder 'of 30 first-of-day', 4 gate rows, backtest tiles (4.5/wk, 51%, +0.5R, 2.40, +$2,931, $542), later trades lose, "
+                          "oos 'Tonight 10:30 PM ET', v5 8 rows with 2 WATCH, lane 'no report yet' state",
+                          "of 30 first-of-day" in ctl["gate"] and ctl["checks"] == 4 and ctl["tiles"][:6] == ["4.5/wk", "51%", "+0.5R", "2.40", "+$2,931", "$542"]
+                          and "lose" in ctl["later"] and ctl["oos"].startswith("Tonight 10:30 PM ET") and ctl["v5"] == 8 and ctl["watch"] == 2
+                          and "PC" in ctl["lane"] and ctl["ring"] == "of 30", ctl)
                     cmp = p.evaluate("() => [...document.querySelectorAll('.of-cmp-num')].map((e) => e.textContent)")
                     check(f"c. {name}: the REAL verdict card: CANDIDATE + taken vs skipped bars with R, win % and $ at 1 MNQ",
                           "CANDIDATE" in o["verdict"] and len(cmp) == 2 and "won" in cmp[0] and "1 MNQ" in cmp[0] and "real days" in o["verChip"], (o["verdict"], cmp))
