@@ -122,7 +122,7 @@ def run(pages, net_name, runs, variants, shots=None):
                         ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=1, service_workers="block")
                         ctx.add_init_script(INIT)
                         for rel_b, body_b in built.items():
-                            ctx.route(f"{base}/{rel_b}*", lambda route, _b=body_b: route.fulfill(status=200, content_type="application/json", body=_b))
+                            ctx.route(f"{base}/{rel_b}*", (lambda b: lambda route: route.fulfill(status=200, content_type="application/json", body=b))(body_b))
                         if v == "after":
                             def inject(route, _rel=rel):
                                 resp = route.fetch()
