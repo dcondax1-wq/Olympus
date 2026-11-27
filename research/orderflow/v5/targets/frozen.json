@@ -1,0 +1,120 @@
+{
+ "frozen_utc": "2026-11-27",
+ "design": "research/orderflow/v5/targets/DESIGN.md",
+ "code": "research/orderflow/v5/targets/study.py",
+ "paper_only": true,
+ "signals": "lane A exactly as engine/of_paper.replay_summary (DESIGN_paper.md): taken = absorbed and not busy; skipped tracked",
+ "entry": {
+  "style": "E5",
+  "limit_at_level_minutes": 5,
+  "fill_rule": "marketable at first open, else >= 1 tick through the level; stop touched first = no trade",
+  "fallback": "market at open of minute 6 + 18 ticks against us",
+  "stop": "1 tick beyond the signal bar extreme"
+ },
+ "costs": {
+  "comm_rt_per_micro": 1.9,
+  "stop_slip_ticks": 2,
+  "market_exit_slip_ticks": 2,
+  "target_needs_ticks_through": 1,
+  "flat": "close of the 15:59 1m bar"
+ },
+ "path": "data/NQ_1m.csv + day median offset when covered, else the day's 5m summary bars",
+ "frozen": [
+  {
+   "id": "T3R",
+   "target": "3R limit from the E5 fill",
+   "other": "none",
+   "why": "best tested variant: YES-candidate, most $ at 1 micro, beat 2R in both halves"
+  },
+  {
+   "id": "TOPP",
+   "target": "nearest opposite-type level (short at a high-type -> pdl/onl/orl; long -> pdh/onh/orh) known at the signal bar, >= 1R in profit, limit 2 ticks in front; none -> 2R",
+   "other": "none",
+   "why": "next by the freeze rule and a different kind"
+  }
+ ],
+ "reference": {
+  "id": "B2R",
+  "target": "2R limit (the lane's rule)"
+ },
+ "in_sample_days": [
+  "2026-09-27",
+  "2026-09-28",
+  "2026-09-29",
+  "2026-09-30",
+  "2026-10-01",
+  "2026-10-02",
+  "2026-10-05",
+  "2026-10-06",
+  "2026-10-07",
+  "2026-10-08",
+  "2026-10-09",
+  "2026-10-12",
+  "2026-10-13",
+  "2026-10-14",
+  "2026-10-15",
+  "2026-10-16",
+  "2026-10-18",
+  "2026-10-19",
+  "2026-10-20",
+  "2026-10-21",
+  "2026-10-22",
+  "2026-10-23",
+  "2026-10-25",
+  "2026-10-26",
+  "2026-10-27",
+  "2026-10-28",
+  "2026-10-29",
+  "2026-10-30",
+  "2026-11-01",
+  "2026-11-02",
+  "2026-11-03",
+  "2026-11-04",
+  "2026-11-05",
+  "2026-11-06",
+  "2026-11-08",
+  "2026-11-09",
+  "2026-11-10",
+  "2026-11-11",
+  "2026-11-12",
+  "2026-11-13",
+  "2026-11-15",
+  "2026-11-16",
+  "2026-11-17",
+  "2026-11-18",
+  "2026-11-19",
+  "2026-11-20",
+  "2026-11-22",
+  "2026-11-23",
+  "2026-11-24",
+  "2026-11-25",
+  "2026-11-26"
+ ],
+ "in_sample": {
+  "B2R": {
+   "trades": 40,
+   "mean_R": 0.535,
+   "pf": 2.38,
+   "net_usd_1": 2833.5,
+   "max_dd_usd_1": 570.1,
+   "placebo_p": 0.002
+  },
+  "T3R": {
+   "trades": 40,
+   "mean_R": 0.85,
+   "pf": 2.68,
+   "net_usd_1": 3448.5,
+   "max_dd_usd_1": 629.0,
+   "placebo_p": 0.0003
+  },
+  "TOPP": {
+   "trades": 40,
+   "mean_R": 0.493,
+   "pf": 2.21,
+   "net_usd_1": 2842.5,
+   "max_dd_usd_1": 512.4,
+   "placebo_p": 0.017
+  }
+ },
+ "oos_pass_bar": "per frozen variant: n >= 30, mean R > 0 and $ > 0 in both OOS halves, label-shuffle placebo p < 0.05, Holm (2 frozen) < 0.10; 'exit edge' also needs net $ > B2R in both OOS halves"
+}

@@ -139,6 +139,13 @@ def main():
         x["usd_1"] = 20.0 if x["R"] > 0 else -60.0
     d = L.evaluate(base + lr)
     check("g rt 15 later trades mean R >= 0 but $ < 0: cap (in $ too)", d["cap_one_a_day"] and "-$" in d["why"], d["why"])
+    d = L.evaluate(later("L", 20) + base)            # landing #3: no step-1 card while later trades lose and the Sim lane is uncapped
+    check("g hold: gate 0 passed + later trades losing + lane not capped -> no card, says why",
+          d["passed_gate"] == 0 and not d["card_due"] and d["card_held"] and "waits until the Sim lane is capped" in d["why"], d["why"])
+    d = L.evaluate(later("L", 20) + base, lane_capped=True)
+    check("g hold lifts once the Sim lane is capped at 1 a day", d["card_due"] and not d["card_held"], d["why"])
+    d = L.evaluate(base + later("L", 14))
+    check("g no hold before 15 later trades", d["card_due"] and not d["card_held"], d["why"])
     fd = L.split_first([dict(base[0], id="z", t_sig=9000), dict(base[0], id="y", t_sig=10)])
     check("g split_first orders by signal time within a day", [x["id"] for x in fd[0]] == ["y"] and [x["id"] for x in fd[1]] == ["z"])
     print(f"\nof_ladder: {'ALL PASS' if not FAILS else str(len(FAILS)) + ' FAIL'}")

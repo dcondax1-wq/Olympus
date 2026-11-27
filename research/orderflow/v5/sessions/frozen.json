@@ -1,0 +1,213 @@
+{
+ "family": "sessions",
+ "design": "research/orderflow/v5/sessions/DESIGN.md",
+ "frozen_on": "2026-11-27",
+ "in_sample_days": [
+  "2026-09-27",
+  "2026-09-28",
+  "2026-09-29",
+  "2026-09-30",
+  "2026-10-01",
+  "2026-10-02",
+  "2026-10-05",
+  "2026-10-06",
+  "2026-10-07",
+  "2026-10-08",
+  "2026-10-09",
+  "2026-10-12",
+  "2026-10-13",
+  "2026-10-14",
+  "2026-10-15",
+  "2026-10-16",
+  "2026-10-18",
+  "2026-10-19",
+  "2026-10-20",
+  "2026-10-21",
+  "2026-10-22",
+  "2026-10-23",
+  "2026-10-25",
+  "2026-10-26",
+  "2026-10-27",
+  "2026-10-28",
+  "2026-10-29",
+  "2026-10-30",
+  "2026-11-01",
+  "2026-11-02",
+  "2026-11-03",
+  "2026-11-04",
+  "2026-11-05",
+  "2026-11-06",
+  "2026-11-08",
+  "2026-11-09",
+  "2026-11-10",
+  "2026-11-11",
+  "2026-11-12",
+  "2026-11-13",
+  "2026-11-15",
+  "2026-11-16",
+  "2026-11-17",
+  "2026-11-18",
+  "2026-11-19",
+  "2026-11-20",
+  "2026-11-22",
+  "2026-11-23",
+  "2026-11-24",
+  "2026-11-25",
+  "2026-11-26"
+ ],
+ "variants": {
+  "S3": {
+   "name": "NY midday 10:30-13:30, per-window",
+   "windows": [
+    "MID"
+   ],
+   "touch_mode": "WIN",
+   "window_defs": {
+    "MID": {
+     "signal_bar_open_mod": [
+      630,
+      805
+     ],
+     "flat_bar_open_mod": 955,
+     "levels": [
+      "pdh",
+      "pdl",
+      "onh",
+      "onl",
+      "orh",
+      "orl"
+     ]
+    }
+   },
+   "in_sample": {
+    "trades": 38,
+    "per_week": 3.73,
+    "win_pct": 42.1,
+    "mean_R": 0.15,
+    "pf": 1.26,
+    "net_usd": 669.0,
+    "max_dd_usd": 1319.0,
+    "gap_R": 0.594,
+    "placebo_p": 0.0702,
+    "holm_p": 0.4212,
+    "verdict": "weak"
+   }
+  },
+  "S6": {
+   "name": "all windows, ANY touch",
+   "windows": [
+    "LON",
+    "NYO",
+    "MID",
+    "PM"
+   ],
+   "touch_mode": "ANY",
+   "window_defs": {
+    "LON": {
+     "signal_bar_open_mod": [
+      120,
+      295
+     ],
+     "flat_bar_open_mod": 565,
+     "levels": [
+      "pdh",
+      "pdl",
+      "ash",
+      "asl"
+     ]
+    },
+    "NYO": {
+     "signal_bar_open_mod": [
+      570,
+      625
+     ],
+     "flat_bar_open_mod": 955,
+     "levels": [
+      "pdh",
+      "pdl",
+      "onh",
+      "onl",
+      "orh",
+      "orl"
+     ]
+    },
+    "MID": {
+     "signal_bar_open_mod": [
+      630,
+      805
+     ],
+     "flat_bar_open_mod": 955,
+     "levels": [
+      "pdh",
+      "pdl",
+      "onh",
+      "onl",
+      "orh",
+      "orl"
+     ]
+    },
+    "PM": {
+     "signal_bar_open_mod": [
+      810,
+      925
+     ],
+     "flat_bar_open_mod": 955,
+     "levels": [
+      "pdh",
+      "pdl",
+      "onh",
+      "onl",
+      "orh",
+      "orl"
+     ]
+    }
+   },
+   "in_sample": {
+    "trades": 211,
+    "per_week": 20.69,
+    "win_pct": 33.2,
+    "mean_R": -0.163,
+    "pf": 1.08,
+    "net_usd": 975.0,
+    "max_dd_usd": 1699.0,
+    "gap_R": 0.094,
+    "placebo_p": 0.2595,
+    "holm_p": 1.0,
+    "verdict": "NO"
+   }
+  }
+ },
+ "rules": {
+  "abs_zone_ticks": 8,
+  "abs_share": 0.2,
+  "min_bar_trades": 20,
+  "rr": 2.0,
+  "level_priority": [
+   "pdh",
+   "pdl",
+   "onh",
+   "onl",
+   "orh",
+   "orl",
+   "ash",
+   "asl"
+  ],
+  "level_known_from_mod": {
+   "onh": 570,
+   "onl": 570,
+   "orh": 600,
+   "orl": 600,
+   "ash": 120,
+   "asl": 120,
+   "pdh": 0,
+   "pdl": 0
+  },
+  "entry": "E5 coarse: entry bar opens at/beyond level = fill at open; else >=1 tick through = fill at level (stop-only that bar); else stop in bar = no fill; else next open + 18 ticks",
+  "stop": "1 tick beyond signal bar extreme; stop fill 2 ticks worse",
+  "target": "2R, needs 1 tick through",
+  "flat": "close of the window's flat bar - 2 ticks",
+  "comm_rt": 1.9,
+  "one_position": true,
+  "pass_bar": "YES-candidate: >=20 trades, net>0, PF>=1.2, both halves meanR>0 and gap>0, placebo p<0.10, Holm<0.10"
+ }
+}

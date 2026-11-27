@@ -1,0 +1,117 @@
+{
+ "family": "levels",
+ "design": "research/orderflow/v5/levels/DESIGN.md",
+ "frozen_on": "2026-11-27",
+ "in_sample_days": [
+  "2026-09-27",
+  "2026-09-28",
+  "2026-09-29",
+  "2026-09-30",
+  "2026-10-01",
+  "2026-10-02",
+  "2026-10-05",
+  "2026-10-06",
+  "2026-10-07",
+  "2026-10-08",
+  "2026-10-09",
+  "2026-10-12",
+  "2026-10-13",
+  "2026-10-14",
+  "2026-10-15",
+  "2026-10-16",
+  "2026-10-18",
+  "2026-10-19",
+  "2026-10-20",
+  "2026-10-21",
+  "2026-10-22",
+  "2026-10-23",
+  "2026-10-25",
+  "2026-10-26",
+  "2026-10-27",
+  "2026-10-28",
+  "2026-10-29",
+  "2026-10-30",
+  "2026-11-01",
+  "2026-11-02",
+  "2026-11-03",
+  "2026-11-04",
+  "2026-11-05",
+  "2026-11-06",
+  "2026-11-08",
+  "2026-11-09",
+  "2026-11-10",
+  "2026-11-11",
+  "2026-11-12",
+  "2026-11-13",
+  "2026-11-15",
+  "2026-11-16",
+  "2026-11-17",
+  "2026-11-18",
+  "2026-11-19",
+  "2026-11-20",
+  "2026-11-22",
+  "2026-11-23",
+  "2026-11-24",
+  "2026-11-25",
+  "2026-11-26"
+ ],
+ "variants": {
+  "L2": {
+   "name": "Globex VAH/VAL/POC",
+   "level_types": [
+    "GX"
+   ],
+   "in_sample": {
+    "trades": 40,
+    "per_week": 3.92,
+    "win_pct": 22.5,
+    "mean_R": -0.479,
+    "pf": 0.76,
+    "net_usd": -652.0,
+    "max_dd_usd": 1162.0,
+    "gap_R": 0.388,
+    "placebo_p": 0.1394,
+    "holm_p": 0.8364,
+    "verdict": "NO"
+   }
+  },
+  "L4": {
+   "name": "VWAP +/-1 sd",
+   "level_types": [
+    "VW"
+   ],
+   "in_sample": {
+    "trades": 52,
+    "per_week": 5.1,
+    "win_pct": 15.4,
+    "mean_R": -0.72,
+    "pf": 0.65,
+    "net_usd": -1042.0,
+    "max_dd_usd": 1475.0,
+    "gap_R": -0.114,
+    "placebo_p": 0.6391,
+    "holm_p": 1.0,
+    "verdict": "NO"
+   }
+  }
+ },
+ "rules": {
+  "abs_zone_ticks": 8,
+  "abs_share": 0.2,
+  "window_mod": [
+   585,
+   900
+  ],
+  "flat_mod": 955,
+  "rr": 2.0,
+  "entry": "E5 coarse: open beyond level = fill at open; else >=1 tick through = fill at level (stop-only that bar); else stop in bar = no fill; else next open + 18 ticks",
+  "stop": "1 tick beyond signal bar extreme; stop fill 2 ticks worse",
+  "target": "2R, needs 1 tick through",
+  "comm_rt": 1.9,
+  "gx_min_vol": 20000,
+  "np_n": 5,
+  "level_rule": "two-sided rejection (DESIGN)",
+  "one_position": true,
+  "pass_bar": "YES-candidate: >=20 trades, net>0, PF>=1.2, both halves meanR>0 and gap>0, placebo p<0.10, Holm<0.10"
+ }
+}

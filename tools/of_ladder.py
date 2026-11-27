@@ -238,7 +238,7 @@ def gate1(sim):
     return "watching", f"{len(sim)} / {G1_N} Sim101 trades" + (f", fills {avg:.1f} ticks from paper" if avg is not None else "")
 
 
-def evaluate(rows, sim=None, prev=None, today=None, skipped=None):
+def evaluate(rows, sim=None, prev=None, today=None, skipped=None, lane_capped=False):
     """The ladder state. A stop is sticky (prev['stopped'] stays). Steps >= 2 need the owner's yes: the ladder only says 'ask'."""
     prev = prev or {}
     all_rows = rows
@@ -260,18 +260,21 @@ def evaluate(rows, sim=None, prev=None, today=None, skipped=None):
         step, status, why = prev["stopped"]["step"], "stopped", prev["stopped"]["why"] + " (stopped earlier: stays paper)"
     stopped = prev.get("stopped") or ({"step": step, "why": why, "on": today} if status == "stopped" else None)
     nxt = STEPS[min(step + 1, len(STEPS) - 1)]
-    card_due = passed >= 0 and not stopped
     lc = later_check(later)
     cap = bool(lc and lc[0])
+    held = cap and not lane_capped                    # red team #35: step 1 Sim runs every signal, so no next-step card while the
+    card_due = passed >= 0 and not stopped and not held   # later trades lose and the Sim lane still takes more than 1 a day
     if cap:
         why = (f"{why}; {CAP_TEXT} (the {len(later)} later-in-the-day trades average {lc[1]:+.2f}R, "
                f"{'+' if lc[2] >= 0 else '-'}${abs(lc[2]):,.0f} at 1 micro)")
+        if held and passed >= 0 and not stopped:
+            why += "; the next-step card waits until the Sim lane is capped at 1 trade a day"
     return {"v": 1, "paper_only": True, "plan": PLAN, "fwd_from": FWD_FROM, "step": step, "step_name": STEPS[step]["name"],
             "status": status, "why": why, "stats": st, "gate": STEPS[step]["gate"], "stop_rule": STEPS[step]["stop"],
             "next": {"step": nxt["step"], "name": nxt["name"], "gate": nxt["gate"], "stop": nxt["stop"]},
             "stopped": stopped, "card_due": card_due, "passed_gate": passed, "passed_why": gwhy, "steps": STEPS,
             "judged_on": "first trade of each day", "stats_later": _stats(later) if later else None,
-            "stats_all": _stats(all_rows), "cap_one_a_day": cap, "later_need": LATER_N,
+            "stats_all": _stats(all_rows), "cap_one_a_day": cap, "card_held": held, "later_need": LATER_N,
             "line": line(step, status, st, why, later)}
 
 
@@ -308,7 +311,10 @@ def run(out=None, card_path=None, say=print, today=None):
     rows, src = forward_rows()
     sim = _read(SIM_ROWS, []) or []
     prev = _read(out, {}) or {}
-    doc = evaluate(rows, sim if isinstance(sim, list) else [], prev, today or dt.date.today().isoformat(), skipped=forward_skipped())
+    lane = _read(os.path.join(ROOT, "data", "of_lane.json"), {}) or {}
+    capped = isinstance(lane, dict) and str(lane.get("max_per_day", "")) == "1"   # data/of_lane.json max_per_day: 1 = capped
+    doc = evaluate(rows, sim if isinstance(sim, list) else [], prev, today or dt.date.today().isoformat(), skipped=forward_skipped(),
+                   lane_capped=capped)
     doc["sources"] = src
     doc["built"] = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     fi = {id(r) for r in split_first(rows)[0]}

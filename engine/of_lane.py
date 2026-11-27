@@ -725,7 +725,9 @@ def tg_text(arg: str, root: str = ROOT, now=None) -> str:
         ok, msg = set_switch(True, root=root)
         if not ok:
             return msg
-        return (msg + f"\nStarts by itself at 09:20 ET on weekdays (the PC). Off: /oflane off\nToday: {_today_paper(root, now)}."
+        sim101 = ("\nIf the lane is on Sim101, ATLAS's week or START's Sim test started later today sends no orders until "
+                  "tomorrow (safe).")  # the account is re-picked at each runner start, so always said
+        return (msg + f"\nStarts by itself at 09:20 ET on weekdays (the PC). Off: /oflane off{sim101}\nToday: {_today_paper(root, now)}."
                 f"\n{_ladder(root)}")
     if arg == "off":
         return set_switch(False, root=root)[1]

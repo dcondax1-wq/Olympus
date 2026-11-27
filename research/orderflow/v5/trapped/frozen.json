@@ -1,0 +1,150 @@
+{
+ "family": "trapped",
+ "design": "research/orderflow/v5/trapped/DESIGN.md + DESIGN_look2.md",
+ "frozen_on": "2026-11-27",
+ "in_sample_days": [
+  "2026-09-27",
+  "2026-09-28",
+  "2026-09-29",
+  "2026-09-30",
+  "2026-10-01",
+  "2026-10-02",
+  "2026-10-05",
+  "2026-10-06",
+  "2026-10-07",
+  "2026-10-08",
+  "2026-10-09",
+  "2026-10-12",
+  "2026-10-13",
+  "2026-10-14",
+  "2026-10-15",
+  "2026-10-16",
+  "2026-10-18",
+  "2026-10-19",
+  "2026-10-20",
+  "2026-10-21",
+  "2026-10-22",
+  "2026-10-23",
+  "2026-10-25",
+  "2026-10-26",
+  "2026-10-27",
+  "2026-10-28",
+  "2026-10-29",
+  "2026-10-30",
+  "2026-11-01",
+  "2026-11-02",
+  "2026-11-03",
+  "2026-11-04",
+  "2026-11-05",
+  "2026-11-06",
+  "2026-11-08",
+  "2026-11-09",
+  "2026-11-10",
+  "2026-11-11",
+  "2026-11-12",
+  "2026-11-13",
+  "2026-11-15",
+  "2026-11-16",
+  "2026-11-17",
+  "2026-11-18",
+  "2026-11-19",
+  "2026-11-20",
+  "2026-11-22",
+  "2026-11-23",
+  "2026-11-24",
+  "2026-11-25",
+  "2026-11-26"
+ ],
+ "variants": {
+  "C3@look1": {
+   "id": "C3",
+   "look": 1,
+   "thresholds": {
+    "bd": 0.08,
+    "xd": 0.15
+   },
+   "name": "hold session-extreme break, bar delta",
+   "pattern": "HOLD",
+   "levels": "SX",
+   "label": "BD",
+   "in_sample": {
+    "trades": 10,
+    "per_week": 0.98,
+    "win_pct": 50.0,
+    "mean_R": 0.192,
+    "pf": 1.61,
+    "net_usd": 494.0,
+    "max_dd_usd": 342.0,
+    "gap_R": 0.509,
+    "placebo_p": 0.1218,
+    "holm_p": 0.4872,
+    "verdict": "TOO FEW"
+   }
+  },
+  "C3@look2": {
+   "id": "C3",
+   "look": 2,
+   "thresholds": {
+    "bd": 0.05,
+    "xd": 0.05
+   },
+   "name": "hold session-extreme break, bar delta",
+   "pattern": "HOLD",
+   "levels": "SX",
+   "label": "BD",
+   "in_sample": {
+    "trades": 25,
+    "per_week": 2.45,
+    "win_pct": 36.0,
+    "mean_R": -0.043,
+    "pf": 1.25,
+    "net_usd": 690.0,
+    "max_dd_usd": 1776.0,
+    "gap_R": -0.005,
+    "placebo_p": 0.5105,
+    "holm_p": 1.0,
+    "verdict": "NO"
+   }
+  }
+ },
+ "rules": {
+  "breakout_bar_mod": [
+   570,
+   900
+  ],
+  "decision_bar_mod": [
+   585,
+   900
+  ],
+  "orb_from_mod": 600,
+  "label_thresholds_by_look": {
+   "1": {
+    "bd": 0.08,
+    "xd": 0.15
+   },
+   "2": {
+    "bd": 0.05,
+    "xd": 0.05
+   }
+  },
+  "xd_min_contracts": 100,
+  "fade_within_bars": 2,
+  "sx_cooldown_bars": 6,
+  "key_levels": [
+   "pdh",
+   "pdl",
+   "onh",
+   "onl",
+   "orh",
+   "orl"
+  ],
+  "rr": 2.0,
+  "flat_mod": 955,
+  "entry": "E5 coarse: decision at F close; F+1 opens at/beyond L our way = fill at open; else >=1 tick through L = fill at L (stop-only that bar); else stop in F+1 = no fill; else F+2 open + 18 ticks against",
+  "stop": "FADE: 1 tick beyond the excursion extreme of B..F; HOLD: 1 tick beyond the other side of B..F; stop fill 2 ticks worse",
+  "target": "2R, needs 1 tick through",
+  "comm_rt": 1.9,
+  "one_position": true,
+  "pass_bar": "YES-candidate: >=20 trades, net>0, PF>=1.2, both halves meanR>0 and gap>0, placebo p<0.10, Holm<0.10"
+ }
+}

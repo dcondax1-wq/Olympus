@@ -1,0 +1,157 @@
+{
+ "family": "delta",
+ "frozen_at": "2026-11-27",
+ "design": "research/orderflow/v5/delta/DESIGN.md",
+ "core_sha256": "1e2baf6624770afc4590b09c0df25df8ef59efc92378b8734ce56ec1d00d47a2",
+ "in_sample": {
+  "first": "2026-09-27",
+  "last": "2026-11-26",
+  "days": [
+   "2026-09-27",
+   "2026-09-28",
+   "2026-09-29",
+   "2026-09-30",
+   "2026-10-01",
+   "2026-10-02",
+   "2026-10-05",
+   "2026-10-06",
+   "2026-10-07",
+   "2026-10-08",
+   "2026-10-09",
+   "2026-10-12",
+   "2026-10-13",
+   "2026-10-14",
+   "2026-10-15",
+   "2026-10-16",
+   "2026-10-18",
+   "2026-10-19",
+   "2026-10-20",
+   "2026-10-21",
+   "2026-10-22",
+   "2026-10-23",
+   "2026-10-25",
+   "2026-10-26",
+   "2026-10-27",
+   "2026-10-28",
+   "2026-10-29",
+   "2026-10-30",
+   "2026-11-01",
+   "2026-11-02",
+   "2026-11-03",
+   "2026-11-04",
+   "2026-11-05",
+   "2026-11-06",
+   "2026-11-08",
+   "2026-11-09",
+   "2026-11-10",
+   "2026-11-11",
+   "2026-11-12",
+   "2026-11-13",
+   "2026-11-15",
+   "2026-11-16",
+   "2026-11-17",
+   "2026-11-18",
+   "2026-11-19",
+   "2026-11-20",
+   "2026-11-22",
+   "2026-11-23",
+   "2026-11-24",
+   "2026-11-25",
+   "2026-11-26"
+  ]
+ },
+ "constants": {
+  "TICK": 0.25,
+  "PV_per_point_1_micro": 2.0,
+  "COMM_rt": 1.9,
+  "MKT_TICKS": 18,
+  "STOP_SLIP": 2,
+  "FLAT_SLIP": 2,
+  "MIN_STOP_TICKS": 8,
+  "LAST_BAR_mod": 950,
+  "LAST_ENTRY_mod": 945,
+  "MIN_ROWS": 50000,
+  "ON_MIN_VOL": 20000
+ },
+ "rules_text": {
+  "O2": "Every RTH day: ON delta = sum(buy-sell) of 5m bars from 18:00 ET of the previous calendar day's file (Monday: Sunday file) to 09:30 ET (previous file missing: from 00:00 ET); needs ON volume >= 20,000 and ON delta != 0. d = sign(ON delta). Signal at the close of the 09:30 5m bar (>= 20 trades). Entry E5: limit at that close for 5 min (fills if the 09:35 bar trades 1 tick through), else market at the 09:40 open +18 ticks against. Stop 1 tick beyond the 09:30 bar's low (long) / high (short), at least 8 ticks from the fill; stop fill -2 ticks. One target at 2R (1 tick through). Time exit at the 10:25 bar close (10:30 ET) -2 ticks. $1.90 rt per micro.",
+  "O1": "Same as O2, but trade only when the 09:30 5m bar closed in the same direction as the ON delta (d = the bar's direction; close == open: no trade)."
+ },
+ "variants": {
+  "O2": {
+   "name": "trade overnight-delta direction at 09:35",
+   "spec": {
+    "fam": "O",
+    "mode": "pure",
+    "RR": 2.0,
+    "H": 11
+   },
+   "in_sample": {
+    "trades": 44,
+    "per_week": 5.0,
+    "win_pct": 38.6,
+    "mean_R": -0.007,
+    "pf": 1.19,
+    "net_usd": 620.0,
+    "max_dd_usd": 1374.0,
+    "usd500": 722.0,
+    "halves": {
+     "older": {
+      "trades": 23,
+      "mean_R": 0.267,
+      "usd": 556.0,
+      "gap_R": 0.519
+     },
+     "newer": {
+      "trades": 21,
+      "mean_R": -0.308,
+      "usd": 64.0,
+      "gap_R": 0.416
+     }
+    },
+    "gap_R": 0.47,
+    "placebo_p": 0.077,
+    "holm_p": 0.385,
+    "verdict": "weak"
+   }
+  },
+  "O1": {
+   "name": "09:30 bar dir agrees with overnight delta",
+   "spec": {
+    "fam": "O",
+    "mode": "confirm",
+    "RR": 2.0,
+    "H": 11
+   },
+   "in_sample": {
+    "trades": 26,
+    "per_week": 2.95,
+    "win_pct": 42.3,
+    "mean_R": 0.098,
+    "pf": 1.17,
+    "net_usd": 477.0,
+    "max_dd_usd": 1227.0,
+    "usd500": 1093.0,
+    "halves": {
+     "older": {
+      "trades": 14,
+      "mean_R": 0.07,
+      "usd": 226.0,
+      "gap_R": 0.272
+     },
+     "newer": {
+      "trades": 12,
+      "mean_R": 0.13,
+      "usd": 250.0,
+      "gap_R": 0.45
+     }
+    },
+    "gap_R": 0.359,
+    "placebo_p": 0.1766,
+    "holm_p": 0.5298,
+    "verdict": "weak"
+   }
+  }
+ },
+ "oos_bar": "Same YES-candidate bar as DESIGN.md on the new days alone (>= 20 trades, net $ > 0, PF >= 1.20, mean R and gap R > 0 in both halves of the new days, placebo p < 0.10, Holm over the 2 frozen variants < 0.10). Sign must match in-sample (gap R > 0)."
+}
