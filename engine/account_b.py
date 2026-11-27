@@ -292,8 +292,8 @@ def set_time_size(on: bool, phrase: str = "", path: str | None = None, today: st
     except Exception as e:
         return {"ok": False, "error": f"{LOCAL_REL} unreadable ({e.__class__.__name__}): nothing written"}
     if on:
-        from .go import LIVE_PHRASE, typed_phrase
-        if typed_phrase(phrase) != LIVE_PHRASE:
+        from .go import live_phrase_ok          # the owner's consent check lives in engine/go: account_b holds no phrase, arms nothing
+        if not live_phrase_ok(phrase):
             return {"ok": False, "error": "the live phrase was not typed: nothing switched on"}
         ts = time_size_norm({**TIME_SIZE_DEFAULT, **(block or {})})
         if ts is None:

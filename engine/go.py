@@ -1287,6 +1287,13 @@ def phrase_also_arms() -> list:
     return out
 
 
+def live_phrase_ok(s) -> bool:
+    """True when the owner typed the live phrase (capitals / spaces do not matter). For switches outside this module that only
+    need the owner's consent check (engine/account_b time_size, which only ever LOWERS a size): they get a yes / no and never
+    hold the phrase themselves (tests.test_second_account_b: account_b holds no LIVE phrase and arms nothing)."""
+    return typed_phrase(s) == LIVE_PHRASE
+
+
 def typed_phrase(s) -> str:
     """The owner's typed line: capitals and extra spaces do not matter ("i accept live risk" counts); anything else is
     passed on unchanged (and refused)."""

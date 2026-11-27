@@ -4,6 +4,7 @@ account and second_model.json is never edited by this test (the start cfg "accou
 
     python -X utf8 -m tests.test_second_account_b            # everything (~85 min on 4 cores)
     python -X utf8 -m tests.test_second_account_b --quick    # unit checks + one day + crash (~25 min)
+    python -X utf8 -m tests.test_second_account_b --only f   # unit checks + the restart mid-trade check alone (~4 min)
 
  a. off = today: second_model.json ships "account_b": null; tests.test_lit_live --days --bot (120/120, LiveBot 2/2/2/2);
     a LiveBot day with B off: no account B object, no B order file, LIT's orders as run lit_live.
@@ -501,8 +502,15 @@ def part_f(H):
           and not fake.pos.get(("Sim102", next((i for a, i in fake.pos if a == "Sim102"), None)), [0])[0], (x, recon[:2], errors[:2]))
 
 
+class _Only(Exception):
+    """--only f: stop after the chosen part (the saved result file is written only by a full run)."""
+
+
 def main():
     quick = "--quick" in sys.argv
+    # night-acctb-test 2026-11-27: the full run is ~78 min (4719 s on 2026-11-23: each replayed day is 5-14 min of pure CPU in the
+    # strategies' candidate scans, profiled: no sleep / lock). "--only f" runs the units + the restart check alone (~3-4 min).
+    only = next((a.split("=", 1)[1] if "=" in a else sys.argv[sys.argv.index(a) + 1] for a in sys.argv if a.startswith("--only")), None)
     t_all = time.time()
     ref = Ref()
     tmp = tempfile.mkdtemp(prefix="le_acctb_units_")
@@ -515,6 +523,9 @@ def main():
     install_factory(H)
     out = {"days": []}
     try:
+        if only == "f":
+            part_f(H)
+            raise _Only()
         part_a(H, quick)
         print("b/c. account B on (Sim102) next to LIT (Sim101)", flush=True)
         days = [("2026-10-02", "builder25k", {"expect_same": True})]
@@ -543,12 +554,14 @@ def main():
         part_e(H)
         if not quick:
             part_f(H)
+    except _Only:
+        pass
     finally:
         AB.ADAPTER_FACTORY = None
         H.close()
     n_ok = sum(1 for _, ok in RESULTS if ok)
     out.update(results=[{"name": n, "ok": ok} for n, ok in RESULTS], passed=n_ok, total=len(RESULTS), seconds=round(time.time() - t_all))
-    if not quick:
+    if not quick and not only:
         with open(OUT, "w", encoding="utf-8") as fh:
             json.dump(out, fh, indent=1, default=str)
     print(f"account B: {n_ok}/{len(RESULTS)} checks passed in {out['seconds']} s")
