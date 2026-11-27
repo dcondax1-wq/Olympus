@@ -30,8 +30,8 @@ PLAN = "research/evalplan/PLAN.md"
 # the ladder exactly as PLAN.md section 3 (do not loosen after seeing forward data)
 STEPS = [
     {"step": 0, "name": "paper forward", "where": "the paper bot (scored nightly)",
-     "gate": "20 forward trades with >= 9 won (mean >= +0.35R, $ > 0 at 1 micro)",
-     "stop": "after 10 forward trades <= 2 won, or the forward sum <= -6R at any time"},
+     "gate": "30 forward trades: mean >= +0.20R after costs, PF ($) >= 1.30, taken > skipped, both halves >= 0R, max DD <= 6R",
+     "stop": "after 10 forward trades <= 2 won, or the forward sum <= -6R, or max DD > 6R (after >= 10 trades) at any time"},
     {"step": 1, "name": "Sim101", "where": "NinjaTrader Sim101, same rules, real order path",
      "gate": "10 Sim101 trades, fills within 2 ticks of paper on average, 0 hedge / one-position conflicts",
      "stop": "any hedge conflict, or fills worse than paper by > 4 ticks on average"},
@@ -44,7 +44,10 @@ STEPS = [
     {"step": 4, "name": "ATLAS funded", "where": "ATLAS Builder 25K funded, $100, after its first $1,000 payout",
      "gate": "2 months of step 3 with lane A $ > 0 on every account", "stop": "lane A's sum <= -$250 on the funded account = off for good"},
 ]
-G0_N, G0_WON, S0_FIRST, S0_FIRST_WON, S0_SUM = 20, 9, 10, 2, -6.0
+# gate 0 = the pre-registered lane A forward gate (research/orderflow/DESIGN_lanea_proof.md; night-of-lanea scoreboard.score)
+G0_N, G0_MEAN, G0_PF, G0_DD = 30, 0.20, 1.30, 6.0
+S0_FIRST, S0_FIRST_WON, S0_SUM = 10, 2, -6.0
+COMM_ADJ = 1.90 - 1.40                            # the paper row's usd_1 is at $1.40 a round trip; the gate counts $1.90
 G1_N, G1_GAP, S1_GAP = 10, 2.0, 4.0
 G2_N, G2_WON = 40, 17
 RATE = 40 / 43                                   # lane A trades a session on the 43 real tick days (research/evalplan/PLAN.md)
@@ -107,6 +110,62 @@ def forward_rows(pc_days=None, verdict=None):
     return out, src
 
 
+def forward_skipped(pc_days=None, verdict=None):
+    """The forward SKIPPED (not absorbed / busy) lane A rows with an outcome, same sources and dedupe as forward_rows."""
+    pc_days, verdict = pc_days or PC_DAYS, verdict or VERDICT
+    seen, out, pc_seen = set(), [], set()
+
+    def ok(r):
+        return isinstance(r, dict) and not r.get("taken") and r.get("R") is not None and str(r.get("day") or "") >= FWD_FROM
+
+    if os.path.isdir(pc_days):
+        for d in sorted(os.listdir(pc_days)):
+            S = _read(os.path.join(pc_days, d, "of", "NQ_paper.json.gz"))
+            if isinstance(S, dict):
+                pc_seen.add(d)
+                for r in S.get("rows") or []:
+                    k = (r.get("id") or (r.get("day"), r.get("level"))) if isinstance(r, dict) else None
+                    if ok(r) and k not in seen:
+                        seen.add(k); out.append(r)
+    for r in (_read(verdict, {}) or {}).get("rows") or []:
+        k = (r.get("id") or (r.get("day"), r.get("level"))) if isinstance(r, dict) else None
+        if ok(r) and r["day"] not in pc_seen and k not in seen:
+            seen.add(k); out.append(r)
+    return out
+
+
+def gate0_checks(rows, skipped=None):
+    """The pre-registered checks on the first G0_N forward trades (judged R = the worse of the paper and E5 fills)."""
+    rr = rows[:G0_N]
+    J = [min(float(r["R"]), x) if (x := r_e5(r)) is not None else float(r["R"]) for r in rr]
+    U = [float(r.get("usd_1") or 0) - COMM_ADJ for r in rr]
+    pos, neg = sum(u for u in U if u > 0), -sum(u for u in U if u < 0)
+    pf = (pos / neg) if neg > 0 else (float("inf") if pos > 0 else 0.0)
+    eq, peak, dd = 0.0, 0.0, 0.0
+    for x in J:
+        eq += x; peak = max(peak, eq); dd = max(dd, peak - eq)
+    days = sorted({r["day"] for r in rr})
+    mid = days[len(days) // 2] if days else ""
+    h1 = [x for r, x in zip(rr, J) if r["day"] < mid]
+    h2 = [x for r, x in zip(rr, J) if r["day"] >= mid]
+    mean = sum(J) / len(J) if J else 0.0
+    sk = [float(r["R"]) for r in (skipped or [])]
+    return {"mean >= +0.20R": mean >= G0_MEAN, "PF ($) >= 1.30": pf >= G0_PF,
+            "taken > skipped": (not sk) or mean > sum(sk) / len(sk),
+            "both halves >= 0R": (not h1 or sum(h1) / len(h1) >= 0) and (not h2 or sum(h2) / len(h2) >= 0),
+            "max DD <= 6R": dd <= G0_DD}, {"mean_R": round(mean, 3), "pf_usd": round(pf, 2) if pf != float("inf") else None,
+                                         "maxdd_R": round(dd, 2), "skipped_n": len(sk),
+                                         "skipped_mean_R": round(sum(sk) / len(sk), 3) if sk else None}
+
+
+def _maxdd(rows):
+    eq, peak, dd = 0.0, 0.0, 0.0
+    for r in rows:
+        x = float(r["R"]) if r_e5(r) is None else min(float(r["R"]), r_e5(r))
+        eq += x; peak = max(peak, eq); dd = max(dd, peak - eq)
+    return dd
+
+
 def _stats(rows):
     R = [float(r["R"]) for r in rows]
     R5 = [r_e5(r) for r in rows]
@@ -119,20 +178,24 @@ def _stats(rows):
             "orig_sum_R": round(sum(R), 2), "e5_n": len(have5), "e5_sum_R": round(sum(have5), 2) if have5 else None}
 
 
-def gate0(rows):
-    """-> ("stopped" | "passed" | "watching", why)"""
+def gate0(rows, skipped=None):
+    """-> ("stopped" | "passed" | "watching", why). The pre-registered lane A forward gate, judged ONCE on the first 30."""
     st = _stats(rows)
     first = _stats(rows[:S0_FIRST])
     if st["n"] and st["sum_R"] <= S0_SUM:
         return "stopped", f"forward sum {st['sum_R']}R <= {S0_SUM}R"
     if len(rows) >= S0_FIRST and first["won"] <= S0_FIRST_WON:
         return "stopped", f"first {S0_FIRST} forward trades won only {first['won']}"
-    if st["n"] >= G0_N:                     # judged ONCE, on the first 20 forward trades (no re-tries after a miss)
-        g = _stats(rows[:G0_N])
-        if g["won"] >= G0_WON and g["usd_1"] > 0:
-            return "passed", f"first {G0_N} forward trades: {g['won']} won, {g['sum_R']:+.1f}R, ${g['usd_1']:,.0f} at 1 micro"
-        return "stopped", f"first {G0_N} forward trades won {g['won']} (needs {G0_WON}) / ${g['usd_1']:,.0f} at 1 micro: gate 0 missed"
-    return "watching", f"{st['n']} / {G0_N} forward trades, {st['won']} won (needs {G0_WON})"
+    if len(rows) >= S0_FIRST and _maxdd(rows[:G0_N]) > G0_DD:
+        return "stopped", f"max drawdown {_maxdd(rows[:G0_N]):.1f}R > {G0_DD:.0f}R"
+    if st["n"] >= G0_N:                     # judged ONCE, on the first 30 forward trades (no re-tries after a miss)
+        chk, v = gate0_checks(rows, skipped)
+        if all(chk.values()):
+            return "passed", (f"first {G0_N} forward trades: {v['mean_R']:+.2f}R avg, PF ${v['pf_usd']}, max DD {v['maxdd_R']}R, "
+                              f"skipped {v['skipped_mean_R']}R")
+        miss = ", ".join(k for k, ok in chk.items() if not ok)
+        return "stopped", f"first {G0_N} forward trades {v['mean_R']:+.2f}R avg, PF ${v['pf_usd']}: gate 0 missed ({miss})"
+    return "watching", f"{st['n']} / {G0_N} forward trades, {st['mean_R'] if st['mean_R'] is not None else 0:+.2f}R avg (needs >= +{G0_MEAN:.2f}R)"
 
 
 def gate1(sim):
@@ -149,11 +212,11 @@ def gate1(sim):
     return "watching", f"{len(sim)} / {G1_N} Sim101 trades" + (f", fills {avg:.1f} ticks from paper" if avg is not None else "")
 
 
-def evaluate(rows, sim=None, prev=None, today=None):
+def evaluate(rows, sim=None, prev=None, today=None, skipped=None):
     """The ladder state. A stop is sticky (prev['stopped'] stays). Steps >= 2 need the owner's yes: the ladder only says 'ask'."""
     prev = prev or {}
     st = _stats(rows)
-    g0, why0 = gate0(rows)
+    g0, why0 = gate0(rows, skipped)
     step, status, why, passed, gwhy = 0, g0, why0, -1, None   # passed = the highest gate passed; step = the one being scored now
     if g0 == "passed":
         passed, gwhy = 0, why0
@@ -209,7 +272,7 @@ def run(out=None, card_path=None, say=print, today=None):
     rows, src = forward_rows()
     sim = _read(SIM_ROWS, []) or []
     prev = _read(out, {}) or {}
-    doc = evaluate(rows, sim if isinstance(sim, list) else [], prev, today or dt.date.today().isoformat())
+    doc = evaluate(rows, sim if isinstance(sim, list) else [], prev, today or dt.date.today().isoformat(), skipped=forward_skipped())
     doc["sources"] = src
     doc["built"] = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     doc["rows"] = [{k: r.get(k) for k in ("id", "day", "level", "d", "R", "usd_1", "src")} | {"R_e5": r_e5(r)} for r in rows][-60:]

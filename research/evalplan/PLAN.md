@@ -10,7 +10,7 @@ trades it next week. Why, in plain words:
    (+0.79R a trade); the **newer 20 won 8 (+0.20R, $365 at 1 micro)**. The edge is already shrinking, and the strategy rule
    says both 2026 halves + 2021-25: we have neither (ticks start Sep 2026).
 2. **It trades too often for the house rule**: ~4.7 trades a week (rule: 2-4), so even a pass needs a cap (1 a day, 3 a week).
-3. **Forward clock**: at ~0.9 trades a day, 20 forward paper trades take ~22 trading days = **about Dec 29**. That is the
+3. **Forward clock**: at ~0.9 trades a day, 30 forward paper trades take ~33 trading days = **about mid-January** (gate 0 = the pre-registered lane A gate, night-of-lanea-gate 2026-11-27). That is the
    earliest a real eval could see it (~early January), not next week.
 4. **The sim (below) fails the pre-registered bar on every account.** All 4 accounts, small size, Jul-Oct-like market, 6 months:
    edge as measured **+$5,872**; 1/4 of the edge **+$695**; NO edge **-$1,097** (and the 25K #2 eval's fail rate goes 2% -> 20%).
@@ -126,7 +126,7 @@ Win counts below are out of lane A's 2:1 trades (won = hit +2R). Pass chances fr
 edge (37.5%) / as measured (50%).
 | step | where | go to the next step when | stop rule (switch OFF, back to paper) | earliest |
 |---|---|---|---|---|
-| 0 | paper bot (running; scored nightly by tools/of_ladder.py -> research/evalplan/ladder.json) | judged ONCE on the first 20 forward trades (from Nov 27): **>= 9 won** (mean >= +0.35R after costs, $ > 0 at 1 micro, PF >= 1.6) | after 10 forward trades <= 2 won, or forward sum <= -6R at any time | ~Dec 29 |
+| 0 | paper bot (running; scored nightly by tools/of_ladder.py -> research/evalplan/ladder.json) | judged ONCE on the first 30 forward trades (from Nov 27), the pre-registered gate of research/orderflow/DESIGN_lanea_proof.md: **mean >= +0.20R after costs, PF ($) >= 1.30, taken > skipped, both halves >= 0R, max DD <= 6R** | after 10 forward trades <= 2 won, or forward sum <= -6R, or max DD > 6R at any time | ~mid-Jan |
 | | | false pass if no edge 19%, if 1/4 edge 32%, real edge passes 75% | | |
 | 1 | NinjaTrader Sim101, same rules, real order path (fills, slippage, the hedge guard with the live lanes) | 10 Sim101 trades, fills within 2 ticks of paper on average, 0 hedge / one-position conflicts | any hedge conflict, or fills worse than paper by > 4 ticks average | ~2 weeks after step 0 |
 | 2 | ONE eval: Zlarior 25K #2, SMALL ($100), quiet days only, cap 1 a day / 3 a week; owner's yes + phrase | pooled forward (paper + Sim101 + eval) **40 trades with >= 17 won** (+0.28R; false pass 14% / 31% / real 87%) | lane A's own sum on the account <= -$300 (3 full losses), or 10 eval trades <= 2 won, or the account's room under $400 | mid/late Jan |
