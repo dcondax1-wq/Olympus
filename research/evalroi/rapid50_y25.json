@@ -1,0 +1,25 @@
+{
+ "plan": "mffu_rapid_eod_50k",
+ "price": 165.0,
+ "Y25": {
+  "eval": {
+   "pass": 13.7,
+   "fail": 74.6,
+   "med_days": 31.0
+  },
+  "slot": {
+   "owner_6m": 341,
+   "fees_6m": 644.0,
+   "net_6m": -303,
+   "net_p10": -825,
+   "evals_bought": 3.9,
+   "net_per_eval": -77.8,
+   "payouts_per_month": 0.04,
+   "spend_per_month_p90": 137.5,
+   "spend_per_month_mean": 107.3,
+   "funded_lost": 0.36,
+   "no_pay_pct": 91.8,
+   "owner_per_pass": 744
+  }
+ }
+}

@@ -256,6 +256,14 @@ function render() {
   if (!S.counted && T.n) { S.counted = true; countUp(box); }
   drawBiz(M.biz);
   handsBox(A.handsSteps(S.lite, t));
+  const rc = $('roiCard');                                         // day-evalroi: the best next money move -> roi.html
+  if (rc) {
+    rc.textContent = '';
+    const b = S.roi && S.roi.best;
+    rc.hidden = !b;
+    if (b) rc.append(el('span', 'rc-k', 'Eval economics · best next money move'), el('b', null, `${b.name} at $${Number(b.price).toFixed(2)}`),
+      el('span', 'rc-l', String(b.line || '').replace(/^Best next buy: [^.]*\.\s*/, '')), el('span', 'rc-go', 'Every account type, $ per $1, payback ›'));
+  }
   if (!S.ready) tiltOn();
   S.ready = true;
 }
@@ -306,6 +314,7 @@ async function load(first) {
   const [home, biz, payday, fc, plan] = await Promise.all([getJSON('../home.json'), first || !S.biz ? getJSON('../business/accounts.json') : S.biz,
     first || !S.payday ? getJSON('../business/payday.json') : S.payday, getJSON('../business/forecast.json'), first || !S.plan ? getJSON('./plan12.json') : S.plan]);
   S.home = home; S.biz = biz; S.payday = payday; S.forecast = fc || S.forecast; S.plan = plan || S.plan;
+  if (first || !S.roi) S.roi = (await getJSON('./roi.json')) || S.roi;
   if (first) render();                 // the plan rows at once; the PC's numbers a moment later
   const lite = await getPost();
   if (lite) S.lite = lite;

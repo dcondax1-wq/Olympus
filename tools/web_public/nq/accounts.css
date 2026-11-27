@@ -194,6 +194,13 @@ main { max-width: 560px; margin: 0 auto; padding: max(12px, env(safe-area-inset-
 .hist-dot.up { fill: var(--mint); } .hist-dot.down { fill: var(--red); }
 @keyframes open { from { opacity: 0; transform: translateY(-6px); } }
 
+/* day-evalroi: the eval economics card (a link to roi.html) */
+.ac-roi { display: grid; gap: 3px; margin-top: 18px; padding: 13px 16px; border-radius: 18px; text-decoration: none; color: var(--ink);
+  border: 1px solid rgba(241, 193, 75, .6); background: linear-gradient(160deg, rgba(241, 193, 75, .13), rgba(22, 19, 30, .95)); box-shadow: 0 0 22px rgba(241, 193, 75, .18); }
+.ac-roi .rc-k { font-size: 12px; letter-spacing: .5px; text-transform: uppercase; color: var(--gold); font-weight: 800; }
+.ac-roi b { font-size: 17px; } .ac-roi .rc-l { font-size: 13px; color: var(--dim); } .ac-roi .rc-go { font-size: 13px; color: var(--gold); font-weight: 700; }
+.ac-roi:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
 /* ---------------------------------------------------------------- the business view */
 .ac-biz { margin-top: 18px; padding: 14px; border-radius: 20px; border: 1px solid var(--line2);
   background: radial-gradient(120% 80% at 0% 0%, rgba(241, 193, 75, .07), transparent 60%), linear-gradient(170deg, var(--card2), var(--card));
