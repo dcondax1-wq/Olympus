@@ -150,7 +150,14 @@ const stub = `window.PC_FEED={fetchLatest:async()=>(${JSON.stringify(P)})};`;
     const h = M.mount(host, { s: 'lit' }); await new Promise((r) => setTimeout(r, 800));
     const a = [host.querySelector('.bv-name') && host.querySelector('.bv-name').textContent, host.querySelectorAll('.bv-node').length];
     h.setStrategy('poseidon'); const b2 = [host.querySelector('.bv-name').textContent, host.querySelectorAll('.bv-node').length];
-    h.destroy(); return [a, b2, host.childNodes.length, !!document.querySelector('link[data-brainview]')];
+    h.destroy();
+    // hosted (nq/strat.html): getState is the only source, even with window.NQ_HOME set and 'nq-home' fired
+    window.NQ_HOME = { lite: { t: 1, pc: { glance: { bots: [{ id: 'lit', stage: 'Sweep (2/10)' }] } } } }; let calls = 0;
+    const h2 = M.mount(host, { s: 'lit', getState: () => { calls++; return null; } });
+    dispatchEvent(new Event('nq-home')); await new Promise((r) => setTimeout(r, 300));
+    const hosted = [host.querySelector('.bv-note') && host.querySelector('.bv-note').textContent, host.querySelector('.bv-stage') ? host.querySelector('.bv-stage').textContent : '', calls >= 1];
+    h2.destroy();
+    return [a, b2, host.childNodes.length, !!document.querySelector('link[data-brainview]'), hosted];
   });
   o.mount.push(errs); await ctx.close();
   console.log(JSON.stringify(o)); await b.close();
@@ -179,7 +186,9 @@ def browser():
     check("f. 1440: all 4 brains, no chips, no sideways scroll, no errors", dk["shown"] == ["lit", "atlas", "blitz", "poseidon"] and not dk["chips"] and dk["sw"] <= 0 and not dk["errs"], dk)
     m = o["mount"]
     check("f. mount() into a bare host (the post via PC_FEED): LIT with 9 gates, setStrategy -> POSEIDON 5 gates, destroy() empties the host; its CSS loaded once",
-          m[0] == ["LIT", 9] and m[1] == ["POSEIDON", 5] and m[2] == 0 and m[3] is True and not m[4], m)
+          m[0] == ["LIT", 9] and m[1] == ["POSEIDON", 5] and m[2] == 0 and m[3] is True and not m[5], m)
+    check("f. hosted mount (getState given): window.NQ_HOME is ignored (no 'Sweep (2/10)' from it), the honest no-report line shows, getState was asked",
+          m[4][0].startswith("No PC report on this page yet") and m[4][1] == "" and m[4][2] is True, m[4])
 
 
 if __name__ == "__main__":

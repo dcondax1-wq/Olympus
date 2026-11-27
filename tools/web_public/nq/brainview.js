@@ -1,8 +1,9 @@
 // STRATEGY BRAIN view (day-brains 2026-11-27): the live brain of one strategy, mountable anywhere.
 //   import { mount } from './brainview.js?v=1';  const h = mount(el, { s: 'lit' | 'atlas' | 'blitz' | 'poseidon', getState, compact });
 //   h.update(state?) redraws now; h.setStrategy(s); h.destroy() (timers + listeners off, el emptied).
-// Contract (agreed with the chart helper for nq/strat.html #brainMount): touches only el's children, loads its own CSS (brainview.css from
-// import.meta.url), fluid (min 320 px), no position:fixed. Data, in order: opts.getState() -> { lite, home }; else window.NQ_HOME (+ 'nq-home');
+// Contract (agreed with the chart helper for nq/strat.html #brainMount, 2026-11-27): touches only el's children, loads its own CSS (brainview.css
+// from import.meta.url), fluid (min 320 px), no position:fixed. Data: with opts.getState() -> { lite, home, bars } that is the ONLY source (no
+// window.NQ_HOME, no global listener, no fetch of its own; the host calls update() after each refresh). Without getState: window.NQ_HOME + 'nq-home',
 // else the PC's post itself via window.PC_FEED.fetchLatest (the host page loads ../pc_feed.js). Redraws every 60 s. textContent / createElement only.
 import { brain, STRATS } from './brainviewcore.js?v=1';
 
@@ -98,17 +99,18 @@ export function mount(host, opts) {
   let s = String(O.s || 'lit'), own = null, timer = 0, alive = true;
   css();
   const root = el('div', 'bv'); clear(host); host.appendChild(root);
+  const HOSTED = typeof O.getState === 'function';   // the host owns the data (nq/strat.html): getState is the ONLY source, nothing global
   const state = () => {
-    try { if (typeof O.getState === 'function') { const x = O.getState(); if (x && (x.lite || x.home)) return x; } } catch (_) { /* fall through */ }
+    if (HOSTED) { try { const x = O.getState(); return x && (x.lite || x.home) ? x : null; } catch (_) { return null; } }
     if (window.NQ_HOME && (window.NQ_HOME.lite || window.NQ_HOME.home)) return window.NQ_HOME;
     return own ? { lite: own } : null;
   };
   const update = (st) => { if (!alive) return; const src = st || state() || {}; draw(root, brain(s, src, Date.now() / 1000), !!O.compact); };
   const onHome = () => update();
-  addEventListener('nq-home', onHome);
+  if (!HOSTED) addEventListener('nq-home', onHome);
   update();
-  if (!state()) postItself().then((p) => { own = p; update(); });
-  timer = setInterval(() => { if (!state() && !own) postItself().then((p) => { own = p; update(); }); else update(); }, 60000);
+  if (!HOSTED && !state()) postItself().then((p) => { own = p; update(); });
+  timer = setInterval(() => { if (!HOSTED && !state() && !own) postItself().then((p) => { own = p; update(); }); else update(); }, 60000);
   return {
     update,
     setStrategy(x) { s = String(x || 'lit'); update(); },
