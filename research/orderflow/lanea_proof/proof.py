@@ -107,7 +107,8 @@ def sim(row, Dy, model="F1"):
 def _out(fill, px, d, risk, why, b, jf, j, w1):
     pts = (px - fill) * d
     return {"fill": fill, "exit": px, "R": pts / risk, "pts": pts, "usd": pts * PV - COMM, "why": why, "risk": risk,
-            "fill_t": int(b.t.iat[jf]), "exit_t": int(b.t.iat[j]) + 300, "w1": min(w1, pts)}
+            "fill_t": int(b.t.iat[jf]), "exit_t": int(b.t.iat[j]) + 300,
+            "w1": min(max(w1, -(risk + 2 * TICK)), pts)}      # the worst open loss can't pass the stop fill (the bar's low beyond it isn't held)
 
 
 # ------------------------------------------------------------------------------------------------ stats
