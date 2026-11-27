@@ -1,5 +1,3 @@
-{"week": "2026-W48", "data_end": "2026-11-24", "rule": "bad", "status": "error", "n": null, "mean": null, "sum": null, "z": null, "band_mu": null, "error": "RuntimeError: no numba"}
-{"week": "2026-W48", "data_end": "2026-11-24", "rule": "good", "status": "watching", "n": 2, "mean": 0.25, "sum": 0.5, "z": -0.09, "band_mu": 0.3, "error": null}
 {"week": "2026-W47", "data_end": "2026-11-20", "rule": "atlas_half_off_sb", "status": "watching", "n": 0, "mean": null, "sum": 0, "z": null, "band_mu": 0.0263, "error": null}
 {"week": "2026-W47", "data_end": "2026-11-20", "rule": "atlas_s1_gate", "status": "watching", "n": 0, "mean": null, "sum": 0, "z": null, "band_mu": -0.0295, "error": null}
 {"week": "2026-W47", "data_end": "2026-11-20", "rule": "atlas_skip_news", "status": "watching", "n": 0, "mean": null, "sum": 0, "z": null, "band_mu": 0.0952, "error": null}
@@ -8,3 +6,11 @@
 {"week": "2026-W47", "data_end": "2026-11-20", "rule": "ict_ote_dol", "status": "watching", "n": 0, "mean": null, "sum": 0, "z": null, "band_mu": 0.1749, "error": null}
 {"week": "2026-W47", "data_end": "2026-11-20", "rule": "lit_second_after_stop", "status": "watching", "n": 0, "mean": null, "sum": 0, "z": null, "band_mu": -0.009, "error": null}
 {"week": "2026-W47", "data_end": "2026-11-20", "rule": "lit_x15_extreme", "status": "watching", "n": 0, "mean": null, "sum": 0, "z": null, "band_mu": 0.265, "error": null}
+{"week": "2026-W48", "data_end": "2026-11-26", "rule": "atlas_half_off_sb", "status": "watching", "n": 0, "mean": null, "sum": 0, "z": null, "band_mu": 0.0263, "error": null}
+{"week": "2026-W48", "data_end": "2026-11-26", "rule": "atlas_s1_gate", "status": "watching", "n": 0, "mean": null, "sum": 0, "z": null, "band_mu": -0.0295, "error": null}
+{"week": "2026-W48", "data_end": "2026-11-26", "rule": "atlas_skip_news", "status": "watching", "n": 0, "mean": null, "sum": 0, "z": null, "band_mu": 0.0952, "error": null}
+{"week": "2026-W48", "data_end": "2026-11-26", "rule": "blitz_v1_noise", "status": "watching", "n": 0, "mean": null, "sum": 0, "z": null, "band_mu": 0.1507, "error": null}
+{"week": "2026-W48", "data_end": "2026-11-26", "rule": "ict_mmbm_week", "status": "watching", "n": 0, "mean": null, "sum": 0, "z": null, "band_mu": 0.2182, "error": null}
+{"week": "2026-W48", "data_end": "2026-11-26", "rule": "ict_ote_dol", "status": "watching", "n": 0, "mean": null, "sum": 0, "z": null, "band_mu": 0.1749, "error": null}
+{"week": "2026-W48", "data_end": "2026-11-26", "rule": "lit_second_after_stop", "status": "watching", "n": 0, "mean": null, "sum": 0, "z": null, "band_mu": -0.009, "error": null}
+{"week": "2026-W48", "data_end": "2026-11-26", "rule": "lit_x15_extreme", "status": "watching", "n": 0, "mean": null, "sum": 0, "z": null, "band_mu": 0.265, "error": null}

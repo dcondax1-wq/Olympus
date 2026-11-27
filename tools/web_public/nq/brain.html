@@ -36,7 +36,7 @@
 <link rel="stylesheet" href="nqtheme.css?v=9">
 <link rel="stylesheet" href="../olympus/brain3d.css?v=b1">
 <link rel="stylesheet" href="brain.css?v=3">
-<link rel="stylesheet" href="brainmind.css?v=m1">
+<link rel="stylesheet" href="brainmind.css?v=m2">
 <script src="../olympus/brain3d.js?v=b1"></script><!-- DESIGN's brain (window.Brain3D): in <head>, NOT defer, so the body mounts it before the first paint (no shift); three.js comes later, only on this page -->
 </head>
 <body>
@@ -71,9 +71,9 @@
         window.NQBRAIN_DEF = function (b) { return b === 'atlas'
           ? { layout: 'lobes', title: 'ATLAS', list: false, stages: [{ id: 'ema', name: 'EMA' }, { id: 'macd', name: 'MACD' }, { id: 'sr', name: 'S/R' }],
               ring: [{ id: 'dd', name: 'Drawdown left' }, { id: 'best', name: 'Best day' }, { id: 'idle', name: '7-day clock' }, { id: 'news', name: 'News' }] }
-          : { layout: 'path', title: 'Zlarior', list: false, stages: [{ id: 'levels', name: 'Levels' }, { id: 'sweep', name: 'Sweep' }, { id: 'inducement', name: 'Inducement' },
-              { id: 'displacement', name: 'Displacement' }, { id: 'cisd5', name: '5m CISD' }, { id: 'limit', name: 'Limit armed' }, { id: 'cisd1m', name: '1m CISD wait' },
-              { id: 'entry', name: 'Entry' }, { id: 'trade', name: 'In trade' }, { id: 'done', name: 'Done for today' }],
+          : { layout: 'path', title: 'Zlarior', list: false, stages: [{ id: 'levels', name: 'Levels' }, { id: 'sweep', name: 'Sweep' }, { id: 'inducement', name: 'Induce' },
+              { id: 'displacement', name: 'Displace' }, { id: 'cisd5', name: '5m CISD' }, { id: 'limit', name: 'Limit' }, { id: 'cisd1m', name: '1m CISD' },
+              { id: 'entry', name: 'Entry' }, { id: 'trade', name: 'In trade' }, { id: 'done', name: 'Done' }],   /* short 3D labels (QA 2026-11-27: 'Displacement' covered the nodes); the steps list keeps the full names */
               ring: [{ id: 'dd', name: 'Drawdown left' }, { id: 'daily', name: 'Daily loss' }, { id: 'best', name: 'Best day' }, { id: 'idle', name: '7-day clock' }, { id: 'news', name: 'News' }] }; };
         window.NQBRAIN_3D = { bot: bot, api: window.Brain3D.mount(document.getElementById('brain3d'), window.NQBRAIN_DEF(bot)) };
       } catch (e) { window.NQBRAIN_3D = null; } })();</script>
@@ -116,6 +116,6 @@
   <p class="bk">What would change my mind</p><p id="bCardChange"></p>
 </section>
 <script type="module" src="brain.js?v=7"></script>
-<script type="module" src="brainmind.js?v=m1"></script>
+<script type="module" src="brainmind.js?v=m3"></script>
 </body>
 </html>

@@ -1,10 +1,10 @@
 {
  "v": 1,
- "built": "2026-11-26 17:43 UTC",
+ "built": "2026-11-27 05:16 UTC",
  "design": "research/forward/DESIGN.md",
  "fwd_from": "2026-11-23",
- "data_end": "2026-11-20",
- "forward_sessions": 0,
+ "data_end": "2026-11-26",
+ "forward_sessions": 4,
  "bars": {
   "promote": "n >= 20 and z >= -1.0 and sum > 0",
   "demote": "(n >= 10 and z <= -2.0) or sum <= -8.0 R"
@@ -32,7 +32,7 @@
    "sum": 0,
    "z": null,
    "status": "watching",
-   "days_in": 0,
+   "days_in": 4,
    "events": [],
    "error": null
   },
@@ -58,7 +58,7 @@
    "sum": 0,
    "z": null,
    "status": "watching",
-   "days_in": 0,
+   "days_in": 4,
    "events": [],
    "error": null
   },
@@ -84,7 +84,7 @@
    "sum": 0,
    "z": null,
    "status": "watching",
-   "days_in": 0,
+   "days_in": 4,
    "events": [],
    "error": null
   },
@@ -110,7 +110,7 @@
    "sum": 0,
    "z": null,
    "status": "watching",
-   "days_in": 0,
+   "days_in": 4,
    "events": [],
    "error": null
   },
@@ -136,7 +136,7 @@
    "sum": 0,
    "z": null,
    "status": "watching",
-   "days_in": 0,
+   "days_in": 4,
    "events": [],
    "error": null
   },
@@ -162,7 +162,7 @@
    "sum": 0,
    "z": null,
    "status": "watching",
-   "days_in": 0,
+   "days_in": 4,
    "events": [],
    "error": null
   },
@@ -188,7 +188,7 @@
    "sum": 0,
    "z": null,
    "status": "watching",
-   "days_in": 0,
+   "days_in": 4,
    "events": [],
    "error": null
   },
@@ -214,7 +214,7 @@
    "sum": 0,
    "z": null,
    "status": "watching",
-   "days_in": 0,
+   "days_in": 4,
    "events": [],
    "error": null
   }

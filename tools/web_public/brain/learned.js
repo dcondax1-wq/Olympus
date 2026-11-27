@@ -51,6 +51,7 @@ function grad(L) {
   if (!F || !(F.rules || []).length) { box.replaceChildren(el('p', { class: 'muted', text: 'No idea is on trial yet (research/forward/forward.json has not been built).' })); return; }
   const kids = [el('p', { class: 'muted', text: `Each idea is scored only on trading days from ${md(F.from)} on, against what it did in its own backtest. It graduates at ${L.promote_bar}. Then the lead brings you a yes / no card; nothing switches on by itself.` })];
   if (!F.sessions) kids.push(el('p', { class: 'muted', text: `No new trading days scored yet (the bars end ${md(F.data_end)}). The count starts with the next pulled day.` }));
+  else if (!F.rules.some((r) => r.n)) kids.push(el('p', { class: 'muted', text: `${F.sessions} new trading day${F.sessions === 1 ? '' : 's'} scored (${md(F.from)} - ${md(F.data_end)}): none of the ideas had a trade on them yet.` }));
   for (const r of F.rules) {
     kids.push(el('div', { class: 'idea', 'data-id': r.id },
       el('div', { class: 't' }, el('b', { text: r.what }), el('span', { class: `badge ${r.status}`, text: STATUS[r.status] || r.status })),
@@ -151,8 +152,16 @@ function health(L) {
 function of(L) {
   const O = L.of || {}, box = $('of');
   const kids = (O.lines || []).length ? [el('ul', { class: 'lst' }, ...O.lines.map((x) => el('li', { text: `${md(x.date)}: ${x.text}` })))]
-    : [el('p', { class: 'muted', text: 'No order-flow lessons yet: it is still collecting tick days.' })];
-  if (O.next) kids.push(el('p', { class: 'src', text: `Next: ${O.next}` }));
+    : (O.verdict ? [] : [el('p', { class: 'muted', text: 'No order-flow lessons yet: it is still collecting tick days.' })]);
+  const V = O.verdict;
+  if (V) {
+    kids.unshift(el('div', { class: 'kv' }, el('span', { text: 'Real tick days' }), el('b', { text: `${V.tick_days} (${md(V.first)} - ${md(V.last)})` }),
+      el('span', { text: 'Absorbed sweeps (taken)' }), el('b', { class: cls(V.taken_r), text: `${R(V.taken_r)} a trade` }),
+      el('span', { text: 'Not absorbed (skipped)' }), el('b', { class: cls(V.skipped_r), text: `${R(V.skipped_r)} a trade` }),
+      el('span', { text: 'New-day trades for the verdict' }), el('b', { text: `${int(V.fwd_n || 0)} of ${int(V.fwd_need || 20)}` })),
+    el('p', { class: 'muted', style: 'margin-top:8px', text: V.line }));
+  }
+  if (O.next && !V) kids.push(el('p', { class: 'src', text: `Next: ${O.next}` }));
   box.replaceChildren(...kids);
 }
 

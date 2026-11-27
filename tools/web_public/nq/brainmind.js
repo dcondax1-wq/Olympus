@@ -122,8 +122,8 @@ function pipeCanvas(P) {
       g.fillStyle = taken ? '#77db89' : live ? '#f1c14b' : '#dacbf0'; g.font = `${taken ? 700 : 600} 12px system-ui, sans-serif`; g.textAlign = 'left';
       const n = P.cnt[st.step] || 0;
       g.fillText(taken ? `TAKEN ${n.toLocaleString('en-US')}` : st.gate, 10, y - 4);
-      if (!taken) { g.fillStyle = 'rgba(169,156,194,.9)'; g.font = '11px system-ui, sans-serif'; g.fillText(`-${n.toLocaleString('en-US')}`, 10, y + 11); }
-      if (live) { g.fillStyle = '#f1c14b'; g.font = '700 11px system-ui, sans-serif'; g.textAlign = 'right'; g.fillText('NOW', W - 10, y - 4); }
+      if (!taken) { g.fillStyle = 'rgba(169,156,194,.9)'; g.font = '12px system-ui, sans-serif'; g.fillText(`-${n.toLocaleString('en-US')}`, 10, y + 11); }
+      if (live) { g.fillStyle = '#f1c14b'; g.font = '700 12px system-ui, sans-serif'; g.textAlign = 'right'; g.fillText('NOW', W - 10, y - 4); }
     });
     // particles
     for (const p of S.parts) {
@@ -184,7 +184,7 @@ function drawTrial() {
   const F = S.learn && S.learn.learning && S.learn.learning.forward;
   const rules = ((F && F.rules) || []).filter((r) => !HIDDEN.has(String(r.bot || '').toLowerCase()) && !/^blitz/i.test(r.id));
   if (!rules.length) { box.appendChild(h('p', 'mnone', 'No idea is on trial yet.')); return; }
-  $('mTrialSub').textContent = `Scored only on trading days from ${md(F.from)} on, against its own backtest. 20 new trades holding up = an owner yes / no card; nothing switches on by itself.${F.sessions ? '' : ` No new day scored yet (bars end ${md(F.data_end)}).`}`;
+  $('mTrialSub').textContent = `Scored only on trading days from ${md(F.from)} on, against its own backtest. 20 new trades holding up = an owner yes / no card; nothing switches on by itself.${!F.sessions ? ` No new day scored yet (bars end ${md(F.data_end)}).` : rules.some((r) => r.n) ? '' : ` ${F.sessions} new trading day${F.sessions === 1 ? '' : 's'} scored to ${md(F.data_end)}: no idea had a trade on them yet.`}`;
   const grid = h('div', 'mrings');
   for (const r of rules) {
     const c = h('div', 'mring ' + r.status); c.dataset.id = r.id;
@@ -270,6 +270,10 @@ async function boot() {
   try { if (matchMedia('(min-width: 1100px)').matches) $('mPipeDet').open = true; } catch (_) { /* phone: folded */ }
   S.learn = await getJSON('../brain/learn.json');
   setInterval(() => tick(false), 1000);
+  try {                                                // brain.js redraws (the PC's report arrived, a bot switch): follow at once
+    const mo = new MutationObserver(() => tick(false));
+    for (const id of ['bStatus', 'bNow', 'brainH']) { const e = $(id); if (e) mo.observe(e, { childList: true, characterData: true, subtree: true }); }
+  } catch (_) { /* the 1 s poll stays */ }
   setInterval(async () => { const d = await getJSON('../brain/learn.json'); if (d) { S.learn = d; tick(true); } }, 10 * 60 * 1000);
   let rw = 0; addEventListener('resize', () => { clearTimeout(rw); rw = setTimeout(() => { if (S.ready) drawPipe(); }, 200); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden && S.ready) drawPipe(); });

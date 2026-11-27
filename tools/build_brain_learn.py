@@ -23,7 +23,8 @@ FORWARD = "research/forward/forward.json"           # big-forward 2026-11-26: th
 IDEAMILL = "research/ideamill/summary.json"
 LIVEGAP = "research/livegap/daily.json"
 HEALTH = "research/health/bands.json"
-OF_LEARN = "research/orderflow/learner.json"        # the order-flow learner's lines when it lands ({lines: [{date, text}]})
+OF_LEARN = "research/orderflow/learner.json"
+OF_VERDICT = "research/orderflow/real_verdict.json"   # the real tick-day verdict (night 2026-11-27)        # the order-flow learner's lines when it lands ({lines: [{date, text}]})
 SETUPS = "research/learn/lit_setups.json"
 SCORE_EVAL = "research/setupscore/eval.json"         # big-setupscore 2026-11-26: the pre-registered holdout verdict
 PROMOTE_N = 20
@@ -231,7 +232,15 @@ def of_lines(o, st):
         if isinstance(r, dict) and r.get("text"):
             rows.append({"date": _s(r.get("date"), 10), "text": _s(r.get("text"), 240)})
     p = (((st or {}).get("pillars") or {}).get("orderflow") or {})
-    return {"lines": sorted(rows, key=lambda r: r["date"], reverse=True)[:8], "next": _s(p.get("testing_next"), 200) or None}
+    v = _load(OF_VERDICT)
+    ver = None
+    if isinstance(v, dict) and v.get("verdict_line"):
+        a, fw = v.get("laneA") or {}, v.get("forward") or {}
+        ver = {"line": _s(v.get("verdict_line"), 420), "tick_days": v.get("tick_days"), "first": _s(v.get("first"), 10) or None,
+               "last": _s(v.get("last"), 10) or None, "made": _s(v.get("made"), 10) or None, "absorption": _s(a.get("verdict"), 160) or None,
+               "taken_r": _num((a.get("taken") or {}).get("mean_R")), "skipped_r": _num((a.get("skipped") or {}).get("mean_R")),
+               "p": _num(a.get("p")), "fwd_n": fw.get("taken_resolved"), "fwd_need": fw.get("need")}
+    return {"lines": sorted(rows, key=lambda r: r["date"], reverse=True)[:8], "next": _s(p.get("testing_next"), 200) or None, "verdict": ver}
 
 
 def next_tests(st):
