@@ -1,0 +1,442 @@
+{
+ "made": "2026-11-27",
+ "window": [
+  "2026-10-23",
+  "2026-11-26"
+ ],
+ "sign": "live minus twin, $: + = live did better than the twin (a missed LOSER), - = money left on the table",
+ "sources": [
+  "research/livegap/LIVEGAP.json (audit 2026-11-24, data/pc_days 30 days)",
+  "research/livegap/daily.json",
+  "tools/web_public/nq/replay/*.json (twins to Nov 26)",
+  "tools/board.py read (Nov 27 00:38 ET)",
+  "research/writeups/lit-vix-downtrend-2026-11-24.md"
+ ],
+ "no_twin_trades": "Nov 21-26: no LIT, ATLAS or BLITZ twin trade on any day (nq/replay + forward_paper: 4 sessions, 0 events), so no gap is possible there",
+ "gaps": [
+  {
+   "day": "2026-10-26",
+   "when": "Mon Oct 26 08:37",
+   "account": "Zlarior 50K (LIT, Builder 50K eval)",
+   "key": "z50k",
+   "twin": {
+    "side": "SHORT",
+    "exit": "BE",
+    "r": 0.015,
+    "qty": 5,
+    "usd": 0.5
+   },
+   "live": {
+    "qty": null,
+    "usd": 0.0
+   },
+   "kind": "MISSED",
+   "live_minus_twin_usd": -0.5,
+   "cause": "feed / bot gap (08:30-08:45 ET)",
+   "evidence": "engine/live.py comment at the un-routed exit (23:08 ET 2026-10-26): 'the model entered during it, never routed'",
+   "bug": false
+  },
+  {
+   "day": "2026-10-27",
+   "when": "Tue Oct 27 06:12",
+   "account": "Zlarior 50K (LIT, Builder 50K eval)",
+   "key": "z50k",
+   "twin": {
+    "side": "SHORT",
+    "exit": "STOP",
+    "r": -1.004,
+    "qty": 5,
+    "usd": -689.5
+   },
+   "live": {
+    "qty": null,
+    "usd": 0.0
+   },
+   "kind": "MISSED",
+   "live_minus_twin_usd": 689.5,
+   "cause": "order refused: account Name without the 'R' (BUG, fixed Oct 27)",
+   "evidence": "engine/ninjatrader._nt_said_no_account + engine/live._void_refused_days: NinjaTrader refused every MFFU order; the bot booked 6 MNQ -$827 that was voided",
+   "bug": true
+  },
+  {
+   "day": "2026-10-28",
+   "when": "Wed Oct 28 03:43",
+   "account": "Zlarior 50K (LIT, Builder 50K eval)",
+   "key": "z50k",
+   "twin": {
+    "side": "SHORT",
+    "exit": "STOP",
+    "r": -1.006,
+    "qty": 5,
+    "usd": -437.0
+   },
+   "live": {
+    "qty": 5,
+    "usd": -437.0
+   },
+   "kind": "IDENTICAL",
+   "live_minus_twin_usd": 0.0,
+   "cause": "live = twin (same entry, size, exit)",
+   "evidence": "live vs twin entry/exit price (research/livegap/LIVEGAP.json row)",
+   "bug": false
+  },
+  {
+   "day": "2026-11-03",
+   "when": "Tue Nov 03 15:39",
+   "account": "Zlarior 50K (LIT, Builder 50K eval)",
+   "key": "z50k",
+   "twin": {
+    "side": "LONG",
+    "exit": "EOD",
+    "r": 0.213,
+    "qty": 2,
+    "usd": 54.2
+   },
+   "live": {
+    "qty": null,
+    "usd": 0.0
+   },
+   "kind": "MISSED",
+   "live_minus_twin_usd": -54.2,
+   "cause": "not armed: the bot was re-set up and re-armed by hand 20:51-21:06 ET, after the 15:39 signal",
+   "evidence": "heartbeat remote / autopilot events (no record of the 15:39 signal)",
+   "bug": false
+  },
+  {
+   "day": "2026-11-10",
+   "when": "Tue Nov 10 03:33",
+   "account": "Zlarior 50K (LIT, Builder 50K eval)",
+   "key": "z50k",
+   "twin": {
+    "side": "LONG",
+    "exit": "STOP",
+    "r": -1.004,
+    "qty": 3,
+    "usd": -347.7
+   },
+   "live": {
+    "qty": null,
+    "usd": 0.0
+   },
+   "kind": "MISSED",
+   "live_minus_twin_usd": 347.7,
+   "cause": "bot not running: PC bot OFF Nov 9 15:55 -> Nov 15 20:39 ET",
+   "evidence": "data/pc_days/2026-11-09 + 2026-11-16 gaps.json uptime (no sample in the window); no trade rows Nov 10-13; balance $49,313.54 (Nov 6) -> $49,192.78 (Nov 17) = only Nov 16's -$129",
+   "bug": false
+  },
+  {
+   "day": "2026-11-11",
+   "when": "Wed Nov 11 03:56",
+   "account": "Zlarior 50K (LIT, Builder 50K eval)",
+   "key": "z50k",
+   "twin": {
+    "side": "SHORT",
+    "exit": "CUT_T15",
+    "r": -0.305,
+    "qty": 1,
+    "usd": -42.4
+   },
+   "live": {
+    "qty": null,
+    "usd": 0.0
+   },
+   "kind": "MISSED",
+   "live_minus_twin_usd": 42.4,
+   "cause": "bot not running: PC bot OFF Nov 9 15:55 -> Nov 15 20:39 ET",
+   "evidence": "data/pc_days/2026-11-09 + 2026-11-16 gaps.json uptime (no sample in the window); no trade rows Nov 10-13; balance $49,313.54 (Nov 6) -> $49,192.78 (Nov 17) = only Nov 16's -$129",
+   "bug": false
+  },
+  {
+   "day": "2026-11-16",
+   "when": "Mon Nov 16 06:16",
+   "account": "Zlarior 50K (LIT, Builder 50K eval)",
+   "key": "z50k",
+   "twin": {
+    "side": "LONG",
+    "exit": "STOP",
+    "r": -1.004,
+    "qty": 1,
+    "usd": -129.4
+   },
+   "live": {
+    "qty": 1,
+    "usd": -129.4
+   },
+   "kind": "IDENTICAL",
+   "live_minus_twin_usd": 0.0,
+   "cause": "live = twin (same entry, size, exit)",
+   "evidence": "live vs twin entry/exit price (research/livegap/LIVEGAP.json row)",
+   "bug": false
+  },
+  {
+   "day": "2026-11-06",
+   "when": "Fri Nov 06 04:00",
+   "account": "ATLAS (Builder 25K: eval Nov 6-17, funded from Nov 18)",
+   "key": "atlas25",
+   "twin": {
+    "side": "SHORT",
+    "exit": "STOP",
+    "r": -1.029,
+    "qty": null,
+    "usd": null
+   },
+   "live": {
+    "qty": 2,
+    "usd": -168.81
+   },
+   "kind": "SLIPPED",
+   "live_minus_twin_usd": 8.44,
+   "cause": "slippage on the live fill",
+   "evidence": "live vs twin entry/exit price (research/livegap/LIVEGAP.json row)",
+   "bug": false
+  },
+  {
+   "day": "2026-11-10",
+   "when": "Tue Nov 10 03:55",
+   "account": "ATLAS (Builder 25K: eval Nov 6-17, funded from Nov 18)",
+   "key": "atlas25",
+   "twin": {
+    "side": "LONG",
+    "exit": "STOP",
+    "r": -1.025,
+    "qty": null,
+    "usd": null
+   },
+   "live": {
+    "qty": null,
+    "usd": 0.0
+   },
+   "kind": "MISSED",
+   "live_minus_twin_usd": 176.56,
+   "cause": "bot not running: PC bot OFF Nov 9 15:55 -> Nov 15 20:39 ET",
+   "evidence": "data/pc_days/2026-11-09 + 2026-11-16 gaps.json uptime (no sample in the window); no trade rows Nov 10-13; balance $49,313.54 (Nov 6) -> $49,192.78 (Nov 17) = only Nov 16's -$129",
+   "bug": false
+  },
+  {
+   "day": "2026-11-11",
+   "when": "Wed Nov 11 09:40",
+   "account": "ATLAS (Builder 25K: eval Nov 6-17, funded from Nov 18)",
+   "key": "atlas25",
+   "twin": {
+    "side": "SHORT",
+    "exit": "STOP",
+    "r": -1.017,
+    "qty": null,
+    "usd": null
+   },
+   "live": {
+    "qty": null,
+    "usd": 0.0
+   },
+   "kind": "MISSED",
+   "live_minus_twin_usd": 175.18,
+   "cause": "bot not running: PC bot OFF Nov 9 15:55 -> Nov 15 20:39 ET",
+   "evidence": "data/pc_days/2026-11-09 + 2026-11-16 gaps.json uptime (no sample in the window); no trade rows Nov 10-13; balance $49,313.54 (Nov 6) -> $49,192.78 (Nov 17) = only Nov 16's -$129",
+   "bug": false
+  },
+  {
+   "day": "2026-11-12",
+   "when": "Thu Nov 12 09:45",
+   "account": "ATLAS (Builder 25K: eval Nov 6-17, funded from Nov 18)",
+   "key": "atlas25",
+   "twin": {
+    "side": "SHORT",
+    "exit": "STOP",
+    "r": -1.019,
+    "qty": null,
+    "usd": null
+   },
+   "live": {
+    "qty": null,
+    "usd": 0.0
+   },
+   "kind": "MISSED",
+   "live_minus_twin_usd": 175.53,
+   "cause": "bot not running: PC bot OFF Nov 9 15:55 -> Nov 15 20:39 ET",
+   "evidence": "data/pc_days/2026-11-09 + 2026-11-16 gaps.json uptime (no sample in the window); no trade rows Nov 10-13; balance $49,313.54 (Nov 6) -> $49,192.78 (Nov 17) = only Nov 16's -$129",
+   "bug": false
+  },
+  {
+   "day": "2026-11-13",
+   "when": "Fri Nov 13 03:40",
+   "account": "ATLAS (Builder 25K: eval Nov 6-17, funded from Nov 18)",
+   "key": "atlas25",
+   "twin": {
+    "side": "LONG",
+    "exit": "STOP",
+    "r": -1.032,
+    "qty": null,
+    "usd": null
+   },
+   "live": {
+    "qty": null,
+    "usd": 0.0
+   },
+   "kind": "MISSED",
+   "live_minus_twin_usd": 177.77,
+   "cause": "bot not running: PC bot OFF Nov 9 15:55 -> Nov 15 20:39 ET",
+   "evidence": "data/pc_days/2026-11-09 + 2026-11-16 gaps.json uptime (no sample in the window); no trade rows Nov 10-13; balance $49,313.54 (Nov 6) -> $49,192.78 (Nov 17) = only Nov 16's -$129",
+   "bug": false
+  },
+  {
+   "day": "2026-11-13",
+   "when": "Fri Nov 13 08:05",
+   "account": "ATLAS (Builder 25K: eval Nov 6-17, funded from Nov 18)",
+   "key": "atlas25",
+   "twin": {
+    "side": "LONG",
+    "exit": "BE",
+    "r": 0.001,
+    "qty": null,
+    "usd": null
+   },
+   "live": {
+    "qty": null,
+    "usd": 0.0
+   },
+   "kind": "MISSED",
+   "live_minus_twin_usd": -0.17,
+   "cause": "bot not running: PC bot OFF Nov 9 15:55 -> Nov 15 20:39 ET",
+   "evidence": "data/pc_days/2026-11-09 + 2026-11-16 gaps.json uptime (no sample in the window); no trade rows Nov 10-13; balance $49,313.54 (Nov 6) -> $49,192.78 (Nov 17) = only Nov 16's -$129",
+   "bug": false
+  },
+  {
+   "day": "2026-11-17",
+   "when": "Tue Nov 17 08:20",
+   "account": "ATLAS (Builder 25K: eval Nov 6-17, funded from Nov 18)",
+   "key": "atlas25",
+   "twin": {
+    "side": "SHORT",
+    "exit": "TARGET",
+    "r": 6.865,
+    "qty": null,
+    "usd": null
+   },
+   "live": {
+    "qty": 2,
+    "usd": 1791.89
+   },
+   "kind": "SLIPPED",
+   "live_minus_twin_usd": -74.78,
+   "cause": "slippage on the live fill",
+   "evidence": "live vs twin entry/exit price (research/livegap/LIVEGAP.json row)",
+   "bug": false
+  },
+  {
+   "day": "2026-11-17",
+   "when": "Tue Nov 17 10:15",
+   "account": "ATLAS (Builder 25K: eval Nov 6-17, funded from Nov 18)",
+   "key": "atlas25",
+   "twin": {
+    "side": "LONG",
+    "exit": "STOP",
+    "r": -1.022,
+    "qty": null,
+    "usd": null
+   },
+   "live": {
+    "qty": null,
+    "usd": 0.0
+   },
+   "kind": "NOT A GAP",
+   "live_minus_twin_usd": 0,
+   "cause": "not a gap: the one-position rule skips it (another member open)",
+   "evidence": "research/livegap/LIVEGAP.json",
+   "bug": false
+  },
+  {
+   "day": "2026-11-18",
+   "when": "Wed Nov 18 04:50",
+   "account": "ATLAS (Builder 25K: eval Nov 6-17, funded from Nov 18)",
+   "key": "atlas25",
+   "twin": {
+    "side": "SHORT",
+    "exit": "STOP",
+    "r": -1.044,
+    "qty": null,
+    "usd": null
+   },
+   "live": {
+    "qty": 2,
+    "usd": -112.8
+   },
+   "kind": "SLIPPED",
+   "live_minus_twin_usd": 15.2,
+   "cause": "slippage on the live fill",
+   "evidence": "live vs twin entry/exit price (research/livegap/LIVEGAP.json row)",
+   "bug": false
+  },
+  {
+   "day": "2026-11-20",
+   "when": "Fri Nov 20 03:45",
+   "account": "ATLAS (Builder 25K: eval Nov 6-17, funded from Nov 18)",
+   "key": "atlas25",
+   "twin": {
+    "side": "SHORT",
+    "exit": "TARGET",
+    "r": 6.635,
+    "qty": null,
+    "usd": null
+   },
+   "live": {
+    "qty": 1,
+    "usd": 512.31
+   },
+   "kind": "SIZE",
+   "live_minus_twin_usd": -516.0,
+   "cause": "funded sizing by design: the $1,000 best-day / max_win cap -> 1 micro",
+   "evidence": "engine/account_b.funded_qty -> engine/sizing.funded_qty, MFFU 25K funded preset max_win $1,000 (research/writeups/lit-vix-downtrend-2026-11-24.md): stop 38.75 pts, target 258 pts = $516 a micro, 2 micros would break $1,000",
+   "bug": false
+  },
+  {
+   "day": "2026-11-20",
+   "when": "Fri Nov 20 03:45",
+   "account": "Rapid EOD 25K (LIT + ATLAS <= $250, eval)",
+   "key": "rapid25k",
+   "twin": {
+    "side": "SHORT",
+    "exit": "TARGET",
+    "r": 6.635,
+    "qty": null,
+    "usd": 1658.75,
+    "member": "ATLAS EMA"
+   },
+   "live": {
+    "qty": null,
+    "usd": 0.0
+   },
+   "kind": "MISSED",
+   "live_minus_twin_usd": -1658.75,
+   "cause": "not armed: the Rapid EOD 25K was added DISARMED (Nov 19) and the owner's arm step ('START BOT + I ACCEPT LIVE RISK; check Rapid EOD 25K ... armed') is still waiting",
+   "evidence": "board (tools/board.py read, Nov 27 00:38 ET): Rapid EOD 25K balance $24,995 = never traded; WAITING ON THE OWNER: 'At the PC: STOP BOT, then START_BOT.bat, type I ACCEPT LIVE RISK; check Rapid EOD 25K ... armed'; Nov 19 20:24 note 'Added disarmed; START BOT + your phrase'",
+   "bug": false
+  }
+ ],
+ "unexplained_balance": [
+  {
+   "account": "Zlarior 50K",
+   "usd": -219.6,
+   "why": "balance move with no trade the cloud can see (fees + rows not in the cloud Oct 19-23 and after Nov 20)"
+  },
+  {
+   "account": "ATLAS 25K",
+   "usd": 324.51,
+   "why": "balance higher than the seen trades (rows missing for the silent Nov 7-17 and Nov 19-24)"
+  },
+  {
+   "account": "Zlarior 25K #2",
+   "usd": 24.0,
+   "why": "small move, no twin trade since its Nov 18 start (board balance $25,019 on Nov 27)"
+  }
+ ],
+ "usd_by_cause": {
+  "feed / bot gap": -0.5,
+  "order refused": 689.5,
+  "not armed": -1712.95,
+  "bot not running": 1094.97,
+  "slippage": -51.14,
+  "sizing by design (funded max_win cap)": -516.0
+ },
+ "left_on_table_usd": -2304.4,
+ "saved_by_misses_usd": 1784.64
+}
