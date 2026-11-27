@@ -134,6 +134,11 @@ def main():
     check("g 15 later trades at mean 0R: no cap", not d["cap_one_a_day"], d["stats_later"])
     d = L.evaluate(base + later("LLLLLLLLLLLLLLW", 15))
     check("g 15 later trades mean < 0: cap", d["cap_one_a_day"], d["stats_later"])
+    lr = later("WLL", 15)                              # red team #35: +R but -$ (tight-stop winners, wide-stop losers)
+    for x in lr:
+        x["usd_1"] = 20.0 if x["R"] > 0 else -60.0
+    d = L.evaluate(base + lr)
+    check("g rt 15 later trades mean R >= 0 but $ < 0: cap (in $ too)", d["cap_one_a_day"] and "-$" in d["why"], d["why"])
     fd = L.split_first([dict(base[0], id="z", t_sig=9000), dict(base[0], id="y", t_sig=10)])
     check("g split_first orders by signal time within a day", [x["id"] for x in fd[0]] == ["y"] and [x["id"] for x in fd[1]] == ["z"])
     print(f"\nof_ladder: {'ALL PASS' if not FAILS else str(len(FAILS)) + ' FAIL'}")

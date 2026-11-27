@@ -343,7 +343,9 @@ def levels(D, days, i):
     b = D[d].bars
     on = [b[b["mod"] < 570]]
     d0 = dt.date.fromisoformat(d)
-    prev = set(days[:i]) | {k for k in D if k < d and k not in days and not has_rth(D[k])}
+    # red team #35: EVERY earlier file in D, as the live bot sees them (engine/of_paper._prev_summary): a thin day WITH RTH bars that
+    # the battery dropped (the 11-26 Thanksgiving half day) is the prior day, not a hole (before: Friday skipped Thursday entirely)
+    prev = set(days[:i]) | {k for k in D if k < d}
     for p in sorted(prev, reverse=True):
         if (d0 - dt.date.fromisoformat(p)).days > 4:
             break

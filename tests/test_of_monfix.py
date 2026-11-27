@@ -90,6 +90,27 @@ def main() -> int:
     check("Tuesday: a thin Sunday two days back changes nothing", lv(B.levels(D, [FRI, MON, TUE], 2)) == L)
     check("look-ahead: today's RTH bars never set onh / onl", lv(B.levels(D, [FRI, SUN, MON], 2)).get("onh") != 111.0)
 
+    # (rt) red team #35: a thin RTH day the battery dropped (the 11-26 half day) is still the prior day (= the live bot), not a hole
+    WED, THU, FRI2 = "2030-03-06", "2030-03-07", "2030-03-08"
+    G = {WED: summary(WED, [("00:00", "17:00"), ("18:00", "23:55")], peaks=[("11:00", 120.0, 99.0), ("20:00", 105.0, 99.0)]),
+         THU: summary(THU, [("00:00", "13:00"), ("18:00", "23:55")], peaks=[("10:00", 130.0, 99.0), ("21:00", 126.0, 99.0)]),
+         FRI2: summary(FRI2, [("00:00", "13:15")])}
+    DG = {d: B.Day(d, R) for d, R in G.items()}
+    kept, dropped = lv(B.levels(DG, [WED, THU, FRI2], 2)), lv(B.levels(DG, [WED, FRI2], 1))
+    check("rt thin half-day Thursday dropped: Friday still gets Thursday's pdh 130 + its evening onh 126 (same as kept)",
+          dropped == kept and kept.get("pdh") == 130.0 and kept.get("onh") == 126.0)
+    check("rt a later file in D never feeds an earlier day's levels", lv(B.levels(DG, [WED, THU], 1)) == lv(B.levels(
+        {k: v for k, v in DG.items() if k != FRI2}, [WED, THU], 1)))
+    with tempfile.TemporaryDirectory() as root:
+        cd = os.path.join(root, "data", P.CACHE_NAME)
+        os.makedirs(cd)
+        for d, R in G.items():
+            json.dump({"bars": R["bars"].to_dict("list"), "fp": R["fp"].to_dict("list"), "meta": R["meta"]}, open(os.path.join(cd, f"{d}.json"), "w"))
+        pg, Rg = P._prev_summary(FRI2, None, root)
+        Sg = P.replay_summary(G[FRI2], FRI2, Rg, pg, lit=[])
+        Lg = {x["name"]: x["px"] for x in Sg["levels"]}
+        check("rt live path agrees on the half-day Friday (pdh 130, onh 126)", pg == THU and Lg.get("pdh") == 130.0 and Lg.get("onh") == 126.0)
+
     # (d) the live path: engine/of_paper._prev_summary reads the day cache under data/of_paper_cache/
     with tempfile.TemporaryDirectory() as root:
         cd = os.path.join(root, "data", P.CACHE_NAME)

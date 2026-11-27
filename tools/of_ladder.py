@@ -126,12 +126,14 @@ def split_first(rows):
 
 
 def later_check(later):
-    """None until LATER_N later-in-the-day trades; then (cap?, mean R)."""
+    """None until LATER_N later-in-the-day trades; then (cap?, mean R, $ at 1 micro). Cap when the mean R < 0 OR the $ < 0:
+    red team #35: monfix's own later-in-day E5 book was +0.23R but -$561 (tight-stop winners in R, wide-stop losers in $)."""
     if len(later) < LATER_N:
         return None
     J = [min(float(r["R"]), x) if (x := r_e5(r)) is not None else float(r["R"]) for r in later]
     m = sum(J) / len(J)
-    return m < 0, round(m, 3)
+    usd = sum(float(r.get("usd_1") or 0) for r in later)
+    return (m < 0 or usd < 0), round(m, 3), round(usd, 2)
 
 
 def forward_skipped(pc_days=None, verdict=None):
@@ -262,7 +264,8 @@ def evaluate(rows, sim=None, prev=None, today=None, skipped=None):
     lc = later_check(later)
     cap = bool(lc and lc[0])
     if cap:
-        why = f"{why}; {CAP_TEXT} (the {len(later)} later-in-the-day trades average {lc[1]:+.2f}R)"
+        why = (f"{why}; {CAP_TEXT} (the {len(later)} later-in-the-day trades average {lc[1]:+.2f}R, "
+               f"{'+' if lc[2] >= 0 else '-'}${abs(lc[2]):,.0f} at 1 micro)")
     return {"v": 1, "paper_only": True, "plan": PLAN, "fwd_from": FWD_FROM, "step": step, "step_name": STEPS[step]["name"],
             "status": status, "why": why, "stats": st, "gate": STEPS[step]["gate"], "stop_rule": STEPS[step]["stop"],
             "next": {"step": nxt["step"], "name": nxt["name"], "gate": nxt["gate"], "stop": nxt["stop"]},
