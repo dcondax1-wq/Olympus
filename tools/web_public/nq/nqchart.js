@@ -19,7 +19,6 @@ const S = { lite: null, priv: null, privSeen: [], privOn: false, privFails: 0, b
   whole: false, want: null, mode: 'default', viewKey: '', drawnN: 0, ready: false, fetchedAt: 0, busy: false, err: '' };
 
 // ------------------------------------------------------------------------------------------------ the AGORA colours (canvas needs real colours)
-// perf (CPU profile 2026-11-21: tokens() + its getComputedStyle reads were 171 ms of the load at 4x CPU): read once per theme
 let TOK = null, TOK_KEY = '';
 function tokens() {
   const key = (document.documentElement.getAttribute('data-oly-theme') || '') + '|' + (document.documentElement.getAttribute('data-oly-scheme') || '');
@@ -27,8 +26,6 @@ function tokens() {
   TOK_KEY = key; TOK = tokensRead(); return TOK;
 }
 function tokensRead() {
-  // night-nq-chart 2026-11-27: the chart's own OLYMPUS NIGHT palette (the page kit's AGORA tokens fell back to cyan / olive): black, violet
-  // outlines + glow, gold accents, mint up, a clear rose-red down; account dots gold / lavender / violet
   return { text: '#f3eefc', soft: '#cfc3e6', muted: '#9b8fb5', line: 'rgba(157,89,238,0.32)', up: '#77db89', down: '#ff5d73', good: '#77db89', bad: '#ff5d73',
     gold: '#f1c14b', lav: '#dacbf0', aegean: '#dacbf0', mauve: '#b48cf2', violet: '#9d59ee', rose: '#f472b6', amber: '#fbbf24', sky: '#a5b4fc', sand: '#f472b6',
     font: getComputedStyle(document.body).fontFamily || 'system-ui, sans-serif' };
@@ -136,15 +133,12 @@ function makeChart(LC, T) {
     kineticScroll: { touch: true, mouse: false },      // night-nq-chart: a flick keeps gliding on a phone (momentum), like a native chart
     localization: { locale: 'en-US', priceFormatter: (p) => { const r = Math.round(p * 100) / 100; return Number.isInteger(r) ? r.toLocaleString('en-US') : B.px(r); } },
   });
-  // v5 (owner 2026-11-20 15:50 ET: "The chart looks terrible. It needs some 3D, it needs some effects"): under the candles, the day's closes as a
-  // glowing violet line with a soft violet fill fading to black (never in the price scale's range: the candles and the trade lines set it)
   const area = chart.addSeries(LC.AreaSeries, { lineColor: 'rgba(157,89,238,0.0)', lineWidth: 1, topColor: 'rgba(157,89,238,0.16)', bottomColor: 'rgba(157,89,238,0.0)',   // night-nq-chart: a soft violet glow under the candles, no line over them
     priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false, autoscaleInfoProvider: () => null, lineType: LC.LineType ? LC.LineType.Curved : 0,
     priceFormat: { type: 'price', precision: 2, minMove: 0.25 } }, 0);
   const series = chart.addSeries(LC.CandlestickSeries, {
     upColor: T.up, downColor: T.down, borderUpColor: T.up, borderDownColor: T.down, wickUpColor: 'rgba(119,219,137,0.85)', wickDownColor: 'rgba(255,93,115,0.85)',
     priceFormat: { type: 'price', precision: 2, minMove: 0.25 }, lastValueVisible: false, priceLineVisible: false,   // the last price: the gold tag below
-    // the open trade's stop and target stay on the screen even when the candles have not reached them (the price scale takes them in)
     autoscaleInfoProvider: (orig) => {
       const r = orig(), x = S.model && S.model.extent;
       if (!r || !r.priceRange || !x) return r;
@@ -152,16 +146,12 @@ function makeChart(LC, T) {
     },
   });
   const marks = LC.createSeriesMarkers(series, []);
-  // night-nq-chart 2026-11-27: the v4 light trail over the candles is gone (it hid them); the area glow under them and the gold last price stay
   const glow = null, trail = null;
-  // the last price as a bright GOLD tag on the axis + a dotted gold line (one point, no line drawn); the pulsing dot over it is DOM (#chartPulse)
   const tag = chart.addSeries(LC.LineSeries, { color: '#f1c14b', lineVisible: false, pointMarkersVisible: false, crosshairMarkerVisible: false, lastValueVisible: true,
     priceLineVisible: true, priceLineColor: 'rgba(241,193,75,0.55)', priceLineStyle: LC.LineStyle.Dotted, priceLineWidth: 1, autoscaleInfoProvider: () => null,
     priceFormat: { type: 'price', precision: 2, minMove: 0.25 } }, 0);
   const pulse = () => { placePulse(); fx(); nowBtn(); };
   chart.timeScale().subscribeVisibleLogicalRangeChange(pulse);
-  // the view is set before the price axis has measured its labels: when the plot gets narrower (or the phone turns), set it again,
-  // unless the owner moved the chart himself (a drag, a pinch, the wheel: from then on his view is kept)
   chart.timeScale().subscribeSizeChange(() => { if (S.want && S.mode !== 'user') setView(S.want[0], S.want[1]); fx(); });
   chart.subscribeClick((p) => { try { whyAt(p); } catch (e) { /* no popover */ } });
   chart.subscribeCrosshairMove((p) => legend(p && p.time != null && p.seriesData ? p.seriesData.get(series) : null));
@@ -244,9 +234,6 @@ function placePulse() {
   } catch (e) { d.hidden = true; }
 }
 // ------------------------------------------------------------------------------------------------ night-nq-chart 2026-11-27: the overlay
-// One canvas over the plot (pointer-events none, clipped to the plot, never the price axis): the session bands (Asia / London / New York) with
-// their names, each open trade's risk (rose) and reward (mint) box from its entry to the right edge, the session highs / lows the bars hold
-// (dashed lavender from where they formed, the name at their start) and each sweep (a gold diamond + "swept"). Drawn on a view change only.
 function ensureFx() {
   const box = $('chartBox'); if (!box) return null;
   let c = $('chartFx');
@@ -265,7 +252,6 @@ function drawFx() {
   const X = (t) => ts.timeToCoordinate(t), Y = (p) => S.series.priceToCoordinate(p), half = Math.max(1, (ts.options().barSpacing || 6) / 2);
   const T = tokens(), font = (px, w) => `${w || 600} ${px}px ${T.font}`;
   const cutT = S.replay != null && m.candles[S.replay] ? m.candles[S.replay].time : Infinity;
-  // sessions
   const tint = { asia: 'rgba(157,89,238,0.07)', london: 'rgba(218,203,240,0.05)', ny: 'rgba(241,193,75,0.035)' };
   for (const s of m.sessions || []) {
     let x0 = X(s.from), x1 = X(s.to);
@@ -276,7 +262,6 @@ function drawFx() {
     g.fillStyle = 'rgba(157,89,238,0.35)'; g.fillRect(Math.max(0, x0), 0, 1, H);
     if (x1 - Math.max(0, x0) > 56) { g.font = font(10, 700); g.fillStyle = 'rgba(218,203,240,0.55)'; g.fillText(s.name.toUpperCase(), Math.max(0, x0) + 6, H - 8); }
   }
-  // open trades: risk / reward boxes
   for (const z of m.zones || []) {
     const x0 = X(z.from); if (x0 == null) continue;
     const ye = Y(z.e);
@@ -288,7 +273,6 @@ function drawFx() {
       g.strokeStyle = stroke; g.lineWidth = 1; g.strokeRect(x + 0.5, top + 0.5, W - x - 1, h - 1);
     }
   }
-  // session highs / lows + the PC's levels
   g.setLineDash([5, 4]); g.lineWidth = 1;
   for (const L of m.levels || []) {
     const y = Y(L.price); if (y == null || y < 0 || y > H) continue;
@@ -300,7 +284,6 @@ function drawFx() {
     g.fillStyle = 'rgba(7,5,12,0.78)'; g.fillRect(tx - 3, ty - 10, tw + 6, 13);                   // a dark backing: readable over the candles
     g.fillStyle = L.src === 'pc' ? '#f1c14b' : 'rgba(218,203,240,0.92)'; g.fillText(L.label, tx, ty);
   }
-  // the bots' own levels (their glance: PD / Globex / London / Asia, ATLAS's S/R, the order-flow room's): gold, from today's first bar
   const LV = (S.live && S.live.levels) || [], x0d = X(firstToday(m));
   for (const Lv of LV) {
     if ((m.levels || []).some((q) => Math.abs(q.price - Lv.price) < 1)) continue;
@@ -311,7 +294,6 @@ function drawFx() {
     g.fillStyle = 'rgba(7,5,12,0.8)'; g.fillRect(tx - 3, ty - 10, tw + 6, 13); g.fillStyle = Lv.src === 'of' ? '#c9a8ff' : '#f1c14b'; g.fillText(lab, tx, ty);
   }
   g.setLineDash([]);
-  // sweeps (the chart's session levels + the bots' levels)
   for (const w of [...(m.sweeps || []), ...((S.live && S.live.sweeps) || [])]) {
     if (w.time > cutT) continue;
     const x = X(w.time), y = Y(w.price); if (x == null || y == null || x < 0 || x > W) continue;
@@ -323,7 +305,6 @@ function drawFx() {
     g.fillStyle = 'rgba(241,193,75,0.95)'; g.fillText('SWEPT', sx, sy);
   }
   const Lv2 = S.live || {};
-  // order-flow absorption (the order-flow room, today only): a violet ring at the level where the sweep was absorbed
   for (const a of Lv2.absorb || []) {
     if (a.time > cutT) continue;
     const x = X(a.time), y = Y(a.price); if (x == null || y == null || x < 0 || x > W) continue;
@@ -331,7 +312,6 @@ function drawFx() {
     g.font = font(9, 700); g.fillStyle = 'rgba(7,5,12,0.8)'; const tw = g.measureText('ABSORBED').width; g.fillRect(Math.min(x + 9, W - tw - 6) - 2, y - 5 - 9, tw + 4, 12);
     g.fillStyle = '#c9a8ff'; g.fillText('ABSORBED', Math.min(x + 9, W - tw - 6), y - 5);
   }
-  // today's halt (CME early close): a gold dashed vertical line, also when it is still ahead (placed by bar spacing from the last bar)
   if (Lv2.halt) {
     let x = X(Lv2.halt.time);
     const cs = m.candles, lt = cs.length ? cs[cs.length - 1].time : null, lx = lt != null ? X(lt) : null;
@@ -350,7 +330,6 @@ function firstToday(m) {
   for (const c of cs) if (dayOf(real(c)) >= lastDay) return c.time;
   return cs[0].time;
 }
-// the readout over the plot: the bar under the finger (or the newest): its ET time + session, O H L C and the change, in the chart's colours
 function legend(bar) {
   const box = $('chartBox'), m = S.model; if (!box || !m || !m.candles.length) return;
   let el = $('chartLeg');
@@ -369,7 +348,6 @@ function legend(bar) {
   for (const [k, v] of [['O', c.open], ['H', c.high], ['L', c.low]]) { const s2 = h('span', 'clv'); s2.appendChild(h('i', '', k)); s2.appendChild(h('b', '', B.px(v))); row.appendChild(s2); }
   el.appendChild(row);
 }
-// the honest age of the bars, on the chart itself: mint "LIVE" under 20 minutes, gold when older than that, rose past the fresh limit
 function age() {
   const box = $('chartBox'), m = S.model; if (!box) return;
   let el = $('chartAge');
@@ -379,18 +357,14 @@ function age() {
   el.hidden = false; el.className = 'cage ' + f.cls + (f.pc ? ' pcnow' : '');
   if (S.stale !== (f.cls !== 'live')) { S.stale = f.cls !== 'live'; placePulse(); }   // the pulsing dot means live: never on old bars
   el.textContent = f.text; el.setAttribute('aria-label', f.label);
-  // on a phone the badge sits over the readout's corner: the readout goes just under it, however many lines the badge takes
   const leg = $('chartLeg');
   if (leg) { const narrow = box.clientWidth <= 420; leg.style.top = narrow ? (el.offsetTop + el.offsetHeight + 6) + 'px' : ''; }
-  // never a 500-point-old close dressed as the current price: the gold tag names its bar's time when the bars are not live,
-  // and the PC's newer price gets its own dashed gold line (seen when it is inside the chart's range; the badge says it in words)
   try { if (S.tag) S.tag.applyOptions({ title: f.tagTitle }); } catch (e) { /* the badge says it */ }
   try {
     if (S.pcLine) { S.series.removePriceLine(S.pcLine); S.pcLine = null; }
     if (f.pc && S.series && S.lib) S.pcLine = S.series.createPriceLine({ price: f.pc.px, color: '#f1c14b', lineWidth: 1, lineStyle: S.lib.LineStyle.Dashed, axisLabelVisible: true, title: 'NQ now (PC)' });
   } catch (e) { /* the badge says it */ }
 }
-// "Now": back to the newest bar when the owner scrolled away from it
 function nowBtn() {
   const box = $('chartBox'), m = S.model; if (!box || !S.chart || !m || m.state === 'none') return;
   let b = $('chartNow');
@@ -405,8 +379,6 @@ function nowBtn() {
 }
 
 // ------------------------------------------------------------------------------------------------ the 3D view (nqchart3d.js, only on the toggle)
-// The owner's choice is kept on this phone (one key, nq.chart.view = '2d' | '3d'); 2D is the default. The 3D module (three.js) is fetched only
-// when the 3D view is chosen: a module tag (no dynamic import), its 'nqchart3d' event, then NQCHART3D.mount(#chart3d, data).
 const PREF = 'nq.chart.view';
 const prefGet = () => { try { return window.localStorage.getItem(PREF) || ''; } catch (e) { return ''; } };
 const prefSet = (v) => { try { window.localStorage.setItem(PREF, v); } catch (e) { /* this visit only */ } };
@@ -450,7 +422,6 @@ function focusTrade(r) {
   try { $('chartBox').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) { /* old browser */ }
 }
 
-// day-livechart 2026-11-27: the stage strip + stamp above, the ticker + next trigger + replay under, tap -> why (text only)
 const PRIV_URL = '/api/live/state', PRIV_MS = 3000, LITE_MS = 30000, AUX_MS = 300000;
 const reduced = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
 const isPriv = () => /^\/site\//.test(location.pathname) || /[?&]priv=1\b/.test(location.search);
@@ -492,9 +463,7 @@ function renderLive() {
   const off = m.state === 'none' && !Lv;
   top.hidden = off; bot.hidden = off;
   clear(top);
-  // the honest stamp
   const st = stampNow(), sp = h('span', 'lcstamp ' + st.cls, st.text); sp.id = 'lcStamp'; sp.setAttribute('role', 'status'); top.appendChild(sp);
-  // LIT's stage strip
   if (Lv && Lv.stage) {
     const g = h('div', 'lcstage'); g.id = 'lcStage';
     const n = Lv.stage.n, of = Lv.stage.of || 10;
@@ -509,7 +478,6 @@ function renderLive() {
   if (Lv && Lv.halt) { const c = h('span', 'lcchip halt', Lv.halt.passed ? `Halted ${((B.et(Lv.haltT) || {}).hm || '')} ET (early close)` : `Halt ${((B.et(Lv.haltT) || {}).hm || '')} ET today`); c.id = 'lcHalt'; chips.appendChild(c); }
   if (Lv && Lv.trades.length) for (const t of Lv.trades) chips.appendChild(h('span', 'lcchip gold', `${t.name} ${t.side} open${t.risk != null ? ' · risk $' + Math.round(Math.abs(t.risk)) : ''}${t.tgt != null ? ' · target $' + Math.round(Math.abs(t.tgt)) : ''}`));
   if (chips.firstChild) top.appendChild(chips);
-  // the "now" ticker + the next trigger + the replay
   clear(bot);
   const nx = Lv && Lv.next;
   const nl = h('p', 'lcnext'); nl.id = 'lcNext';
@@ -528,7 +496,6 @@ function renderLive() {
   replayBar(bot, m);
   sweepFlash();
 }
-// the replay scrubber: today's bars from the first one, Play / Live (44 px), the chart draws the day up to the chosen bar
 function replayBar(bot, m) {
   if (!m.candles || m.candles.length < 3 || !S.lib) return;
   const i0 = Math.max(0, m.candles.findIndex((c) => c.time === firstToday(m))), n = m.candles.length;
@@ -549,7 +516,6 @@ function replayBar(bot, m) {
 function stopPlay() { if (S.playing) { clearInterval(S.playing); S.playing = 0; } }
 function stepPlay() { const m = S.model; if (!m) return stopPlay(); S.replay = (S.replay == null ? 0 : S.replay) + 1; if (S.replay >= m.candles.length - 1) { S.replay = null; stopPlay(); } redraw(); }
 function redraw() { const m = S.model; if (!m || !S.lib || m.state === 'none') return; try { draw(m); } catch (e) { /* the chart stays */ } try { renderLive(); } catch (e) { /* the chart stays */ } }
-// a level swept since the last look flashes gold once (not under reduced motion; the SWEPT mark stays either way)
 function sweepFlash() {
   const sw = (S.live && S.live.sweeps) || [], keys = sw.map((w) => w.label + '@' + w.time);
   if (S.sweepSeen == null) { S.sweepSeen = new Set(keys); return; }
@@ -564,7 +530,6 @@ function sweepFlash() {
     } catch (e) { /* the mark stays */ }
   }
 }
-// tap a mark -> why (sweeps, absorption, the bots' levels, the halt, our trades' arrows)
 function whyAt(p) {
   const m = S.model, Lv = S.live || {}; if (!p || !p.point || !m || !S.chart) return;
   const ts = S.chart.timeScale(), X = (t) => ts.timeToCoordinate(t), Y = (v) => S.series.priceToCoordinate(v), at = (t) => (B.et(t - ((B.et(t) || {}).off || 0)) || {}).hm || '';
@@ -589,7 +554,6 @@ function showWhy(c) {
   el.appendChild(h('b', 'lcwh', c.head)); el.appendChild(h('p', 'lcwt', c.text));
   const x = h('button', 'lcwx', '✕'); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.addEventListener('click', () => { el.hidden = true; }); el.appendChild(x);
 }
-// the private link (the PC serves this site at /site/): the bot's own snapshot every 3 s -> its 5-minute bars + the forming bar from its price
 let PRIVQ = false;
 async function privPoll() {
   if (PRIVQ || document.hidden) return; PRIVQ = true;
@@ -626,8 +590,21 @@ function liveTick() {
 }
 async function aux() {
   const get = async (f) => { const t = await getText(new URL('./' + f, import.meta.url).href + '?t=' + Math.floor(Date.now() / 60000), 6000, 'no-cache'); try { return t ? JSON.parse(t) : null; } catch (e) { return null; } };
-  const [b, o] = await Promise.all([get('brief.json'), get('of_room.json')]);
+  const [b, o, f] = await Promise.all([get('brief.json'), get('of_room.json'), get('of_strip.json')]);
   if (b) S.brief = b; if (o) S.ofroom = o;
+  if (f && Array.isArray(f.bars) && f.bars.length && f.day === (B.et(Date.now() / 1000) || {}).day) ofStrip(f);
+}
+function ofStrip(f) {
+  let box = $('lcStrip');
+  if (!box) { box = h('div', 'lcstrip'); box.id = 'lcStrip'; const b = $('lcBelow') || $('chartBox'); if (!b) return; b.parentNode.insertBefore(box, b.nextSibling); }
+  const go = () => { const O = window.OFSTRIP; if (!O) return; if (S.strip) { S.strip.update(f); return; }
+    S.strip = O.mount(box, f, { height: 230, onSelect: (bar) => { const m = S.model; if (!m || !S.chart) return;
+      const c = m.candles.filter((x) => new Date(x.time * 1000).toISOString().slice(11, 16) === bar.t).pop(); if (!c) return;
+      try { S.chart.setCrosshairPosition(c.close, c.time, S.series); legend(c); } catch (e) { /* the strip says it */ } } }); };
+  if (window.OFSTRIP) return go();
+  if (S.stripLoad) return; S.stripLoad = true;
+  const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('./ofstrip.css?v=1', import.meta.url).href; document.head.appendChild(l);
+  const t = document.createElement('script'); t.type = 'module'; t.src = new URL('./ofstrip.js?v=1', import.meta.url).href; t.onload = go; t.onerror = () => { box.remove(); }; document.head.appendChild(t);
 }
 async function liteTick() { if (document.hidden) return; await pcPrice(); if (S.model) { liveLayer(S.model); age(); fx(); } }
 

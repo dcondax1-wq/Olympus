@@ -169,7 +169,10 @@ def test_page(shots=False):
         NP.time.time = real
     brief = json.dumps({"v": 1, "day": "2026-11-27", "early_close": "13:15", "headline": "Test day"})
     ofroom = json.dumps({"v": 1, "day": "2026-11-27", "levels": [{"label": "Asia low", "px": asia, "side": "low", "read": "absorbed", "t": NOW - 1500}]})
-    srv, origin = AK.serve({"/status_feed.json": T.FEED, "/home.json": home, "/nq/brief.json": brief, "/nq/of_room.json": ofroom})
+    # the footprint strip (day-ofroom2's ofstrip.js): a stub module here, so this suite checks only the hook (today's of_strip.json -> mount -> tap = crosshair)
+    strip = json.dumps({"day": "2026-11-27", "tick": 0.25, "bucket": 2.0, "bars": [{"t": "12:30", "o": 1, "h": 2, "l": 0, "c": 1, "v": 10, "d": 2, "big": 0, "cells": [], "abs": []}]})
+    stub = "window.OFSTRIP = { mount: (el, d, o) => { window.__ofs = { n: d.bars.length, o }; el.textContent = 'footprint'; return { update() {}, select() {}, destroy() {} }; } };"
+    srv, origin = AK.serve({"/status_feed.json": T.FEED, "/home.json": home, "/nq/brief.json": brief, "/nq/of_room.json": ofroom, "/nq/of_strip.json": strip})
     bars_url, core_url = f"/{T.TOPIC}-bars/json", f"/{T.TOPIC}/json"
     fixed = lambda p: p.clock.set_fixed_time(dt.datetime.fromtimestamp(NOW, dt.timezone.utc))  # noqa: E731
     try:
@@ -177,6 +180,8 @@ def test_page(shots=False):
             for w, h in ((390, 844), (1440, 900)):
                 ctx, p, errs, seen, off = AK.page(br, origin, w=w, h=h, mock={bars_url: T.ndjson(post), core_url: core_body(lite, NOW - 30)})
                 fixed(p)
+                p.route("**/nq/ofstrip.js*", lambda r: r.fulfill(status=200, content_type="text/javascript", body=stub))
+                p.route("**/nq/ofstrip.css*", lambda r: r.fulfill(status=200, content_type="text/css", body="/* stub */"))
                 T.open_chart(p, origin)
                 p.wait_for_function("document.getElementById('lcStage') && window.NQCHART.S.live && window.NQCHART.S.live.halt", timeout=20000)
                 p.evaluate("document.getElementById('chartCard').scrollIntoView({block:'start'})")
@@ -202,6 +207,11 @@ def test_page(shots=False):
                     p.locator("#lcWhy .lcwx").tap()
                 if w == 1440:
                     shot(p, "livechart_1440", shots)
+                if w == 390:
+                    p.wait_for_function("window.__ofs", timeout=15000)
+                    leg = p.evaluate("() => { window.__ofs.o.onSelect({ t: '12:30' }, 0); return [window.__ofs.n, document.getElementById('lcStrip').textContent, document.getElementById('chartLeg').textContent]; }")
+                    check("c. 390px: today's of_strip.json loads the footprint strip (lazily) under the ticker; a tap on its 12:30 bar moves the chart's readout to 12:30",
+                          leg[0] == 1 and leg[1] == "footprint" and leg[2].startswith("12:30"), leg)
                 n0 = s["drawn"]
                 p.locator("#lcScrub").evaluate("(r) => { r.value = String(+r.min + 10); r.dispatchEvent(new Event('input')); }")
                 p.wait_for_timeout(300)
