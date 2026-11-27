@@ -19,6 +19,26 @@
   function mask(t) {
     return String(t == null ? '' : t).replace(/\b[A-Z]{3,}[A-Z0-9_-]*?(?:…|\.\.\.)?(\d{4})\b/g, '…$1');
   }
+
+  // QA #1 (lead 2026-11-27): the PC cuts rd text at 200 bytes: never show it cut mid-word ("(Claud"): drop an unclosed bracket,
+  // else end at the last whole word + "…". And when rd says an account is not armed but the PC's live state says it IS armed, say so.
+  function tidyCut(t) {
+    t = String(t == null ? '' : t).trim();
+    if (!t) return t;
+    const open = t.lastIndexOf('('), close = t.lastIndexOf(')');
+    if (open > close) return t.slice(0, open).trim().replace(/[,;:]$/, '') + (/[.!?]$/.test(t.slice(0, open).trim()) ? '' : '.');
+    if (/[.!?)"]$/.test(t)) return t;
+    return t.length >= 60 ? t.replace(/\s+\S*$/, '') + '…' : t;
+  }
+  function rdDisagrees(L, rd) {   // rd blames "<account> is not armed" while ck.acc / ar say that account is armed
+    const m = rd && /^(.+?) is not armed/i.exec(String(rd.b || ''));
+    if (!m) return null;
+    const who = m[1].trim(), low = who.toLowerCase();
+    const acc = isObj(L.ck) && Array.isArray(L.ck.acc) ? L.ck.acc.find((r) => Array.isArray(r) && String(r[0]).toLowerCase() === low) : null;
+    const key = /atlas/i.test(who) ? 'atlas' : /rapid/i.test(who) ? 'rapid' : /#2/.test(who) ? 'b25k_2' : /zlarior|lit/i.test(who) ? 'lit' : null;
+    const ar = isObj(L.ar) && key && Array.isArray(L.ar[key]) ? L.ar[key] : null;
+    return (acc && acc[1]) || (ar && ar[0]) ? who : null;
+  }
   function postT(L) { return num(L.ext_t) || num(isObj(L.reporter) ? L.reporter.t : null) || num(L.t); }
   const SH_WORDS = { update_blocked: 'the update is blocked', server: 'the bot server is down', disk: 'the disk is nearly full',
     pip: 'a package will not install', clock: 'the PC clock is off', git_lock: 'a git lock is stuck', oif_stuck: 'an old order file is stuck',
@@ -83,10 +103,14 @@
         nores.length ? 'On the PC: TRADE_HOME, press 2 once more; it asks to keep it armed after restarts.' : null);
     } else add('armed', 'Accounts armed', 'grey', 'The PC did not send its account list.', null);
     // 6 the pre-window ready check (engine/readiness)
-    if (rd && (rd.s === 'ok' || rd.s === 'warn' || rd.s === 'no'))
-      add('ready', 'Ready check', rd.s === 'ok' ? 'green' : rd.s === 'warn' ? 'amber' : 'red',
-        (rd.s === 'ok' ? 'READY' : rd.s === 'warn' ? 'READY, 1 to watch' : 'NOT READY') + (rd.w ? ' for ' + rd.w + ' ET' : '') + (rd.b ? ': ' + rd.b + '.' : '.'),
-        rd.s === 'no' ? (String(rd.f || 'On the PC: double-click HEALTH_CHECK.bat.').replace(/\s*\([^)]*$/, '')) : null);
+    if (rd && (rd.s === 'ok' || rd.s === 'warn' || rd.s === 'no')) {
+      const dis = rd.s === 'no' ? rdDisagrees(L, rd) : null;
+      add('ready', 'Ready check', dis ? 'amber' : rd.s === 'ok' ? 'green' : rd.s === 'warn' ? 'amber' : 'red',
+        (dis ? 'The ready check says ' + dis + ' is not armed, but the PC\'s live state says it is armed: the two disagree, being checked.' :
+          (rd.s === 'ok' ? 'READY' : rd.s === 'warn' ? 'READY, 1 to watch' : 'NOT READY') + (rd.w ? ' for ' + rd.w + ' ET' : '') + (rd.b ? ': ' + tidyCut(rd.b).replace(/\.$/, '') + '.' : '.')) +
+          (age != null ? ' Checked with the report ' + ageText(age) + ' ago.' : ''),
+        dis ? 'Look at the bot window on the PC: if ' + dis + ' shows ARMED, nothing to do.' : rd.s === 'no' ? tidyCut(rd.f || 'On the PC: double-click HEALTH_CHECK.bat.') : null);
+    }
     // 7 keep-alive (MFFU closes an account after 7 idle days)
     const ka = Array.isArray(ck.ka) ? ck.ka : null;
     if (ka) add('keepalive', 'Keep-alive', ka[0] >= ka[1] ? 'green' : 'amber', ka[0] + ' of ' + ka[1] + ' armed accounts have keep-alive on (MFFU closes an account after 7 idle days).',
@@ -136,14 +160,15 @@
   function finish(list, age) {
     const worst = list.reduce((m, c) => (RANK[c.state] > RANK[m] ? c.state : m), 'grey');
     const overall = list.length ? (worst === 'grey' ? 'grey' : worst) : 'grey';
-    const order = list.slice().sort((a, b) => RANK[b.state] - RANK[a.state]);
+    const P = ['report', 'ready', 'armed', 'server', 'version', 'nt', 'clock'], pi = (c) => (P.indexOf(c.id) < 0 ? 99 : P.indexOf(c.id));
+    const order = list.map((c, i) => [c, i]).sort((a, b) => RANK[b[0].state] - RANK[a[0].state] || pi(a[0]) - pi(b[0]) || a[1] - b[1]).map((x) => x[0]);
     const bad = order.filter((c) => c.state === 'red' || c.state === 'amber');
     const say = overall === 'green' ? 'All good: nothing needs you.' : overall === 'grey' ? 'Not enough from the PC to tell.' :
-      (bad.length === 1 ? '1 thing needs you: ' : bad.length + ' things need you, first: ') + bad[0].title.toLowerCase() + '.';
+      (bad.length === 1 ? '1 thing needs you: ' : bad.length + ' things need you, first: ') + bad[0].title + '.';
     return { overall, say, age, checks: order, counts: { red: bad.filter((c) => c.state === 'red').length, amber: bad.filter((c) => c.state === 'amber').length,
       green: list.filter((c) => c.state === 'green').length, grey: list.filter((c) => c.state === 'grey').length } };
   }
-  const API = { checks, mask, ageText, FRESH_S, LATE_S };
+  const API = { checks, mask, tidyCut, ageText, FRESH_S, LATE_S };
   root.PCHEALTH = API;
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
 })(typeof window !== 'undefined' ? window : globalThis);

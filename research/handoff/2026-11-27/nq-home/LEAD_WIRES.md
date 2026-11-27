@@ -23,3 +23,9 @@ I added one line: `AREAS["nq"].append("nq_home")` (tests/test_nq_home.py, 64 che
 - `tr`: 312 tick days on the PC, backfill DONE, oldest 2025-11-28: the order-flow battery + mill can run on real days now (tools/of_send_now.py on the PC after 16:05 ET, then `python tools/data_pull.py --of`).
 - Ready check says NOT READY (ATLAS 25K not armed) while `ck.acc` says all 4 armed: the two disagree on the PC. The page shows both honestly; worth a look in engine/readiness vs pc_checklist.
 - NinjaTrader "Connect on startup" is off: after a PC restart nothing trades until the owner logs in.
+
+## 5. QA #1 (done on my side) + one engine ask
+Trading Home + PC Health no longer show a hard NOT READY when rd blames "<acct> is not armed" while ck.acc / ar say it is armed:
+they say "the ready check and the live state disagree: checking" (amber). rd text is never cut mid-word (tidyCut), no "press 1" next to
+rd's own "press 2", age shown as "checked with the PC report N min ago". Engine ask: put `t` (unix) in `rd` (engine/readiness.rd) so
+the page can show the check's own age, and fit `f` under the 200 B cap instead of cutting it.

@@ -113,7 +113,7 @@ h2.sec{font-size:13px;margin:4px 2px 8px;color:var(--mut);text-transform:upperca
       var li = document.createElement('li'); li.className = 'row ' + (l.ok === true ? 'ok' : 'no') + (l.tone ? ' ' + l.tone : ''); li.setAttribute('data-id', l.id);
       var b = document.createElement('div'); b.className = 'box'; b.textContent = l.ok === true ? '✓' : '•'; b.setAttribute('aria-label', l.ok === true ? 'done' : 'to do');
       var t = document.createElement('div'); t.className = 't'; t.textContent = l.title;
-      var s = document.createElement('div'); s.className = 'say'; s.textContent = String(l.say || '').replace(/\s*\([^)]{0,12}$/, '');   // a PC sentence cut mid-bracket
+      var s = document.createElement('div'); s.className = 'say'; s.textContent = l.say;
       li.appendChild(b); li.appendChild(t); li.appendChild(s);
       if (l.ok !== true && l.menu) { var m = document.createElement('div'); m.className = 'menu'; m.textContent = 'PC: TRADE_HOME, press ' + l.menu; li.appendChild(m); }
       if (l.tick && l.ok !== true) {

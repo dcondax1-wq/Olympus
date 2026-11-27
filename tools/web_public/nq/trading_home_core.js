@@ -13,6 +13,27 @@
     s = Math.max(0, Math.round(s));
     return s < 90 ? s + ' s' : s < 5400 ? Math.round(s / 60) + ' min' : (s / 3600).toFixed(1) + ' h';
   }
+
+  // QA #1 (lead 2026-11-27): the PC cuts rd text at 200 bytes: never show it cut mid-word ("(Claud"): drop an unclosed bracket,
+  // else end at the last whole word + "…". And when rd says an account is not armed but the PC's live state says it IS armed, say so.
+  function tidyCut(t) {
+    t = String(t == null ? '' : t).trim();
+    if (!t) return t;
+    const open = t.lastIndexOf('('), close = t.lastIndexOf(')');
+    if (open > close) return t.slice(0, open).trim().replace(/[,;:]$/, '') + (/[.!?]$/.test(t.slice(0, open).trim()) ? '' : '.');
+    if (/[.!?)"]$/.test(t)) return t;
+    return t.length >= 60 ? t.replace(/\s+\S*$/, '') + '…' : t;
+  }
+  function rdDisagrees(L, rd) {   // rd blames "<account> is not armed" while ck.acc / ar say that account is armed
+    const m = rd && /^(.+?) is not armed/i.exec(String(rd.b || ''));
+    if (!m) return null;
+    const who = m[1].trim(), low = who.toLowerCase();
+    const acc = isObj(L.ck) && Array.isArray(L.ck.acc) ? L.ck.acc.find((r) => Array.isArray(r) && String(r[0]).toLowerCase() === low) : null;
+    const key = /atlas/i.test(who) ? 'atlas' : /rapid/i.test(who) ? 'rapid' : /#2/.test(who) ? 'b25k_2' : /zlarior|lit/i.test(who) ? 'lit' : null;
+    const ar = isObj(L.ar) && key && Array.isArray(L.ar[key]) ? L.ar[key] : null;
+    return (acc && acc[1]) || (ar && ar[0]) ? who : null;
+  }
+
   // the PC's accounts; ATLAS (account B) is not in "accounts" (tonight's real post): a row is made from board.atlas (audit E1, 2026-11-22)
   function realAccounts(lite) {
     const rows = (Array.isArray(lite && lite.accounts) ? lite.accounts : [])
@@ -105,8 +126,11 @@
     if (rds) out.push({ id: 'ready', ok: rds === 'ok' || rds === 'warn' ? true : rds === 'no' ? false : null, tone: rds === 'no' ? 'gold' : rds ? 'mint' : null, title: 'Ready to trade',
       say: rds === 'ok' ? 'READY' + (rd.w ? ' for ' + rd.w : '') + '. The PC checked its clock, NinjaTrader, bars and accounts.' :
         rds === 'warn' ? 'READY, 1 to watch: ' + (rd.b || 'see the PC') + '.' :
-        'NOT READY' + (rd.w ? ' for ' + rd.w : '') + ': ' + (rd.b || 'see the PC') + '. ' + (rd.f || 'On the PC: double-click HEALTH_CHECK.bat.'),
-      menu: rds === 'no' ? 1 : null });
+        (rdDisagrees(L, rd) ? 'The PC\'s ready check says ' + rdDisagrees(L, rd) + ' is not armed, but its live state says armed: checking. ' +
+          'If the bot shows it armed on the PC, nothing to do.' :
+          'NOT READY' + (rd.w ? ' for ' + rd.w : '') + ': ' + tidyCut(rd.b || 'see the PC').replace(/\.$/, '') + '. ' + tidyCut(rd.f || 'On the PC: double-click HEALTH_CHECK.bat.')) +
+        (age != null ? ' (checked with the PC report ' + ageText(age) + ' ago)' : ''),
+      menu: rds === 'no' && !/press \d/i.test(String(rd.f || '')) && !rdDisagrees(L, rd) ? 1 : null });
 
     // 1 bot running
     let run = null;
@@ -236,7 +260,7 @@
   }
   function mask(t) { return String(t == null ? '' : t).replace(/\b[A-Z]{3,}[A-Z0-9_-]*?(?:…|\.\.\.)?(\d{4})\b/g, '…$1'); }
 
-  const API = { today, tiles, nextNews, nextStep, ageText, realAccounts, heldWhy, accountRows, rowText, FRESH_S, ALERT_OK_DAYS };
+  const API = { today, tiles, tidyCut, rdDisagrees, nextNews, nextStep, ageText, realAccounts, heldWhy, accountRows, rowText, FRESH_S, ALERT_OK_DAYS };
   root.TRADING_HOME = API;
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
 })(typeof window !== 'undefined' ? window : globalThis);

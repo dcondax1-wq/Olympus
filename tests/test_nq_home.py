@@ -59,6 +59,10 @@ out.tilesNone = T.tiles(null, { now });
 const op = clone(); op.board.trades.unshift({ acct: 'lit', member: 'LIT', side: 'LONG', qty: 2, open: true, usd: 180 }); out.tilesOpen = T.tiles(op, { now, health: H });
 const bz = clone(); bz.ck.acc.push(['BLITZ 50K', 0, 0, 0]); out.tilesBlitz = T.tiles(bz, { now, health: H });
 out.today = T.today(L, { now });
+out.todayReal = out.today;
+const un = clone(); un.ar.atlas = [0, 0]; un.ck.acc.forEach((r) => { if (/atlas/i.test(r[0])) r[1] = 0; }); out.unarmed = H.checks(un, { now }); out.todayUnarmed = T.today(un, { now });
+out.cut1 = T.tidyCut('Press 2 (Start bot) and type it yourself (Claud');
+out.cut2 = T.tidyCut('one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen ab');
 out.nn = T.nextNews([{ date: '2026-12-04', time: '08:30', title: 'NFP', impact: 'high' }, { date: '2026-11-20', time: '08:30', title: 'old', impact: 'high' }], Date.UTC(2026, 10, 27) / 1000);
 console.log(JSON.stringify(out));
 """
@@ -73,8 +77,20 @@ def node():
     o = json.loads(p.stdout)
     by = lambda r: {c["id"]: c for c in r["checks"]}  # noqa: E731
     r, c = o["real"], by(o["real"])
-    check("b. real post: overall red, first = ready check", r["overall"] == "red" and r["checks"][0]["id"] == "ready" and "ready check" in r["say"], r["say"])
-    check("b. ready check says ATLAS not armed + a fix", "ATLAS 25K is not armed" in c["ready"]["say"] and c["ready"]["fix"] and not c["ready"]["fix"].endswith("(Claud"), c["ready"])
+    check("b. real post: overall amber, first = ready check", r["overall"] == "amber" and r["checks"][0]["id"] == "ready" and "Ready check" in r["say"], r["say"])
+    check("b. QA#1: rd says ATLAS not armed but ck.acc/ar say armed -> amber 'disagree', not a hard NOT READY; its age shown",
+          c["ready"]["state"] == "amber" and "disagree" in c["ready"]["say"] and "NOT READY" not in c["ready"]["say"] and "2 min ago" in c["ready"]["say"], c["ready"])
+    u = by(o["unarmed"])["ready"]
+    check("b. QA#1: really not armed -> red NOT READY, fix never cut mid-word", u["state"] == "red" and "NOT READY" in u["say"] and "(Claud" not in u["fix"]
+          and u["fix"].endswith("yourself."), u)
+    tr = o["todayReal"]["lines"][0]
+    check("b. QA#1 Trading Home: the ready line says 'checking', no 'press 1' next to rd's 'press 2', age shown", tr["id"] == "ready" and "checking" in tr["say"]
+          and tr["menu"] is None and "(Claud" not in tr["say"] and "ago" in tr["say"], tr)
+    tu = o["todayUnarmed"]["lines"][0]
+    check("b. QA#1 Trading Home really not armed: NOT READY + whole-word fix, no duplicate menu", "NOT READY for 02:00: ATLAS 25K is not armed." in tu["say"]
+          and "yourself." in tu["say"] and "(Claud" not in tu["say"] and tu["menu"] is None, tu)
+    check("b. tidyCut: unclosed bracket dropped, long cut ends on a whole word", o["cut1"] == "Press 2 (Start bot) and type it yourself." and o["cut2"].endswith("…")
+          and not o["cut2"].endswith("ab…"), (o["cut1"], o["cut2"]))
     check("b. NinjaTrader connect-on-startup off = amber with the fix", c["nt"]["state"] == "amber" and "Connect on startup" in c["nt"]["fix"], c["nt"])
     check("b. backup amber, version green bc74f71 + 'updates itself hourly'", c["backup"]["state"] == "amber" and c["version"]["state"] == "green"
           and "bc74f71" in c["version"]["say"] and "hourly" in c["version"]["say"], (c["backup"], c["version"]))
@@ -98,7 +114,7 @@ def node():
     t = {x["id"]: x for x in o["tiles"]}
     check("b. tiles: today / armed / trade / event / of / brain / target / health", list(t) == ["today", "armed", "trade", "event", "of", "brain", "target", "health"], list(t))
     check("b. tiles real numbers", t["today"]["big"] == "$0" and t["armed"]["big"] == "4 / 4" and t["trade"]["big"] == "Flat" and t["of"]["big"] == "312 days"
-          and t["target"]["big"] == "$3,822" and t["brain"]["big"].startswith("Displacement") and t["health"]["tone"] == "red", t)
+          and t["target"]["big"] == "$3,822" and t["brain"]["big"].startswith("Displacement") and t["health"]["tone"] == "gold", t)
     check("b. next event = Fri 02:00 window + a real news line", t["event"]["big"] == "Fri 02:00 ET" and "news:" in t["event"]["sub"], t["event"])
     check("b. every tile links a real page", all(os.path.exists(os.path.join(NQ, x["href"])) for x in o["tiles"]))
     check("b. old report marks the tiles", all(x["sub"].startswith("Old report") for x in o["tilesOld"] if x["id"] != "health"))
@@ -127,12 +143,13 @@ def browser():
         check(f"c. {k}: no full account id, no BLITZ", not re.search(r"MFFU[A-Z]{2,}\d{5,}", v["text"]) and "BLITZ" not in v["text"])
     f = o["fresh_trading_home"]
     check("c. trading home: 5 checklist rows kept + 8 tiles", f["rows"] >= 5 and len(f["tiles"]) == 8, (f["rows"], len(f["tiles"])))
-    check("c. trading home: PC health tile first when red", f["tiles"][0][0] == "health" and f["tiles"][0][1].startswith("red"), f["tiles"][0])
+    check("c. trading home: PC health tile amber (QA#1 disagreement), stays in place", [x[0] for x in f["tiles"]].index("health") == 7 and f["tiles"][7][1].startswith("gold"), f["tiles"][7])
+    check("c. trading home: no '(Claud' anywhere", "(Claud" not in f["text"])
     g = o["fresh_pchealth"]
-    check("c. pchealth: red hero + the ready check first", g["hero"] == "red" and g["cards"][0][0] == "ready" and "ready check" in g["say"], (g["hero"], g["cards"][:2]))
+    check("c. pchealth: amber hero + the ready check first", g["hero"] == "amber" and g["cards"][0][0] == "ready" and "Ready check" in g["say"], (g["hero"], g["cards"][:2]))
     clip = g.get("clip") or ""
-    check("c. pchealth 'Copy for Claude' copies every check in plain text", clip.startswith("PC Health: 4 things need you") and clip.count("\n- [") == len(g["cards"])
-          and "[red] Ready check" in clip and not re.search(r"MFFU[A-Z]{2,}\d{4,}", clip), clip[:200])
+    check("c. pchealth 'Copy for Claude' copies every check in plain text", clip.startswith("PC Health: 4 things need you") and "(Claud" not in clip and clip.count("\n- [") == len(g["cards"])
+          and "[amber] Ready check" in clip and not re.search(r"MFFU[A-Z]{2,}\d{4,}", clip), clip[:200])
     check("c. pchealth old: report red", dict(o["old_pchealth"]["cards"]).get("report") == "red")
     check("c. pchealth none: 'No report from the PC yet.'", o["none_pchealth"]["say"] == "No report from the PC yet.", o["none_pchealth"]["say"])
     nt = {x[0]: x for x in o["none_trading_home"]["tiles"]}
