@@ -481,3 +481,7 @@
   +$130/+$180 a slot / 6 mo, fails +3-7 pts), less in bad ones (-$32/-$35); a smaller cap / protect / DP = fewer fails (50K PR1 fail
   16.2 -> 10.5%) but slower passes, -$106..-$1,470 in 2026 markets for +$30..+$98 in bad ones (still negative). Bold play near the
   target = today exactly (the one-winner need cap already binds). Today stays. research/writeups/evalsizer-2026-11-26.md
+- 2026-11-27 LIT wider stop cap for high-ATR weeks (drought Oct 15-Nov 26: 7 trades; choke = 80-pt max stop + 0 micros above
+  ~89 pts, ATR ~2x). 4 pre-registered caps with a 1-micro floor (120 pts, max(80, 3 ATR), VIX >= 22 -> 120, 3.2 ATR in [40,150]):
+  none better in H1 and Jul-Oct (best V3: H1 +$191 but PF 5.20 -> 4.99, Jul-Oct +$1), Holm p 1.0, all lose more in the drought
+  (-$916..-$1,938 vs -$858). Live stays. research/lit/drought-2026-11-27/RESULT.md

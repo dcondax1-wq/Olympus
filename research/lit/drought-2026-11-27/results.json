@@ -1,0 +1,690 @@
+{
+ "date": "2026-11-27",
+ "question": "Why LIT took 7 trades Oct 15-Nov 26 2026 (none Nov 17-26)",
+ "choke_rule": "stop size: max_stop 80 pts + qty_for gives 0 micros above ~89 pts",
+ "funnel": {
+  "H1": {
+   "sessions": 127,
+   "weeks": 25.4,
+   "sweeps_per_wk": 119.9,
+   "cands_per_wk": 32.6,
+   "survive_per_wk": {
+    "window": 29.96,
+    "depth": 27.48,
+    "idm": 18.82,
+    "disp": 12.87,
+    "monday": 12.05,
+    "stop_range": 8.78,
+    "target": 8.66,
+    "fill": 4.69
+   },
+   "killed_first_pct": {
+    "window": 8.1,
+    "depth": 7.6,
+    "idm": 26.6,
+    "disp": 18.2,
+    "monday": 2.5,
+    "stop_range": 10.0,
+    "target": 0.4,
+    "fill": 12.2
+   },
+   "fail_rate_pct": {
+    "window": 8.1,
+    "depth": 8.6,
+    "idm": 29.1,
+    "disp": 31.3,
+    "monday": 6.8,
+    "stop_range": 24.0,
+    "target": 7.7
+   },
+   "sole_killer_per_wk": {
+    "window": 1.14,
+    "depth": 0.71,
+    "idm": 3.35,
+    "disp": 4.65,
+    "monday": 0.47,
+    "stop_range": 2.6,
+    "target": 0.12,
+    "fill": 3.98
+   },
+   "trades": 79,
+   "tpw": 3.11,
+   "net": 34261,
+   "wins": 47,
+   "median_disp": 0.984,
+   "median_depth": 2.115,
+   "median_atr_pts": 25.9,
+   "median_vix_move": 325.2
+  },
+  "JulOct14": {
+   "sessions": 76,
+   "weeks": 15.2,
+   "sweeps_per_wk": 106.8,
+   "cands_per_wk": 31.5,
+   "survive_per_wk": {
+    "window": 28.75,
+    "depth": 26.32,
+    "idm": 17.3,
+    "disp": 10.92,
+    "monday": 10.2,
+    "stop_range": 7.3,
+    "target": 7.11,
+    "fill": 3.75
+   },
+   "killed_first_pct": {
+    "window": 8.8,
+    "depth": 7.7,
+    "idm": 28.6,
+    "disp": 20.3,
+    "monday": 2.3,
+    "stop_range": 9.2,
+    "target": 0.6,
+    "fill": 10.6
+   },
+   "fail_rate_pct": {
+    "window": 8.8,
+    "depth": 8.6,
+    "idm": 31.9,
+    "disp": 35.7,
+    "monday": 7.1,
+    "stop_range": 22.5,
+    "target": 11.5
+   },
+   "sole_killer_per_wk": {
+    "window": 0.99,
+    "depth": 0.86,
+    "idm": 3.16,
+    "disp": 5.2,
+    "monday": 0.39,
+    "stop_range": 1.84,
+    "target": 0.2,
+    "fill": 3.36
+   },
+   "trades": 40,
+   "tpw": 2.63,
+   "net": 9919,
+   "wins": 20,
+   "median_disp": 0.938,
+   "median_depth": 2.037,
+   "median_atr_pts": 24.8,
+   "median_vix_move": 298.0
+  },
+  "Drought": {
+   "sessions": 31,
+   "weeks": 6.2,
+   "sweeps_per_wk": 116.6,
+   "cands_per_wk": 34.5,
+   "survive_per_wk": {
+    "window": 31.77,
+    "depth": 28.06,
+    "idm": 18.87,
+    "disp": 12.42,
+    "monday": 11.77,
+    "stop_range": 5.81,
+    "target": 5.0,
+    "fill": 1.61
+   },
+   "killed_first_pct": {
+    "window": 7.9,
+    "depth": 10.7,
+    "idm": 26.6,
+    "disp": 18.7,
+    "monday": 1.9,
+    "stop_range": 17.3,
+    "target": 2.3,
+    "fill": 9.8
+   },
+   "fail_rate_pct": {
+    "window": 7.9,
+    "depth": 12.6,
+    "idm": 30.4,
+    "disp": 36.0,
+    "monday": 5.1,
+    "stop_range": 40.2,
+    "target": 17.3
+   },
+   "sole_killer_per_wk": {
+    "window": 0.81,
+    "depth": 0.48,
+    "idm": 1.61,
+    "disp": 3.71,
+    "monday": 0.48,
+    "stop_range": 4.52,
+    "target": 0.81,
+    "fill": 3.39
+   },
+   "trades": 7,
+   "tpw": 1.13,
+   "net": -858,
+   "wins": 2,
+   "median_disp": 0.931,
+   "median_depth": 1.78,
+   "median_atr_pts": 36.6,
+   "median_vix_move": 349.7
+  },
+  "Dry9": {
+   "sessions": 8,
+   "weeks": 1.6,
+   "sweeps_per_wk": 113.1,
+   "cands_per_wk": 31.2,
+   "survive_per_wk": {
+    "window": 28.12,
+    "depth": 24.38,
+    "idm": 16.88,
+    "disp": 11.25,
+    "monday": 11.25,
+    "stop_range": 1.88,
+    "target": 1.88,
+    "fill": 0.0
+   },
+   "killed_first_pct": {
+    "window": 10.0,
+    "depth": 12.0,
+    "idm": 24.0,
+    "disp": 18.0,
+    "monday": 0.0,
+    "stop_range": 30.0,
+    "target": 0.0,
+    "fill": 6.0
+   },
+   "fail_rate_pct": {
+    "window": 10.0,
+    "depth": 14.0,
+    "idm": 32.0,
+    "disp": 34.0,
+    "monday": 0.0,
+    "stop_range": 56.0,
+    "target": 20.0
+   },
+   "sole_killer_per_wk": {
+    "window": 0.62,
+    "depth": 0.62,
+    "idm": 1.88,
+    "disp": 3.75,
+    "monday": 0.0,
+    "stop_range": 6.25,
+    "target": 0.0,
+    "fill": 1.88
+   },
+   "trades": 0,
+   "tpw": 0.0,
+   "net": 0,
+   "wins": 0,
+   "median_disp": 1.022,
+   "median_depth": 1.772,
+   "median_atr_pts": 47.4,
+   "median_vix_move": 445.0
+  },
+  "2021-25": {
+   "sessions": 1085,
+   "weeks": 217.0,
+   "sweeps_per_wk": 129.6,
+   "cands_per_wk": 33.9,
+   "survive_per_wk": {
+    "window": 31.01,
+    "depth": 28.57,
+    "idm": 18.94,
+    "disp": 13.42,
+    "monday": 12.66,
+    "stop_range": 11.1,
+    "target": 10.88,
+    "fill": 3.13
+   },
+   "killed_first_pct": {
+    "window": 8.5,
+    "depth": 7.2,
+    "idm": 28.4,
+    "disp": 16.3,
+    "monday": 2.3,
+    "stop_range": 4.6,
+    "target": 0.6,
+    "fill": 22.9
+   },
+   "fail_rate_pct": {
+    "window": 8.5,
+    "depth": 8.3,
+    "idm": 31.7,
+    "disp": 30.2,
+    "monday": 5.2,
+    "stop_range": 13.7,
+    "target": 3.8
+   },
+   "sole_killer_per_wk": {
+    "window": 1.08,
+    "depth": 0.95,
+    "idm": 5.11,
+    "disp": 4.62,
+    "monday": 0.62,
+    "stop_range": 1.32,
+    "target": 0.22,
+    "fill": 7.75
+   },
+   "trades": 520,
+   "tpw": 2.4,
+   "net": 5180,
+   "wins": 281,
+   "median_disp": 1.014,
+   "median_depth": 2.294,
+   "median_atr_pts": 14.8,
+   "median_vix_move": 230.9
+  },
+  "chance": {
+   "drought_sessions": 31,
+   "drought_trades": 7,
+   "hist_30sess_windows": 1056,
+   "hist_windows_le_7": 19,
+   "pct_hist_windows_le_7": 1.8,
+   "hist_30sess_median": 14.0,
+   "hist_30sess_p5": 9.0,
+   "longest_dry_spells": [
+    {
+     "sessions": 10,
+     "from": "2025-04-16"
+    },
+    {
+     "sessions": 10,
+     "from": "2025-04-01"
+    },
+    {
+     "sessions": 8,
+     "from": "2026-11-17"
+    },
+    {
+     "sessions": 7,
+     "from": "2026-10-15"
+    },
+    {
+     "sessions": 7,
+     "from": "2025-11-26"
+    },
+    {
+     "sessions": 7,
+     "from": "2023-07-27"
+    },
+    {
+     "sessions": 6,
+     "from": "2026-03-05"
+    },
+    {
+     "sessions": 6,
+     "from": "2025-06-17"
+    }
+   ],
+   "dry_spells_ge_8_before_2026": 2,
+   "current_dry_sessions": 8
+  }
+ },
+ "variants": {
+  "live": {
+   "H1": {
+    "n": 79,
+    "tpw": 3.11,
+    "pf": 5.2,
+    "net": 34261,
+    "per_month": 5665,
+    "dd": -2196,
+    "win": 59.5,
+    "pass_rate": 83.5,
+    "wide": 5,
+    "wide_net": 1923
+   },
+   "JulOct": {
+    "n": 40,
+    "tpw": 2.63,
+    "pf": 2.91,
+    "net": 9919,
+    "per_month": 2741,
+    "dd": -1396,
+    "win": 50.0,
+    "pass_rate": 100.0,
+    "wide": 5,
+    "wide_net": 118
+   },
+   "2021-25": {
+    "n": 520,
+    "tpw": 2.4,
+    "pf": 1.05,
+    "net": 5180,
+    "per_month": 100,
+    "dd": -19020,
+    "win": 54.0,
+    "pass_rate": 30.6,
+    "wide": 15,
+    "wide_net": -132
+   },
+   "Drought": {
+    "n": 7,
+    "tpw": 1.13,
+    "pf": 0.03,
+    "net": -858,
+    "per_month": -581,
+    "dd": -859,
+    "win": 28.6,
+    "pass_rate": null,
+    "wide": 0,
+    "wide_net": 0
+   },
+   "2026all": {
+    "n": 126,
+    "tpw": 2.69,
+    "pf": 4.04,
+    "net": 43321,
+    "per_month": 3888,
+    "dd": -2196,
+    "win": 54.8,
+    "pass_rate": 91.2,
+    "wide": 10,
+    "wide_net": 2041
+   }
+  },
+  "V1_pts120": {
+   "H1": {
+    "n": 92,
+    "tpw": 3.62,
+    "pf": 4.07,
+    "net": 29955,
+    "per_month": 4953,
+    "dd": -2787,
+    "win": 55.4,
+    "pass_rate": 66.7,
+    "wide": 17,
+    "wide_net": 1542
+   },
+   "JulOct": {
+    "n": 49,
+    "tpw": 3.22,
+    "pf": 2.37,
+    "net": 8640,
+    "per_month": 2387,
+    "dd": -2194,
+    "win": 44.9,
+    "pass_rate": 68.0,
+    "wide": 15,
+    "wide_net": -1476
+   },
+   "2021-25": {
+    "n": 562,
+    "tpw": 2.59,
+    "pf": 1.08,
+    "net": 8153,
+    "per_month": 158,
+    "dd": -19247,
+    "win": 54.4,
+    "pass_rate": 30.9,
+    "wide": 62,
+    "wide_net": 2435
+   },
+   "Drought": {
+    "n": 13,
+    "tpw": 2.1,
+    "pf": 0.0,
+    "net": -1637,
+    "per_month": -1109,
+    "dd": -1637,
+    "win": 23.1,
+    "pass_rate": null,
+    "wide": 6,
+    "wide_net": -634
+   },
+   "2026all": {
+    "n": 154,
+    "tpw": 3.29,
+    "pf": 3.09,
+    "net": 36958,
+    "per_month": 3317,
+    "dd": -2787,
+    "win": 49.4,
+    "pass_rate": 59.2,
+    "wide": 38,
+    "wide_net": -569
+   },
+   "judge": {
+    "split_ok": {
+     "H1": false,
+     "JulOct": false,
+     "2021-25": true
+    },
+    "tpw_ok": true,
+    "p_H1": 0.8692,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   }
+  },
+  "V2_atr_floor": {
+   "H1": {
+    "n": 88,
+    "tpw": 3.46,
+    "pf": 4.71,
+    "net": 34028,
+    "per_month": 5627,
+    "dd": -2063,
+    "win": 58.0,
+    "pass_rate": 83.5,
+    "wide": 13,
+    "wide_net": 1585
+   },
+   "JulOct": {
+    "n": 45,
+    "tpw": 2.96,
+    "pf": 2.73,
+    "net": 9589,
+    "per_month": 2650,
+    "dd": -1525,
+    "win": 51.1,
+    "pass_rate": 100.0,
+    "wide": 10,
+    "wide_net": -212
+   },
+   "2021-25": {
+    "n": 548,
+    "tpw": 2.53,
+    "pf": 1.06,
+    "net": 6383,
+    "per_month": 124,
+    "dd": -19018,
+    "win": 54.7,
+    "pass_rate": 29.5,
+    "wide": 47,
+    "wide_net": 581
+   },
+   "Drought": {
+    "n": 14,
+    "tpw": 2.26,
+    "pf": 0.0,
+    "net": -1938,
+    "per_month": -1313,
+    "dd": -1938,
+    "win": 21.4,
+    "pass_rate": null,
+    "wide": 7,
+    "wide_net": -935
+   },
+   "2026all": {
+    "n": 147,
+    "tpw": 3.14,
+    "pf": 3.5,
+    "net": 41679,
+    "per_month": 3740,
+    "dd": -2063,
+    "win": 52.4,
+    "pass_rate": 82.4,
+    "wide": 30,
+    "wide_net": 438
+   },
+   "judge": {
+    "split_ok": {
+     "H1": false,
+     "JulOct": false,
+     "2021-25": true
+    },
+    "tpw_ok": true,
+    "p_H1": 0.629,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   }
+  },
+  "V3_vix_band": {
+   "H1": {
+    "n": 84,
+    "tpw": 3.31,
+    "pf": 4.99,
+    "net": 34452,
+    "per_month": 5697,
+    "dd": -2063,
+    "win": 59.5,
+    "pass_rate": 83.5,
+    "wide": 10,
+    "wide_net": 2141
+   },
+   "JulOct": {
+    "n": 42,
+    "tpw": 2.76,
+    "pf": 2.91,
+    "net": 9920,
+    "per_month": 2741,
+    "dd": -1396,
+    "win": 52.4,
+    "pass_rate": 100.0,
+    "wide": 7,
+    "wide_net": 119
+   },
+   "2021-25": {
+    "n": 552,
+    "tpw": 2.54,
+    "pf": 1.07,
+    "net": 7703,
+    "per_month": 149,
+    "dd": -19018,
+    "win": 54.5,
+    "pass_rate": 32.1,
+    "wide": 51,
+    "wide_net": 1901
+   },
+   "Drought": {
+    "n": 11,
+    "tpw": 1.77,
+    "pf": 0.27,
+    "net": -916,
+    "per_month": -620,
+    "dd": -916,
+    "win": 36.4,
+    "pass_rate": null,
+    "wide": 5,
+    "wide_net": -30
+   },
+   "2026all": {
+    "n": 137,
+    "tpw": 2.93,
+    "pf": 3.88,
+    "net": 43456,
+    "per_month": 3900,
+    "dd": -2063,
+    "win": 55.5,
+    "pass_rate": 91.2,
+    "wide": 22,
+    "wide_net": 2230
+   },
+   "judge": {
+    "split_ok": {
+     "H1": false,
+     "JulOct": true,
+     "2021-25": true
+    },
+    "tpw_ok": true,
+    "p_H1": 0.377,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   }
+  },
+  "V4_atr_only": {
+   "H1": {
+    "n": 80,
+    "tpw": 3.15,
+    "pf": 4.43,
+    "net": 31126,
+    "per_month": 5147,
+    "dd": -2211,
+    "win": 57.5,
+    "pass_rate": 87.4,
+    "wide": 12,
+    "wide_net": 599
+   },
+   "JulOct": {
+    "n": 44,
+    "tpw": 2.89,
+    "pf": 2.69,
+    "net": 9505,
+    "per_month": 2626,
+    "dd": -1588,
+    "win": 52.3,
+    "pass_rate": 100.0,
+    "wide": 10,
+    "wide_net": -300
+   },
+   "2021-25": {
+    "n": 509,
+    "tpw": 2.35,
+    "pf": 1.08,
+    "net": 8020,
+    "per_month": 155,
+    "dd": -18817,
+    "win": 55.0,
+    "pass_rate": 32.4,
+    "wide": 38,
+    "wide_net": 1517
+   },
+   "Drought": {
+    "n": 14,
+    "tpw": 2.26,
+    "pf": 0.0,
+    "net": -1938,
+    "per_month": -1313,
+    "dd": -1938,
+    "win": 21.4,
+    "pass_rate": null,
+    "wide": 7,
+    "wide_net": -935
+   },
+   "2026all": {
+    "n": 138,
+    "tpw": 2.95,
+    "pf": 3.32,
+    "net": 38694,
+    "per_month": 3473,
+    "dd": -2211,
+    "win": 52.2,
+    "pass_rate": 84.4,
+    "wide": 29,
+    "wide_net": -636
+   },
+   "judge": {
+    "split_ok": {
+     "H1": false,
+     "JulOct": false,
+     "2021-25": true
+    },
+    "tpw_ok": true,
+    "p_H1": 0.8919,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   }
+  }
+ },
+ "april_2025_check": {
+  "stop_range_fail_pct": 39.5,
+  "median_atr_pts": 38.0,
+  "disp_fail_pct": 33.3,
+  "other_dry_spells": {
+   "2023-07-27": {
+    "stop_range_fail_pct": 4.0,
+    "atr": 14.8
+   },
+   "2025-11-26": {
+    "stop_range_fail_pct": 15.6,
+    "atr": 20.1
+   }
+  }
+ },
+ "verdict": "Regime, not a broken rule: ATR doubled so most setups need a stop > 80 pts. All 4 pre-registered wider-stop variants REJECTED (none better in H1 and Jul-Oct; Holm p = 1.0; each loses more in the drought). Keep live as is.",
+ "live_changed": false
+}

@@ -1,0 +1,359 @@
+{
+ "design": "DESIGN.md (committed before this run)",
+ "variants": {
+  "live": {
+   "H1": {
+    "n": 79,
+    "tpw": 3.11,
+    "pf": 5.2,
+    "net": 34261,
+    "per_month": 5665,
+    "dd": -2196,
+    "win": 59.5,
+    "pass_rate": 83.5,
+    "wide": 5,
+    "wide_net": 1923
+   },
+   "JulOct": {
+    "n": 40,
+    "tpw": 2.63,
+    "pf": 2.91,
+    "net": 9919,
+    "per_month": 2741,
+    "dd": -1396,
+    "win": 50.0,
+    "pass_rate": 100.0,
+    "wide": 5,
+    "wide_net": 118
+   },
+   "2021-25": {
+    "n": 520,
+    "tpw": 2.4,
+    "pf": 1.05,
+    "net": 5180,
+    "per_month": 100,
+    "dd": -19020,
+    "win": 54.0,
+    "pass_rate": 30.6,
+    "wide": 15,
+    "wide_net": -132
+   },
+   "Drought": {
+    "n": 7,
+    "tpw": 1.13,
+    "pf": 0.03,
+    "net": -858,
+    "per_month": -581,
+    "dd": -859,
+    "win": 28.6,
+    "pass_rate": null,
+    "wide": 0,
+    "wide_net": 0
+   },
+   "2026all": {
+    "n": 126,
+    "tpw": 2.69,
+    "pf": 4.04,
+    "net": 43321,
+    "per_month": 3888,
+    "dd": -2196,
+    "win": 54.8,
+    "pass_rate": 91.2,
+    "wide": 10,
+    "wide_net": 2041
+   }
+  },
+  "V1_pts120": {
+   "H1": {
+    "n": 92,
+    "tpw": 3.62,
+    "pf": 4.07,
+    "net": 29955,
+    "per_month": 4953,
+    "dd": -2787,
+    "win": 55.4,
+    "pass_rate": 66.7,
+    "wide": 17,
+    "wide_net": 1542
+   },
+   "JulOct": {
+    "n": 49,
+    "tpw": 3.22,
+    "pf": 2.37,
+    "net": 8640,
+    "per_month": 2387,
+    "dd": -2194,
+    "win": 44.9,
+    "pass_rate": 68.0,
+    "wide": 15,
+    "wide_net": -1476
+   },
+   "2021-25": {
+    "n": 562,
+    "tpw": 2.59,
+    "pf": 1.08,
+    "net": 8153,
+    "per_month": 158,
+    "dd": -19247,
+    "win": 54.4,
+    "pass_rate": 30.9,
+    "wide": 62,
+    "wide_net": 2435
+   },
+   "Drought": {
+    "n": 13,
+    "tpw": 2.1,
+    "pf": 0.0,
+    "net": -1637,
+    "per_month": -1109,
+    "dd": -1637,
+    "win": 23.1,
+    "pass_rate": null,
+    "wide": 6,
+    "wide_net": -634
+   },
+   "2026all": {
+    "n": 154,
+    "tpw": 3.29,
+    "pf": 3.09,
+    "net": 36958,
+    "per_month": 3317,
+    "dd": -2787,
+    "win": 49.4,
+    "pass_rate": 59.2,
+    "wide": 38,
+    "wide_net": -569
+   },
+   "judge": {
+    "split_ok": {
+     "H1": false,
+     "JulOct": false,
+     "2021-25": true
+    },
+    "tpw_ok": true,
+    "p_H1": 0.8692,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   }
+  },
+  "V2_atr_floor": {
+   "H1": {
+    "n": 88,
+    "tpw": 3.46,
+    "pf": 4.71,
+    "net": 34028,
+    "per_month": 5627,
+    "dd": -2063,
+    "win": 58.0,
+    "pass_rate": 83.5,
+    "wide": 13,
+    "wide_net": 1585
+   },
+   "JulOct": {
+    "n": 45,
+    "tpw": 2.96,
+    "pf": 2.73,
+    "net": 9589,
+    "per_month": 2650,
+    "dd": -1525,
+    "win": 51.1,
+    "pass_rate": 100.0,
+    "wide": 10,
+    "wide_net": -212
+   },
+   "2021-25": {
+    "n": 548,
+    "tpw": 2.53,
+    "pf": 1.06,
+    "net": 6383,
+    "per_month": 124,
+    "dd": -19018,
+    "win": 54.7,
+    "pass_rate": 29.5,
+    "wide": 47,
+    "wide_net": 581
+   },
+   "Drought": {
+    "n": 14,
+    "tpw": 2.26,
+    "pf": 0.0,
+    "net": -1938,
+    "per_month": -1313,
+    "dd": -1938,
+    "win": 21.4,
+    "pass_rate": null,
+    "wide": 7,
+    "wide_net": -935
+   },
+   "2026all": {
+    "n": 147,
+    "tpw": 3.14,
+    "pf": 3.5,
+    "net": 41679,
+    "per_month": 3740,
+    "dd": -2063,
+    "win": 52.4,
+    "pass_rate": 82.4,
+    "wide": 30,
+    "wide_net": 438
+   },
+   "judge": {
+    "split_ok": {
+     "H1": false,
+     "JulOct": false,
+     "2021-25": true
+    },
+    "tpw_ok": true,
+    "p_H1": 0.629,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   }
+  },
+  "V3_vix_band": {
+   "H1": {
+    "n": 84,
+    "tpw": 3.31,
+    "pf": 4.99,
+    "net": 34452,
+    "per_month": 5697,
+    "dd": -2063,
+    "win": 59.5,
+    "pass_rate": 83.5,
+    "wide": 10,
+    "wide_net": 2141
+   },
+   "JulOct": {
+    "n": 42,
+    "tpw": 2.76,
+    "pf": 2.91,
+    "net": 9920,
+    "per_month": 2741,
+    "dd": -1396,
+    "win": 52.4,
+    "pass_rate": 100.0,
+    "wide": 7,
+    "wide_net": 119
+   },
+   "2021-25": {
+    "n": 552,
+    "tpw": 2.54,
+    "pf": 1.07,
+    "net": 7703,
+    "per_month": 149,
+    "dd": -19018,
+    "win": 54.5,
+    "pass_rate": 32.1,
+    "wide": 51,
+    "wide_net": 1901
+   },
+   "Drought": {
+    "n": 11,
+    "tpw": 1.77,
+    "pf": 0.27,
+    "net": -916,
+    "per_month": -620,
+    "dd": -916,
+    "win": 36.4,
+    "pass_rate": null,
+    "wide": 5,
+    "wide_net": -30
+   },
+   "2026all": {
+    "n": 137,
+    "tpw": 2.93,
+    "pf": 3.88,
+    "net": 43456,
+    "per_month": 3900,
+    "dd": -2063,
+    "win": 55.5,
+    "pass_rate": 91.2,
+    "wide": 22,
+    "wide_net": 2230
+   },
+   "judge": {
+    "split_ok": {
+     "H1": false,
+     "JulOct": true,
+     "2021-25": true
+    },
+    "tpw_ok": true,
+    "p_H1": 0.377,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   }
+  },
+  "V4_atr_only": {
+   "H1": {
+    "n": 80,
+    "tpw": 3.15,
+    "pf": 4.43,
+    "net": 31126,
+    "per_month": 5147,
+    "dd": -2211,
+    "win": 57.5,
+    "pass_rate": 87.4,
+    "wide": 12,
+    "wide_net": 599
+   },
+   "JulOct": {
+    "n": 44,
+    "tpw": 2.89,
+    "pf": 2.69,
+    "net": 9505,
+    "per_month": 2626,
+    "dd": -1588,
+    "win": 52.3,
+    "pass_rate": 100.0,
+    "wide": 10,
+    "wide_net": -300
+   },
+   "2021-25": {
+    "n": 509,
+    "tpw": 2.35,
+    "pf": 1.08,
+    "net": 8020,
+    "per_month": 155,
+    "dd": -18817,
+    "win": 55.0,
+    "pass_rate": 32.4,
+    "wide": 38,
+    "wide_net": 1517
+   },
+   "Drought": {
+    "n": 14,
+    "tpw": 2.26,
+    "pf": 0.0,
+    "net": -1938,
+    "per_month": -1313,
+    "dd": -1938,
+    "win": 21.4,
+    "pass_rate": null,
+    "wide": 7,
+    "wide_net": -935
+   },
+   "2026all": {
+    "n": 138,
+    "tpw": 2.95,
+    "pf": 3.32,
+    "net": 38694,
+    "per_month": 3473,
+    "dd": -2211,
+    "win": 52.2,
+    "pass_rate": 84.4,
+    "wide": 29,
+    "wide_net": -636
+   },
+   "judge": {
+    "split_ok": {
+     "H1": false,
+     "JulOct": false,
+     "2021-25": true
+    },
+    "tpw_ok": true,
+    "p_H1": 0.8919,
+    "holm_p": 1.0,
+    "verdict": "REJECTED"
+   }
+  }
+ }
+}
