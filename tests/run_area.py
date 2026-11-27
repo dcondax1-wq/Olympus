@@ -107,6 +107,7 @@ AREAS["nq"].append("learn_night")       # night-learnloop 2026-11-19: ZEUS learn
 AREAS["nq"].append("forward_paper")     # big-forward 2026-11-26: tools/forward_paper.py (watched leads scored on new sessions); its own line
 AREAS["nq"].append("nq_nav")            # night-nq-nav 2026-11-27: shared NQ dock + PC pill (nq/nqnav.js)
 AREAS["nq"].append("nq_of")             # night-nq-of 2026-11-27: the order-flow room (nq/orderflow.*)
+AREAS["nq"].append("nq_week")           # day-weekreview 2026-11-27: Week in Review (nq/week.*, tools/week_review.py); its own line
 AREAS["nq"].append("nq_chart_pro")      # night-nq-chart 2026-11-27: chart levels / sweeps / honest age
 AREAS["nq"].append("nq_live_trades")    # night-nq-live 2026-11-27: live trades page (nq/live.*)
 AREAS["pc"].append("of_conflog")        # night-of-conflog 2026-11-27: per-trade order-flow confluence log (engine/of_conflog.py)
