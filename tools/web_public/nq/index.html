@@ -36,11 +36,11 @@
 <script src="../olympus/agora-ui.js?v=12" defer></script>
 <script src="../olympus/gate-nav.js?v=g14" defer></script><!-- the way back to the Gate + Go to (olympus/gate-nav.js) -->
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#c8a24a'); r.setProperty('--oly-accent-rgb', '241, 193, 75'); })();</script>
-<link rel="stylesheet" href="nq.css?v=a11">
+<link rel="stylesheet" href="nq.css?v=a12">
 <link rel="stylesheet" href="../nqdeep.css?v=2" media="print" onload="this.media='all'"><!-- perf: the deep views (.nqd-*) are far below the first screen: not render-blocking -->
 <link rel="stylesheet" href="nqdesk.css?v=14">
 <link rel="stylesheet" href="nqhero.css?v=11">
-<link rel="stylesheet" href="plan.css?v=4" media="print" onload="this.media='all'"><link rel="stylesheet" href="december.css?v=1" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="plan.css?v=4" media="print" onload="this.media='all'"><link rel="stylesheet" href="december.css?v=1" media="print" onload="this.media='all'"><link rel="stylesheet" href="ports.css?v=1" media="print" onload="this.media='all'"><link rel="stylesheet" href="story.css?v=2" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="nqgoals.css?v=12" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="nqtheme.css?v=11">
 <link rel="stylesheet" href="sun.css?v=2" id="sunCss" media="(prefers-contrast: more)"><!-- SUNLIGHT MODE: off = not render-blocking; on (saved, or prefers-contrast: more) = applied before the first paint -->
@@ -64,6 +64,7 @@
         <div class="hx-money"><span class="hx-k" id="hxTitle" data-hx="todayK">TODAY</span><b class="hx-big ag-num" data-hx="today">-</b><span class="hx-age" data-hx="age">Loading the PC's report...</span></div>
         <div class="hx-clock"><b data-hx="phase"></b><span class="hx-who" data-hx="who"></span><span class="hx-next" data-hx="next"></span></div>
       </div>
+      <p class="hx-story" data-hx="story" hidden></p>
       <div class="hx-tools" role="group" aria-label="Hear the brief, or switch to the high-contrast outdoor look"><button type="button" class="btn hx-tool" id="hxBrief" aria-pressed="false" aria-controls="hxBriefText"><i class="hx-ti" aria-hidden="true"></i><span class="hx-tl">Brief me</span></button><button type="button" class="btn hx-tool" id="hxSun" aria-pressed="false"><i class="hx-ti sun" aria-hidden="true"></i><span class="hx-tl">Sunlight</span></button></div>
       <p class="hx-brief" id="hxBriefText" hidden></p>
       <div class="hx-honestw" data-hx="honestw" hidden><p class="hx-honest" data-hx="honest"></p><button type="button" class="btn hx-how" data-howto aria-haspopup="dialog" aria-expanded="false">How to get the PC reporting again</button></div>
@@ -75,9 +76,11 @@
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
   <p id="src" class="note" data-truth="source"></p>
   <section class="ag-card card bp" id="battle" aria-labelledby="battleH" hidden></section>
+  <section class="ag-card card st" id="storyCard" aria-labelledby="storyH" hidden></section>
   <details class="nq-fold bp-drawer" id="alertsDrawer" hidden></details>
   <section class="ag-card card dc" id="decCard" aria-labelledby="decH" hidden></section>
-  <nav class="hx-jump" id="jump" aria-label="Jump to a card on this page"><a href="#battle">Plan</a><a href="#decCard">December</a><a href="#chartCard">Chart</a><a href="#goalCard">Goals</a><a href="#acctMore">Accounts</a><a href="#thinkCard">Bots</a><a href="#tradesCard">Trades</a><a href="#newsCard">News</a><a href="#qualCard">Checks</a></nav>
+  <section class="ag-card card pt" id="ports" aria-labelledby="portsH" hidden><div class="row"><h2 id="portsH">Market ports</h2></div><p class="pt-intro">What the wider market says today, from free public data: context for your decisions, never a trade signal.</p></section>
+  <nav class="hx-jump" id="jump" aria-label="Jump to a card on this page"><a href="#battle">Plan</a><a href="#storyCard">Story</a><a href="#decCard">December</a><a href="#ports">Market</a><a href="#chartCard">Chart</a><a href="#goalCard">Goals</a><a href="#acctMore">Accounts</a><a href="#thinkCard">Bots</a><a href="#tradesCard">Trades</a><a href="#newsCard">News</a><a href="#qualCard">Checks</a></nav>
   <a class="btn primary" id="liveDoor" href="live.html" style="display:flex;min-height:52px;margin:8px 0;font-weight:800">LIVE NOW: trades, accounts, setups ›</a>
 
   <section class="banner" id="banner" data-level="bad" aria-labelledby="bannerTitle" hidden>
@@ -248,7 +251,7 @@
   <div class="sheetbody" id="sheetBody"></div>
 </section>
 <script src="../nqdeep.js?v=1" defer></script>
-<script type="module" src="nq.js?v=r44"></script>
+<script type="module" src="nq.js?v=r46"></script>
 <script type="module" src="nqchart.js?v=d2"></script>
 <!-- QA round 6: the 3D loads after the first paint, and not at all on LITE (olympus/lazy3d.js) -->
 <script src="../olympus/lazy3d.js?v=l2" data-src="nqscene.js?v=q9" data-near="#sceneCard" data-skip="lite" data-event="nq3d" defer></script>
