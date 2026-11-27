@@ -642,9 +642,35 @@ def heartbeat(root: str = ROOT, now=None, started=None):
         pass
 
 
+RUN_LOCK_NAME = "of_lane_run.lock"
+
+
+def run_lock(root: str = ROOT):
+    """red team #34: ONE lane runner per repo: an OS lock on data/of_lane_run.lock held for the runner's life (released by the OS
+    if it crashes, so never stale). Returns the open handle, or None when another runner holds it."""
+    d = _p(root, "data")
+    os.makedirs(d, exist_ok=True)
+    fh = open(os.path.join(d, RUN_LOCK_NAME), "a+")
+    try:
+        if os.name == "nt":
+            import msvcrt
+            fh.seek(0)
+            msvcrt.locking(fh.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(fh.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        fh.close()
+        return None
+    return fh
+
+
 def loop(root: str = ROOT, every: float = 15.0, clock=time.time, sleep=time.sleep, tick_fn=None, max_runs=None):
     """The runner (started detached by engine/ops_checks.of_lane_kick at 09:20 ET): one tick every 15 s, a heartbeat in
     data/of_lane_run.json, exits only while flat (16:10 / the 16:15 flag / OFF / kill)."""
+    lk = run_lock(root)
+    if lk is None:                                    # red team #34: a 2nd runner (a slow tick let the 2-min heartbeat age) exits
+        return "already running"                      # at once and touches nothing (not the 1st one's heartbeat / stop flag)
     ad = None
     t0 = clock()
     n = 0
@@ -676,6 +702,7 @@ def loop(root: str = ROOT, every: float = 15.0, clock=time.time, sleep=time.slee
                 os.remove(_p(root, "data", nm))
             except OSError:
                 pass
+        lk.close()                                    # the OS lock goes with the handle (and with the process if it dies)
 
 
 # ------------------------------------------------------------------------------------------------ Telegram /oflane

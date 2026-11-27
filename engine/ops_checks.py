@@ -1554,6 +1554,7 @@ def of_paper_kick(now, real: bool = True, root: str | None = None, popen=None) -
 
 OF_LANE_FROM, OF_LANE_TO = 9 * 60 + 20, 16 * 60 + 15      # night-of-lane-ready: the order-flow lane runner's day (ET minutes)
 OF_LANE_BEAT_S, OF_LANE_START_S = 120, 180
+OF_LANE_LAST_START = 16 * 60          # red team #34: no NEW start from 16:00 ET (the lane is flat by 15:55; the PC update window opens)
 
 
 def of_lane_kick(now, real: bool = True, root: str | None = None, popen=None) -> str | None:
@@ -1588,6 +1589,7 @@ def of_lane_kick(now, real: bool = True, root: str | None = None, popen=None) ->
             return None
         if not (OF_LANE_FROM <= mod < OF_LANE_TO):
             return None
+        late = mod >= OF_LANE_LAST_START
         if cfg.get("on") is not True:
             return "off"
         if not _re.match(r"^(Sim|Playback)\d+$", str(cfg.get("account") or "").strip()):
@@ -1599,6 +1601,8 @@ def of_lane_kick(now, real: bool = True, root: str | None = None, popen=None) ->
         st = rj("of_lane_start.json") or {}
         if now - float(st.get("t") or 0) < OF_LANE_START_S:
             return "starting"
+        if late:
+            return "too late to start (from 16:00 ET)"
         try:
             os.remove(os.path.join(d, "of_lane_stop"))                # yesterday's flag must not stop today's run
         except OSError:
