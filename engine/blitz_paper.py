@@ -12,8 +12,8 @@ opens, an exit row when it closes, keyed by entry_t). Report: data/blitz_paper.j
 Safety pattern = engine/of_paper + engine/of_lane:
   started by engine/ops_checks.blitz_paper_kick (BELOW_NORMAL, detached, weekdays 09:25-16:10 ET, never twice: heartbeat
   data/blitz_paper_run.json < 2 min old or a start < 3 min ago), stops itself at 16:10 ET or on data/blitz_paper_stop;
-  kill switch (data/live_state.json "kill", or data/blitz_paper_kill): no new paper entry, an open paper trade is closed at the
-  next bar; off: LE_BLITZPAPER=0 or data/blitz_paper_off.
+  kill switch (data/live_state.json "kill", or data/blitz_paper_kill): the lane freezes (no step, no new paper entry; trades of
+  the frozen window are tagged killed_window and never scored); off: LE_BLITZPAPER=0 or data/blitz_paper_off.
 
     python -X utf8 -m engine.blitz_paper tick      # one run
     python -X utf8 -m engine.blitz_paper loop      # every 30 s until 16:10 ET
