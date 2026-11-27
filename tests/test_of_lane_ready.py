@@ -236,6 +236,16 @@ def main():
         check("d. flat + the 16:15 stop flag -> exits; heartbeat + flag removed", w2 == "stop flag (16:15)" and gone, (w2, gone))
         check("d. flat + OFF / kill / after 16:10 -> exits", (w3, w4, w5) == ("switched OFF", "kill switch", "after 16:10 ET"), (w3, w4, w5))
         check("d. the heartbeat is written every run", all(beats), beats[:5])
+        # the morning re-pick: Sim101 yesterday, Sim102 created overnight -> the runner's start moves the lane to Sim102 (flat)
+        with tempfile.TemporaryDirectory() as td:
+            nd = world(td, ("Sim101",))
+            L.set_switch(True, root=td)
+            before = L.load_cfg(td)["account"]
+            world(td, ("Sim101", "Sim102"), cfg={"on": True, "account": "Sim101", "account_note": "x"})
+            L.loop(td, clock=time.time, sleep=lambda s: None, tick_fn=lambda **k: {"S": {}, "routed": []}, max_runs=1)
+            after = L.load_cfg(td)
+        check("d. the runner's morning re-pick: Sim101 -> Sim102 once NinjaTrader lists it (while flat)",
+              before == "Sim101" and after["account"] == "Sim102" and not after.get("account_note"), (before, after))
         # ---- e. the card
         cp = os.path.join(ROOT, "research", "handoff", "2026-11-27", "oflane", "card.json")
         cd = json.load(open(cp, encoding="utf-8"))

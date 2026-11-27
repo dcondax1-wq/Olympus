@@ -649,6 +649,10 @@ def loop(root: str = ROOT, every: float = 15.0, clock=time.time, sleep=time.slee
     t0 = clock()
     n = 0
     try:
+        refresh_account(root, t0)                     # the morning re-pick (Sim102 once it exists), only while flat
+    except Exception:  # noqa: BLE001
+        pass
+    try:
         while True:
             now = clock()
             heartbeat(root, now, t0)
