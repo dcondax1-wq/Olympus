@@ -226,16 +226,19 @@ def gate0(rows, skipped=None):
 
 def gate1(sim):
     if not sim:
-        return "waiting", "no Sim101 lane A trades yet (the Sim101 route is not built; the lead builds it after gate 0)"
+        return "waiting", "no Sim lane A trades yet (the Sim route is built and OFF: /oflane on starts it)"
     if any(r.get("hedge_conflict") or r.get("one_position_conflict") for r in sim):
         return "stopped", "a hedge / one-position conflict on Sim101"
+    refused = sum(1 for r in sim if r.get("hedge_refused") or r.get("one_position_refused"))   # red team #38: guard refusals
+    sim = [r for r in sim if r.get("R") is not None]          # the trades (conflict rows are flags only)
+    rnote = f", {refused} signal{'s' if refused != 1 else ''} refused by the hedge / one-position guard" if refused else ""
     gaps = [float(r["fill_gap_ticks"]) for r in sim if r.get("fill_gap_ticks") is not None]
     avg = sum(gaps) / len(gaps) if gaps else None
     if avg is not None and len(gaps) >= 3 and avg > S1_GAP:
-        return "stopped", f"Sim101 fills {avg:.1f} ticks worse than paper on average (> {S1_GAP})"
+        return "stopped", f"Sim101 fills {avg:.1f} ticks worse than paper on average (> {S1_GAP})" + rnote
     if len(sim) >= G1_N and avg is not None and avg <= G1_GAP:
-        return "passed", f"{len(sim)} Sim101 trades, fills {avg:.1f} ticks from paper, 0 conflicts"
-    return "watching", f"{len(sim)} / {G1_N} Sim101 trades" + (f", fills {avg:.1f} ticks from paper" if avg is not None else "")
+        return "passed", f"{len(sim)} Sim101 trades, fills {avg:.1f} ticks from paper, 0 conflicts" + rnote
+    return "watching", f"{len(sim)} / {G1_N} Sim101 trades" + (f", fills {avg:.1f} ticks from paper" if avg is not None else "") + rnote
 
 
 def evaluate(rows, sim=None, prev=None, today=None, skipped=None, lane_capped=False):
@@ -252,7 +255,7 @@ def evaluate(rows, sim=None, prev=None, today=None, skipped=None, lane_capped=Fa
         step, status, why = 1, g1, why1
         if g1 == "passed":
             passed, gwhy = 1, why1
-            pooled = _stats(rows + list(sim or []))
+            pooled = _stats(rows + [r for r in sim or [] if r.get("R") is not None])   # conflict rows carry no R
             step, status = 2, "ask_owner"
             why = (f"Sim101 passed; step 2 (one eval) needs your yes. Its own gate later: pooled {pooled['n']} / {G2_N} trades, "
                    f"{pooled['won']} won (needs {G2_WON})")
@@ -319,10 +322,26 @@ def lane_day_cap(lane) -> int:
         return 1
 
 
+def lane_sim_rows(pc_days=None) -> list:
+    """day-ofready2: the Sim lane's step-1 rows from the days the PC shipped (data/pc_days/<day>/of/NQ_lane.json.gz, engine/of_lane.
+    export_day "sim_rows"), forward days only; [] when none."""
+    pc_days = pc_days or PC_DAYS
+    out = []
+    try:
+        for d in sorted(os.listdir(pc_days)):
+            if len(d) == 10 and d >= FWD_FROM:
+                v = _read(os.path.join(pc_days, d, "of", "NQ_lane.json.gz"))
+                if isinstance(v, dict):
+                    out += [r for r in v.get("sim_rows") or [] if isinstance(r, dict)]
+    except OSError:
+        pass
+    return out
+
+
 def run(out=None, card_path=None, say=print, today=None):
     out, card_path = out or OUT, card_path or CARD
     rows, src = forward_rows()
-    sim = _read(SIM_ROWS, []) or []
+    sim = _read(SIM_ROWS, []) or lane_sim_rows()     # day-ofready2: the shipped Sim lane days when no hand file
     prev = _read(out, {}) or {}
     lane = _read(os.path.join(ROOT, "data", "of_lane.json"), {}) or {}
     capped = lane_day_cap(lane) == 1                  # night-of-daycap: missing key = engine.of_lane's default 1 = capped

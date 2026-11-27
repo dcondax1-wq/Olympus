@@ -214,7 +214,7 @@ def day_files(dp_work: str | None, d: str, now: int) -> dict:
     from . import datapipe as DP
     base = os.path.join(dp_work or DP.WORK, "days", d, "of")
     fs = {}
-    for f in DF.OF_FILES + ("NQ_depth5m.csv.gz", "NQ_paper.json.gz"):
+    for f in DF.OF_FILES + ("NQ_depth5m.csv.gz", "NQ_paper.json.gz", "NQ_lane.json.gz"):
         p = os.path.join(base, f)
         if f in DF.OF_FILES or os.path.exists(p):
             with open(p, "rb") as fh:
