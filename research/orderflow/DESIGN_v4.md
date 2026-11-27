@@ -63,3 +63,12 @@ Rank the 7 by (1) verdict (CANDIDATE first), (2) the best raw p over (b) and (c)
 in `engine/oflive.py` (standard library over the tick tail): cheap = running sums (V4, V5, V6, V7, V2), medium = per-price
 buckets of one bar (V1, V3). Output: `research/orderflow/v4_results.json` + `v4_verdict.md` with the LEAD_WIRES list. The lead
 wires; this helper changes no engine file.
+
+## Addendum 2026-11-27 ~01:30 ET (after the history results, BEFORE any forward day exists): the forward watch list
+History gave 0 CANDIDATES. Four reads earned forward watching (best raw p or both-halves sign); scored ONLY on tick days from
+2026-11-27 on, rules above unchanged, Holm over these 4, bar adjusted p < 0.10 + the same sign as history:
+- W1 = V7 inside lane A's TAKEN trades (kept = with the first-15 flow): gain R > 0. Floor 20 taken trades with a read.
+- W2 = V6 standalone VWAP fade: mean $ > 0 (sign-flip placebo). Floor 40 trades.
+- W3 = V5 lane A filter (all candidates): gain R > 0. Floor 40 candidates.
+- W4 = V3 lane A filter (all candidates): gain R > 0. Floor 40 candidates.
+No forward look changes a bot; a forward pass goes to the owner as a yes / no with the 2021-25 caveat (no ticks before 2026-09).
