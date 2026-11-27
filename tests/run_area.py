@@ -602,5 +602,10 @@ AREAS["pc"].append("tg_pretty_rt")   # red team #39: Sim Funded is never paper; 
 AREAS["pc"].append("thoughtlog")   # day-thoughtlog 2026-11-27: every bot's thoughts of the day -> the day zip (engine/thoughtlog.py)
 AREAS["pc"].append("thoughtlog_rt")   # red team #43: always scrubbed, 45-day prune
 
+AREAS["nq"].append("livechart")   # day-livechart 2026-11-27: the live chart (overlays, ticker, replay, private-link poll, footprint lane)
+AREAS["nq"].append("ofstrip")   # day-ofroom2 2026-11-27: the footprint heat strip (nq/ofstrip.js)
+AREAS["nq"].append("sharecard")   # day-sharecard 2026-11-27: the Insta card (nq/share.html)
+AREAS["money"].append("nq_now"); AREAS["nq"].append("nq_now")   # day-widget 2026-11-27: the NQ NOW Scriptable widget + Siri
+
 if __name__ == "__main__":
     sys.exit(main())

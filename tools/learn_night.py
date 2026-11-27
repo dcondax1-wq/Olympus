@@ -60,7 +60,7 @@ WHY = os.path.join(ROOT, "tools", "web_public", "why", "why.json")
 LAB = os.path.join(ROOT, "tools", "web_public", "business", "lab.json")
 REPORT = os.path.join(ROOT, "research", "learn", "night_cloud.json")
 PROTECTED = ("live_model.json", "live_model_lit.json", "live_model_engine.json", "second_model.json", "data/account_b.json")
-STEPS = ("pull", "backfill", "livegap", "edge", "costs", "anatomy", "lab", "learned", "decide", "hub", "blitz", "forward")
+STEPS = ("pull", "backfill", "livegap", "edge", "costs", "anatomy", "lab", "learned", "decide", "hub", "blitz", "forward", "nqsite")
 LIMIT_S = {"pull": 1500, "backfill": 1800, "livegap": 600, "edge": 1200, "costs": 900, "anatomy": 2400, "lab": 2400, "blitz": 3600, "forward": 900}
 CARD_MAX_BYTES = 6000
 DECIDE_MAX_NEW = 3                       # proposals added per night at most (the owner's card stays short)
@@ -194,6 +194,9 @@ def plan(a) -> list:
         out.append(("forward", [["tools/forward_paper.py"]]))   # -> research/forward/forward.json + journal.jsonl (paper only)
     if "oflearn" not in skip:              # day-oflearn 2026-11-26 (owner: "keep building order flow and learning about it"): DESIGN3
         out.append(("oflearn", [["research/orderflow/of_learn.py"]]))   # -> research/learn/of_signals.jsonl + journal.json lines; paper only
+    if "nqsite" not in skip:               # afternoon landing 2026-11-27: the NQ site's data cards (read only; web data, never a bot file)
+        out.append(("nqsite", [["tools/nq_ports.py"], ["tools/nq_thoughts.py"], ["tools/build_replay.py"], ["tools/build_of_room.py"],
+                               ["tools/week_review.py"], ["tools/roi_build.py"]]))
     return out
 
 
