@@ -88,3 +88,9 @@ nqland.js, the NEW nq/nqhero.css, and tests/test_nq_desk.py (hero checks). Web o
 - sw.js precache (lead only): add `nq/decore.js`, `nq/december.js`, `nq/december.css` (+ `nq/december.json` once landed).
 - tests/run_area.py: both branches append one line under the `AREAS["nq"]` block (nq_december here, december_plan there): keep both.
 - tests/test_nq_page.py: the kit's "no browser storage" check now allows exactly one key, `nq.sun` (SUNLIGHT MODE), and checks the try/catch.
+
+## 21. HOW TO READ THIS PAGE tour (2026-11-27)
+- tour.js (lazy, first visit only: localStorage nq.tour unset; ?tour=1 replays). sw.js precache (lead only): add `nq/tour.js`.
+- 5 stops: today's $, the account rings, the bot words, the battle plan, the PC freshness dot ("updated N min ago" in the hero: the page
+  has no separate "PC pill", so this is the stop). A stop whose card is missing is left out.
+- Automated browsers (navigator.webdriver) never get it without ?tour=1, so no existing browser suite is blocked by the overlay.

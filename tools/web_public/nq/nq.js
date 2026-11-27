@@ -192,6 +192,13 @@ function sunSet(onOff, store) {
   if (store) { try { localStorage.setItem('nq.sun', onOff ? '1' : '0'); } catch (_) { /* private mode: this visit only */ } }
   const b = $('hxSun'); if (b) { b.setAttribute('aria-pressed', onOff ? 'true' : 'false'); const t = b.querySelector('.hx-tl'); if (t) t.textContent = onOff ? 'Sunlight on' : 'Sunlight'; }
 }
+// HOW TO READ THIS PAGE (tour.js): first visit only (localStorage 'nq.tour' unset) or ?tour=1; added when the browser is idle
+function loadTour() {
+  let seen = false; try { seen = !!localStorage.getItem('nq.tour'); } catch (_) { seen = false; }
+  const force = /[?&]tour=1\b/.test(location.search);
+  if ((seen || navigator.webdriver) && !force) return;   // an automated browser (the test suites) is not the owner: ?tour=1 only
+  (window.requestIdleCallback || ((f) => setTimeout(f, 1500)))(() => { const t = document.createElement('script'); t.type = 'module'; t.src = new URL('./tour.js?v=1', import.meta.url).href; document.head.appendChild(t); }, { timeout: 4000 });
+}
 function toolsInit() {
   const b = $('hxBrief'), s = $('hxSun');
   if (b) {
@@ -199,6 +206,7 @@ function toolsInit() {
     if (!('speechSynthesis' in window)) { const t = b.querySelector('.hx-tl'); if (t) t.textContent = 'Show brief'; b.title = 'This browser has no voice: the brief shows as text'; }
     (window.requestIdleCallback || ((f) => setTimeout(f, 2500)))(loadBrief, { timeout: 6000 });
   }
+  loadTour();
   if (s) { sunSet(document.documentElement.classList.contains('sun'), false); s.addEventListener('click', () => sunSet(!document.documentElement.classList.contains('sun'), true)); }
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', toolsInit); else toolsInit();
