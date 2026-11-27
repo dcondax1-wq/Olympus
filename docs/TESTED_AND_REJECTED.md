@@ -489,3 +489,8 @@
   +$37..+$63/mo H1, +$41..+$99 Jul-Oct for fresh fails 3 -> 4-8% / 9 -> 15-22%; same answer as evalsizer. room_f stays 0.4.
   ATLAS eval share x1.0 (room 0.4) = +$183 / +$111 / +$44 a month (H1 / Jul-Oct / 2021-25) for fails 3 -> 9% / 9 -> 13%:
   owner 2026-11-27: "Wait until more room" = later, revisit when the 50K room > $2,000. research/lit/size50k-2026-11-27/RESULT.md
+- 2026-11-27 All strategies per account, fastest FIRST payout from today's balances (day-allstrats, research/portfolio/allstrats-2026-11-28/,
+  DESIGN.md pre-registered, rank.py engine, one-position risk manager, 39 rows x 4 markets): more bots = payouts 1-4 weeks sooner on every
+  account, but more lost funded accounts; every mix loses in 2021-25 / 2025. Only card: Rapid EOD 25K + BLITZ $300 (Jan 31 paid 31 -> 49% /
+  24 -> 39%, fail +1.8 / +0.4 pts; conflicts with the 2026-11-24 +1-pt bar rejection). Not cards: Zlarior 50K (all mixes raise fail > 3 pts),
+  25K #2 (rule pick fails H2; post-hoc lead = all 3 bots once funded), ATLAS funded + BLITZ $150 (H1 +1.4 pts = noise). POSEIDON untestable (51 tick days).

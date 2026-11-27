@@ -72,12 +72,15 @@ def one_pos(ts):
 
 
 _MIX = {}
+TICK = {"blitz": 0.0}   # sensitivity: extra points per BLITZ trade (0.5 = +1 tick on the entry AND the exit)
 
 
 def mix(bots, news):
     k = (tuple(sorted(bots)), news)
     if k not in _MIX:
-        _MIX[k] = [one_pos(ts) for ts in RL.mix_by(bots, news=news)]
+        x = TICK["blitz"]
+        _MIX[k] = [one_pos([({**t, "pts": t["pts"] - x, "w1": min(0.0, t["w1"] - x)} if (x and t["strat"] == "BLITZ") else t)
+                            for t in ts]) for ts in RL.mix_by(bots, news=news)]
     return _MIX[k]
 
 
@@ -249,7 +252,10 @@ def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=1000)
     ap.add_argument("--only", default="")
+    ap.add_argument("--blitz-tick", action="store_true", help="sensitivity: +1 tick a side on BLITZ, candidate rows only")
     a = ap.parse_args(argv)
+    if a.blitz_tick:
+        return tick_check(a)
     t0 = time.time()
     S = SOA.data()["S"]
     P = {m: U.mc_paths(S, m, a.n, length=LEN, seed=23) for m in MKTS}
@@ -270,6 +276,24 @@ def main(argv=None):
     res["rows_counted"] = sum(len(v["rows"]) for v in res["accounts"].values())
     with open(OUT if not a.only else OUT.replace(".json", f"_{a.only}.json"), "w", encoding="utf-8") as fh:
         json.dump(res, fh, indent=1, default=float)
+
+
+CAND = {"Z50": ("M04 LIT+ATLAS x0.5 eval", "M09 LIT+ATLAS x0.5+BLITZ150"), "N25": ("M01 LIT", "M10 LIT eval, all 3 funded"),
+        "R25": ("M03 LIT+ATLAS", "M05 LIT+ATLAS+BLITZ150", "M06 LIT+ATLAS+BLITZ300"), "A25": ("M02 ATLAS", "M08 ATLAS+BLITZ150")}
+
+
+def tick_check(a):
+    TICK["blitz"] = 0.5
+    S = SOA.data()["S"]
+    P = {m: U.mc_paths(S, m, a.n, length=LEN, seed=23) for m in MKTS}
+    out = {}
+    for acct, mxs in CAND.items():
+        out[acct] = {}
+        for mx in mxs:
+            out[acct][mx] = run(acct, mx, P, S)
+            print(line(acct, mx, out[acct][mx]), flush=True)
+    with open(OUT.replace(".json", "_blitz_tick.json"), "w", encoding="utf-8") as fh:
+        json.dump({"n": a.n, "blitz_extra_pts": 0.5, "rows": out}, fh, indent=1, default=float)
 
 
 if __name__ == "__main__":
