@@ -254,6 +254,37 @@ export function levels(bars, post, tick) {
   return { levels: out.slice(0, 8), sweeps: sw };
 }
 
+// ------------------------------------------------------------------------------------------------ which price is current (QA 2026-11-27 #2)
+// The bars come about hourly in the bots' hours only; the PC's status post (pc_feed.js fetchLatest, every 15 min) carries its price at its
+// heartbeat. When that price is newer than the last bar the card must say so: the chart is "stopped at HH:MM", the current price is the PC's.
+export const PC_NEWER_S = 10 * 60, PC_MAX_AGE_S = 2 * 3600;
+/** {px, t} of the PC's newest price in its status post (lite), or null */
+export function pcNow(lite) {
+  const L = obj(lite), c = [];
+  if (num(L.price) != null && num(L.t) != null) c.push({ px: num(L.price), t: num(L.t) });
+  const g = obj(obj(L.pc).glance), gb = arr(g.bots).find((b) => isObj(b) && num(b.px) != null);
+  if (gb && num(g.t) != null) c.push({ px: num(gb.px), t: num(g.t) });
+  return c.sort((a, b) => b.t - a.t)[0] || null;
+}
+/** the badge: {cls: live | warm | old | none, text, label, stopped (bool), pc: {px, t, age, diff} | null, tagTitle} for model m */
+export function freshness(m, pc, nowS) {
+  const now = num(nowS) != null ? num(nowS) : Date.now() / 1000;
+  if (!m || m.state === 'none' || m.dataT == null) return { cls: 'none', text: '', label: '', stopped: false, pc: null, tagTitle: '' };
+  const a = Math.max(0, now - m.dataT), mins = Math.floor(a / 60), barHm = hm(m.dataT, now);
+  const P = pc && num(pc.px) != null && num(pc.t) != null && now - pc.t <= PC_MAX_AGE_S && pc.t >= m.dataT + PC_NEWER_S
+    ? { px: num(pc.px), t: num(pc.t), age: Math.max(0, now - pc.t), diff: num(pc.px) - m.last } : null;
+  if (P) {
+    const d = P.diff, dw = `${d >= 0 ? '+' : ''}${px(d)}`;
+    return { cls: 'old', stopped: true, pc: P, tagTitle: `last bar ${barHm.replace(' ET', '')}`,
+      text: `Chart stopped ${barHm} · NQ now ${px(P.px)} (${dw}), PC ${P.age < 90 ? 'just now' : ageWords(P.age) + ' ago'}`,
+      label: `The chart's newest bar is from ${barHm}, ${ageWords(a)} ago. The PC's price now is ${px(P.px)}, ${dw} points from the chart's last close.` };
+  }
+  const cls = a < 20 * 60 ? 'live' : m.state === 'ok' ? 'warm' : 'old';
+  return { cls, stopped: cls === 'old', pc: null, tagTitle: cls === 'live' ? '' : `last bar ${barHm.replace(' ET', '')}`,
+    text: cls === 'live' ? `LIVE · last bar ${mins < 1 ? 'just now' : mins + ' min ago'}` : `Last bar ${barHm} · ${ageWords(a)} old`,
+    label: `The newest bar is from ${barHm}, ${a < 60 ? 'less than a minute' : ageWords(a)} old` };
+}
+
 /** what the card shows for one account filter ('all' or a key) at nowS (seconds) */
 export function model(post, acct, nowS) {
   const now = num(nowS) != null ? num(nowS) : Date.now() / 1000;

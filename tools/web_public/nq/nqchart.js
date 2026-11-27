@@ -217,7 +217,7 @@ function draw(m) {
 }
 /** the pulsing last-price dot (DOM, CSS animated: nothing repaints the chart): on the newest close, hidden when that bar is out of view */
 function placePulse() {
-  const d = $('chartPulse'), m = S.model; if (!d || !S.chart || !m || !m.candles.length) { if (d) d.hidden = true; return; }
+  const d = $('chartPulse'), m = S.model; if (!d || !S.chart || !m || !m.candles.length || S.stale) { if (d) d.hidden = true; return; }
   try {
     const L = m.candles[m.candles.length - 1], x = S.chart.timeScale().timeToCoordinate(L.time), y = S.series.priceToCoordinate(L.close), w = S.chart.timeScale().width();
     if (x === null || y === null || x < 0 || x > w) { d.hidden = true; return; }
@@ -316,12 +316,21 @@ function age() {
   const box = $('chartBox'), m = S.model; if (!box) return;
   let el = $('chartAge');
   if (!el) { el = h('div', 'cage'); el.id = 'chartAge'; box.appendChild(el); }
-  if (!m || m.state === 'none' || m.dataT == null) { el.hidden = true; return; }
-  const a = Math.max(0, Date.now() / 1000 - m.dataT), mins = Math.floor(a / 60);
-  const cls = a < 20 * 60 ? 'live' : m.state === 'ok' ? 'warm' : 'old';
-  el.hidden = false; el.className = 'cage ' + cls;
-  el.textContent = cls === 'live' ? `LIVE · last bar ${mins < 1 ? 'just now' : mins + ' min ago'}` : `Bars ${B.ageWords(a)} old`;
-  el.setAttribute('aria-label', `The newest bar is ${a < 60 ? 'less than a minute' : B.ageWords(a)} old`);
+  const f = B.freshness(m, S.pc, Date.now() / 1000);
+  if (f.cls === 'none') { el.hidden = true; return; }
+  el.hidden = false; el.className = 'cage ' + f.cls + (f.pc ? ' pcnow' : '');
+  if (S.stale !== (f.cls !== 'live')) { S.stale = f.cls !== 'live'; placePulse(); }   // the pulsing dot means live: never on old bars
+  el.textContent = f.text; el.setAttribute('aria-label', f.label);
+  // on a phone the badge sits over the readout's corner: the readout goes just under it, however many lines the badge takes
+  const leg = $('chartLeg');
+  if (leg) { const narrow = box.clientWidth <= 420; leg.style.top = narrow ? (el.offsetTop + el.offsetHeight + 6) + 'px' : ''; }
+  // never a 500-point-old close dressed as the current price: the gold tag names its bar's time when the bars are not live,
+  // and the PC's newer price gets its own dashed gold line (seen when it is inside the chart's range; the badge says it in words)
+  try { if (S.tag) S.tag.applyOptions({ title: f.tagTitle }); } catch (e) { /* the badge says it */ }
+  try {
+    if (S.pcLine) { S.series.removePriceLine(S.pcLine); S.pcLine = null; }
+    if (f.pc && S.series && S.lib) S.pcLine = S.series.createPriceLine({ price: f.pc.px, color: '#f1c14b', lineWidth: 1, lineStyle: S.lib.LineStyle.Dashed, axisLabelVisible: true, title: 'NQ now (PC)' });
+  } catch (e) { /* the badge says it */ }
 }
 // "Now": back to the newest bar when the owner scrolled away from it
 function nowBtn() {
@@ -392,11 +401,19 @@ function render() {
   S.ready = true;
 }
 
+async function pcPrice() {
+  const F = window.PC_FEED;                          // index.html loads ../pc_feed.js (its fetches are shared with the rest of the page)
+  if (!F || !F.fetchLatest) return;
+  try {
+    const lite = await Promise.race([F.fetchLatest({ feedUrl: new URL('../status_feed.json', import.meta.url).href }), new Promise((r) => setTimeout(() => r(null), 12000))]);
+    const p = B.pcNow(lite); if (p) S.pc = p;
+  } catch (e) { /* the bars alone */ }
+}
 async function refresh(force) {
   if (S.busy || (!force && (document.hidden || Date.now() - S.fetchedAt < POLL_MS / 2))) return;
   S.busy = true;
   try {
-    const r = await fetchPost();
+    const [r] = await Promise.all([fetchPost(), pcPrice()]);
     S.fetchedAt = Date.now();
     if (r.post || !S.post) { S.post = r.post; S.why = r.why; }       // a failed poll keeps the last good bars on the screen
     render();

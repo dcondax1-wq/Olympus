@@ -142,7 +142,24 @@ def test_page():
             p.clock.set_fixed_time(dt.datetime.fromtimestamp(NOW, dt.timezone.utc))
             T.open_chart(p, origin)
             s = p.evaluate(SNAP)
-            check("c. bars 3 hours old: the badge says so in plain words (never 'LIVE')", s["age"].startswith("Bars 3 hours") and "old" in s["ageCls"], s["age"])
+            check("c. bars 3 hours old: the badge says so in plain words with the bar's time (never 'LIVE')", s["age"].startswith("Last bar ") and "3 hours old" in s["age"]
+                  and "old" in s["ageCls"] and "LIVE" not in s["age"], s["age"])
+            ctx.close()
+            # QA 2026-11-27 #2: old bars while the PC's status post has a newer price -> "Chart stopped HH:MM · NQ now <PC price>", a gold dashed
+            # "NQ now (PC)" line, and the last bar's tag named by its time (a 500-point-old close never looks current)
+            lp = old["p0"] * 0.25
+            lite = {"kind": "le-live", "lite": True, "t": NOW - 60, "price": 26745.25}
+            core = json.dumps({"event": "message", "time": NOW - 60, "message": json.dumps(lite)}) + "\n"
+            ctx, p, errs, seen, off = AK.page(br, origin, mock={bars_url: T.ndjson(old), core_url: core})
+            p.clock.set_fixed_time(dt.datetime.fromtimestamp(NOW, dt.timezone.utc))
+            T.open_chart(p, origin)
+            p.wait_for_function("document.getElementById('chartAge') && /NQ now/.test(document.getElementById('chartAge').textContent)", timeout=20000)
+            s = p.evaluate(SNAP)
+            pl = p.evaluate("() => { const S = window.NQCHART.S; return [S.pcLine ? S.pcLine.options().title : null, S.tag ? S.tag.options().title : null]; }")
+            check("c. bars old + a newer PC price: the badge says 'Chart stopped <time> · NQ now 26,745.25 (+...)', gold; a dashed 'NQ now (PC)' line; the last bar's tag says 'last bar HH:MM'",
+                  s["age"].startswith("Chart stopped ") and "NQ now 26,745.25" in s["age"] and "pcnow" in s["ageCls"] and pl[0] == "NQ now (PC)"
+                  and str(pl[1]).startswith("last bar "), (s["age"], pl, lp))
+            check("c. ... and the phone shows no sideways scroll, no console error", AK.no_sideways(p) and not errs, errs[:3])
             ctx.close()
     finally:
         srv.shutdown()
