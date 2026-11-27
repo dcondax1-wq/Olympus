@@ -1,0 +1,19 @@
+{
+ "id": "of-lane-a-rollout",
+ "question": "Order flow (absorption fade) on your accounts: paper only until ~Dec 29, then one small test on the 25K #2 eval?",
+ "why": "On 43 real tick days the absorption fade made +$1,582 at 1 micro (40 trades, 50% won). But the newer 20 trades only won 8 (+$365), all the data is one 2-month market, and it trades ~5 times a week. Not enough proof for real accounts yet.",
+ "impact": "Simulated on your 4 accounts for 6 months (Jul-Oct-like market, small size $100 / $200 a trade): if the edge is real +$5,872; if it is 1/4 as good +$695; if it is zero -$1,097 and the 25K #2 eval fails 20% of the time instead of 2%. Safest form (only on days LIT / ATLAS did not trade): real +$2,699, zero -$229.",
+ "impact_usd": 0,
+ "options": ["yes", "no", "later"],
+ "status": "open",
+ "source": "research/evalplan/PLAN.md (sim research/evalplan/results.json, design DESIGN.md)",
+ "applies": "Nothing live. YES = keep the paper bot scoring forward days; at 20 forward trades with >= 9 won (~Dec 29) the lead builds a Sim101 route for lane A (switch OFF), then asks you again before any eval trades it.",
+ "added": "2026-11-27",
+ "usd_month": 0,
+ "usd_month_by": {"edge_real_small": 979, "edge_quarter_small": 116, "edge_zero_small": -183, "edge_zero_quiet_days": -38},
+ "risk": "none now (paper). Later, on one eval: at most about $300 of lane A losses before it switches itself off.",
+ "recommend": "later",
+ "recommend_why": "Nothing to approve for next week: the forward paper test needs ~20 more trades (~Dec 29). Stop rules are already set: 8 losses in the first 10 forward trades or -6R = order flow stays paper.",
+ "valued": "2026-11-27",
+ "answered": null
+}

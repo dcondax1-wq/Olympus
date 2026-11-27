@@ -1,0 +1,1922 @@
+{
+ "n": 1000,
+ "pool": {
+  "n": 40,
+  "days": 43,
+  "rate": 0.9302325581395349,
+  "mean_R": 0.49545000000000006,
+  "win": 0.5
+ },
+ "stops_pts": [
+  3.9,
+  8.2,
+  9.9,
+  13.7,
+  14.7,
+  18.6,
+  19.9,
+  20.4,
+  24.1,
+  24.6,
+  30.2,
+  31.9,
+  34.5,
+  34.7,
+  35.9,
+  37.1,
+  37.1,
+  39.1,
+  42.9,
+  45.2,
+  45.9,
+  50.9,
+  54.2,
+  55.1,
+  56.6,
+  57.5,
+  57.9,
+  70.7,
+  80.2,
+  84.2,
+  104.0,
+  105.2,
+  107.4,
+  108.9,
+  115.5,
+  126.7,
+  133.4,
+  162.6,
+  171.4,
+  221.7
+ ],
+ "scen_p": {
+  "REAL": 0.5,
+  "Q25": 0.375,
+  "ZERO": 0.333,
+  "BAD": 0.24
+ },
+ "cells": {
+  "Z50|none": {
+   "H1": {
+    "eval": {
+     "pass": 72.3,
+     "fail": 24.5,
+     "med_days": 14.0
+    },
+    "slot": {
+     "net": 4421,
+     "per_month": 737,
+     "p10": 1416,
+     "lost": 10.8,
+     "no_pay": 8.1
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 69.8,
+     "fail": 24.5,
+     "med_days": 16.0
+    },
+    "slot": {
+     "net": 4210,
+     "per_month": 702,
+     "p10": 0,
+     "lost": 9.6,
+     "no_pay": 11.1
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 13.3,
+     "fail": 75.8,
+     "med_days": 23.0
+    },
+    "slot": {
+     "net": -88,
+     "per_month": -15,
+     "p10": -275,
+     "lost": 30.5,
+     "no_pay": 93.6
+    }
+   }
+  },
+  "Z50|SMALL|REAL": {
+   "H1": {
+    "eval": {
+     "pass": 77.9,
+     "fail": 21.6,
+     "med_days": 13.0
+    },
+    "slot": {
+     "net": 6348,
+     "per_month": 1058,
+     "p10": 3108,
+     "lost": 8.5,
+     "no_pay": 1.1
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 77.2,
+     "fail": 21.6,
+     "med_days": 14.0
+    },
+    "slot": {
+     "net": 6311,
+     "per_month": 1052,
+     "p10": 3108,
+     "lost": 7.5,
+     "no_pay": 1.9
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 34.6,
+     "fail": 56.7,
+     "med_days": 26.0
+    },
+    "slot": {
+     "net": 776,
+     "per_month": 129,
+     "p10": -275,
+     "lost": 34.4,
+     "no_pay": 61.2
+    }
+   }
+  },
+  "Z50|SMALL|Q25": {
+   "H1": {
+    "eval": {
+     "pass": 64.0,
+     "fail": 35.5,
+     "med_days": 13.0
+    },
+    "slot": {
+     "net": 4612,
+     "per_month": 769,
+     "p10": 1416,
+     "lost": 21.0,
+     "no_pay": 7.2
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 60.7,
+     "fail": 37.5,
+     "med_days": 14.0
+    },
+    "slot": {
+     "net": 4543,
+     "per_month": 757,
+     "p10": 1325,
+     "lost": 21.7,
+     "no_pay": 8.1
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 16.2,
+     "fail": 80.2,
+     "med_days": 21.0
+    },
+    "slot": {
+     "net": -44,
+     "per_month": -7,
+     "p10": -376,
+     "lost": 50.5,
+     "no_pay": 88.3
+    }
+   }
+  },
+  "Z50|SMALL|ZERO": {
+   "H1": {
+    "eval": {
+     "pass": 59.7,
+     "fail": 40.1,
+     "med_days": 13.0
+    },
+    "slot": {
+     "net": 4014,
+     "per_month": 669,
+     "p10": -92,
+     "lost": 27.1,
+     "no_pay": 10.8
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 55.4,
+     "fail": 43.5,
+     "med_days": 14.0
+    },
+    "slot": {
+     "net": 3884,
+     "per_month": 647,
+     "p10": -184,
+     "lost": 28.5,
+     "no_pay": 14.8
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 11.2,
+     "fail": 86.5,
+     "med_days": 19.0
+    },
+    "slot": {
+     "net": -175,
+     "per_month": -29,
+     "p10": -459,
+     "lost": 50.0,
+     "no_pay": 91.8
+    }
+   }
+  },
+  "Z50|SMALL|BAD": {
+   "H1": {
+    "eval": {
+     "pass": 46.5,
+     "fail": 53.2,
+     "med_days": 12.0
+    },
+    "slot": {
+     "net": 2822,
+     "per_month": 470,
+     "p10": -275,
+     "lost": 47.3,
+     "no_pay": 23.4
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 41.7,
+     "fail": 57.8,
+     "med_days": 13.0
+    },
+    "slot": {
+     "net": 2629,
+     "per_month": 438,
+     "p10": -275,
+     "lost": 46.4,
+     "no_pay": 26.0
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 5.6,
+     "fail": 93.6,
+     "med_days": 15.0
+    },
+    "slot": {
+     "net": -371,
+     "per_month": -62,
+     "p10": -551,
+     "lost": 49.9,
+     "no_pay": 96.6
+    }
+   }
+  },
+  "Z50|FULL|REAL": {
+   "H1": {
+    "eval": {
+     "pass": 75.5,
+     "fail": 24.2,
+     "med_days": 10.0
+    },
+    "slot": {
+     "net": 10044,
+     "per_month": 1674,
+     "p10": 6308,
+     "lost": 18.5,
+     "no_pay": 0.9
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 76.6,
+     "fail": 22.9,
+     "med_days": 11.0
+    },
+    "slot": {
+     "net": 9692,
+     "per_month": 1615,
+     "p10": 4800,
+     "lost": 18.2,
+     "no_pay": 1.1
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 42.4,
+     "fail": 55.4,
+     "med_days": 14.0
+    },
+    "slot": {
+     "net": 4287,
+     "per_month": 715,
+     "p10": -275,
+     "lost": 51.5,
+     "no_pay": 22.6
+    }
+   }
+  },
+  "Z50|FULL|Q25": {
+   "H1": {
+    "eval": {
+     "pass": 55.6,
+     "fail": 43.7,
+     "med_days": 11.0
+    },
+    "slot": {
+     "net": 4686,
+     "per_month": 781,
+     "p10": -184,
+     "lost": 47.4,
+     "no_pay": 12.0
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 51.6,
+     "fail": 47.2,
+     "med_days": 12.0
+    },
+    "slot": {
+     "net": 4334,
+     "per_month": 722,
+     "p10": -275,
+     "lost": 44.2,
+     "no_pay": 16.3
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 15.9,
+     "fail": 83.3,
+     "med_days": 13.0
+    },
+    "slot": {
+     "net": 270,
+     "per_month": 45,
+     "p10": -551,
+     "lost": 67.5,
+     "no_pay": 76.4
+    }
+   }
+  },
+  "Z50|FULL|ZERO": {
+   "H1": {
+    "eval": {
+     "pass": 47.3,
+     "fail": 52.0,
+     "med_days": 11.0
+    },
+    "slot": {
+     "net": 3144,
+     "per_month": 524,
+     "p10": -367,
+     "lost": 57.5,
+     "no_pay": 24.5
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 43.1,
+     "fail": 56.1,
+     "med_days": 13.0
+    },
+    "slot": {
+     "net": 2812,
+     "per_month": 469,
+     "p10": -367,
+     "lost": 57.7,
+     "no_pay": 28.8
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 10.5,
+     "fail": 89.3,
+     "med_days": 13.0
+    },
+    "slot": {
+     "net": -171,
+     "per_month": -28,
+     "p10": -643,
+     "lost": 63.1,
+     "no_pay": 88.6
+    }
+   }
+  },
+  "Z50|FULL|BAD": {
+   "H1": {
+    "eval": {
+     "pass": 28.0,
+     "fail": 71.2,
+     "med_days": 11.0
+    },
+    "slot": {
+     "net": 737,
+     "per_month": 123,
+     "p10": -551,
+     "lost": 75.9,
+     "no_pay": 59.4
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 24.5,
+     "fail": 74.7,
+     "med_days": 12.0
+    },
+    "slot": {
+     "net": 483,
+     "per_month": 80,
+     "p10": -551,
+     "lost": 77.4,
+     "no_pay": 67.9
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 3.7,
+     "fail": 96.3,
+     "med_days": 13.0
+    },
+    "slot": {
+     "net": -566,
+     "per_month": -94,
+     "p10": -734,
+     "lost": 44.6,
+     "no_pay": 98.1
+    }
+   }
+  },
+  "Z50|SMALL|REAL|quiet": {
+   "H1": {
+    "eval": {
+     "pass": 75.0,
+     "fail": 23.5,
+     "med_days": 14.0
+    },
+    "slot": {
+     "net": 5366,
+     "per_month": 894,
+     "p10": 1508,
+     "lost": 10.1,
+     "no_pay": 3.9
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 74.5,
+     "fail": 22.8,
+     "med_days": 15.0
+    },
+    "slot": {
+     "net": 5476,
+     "per_month": 913,
+     "p10": 1508,
+     "lost": 9.6,
+     "no_pay": 4.2
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 23.8,
+     "fail": 65.6,
+     "med_days": 24.0
+    },
+    "slot": {
+     "net": 270,
+     "per_month": 45,
+     "p10": -275,
+     "lost": 32.9,
+     "no_pay": 77.4
+    }
+   }
+  },
+  "Z50|SMALL|ZERO|quiet": {
+   "H1": {
+    "eval": {
+     "pass": 67.4,
+     "fail": 31.4,
+     "med_days": 13.0
+    },
+    "slot": {
+     "net": 4402,
+     "per_month": 734,
+     "p10": 1416,
+     "lost": 16.9,
+     "no_pay": 8.6
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 60.6,
+     "fail": 37.9,
+     "med_days": 15.0
+    },
+    "slot": {
+     "net": 4145,
+     "per_month": 691,
+     "p10": -92,
+     "lost": 19.8,
+     "no_pay": 11.9
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 12.6,
+     "fail": 84.2,
+     "med_days": 20.0
+    },
+    "slot": {
+     "net": -113,
+     "per_month": -19,
+     "p10": -367,
+     "lost": 43.3,
+     "no_pay": 90.9
+    }
+   }
+  },
+  "Z25|none": {
+   "H1": {
+    "eval": {
+     "pass": 87.5,
+     "fail": 2.1,
+     "med_days": 9.0
+    },
+    "slot": {
+     "net": 2192,
+     "per_month": 365,
+     "p10": 0,
+     "lost": 14.3,
+     "no_pay": 10.6
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 82.6,
+     "fail": 1.7,
+     "med_days": 8.0
+    },
+    "slot": {
+     "net": 1927,
+     "per_month": 321,
+     "p10": -63,
+     "lost": 17.3,
+     "no_pay": 18.3
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 28.1,
+     "fail": 32.1,
+     "med_days": 14.0
+    },
+    "slot": {
+     "net": -42,
+     "per_month": -7,
+     "p10": -126,
+     "lost": 30.8,
+     "no_pay": 95.0
+    }
+   }
+  },
+  "Z25|SMALL|REAL": {
+   "H1": {
+    "eval": {
+     "pass": 88.4,
+     "fail": 7.7,
+     "med_days": 9.0
+    },
+    "slot": {
+     "net": 2870,
+     "per_month": 478,
+     "p10": 800,
+     "lost": 12.7,
+     "no_pay": 4.0
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 86.9,
+     "fail": 8.2,
+     "med_days": 9.0
+    },
+    "slot": {
+     "net": 2700,
+     "per_month": 450,
+     "p10": 737,
+     "lost": 11.6,
+     "no_pay": 8.1
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 42.6,
+     "fail": 35.2,
+     "med_days": 17.0
+    },
+    "slot": {
+     "net": 211,
+     "per_month": 35,
+     "p10": -126,
+     "lost": 32.6,
+     "no_pay": 73.7
+    }
+   }
+  },
+  "Z25|SMALL|Q25": {
+   "H1": {
+    "eval": {
+     "pass": 82.7,
+     "fail": 12.4,
+     "med_days": 9.0
+    },
+    "slot": {
+     "net": 2265,
+     "per_month": 377,
+     "p10": 674,
+     "lost": 21.8,
+     "no_pay": 8.6
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 77.7,
+     "fail": 15.7,
+     "med_days": 8.0
+    },
+    "slot": {
+     "net": 2058,
+     "per_month": 343,
+     "p10": -63,
+     "lost": 23.0,
+     "no_pay": 14.6
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 29.9,
+     "fail": 54.1,
+     "med_days": 15.0
+    },
+    "slot": {
+     "net": -29,
+     "per_month": -5,
+     "p10": -189,
+     "lost": 41.0,
+     "no_pay": 89.9
+    }
+   }
+  },
+  "Z25|SMALL|ZERO": {
+   "H1": {
+    "eval": {
+     "pass": 80.0,
+     "fail": 14.0,
+     "med_days": 8.0
+    },
+    "slot": {
+     "net": 2041,
+     "per_month": 340,
+     "p10": -63,
+     "lost": 25.5,
+     "no_pay": 11.8
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 74.0,
+     "fail": 20.0,
+     "med_days": 8.0
+    },
+    "slot": {
+     "net": 1855,
+     "per_month": 309,
+     "p10": -126,
+     "lost": 26.3,
+     "no_pay": 17.7
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 27.4,
+     "fail": 58.5,
+     "med_days": 15.0
+    },
+    "slot": {
+     "net": -77,
+     "per_month": -13,
+     "p10": -189,
+     "lost": 39.2,
+     "no_pay": 93.0
+    }
+   }
+  },
+  "Z25|SMALL|BAD": {
+   "H1": {
+    "eval": {
+     "pass": 75.1,
+     "fail": 19.6,
+     "med_days": 8.0
+    },
+    "slot": {
+     "net": 1581,
+     "per_month": 264,
+     "p10": -126,
+     "lost": 35.9,
+     "no_pay": 21.6
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 67.0,
+     "fail": 27.8,
+     "med_days": 7.0
+    },
+    "slot": {
+     "net": 1409,
+     "per_month": 235,
+     "p10": -126,
+     "lost": 35.9,
+     "no_pay": 26.5
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 20.3,
+     "fail": 70.6,
+     "med_days": 12.0
+    },
+    "slot": {
+     "net": -147,
+     "per_month": -25,
+     "p10": -252,
+     "lost": 40.7,
+     "no_pay": 97.0
+    }
+   }
+  },
+  "Z25|FULL|REAL": {
+   "H1": {
+    "eval": {
+     "pass": 89.6,
+     "fail": 8.3,
+     "med_days": 7.0
+    },
+    "slot": {
+     "net": 4544,
+     "per_month": 757,
+     "p10": 2337,
+     "lost": 23.0,
+     "no_pay": 2.6
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 85.8,
+     "fail": 9.1,
+     "med_days": 8.0
+    },
+    "slot": {
+     "net": 4261,
+     "per_month": 710,
+     "p10": 1537,
+     "lost": 26.1,
+     "no_pay": 4.8
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 57.6,
+     "fail": 33.7,
+     "med_days": 11.0
+    },
+    "slot": {
+     "net": 1553,
+     "per_month": 259,
+     "p10": -189,
+     "lost": 47.8,
+     "no_pay": 36.5
+    }
+   }
+  },
+  "Z25|FULL|Q25": {
+   "H1": {
+    "eval": {
+     "pass": 75.1,
+     "fail": 19.3,
+     "med_days": 8.0
+    },
+    "slot": {
+     "net": 2232,
+     "per_month": 372,
+     "p10": -126,
+     "lost": 46.0,
+     "no_pay": 16.6
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 66.9,
+     "fail": 26.2,
+     "med_days": 8.0
+    },
+    "slot": {
+     "net": 2029,
+     "per_month": 338,
+     "p10": -126,
+     "lost": 42.7,
+     "no_pay": 20.7
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 30.2,
+     "fail": 60.6,
+     "med_days": 10.0
+    },
+    "slot": {
+     "net": 41,
+     "per_month": 7,
+     "p10": -252,
+     "lost": 54.8,
+     "no_pay": 84.3
+    }
+   }
+  },
+  "Z25|FULL|ZERO": {
+   "H1": {
+    "eval": {
+     "pass": 69.2,
+     "fail": 24.7,
+     "med_days": 8.0
+    },
+    "slot": {
+     "net": 1552,
+     "per_month": 259,
+     "p10": -132,
+     "lost": 52.2,
+     "no_pay": 26.8
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 60.3,
+     "fail": 32.0,
+     "med_days": 8.0
+    },
+    "slot": {
+     "net": 1361,
+     "per_month": 227,
+     "p10": -189,
+     "lost": 50.3,
+     "no_pay": 33.1
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 22.7,
+     "fail": 68.7,
+     "med_days": 10.0
+    },
+    "slot": {
+     "net": -94,
+     "per_month": -16,
+     "p10": -252,
+     "lost": 50.6,
+     "no_pay": 91.9
+    }
+   }
+  },
+  "Z25|FULL|BAD": {
+   "H1": {
+    "eval": {
+     "pass": 54.9,
+     "fail": 36.2,
+     "med_days": 8.0
+    },
+    "slot": {
+     "net": 509,
+     "per_month": 85,
+     "p10": -189,
+     "lost": 66.6,
+     "no_pay": 56.1
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 45.6,
+     "fail": 46.5,
+     "med_days": 7.0
+    },
+    "slot": {
+     "net": 330,
+     "per_month": 55,
+     "p10": -252,
+     "lost": 63.9,
+     "no_pay": 65.3
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 11.7,
+     "fail": 83.4,
+     "med_days": 10.0
+    },
+    "slot": {
+     "net": -221,
+     "per_month": -37,
+     "p10": -315,
+     "lost": 33.6,
+     "no_pay": 99.3
+    }
+   }
+  },
+  "Z25|SMALL|REAL|quiet": {
+   "H1": {
+    "eval": {
+     "pass": 88.8,
+     "fail": 4.9,
+     "med_days": 9.0
+    },
+    "slot": {
+     "net": 2492,
+     "per_month": 415,
+     "p10": 737,
+     "lost": 13.9,
+     "no_pay": 8.2
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 84.6,
+     "fail": 6.9,
+     "med_days": 9.0
+    },
+    "slot": {
+     "net": 2363,
+     "per_month": 394,
+     "p10": 0,
+     "lost": 14.1,
+     "no_pay": 10.9
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 35.9,
+     "fail": 35.3,
+     "med_days": 16.0
+    },
+    "slot": {
+     "net": 50,
+     "per_month": 8,
+     "p10": -126,
+     "lost": 32.7,
+     "no_pay": 85.9
+    }
+   }
+  },
+  "Z25|SMALL|ZERO|quiet": {
+   "H1": {
+    "eval": {
+     "pass": 85.0,
+     "fail": 6.9,
+     "med_days": 9.0
+    },
+    "slot": {
+     "net": 2162,
+     "per_month": 360,
+     "p10": 0,
+     "lost": 20.2,
+     "no_pay": 12.0
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 75.2,
+     "fail": 11.9,
+     "med_days": 8.0
+    },
+    "slot": {
+     "net": 1907,
+     "per_month": 318,
+     "p10": -63,
+     "lost": 20.2,
+     "no_pay": 18.1
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 28.2,
+     "fail": 48.6,
+     "med_days": 13.0
+    },
+    "slot": {
+     "net": -56,
+     "per_month": -9,
+     "p10": -189,
+     "lost": 35.2,
+     "no_pay": 93.7
+    }
+   }
+  },
+  "R25|none": {
+   "H1": {
+    "eval": {
+     "pass": 79.4,
+     "fail": 0.3,
+     "med_days": 33.0
+    },
+    "slot": {
+     "net": 11359,
+     "per_month": 1893,
+     "p10": 1369,
+     "lost": 27.4,
+     "no_pay": 7.6
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 85.4,
+     "fail": 2.5,
+     "med_days": 26.0
+    },
+    "slot": {
+     "net": 4893,
+     "per_month": 815,
+     "p10": -97,
+     "lost": 38.0,
+     "no_pay": 15.1
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 6.9,
+     "fail": 77.3,
+     "med_days": 30.0
+    },
+    "slot": {
+     "net": -202,
+     "per_month": -34,
+     "p10": -389,
+     "lost": 18.4,
+     "no_pay": 96.8
+    }
+   }
+  },
+  "R25|SMALL|REAL": {
+   "H1": {
+    "eval": {
+     "pass": 93.8,
+     "fail": 1.5,
+     "med_days": 26.0
+    },
+    "slot": {
+     "net": 14811,
+     "per_month": 2468,
+     "p10": 5309,
+     "lost": 26.8,
+     "no_pay": 2.5
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 92.1,
+     "fail": 3.3,
+     "med_days": 22.0
+    },
+    "slot": {
+     "net": 6925,
+     "per_month": 1154,
+     "p10": 1413,
+     "lost": 36.4,
+     "no_pay": 5.7
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 21.7,
+     "fail": 65.1,
+     "med_days": 33.0
+    },
+    "slot": {
+     "net": -32,
+     "per_month": -5,
+     "p10": -389,
+     "lost": 48.5,
+     "no_pay": 89.5
+    }
+   }
+  },
+  "R25|SMALL|Q25": {
+   "H1": {
+    "eval": {
+     "pass": 80.6,
+     "fail": 5.8,
+     "med_days": 30.0
+    },
+    "slot": {
+     "net": 11238,
+     "per_month": 1873,
+     "p10": 472,
+     "lost": 38.4,
+     "no_pay": 9.8
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 82.6,
+     "fail": 8.9,
+     "med_days": 24.0
+    },
+    "slot": {
+     "net": 5004,
+     "per_month": 834,
+     "p10": -97,
+     "lost": 43.0,
+     "no_pay": 15.2
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 10.6,
+     "fail": 79.9,
+     "med_days": 32.0
+    },
+    "slot": {
+     "net": -221,
+     "per_month": -37,
+     "p10": -486,
+     "lost": 29.1,
+     "no_pay": 95.8
+    }
+   }
+  },
+  "R25|SMALL|ZERO": {
+   "H1": {
+    "eval": {
+     "pass": 74.2,
+     "fail": 6.8,
+     "med_days": 31.0
+    },
+    "slot": {
+     "net": 9968,
+     "per_month": 1661,
+     "p10": -97,
+     "lost": 39.6,
+     "no_pay": 14.4
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 79.0,
+     "fail": 11.6,
+     "med_days": 24.0
+    },
+    "slot": {
+     "net": 4346,
+     "per_month": 724,
+     "p10": -194,
+     "lost": 46.3,
+     "no_pay": 20.1
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 7.7,
+     "fail": 83.7,
+     "med_days": 29.0
+    },
+    "slot": {
+     "net": -261,
+     "per_month": -43,
+     "p10": -486,
+     "lost": 25.4,
+     "no_pay": 96.8
+    }
+   }
+  },
+  "R25|SMALL|BAD": {
+   "H1": {
+    "eval": {
+     "pass": 55.0,
+     "fail": 14.3,
+     "med_days": 34.0
+    },
+    "slot": {
+     "net": 7326,
+     "per_month": 1221,
+     "p10": -97,
+     "lost": 37.7,
+     "no_pay": 26.1
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 68.2,
+     "fail": 19.5,
+     "med_days": 25.0
+    },
+    "slot": {
+     "net": 3156,
+     "per_month": 526,
+     "p10": -194,
+     "lost": 51.7,
+     "no_pay": 32.1
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 3.9,
+     "fail": 90.8,
+     "med_days": 27.0
+    },
+    "slot": {
+     "net": -356,
+     "per_month": -59,
+     "p10": -486,
+     "lost": 15.1,
+     "no_pay": 98.2
+    }
+   }
+  },
+  "R25|FULL|REAL": {
+   "H1": {
+    "eval": {
+     "pass": 92.0,
+     "fail": 4.8,
+     "med_days": 16.0
+    },
+    "slot": {
+     "net": 19813,
+     "per_month": 3302,
+     "p10": 7825,
+     "lost": 41.7,
+     "no_pay": 2.0
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 91.1,
+     "fail": 6.5,
+     "med_days": 15.0
+    },
+    "slot": {
+     "net": 11214,
+     "per_month": 1869,
+     "p10": 3269,
+     "lost": 47.0,
+     "no_pay": 2.9
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 39.5,
+     "fail": 57.9,
+     "med_days": 17.0
+    },
+    "slot": {
+     "net": 725,
+     "per_month": 121,
+     "p10": -486,
+     "lost": 85.2,
+     "no_pay": 64.5
+    }
+   }
+  },
+  "R25|FULL|Q25": {
+   "H1": {
+    "eval": {
+     "pass": 67.5,
+     "fail": 18.5,
+     "med_days": 22.0
+    },
+    "slot": {
+     "net": 10580,
+     "per_month": 1763,
+     "p10": -97,
+     "lost": 55.4,
+     "no_pay": 12.5
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 73.3,
+     "fail": 19.0,
+     "med_days": 18.0
+    },
+    "slot": {
+     "net": 4626,
+     "per_month": 771,
+     "p10": -194,
+     "lost": 65.8,
+     "no_pay": 21.3
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 15.6,
+     "fail": 82.1,
+     "med_days": 17.0
+    },
+    "slot": {
+     "net": -162,
+     "per_month": -27,
+     "p10": -583,
+     "lost": 53.7,
+     "no_pay": 89.4
+    }
+   }
+  },
+  "R25|FULL|ZERO": {
+   "H1": {
+    "eval": {
+     "pass": 56.0,
+     "fail": 23.5,
+     "med_days": 24.0
+    },
+    "slot": {
+     "net": 7737,
+     "per_month": 1289,
+     "p10": -194,
+     "lost": 53.8,
+     "no_pay": 22.8
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 65.1,
+     "fail": 24.7,
+     "med_days": 19.0
+    },
+    "slot": {
+     "net": 3095,
+     "per_month": 516,
+     "p10": -292,
+     "lost": 67.9,
+     "no_pay": 33.0
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 10.4,
+     "fail": 88.1,
+     "med_days": 16.0
+    },
+    "slot": {
+     "net": -315,
+     "per_month": -53,
+     "p10": -583,
+     "lost": 41.5,
+     "no_pay": 93.6
+    }
+   }
+  },
+  "R25|FULL|BAD": {
+   "H1": {
+    "eval": {
+     "pass": 24.9,
+     "fail": 45.4,
+     "med_days": 28.0
+    },
+    "slot": {
+     "net": 2772,
+     "per_month": 462,
+     "p10": -292,
+     "lost": 36.8,
+     "no_pay": 56.3
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 45.1,
+     "fail": 42.8,
+     "med_days": 21.0
+    },
+    "slot": {
+     "net": 866,
+     "per_month": 144,
+     "p10": -292,
+     "lost": 64.4,
+     "no_pay": 63.2
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 2.9,
+     "fail": 95.4,
+     "med_days": 14.0
+    },
+    "slot": {
+     "net": -486,
+     "per_month": -81,
+     "p10": -680,
+     "lost": 16.8,
+     "no_pay": 98.2
+    }
+   }
+  },
+  "R25|SMALL|REAL|quiet": {
+   "H1": {
+    "eval": {
+     "pass": 84.7,
+     "fail": 0.4,
+     "med_days": 32.0
+    },
+    "slot": {
+     "net": 12025,
+     "per_month": 2004,
+     "p10": 1914,
+     "lost": 27.1,
+     "no_pay": 6.9
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 85.9,
+     "fail": 2.5,
+     "med_days": 25.0
+    },
+    "slot": {
+     "net": 5353,
+     "per_month": 892,
+     "p10": -97,
+     "lost": 38.0,
+     "no_pay": 12.6
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 10.0,
+     "fail": 76.4,
+     "med_days": 31.0
+    },
+    "slot": {
+     "net": -186,
+     "per_month": -31,
+     "p10": -389,
+     "lost": 22.7,
+     "no_pay": 96.2
+    }
+   }
+  },
+  "R25|SMALL|ZERO|quiet": {
+   "H1": {
+    "eval": {
+     "pass": 77.9,
+     "fail": 0.7,
+     "med_days": 32.0
+    },
+    "slot": {
+     "net": 10927,
+     "per_month": 1821,
+     "p10": 371,
+     "lost": 30.3,
+     "no_pay": 9.9
+    }
+   },
+   "H2": {
+    "eval": {
+     "pass": 83.4,
+     "fail": 4.1,
+     "med_days": 25.5
+    },
+    "slot": {
+     "net": 4833,
+     "per_month": 806,
+     "p10": -97,
+     "lost": 40.2,
+     "no_pay": 16.5
+    }
+   },
+   "REF": {
+    "eval": {
+     "pass": 7.8,
+     "fail": 79.3,
+     "med_days": 29.5
+    },
+    "slot": {
+     "net": -208,
+     "per_month": -35,
+     "p10": -389,
+     "lost": 19.2,
+     "no_pay": 96.3
+    }
+   }
+  },
+  "A25|none": {
+   "H1": {
+    "eval": null,
+    "slot": {
+     "net": 2986,
+     "per_month": 498,
+     "p10": 737,
+     "lost": 11.0,
+     "no_pay": 8.1
+    }
+   },
+   "H2": {
+    "eval": null,
+    "slot": {
+     "net": 1665,
+     "per_month": 277,
+     "p10": -63,
+     "lost": 15.5,
+     "no_pay": 23.3
+    }
+   },
+   "REF": {
+    "eval": null,
+    "slot": {
+     "net": -105,
+     "per_month": -17,
+     "p10": -315,
+     "lost": 96.8,
+     "no_pay": 87.1
+    }
+   }
+  },
+  "A25|SMALL|REAL": {
+   "H1": {
+    "eval": null,
+    "slot": {
+     "net": 3575,
+     "per_month": 596,
+     "p10": 2337,
+     "lost": 13.2,
+     "no_pay": 2.4
+    }
+   },
+   "H2": {
+    "eval": null,
+    "slot": {
+     "net": 2631,
+     "per_month": 438,
+     "p10": 737,
+     "lost": 13.3,
+     "no_pay": 7.5
+    }
+   },
+   "REF": {
+    "eval": null,
+    "slot": {
+     "net": -12,
+     "per_month": -2,
+     "p10": -315,
+     "lost": 93.6,
+     "no_pay": 80.7
+    }
+   }
+  },
+  "A25|SMALL|Q25": {
+   "H1": {
+    "eval": null,
+    "slot": {
+     "net": 3081,
+     "per_month": 514,
+     "p10": 794,
+     "lost": 22.2,
+     "no_pay": 5.3
+    }
+   },
+   "H2": {
+    "eval": null,
+    "slot": {
+     "net": 1785,
+     "per_month": 298,
+     "p10": -63,
+     "lost": 32.4,
+     "no_pay": 21.4
+    }
+   },
+   "REF": {
+    "eval": null,
+    "slot": {
+     "net": -123,
+     "per_month": -21,
+     "p10": -378,
+     "lost": 97.0,
+     "no_pay": 85.6
+    }
+   }
+  },
+  "A25|SMALL|ZERO": {
+   "H1": {
+    "eval": null,
+    "slot": {
+     "net": 2893,
+     "per_month": 482,
+     "p10": 737,
+     "lost": 27.1,
+     "no_pay": 7.0
+    }
+   },
+   "H2": {
+    "eval": null,
+    "slot": {
+     "net": 1513,
+     "per_month": 252,
+     "p10": -126,
+     "lost": 40.3,
+     "no_pay": 27.6
+    }
+   },
+   "REF": {
+    "eval": null,
+    "slot": {
+     "net": -157,
+     "per_month": -26,
+     "p10": -378,
+     "lost": 97.4,
+     "no_pay": 86.9
+    }
+   }
+  },
+  "A25|SMALL|BAD": {
+   "H1": {
+    "eval": null,
+    "slot": {
+     "net": 2488,
+     "per_month": 415,
+     "p10": -126,
+     "lost": 35.1,
+     "no_pay": 13.0
+    }
+   },
+   "H2": {
+    "eval": null,
+    "slot": {
+     "net": 996,
+     "per_month": 166,
+     "p10": -126,
+     "lost": 59.7,
+     "no_pay": 43.1
+    }
+   },
+   "REF": {
+    "eval": null,
+    "slot": {
+     "net": -221,
+     "per_month": -37,
+     "p10": -441,
+     "lost": 98.3,
+     "no_pay": 89.3
+    }
+   }
+  },
+  "A25|FULL|REAL": {
+   "H1": {
+    "eval": null,
+    "slot": {
+     "net": 4754,
+     "per_month": 792,
+     "p10": 3200,
+     "lost": 17.2,
+     "no_pay": 1.3
+    }
+   },
+   "H2": {
+    "eval": null,
+    "slot": {
+     "net": 4134,
+     "per_month": 689,
+     "p10": 800,
+     "lost": 22.5,
+     "no_pay": 6.8
+    }
+   },
+   "REF": {
+    "eval": null,
+    "slot": {
+     "net": 479,
+     "per_month": 80,
+     "p10": -315,
+     "lost": 85.0,
+     "no_pay": 55.2
+    }
+   }
+  },
+  "A25|FULL|Q25": {
+   "H1": {
+    "eval": null,
+    "slot": {
+     "net": 3028,
+     "per_month": 505,
+     "p10": 611,
+     "lost": 35.0,
+     "no_pay": 9.7
+    }
+   },
+   "H2": {
+    "eval": null,
+    "slot": {
+     "net": 1654,
+     "per_month": 276,
+     "p10": -126,
+     "lost": 55.8,
+     "no_pay": 33.0
+    }
+   },
+   "REF": {
+    "eval": null,
+    "slot": {
+     "net": -70,
+     "per_month": -12,
+     "p10": -441,
+     "lost": 96.2,
+     "no_pay": 79.6
+    }
+   }
+  },
+  "A25|FULL|ZERO": {
+   "H1": {
+    "eval": null,
+    "slot": {
+     "net": 2478,
+     "per_month": 413,
+     "p10": -126,
+     "lost": 42.0,
+     "no_pay": 15.0
+    }
+   },
+   "H2": {
+    "eval": null,
+    "slot": {
+     "net": 983,
+     "per_month": 164,
+     "p10": -189,
+     "lost": 71.4,
+     "no_pay": 46.6
+    }
+   },
+   "REF": {
+    "eval": null,
+    "slot": {
+     "net": -168,
+     "per_month": -28,
+     "p10": -441,
+     "lost": 98.3,
+     "no_pay": 85.0
+    }
+   }
+  },
+  "A25|FULL|BAD": {
+   "H1": {
+    "eval": null,
+    "slot": {
+     "net": 1333,
+     "per_month": 222,
+     "p10": -189,
+     "lost": 62.7,
+     "no_pay": 34.8
+    }
+   },
+   "H2": {
+    "eval": null,
+    "slot": {
+     "net": 149,
+     "per_month": 25,
+     "p10": -189,
+     "lost": 93.9,
+     "no_pay": 76.8
+    }
+   },
+   "REF": {
+    "eval": null,
+    "slot": {
+     "net": -312,
+     "per_month": -52,
+     "p10": -504,
+     "lost": 99.8,
+     "no_pay": 92.7
+    }
+   }
+  },
+  "A25|SMALL|REAL|quiet": {
+   "H1": {
+    "eval": null,
+    "slot": {
+     "net": 3246,
+     "per_month": 541,
+     "p10": 1531,
+     "lost": 12.8,
+     "no_pay": 5.9
+    }
+   },
+   "H2": {
+    "eval": null,
+    "slot": {
+     "net": 2202,
+     "per_month": 367,
+     "p10": -63,
+     "lost": 16.2,
+     "no_pay": 14.5
+    }
+   },
+   "REF": {
+    "eval": null,
+    "slot": {
+     "net": -76,
+     "per_month": -13,
+     "p10": -315,
+     "lost": 95.9,
+     "no_pay": 84.9
+    }
+   }
+  },
+  "A25|SMALL|ZERO|quiet": {
+   "H1": {
+    "eval": null,
+    "slot": {
+     "net": 2935,
+     "per_month": 489,
+     "p10": 674,
+     "lost": 18.1,
+     "no_pay": 8.4
+    }
+   },
+   "H2": {
+    "eval": null,
+    "slot": {
+     "net": 1581,
+     "per_month": 263,
+     "p10": -63,
+     "lost": 34.2,
+     "no_pay": 27.5
+    }
+   },
+   "REF": {
+    "eval": null,
+    "slot": {
+     "net": -109,
+     "per_month": -18,
+     "p10": -378,
+     "lost": 96.9,
+     "no_pay": 86.1
+    }
+   }
+  }
+ },
+ "verdict": {
+  "Z50": {
+   "SMALL": {
+    "real_q25_beat_both_halves": true,
+    "zero_cost_H2": 326,
+    "price": 91.8,
+    "worth_forward_plan": false
+   },
+   "FULL": {
+    "real_q25_beat_both_halves": true,
+    "zero_cost_H2": 1398,
+    "price": 91.8,
+    "worth_forward_plan": false
+   }
+  },
+  "Z25": {
+   "SMALL": {
+    "real_q25_beat_both_halves": true,
+    "zero_cost_H2": 72,
+    "price": 63.0,
+    "worth_forward_plan": false
+   },
+   "FULL": {
+    "real_q25_beat_both_halves": true,
+    "zero_cost_H2": 566,
+    "price": 63.0,
+    "worth_forward_plan": false
+   }
+  },
+  "R25": {
+   "SMALL": {
+    "real_q25_beat_both_halves": false,
+    "zero_cost_H2": 547,
+    "price": 97.2,
+    "worth_forward_plan": false
+   },
+   "FULL": {
+    "real_q25_beat_both_halves": false,
+    "zero_cost_H2": 1798,
+    "price": 97.2,
+    "worth_forward_plan": false
+   }
+  },
+  "A25": {
+   "SMALL": {
+    "real_q25_beat_both_halves": true,
+    "zero_cost_H2": 152,
+    "price": 63.0,
+    "worth_forward_plan": false
+   },
+   "FULL": {
+    "real_q25_beat_both_halves": false,
+    "zero_cost_H2": 682,
+    "price": 63.0,
+    "worth_forward_plan": false
+   }
+  }
+ }
+}
