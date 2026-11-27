@@ -136,11 +136,22 @@ def feed(st: dict, rows: list) -> None:
     st["rows"] += len(rows)
 
 
+def _head(path: str) -> str:
+    """red team #44: the file's first 256 bytes (header + first trades), so a REPLACED file of the same or a larger size restarts too."""
+    try:
+        with open(path, "rb") as fh:
+            return fh.read(256).decode("utf-8", "replace")
+    except OSError:
+        return ""
+
+
 def read_new(st: dict, path: str, max_read: int = MAX_READ) -> int:
     """Read the complete lines after st["off"] (at most max_read bytes) and feed them. Returns the trades added."""
     size = os.path.getsize(path)
-    if size < st["off"]:                              # the file was replaced: start the day again
+    head = _head(path)
+    if size < st["off"] or (st.get("head") and head != st["head"]):   # replaced (shorter, or other first trades): start the day again
         st.update(new_state(st["day"], path))
+    st["head"] = head
     if size == st["off"]:
         return 0
     with open(path, "rb") as fh:
@@ -240,8 +251,14 @@ def kick(now: float | None = None, out_dir: str = OUT_DIR, spawn=None) -> bool:
     """Start one build child when fp.json is older than REFRESH_S and no child is running. Never waits for it."""
     now = time.time() if now is None else now
     p = _P["proc"]
-    if p is not None and p.poll() is None and now - _P["started"] < BUILD_TIMEOUT_S:
-        return False
+    if p is not None and p.poll() is None:
+        if now - _P["started"] < BUILD_TIMEOUT_S:
+            return False
+        try:                                          # red team #44: a stuck child is stopped, never left beside a new one
+            p.kill()
+            p.wait(5)
+        except Exception:  # noqa: BLE001
+            pass
     fpp = os.path.join(out_dir, "fp.json")
     try:
         if now - os.path.getmtime(fpp) < REFRESH_S:

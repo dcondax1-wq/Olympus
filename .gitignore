@@ -401,3 +401,6 @@ data/of_lane_run.json
 data/of_lane_run.lock
 data/of_lane_start.json
 data/of_lane_stop
+
+# red team #44 (day-livefp): the live footprint's state + strip (rebuilt on the PC)
+data/livefp/
