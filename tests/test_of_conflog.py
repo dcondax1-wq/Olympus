@@ -15,6 +15,7 @@ import gzip
 import importlib.util
 import io
 import json
+import re
 import os
 import sys
 import tempfile
@@ -192,7 +193,7 @@ def main():
         check("e. DAY_FILE allows days/<day>/of/NQ_conflog.json.gz", bool(DF.DAY_FILE.match(f"days/{DAY}/of/NQ_conflog.json.gz")))
         check("e. the daily day bundle carries it (EXTRAS)", "of/NQ_conflog.json.gz" in DF.EXTRAS)
         src = open(os.path.join(ROOT, "engine", "datafeed.py"), encoding="utf-8").read()
-        check("e. the nightly 'of' pages carry it", '"NQ_paper.json.gz", "NQ_conflog.json.gz")' in src)
+        check("e. the nightly 'of' pages carry it", bool(re.search(r'OF_FILES \+ \([^)]*"NQ_conflog\.json\.gz"', src)))   # day-ofready2: NQ_lane rides the same tuple
         # ---- f. cloud score on the shipped rows (C-b needs no bars; the others need 1m bars of the day: absent here)
         pc = os.path.join(root, "pc_days", DAY, "of")
         os.makedirs(pc)

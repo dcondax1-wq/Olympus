@@ -509,7 +509,7 @@ def build_of(since: str, now=None, dp_work: str | None = None, max_zip: int = MA
     packed, size, more = {}, 22, False
     for d in days:
         fs = {}
-        for f in OF_FILES + ("NQ_depth5m.csv.gz", "NQ_paper.json.gz", "NQ_lane.json.gz", "NQ_conflog.json.gz"):   # day-ofmax: depth when the day has one; big-ofpipe: the PAPER bot
+        for f in OF_FILES + ("NQ_depth5m.csv.gz", "NQ_paper.json.gz", "NQ_conflog.json.gz", "NQ_lane.json.gz"):   # day-ofmax: depth when the day has one; big-ofpipe: the PAPER bot
             fp_ = os.path.join(base, d, "of", f)
             if f not in OF_FILES and not os.path.exists(fp_):
                 continue
