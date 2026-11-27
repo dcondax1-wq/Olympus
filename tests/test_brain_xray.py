@@ -82,6 +82,12 @@ def main():
           all(len(json.dumps(e, separators=(",", ":"))) <= PR.MAX_STATUS_BYTES and PR._size(e) <= PR.MAX_STATUS_BYTES for e in [core2, *exts2]) and exts2 and exts2[-1].get("cut"),
           [PR._size(e) for e in [core2, *exts2]])
     check("e. ext_hash ignores bx (a changed gate number is not news: no extra ntfy post)", '"glance", "glog", "bf", "bx"' in rep)
+    from engine import brain_xray as BXR      # red team: a guard / BLITZ text naming another account never leaves with its id
+    bxr = BXR.build({"t": 1, "brain": {"stage": "watch", "guards": {"blocking": "hedging: MFFUEVBLDR1234567 holds a SHORT NQ position"},
+                                       "setups": [], "watch": []},
+                     "blitz": {"paper": True, "state": "account FFN12345678 at 26289.5", "signals": []}})
+    js = json.dumps(bxr)
+    check("rt. ids masked in free text (guard, BLITZ), prices kept", "1234567" not in js and "12345678" not in js and "26289.5" in js, js)
     n, ok = len(RES), sum(RES)
     print(f"\n{ok}/{n} passed")
     return 0 if ok == n else 1

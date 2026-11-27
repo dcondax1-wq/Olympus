@@ -48,8 +48,20 @@ def _f(x, n=2):
         return None
 
 
+_ID2 = re.compile(r"\b[A-Z]{2,}[A-Z0-9-]*\d{5,}\b")
+
+
 def _t(s, n=TXT) -> str:
-    s = " ".join(str(s or "").split())
+    """Free text cut short. red team (brains-feed): masked first, since a guard / BLITZ / ATLAS text can name another account
+    ("hedging: <account> holds a SHORT ..."): engine/notify.mask_ids + any LETTERS+5-digit id left; prices (26289.5) stay."""
+    s = str(s or "")
+    try:
+        from .notify import mask_ids
+        s = mask_ids(s)
+    except Exception:  # noqa: BLE001
+        pass
+    s = _ID2.sub(lambda m: "..." + m.group(0)[-4:], s)
+    s = " ".join(s.split())
     return s if len(s) <= n else s[:n - 1].rstrip() + "…"
 
 
