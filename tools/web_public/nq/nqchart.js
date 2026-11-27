@@ -7,13 +7,15 @@
 // loaded after the page. Its own module and card: a failure here never touches the rest of the NQ page. Text only through textContent.
 // Read only: it sends nothing, stores nothing, places nothing. window.NQCHART is the test hook. ?acct=z50k opens on one account.
 import * as B from './nqbars.js?v=b2';
+import * as L from './lcmodel.js?v=1';     // day-livechart 2026-11-27: what the bots see (pure)
 
 const LIB = 'vendor/lightweight-charts.standalone.production.js?v=5.2.1';
 const POLL_MS = 120000, TIMEOUT_MS = 7000;
 const $ = (id) => document.getElementById(id);
 function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; }
 const clear = (el) => { while (el && el.firstChild) el.removeChild(el.firstChild); };
-const S = { feed: undefined, post: null, why: '', acct: 'all', model: null, lib: null, libTried: false, chart: null, series: null, marks: null, lines: [],
+const S = { lite: null, priv: null, privSeen: [], privOn: false, privFails: 0, brief: null, ofroom: null, live: null, replay: null, playing: 0, sweepSeen: null, glLines: [], emaS: null,
+  feed: undefined, post: null, why: '', acct: 'all', model: null, lib: null, libTried: false, chart: null, series: null, marks: null, lines: [],
   whole: false, want: null, mode: 'default', viewKey: '', drawnN: 0, ready: false, fetchedAt: 0, busy: false, err: '' };
 
 // ------------------------------------------------------------------------------------------------ the AGORA colours (canvas needs real colours)
@@ -161,6 +163,7 @@ function makeChart(LC, T) {
   // the view is set before the price axis has measured its labels: when the plot gets narrower (or the phone turns), set it again,
   // unless the owner moved the chart himself (a drag, a pinch, the wheel: from then on his view is kept)
   chart.timeScale().subscribeSizeChange(() => { if (S.want && S.mode !== 'user') setView(S.want[0], S.want[1]); fx(); });
+  chart.subscribeClick((p) => { try { whyAt(p); } catch (e) { /* no popover */ } });
   chart.subscribeCrosshairMove((p) => legend(p && p.time != null && p.seriesData ? p.seriesData.get(series) : null));
   const mine = () => { S.mode = 'user'; };
   for (const ev of ['pointerdown', 'touchstart', 'wheel']) el.addEventListener(ev, mine, { passive: true });
@@ -199,14 +202,29 @@ function draw(m) {
   const T = tokens();
   if (!S.chart) Object.assign(S, makeChart(LC, T));
   const keep = S.drawnN && S.viewKey === m.acct && (S.mode === 'user' || S.mode === 'focus') ? viewNow() : null;   // a refresh keeps where the owner looked
-  S.series.setData(m.candles);
-  try { S.area.setData(m.candles.map((c) => ({ time: c.time, value: c.close }))); const L = m.candles[m.candles.length - 1]; S.tag.setData(L ? [{ time: L.time, value: L.close }] : []); } catch (e) { /* the candles are the chart */ }
+  const cs = S.replay != null ? m.candles.slice(0, S.replay + 1) : m.candles;      // the replay scrubber: the day up to the chosen bar
+  S.series.setData(cs);
+  try { S.area.setData(cs.map((c) => ({ time: c.time, value: c.close }))); const Lc = cs[cs.length - 1]; S.tag.setData(Lc ? [{ time: Lc.time, value: Lc.close }] : []); } catch (e) { /* the candles are the chart */ }
+  drawLiveSeries(LC, cs);
   S.drawnN = m.n;
   S.marks.setMarkers(m.markers.map((x) => ({ time: x.time, position: x.position, price: x.price, shape: x.shape, color: col(T, x.color), text: x.text, size: x.size, id: x.id })));
   for (const pl of S.lines) { try { S.series.removePriceLine(pl); } catch (e) { /* gone */ } }
   S.lines = m.lines.map((l) => S.series.createPriceLine({ price: l.price, color: col(T, l.color), lineWidth: l.kind === 'entry' ? 1 : 2,
-    lineStyle: l.style === 'dashed' ? LC.LineStyle.Dashed : LC.LineStyle.Solid, axisLabelVisible: true, title: l.title }));
-  if (keep && keep.atEnd) { try { S.chart.timeScale().setVisibleLogicalRange({ from: m.n - 1 + 3 - keep.width, to: m.n - 1 + roomRight(m.n - 1 + 3 - keep.width, m.n - 1) }); } catch (e) { /* stays */ } }
+    lineStyle: l.style === 'dashed' ? LC.LineStyle.Dashed : LC.LineStyle.Solid, axisLabelVisible: true, title: l.title + dollars(l) }));
+  for (const pl of S.glLines) { try { S.series.removePriceLine(pl); } catch (e) { /* gone */ } }
+  S.glLines = [];
+  if (!m.lines.length && S.live) {        // the bot's open trade from its glance when the chart post has none yet: entry / stop / target with $
+    for (const t of S.live.trades) {
+      const rows = [['entry', t.entry, 'gold', ''], ['stop', t.stop, 'bad', t.risk != null ? ' -$' + Math.round(t.risk) : ''], ['target', t.target, 'good', t.tgt != null ? ' +$' + Math.round(t.tgt) : '']];
+      for (const [kind, p, c, extra] of rows) {
+        if (p == null) continue;
+        S.glLines.push(S.series.createPriceLine({ price: p, color: col(T, c), lineWidth: kind === 'entry' ? 1 : 2, lineStyle: kind === 'entry' ? LC.LineStyle.Dashed : LC.LineStyle.Solid,
+          axisLabelVisible: true, title: t.name + ' ' + (kind === 'entry' ? t.side + ' entry' : kind === 'stop' ? 'Stop' : 'Target') + extra }));
+      }
+    }
+  }
+  if (S.replay != null) want(Math.max(0, S.replay - B.VIEW_BARS + 1), S.replay, 'replay');
+  else if (keep && keep.atEnd) { try { S.chart.timeScale().setVisibleLogicalRange({ from: m.n - 1 + 3 - keep.width, to: m.n - 1 + roomRight(m.n - 1 + 3 - keep.width, m.n - 1) }); } catch (e) { /* stays */ } }
   else if (keep) { try { S.chart.timeScale().setVisibleRange(keep.vr); } catch (e) { want(m.view.from, m.view.to, 'default'); } }
   else if (S.whole) want(0, m.n - 1, 'whole');
   else want(m.view.from, m.view.to, 'default');
@@ -218,7 +236,7 @@ function draw(m) {
 }
 /** the pulsing last-price dot (DOM, CSS animated: nothing repaints the chart): on the newest close, hidden when that bar is out of view */
 function placePulse() {
-  const d = $('chartPulse'), m = S.model; if (!d || !S.chart || !m || !m.candles.length || S.stale) { if (d) d.hidden = true; return; }
+  const d = $('chartPulse'), m = S.model; if (!d || !S.chart || !m || !m.candles.length || S.stale || S.replay != null) { if (d) d.hidden = true; return; }
   try {
     const L = m.candles[m.candles.length - 1], x = S.chart.timeScale().timeToCoordinate(L.time), y = S.series.priceToCoordinate(L.close), w = S.chart.timeScale().width();
     if (x === null || y === null || x < 0 || x > w) { d.hidden = true; return; }
@@ -246,6 +264,7 @@ function drawFx() {
   const g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
   const X = (t) => ts.timeToCoordinate(t), Y = (p) => S.series.priceToCoordinate(p), half = Math.max(1, (ts.options().barSpacing || 6) / 2);
   const T = tokens(), font = (px, w) => `${w || 600} ${px}px ${T.font}`;
+  const cutT = S.replay != null && m.candles[S.replay] ? m.candles[S.replay].time : Infinity;
   // sessions
   const tint = { asia: 'rgba(157,89,238,0.07)', london: 'rgba(218,203,240,0.05)', ny: 'rgba(241,193,75,0.035)' };
   for (const s of m.sessions || []) {
@@ -281,9 +300,20 @@ function drawFx() {
     g.fillStyle = 'rgba(7,5,12,0.78)'; g.fillRect(tx - 3, ty - 10, tw + 6, 13);                   // a dark backing: readable over the candles
     g.fillStyle = L.src === 'pc' ? '#f1c14b' : 'rgba(218,203,240,0.92)'; g.fillText(L.label, tx, ty);
   }
+  // the bots' own levels (their glance: PD / Globex / London / Asia, ATLAS's S/R, the order-flow room's): gold, from today's first bar
+  const LV = (S.live && S.live.levels) || [], x0d = X(firstToday(m));
+  for (const Lv of LV) {
+    if ((m.levels || []).some((q) => Math.abs(q.price - Lv.price) < 1)) continue;
+    const y = Y(Lv.price); if (y == null || y < 0 || y > H) continue;
+    const xs = x0d == null ? 0 : Math.max(0, x0d - half);
+    g.strokeStyle = Lv.src === 'of' ? 'rgba(180,140,242,0.8)' : 'rgba(241,193,75,0.7)'; g.beginPath(); g.moveTo(xs, Math.round(y) + 0.5); g.lineTo(W, Math.round(y) + 0.5); g.stroke();
+    g.font = font(10, 700); const lab = Lv.label + (Lv.read ? ' · ' + Lv.read : ''), tw = g.measureText(lab).width, tx = Math.min(xs + 4, W - tw - 6), ty = y + (Lv.side > 0 ? -5 : 13);
+    g.fillStyle = 'rgba(7,5,12,0.8)'; g.fillRect(tx - 3, ty - 10, tw + 6, 13); g.fillStyle = Lv.src === 'of' ? '#c9a8ff' : '#f1c14b'; g.fillText(lab, tx, ty);
+  }
   g.setLineDash([]);
-  // sweeps
-  for (const w of m.sweeps || []) {
+  // sweeps (the chart's session levels + the bots' levels)
+  for (const w of [...(m.sweeps || []), ...((S.live && S.live.sweeps) || [])]) {
+    if (w.time > cutT) continue;
     const x = X(w.time), y = Y(w.price); if (x == null || y == null || x < 0 || x > W) continue;
     const yy = y + (w.side > 0 ? -9 : 9);
     g.save(); g.translate(x, yy); g.rotate(Math.PI / 4); g.fillStyle = '#f1c14b'; g.shadowColor = 'rgba(241,193,75,0.8)'; g.shadowBlur = 8; g.fillRect(-3.5, -3.5, 7, 7); g.restore();
@@ -292,6 +322,33 @@ function drawFx() {
     g.fillStyle = 'rgba(7,5,12,0.78)'; g.fillRect(sx - 2, sy - 9, sw + 4, 12);
     g.fillStyle = 'rgba(241,193,75,0.95)'; g.fillText('SWEPT', sx, sy);
   }
+  const Lv2 = S.live || {};
+  // order-flow absorption (the order-flow room, today only): a violet ring at the level where the sweep was absorbed
+  for (const a of Lv2.absorb || []) {
+    if (a.time > cutT) continue;
+    const x = X(a.time), y = Y(a.price); if (x == null || y == null || x < 0 || x > W) continue;
+    g.strokeStyle = '#c9a8ff'; g.lineWidth = 2; g.shadowColor = 'rgba(157,89,238,0.9)'; g.shadowBlur = 10; g.beginPath(); g.arc(x, y, 7, 0, Math.PI * 2); g.stroke(); g.shadowBlur = 0;
+    g.font = font(9, 700); g.fillStyle = 'rgba(7,5,12,0.8)'; const tw = g.measureText('ABSORBED').width; g.fillRect(Math.min(x + 9, W - tw - 6) - 2, y - 5 - 9, tw + 4, 12);
+    g.fillStyle = '#c9a8ff'; g.fillText('ABSORBED', Math.min(x + 9, W - tw - 6), y - 5);
+  }
+  // today's halt (CME early close): a gold dashed vertical line, also when it is still ahead (placed by bar spacing from the last bar)
+  if (Lv2.halt) {
+    let x = X(Lv2.halt.time);
+    const cs = m.candles, lt = cs.length ? cs[cs.length - 1].time : null, lx = lt != null ? X(lt) : null;
+    if (x == null && lx != null && Lv2.halt.time > lt) x = lx + ((Lv2.halt.time - lt) / 300) * (ts.options().barSpacing || 6);
+    if (x != null && x >= 0 && x <= W) {
+      g.strokeStyle = 'rgba(241,193,75,0.85)'; g.setLineDash([6, 4]); g.lineWidth = 1.5; g.beginPath(); g.moveTo(Math.round(x) + 0.5, 0); g.lineTo(Math.round(x) + 0.5, H); g.stroke(); g.setLineDash([]);
+      g.font = font(10, 800); const lab = 'HALT ' + ((B.et(Lv2.haltT) || {}).hm || ''), tw = g.measureText(lab).width, hx = Math.max(2, Math.min(x - tw / 2, W - tw - 4));
+      g.fillStyle = 'rgba(7,5,12,0.85)'; g.fillRect(hx - 4, 26, tw + 8, 15); g.fillStyle = '#f1c14b'; g.fillText(lab, hx, 37);
+    }
+  }
+}
+function firstToday(m) {
+  const cs = m.candles; if (!cs.length) return null;
+  const real = (c) => c.time - ((B.et(c.time) || {}).off || 0), dayOf = (t) => (B.et(t + 6 * 3600) || {}).day;   // the CME day: 18:00 ET starts it
+  const lastDay = dayOf(real(cs[cs.length - 1]));
+  for (const c of cs) if (dayOf(real(c)) >= lastDay) return c.time;
+  return cs[0].time;
 }
 // the readout over the plot: the bar under the finger (or the newest): its ET time + session, O H L C and the change, in the chart's colours
 function legend(bar) {
@@ -393,8 +450,209 @@ function focusTrade(r) {
   try { $('chartBox').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) { /* old browser */ }
 }
 
+// day-livechart 2026-11-27: the stage strip + stamp above, the ticker + next trigger + replay under, tap -> why (text only)
+const PRIV_URL = '/api/live/state', PRIV_MS = 3000, LITE_MS = 30000, AUX_MS = 300000;
+const reduced = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
+const isPriv = () => /^\/site\//.test(location.pathname) || /[?&]priv=1\b/.test(location.search);
+function dollars(l) {
+  if (/\$/.test(l.title || '') || !S.live) return '';
+  for (const t of S.live.trades) {
+    if (l.kind === 'stop' && t.stop != null && Math.abs(t.stop - l.price) < 0.3 && t.risk != null) return ' -$' + Math.round(Math.abs(t.risk));
+    if (l.kind === 'target' && t.target != null && Math.abs(t.target - l.price) < 0.3 && t.tgt != null) return ' +$' + Math.round(Math.abs(t.tgt));
+  }
+  return '';
+}
+/** ATLAS's 5-minute EMA 50 (what it trades around): violet, rose when it is armed SHORT, mint when armed LONG */
+function drawLiveSeries(LC, cs) {
+  const Lv = S.live; if (!Lv) return;
+  const side = Lv.atlasArm && Lv.atlasArm.side, color = side === 'SHORT' ? '#ff5d73' : side === 'LONG' ? '#77db89' : '#b48cf2';
+  if (!S.emaS) S.emaS = S.chart.addSeries(LC.LineSeries, { color, lineWidth: 2, lineStyle: LC.LineStyle.Solid, priceLineVisible: false, lastValueVisible: true, title: 'EMA 50',
+    crosshairMarkerVisible: false, autoscaleInfoProvider: () => null, priceFormat: { type: 'price', precision: 2, minMove: 0.25 } });
+  const last = cs.length ? cs[cs.length - 1].time : 0, t0 = cs.length ? cs[0].time : 0;
+  S.emaS.applyOptions({ color, title: side ? 'EMA 50 · ATLAS ' + side : 'EMA 50' });
+  S.emaS.setData(Lv.ema.filter((p) => p.time <= last && p.time >= t0));
+}
+function stampNow() {
+  const now = Date.now() / 1000, m = S.model || {};
+  if (S.privOn && S.priv) return L.stamp('private', S.priv.t, now);
+  const lt = S.pc && S.pc.t != null ? S.pc.t : null, t = Math.max(lt || 0, m.dataT || 0) || null;
+  return L.stamp('public', t, now);
+}
+function mk(id, cls, where, ref) {
+  let e = $(id); if (e) return e;
+  e = h('div', cls); e.id = id;
+  const box = $('chartBox'); if (!box || !box.parentNode) return null;
+  if (where === 'before') box.parentNode.insertBefore(e, box); else box.parentNode.insertBefore(e, ref || box.nextSibling);
+  return e;
+}
+function renderLive() {
+  const Lv = S.live, m = S.model; if (!m) return;
+  const top = mk('lcTop', 'lctop', 'before'), bot = mk('lcBelow', 'lcbelow', 'after');
+  if (!top || !bot) return;
+  const off = m.state === 'none' && !Lv;
+  top.hidden = off; bot.hidden = off;
+  clear(top);
+  // the honest stamp
+  const st = stampNow(), sp = h('span', 'lcstamp ' + st.cls, st.text); sp.id = 'lcStamp'; sp.setAttribute('role', 'status'); top.appendChild(sp);
+  // LIT's stage strip
+  if (Lv && Lv.stage) {
+    const g = h('div', 'lcstage'); g.id = 'lcStage';
+    const n = Lv.stage.n, of = Lv.stage.of || 10;
+    g.setAttribute('aria-label', `Zlarior's stage: ${Lv.stage.label}${n != null ? `, step ${n} of ${of}` : ''}${Lv.litOn ? '' : ' (off)'}`);
+    const lab = h('span', 'lcsl'); lab.appendChild(h('b', '', 'Zlarior')); lab.appendChild(h('span', '', ' ' + Lv.stage.label + (n != null ? ` ${n}/${of}` : ''))); g.appendChild(lab);
+    const bar = h('span', 'lcsteps'); bar.setAttribute('aria-hidden', 'true');
+    for (let i = 1; i <= of; i++) bar.appendChild(h('i', n != null && i <= n ? (i === n ? 'on now' : 'on') : ''));
+    g.appendChild(bar); top.appendChild(g);
+  }
+  const chips = h('div', 'lcchips');
+  if (Lv && Lv.atlasArm) { const c = h('span', 'lcchip ' + (Lv.atlasArm.side === 'SHORT' ? 'dn' : 'up'), `ATLAS armed ${Lv.atlasArm.side}`); c.id = 'lcAtlas'; chips.appendChild(c); }
+  if (Lv && Lv.halt) { const c = h('span', 'lcchip halt', Lv.halt.passed ? `Halted ${((B.et(Lv.haltT) || {}).hm || '')} ET (early close)` : `Halt ${((B.et(Lv.haltT) || {}).hm || '')} ET today`); c.id = 'lcHalt'; chips.appendChild(c); }
+  if (Lv && Lv.trades.length) for (const t of Lv.trades) chips.appendChild(h('span', 'lcchip gold', `${t.name} ${t.side} open${t.risk != null ? ' · risk $' + Math.round(Math.abs(t.risk)) : ''}${t.tgt != null ? ' · target $' + Math.round(Math.abs(t.tgt)) : ''}`));
+  if (chips.firstChild) top.appendChild(chips);
+  // the "now" ticker + the next trigger + the replay
+  clear(bot);
+  const nx = Lv && Lv.next;
+  const nl = h('p', 'lcnext'); nl.id = 'lcNext';
+  nl.appendChild(h('b', '', nx ? `Next trade if (${nx.bot}${nx.side ? ' ' + nx.side : ''}): ` : 'Next trade: '));
+  nl.appendChild(h('span', '', nx ? nx.text : 'the PC has not said what it waits for yet.'));
+  bot.appendChild(nl);
+  const ol = h('ol', 'lctick'); ol.id = 'lcTicker'; ol.setAttribute('aria-label', 'What the bots just thought, newest first');
+  const rows = (Lv && Lv.ticker) || [];
+  if (!rows.length) ol.appendChild(h('li', 'lcnone', S.lite ? 'No bot thoughts in the PC\'s last post.' : 'Waiting for the PC\'s post (the bots\' thoughts).'));
+  rows.forEach((r, i) => {
+    const li = h('li', i === 0 ? 'lcrow first' : 'lcrow');
+    li.appendChild(h('span', 'lce', r.emoji)); li.appendChild(h('span', 'lct', r.hm)); li.appendChild(h('b', 'lcb ' + r.bot, r.name)); li.appendChild(h('span', 'lcx', r.text));
+    ol.appendChild(li);
+  });
+  bot.appendChild(ol);
+  replayBar(bot, m);
+  sweepFlash();
+}
+// the replay scrubber: today's bars from the first one, Play / Live (44 px), the chart draws the day up to the chosen bar
+function replayBar(bot, m) {
+  if (!m.candles || m.candles.length < 3 || !S.lib) return;
+  const i0 = Math.max(0, m.candles.findIndex((c) => c.time === firstToday(m))), n = m.candles.length;
+  const row = h('div', 'lcreplay'); row.id = 'lcReplay';
+  const play = h('button', 'btn lcbtn', S.playing ? 'Pause' : 'Replay ▶'); play.type = 'button'; play.id = 'lcPlay';
+  play.setAttribute('aria-label', S.playing ? 'Pause the replay' : 'Replay today bar by bar');
+  const r = document.createElement('input'); r.type = 'range'; r.id = 'lcScrub'; r.className = 'lcscrub'; r.min = String(i0); r.max = String(n - 1); r.step = '1';
+  r.value = String(S.replay != null ? S.replay : n - 1); r.setAttribute('aria-label', 'Scrub through today');
+  const at = S.replay != null ? m.candles[S.replay] : null;
+  const lab = h('span', 'lcrl', at ? ((B.et(at.time - ((B.et(at.time) || {}).off || 0)) || {}).hm || '') + ' ET' : 'Live'); lab.id = 'lcRl';
+  const live = h('button', 'btn lcbtn', 'Live'); live.type = 'button'; live.id = 'lcLive'; live.hidden = S.replay == null; live.setAttribute('aria-label', 'Back to live');
+  r.addEventListener('input', () => { stopPlay(); const v = +r.value; S.replay = v >= n - 1 ? null : v; redraw(); });
+  play.addEventListener('click', () => { if (S.playing) { stopPlay(); renderLive(); return; } S.replay = S.replay == null || S.replay >= n - 1 ? i0 : S.replay; S.playing = setInterval(stepPlay, reduced() ? 600 : 220); redraw(); });
+  live.addEventListener('click', () => { stopPlay(); S.replay = null; redraw(); });
+  row.appendChild(play); row.appendChild(r); row.appendChild(lab); row.appendChild(live);
+  bot.appendChild(row);
+}
+function stopPlay() { if (S.playing) { clearInterval(S.playing); S.playing = 0; } }
+function stepPlay() { const m = S.model; if (!m) return stopPlay(); S.replay = (S.replay == null ? 0 : S.replay) + 1; if (S.replay >= m.candles.length - 1) { S.replay = null; stopPlay(); } redraw(); }
+function redraw() { const m = S.model; if (!m || !S.lib || m.state === 'none') return; try { draw(m); } catch (e) { /* the chart stays */ } try { renderLive(); } catch (e) { /* the chart stays */ } }
+// a level swept since the last look flashes gold once (not under reduced motion; the SWEPT mark stays either way)
+function sweepFlash() {
+  const sw = (S.live && S.live.sweeps) || [], keys = sw.map((w) => w.label + '@' + w.time);
+  if (S.sweepSeen == null) { S.sweepSeen = new Set(keys); return; }
+  const fresh = sw.filter((w, i) => !S.sweepSeen.has(keys[i])); keys.forEach((k) => S.sweepSeen.add(k));
+  if (!fresh.length || reduced() || !S.chart) return;
+  const box = $('chartBox');
+  for (const w of fresh) {
+    try {
+      const x = S.chart.timeScale().timeToCoordinate(w.time), y = S.series.priceToCoordinate(w.price); if (x == null || y == null) continue;
+      const f = h('span', 'lcflash'); f.setAttribute('aria-hidden', 'true'); f.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`; box.appendChild(f);
+      setTimeout(() => f.remove(), 2200);
+    } catch (e) { /* the mark stays */ }
+  }
+}
+// tap a mark -> why (sweeps, absorption, the bots' levels, the halt, our trades' arrows)
+function whyAt(p) {
+  const m = S.model, Lv = S.live || {}; if (!p || !p.point || !m || !S.chart) return;
+  const ts = S.chart.timeScale(), X = (t) => ts.timeToCoordinate(t), Y = (v) => S.series.priceToCoordinate(v), at = (t) => (B.et(t - ((B.et(t) || {}).off || 0)) || {}).hm || '';
+  const cand = [];
+  const near = (x, y, r, text, head) => { if (x == null || y == null) return; const d = Math.hypot(x - p.point.x, y - p.point.y); if (d <= r) cand.push({ d, text, head }); };
+  for (const w of [...(m.sweeps || []), ...(Lv.sweeps || [])]) near(X(w.time), Y(w.price), 22, `${w.label || 'A level'} was swept at ${at(w.time)} ET: price ran ${w.side > 0 ? 'above' : 'below'} it to ${B.px(w.price)} and closed back ${w.side > 0 ? 'under' : 'over'} it. That grab of stops is what Zlarior waits for before it looks for a ${w.side > 0 ? 'short' : 'long'}.`, '🧹 Swept');
+  for (const a of Lv.absorb || []) near(X(a.time), Y(a.price), 22, `Order flow at ${a.label} (${B.px(a.price)}), ${at(a.time)} ET: the ${a.side > 0 ? 'buyers' : 'sellers'} who ran it got absorbed (${a.read}). Lane A fades that.`, '🧲 Absorbed');
+  for (const x of m.markers || []) near(X(x.time), Y(x.price != null ? x.price : (m.candles.find((c) => c.time === x.time) || {}).close), 20, (x.why || x.text || 'Our trade') + ` (${at(x.time)} ET)`, x.kind === 'exit' ? '💰 Exit' : '🚀 Entry');
+  for (const l of Lv.levels || []) { const y = Y(l.price); if (y != null && Math.abs(y - p.point.y) <= 10) cand.push({ d: Math.abs(y - p.point.y) + 8, head: '📏 ' + l.label, text: `${l.label} at ${B.px(l.price)}: a level ${l.src === 'of' ? 'the order-flow room' : l.src === 'atlas' ? 'ATLAS' : 'Zlarior'} watches.${l.read ? ' Read: ' + l.read + '.' : ''}${l.src === 'lit' && Lv.why && Lv.why.lit ? ' Zlarior: ' + Lv.why.lit : ''}` }); }
+  if (Lv.halt) { let x = X(Lv.halt.time); if (x != null && Math.abs(x - p.point.x) <= 14) cand.push({ d: 30, head: '📰 Halt', text: Lv.halt.text + ': the bots stop new trades before it and are flat at it.' }); }
+  cand.sort((a, b) => a.d - b.d);
+  showWhy(cand[0] || null);
+}
+function showWhy(c) {
+  const box = $('chartBox'); if (!box) return;
+  let el = $('lcWhy');
+  if (!c) { if (el) el.hidden = true; return; }
+  if (!el) {
+    el = h('div', 'lcwhy'); el.id = 'lcWhy'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-live', 'polite'); box.appendChild(el);
+  }
+  clear(el); el.hidden = false;
+  el.appendChild(h('b', 'lcwh', c.head)); el.appendChild(h('p', 'lcwt', c.text));
+  const x = h('button', 'lcwx', '✕'); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.addEventListener('click', () => { el.hidden = true; }); el.appendChild(x);
+}
+// the private link (the PC serves this site at /site/): the bot's own snapshot every 3 s -> its 5-minute bars + the forming bar from its price
+let PRIVQ = false;
+async function privPoll() {
+  if (PRIVQ || document.hidden) return; PRIVQ = true;
+  try {
+    const t = await getText(PRIV_URL, 2500, 'no-store'); let j = null;
+    try { j = t ? JSON.parse(t) : null; } catch (e) { j = null; }
+    const P = j ? L.privBars(j) : null;
+    if (!P || !P.bars.length) { S.privFails++; if (S.privFails >= 3 && S.privOn) { S.privOn = false; liveTick(); } return; }
+    S.privFails = 0; S.priv = P;
+    const now = Date.now() / 1000;
+    if (P.price != null) { S.privSeen.push({ t: now, p: P.price }); S.privSeen = S.privSeen.filter((x) => x.t >= now - 900); }
+    const was = S.privOn; S.privOn = true;
+    if (!was) { render(); return; }
+    liveTick();
+  } finally { PRIVQ = false; }
+}
+/** a light update: the forming bar glides to its new close (series.update, no rebuild); a new bar or a state change redraws everything */
+function liveTick() {
+  if (!S.post && !S.priv) return;
+  const prev = S.model, m = withPriv(B.model(S.post, S.acct, Date.now() / 1000));
+  if (!S.chart || !S.lib || !prev || prev.state === 'none' || m.state === 'none' || m.n !== prev.n || S.replay != null || !m.candles.length) { if (S.replay == null) render(); else { S.model = m; liveLayer(m); } return; }
+  S.model = m; liveLayer(m);
+  const a = prev.candles[prev.candles.length - 1], b = m.candles[m.candles.length - 1];
+  const put = (c) => { try { S.series.update(c); S.area.update({ time: c.time, value: c.close }); S.tag.setData([{ time: c.time, value: c.close }]); } catch (e) { /* the next draw */ } };
+  if (reduced() || !a || a.time !== b.time || a.close === b.close) put(b);
+  else {
+    const t0 = performance.now(), D = 450;
+    const step = (now) => { const k = Math.min(1, (now - t0) / D), e = 1 - Math.pow(1 - k, 3), c = a.close + (b.close - a.close) * e;
+      put({ ...b, close: c, high: Math.max(b.high, c), low: Math.min(b.low, c) }); placePulse(); if (k < 1) requestAnimationFrame(step); else { put(b); fx(); } };
+    requestAnimationFrame(step);
+    const d = $('chartPulse'); if (d) { d.classList.remove('tick'); void d.offsetWidth; d.classList.add('tick'); }
+  }
+  age(); fx(); placePulse();
+}
+async function aux() {
+  const get = async (f) => { const t = await getText(new URL('./' + f, import.meta.url).href + '?t=' + Math.floor(Date.now() / 60000), 6000, 'no-cache'); try { return t ? JSON.parse(t) : null; } catch (e) { return null; } };
+  const [b, o] = await Promise.all([get('brief.json'), get('of_room.json')]);
+  if (b) S.brief = b; if (o) S.ofroom = o;
+}
+async function liteTick() { if (document.hidden) return; await pcPrice(); if (S.model) { liveLayer(S.model); age(); fx(); } }
+
+/** day-livechart: the bot's own bars on the private link replace the hourly public ones (same trades / markers from the public post) */
+function withPriv(m) {
+  const P = S.priv; if (!P || P.bars.length < 12) return m;
+  const now = Date.now() / 1000, bars = P.bars.slice(-240), fm = L.forming(bars[bars.length - 1], S.privSeen, now);
+  const all = fm ? [...bars, fm] : bars, off = (t) => ((B.et(t) || {}).off || 0);
+  const candles = all.map(([t, o, hh, l, c]) => ({ time: t + off(t), open: o, high: hh, low: l, close: c }));
+  const n = candles.length, dataT = P.t || (all[n - 1][0] + 300);
+  return { ...m, state: 'ok', candles, n, last: all[n - 1][4], dataT, forming: !!fm, rawBars: all, view: { from: Math.max(0, n - B.VIEW_BARS), to: n - 1 },
+    message: '', label: `NQ 5-minute chart from your PC (live), ${n} bars, last price ${B.px(all[n - 1][4])}.`,
+    markers: (m.markers || []).filter((x) => x.time <= candles[n - 1].time), chips: m.chips && m.chips.length ? m.chips : [{ k: 'all', name: 'All', n: 0, color: null }],
+    list: m.list || [], lines: m.lines || [], sessions: m.sessions || [], levels: m.levels || [], sweeps: m.sweeps || [], zones: m.zones || [], extent: m.extent || null };
+}
+function liveLayer(m) {
+  try {
+    const bars = m.rawBars || B.unpack(S.post);
+    S.live = L.live({ lite: S.lite, priv: S.priv, brief: S.brief, ofroom: S.ofroom, bars, candles: m.candles, nowS: Date.now() / 1000 });
+  } catch (e) { S.live = null; }
+  try { renderLive(); } catch (e) { /* the chart stays */ }
+}
 function render() {
-  const m = S.model = B.model(S.post, S.acct, Date.now() / 1000);
+  const m = S.model = withPriv(B.model(S.post, S.acct, Date.now() / 1000));
+  liveLayer(m);
   renderChips(m); say(m); renderList(m);
   if (m.state !== 'none' && S.lib) {
     try { draw(m); $('chart').hidden = false; } catch (e) { S.err = String(e && e.message ? e.message : e); $('chartMsg').textContent = 'The chart could not be drawn on this phone. The trades are listed below.'; $('chartMsg').hidden = false; }
@@ -407,6 +665,7 @@ async function pcPrice() {
   if (!F || !F.fetchLatest) return;
   try {
     const lite = await Promise.race([F.fetchLatest({ feedUrl: new URL('../status_feed.json', import.meta.url).href }), new Promise((r) => setTimeout(() => r(null), 12000))]);
+    if (lite) S.lite = lite;
     const p = B.pcNow(lite); if (p) S.pc = p;
   } catch (e) { /* the bars alone */ }
 }
@@ -424,7 +683,7 @@ async function refresh(force) {
 
 function css() {
   if ($('chartCss')) return;
-  const l = document.createElement('link'); l.id = 'chartCss'; l.rel = 'stylesheet'; l.href = new URL('./chart.css?v=2', import.meta.url).href; document.head.appendChild(l);
+  const l = document.createElement('link'); l.id = 'chartCss'; l.rel = 'stylesheet'; l.href = new URL('./chart.css?v=3', import.meta.url).href; document.head.appendChild(l);
 }
 async function boot() {
   css();
@@ -438,6 +697,7 @@ async function boot() {
   const t3 = $('chart3dBtn');
   if (t3) { t3.hidden = false; setToggle(); t3.addEventListener('click', () => show3d(!S.view3d, true)); }
   render();                                                  // the waiting card at once
+  aux().then(() => { if (S.model) liveLayer(S.model); fx(); });
   const libP = loadLib().then((LC) => { S.lib = LC && LC.createChart ? LC : null; S.libTried = true; });
   await Promise.all([libP, refresh(true)]);
   render();
@@ -448,9 +708,13 @@ async function boot() {
   addEventListener('resize', () => requestAnimationFrame(() => { placePulse(); fx(); }));
   setInterval(() => { if (!document.hidden) age(); }, 30000);
   setInterval(() => refresh(false), POLL_MS);
+  setInterval(liteTick, LITE_MS);                            // day-livechart: the bots' glance / thoughts + the PC price every 30 s
+  setInterval(aux, AUX_MS);
+  if (isPriv()) { privPoll(); setInterval(privPoll, PRIV_MS); }   // the private link: the bot itself every 3 s
+  setInterval(() => { if (!document.hidden && S.model) { const e = $('lcStamp'), st = stampNow(); if (e) { e.textContent = st.text; e.className = 'lcstamp ' + st.cls; } } }, 5000);
   setInterval(() => { if (!document.hidden && S.model && S.model.state !== 'none') say(B.model(S.post, S.acct, Date.now() / 1000)); }, 60000);   // the age keeps counting
   document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(false); });
   window.addEventListener('nq-refresh', () => refresh(true));
 }
-window.NQCHART = { S, B, show3d, ready: () => S.ready && S.libTried && S.fetchedAt > 0, refresh: () => refresh(true), render, setAcct: (k) => { S.acct = k; S.mode = 'default'; render(); } };
+window.NQCHART = { S, B, L, liveTick, privPoll, whyAt, show3d, ready: () => S.ready && S.libTried && S.fetchedAt > 0, refresh: () => refresh(true), render, setAcct: (k) => { S.acct = k; S.mode = 'default'; render(); } };
 boot().catch((e) => { S.err = String(e && e.message ? e.message : e); S.ready = true; S.libTried = true; S.fetchedAt = S.fetchedAt || 1; try { $('chartMsg').textContent = 'The chart could not start: ' + S.err; $('chartMsg').hidden = false; } catch (_) { /* nothing */ } });
