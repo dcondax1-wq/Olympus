@@ -110,6 +110,51 @@ console.log(JSON.stringify({ at, none: A.payoutEta('nope', { name: 'X', plan: ''
           cr["text"] == "$1,505" and cr["note"] == "$5 below the start: $1,505 to make back and reach +$1,500", cr)
 
 
+def part_e():
+    """day-healthqa 2026-11-27: the 7-day clock counts keep-alive fills; live / today per account; the owner's hands steps."""
+    o = node("""
+import * as A from './acctcore.js';
+import * as K from './clock7.js';
+import { createRequire } from 'module';
+const F = createRequire(import.meta.url)('../pc_feed.js');
+const g = (id, x) => ({ id, on: true, armed: true, ...x });
+const lite = { pc: { glance: { bots: [g('lit', { pos: { side: 'long', qty: 4, entry: 26617.5, stop: 26567.25, target: 26880, risk_usd: 412.6, now_usd: 138.4, tgt_usd: 2092 } }),
+  g('atlas', { wait: 'EMA: Armed (long): price at the 5m EMA 50' }), g('rapid', { wait: 'Trades the same LIT setups as Zlarior.' }), g('b25k_2', { on: false })] } },
+  ck: { nt: [1, 1, 0] }, brd: { ev: [[1795758357, 'self_heal', '', 'Self-heal could not fix: NinjaTrader still runs the old LE_TickRec.cs (before build ids; n']] },
+  mf: { a: [{ id: 'atlas', nm: 'ATLAS 25K funded', lt: '2026-11-20' }, { id: 'mffu50k_eval', nm: 'Zlarior 50K', lt: '2026-11-26' }] },
+  k7: { a: [{ id: 'atlas', nm: 'ATLAS 25K funded', lf: '2026-11-25', base: 'fill', hard: '2026-12-02', on: true }, { id: 'mffu50k_eval', nm: 'Zlarior 50K', lf: '2026-11-26', base: 'fill', hard: '2026-12-03', on: true }] } };
+const now = 1795790702;
+const L = { in: A.liveOf(['mffu50k_eval', 'lit'], lite), setup: A.liveOf(['atlas'], lite), wait: A.liveOf(['rapid'], lite), off: A.liveOf(['b25k_2'], lite), none: A.liveOf(['x'], lite) };
+const H = { both: A.handsSteps(lite, now).map((x) => x.k), ok: A.handsSteps({ ...lite, ck: { nt: [1, 1, 1] }, brd: { ev: [] } }, now).map((x) => x.k),
+  unknown: A.handsSteps({ ck: { nt: [1, 1, null] } }, now).map((x) => x.k),
+  old: A.handsSteps({ brd: { ev: [[now - 8 * 86400, 'self_heal', '', 'NinjaTrader still runs the old LE_TickRec.cs']] } }, now).map((x) => x.k),
+  fixed: A.handsSteps({ brd: { ev: [[now - 3600, 'self_heal', '', 'NinjaTrader still runs the old LE_TickRec.cs'], [now - 60, 'self_heal', '', 'NinjaTrader runs LE_TickRec.cs 1a2b3c']] } }, now).map((x) => x.k) };
+const M = F.merge(JSON.parse(JSON.stringify(lite)), []);
+const R = K.rows(M, now), W = Object.fromEntries(R.map((r) => [r.id, { ka: r.ka, w: K.words(r) }]));
+const C = A.clockOf(R.find((r) => r.id === 'atlas'), '2026-11-27', 600, null, '2026-11-27');
+console.log(JSON.stringify({ L, H, mf: M.mf.a, W, C: { lastText: C.lastText, hardText: C.hardText } }));
+""")
+    L = o["L"]
+    check("e. an open trade from the PC's glance: live $ +$138 (0.34R), risk $413 to the stop, $2,092 at the target, LONG 4",
+          L["in"]["state"] == "in" and L["in"]["pos"]["now"] == 138.4 and L["in"]["pos"]["risk"] == 412.6 and L["in"]["pos"]["tgt"] == 2092
+          and L["in"]["pos"]["r"] == 0.34 and L["in"]["pos"]["side"] == "LONG" and L["in"]["icon"] == "\U0001F7E2", L["in"])
+    check("e. today per account: armed setup = setup forming (eyes), waiting = pause, bot off = off, no glance row = nothing",
+          L["setup"]["state"] == "setup" and L["wait"]["state"] == "wait" and L["off"]["state"] == "off" and L["none"]["state"] == "none", L)
+    H = o["H"]
+    check("e. hands steps: Connect on startup only while ck.nt[2] == 0; F5 only while the newest LE_TickRec event says 'still runs the old' (< 7 days)",
+          H["both"] == ["nt_auto", "f5"] and H["ok"] == [] and H["unknown"] == [] and H["old"] == [] and H["fixed"] == [], H)
+    mf = {r["id"]: r for r in o["mf"]}
+    check("e. pc_feed.merge: an mf row's lt becomes the keep-alive's newer confirmed fill (the strategy's day kept as lt_strat); a newer strategy day stays",
+          mf["atlas"]["lt"] == "2026-11-25" and mf["atlas"]["lt_strat"] == "2026-11-20" and mf["atlas"]["lt_ka"] is True
+          and mf["mffu50k_eval"]["lt"] == "2026-11-26" and "lt_ka" not in mf["mffu50k_eval"], mf)
+    W, C = o["W"], o["C"]
+    check("e. 7-day words: 'MFFU last day Wed 12/02 (keep-alive filled Nov 25, ...)' when the keep-alive filled last; a strategy fill says no keep-alive",
+          W["atlas"]["ka"] is True and "keep-alive filled Nov 25" in W["atlas"]["w"]["hard"] and "(the keep-alive)" in W["atlas"]["w"]["last"]
+          and W["mffu50k_eval"]["ka"] is False and "keep-alive" not in W["mffu50k_eval"]["w"]["hard"], W)
+    check("e. the Accounts card's clock: 'Keep-alive filled Wed 11/25' + 'MFFU's last day Wed 12/2 (keep-alive filled Nov 25)'",
+          C["lastText"] == "Keep-alive filled Wed 11/25" and C["hardText"] == "MFFU's last day Wed 12/2 (keep-alive filled Nov 25)", C)
+
+
 def part_b():
     P = json.load(open(os.path.join(NQ, "plan12.json"), encoding="utf-8"))
     R = json.load(open(os.path.join(ROOT, "research", "planner", "results.json"), encoding="utf-8"))["rows"]
@@ -151,7 +196,15 @@ def post_rich(bg=True):
     for r in exts[0]["x"]["mf"]["a"]:
         if r["id"] in eq:
             r["eq"] = eq[r["id"]]
-    if bg:
+    if bg:                                        # day-healthqa: an open trade on Zlarior, the hands steps open, a keep-alive fill newer than ATLAS's last trade
+        core["pc"]["glance"] = {"bots": [{"id": "lit", "on": True, "armed": True, "pos": {"side": "long", "qty": 4, "entry": 26617.5, "stop": 26567.25, "target": 26880,
+                                                                                      "risk_usd": 412.6, "now_usd": 138.4, "tgt_usd": 2092}},
+                                         {"id": "atlas", "on": True, "armed": True, "wait": "EMA: Armed (long): price at the 5m EMA 50"}]}
+        exts[0]["x"]["ck"] = {"nt": [1, 1, 0]}
+        exts[0]["x"]["brd"] = {"ev": [[TA.NOW - 3600, "self_heal", "", "Self-heal could not fix: NinjaTrader still runs the old LE_TickRec.cs (before build ids"]]}
+        for r in exts[0]["x"]["k7"]["a"]:
+            if r["id"] == "atlas":
+                r.update(lf="2026-11-22", base="fill", hard="2026-11-29")
         exts[0]["x"]["bg"] = {"s": "OK", "l": "Buy gate: OK to buy new evals · LIT last 40 trades +30.4R · payouts-minus-fees rule OK (display only)", "sh": "", "t": TA.NOW}
     return core, exts
 
@@ -197,6 +250,13 @@ def part_d():
             a1 = p.evaluate("() => ({ x: document.querySelector('#acct-atlas .ac-more').getAttribute('aria-expanded'), h: document.getElementById('hist-atlas').hidden, pl: !!document.querySelector('#hist-atlas polyline') })")
             p.click(btn)
             a2 = p.evaluate("() => ({ x: document.querySelector('#acct-atlas .ac-more').getAttribute('aria-expanded'), h: document.getElementById('hist-atlas').hidden })")
+            o2 = p.evaluate("""() => ({ hands: document.getElementById('hands').hidden, open: !!document.querySelector('#acct-zlarior .ac-open'),
+                live: (document.querySelector('#acct-zlarior .op-cell.live b') || {}).textContent, now: (document.querySelector('#acct-zlarior .ac-now') || {}).textContent,
+                steps: [...document.querySelectorAll('#hands li b')].map((e) => e.textContent), k7: (document.querySelector('#acct-atlas .ac-k7') || {}).textContent })""")
+            check("d. day-healthqa: Zlarior's open trade shows its live $ (pulsing), the 'in a trade' line; the hands chip lists Connect on startup + F5",
+                  o2["open"] and o2["live"] and o2["live"].startswith("+$138") and "In a trade" in (o2["now"] or "") and not o2["hands"]
+                  and o2["steps"] == ["NinjaTrader: tick 'Connect on startup'", "NinjaTrader: press F5 once"], o2)
+            check("d. day-healthqa: the 7-day clock names the keep-alive's fill", "keep-alive filled" in (o2["k7"] or ""), o2["k7"])
             check("d. History opens ATLAS's sparkline (aria-expanded true) and closes it again",
                   a1 == {"x": "true", "h": False, "pl": True} and a2 == {"x": "false", "h": True}, (a1, a2))
             p.click("#acct-rapid1 .ac-more")
@@ -222,6 +282,8 @@ def part_d():
                 return { cols: new Set(c).size, light: !!document.getElementById('buyLight') }; }""")
             check("d. 1440: two card columns; no 'bg' in the post (the show switch off) = no buy light at all",
                   o["cols"] == 2 and not o["light"] and AK.no_sideways(p) and not errs, o)
+            check("d. day-healthqa: no open hands step in the post = the chip stays hidden; no open trade = no trade box",
+                  p.evaluate("() => document.getElementById('hands').hidden && !document.querySelector('.ac-open')"))
             ctx.close()
     finally:
         srv.shutdown()
@@ -230,6 +292,7 @@ def part_d():
 def main():
     part_a()
     part_a2()
+    part_e()
     part_b()
     part_c()
     if "--static" not in sys.argv:
