@@ -4,8 +4,8 @@
 // Funded accounts also get the payout tracker's line (payready.js model + ../business/payoutcoach.js). Text only through textContent /
 // createElement(NS). Sends nothing, stores nothing. ?at=<ISO time> pins the clock (tests and screenshots only).
 import * as D from './nqdesk.js?v=8';
-import * as K7 from './clock7.js?v=3';
-import * as A from './acctcore.js?v=2';
+import * as K7 from './clock7.js?v=4';
+import * as A from './acctcore.js?v=3';
 import { model as payModel } from './payready.js?v=3';
 
 const $ = (id) => document.getElementById(id);

@@ -156,7 +156,7 @@ def main():
         check(f"page has #{i}", f'id="{i}"' in html)
     check("page draws the new blocks", all(x in js for x in ("drawMore", "D.twins", "D.best", "D.kalshi", "D.calendar", "D.weekend")))
     check("page: text only (no innerHTML / eval)", not re.search(r"innerHTML|outerHTML|insertAdjacentHTML|document\.write|\beval\(", js))
-    check("page cache-busts week.js (v=4)", 'week.js?v=11' in html)
+    check("page cache-busts week.js (v=4)", 'week.js?v=12' in html)
     r = subprocess.run(["node", "--check", os.path.join(BIZ, "week.js")], capture_output=True, text=True)
     check("node: week.js parses", r.returncode == 0, r.stderr[-200:])
 

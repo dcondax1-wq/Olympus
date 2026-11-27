@@ -2,8 +2,8 @@
 // same pipeline as the live screen (livecore.js); ?day=YYYY-MM-DD = that day's replay file (the bots' BACKTEST twins: the card says so).
 // Sends nothing (navigator.share only opens the phone's own share sheet with the PNG), stores nothing. ?at=<ISO> pins the clock (tests).
 import * as D from './nqdesk.js?v=8';
-import * as K7 from './clock7.js?v=2';
-import * as A from './acctcore.js?v=1';
+import * as K7 from './clock7.js?v=4';
+import * as A from './acctcore.js?v=3';
 import * as B from './nqbars.js?v=b1';
 import * as L from './livecore.js?v=1';
 import { cardModel, draw, textOf, SIZES } from './sharecard.js?v=1';

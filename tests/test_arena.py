@@ -367,7 +367,7 @@ def part_f():
     css = open(os.path.join(PAGE, "arena.css"), encoding="utf-8").read()
     js = {n: open(os.path.join(PAGE, n), encoding="utf-8").read() for n in os.listdir(PAGE) if n.endswith(".js")}
     check("f. the kit first (olympus.css + olympus.js data-app=arena), viewport-fit=cover, theme-color, dark",
-          '<link rel="stylesheet" href="../olympus/olympus.css' in html and 'src="../olympus/olympus.js?v=o28" data-app="arena"' in html
+          '<link rel="stylesheet" href="../olympus/olympus.css' in html and 'src="../olympus/olympus.js?v=o29" data-app="arena"' in html
           and "viewport-fit=cover" in html and 'name="theme-color" content="#000000"' in html and 'content="dark"' in html)
     check("f. the PC feed reader is on the page (../pc_feed.js, id pcFeedJs): ../jarvis/data.js reads the PC's status post first, never the old live.json of the suspended account when the post answers",
           '<script src="../pc_feed.js?v=' in html and 'id="pcFeedJs"' in html)

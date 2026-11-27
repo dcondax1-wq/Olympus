@@ -220,7 +220,7 @@ const { pathToFileURL } = require('url');
     // the page's own copies of pc_feed.js / payoutcoach.js (the shim imports them when missing: http:// cannot be imported in node,
     // which is the "file missing" case of a real page)
     const win = { location: { href: 'http://site/ares/', origin: 'http://site', search: '' }, ...(have ? { PC_FEED: F, PAYOUT_COACH: C } : {}) };
-    const doc = { currentScript: { src: 'http://site/home_feed.js?v=5' }, documentElement: {},
+    const doc = { currentScript: { src: 'http://site/home_feed.js?v=6' }, documentElement: {},
       createElement: () => { throw new Error('no script tags: a failed one would trip the OLYMPUS kit'); }, head: { appendChild() { throw new Error('no script tags'); } } };
     const calls = [];
     win.fetch = async (u) => {
