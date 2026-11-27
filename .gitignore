@@ -401,3 +401,13 @@ data/of_lane_run.json
 data/of_lane_run.lock
 data/of_lane_start.json
 data/of_lane_stop
+
+# day-blitzready 2026-11-27: the BLITZ paper lane (engine/blitz_paper.py), PC-local, never tracked
+data/blitz_paper.json
+data/blitz_paper.json.tmp
+data/blitz_paper/
+data/blitz_paper_run.json
+data/blitz_paper_start.json
+data/blitz_paper_stop
+data/blitz_paper_kill
+data/blitz_paper_off

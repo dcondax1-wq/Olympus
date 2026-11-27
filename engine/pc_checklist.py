@@ -106,7 +106,7 @@ def _bots(glance) -> dict:
     return {str(b.get("id")): b for b in (glance or {}).get("bots") or [] if isinstance(b, dict) and b.get("id")}
 
 
-def pillars(glance, blitz, tr, running) -> list:
+def pillars(glance, blitz, tr, running, bp=None) -> list:
     """[[pillar, state, words]] state: run (trading, armed) / on (running, not armed) / paper / off / wait."""
     bots = _bots(glance)
     out = []
@@ -121,7 +121,10 @@ def pillars(glance, blitz, tr, running) -> list:
         else:
             out.append([pid, "off", "stopped"])
     bz = blitz if isinstance(blitz, dict) else {}
-    if bz and not bz.get("off"):
+    pl = bp if isinstance(bp, dict) and bp.get("paper") and not bp.get("error") else None    # day-blitzready: the PAPER lane's own report
+    if pl and bp.get("fresh"):
+        out.append(["BLITZ", "paper", f"paper lane: {bp.get('today_n', 0)} trades today"])
+    elif bz and not bz.get("off"):
         out.append(["BLITZ", "paper" if "PAPER" in str(bz.get("badge") or "").upper() else "run", f"on ({str(bz.get('badge') or 'running').lower()})"])
     else:
         out.append(["BLITZ", "off", "off (hidden, paper only)"])
@@ -162,7 +165,7 @@ def need(b: dict) -> dict | None:
     return None
 
 
-def block(loc: dict | None, glance=None, blitz=None, tr=None, sh=None, nt_running=None, server=None, running=None) -> dict:
+def block(loc: dict | None, glance=None, blitz=None, tr=None, sh=None, nt_running=None, server=None, running=None, bp=None) -> dict:
     """The public "ck" block from this PC's local view + what the report already holds. Pure. <= ~600 bytes."""
     loc = loc or {}
     up = dict(loc.get("up") or {})
@@ -175,7 +178,7 @@ def block(loc: dict | None, glance=None, blitz=None, tr=None, sh=None, nt_runnin
     b = {"pc": 1, "srv": _i(server), "nt": [_i(nt_running), _i(loc.get("nt_conn")), _i(loc.get("nt_auto"))],
          "acc": [list(r) for r in (loc.get("acc") or [])][:8], "ka": loc.get("ka"), "up": {k: v for k, v in up.items() if v},
          "tr": [t.get("d", 0), t.get("of", 60), _i(t.get("on"))] if t else None,
-         "clk": loc.get("clk"), "pl": pillars(glance, blitz, tr, running)}
+         "clk": loc.get("clk"), "pl": pillars(glance, blitz, tr, running, bp)}
     bz = next((p for p in b["pl"] if p[0] == "BLITZ"), None)
     b["bz"] = bz[1] if bz else "off"
     b["need"] = need(b)

@@ -1624,6 +1624,57 @@ def of_lane_kick(now, real: bool = True, root: str | None = None, popen=None) ->
         return f"error {e.__class__.__name__}"
 
 
+BP_LAST_START = 16 * 60 + 5          # no NEW start after 16:05 ET (the lane stops itself at 16:10)
+
+
+def blitz_paper_kick(now, real: bool = True, root: str | None = None, popen=None) -> str | None:
+    """day-blitzready 2026-11-27: start the BLITZ PAPER lane (`-m engine.blitz_paper loop`, engine/blitz_paper.py) detached at BELOW_NORMAL
+    on weekdays 09:25-16:05 ET. PAPER ONLY (it imports no broker / adapter and has no order path); never twice (its heartbeat
+    data/blitz_paper_run.json < 2 min old, or a start < 3 min ago); not while the kill switch is on; LE_BLITZPAPER=0 or
+    data/blitz_paper_off = off. Plain JSON reads. Returns what it did (None = not due). Never raises."""
+    try:
+        root = root or ROOT
+        d = os.path.join(root, "data")
+
+        def rj(n):
+            try:
+                with open(os.path.join(d, n), encoding="utf-8") as fh:
+                    return json.load(fh)
+            except Exception:  # noqa: BLE001
+                return None
+        if os.environ.get("LE_BLITZPAPER") == "0" or os.path.exists(os.path.join(d, "blitz_paper_off")):
+            return "off"
+        e = _et(now)
+        mod = e.hour * 60 + e.minute
+        if e.weekday() >= 5 or not (9 * 60 + 25 <= mod <= BP_LAST_START):
+            return None
+        if (rj("live_state.json") or {}).get("kill") or os.path.exists(os.path.join(d, "blitz_paper_kill")):
+            return "kill"
+        if now - float((rj("blitz_paper_run.json") or {}).get("t") or 0) < 120 and not (rj("blitz_paper_run.json") or {}).get("stopped"):
+            return "running"
+        if now - float((rj("blitz_paper_start.json") or {}).get("t") or 0) < 180:
+            return "starting"
+        try:
+            os.remove(os.path.join(d, "blitz_paper_stop"))             # yesterday's stop flag must not stop today's run
+        except OSError:
+            pass
+        os.makedirs(d, exist_ok=True)
+        with open(os.path.join(d, "blitz_paper_start.json"), "w", encoding="utf-8") as fh:
+            json.dump({"t": int(now)}, fh)
+        if not real:
+            return "started (test)"
+        import subprocess
+        kw = {"cwd": root, "stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL, "stdin": subprocess.DEVNULL}
+        if os.name == "nt":
+            kw["creationflags"] = 0x00000008 | 0x00000200 | 0x08000000 | 0x00004000   # DETACHED | NEW_GROUP | NO_WINDOW | BELOW_NORMAL
+        elif hasattr(os, "nice"):
+            kw["preexec_fn"] = lambda: os.nice(5)
+        (popen or subprocess.Popen)([sys.executable, "-X", "utf8", "-m", "engine.blitz_paper", "loop"], **kw)
+        return "started"
+    except Exception as e:  # noqa: BLE001
+        return f"error {e.__class__.__name__}"
+
+
 def of_paper_line(now, root: str | None = None) -> str | None:
     """Today's OF paper line from data/of_paper.json (plain JSON read, no numpy), else None. Never raises."""
     try:
@@ -1640,6 +1691,7 @@ def tick(now=None, ctx=None, state=None, sender=None, state_path: str = STATE_PA
     if ctx is None:                          # day-oflearn: the OF paper bot (scheduled runs only, never a replay / test ctx)
         of_paper_kick(now)
         of_lane_kick(now)                    # night-of-lane-ready: the order-flow lane runner (Sim only, OFF unless switched on)
+        blitz_paper_kick(now)                # day-blitzready: the BLITZ PAPER lane (never an order)
     state = load_state(state_path) if state is None else state
     D = due(now)
     full = D["presession"] or D["weekly"]
