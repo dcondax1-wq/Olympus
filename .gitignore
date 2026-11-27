@@ -393,3 +393,6 @@ data/eval_buys.json
 data/of_lane.json
 data/of_lane_state.json
 data/of_lane_kill
+
+# screenshots from helper handoffs stay on their branches (they ship to the PC on every update)
+research/handoff/**/shots/
