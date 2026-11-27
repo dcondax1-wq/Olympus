@@ -105,6 +105,19 @@ def main():
     live = open(os.path.join(ROOT, "engine", "ninjatrader.py"), encoding="utf-8").read()
     check("the live engine/ninjatrader.py carries the ES feed (feed_es)", "feed_es" in live)
 
+    # day-healthqa 2026-11-27: the "all clear" after a stale note (once), nothing while a file is stale, nothing without a stale note
+    with tempfile.TemporaryDirectory() as td:
+        sp = os.path.join(td, "shared.jsonl")
+        fresh = [{"file": "NQ_5m.csv", "day": "2026-11-26", "sessions": 0, "stale": False}, {"file": "VIX_1d.csv", "day": "2026-11-25", "sessions": 1, "stale": False}]
+        stale = [dict(fresh[0], stale=True, sessions=4)] + fresh[1:]
+        check("fresh note: none without an earlier stale note", DH.note_fresh(fresh, sp, now=1795790000) == [])
+        DH.note_stale(stale, sp, now=1795755750)
+        check("fresh note: none while a file is still stale", DH.note_fresh(stale, sp, now=1795780000) == [])
+        f1 = DH.note_fresh(fresh, sp, now=1795790000)
+        check("fresh note: ONE 'Data fresh again' after the stale note, keyed data_fresh:<newest day>",
+              len(f1) == 1 and f1[0]["text"].startswith("Data fresh again: all 2 price files") and f1[0]["data"]["keys"] == ["data_fresh:2026-11-26"], f1)
+        check("fresh note: never twice", DH.note_fresh(fresh, sp, now=1795790100) == [])
+
     n = sum(RES)
     print(f"\ndata health: {n}/{len(RES)} {'PASS' if n == len(RES) else 'FAIL'}")
     return 0 if n == len(RES) else 1
