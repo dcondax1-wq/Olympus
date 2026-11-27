@@ -497,3 +497,8 @@
   equal-risk flat control; LIT, ATLAS, BLITZ. 0 of 18 pass (Holm 1.0): LIT grade flips in Jul-Oct (A+ -0.73R, C +1.30R), ATLAS ranks
   weakly every period but 2021-25 A+ loses, BLITZ = leverage. Builder 50K combo: every map -$141..-$1,057/mo in Jul-Oct, more fails.
   POSEIDON not gradable (no H1 ticks). research/grades-2026-11-28/RESULT.md
+- 2026-11-27 All strategies per account, fastest FIRST payout from today's balances (day-allstrats, research/portfolio/allstrats-2026-11-28/,
+  DESIGN.md pre-registered, rank.py engine, one-position risk manager, 39 rows x 4 markets): more bots = payouts 1-4 weeks sooner on every
+  account, but more lost funded accounts; every mix loses in 2021-25 / 2025. Only card: Rapid EOD 25K + BLITZ $300 (Jan 31 paid 31 -> 49% /
+  24 -> 39%, fail +1.8 / +0.4 pts; conflicts with the 2026-11-24 +1-pt bar rejection). Not cards: Zlarior 50K (all mixes raise fail > 3 pts),
+  25K #2 (rule pick fails H2; post-hoc lead = all 3 bots once funded), ATLAS funded + BLITZ $150 (H1 +1.4 pts = noise). POSEIDON untestable (51 tick days).
