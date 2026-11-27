@@ -335,6 +335,15 @@ def _short_why(w) -> str | None:
                      ("target", "target"), ("stop", "stop"), ("flat", "flat time")):
         if key in w:
             return say
+    # red team #38: an unmatched refusal goes into the ntfy status ext and the PUBLIC NQ_lane.json; firm / account texts can name
+    # another account ("hedging: <account> holds ...", "account '<id>' is not ..."): no quoted name, no id-like run, ever
+    try:
+        from .notify import mask_ids
+        w = mask_ids(w)
+    except Exception:  # noqa: BLE001
+        pass
+    w = __import__("re").sub(r"'[^']*'|\"[^\"]*\"", "<account>", w)
+    w = __import__("re").sub(r"[\w-]*\d{5,}[\w-]*|\.\.\.\d+", "<id>", w)
     return w[:40]
 
 
