@@ -286,7 +286,10 @@ function drawFx() {
     const x = X(w.time), y = Y(w.price); if (x == null || y == null || x < 0 || x > W) continue;
     const yy = y + (w.side > 0 ? -9 : 9);
     g.save(); g.translate(x, yy); g.rotate(Math.PI / 4); g.fillStyle = '#f1c14b'; g.shadowColor = 'rgba(241,193,75,0.8)'; g.shadowBlur = 8; g.fillRect(-3.5, -3.5, 7, 7); g.restore();
-    g.font = font(9, 700); g.fillStyle = 'rgba(241,193,75,0.95)'; g.fillText('SWEPT', Math.min(x + 7, W - 34), yy + (w.side > 0 ? -4 : 10));
+    g.font = font(9, 700);
+    const sx = Math.min(x + 7, W - 38), sy = yy + (w.side > 0 ? -4 : 10), sw = g.measureText('SWEPT').width;
+    g.fillStyle = 'rgba(7,5,12,0.78)'; g.fillRect(sx - 2, sy - 9, sw + 4, 12);
+    g.fillStyle = 'rgba(241,193,75,0.95)'; g.fillText('SWEPT', sx, sy);
   }
 }
 // the readout over the plot: the bar under the finger (or the newest): its ET time + session, O H L C and the change, in the chart's colours
