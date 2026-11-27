@@ -1,0 +1,312 @@
+{
+ "H1": {
+  "sessions": 127,
+  "weeks": 25.4,
+  "sweeps_per_wk": 119.9,
+  "cands_per_wk": 32.6,
+  "survive_per_wk": {
+   "window": 29.96,
+   "depth": 27.48,
+   "idm": 18.82,
+   "disp": 12.87,
+   "monday": 12.05,
+   "stop_range": 8.78,
+   "target": 8.66,
+   "fill": 4.69
+  },
+  "killed_first_pct": {
+   "window": 8.1,
+   "depth": 7.6,
+   "idm": 26.6,
+   "disp": 18.2,
+   "monday": 2.5,
+   "stop_range": 10.0,
+   "target": 0.4,
+   "fill": 12.2
+  },
+  "fail_rate_pct": {
+   "window": 8.1,
+   "depth": 8.6,
+   "idm": 29.1,
+   "disp": 31.3,
+   "monday": 6.8,
+   "stop_range": 24.0,
+   "target": 7.7
+  },
+  "sole_killer_per_wk": {
+   "window": 1.14,
+   "depth": 0.71,
+   "idm": 3.35,
+   "disp": 4.65,
+   "monday": 0.47,
+   "stop_range": 2.6,
+   "target": 0.12,
+   "fill": 3.98
+  },
+  "trades": 79,
+  "tpw": 3.11,
+  "net": 34261,
+  "wins": 47,
+  "median_disp": 0.984,
+  "median_depth": 2.115,
+  "median_atr_pts": 25.9,
+  "median_vix_move": 325.2
+ },
+ "JulOct14": {
+  "sessions": 76,
+  "weeks": 15.2,
+  "sweeps_per_wk": 106.8,
+  "cands_per_wk": 31.5,
+  "survive_per_wk": {
+   "window": 28.75,
+   "depth": 26.32,
+   "idm": 17.3,
+   "disp": 10.92,
+   "monday": 10.2,
+   "stop_range": 7.3,
+   "target": 7.11,
+   "fill": 3.75
+  },
+  "killed_first_pct": {
+   "window": 8.8,
+   "depth": 7.7,
+   "idm": 28.6,
+   "disp": 20.3,
+   "monday": 2.3,
+   "stop_range": 9.2,
+   "target": 0.6,
+   "fill": 10.6
+  },
+  "fail_rate_pct": {
+   "window": 8.8,
+   "depth": 8.6,
+   "idm": 31.9,
+   "disp": 35.7,
+   "monday": 7.1,
+   "stop_range": 22.5,
+   "target": 11.5
+  },
+  "sole_killer_per_wk": {
+   "window": 0.99,
+   "depth": 0.86,
+   "idm": 3.16,
+   "disp": 5.2,
+   "monday": 0.39,
+   "stop_range": 1.84,
+   "target": 0.2,
+   "fill": 3.36
+  },
+  "trades": 40,
+  "tpw": 2.63,
+  "net": 9919,
+  "wins": 20,
+  "median_disp": 0.938,
+  "median_depth": 2.037,
+  "median_atr_pts": 24.8,
+  "median_vix_move": 298.0
+ },
+ "Drought": {
+  "sessions": 31,
+  "weeks": 6.2,
+  "sweeps_per_wk": 116.6,
+  "cands_per_wk": 34.5,
+  "survive_per_wk": {
+   "window": 31.77,
+   "depth": 28.06,
+   "idm": 18.87,
+   "disp": 12.42,
+   "monday": 11.77,
+   "stop_range": 5.81,
+   "target": 5.0,
+   "fill": 1.61
+  },
+  "killed_first_pct": {
+   "window": 7.9,
+   "depth": 10.7,
+   "idm": 26.6,
+   "disp": 18.7,
+   "monday": 1.9,
+   "stop_range": 17.3,
+   "target": 2.3,
+   "fill": 9.8
+  },
+  "fail_rate_pct": {
+   "window": 7.9,
+   "depth": 12.6,
+   "idm": 30.4,
+   "disp": 36.0,
+   "monday": 5.1,
+   "stop_range": 40.2,
+   "target": 17.3
+  },
+  "sole_killer_per_wk": {
+   "window": 0.81,
+   "depth": 0.48,
+   "idm": 1.61,
+   "disp": 3.71,
+   "monday": 0.48,
+   "stop_range": 4.52,
+   "target": 0.81,
+   "fill": 3.39
+  },
+  "trades": 7,
+  "tpw": 1.13,
+  "net": -858,
+  "wins": 2,
+  "median_disp": 0.931,
+  "median_depth": 1.78,
+  "median_atr_pts": 36.6,
+  "median_vix_move": 349.7
+ },
+ "Dry9": {
+  "sessions": 8,
+  "weeks": 1.6,
+  "sweeps_per_wk": 113.1,
+  "cands_per_wk": 31.2,
+  "survive_per_wk": {
+   "window": 28.12,
+   "depth": 24.38,
+   "idm": 16.88,
+   "disp": 11.25,
+   "monday": 11.25,
+   "stop_range": 1.88,
+   "target": 1.88,
+   "fill": 0.0
+  },
+  "killed_first_pct": {
+   "window": 10.0,
+   "depth": 12.0,
+   "idm": 24.0,
+   "disp": 18.0,
+   "monday": 0.0,
+   "stop_range": 30.0,
+   "target": 0.0,
+   "fill": 6.0
+  },
+  "fail_rate_pct": {
+   "window": 10.0,
+   "depth": 14.0,
+   "idm": 32.0,
+   "disp": 34.0,
+   "monday": 0.0,
+   "stop_range": 56.0,
+   "target": 20.0
+  },
+  "sole_killer_per_wk": {
+   "window": 0.62,
+   "depth": 0.62,
+   "idm": 1.88,
+   "disp": 3.75,
+   "monday": 0.0,
+   "stop_range": 6.25,
+   "target": 0.0,
+   "fill": 1.88
+  },
+  "trades": 0,
+  "tpw": 0.0,
+  "net": 0,
+  "wins": 0,
+  "median_disp": 1.022,
+  "median_depth": 1.772,
+  "median_atr_pts": 47.4,
+  "median_vix_move": 445.0
+ },
+ "2021-25": {
+  "sessions": 1085,
+  "weeks": 217.0,
+  "sweeps_per_wk": 129.6,
+  "cands_per_wk": 33.9,
+  "survive_per_wk": {
+   "window": 31.01,
+   "depth": 28.57,
+   "idm": 18.94,
+   "disp": 13.42,
+   "monday": 12.66,
+   "stop_range": 11.1,
+   "target": 10.88,
+   "fill": 3.13
+  },
+  "killed_first_pct": {
+   "window": 8.5,
+   "depth": 7.2,
+   "idm": 28.4,
+   "disp": 16.3,
+   "monday": 2.3,
+   "stop_range": 4.6,
+   "target": 0.6,
+   "fill": 22.9
+  },
+  "fail_rate_pct": {
+   "window": 8.5,
+   "depth": 8.3,
+   "idm": 31.7,
+   "disp": 30.2,
+   "monday": 5.2,
+   "stop_range": 13.7,
+   "target": 3.8
+  },
+  "sole_killer_per_wk": {
+   "window": 1.08,
+   "depth": 0.95,
+   "idm": 5.11,
+   "disp": 4.62,
+   "monday": 0.62,
+   "stop_range": 1.32,
+   "target": 0.22,
+   "fill": 7.75
+  },
+  "trades": 520,
+  "tpw": 2.4,
+  "net": 5180,
+  "wins": 281,
+  "median_disp": 1.014,
+  "median_depth": 2.294,
+  "median_atr_pts": 14.8,
+  "median_vix_move": 230.9
+ },
+ "chance": {
+  "drought_sessions": 31,
+  "drought_trades": 7,
+  "hist_30sess_windows": 1056,
+  "hist_windows_le_7": 19,
+  "pct_hist_windows_le_7": 1.8,
+  "hist_30sess_median": 14.0,
+  "hist_30sess_p5": 9.0,
+  "longest_dry_spells": [
+   {
+    "sessions": 10,
+    "from": "2025-04-16"
+   },
+   {
+    "sessions": 10,
+    "from": "2025-04-01"
+   },
+   {
+    "sessions": 8,
+    "from": "2026-11-17"
+   },
+   {
+    "sessions": 7,
+    "from": "2026-10-15"
+   },
+   {
+    "sessions": 7,
+    "from": "2025-11-26"
+   },
+   {
+    "sessions": 7,
+    "from": "2023-07-27"
+   },
+   {
+    "sessions": 6,
+    "from": "2026-03-05"
+   },
+   {
+    "sessions": 6,
+    "from": "2025-06-17"
+   }
+  ],
+  "dry_spells_ge_8_before_2026": 2,
+  "current_dry_sessions": 8
+ }
+}
