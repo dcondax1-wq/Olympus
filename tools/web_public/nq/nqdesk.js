@@ -568,7 +568,11 @@ function ring(frac, tone) {
   const mk = (cls, extra) => { const e = document.createElementNS(NSV, 'circle'); e.setAttribute('cx', '32'); e.setAttribute('cy', '32'); e.setAttribute('r', String(r)); e.setAttribute('class', cls); for (const k in extra || {}) e.setAttribute(k, extra[k]); return e; };
   s.appendChild(mk('hx-r0'));
   const f = frac === null ? 0 : Math.max(0, Math.min(1, frac));
-  if (f > 0) s.appendChild(mk('hx-r1', { 'stroke-dasharray': `${(c * f).toFixed(2)} ${c.toFixed(2)}`, transform: 'rotate(-90 32 32)' }));
+  if (f > 0) {
+    const r1 = mk('hx-r1', { 'stroke-dasharray': `0 ${c.toFixed(2)}`, transform: 'rotate(-90 32 32)' }), fin = `${(c * f).toFixed(2)} ${c.toFixed(2)}`;
+    s.appendChild(r1);
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(() => requestAnimationFrame(() => r1.setAttribute('stroke-dasharray', fin))); else r1.setAttribute('stroke-dasharray', fin);
+  }
   return s;
 }
 function countUp(node, to, box) {
@@ -591,6 +595,7 @@ function drawHero(box, H) {
   set('phase', H.phase.label); set('who', H.phase.who || ''); set('next', H.nextText ? 'Next: ' + H.nextText : '');
   set('honest', H.honest); const hn = q('honestw'); if (hn) hn.hidden = !H.honest;
   box.dataset.tone = H.tone; box.dataset.level = H.level;
+  if (!box._hxIn && (H.accts.some((a) => a.has) || H.honest || H.bots.length)) { box._hxIn = true; box.classList.add('hx-enter'); }   // the one load moment
   const ab = q('accts');
   if (ab) {
     clear(ab);

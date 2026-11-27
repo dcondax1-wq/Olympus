@@ -5,7 +5,7 @@
 // ?demo=1 the example; ?demo=1&silent=4d (or 90m, 5h) the example with a silent PC; ?flat=1 the 2D columns; ?howto=1 opens the sheet.
 import * as C from './nqcore.js?v=d6';   // d6 (night-seedata): today's $ in the first line; d1 (polish2 2026-11-19): the CME trading day
 import * as T from '../olympus/truth.js';
-import * as D from './nqdesk.js?v=12';
+import * as D from './nqdesk.js?v=13';
 import * as GM from './goals_model.js?v=1';             // night-nq-main: ONE goals model (QA #4)
 import { unpack as unpackBars } from './nqbars.js?v=b1';     // nqdash3: the accounts strip, the bots' thinking, the quality checks
 import * as G from './nqgoals.js?v=10';

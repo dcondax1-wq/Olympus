@@ -9,12 +9,8 @@ box-shadow:0 0 0 1px rgba(157,89,238,.10) inset,0 24px 60px rgba(0,0,0,.7),0 0 6
 .hx-in{position:relative;z-index:1;padding:18px 16px 16px;display:grid;gap:14px;}
 .hx-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 18px;}
 .hx-money{display:grid;gap:2px;}
-.hx-k{font-size:12px;letter-spacing:.18em;font-weight:800;color:var(--nq-cyan-hi);text-transform:uppercase;}
 .hx-big{font-size:clamp(44px,12vw,72px);line-height:.95;font-weight:900;letter-spacing:-.02em;color:var(--ag-text);
 text-shadow:0 0 28px rgba(157,89,238,.55),0 2px 0 rgba(0,0,0,.6);font-variant-numeric:tabular-nums;}
-.hx-big.up{color:var(--ag-good);text-shadow:0 0 30px rgba(119,219,137,.45),0 2px 0 rgba(0,0,0,.6);}
-.hx-big.down{color:var(--ag-bad);text-shadow:0 0 30px rgba(239,68,68,.40),0 2px 0 rgba(0,0,0,.6);}
-.hx-big.flat{color:var(--ag-gold);text-shadow:0 0 30px rgba(241,193,75,.40);}
 .hx-age{font-size:13px;color:var(--ag-muted);display:inline-flex;align-items:center;gap:6px;}
 .hx-age::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--ag-muted);box-shadow:0 0 8px currentColor;}
 .hx-age.lv-ok::before{background:var(--ag-good);color:var(--ag-good);} .hx-age.lv-warn::before{background:var(--ag-gold);color:var(--ag-gold);} .hx-age.lv-bad::before{background:var(--ag-bad);color:var(--ag-bad);}
@@ -108,9 +104,7 @@ html{scroll-padding-top:124px}
 html[data-oly-scheme="light"] .hx-jump{background:rgba(255,255,255,.9)}
 @media (min-width:1100px){#app>.hx-jump{grid-column:1/-1}}
 @media (max-width:759px){.hx-acc:last-child:nth-child(odd){grid-column:1/-1}}
-/* QA #9: the kit's round floating controls (Ask Jarvis, Home) docked as glass chips on this page: they read as controls, never as part of a 3D scene */
 body .oly-ask-btn,body .oly-home{background:rgba(6,4,11,.82)!important;border:1px solid var(--hx-line2)!important;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 6px 18px rgba(0,0,0,.6),0 0 12px rgba(157,89,238,.25)!important}
-/* QA #5: folds (the same accounts the hero shows, one tap away) */
 .nq-fold{border:1px solid var(--ag-line);border-radius:18px;background:linear-gradient(180deg,rgba(22,19,30,.9),rgba(2,2,4,.9));overflow:hidden}
 .nq-fold>summary{list-style:none;cursor:pointer;min-height:56px;display:grid;align-content:center;gap:2px;padding:10px 44px 10px 16px;position:relative}
 .nq-fold>summary::-webkit-details-marker{display:none}
@@ -123,3 +117,33 @@ body .oly-ask-btn,body .oly-home{background:rgba(6,4,11,.82)!important;border:1p
 .nq-fold>:not(summary){margin:0 12px 12px}
 @media (min-width:1100px){#app>.nq-fold{grid-column:1/-1}#app>.nq-fold[open]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}#app>.nq-fold>summary{grid-column:1/-1}#app>.nq-fold>#acctCard{grid-column:1/-1}}
 main#app{--ag-fs-cap:12px}
+.hx{--hx-s1:4px;--hx-s2:8px;--hx-s3:12px;--hx-s4:16px;--hx-s5:24px;--hx-s6:32px}
+.hx-in{padding:var(--hx-s5) var(--hx-s4) var(--hx-s4);gap:var(--hx-s4)}
+.hx-k{text-transform:uppercase;font-size:12px;letter-spacing:.22em;font-weight:700;color:var(--nq-cyan-hi);opacity:.9}
+.hx-big{font-weight:800;letter-spacing:-.035em;font-feature-settings:"tnum" 1,"lnum" 1;line-height:.92}
+.hx-big.up{background:linear-gradient(180deg,#d6ffe0 0%,#77db89 55%,#3fae55 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 22px rgba(119,219,137,.35))}
+.hx-big.down{background:linear-gradient(180deg,#ffd4d4 0%,#f87171 60%,#dc2626 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 22px rgba(239,68,68,.3))}
+.hx-big.flat{background:linear-gradient(180deg,#fff1c4 0%,#f1c14b 60%,#c8a24a 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hx-age{font-size:12.5px;letter-spacing:.02em}
+.hx-clock b{font-size:13px;letter-spacing:.14em;text-transform:uppercase}
+.hx-acc{padding:var(--hx-s3) var(--hx-s3) var(--hx-s3);gap:var(--hx-s2)}
+.hx-acc-nm{font-size:14px;font-weight:700;letter-spacing:.01em}
+.hx-goal b{font-weight:800;letter-spacing:-.02em;font-feature-settings:"tnum" 1}
+.hx-room-l b,.hx-acc-ft .ag-num{font-feature-settings:"tnum" 1}
+.hx-bot-h b{font-size:15px;letter-spacing:.02em}
+.hx-bot-w{font-size:12px;letter-spacing:.16em}
+@media (min-width:760px){.hx-in{padding:var(--hx-s6) var(--hx-s6) var(--hx-s5);gap:var(--hx-s5)}.hx-big{font-size:clamp(64px,7vw,96px)}}
+.hx::after{content:'';position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(105deg,transparent 35%,rgba(218,203,240,.16) 48%,rgba(241,193,75,.14) 52%,transparent 65%);transform:translateX(-120%);opacity:0}
+@media (prefers-reduced-motion:no-preference){
+  .hx.hx-enter::after{animation:hx-sweep 1.4s cubic-bezier(.2,.7,.2,1) .15s both}
+  .hx.hx-enter .hx-acc{animation:hx-rise .75s cubic-bezier(.2,.8,.2,1) both,hx-float 7s ease-in-out 1.2s infinite}
+  .hx.hx-enter .hx-acc:nth-child(2){animation-delay:.08s,2.9s}.hx.hx-enter .hx-acc:nth-child(3){animation-delay:.16s,4.6s}.hx.hx-enter .hx-acc:nth-child(4){animation-delay:.24s,6.3s}
+  .hx.hx-enter .hx-bot{animation:hx-rise .7s cubic-bezier(.2,.8,.2,1) .05s both}
+  .hx.hx-enter .hx-money{animation:hx-in .8s cubic-bezier(.2,.8,.2,1) both}
+}
+@keyframes hx-sweep{0%{transform:translateX(-120%);opacity:0}15%{opacity:1}100%{transform:translateX(120%);opacity:0}}
+@keyframes hx-rise{from{opacity:0;transform:translateZ(0) translateY(14px) scale(.98);filter:blur(4px)}to{opacity:1;transform:translateZ(18px);filter:none}}
+@keyframes hx-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.hx-acc-nm{overflow-wrap:normal;word-break:normal;hyphens:none}
+.hx-acc-st{letter-spacing:.05em;padding:1px 6px;font-size:12px}
+@media (max-width:420px){.hx-acc-nm{font-size:13.5px}.hx-acc-st{letter-spacing:.02em;padding:1px 5px}}
