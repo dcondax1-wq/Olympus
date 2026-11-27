@@ -1,4 +1,4 @@
-"""Red team #29 (night-of-asks): the "of" ask dedup is ONE per answering night (16:00 ET .. next 15:59), never a sliding 20 h that
+"""Red team #29 (night-of-asks): the "of" ask dedup is ONE per answering night (09:00 ET .. next 08:59), never a sliding 20 h that
 skips the next night; "bf" (backfill) asks are never swallowed by it.
     python -X utf8 -m tests.test_of_asks_rt
 """

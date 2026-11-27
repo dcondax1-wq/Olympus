@@ -736,9 +736,10 @@ def pending(msgs: list, now, st: dict) -> list:
 
 
 def of_night(t) -> str:
-    """red team #29: the order-flow NIGHT a moment belongs to: the PC answers 16:00 ET .. 01:50 ET next morning, so the ET clock
-    minus 16 h gives one key for one whole answering night (Mon 16:00 .. Tue 15:59 = Monday's night)."""
-    return (_et(int(t)) - dt.timedelta(hours=16)).date().isoformat()
+    """red team #29: the order-flow NIGHT a moment belongs to. On a weekday the PC answers 16:00 ET .. 01:50 ET next morning; the
+    key flips at 09:00 ET, the middle of the hours it never answers, so one whole answering night has one key (Mon 09:00 ..
+    Tue 08:59 = Monday's night) and an odd-hour answer (a weekend) still lands on the night it belongs to."""
+    return (_et(int(t)) - dt.timedelta(hours=9)).date().isoformat()
 
 
 def of_answered_recently(st: dict, now) -> bool:
