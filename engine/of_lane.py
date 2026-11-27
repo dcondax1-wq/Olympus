@@ -175,6 +175,12 @@ def _nt_open(root) -> bool:
     return any(isinstance(lg, dict) and lg.get("status") in OPEN_STATUSES for lg in s.get("legs") or [])
 
 
+def _nt_open_account(root) -> str | None:
+    """The account of an open bracket in the adapter's write-ahead state (it saves its own account name), else None."""
+    s = _rj(_p(root, "data", NT_STATE_NAME), {}) or {}
+    return str(s["account"]) if _nt_open(root) and s.get("account") else None
+
+
 def book(S: dict, P: dict, today: str, open_pnl: float = 0.0, open_micros: int = 0) -> dict:
     from . import firms
     return firms.book(float(P.get("start") or 0.0), [(c["day"], c["t"], c["pnl"]) for c in S["closes"]], today,
@@ -322,7 +328,7 @@ def _sync_trades(S, ad, now, last_px):
 
 
 def tick(now: float | None = None, root: str = ROOT, nd: str | None = None, ad=None, force_step: bool = False,
-         news_events=None) -> dict:
+         news_events=None, clock=None) -> dict:
     """One lane run. Returns {"S", "routed": [...], "ad"}. While OFF and flat it touches nothing (no adapter, no lock)."""
     now = float(now or time.time())
     cfg = load_cfg(root)
@@ -337,10 +343,19 @@ def tick(now: float | None = None, root: str = ROOT, nd: str | None = None, ad=N
     if not cfg["on"] and not open_tr and ad is None and not _nt_open(root):
         return {"off": True, "S": S, "routed": []}
     nd = nd or cfg.get("nt_folder") or OP.nt_dir()
+    # red team 2026-11-27: an open trade is always managed on ITS account (remembered on the trade / the adapter's state), never on
+    # whatever data/of_lane.json says now: an edit mid-trade cannot orphan the Sim trade's stop / target / 15:55 close
+    held = next((t.get("account") for t in open_tr if t.get("account")), None) or _nt_open_account(root)
+    acct = held or cfg.get("account")
+    if sim_problem(acct):
+        if ad is not None:
+            ad.release_lock()
+        return {"refused": sim_problem(acct), "S": S, "routed": []}
+    if ad is not None and str(ad.account) != str(acct):
+        ad.release_lock()
+        ad = None
     if ad is None:
-        if sim_problem(cfg.get("account")) and not open_tr:
-            return {"refused": sim_problem(cfg.get("account")), "S": S, "routed": []}
-        ad = make_adapter(cfg, root, nd)
+        ad = make_adapter({**cfg, "account": acct}, root, nd, clock=clock)
     out = {"S": S, "routed": [], "ad": ad}
     killed = OP._kill(root) or os.path.exists(_p(root, "data", KILL_NAME))
     ad.tick()
@@ -432,6 +447,7 @@ def _send(S, ad, tr, cfg, now, out):
     """One bracket through the adapter (write-ahead: the trade is saved 'sending' before the order file goes out)."""
     d = tr["d"]
     tr["status"] = "sending"
+    tr["account"] = str(ad.account)                   # the account this trade lives on (managed there until it is closed)
     save_state(S, cfg.get("_root") or ROOT)
     act = {"side": "buy" if d == 1 else "sell", "qty": tr["qty"], "stop": tr["stop"], "target": tr["target"], "entry": tr["est"],
            "sym": "NQ", "entry_t": tr["entry_t"], "target_rr": E5_RR}

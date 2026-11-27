@@ -389,6 +389,31 @@ def main():
           len(sent0) == 1 and len(sent1) == 1 and tr["status"] == "closed" and tr.get("pnl") is not None
           and not any(v[0] for v in g.fake.pos.values()), (len(sent0), len(sent1), tr))
     g.ad.release_lock()
+    # red team 2026-11-27: data/of_lane.json edited to a REAL account mid-trade (+ a restart): the Sim trade is still managed on
+    # Sim101 to its close, no order ever names the other account, no new trade is routed
+    g = Rig(tempfile.mkdtemp(prefix="oflane_"), W, d0, d1)
+    g.run(g.hm(9, 25), t_dec + 61)
+    tr0 = next((x for x in g.S()["trades"] if x["row_id"] == first["id"]), {})
+    json.dump({**L.DEFAULT_CFG, "on": True, "account": "MFFUEVAL123", "nt_folder": g.nd}, open(os.path.join(g.root, "data", L.CFG_NAME), "w"))
+    g.run(t_dec + 61, t_dec + 181)
+    g.ad.release_lock(); g.ad = None                        # and a restart while the switch names the real account
+    g.now[0] = float(t_dec + 200)
+    outs = [g.L.tick(now=t_dec + 200, root=g.root, nd=g.nd, news_events=[], clock=lambda: g.now[0])]
+    g.ad = outs[0].get("ad")
+    if g.ad is not None:
+        g.ad._sleep = lambda s_: (g.fake.process(), g.now.__setitem__(0, g.now[0] + s_))
+        g.ad._alert_fn = g.alerts.append
+    g.run(t_dec + 241, g.hm(16, 6))
+    S = g.S()
+    tr = next(x for x in S["trades"] if x["row_id"] == first["id"])
+    real = [ln for f in g.fake.files for ln in f[1] if "MFFUEVAL123" in ln]
+    later = [x for x in S["trades"] if x["decided_t"] > t_dec + 61 and x["status"] not in ("refused",) and x["row_id"] != first["id"]]
+    check("red team: switch edited to a real account mid-trade -> the Sim101 trade is still managed to its close, nothing sent "
+          "to the real account, no new trade", tr0.get("account") == "Sim101" and tr["status"] == "closed"
+          and not any(v[0] for v in g.fake.pos.values()) and not real and not later
+          and (outs[0].get("ad") is not None and outs[0]["ad"].account == "Sim101"), (tr0.get("account"), tr["status"], real[:2], later, g.fake.pos))
+    if g.ad:
+        g.ad.release_lock()
     # a crash between the write-ahead mark and the order file: the lane never resends it
     with tempfile.TemporaryDirectory() as td:
         g = Rig(td, W, d0, d1)
