@@ -76,6 +76,7 @@ const watch = () => { if (card && typeof IntersectionObserver === 'function') {
   const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); loadView(); } }, { rootMargin: '400px 0px' });
   io.observe(card);
 } };
-if (document.readyState === 'complete') watch(); else addEventListener('load', watch, { once: true });
+const watchIdle = () => (typeof requestIdleCallback === 'function' ? requestIdleCallback(watch, { timeout: 2500 }) : setTimeout(watch, 1500));   // idle: the effects kit (vault) gets its turn too
+if (document.readyState === 'complete') watchIdle(); else addEventListener('load', watchIdle, { once: true });
 const idle = () => (typeof requestIdleCallback === 'function' ? requestIdleCallback(loadView, { timeout: 2500 }) : setTimeout(loadView, 1500));
 if (document.readyState === 'complete') idle(); else addEventListener('load', idle, { once: true });
