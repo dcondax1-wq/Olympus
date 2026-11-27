@@ -20,6 +20,8 @@ that flips lane A to NO. The patient entry E5 keeps it YES. The forward days mus
   - else the next bar's open + 18 ticks.
 - The same stop (1 tick beyond the signal bar's extreme), 2R from the E5 fill, flat 15:55, kill. Exits use the lane's own
   `_resolve`: closed 5m bars, stop first, stop fill + 1 tick.
+- **Costs:** the E5 book pays $1.90 a micro round turn (engine/costs.COMM_RT). The v1 book keeps its frozen $1.40, labelled
+  "frozen v1" in day_summary (comm_v1 / comm_e5), so a $ comparison across the two books must add $0.50 a trade to v1.
 - **Logged on the row:** fill_e5, fill_t_e5 (ms), how_e5 (level | marketable | market+18 | none), exit_e5, why_e5, R_e5, usd_1_e5,
   usd_500_e5. Rows are never rewritten once resolved.
 

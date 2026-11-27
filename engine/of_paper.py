@@ -44,6 +44,10 @@ VERSION = 1
 TICK, PV, COMM, SLIP = 0.25, 2.0, 1.40, 0.25            # of_study: MNQ $2 a point, $1.40 a micro round trip, 1 tick
 ZONE, ABS_SHARE, RR, RISK_USD, MAXQ = 8, 0.20, 2.0, 500.0, 40
 WAIT_S = 60
+try:                                                    # DESIGN_paper_v2: the E5 book pays the research cost ($1.90)
+    from .costs import COMM_RT as COMM_E5
+except Exception:  # noqa: BLE001
+    COMM_E5 = 1.90
 E5_WAIT_S, E5_MKT_TICKS = 300, 18                        # DESIGN_paper_v2.md: limit at the level 300 s, else market + 18 ticks
 MAX_ROWS = 600
 _M = {}
@@ -148,9 +152,10 @@ def _close(row, t, px, why):
     d, fill, stop = row["d"], row["fill"], row["stop"]
     risk = (fill - stop) * d
     q = _risk_q(risk)
+    cm = float(row.get("comm", COMM))                # v1 rows: $1.40 (frozen); the E5 shadow row: COMM_E5
     row.update(exit_t=int(t), exit=round(px, 2), why=why, R=round((px - fill) * d / risk, 3),
-               usd_1=round((px - fill) * d * PV - COMM, 2),
-               usd_500=round((px - fill) * d * PV * q - COMM * q, 2) if q >= 1 else None)
+               usd_1=round((px - fill) * d * PV - cm, 2),
+               usd_500=round((px - fill) * d * PV * q - cm * q, 2) if q >= 1 else None)
 
 
 def _kill_close(row, ticks_t, ticks_p, t_kill_ms):
@@ -218,7 +223,7 @@ def _e5(row: dict, bars, ticks_t, ticks_p, t_close_last, end_of_day, coarse: boo
         if f[0] == "none":
             row.update(how_e5="none", fill_e5=None, fill_t_e5=None, why_e5=f[1], R_e5=None, usd_1_e5=None, usd_500_e5=None)
             return
-        sh = {"d": row["d"], "stop": row["stop"], "fill": f[0], "fill_t_ms": f[1], "entry_bar_t": int(f[1] // 1000) // 300 * 300}
+        sh = {"comm": COMM_E5, "d": row["d"], "stop": row["stop"], "fill": f[0], "fill_t_ms": f[1], "entry_bar_t": int(f[1] // 1000) // 300 * 300}
         row.update(fill_e5=f[0], fill_t_e5=f[1], how_e5=f[2])
         if (f[0] - row["stop"]) * row["d"] <= 0:
             row.update(why_e5="no risk", R_e5=None, usd_1_e5=None, usd_500_e5=None)
@@ -389,6 +394,7 @@ def day_summary(S: dict, day: str | None = None) -> dict:
     sk = [r for r in A if not r.get("taken")]
     return {"day": day, "candidates": len(A), "taken": len(tk), "open": sum(1 for r in tk if not r.get("exit_t")),
             "R": round(sum(r["R"] for r in done), 2), "usd_1": round(sum(r.get("usd_1") or 0 for r in done), 2),
+            "comm_v1": COMM, "comm_v1_label": "frozen v1 ($1.40)", "comm_e5": COMM_E5,
             "R_e5": round(sum(r["R_e5"] for r in tk if r.get("R_e5") is not None), 2),
             "usd_1_e5": round(sum(r.get("usd_1_e5") or 0 for r in tk if r.get("R_e5") is not None), 2),
             "skipped": len(sk), "skipped_R": round(sum(r["R"] for r in sk if r.get("R") is not None), 2),

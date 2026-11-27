@@ -65,6 +65,12 @@ def main() -> int:
     bars2 = bars.assign(high=[100.0, 98.5])
     f = P._fill_e5(r, bars2, np.array([], np.int64), np.array([]), True)
     check("coarse: else next open +18", f is not None and f[2] == "market+18" and abs(f[0] - (98.0 - 18 * T)) < 1e-9)
+    # the E5 book pays $1.90 (engine/costs.COMM_RT); the v1 book keeps its frozen $1.40
+    sh = {"comm": P.COMM_E5, "d": -1, "stop": 105.0, "fill": 100.0}
+    P._close(sh, td, 90.0, "target")
+    v1 = {"d": -1, "stop": 105.0, "fill": 100.0}
+    P._close(v1, td, 90.0, "target")
+    check("E5 book at $1.90, v1 at $1.40", abs(sh["usd_1"] - (20.0 - 1.90)) < 1e-9 and abs(v1["usd_1"] - (20.0 - 1.40)) < 1e-9)
     # the original fields are untouched by the E5 shadow: the frozen selftest (research LVL = paper) still holds
     check("of_paper selftest (original fills unchanged)", P.selftest())
     print(f"test_of_paper_e5: {'ALL OK' if not FAILS else str(len(FAILS)) + ' FAILED'}")
