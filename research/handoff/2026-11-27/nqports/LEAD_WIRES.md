@@ -29,3 +29,9 @@ Add `nq/portscore.js`, `nq/ports.js`, `nq/ports.css`, `nq/ports.json`. Versions 
 - run_area: AREAS["nq"].append("nq_story") (added).
 - Data the PC could add later (LEAD_WIRES, engine side, not done): glog keeps only ~8 lines a bot, so a busy morning loses its early
   thoughts; a per-day thought log published with the day (like pc_days) would let past days show LIT's real reasons, not only the twin's.
+
+# The PC's thought log on story.html (3rd commit; the bot side = branch day-thoughtlog)
+- Site build: `python tools/nq_thoughts.py` after `tools/data_pull.py` (publishes data/pc_days/<day>/thoughts.jsonl.gz -> nq/thoughts/,
+  the last 10 days, BLITZ never, ids masked again). Until the PC with day-thoughtlog sends a day, the index is empty and the page says
+  "The PC's thought log for this day has not reached the site."
+- sw.js: nq/thoughts/ is data (network first, like replay/). Versions: story.js?v=2, story.css?v=2.

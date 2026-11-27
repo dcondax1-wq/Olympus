@@ -3,9 +3,10 @@
 // one line (nq/ [data-hx="story"]). The model is storycore.js. textContent / createElement(NS) only; reads published files + the PC's posts.
 //   today      nq/: the page's own state (window.NQ_HOME: the chart bars, the PC post's glog + trades; never a 2nd feed read)
 //              story.html: the PC's status post (../pc_feed.js PC_FEED.fetchLatest) + the chart topic (nqbars.js, signed posts kept)
-//   past days  nq/replay/index.json + nq/replay/<day>.json (the PC's bars + the bots' replay twin), the last 5 stored
+//   past days  nq/replay/index.json + nq/replay/<day>.json (the PC's bars + the bots' replay twin), the last 5 stored;
+//              nq/thoughts/<day>.json (the PC's own day thought log, engine/thoughtlog.py -> tools/nq_thoughts.py) when published
 //   context    nq/ports.json (the normal Asia range, the prior day's levels, today's CME half day)
-import * as SC from './storycore.js?v=1';
+import * as SC from './storycore.js?v=2';
 import { feedUrls, parse as parseBars, parseVerified, unpack } from './nqbars.js?v=b2';
 
 const $ = (id) => document.getElementById(id);
@@ -14,7 +15,7 @@ const clear = (n) => { while (n.firstChild) n.removeChild(n.firstChild); };
 const NS = 'http://www.w3.org/2000/svg';
 const get = (u, ms) => { const ac = typeof AbortController === 'function' ? new AbortController() : null, tm = ac ? setTimeout(() => ac.abort(), ms || 10000) : 0;
   return fetch(u, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }).then((r) => (r.ok ? r.json() : null)).catch(() => null).finally(() => clearTimeout(tm)); };
-const PAGE = !!$('storyPage'), S = { ports: null, index: null, replay: {}, pick: 'today', live: null, home: window.NQ_HOME || null, post: null, bars: null };
+const PAGE = !!$('storyPage'), S = { ports: null, index: null, thIndex: null, replay: {}, pick: 'today', live: null, home: window.NQ_HOME || null, post: null, bars: null };
 const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], MO = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const dayName = (iso) => { const d = new Date(iso + 'T12:00:00Z'); return `${WD[d.getUTCDay()]} ${MO[d.getUTCMonth()]} ${d.getUTCDate()}`; };
 const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
@@ -42,7 +43,8 @@ async function storyFor(day) {
     return { ...st, demo: L.demo };
   }
   const R = await replayDay(day), i = days.indexOf(day), prevD = i >= 0 ? days[i + 1] : null, Rp = prevD ? await replayDay(prevD) : null;
-  return SC.build({ day, live: false, nowS, bars: R ? R.bars : [], prior: Rp ? hiLo(Rp.bars) : null, normalAsia, twin: R ? R.events : [], trades: liveParts().trades });
+  const T = isObj(S.thIndex) && Array.isArray(S.thIndex.days) && S.thIndex.days.some((x) => x && x.day === day) ? await get(`./thoughts/${day}.json`) : null;
+  return SC.build({ day, live: false, nowS, bars: R ? R.bars : [], prior: Rp ? hiLo(Rp.bars) : null, normalAsia, twin: R ? R.events : [], thoughts: T && Array.isArray(T.rows) ? T.rows : null, trades: liveParts().trades });
 }
 
 function mini(bars, m) {
@@ -113,7 +115,7 @@ async function pagePost() {             // story.html: the PC's post + the chart
 addEventListener('nq-home', (e) => { S.home = e.detail || S.home; if (S.pick === 'today') draw(); else storyFor('today').then((st) => { S.live = st; hero(); }); });
 (async () => {
   const q = new URLSearchParams(location.search).get('day');
-  [S.ports, S.index] = await Promise.all([get('./ports.json'), get('./replay/index.json')]);
+  [S.ports, S.index, S.thIndex] = await Promise.all([get('./ports.json'), get('./replay/index.json'), get('./thoughts/index.json')]);
   if (q && /^\d{4}-\d\d-\d\d$/.test(q) && pastDays().includes(q)) S.pick = q;
   if (PAGE) await pagePost();
   S.home = window.NQ_HOME || S.home;

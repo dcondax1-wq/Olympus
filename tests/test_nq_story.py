@@ -42,10 +42,10 @@ def static():
     check("a. story.js code-split on nq/ (idle, for the hero line), story.css non-blocking, #storyCard + the hero slot + a jump link",
           'src="story.js' not in html and "./story.js?v=" in nqjs and re.search(r'story\.css\?v=\d+" media="print" onload=', html)
           and 'id="storyCard"' in html and 'data-hx="story"' in html and 'href="#storyCard"' in html)
-    check("a. storycore pure + Safari-16 safe; story.js text only, reads ./ports.json, ./replay/index.json, ./replay/<day>.json, ../status_feed.json",
+    check("a. storycore pure + Safari-16 safe; story.js text only, reads ./ports.json, ./replay/index.json + <day>.json, ./thoughts/index.json + <day>.json, ../status_feed.json",
           not re.search(r"\bdocument\.|\bwindow\.|\bfetch\(|localStorage|\(\?<[=!]|\.at\(", re.sub(r"//[^\n]*", "", core))
           and not re.search(r"innerHTML|insertAdjacentHTML|\beval\(|\bimport\s*\(", js)
-          and set(re.findall(r"get\('(\.{1,2}/[^']+)'\)", js)) == {"./ports.json", "./replay/index.json", "../status_feed.json"} and "`./replay/${day}.json`" in js)
+          and set(re.findall(r"get\('(\.{1,2}/[^']+)'\)", js)) == {"./ports.json", "./replay/index.json", "../status_feed.json", "./thoughts/index.json"} and "`./replay/${day}.json`" in js and "`./thoughts/${day}.json`" in js)
     check("a. story.html: pc_feed.js + story.js + nqnav.js, the #storyPage section", "../pc_feed.js" in page and 'src="story.js?v=' in page and "nqnav.js" in page and 'id="storyPage"' in page)
     check("a. story.css: OLYMPUS NIGHT only, no font under 12 px, taps >= 44 px",
           not re.search(r"cyan|olive|brown|#0ff\b|#22d3ee", css, re.I) and not [x for x in re.findall(r"font-size:(\d+(?:\.\d+)?)px", css) if float(x) < 12] and css.count("min-height:44px") >= 2)
@@ -71,6 +71,13 @@ import(process.argv[1]).then((S) => {
   const bars = Array.from({ length: 40 }, (_, i) => [t0 + i * 300, 1, 2, 0, 1]);
   o.snap = [!!S.snap(bars, t0 + 3000, 1.5), S.snap(bars, t0 + 40 * 300 + 7200, null)];
   o.plain = S.plainThought('Displacement push 0.17 ATR; LIT needs 0.8').text;
+  const th = [[Date.parse('2026-11-26T07:30:00Z') / 1000, 'lit', 'rejected', 'Swept equal highs 26,741.5 (0.18 ATR deep; \u2717 LIT needs 0.5)'],
+    [Date.parse('2026-11-26T07:40:00Z') / 1000, 'lit', 'stage', 'Now: Displacement - Short setup forming: swept equal highs (1.05 ATR, ok)'],
+    [Date.parse('2026-11-26T07:45:00Z') / 1000, 'lit', 'stage', 'Now: Displacement - Short setup forming: still'],
+    [Date.parse('2026-11-26T08:00:00Z') / 1000, 'atlas', '', 'EMA: pullback to the 50 forming'],
+    [Date.parse('2026-11-26T14:40:00Z') / 1000, 'of', '', 'OF paper: opening-range high swept, absorbed -> taken']];
+  const pt = S.build({ day: '2026-11-26', bars: R.bars, prior: { pdh: hi, pdl: lo }, normalAsia: 437, twin: R.events, thoughts: th, trades: [] });
+  o.pcd = { m: pt.moments.filter((m) => m.tag === 'PC').map((m) => [m.hm, m.emoji, m.kind, m.title]), note: pt.note, waiting: pt.waiting };
   o.junk = [null, 1, 'x', [], {}].map((j) => { try { S.build(j); S.storyLine(j); S.snap(j, 1, null); S.plainThought(j); return 'ok'; } catch (e) { return 'THROW ' + e.message; } });
   console.log(JSON.stringify(o));
 });
@@ -97,7 +104,7 @@ def core():
     kinds = [x[2] for x in m]
     check("b. the NY open, the 13:00 halt (bars end early), the day in one line last; what LIT worked on last; the honest past-day note",
           "open" in kinds and any(x[2] == "halt" and "13:00" in x[4] for x in m) and kinds[-1] == "close" and "up 165 pts" in m[-1][5]
-          and o["past"]["waiting"].startswith("its last setup:") and "not stored for past days" in o["past"]["note"], (kinds, o["past"]["waiting"], o["past"]["note"]))
+          and o["past"]["waiting"].startswith("its last setup:") and "TWIN" in o["past"]["note"], (kinds, o["past"]["waiting"], o["past"]["note"]))
     lv = o["live"]["m"]
     check("c. today's thoughts: the counted sweep of equal highs (👀 1.15 ATR), PDH 7.70 ATR, the too-shallow sweep in plain words (❌ 0.18 vs 0.5)",
           any(x[1] == "👀" and "1.15 ATR deep: deep enough" in x[4] for x in lv) and any("PDH 26,435.75 swept 7.70 ATR deep" in x[4] for x in lv)
@@ -111,6 +118,11 @@ def core():
     check("c. real trades: LIT 🟢 entered LONG 2 MNQ, ✅ hit its target +$812, ATLAS EMA 🛑 stopped -$113; REAL tags; BLITZ + paper never",
           [x[0] for x in t] == ["🟢", "🟢", "🛑", "✅"] and all(x[1] == "REAL" for x in t) and t[0][2] == "LIT entered LONG 2 MNQ" and "hit its target +$812" in t[3][2]
           and "was stopped out -$113" in t[2][2] and not any("BLITZ" in x[2].upper() for x in t) and len(t) == 4, t)
+    pc = o["pcd"]
+    check("c. a past day WITH the PC's thought log: LIT's real reject (❌ 0.18 vs 0.5) + one Displacement stage, ATLAS 🤖, OF 📊, tagged PC; the note says so; waiting from the log",
+          [x[1] for x in pc["m"]] == ["❌", "👀", "🤖", "📊"] and pc["note"].startswith("Past days: the bots' own thoughts from the PC's day log")
+          and pc["waiting"].startswith("Short setup forming"), pc)
+    check("c. a past day WITHOUT it: the note says the PC's log has not reached the site", "has not reached the site" in o["past"]["note"], o["past"]["note"])
     check("d. snap: a mini chart near the bars, none 2 h past them; plain words for a weak push; junk never throws",
           o["snap"] == [True, None] and "plain: the push was 0.17 ATR, it needs 0.8" in o["plain"] and all(j == "ok" for j in o["junk"]), (o["snap"], o["plain"], o["junk"]))
 
@@ -165,9 +177,33 @@ def browser():
           p["n"] == 12 and any(x[0] == "Thu Nov 26" and x[2] == "true" for x in p["chips"]) and "TWIN" in p["tags"] and p["small"] == 0 and p["sw"] <= 0 and not p["errs"], p)
 
 
+def publisher():
+    import gzip
+    import tempfile
+    sys.path.insert(0, ROOT)
+    from tools import nq_thoughts as NT
+    with tempfile.TemporaryDirectory() as tmp:
+        src, out = os.path.join(tmp, "pc_days"), os.path.join(tmp, "out")
+        for d in ("2026-11-25", "2026-11-26"):
+            os.makedirs(os.path.join(src, d))
+            rows = [{"t": 1795700000 + i, "bot": b, "kind": "", "text": x} for i, (b, x) in enumerate([("lit", "Swept PDH on MFFUEVBLDR123456"), ("atlas", "EMA: ok"),
+                    ("blitz", "hidden"), ("lit", "BLITZ note"), ("of", "OF paper: taken")])]
+            with open(os.path.join(src, d, "thoughts.jsonl.gz"), "wb") as fh:
+                fh.write(gzip.compress("".join(json.dumps(r) + "\n" for r in rows).encode()))
+        os.makedirs(os.path.join(src, "2026-11-24"))                     # a day without a log: not listed
+        os.makedirs(out)
+        open(os.path.join(out, "2026-10-01.json"), "w").write("{}")        # an old published day leaves
+        doc = NT.build(src, out)
+        got = json.load(open(os.path.join(out, "2026-11-26.json")))
+        check("f. tools/nq_thoughts.py: newest first, LIT / ATLAS / OF rows only (BLITZ never), ids masked, old days removed",
+              [x["day"] for x in doc["days"]] == ["2026-11-26", "2026-11-25"] and [r[1] for r in got["rows"]] == ["lit", "atlas", "of"]
+              and "MFFUEVBLDR123456" not in json.dumps(got) and "...3456" in got["rows"][0][3] and not os.path.exists(os.path.join(out, "2026-10-01.json")), (doc, got))
+
+
 if __name__ == "__main__":
     static()
     core()
+    publisher()
     browser()
     n, ok = len(RES), sum(RES)
     print(f"\n{ok}/{n} passed")

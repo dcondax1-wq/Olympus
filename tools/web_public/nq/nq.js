@@ -179,7 +179,7 @@ function loadPlan() {
 // TODAY'S STORY (story.js + storycore.js): the card + the hero's one line; added when the browser is idle (the hero line wants it early)
 function loadStory() {
   if (S.storyIn) return; S.storyIn = true;
-  (window.requestIdleCallback || ((f) => setTimeout(f, 1500)))(() => { const t = document.createElement('script'); t.type = 'module'; t.src = new URL('./story.js?v=1', import.meta.url).href; document.head.appendChild(t); }, { timeout: 4000 });
+  (window.requestIdleCallback || ((f) => setTimeout(f, 1500)))(() => { const t = document.createElement('script'); t.type = 'module'; t.src = new URL('./story.js?v=2', import.meta.url).href; document.head.appendChild(t); }, { timeout: 4000 });
 }
 // MARKET PORTS (ports.js + portscore.js; nq/ports.json from tools/nq_ports.py): code-split like plan.js, near its section or when idle
 function loadPorts() {

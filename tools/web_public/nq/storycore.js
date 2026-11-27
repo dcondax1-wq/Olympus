@@ -107,6 +107,24 @@ function thoughtMoments(day, glog) {
   return out;
 }
 
+// ------------------------------------------------------------------------------------------------ the PC's day thought log (past days)
+function logMoments(rows) {
+  const out = [];
+  let lastStage = '';
+  for (const r of arr(rows)) {
+    if (!Array.isArray(r) || num(r[0]) === null || !r[3]) continue;
+    const t = +r[0], bot = String(r[1] || ''), text = String(r[3]);
+    if (bot === 'lit') {
+      const P = plainThought(text);
+      if (P.kind === 'stage') { if (P.stage === lastStage) continue; lastStage = P.stage; }
+      if (P.kind === 'thought' && /^(box|level)/i.test(String(r[2] || ''))) continue;      // the level book's housekeeping, not a story line
+      out.push({ t, ...P, tag: 'PC' });
+    } else if (bot === 'atlas') out.push({ t, emoji: '🤖', kind: 'atlas', tone: 'calm', title: 'ATLAS', text, short: '', level: null, tag: 'PC' });
+    else if (bot === 'of') out.push({ t, emoji: '📊', kind: 'of', tone: 'calm', title: 'Order flow (paper)', text, short: '', level: null, tag: 'PC' });
+  }
+  return out;
+}
+
 // ------------------------------------------------------------------------------------------------ the replay twin (past days)
 const WHY = { 'no inducement': 'no inducement (no small trap move before the entry)', 'never filled': 'the entry price never came back to fill it',
   'outside hours': 'it formed outside LIT\'s hours', 'no target room': 'not enough room to the target', 'target too close': 'the target was too close' };
@@ -156,7 +174,7 @@ export function build(I) {
   const day = String((I && I.day) || '') || dayOf(I && I.bars), live = !!(I && I.live), nowS = num(I && I.nowS);
   const B = arr(I && I.bars).filter((b) => Array.isArray(b) && num(b[0]) !== null && num(b[2]) !== null && num(b[3]) !== null && tradeDay(b[0]) === day)
     .map((b) => [+b[0], +b[1], +b[2], +b[3], +b[4]]).sort((a, b) => a[0] - b[0]);
-  let M = [...barMoments(day, B, I && I.prior, I && I.normalAsia, live, nowS), ...thoughtMoments(day, I && I.glog), ...twinMoments(I && I.twin), ...realMoments(day, I && I.trades)];
+  let M = [...barMoments(day, B, I && I.prior, I && I.normalAsia, live, nowS), ...thoughtMoments(day, I && I.glog), ...logMoments(I && I.thoughts), ...twinMoments(I && I.twin), ...realMoments(day, I && I.trades)];
   if (live && I && I.halt && nowS !== null) {
     const ht = hmToT(day, I.halt);
     if (ht !== null) M.push({ t: ht, emoji: '⏸️', kind: 'halt', tone: 'calm', level: null, title: `The CME halts at ${I.halt} ET`, text: ht <= nowS ? 'A short day: the session is over.' : 'A short day: every bot is flat 5 minutes before.', short: `⏸️ halt ${I.halt}`, future: ht > nowS });
@@ -166,11 +184,16 @@ export function build(I) {
   let waiting = '';
   const nowLine = arr(isObj(I && I.glog) ? I.glog.lit : null).find((x) => Array.isArray(x) && /^Now: /.test(String(x[1])));
   if (nowLine) waiting = String(nowLine[1]).replace(/^Now: [A-Za-z ]+? - /, '').replace(/^Before \d\d:\d\d ET \([^)]*\):\s*/, '').replace(/\u2026$/, '...');
-  else { const tw = arr(I && I.twin).filter((e) => isObj(e) && /setup|step/.test(e.kind) && String(e.bot) === 'LIT').pop(); if (tw) waiting = `its last setup: ${tw.text}`; }
+  else if (arr(I && I.thoughts).some((r) => Array.isArray(r) && r[1] === 'lit')) {
+    const st = arr(I.thoughts).filter((r) => Array.isArray(r) && r[1] === 'lit' && /^Now: /.test(String(r[3]))).pop();
+    if (st) waiting = String(st[3]).replace(/^Now: [A-Za-z ]+? - /, '').replace(/^Before \d\d:\d\d ET \([^)]*\):\s*/, '');
+  }
+  if (!waiting && !nowLine) { const tw = arr(I && I.twin).filter((e) => isObj(e) && /setup|step/.test(e.kind) && String(e.bot) === 'LIT').pop(); if (tw) waiting = `its last setup: ${tw.text}`; }
   const thin = B.length < 12 && M.length < 3;
   const note = !B.length ? (live ? "No bars from the PC's chart for today yet: the story starts when they come." : 'No bars stored for this day.')
     : live && !arr(isObj(I && I.glog) ? I.glog.lit : null).length ? "The PC has not posted LIT's thoughts today: the moments come from the bars and trades only."
-      : !live ? "Past days: the bars are the PC's own; setups and twin trades are LIT / ATLAS's replay twin on those bars (TWIN); real fills are marked REAL. The bots' live thoughts are not stored for past days." : '';
+      : !live && arr(I && I.thoughts).length ? "Past days: the bots' own thoughts from the PC's day log (PC), the replay twin's setups and trades on the same bars (TWIN), real fills (REAL)."
+        : !live ? "Past days: the bars are the PC's own; setups and twin trades are LIT / ATLAS's replay twin on those bars (TWIN); real fills are marked REAL. The PC's thought log for this day has not reached the site." : '';
   return { day, live, moments: M, waiting, thin, note, nBars: B.length, bars: B,
     summary: M.length ? `${M.length} moment${M.length === 1 ? '' : 's'}${B.length ? `, ${B.length} bars` : ''}` : 'no moments yet' };
 }
