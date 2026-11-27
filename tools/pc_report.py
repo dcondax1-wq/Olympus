@@ -71,7 +71,7 @@ EXT_PARTS = 2                    # at most 2 ext posts a run (ntfy.sh free: a fe
 EXT_EVERY_S = 2640               # the ext goes every 3rd 15-minute run (44 min), or at once when its news changed (ext_hash). Was every 2nd (29 min) until
                                  # 2026-11-20: 96 core + 96 ext + 24 chart posts a day left no room under ntfy's 250 for the other programs and the alerts
 EXT_ORDER = ("rc", "ck", "rd", "fl", "brd", "life", "mf", "k7", "board_trades", "at", "fq", "zl", "learn", "lab", "glance", "kalshi_rewards", "kalshi_k1", "kalshi_live", "ap", "bg", "ofp", "ofl")   # "at": engine/feed_trades; "ofp": the OF pillar's PAPER bot (engine/oflive.paper_tiny, <= 300 B)
-EXT_LAST = ("bf", "glog")   # bf: the Brain app feed (engine/brain_feed, day-brain-feed 2026-11-24; <= 2 KB, cut 1400/900, then out)     # red-team 2026-11-21: the Brain's long thought stream takes only the room every other block left (cut 5/3, then out)
+EXT_LAST = ("bf", "glog", "bx")   # bf: the Brain app feed (engine/brain_feed, day-brain-feed 2026-11-24; <= 2 KB, cut 1400/900, then out)     # red-team 2026-11-21: the Brain's long thought stream takes only the room every other block left (cut 5/3, then out)
 # "zl": ZEUS learned, the nightly line (engine/zeus_learn.read_tiny, <= 220 bytes) -> the ZEUS page's "ZEUS learned" card
 CORE_KEYS = ("eh", "v", "kind", "lite", "src", "t", "every_s", "host", "model_state", "price", "day_pnl", "pc_verdict", "pc", "reporter",
              "board", "accounts", "trimmed", "wp", "ar", "pulse", "p4", "ab")   # wp: the phone app's push set-up (engine/push.app_block: public keys, ~230 bytes)
@@ -763,6 +763,13 @@ def full(snap: dict) -> dict:
     rc = rc_block(hb.get("remote"))
     if rc:
         out["rc"] = rc
+    try:                                           # day-brains-feed: the brain x-ray (engine/brain_xray: each strategy's gates, number vs rule, the
+        from engine import brain_xray               # skipped setups + why, the next trade's size; read-only, no ids), after every block (EXT_LAST)
+        bx = brain_xray.build(hb)
+        if bx:
+            out["bx"] = bx
+    except Exception:  # noqa: BLE001
+        pass
     try:                                           # the Brain app feed (engine/brain_feed: think / next / levels a bot + market; read-only)
         from engine import brain_feed
         bf = brain_feed.build(hb, bars=snap.get("bf_bars"), root=snap.get("bf_root"), now=snap.get("t"))
@@ -950,6 +957,11 @@ def _cuts(key: str) -> list:
             from engine import brain_feed
             brain_feed.fit(v, n)
         return f
+    def bxfit(n):                          # day-brains-feed: the brain x-ray shrinks (texts, older setups, checks) before it is left out
+        def f(v):
+            from engine import brain_xray
+            brain_xray.fit(v, n)
+        return f
     def eq(n):
         def f(v):
             from engine import mffu_view
@@ -975,7 +987,7 @@ def _cuts(key: str) -> list:
                 for key in keys:
                     v["k8"].pop(key, None)
         return f
-    return {"kalshi_live": [k8("lg", "ls"), k8("e", "dy", "kk", "al", "pn")], "glance": [glance(1000), glance(600)], "glog": [glog(5), glog(3)], "bf": [bfit(1400), bfit(900)], "k7": [k7cut], "mf": [eq(4), eq(0)], "brd": [ev(3), ev(1), ev(0)], "life": [ev(0)],
+    return {"kalshi_live": [k8("lg", "ls"), k8("e", "dy", "kk", "al", "pn")], "glance": [glance(1000), glance(600)], "glog": [glog(5), glog(3)], "bf": [bfit(1400), bfit(900)], "bx": [bxfit(900), bxfit(500)], "k7": [k7cut], "mf": [eq(4), eq(0)], "brd": [ev(3), ev(1), ev(0)], "life": [ev(0)],
             "board_trades": [first(1)], "at": [at(2), at(1)], "fq": [fq(2), fq(0)]}.get(key, [])
 
 
@@ -1020,6 +1032,13 @@ def split(out: dict, max_bytes: int = MAX_STATUS_BYTES, parts: int | None = None
     exts = [{**base, "part": i, "of": len(packs), "x": p} for i, p in enumerate(packs)]
     if cut and exts:
         exts[-1]["cut"] = cut
+        # day-brains-feed: the "cut" list itself can push the last post over max_bytes (it was sized without it): the lowest-priority
+        # block of that post goes too, until it fits
+        while _size(exts[-1]) > max_bytes and len(exts[-1]["x"]) > 1:
+            k = max(exts[-1]["x"], key=lambda z: order.index(z) if z in order else -1)
+            exts[-1]["x"].pop(k)
+            if k not in cut:
+                cut.append(k)
     pub = public(core)
     wp = core.get("wp")
     if isinstance(pub, dict) and isinstance(wp, dict):
@@ -1100,7 +1119,7 @@ def ext_hash(exts) -> str:
     """The ext's news (block times, the brain glance and an open trade's live $ / R left out: _news_of): a new hash = post the ext now, not at
     the next EXT_EVERY_S."""
     import hashlib
-    keep = [{k: _news_of(k, v) for k, v in _d(e.get("x")).items() if k not in ("glance", "glog", "bf")} for e in exts or []]
+    keep = [{k: _news_of(k, v) for k, v in _d(e.get("x")).items() if k not in ("glance", "glog", "bf", "bx")} for e in exts or []]
     # audit D1 (2026-11-22): a bot turning on / off, armed / disarmed or its "why not armed" is news (the Brain page waited up to 44 min);
     # the glance's other fields (levels, logs, texts, $) still are not
     keep.append([[b.get("id"), bool(b.get("on")), bool(b.get("armed")), b.get("nar")]
