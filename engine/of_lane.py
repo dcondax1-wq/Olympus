@@ -352,8 +352,15 @@ def entry_guards(S, cfg, ad, row, now, est, killed, news_events=None, skip_late:
         why.append("the lane already has an open trade")
     cap = day_cap(cfg)
     used = day_entries(S, day, ad, exclude=self_entry_t)
+    rank = signal_rank(S, row, day)
     if used >= cap:
         why.insert(0, f"skipped: day cap ({used} of {cap} entr{'y' if cap == 1 else 'ies'} today; data/of_lane.json max_per_day)")
+    elif rank >= cap:
+        # red team #37: the tested book is the paper bot's FIRST taken signal of the day, whatever happened to it. A first signal
+        # the lane refused (news / size / late / hedge) or whose E5 limit was cancelled (stop traded first) gives that day NO
+        # trade there; trading a later signal instead would add exactly the later-in-the-day trades that lost.
+        why.insert(0, f"skipped: day cap (paper signal {rank + 1} of the day; the tested book takes only the first "
+                      f"{cap}; data/of_lane.json max_per_day)")
     try:
         pos = other_positions(ad)
     except Exception as ex:  # noqa: BLE001
@@ -385,6 +392,15 @@ def entry_guards(S, cfg, ad, row, now, est, killed, news_events=None, skip_late:
         if q < 1:
             why.append("the firm rules leave no size")
     return why, q, fc
+
+
+def signal_rank(S: dict, row: dict, day: str) -> int:
+    """0 for the paper bot's first taken lane A signal of `day` (the tested book), 1 for the second, ... (by signal time)."""
+    rows = [r for r in ((S.get("paper") or {}).get("rows") or [])
+            if r.get("lane") == "A" and r.get("day") == day and r.get("taken")]
+    ts = sorted({int(r.get("t_sig") or 0) for r in rows})
+    t = int(row.get("t_sig") or 0)
+    return sum(1 for x in ts if x < t)
 
 
 def day_cap(cfg: dict) -> int:

@@ -134,6 +134,26 @@ def main():
         held_ok, d_cap, d_two = False, ex, None
     check("e ladder: the default cap counts as capped, cap 2 does not", held_ok and LD.lane_day_cap({}) == 1
           and LD.lane_day_cap({"max_per_day": 2}) == 2, (d_cap, d_two))
+    # ---- rt (red team #37): the book is the paper bot's FIRST taken signal; a refused / cancelled first signal gives no later trade
+    tk = sorted(taken, key=lambda r: r["t_sig"])
+    SP = {"paper": S1["paper"], "trades": []}
+    check("rt signal_rank: the day's taken signals rank 0, 1, 2", [L.signal_rank(SP, r, d1) for r in tk] == [0, 1, 2],
+          [L.signal_rank(SP, r, d1) for r in tk])
+    for first in ({"day": d1, "status": "refused", "entry_t": tk[0]["t_sig"] + 300, "why": "news"},
+                  {"day": d1, "status": "closed", "entry_t": tk[0]["t_sig"] + 300, "filled": 0, "stop_first": True,
+                   "why": "no fill: stopped before entry"}):
+        S4 = {"paper": S1["paper"], "trades": [first], "closes": [], "day": d1}
+        res = {}
+        for cap in (1, 2):
+            try:
+                why, _q, _fc = L.entry_guards(S4, dict(L.DEFAULT_CFG, on=True, account="Sim102", max_per_day=cap), None, tk[1],
+                                              tk[1]["t_sig"] + 301, float(tk[1]["level_px"]), False)
+            except Exception as ex:  # noqa: BLE001
+                why = [f"error {ex!r}"]
+            res[cap] = why
+        check(f"rt first signal {first['status']} ({first['why']}): no entry used, yet the 2nd signal is day-capped at cap 1",
+              L.day_entries(S4, d1) == 0 and res[1] and str(res[1][0]).startswith("skipped: day cap (paper signal 2"), res[1])
+        check(f"rt ... and not day-capped at max_per_day 2", not any("day cap" in str(w) for w in res[2]), res[2])
     n = sum(RES)
     print(f"\nof_daycap: {n}/{len(RES)} " + ("ALL OK" if n == len(RES) else "FAILURES"))
     return 0 if n == len(RES) else 1
