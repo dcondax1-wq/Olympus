@@ -243,6 +243,69 @@ def build(root: str = ROOT, now: float | None = None, state: dict | None = None)
     return out
 
 
+# ------------------------------------------------------------------------------------------------ the footprint strip (nq/ofstrip.js)
+STRIP_OUT = os.path.join(ROOT, "tools", "web_public", "nq", "of_strip.json")
+STRIP_BUCKET_TICKS = 8          # 2 points a cell (8 x 0.25): ~15 cells a 5m bar, the whole RTH day < 40 KB
+ZONE_TICKS, ABS_SHARE = 8, 0.20  # OF1 (research/orderflow/PREREG_ticks.md): zone at the bar extreme, absorbed share
+
+
+def strip_from_summary(R: dict, day: str) -> dict:
+    """One day's order-flow summary (engine.ofsum: bars5m + fp5m) -> the strip's data: RTH 5m bars, each with o/h/l/c, volume, delta,
+    big prints (signed >= 20 lots), price cells [low price of the 2-pt cell, buy lots, sell lots] and the OF1 absorption read at
+    both extremes ({side, who, px, vz, dz}). Market data only."""
+    import pandas as pd
+    b, fp = R["bars"].copy(), R["fp"]
+    tick = float((R.get("meta") or {}).get("tick") or 0.25)
+    et = pd.to_datetime(b.t, unit="s", utc=True).dt.tz_convert(ET)
+    b["mod"] = et.dt.hour * 60 + et.dt.minute
+    b["hm"] = et.dt.strftime("%H:%M")
+    b["i"] = range(len(b))
+    rth = b[(b["mod"] >= 570) & (b["mod"] < 960)]
+    byb = {int(k): g for k, g in fp.groupby("bar")}
+    bars = []
+    for _, r in rth.iterrows():
+        g = byb.get(int(r["i"]))
+        lo, hi = float(r["l"]), float(r["h"])
+        cells, absd = {}, []
+        if g is not None:
+            kmax = int(round((hi - lo) / tick))
+            for k, a, bb in zip(g.k.to_numpy(), g.a.to_numpy(), g.b.to_numpy()):
+                px = lo + int(k) * tick
+                c = round((px // (STRIP_BUCKET_TICKS * tick)) * STRIP_BUCKET_TICKS * tick, 2)
+                x = cells.setdefault(c, [c, 0, 0])
+                x[1] += int(a); x[2] += int(bb)
+            if int(r.get("n") or 0) >= 20:
+                for side, z, d in (("low", g[g.k <= ZONE_TICKS], 1), ("high", g[g.k >= kmax - ZONE_TICKS], -1)):
+                    vz = float((z.a + z.b + z.u).sum()); dz = float((z.a - z.b).sum())
+                    if vz > 0 and dz * d < 0 and abs(dz) >= ABS_SHARE * vz:
+                        absd.append({"side": side, "who": "buyers" if side == "low" else "sellers", "px": lo if side == "low" else hi,
+                                     "vz": int(vz), "dz": int(dz)})
+        big = r.get("b20")
+        bars.append({"t": r["hm"], "o": float(r["o"]), "h": hi, "l": lo, "c": float(r["c"]), "v": int(r["vol"]),
+                     "d": int(r["buy"] - r["sell"]), "big": int(big) if big not in ("", None) and pd.notna(big) else 0,
+                     "cells": sorted(cells.values()), "abs": absd})
+    return {"v": 1, "day": day, "tick": tick, "bucket": STRIP_BUCKET_TICKS * tick, "bars": bars, "paper": True,
+            "what": "NQ footprint by 5-minute bar: aggressive buying vs selling at each 2-point cell, absorption at the bar's extremes, big prints"}
+
+
+def strip_for(root: str, day: str | None):
+    """The strip of `day` (or the newest pulled real tick day) from data/pc_days / logs/datapipe/days, or None."""
+    from engine import ofsum
+    dirs = {}
+    for base in (os.path.join(root, "data", "pc_days"), os.path.join(root, "logs", "datapipe", "days")):
+        if os.path.isdir(base):
+            for d in sorted(os.listdir(base)):
+                if len(d) == 10 and os.path.exists(os.path.join(base, d, "of", "NQ_meta.json")):
+                    dirs.setdefault(d, os.path.join(base, d))
+    for d in ([day] if day in dirs else []) + sorted(dirs, reverse=True):
+        R = ofsum.read(dirs[d])
+        if R and int(R["meta"].get("rows", 0)) >= 50_000:
+            s_ = strip_from_summary(R, d)
+            if s_["bars"]:
+                return s_
+    return None
+
+
 def write(obj, path=OUT):
     raw = json.dumps(obj, separators=(",", ":"), default=float)
     if len(raw) > MAX_BYTES:                      # keep the page light: the newest paper rows only
@@ -261,4 +324,14 @@ if __name__ == "__main__":
     a = ap.parse_args()
     o = build(a.root)
     n = write(o, a.out)
+    try:                                                     # the footprint strip of the room's day (nq/ofstrip.js reads it)
+        st = strip_for(a.root, o.get("day"))
+        if st:
+            sp = os.path.join(os.path.dirname(a.out), "of_strip.json")
+            with open(sp + ".tmp", "w", encoding="utf-8") as fh:
+                json.dump(st, fh, separators=(",", ":"))
+            os.replace(sp + ".tmp", sp)
+            print(f"of_strip.json: {st['day']}, {len(st['bars'])} bars")
+    except Exception as e:  # noqa: BLE001
+        print(f"of_strip.json: skipped ({e.__class__.__name__})")
     print(f"of_room.json: {o['source']}, day {o.get('day')}, {len(o.get('rows') or [])} paper rows, {n} bytes | {o.get('line')}")

@@ -18,3 +18,9 @@ Files changed (mine): tools/web_public/nq/orderflow.html / .js / .css, tools/bui
    the PC: `snap["ofl"] = build_of_room.lane_block(cfg, state)` (or the lane helper's own builder with the same keys). A refused row's
    "why" containing "day cap" shows "skipped: day cap (1 a day)". Only a fresh post (< 3 h) counts as live.
 4. Nav: unchanged (the NQ bottom bar already has "Flow").
+5. **Footprint strip** (nq/ofstrip.js + ofstrip.css, data nq/of_strip.json): `tools/build_of_room.py` now also writes
+   tools/web_public/nq/of_strip.json (the room's day, else the newest pulled real tick day; RTH 5m bars, < 40 KB) - publish it with
+   of_room.json. API for any page (the live chart): `<link rel="stylesheet" href="ofstrip.css?v=1">` + `import { mount } from
+   './ofstrip.js?v=1'` (or window.OFSTRIP.mount); `const s = mount(el, data, { height: 230, onSelect: (bar, i) => {} })`;
+   `s.update(data)`, `s.select(i)`, `s.destroy()`. Demo: the Footprint card on nq/orderflow.html. Tests: tests/test_ofstrip.py
+   (add to run_area nq).

@@ -2,6 +2,7 @@
 // Reads of_room.json (tools/build_of_room.py) and the PC's public status post (../pc_feed.js fetchLatest: core "price" + "t", ext "ofp" =
 // today's paper bot, engine/oflive.paper_tiny), every 30 s while the screen is visible. model() is pure (node-tested: tests/test_nq_of.py);
 // draw() uses textContent / createElement(NS) only. Sends nothing, stores nothing. ?at=<ISO time> pins the clock (tests / screenshots).
+import { mount as mountStrip } from './ofstrip.js?v=1';
 export const NAMES = { pdh: 'Prior-day high', pdl: 'Prior-day low', onh: 'Overnight high', onl: 'Overnight low', orh: 'Opening-range high', orl: 'Opening-range low' };
 const READ = { a: 'absorbed', n: 'not absorbed', u: 'untouched' };
 const POLL_MS = 30000, LIVE_MAX_S = 3 * 3600;
@@ -453,7 +454,7 @@ function draw(M) {
 }
 
 // ------------------------------------------------------------------------------------------------ boot
-const S = { room: null, lite: null, M: null, ready: false, polls: 0 };
+const S = { room: null, lite: null, M: null, ready: false, polls: 0, strip: null };
 const AT = (() => { try { const v = new URLSearchParams(location.search).get('at'); const t = v ? Date.parse(v) : NaN; return Number.isFinite(t) ? t / 1000 : null; } catch (_) { return null; } })();
 const T0 = Date.now() / 1000, nowS = () => (AT ? AT + (Date.now() / 1000 - T0) : Date.now() / 1000);
 async function getJSON(url, ms) {
@@ -465,7 +466,19 @@ async function getPost() {
   if (!F || !F.fetchLatest) return null;
   try { return await Promise.race([F.fetchLatest({ feedUrl: new URL('../status_feed.json', import.meta.url).href }), new Promise((r) => setTimeout(() => r(null), 15000))]); } catch (_) { return null; }
 }
+async function loadStrip() {
+  const d = await getJSON('of_strip.json');
+  const chip = document.getElementById('stripChip'), box = document.getElementById('strip');
+  if (!d || !Array.isArray(d.bars) || !d.bars.length) {
+    chip.textContent = 'no day yet';
+    if (!S.strip) box.replaceChildren(el('p', 'of-empty', 'The footprint shows here once a recorded tick day reaches the site.'));
+    return;
+  }
+  chip.textContent = d.day ? `${d.day} · ${d.bars.length} bars` : `${d.bars.length} bars`; chip.dataset.level = 'ok';
+  if (S.strip) S.strip.update(d); else S.strip = mountStrip(box, d, { height: 230 });
+}
 async function refresh(full) {
+  if (full || !S.strip) loadStrip();
   const [room, lite] = await Promise.all([full || !S.room ? getJSON('of_room.json') : Promise.resolve(S.room), getPost()]);
   if (room) S.room = room;
   if (lite) S.lite = lite;
