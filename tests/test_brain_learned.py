@@ -126,7 +126,7 @@ def browser():
     check("b. no sideways scroll at 390; every tap target >= 44 px; black page", P.get("wide") is False and not P.get("small") and P.get("bg") == "rgb(0, 0, 0)",
           (P.get("wide"), P.get("small"), P.get("bg")))
     L = json.loads(read("brain", "learn.json")).get("learning") or {}
-    n_rules = len((L.get("forward") or {}).get("rules") or [])
+    n_rules = len([r for r in (L.get("forward") or {}).get("rules") or [] if "blitz" not in (str(r.get("bot")) + r.get("id", "")).lower()])
     check("b. 4 tiles, every idea on trial drawn, the timeline, next, LIT funnel, idea mill steps, health bands",
           P.get("tiles") == 4 and P.get("ideas") == n_rules and P.get("tl", 0) >= 1 and P.get("next", 0) >= 1 and P.get("funnel", 0) >= 3
           and P.get("mill") == 5 and P.get("health", 0) >= 1, {k: P.get(k) for k in ("tiles", "ideas", "tl", "next", "funnel", "mill", "health")})
@@ -135,6 +135,7 @@ def browser():
           P.get("scores") == len(ss.get("rows") or []) and (ss.get("verdict") == "separates" or "not a predictor" in (P.get("text") or "")),
           (P.get("scores"), ss.get("verdict")))
     t = P.get("text") or ""
+    check("b. BLITZ hidden (owner rule): no BLITZ idea, lesson, health row or filter on the page", "BLITZ" not in t.upper(), [x for x in t.split("\n") if "BLITZ" in x.upper()][:3])
     check("b. plain words on the page: graduates / yes / no card / nothing switches on by itself", "graduates" in t and "yes / no card" in t and "nothing switches on by itself" in t)
     li = o.get("lit") or {}
     check("b. the LIT filter shows only LIT lessons", li.get("pressed") == "true" and li.get("chips") and set(li["chips"]) == {"LIT"}, li)

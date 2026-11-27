@@ -126,8 +126,8 @@ function gap(L) {
   const G = L.livegap, box = $('gap');
   if (!G) { box.replaceChildren(el('p', { class: 'muted', text: 'The live-vs-twin audit has not run yet.' })); return; }
   const words = { MISSED: 'Missed (the twin traded, live did not)', SLIPPED: 'Slipped (worse fills than the twin)', SIZE: 'Size (different number of micros)', EXTRA: 'Extra (live moved with no twin trade)' };
-  const kids = [el('p', { class: 'muted', text: `The twin is the backtest run on the PC's own bars. Every gap since the accounts started, to ${md(G.to)} ($ = live minus twin, by kind):` }),
-    el('div', { class: 'kv' }, ...Object.entries(G.totals || {}).flatMap(([k, v]) => [el('span', { text: words[k] || k }), el('b', { class: cls(-v), text: usd(v) })]))];
+  const kids = [el('p', { class: 'muted', text: `The twin is the backtest run on the PC's own bars. Every gap since the accounts started, to ${md(G.to)} ($ = live minus twin, by kind; + = live did better):` }),
+    el('div', { class: 'kv' }, ...Object.entries(G.totals || {}).flatMap(([k, v]) => [el('span', { text: words[k] || k }), el('b', { class: cls(v), text: usd(v) })]))];
   if ((G.recent || []).length) kids.push(el('ul', { class: 'lst' }, ...G.recent.map((x) => el('li', { text: `${x.when}: ${x.kind} ${x.bot} ${usd(x.usd)}. ${x.detail}` }))));
   box.replaceChildren(...kids);
 }
@@ -157,7 +157,17 @@ function of(L) {
 }
 
 /* ---------------- page ---------------- */
+function hideBlitz(d) {                                // owner rule: BLITZ is hidden on the phone pages (paper, switched off)
+  const no = (x) => !/blitz/i.test(String(x || ''));
+  d.journal = (d.journal || []).filter((r) => no(r.pillar));
+  const L = d.learning || {};
+  if (L.forward) L.forward.rules = (L.forward.rules || []).filter((r) => no(r.bot) && no(r.id));
+  if (L.health && L.health.bots) for (const k of Object.keys(L.health.bots)) if (!no(k)) delete L.health.bots[k];
+  if (L.next) L.next = L.next.filter((x) => no(x.pillar));
+  return d;
+}
 function render(d) {
+  d = hideBlitz(d);
   S.d = d;
   const L = d.learning || {};
   hero(d); grad(L); scores(L); timeline(d); nextList(L); funnel(L); mill(L); gap(L); health(L); of(L);
