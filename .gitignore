@@ -45,6 +45,7 @@ data/heartbeat_pub.git/
 # the data pipe's scratch git dir (engine/datapipe.py) and the cloud's copy of the data branch (tools/data_pull.py)
 data/datapipe_pub.git/
 data/pc_days/
+data/of_store/
 # the Bot Brain's thought log, one JSONL per trading day (engine/brain.py BrainLog)
 data/brain/
 

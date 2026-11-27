@@ -38,3 +38,19 @@ is off by default: scratch git dir `data/datapipe_pub.git`, plumbing only, never
 (the review, same function on the PC and in the cloud), `tools/data_pull.py`. Hook:
 `engine/ops_checks.tick` (5 min) -> `datapipe.maybe_run` -> `datafeed.maybe_answer`. Tests: `python -X utf8 -m tests.test_datapipe` (offline: a local bare repo stands in for GitHub), `python -X utf8 -m tests.test_datafeed`
 (offline: a local fake ntfy server, fake clock: the PC tick, the size cap, privacy, refused bundles, the git switch).
+
+## Order-flow year backfill (night-of-backfill 2026-11-27)
+The PC's whole tick year (LE_TickRec, up to 400 days) reaches the cloud in a few nights, by itself. ntfy.sh's real free limits
+(GET https://ntfy.sh/v1/account, 2026-11-27): 250 messages a UTC day per IP (reset 19:00 ET), 2 MiB a file, 20 MiB of files in
+flight (each kept 3 h), 350 MiB bandwidth a day. A page = one message.
+- Cloud: `python tools/of_backfill.py --push` (tools/learn_night step `backfill`, right after `pull`): restores branch `of-store`
+  into data/pc_days, posts ONE "bf" ask with a bitmap of the days it holds (~70 characters for 400 days), collects the pages for
+  up to 25 min, saves data/of_store/<YYYY-MM>.ofp and pushes them to branch `of-store` (data only; never pc / main).
+- PC: the 5-minute hook (datafeed.maybe_answer) starts the usual detached BELOW_NORMAL child; engine/ofbackfill.answer_bf builds
+  missing summaries (time-boxed), then sends the missing days newest first, each page only while ntfy's OWN count says
+  `remaining - projected rest-of-day posts - 25 (alerts) - 3 (bars answers) >= 1` and the attachment room has a page free. The
+  projection uses per-hour rates (session / off / closed market) learned from ntfy's count every 15 min outside the session.
+  Never in the weekday session. Pages are engine/ofpack (lossless columns + deltas + xz, sha256 per file: ~0.53-0.63 of gzip).
+- Every page is signed (datafeed.send), size + sha256 checked on download, every file checked by ofpack and datafeed.extract.
+- `python -X utf8 -m engine.ofbackfill budget` on the PC = tonight's page budget with the math (one GET, no message).
+Tests: `python -X utf8 -m tests.test_of_backfill` (fake ntfy with a live quota, fake git remote).
