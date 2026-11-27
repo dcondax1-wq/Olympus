@@ -1032,6 +1032,13 @@ def split(out: dict, max_bytes: int = MAX_STATUS_BYTES, parts: int | None = None
     exts = [{**base, "part": i, "of": len(packs), "x": p} for i, p in enumerate(packs)]
     if cut and exts:
         exts[-1]["cut"] = cut
+        # day-brains-feed: the "cut" list itself can push the last post over max_bytes (it was sized without it): the lowest-priority
+        # block of that post goes too, until it fits
+        while _size(exts[-1]) > max_bytes and len(exts[-1]["x"]) > 1:
+            k = max(exts[-1]["x"], key=lambda z: order.index(z) if z in order else -1)
+            exts[-1]["x"].pop(k)
+            if k not in cut:
+                cut.append(k)
     pub = public(core)
     wp = core.get("wp")
     if isinstance(pub, dict) and isinstance(wp, dict):
@@ -1112,7 +1119,7 @@ def ext_hash(exts) -> str:
     """The ext's news (block times, the brain glance and an open trade's live $ / R left out: _news_of): a new hash = post the ext now, not at
     the next EXT_EVERY_S."""
     import hashlib
-    keep = [{k: _news_of(k, v) for k, v in _d(e.get("x")).items() if k not in ("glance", "glog", "bf")} for e in exts or []]
+    keep = [{k: _news_of(k, v) for k, v in _d(e.get("x")).items() if k not in ("glance", "glog", "bf", "bx")} for e in exts or []]
     # audit D1 (2026-11-22): a bot turning on / off, armed / disarmed or its "why not armed" is news (the Brain page waited up to 44 min);
     # the glance's other fields (levels, logs, texts, $) still are not
     keep.append([[b.get("id"), bool(b.get("on")), bool(b.get("armed")), b.get("nar")]

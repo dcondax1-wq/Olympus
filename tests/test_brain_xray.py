@@ -74,6 +74,14 @@ def main():
     core, exts = PR.split({"v": 1, "kind": "le-live", "t": 1, "lite": True, "bx": x, "glog": {"lit": [["01:00", "a"]]}})
     got = [e for e in exts if "bx" in (e.get("x") or {})]
     check("e. split(): bx lands in an ext post (not the core), under the post limit", got and "bx" not in core and "bx" not in (core.get("x") or {}) and all(len(json.dumps(e)) <= PR.MAX_STATUS_BYTES for e in exts), [list(e) for e in exts])
+    # the "cut" list rides the last post after it was sized: it may never push a post over the limit (regression, day-brains-feed)
+    big = {"v": 1, "kind": "le-live", "t": 1, "lite": True, "bx": x, "glog": {"lit": [["01:00", "y" * 300]] * 8},
+           **{f"zz{i}": {"filler": "x" * 1400} for i in range(6)}}
+    core2, exts2 = PR.split(big)
+    check("e. split() with forced cuts: every post <= MAX_STATUS_BYTES, the cut list names what was left out",
+          all(len(json.dumps(e, separators=(",", ":"))) <= PR.MAX_STATUS_BYTES and PR._size(e) <= PR.MAX_STATUS_BYTES for e in [core2, *exts2]) and exts2 and exts2[-1].get("cut"),
+          [PR._size(e) for e in [core2, *exts2]])
+    check("e. ext_hash ignores bx (a changed gate number is not news: no extra ntfy post)", '"glance", "glog", "bf", "bx"' in rep)
     n, ok = len(RES), sum(RES)
     print(f"\n{ok}/{n} passed")
     return 0 if ok == n else 1
