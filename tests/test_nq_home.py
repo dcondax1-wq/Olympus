@@ -40,6 +40,12 @@ def static():
         check(f"a. {f}: prefers-reduced-motion", "prefers-reduced-motion" in open(os.path.join(NQ, f), encoding="utf-8").read())
     h = open(os.path.join(NQ, "trading_home.html"), encoding="utf-8").read()
     check("a. trading home links PC Health", 'href="pchealth.html"' in h and "pchealth_core.js" in h)
+    for f in ("trading_home.html", "pchealth.html"):
+        src = open(os.path.join(NQ, f), encoding="utf-8").read()
+        head = src.split("</head>")[0]
+        check(f"a. {f}: nqfeed.js right after pc_feed.js in <head>, not defer", '<script src="../pc_feed.js"></script><script src="nqfeed.js?v=1"></script>' in head)
+    check("a. pages use NQ_FEED.cached()/on() when present, old 60 s read otherwise", all("NQF.cached()" in open(os.path.join(NQ, f), encoding="utf-8").read()
+          and "NQF.on(" in open(os.path.join(NQ, f), encoding="utf-8").read() for f in ("trading_home.html", "pchealth.js")))
     check("a. pchealth links back to Trading Home", 'href="trading_home.html"' in open(os.path.join(NQ, "pchealth.html"), encoding="utf-8").read())
 
 
@@ -59,6 +65,8 @@ out.tilesNone = T.tiles(null, { now });
 const op = clone(); op.board.trades.unshift({ acct: 'lit', member: 'LIT', side: 'LONG', qty: 2, open: true, usd: 180 }); out.tilesOpen = T.tiles(op, { now, health: H });
 const bz = clone(); bz.ck.acc.push(['BLITZ 50K', 0, 0, 0]); out.tilesBlitz = T.tiles(bz, { now, health: H });
 out.today = T.today(L, { now });
+const ni = clone(); ni.ck.acc.forEach((r) => { r[1] = 0; }); out.ntIdle = H.checks(ni, { now });
+const no = clone(); no.ck.nt = [1, 1, 1]; out.ntOn = H.checks(no, { now });
 out.todayReal = out.today;
 const un = clone(); un.ar.atlas = [0, 0]; un.ck.acc.forEach((r) => { if (/atlas/i.test(r[0])) r[1] = 0; }); out.unarmed = H.checks(un, { now }); out.todayUnarmed = T.today(un, { now });
 out.cut1 = T.tidyCut('Press 2 (Start bot) and type it yourself (Claud');
@@ -77,7 +85,8 @@ def node():
     o = json.loads(p.stdout)
     by = lambda r: {c["id"]: c for c in r["checks"]}  # noqa: E731
     r, c = o["real"], by(o["real"])
-    check("b. real post: overall amber, first = ready check", r["overall"] == "amber" and r["checks"][0]["id"] == "ready" and "Ready check" in r["say"], r["say"])
+    check("b. real post: overall red, first = NinjaTrader connect-on-startup OFF (4 armed accounts wait on it)", r["overall"] == "red" and r["checks"][0]["id"] == "nt"
+          and "connect-on-startup OFF" in r["say"] and r["checks"][1]["id"] == "ready", r["say"])
     check("b. QA#1: rd says ATLAS not armed but ck.acc/ar say armed -> amber 'disagree', not a hard NOT READY; its age shown",
           c["ready"]["state"] == "amber" and "disagree" in c["ready"]["say"] and "NOT READY" not in c["ready"]["say"] and "2 min ago" in c["ready"]["say"], c["ready"])
     u = by(o["unarmed"])["ready"]
@@ -91,7 +100,10 @@ def node():
           and "yourself." in tu["say"] and "(Claud" not in tu["say"] and tu["menu"] is None, tu)
     check("b. tidyCut: unclosed bracket dropped, long cut ends on a whole word", o["cut1"] == "Press 2 (Start bot) and type it yourself." and o["cut2"].endswith("…")
           and not o["cut2"].endswith("ab…"), (o["cut1"], o["cut2"]))
-    check("b. NinjaTrader connect-on-startup off = amber with the fix", c["nt"]["state"] == "amber" and "Connect on startup" in c["nt"]["fix"], c["nt"])
+    check("b. NinjaTrader connect-on-startup OFF = red while armed, plain sentence + the docs' 3-click fix", c["nt"]["state"] == "red"
+          and "nothing trades until you log in" in c["nt"]["say"] and "Connections > Configure > your MFFU connection > tick \"Connect on startup\"" in c["nt"]["fix"], c["nt"])
+    check("b. connect-on-startup OFF with nothing armed = amber; ON = green", by(o["ntIdle"])["nt"]["state"] == "amber" and by(o["ntOn"])["nt"]["state"] == "green"
+          and "by itself after a restart" in by(o["ntOn"])["nt"]["say"], (by(o["ntIdle"])["nt"], by(o["ntOn"])["nt"]))
     check("b. backup amber, version green bc74f71 + 'updates itself hourly'", c["backup"]["state"] == "amber" and c["version"]["state"] == "green"
           and "bc74f71" in c["version"]["say"] and "hourly" in c["version"]["say"], (c["backup"], c["version"]))
     check("b. all 4 armed green, clock green, 312 tick days", c["armed"]["state"] == "green" and "All 4 armed" in c["armed"]["say"]
@@ -114,7 +126,7 @@ def node():
     t = {x["id"]: x for x in o["tiles"]}
     check("b. tiles: today / armed / trade / event / of / brain / target / health", list(t) == ["today", "armed", "trade", "event", "of", "brain", "target", "health"], list(t))
     check("b. tiles real numbers", t["today"]["big"] == "$0" and t["armed"]["big"] == "4 / 4" and t["trade"]["big"] == "Flat" and t["of"]["big"] == "312 days"
-          and t["target"]["big"] == "$3,822" and t["brain"]["big"].startswith("Displacement") and t["health"]["tone"] == "gold", t)
+          and t["target"]["big"] == "$3,822" and t["brain"]["big"].startswith("Displacement") and t["health"]["tone"] == "red", t)
     check("b. next event = Fri 02:00 window + a real news line", t["event"]["big"] == "Fri 02:00 ET" and "news:" in t["event"]["sub"], t["event"])
     check("b. every tile links a real page", all(os.path.exists(os.path.join(NQ, x["href"])) for x in o["tiles"]))
     check("b. old report marks the tiles", all(x["sub"].startswith("Old report") for x in o["tilesOld"] if x["id"] != "health"))
@@ -136,6 +148,13 @@ def browser():
         check("c. page check ran", False, p.stderr[-500:])
         return
     o = json.loads(p.stdout.strip().splitlines()[-1])
+    ca = {k: o.pop(k) for k in [k for k in o if k.startswith("cache_")]}
+    if ca:
+        check("c. nqfeed cache: network silent, the kept post shows at once with its age (both pages)",
+              ca["cache_pchealth"]["hero"] == "red" and "5 min" in ca["cache_pchealth"]["age"] and ca["cache_trading_home"]["armed"] == "4 / 4"
+              and "5 min" in ca["cache_trading_home"]["age"] and not ca["cache_pchealth"]["errs"] and not ca["cache_trading_home"]["errs"], ca)
+    else:
+        print("SKIP c. nqfeed cache path: nq/nqfeed.js not in this tree yet (night-nq-speed)")
     for k, v in o.items():
         check(f"c. {k}: no sideways scroll, no error, GET only, taps >= 44", v["side"] <= 0 and not v["errs"] and not v["sends"] and not v["small"],
               (v["side"], v["errs"], v["sends"], v["small"]))
@@ -143,10 +162,11 @@ def browser():
         check(f"c. {k}: no full account id, no BLITZ", not re.search(r"MFFU[A-Z]{2,}\d{5,}", v["text"]) and "BLITZ" not in v["text"])
     f = o["fresh_trading_home"]
     check("c. trading home: 5 checklist rows kept + 8 tiles", f["rows"] >= 5 and len(f["tiles"]) == 8, (f["rows"], len(f["tiles"])))
-    check("c. trading home: PC health tile amber (QA#1 disagreement), stays in place", [x[0] for x in f["tiles"]].index("health") == 7 and f["tiles"][7][1].startswith("gold"), f["tiles"][7])
+    check("c. trading home: PC health tile red -> first", f["tiles"][0][0] == "health" and f["tiles"][0][1].startswith("red"), f["tiles"][0])
     check("c. trading home: no '(Claud' anywhere", "(Claud" not in f["text"])
     g = o["fresh_pchealth"]
-    check("c. pchealth: amber hero + the ready check first", g["hero"] == "amber" and g["cards"][0][0] == "ready" and "Ready check" in g["say"], (g["hero"], g["cards"][:2]))
+    check("c. pchealth: red hero, connect-on-startup first, ready check amber next", g["hero"] == "red" and g["cards"][0] == ["nt", "red"]
+          and g["cards"][1] == ["ready", "amber"], (g["hero"], g["cards"][:2]))
     clip = g.get("clip") or ""
     check("c. pchealth 'Copy for Claude' copies every check in plain text", clip.startswith("PC Health: 4 things need you") and "(Claud" not in clip and clip.count("\n- [") == len(g["cards"])
           and "[amber] Ready check" in clip and not re.search(r"MFFU[A-Z]{2,}\d{4,}", clip), clip[:200])

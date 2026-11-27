@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="icon" href="icon.svg">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script src="../pc_feed.js"></script><script src="nqfeed.js?v=1"></script>
 <!-- TRADING HOME (owner 2026-11-22). OLYMPUS NIGHT. Reads ONLY ../status_feed.json (the PC's public report) through ../pc_feed.js;
      sends nothing, arms nothing. The text is set with textContent. trading_home_core.js = the rules (node-tested). -->
 <style>
@@ -80,7 +81,6 @@ h2.sec{font-size:13px;margin:4px 2px 8px;color:var(--mut);text-transform:upperca
 <p class="foot">Reads the PC's public report only. Nothing here arms or trades. On the PC, double-click <b>TRADE_HOME</b> and press the number shown.</p>
 <p class="foot"><a href="pchealth.html">PC Health</a> &middot; <a href="index.html">NQ bots</a> &middot; <a href="../add-account/">Add an account</a> (your private PC link)</p>
 </main>
-<script src="../pc_feed.js"></script>
 <script src="pchealth_core.js"></script>
 <script src="trading_home_core.js"></script>
 <script>
@@ -135,12 +135,15 @@ h2.sec{font-size:13px;margin:4px 2px 8px;color:var(--mut);text-transform:upperca
     document.getElementById('age').textContent = res.age == null ? 'No PC report' : 'PC reported ' + window.TRADING_HOME.ageText(res.age) + ' ago';
   }
   render();
+  var NQF = window.NQ_FEED;   // night-nq-speed shared feed: the kept post now, every newer post pushed (one read per phone)
+  if (NQF) { var first = NQF.cached(); if (first) { lite = first; render(); } NQF.on(function (j) { lite = j || lite; render(); }); }
   function load() {
+    if (NQF) { NQF.latest().then(function (j) { if (j) { lite = j; render(); } }, function () {}); return; }
     if (!window.PC_FEED) return;
     window.PC_FEED.fetchLatest({ feedUrl: new URL('../status_feed.json', location.href).href }).then(function (j) { lite = j || null; render(); }, function () { render(); });
   }
   fetch('news_week.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { news = j && j.events || null; renderTiles(); }, function () {});
-  load(); setInterval(load, 60000);
+  load(); if (!NQF) setInterval(load, 60000);
 })();
 </script>
 </body>

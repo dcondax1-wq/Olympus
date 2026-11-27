@@ -46,6 +46,25 @@ function shifted(ago) {
       await ctx.close();
     }
   }
+  // nqfeed cache path (only when nq/nqfeed.js is in the tree): the network never answers, the kept post renders at once
+  if (fs.existsSync(path.join(web, 'nq', 'nqfeed.js'))) {
+    for (const p of ['trading_home', 'pchealth']) {
+      const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+      const pg = await ctx.newPage(), errs = [];
+      pg.on('pageerror', (e) => errs.push(String(e)));
+      const lite = shifted(300);
+      await pg.addInitScript('try{localStorage.setItem("olympus.nqfeed.v1", JSON.stringify({v:1, at: Date.now(), lite: ' + JSON.stringify(lite) + '}));}catch(e){}');
+      await pg.route('**/pc_feed.js', (route) => route.fulfill({ contentType: 'text/javascript',
+        body: fs.readFileSync(path.join(web, 'pc_feed.js'), 'utf8') + '\n;window.PC_FEED.fetchLatest=function(){return new Promise(function(){});};' }));
+      await pg.goto(base + '/nq/' + p + '.html');
+      await pg.waitForTimeout(500);
+      out['cache_' + p] = await pg.evaluate(() => ({ hero: document.getElementById('hero') ? document.getElementById('hero').dataset.s : null,
+        tiles: document.querySelectorAll('a.tile').length, armed: (document.querySelector('a.tile[data-id=armed] .tb') || {}).textContent || null,
+        age: (document.getElementById('meta') || document.getElementById('age') || {}).textContent || '' }));
+      out['cache_' + p].errs = errs;
+      await ctx.close();
+    }
+  }
   await browser.close(); srv.close();
   console.log(JSON.stringify(out));
 })();

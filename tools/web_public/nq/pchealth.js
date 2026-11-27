@@ -38,11 +38,15 @@
     });
     document.getElementById('needh').hidden = !n; document.getElementById('okh').hidden = !m;
   }
+  var NQF = window.NQ_FEED;   // night-nq-speed shared feed (nqfeed.js): kept post at once + every newer post; else the old 60 s read
   function load() {
+    if (NQF) { NQF.latest().then(function (j) { if (j) { lite = j; render(); } }, function () {}); return; }
     if (!window.PC_FEED) { render(); return; }
     window.PC_FEED.fetchLatest({ feedUrl: new URL('../status_feed.json', location.href).href })
       .then(function (j) { lite = j || null; render(); }, function () { render(); });
   }
   document.getElementById('copy').addEventListener('click', copy);
-  render(); load(); setInterval(load, 60000);
+  render();
+  if (NQF) { var first = NQF.cached(); if (first) { lite = first; render(); } NQF.on(function (j) { lite = j || lite; render(); }); }
+  load(); if (!NQF) setInterval(load, 60000);
 })();
