@@ -7,7 +7,7 @@
 //   file    = odeon/trades.json (the ledger: a last trade when the post has none)
 // Missing data says "waiting", never a made-up number. Read only: nothing here arms, starts, stops or orders anything.
 import { live as liveState, chainStates, today as todayRows, ageText, FRESH_S, glanceOf, pillarOf } from '../cities/mind/mindcore.js?v=m6';
-import { ATLAS_STEPS, lobeState } from '../nq/braincore.js?v=4';
+import { ATLAS_STEPS, lobeState } from '../nq/braincore.js?v=7';
 
 const isObj = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
 const arr = (x) => (Array.isArray(x) ? x : []);
