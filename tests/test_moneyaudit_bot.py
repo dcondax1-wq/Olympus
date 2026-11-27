@@ -8,6 +8,9 @@ folders said whether the 25K #2's ATLAS lane was even on, or why any non-B lane 
      open record + today's skip count + last reason (B left to "ab"), the combo switch's accounts as last 4 only
   2. the status post: "cb" rides the core "ab" (every 15 minutes), "abl" (the lanes) an ext block; no full account Name anywhere
   3. the PC's day folder (datapipe.day_decisions): every lane's held{} rows of that day, src "held_atlas" + the lane
+  5. live_guard (the instant MISSED push): a stuck record of an EARLIER day no longer silences it (it silenced today's ATLAS
+     funded miss: _in_trade_at counted the Nov 20 record as "in a trade"); a late check pushes; a same-day real position and a real
+     rule hold stay quiet; the combo's ATLAS lanes (acct_x) are checked and listed at 01:55 / 09:00
   4. trade_watch: a twin entry the Rapid's lane checked with no reason -> "ATLAS on the Rapid EOD vs backtest: missed", its own key;
      the combo lane's stuck record -> missed; account B's keys and texts unchanged
 """
@@ -108,11 +111,53 @@ def part4(root):
     check("4. three lanes, three pushes, no duplicate", len(fl) == 3 and len(by) == 3, [f["key"] for f in fl])
 
 
+class Lane:
+    def __init__(self, label, open_t=None, held=None, probed=(), keys=("ema_lon_vix", "macd_sweep", "sr_nyreclaim")):
+        self.label, self.open_t, self.held = label, open_t, dict(held or {})
+        self.spec = {"keys": list(keys), "armed": True, "adapter": "ninjatrader"}
+        self.ledger, self.closes, self.problem, self.prov = [], [], None, {}
+        self.seen = {("probe", t) for t in probed}
+        self.name = label
+
+    def disabled_reason(self):
+        return None
+
+
+class Bot:
+    def __init__(self, b=None, x=None):
+        self.running, self.kill, self.cfg = True, False, {"adapter": "ninjatrader"}
+        self.second = {"strategies": {"sr_nyreclaim": {"trades": [{"entry_t": TB, "dir": 1, "r": 1.9, "risk_usd": 157.5}]}}}
+        self.acct_b, self.acct_r, self.acct_r2, self.acct_x = b, None, None, dict(x or {})
+        self.accts, self.seen, self.state = None, set(), {}
+
+
+def part5(root):
+    from engine import live_guard as LG
+    now = TB + 300
+    stuck = Lane("ATLAS funded", open_t=OLD, held={str(TB): {"key": None, "why": "one position ... still open", "code": "open", "since": OLD}})
+    m = [x for x in LG.missed(Bot(b=stuck), now) if x["model"] == "atlas"]
+    check("5. a stuck Nov 20 record: the MISSED push fires, naming the stuck record", len(m) == 1 and "stuck position record" in m[0]["why"], m)
+    real = Lane("ATLAS funded", open_t=TB - 3600, held={str(TB): {"key": None, "why": "one position", "code": "open", "since": TB - 3600}})
+    check("5. a real position of the same day: quiet (one position is its rule)", not LG.missed(Bot(b=real), now))
+    rule = Lane("ATLAS funded", held={str(TB): {"key": "sr_nyreclaim", "why": "size 0 (soft daily loss)"}}, probed=[TB])
+    check("5. a real rule hold (size 0): quiet", not LG.missed(Bot(b=rule), now))
+    late = Lane("ATLAS funded", held={str(TB): {"key": None, "why": "late: this 5m open was first checked 60 s after it", "code": "late"}})
+    m = LG.missed(Bot(b=late), now)
+    check("5. a late check: the MISSED push fires with that reason", len(m) == 1 and m[0]["why"].startswith("late"), m)
+    combo = Lane("Zlarior 25K #2 (ATLAS)", probed=[])
+    b = Bot(b=Lane("ATLAS funded", probed=[TB]), x={"b25k_2": combo})
+    b.acct_b.ledger = [{"side": "buy", "entry_t": TB, "result": {"ok": True}}]
+    m = LG.missed(b, now)
+    check("5. the combo's ATLAS lane on the 25K #2 is checked too (B routed it, the lane did not)",
+          [x["account"] for x in m] == ["Zlarior 25K #2 (ATLAS)"] and "did not run" in m[0]["why"], m)
+    check("5. ... and it is one of the armed-check accounts (01:55 / 09:00 lines)", combo in LG.atlas_accounts(b))
+
+
 def main():
     root = tempfile.mkdtemp(prefix="moneyaudit_")
     try:
         setup(root)
-        for fn in (part1, part2, part3, part4):
+        for fn in (part1, part2, part3, part4, part5):
             try:
                 fn(root)
             except Exception as e:  # noqa: BLE001

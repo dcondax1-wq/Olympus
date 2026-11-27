@@ -129,15 +129,30 @@ def atlas_signals(bot, now) -> list:
 
 
 def _in_trade_at(acct, t) -> bool:
-    """The account held another trade at t (one position per account: a twin signal then is not its trade)."""
+    """The account held another trade at t (one position per account: a twin signal then is not its trade). day-moneyaudit
+    (2026-11-27): only a trade of the SAME trading day counts. ATLAS is flat by 15:55 ET, so an entry of an earlier day still
+    marked open is a stuck record (_stuck_since), never a reason to stay quiet: it silenced today's MISSED push for ATLAS
+    funded (its Nov 20 record)."""
+    day = trading_day(int(t))
     closes = {int(c[3]): int(c[1]) for c in (getattr(acct, "closes", None) or []) if isinstance(c, (list, tuple)) and len(c) > 3}
     for r in getattr(acct, "ledger", None) or []:
         if r.get("side") in ("buy", "sell") and r.get("entry_t") and _ok_row(r):
             e = int(r["entry_t"])
-            if e < t and (closes.get(e) is None or closes[e] > t):
+            if e < t and trading_day(e) == day and (closes.get(e) is None or closes[e] > t):
                 return True
     ot = getattr(acct, "open_t", None)
-    return ot is not None and int(ot) < t
+    return ot is not None and int(ot) < t and trading_day(int(ot)) == day
+
+
+def _stuck_since(acct, t):
+    """The entry time of a position record of an EARLIER trading day the account still marks open at t (None = none)."""
+    try:
+        ot = getattr(acct, "open_t", None)
+        if ot is not None and int(ot) < int(t) and trading_day(int(ot)) != trading_day(int(t)):
+            return int(ot)
+    except (TypeError, ValueError):
+        pass
+    return None
 
 
 def _routed(acct, t):
@@ -188,7 +203,10 @@ def lit_followers(bot) -> list:
 
 
 def atlas_accounts(bot) -> list:
-    return [a for a in (getattr(bot, "acct_b", None), getattr(bot, "acct_r", None), getattr(bot, "acct_r2", None))
+    # day-moneyaudit: + the combo's ATLAS lanes on extra Builders (engine/combo25.ComboAtlas, LiveBot.acct_x): they had no
+    # missed-trade check and no 01:55 / 09:00 armed line
+    xs = [x for x in (getattr(bot, "acct_x", None) or {}).values() if x is not None] if isinstance(getattr(bot, "acct_x", None), dict) else []
+    return [a for a in [getattr(bot, "acct_b", None), getattr(bot, "acct_r", None), getattr(bot, "acct_r2", None)] + xs
             if a is not None and not _paper(a)]
 
 
@@ -268,14 +286,22 @@ def missed(bot, now) -> list:
                 continue                                   # not one of this account's members (no keys = it trades none)
             if t in took and _routed(a, t) is True:
                 continue
-            if str(t) in (getattr(a, "held", None) or {}):
-                continue                                   # its own rule held it (account B "held": room, size 0, news)
+            h = (getattr(a, "held", None) or {}).get(str(t))
+            stuck = _stuck_since(a, t)
+            late = isinstance(h, dict) and h.get("code") == "late"
+            if h is not None and not late and not stuck:
+                continue                                   # its own rule held it (account B "held": room, size 0, news, one position)
             if _in_trade_at(a, t):
                 continue
             r = _routed(a, t)
             soft = False
             if r is not None and r is not True:
                 why = f"NinjaTrader refused it: {r}"
+            elif stuck:
+                why = (f"the account still marks its {_et(stuck):%a %m-%d %H:%M} ET entry open (a stuck position record): every new entry "
+                       "is skipped until it clears (the bot clears it itself once NinjaTrader shows the account flat)")
+            elif late:
+                why = str(h.get("why") or "the 5-minute open was checked too late")[:160]
             else:
                 why = _why_off(a)
                 if not why:
