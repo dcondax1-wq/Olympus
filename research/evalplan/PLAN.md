@@ -126,7 +126,7 @@ Win counts below are out of lane A's 2:1 trades (won = hit +2R). Pass chances fr
 edge (37.5%) / as measured (50%).
 | step | where | go to the next step when | stop rule (switch OFF, back to paper) | earliest |
 |---|---|---|---|---|
-| 0 | paper bot (running; scored nightly from the pulled tick days) | 20 forward trades (from Nov 27) with **>= 9 won** (mean >= +0.35R after costs, $ > 0 at 1 micro, PF >= 1.6) | after 10 forward trades <= 2 won, or forward sum <= -6R at any time | ~Dec 29 |
+| 0 | paper bot (running; scored nightly by tools/of_ladder.py -> research/evalplan/ladder.json) | judged ONCE on the first 20 forward trades (from Nov 27): **>= 9 won** (mean >= +0.35R after costs, $ > 0 at 1 micro, PF >= 1.6) | after 10 forward trades <= 2 won, or forward sum <= -6R at any time | ~Dec 29 |
 | | | false pass if no edge 19%, if 1/4 edge 32%, real edge passes 75% | | |
 | 1 | NinjaTrader Sim101, same rules, real order path (fills, slippage, the hedge guard with the live lanes) | 10 Sim101 trades, fills within 2 ticks of paper on average, 0 hedge / one-position conflicts | any hedge conflict, or fills worse than paper by > 4 ticks average | ~2 weeks after step 0 |
 | 2 | ONE eval: Zlarior 25K #2, SMALL ($100), quiet days only, cap 1 a day / 3 a week; owner's yes + phrase | pooled forward (paper + Sim101 + eval) **40 trades with >= 17 won** (+0.28R; false pass 14% / 31% / real 87%) | lane A's own sum on the account <= -$300 (3 full losses), or 10 eval trades <= 2 won, or the account's room under $400 | mid/late Jan |

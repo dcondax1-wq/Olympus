@@ -282,7 +282,20 @@ def setup_scores():
 def learning(st):
     f, m, d, h, o = _load(FORWARD), _load(IDEAMILL), _load(LIVEGAP), _load(HEALTH), _load(OF_LEARN)
     src = [p for p, x in ((FORWARD, f), (IDEAMILL, m), (LIVEGAP, d), (HEALTH, h), (OF_LEARN, o)) if x is not None]
-    return {"sources": src, "forward": forward_rows(f), "ideamill": ideamill_block(m, st), "livegap": livegap_block(d),
+    fw = forward_rows(f)
+    try:                                   # night-of-ladder: the order-flow gate ladder as one more idea on trial
+        try:
+            import of_ladder
+        except ImportError:
+            from tools import of_ladder
+        tr = of_ladder.trial_row()
+        if tr and fw is not None:
+            fw["rules"] = [r for r in fw["rules"] if r["id"] != tr["id"]] + [tr]
+        if tr:
+            src.append("research/evalplan/ladder.json")
+    except Exception:  # noqa: BLE001
+        pass
+    return {"sources": src, "forward": fw, "ideamill": ideamill_block(m, st), "livegap": livegap_block(d),
             "health": health_block(h), "lit_setups": lit_setups(st), "setup_scores": setup_scores(), "of": of_lines(o, st), "next": next_tests(st),
             "promote_bar": f"{PROMOTE_N} new trades, holding near its own backtest, money made overall"}
 

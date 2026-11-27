@@ -1,0 +1,74 @@
+{
+ "v": 1,
+ "paper_only": true,
+ "plan": "research/evalplan/PLAN.md",
+ "fwd_from": "2026-11-27",
+ "step": 0,
+ "step_name": "paper forward",
+ "status": "watching",
+ "why": "0 / 20 forward trades, 0 won (needs 9)",
+ "stats": {
+  "n": 0,
+  "won": 0,
+  "sum_R": 0,
+  "mean_R": null,
+  "pf": null,
+  "usd_1": 0,
+  "orig_sum_R": 0,
+  "e5_n": 0,
+  "e5_sum_R": null
+ },
+ "gate": "20 forward trades with >= 9 won (mean >= +0.35R, $ > 0 at 1 micro)",
+ "stop_rule": "after 10 forward trades <= 2 won, or the forward sum <= -6R at any time",
+ "next": {
+  "step": 1,
+  "name": "Sim101",
+  "gate": "10 Sim101 trades, fills within 2 ticks of paper on average, 0 hedge / one-position conflicts",
+  "stop": "any hedge conflict, or fills worse than paper by > 4 ticks on average"
+ },
+ "stopped": null,
+ "card_due": false,
+ "passed_gate": -1,
+ "passed_why": null,
+ "steps": [
+  {
+   "step": 0,
+   "name": "paper forward",
+   "where": "the paper bot (scored nightly)",
+   "gate": "20 forward trades with >= 9 won (mean >= +0.35R, $ > 0 at 1 micro)",
+   "stop": "after 10 forward trades <= 2 won, or the forward sum <= -6R at any time"
+  },
+  {
+   "step": 1,
+   "name": "Sim101",
+   "where": "NinjaTrader Sim101, same rules, real order path",
+   "gate": "10 Sim101 trades, fills within 2 ticks of paper on average, 0 hedge / one-position conflicts",
+   "stop": "any hedge conflict, or fills worse than paper by > 4 ticks on average"
+  },
+  {
+   "step": 2,
+   "name": "one eval",
+   "where": "Zlarior 25K #2, $100 a trade, quiet days only, 1 a day / 3 a week (owner yes + phrase)",
+   "gate": "pooled forward 40 trades with >= 17 won (+0.28R)",
+   "stop": "lane A's own sum on the account <= -$300, or 10 eval trades <= 2 won, or the account's room under $400"
+  },
+  {
+   "step": 3,
+   "name": "the other evals",
+   "where": "Zlarior 50K at $200, Rapid EOD 25K at $100 with the news window",
+   "gate": "60 forward trades, mean >= +0.25R in both halves of the forward",
+   "stop": "lane A's sum <= -$300 (25K) / -$600 (50K) on an account"
+  },
+  {
+   "step": 4,
+   "name": "ATLAS funded",
+   "where": "ATLAS Builder 25K funded, $100, after its first $1,000 payout",
+   "gate": "2 months of step 3 with lane A $ > 0 on every account",
+   "stop": "lane A's sum <= -$250 on the funded account = off for good"
+  }
+ ],
+ "line": "Order flow ladder step 0 (paper forward): watching. 0 / 20 forward trades, 0 won (needs 9). Forward so far: 0 trades, 0 won, +0.0R (1 micro $+0).",
+ "sources": [],
+ "built": "2026-11-27 05:31 UTC",
+ "rows": []
+}

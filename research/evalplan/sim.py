@@ -16,6 +16,15 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, os.path.join(ROOT, "research", "alloc"))
+try:                                              # numba-free fallback (cloud without numba): njit = plain Python (slower BLITZ load)
+    import numba  # noqa: F401
+except ImportError:
+    import types
+    _nb = types.ModuleType("numba")
+    _nb.njit = lambda *a, **k: (a[0] if a and callable(a[0]) else (lambda f: f))
+    _nb.jit = _nb.njit
+    _nb.prange = range
+    sys.modules["numba"] = _nb
 import alloc as AL  # noqa: E402  (book.py + rank.py engines, today's account state)
 
 BK, R, U, SOA = AL.BK, AL.R, AL.U, AL.SOA
