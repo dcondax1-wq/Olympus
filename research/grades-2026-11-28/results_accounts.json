@@ -1,0 +1,169 @@
+{
+ "G1/M1": {
+  "H1": {
+   "pass": 98.2,
+   "fail": 1.7,
+   "med_pass": 9.0,
+   "per_month": 2802,
+   "first_pay_med": 27.0
+  },
+  "H2": {
+   "pass": 86.3,
+   "fail": 10.7,
+   "med_pass": 13.0,
+   "per_month": 1316,
+   "first_pay_med": 42.0
+  },
+  "REF": {
+   "pass": 29.0,
+   "fail": 66.2,
+   "med_pass": 18.0,
+   "per_month": -7,
+   "first_pay_med": 78.0
+  },
+  "pass_rule": false
+ },
+ "live": {
+  "H2": {
+   "pass": 89.2,
+   "fail": 8.8,
+   "med_pass": 11.0,
+   "per_month": 1457,
+   "first_pay_med": 39.0
+  },
+  "H1": {
+   "pass": 96.6,
+   "fail": 3.0,
+   "med_pass": 10.0,
+   "per_month": 2529,
+   "first_pay_med": 30.0
+  },
+  "REF": {
+   "pass": 28.7,
+   "fail": 67.8,
+   "med_pass": 15.0,
+   "per_month": -2,
+   "first_pay_med": 75.0
+  }
+ },
+ "G1/M2": {
+  "H1": {
+   "pass": 97.4,
+   "fail": 2.6,
+   "med_pass": 9.0,
+   "per_month": 2808,
+   "first_pay_med": 27.0
+  },
+  "H2": {
+   "pass": 78.9,
+   "fail": 16.6,
+   "med_pass": 15.0,
+   "per_month": 1015,
+   "first_pay_med": 49.0
+  },
+  "REF": {
+   "pass": 30.0,
+   "fail": 62.2,
+   "med_pass": 17.0,
+   "per_month": 6,
+   "first_pay_med": 73.0
+  },
+  "pass_rule": false
+ },
+ "G1/M3": {
+  "H1": {
+   "pass": 96.4,
+   "fail": 3.5,
+   "med_pass": 8.0,
+   "per_month": 3136,
+   "first_pay_med": 26.0
+  },
+  "H2": {
+   "pass": 81.5,
+   "fail": 17.7,
+   "med_pass": 11.0,
+   "per_month": 1280,
+   "first_pay_med": 42.0
+  },
+  "REF": {
+   "pass": 28.7,
+   "fail": 68.6,
+   "med_pass": 14.0,
+   "per_month": -8,
+   "first_pay_med": 70.5
+  },
+  "pass_rule": false
+ },
+ "G2/M1": {
+  "H2": {
+   "pass": 82.2,
+   "fail": 11.4,
+   "med_pass": 19.0,
+   "per_month": 868,
+   "first_pay_med": 56.0
+  },
+  "H1": {
+   "pass": 96.9,
+   "fail": 2.8,
+   "med_pass": 10.0,
+   "per_month": 2151,
+   "first_pay_med": 31.0
+  },
+  "REF": {
+   "pass": 24.7,
+   "fail": 67.2,
+   "med_pass": 20.0,
+   "per_month": -30,
+   "first_pay_med": 89.0
+  },
+  "pass_rule": false
+ },
+ "G2/M2": {
+  "H2": {
+   "pass": 59.7,
+   "fail": 24.2,
+   "med_pass": 22.0,
+   "per_month": 400,
+   "first_pay_med": 71.0
+  },
+  "H1": {
+   "pass": 95.8,
+   "fail": 2.7,
+   "med_pass": 11.0,
+   "per_month": 1509,
+   "first_pay_med": 36.0
+  },
+  "REF": {
+   "pass": 19.9,
+   "fail": 65.6,
+   "med_pass": 21.0,
+   "per_month": -36,
+   "first_pay_med": 77.5
+  },
+  "pass_rule": false
+ },
+ "G2/M3": {
+  "H1": {
+   "pass": 94.6,
+   "fail": 5.3,
+   "med_pass": 9.0,
+   "per_month": 2087,
+   "first_pay_med": 31.0
+  },
+  "H2": {
+   "pass": 74.3,
+   "fail": 22.6,
+   "med_pass": 17.0,
+   "per_month": 693,
+   "first_pay_med": 59.0
+  },
+  "REF": {
+   "pass": 29.9,
+   "fail": 68.4,
+   "med_pass": 14.0,
+   "per_month": -32,
+   "first_pay_med": 70.0
+  },
+  "pass_rule": false
+ }
+}

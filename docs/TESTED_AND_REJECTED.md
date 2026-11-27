@@ -489,3 +489,9 @@
   +$37..+$63/mo H1, +$41..+$99 Jul-Oct for fresh fails 3 -> 4-8% / 9 -> 15-22%; same answer as evalsizer. room_f stays 0.4.
   ATLAS eval share x1.0 (room 0.4) = +$183 / +$111 / +$44 a month (H1 / Jul-Oct / 2021-25) for fails 3 -> 9% / 9 -> 13%:
   owner 2026-11-27: "Wait until more room" = later, revisit when the 50K room > $2,000. research/lit/size50k-2026-11-27/RESULT.md
+- 2026-11-28 Setup GRADES A+/A/B/C + conviction sizing, every bot (day-grades, pre-registered, research/grades-2026-11-28/):
+  16 entry facts (stop pts/ATR, RR, ATR regime, VIX, daily + 1h trend, range/ADR, news, session, weekday; LIT depth / displacement /
+  inducements; ATLAS member), fitted grader on 2026 H1 + an unfitted trader's prior, maps 1.5/1.25/1/0.5, C skip, 2/1.5/1/0.5 vs an
+  equal-risk flat control; LIT, ATLAS, BLITZ. 0 of 18 pass (Holm 1.0): LIT grade flips in Jul-Oct (A+ -0.73R, C +1.30R), ATLAS ranks
+  weakly every period but 2021-25 A+ loses, BLITZ = leverage. Builder 50K combo: every map -$141..-$1,057/mo in Jul-Oct, more fails.
+  POSEIDON not gradable (no H1 ticks). research/grades-2026-11-28/RESULT.md
