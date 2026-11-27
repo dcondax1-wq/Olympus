@@ -37,11 +37,11 @@
 <script src="../olympus/agora-ui.js?v=12" defer></script>
 <script src="../olympus/gate-nav.js?v=g14" defer></script><!-- the way back to the Gate + Go to (olympus/gate-nav.js) -->
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#c8a24a'); r.setProperty('--oly-accent-rgb', '241, 193, 75'); })();</script>
-<link rel="stylesheet" href="nq.css?v=a9">
+<link rel="stylesheet" href="nq.css?v=a10">
 <link rel="stylesheet" href="../nqdeep.css?v=2" media="print" onload="this.media='all'"><!-- perf: the deep views (.nqd-*) are far below the first screen: not render-blocking -->
-<link rel="stylesheet" href="nqdesk.css?v=11">
+<link rel="stylesheet" href="nqdesk.css?v=12">
 <link rel="stylesheet" href="nqgoals.css?v=9">
-<link rel="stylesheet" href="nqtheme.css?v=9"><!-- owner 2026-11-20 15:15 ET: the NQ terminal look (navy, cyan / blue glows, violet), last so it wins -->
+<link rel="stylesheet" href="nqtheme.css?v=10"><!-- owner 2026-11-20 15:15 ET: the NQ terminal look (navy, cyan / blue glows, violet), last so it wins -->
 <style>/* the status lines above the chart fill in a moment after the page shows (3 + 2 lines on a phone): held from the start so the chart card never jumps (phone QA 2026-11-19) */
 @media (max-width: 520px) { #status { min-height: 3lh; } #src:empty { min-height: 2lh; } }</style>
 </head>
@@ -52,6 +52,22 @@
     <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">NQ</h1><p class="sub">Are the bots on, and how much $ each account can still lose before it fails.</p></div></div>
     <div class="tags"><a class="btn primary brainlink" href="live.html">Live</a><a class="btn brainlink" href="../warroom/" aria-label="Open the War Room: every bot, every step, live">War Room</a><a class="btn brainlink" href="../brain/" aria-label="Open the Brain: one living 3D brain of every bot">3D Brain</a><a class="btn brainlink" href="../pillars/" aria-label="Open the four pillars: LIT, ATLAS, BLITZ, ORDER FLOW">Pillars</a><a class="btn brainlink" href="accounts.html" aria-label="Open every account on one screen">Accounts</a><a class="btn brainlink" href="brain.html" aria-label="Open the bots' brains">Brain</a><span id="demo" class="tag demo" hidden>DEMO</span><span id="lite" class="tag" hidden>LITE</span></div>
   </header>
+  <!-- night-nq-main 2026-11-27 (owner 00:00 ET: "make everything better, 3D, higher quality, effects"): the first screen. Today's $ with its age, each
+       account's way to pass / to payout + the room left, LIT and ATLAS in one word, where the trading day is and what comes next (nqdesk.js hero /
+       drawHero / heroScene: the scene's ribbon is today's real 5-minute closes from the PC's chart post, none = no ribbon). -->
+  <section class="hx" id="hero" aria-labelledby="hxTitle" data-tone="none">
+    <canvas class="hx-scene" id="heroScene" aria-hidden="true"></canvas>
+    <div class="hx-in">
+      <div class="hx-head">
+        <div class="hx-money"><span class="hx-k" id="hxTitle" data-hx="todayK">TODAY</span><b class="hx-big ag-num" data-hx="today">-</b><span class="hx-age" data-hx="age">Loading the PC's report...</span></div>
+        <div class="hx-clock"><b data-hx="phase"></b><span class="hx-who" data-hx="who"></span><span class="hx-next" data-hx="next"></span></div>
+      </div>
+      <div class="hx-honestw" data-hx="honestw" hidden><p class="hx-honest" data-hx="honest"></p><button type="button" class="btn hx-how" data-howto aria-haspopup="dialog" aria-expanded="false">How to get the PC reporting again</button></div>
+      <div class="hx-bots" data-hx="bots" role="group" aria-label="What LIT and ATLAS are doing now"></div>
+      <div class="hx-accts" data-hx="accts" role="group" aria-label="Each account: the way to pass or to payout, and the room left"></div>
+    </div>
+  </section>
+
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
   <p id="src" class="note" data-truth="source"></p>
   <a class="btn primary" id="liveDoor" href="live.html" style="display:flex;min-height:52px;margin:8px 0;font-weight:800">LIVE NOW: trades, accounts, setups ›</a>
@@ -218,7 +234,7 @@
   <div class="sheetbody" id="sheetBody"></div>
 </section>
 <script src="../nqdeep.js?v=1" defer></script>
-<script type="module" src="nq.js?v=r33"></script>
+<script type="module" src="nq.js?v=r34"></script>
 <script type="module" src="nqchart.js?v=c9"></script>
 <!-- QA round 6: the 3D loads after the first paint, and not at all on LITE (olympus/lazy3d.js) -->
 <script src="../olympus/lazy3d.js?v=l2" data-src="nqscene.js?v=q6f" data-near="#sceneCard" data-skip="lite" data-event="nq3d" defer></script>

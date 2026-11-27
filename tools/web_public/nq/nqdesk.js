@@ -502,3 +502,190 @@ function drawPast(box, L) {
 }
 function nice2(d) { const t = Date.parse(d + 'T12:00:00Z'); return isNaN(t) ? d : new Date(t).toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' }); }
 draw.gate = drawGate; draw.day = drawDay; draw.past = drawPast;
+
+// ------------------------------------------------------------------------------------------------ 5. the HERO (night-nq-main 2026-11-27, owner 00:00 ET:
+// "the NQ dashboard still looks poorly done ... make everything better, 3D, higher quality"). The first screen: today's $ (with its age), each
+// account's way to pass / to payout + the room left, LIT and ATLAS in one word each, where the trading day is and what comes next. Only the models
+// above (accounts / goals / thinking / phase): nothing new is guessed; an empty or old report says so.
+const NEXT = [   // the next moment that matters, in ET minutes after 18:00 (the CME day)
+  { at: 120, label: 'London entries open 02:00' }, { at: 480, label: 'New York morning 08:00' }, { at: 930, label: 'Last new entries 15:30' },
+  { at: 955, label: 'Flat time 15:55' }, { at: 1080, label: 'CME reopens 18:00' },
+];
+export function nextUp(nowS) {
+  const ph = phase(nowS);
+  if (ph.id === 'closed') return { label: 'CME reopens Sunday 18:00 ET', inS: null };
+  const m = ph.mod;
+  const cand = NEXT.map((n) => ({ ...n, d: ((n.at - m) + 1440) % 1440 })).filter((n) => n.d > 0).sort((a, b) => a.d - b.d)[0];
+  return cand ? { label: cand.label, inS: cand.d * 60 } : { label: '', inS: null };
+}
+/** one word per bot (+ its line): IN TRADE / SETUP ARMED / SETUP FORMING / DONE TODAY / WATCHING / OFF / NO REPORT. The PC's glance posts no
+ *  numbered LIT step, so none is shown (LEAD_WIRES: a "step" field in engine/brain_glance would let this say "step 3 of 4"). */
+export function botState(b) {
+  if (!isObj(b)) return { word: 'NO REPORT', tone: 'off', line: '' };
+  if (!b.has) return { word: 'NO REPORT', tone: 'off', line: 'No word from the PC about this bot yet.' };
+  if (b.on === false) return { word: 'OFF', tone: 'off', line: b.before && b.before.waiting ? b.before.waiting : 'Switched off on the PC.' };
+  if (b.phase === 'in' && b.inTrade) {
+    const t = b.inTrade, now = num(t.now);
+    return { word: 'IN TRADE', tone: 'hot', side: t.side || '', line: `${t.side || ''} ${t.qty ? t.qty + ' MNQ' : ''}${now !== null ? ' · ' + money(now, true) + ' now' : ''}${t.stopMoved ? ' · stop at break-even or better' : ''}`.trim() };
+  }
+  const L = b.before && b.before.lean;
+  if (L && L.side && /armed/.test(L.why || '')) return { word: 'SETUP ARMED', tone: 'warm', side: L.side, line: L.trig || L.why };
+  if (L && L.side && /forming/.test(L.why || '')) return { word: 'SETUP FORMING', tone: 'warm', side: L.side, line: (L.why || '').replace(/^setup forming:\s*/, '') };
+  if (b.phase === 'after' && b.after) return { word: 'DONE TODAY', tone: (num(b.after.usd) || 0) >= 0 ? 'up' : 'down', line: `${money(b.after.usd, true)}${b.after.exit ? ' · ' + b.after.exit : ''}${b.after.at ? ' at ' + b.after.at : ''}` };
+  return { word: 'WATCHING', tone: 'calm', line: (b.before && b.before.waiting) || 'Waiting for its setup.' };
+}
+export function hero(accts, goalList, bots, home, nowS, demo) {
+  const A = arr(accts).filter((a) => isObj(a) && a.dot !== 'plan'), G = arr(goalList).filter(isObj), fa = feedAge(home, nowS);
+  const withNum = A.filter((a) => a.has && num(a.today) !== null);
+  const today = withNum.length ? withNum.reduce((s, a) => s + num(a.today), 0) : null;
+  const ages = A.filter((a) => a.has && num(a.ageS) !== null).map((a) => a.ageS);
+  const age = ages.length ? Math.max(...ages) : fa.report;
+  const level = demo ? 'warn' : age === null ? 'bad' : ageLevel(age, 'pc');
+  const ph = phase(nowS), nx = nextUp(nowS);
+  const acc = A.map((a) => {
+    const g = G.find((x) => x.key === a.key) || null;
+    return { key: a.key, name: a.name, stage: a.stage, has: a.has, dot: a.dot, ageText: a.ageText, today: num(a.today), room: num(a.room), mll: num(a.mll),
+      roomFrac: a.roomFrac, frac: g && g.has !== false ? Math.max(0, Math.min(1, num(g.frac) || 0)) : null,
+      goalBig: g ? g.big : a.goalText, goalUnit: g ? g.unit : a.goalLabel.toLowerCase(), goalKind: g ? g.kind : (a.stage === 'Funded' ? 'payout' : 'pass'),
+      open: a.open ? { side: a.open.side, now: num(a.open.now) } : null };
+  });
+  return {
+    today, todayText: today === null ? '-' : money(today, true), tone: today === null ? 'none' : today > 0.5 ? 'up' : today < -0.5 ? 'down' : 'flat',
+    ageText: demo ? 'example numbers (DEMO)' : age === null ? 'no PC report on this page yet' : updated(age), level,
+    nAcc: withNum.length, phase: { id: ph.id, label: ph.label, who: ph.who }, next: nx, nextText: nx.label ? (nx.inS !== null ? `${nx.label} in ${mins(nx.inS)}` : nx.label) : '',
+    accts: acc, bots: arr(bots).filter((b) => isObj(b)).map((b) => ({ id: b.id, name: b.name, what: b.what, ...botState(b) })),
+    honest: !acc.some((a) => a.has) ? (demo ? '' : "Waiting for your PC's report: no account numbers yet. Nothing here is made up.") : '',
+  };
+}
+
+function ring(frac, tone) {
+  const NSV = 'http://www.w3.org/2000/svg', s = document.createElementNS(NSV, 'svg'), r = 26, c = 2 * Math.PI * r;
+  s.setAttribute('viewBox', '0 0 64 64'); s.setAttribute('class', 'hx-ring ' + (tone || '')); s.setAttribute('aria-hidden', 'true');
+  const mk = (cls, extra) => { const e = document.createElementNS(NSV, 'circle'); e.setAttribute('cx', '32'); e.setAttribute('cy', '32'); e.setAttribute('r', String(r)); e.setAttribute('class', cls); for (const k in extra || {}) e.setAttribute(k, extra[k]); return e; };
+  s.appendChild(mk('hx-r0'));
+  const f = frac === null ? 0 : Math.max(0, Math.min(1, frac));
+  if (f > 0) s.appendChild(mk('hx-r1', { 'stroke-dasharray': `${(c * f).toFixed(2)} ${c.toFixed(2)}`, transform: 'rotate(-90 32 32)' }));
+  return s;
+}
+function drawHero(box, H) {
+  if (!box || !isObj(H)) return;
+  const q = (id) => box.querySelector('[data-hx="' + id + '"]');
+  const set = (id, t, cls) => { const e = q(id); if (e) { e.textContent = t; if (cls !== undefined) e.className = cls; } };
+  set('today', H.today === null ? 'No report yet' : H.todayText, 'hx-big ag-num ' + H.tone + (H.today === null ? ' none' : ''));
+  set('todayK', H.nAcc ? `TODAY · ${H.nAcc} account${H.nAcc === 1 ? '' : 's'}` : 'TODAY');
+  set('age', H.ageText, 'hx-age lv-' + H.level);
+  set('phase', H.phase.label); set('who', H.phase.who || ''); set('next', H.nextText ? 'Next: ' + H.nextText : '');
+  set('honest', H.honest); const hn = q('honestw'); if (hn) hn.hidden = !H.honest;
+  box.dataset.tone = H.tone; box.dataset.level = H.level;
+  const ab = q('accts');
+  if (ab) {
+    clear(ab);
+    for (const a of H.accts) {
+      const t = el('article', 'hx-acc' + (a.has ? '' : ' none'));
+      if (!a.has) {                            // no numbers: one quiet line instead of a card of dashes
+        const top = el('div', 'hx-acc-top'), d = el('i', 'dk-dot ' + a.dot); d.title = DOT[a.dot] || '';
+        top.appendChild(d); top.appendChild(el('b', 'hx-acc-nm', a.name)); top.appendChild(el('span', 'hx-acc-st', a.stage));
+        t.appendChild(top); t.appendChild(el('span', 'hx-acc-age', a.ageText)); t.dataset.key = a.key;
+        t.setAttribute('aria-label', `${a.name}: no PC numbers yet`); ab.appendChild(t); continue;
+      }
+      t.dataset.key = a.key; t.tabIndex = 0;
+      t.setAttribute('aria-label', `${a.name}: ${a.has ? `${a.goalBig} ${a.goalUnit}, ${money(a.room)} room left, today ${money(a.today, true)}` : 'no PC numbers yet'}; ${a.ageText}`);
+      const top = el('div', 'hx-acc-top');
+      const d = el('i', 'dk-dot ' + a.dot); d.title = DOT[a.dot] || ''; top.appendChild(d);
+      top.appendChild(el('b', 'hx-acc-nm', a.name)); top.appendChild(el('span', 'hx-acc-st', a.stage));
+      t.appendChild(top);
+      const mid = el('div', 'hx-acc-mid');
+      const rw = el('div', 'hx-ringw'); rw.appendChild(ring(a.frac, a.goalKind)); rw.appendChild(el('span', 'hx-pct', a.frac === null ? '-' : Math.round(a.frac * 100) + '%')); mid.appendChild(rw);
+      const g = el('div', 'hx-goal'); g.appendChild(el('b', 'ag-num', a.has ? a.goalBig : '-')); g.appendChild(el('span', '', a.has ? a.goalUnit : 'no numbers yet'));
+      mid.appendChild(g); t.appendChild(mid);
+      const rm = el('div', 'hx-room');
+      const lab = el('div', 'hx-room-l'); lab.appendChild(el('span', '', 'Room')); lab.appendChild(el('b', 'ag-num', a.room === null ? '-' : `${money(a.room)}${a.mll ? ' / ' + money(a.mll) : ''}`)); rm.appendChild(lab);
+      const bar = el('div', 'hx-bar'), fill = el('i', 'hx-fill ' + (a.roomFrac === null ? '' : a.roomFrac < 0.3 ? 'bad' : a.roomFrac < 0.6 ? 'warn' : 'ok'));
+      fill.style.width = a.roomFrac === null ? '0%' : `${Math.round(a.roomFrac * 100)}%`; bar.appendChild(fill); rm.appendChild(bar);
+      t.appendChild(rm);
+      const ft = el('div', 'hx-acc-ft');
+      ft.appendChild(el('span', 'ag-num ' + (a.today === null ? '' : a.today > 0.5 ? 'pos' : a.today < -0.5 ? 'neg' : ''), a.today === null ? 'today -' : `today ${money(a.today, true)}`));
+      if (a.open) ft.appendChild(el('span', 'hx-open', `${a.open.side} open${a.open.now !== null ? ' ' + money(a.open.now, true) : ''}`));
+      ft.appendChild(el('span', 'hx-acc-age', a.ageText));
+      t.appendChild(ft);
+      ab.appendChild(t);
+    }
+  }
+  const bb = q('bots');
+  if (bb) {
+    clear(bb);
+    for (const b of H.bots) {
+      const c = el('div', 'hx-bot tone-' + b.tone);
+      const hd = el('div', 'hx-bot-h'); hd.appendChild(el('b', '', b.name)); hd.appendChild(el('span', 'hx-bot-w', b.word + (b.side ? ' · ' + b.side : '')));
+      c.appendChild(hd); c.appendChild(el('p', 'hx-bot-l', b.line || ''));
+      bb.appendChild(c);
+    }
+  }
+}
+draw.hero = drawHero;
+
+// the hero's scene: a perspective floor, today's real 5-minute closes as a glowing ribbon (the PC's chart post; none = no ribbon, never made up),
+// drifting depth motes, and a pointer / scroll parallax. Canvas 2D (no WebGL, no library): cheap on a phone; paused when off screen or hidden;
+// prefers-reduced-motion = one still frame.
+export function heroScene(canvas, getBars) {
+  if (!canvas || !canvas.getContext || typeof window === 'undefined') return null;
+  const ctx = canvas.getContext('2d'); if (!ctx) return null;
+  const still = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const S2 = { w: 0, h: 0, dpr: 1, px: 0, py: 0, tx: 0, ty: 0, run: false, raf: 0, t0: performance.now(), vis: true, motes: [] };
+  for (let i = 0; i < 34; i++) S2.motes.push({ x: Math.random(), y: Math.random(), z: 0.25 + Math.random() * 0.75, s: 0.4 + Math.random() * 1.2 });
+  const size = () => {
+    const r = canvas.getBoundingClientRect(); S2.dpr = Math.min(2, window.devicePixelRatio || 1);
+    S2.w = Math.max(1, r.width); S2.h = Math.max(1, r.height); canvas.width = Math.round(S2.w * S2.dpr); canvas.height = Math.round(S2.h * S2.dpr);
+  };
+  const frame = (now) => {
+    const { w, h } = S2, t = (now - S2.t0) / 1000;
+    S2.px += (S2.tx - S2.px) * 0.06; S2.py += (S2.ty - S2.py) * 0.06;
+    ctx.setTransform(S2.dpr, 0, 0, S2.dpr, 0, 0); ctx.clearRect(0, 0, w, h);
+    const hz = h * 0.58 + S2.py * 6;                         // the horizon
+    // the floor grid in perspective (violet), scrolling slowly toward the viewer
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 14; i++) {
+      const k = ((i + (still ? 0 : t * 0.35)) % 14) / 14, y = hz + (h - hz) * k * k;
+      ctx.strokeStyle = `rgba(157, 89, 238, ${0.05 + 0.22 * k})`; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+    }
+    for (let i = -10; i <= 10; i++) {
+      const xb = w / 2 + i * w * 0.11 + S2.px * 10, xt = w / 2 + i * w * 0.018 + S2.px * 3;
+      ctx.strokeStyle = 'rgba(157, 89, 238, 0.12)'; ctx.beginPath(); ctx.moveTo(xt, hz); ctx.lineTo(xb, h); ctx.stroke();
+    }
+    const glow = ctx.createLinearGradient(0, hz - 2, 0, hz + 40); glow.addColorStop(0, 'rgba(157, 89, 238, .35)'); glow.addColorStop(1, 'rgba(157, 89, 238, 0)');
+    ctx.fillStyle = glow; ctx.fillRect(0, hz - 2, w, 42);
+    // today's ribbon (real closes only)
+    const B = typeof getBars === 'function' ? getBars() : null;
+    if (Array.isArray(B) && B.length > 3) {
+      const cl = B.map((b) => +b[4]).filter((v) => Number.isFinite(v)), lo = Math.min(...cl), hi = Math.max(...cl), span = hi - lo || 1;
+      const wide = w >= 760, x0 = (wide ? w * 0.38 : w * 0.42) + S2.px * 14, x1 = w * 0.97 + S2.px * 14, top = h * 0.05 + S2.py * 8, bot = h * (wide ? 0.34 : 0.17) + S2.py * 8;
+      const pts = cl.map((v, i) => [x0 + (x1 - x0) * i / (cl.length - 1), bot - (bot - top) * (v - lo) / span]);
+      const up = cl[cl.length - 1] >= cl[0];
+      const fill = ctx.createLinearGradient(0, top, 0, bot + h * 0.04); fill.addColorStop(0, up ? 'rgba(119, 219, 137, .20)' : 'rgba(239, 68, 68, .16)'); fill.addColorStop(1, 'rgba(157, 89, 238, 0)');
+      ctx.globalAlpha = 0.8; ctx.beginPath(); ctx.moveTo(pts[0][0], bot + h * 0.04); for (const p of pts) ctx.lineTo(p[0], p[1]); ctx.lineTo(pts[pts.length - 1][0], bot + h * 0.04); ctx.closePath(); ctx.fillStyle = fill; ctx.fill(); ctx.globalAlpha = 1;
+      ctx.save(); ctx.shadowColor = 'rgba(241, 193, 75, .8)'; ctx.shadowBlur = 14; ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(241, 193, 75, .85)';
+      ctx.beginPath(); pts.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]))); ctx.stroke(); ctx.restore();
+      const L = pts[pts.length - 1], pulse = still ? 0.6 : 0.5 + 0.5 * Math.sin(t * 2.4);
+      ctx.fillStyle = `rgba(241, 193, 75, ${0.25 + 0.35 * pulse})`; ctx.beginPath(); ctx.arc(L[0], L[1], 6 + 6 * pulse, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#f1c14b'; ctx.beginPath(); ctx.arc(L[0], L[1], 3, 0, Math.PI * 2); ctx.fill();
+    }
+    // depth motes (nearer = bigger, faster, more parallax)
+    for (const m of S2.motes) {
+      const y = ((m.y - (still ? 0 : t * 0.012 * m.z)) % 1 + 1) % 1, x = m.x * w + S2.px * 22 * m.z;
+      ctx.fillStyle = `rgba(218, 203, 240, ${0.10 + 0.35 * m.z})`; ctx.beginPath(); ctx.arc(x, y * hz, m.s * m.z * 1.6, 0, Math.PI * 2); ctx.fill();
+    }
+  };
+  const loop = (now) => { if (!S2.run) return; frame(now); S2.raf = requestAnimationFrame(loop); };
+  const start = () => { if (still) { frame(performance.now()); return; } if (S2.run || !S2.vis || document.hidden) return; S2.run = true; S2.raf = requestAnimationFrame(loop); };
+  const stop = () => { S2.run = false; cancelAnimationFrame(S2.raf); };
+  size();
+  window.addEventListener('resize', () => { size(); if (still) frame(performance.now()); }, { passive: true });
+  document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+  if (!still) {
+    window.addEventListener('pointermove', (e) => { S2.tx = (e.clientX / innerWidth - 0.5) * 2; S2.ty = (e.clientY / innerHeight - 0.5) * 2; }, { passive: true });
+    window.addEventListener('scroll', () => { S2.ty = Math.max(-1, Math.min(1, scrollY / 400)); }, { passive: true });
+  }
+  if ('IntersectionObserver' in window) new IntersectionObserver((es) => { S2.vis = es.some((x) => x.isIntersecting); S2.vis ? start() : stop(); }).observe(canvas);
+  start();
+  return { redraw: () => frame(performance.now()), stop, start };
+}

@@ -5,7 +5,7 @@
 // ?demo=1 the example; ?demo=1&silent=4d (or 90m, 5h) the example with a silent PC; ?flat=1 the 2D columns; ?howto=1 opens the sheet.
 import * as C from './nqcore.js?v=d6';   // d6 (night-seedata): today's $ in the first line; d1 (polish2 2026-11-19): the CME trading day
 import * as T from '../olympus/truth.js';
-import * as D from './nqdesk.js?v=8';
+import * as D from './nqdesk.js?v=9';
 import { unpack as unpackBars } from './nqbars.js?v=b1';     // nqdash3: the accounts strip, the bots' thinking, the quality checks
 import * as G from './nqgoals.js?v=10';
 import * as K7 from './clock7.js?v=2';                          // day-nqops: the MFFU 7-day clock card + window.NQ_K7 for Jarvis                       // v4: the goals strip, the numbers card, the bursts
@@ -225,6 +225,19 @@ function watchPast() {
   const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); go(); } }, { rootMargin: '400px 0px' });
   io.observe(card);
 }
+// the hero scene's ribbon: today's (the CME day's, from 18:00 ET) 5-minute closes in the PC's chart post; the DEMO's fixture chart; else none
+function heroBars() {
+  try {
+    const post = S.demo ? (S.fixture && S.fixture.chart ? demoHome({ home: S.fixture.chart }, Date.now(), S.silent) : null) : (window.NQCHART && window.NQCHART.S ? window.NQCHART.S.post : null);
+    if (!post) return null;
+    if (S.heroKey === post) return S.heroB;
+    const b = unpackBars(post); if (!b.length) return null;
+    const last = b[b.length - 1][0], p = D.etParts(last), m = +p.hm.slice(0, 2) * 60 + +p.hm.slice(3);
+    const t0 = last - ((m - 1080 + 1440) % 1440) * 60;                  // 18:00 ET before the last bar
+    S.heroKey = post; S.heroB = b.filter((x) => x[0] >= t0);
+    return S.heroB.length > 3 ? S.heroB : b.slice(-120);
+  } catch (_) { return null; }
+}
 function deskHome() { return S.demo ? demoHome(S.fixture, Date.now(), S.silent) : S.home; }
 // day-nqops 2026-11-21: the MFFU 7-day clock per account (clock7.js: the PC's k7 block, else its mf rows); Jarvis reads window.NQ_K7
 function drawK7(nowS) {
@@ -311,6 +324,12 @@ function renderV4(home, file, nowS) {
   if (box) G.drawGoals(box, list, $('goalDetail'), { open: V4.open, onOpen: (k) => { V4.open = k; } });
   const fa = D.feedAge(home, nowS), age = $('goalAge');
   if (age) { age.textContent = S.demo ? 'DEMO' : fa.fromPc ? D.updated(fa.report) : 'plan + cloud copy'; age.className = 'pill ' + (S.demo ? 'warn' : fa.fromPc ? D.ageLevel(fa.report, 'pc') : 'warn'); }
+  try {                                   // night-nq-main: the hero (today's $, every account's way to pass + room, LIT / ATLAS in one word)
+    const B = D.thinking(home, S.news, file, nowS, chart, S.brief);
+    D.draw.hero($('hero'), D.hero(A, list, B, home, nowS, S.demo));
+    if (!S.scene3 && $('heroScene')) S.scene3 = D.heroScene($('heroScene'), heroBars) || true;
+    else if (S.scene3 && S.scene3.redraw) S.scene3.redraw();
+  } catch (_) { /* the rest of the page still draws */ }
   const real = G.realRows(file, chart, G.fundedSince(S.lite));   // ATLAS's passed-eval trades are not the funded account's
   // below the first screen: the numbers card and the landscape draw when the main thread is free (perf: one long task less at load)
   later(() => {
