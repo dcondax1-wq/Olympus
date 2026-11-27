@@ -699,6 +699,11 @@ def shared_of_ask(base, topic, now, window=None) -> tuple:
         except Exception:  # noqa: BLE001
             x = None
         if x and x.get("what") == "of" and not str(x.get("req") or "").startswith("push"):
+            # red team #29: reuse only an answer of THIS answering night (DF.of_night of the answer's own time): yesterday's
+            # answer holds yesterday's days; reusing it would leave the new day out
+            at = int(DF._num(m.get("time")) or DF._num(x.get("made_t")) or 0)
+            if at and DF.of_night(at) != DF.of_night(now):
+                continue
             done.add(str(x.get("req")))
             done.update(str(r) for r in (x.get("also") or []) if isinstance(x.get("also"), list))
     ans = [k for k in asks if k[1] in done]

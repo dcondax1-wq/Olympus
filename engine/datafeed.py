@@ -722,13 +722,22 @@ def pending(msgs: list, now, st: dict) -> list:
     return out
 
 
+def of_night(t) -> str:
+    """red team #29: the order-flow NIGHT a moment belongs to: the PC answers 16:00 ET .. 01:50 ET next morning, so the ET clock
+    minus 16 h gives one key for one whole answering night (Mon 16:00 .. Tue 15:59 = Monday's night)."""
+    return (_et(int(t)) - dt.timedelta(hours=16)).date().isoformat()
+
+
 def of_answered_recently(st: dict, now) -> bool:
     """night-of-asks: a page answering a CLOUD "of" ask (not the owner's push, req "push...") went out within OF_DEDUP_S, so
     a newer "of" ask is a duplicate (several cloud sessions asking the same night) and is not answered: the cloud reuses the
     pages already on the topic. Never raises."""
     try:
+        # red team #29: ONE per answering night (of_night), not a sliding 20 h: an answer at 23:00 must not hold back the NEXT
+        # night's ask that the cloud posts at, say, 17:00 (18 h later), or new days reach the cloud only every other night
+        n = of_night(now)
         return any("page" in s_ and not str(s_.get("req") or "").startswith("push") and int(now) - int(_num(s_.get("t"))) < OF_DEDUP_S
-                   for s_ in (st.get("sent") or []))
+                   and of_night(int(_num(s_.get("t")))) == n for s_ in (st.get("sent") or []))
     except Exception:
         return False
 
