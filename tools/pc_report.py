@@ -748,6 +748,11 @@ def full(snap: dict) -> dict:
             out["glog"] = gl
     except Exception:  # noqa: BLE001
         pass
+    try:                                           # day-thoughtlog: keep the WHOLE day's ATLAS / OF thoughts on the PC (data/thoughts/<day>.jsonl,
+        from engine import thoughtlog               # deduped + capped, ids masked) for the day zip; this report task only, never the poll loop
+        thoughtlog.collect(hb)
+    except Exception:  # noqa: BLE001
+        pass
     rc = rc_block(hb.get("remote"))
     if rc:
         out["rc"] = rc
