@@ -10,13 +10,12 @@ import * as B from './nqbars.js?v=b2';
 import * as L from './lcmodel.js?v=1';     // day-livechart 2026-11-27: what the bots see (pure)
 
 const LIB = 'vendor/lightweight-charts.standalone.production.js?v=5.2.1';
-const POLL_MS = 120000, TIMEOUT_MS = 7000;
+const POLL_MS = 120000;
 const $ = (id) => document.getElementById(id);
 function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; }
 const clear = (el) => { while (el && el.firstChild) el.removeChild(el.firstChild); };
-const S = { lite: null, priv: null, privSeen: [], privOn: false, privFails: 0, brief: null, ofroom: null, live: null, replay: null, playing: 0, sweepSeen: null, glLines: [], emaS: null,
-  feed: undefined, post: null, why: '', acct: 'all', model: null, lib: null, libTried: false, chart: null, series: null, marks: null, lines: [],
-  whole: false, want: null, mode: 'default', viewKey: '', drawnN: 0, ready: false, fetchedAt: 0, busy: false, err: '' };
+// the data side (fetch, poll, S) is nqchartfeed.js (eager); this view loads on first view / idle (day-livechart perf)
+const C = window.NQCHART, S = C.S, getText = C.getText, pcPrice = C.pcPrice, refresh = C.refresh;
 
 // ------------------------------------------------------------------------------------------------ the AGORA colours (canvas needs real colours)
 let TOK = null, TOK_KEY = '';
@@ -45,30 +44,6 @@ function loadLib() {
     setTimeout(end, 30000);
   });
 }
-async function getText(url, ms, cache) {
-  const E = window.NQ_EARLY && window.NQ_EARLY.text;  // perf: the page head started the feed file and the chart post (index.html); used once
-  if (E && E[url]) { const p = E[url]; delete E[url]; try { const t = await p; if (t != null) return t; } catch (e) { /* ask again below */ } }
-  const ac = typeof AbortController === 'function' ? new AbortController() : null, timer = ac ? setTimeout(() => ac.abort(), ms) : 0;
-  try { const r = await fetch(url, { cache, ...(ac ? { signal: ac.signal } : {}) }); return r.ok ? await r.text() : null; } catch (e) { return null; } finally { clearTimeout(timer); }
-}
-async function fetchPost() {
-  if (S.feed === undefined || S.feed === null) {
-    const t = await getText('../status_feed.json', 6000, 'no-cache');
-    try { S.feed = t ? JSON.parse(t) : null; } catch (e) { S.feed = null; }
-  }
-  const urls = B.feedUrls(S.feed);
-  if (!urls.length) return { post: null, why: 'nofeed' };
-  let reached = false;
-  for (const u of urls) {
-    const t = await getText(u, TIMEOUT_MS, 'no-store');
-    if (t == null) continue;
-    reached = true;
-    const p = B.parse(t);
-    if (p) return { post: p, why: '' };
-  }
-  return { post: null, why: reached ? 'none' : 'offline' };
-}
-
 // ------------------------------------------------------------------------------------------------ the card
 function renderChips(m) {
   const box = $('chartChips'); clear(box);
@@ -153,7 +128,7 @@ function makeChart(LC, T) {
   const pulse = () => { placePulse(); fx(); nowBtn(); };
   chart.timeScale().subscribeVisibleLogicalRangeChange(pulse);
   chart.timeScale().subscribeSizeChange(() => { if (S.want && S.mode !== 'user') setView(S.want[0], S.want[1]); fx(); });
-  chart.subscribeClick((p) => { try { whyAt(p); } catch (e) { /* no popover */ } });
+  chart.subscribeClick((p) => { try { whyAt(p); } catch (e) { /* no popover */ } if (p && p.time != null) stripSync(p.time); });
   chart.subscribeCrosshairMove((p) => legend(p && p.time != null && p.seriesData ? p.seriesData.get(series) : null));
   const mine = () => { S.mode = 'user'; };
   for (const ev of ['pointerdown', 'touchstart', 'wheel']) el.addEventListener(ev, mine, { passive: true });
@@ -515,7 +490,7 @@ function replayBar(bot, m) {
 }
 function stopPlay() { if (S.playing) { clearInterval(S.playing); S.playing = 0; } }
 function stepPlay() { const m = S.model; if (!m) return stopPlay(); S.replay = (S.replay == null ? 0 : S.replay) + 1; if (S.replay >= m.candles.length - 1) { S.replay = null; stopPlay(); } redraw(); }
-function redraw() { const m = S.model; if (!m || !S.lib || m.state === 'none') return; try { draw(m); } catch (e) { /* the chart stays */ } try { renderLive(); } catch (e) { /* the chart stays */ } }
+function redraw() { const m = S.model; if (!m || !S.lib || m.state === 'none') return; if (S.replay != null && m.candles[S.replay]) stripSync(m.candles[S.replay].time); try { draw(m); } catch (e) { /* the chart stays */ } try { renderLive(); } catch (e) { /* the chart stays */ } }
 function sweepFlash() {
   const sw = (S.live && S.live.sweeps) || [], keys = sw.map((w) => w.label + '@' + w.time);
   if (S.sweepSeen == null) { S.sweepSeen = new Set(keys); return; }
@@ -594,9 +569,16 @@ async function aux() {
   if (b) S.brief = b; if (o) S.ofroom = o;
   if (f && Array.isArray(f.bars) && f.bars.length && f.day === (B.et(Date.now() / 1000) || {}).day) ofStrip(f);
 }
+/** the footprint bar at a chart time (wall-time candle) -> selected in the strip (a tap on a candle, the replay scrubber) */
+function stripSync(t) {
+  const f = S.stripData; if (!S.strip || !f) return;
+  const hm = new Date(t * 1000).toISOString().slice(11, 16), i = f.bars.findIndex((b) => b.t === hm);
+  if (i >= 0) { try { S.strip.select(i); } catch (e) { /* the strip stays */ } }
+}
 function ofStrip(f) {
   let box = $('lcStrip');
   if (!box) { box = h('div', 'lcstrip'); box.id = 'lcStrip'; const b = $('lcBelow') || $('chartBox'); if (!b) return; b.parentNode.insertBefore(box, b.nextSibling); }
+  S.stripData = f;
   const go = () => { const O = window.OFSTRIP; if (!O) return; if (S.strip) { S.strip.update(f); return; }
     S.strip = O.mount(box, f, { height: 230, onSelect: (bar) => { const m = S.model; if (!m || !S.chart) return;
       const c = m.candles.filter((x) => new Date(x.time * 1000).toISOString().slice(11, 16) === bar.t).pop(); if (!c) return;
@@ -637,35 +619,12 @@ function render() {
   S.ready = true;
 }
 
-async function pcPrice() {
-  const F = window.PC_FEED;                          // index.html loads ../pc_feed.js (its fetches are shared with the rest of the page)
-  if (!F || !F.fetchLatest) return;
-  try {
-    const lite = await Promise.race([F.fetchLatest({ feedUrl: new URL('../status_feed.json', import.meta.url).href }), new Promise((r) => setTimeout(() => r(null), 12000))]);
-    if (lite) S.lite = lite;
-    const p = B.pcNow(lite); if (p) S.pc = p;
-  } catch (e) { /* the bars alone */ }
-}
-async function refresh(force) {
-  if (S.busy || (!force && (document.hidden || Date.now() - S.fetchedAt < POLL_MS / 2))) return;
-  S.busy = true;
-  try {
-    const [r] = await Promise.all([fetchPost(), pcPrice()]);
-    S.fetchedAt = Date.now();
-    if (r.post || !S.post) { S.post = r.post; S.why = r.why; }       // a failed poll keeps the last good bars on the screen
-    render();
-    try { window.dispatchEvent(new Event('nq-bars')); } catch (e) { /* the desk cards redraw on their own minute */ }
-  } finally { S.busy = false; }
-}
-
 function css() {
   if ($('chartCss')) return;
   const l = document.createElement('link'); l.id = 'chartCss'; l.rel = 'stylesheet'; l.href = new URL('./chart.css?v=3', import.meta.url).href; document.head.appendChild(l);
 }
 async function boot() {
   css();
-  const q = new URLSearchParams(location.search), a = q.get('acct');
-  if (a && /^[a-z0-9_]{1,24}$/.test(a)) S.acct = a;
   $('chartWhole').addEventListener('click', () => {
     if (!S.model || !S.chart) return;
     S.whole = !S.whole; $('chartWhole').textContent = S.whole ? 'Last 6 hours' : 'Whole day';
@@ -676,7 +635,8 @@ async function boot() {
   render();                                                  // the waiting card at once
   aux().then(() => { if (S.model) liveLayer(S.model); fx(); });
   const libP = loadLib().then((LC) => { S.lib = LC && LC.createChart ? LC : null; S.libTried = true; });
-  await Promise.all([libP, refresh(true)]);
+  await libP;
+  if (!S.fetchedAt) await refresh(true);
   render();
   if (prefGet() === '3d' && S.model && S.model.state !== 'none') {                    // the owner's last choice on this phone: after the first paint
     const go = () => show3d(true, false);
@@ -684,14 +644,11 @@ async function boot() {
   }
   addEventListener('resize', () => requestAnimationFrame(() => { placePulse(); fx(); }));
   setInterval(() => { if (!document.hidden) age(); }, 30000);
-  setInterval(() => refresh(false), POLL_MS);
   setInterval(liteTick, LITE_MS);                            // day-livechart: the bots' glance / thoughts + the PC price every 30 s
   setInterval(aux, AUX_MS);
   if (isPriv()) { privPoll(); setInterval(privPoll, PRIV_MS); }   // the private link: the bot itself every 3 s
   setInterval(() => { if (!document.hidden && S.model) { const e = $('lcStamp'), st = stampNow(); if (e) { e.textContent = st.text; e.className = 'lcstamp ' + st.cls; } } }, 5000);
   setInterval(() => { if (!document.hidden && S.model && S.model.state !== 'none') say(B.model(S.post, S.acct, Date.now() / 1000)); }, 60000);   // the age keeps counting
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(false); });
-  window.addEventListener('nq-refresh', () => refresh(true));
 }
-window.NQCHART = { S, B, L, liveTick, privPoll, whyAt, show3d, ready: () => S.ready && S.libTried && S.fetchedAt > 0, refresh: () => refresh(true), render, setAcct: (k) => { S.acct = k; S.mode = 'default'; render(); } };
+Object.assign(C, { L, liveTick, privPoll, whyAt, show3d, render, view: { render } });
 boot().catch((e) => { S.err = String(e && e.message ? e.message : e); S.ready = true; S.libTried = true; S.fetchedAt = S.fetchedAt || 1; try { $('chartMsg').textContent = 'The chart could not start: ' + S.err; $('chartMsg').hidden = false; } catch (_) { /* nothing */ } });

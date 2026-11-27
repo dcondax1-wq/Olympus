@@ -60,6 +60,10 @@ def core_body(lite, t):
 
 def test_static():
     js, lm, css = (AK.read(os.path.join(D, n)) for n in ("nqchart.js", "lcmodel.js", "chart.css"))
+    feed = AK.read(os.path.join(D, "nqchartfeed.js"))
+    html = AK.read(os.path.join(D, "index.html"))
+    check("a. perf: the page loads only the small feed (nqchartfeed.js) eagerly; the view (nqchart.js + lcmodel.js) loads on first view (IntersectionObserver) or idle",
+          'src="nqchartfeed.js?v=' in html and 'src="nqchart.js' not in html and "IntersectionObserver" in feed and "'./nqchart.js?v=" in feed and "lcmodel.js?v" not in feed)
     check("a. lcmodel.js is pure (no document / window / fetch / storage) and nqchart.js imports it", not re.search(r"\bdocument\.|\bwindow\.|\bfetch\(|localStorage", re.sub(r"//[^\n]*", "", lm))
           and "from './lcmodel.js?v=" in js)
     check("a. text only (no innerHTML / eval), GET only (no POST / socket), the private poll only reads /api/live/state",
@@ -171,7 +175,7 @@ def test_page(shots=False):
     ofroom = json.dumps({"v": 1, "day": "2026-11-27", "levels": [{"label": "Asia low", "px": asia, "side": "low", "read": "absorbed", "t": NOW - 1500}]})
     # the footprint strip (day-ofroom2's ofstrip.js): a stub module here, so this suite checks only the hook (today's of_strip.json -> mount -> tap = crosshair)
     strip = json.dumps({"day": "2026-11-27", "tick": 0.25, "bucket": 2.0, "bars": [{"t": "12:30", "o": 1, "h": 2, "l": 0, "c": 1, "v": 10, "d": 2, "big": 0, "cells": [], "abs": []}]})
-    stub = "window.OFSTRIP = { mount: (el, d, o) => { window.__ofs = { n: d.bars.length, o }; el.textContent = 'footprint'; return { update() {}, select() {}, destroy() {} }; } };"
+    stub = "window.OFSTRIP = { mount: (el, d, o) => { window.__ofs = { n: d.bars.length, o }; el.textContent = 'footprint'; return { update() {}, select(i) { window.__ofsSel = i; }, destroy() {} }; } };"
     srv, origin = AK.serve({"/status_feed.json": T.FEED, "/home.json": home, "/nq/brief.json": brief, "/nq/of_room.json": ofroom, "/nq/of_strip.json": strip})
     bars_url, core_url = f"/{T.TOPIC}-bars/json", f"/{T.TOPIC}/json"
     fixed = lambda p: p.clock.set_fixed_time(dt.datetime.fromtimestamp(NOW, dt.timezone.utc))  # noqa: E731
@@ -212,6 +216,10 @@ def test_page(shots=False):
                     leg = p.evaluate("() => { window.__ofs.o.onSelect({ t: '12:30' }, 0); return [window.__ofs.n, document.getElementById('lcStrip').textContent, document.getElementById('chartLeg').textContent]; }")
                     check("c. 390px: today's of_strip.json loads the footprint strip (lazily) under the ticker; a tap on its 12:30 bar moves the chart's readout to 12:30",
                           leg[0] == 1 and leg[1] == "footprint" and leg[2].startswith("12:30"), leg)
+                    sel = p.evaluate("""() => { window.__ofsSel = null; const S = window.NQCHART.S, r = document.getElementById('lcScrub');
+                      const i = S.model.candles.findIndex((c) => new Date(c.time * 1000).toISOString().slice(11, 16) === '12:30'); r.value = String(i); r.dispatchEvent(new Event('input'));
+                      const out = window.__ofsSel; document.getElementById('lcLive').click(); return out; }""")
+                    check("c. 390px: the replay scrubber on the 12:30 candle selects the strip's 12:30 footprint bar (synced by time)", sel == 0, sel)
                 n0 = s["drawn"]
                 p.locator("#lcScrub").evaluate("(r) => { r.value = String(+r.min + 10); r.dispatchEvent(new Event('input')); }")
                 p.wait_for_timeout(300)
