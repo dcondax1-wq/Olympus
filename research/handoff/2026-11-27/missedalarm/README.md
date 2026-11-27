@@ -18,3 +18,12 @@ Other miss reasons (refused, start problem, did not run) keep the MISSED TRADE l
 Tests: `tests/test_missed_alarm.py` (new, 8 checks: unarmed + signal -> one line; armed -> none; 2nd signal same day -> none; next
 day -> a new key; Rapid ATLAS +6.6R -> ~+$1,659; other reasons keep MISSED TRADE; ids masked; junk never raises) +
 `tests/test_chaos_live` unchanged 40/40. Checks run on the patch: see CHECKS below.
+
+## CHECKS (run on commit a8ffad19 in a clean worktree, 2026-11-27)
+| Check | Result |
+|---|---|
+| tests/test_chaos_live | 40/40 (unchanged) |
+| tests/test_missed_alarm (new) | ALL PASS (8) |
+| python -m engine.ninjatrader --selftest | ran clean (exit / kill lines as before) |
+| python -X utf8 -m tests.test_lit_live | OK (live loop = backtest; enter-now 118/119 identical as on pc; LiveBot routes 2/2, errors 0) |
+| tools/update_gate.py --base origin/pc --candidate a8ffad19 --sessions 3 | **SAME**: no trade differs on 2,304 polls (Nov 24, 25, 26) |
