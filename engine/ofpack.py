@@ -14,8 +14,8 @@ How (stdlib only: gzip, lzma, json, hashlib):
   The page lists every file's sha256 + size of the ORIGINAL uncompressed content; unpack() checks each one and rebuilds the same
   file names (.gz files gzipped again with mtime 0: same content, the cloud's readers read the content). A broken / foreign /
   oversize blob raises ValueError and nothing is returned.
-Measured on engine/ofsum.synth_day days (900k ticks): gzip 278,018 B -> 145-150 kB (~0.53). Real days compress similarly or
-better (fewer distinct values); the PC reports the real ratio in every page's meta ("ratio").
+Measured 2026-11-27 on the 53 REAL tick-summary days (branch of-days): gzip 7,045,000 B -> 2,597,184 B = 0.37, lossless:
+~38 days a 1.85 MB page instead of ~14 (synthetic days: ~0.53). Every page's meta carries its real ratio ("ratio").
 
     python -X utf8 -m engine.ofpack selftest
 """

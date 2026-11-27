@@ -50,7 +50,7 @@ flight (each kept 3 h), 350 MiB bandwidth a day. A page = one message.
   missing summaries (time-boxed), then sends the missing days newest first, each page only while ntfy's OWN count says
   `remaining - projected rest-of-day posts - 25 (alerts) - 3 (bars answers) >= 1` and the attachment room has a page free. The
   projection uses per-hour rates (session / off / closed market) learned from ntfy's count every 15 min outside the session.
-  Never in the weekday session. Pages are engine/ofpack (lossless columns + deltas + xz, sha256 per file: ~0.53-0.63 of gzip).
+  Never in the weekday session. Pages are engine/ofpack (lossless columns + deltas + xz, sha256 per file: 0.37 of gzip on the 53 real days, ~38 days a page).
 - Every page is signed (datafeed.send), size + sha256 checked on download, every file checked by ofpack and datafeed.extract.
 - `python -X utf8 -m engine.ofbackfill budget` on the PC = tonight's page budget with the math (one GET, no message).
 Tests: `python -X utf8 -m tests.test_of_backfill` (fake ntfy with a live quota, fake git remote).
