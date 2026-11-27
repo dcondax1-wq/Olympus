@@ -567,53 +567,109 @@ def render_week(spec: dict) -> bytes | None:
 
 # ------------------------------------------------------------------------------------------------ the Insta card (day-insta 2026-11-27)
 IW, IH = 1080, 1350             # Instagram's portrait post (4:5)
+FOOT_INK = (111, 100, 133)      # #6f6485
+
+
+def _insta_page(w: int, h: int) -> np.ndarray:
+    """Black + a radial violet glow at (w/2, 243) + faint violet lines every 54 px (the site's share card, nq/sharecard.js)."""
+    k = ("insta", w, h)
+    if k not in _BASE:
+        yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+        d = np.sqrt((xx - w / 2) ** 2 + ((yy - 243) * 1.25) ** 2)
+        g = np.exp(-(d / 430.0) ** 2) * 0.55
+        g[(np.arange(h) % 54 == 0)] += 0.07
+        a = np.zeros((h, w, 3), np.float32)
+        for i, v in enumerate(GLOW):
+            a[..., i] = v * np.clip(g, 0, 1)
+        if len(_BASE) > 8:
+            _BASE.clear()
+        _BASE[k] = a
+    return _BASE[k]
+
+
+def _grad_text(c: Canvas, cx, y, s, scale, top, bot, glow=None):
+    """Centred bitmap text with a vertical colour gradient top -> bot (the hero: gold -> mint)."""
+    m = F.mask(F.norm(s))
+    if m.shape[1] == 0:
+        return 0
+    m = np.kron(m, np.ones((int(scale), int(scale)), np.float32))
+    x = int(round(cx - m.shape[1] / 2))
+    y = int(round(y))
+    if glow:
+        g = max(2, int(scale) * 2)
+        gm = _blur(np.pad(m, g * 2), g)
+        c.blend(x - g * 2, y - g * 2, np.clip(gm * 1.6, 0, 1), glow, 0.45)
+    n = m.shape[0]
+    for i in range(n):
+        f = i / max(1, n - 1)
+        col = tuple(int(round(top[j] + (bot[j] - top[j]) * f)) for j in range(3))
+        c.blend(x, y + i, m[i:i + 1], col)
+    return m.shape[1]
+
+
+def _tri(c: Canvas, cx, cy, size, up: bool, col, glow=None):
+    """A filled triangle (▲ long entry / ▼ short entry), anti-aliased by 4x4 supersampling."""
+    r = int(size) + 2
+    ss = 4
+    yy, xx = np.mgrid[0:2 * r * ss, 0:2 * r * ss].astype(np.float32) / ss - r
+    if not up:
+        yy = -yy
+    inside = (yy <= size * 0.6) & (yy >= -size * 0.9 + np.abs(xx) * 1.75)
+    m = inside.reshape(2 * r, ss, 2 * r, ss).mean(axis=(1, 3)).astype(np.float32)
+    if glow:
+        c.circle(cx, cy, size * 0.7, glow, alpha=0.0, glow=glow, glow_r=6)
+    c.blend(int(round(cx - r)), int(round(cy - r)), m, col)
+
+
+def _panel(c: Canvas, x0, y0, x1, y1, r=28):
+    c.rrect(x0, y0, x1, y1, r, fill=CARD, alpha=0.82, line=EDGE2, lw=1.5)
 
 
 def render_insta(spec: dict) -> bytes | None:
-    """The green-day share card, 1080 x 1350 (owner 2026-11-27: "a sick image to post on insta that shows daily PNL").
-    spec {"date": "FRI NOV 27", "total", "rows": [{"name", "today"}] (names only), "trades", "wins", "losses",
-          "bars": [(t, close)], "marks": [{"t", "px", "xt", "xpx", "usd"}]}. None on any trouble (no picture)."""
+    """The green-day share card, 1080 x 1350 (owner 2026-11-27: "a sick image to post on insta that shows daily PNL"). The same
+    look and order as the site's share card (nq/sharecard.js, Neon style): brand, hero, chart, accounts, stats, footer.
+    spec {"date": "FRI NOV 27 2026", "total", "rows": [{"name", "today"}] (names only), "trades", "wins", "losses", "week",
+          "bars": [(t, o, h, l, c)], "marks": [{"t", "px", "xt", "xpx", "usd", "side"}]}. None on any trouble (no picture)."""
     try:
         w, h = IW, IH
         c = Canvas(w, h)
-        c.a[:] = _base(w, h, (60, 520, w - 60, 930))
-        # header: the brand + the date
-        c.circle(76, 84, 9, GOLD, glow=GOLD, glow_r=7)
-        x = 96 + c.text(96, 74, "OLYMPUS", 3, GOLD, glow=GOLD)
-        c.text(x + 16, 74, "\u00b7 NQ", 3, LILAC)
-        c.text(w - 64, 74, str(spec.get("date") or ""), 3, SOFT, anchor="r")
-        # the hero: the day's $
+        c.a[:] = _insta_page(w, h)
+        # brand + date
+        c.text(72, 92, "OLYMPUS \u00b7 NQ", 4, GOLD, glow=GOLD)
+        c.text(w - 72, 96, str(spec.get("date") or ""), 3, (169, 156, 192), anchor="r")
+        # hero: gold -> mint, then "DAY P&L"
         tot = spec.get("total")
-        c.text(w / 2, 168, "DAY P&L", 3, MUTED, anchor="c")
         big = money(tot)
-        sc = 20 if F.width(big, 20) <= w - 140 else max(8, int((w - 140) / max(1, F.width(big, 1))))
-        c.text(w / 2, 222, big, sc, col_of(tot), anchor="c", glow=col_of(tot))
-        # trades + win dots
-        n, wins, losses = int(spec.get("trades") or 0), int(spec.get("wins") or 0), int(spec.get("losses") or 0)
-        y = 222 + 7 * sc + 46
-        line = f"{n} TRADE{'S' if n != 1 else ''}" + (f"  \u00b7  {wins} WIN{'S' if wins != 1 else ''}" if n else "")
-        lw = c.text(w / 2, y, line, 3, WHITE, anchor="c")
-        dots = ([UP] * wins + [DOWN] * losses)[:12]
-        if dots:
-            dx0 = w / 2 - (len(dots) - 1) * 30 / 2
-            for i, col in enumerate(dots):
-                c.circle(dx0 + i * 30, y + 64, 10, col, glow=col, glow_r=6)
-        # the day's chart: the price line + every trade's entry (gold) and exit (white ring), the move between them
-        bars = [b for b in spec.get("bars") or [] if isinstance(b, (list, tuple)) and len(b) >= 2]
-        x0, y0, x1, y1 = 60 + 24, 520 + 30, w - 60 - 24, 930 - 30
+        sc = 22 if F.width(big, 22) <= w - 144 else max(8, int((w - 144) / max(1, F.width(big, 1))))
+        top, bot = (GOLD, UP) if (tot or 0) >= 0 else (DOWN, DOWN)
+        _grad_text(c, w / 2, 168, big, sc, top, bot, glow=UP if (tot or 0) >= 0 else DOWN)
+        yh = 168 + 7 * sc + 22
+        c.text(w / 2, yh, "DAY P&L", 3, (169, 156, 192), anchor="c")
+        # the chart panel: candles + a violet area, entries ▲ / ▼ (gold), dashed to the exit dot
+        bars = [b for b in spec.get("bars") or [] if isinstance(b, (list, tuple)) and len(b) >= 5]
+        py0 = yh + 52
         if len(bars) >= 2:
-            ts = np.array([float(b[0]) for b in bars]); ps = np.array([float(b[1]) for b in bars])
+            px0, px1, py1 = 72, w - 72, py0 + 300
+            _panel(c, px0, py0, px1, py1)
+            x0, x1, y0, y1 = px0 + 28, px1 - 28, py0 + 26, py1 - 40
+            ts = [float(b[0]) for b in bars]
             mk = [m for m in spec.get("marks") or [] if isinstance(m, dict)]
-            allp = list(ps) + [float(m[k]) for m in mk for k in ("px", "xpx") if m.get(k) is not None]
+            allp = [float(b[2]) for b in bars] + [float(b[3]) for b in bars] + [float(m[k]) for m in mk for k in ("px", "xpx") if m.get(k) is not None]
             lo, hi = min(allp), max(allp)
-            pad = (hi - lo) * 0.08 or 1.0
+            pad = (hi - lo) * 0.06 or 1.0
             lo, hi = lo - pad, hi + pad
-            t0, t1 = float(ts.min()), float(ts.max()) or float(ts.min()) + 1
+            t0, t1 = min(ts), max(ts)
             fx = lambda t: x0 + (float(t) - t0) / max(1.0, t1 - t0) * (x1 - x0)
             fy = lambda p: y1 - (float(p) - lo) / max(1e-9, hi - lo) * (y1 - y0)
-            for k in range(1, 4):
-                c.hline(x0, x1, y0 + (y1 - y0) * k / 4, GRID, lw=1.0, alpha=0.8)
-            _curve(c, [fx(t) for t in ts], [fy(p) for p in ps], x0, x1, y0, y1, VIOLET, lw=3.0, fill_a=0.18, glow_a=0.4)
+            _curve(c, [fx(b[0]) for b in bars], [fy(b[4]) for b in bars], x0, x1, y0, y1, VIOLET, lw=0.01, fill_a=0.22, glow_a=0.0)
+            cw = max(2.0, (x1 - x0) / max(1, len(bars)) * 0.62)
+            for b in bars:
+                up = b[4] >= b[1]
+                col = UP if up else DOWN
+                xm = fx(b[0])
+                c.rect(xm - 0.8, fy(b[2]), xm + 0.8, fy(b[3]), col, alpha=0.85)
+                ya, yb = sorted((fy(b[1]), fy(b[4])))
+                c.rect(xm - cw / 2, ya, xm + cw / 2, max(yb, ya + 1.5), col, alpha=0.95)
             for m in mk:
                 if m.get("t") is None or m.get("px") is None:
                     continue
@@ -621,28 +677,46 @@ def render_insta(spec: dict) -> bytes | None:
                 if m.get("xt") is not None and m.get("xpx") is not None:
                     xx, xy = fx(min(max(m["xt"], t0), t1)), fy(m["xpx"])
                     col = col_of(m.get("usd"))
-                    steps = max(2, int(abs(xx - ex) + abs(xy - ey)) // 3)
-                    for i in range(steps + 1):
-                        f = i / steps
-                        c.circle(ex + (xx - ex) * f, ey + (xy - ey) * f, 2.2, col, alpha=0.9)
-                    c.circle(xx, xy, 11, WHITE, ring=3.0, glow=col, glow_r=6)
-                c.circle(ex, ey, 10, GOLD, glow=GOLD, glow_r=7)
-            c.text(x0, 930 - 26, _et(t0).strftime("%H:%M"), 2, MUTED)
-            c.text(x1, 930 - 26, _et(t1).strftime("%H:%M") + " ET", 2, MUTED, anchor="r")
+                    steps = max(2, int(abs(xx - ex) + abs(xy - ey)) // 9)
+                    for i in range(0, steps + 1, 2):
+                        f0, f1 = i / steps, min(1.0, (i + 1) / steps)
+                        for f in np.linspace(f0, f1, 5):
+                            c.circle(ex + (xx - ex) * f, ey + (xy - ey) * f, 1.6, col, alpha=0.95)
+                    c.circle(xx, xy, 9, col, glow=col, glow_r=6)
+                _tri(c, ex, ey, 13, str(m.get("side") or "LONG").upper() != "SHORT", GOLD, glow=GOLD)
+            c.text(x0, py1 - 30, _et(t0).strftime("%H:%M"), 2, MUTED)
+            c.text(x1, py1 - 30, _et(t1).strftime("%H:%M") + " ET", 2, MUTED, anchor="r")
+            ya = py1 + 28
         else:
-            c.text(w / 2, 712, "THE CHART COMES WITH THE NEXT REPORT", 2, MUTED, anchor="c")
-        # per account, names only
-        rows = [r for r in spec.get("rows") or [] if isinstance(r, dict)][:4]
-        y = 966
-        for r in rows:
-            c.rrect(60, y, w - 60, y + 66, 16, fill=CARD2, line=EDGE, lw=1.0)
-            c.text(88, y + 23, str(r.get("name") or "")[:24], 3, WHITE, max_px=560)
-            c.text(w - 88, y + 23, money(r.get("today")), 3, col_of(r.get("today")), anchor="r")
-            y += 80
-        # the brand
-        c.hline(w / 2 - 160, w / 2 + 160, h - 112, EDGE2, lw=2.0)
-        c.text(w / 2, h - 92, "OLYMPUS \u00b7 NQ", 4, GOLD, anchor="c", glow=GOLD)
-        c.text(w / 2, h - 50, "FUTURES \u00b7 PROP EVAL", 2, MUTED, anchor="c")
+            _panel(c, 72, py0, w - 72, py0 + 110)
+            c.text(w / 2, py0 + 46, "CHART OF THE DAY NOT AVAILABLE", 2, MUTED, anchor="c")
+            ya = py0 + 110 + 28
+        # accounts: names only, best first, max 3
+        for r in [r for r in spec.get("rows") or [] if isinstance(r, dict)][:3]:
+            _panel(c, 72, ya, w - 72, ya + 84, 24)
+            c.text(104, ya + 28, str(r.get("name") or "")[:24], 4, WHITE, max_px=600)
+            c.text(w - 104, ya + 28, money(r.get("today")), 4, col_of(r.get("today")), anchor="r")
+            ya += 100
+        # stats tiles: trades · won / lost · this week
+        n, wins, losses = int(spec.get("trades") or 0), int(spec.get("wins") or 0), int(spec.get("losses") or 0)
+        tiles = [(str(n), "TRADES", GOLD), (f"{wins} WON", f"{losses} LOST", UP)]
+        if spec.get("week") is not None:
+            tiles.append((money(spec.get("week")), "THIS WEEK", col_of(spec.get("week"))))
+        gap = 20
+        tw = (w - 144 - gap * (len(tiles) - 1)) / len(tiles)
+        ty = max(ya + 8, h - 260)
+        for i, (big_t, small_t, col) in enumerate(tiles):
+            tx = 72 + i * (tw + gap)
+            _panel(c, tx, ty, tx + tw, ty + 124, 24)
+            c.text(tx + tw / 2, ty + 26, big_t, 5, col, anchor="c", max_px=int(tw - 24))
+            c.text(tx + tw / 2, ty + 70, small_t, 3, (169, 156, 192), anchor="c", max_px=int(tw - 24))
+            if i == 1 and (wins or losses):                  # the win / loss dots (the site shows ✅ ❌)
+                dots = ([UP] * wins + [DOWN] * losses)[:8]
+                dx0 = tx + tw / 2 - (len(dots) - 1) * 18 / 2
+                for j, col2 in enumerate(dots):
+                    c.circle(dx0 + j * 18, ty + 106, 5, col2, glow=col2, glow_r=3)
+        # footer
+        c.text(w / 2, h - 66, "MNQ FUTURES \u00b7 PROP EVALUATION ACCOUNTS \u00b7 NOT ADVICE", 2, FOOT_INK, anchor="c")
         return c.png()
     except Exception:
         return None

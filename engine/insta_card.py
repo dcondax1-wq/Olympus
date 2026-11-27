@@ -22,6 +22,7 @@ import re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PAPER = ("sim", "paper", "demo", "playback", "replay", "blitz", "acctc", "acct_c")
+CANDLES = 80
 DAY_RX = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
@@ -34,8 +35,16 @@ def _f(x):
 
 
 def _paper(*words) -> bool:
-    s = " ".join(str(w or "") for w in words).lower()
-    return any(p in s for p in PAPER)
+    """Whole words (red team #39): an MFFU 'Sim Funded' account is a REAL payout account and counts; NinjaTrader's Sim101 /
+    Playback101, paper, demo, replay, BLITZ (acctc) never do."""
+    s = " ".join(str(w or "") for w in words)
+    try:
+        from . import tg_pretty
+        return tg_pretty._paper_words(s)
+    except Exception:
+        w = re.sub(r"sim[ _-]*funded", " ", s.lower())
+        toks = [t for t in re.split(r"[^a-z0-9]+", w) if t]
+        return any(t in PAPER or re.match(r"^(sim|playback)\d+$", t) for t in toks) or "acct_c" in w or "acctc" in w
 
 
 def _mask(s) -> str:
@@ -88,7 +97,8 @@ def marks_of(fills) -> list:
         if xp is not None:
             d = 1 if str(r.get("side") or r.get("action") or "").upper() in ("LONG", "BUY") else -1
             usd = (xp - p) * d * 2.0 * (_f(r.get("qty")) or 1)
-        out.append({"t": t, "px": p, "xt": xt, "xpx": xp, "usd": usd})
+        out.append({"t": t, "px": p, "xt": xt, "xpx": xp, "usd": usd,
+                    "side": "LONG" if str(r.get("side") or r.get("action") or "").upper() in ("LONG", "BUY") else "SHORT"})
     return sorted(out, key=lambda m: m["t"])[:20]
 
 
@@ -117,18 +127,18 @@ def spec(card: dict, day: str, fills=None, bars=None) -> dict | None:
         wins = sum(1 for r in rows if r["today"] > 0 and r["trades"])
         losses = sum(1 for r in rows if r["today"] < 0 and r["trades"])
     rows.sort(key=lambda r: -r["today"])
-    b = []
-    for x in bars or []:
-        if isinstance(x, (list, tuple)) and len(x) >= 5:
-            b.append((int(x[0]), float(x[4])))
-        elif isinstance(x, (list, tuple)) and len(x) == 2:
-            b.append((int(x[0]), float(x[1])))
-    if len(b) > 240:                                      # ~240 points are plenty for 1000 px
-        step = len(b) / 240.0
-        b = [b[int(i * step)] for i in range(240)] + [b[-1]]
+    b = [(int(x[0]), float(x[1]), float(x[2]), float(x[3]), float(x[4])) for x in bars or []
+         if isinstance(x, (list, tuple)) and len(x) >= 5]
+    if len(b) > CANDLES:                                  # ~CANDLES candles across 936 px (the site's card shows the same)
+        k = -(-len(b) // CANDLES)
+        b = [(g[0][0], g[0][1], max(y[2] for y in g), min(y[3] for y in g), g[-1][4]) for g in (b[i:i + k] for i in range(0, len(b), k))]
+    week = None
+    wk = [_f(r.get("week")) for r in card.get("rows") or [] if isinstance(r, dict) and not r.get("sim") and not _paper(r.get("name"))]
+    if any(v is not None for v in wk):
+        week = round(sum(v or 0.0 for v in wk), 2)
     d = dt.date.fromisoformat(day)
     return {"day": day, "date": f"{d:%a %b %d %Y}".upper(), "total": tot, "rows": rows, "trades": n, "wins": wins,
-            "losses": losses, "bars": b, "marks": mk}
+            "losses": losses, "week": week, "bars": b, "marks": mk}
 
 
 def _paths(day: str) -> tuple:

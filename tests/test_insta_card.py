@@ -65,8 +65,11 @@ def t_spec():
           names == ["Zlarior 50K", "Zlarior 25K #2", "ATLAS 25K"] and ID not in json.dumps(sp) and "3456" not in json.dumps(sp), names)
     check("marks: the 2 real trades (BLITZ's fill and the stop leg left out), each with its exit; 1 win 1 loss",
           len(sp["marks"]) == 2 and all(m["xt"] for m in sp["marks"]) and sp["wins"] == 1 and sp["losses"] == 1, sp["marks"])
-    check("bars thinned to <= 241 points", 2 <= len(sp["bars"]) <= 241, len(sp["bars"]))
+    check("bars as candles, at most 80 (o h l c)", 2 <= len(sp["bars"]) <= 80 and len(sp["bars"][0]) == 5, len(sp["bars"]))
     check("a red day (real accounts) -> no card, even with a green BLITZ", I.spec(RED, DAY, FILLS, B) is None)
+    sf = I.spec({"rows": [{"name": "ATLAS 25K Sim Funded", "today": 401.0, "trades": 1}, {"name": "Sim101", "today": 50.0}]}, DAY)
+    check("red team #39: an MFFU 'Sim Funded' account is REAL (counted); NinjaTrader's Sim101 is not",
+          sf and sf["total"] == 401.0 and [r["name"] for r in sf["rows"]] == ["ATLAS 25K Sim Funded"], sf)
     check("flat day -> no card", I.spec({"rows": [{"name": "Zlarior 50K", "today": 0.0}]}, DAY) is None)
     check("bad input -> None", I.spec(None, DAY) is None and I.spec(GREEN, "today") is None)
 
