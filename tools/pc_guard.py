@@ -424,7 +424,7 @@ def month_pnl(snap: dict, k: str, now) -> float | None:
         return None
 
 
-def extra_lines(snap: dict, now) -> tuple:
+def extra_lines(snap: dict, now, rows: list | None = None) -> tuple:
     """day-zeroerr (lead 2026-11-26): the extra accounts (Zlarior 25K #2, the Rapid EOD lanes ...) from the heartbeat's acct.accounts
     rows: ([line], total today). $ today, week (Mon..today of its eval days), month, trades today, $ to pass. Never raises."""
     out, tot = [], 0.0
@@ -453,6 +453,9 @@ def extra_lines(snap: dict, now) -> tuple:
             if tgt is not None and a.get("kind") != "funded":
                 to_pass = (tgt - ((start or 0.0) + prof)) if (start and tgt > start / 2) else (tgt - prof)
             live = str(_d(a.get("account")).get("kind") or "") == "live"
+            if rows is not None:              # night-nq-cards: the day summary's picture card
+                rows.append({"name": extra_name(a), "today": t, "week": wk, "month": mth, "trades": n, "to_pass": to_pass,
+                             "sim": not live})
             out.append(f"{extra_name(a)}: {signed(t)} today, {signed(wk)} week, {signed(mth)} month, {n} trade{'s' if n != 1 else ''}"
                        + (f", {money(to_pass)} to pass" if to_pass is not None and to_pass > 0 else ", target reached" if to_pass is not None else "")
                        + ("" if live else " (Sim / paper)"))
@@ -528,7 +531,7 @@ def day_summary(snap: dict, now: int, sent: dict | None = None) -> list:
         why = "the bot has not reported" if age is None else f"no account numbers in the last report ({int(age) // 60} min ago)"
         return [{"key": key, "title": f"Day {e:%a %b %d}: no numbers", "body": f"No day summary: {why}. Double-click tools/bat/STATUS.bat on the PC.{news}",
                  "priority": "default", "tags": "memo"}]
-    lines, tot = [], 0.0
+    lines, tot, crows = [], 0.0, []
     for k, c in cs:
         t = _f(c.get("today_pnl"))
         tot += t or 0.0
@@ -543,14 +546,31 @@ def day_summary(snap: dict, now: int, sent: dict | None = None) -> list:
                      + (f", {money(tt)} to pass" if tt is not None and tt > 0 else ", target reached" if tt is not None else "")
                      + (f", room {money(room)} of {money(c.get('mll'))}" if room is not None else "")
                      + ("" if real(k, c, snap) else " (Sim / paper)"))
-    xl, xt = extra_lines(snap, now)           # day-zeroerr: the extra accounts (25K #2, Rapid EOD ...) as lines too
+        crows.append({"name": label(k, c), "today": t, "week": wk, "month": mo, "trades": nt if isinstance(nt, (int, float)) else None,
+                      "to_pass": tt, "room": room, "mll": _f(c.get("mll")), "sim": not real(k, c, snap)})
+    xl, xt = extra_lines(snap, now, crows)    # day-zeroerr: the extra accounts (25K #2, Rapid EOD ...) as lines too
     lines += xl
     tot += xt
     stale = age is None or age > HB_FRESH_S
     head = f"Day {e:%a %b %d}: {signed(tot)}" + (" (last report old)" if stale else "")
     body = ("; ".join(lines) + "." + (f" These are the numbers of the last report, {int(age) // 60} min ago." if stale and age is not None else "")
             + near_setups(snap) + clocks_line(snap, now) + news + evening_extra(e.date().isoformat()))
-    return [{"key": key, "title": head, "body": body, "priority": "default", "tags": "memo"}]
+    card = {"type": "day", "date": f"{e:%a %b %d}".upper(), "total": tot, "rows": crows, "days": last_days(snap, now),
+            "note": (near_setups(snap, 1).replace(" Close but no trade: ", "CLOSE BUT NO TRADE: ").rstrip(".") if snap else ""),
+            "tag": "LAST REPORT OLD" if stale else ("HALF DAY" if frm < SUMMARY_FROM else "16:20 ET")}
+    return [{"key": key, "title": head, "body": body, "priority": "default", "tags": "memo", "card": card}]
+
+
+def last_days(snap: dict, now, n: int = 7) -> list:
+    """night-nq-cards: the main account's last n trading days [("MON", $)] from the heartbeat's eval days, for the day card's bars."""
+    try:
+        days = _d(_d(_d(_d(snap.get("hb")).get("acct")).get("eval")).get("days"))
+        today = dt.datetime.fromtimestamp(int(now), ET).date().isoformat()
+        ks = sorted(k for k in days if str(k) <= today)[-n:]
+        return [(dt.date.fromisoformat(k).strftime("%a").upper()[:2] + dt.date.fromisoformat(k).strftime("%d"), _f(days[k]) or 0.0)
+                for k in ks]
+    except Exception:
+        return []
 
 
 WEEK_FROM = 17 * 60                     # day-cards: the week report, Friday 17:00 ET (the CME weekly close); Saturday before noon catches up
@@ -582,7 +602,7 @@ def weekly_report(snap: dict, now: int, sent: dict | None = None, reviews_path: 
         tot = sum(_f(c.get("week_pnl")) or 0.0 for k, c in cs)
         if money_rows:
             parts.append("This week: " + ", ".join(money_rows) + ".")
-        noticed = []
+        noticed, cbots = [], []
         for bot, b in (W.get("bots") or {}).items():
             name = LL.BOTS.get(bot, bot)
             lw = sum(1 for r in recs if isinstance(r, dict) and r.get("bot") == bot and mon.isoformat() <= str(r.get("day")) <= W["to"]
@@ -590,6 +610,8 @@ def weekly_report(snap: dict, now: int, sent: dict | None = None, reviews_path: 
             tw = sum(1 for r in recs if isinstance(r, dict) and r.get("bot") == bot and mon.isoformat() <= str(r.get("day")) <= W["to"]
                      and float(((r.get("twin") or {}).get("usd")) or 0) > 0)
             parts.append(f"{name}: {b.get('text')}; winners {lw}/{b.get('trades_live') or 0} live vs {tw}/{b.get('trades_twin') or 0} backtest.")
+            cbots.append({"name": name, "live": b.get("trades_live") or 0, "twin": b.get("trades_twin") or 0, "missed": b.get("missed") or 0,
+                          "extra": b.get("extra") or 0, "wins_live": lw, "wins_twin": tw})
             for cause, n in list((b.get("causes") or {}).items())[:3]:
                 noticed.append(f"{name} {cause} x{n}")
         if noticed:
@@ -598,8 +620,20 @@ def weekly_report(snap: dict, now: int, sent: dict | None = None, reviews_path: 
             return []
         if not (W.get("bots")):
             parts.append("No live or backtest trades this week.")
+        daily = []                    # night-nq-cards: Mon..Fri live $ vs the backtest twin's $ (all bots) for the week card's bars
+        for i in range(5):
+            dd = (mon + dt.timedelta(days=i)).isoformat()
+            rr = [r for r in recs if isinstance(r, dict) and str(r.get("day")) == dd and r.get("bot")]
+            lv = [float(((r.get("live") or {}).get("usd")) or 0) for r in rr if (r.get("live") or {}).get("usd") is not None]
+            tv = [float(((r.get("twin") or {}).get("usd")) or 0) for r in rr if (r.get("twin") or {}).get("usd") is not None]
+            daily.append(((mon + dt.timedelta(days=i)).strftime("%a").upper(), round(sum(lv), 2) if lv else None,
+                          round(sum(tv), 2) if tv else None))
+        card = {"type": "week", "title": f"Week {mon:%b %d} - {(mon + dt.timedelta(days=4)):%b %d}".upper(), "total": tot,
+                "rows": [{"name": label(k, c), "week": _f(c.get("week_pnl"))} for k, c in cs if _f(c.get("week_pnl")) is not None],
+                "bots": cbots, "daily": daily,
+                "note": notify.mask_ids(("LEARNING NOTICED: " + "; ".join(noticed)) if noticed else "")}
         return [{"key": key, "title": f"Week {mon:%b %d}-{(mon + dt.timedelta(days=4)):%b %d}: {signed(tot)}",
-                 "body": notify.mask_ids(" ".join(parts))[:1500], "priority": "default", "tags": "bar_chart"}]
+                 "body": notify.mask_ids(" ".join(parts))[:1500], "priority": "default", "tags": "bar_chart", "card": card}]
     except Exception:
         return []
 

@@ -3,7 +3,9 @@ alert bus's Telegram message becomes a chart PICTURE (engine/png_chart: the last
 lines, the entry and exit marks) with the caption the bus already writes plus the bot's one-line reason (the LIT Brain's setup
 status_text / the ATLAS member's own state words) and R / $ risk / $ result. Every other channel stays text only.
 
-READ-ONLY: it reads bars and the bot's brain, writes logs/cards/ (gitignored: <entry_t>.json + <key>.png, newest 60 kept),
+night-nq-cards 2026-11-27: the premium look (engine/png_chart: OLYMPUS NIGHT, 1280 x 720, header with bot / account / side / R / $,
+entry / stop / target / sweep lines with tags) + the day summary and week report as pictures too (summary_photo).
+READ-ONLY: it reads bars and the bot's brain, writes logs/cards/ (gitignored: <entry_t>.json + <key>.png, newest 120 files kept),
 never routes or changes anything. engine/push._bus_send calls attach() in its background thread (after the order went out).
 Off: notify_settings.json alerts.trade_cards false, or LE_TRADE_CARDS=0: the old text message, exactly.
 Tests: python -X utf8 -m tests.test_trade_cards
@@ -115,6 +117,36 @@ def reason(p: dict, bot=None) -> str:
     return ""
 
 
+def sweep_level(p: dict, bot=None):
+    """The swept level's extreme (the LIT Brain's setup row "ext", this side) for the chart's SWEEP line; None when unknown."""
+    bot = bot if bot is not None else _bot()
+    try:
+        if p.get("who"):
+            return None
+        d = 1 if str(p.get("side") or "").upper() == "LONG" else -1
+        rows = [s for s in (getattr(bot, "brain", None) or {}).get("setups") or [] if isinstance(s, dict) and s.get("dir") == d
+                and s.get("status") in ("filled", "entering", "tapped", "armed")]
+        return _f(rows[-1].get("ext")) if rows else None
+    except Exception:
+        return None
+
+
+def _account(p: dict) -> str:
+    try:
+        from . import notify
+        return notify.mask_ids(notify.display_name(p))[:40]
+    except Exception:
+        return "Account"
+
+
+def _mask(s) -> str:
+    try:
+        from . import notify
+        return notify.mask_ids(s)
+    except Exception:
+        return str(s or "")
+
+
 def _save(et_, info: dict):
     try:
         os.makedirs(CARD_DIR, exist_ok=True)
@@ -155,7 +187,7 @@ def build(p: dict, what: str, now=None, bot=None, bars_fn=None) -> dict | None:
         info = _load(et_)
         if what == "entry":
             info = {"entry": _f(p.get("entry")), "stop": _f(p.get("stop")), "target": _f(p.get("target")), "qty": _f(p.get("qty")),
-                    "side": side, "why": reason(p, bot)}
+                    "side": side, "why": reason(p, bot), "sweep": sweep_level(p, bot)}
             _save(et_, info)
         entry, stop, target = info.get("entry") or _f(p.get("entry")), info.get("stop"), info.get("target")
         qty = _f(p.get("qty")) or info.get("qty")
@@ -174,11 +206,40 @@ def build(p: dict, what: str, now=None, bot=None, bars_fn=None) -> dict | None:
         B = (bars_fn or bars)(et_ - BEFORE_S, t_end + 60) if bars_fn else bars(et_ - BEFORE_S, t_end + 60, bot)
         photo = None
         if B:
-            lines = [(target, PC.GREEN, et_, False), (stop, PC.RED, et_, False), (entry, PC.WHITE, et_, True)]
-            marks = [(et_, entry, PC.GOLD)]
-            if what == "exit" and x_px is not None:
-                marks.append((int(p.get("t") or now), x_px, PC.BLUE))
-            png = PC.render(B, lines, marks)
+            acct = _account(p)
+            bot_name = "ATLAS" if ("ATLAS" in acct.upper() or p.get("who")) else "LIT"
+            lines = [(target, PC.GREEN, et_, False, "TARGET"), (entry, PC.GOLD, et_, True, "ENTRY"),
+                     (stop, PC.RED, et_, False, "STOP")]
+            if info.get("sweep") is not None:
+                lines.append((info["sweep"], PC.LILAC, None, True, "SWEEP"))
+            marks = [(et_, entry, PC.GOLD, "entry")]
+            zones = [(entry, target, et_, PC.UP), (entry, stop, et_, PC.DOWN)]
+            q = int(qty) if qty else None
+            usd = _f(p.get("usd"))
+            if what == "exit":
+                if x_px is not None:
+                    marks.append((int(p.get("t") or now), x_px, PC.WHITE, "exit"))
+                rr = (x_px - entry) * d / risk_pts if (risk_pts and x_px is not None and entry is not None) else None
+                hero = PC.money(usd) if usd is not None else (f"{rr:+.2f}R" if rr is not None else "CLOSED")
+                hc = PC.col_of(usd if usd is not None else rr)
+                sub = " \u00b7 ".join(x for x in ((f"{rr:+.2f}R" if rr is not None and usd is not None else ""),
+                                                  str(p.get("exit") or "").upper()[:12],
+                                                  (f"RISK ${risk_pts * PV_MNQ * qty:,.0f}" if risk_pts and qty else "")) if x)
+            else:
+                rr = abs(target - entry) / risk_pts if (risk_pts and target is not None) else None
+                hero = f"{rr:.1f}R" if rr is not None else "IN TRADE"
+                hc = PC.GOLD
+                sub = " \u00b7 ".join(x for x in ((f"RISK ${risk_pts * PV_MNQ * qty:,.0f}" if risk_pts and qty else ""),
+                                                  (f"TARGET +${abs(target - entry) * PV_MNQ * qty:,.0f}"
+                                                   if (target is not None and qty and entry is not None) else "")) if x)
+            try:
+                from . import png_chart as _pc
+                tag = f"{_pc._et(et_):%a %b %d}".upper()
+            except Exception:
+                tag = ""
+            head = {"bot": bot_name, "account": acct, "side": side, "qty": q, "hero": hero, "hero_col": hc, "sub": sub, "tag": tag}
+            foot = _mask(info.get("why") or "")
+            png = PC.render(B, lines, marks, head=head, foot=foot, zones=zones)
             if png:
                 os.makedirs(CARD_DIR, exist_ok=True)
                 photo = os.path.join(CARD_DIR, f"{what}_{int(et_)}.png")
@@ -186,8 +247,51 @@ def build(p: dict, what: str, now=None, bot=None, bars_fn=None) -> dict | None:
                     fh.write(png)
                 _trim()
         return {"photo": photo, "why": info.get("why") or "", "extra": " · ".join(extra),
-                "legend": "Chart: 1-min candles · white dashed = entry · red = stop · green = target · gold = entry fill"
-                          + (" · blue = exit" if what == "exit" else "")}
+                "legend": "Chart: 1-min candles · gold dashed = entry · red = stop · green = target · violet dashed = sweep level"
+                          + (" · white ring = exit" if what == "exit" else "")}
+    except Exception:
+        return None
+
+
+def _masked(x):
+    if isinstance(x, str):
+        return _mask(x)
+    if isinstance(x, dict):
+        return {k: _masked(v) for k, v in x.items()}
+    if isinstance(x, (list, tuple)):
+        return type(x)(_masked(v) for v in x)
+    return x
+
+
+def _test_transport() -> bool:
+    """A test's fake alert transport (alert_bus._HTTP) never draws into the repo's logs/."""
+    try:
+        from . import alert_bus as _AB
+        return _AB._HTTP is not None and CARD_DIR == _DEFAULT_DIR
+    except Exception:
+        return False
+
+
+def summary_photo(card: dict, key: str = "") -> str | None:
+    """night-nq-cards: the day summary (16:20 ET, half day: halt + 20 min) / the Friday week report as a picture (engine/png_chart
+    render_day / render_week) -> the PNG's path in logs/cards/, or None (off / nothing to draw / any trouble: the text message).
+    Called by alert_bus.from_report in tools/pc_report's 15-minute run, never on the order path. Never raises."""
+    try:
+        if not isinstance(card, dict) or not enabled() or _test_transport():
+            return None
+        from . import png_chart as PC
+        c = _masked(card)
+        fn = {"day": PC.render_day, "week": PC.render_week}.get(str(c.get("type")))
+        png = fn(c) if fn else None
+        if not png:
+            return None
+        os.makedirs(CARD_DIR, exist_ok=True)
+        safe = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in str(key or c.get("type")))[-60:]
+        path = os.path.join(CARD_DIR, f"{c.get('type')}_{safe}.png")
+        with open(path, "wb") as fh:
+            fh.write(png)
+        _trim()
+        return path
     except Exception:
         return None
 
@@ -197,12 +301,8 @@ def attach(ev: dict, p: dict, what: str, now=None, bot=None) -> dict:
     try:
         if not enabled():
             return ev
-        try:                                # a test's fake alert transport (alert_bus._HTTP) never draws into the repo's logs/
-            from . import alert_bus as _AB
-            if _AB._HTTP is not None and CARD_DIR == _DEFAULT_DIR:
-                return ev
-        except Exception:
-            pass
+        if _test_transport():
+            return ev
         c = build(p, what, now=now, bot=bot)
         if not c:
             return ev

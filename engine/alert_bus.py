@@ -355,8 +355,17 @@ def from_report(m: dict) -> dict:
     if k.startswith("cond:") and any(w in k for w in ("bot_down", "server_down", "not_running", "stopped")):
         kind = "bot_stopped"
     crit = k.startswith("cond:") and any(w in k for w in ("halt_open", "no_stop"))
-    return {"kind": kind, "key": k, "title": str(m.get("title") or "Olympus"), "body": str(m.get("body") or ""),
-            "notify_type": nt, "priority": m.get("priority"), "report": True, "dual": crit}
+    ev = {"kind": kind, "key": k, "title": str(m.get("title") or "Olympus"), "body": str(m.get("body") or ""),
+          "notify_type": nt, "priority": m.get("priority"), "report": True, "dual": crit}
+    if isinstance(m.get("card"), dict):              # night-nq-cards: the day summary / week report as a picture on Telegram
+        try:                                         # (any trouble: no photo = the text message, exactly as before)
+            from . import trade_card as _tc
+            ph = _tc.summary_photo(m["card"], k)
+            if ph:
+                ev["photo"] = ph
+        except Exception:
+            pass
+    return ev
 
 
 def from_problem(p: dict, msg: dict) -> dict:
