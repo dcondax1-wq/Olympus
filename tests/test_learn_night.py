@@ -385,7 +385,7 @@ def part_g(tmp, dd_c):
     a = argparse.Namespace(no_pull=False, wait=0.0, skip="", full=False, fetch=False, dry_run=False)
     P = LN.plan(a)
     check("g. plan: pull (data_pull --latest), edge_health, cost_alarm, anatomy build/explain/page, zeus_lab run --publish, learned, decide",
-          [s for s, _ in P] == ["pull", "backfill", "livegap", "edge", "costs", "anatomy", "lab", "learned", "decide", "hub", "blitz", "forward", "oflearn"]
+          [s for s, _ in P] == ["pull", "backfill", "livegap", "edge", "costs", "anatomy", "lab", "learned", "decide", "hub", "blitz", "forward", "oflearn", "nqsite"]
           and P[0][1] == [["tools/data_pull.py", "--latest", "--wait", "0.0"]] and P[6][1] == [["tools/zeus_lab.py", "run", "--publish"]]
           and P[1][1] == [["tools/of_backfill.py", "--push", "--wait", "0.0"]]          # night-of-backfill
           and P[2][1] == [["tools/livegap_daily.py"]] and P[4][1] == [["tools/cost_alarm.py"]] and [c[1] for c in P[5][1]] == ["build", "explain", "page"], P)
@@ -411,6 +411,7 @@ def part_g(tmp, dd_c):
     check("g. fake steps run in order (pull, edge, costs, 3 anatomy, lab, hub); the card learned.json = the PC's line + date, no BLITZ",
           [x[0] for x in calls] == ["tools/data_pull.py", "tools/of_backfill.py", "tools/livegap_daily.py", "tools/edge_health.py", "tools/cost_alarm.py"] + ["tools/win_loss_anatomy.py"] * 3
           + ["tools/zeus_lab.py", "tools/research_hub.py", "research/blitz/learn.py", "tools/forward_paper.py", "research/orderflow/of_learn.py"]
+          + ["tools/nq_ports.py", "tools/nq_thoughts.py", "tools/build_replay.py", "tools/build_of_room.py", "tools/week_review.py", "tools/roi_build.py"]   # afternoon landing 2026-11-27: step nqsite
           and c.get("day") == DAY and c.get("line", "").startswith("ZEUS learned Nov 19") and "blitz" not in json.dumps(c).lower()
           and len(json.dumps(c).encode()) <= LN.CARD_MAX_BYTES, (calls, c.get("line")))
     D = ZL._read_json(dec, {})
@@ -434,7 +435,7 @@ def part_g(tmp, dd_c):
                 card_path=card, decisions=dec, report=rep)
     check("g. dry run: the plan only, nothing run or written", o3.get("plan") and os.path.getmtime(dec) == mt)
     skip = LN.plan(argparse.Namespace(**{**vars(a), "no_pull": True, "skip": "lab,anatomy,livegap", "full": True}))
-    check("g. --no-pull --skip lab,anatomy,livegap: edge, costs, learned, decide, hub only", [s for s, _ in skip] == ["edge", "costs", "learned", "decide", "hub", "blitz", "forward", "oflearn"], skip)
+    check("g. --no-pull --skip lab,anatomy,livegap: edge, costs, learned, decide, hub only", [s for s, _ in skip] == ["edge", "costs", "learned", "decide", "hub", "blitz", "forward", "oflearn", "nqsite"], skip)
     it = LN.decide_item({"id": "Bad Id!", "question": "q", "why": "w"})
     check("g. a proposal with a bad id never reaches the card", it is None)
 

@@ -14,7 +14,7 @@ const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
 /** a display name with nothing that identifies an account: digits runs >= 4, firm-id prefixes, e-mails, "#123456" go */
 export function cleanName(s) {
   let t = String(s || '').replace(/\S+@\S+/g, '')
-    .replace(/\b[A-Z]{2,8}[-_]?\d{4,}\w*\b/gi, '')          // firm-prefixed ids (MFFU1234567, APEX-123456)
+    .replace(/\b[A-Z]{2,8}[-_]?\d{4,}\w*\b/gi, '')          // firm-prefixed ids (letters + 4 or more digits)
     .replace(/\.{2,}\s*\d+/g, '')                          // "...6016"
     .replace(/#?\b\d{4,}\b/g, '').replace(/#\s*$/, '').replace(/\s{2,}/g, ' ').trim();
   t = t.replace(/^[-·:,]+|[-·:,]+$/g, '').trim();
