@@ -126,6 +126,10 @@ function drawLadder(M) {
   const W = Math.round(Math.max(300, Math.min(760, box.clientWidth || 360))), ROW = 56, H = items.length * ROW + 10, vmax = Math.max(1, ...M.levels.map((x) => x.vz || 0));
   const svg = sv('svg', { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: 'xMidYMid meet' });
   const defs = sv('defs');
+  const sh = sv('linearGradient', { id: 'shine', x1: 0, y1: 0, x2: 1, y2: 0 });
+  sh.append(sv('stop', { offset: 0, 'stop-color': '#ffffff', 'stop-opacity': 0 }), sv('stop', { offset: 0.5, 'stop-color': '#eafff0', 'stop-opacity': 0.85 }),
+    sv('stop', { offset: 1, 'stop-color': '#ffffff', 'stop-opacity': 0 }));
+  defs.append(sh);
   for (const [id, c] of [['heatA', '#77db89'], ['heatN', '#ff5d6c']]) {
     const g = sv('linearGradient', { id, x1: 0, y1: 0, x2: 1, y2: 0 });
     g.append(sv('stop', { offset: 0, 'stop-color': c, 'stop-opacity': 0.05 }), sv('stop', { offset: 1, 'stop-color': c, 'stop-opacity': 0.75 }));
@@ -142,6 +146,7 @@ function drawLadder(M) {
     const c = x.read === 'absorbed' ? 'a' : x.read === 'not absorbed' ? 'n' : 'u';
     const g = sv('g', { class: `rung rung-${c}`, style: `animation-delay:${k * 70}ms` });
     if (x.vz && c !== 'u') { const w = Math.max(10, Math.round(0.4 * W * x.vz / vmax)); g.append(sv('rect', { class: 'rung-heat', x: W - 4 - w, y: y - 10, width: w, height: 18, rx: 4 })); }
+    if (c === 'a') g.append(sv('rect', { class: 'rung-shine', x: 0, y: y + 9, width: 70, height: 6, rx: 3, style: `animation-delay:${600 + k * 140}ms` }));
     g.append(sv('line', { class: 'rung-line', x1: 4, x2: W - 4, y1: y + 12, y2: y + 12 }),
       sv('text', { class: 'rung-name', x: 6, y: y - 8 }, x.label), sv('text', { class: 'rung-px', x: 6, y: y + 7 }, fmtPx(x.px) + (x.t ? `  · swept ${x.t}` : '')),
       sv('text', { class: 'rung-read', x: W - 8, y: y + 4, 'text-anchor': 'end' }, (READ[c] || 'untouched').toUpperCase() + (x.vz ? ` · ${x.vz.toLocaleString('en-US')} lots` : '')));
