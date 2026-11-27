@@ -8,7 +8,7 @@ B1, B5 = N.bars(1), N.bars(5)
 SR = N.sessions(B5, "R"); S1 = N.sessions(B1, "H1"); S2 = N.sessions(B1, "H2")
 Y = {"2021-24": [d for d in SR if d < "2025-01-01"], "2025": [d for d in SR if d >= "2025-01-01"]}
 def run(cfg):
-    T1, T5 = M.usd(M.sim(B1, cfg)), M.usd(M.sim(B5, cfg)); T1x, T5x = M.usd(M.sim(B1, cfg), 1.0), M.usd(M.sim(B5, cfg), 1.0)
+    T1, T5 = M.usd(M.sim(B1, cfg)), M.usd(M.sim(B5, cfg)); tk = lambda T: [{**t, "pnl_pm": t["pnl_pm"] - 1.0} for t in T]; T1x, T5x = M.usd(tk(M.sim(B1, cfg))), M.usd(tk(M.sim(B5, cfg)))
     st = lambda T, S: N.stats(T, S, M.USD, 20)
     o = {"2021-24": st(T5, Y["2021-24"]), "2025": st(T5, Y["2025"]), "2021-25": st(T5, SR), "2026 H1": st(T1, S1), "2026 Jul-Nov20": st(T1, S2),
          "tick1_2021-25": st(T5x, SR)["pf"], "years": {y: N.stats(T5, [d for d in SR if d.startswith(y)], M.USD, 20)["per_month"] for y in M.BZ.YEARS}}

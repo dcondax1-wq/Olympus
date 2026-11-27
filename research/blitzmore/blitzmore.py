@@ -196,7 +196,7 @@ def score(nm, v, B1, B5, S, TV, base):
         ev = MT.span_stats(T, Ss, Ss[0], Ss[-1])
         st["b25k"], st["rapid25k"], st["k50"] = ev["evals"]["25K"], ev["evals"]["Rapid25K"], ev["evals"]["50K"]
         o["spans"][sp] = st
-        Tx = usd(BZ_raw[nm][0 if tf == 1 else 1], 1.0)
+        Tx = usd([{**t, "pnl_pm": t["pnl_pm"] - 2 * TICK * PV} for t in BZ_raw[nm][0 if tf == 1 else 1]])   # one more tick each way = $1 a micro
         sx = N.stats(Tx, Ss, USD, 20)
         o["tick1"][sp] = {"pf": sx["pf"], "per_month": sx["per_month"], "net": sx["net"]}
     for y in BZ.YEARS:
