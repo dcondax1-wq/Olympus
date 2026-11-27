@@ -48,6 +48,7 @@ data/pc_days/
 data/of_store/
 # the Bot Brain's thought log, one JSONL per trading day (engine/brain.py BrainLog)
 data/brain/
+data/thoughts/
 
 # runtime
 logs/

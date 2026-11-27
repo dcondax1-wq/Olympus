@@ -94,7 +94,7 @@ _DAY = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 # night-cleanup 2026-11-22: fills.jsonl.gz (pack_day sends it since day-speed 2026-11-20) was missing here, so the cloud refused
 # EVERY PC answer from Nov 20 on ("unexpected file in the bundle") and no bar after Nov 19 arrived. tests/test_datafeed_names.py
 # keeps this list = every name pack_day can write.
-DAY_FILE = re.compile(r"^days/(\d{4}-\d{2}-\d{2})/(manifest\.json|trades\.jsonl\.gz|fills\.jsonl\.gz|review\.json|proposals\.jsonl|learn\.json|gaps\.json|"
+DAY_FILE = re.compile(r"^days/(\d{4}-\d{2}-\d{2})/(manifest\.json|trades\.jsonl\.gz|fills\.jsonl\.gz|thoughts\.jsonl\.gz|review\.json|proposals\.jsonl|learn\.json|gaps\.json|"
                       r"of/NQ_(?:bars5m|fp5m|depth5m)\.csv\.gz|of/NQ_meta\.json|of/manifest\.json|of/NQ_paper\.json\.gz|of/NQ_lane\.json\.gz|of/NQ_conflog\.json\.gz|"     # day-ofready (engine/ofsum.py)
                       r"bars/(?:MNQ|NQ|MES|ES|GC|MGC|SI|SIL)_(?:1m|5m)\.csv\.gz)$")
 
@@ -415,6 +415,13 @@ def pack_day(day: str, picked: dict, rows: list, names, contracts: dict, now, co
     g = day_gaps(day, notes)
     if g is not None and len(g) < 200_000:
         files["gaps.json"] = g
+    try:                                         # day-thoughtlog 2026-11-27: every bot's thoughts of the day (LIT's own log + ATLAS / OF lines)
+        from . import thoughtlog                  # for nq/story.html's past days; ids masked, names scrubbed, <= 1,200 rows
+        th = thoughtlog.pack(day, names=names)
+        if th is not None and len(th) < 200_000:
+            files["thoughts.jsonl.gz"] = th
+    except Exception:
+        pass
     for x in EXTRAS:
         p = os.path.join(local_days, day, x)
         try:

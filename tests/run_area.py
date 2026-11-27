@@ -596,5 +596,8 @@ AREAS["pc"].append("tg_pretty")   # day-tgpretty 2026-11-27: short emoji Telegra
 AREAS["pc"].append("insta_card")   # day-insta 2026-11-27: the green-day 1080 x 1350 Insta card after the day summary, /insta
 AREAS["pc"].append("tg_pretty_rt")   # red team #39: Sim Funded is never paper; a Telegram skip / hold still reaches ntfy + the app
 
+AREAS["pc"].append("thoughtlog")   # day-thoughtlog 2026-11-27: every bot's thoughts of the day -> the day zip (engine/thoughtlog.py)
+AREAS["pc"].append("thoughtlog_rt")   # red team #43: always scrubbed, 45-day prune
+
 if __name__ == "__main__":
     sys.exit(main())
