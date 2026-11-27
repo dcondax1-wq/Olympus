@@ -160,11 +160,36 @@ def collect(hb, root: str = ROOT, now=None, folder: str | None = None) -> int:
         if size + len(data.encode("utf-8")) > MAX_BYTES:
             return 0
         os.makedirs(os.path.dirname(p), exist_ok=True)
+        fresh_day = not os.path.exists(p)
         with open(p, "a", encoding="utf-8") as fh:
             fh.write(data)
+        if fresh_day:
+            prune(folder, now)
         return len(new)
     except Exception:  # noqa: BLE001 - logging only: never into the report
         return 0
+
+
+KEEP_DAYS = 45              # red team #43: day files kept on the PC (the cloud has its copy in the day zip); ~7 MB at the cap
+
+
+def prune(folder: str | None = None, now=None, keep: int = KEEP_DAYS) -> int:
+    """Delete data/thoughts/<day>.jsonl older than `keep` days (once a day, at the day's first write). Returns files removed."""
+    d = folder or DIR
+    cut = (dt.datetime.fromtimestamp(int(now or time.time()), ET).date() - dt.timedelta(days=keep)).isoformat()
+    n = 0
+    try:
+        for f in os.listdir(d):
+            m = re.match(r"^(\d{4}-\d{2}-\d{2})\.jsonl$", f)
+            if m and m.group(1) < cut:
+                try:
+                    os.remove(os.path.join(d, f))
+                    n += 1
+                except OSError:
+                    pass
+    except OSError:
+        pass
+    return n
 
 
 def day_rows(day: str, root: str = ROOT, folder: str | None = None, brain_dir: str | None = None, names=()) -> list:
@@ -180,12 +205,11 @@ def day_rows(day: str, root: str = ROOT, folder: str | None = None, brain_dir: s
     for r in read_rows(day, folder):
         if isinstance(r.get("t"), (int, float)) and r.get("bot") in ("atlas", "of"):
             rows.append({"t": int(r["t"]), "bot": r["bot"], "kind": "", "text": _mask(r["text"])})
-    if names:
-        try:
-            from .datapipe import scrub_text
-            rows = [{**r, "text": scrub_text(r["text"], names)} for r in rows]
-        except Exception:  # noqa: BLE001
-            pass
+    try:                                    # red team #43: ALWAYS (was only when names were given: then emails, paths, the live
+        from .datapipe import scrub_text    # phrase and generic account ids went out unscrubbed)
+        rows = [{**r, "text": scrub_text(r["text"], names or ())} for r in rows]
+    except Exception:  # noqa: BLE001 - no scrubber = nothing leaves (the zip goes over ntfy)
+        return []
     rows.sort(key=lambda r: (r["t"], r["bot"]))
     return rows[-PACK_ROWS:]
 
