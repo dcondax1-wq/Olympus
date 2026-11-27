@@ -107,3 +107,4 @@ html{scroll-padding-top:124px}
 @media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
 html[data-oly-scheme="light"] .hx-jump{background:rgba(255,255,255,.9)}
 @media (min-width:1100px){#app>.hx-jump{grid-column:1/-1}}
+@media (max-width:759px){.hx-acc:last-child:nth-child(odd){grid-column:1/-1}}

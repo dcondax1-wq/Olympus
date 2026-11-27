@@ -23,3 +23,4 @@ nqland.js, the NEW nq/nqhero.css, and tests/test_nq_desk.py (hero checks). Web o
    - The older Accounts card (nqdesk.accounts goalText) shows the board's own `to_target` ($1,290 in the DEMO).
    - Suggest the Accounts card reads the same goals model (nqgoals.goals) so one number shows. I left that card's logic alone.
 6. **New: a sticky "jump to" bar under the hero** (Chart / Goals / Accounts / Bots / Trades / News / Checks), 44 px taps, below the kit's compact bar.
+7. **Light scheme:** styled (tokens flip) but not screenshot-checked tonight: my forced-attribute script failed. The page is dark-first.

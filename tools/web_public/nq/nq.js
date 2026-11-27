@@ -293,8 +293,8 @@ function render() {
   const v = S.view;
   $('demo').hidden = !S.demo; try { $('lite').hidden = !(O && O.lite && O.lite()); } catch (_) { $('lite').hidden = true; }
   renderBanner(); renderDesk(); renderScene(); renderPlan(); renderBots(); renderNews(); renderTrades(); renderFacts();
-  say(`${v.headline}${v.todayLine ? ' ' + v.todayLine : ''}${v.tight ? ` ${v.tight.name}: ${v.tight.ddLine}.` : ''}${S.demo ? ' Example numbers.' : ''}`);
-  { const el = $('src'); if (el) el.textContent = srcLine(); }
+  say(`${v.headline}${v.tight ? ` ${v.tight.name}: ${v.tight.ddLine}.` : ''}${S.demo ? ' Example numbers.' : ''}`);
+  { const el = $('src'); if (el) el.textContent = srcLine(); }   // (the hero shows today's $: v.todayLine stays in the model for Jarvis / tests)
   S.ready = true;
   try { if (O && O.ready) O.ready(); } catch (_) { /* the veil lifts by itself */ }
   tryScene(); tryLand();
