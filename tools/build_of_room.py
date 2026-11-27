@@ -86,37 +86,6 @@ def shipped(root: str):
     return None, None
 
 
-def lane_view(root: str, today: str) -> dict:
-    """The order-flow lane on the practice (Sim) account (engine/of_lane.public_view): the PC's own state when it is today's,
-    else the newest day the PC shipped (data/pc_days/<day>/of/NQ_lane.json.gz), else just the switch. No $ (public site)."""
-    try:
-        from engine import of_lane as L
-        cfg = L.load_cfg(root)
-        S = _rj(os.path.join(root, "data", L.STATE_NAME))
-        if isinstance(S, dict) and S.get("day") == today:
-            v = L.public_view(S, cfg)
-            v["source"] = "live"
-            return v
-        import gzip
-        for base in (os.path.join(root, "data", "pc_days"), os.path.join(root, "logs", "datapipe", "days")):
-            try:
-                ds = sorted((d for d in os.listdir(base) if len(d) == 10), reverse=True)
-            except OSError:
-                continue
-            for d in ds:
-                p = os.path.join(base, d, "of", L.EXPORT_NAME)
-                if os.path.exists(p):
-                    with gzip.open(p, "rt", encoding="utf-8") as fh:
-                        v = json.load(fh)
-                    v.pop("sim_rows", None)
-                    v["source"] = f"PC ({d}, shipped)"
-                    return v
-        return {"on": bool(cfg.get("on")), "sim": True, "source": "switch only",
-                "line": "Order flow on the practice account: " + ("ON (no trade yet)" if cfg.get("on") else "OFF (/oflane on to start)")}
-    except Exception as e:  # noqa: BLE001
-        return {"line": f"order-flow lane: unreadable ({e.__class__.__name__})"}
-
-
 def build(root: str = ROOT, now: float | None = None, state: dict | None = None) -> dict:
     now = now or dt.datetime.now(dt.timezone.utc).timestamp()
     today = dt.datetime.fromtimestamp(now, ET).strftime("%Y-%m-%d")
@@ -150,7 +119,6 @@ def build(root: str = ROOT, now: float | None = None, state: dict | None = None)
                        "result": r.get("result") if "result" in r else (None if r.get("pnl") is None else ("won" if r["pnl"] > 0 else "lost"))}
                       for r in S.get("lit") or []]
         out["today"] = {k: (S.get("today") or {}).get(k) for k in ("taken", "open", "R", "usd_1", "skipped", "skipped_R")}
-    out["lane"] = lane_view(root, today)                  # day-ofready2: the Sim lane (practice account), R only, no $
     V = _rj(os.path.join(root, "research", "orderflow", "real_verdict.json"))
     if V:
         fw = V.get("forward") or {}

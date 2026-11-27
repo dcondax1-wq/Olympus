@@ -317,6 +317,59 @@ def paper_tiny(root: str = ROOT, now: float | None = None) -> dict | None:
         return None
 
 
+OFL_MAX = 400
+_SIM_RX = __import__("re").compile(r"^(Sim|Playback)\d+$")
+
+
+def _short_why(w) -> str | None:
+    """A refusal in a few plain words for the room (day-ofready2)."""
+    w = str(w or "")
+    if not w:
+        return None
+    for key, say in (("day cap", "skipped: day cap (1 a day)"), ("news blackout", "skipped: news"), ("not chased", "skipped: late"),
+                     ("entry cut", "skipped: after the entry cut"), ("kill switch", "skipped: kill switch"),
+                     ("hedging", "skipped: another account holds the other side"), ("one position", "skipped: account already in a trade"),
+                     ("lane is OFF", "skipped: lane off"), ("stopped before entry", "no fill: the stop traded first"),
+                     ("must exist in NinjaTrader", "skipped: Sim account missing in NinjaTrader"), ("skip: 1 micro", "skipped: stop too wide for the $ risk"),
+                     ("daily loss", "skipped: daily loss limit"), ("floor", "skipped: max-loss floor"),
+                     ("target", "target"), ("stop", "stop"), ("flat", "flat time")):
+        if key in w:
+            return say
+    return w[:40]
+
+
+def lane_tiny(root: str = ROOT, now: float | None = None) -> dict | None:
+    """day-ofready2: the order-flow LANE on the practice account (engine/of_lane.py: data/of_lane.json + data/of_lane_state.json) for
+    the 15-minute status ext block "ofl" (day-ofroom2's control room reads exactly these keys), <= OFL_MAX bytes, stdlib only:
+    {"on", "account" (a Sim name only), "cap", "used", "day", "trades": [{"t", "dir", "qty", "status", "pnl", "why"}] (today's,
+    newest 4)}. pnl = simulation $ after costs (practice money). None when the lane has never been set up. Never raises."""
+    try:
+        cfg = _read_json(os.path.join(root, "data", "of_lane.json"), None)
+        S = _read_json(os.path.join(root, "data", "of_lane_state.json"), None)
+        if not isinstance(cfg, dict) and not isinstance(S, dict):
+            return None
+        cfg, S = cfg if isinstance(cfg, dict) else {}, S if isinstance(S, dict) else {}
+        now = now or time.time()
+        today = _et_day(now)
+        acct = str(cfg.get("account") or "Sim102").strip()
+        acct = acct if _SIM_RX.match(acct) else "not Sim"
+        cap = cfg.get("max_per_day", 1)
+        cap = cap if isinstance(cap, int) and not isinstance(cap, bool) and cap >= 1 else 1
+        tr = [t for t in S.get("trades") or [] if isinstance(t, dict) and t.get("day") == today and S.get("day") == today]
+        slots = {int(t["entry_t"]) // 300 for t in tr if t.get("entry_t") and (t.get("filled") or t.get("status") in ("sending", "open", "fallback", "unknown"))}
+        hm = lambda t: dt.datetime.fromtimestamp(int(t), ET).strftime("%H:%M") if (ET and t) else None   # noqa: E731
+        rows = [{"t": hm(t.get("t_sig") or t.get("entry_t")), "dir": "long" if t.get("d") == 1 else "short", "qty": t.get("qty"),
+                 "status": "open" if t.get("status") == "fallback" else t.get("status"),
+                 "pnl": None if t.get("pnl") is None else round(float(t["pnl"]), 2),
+                 "why": _short_why(t.get("why")) if t.get("status") != "open" else None} for t in tr][-4:]
+        out = {"on": cfg.get("on") is True, "account": acct, "cap": cap, "used": len(slots), "day": today, "trades": rows}
+        while len(json.dumps(out, separators=(",", ":"))) > OFL_MAX and out["trades"]:
+            out["trades"].pop(0)
+        return out
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def setup_of(setup: dict, now: float | None = None, nd: str | None = None) -> dict:
     """The OF input field for a LIT setup (for the live setup score, big-setupscore): OF1's read at the setup's sweep extreme from
     the live tick file. setup = {"side": "LONG"|"SHORT", "plan": {"stop": price}} (the Brain's setup row; the plan's stop is 1 tick

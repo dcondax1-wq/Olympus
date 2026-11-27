@@ -80,9 +80,12 @@ def main(argv=None):
     from engine import of_lane as L, of_paper as P, ops_checks as OC, tg_cmd as T, atlas_exec as AX, ofsum, datapipe
     from engine.ninjatrader import _FakeNT
     import of_replay_ticks as RT
-    import build_of_room as ROOM
     AX.is_on, AX.lanes = (lambda *a, **k: False), (lambda: [])          # no ATLAS Sim101 week in the temp world
     days = [("2026-11-23", None), ("2026-11-26", None), ("2026-11-27", "2026-11-25")]
+    if "--one" in argv:
+        days = days[:1]
+    if "--two" in argv:
+        days = days[:2]
     if "--full" in argv:
         days = [("2026-11-23", None), ("2026-11-24", None), ("2026-11-25", None), ("2026-11-26", None), ("2026-11-27", "2026-11-25")]
     td = tempfile.mkdtemp(prefix="of_dryrun_")
@@ -161,7 +164,7 @@ def main(argv=None):
                         path=os.path.join(root, "data", "tg.json"), env={}, started_at=time.time())
     poll.oflane_root = root
     with open(os.path.join(nd, "le_feed", "accounts.csv"), "w") as fh:
-        fh.write(f"name,t,cash\nSim101,{int(time.time()) + 10**9},100000\n")     # a fresh account list without Sim102
+        fh.write(f"name,t,cash\nSim101,{int(time.time())},100000\n")     # a fresh account list without Sim102 (the switch reads real time)
     json.dump({**L.DEFAULT_CFG, "nt_folder": nd}, open(os.path.join(root, "data", L.CFG_NAME), "w"))
     rep_on = fk.say(poll, "/oflane on")
     cfg = L.load_cfg(root)
@@ -173,6 +176,8 @@ def main(argv=None):
         e0 = dt.datetime.fromisoformat(d).replace(tzinfo=ET)
         clock[0] = e0.replace(hour=9, minute=10).timestamp()
         market_to(clock[0])
+        with open(os.path.join(nd, "le_feed", "accounts.csv"), "w") as fh:     # LE_BarFeed writes it every minute: fresh, no Sim102
+            fh.write(f"name,t,cash\nSim101,{int(e0.replace(hour=9, minute=19).timestamp())},100000\n")
         r_early = OC.of_lane_kick(clock[0], root=root, popen=popen)
         n0 = runner["ran"]
         t = e0.replace(hour=9, minute=20).timestamp()
@@ -235,19 +240,43 @@ def main(argv=None):
     check("runner: every 5-min kick while it ran said 'running' (never a 2nd start)", not kk, kk[:5])
     check("runner: the 16:15 kick finds it already gone (it exits flat after 16:10), nothing stray",
           all(per_day[d]["S"] is not None for d, _ in days) and not os.path.exists(os.path.join(root, "data", L.RUN_NAME)))
-    # ---- the dashboard fields
-    room = ROOM.build(root, now=per_day[days[-1][0]]["end"])
-    ln = room.get("lane") or {}
-    check("dashboard: of_room.json carries the lane (on, Sim account, today's Sim trades, the plain line, no $)",
-          ln.get("on") is True and ln.get("account") == "Sim101" and ln.get("sim") is True and isinstance(ln.get("today"), dict)
-          and ln.get("line") and "$" not in json.dumps(ln), ln)
+    # ---- the dashboard fields: the 15-min status ext block "ofl" (the OF control room, day-ofroom2) + the Brain line
+    from engine import oflive
+    import pc_report as PR
+    t_end = per_day[days[0][0]]["end"]
+    S0 = per_day[days[0][0]]["S"]
+    L.save_state(S0, root)                                     # Monday's book as it stood at its close
+    ofl = oflive.lane_tiny(root, now=t_end - 3600)
+    core, ext = PR.split({"v": 1, "t": int(t_end), "ofl": ofl})
+    sent_ofl = next((e["x"]["ofl"] for e in ext if "ofl" in (e.get("x") or {})), None)
+    check("dashboard: the status ext block 'ofl' has the room's exact keys (on, account, cap, used, day, trades[t, dir, qty, "
+          "status, pnl, why]), <= 400 bytes, through the privacy pass", isinstance(ofl, dict) and set(ofl) == {"on", "account", "cap", "used", "day", "trades"}
+          and all(set(r) == {"t", "dir", "qty", "status", "pnl", "why"} for r in ofl["trades"]) and ofl["on"] is True
+          and ofl["account"] == "Sim101" and ofl["cap"] == 1 and len(json.dumps(ofl, separators=(",", ":"))) <= 400 and sent_ofl == ofl, (ofl, sent_ofl))
+    src = open(os.path.join(ROOT, "tools", "pc_report.py"), encoding="utf-8").read()
+    check("dashboard: pc_report puts 'ofl' in the snapshot + EXT_ORDER (inside the existing 15-min status, no new post)",
+          'snap["ofl"] = _ofl2.lane_tiny(root, now=now)' in src and '"ofp", "ofl")' in src)
+    L.save_state(per_day[days[-1][0]]["S"], root)
     from engine import brain_feed
+    Sb = L.load_state(root)
+    real_today = dt.datetime.now(ET).strftime("%Y-%m-%d")
+    Sb["day"] = real_today                                    # the Brain shows TODAY's lane line (real clock): the replayed day as today
+    for t_ in Sb["trades"]:
+        t_["day"] = real_today
+    Sb["line"] = L.line(Sb, L.load_cfg(root))
+    L.save_state(Sb, root)
     bf = json.dumps(brain_feed.of_bot(root, {}))
     check("dashboard: the Brain's order-flow room shows the lane line", "OF lane" in bf or "Sim" in bf, bf[:400])
     ex = os.path.join(root, "logs", "datapipe", "days", days[-1][0], "of", L.EXPORT_NAME)
     check("PC -> cloud: the lane's day file is exported next to the summaries (the nightly 'of' answer carries it)",
-          os.path.exists(ex) and L.EXPORT_NAME in __import__("engine.datafeed", fromlist=["x"]).DAY_FILE.pattern, ex)
+          os.path.exists(ex) and bool(__import__("engine.datafeed", fromlist=["x"]).DAY_FILE.match(f"days/{days[-1][0]}/of/{L.EXPORT_NAME}")), ex)
     fills = [r for r in datapipe.day_fills(days[0][0], root=root) if r.get("lane") == "oflane"]
+    if not fills:
+        import glob as _g
+        if os.environ.get("OF_DRYRUN_KEEP"):
+            shutil.copytree(os.path.join(root, "logs"), os.environ["OF_DRYRUN_KEEP"], dirs_exist_ok=True)
+        print("   debug fill log:", _g.glob(os.path.join(root, "logs", "*")), [ln_[:120] for p_ in _g.glob(os.path.join(root, "logs", "ninjatrader_oif*.log"))
+                                                                         for ln_ in open(p_, encoding="utf-8")][:3])
     check("fill log: the Sim orders are lane 'oflane' in the unified fill log", fills or not any(
         t.get("filled") for t in per_day[days[0][0]]["S"]["trades"] if t.get("day") == days[0][0]), fills[:1])
     check("no alert about a real account, nothing named a non-Sim account in any order line",

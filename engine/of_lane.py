@@ -659,6 +659,11 @@ def line(S: dict, cfg: dict | None = None) -> str:
 EXPORT_NAME = "NQ_lane.json.gz"
 
 
+def _oflive_why(w):
+    from .oflive import _short_why          # one wording for the room, the status ext block and this file
+    return _short_why(w)
+
+
 def public_view(S: dict, cfg: dict) -> dict:
     """The lane for a dashboard (day-ofready2): switch, Sim account, today's Sim trades in R (no $, no real account: the site is
     public; it is simulation money anyway), one plain line. Never raises."""
@@ -671,7 +676,7 @@ def public_view(S: dict, cfg: dict) -> dict:
         acct = str(cfg.get("account") or "")
         rows = [{"t": _et(t["t_sig"]).strftime("%H:%M") if t.get("t_sig") else None, "level": t.get("level"),
                  "dir": "long" if t.get("d") == 1 else "short", "how": t.get("how"), "status": t["status"],
-                 "R": t.get("R"), "why": re.sub(r"\$[\d,.]+", "", str(t.get("why") or ""))[:90] or None} for t in tr]
+                 "R": t.get("R"), "why": _oflive_why(t.get("why"))} for t in tr]
         if not cfg.get("on") and not tr:
             ln = "Order flow on the practice account: OFF"
         else:

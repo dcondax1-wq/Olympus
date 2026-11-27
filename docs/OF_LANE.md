@@ -54,3 +54,16 @@ Tests: `python tests/run_area.py pc` (suite `of_lane`, ~6 min, fake NinjaTrader,
   on weekdays 09:20-16:15 ET only when on + a Sim account + no kill; never twice (heartbeat `data/of_lane_run.json` < 2 min,
   or a start < 3 min ago). 16:15 -> stop flag `data/of_lane_stop`; the loop exits only while flat (16:10 / flag / OFF / kill).
 - Card draft: `research/handoff/2026-11-27/oflane/card.json` (the lead wires it into decisions.json).
+
+## Monday dry run + the dashboard fields (day-ofready2 2026-11-27)
+- `tests/test_of_dryrun.py` replays REAL days (data/pc_days) through the real path: /oflane on (fake Telegram) -> the 09:20
+  ops kick -> the runner (run_lock, heartbeat) -> the live tick CSV rebuilt by `tools/of_replay_ticks.py` (bars + footprint
+  identical to the PC's summary) -> paper decisions = the paper bot on the real summary -> guards (day cap, real news, half-day
+  cut) -> Sim orders in a fake NinjaTrader (E5 limit / market) -> exits -> flat after 16:10 -> /oflane status. Days: Monday
+  11-23 (Sunday Globex file before it), Thanksgiving 11-26 (halt 13:00), 11-27 (halt 13:15; 11-25's ticks re-dated). `--full`
+  adds 11-24 / 11-25, `--one` only Monday. ~9 min; SKIP without data/pc_days.
+- Status ext block `ofl` (tools/pc_report.py, engine/oflive.lane_tiny, <= 400 B, inside the 15-min status): {on, account, cap,
+  used, day, trades[{t, dir, qty, status, pnl, why}]} (today's, newest 4; why = short plain words, oflive._short_why).
+- Day file `NQ_lane.json.gz` (engine/of_lane.export_day) rides the nightly 'of' answer + the backfill: the public view (R only)
+  + `sim_rows` = the forward ladder's step-1 rows (tools/of_ladder.lane_sim_rows: R, usd_1, fill_gap_ticks vs paper).
+- Telegram `/oflane on|off|status`: short lines with emojis (engine/of_lane.tg_text); the CLI `--sim status` keeps the detail.
