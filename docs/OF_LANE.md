@@ -1,29 +1,29 @@
-# Order-flow lane (Sim101 only, OFF by default) - night-of-lane 2026-11-27
+# Order-flow lane (Sim102 only, OFF by default) - night-of-lane 2026-11-27
 
 What: `engine/of_lane.py` routes the order-flow PAPER bot's lane A trades (absorbed level fade, `engine/of_paper.py`,
 rules `research/orderflow/DESIGN_paper.md`) to a NinjaTrader **simulation** account through the existing adapter
 (`engine/ninjatrader.py`). Same decision code as the paper bot (`of_paper.step`), no second rule.
 
 Status of the idea: a CANDIDATE (51 real days: taken +0.49R vs skipped -0.31R, p 0.0065, but the halves differ). Forward
-days decide. The lane is for running it on Sim101 next week; an eval / funded account needs the forward gate + the owner's yes,
+days decide. The lane is for running it on Sim102 next week (its own Sim account: red team 2026-11-27, so it never fights atlas_exec's Sim101 week or START's Sim test for the account lock; **Sim102 must exist in NinjaTrader: Accounts tab > Add Sim account**, `--sim status` says so when NinjaTrader does not list it); an eval / funded account needs the forward gate + the owner's yes,
 and that switch is NOT built (any non-Sim account is refused in 3 places: the switch, the tick, the adapter's own live gate).
 
 ## Switch (owner or the lead, one line on the PC)
-    python -X utf8 -m engine.of_lane --sim on        # Sim101, $200 risk a trade, max 10 micros
+    python -X utf8 -m engine.of_lane --sim on        # Sim102, $200 risk a trade, max 10 micros
     python -X utf8 -m engine.of_lane --sim off       # no new trades (an open Sim trade keeps its stop/target + 15:55 close)
     python -X utf8 -m engine.of_lane --sim status
 File: `data/of_lane.json` {"on", "account", "risk_usd", "max_micros", "plan", "stage", "news_min"} (gitignored; absent = OFF).
 
 ## Runner (lead wires it; not wired tonight)
-`python -X utf8 -m engine.of_lane loop` = every 15 s until 16:10 ET, its own process (it holds the Sim101 account lock
-`le_locks\Sim101.lock`: nothing else may trade Sim101 at the same time). Suggested hook: engine/ops_checks next to
+`python -X utf8 -m engine.of_lane loop` = every 15 s until 16:10 ET, its own process (it holds the Sim102 account lock
+`le_locks\Sim102.lock`: nothing else may trade Sim102 at the same time). Suggested hook: engine/ops_checks next to
 `of_paper_kick`, started detached at 09:20 ET on weekdays only when `data/of_lane.json` says on. It needs LE_TickRec on
 (the live tick file `le_ticks\NQ_<day>.csv`).
 
 ## Guards (any one = not routed, logged in plain words)
 switch OFF | not a Sim account | kill (`live_state.json` kill or `data/of_lane_kill`: no entry + flatten) | CME holiday /
 weekend / half-day cut (15 min before an early close) | decision > 2 min after the bar close (never chased) | Tier-1 news
-+-2 min | the lane's open trade or ANY Sim101 position (one per account) | another account holds the opposite NQ side (hedge)
++-2 min | the lane's open trade or ANY Sim102 position (one per account) | another account holds the opposite NQ side (hedge)
 | size: `sizing.second_qty` at the fixed $ risk | `firms.check` with the MFFU Builder 50K eval rules on the lane's own book
 (soft DLL $1,000, EOD trailing $2,000, contracts, flat time). Exits: OCO bracket (stop 1 tick beyond the sweep bar, 2R),
 adapter flat at 15:55 (5 min before an early close), kill flatten. Restart: the adapter's write-ahead state

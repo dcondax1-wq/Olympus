@@ -1,6 +1,7 @@
 """The Order Flow LANE: of_paper's lane A decisions routed to a NinjaTrader SIMULATION account (night-of-lane 2026-11-27).
 
-OFF by default. Built so "next week on Sim101" is one switch; an eval / funded account is NOT possible from this file: any
+OFF by default. Built so "next week on Sim102" is one switch (its OWN simulation account, red team 2026-11-27: never fights
+atlas_exec's Sim101 week or START's Sim101 test for the account lock; Sim102 must exist in NinjaTrader); an eval / funded account is NOT possible from this file: any
 account that is not a NinjaTrader simulation account (Sim101, SimNNN, PlaybackNNN) is refused, whatever the switch says. A
 future owner switch + phrase for a real account is deliberately not built (owner's yes + the forward gate first).
 
@@ -56,7 +57,8 @@ ET = ZoneInfo("America/New_York")
 CFG_NAME, STATE_NAME, NT_STATE_NAME, KILL_NAME = "of_lane.json", "of_lane_state.json", "ninjatrader_state_oflane.json", "of_lane_kill"
 AUDIT_NAME = "ninjatrader_oif_oflane.log"           # engine.datapipe._lane_of -> lane "oflane"
 LANE = "oflane"
-DEFAULT_CFG = {"on": False, "account": "Sim101", "risk_usd": 200.0, "max_micros": 10, "plan": "mffu_builder_50k",
+ACCOUNT_HOWTO = "Accounts tab > Add Sim account"
+DEFAULT_CFG = {"on": False, "account": "Sim102", "risk_usd": 200.0, "max_micros": 10, "plan": "mffu_builder_50k",
                "stage": "eval", "news_min": 2}
 E5_WAIT_S = 300             # E5 entry (research/writeups/ofexec-2026-11-27.md, engine/of_paper._fill_e5 on night-of-paperv2):
 E5_RR = 2.0                 # a resting limit AT the swept level for 300 s, cancelled if the stop trades first, else market; 2R from the fill
@@ -117,6 +119,35 @@ def sim_problem(account) -> str | None:
     return None
 
 
+def account_seen(account, folder: str | None = None, now=None) -> bool | None:
+    """True = NinjaTrader lists the account (a fresh le_feed\\accounts.csv row, or a position file of it in outgoing\\);
+    False = accounts.csv is fresh and the account is not in it (it does not exist / is not connected); None = cannot tell."""
+    a = str(account or "").strip().lower()
+    try:
+        from . import broker_balance as BB
+        from .ninjatrader import default_folder
+        folder = folder or default_folder()
+        r = BB.read(folder, now=now)
+        if r.get("ok"):
+            return any(n.lower() == a for n in (r.get("rows") or {}))
+        out = os.path.join(folder, "outgoing")
+        if os.path.isdir(out) and any(n.lower().endswith(f"_{a}_position.txt") for n in os.listdir(out)):
+            return True
+    except Exception:  # noqa: BLE001
+        pass
+    return None
+
+
+def account_words(account, folder: str | None = None, now=None) -> str | None:
+    """Plain words when the lane's account is missing / unverified in NinjaTrader, else None."""
+    seen = account_seen(account, folder, now)
+    if seen is False:
+        return f"{account} must exist in NinjaTrader ({ACCOUNT_HOWTO}): NinjaTrader does not list it now"
+    if seen is None:
+        return f"could not check that {account} exists (no fresh le_feed accounts list): {account} must exist in NinjaTrader ({ACCOUNT_HOWTO})"
+    return None
+
+
 def set_switch(on: bool, account: str | None = None, root: str = ROOT) -> tuple[bool, str]:
     c = load_cfg(root)
     if account:
@@ -127,9 +158,10 @@ def set_switch(on: bool, account: str | None = None, root: str = ROOT) -> tuple[
             return False, "NOT switched on: " + bad + "."
     c["on"] = bool(on)
     c["set_at"] = _et(time.time()).strftime("%Y-%m-%d %H:%M ET")
-    _wj(_p(root, "data", CFG_NAME), {k: c[k] for k in list(DEFAULT_CFG) + ["set_at"]})
+    _wj(_p(root, "data", CFG_NAME), {k: c[k] for k in list(DEFAULT_CFG) + ["set_at", "nt_folder"] if k in c})
     if on:
-        return True, (f"Order-flow lane ON for {c['account']} (simulation money). It trades the paper bot's absorbed level fades, "
+        aw = account_words(c["account"], c.get("nt_folder"))
+        return True, (f"Order-flow lane ON for {c['account']} (simulation money)." + (f" Note: {aw}." if aw else "") + f" It trades the paper bot's absorbed level fades, "
                       f"${c['risk_usd']:,.0f} risk a trade, max {c['max_micros']} micros, one trade at a time, flat by 15:55 ET.")
     return True, "Order-flow lane OFF: no new trades. An open simulation trade keeps its stop and target and the 15:55 close."
 
@@ -224,6 +256,8 @@ def entry_guards(S, cfg, ad, row, now, est, killed, news_events=None, skip_late:
         why.append(bad)
     if killed:
         why.append("kill switch on")
+    if account_seen(cfg.get("account"), getattr(ad, "folder", None), now=now) is False:
+        why.append(f"{cfg.get('account')} must exist in NinjaTrader ({ACCOUNT_HOWTO})")
     if e.weekday() >= 5 or CAL.full_closure(day):
         why.append("no CME session today")
     cut = CAL.entry_cut(day, FLAT_MOD)
@@ -476,7 +510,7 @@ def line(S: dict, cfg: dict | None = None) -> str:
     opn = [t for t in tr if t["status"] in ("sending", "open")]
     ref = [t for t in tr if t["status"] == "refused"]
     usd = sum(t["pnl"] for t in done)
-    s = f"OF lane ({cfg.get('account') or 'Sim101'}, {'ON' if cfg.get('on') else 'OFF'}): {len(done)} closed today " \
+    s = f"OF lane ({cfg.get('account') or DEFAULT_CFG['account']}, {'ON' if cfg.get('on') else 'OFF'}): {len(done)} closed today " \
         f"{'+' if usd >= 0 else '-'}${abs(usd):,.0f}"
     if opn:
         s += f", 1 open ({'LONG' if opn[0]['d'] == 1 else 'SHORT'} {opn[0].get('qty')} MNQ)"
@@ -498,6 +532,9 @@ def status_text(root: str = ROOT) -> str:
              f"All lane trades so far: {len(allc)}, {'+' if tot >= 0 else '-'}${abs(tot):,.0f} (simulation money)."]
     if S.get("day"):
         lines.append(line(S, cfg))
+    aw = account_words(cfg["account"], cfg.get("nt_folder"))
+    if aw and not bad:
+        lines.append(aw[0].upper() + aw[1:] + ".")
     for n in (S.get("log") or [])[-3:]:
         lines.append(f"  {_et(n['t']):%m-%d %H:%M} {n['text']}")
     return "\n".join(lines)

@@ -1,6 +1,6 @@
 """night-of-lane 2026-11-27: the order-flow LANE (engine/of_lane.py) on a simulated NinjaTrader folder (engine.ninjatrader._FakeNT).
 Synthetic tick days (research/orderflow/of_sim.py, planted absorption), written as LE_TickRec live CSVs; temp folders only, no
-network, no repo data written, nothing real can trade (Sim101 in a temp folder; a non-Sim account is refused).
+network, no repo data written, nothing real can trade (Sim102 in a temp folder; a non-Sim account is refused).
   a. a whole day driven every 60 s: the lane's paper rows = engine.of_paper.replay_frame's decisions; every routed trade is a
      taken paper row (side, stop); every taken row is routed or refused with a reason; exits close at the bracket / 15:55
   b. Sim-only refusal (switch, tick, adapter), OFF = nothing touched, the CLI words
@@ -171,7 +171,7 @@ def main():
     check(f"a. lane decisions = of_paper replay, row for row ({len(days) - 1} days)", not bad_dec, bad_dec[:1])
     check(f"a. every lane trade is a TAKEN paper row, same side + stop; every taken row handled ({n_taken} taken)",
           not bad_route and n_taken >= 4, bad_route[:2])
-    check(f"a. routed trades filled on Sim101 and closed by stop / target / 15:55 ({n_routed} routed, {n_closed} closed, "
+    check(f"a. routed trades filled on Sim102 and closed by stop / target / 15:55 ({n_routed} routed, {n_closed} closed, "
           f"{len(refusals)} refused)", n_routed >= 3 and n_closed == n_routed and not bad_close, (bad_close[:2], refusals))
     check(f"a. E5 entries: {hows}; every target = 2R from the ACTUAL fill, limit fills at the level", not bad_tgt
           and hows.get("limit", 0) >= 1, bad_tgt[:3])
@@ -201,8 +201,8 @@ def main():
         ok, msg = L.set_switch(True, "MFFU-EVAL-1", root=td)
         check("b. --sim on for a real (non-Sim) account is refused in plain words, the switch stays OFF",
               not ok and "not a NinjaTrader simulation account" in msg and L.load_cfg(td)["on"] is False, msg)
-        ok, msg = L.set_switch(True, "Sim101", root=td)
-        check("b. --sim on for Sim101 works and says what it does", ok and L.load_cfg(td)["on"] is True and "simulation" in msg, msg)
+        ok, msg = L.set_switch(True, "Sim102", root=td)
+        check("b. --sim on for Sim102 works and says what it does", ok and L.load_cfg(td)["on"] is True and "simulation" in msg, msg)
         ok2, msg2 = L.set_switch(False, root=td)
         check("b. --sim off -> OFF, open trade keeps its bracket", ok2 and L.load_cfg(td)["on"] is False and "stop and target" in msg2, msg2)
         check("b. no switch file = OFF; OFF + flat = nothing touched (no adapter)", L.load_cfg(os.path.join(td, "nope"))["on"] is False
@@ -212,6 +212,37 @@ def main():
         check("b. a hand-edited switch naming a real account: tick refuses, builds no adapter", "refused" in r and "ad" not in r, r.get("refused"))
         txt = L.status_text(td)
         check("b. status words name the account as REFUSED", "REFUSED" in txt, txt)
+    # red team 2026-11-27: the lane's own Sim account (Sim102) and the plain words when NinjaTrader does not list it
+    check("b. default account = Sim102 (its own Sim account, not Sim101)", L.DEFAULT_CFG["account"] == "Sim102"
+          and L.load_cfg(os.path.join(tempfile.gettempdir(), "nope_of_lane"))["account"] == "Sim102")
+    with tempfile.TemporaryDirectory() as td:
+        nd = os.path.join(td, "NinjaTrader 8")
+        os.makedirs(os.path.join(td, "data")); os.makedirs(os.path.join(nd, "le_feed")); os.makedirs(os.path.join(nd, "outgoing"))
+        json.dump({**L.DEFAULT_CFG, "nt_folder": nd}, open(os.path.join(td, "data", L.CFG_NAME), "w"))
+        acc = os.path.join(nd, "le_feed", "accounts.csv")
+        import time as _t
+        open(acc, "w").write(f"name,t,cash\nSim101,{int(_t.time())},100000\n")
+        txt_missing = L.status_text(td)
+        seen_missing = L.account_seen("Sim102", nd)
+        ok_on, msg_on = L.set_switch(True, root=td)
+
+        class _A:
+            folder = nd
+            outgoing = os.path.join(nd, "outgoing")
+        why_m, _, _ = L.entry_guards(L.new_state("2026-11-25"), {**L.DEFAULT_CFG, "on": True}, _A(),
+                                     {"d": 1, "stop": 100.0, "day": "2026-11-25", "t_sig": int(_t.time()) - 305}, _t.time(), 110.0, False, [])
+        open(acc, "w").write(f"name,t,cash\nSim101,{int(_t.time())},100000\nSim102,{int(_t.time())},100000\n")
+        txt_ok = L.status_text(td)
+        seen_ok = L.account_seen("Sim102", nd)
+        os.remove(acc)
+        txt_unknown = L.status_text(td)
+    want = "Sim102 must exist in NinjaTrader (Accounts tab > Add Sim account)"
+    check("b. --sim status: NinjaTrader lists no Sim102 -> says plainly 'Sim102 must exist in NinjaTrader (Accounts tab > Add Sim account)'",
+          seen_missing is False and want in txt_missing and want in msg_on, (txt_missing, msg_on))
+    check("b. Sim102 missing from NinjaTrader's account list -> no entry (guard)", any("must exist in NinjaTrader" in w for w in why_m), why_m)
+    check("b. Sim102 listed -> no warning; no accounts list -> 'could not check' + the same how-to",
+          seen_ok is True and "must exist" not in txt_ok and "could not check" in txt_unknown.lower() and "Add Sim account" in txt_unknown,
+          (txt_ok, txt_unknown))
     g, S = guard_day(cfg={"account": "Playback101"}, until=t_dec + 61)
     check("b. Playback101 is a simulation account too (routes)", any(t["status"] in ("open", "closed") for t in S["trades"]), S["trades"][:1])
     g.ad.release_lock()
@@ -220,7 +251,7 @@ def main():
     adr = L.make_adapter({**L.DEFAULT_CFG, "account": "MFFUEVAL123"}, gx.root, gx.nd)
     check("b. the adapter itself refuses a real account (never armed by the lane)", bool(adr.disabled) and "refused" in adr.disabled.lower(), adr.disabled)
     routed = [t for t in Sx["trades"] if t["status"] in ("open", "closed")]
-    check("b. the first taken signal is routed on Sim101 (bracket: side, stop = paper stop, 2R target)",
+    check("b. the first taken signal is routed on Sim102 (bracket: side, stop = paper stop, 2R target)",
           routed and routed[0]["row_id"] == first["id"] and routed[0]["stop"] == first["stop"]
           and abs((routed[0]["target"] - routed[0]["est"]) - 2 * (routed[0]["est"] - routed[0]["stop"])) < 0.3, routed[:1])
     # ---- c. guards
@@ -242,19 +273,19 @@ def main():
             open(os.path.join(g.root, "data", L.KILL_NAME), "w").close()
     g, S = guard_day(hook=kill_mid, until=t_dec + 300)
     tr = next((x for x in S["trades"] if x["row_id"] == first["id"]), {})
-    check("c. kill while in a trade (or its limit still working): the lane flattens / cancels on Sim101, nothing re-entered",
+    check("c. kill while in a trade (or its limit still working): the lane flattens / cancels on Sim102, nothing re-entered",
           (tr.get("status") == "closed" or (tr.get("status") == "refused" and "kill switch" in tr.get("why", "")))
           and not any(v[0] for v in g.fake.pos.values()) and any("kill switch" in n["text"] for n in S["log"]), (tr, g.fake.pos))
     g.ad.release_lock()
 
-    def pos_hook(g, t):                # the owner's hand trade on Sim101 (one position per account)
+    def pos_hook(g, t):                # the owner's hand trade on Sim102 (one position per account)
         if t >= t_dec - 300 and not g.fake.pos:
             inst = g.ad._instruments()["micro"]
-            g.fake.pos[("Sim101", inst)] = [1, 25000.0]
-            g.fake._write_pos("Sim101", inst)
+            g.fake.pos[("Sim102", inst)] = [1, 25000.0]
+            g.fake._write_pos("Sim102", inst)
     g, S = guard_day(hook=pos_hook)
     r, w = refused_first(S)
-    check("c. one position per account: Sim101 already LONG -> not routed", r and "one position per account" in w, w)
+    check("c. one position per account: Sim102 already LONG -> not routed", r and "one position per account" in w, w)
     g.ad.release_lock()
 
     def hedge_hook(g, t):              # another account (the MFFU eval) holds the opposite side
@@ -390,7 +421,7 @@ def main():
           and not any(v[0] for v in g.fake.pos.values()), (len(sent0), len(sent1), tr))
     g.ad.release_lock()
     # red team 2026-11-27: data/of_lane.json edited to a REAL account mid-trade (+ a restart): the Sim trade is still managed on
-    # Sim101 to its close, no order ever names the other account, no new trade is routed
+    # Sim102 to its close, no order ever names the other account, no new trade is routed
     g = Rig(tempfile.mkdtemp(prefix="oflane_"), W, d0, d1)
     g.run(g.hm(9, 25), t_dec + 61)
     tr0 = next((x for x in g.S()["trades"] if x["row_id"] == first["id"]), {})
@@ -408,10 +439,10 @@ def main():
     tr = next(x for x in S["trades"] if x["row_id"] == first["id"])
     real = [ln for f in g.fake.files for ln in f[1] if "MFFUEVAL123" in ln]
     later = [x for x in S["trades"] if x["decided_t"] > t_dec + 61 and x["status"] not in ("refused",) and x["row_id"] != first["id"]]
-    check("red team: switch edited to a real account mid-trade -> the Sim101 trade is still managed to its close, nothing sent "
-          "to the real account, no new trade", tr0.get("account") == "Sim101" and tr["status"] == "closed"
+    check("red team: switch edited to a real account mid-trade -> the Sim102 trade is still managed to its close, nothing sent "
+          "to the real account, no new trade", tr0.get("account") == "Sim102" and tr["status"] == "closed"
           and not any(v[0] for v in g.fake.pos.values()) and not real and not later
-          and (outs[0].get("ad") is not None and outs[0]["ad"].account == "Sim101"), (tr0.get("account"), tr["status"], real[:2], later, g.fake.pos))
+          and (outs[0].get("ad") is not None and outs[0]["ad"].account == "Sim102"), (tr0.get("account"), tr["status"], real[:2], later, g.fake.pos))
     if g.ad:
         g.ad.release_lock()
     # a crash between the write-ahead mark and the order file: the lane never resends it
