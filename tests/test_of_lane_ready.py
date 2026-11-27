@@ -146,19 +146,19 @@ def main():
             r_on = say("/oflane on")
             c2 = json.load(open(cfgp))
             check("b. /oflane on: switch ON for the Sim account (Sim101 here: Sim102 missing, Sim101 free), said in plain words",
-                  c2["on"] is True and c2["account"] == "Sim101" and r_on and "ON for Sim101" in r_on[0]
-                  and "simulation money" in r_on[0] and "Sim102 is not in NinjaTrader" in r_on[0], (c2, r_on))
+                  c2["on"] is True and c2["account"] == "Sim101" and r_on and "ON - practice account Sim101" in r_on[0]
+                  and "no real money" in r_on[0] and "Sim102 is not in NinjaTrader" in r_on[0], (c2, r_on))
             check("b. /oflane on: today's paper stats + the ladder step + when it starts",
-                  "OF paper Nov 27" in r_on[0] and "ladder step 0" in r_on[0] and "09:20 ET" in r_on[0], r_on)
+                  "OF paper Nov 27" in r_on[0] and "ladder step 0" in r_on[0] and "9:20 AM ET" in r_on[0], r_on)
             r_st = say("/oflane status")
-            check("b. /oflane status: account, today's trades, the ladder step", r_st and "Order-flow lane: ON | account Sim101" in r_st[0]
+            check("b. /oflane status: account, today's trades, the ladder step", r_st and "Order flow: ON - Sim101" in r_st[0]
                   and "OF lane" not in "" and "ladder step 0" in r_st[0] and "Paper bot today" in r_st[0], r_st)
             r_off = say("/oflane off")
             check("b. /oflane off: OFF in plain words", json.load(open(cfgp))["on"] is False and r_off and "OFF" in r_off[0], r_off)
             json.dump({**json.load(open(cfgp)), "account": "MFFUEVAL123", "auto_account": False}, open(cfgp, "w"))
             r_bad = say("/oflane on")
             check("b. a hand-edited switch naming a real account: /oflane on is refused, stays OFF",
-                  r_bad and "NOT switched on" in r_bad[0] and json.load(open(cfgp))["on"] is False, r_bad)
+                  r_bad and "Not switched on" in r_bad[0] and json.load(open(cfgp))["on"] is False, r_bad)
             check("b. /oflane never went through the control path (remote_ctl)", ctl.calls == [], ctl.calls)
             check("b. /help lists /oflane as the practice account", "/oflane" in T.HELP and "Sim" in T.HELP)
         # ---- c. the runner kick

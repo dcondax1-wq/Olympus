@@ -355,6 +355,9 @@ def of_bot(root: str | None = None, br: dict | None = None) -> dict:
     today_et = dt.datetime.now(ET).strftime("%Y-%m-%d") if ET is not None else None
     if ofp.get("line") and ofp.get("day") == today_et:
         think.insert(len(live), _line(_hm(ofp.get("t")), _plain(ofp["line"])))
+    olane = _d(_rj(os.path.join(root, "data", "of_lane_state.json")))    # day-ofready2: the Sim lane (engine/of_lane.py)
+    if olane.get("line") and olane.get("day") == today_et:
+        think.insert(len(live), _line(_hm(olane.get("t")), _plain(olane["line"])))
     for lp in (os.path.join(root, "logs", "orderflow", "of_learn_state.json"), os.path.join(root, "research", "learn", "of_learn_state.json")):
         ln = _d(_rj(lp)).get("line")                     # day-oflearn: the nightly learner's newest line (research/orderflow/of_learn.py)
         if ln:

@@ -47,6 +47,7 @@ import argparse
 import datetime as dt
 import json
 import os
+import re
 import sys
 import time
 from zoneinfo import ZoneInfo
@@ -608,6 +609,7 @@ def tick(now: float | None = None, root: str = ROOT, nd: str | None = None, ad=N
         _sync_trades(S, ad, now, last_px)
     S["t"] = int(now)
     S["line"] = line(S, cfg)
+    export_day(S, cfg, root)
     save_state(S, root)
     return out
 
@@ -652,6 +654,80 @@ def line(S: dict, cfg: dict | None = None) -> str:
     if ref:
         s += f", {len(ref)} not routed (last: {ref[-1]['why'][:80]})"
     return s
+
+
+EXPORT_NAME = "NQ_lane.json.gz"
+
+
+def public_view(S: dict, cfg: dict) -> dict:
+    """The lane for a dashboard (day-ofready2): switch, Sim account, today's Sim trades in R (no $, no real account: the site is
+    public; it is simulation money anyway), one plain line. Never raises."""
+    try:
+        day = S.get("day")
+        tr = [t for t in S.get("trades") or [] if t.get("day") == day]
+        filled = [t for t in tr if t.get("filled")]
+        done = [t for t in filled if t["status"] == "closed" and t.get("R") is not None]
+        rr = round(sum(t["R"] for t in done), 2)
+        acct = str(cfg.get("account") or "")
+        rows = [{"t": _et(t["t_sig"]).strftime("%H:%M") if t.get("t_sig") else None, "level": t.get("level"),
+                 "dir": "long" if t.get("d") == 1 else "short", "how": t.get("how"), "status": t["status"],
+                 "R": t.get("R"), "why": re.sub(r"\$[\d,.]+", "", str(t.get("why") or ""))[:90] or None} for t in tr]
+        if not cfg.get("on") and not tr:
+            ln = "Order flow on the practice account: OFF"
+        else:
+            ln = (f"Order flow on the practice account ({acct}): {len(filled)} trade{'s' if len(filled) != 1 else ''} today"
+                  + (f", {rr:+.1f}R" if done else "") + (", 1 open" if any(t["status"] in ("sending", "open") for t in tr) else ""))
+        return {"on": bool(cfg.get("on")), "account": acct if not sim_problem(acct) else "refused (not Sim)",
+                "sim": not sim_problem(acct), "day": day, "t": S.get("t"), "line": ln,
+                "today": {"signals": len(tr), "filled": len(filled), "closed": len(done), "won": sum(1 for t in done if t["R"] > 0),
+                          "R": rr, "open": sum(1 for t in tr if t["status"] in ("sending", "open"))}, "trades": rows[-12:],
+                "sim_rows": sim_rows(S, day)}
+    except Exception as e:  # noqa: BLE001
+        return {"on": bool(cfg.get("on")), "line": f"order-flow lane: unreadable ({e.__class__.__name__})"}
+
+
+def sim_rows(S: dict, day: str) -> list:
+    """The forward ladder's step-1 rows (tools/of_ladder.gate1): each CLOSED Sim trade of `day` (R, $ at 1 micro after $1.90,
+    the fill vs the paper bot's fill in ticks, + = worse) and each refusal by the hedge / one-position guard (flagged *_refused;
+    the guard prevented it, so it is not the ladder's conflict = two opposite positions at once, which the guards make impossible)."""
+    paper = {r["id"]: r for r in ((S.get("paper") or {}).get("rows") or [])}
+    out = []
+    for t in S.get("trades") or []:
+        if t.get("day") != day:
+            continue
+        why = str(t.get("why") or "")
+        if t["status"] == "refused" and ("hedging" in why or "one position per account" in why):
+            # a guard REFUSAL (the conflict was prevented): logged, not the ladder's "conflict" (an actual opposite position)
+            out.append({"id": t["id"], "day": day, "hedge_refused": "hedging" in why,
+                        "one_position_refused": "one position per account" in why})
+            continue
+        if t["status"] != "closed" or not t.get("filled") or t.get("R") is None or t.get("exit_px") is None:
+            continue
+        pf = (paper.get(t["row_id"]) or {}).get("fill")
+        gap = None if pf is None else round((float(t["fill_px"]) - float(pf)) * t["d"] / OP.TICK, 1)
+        out.append({"id": t["id"], "day": day, "R": t["R"], "how": t.get("how"),
+                    "usd_1": round((float(t["exit_px"]) - float(t["fill_px"])) * t["d"] * PV - COMM, 2), "fill_gap_ticks": gap})
+    return out
+
+
+def export_day(S: dict, cfg: dict, root: str = ROOT) -> str | None:
+    """The day's public lane view, gzip'd, next to the order-flow summary (logs/datapipe/days/<day>/of/NQ_lane.json.gz): the
+    nightly signed 'of' answer (engine/datafeed.build_of) carries it to the cloud's dashboard. Never raises."""
+    try:
+        if not S.get("day"):
+            return None
+        import gzip
+        d = os.path.join(root, "logs", "datapipe", "days", S["day"], "of")
+        os.makedirs(d, exist_ok=True)
+        raw = json.dumps(public_view(S, cfg), separators=(",", ":"), default=float).encode("utf-8")
+        p = os.path.join(d, EXPORT_NAME)
+        with open(p + ".tmp", "wb") as f0, gzip.GzipFile(fileobj=f0, mode="wb", compresslevel=9, mtime=0) as fh:
+            fh.write(raw)
+        from . import fsutil
+        fsutil.replace(p + ".tmp", p)
+        return p
+    except Exception:  # noqa: BLE001
+        return None
 
 
 def status_text(root: str = ROOT) -> str:
@@ -781,20 +857,70 @@ def _ladder(root) -> str:
     return d["line"] if isinstance(d, dict) and d.get("line") else "the forward ladder has not been scored yet (tools/of_ladder.py, nightly)"
 
 
+def _today_words(S: dict, cfg: dict) -> str:
+    """Today's Sim trades in a few plain words (Telegram)."""
+    day = S.get("day")
+    tr = [t for t in S.get("trades") or [] if t.get("day") == day]
+    filled = [t for t in tr if t.get("filled")]
+    opn = [t for t in tr if t["status"] in ("sending", "open")]
+    done = [t for t in filled if t["status"] == "closed" and t.get("pnl") is not None]
+    bits = []
+    for t in done:
+        r = t.get("R")
+        bits.append(("✅ won" if (t["pnl"] or 0) > 0 else "❌ lost") + (f" {r:+.1f}R" if r is not None else "")
+                    + f" ({'+' if t['pnl'] >= 0 else '-'}${abs(t['pnl']):,.0f} practice)")
+    for t in opn:
+        bits.append(f"⏳ 1 open ({'LONG' if t['d'] == 1 else 'SHORT'} {t.get('qty')} micros"
+                    + (f", limit at {t['limit']}" if t.get("how") == "limit" and not t.get("filled") else "") + ")")
+    if not bits:
+        sk = [t for t in tr if t["status"] == "refused"]
+        bits.append("no trade yet" + (f" (1 signal skipped: {sk[-1]['why'].split(':')[0][:50]})" if sk else ""))
+    return "; ".join(bits)
+
+
 def tg_text(arg: str, root: str = ROOT, now=None) -> str:
-    """Telegram /oflane on|off|status (engine/tg_cmd, the owner's private chat only). Simulation accounts only, always."""
+    """Telegram /oflane on|off|status (engine/tg_cmd, the owner's private chat only). Simulation accounts only, always. Plain words +
+    emojis (owner 2026-11-27: keep it simple)."""
     now = now or time.time()
     if arg == "on":
         ok, msg = set_switch(True, root=root)
         if not ok:
-            return msg
-        sim101 = ("\nIf the lane is on Sim101, ATLAS's week or START's Sim test started later today sends no orders until "
-                  "tomorrow (safe).")  # the account is re-picked at each runner start, so always said
-        return (msg + f"\nStarts by itself at 09:20 ET on weekdays (the PC). Off: /oflane off{sim101}\nToday: {_today_paper(root, now)}."
-                f"\n{_ladder(root)}")
+            return "⛔ " + msg.replace("NOT switched on: ", "Not switched on: ") + " Real accounts are never used."
+        c = load_cfg(root)
+        out = [f"✅ Order flow is ON - practice account {c['account']} (no real money).",
+               f"🎯 It fades a sweep of yesterday's / overnight / opening-range high or low, only when the sweep was absorbed. "
+               f"Max {day_cap(c)} trade a day, ${float(c['risk_usd']):,.0f} risk, flat by 15:55 ET.",
+               "⏰ Starts by itself at 9:20 AM ET on weekdays."]
+        if c.get("account_note"):
+            out.append("ℹ️ " + c["account_note"] + ".")
+        if c["account"] == FALLBACK:
+            out.append("ℹ️ On Sim101: if ATLAS's Sim week or START's Sim test takes Sim101 later today, the lane just waits "
+                       "until tomorrow (safe).")
+        out += [f"📊 Paper bot today: {_today_paper(root, now)}.", f"🪜 {_ladder(root)}", "🛑 To stop: /oflane off"]
+        return "\n".join(out)
     if arg == "off":
-        return set_switch(False, root=root)[1]
-    return status_text(root) + f"\nPaper bot today: {_today_paper(root, now)}.\n{_ladder(root)}"
+        set_switch(False, root=root)
+        return ("⏸️ Order flow is OFF. No new practice trades. An open one keeps its stop and target and still closes by "
+                "15:55 ET.\n▶️ To start again: /oflane on")
+    c = load_cfg(root)
+    S = load_state(root)
+    bad = sim_problem(c["account"])
+    allc = S.get("closes") or []
+    tot = sum(x["pnl"] for x in allc)
+    head = (f"🟢 Order flow: ON - {c['account']} (practice, no real money)" if c["on"] and not bad else
+            f"⛔ Order flow: account {c['account']} is not a practice account - it will not trade" if bad else
+            f"⚪ Order flow: OFF ({c['account']}, practice)")
+    out = [head]
+    if S.get("day") == OP.et_day(now):
+        out.append(f"📅 Today: {_today_words(S, c)}")
+    else:
+        out.append("📅 Today: no practice trade yet" + (" (starts 9:20 AM ET on weekdays)" if c["on"] else ""))
+    out.append(f"🗓️ All practice trades: {len(allc)}, {'+' if tot >= 0 else '-'}${abs(tot):,.0f} (practice money)")
+    if c.get("account_note") and not bad:
+        out.append("ℹ️ " + c["account_note"] + ".")
+    out += [f"📊 Paper bot today: {_today_paper(root, now)}.", f"🪜 {_ladder(root)}",
+            "🛑 To stop: /oflane off" if c["on"] else "▶️ To start: /oflane on"]
+    return "\n".join(out)
 
 
 def main(argv=None) -> int:
