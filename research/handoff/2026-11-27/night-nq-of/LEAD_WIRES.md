@@ -16,3 +16,7 @@ Nothing else was edited. Please wire:
    not a leak of something new).
 6. Browser tests in this container: the shared kit looks for /opt/pw-browsers/chromium-*/chrome-linux/chrome; this image has
    chrome-linux64/. I added a local symlink (not in the repo). tests/browser_kit.chrome_exe could also try chrome-linux64.
+7. **Shared fast feed** (night-nq-speed c0dd2750): orderflow.html already has `<script src="nqfeed.js?v=1"></script>` right after
+   pc_feed.js; orderflow.js uses NQ_FEED.cached() + on() when it is there (own poll drops to 150 s) and polls itself every 30 s when
+   it is not. Land night-nq-speed with or before this branch; without nqfeed.js the page logs one 404 and still works
+   (tests/test_nq_of.py 31/31 both with and without the file).

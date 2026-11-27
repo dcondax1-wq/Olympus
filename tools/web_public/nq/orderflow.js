@@ -307,12 +307,22 @@ async function refresh(full) {
   draw(S.M);
   S.ready = true;
 }
+function redraw() { S.M = model({ room: S.room, lite: S.lite, nowS: nowS() }); draw(S.M); }
 if (typeof document !== 'undefined' && document.getElementById('app')) {
   window.NQ_OF = { S, ready: () => S.ready, model };
   draw(model({ room: null, lite: null, nowS: nowS() }));
   document.getElementById('app').dataset.state = 'loading';
+  // the shared fast feed (nq/nqfeed.js, night-nq-speed): the kept post at once, then every newer post; our own poll only without it
+  const NQF = window.NQ_FEED || null;
+  if (NQF) {
+    try {
+      const first = NQF.cached();
+      if (first) { S.lite = first; }
+      NQF.on((lite) => { if (lite) { S.lite = lite; if (S.ready) redraw(); } });
+    } catch (_) { /* the page still polls itself */ }
+  }
   refresh(true);
-  let timer = setInterval(() => { if (!document.hidden) refresh(S.polls % 10 === 0); }, POLL_MS);
+  let timer = setInterval(() => { if (!document.hidden) refresh(S.polls % 10 === 0); }, NQF ? 5 * POLL_MS : POLL_MS);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(false); });
   window.addEventListener('pagehide', () => clearInterval(timer));
   let rz = 0, lastW = innerWidth;                      // re-draw at a new WIDTH only (the ladder / tape keep their text size)
