@@ -120,6 +120,7 @@ addEventListener('nq-home', (e) => { S.home = e.detail || S.home; if (S.pick ===
   if (PAGE) await pagePost();
   S.home = window.NQ_HOME || S.home;
   await draw();
+  try { const O = window.OLYMPUS; if (PAGE && O && O.ready) O.ready(); } catch (_) { /* the veil lifts by itself */ }
   if (S.pick !== 'today') { S.live = await storyFor('today'); hero(); }
   setInterval(() => { if (S.pick === 'today') draw(); }, 120000);
 })();
