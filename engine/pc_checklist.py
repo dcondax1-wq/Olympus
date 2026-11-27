@@ -159,6 +159,13 @@ def need(b: dict) -> dict | None:
         return {"k": "clock", "t": "PC clock is off: right-click FIX_CLOCK.bat > Run as administrator (once)"}
     if any(r[3] == 0 for r in acc):
         return {"k": "keepalive", "t": "Keep-alive is off for " + ", ".join(r[0] for r in acc if r[3] == 0) + ": KEEPALIVE_ON.bat on the PC"}
+    if nt[2] == 0:
+        # day-healthqa 2026-11-27: NinjaTrader's 'Connect on startup' read OFF (config.xml) and nothing above needed the owner. Today it is
+        # connected, but after any restart (Windows Update, a crash, self-heal reopening NinjaTrader) it would sit DISCONNECTED: no trade,
+        # and the 7-day keep-alive's order (MFFU closes an account after 7 days without a fill) would not reach MFFU. Last in the list:
+        # only when nothing more urgent is open. None (not readable) says nothing.
+        return {"k": "nt_auto", "t": "NinjaTrader 'Connect on startup' is OFF: Connections > Configure > your MFFU connection > tick "
+                                     "'Connect on startup' > OK (once), so a restart reconnects by itself"}
     return None
 
 
