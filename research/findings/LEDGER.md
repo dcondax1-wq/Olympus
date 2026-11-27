@@ -7,6 +7,7 @@ WATCH (not actionable yet), REFUTED (checked, not real). Already-known ideas: re
 
 | Date | Finding | $ / risk | Status |
 |---|---|---|---|
+| 2026-11-26 | PC silent since 14:15 ET (still at 21:31; not the ntfy daily cap - silent after the 19:00 ET reset); old code 75d5a60b9 has no hang guard, no Remote Control folder shared | missed evening ATLAS + Friday half-day trades if the bot is down | OWNER: restart PC + update line, or share the bot folder via Claude desktop Remote Control so Claude can do it; told 18:05 + 19:11 ET |
 | 2026-11-20 | ntfy per-IP daily cap (250) hit 09:45 ET: PC went silent, alerts lost | lost alerts on live days | FIXED 58d8d701 (ext every 3rd run, quota reserve) |
 | 2026-11-20 | Zlarior 50K + 25K #2: MFFU 7-day inactivity (last fill Mon 11-16 / never) | account closure | owner hand trades 11-20; keep-alive BRANCH wf-keepalive |
 | 2026-11-20 | ATLAS entry/exit alerts never reached the phone (Web Push 'accepted' hid ntfy) | missed alerts | BRANCH wf-alert-fix (round 2 review) |
