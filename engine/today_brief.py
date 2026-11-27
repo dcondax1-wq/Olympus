@@ -57,32 +57,11 @@ def _news_today(now, root=None) -> str:
         return "News: calendar not readable"
 
 
-def text(live, now=None, views=None, root=None, plan_rows=None) -> str:
-    """The /today reply + the payout forecast (big-payout, engine/payout_engine) + the PC's key line (red team 2026-11-26,
-    key_line). Never raises."""
+def text(live, now=None, views=None, root=None) -> str:
+    """The /today reply + the PC's key line (red team 2026-11-26, key_line). Never raises."""
     out = _text(live, now, views, root)
-    pl = payout_forecast(plan_rows)
     kl = key_line()
-    tail = "\n".join(x for x in (pl, kl) if x)
-    return (out[:MAX_CHARS - len(tail) - 1] + "\n" + tail) if tail else out
-
-
-def payout_forecast(rows=None) -> str:
-    """big-payout 2026-11-26: for each funded account NOT ready today, the next payout's $, the date at its own pace (an
-    estimate), the buffer to keep and what blocks it (engine/payout_engine, read-only). '' when there is nothing to say."""
-    try:
-        from . import payout_engine as PE
-        rows = PE.gather() if rows is None else rows
-        out = []
-        for r in rows:
-            if r.get("ready") or not r.get("next_date"):
-                continue
-            b = "; ".join((r.get("blocks") or [])[:1])
-            out.append(f"Next payout {r['name']}: {PE.usd(r.get('next_amount'))} about {r['next_date']} "
-                       f"({PE.usd(r.get('to_you'))} to you), keep {PE.usd(r.get('keep_balance'))}" + (f"; {b}" if b else ""))
-        return "\n".join(out[:3])
-    except Exception:  # noqa: BLE001
-        return ""
+    return (out[:MAX_CHARS - len(kl) - 1] + "\n" + kl) if kl else out
 
 
 def _text(live, now=None, views=None, root=None) -> str:
