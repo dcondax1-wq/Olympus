@@ -68,7 +68,7 @@ def part_a():
           "prefers-reduced-motion: reduce" in f["live.css"] and "animation: none !important" in f["live.css"])
     check("a. still read only: no innerHTML / storage / POST; versions bumped (live.js / live.css / livecore v2)",
           not re.search(r"innerHTML|insertAdjacentHTML|localStorage|sessionStorage|method:\s*['\"]POST|sendBeacon", f["live.js"] + f["livecore.js"])
-          and "live.js?v=6" in f["live.html"] and "nqfeed.js?v=2" in f["live.html"] and "live.css?v=4" in f["live.html"] and "livecore.js?v=2" in f["live.js"])
+          and "live.js?v=7" in f["live.html"] and "nqfeed.js?v=2" in f["live.html"] and "live.css?v=4" in f["live.html"] and "livecore.js?v=2" in f["live.js"])
 
 
 # ------------------------------------------------------------------------------------------------ b. node
