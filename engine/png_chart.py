@@ -563,3 +563,86 @@ def render_week(spec: dict) -> bytes | None:
         return c.png()
     except Exception:
         return None
+
+
+# ------------------------------------------------------------------------------------------------ the Insta card (day-insta 2026-11-27)
+IW, IH = 1080, 1350             # Instagram's portrait post (4:5)
+
+
+def render_insta(spec: dict) -> bytes | None:
+    """The green-day share card, 1080 x 1350 (owner 2026-11-27: "a sick image to post on insta that shows daily PNL").
+    spec {"date": "FRI NOV 27", "total", "rows": [{"name", "today"}] (names only), "trades", "wins", "losses",
+          "bars": [(t, close)], "marks": [{"t", "px", "xt", "xpx", "usd"}]}. None on any trouble (no picture)."""
+    try:
+        w, h = IW, IH
+        c = Canvas(w, h)
+        c.a[:] = _base(w, h, (60, 520, w - 60, 930))
+        # header: the brand + the date
+        c.circle(76, 84, 9, GOLD, glow=GOLD, glow_r=7)
+        x = 96 + c.text(96, 74, "OLYMPUS", 3, GOLD, glow=GOLD)
+        c.text(x + 16, 74, "\u00b7 NQ", 3, LILAC)
+        c.text(w - 64, 74, str(spec.get("date") or ""), 3, SOFT, anchor="r")
+        # the hero: the day's $
+        tot = spec.get("total")
+        c.text(w / 2, 168, "DAY P&L", 3, MUTED, anchor="c")
+        big = money(tot)
+        sc = 20 if F.width(big, 20) <= w - 140 else max(8, int((w - 140) / max(1, F.width(big, 1))))
+        c.text(w / 2, 222, big, sc, col_of(tot), anchor="c", glow=col_of(tot))
+        # trades + win dots
+        n, wins, losses = int(spec.get("trades") or 0), int(spec.get("wins") or 0), int(spec.get("losses") or 0)
+        y = 222 + 7 * sc + 46
+        line = f"{n} TRADE{'S' if n != 1 else ''}" + (f"  \u00b7  {wins} WIN{'S' if wins != 1 else ''}" if n else "")
+        lw = c.text(w / 2, y, line, 3, WHITE, anchor="c")
+        dots = ([UP] * wins + [DOWN] * losses)[:12]
+        if dots:
+            dx0 = w / 2 - (len(dots) - 1) * 30 / 2
+            for i, col in enumerate(dots):
+                c.circle(dx0 + i * 30, y + 64, 10, col, glow=col, glow_r=6)
+        # the day's chart: the price line + every trade's entry (gold) and exit (white ring), the move between them
+        bars = [b for b in spec.get("bars") or [] if isinstance(b, (list, tuple)) and len(b) >= 2]
+        x0, y0, x1, y1 = 60 + 24, 520 + 30, w - 60 - 24, 930 - 30
+        if len(bars) >= 2:
+            ts = np.array([float(b[0]) for b in bars]); ps = np.array([float(b[1]) for b in bars])
+            mk = [m for m in spec.get("marks") or [] if isinstance(m, dict)]
+            allp = list(ps) + [float(m[k]) for m in mk for k in ("px", "xpx") if m.get(k) is not None]
+            lo, hi = min(allp), max(allp)
+            pad = (hi - lo) * 0.08 or 1.0
+            lo, hi = lo - pad, hi + pad
+            t0, t1 = float(ts.min()), float(ts.max()) or float(ts.min()) + 1
+            fx = lambda t: x0 + (float(t) - t0) / max(1.0, t1 - t0) * (x1 - x0)
+            fy = lambda p: y1 - (float(p) - lo) / max(1e-9, hi - lo) * (y1 - y0)
+            for k in range(1, 4):
+                c.hline(x0, x1, y0 + (y1 - y0) * k / 4, GRID, lw=1.0, alpha=0.8)
+            _curve(c, [fx(t) for t in ts], [fy(p) for p in ps], x0, x1, y0, y1, VIOLET, lw=3.0, fill_a=0.18, glow_a=0.4)
+            for m in mk:
+                if m.get("t") is None or m.get("px") is None:
+                    continue
+                ex, ey = fx(min(max(m["t"], t0), t1)), fy(m["px"])
+                if m.get("xt") is not None and m.get("xpx") is not None:
+                    xx, xy = fx(min(max(m["xt"], t0), t1)), fy(m["xpx"])
+                    col = col_of(m.get("usd"))
+                    steps = max(2, int(abs(xx - ex) + abs(xy - ey)) // 3)
+                    for i in range(steps + 1):
+                        f = i / steps
+                        c.circle(ex + (xx - ex) * f, ey + (xy - ey) * f, 2.2, col, alpha=0.9)
+                    c.circle(xx, xy, 11, WHITE, ring=3.0, glow=col, glow_r=6)
+                c.circle(ex, ey, 10, GOLD, glow=GOLD, glow_r=7)
+            c.text(x0, 930 - 26, _et(t0).strftime("%H:%M"), 2, MUTED)
+            c.text(x1, 930 - 26, _et(t1).strftime("%H:%M") + " ET", 2, MUTED, anchor="r")
+        else:
+            c.text(w / 2, 712, "THE CHART COMES WITH THE NEXT REPORT", 2, MUTED, anchor="c")
+        # per account, names only
+        rows = [r for r in spec.get("rows") or [] if isinstance(r, dict)][:4]
+        y = 966
+        for r in rows:
+            c.rrect(60, y, w - 60, y + 66, 16, fill=CARD2, line=EDGE, lw=1.0)
+            c.text(88, y + 23, str(r.get("name") or "")[:24], 3, WHITE, max_px=560)
+            c.text(w - 88, y + 23, money(r.get("today")), 3, col_of(r.get("today")), anchor="r")
+            y += 80
+        # the brand
+        c.hline(w / 2 - 160, w / 2 + 160, h - 112, EDGE2, lw=2.0)
+        c.text(w / 2, h - 92, "OLYMPUS \u00b7 NQ", 4, GOLD, anchor="c", glow=GOLD)
+        c.text(w / 2, h - 50, "FUTURES \u00b7 PROP EVAL", 2, MUTED, anchor="c")
+        return c.png()
+    except Exception:
+        return None

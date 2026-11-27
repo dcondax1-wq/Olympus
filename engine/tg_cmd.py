@@ -25,6 +25,8 @@ Telegram reply to the owner's message.
                      path); a real / MFFU account is always refused (it takes no account name at all)
   /preview           one example of each alert style (day-tgpretty: short, emoji first) + an example chart picture. Answered here,
                      read-only, examples only (no account, no trade)
+  /insta [YYYY-MM-DD]   day-insta: re-send a green day's Insta card (1080 x 1350, engine/insta_card; default: the newest one).
+                     Read-only, answered here
   /help              this list
 
 Never accepted from Telegram: kill, stop, flatten, start, add_account, switch, arming, anything about sizing or strategy. Unknown
@@ -47,7 +49,7 @@ POLL_S = 15.0
 BACK_AFTER_S = 90.0                     # the "PC is back up" receipt after a /restart or /update: this long after the server start
 BACK_MAX_S = 30 * 60                    # ... for a command at most this old
 MAX_TEXT = 80
-ALLOW = ("status", "today", "update", "restart", "pause", "resume", "help", "preview")
+ALLOW = ("status", "today", "update", "restart", "pause", "resume", "help", "preview", "insta")
 TO_CMD = {"status": "status", "update": "update", "restart": "restart", "pause": "pause", "resume": "resume_entries"}
 REFUSED_WORDS = ("kill", "stop", "flatten", "start", "arm", "add_account", "switch", "present", "buy", "sell", "long", "short")
 PAUSE_ARG = re.compile(r"^(tomorrow|\d{1,2}:\d{2}|\d{4}-\d{2}-\d{2})$")
@@ -55,7 +57,7 @@ HELP = ("PC commands (reply here):\n/status - how the bot is doing\n/oflane on|o
         "account, no real money\n/today - where are we: accounts, $ today, $ left, payouts, open trade, "
         "setup, news\n/update - install the newest code now (outside 01:50-16:00 ET, "
         "flat)\n/restart - restart the PC server (your eval comes back armed by itself)\n/pause [HH:MM|tomorrow] - no new entries "
-        "until then\n/resume - lift the pause\n/preview - one example of each alert style\nTrading, arming, stop and flatten are never done from Telegram.")
+        "until then\n/resume - lift the pause\n/preview - one example of each alert style\n/insta [YYYY-MM-DD] - a green day's Insta card again\nTrading, arming, stop and flatten are never done from Telegram.")
 
 
 def enabled(env=None) -> bool:
@@ -109,6 +111,10 @@ def parse_text(text: str) -> tuple:
         if args:
             return None, "/today takes no words after it."
         return {"cmd": "today"}, None
+    if head == "insta":
+        if len(args) > 1 or (args and not re.match(r"^\d{4}-\d{2}-\d{2}$", args[0])):
+            return None, "/insta takes nothing (the newest card) or a day: /insta 2026-11-27"
+        return {"cmd": "insta", "day": args[0] if args else None}, None
     if head == "preview":
         if args:
             return None, "/preview takes no words after it."
@@ -180,6 +186,35 @@ def preview_reply(token: str, chat: str, reply_to=None, http=None, photo: bool =
         import threading
         threading.Thread(target=_preview_photo, args=(token, chat), name="tg-preview", daemon=True).start()
     return n
+
+
+def insta_reply(token: str, chat: str, day=None, reply_to=None, http=None, wait: bool = False) -> str:
+    """/insta [day]: the saved Insta card through sendPhoto on a daemon thread (the poll never waits), or a one-line reason.
+    Returns "sending" / the reason. Never raises."""
+    try:
+        from . import insta_card
+        path = insta_card.load(day)
+        if not path:
+            say = (f"\U0001F4F8 No Insta card for {day}: cards are made on green days after the day summary (16:20 ET)." if day else
+                   "\U0001F4F8 No Insta card yet: one is made on a green day after the day summary (16:20 ET).")
+            send_reply(token, chat, say, reply_to, http)
+            return say
+        import threading
+
+        def go():
+            try:
+                from . import alert_bus as AB
+                d = day or os.path.basename(path)[6:16]
+                AB.send_telegram_photo({"token": token, "chat_id": chat}, path, f"\U0001F4F8 Insta card {d} · ready to post", True)
+            except Exception:  # noqa: BLE001
+                pass
+        th = threading.Thread(target=go, name="tg-insta", daemon=True)
+        th.start()
+        if wait:
+            th.join(30)
+        return "sending"
+    except Exception as e:  # noqa: BLE001
+        return f"error {e.__class__.__name__}"
 
 
 def _preview_photo(token: str, chat: str) -> bool:
@@ -342,6 +377,9 @@ class TgCommands:
                 continue
             if c.get("cmd") == "oflane":             # the Sim lane's own switch file: answered here, never the control path
                 send_reply(token, chat, oflane_reply(c["arg"], self.oflane_root, now), mid, self.http)
+                continue
+            if c.get("cmd") == "insta":              # read-only: the saved card, answered here, never through the control path
+                insta_reply(token, chat, c.get("day"), mid, self.http)
                 continue
             if c.get("cmd") == "preview":            # examples only: answered here, never through the control path
                 preview_reply(token, chat, mid, self.http)

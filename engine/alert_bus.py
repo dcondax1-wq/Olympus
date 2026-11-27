@@ -365,7 +365,18 @@ def from_report(m: dict) -> dict:
                 ev["photo"] = ph
         except Exception:
             pass
+        if k.startswith("guard:day:") and str(m["card"].get("type")) == "day":
+            day, card = k.split(":")[-1], dict(m["card"])   # day-insta: a green day's Insta card, drawn + sent after the text
+            ev["more_photos"] = [lambda: _insta(card, day)]
     return ev
+
+
+def _insta(card: dict, day: str):
+    try:
+        from . import insta_card
+        return insta_card.photo(card, day)
+    except Exception:
+        return None
 
 
 def from_problem(p: dict, msg: dict) -> dict:
@@ -576,46 +587,59 @@ def tg_text(ev: dict, title: str, body: str) -> str:
     return f"{title}\n{body}"
 
 
+def _timed(fn, ev: dict, cfg: dict, what: str = "chart"):
+    """fn() on its own daemon thread, at most PHOTO_TIMEOUT_S; its answer, or None (slow / crashed: logged). Never raises."""
+    box = {}
+
+    def _draw():
+        try:
+            box["p"] = fn()
+        except Exception as e:  # noqa: BLE001 (a chart crash = no picture, never a lost alert)
+            box["e"] = e.__class__.__name__
+
+    drawer = threading.Thread(target=_draw, name="alert-chart", daemon=True)
+    drawer.start()
+    drawer.join(PHOTO_TIMEOUT_S)                      # a slow / stuck chart: no picture (the text went long ago)
+    if drawer.is_alive():
+        log_fail({"key": str(ev.get("key") or ""), "kind": ev.get("kind"), "channel": "telegram_photo",
+                  "why": f"{what} took over {PHOTO_TIMEOUT_S} s: skipped"}, cfg)
+        return None
+    if box.get("e"):
+        log_fail({"key": str(ev.get("key") or ""), "kind": ev.get("kind"), "channel": "telegram_photo",
+                  "why": f"{what} failed: {box['e']}"}, cfg)
+    return box.get("p")
+
+
 def _photo_later(cfg: dict, ev: dict, silent: bool) -> None:
     """day-tgpretty: the chart picture AFTER the text, on its own daemon thread (never delays or drops the alert). The picture is
-    ev["photo"] (a path) or ev["photo_fn"]() (draws it now: engine/trade_card). Any trouble = no picture, logged. Never raises."""
-    if ev.get("_photo_started") or not (ev.get("photo") or callable(ev.get("photo_fn"))):
+    ev["photo"] (a path) or ev["photo_fn"]() (draws it now: engine/trade_card); then each ev["more_photos"] fn() -> (path,
+    caption) | None (day-insta: the green day's Insta card). Any trouble = no picture, logged. Never raises."""
+    more = [f for f in ev.get("more_photos") or [] if callable(f)]
+    if ev.get("_photo_started") or not (ev.get("photo") or callable(ev.get("photo_fn")) or more):
         return
     ev["_photo_started"] = True
+
+    def send_one(path, cap):
+        r, why = send_telegram_photo(cfg["telegram"], str(path), cap, True)    # silent: the text already rang
+        if not r:
+            log_fail({"key": str(ev.get("key") or ""), "kind": ev.get("kind"), "channel": "telegram_photo", "why": why}, cfg)
 
     def run():
         try:
             path = ev.get("photo")
             if not path and callable(ev.get("photo_fn")):
-                box = {}
-
-                def _draw():
-                    try:
-                        box["p"] = ev["photo_fn"]()
-                    except Exception as e:  # noqa: BLE001 (a chart crash = no picture, never a lost alert)
-                        box["e"] = e.__class__.__name__
-
-                drawer = threading.Thread(target=_draw, name="alert-chart", daemon=True)
-                drawer.start()
-                drawer.join(PHOTO_TIMEOUT_S)                  # a slow / stuck chart: no picture (the text went long ago)
-                if drawer.is_alive():
-                    log_fail({"key": str(ev.get("key") or ""), "kind": ev.get("kind"), "channel": "telegram_photo",
-                              "why": f"chart took over {PHOTO_TIMEOUT_S} s: skipped"}, cfg)
-                    return
-                path = box.get("p")
-                if box.get("e"):
-                    log_fail({"key": str(ev.get("key") or ""), "kind": ev.get("kind"), "channel": "telegram_photo",
-                              "why": f"chart failed: {box['e']}"}, cfg)
-            if not path:
-                return
-            try:
-                from . import tg_pretty
-                cap = tg_pretty.caption(ev)
-            except Exception:
-                cap = "Chart"
-            r, why = send_telegram_photo(cfg["telegram"], str(path), cap, True)    # silent: the text already rang
-            if not r:
-                log_fail({"key": str(ev.get("key") or ""), "kind": ev.get("kind"), "channel": "telegram_photo", "why": why}, cfg)
+                path = _timed(ev["photo_fn"], ev, cfg)
+            if path:
+                try:
+                    from . import tg_pretty
+                    cap = tg_pretty.caption(ev)
+                except Exception:
+                    cap = "Chart"
+                send_one(path, cap)
+            for fn in more:
+                got = _timed(fn, ev, cfg, "insta card")
+                if isinstance(got, (list, tuple)) and len(got) == 2 and got[0]:
+                    send_one(got[0], str(got[1])[:200])
         except Exception as e:  # noqa: BLE001
             log_fail({"key": str(ev.get("key") or ""), "kind": ev.get("kind"), "channel": "telegram_photo",
                       "why": f"chart failed: {e.__class__.__name__}"}, cfg)
