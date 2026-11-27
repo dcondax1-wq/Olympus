@@ -37,6 +37,7 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
 
 ## Owner decisions 2026-11-24 ~13:00 ET (chat)
 - "It can be paper till we study more": BLITZ stays PAPER (do not prompt the --blitz on switch).
+  - day-blitzready 2026-11-27 (branch day-blitzready): BLITZ now has its OWN PAPER lane, `engine/blitz_paper.py` (started by ops_checks.blitz_paper_kick, 09:25-16:05 ET, BELOW_NORMAL, never twice, kill/off respected, no order path; log data/blitz_paper/trades.jsonl, report data/blitz_paper.json, p4 BLITZ = "paper"). Card + forward gate (40 trades, PF>=1.30, shelve rules): research/handoff/2026-11-27/blitz/ (tools/blitz_ladder.py). Backtest with costs: 2026 H1 PF 1.63 / +$934 a month, Jul-Nov PF 1.41 / +$689, 2021-25 PF 1.05 / +$73. Paper = backtest 102/102 trades over 25 sessions. tests.test_blitz_paper 28/28 (pc area).
 - "I'll hold the 4 accounts we have currently": Rapid EOD 25K, ATLAS Builder 25K funded, Zlarior 50K, Zlarior 25K #2 (ATLAS combo). No new evals bought (badcase: 2025-like markets make every eval -EV).
 
 ## PC update BLOCKED (2026-11-24, root cause found)

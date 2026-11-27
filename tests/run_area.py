@@ -432,6 +432,8 @@ AREAS["pc"].append("of_paper_rt")   # red team 2026-11-26: the paper child BELOW
 AREAS["pc"].append("of_paper_e5")   # night-of-paperv2 2026-11-27: the E5 second fill (DESIGN_paper_v2.md)
 AREAS["pc"].append("of_lane")             # night-of-lane 2026-11-27: the order-flow LANE on Sim101, OFF (engine/of_lane.py; fake NinjaTrader, ~6 min)
 AREAS["pc"].append("of_lane_ready")       # night-of-lane-ready 2026-11-27: /oflane Telegram, the 09:20 runner, Sim102 -> Sim101 fallback, the card (fake TG / NT, ~5 s)
+AREAS["pc"].append("blitz_paper")          # day-blitzready 2026-11-27: the BLITZ paper lane (never an order), paper = backtest, the kick, p4 BLITZ = paper (~30 s)
+AREAS["pc"].append("blitz_paper_rt")   # red team #40: one BLITZ paper runner (OS lock), nothing that can trade is imported
 AREAS["pc"].append("of_lane_ready_rt")    # red team #34 2026-11-27: one runner (OS lock), no start from 16:00, never a real account, /oflane owner-only, Sim101 only when free (~10 s)
 AREAS["pc"].append("of_dryrun")            # day-ofready2 2026-11-27: the Monday DRY RUN on replayed REAL days (fake NT + Telegram, ~9 min; SKIP without data/pc_days)
 AREAS["pc"].append("oflane_privacy_rt")   # red team #38: no account name / id in the lane refusal words

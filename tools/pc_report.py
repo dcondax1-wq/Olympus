@@ -780,7 +780,13 @@ def full(snap: dict) -> dict:
         out["tr"].update({k: snap["tr"][k] for k in ("h", "e") if snap["tr"].get(k) is not None})   # day-ofready: tick-day holes, bf_errors
     try:                                     # day-zerotouch2: the phone's PC checklist + one line per pillar (engine/pc_checklist)
         from engine import pc_checklist as _pcc
-        ck = _pcc.block(snap.get("ck_local"), glance=pc.get("glance"), blitz=L.get("blitz") or bd.get("blitz"), tr=snap.get("tr"),
+        try:                               # day-blitzready: the BLITZ paper lane's report (engine/blitz_paper.py), plain JSON, paper only
+            from engine import blitz_paper as _bpl
+            _bp = _bpl.compact()
+            _bp = {**_bp, "fresh": _bpl.fresh(_bp)} if _bp else None
+        except Exception:  # noqa: BLE001
+            _bp = None
+        ck = _pcc.block(snap.get("ck_local"), glance=pc.get("glance"), blitz=L.get("blitz") or bd.get("blitz"), tr=snap.get("tr"), bp=_bp,
                         sh=snap.get("sh"), nt_running=snap.get("nt"), server=snap.get("server"),
                         running=pc.get("running") if pc else None)
         out["ck"] = ck
