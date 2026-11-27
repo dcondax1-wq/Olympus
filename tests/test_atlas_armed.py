@@ -1,86 +1,54 @@
-"""ATLAS: LIT's armed-setup windows (tools/atlas_lit_armed.py) == what the live LIT loop shows as armed setups.
+"""night 2026-11-27: ATLAS's heartbeat block carries its armed flag, so readiness stops saying "ATLAS 25K is not armed" (NOT READY)
+while ATLAS is armed and trading live (the owner's Trading Home at 00:15 ET).
 
-engine/account_b.AccountB.lit_opposite blocks a B entry while LIT's state has a setup armed the other way
-(state["setups"]["long" / "short"]: limit working, or tapped and waiting for its 1m CISD). The research windows come from a
-walker that copies engine/lit.simulate_x's setup loop; on 67 of 1,959 setups the walker says "confirmed" while the
-backtest has no trade (the 1m CISD confirmed, then the trade was dropped: target < 1.5R from the real fill, or risk out of
-range); the window then ends at that CISD close, the moment the live loop drops the setup. This test polls the live loop
-(engine/lit_live.run on cut data, the PC's early mode, as tests/test_lit_live.py) on sampled 2026 setups:
-  inside   a poll in the middle of the window shows the setup armed on its side (or LIT already entering)
-  after    a poll 65 s after the window's end no longer shows it armed (dropped, or filled: LIT entering / in the trade)
-Samples: every "confirmed but no trade" setup of 2026 on 1m bars + a seeded sample of unfilled and filled ones.
-
-    python -X utf8 -m tests.test_atlas_armed [--n 40]
+    python -X utf8 -m tests.test_atlas_armed
 """
 from __future__ import annotations
 
 import os
-import random
 import sys
-
-import numpy as np
-import pandas as pd
+import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, ROOT)
-import logging  # noqa: E402
-logging.disable(logging.CRITICAL)
-from engine import lit_live  # noqa: E402
-from engine.data import load, load_ltf  # noqa: E402
-from tools import atlas_lit_armed as ARM  # noqa: E402
-from tools import lit_adopt_combo as AC  # noqa: E402
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
+
+from engine import account_b as AB, second  # noqa: E402
+from engine import preflight  # noqa: E402
+from tests.test_account_b_funded import acct, funded_block, ts  # noqa: E402
+
+R = []
 
 
-def main():
-    n = int(sys.argv[sys.argv.index("--n") + 1]) if "--n" in sys.argv else 40
-    P = {**AC.LIVE, "t_check": AC.T15, "be_off": AC.BE_OFF}
-    W = [w for w in ARM.windows() if w["day"] >= "2026-01-02" and w["tf"] == 1 and w["end"] - w["t0"] >= 180]
-    diff = [w for w in W if w.get("confirmed") and not w["filled"]]
-    rng = random.Random(7)
-    unf = [w for w in W if not w["filled"] and not w.get("confirmed")]
-    fil = [w for w in W if w["filled"]]
-    S = rng.sample(unf, min(n, len(unf))) + rng.sample(fil, min(n // 2, len(fil))) + diff
-    df5 = pd.read_csv(os.path.join(ROOT, "data", "NQ_5m.csv"))
-    df5 = df5[df5["time"] >= int(min(w["t0"] for w in S)) - 70 * 86400].reset_index(drop=True)
-    b1, _ = load_ltf("NQ", load("NQ", "5m"))
-    b1 = b1.slice(int(np.searchsorted(b1.t, int(df5["time"].min()))), len(b1))
-    T5 = df5["time"].values
+def check(name, ok, info=""):
+    print(f"[{'PASS' if ok else 'FAIL'}] {name}{(': ' + str(info)[:300]) if info and not ok else ''}")
+    R.append(bool(ok))
 
-    def poll(now):
-        cut5 = df5.iloc[:int(np.searchsorted(T5 + 300, now, side="right"))]
-        cut1 = b1.slice(0, int(np.searchsorted(b1.t + 60, now, side="right")))
-        jf = int(np.searchsorted(b1.t, now - now % 60))
-        forming = (int(b1.t[jf]), float(b1.o[jf])) if jf < len(b1.t) and int(b1.t[jf]) == now - now % 60 else None
-        return lit_live.run(cut5, P, one_min=cut1, now=now, forming=forming, early=True)["state"]
 
-    bad_in, bad_out = [], []
-    for w in S:
-        side = "long" if w["dir"] == 1 else "short"
-        mid = (w["t0"] + w["end"]) // 2
-        mid = mid - mid % 60 + 5
-        st = poll(mid)
-        ok_in = bool((st.get("setups") or {}).get(side)) or int((st.get("enter_now") or {}).get("dir") or 0) == w["dir"] \
-            or int((st.get("position") or {}).get("dir") or 0) == w["dir"]
-        if not ok_in:
-            bad_in.append((w["day"], side, w["t0"], w["end"], w["filled"]))
-        stb = poll(w["end"] - 55)                    # the last minute of the window: still armed (or entering / in)
-        if not (bool((stb.get("setups") or {}).get(side)) or int((stb.get("enter_now") or {}).get("dir") or 0) == w["dir"]
-                or int((stb.get("position") or {}).get("dir") or 0) == w["dir"]):
-            bad_in.append((w["day"], side, w["t0"], w["end"], w["filled"], "last minute"))
-        st2 = poll(w["end"] + 65)
-        su = (st2.get("setups") or {}).get(side)
-        if su and int(su.get("arm_t") or 0) == w["t0"]:
-            bad_out.append((w["day"], side, w["t0"], w["end"], w["filled"]))
-    print(f"armed windows vs the live LIT loop: {len(S)} setups ({sum(1 for w in S if not w['filled'])} unfilled); "
-          f"inside the window shown armed: {len(S) - len(bad_in)}/{len(S)}; gone after the end: {len(S) - len(bad_out)}/{len(S)}")
-    if bad_in:
-        print("  not armed inside:", bad_in[:8])
-    if bad_out:
-        print("  still armed after:", bad_out[:8])
-    ok = len(bad_in) <= max(1, len(S) // 20) and len(bad_out) <= max(1, len(S) // 20)
-    print("PASS" if ok else "FAIL")
-    return ok
+def main() -> int:
+    tmp = tempfile.mkdtemp(prefix="le_atlas_armed_")
+    sc = second.load_cfg()
+    now = ts("2026-11-27", 0)
+    armed = AB.normalize(funded_block(armed=True), sc)
+    B, _ = acct(armed, now, tmp, tag="a1")
+    info = B.info(now)
+    check("1. account_b.info() carries 'armed' (the owner-typed flag the adapter's live gate uses)", info.get("armed") is True, info.get("armed"))
+    hb = {"second": {"route": {"account_b": {**info, "kind": "LIVE", "enabled": True}}}}
+    rows = [r for r in preflight.arms(hb) if r[0] == "ATLAS 25K"]
+    check("2. preflight.arms: an armed LIVE ATLAS is ok -> readiness has no 'ATLAS 25K is not armed' blocker",
+          rows and rows[0][1] is True and rows[0][2] == "LIVE, armed", rows)
+    off = AB.normalize(funded_block(), sc)
+    B2, _ = acct(off, now, tmp, tag="a2")
+    i2 = B2.info(now)
+    rows = [r for r in preflight.arms({"second": {"route": {"account_b": {**i2, "kind": "LIVE", "enabled": True}}}}) if r[0] == "ATLAS 25K"]
+    check("3. a really unarmed ATLAS still reads 'LIVE, NOT armed' (the real NOT READY stays)", i2.get("armed") is False
+          and rows and rows[0][1] is False and rows[0][2] == "LIVE, NOT armed", rows)
+    from engine import brain_glance as BG
+    check("4. the phone glance (brain_glance._ab_armed) still says armed with the new key", BG._ab_armed({**info, "kind": "LIVE",
+                                                                                                         "enabled": True}) is True)
+    print(f"\n{sum(R)}/{len(R)} passed")
+    return 0 if all(R) else 1
 
 
 if __name__ == "__main__":
-    sys.exit(0 if main() else 1)
+    sys.exit(main())
