@@ -1,7 +1,7 @@
 {
  "v": 1,
  "title": "ZEUS this week",
- "built": "2026-11-26 11:49 ET",
+ "built": "2026-11-27 03:52 ET",
  "built_by": "tools/weekly_review.py",
  "week": {
   "from": "2026-11-23",
@@ -10,7 +10,7 @@
   "complete": false,
   "sessions_done": 4
  },
- "pc": "PC last reported Nov 26 11:45 ET",
+ "pc": "PC last reported Nov 27 3:45 ET",
  "accounts": [
   {
    "key": "zlarior",
@@ -18,7 +18,7 @@
    "plan": "MFFU Builder 50K",
    "stage": "eval",
    "end": 49177.52,
-   "src": "PC live, Nov 26 11:45 ET",
+   "src": "PC live, Nov 27 3:44 ET",
    "room": 1009.32,
    "to_pass": 3822.48,
    "trades": 0,
@@ -44,7 +44,7 @@
    "plan": "MFFU Builder 25K (funded)",
    "stage": "funded",
    "end": 25401.38,
-   "src": "PC live, Nov 26 11:45 ET",
+   "src": "PC live, Nov 27 3:44 ET",
    "room": 1000.0,
    "to_pass": null,
    "trades": 0,
@@ -69,7 +69,7 @@
    "plan": "MFFU Rapid EOD 25K",
    "stage": "eval",
    "end": 24995.24,
-   "src": "PC live, Nov 26 11:45 ET",
+   "src": "PC live, Nov 27 3:44 ET",
    "room": 995.24,
    "to_pass": 1504.76,
    "trades": 0,
@@ -95,7 +95,7 @@
    "plan": "MFFU Builder 25K",
    "stage": "eval",
    "end": 25019.24,
-   "src": "PC live, Nov 26 11:45 ET",
+   "src": "PC live, Nov 27 3:44 ET",
    "room": 995.62,
    "to_pass": 1480.76,
    "trades": 0,
@@ -167,14 +167,14 @@
  "changes": {
   "n": 200,
   "items": [
-   "Rebuild hub data",
+   "Rebuild Jarvis search index for landing #1",
+   "Rebuild generated hub data for landing #1",
+   "Rebuild brain hub data for landing #1",
    "vault: rebuilt for this landing (tools/obsidian_brain.py)",
-   "Land site5 (money view, strategy health on the real bands, archive door, faster Home, 44 px Today...",
-   "Eval sizer: mixed-market sensitivity (25%/50% 2026): room 0.3 earns less than today's 0.4, fails...",
-   "Allocation optimizer: 4 accounts x 13 books from today's balances (real engine, joint paths):...",
-   "LIT fragility audit: parameter surface, cost stress, trade-order MC, deflated Sharpe, eval sizing...",
-   "LIT fragility audit: plan before the runs",
-   "Home Today strip: 44 px tap targets (pill inside a 44 px link) with search 152 / dashboards 228 /..."
+   "Landing #1 integration fixes: PC pill 44 px tap target on every NQ page, no HEAD probe (sprint...",
+   "Night sprint landing: test pins from bump_versions; nq eager-JS budget 600 - 640 KB",
+   "bump_versions for the night sprint landing (nqscene q9 by hand)",
+   "Night sprint lead wires: NQ nav links (Order Flow, Replay, PC health), payready.css v3, nqgoals..."
   ]
  },
  "next": {
@@ -203,9 +203,44 @@
   "basis": "this week"
  },
  "twins": {
-  "to": "2026-11-20",
-  "bots": [],
-  "note": "no bars for this week yet"
+  "to": "2026-11-26",
+  "days": [
+   "2026-11-23",
+   "2026-11-24",
+   "2026-11-25",
+   "2026-11-26"
+  ],
+  "bots": [
+   {
+    "name": "Zlarior",
+    "rows": [],
+    "n": {
+     "matched": 0,
+     "missed": 0,
+     "extra": 0,
+     "not live yet": 0
+    },
+    "twin_r": 0,
+    "live_r": 0,
+    "verdict": "same as the twin",
+    "line": "twin 0 trades +0.00R, live 0 trades +0.00R."
+   },
+   {
+    "name": "ATLAS",
+    "rows": [],
+    "n": {
+     "matched": 0,
+     "missed": 0,
+     "extra": 0,
+     "not live yet": 0
+    },
+    "twin_r": 0,
+    "live_r": 0,
+    "verdict": "same as the twin",
+    "line": "twin 0 trades +0.00R, live 0 trades +0.00R."
+   }
+  ],
+  "note": "R only (the twin's $ is at the research size). Days after the cloud's last bars are not compared."
  },
  "best": null,
  "worst": null,
@@ -270,15 +305,27 @@
    "src": "Decide card"
   },
   {
+   "id": "alloc-lit-funded25",
+   "question": "Card 2: LIT also trades your funded ATLAS 25K (same 40% risk, never 2 positions at once) - your phrase needed",
+   "usd_month": 350.0,
+   "src": "Decide card"
+  },
+  {
+   "id": "rapid25-second-with-stop",
+   "question": "Buy a 2nd Rapid EOD 25K eval ($97.20, LIT + ATLAS) now, AND stop all new eval buys whenever the business (payouts minus fees since today) is $300 under its best, restarting when a ",
+   "usd_month": 238.0,
+   "src": "Decide card"
+  },
+  {
    "id": "fast-entry",
    "question": "Fast entry: send Zlarior's and ATLAS's orders on the minute's first trade instead of waiting 2 seconds?",
    "usd_month": 100.0,
    "src": "Decide card"
   },
   {
-   "id": "atlas-sb-half",
-   "question": "ATLAS on the Builder evals (Zlarior 50K + 25K #2): trade HALF size outside the Silver Bullet hours (3-4, 10-11, 14-15 ET), normal size inside?",
-   "usd_month": 0.0,
+   "id": "stop-buying-tripwire",
+   "question": "Stop buying NEW evals when LIT's last 40 trades add up to less than 0R, and start again when a free Sim eval (the same bot on NinjaTrader Sim, Builder 50K rules) passes?",
+   "usd_month": 31.0,
    "src": "Decide card"
   }
  ],
@@ -286,6 +333,6 @@
  "sources": {
   "trades": "PC status post",
   "plan_updated": "2026-11-20",
-  "board_pc": "Nov 26 11:45 ET"
+  "board_pc": "Nov 27 3:45 ET"
  }
 }
