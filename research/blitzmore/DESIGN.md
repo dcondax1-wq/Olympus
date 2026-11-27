@@ -42,3 +42,9 @@ Significance: sign-flip permutation test (20,000 flips, one-sided) of the mean D
 - A variant that only improves 2021-25 while losing > 25% of today's 2026 $ / month is reported as a regime trade-off, not a win.
 - No variant clears it -> plain verdict "nothing makes 2021-25 hold up", with the best 2021-25 number and what it cost in 2026.
 - A card to the owner needs the "holds up" rule AND 25K / 50K pass not lower and fail not higher in both 2026 spans.
+
+## Addendum (written AFTER the pre-registered run, which picked 0 of 12 on Jan-Jun; EXPLORATORY, not counted in the Holm family, cannot make a card)
+The owner's question is what makes 2021-25 hold up, so the pick is reversed once: choose on 2021-11..2024 ($ / month, the 12 singles), check on
+2025, 2026 Jan-Jun and 2026 Jul-Nov 20. Candidates: the top 2 singles by 2021-24 $ / month, and their combination (3 candidates; any win is a
+lead for the next pre-registered round, never a result). A candidate "holds" only if 2025, Jan-Jun and Jul-Nov are each >= today's $ / month
+or within 10% of it, and PF >= 1.15 on 2021-25.
