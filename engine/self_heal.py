@@ -1325,7 +1325,9 @@ def fix_backup(ctx) -> list:
     if not r.get("ok"):
         return [item("backup", "backup", "need", f"weekly backup failed: {r.get('error')}", "python -X utf8 -m engine.pc_backup --now")]
     txt = f"weekly encrypted backup made ({r.get('files')} files)"
-    return [item("backup", "backup", "need" if r.get("first") else "fixed",
+    # night 2026-11-27: a backup that WORKED is "fixed", never "need" (the PC's board said "Self-heal could not fix: weekly encrypted
+    # backup made"). The recovery code is shown by START (pc_backup.code_line) until the owner confirms he saved it.
+    return [item("backup", "backup", "fixed",
                  txt + ("; START shows your recovery code once: save it in your phone's notes" if r.get("first") else ""))]
 
 
