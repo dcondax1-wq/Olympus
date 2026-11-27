@@ -87,7 +87,8 @@
   }
   function cardTag(c) {
     if (c.mode === 'paper') return 'PAPER';
-    if (c.src === 'twin') return 'prices from the backtest twin';
+    if (c.phase === 'eval') return 'EVAL phase (before funding): not in the funded $';
+    if (c.src === 'twin') return 'TWIN prices (the $ is the audited PC day)';
     return '';
   }
 

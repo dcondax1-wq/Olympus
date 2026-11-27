@@ -377,7 +377,12 @@ def week_block(mon: str, ctx: dict) -> dict:
     accts = []
     for a in ACCTS:
         mine = [c for c in cards if c["acct"] == a["id"]]
-        live = [c for c in mine if c.get("mode") == "live"]
+        if a["id"] == "atlas25":                       # the funded tracker starts at the eval pass: earlier trades are EVAL phase, listed but never summed into the funded week
+            fs = ctx["starts"].get("atlas25_funded", "2026-11-17")
+            for c in mine:
+                if c["day"] <= fs:
+                    c["phase"] = "eval"
+        live = [c for c in mine if c.get("mode") == "live" and c.get("phase") != "eval"]
         wk = round(sum(c.get("usd") or 0 for c in live), 2)
         row = {"id": a["id"], "name": a["name"], "plan": a["plan"], "stage": a["stage"], "usd": wk, "n": len(live), "wins": sum(1 for c in live if (c.get("usd") or 0) > 0),
                "losses": sum(1 for c in live if (c.get("usd") or 0) < 0), "trades": mine, "note": None}
@@ -386,8 +391,10 @@ def week_block(mon: str, ctx: dict) -> dict:
             fw = row["now"].get("week")
             if fw is not None and abs(fw - wk) > 1.0 and not live:
                 row["usd"], row["note"] = round(fw, 2), "the feed's week total (no per-trade card for it)"
-        if a["id"] == "atlas25" and any(c["day"] == "2026-11-17" and c.get("mode") == "live" for c in mine):
-            row["note"] = "The Nov 17 winner passed the 25K eval; MFFU funded accounts start at $0, so the balance shows profit only."
+        ev = [c for c in mine if c.get("phase") == "eval" and c.get("mode") == "live"]
+        if ev:
+            row["eval_usd"] = round(sum(c.get("usd") or 0 for c in ev), 2)
+            row["note"] = f"The {usd(row['eval_usd'])} trade on {ev[0]['day'][5:]} was the EVAL that passed the 25K: shown below, not in the funded week $ (MFFU funded starts at $0; the PC tracker counts only funded trades)."
         accts.append(row)
 
     # ---- bot = backtest (the twins)
@@ -403,7 +410,7 @@ def week_block(mon: str, ctx: dict) -> dict:
             for t in tw:
                 if t["bot"] in a["twin"] and not (a["id"] == "rapid" and t["bot"] == "ATLAS" and lit_tw):
                     exp.append({**t, "day": d})
-        mine = [c for c in cards if c["acct"] == a["id"] and c.get("mode") == "live"]
+        mine = [c for c in cards if c["acct"] == a["id"] and c.get("mode") == "live"]   # eval-phase included: the twin compare is about the bot, not the stage
         used, rows, missed_usd = set(), [], 0.0
         for t in exp:
             hit = None
@@ -477,7 +484,7 @@ def week_block(mon: str, ctx: dict) -> dict:
           "today": ctx.get("ofp") if cur else None}
 
     # ---- totals + days
-    live_all = [c for c in cards if c.get("mode") == "live"]
+    live_all = [c for c in cards if c.get("mode") == "live" and c.get("phase") != "eval"]
     tot = {"usd": round(sum(r["usd"] for r in accts), 2), "n": sum(r["n"] for r in accts), "wins": sum(r["wins"] for r in accts), "losses": sum(r["losses"] for r in accts),
            "twin_trades": sum(c["expected"] for c in chk), "missed": sum(c["missed"] for c in chk), "setups_rejected": len(rej_replay)}
     traded_days = {c["day"] for c in live_all}

@@ -78,8 +78,8 @@ def part_b():
     check("b. this week: quiet and SAYS so (no trades, twins found none, rejected setups counted)", w0["totals"]["n"] == 0 and "Quiet week" in w0["headline"] and w0["quiet"] and w0["totals"]["setups_rejected"] > 0, w0["headline"])
     check("b. Thanksgiving Thu Nov 26 + the Nov 27 half day are marked", any("early" in (d.get("note") or "") or d["state"] == "closed" for d in w0["days"]), w0["days"])
     acc = {a["id"]: a for a in w1["accounts"]}
-    check("b. Nov 16 week: Zlarior 50K -$129 (1 loss, a LOST line), ATLAS 25K 3 live trades + the paper one flagged", acc["z50k"]["usd"] == -129.4 and acc["z50k"]["n"] == 1 and acc["z50k"]["trades"][0]["why"].startswith("LOST")
-          and acc["atlas25"]["n"] == 3 and any(c.get("mode") == "paper" for c in acc["atlas25"]["trades"]), (acc["z50k"]["usd"], acc["atlas25"]["n"]))
+    check("b. Nov 16 week: Zlarior 50K -$129 (1 loss, a LOST line), ATLAS funded = 2 trades +$401.38 (= the PC tracker); the Nov 17 eval trade listed apart; paper one flagged", acc["z50k"]["usd"] == -129.4 and acc["z50k"]["n"] == 1 and acc["z50k"]["trades"][0]["why"].startswith("LOST")
+          and acc["atlas25"]["n"] == 2 and round(acc["atlas25"]["usd"], 2) == 401.38 and acc["atlas25"].get("eval_usd") == 1791.89 and any(c.get("mode") == "paper" for c in acc["atlas25"]["trades"]), (acc["z50k"]["usd"], acc["atlas25"]["n"]))
     check("b. ATLAS cards carry entry / stop / target from the feed (at) and a WON line", any(c.get("target") and c["why"].startswith("WON") for c in acc["atlas25"]["trades"]))
     tw = {t["id"]: t for t in w1["twin"]}
     check("b. bot = backtest: Zlarior 50K matched; Rapid EOD missed Nov 20 with the 'not armed' cause", tw["z50k"]["missed"] == 0 and tw["z50k"]["matched"] == 1 and tw["rapid"]["missed"] == 1 and "not armed" in tw["rapid"]["rows"][0]["text"], tw["rapid"]["rows"])
