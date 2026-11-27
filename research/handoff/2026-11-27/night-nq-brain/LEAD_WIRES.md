@@ -1,7 +1,7 @@
 # night-nq-brain: what the lead wires (files I do not own)
 
 1. `tools/web_public/sw.js`: precache / version the two NEW files of the NQ Brain page:
-   - `nq/brainmind.js?v=m3`
+   - `nq/brainmind.js?v=m4`
    - `nq/brainmind.css?v=m2`
    (and bump the cache name so phones drop the old nq/brain.html). `brain.js` stays `?v=7` (tests/test_tgweek pins it).
 2. Nothing for `build_web_dashboard.py`, `jarvis/apps.js` or the `olympus.js` APPS table: no new app, the page is the same URL.

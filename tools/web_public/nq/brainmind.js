@@ -11,7 +11,7 @@ const clear = (el) => { while (el && el.firstChild) el.removeChild(el.firstChild
 const REDUCE = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) { return false; } })();
 const LITE = (() => { try { const O = window.OLYMPUS; return !!(O && O.lite && O.lite()); } catch (_) { return false; } })();
 const HIDDEN = new Set(['blitz']);
-const S = { learn: null, model: null, atlas: null, ready: false, raf: 0, parts: [], drawn: 0 };
+const S = { learn: null, model: null, atlas: null, ready: false, raf: 0, parts: [], drawn: 0, feedOn: false };
 const R = (v) => (v === null || v === undefined || !Number.isFinite(+v) ? '-' : `${v > 0 ? '+' : ''}${(+v).toFixed(2)}R`);
 const usd = (v) => (v === null || v === undefined ? '-' : `${v < 0 ? '-' : '+'}$${Math.abs(Math.round(v)).toLocaleString('en-US')}`);
 const md = (s) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }) : (s || '?'); };
@@ -49,7 +49,7 @@ function drawNow() {
   const lite = src && src.lite;
   const t = lite && (lite.t || (lite.reporter && lite.reporter.t));
   const cur = S.learn && S.learn.current;
-  const meta = [t ? `PC report ${hm(t)} ET` : 'the PC\'s report has not arrived yet (the site\'s copy)',
+  const meta = [t ? `PC report ${hm(t)} ET (${ageText(t)})` : 'the PC\'s report has not arrived yet (the site\'s copy)',
     cur && cur.regime ? `market: ${cur.regime} week, ${cur.vix_band || ''}${cur.prior_day ? `, prior day ${cur.prior_day}` : ''} (as of ${md(cur.data_to)})` : null].filter(Boolean).join(' · ');
   $('mNowMeta').textContent = meta;
 }
@@ -247,6 +247,32 @@ function drawHealth() {
   }
 }
 
+/* ---------------- the shared fast feed (nq/nqfeed.js, night-nq-speed): instant paint from the kept post + every newer post ---------------- */
+function postT(l) { return l ? Number(l.t || (l.reporter && l.reporter.t) || 0) : 0; }
+function applyLite(lite) {
+  const N = window.NQBRAIN, F = window.PC_FEED;
+  if (!lite || !N || !N.S || !N.S.src || !N.S.src.home || !F || !F.homeOver) return false;
+  if (postT(N.S.src.lite) >= postT(lite)) return false;                    // never go back to an older post
+  try {
+    N.S.src.lite = lite;
+    N.S.src.home = F.homeOver(N.S.src.home, lite, Date.now() / 1000, window.PAYOUT_COACH || null);
+    N.render();
+    return true;
+  } catch (_) { return false; }
+}
+function useFeed() {
+  const Q = window.NQ_FEED;                                                 // null until nqfeed.js lands: brain.js's own read stays
+  if (!Q || S.feedOn) return;
+  S.feedOn = true;
+  try { const first = Q.cached(); if (first) applyLite(first); } catch (_) { /* nothing kept */ }
+  try { Q.on((lite) => { applyLite(lite); drawNow(); }); } catch (_) { /* the page's own read stays */ }
+}
+function ageText(t) {
+  try { const Q = window.NQ_FEED; if (Q && Q.age) return Q.age(t).text; } catch (_) { /* below */ }
+  const m = Math.max(0, Math.round((Date.now() / 1000 - t) / 60));
+  return m < 2 ? 'just now' : m < 120 ? `${m} min ago` : `${Math.round(m / 60)} h ago`;
+}
+
 /* ---------------- loop ---------------- */
 function models() {
   const N = window.NQBRAIN; if (!N || !N.S || !N.BC) return false;
@@ -277,8 +303,8 @@ async function boot() {
   setInterval(async () => { const d = await getJSON('../brain/learn.json'); if (d) { S.learn = d; tick(true); } }, 10 * 60 * 1000);
   let rw = 0; addEventListener('resize', () => { clearTimeout(rw); rw = setTimeout(() => { if (S.ready) drawPipe(); }, 200); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden && S.ready) drawPipe(); });
-  const wait = () => { if (models()) tick(true); else setTimeout(wait, 300); };
+  const wait = () => { if (models()) { useFeed(); tick(true); } else setTimeout(wait, 300); };
   wait();
 }
-window.NQMIND = { S, ready: () => S.ready, tick, STATIONS };
+window.NQMIND = { S, ready: () => S.ready, tick, STATIONS, applyLite };
 boot();

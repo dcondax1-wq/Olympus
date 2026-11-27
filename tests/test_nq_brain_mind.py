@@ -8,6 +8,7 @@ On the PC's real post (tests/fixtures/truth/pc_post.json) + the site's brain/lea
               bands; BLITZ nowhere; no sideways scroll, taps >= 44 px, no console error, nothing off the origin
   c. 1440     a two-column dashboard: the 3D brain beside its steps, ATLAS's members beside the lessons, the ideas full width
   d. reduced motion: the pipeline drawn without a running animation; no learn.json: every card says why, no error
+  e. nq/nqfeed.js (the shared fast feed): its kept post paints the page at once when the network has nothing, with the post's age
     python -X utf8 -m tests.test_nq_brain_mind [--static]
 """
 from __future__ import annotations
@@ -85,13 +86,15 @@ def test_page():
             p.wait_for_function("document.querySelector('#bStatus').textContent.startsWith('From your PC') && document.querySelectorAll('#mNowBody .mnrow').length === 2", timeout=30000)
             p.wait_for_timeout(1200)
             s = p.evaluate(SNAP)
+            p.wait_for_timeout(600)
+            s["drawn2"] = p.evaluate("window.NQMIND.S.drawn")
             check("b. thinking right now: Zlarior at step 5/10 (5m CISD) and ATLAS's MACD armed, from the PC's post, with its report time",
                   s["now"][0].startswith("Zlarior") and "Step 5/10, 5m CISD" in s["now"][0] and s["now"][1].startswith("ATLAS") and "MACD" in s["now"][1]
                   and "PC report" in s["meta"], (s["now"], s["meta"]))
             check("b. the pipeline animates (frames drawn) and says its 8 gates in words; the PC's live step = NOW at 'Limit armed'; the newest session's setups listed",
-                  s["drawn"] > 5 and len(s["gates"]) == 8 and [i for i, c in enumerate(s["gates"]) if "live" in c] == [4] and "taken" in s["gates"][7]
+                  s["drawn"] >= 1 and s["drawn2"] > s["drawn"] + 1 and len(s["gates"]) == 8 and [i for i, c in enumerate(s["gates"]) if "live" in c] == [4] and "taken" in s["gates"][7]
                   and "Now (PC): 5m CISD" in s["list"] and "8,784" in s["sub"] and re.search(r"Nov \d+: \d\d:\d\d (long|short)", s["list"]),
-                  {k: s[k] for k in ("drawn", "gates", "sub")})
+                  {k: s[k] for k in ("drawn", "drawn2", "gates", "sub", "list")})
             check("b. ATLAS's 3 members (EMA done, MACD armed, S/R)", len(s["atlas"]) == 3 and s["atlas"][1] == "armed", s["atlas"])
             check("b. every idea on trial (BLITZ hidden) as an n/20 ring; the new S1 forward flag marked", s["rings"] == len(rules) and s["s1"], (s["rings"], len(rules)))
             heads = [x.split("\n", 1)[-1].split(" - ")[0][:90] for x in s["lessons"]]
@@ -120,6 +123,22 @@ def test_page():
             b = p.evaluate("window.NQMIND.S.drawn")
             anim = p.evaluate("getComputedStyle(document.querySelector('.mthink i')).animationName")
             check("d. reduced motion: the pipeline is drawn but not animated, the thinking dots still", a >= 1 and b - a <= 1 and anim == "none", (a, b, anim))
+            ctx.close()
+    finally:
+        srv.shutdown()
+    # the shared fast feed (nq/nqfeed.js, night-nq-speed): a stand-in NQ_FEED that keeps the PC's post; the network gives nothing
+    fake = ("window.NQ_FEED = { _cbs: [], cached: function () { return JSON.parse(JSON.stringify(%s)); }, "
+            "on: function (cb) { this._cbs.push(cb); return function () {}; }, age: function () { return { text: '5 min ago', level: 'ok' }; } };") % json.dumps(T.PC)
+    srv, origin = AK.serve({"/status_feed.json": NC.FEED, "/home.json": home, "/nq/nqfeed.js": fake})
+    try:
+        with AK.browser() as br:
+            ctx, p, errs, seen, off = AK.page(br, origin, mock={f"/{NC.TOPIC}/json": "{}"})
+            p.clock.set_fixed_time(dt.datetime.fromtimestamp(T.NOW, dt.timezone.utc))
+            open_brain(p)
+            p.wait_for_timeout(800)
+            f = p.evaluate("() => ({ st: document.querySelector('#bStatus').textContent, now: [...document.querySelectorAll('#mNowBody .mnrow')].map((r) => r.innerText), meta: document.querySelector('#mNowMeta').textContent })")
+            check("e. the shared fast feed (nqfeed.js): with no network post, the kept post paints at once (Zlarior step 5/10) with its age",
+                  f["st"].startswith("From your PC") and "Step 5/10" in f["now"][0] and "(5 min ago)" in f["meta"] and not errs, (f, errs[:3]))
             ctx.close()
     finally:
         srv.shutdown()
