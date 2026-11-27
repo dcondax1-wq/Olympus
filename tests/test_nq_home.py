@@ -43,7 +43,7 @@ def static():
     for f in ("trading_home.html", "pchealth.html"):
         src = open(os.path.join(NQ, f), encoding="utf-8").read()
         head = src.split("</head>")[0]
-        check(f"a. {f}: nqfeed.js right after pc_feed.js in <head>, not defer", '<script src="../pc_feed.js"></script><script src="nqfeed.js?v=1"></script>' in head)
+        check(f"a. {f}: nqfeed.js right after pc_feed.js in <head>, not defer", '<script src="../pc_feed.js"></script><script src="nqfeed.js?v=2"></script>' in head)
     check("a. pages use NQ_FEED.cached()/on() when present, old 60 s read otherwise", all("NQF.cached()" in open(os.path.join(NQ, f), encoding="utf-8").read()
           and "NQF.on(" in open(os.path.join(NQ, f), encoding="utf-8").read() for f in ("trading_home.html", "pchealth.js")))
     check("a. pchealth links back to Trading Home", 'href="trading_home.html"' in open(os.path.join(NQ, "pchealth.html"), encoding="utf-8").read())

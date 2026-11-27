@@ -89,8 +89,8 @@ def test_static():
     js += "\n" + AK.read(os.path.join(D, "nqchartfeed.js"))      # day-livechart 2026-11-27: the data side (eager) + the view (lazy) are the chart's code
     check("a. no CDN anywhere: the page loads the library from vendor/ (pinned ?v=5.2.1), never unpkg / jsdelivr / cdnjs / a tradingview script",
           "vendor/lightweight-charts.standalone.production.js?v=5.2.1" in js and not re.search(r"unpkg|jsdelivr|cdnjs|cdn\.|<script[^>]+tradingview", html + js + core, re.I))
-    check("a. the card sits after the banner and before the columns, with its chips, chart box, as-of line, trades list and the attribution link (TradingView + tradingview.com)",
-          html.index('id="banner"') < html.index('id="chartCard"') < html.index('id="sceneCard"') and all(f'id="{i}"' in html for i in ("chartChips", "chartBox", "chartAsOf", "chartTrades", "chartPill", "chartWhole"))
+    check("a. the card sits right under the hero (day-poseidon: the owner's #1 ask; was after the banner) and before the columns, with its chips, chart box, as-of line, trades list and the attribution link (TradingView + tradingview.com)",
+          html.index('id="hero"') < html.index('id="chartCard"') < html.index('id="status"') < html.index('id="sceneCard"') and all(f'id="{i}"' in html for i in ("chartChips", "chartBox", "chartAsOf", "chartTrades", "chartPill", "chartWhole"))
           and re.search(r'<a class="attrib"[^>]+href="https://www\.tradingview\.com/"[^>]*>Chart: TradingView Lightweight Charts', html))
     check("a. its own module after nq.js (a chart failure never touches the rest of the page), the stylesheet bumped", html.index('src="nq.js') < html.index('src="nqchartfeed.js?v=') and "nq.css?v=a12" in html   # night-nq-main 2026-11-27 bumped a9 -> a11 (the wide desk + hero); day-nqports a12 (#ports full width)
           and "nqchart" not in AK.read(os.path.join(D, "nq.js")))
@@ -223,7 +223,7 @@ SNAP = """() => { const C = window.NQCHART, S = C.S, ts = S.chart ? S.chart.time
     none: (document.querySelector('#chartTrades .cnone') || {}).textContent || '', lr: lr ? [Math.round(lr.from), Math.round(lr.to)] : null, n: S.model ? S.model.n : 0,
     box: document.querySelector('#chartBox').getBoundingClientRect().height, empty: document.querySelector('#chartBox').classList.contains('empty'),
     whole: document.querySelector('#chartWhole').hidden ? '' : document.querySelector('#chartWhole').textContent, key: !document.querySelector('#chartKey').hidden,
-    top: document.querySelector('#chartCard').getBoundingClientRect().top + scrollY, boxBottom: document.querySelector('#chartBox').getBoundingClientRect().bottom + scrollY,
+    top: document.querySelector('#chartCard').getBoundingClientRect().top + scrollY, afterHero: (() => { let e = document.getElementById('hero') && document.getElementById('hero').nextElementSibling; while (e && e.tagName === 'SCRIPT') e = e.nextElementSibling; return !!e && e.id === 'chartCard'; })(), heroBottom: document.querySelector('#hero').getBoundingClientRect().bottom + scrollY, boxBottom: document.querySelector('#chartBox').getBoundingClientRect().bottom + scrollY,
     lib: !!window.LightweightCharts, err: S.err, mode: S.mode, pr: pr ? [pr.from, pr.to] : null, dots: [...document.querySelectorAll('#chartChips .chip .cdot')].length }; }"""
 
 
@@ -282,13 +282,13 @@ def test_page(shots=False):
                   s["chips"] == [["all", "All", "true", "5"], ["z50k", "Zlarior 50K", "false", "2"], ["z25k2", "Zlarior 25K #2", "false", "2"], ["atlas25f", "ATLAS funded", "false", "1"]]
                   and s["dots"] == 3 and [r[:2] for r in s["rows"]] == [["z50k", "1"], ["z25k2", "1"], ["z50k", "0"], ["z25k2", "0"], ["atlas25f", "0"]]
                   and s["rows"][0][2] == "Open" and s["rows"][2][2].startswith("+$") and s["rows"][4][2].startswith("-$"), (s["chips"], s["rows"]))
-            check("c. big on the phone: the chart box 300-440 px tall and wholly on the first 390 x 844 screen (the chips under it), the first view = the last 78 bars to the open trade",
-                  300 <= s["box"] <= 441 and s["boxBottom"] <= 844 and s["lr"] and s["lr"][1] >= 179 and 100 <= s["lr"][0] <= 104 and s["key"] and s["whole"] == "Whole day"
-                  and s["mode"] == "default", (s["box"], s["top"], s["boxBottom"], s["lr"], s["mode"]))
+            check("c. big on the phone: the chart card right under the hero (day-poseidon: the owner's #1 ask), its 300-440 px box within 600 px of the hero's end, the first view = the last 78 bars to the open trade",
+                  300 <= s["box"] <= 441 and s["afterHero"] and s["boxBottom"] - s["heroBottom"] <= 600 and s["lr"] and s["lr"][1] >= 179 and 100 <= s["lr"][0] <= 104 and s["key"] and s["whole"] == "Whole day"
+                  and s["mode"] == "default", (s["box"], s["afterHero"], s["top"], s["heroBottom"], s["boxBottom"], s["lr"], s["mode"]))
             check("c. fast: the page and its chart are ready within 15 s here (one feed poll, the library from vendor/)", took < 15, took)
             check("c. it read the site's status_feed.json, the library from vendor/ and the chart topic (mocked), nothing else off the origin; no console error",
                   any(u.endswith("/status_feed.json") for u in seen) and any("vendor/lightweight-charts" in u for u in seen) and any(bars_url in u for u in p.mocked) and not off and not errs, (off[:3], errs[:3]))
-            check("c. taps >= 44 px (chips, rows, Whole day, the attribution link), no sideways scroll, Jarvis's corner free", not AK.taps(p) and AK.no_sideways(p) and not AK.corner(p), AK.taps(p)[:5])
+            check("c. taps >= 44 px (chips, rows, Whole day, the attribution link), no sideways scroll, Jarvis's corner free", not AK.taps(p) and AK.no_sideways(p) and not AK.corner(p), (AK.taps(p)[:5], AK.no_sideways(p), AK.corner(p)))
             p.evaluate("window.scrollTo(0, 0)")
             p.wait_for_timeout(200)
             shot(p, "nq-chart-all", shots)

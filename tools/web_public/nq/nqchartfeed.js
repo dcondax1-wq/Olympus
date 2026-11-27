@@ -5,7 +5,7 @@
 // whichever comes first. Read only: it sends nothing, stores nothing, places nothing.
 import * as B from './nqbars.js?v=b2';
 
-const POLL_MS = 120000, TIMEOUT_MS = 7000, VIEW = './nqchart.js?v=d3';
+const POLL_MS = 120000, TIMEOUT_MS = 7000, VIEW = './nqchart.js?v=d4';
 const S = { lite: null, priv: null, privSeen: [], privOn: false, privFails: 0, brief: null, ofroom: null, live: null, replay: null, playing: 0, sweepSeen: null, glLines: [], emaS: null,
   feed: undefined, post: null, why: '', acct: 'all', model: null, lib: null, libTried: false, chart: null, series: null, marks: null, lines: [],
   whole: false, want: null, mode: 'default', viewKey: '', drawnN: 0, ready: false, fetchedAt: 0, busy: false, err: '' };
@@ -71,9 +71,11 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) refr
 window.addEventListener('nq-refresh', () => refresh(true));
 // the view: on first view of the card (400 px ahead), else once the page is idle after load (the chart is ready before a scroll gets there)
 const card = document.getElementById('chartCard');
-if (card && typeof IntersectionObserver === 'function') {
+// day-poseidon: the card now sits right under the hero, so the view waits for the page's load (the hero's $ paints first: LCP)
+const watch = () => { if (card && typeof IntersectionObserver === 'function') {
   const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); loadView(); } }, { rootMargin: '400px 0px' });
   io.observe(card);
-}
+} };
+if (document.readyState === 'complete') watch(); else addEventListener('load', watch, { once: true });
 const idle = () => (typeof requestIdleCallback === 'function' ? requestIdleCallback(loadView, { timeout: 2500 }) : setTimeout(loadView, 1500));
 if (document.readyState === 'complete') idle(); else addEventListener('load', idle, { once: true });
