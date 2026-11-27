@@ -207,6 +207,7 @@ AREAS["agency"].append("web_audit")         # day-web-audit 2026-11-20: tools/si
 
 
 AREAS["pc"].append("atlas_miss")         # day-atlasmiss 2026-11-27: B's silent skips get a reason, the stuck-record self-heal, status "ab"; its own line
+AREAS["pc"].append("moneyaudit_bot")     # day-moneyaudit 2026-11-27: every ATLAS lane in the feed / day folders / trade_watch; its own line
 # Retired suites (lead 2026-11-23): never run by an area, always NAMED with the reason (never a silent skip)
 RETIRED = {"live_dryrun": "the retired 'engine' model (live_model.json runs LIT): LIT's live loop = backtest is tests.test_lit_live"}
 

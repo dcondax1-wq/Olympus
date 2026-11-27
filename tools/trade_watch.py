@@ -208,8 +208,28 @@ def atlas_flags(root: str = ROOT, now=None, twin=None) -> list:
         return []
 
 
+LANE_LABEL = {"b": "ATLAS", "r": "ATLAS on the Rapid EOD", "r2": "ATLAS on the Rapid EOD #2"}
+
+
 def _atlas_flags(root, now, twin):
-    st = _read(os.path.join(root, "data", "live_state_acctb.json"), None)
+    """day-moneyaudit: every ATLAS lane state file (account B, the Rapid's lane, the combo lane on an extra Builder): the same
+    twin, each lane's own probes / reasons, one key per lane (B's keys unchanged)."""
+    from engine import account_b as _ab
+    out, cache = [], {}
+
+    def tw(days, keys):
+        k = (tuple(days), tuple(keys))
+        if k not in cache:
+            cache[k] = twin(days, keys) if twin is not None else atlas_twin(root, days, keys, now)
+        return cache[k]
+    for lane, p in _ab.lane_files(os.path.join(root, "data")):
+        for f in _lane_flags(root, now, tw, p, lane):
+            out.append(f)
+    return out
+
+
+def _lane_flags(root, now, twin, path, lane):
+    st = _read(path, None)
     if not isinstance(st, dict):
         return []
     ledger = [r for r in st.get("ledger") or [] if isinstance(r, dict)]
@@ -225,8 +245,11 @@ def _atlas_flags(root, now, twin):
     keys = _atlas_keys(root, ledger) if days else []
     if not keys:
         return []
-    tw = twin(days, keys) if twin is not None else atlas_twin(root, days, keys, now)
+    tw = twin(days, keys)
     out = []
+    who = LANE_LABEL.get(lane) or (f"ATLAS (combo, {lane[2:]})" if lane.startswith("x:") else "ATLAS")
+    pre = "watch:atlas" if lane == "b" else f"watch:atlas-{lane}"
+    acc = "account B" if lane == "b" else f"{who}'s lane"
     for day in days:
         by_t = {}
         for t in tw.get(day) or []:
@@ -245,20 +268,20 @@ def _atlas_flags(root, now, twin):
                 if stuck or silent:                        # day-atlasmiss 2026-11-27: B never checked the open, or its position record is stuck
                     side = "LONG" if t["dir"] == 1 else "SHORT"
                     usd = t.get("usd")
-                    why = (f"account B still marks its {_hm(int(h['since']))} ET entry of {trading_day(int(h['since']))} open (a stuck "
+                    why = (f"{acc} still marks its {_hm(int(h['since']))} ET entry of {trading_day(int(h['since']))} open (a stuck "
                            "position record?): every new entry is skipped until it clears" if stuck else
-                           "account B never checked that open (no reason recorded) while the bot was running")
-                    out.append({"key": f"watch:atlas:{tb}:missed", "t": tb, "code": "missed", "entry_t": tb,
-                                "title": f"ATLAS vs backtest: missed {side} {_hm(tb)} ET",
+                           f"{acc} never checked that open (no reason recorded) while the bot was running")
+                    out.append({"key": f"{pre}:{tb}:missed", "t": tb, "code": "missed", "entry_t": tb,
+                                "title": f"{who} vs backtest: missed {side} {_hm(tb)} ET",
                                 "body": (f"{t.get('short') or t['key']} {side} at the {_hm(tb)} ET open: the backtest twin entered, {why}."
                                          + (f" Twin result {'+' if float(usd) >= 0 else '-'}${abs(float(usd)):,.0f}." if usd is not None else "")
                                          + " The bot clears a stuck record itself once NinjaTrader shows the account flat.")})
                     continue
                 side = "LONG" if t["dir"] == 1 else "SHORT"
                 usd = t.get("usd")
-                out.append({"key": f"watch:atlas:{tb}:missed", "t": tb, "code": "missed", "entry_t": tb,
-                            "title": f"ATLAS vs backtest: missed {side} {_hm(tb)} ET",
-                            "body": (f"{t.get('short') or t['key']} {side} at the {_hm(tb)} ET open: the backtest twin entered, account B "
+                out.append({"key": f"{pre}:{tb}:missed", "t": tb, "code": "missed", "entry_t": tb,
+                            "title": f"{who} vs backtest: missed {side} {_hm(tb)} ET",
+                            "body": (f"{t.get('short') or t['key']} {side} at the {_hm(tb)} ET open: the backtest twin entered, {acc} "
                                      "checked that open and routed nothing, with no reason of its own (no hedge / size / daily limit)."
                                      + (f" Twin result {'+' if float(usd) >= 0 else '-'}${abs(float(usd)):,.0f}." if usd is not None else "")
                                      + " Check the bot log.")})
@@ -277,21 +300,21 @@ def _atlas_flags(root, now, twin):
                 slip = round((fill - float(t["entry"])) * d / TICK, 1)
                 if slip > STOP_TICKS:
                     q = int(e.get("qty") or 0)
-                    out.append({"key": f"watch:atlas:{tb}:slip", "t": tb, "code": "slip", "entry_t": tb,
-                                "title": f"ATLAS vs backtest: slippage {side} {_hm(tb)} ET",
+                    out.append({"key": f"{pre}:{tb}:slip", "t": tb, "code": "slip", "entry_t": tb,
+                                "title": f"{who} vs backtest: slippage {side} {_hm(tb)} ET",
                                 "body": f"{nm} {side} {_hm(tb)} ET filled {fill:,.2f}, {slip:.0f} ticks worse than the twin's "
                                         f"{float(t['entry']):,.2f} (-${slip * TICK * 2.0 * q:,.0f} on {q} micros)."})
             bt_stop = _tick(float(t["stop"]), d)
             if e.get("stop") is None:
-                out.append({"key": f"watch:atlas:{tb}:stop", "t": tb, "code": "stop", "entry_t": tb,
-                            "title": "ATLAS vs backtest: stop",
-                            "body": f"{nm} {side} {_hm(tb)} ET: account B's order has no stop; the backtest's stop was {bt_stop:,.2f}. "
+                out.append({"key": f"{pre}:{tb}:stop", "t": tb, "code": "stop", "entry_t": tb,
+                            "title": f"{who} vs backtest: stop",
+                            "body": f"{nm} {side} {_hm(tb)} ET: {acc}'s order has no stop; the backtest's stop was {bt_stop:,.2f}. "
                                     "Check NinjaTrader for a working stop now."})
             else:
                 diff = round((bt_stop - float(e["stop"])) * d / TICK, 1)      # positive = the live stop sits closer
                 if abs(diff) > STOP_TICKS:
-                    out.append({"key": f"watch:atlas:{tb}:stop", "t": tb, "code": "stop", "entry_t": tb,
-                                "title": "ATLAS vs backtest: stop",
+                    out.append({"key": f"{pre}:{tb}:stop", "t": tb, "code": "stop", "entry_t": tb,
+                                "title": f"{who} vs backtest: stop",
                                 "body": f"{nm} {side} {_hm(tb)} ET: the live stop {float(e['stop']):,.2f} sits {abs(diff):.0f} ticks "
                                         f"{'closer than' if diff > 0 else 'farther than'} the backtest's {bt_stop:,.2f}."})
     return out

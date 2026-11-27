@@ -778,8 +778,13 @@ def full(snap: dict) -> dict:
     try:                                     # day-atlasmiss: account B's position record + today's skip reasons (core, every post)
         from engine import account_b as _ab
         ab = _ab.status_tiny(snap.get("ab_path"), now=snap.get("t"))
+        lt = _ab.lanes_tiny(snap.get("ab_dir"), now=snap.get("t"), root=snap.get("ab_root"))   # day-moneyaudit: every ATLAS lane
+        if lt and "cb" in lt:
+            ab = {**(ab or {}), "cb": lt.pop("cb")}         # the combo switch's accounts (last 4): core, ~20 bytes
         if ab:
             out["ab"] = ab
+        if lt and lt.get("ln"):
+            out["abl"] = lt["ln"]                           # the Rapid / combo ATLAS lanes: open record + today's skips (ext)
     except Exception:  # noqa: BLE001
         pass
     try:                                     # day-ledgerfix: the last 01:55 / 09:00 ET armed + routed check (engine/live_guard.arm_tiny)
