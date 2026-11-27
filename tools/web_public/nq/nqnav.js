@@ -40,7 +40,7 @@
     ['chart', 'Chart', 'chart.html', 'index.html#chartCard', ['chart.html']],
     ['accounts', 'Accounts', 'accounts.html', null, ['accounts.html']],
     ['flow', 'Flow', 'orderflow.html', null, ['orderflow.html']],
-    ['brain', 'Brain', 'brain.html', null, ['brain.html']],
+    ['brain', 'Brain', 'brains.html', null, ['brains.html', 'brain.html']],   // overnight 2026-11-27: the 4 strategy brains (brains.html); brain.html stays lit
     ['pc', 'PC', 'pchealth.html', '../pc/index.html', ['pchealth.html']]
   ];
   var LS_PC = 'nqnav.pc.v1', LS_HAVE = 'nqnav.have.v1', LS_INST = 'nqnav.inst.v1', SS_ENTER = 'nqnav.enter';

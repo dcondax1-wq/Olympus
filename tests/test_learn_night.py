@@ -411,7 +411,7 @@ def part_g(tmp, dd_c):
     check("g. fake steps run in order (pull, edge, costs, 3 anatomy, lab, hub); the card learned.json = the PC's line + date, no BLITZ",
           [x[0] for x in calls] == ["tools/data_pull.py", "tools/of_backfill.py", "tools/livegap_daily.py", "tools/edge_health.py", "tools/cost_alarm.py"] + ["tools/win_loss_anatomy.py"] * 3
           + ["tools/zeus_lab.py", "tools/research_hub.py", "research/blitz/learn.py", "tools/forward_paper.py", "research/orderflow/of_learn.py"]
-          + ["tools/nq_ports.py", "tools/nq_thoughts.py", "tools/build_replay.py", "tools/build_of_room.py", "tools/week_review.py", "tools/roi_build.py"]   # afternoon landing 2026-11-27: step nqsite
+          + ["tools/nq_ports.py", "tools/nq_thoughts.py", "tools/build_replay.py", "tools/build_of_room.py", "tools/week_review.py", "tools/roi_build.py", "tools/refresh_backtests.py", "tools/build_strats.py"]   # afternoon landing 2026-11-27: step nqsite
           and c.get("day") == DAY and c.get("line", "").startswith("ZEUS learned Nov 19") and "blitz" not in json.dumps(c).lower()
           and len(json.dumps(c).encode()) <= LN.CARD_MAX_BYTES, (calls, c.get("line")))
     D = ZL._read_json(dec, {})

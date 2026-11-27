@@ -196,7 +196,7 @@ def plan(a) -> list:
         out.append(("oflearn", [["research/orderflow/of_learn.py"]]))   # -> research/learn/of_signals.jsonl + journal.json lines; paper only
     if "nqsite" not in skip:               # afternoon landing 2026-11-27: the NQ site's data cards (read only; web data, never a bot file)
         out.append(("nqsite", [["tools/nq_ports.py"], ["tools/nq_thoughts.py"], ["tools/build_replay.py"], ["tools/build_of_room.py"],
-                               ["tools/week_review.py"], ["tools/roi_build.py"]]))
+                               ["tools/week_review.py"], ["tools/roi_build.py"], ["tools/refresh_backtests.py"], ["tools/build_strats.py"]]))
     return out
 
 
