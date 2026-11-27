@@ -176,6 +176,11 @@ function loadPlan() {
   if (card && 'IntersectionObserver' in window) { const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); go(); } }, { rootMargin: '600px 0px' }); io.observe(card); }
   (window.requestIdleCallback || ((f) => setTimeout(f, 1500)))(go, { timeout: 4000 });
 }
+// TODAY'S STORY (story.js + storycore.js): the card + the hero's one line; added when the browser is idle (the hero line wants it early)
+function loadStory() {
+  if (S.storyIn) return; S.storyIn = true;
+  (window.requestIdleCallback || ((f) => setTimeout(f, 1500)))(() => { const t = document.createElement('script'); t.type = 'module'; t.src = new URL('./story.js?v=1', import.meta.url).href; document.head.appendChild(t); }, { timeout: 4000 });
+}
 // MARKET PORTS (ports.js + portscore.js; nq/ports.json from tools/nq_ports.py): code-split like plan.js, near its section or when idle
 function loadPorts() {
   if (S.portsAsked) return; S.portsAsked = true;
@@ -390,7 +395,7 @@ function render() {
   try {                                  // night-nq-main: the battle plan + alert history (plan.js) read the SAME merged PC state, never a 2nd feed read
     window.NQ_HOME = { home: deskHome(), lite: S.lite || null, demo: S.demo, chart: deskChart(), bars: heroBars() };   // chart = the PC's last 5-min bar (the battle plan's only "now" price)
     dispatchEvent(new CustomEvent('nq-home', { detail: window.NQ_HOME }));
-    loadPlan(); loadDec(); loadPorts();
+    loadPlan(); loadDec(); loadPorts(); loadStory();
   } catch (_) { /* the plan keeps its last draw */ }
   try { if (O && O.ready) O.ready(); } catch (_) { /* the veil lifts by itself */ }
   tryScene(); tryLand();

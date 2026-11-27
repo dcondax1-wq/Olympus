@@ -142,6 +142,7 @@ AREAS["nq"].append("nq_december")   # night-nq-main 2026-11-27: the December car
 AREAS["nq"].append("nq_tour")   # night-nq-main 2026-11-27: the first-visit tour (nq/tour.js)
 AREAS["nq"].append("nq_qa2")   # night-nq-main 2026-11-27: QA second sweep (dock row, London now, half-day sentence, replay fold, pillar Ready)
 AREAS["nq"].append("nq_ports")   # day-nqports 2026-11-27: market ports (tools/nq_ports.py -> nq/ports.json; nq/portscore.js, ports.js)
+AREAS["nq"].append("nq_story")   # day-nqports 2026-11-27: TODAY'S STORY (nq/storycore.js, story.js, story.html + the hero line)
 AREAS["nq"].append("atlas2")              # day-atlas2 2026-11-26: ATLAS v2 at real fills (research/atlas2/atlas2.py: switch, fixed scoring, gate)
 AREAS["nq"].append("atlas_exec"); AREAS["pc"].append("atlas_exec")   # big-atlasfill 2026-11-26: ATLAS fast lane (engine/atlas_exec.py, OFF, Sim only)
 # night-webpush 2026-11-19: Olympus phone notifications from the PC (engine/push.py: own key, relay intake, phone first / ntfy backup;

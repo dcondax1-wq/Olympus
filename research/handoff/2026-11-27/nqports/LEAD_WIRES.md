@@ -19,3 +19,13 @@ Add `nq/portscore.js`, `nq/ports.js`, `nq/ports.css`, `nq/ports.json`. Versions 
 `tests/run_area.py` gets `AREAS["nq"].append("nq_ports")` (one line under the night-nq-main block).
 
 ## 4. Shots (local, shots/ is git-ignored): research/handoff/2026-11-27/nqports/shots/ports2_phone.png, ports2_desk.png
+
+# TODAY'S STORY (2nd commit on day-nqports)
+- New: nq/storycore.js (pure model), nq/story.js (card + page + hero line), nq/story.css, nq/story.html. No new builder: today = the page's
+  own state (NQ_HOME.bars + the post's glog + board.trades); past days = nq/replay/index.json + replay/<day>.json (tools/build_replay.py,
+  already in the build); context = nq/ports.json.
+- sw.js precache (lead only): nq/storycore.js, story.js, story.css, story.html. nq.js?v=r46.
+- jarvis/apps.js / olympus.js APPS (lead only): optionally list nq/story.html ("NQ Story") next to Replay.
+- run_area: AREAS["nq"].append("nq_story") (added).
+- Data the PC could add later (LEAD_WIRES, engine side, not done): glog keeps only ~8 lines a bot, so a busy morning loses its early
+  thoughts; a per-day thought log published with the day (like pc_days) would let past days show LIT's real reasons, not only the twin's.
