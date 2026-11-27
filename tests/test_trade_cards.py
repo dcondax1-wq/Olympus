@@ -129,16 +129,30 @@ def t_bus(card):
               "target": 25560, "risk": 80, "gain": 240, "t": ET0, "photo": card["photo"], "legend": card["legend"],
               "more": card["why"] + "\n" + card["extra"]}
         r = AB.deliver(ev, cfg=cfg, path=os.devnull, log_path=os.devnull)
+        AB.drain(30)
         ph = [c for c in calls if c[0] == "sendPhoto"]
-        check("Telegram gets sendPhoto (multipart, the PNG inside) and nothing else", r.get("ok") and len(ph) == 1 and len(calls) == 1
-              and ph[0][1].startswith("multipart/form-data") and b"\x89PNG" in ph[0][2], (r, [c[:2] for c in calls]))
-        cap = ph[0][2].split(b'name="caption"')[1][:900].decode("utf-8", "replace") if ph else ""
-        check("the caption: account, side, size, entry / stop / target, $ risk, the reason, R, the colour legend",
-              all(w in cap for w in ("Zlarior 50K", "LONG", "2 MNQ", "25,480", "risk $80", "London low", "3.0R", "green = target")), cap)
+        # day-tgpretty: the SHORT text first (the alert never waits for a picture), then the chart on its own thread
+        check("Telegram: the text first (sendMessage), then sendPhoto (multipart, the PNG inside)",
+              r.get("ok") and [c[0] for c in calls] == ["sendMessage", "sendPhoto"] and ph[0][1].startswith("multipart/form-data")
+              and b"\x89PNG" in ph[0][2], (r, [c[:2] for c in calls]))
+        txt = json.loads(calls[0][2].decode("utf-8"))["text"] if calls else ""
+        check("the text: emoji first, account, side, $ risk, the target $, size, entry / stop / target, the reason; <= 3 lines",
+              txt.startswith("\U0001F7E2") and all(w in txt for w in ("Zlarior 50K", "LONG", "2 MNQ", "25,480", "risk $80", "+$240", "London low"))
+              and len(txt.splitlines()) <= 3, txt)
+        cap = ph[0][2].split(b'name="caption"')[1].split(b"\r\n--")[0].decode("utf-8", "replace").strip() if ph else ""
+        check("the picture's caption: one line, the colour legend", "mint = target" in cap and "\n" not in cap.strip(), cap)
         calls.clear()
         http.fail = True
         r2 = AB.deliver({**ev, "key": "k2"}, cfg=cfg, path=os.devnull, log_path=os.devnull)
-        check("sendPhoto refused -> the plain text message goes instead", r2.get("ok") and [c[0] for c in calls] == ["sendPhoto", "sendMessage"],
+        AB.drain(30)
+        check("sendPhoto refused -> the text still went (receipt from sendMessage)", r2.get("ok") and [c[0] for c in calls] == ["sendMessage", "sendPhoto"],
+              [c[0] for c in calls])
+        calls.clear()
+        http.fail = False
+        r3 = AB.deliver({**ev, "key": "k3", "photo": None, "photo_fn": lambda: (_ for _ in ()).throw(RuntimeError("chart crash"))},
+                        cfg=cfg, path=os.devnull, log_path=os.devnull)
+        AB.drain(30)
+        check("a chart that crashes: the text went, no picture, nothing raised", r3.get("ok") and [c[0] for c in calls] == ["sendMessage"],
               [c[0] for c in calls])
         t, b = AB.text(ev)
         check("every other channel: text only, with the reason line", "London low" in b and "photo" not in b)
@@ -150,20 +164,21 @@ def t_hook():
     print("4. push._bus_send attaches the card to real entries / exits", flush=True)
     from engine import push, alert_bus as AB, notify, trade_card as TC
     got = []
-    saved = (AB.active, AB.send, notify.real_trade, TC.attach)
+    saved = (AB.active, AB.send, notify.real_trade, TC.attach, TC.attach_lazy)
     AB.active = lambda *a, **k: True
     AB.send = lambda ev, on_done=None, **k: got.append(ev) or "queued"
     notify.real_trade = lambda p: True
-    TC.attach = lambda ev, p, what, **k: {**ev, "photo": "/x.png", "more": "why"}
+    TC.attach_lazy = lambda ev, p, what, **k: {**ev, "photo_fn": (lambda: "/x.png"), "more": "why"}
     try:
         push._bus_send({"kind": "fill", "key": f"fill:{ET0}", "side": "LONG", "qty": 1, "entry": 1, "stop": 0, "target": 3, "account": "Zlarior 50K"})
-        check("the bus event carries the picture", got and got[0].get("photo") == "/x.png" and got[0]["kind"] == "entry", got)
-        TC.attach = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("boom"))
+        check("the bus event carries the picture (drawn later: photo_fn, never before the text)",
+              got and callable(got[0].get("photo_fn")) and got[0]["photo_fn"]() == "/x.png" and got[0]["kind"] == "entry", got)
+        TC.attach_lazy = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("boom"))
         got.clear()
         push._bus_send({"kind": "outcome", "key": f"out:{ET0}", "side": "LONG", "usd": 5, "exit": "TARGET", "account": "Zlarior 50K"})
         check("a broken card never stops the alert (plain event sent)", got and "photo" not in got[0], got)
     finally:
-        AB.active, AB.send, notify.real_trade, TC.attach = saved
+        AB.active, AB.send, notify.real_trade, TC.attach, TC.attach_lazy = saved
 
 
 def _snap(now):

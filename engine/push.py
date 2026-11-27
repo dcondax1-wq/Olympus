@@ -1446,7 +1446,8 @@ def _bus_send(payload: dict) -> dict | None:
             ev = AB.from_trade(p, what)
             try:                                       # day-cards: the chart picture + the bot's reason (engine/trade_card, read-only)
                 from . import trade_card
-                ev = trade_card.attach(ev, p, what)
+                # day-tgpretty: the reason now, the chart drawn after the text on its own thread (LE_TG_PRETTY=0: the old card)
+                ev = trade_card.attach_lazy(ev, p, what) if AB._pretty_on() else trade_card.attach(ev, p, what)
             except Exception:
                 pass
             r = AB.send(ev, on_done=lambda res: res.get("ok") and notify.instant_record(p, what))

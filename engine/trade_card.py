@@ -21,7 +21,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CARD_DIR = os.path.join(ROOT, "logs", "cards")
 _DEFAULT_DIR = CARD_DIR
 TYPE = "trade_cards"
-BEFORE_S = 2 * 3600
+BEFORE_S = 90 * 60                      # day-tgpretty (owner): the last ~90 min of 1-minute candles
 KEEP = 60
 PV_MNQ = 2.0
 
@@ -174,7 +174,7 @@ def _trim():
         pass
 
 
-def build(p: dict, what: str, now=None, bot=None, bars_fn=None) -> dict | None:
+def build(p: dict, what: str, now=None, bot=None, bars_fn=None, keep_info: bool = False) -> dict | None:
     """{"photo": path to the PNG | None, "why", "extra"} for a fill ("entry") / outcome ("exit") payload. Never raises."""
     try:
         from . import png_chart as PC
@@ -185,7 +185,7 @@ def build(p: dict, what: str, now=None, bot=None, bars_fn=None) -> dict | None:
         side = str(p.get("side") or "").upper()
         d = 1 if side == "LONG" else -1
         info = _load(et_)
-        if what == "entry":
+        if what == "entry" and not (keep_info and info):     # attach_lazy saved the entry's words already: never read the brain twice
             info = {"entry": _f(p.get("entry")), "stop": _f(p.get("stop")), "target": _f(p.get("target")), "qty": _f(p.get("qty")),
                     "side": side, "why": reason(p, bot), "sweep": sweep_level(p, bot)}
             _save(et_, info)
@@ -294,6 +294,38 @@ def summary_photo(card: dict, key: str = "") -> str | None:
         return path
     except Exception:
         return None
+
+
+def attach_lazy(ev: dict, p: dict, what: str, now=None, bot=None) -> dict:
+    """day-tgpretty: the bus event with the bot's reason + the $ risk line NOW (cheap: the brain's words, the saved entry), and the
+    chart as ev["photo_fn"]: engine/alert_bus draws it on its own thread AFTER the text went (the alert never waits for a picture).
+    Unchanged when off. Never raises."""
+    try:
+        if not enabled() or _test_transport():
+            return ev
+        et_ = entry_time(p)
+        if not et_:
+            return ev
+        out = dict(ev)
+        side = str(p.get("side") or "").upper()
+        info = _load(et_)
+        if what == "entry":
+            info = {"entry": _f(p.get("entry")), "stop": _f(p.get("stop")), "target": _f(p.get("target")), "qty": _f(p.get("qty")),
+                    "side": side, "why": reason(p, bot), "sweep": sweep_level(p, bot)}
+            _save(et_, info)
+        more = [x for x in (_mask(info.get("why") or ""),) if x]
+        if more:
+            out["more"] = "\n".join(more)[:400]
+        p2, bot2 = dict(p), bot
+
+        def draw():
+            c = build(p2, what, now=now, bot=bot2, keep_info=True)
+            return (c or {}).get("photo")
+
+        out["photo_fn"] = draw
+        return out
+    except Exception:
+        return ev
 
 
 def attach(ev: dict, p: dict, what: str, now=None, bot=None) -> dict:

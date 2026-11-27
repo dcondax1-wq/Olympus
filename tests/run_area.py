@@ -587,8 +587,12 @@ AREAS["pc"].append("buy_gate_rt")   # red team 2026-11-26: bg < 400 B, a damaged
 AREAS["nq"].append("fill_log"); AREAS["pc"].append("fill_log")   # day-zeroerr 2026-11-26: every real fill (entry + exit, every lane) in fills.jsonl.gz, BLITZ paper rows, extra accounts in the day summary
 AREAS["pc"].append("of_asks_rt")   # red team #29: one 'of' answer per answering night, bf never swallowed
 
-if __name__ == "__main__":
-    sys.exit(main())
 AREAS["nq"].append("nq_accounts_night")   # night-nq-accounts 2026-11-27: premium account cards + business view (web only)
 AREAS["nq"].append("vault_never_blank"); AREAS["olympus"].append("vault_never_blank")   # QA #3 night-nq-accounts: the payout vault is never a blank box
 AREAS["nq"].append("evalroi"); AREAS["money"].append("evalroi")   # day-evalroi 2026-11-27: nq/roi.html eval economics
+AREAS["pc"].append("tg_pretty")   # day-tgpretty 2026-11-27: short emoji Telegram alerts, the chart after the text, /preview
+AREAS["pc"].append("insta_card")   # day-insta 2026-11-27: the green-day 1080 x 1350 Insta card after the day summary, /insta
+AREAS["pc"].append("tg_pretty_rt")   # red team #39: Sim Funded is never paper; a Telegram skip / hold still reaches ntfy + the app
+
+if __name__ == "__main__":
+    sys.exit(main())
