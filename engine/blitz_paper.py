@@ -63,11 +63,8 @@ def _wj(p, obj):
     tmp = p + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(obj, fh, separators=(",", ":"), default=float)
-    try:
-        from . import fsutil                          # retries on a Windows / OneDrive lock
-        fsutil.replace(tmp, p)
-    except Exception:  # noqa: BLE001
-        os.replace(tmp, p)
+    from . import fsutil                              # retries on a Windows / OneDrive lock (test_selfheal)
+    fsutil.replace(tmp, p)
 
 
 def _d(root: str) -> str:
