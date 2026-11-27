@@ -371,5 +371,5 @@ if (NQF) {
 }
 load(true).then(() => { S.loaded = true; }).catch(() => { S.loaded = true; try { render(); } catch (_) { /* nothing */ } });
 setInterval(() => { if (document.visibilityState !== 'hidden') { try { render(); } catch (_) { /* keeps the last screen */ } } }, 5000);   // ages + time in trade move on
-setInterval(() => { if (document.visibilityState !== 'hidden') load(false).catch(() => {}); }, L.POLL_MS);
+setInterval(() => { if (document.visibilityState !== 'hidden') load(false, true).catch(() => {}); }, L.POLL_MS);   // the live screen reads fresh every 22 s (past the shared feed's 60 s cache)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.loaded) load(false).catch(() => {}); });

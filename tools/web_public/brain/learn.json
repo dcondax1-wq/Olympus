@@ -1154,15 +1154,15 @@
      "bot": "OF",
      "kind": "ladder",
      "n": 0,
-     "need": 20,
+     "need": 30,
      "fwd_r": null,
      "fwd_sum": 0,
      "band_r": 0.495,
      "band_n": 40,
      "z": null,
      "status": "watching",
-     "eta_days": 22,
-     "word": "step 0 (paper forward): needs 20 more forward trades (~22 trading days)",
+     "eta_days": 33,
+     "word": "step 0 (paper forward): needs 30 more forward trades (~33 trading days)",
      "progress": 0.0
     }
    ]

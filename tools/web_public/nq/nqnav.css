@@ -19,7 +19,7 @@
 @keyframes nqn-out { to { opacity: 0; transform: scale(.985); } }
 @keyframes nqn-in { from { opacity: 0; transform: translateY(8px) scale(.992); } }
 
-html.nqnav-on body { padding-bottom: calc(var(--nqnav-h) + 18px) !important; }
+html.nqnav-on body { padding-bottom: calc(var(--nqnav-h) + 34px) !important; }
 html.nqnav-on { overscroll-behavior-y: contain; overflow-x: hidden; }   /* a page's stray wide chip never zooms the phone out (the dock would sit below the screen) */
 /* the kit's floating buttons step up above the dock */
 html.nqnav-on .oly-home { bottom: calc(var(--nqnav-h) + 14px) !important; }
@@ -53,7 +53,7 @@ html.nqnav-on .oly-ask-btn { bottom: calc(var(--nqnav-h) + 14px) !important; }
 .nqn-tab[hidden] { display: none; }
 
 /* the PC pill: a capsule riding on the dock's top edge, or inside any [data-nq-pc-pill] slot */
-.nqn-pill { display: inline-flex; align-items: center; gap: 7px; min-height: 30px; padding: 0 12px 0 10px; border-radius: 999px; box-sizing: border-box;
+.nqn-pill { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 0 14px 0 12px; border-radius: 999px; box-sizing: border-box;
   background: rgba(22, 19, 30, .94); border: 1px solid var(--nqn-line2); color: var(--nqn-text); font: 600 12px/1 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, .6), 0 6px 18px rgba(0, 0, 0, .55), 0 0 16px rgba(157, 89, 238, .28); cursor: pointer; white-space: nowrap; -webkit-tap-highlight-color: transparent; }
 .nqn-pill:focus-visible { outline: 2px solid var(--nqn-gold); outline-offset: 2px; }
@@ -64,7 +64,7 @@ html.nqnav-on .oly-ask-btn { bottom: calc(var(--nqnav-h) + 14px) !important; }
 .nqn-pill[data-lv="bad"] { border-color: rgba(255, 107, 129, .6); }
 .nqn-pill[data-lv="bad"] i { background: var(--nqn-red); box-shadow: 0 0 8px var(--nqn-red); }
 .nqn-pill[data-old="1"]::after { content: "saved"; font-size: 10px; color: var(--nqn-dim); font-weight: 500; }
-.nqn-float { position: fixed; z-index: 61; left: 50%; bottom: calc(var(--nqnav-h) - 15px); transform: translateX(-50%); view-transition-name: nqnav-pill; }
+.nqn-float { position: fixed; z-index: 61; left: 50%; bottom: calc(var(--nqnav-h) - 14px); transform: translateX(-50%); view-transition-name: nqnav-pill; }
 @media (prefers-reduced-motion: no-preference) {
   .nqn-pill[data-lv="ok"] i { animation: nqn-beat 2.4s ease-in-out infinite; }
 }

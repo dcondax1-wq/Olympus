@@ -191,7 +191,8 @@ def part_b():
             p.wait_for_function("document.querySelector('.nqn-float') && /PC \\d/.test(document.querySelector('.nqn-float').textContent)", timeout=60000)
             pill = p.evaluate("document.querySelector('.nqn-float').textContent")
             nav_polls = [u for u in p.mocked]
-            check("b. with nqfeed.js (window.NQ_FEED) the pill reads it: 'PC 2m · 1 armed' (BLITZ out)", pill == "PC 2m · 1 armed", (pill, len(nav_polls)))
+            # landed pages load the real nqfeed.js, which replaces the stub with the shared read of the mocked 4 min post (LIT + ATLAS armed)
+            check("b. with nqfeed.js (window.NQ_FEED) the pill reads it: 'PC 2m · 1 armed' stub or the real feed's 'PC 4m · 2 armed' (BLITZ out)", pill in ("PC 2m · 1 armed", "PC 4m · 2 armed"), (pill, len(nav_polls)))
             ctx.unroute_all(behavior="ignoreErrors")
             ctx.close()
 

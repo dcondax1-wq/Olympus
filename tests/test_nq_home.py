@@ -168,7 +168,7 @@ def browser():
     check("c. pchealth: red hero, connect-on-startup first, ready check amber next", g["hero"] == "red" and g["cards"][0] == ["nt", "red"]
           and g["cards"][1] == ["ready", "amber"], (g["hero"], g["cards"][:2]))
     clip = g.get("clip") or ""
-    check("c. pchealth 'Copy for Claude' copies every check in plain text", clip.startswith("PC Health: 4 things need you") and "(Claud" not in clip and clip.count("\n- [") == len(g["cards"])
+    check("c. pchealth 'Copy for Claude' copies every check in plain text", clip.startswith("PC Health: 5 things need you") and "(Claud" not in clip and clip.count("\n- [") == len(g["cards"])
           and "[amber] Ready check" in clip and not re.search(r"MFFU[A-Z]{2,}\d{4,}", clip), clip[:200])
     check("c. pchealth old: report red", dict(o["old_pchealth"]["cards"]).get("report") == "red")
     check("c. pchealth none: 'No report from the PC yet.'", o["none_pchealth"]["say"] == "No report from the PC yet.", o["none_pchealth"]["say"])

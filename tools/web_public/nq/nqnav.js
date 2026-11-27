@@ -174,7 +174,8 @@
   }
 
   // ---------- the dock ----------
-  var have = ls(LS_HAVE) || {};
+  // landed 2026-11-27: orderflow.html + pchealth.html are on the site, chart.html is not (Chart = Home's chart card); no HEAD probe
+  var have = { 'chart.html': 0, 'orderflow.html': 1, 'pchealth.html': 1 };
   function tabHref(id) {
     for (var i = 0; i < TABS.length; i++) if (TABS[i][0] === id) { var T = TABS[i]; return have[T[2]] === 0 ? (T[3] ? base + T[3] : null) : base + T[2]; }
     return null;
@@ -297,7 +298,7 @@
   // ---------- start ----------
   function css() {
     if (d.querySelector('link[data-nqnav]')) return;
-    var l = d.createElement('link'); l.rel = 'stylesheet'; l.href = base + 'nqnav.css?v=1'; l.setAttribute('data-nqnav', ''); d.head.appendChild(l);
+    var l = d.createElement('link'); l.rel = 'stylesheet'; l.href = base + 'nqnav.css?v=2'; l.setAttribute('data-nqnav', ''); d.head.appendChild(l);
   }
   function start() {
     var html = d.documentElement;
@@ -324,7 +325,6 @@
     w.addEventListener('online', function () { offlineChip(false); });
     if (w.navigator.onLine === false) offlineChip(true);
     maybeInstallChip();
-    if (!framed) (w.requestIdleCallback || function (f) { setTimeout(f, 1500); })(probe);
   }
   w.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); S.installEvt = e; if (d.body) maybeInstallChip(); });
   w.addEventListener('appinstalled', function () { S.installEvt = null; ls(LS_INST, Date.now()); });
