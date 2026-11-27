@@ -1004,7 +1004,8 @@
    "research/forward/forward.json",
    "research/ideamill/summary.json",
    "research/livegap/daily.json",
-   "research/health/bands.json"
+   "research/health/bands.json",
+   "research/evalplan/ladder.json"
   ],
   "forward": {
    "from": "2026-11-23",
@@ -1145,6 +1146,23 @@
      "status": "watching",
      "eta_days": 405,
      "word": "needs 20 more new trades (~405 trading days at its usual pace)",
+     "progress": 0.0
+    },
+    {
+     "id": "of_lane_a_ladder",
+     "what": "Order flow lane A (absorption level fade) gate ladder: paper -> Sim101 -> one eval -> the rest -> funded",
+     "bot": "OF",
+     "kind": "ladder",
+     "n": 0,
+     "need": 20,
+     "fwd_r": null,
+     "fwd_sum": 0,
+     "band_r": 0.495,
+     "band_n": 40,
+     "z": null,
+     "status": "watching",
+     "eta_days": 22,
+     "word": "step 0 (paper forward): needs 20 more forward trades (~22 trading days)",
      "progress": 0.0
     }
    ]

@@ -506,6 +506,15 @@ def run(only=None, bands=False, dry=False, say=print, rules=None, today=None):
                 doc["s1_forward"] = {k: v for k, v in s1_forward(fwd_days, say=say).items() if k != "rows"}
             except Exception as e:  # noqa: BLE001
                 say(f"s1_forward failed: {e.__class__.__name__}: {e}")
+        if rules is None:                  # night-of-ladder: order flow lane A gate ladder (research/evalplan/ladder.json), soft
+            try:
+                try:
+                    import of_ladder
+                except ImportError:
+                    from tools import of_ladder
+                doc["of_ladder"] = {k: v for k, v in of_ladder.run(say=say).items() if k not in ("rows", "steps")}
+            except Exception as e:  # noqa: BLE001
+                say(f"of_ladder failed: {e.__class__.__name__}: {e}")
         if rules is None:                  # the Brain's "What the bots learned" page reads it (big-learnview): rebuild, soft
             try:                           # big-setupscore: the LIT setup score's pool + holdout verdict first (soft, ~5 s)
                 import setupscore_build
