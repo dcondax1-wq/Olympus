@@ -292,18 +292,77 @@ def missed(bot, now) -> list:
     seen, uniq = set(), []
     for m in out:
         k = f"guard:miss:{m['model']}:{_mask(m['account'])}:{int(m['entry_t'])}"
+        if _not_armed(m.get("why")):                       # night-missedalarm: an unarmed account = ONE line a day (its first miss),
+            k = f"guard:miss:{m['model']}:{_mask(m['account'])}:{trading_day(m['entry_t'])}:notarmed"   # not one per signal
         if k not in seen:
             seen.add(k)
-            uniq.append({**m, "key": k})
+            uniq.append({**m, "key": k, **_size_hint(bot, m)})
     return uniq
+
+
+def _not_armed(why) -> bool:
+    w = str(why or "").lower()
+    return "not armed" in w
+
+
+def _size_hint(bot, m: dict) -> dict:
+    """{"side", "risk_usd", "r", "usd"} of a missed signal, estimated at the ACCOUNT's size where it is known (its max risk a trade,
+    engine/multi_account rules.max_risk_usd), else the twin's own risk. Read only; {} on any problem."""
+    try:
+        acct = None
+        for a in list(lit_followers(bot)) + list(atlas_accounts(bot)):
+            if _label(a) == m.get("account"):
+                acct = a
+                break
+        rules = (getattr(acct, "rules", None) or ((getattr(acct, "spec", None) or {}).get("rules")) or {}) if acct is not None else {}
+        cap = rules.get("max_risk_usd") if isinstance(rules, dict) else None
+        t = int(m["entry_t"])
+        if m.get("model") == "atlas":
+            tw = None
+            for tr in ((((getattr(bot, "second", None) or {}).get("strategies") or {}).get(m.get("key")) or {}).get("trades") or []):
+                if int(tr.get("entry_t") or 0) == t:
+                    tw = tr
+                    break
+            if not tw:
+                return {}
+            risk = float(cap or tw.get("risk_usd") or 0) or None
+            r = tw.get("r") if tw.get("r") is not None else tw.get("last_r")
+            side = "LONG" if int(tw.get("dir") or 0) > 0 else "SHORT"
+        else:
+            pos = (getattr(bot, "state", None) or {}).get("position") or {}
+            same = pos.get("entry_t") is not None and int(pos["entry_t"]) == t
+            risk = float(cap or (pos.get("risk_usd") if same else 0) or 0) or None
+            r = None
+            side = ("LONG" if pos.get("dir") == 1 else "SHORT") if same else ""
+        out = {"side": side, "risk_usd": round(risk, 2) if risk else None}
+        if risk and r is not None:
+            out.update(r=round(float(r), 2), usd=round(float(r) * risk, 2))
+        return out
+    except Exception:  # noqa: BLE001
+        return {}
+
+
+def _hint_words(m: dict) -> str:
+    if m.get("usd") is not None:
+        return f" (~{'+' if m['usd'] >= 0 else '-'}${abs(m['usd']):,.0f} at its size: {m['r']:+.1f}R on ~${m['risk_usd']:,.0f} risk)"
+    if m.get("risk_usd"):
+        return f" (~${m['risk_usd']:,.0f} risk at its size)"
+    return ""
 
 
 def missed_payload(m: dict) -> dict:
     who = "Zlarior" if m["model"] == "lit" else "ATLAS"
+    if _not_armed(m.get("why")) and not m.get("soft"):     # night-missedalarm: the owner's words, one a day per account
+        acct = _mask(m["account"])
+        return {"key": m["key"], "code": "missed", "bot": m["model"], "entry_t": int(m["entry_t"]),
+                "title": f"{acct} is not armed"[:120],
+                "body": (f"{acct} is not armed: it missed {who} "
+                         f"{(m.get('side') or '').lower() + ' ' if m.get('side') else ''}at {_hm(m['entry_t'])} ET{_hint_words(m)}. "
+                         "Arm it at the PC: STOP BOT, START_BOT.bat, type I ACCEPT LIVE RISK. (One line a day per account.)")[:600]}
     head = "Not taken (check)" if m.get("soft") else "MISSED TRADE"
     return {"key": m["key"], "code": "missed", "bot": m["model"], "entry_t": int(m["entry_t"]),
             "title": f"{head} · {who} {_hm(m['entry_t'])} ET on {_mask(m['account'])}"[:120],
-            "body": (f"The live twin took {who}'s {_hm(m['entry_t'])} ET entry; {_mask(m['account'])} did not: {_mask(m['why'])}."
+            "body": (f"The live twin took {who}'s {_hm(m['entry_t'])} ET entry; {_mask(m['account'])} did not: {_mask(m['why'])}{_hint_words(m)}."
                      + ("" if m.get("soft") else " Next: python tools/board.py read, then the account's line in the Start window."))[:600],
             **({"soft": True, "tags": "eyes"} if m.get("soft") else {})}
 
