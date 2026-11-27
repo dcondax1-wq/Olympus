@@ -485,3 +485,7 @@
   ~89 pts, ATR ~2x). 4 pre-registered caps with a 1-micro floor (120 pts, max(80, 3 ATR), VIX >= 22 -> 120, 3.2 ATR in [40,150]):
   none better in H1 and Jul-Oct (best V3: H1 +$191 but PF 5.20 -> 4.99, Jul-Oct +$1), Holm p 1.0, all lose more in the drought
   (-$916..-$1,938 vs -$858). Live stays. research/lit/drought-2026-11-27/RESULT.md
+- 2026-11-27 Builder 50K LIT room_f 0.5 / 0.6 / 0.7 (owner "upsize the 50Ks", day-50ksize, combo_account engine, 12 cells pre-registered):
+  +$37..+$63/mo H1, +$41..+$99 Jul-Oct for fresh fails 3 -> 4-8% / 9 -> 15-22%; same answer as evalsizer. room_f stays 0.4.
+  ATLAS eval share x1.0 (room 0.4) = +$183 / +$111 / +$44 a month (H1 / Jul-Oct / 2021-25) for fails 3 -> 9% / 9 -> 13%:
+  owner 2026-11-27: "Wait until more room" = later, revisit when the 50K room > $2,000. research/lit/size50k-2026-11-27/RESULT.md
