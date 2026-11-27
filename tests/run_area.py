@@ -125,6 +125,7 @@ AREAS["nq"].append("market_learn")       # day-marketlearn 2026-11-24: shared Ma
 AREAS["nq"].append("batch5")             # day-batch5 2026-11-26: health bands + forecast shape
 AREAS["nq"].append("ideamill")            # day-ideamill 2026-11-25: the idea mill (tools/ideamill.py, research/ideamill/grammar.py)
 AREAS["nq"].append("atlas2")              # day-atlas2 2026-11-26: ATLAS v2 at real fills (research/atlas2/atlas2.py: switch, fixed scoring, gate)
+AREAS["nq"].append("atlas_exec"); AREAS["pc"].append("atlas_exec")   # big-atlasfill 2026-11-26: ATLAS fast lane (engine/atlas_exec.py, OFF, Sim only)
 # night-webpush 2026-11-19: Olympus phone notifications from the PC (engine/push.py: own key, relay intake, phone first / ntfy backup;
 # docs/NOTIFICATIONS.md); the browser half (the card, the button, push-sw.js) runs with the jarvis suites
 AREAS["pc"] += ["push", "webpush"]
@@ -169,6 +170,7 @@ PARTS = {"olympus_kit": [("a", ["datacity", "mind", "tree"]), ("b", ["oracle", "
 PARTS["combo_50k"] = [("sep", ["--seg", "2026-09-02"]), ("oct", ["--seg", "2026-10-02", "--scenario"])]   # night-combolive: one eval segment each
 AREAS["nq"] += ["combo_25k", "combo25_rt"]   # day-combo25 2026-11-23 + red team: ATLAS + Zlarior on the 25K #2 (OFF), parity replay, switch writer, keep-alive lane
 AREAS["nq"].append("time_size")   # day-sbhalf 2026-11-25: ATLAS x0.5 outside SB hours on the Builder eval combo lanes (OFF)
+AREAS["nq"] += ["alloc_cards", "lit25_replay"]   # day-alloc 2026-11-26: card 2 (lit25 --on phrase) + card 3 (atlas_from_et) + the lit25 Sim replay
 PARTS["combo_25k"] = [("sep", ["--seg", "2026-09-02"]), ("oct", ["--seg", "2026-10-02"])]   # day-combo25: one eval segment each
 AREAS["fleet"].append("rapid_launch")       # day-rapid 2026-11-20: Rapid EOD 25K launch check (tools/money/rapid25_launch.py)
 AREAS["fleet"] += ["rapid_blitz", "rapid_blitz_rt"]     # day-rapidsize 2026-11-23 + red team: BLITZ on the Rapid EOD 25K eval (OFF until --blitz on + phrase)
@@ -396,13 +398,17 @@ AREAS["cities"].append("pillars")         # day-pillars 2026-11-24: the FOUR PIL
 AREAS["nq"].append("pillars")             # day-pillars 2026-11-24: the NQ page strip + header link
 AREAS["nq"].append("brain_app")           # day-brain-app 2026-11-24: THE BRAIN (brain/: 6 regions, next trade, 3D chart, thinking, learning, today $)
 AREAS["nq"].append("brain_learned")       # big-learnview 2026-11-26: brain/learned.html (What the bots learned: lessons, tests next, ideas on trial)
+AREAS["nq"].append("setup_score")         # big-setupscore 2026-11-26: engine/setup_score.py (LIT "similar setups" line, display only)
 AREAS["pc"].append("tickrec_tiny")        # day-pillars 2026-11-24: engine.tickrec.tiny / write_tiny (the order-flow pillar line)
 AREAS["pc"].append("ofready")             # day-ofready 2026-11-24: engine/ofsum.py day summaries + research/orderflow/of_battery.py (synthetic only)
 AREAS["pc"].append("oflearn")             # day-oflearn 2026-11-26: DESIGN3 v3 features + nightly learner, proven on of_sim planted ticks (synthetic only, ~5 min)
 AREAS["pc"].append("of_send")             # day-ofmax 2026-11-26: the owner's one order-flow line, rehearsed end to end (fake ntfy)
-AREAS["pc"].append("payout_engine")       # big-payout 2026-11-26: read-only payout planner, /today, the Money tile
 AREAS["pc"].append("of_paper")            # day-oflearn 2026-11-26: the Order Flow pillar PAPER bot (engine/of_paper.py; synthetic live CSVs, ~4 min)
 AREAS["pc"].append("of_paper_rt")   # red team 2026-11-26: the paper child BELOW_NORMAL
+AREAS["pc"].append("payout_engine")       # big-payout 2026-11-26: read-only payout planner, /today, the Money tile
+AREAS["pc"].append("today_merge_rt")   # red team 2026-11-26: one /today (guard2 + big-payout), key line last
+AREAS["pc"].append("ofreal")              # big-ofreal 2026-11-26: tools/of_realday_verdict.py + tools/build_of_room.py (sim pulled days, ~1 min)
+AREAS["pc"].append("ofpipe")              # big-ofpipe 2026-11-26: OF paper state PC -> cloud (ext "ofp" + the of answer) + oflive.setup_of
 AREAS["cities"].append("research_hub2")   # night-hub2 2026-11-22: the Research Hub (cities/hub.html, data tools/build_research_hub.py); its own line
 AREAS["cities"].append("strategy_lab")    # day-mind 2026-11-23: Strategy Lab data (tools/build_strategy_lab.py) + the Research Hub tab
 AREAS["olympus"].append("brain3d")       # day-arenas 2026-11-21: the bot brain in 3D (olympus/brain3d.js + brain3d-scene.js, brain3d-lab.html); its own line
@@ -498,6 +504,9 @@ AREAS["pc"] += ["zerotouch2", "zerotouch2_rt"]   # day-zerotouch2 2026-11-24 + r
 AREAS["pc"].append("handsfree")
 AREAS["pc"].append("ops2")   # day-ops2 2026-11-26: hands-free roll (LE_Feed shadow), OneDrive / clock in START, backup + restore sandbox   # day-handsfree 2026-11-25: Telegram commands, writers sandbox (git status stays clean), NinjaScript sync, reboot chain
 AREAS["pc"].append("ops2_rt"); AREAS["pc"].append("le_feed_hub_rt")   # red team 2026-11-26: gappy shadow never verifies, backups disarmed, LE_FeedHub heartbeat
+AREAS["pc"].append("zeroerr2")   # big-zeroerr2 2026-11-26: hang guard (a hung server restarted when flat in < 5 min), the sweep's clusters
+AREAS["pc"].append("hang_guard_rt")   # red team 2026-11-26: every account flat, python-only kill, no restart loop
+AREAS["pc"].append("flat_stuck_rt")   # red team #23: 30 h of 'not flat' = one 'update stuck' line naming the leftover file
 AREAS["pc"].append("handsfree_rt")   # red team 2026-11-25: forwarded Telegram = no command, force-park receipt names strategy files
 AREAS["nq"] += ["roll_dec_audit", "nt_roll_guard", "dec_roll", "roll"]   # night-roll 2026-11-23: the December roll (ROLL.md): audit with fakes + the three roll suites (were in no area)
 AREAS["nq"].append("roll_rt")           # red team 2026-11-23: TRADE_HOME R reports what tools/bat/ROLL.bat found (exit 2 = not now)
@@ -540,6 +549,10 @@ AREAS["nq"].append("nt_transport_rt")   # red team 2026-11-26: a live account ne
 
 AREAS["nq"].append("trade_cards"); AREAS["pc"].append("trade_cards")   # day-cards 2026-11-26: Telegram trade cards (chart PNG), 16:20 day summary, Friday week report
 AREAS["nq"].append("trade_cards_rt"); AREAS["pc"].append("trade_cards_rt")   # red team 2026-11-26: long captions never cut, NT files only when needed
+AREAS["pc"].append("buy_gate"); AREAS["money"].append("buy_gate")   # big-shadow 2026-11-26: shadow eval + buy gate (display only)
+AREAS["pc"].append("buy_gate_rt")   # red team 2026-11-26: bg < 400 B, a damaged verdict shows nothing
+
+AREAS["nq"].append("fill_log"); AREAS["pc"].append("fill_log")   # day-zeroerr 2026-11-26: every real fill (entry + exit, every lane) in fills.jsonl.gz, BLITZ paper rows, extra accounts in the day summary
 
 if __name__ == "__main__":
     sys.exit(main())

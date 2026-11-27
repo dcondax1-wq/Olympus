@@ -81,6 +81,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 ## Tested and rejected
 
+> [!failure]- Exit realism / touch-not-fill
+> of 298 stored target exits (LIT 75, ATLAS 223) **0 were touch-only** (all but 6 traded 3+ ticks through), so a "1 tick through" target rule changes $0; stop gaps: LIT 1, ATLAS 0. The only cost that moves money is +1 tick on stop / market exits (2026 -0.6..-0.7%; 2021-25 LIT +$861 -> -$12, ATLAS -17.6%). Adopted as costs in `engine/costs.py` (research / money only; COMM_RT 1.90, stop / market exits LIT 2 / ATLAS 10 ticks (ATLAS pessimistic until measured), ENTRY_SLIP_TICKS LIT 1 / ATLAS 12, TARGET_THR_TICKS 1): LIT live config H1 PF 4.84 +$33,494, Jul-Oct 2.85, **2021-25 PF 0.98 = break-even**. Don't re-test touch-not-fill without tick data.
+> Write-ups: [[exitreal-2026-11-26|Exit + backtest realism]]
+
 > [!failure]- LIT fragility audit
 > 16 knobs at +-10/20%: mostly a plateau; sensitive in Jul-Oct = displacement 0.8 (+10% -> -$894/mo) and the 8R bank (+-10% -> -$290..-$960/mo), tuned near their top; no knob makes 2021-25 real money (-$360..+$160/mo). Costs: 2021-25 negative at +1 tick/side (PF 0.97), 2026 barely moves. MC 50K at 40% room: pass/fail 95/4 (2026 pool), 86/13 (Jul-Nov), 36/62 (2021-25); P(7+ losers in 23 trades) 3-4%. Deflated Sharpe 2026 0.87-0.93 with N 1,483-4,449 trials, only 20-27% of the Sharpe above the best-of-N luck level; 2021-26 DSR 0. Sizing: a simplified sim said room_f 0.3 cuts fails; the real engine (big-evalsizer, rank.py) says no, 0.4 earns more at every mix: keep 0.4.
 > Write-ups: [[lit-fragility-2026-11-26|How fragile is LIT]]

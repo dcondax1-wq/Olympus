@@ -1,0 +1,24 @@
+diff --git a/engine/live.py b/engine/live.py
+index 5af504d1..adcb3023 100644
+--- a/engine/live.py
++++ b/engine/live.py
+@@ -1542,12 +1542,18 @@ class LiveBot:
+             # account C (OFF by default): BLITZ on its own account right after LIT's routing, before the slower read-only
+             # work: its edge needs the entry at the next bar's open (research/writeups/blitz-25k.md: 1 minute late halves the
+             # 2-week pass). ATLAS still goes first on the other side: its opposite entry closes C first (AccountB._c_yield).
++            # ATLAS fast lane (engine/atlas_exec.py, OFF by default, Sim accounts only): on a 5m close, account B's poll runs
++            # HERE, right after LIT, instead of after the read-only work below (its 4 real fills gave away 9-21 ticks in the
++            # 3-5 s after the close: research/writeups/atlasfill-2026-11-26.md). OFF: early() returns "off" and nothing moves.
++            from . import atlas_exec as _ax
++            self.health["atlas_exec"] = _ax.early(self, df_full, df1, sym, now)
+             self._account_c_tick(df_full, df1, sym, now)
+             self._rapid_blitz_tick(df_full, df1, sym, now)        # BLITZ on a Rapid EOD 25K eval (OFF unless one runs)
+             self._learn_es(sym, tf, now, secs, refresh=True)       # ES bars for the next polls' learning features
+             self._brain_tick(res, lit_p, now, brain_keep)
+             self._second_route_tick(df_full, df1, res, sym, now)   # routed second strategies (OFF by default): LIT routed first
+-            self._account_b_tick(df_full, df1, sym, now)           # account B (OFF by default): its own account, after LIT
++            if not _ax.done(self, now):                            # the fast lane above already ran it this minute
++                self._account_b_tick(df_full, df1, sym, now)       # account B (OFF by default): its own account, after LIT
+             self._fleet_tick(sym, now)                             # the fleet (OFF by default): copies of LIT / ATLAS / BLITZ
+             self._keepalive_tick(df1, now)                         # MFFU 7-day keep-alive (OFF by default, engine/keepalive.py)
+             self._second_tick(df_full, df1, res, now)

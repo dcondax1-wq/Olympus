@@ -117,7 +117,7 @@ def spec(plan):
     E = {**E, "stuck": 200.0 if big else 100.0}
     has_cons = bool(E.get("cons"))
     if not has_cons:
-        E["cons"] = 1.0                                     # no eval consistency rule: the pass check never binds
+        E["cons"] = 1.0                                     # no eval consistency rule: RL.Ev treats cons >= 1 as no rule (big-consfix)
     ec = A4.ecfg({**E, "dll": min(E["dll"], soft)})
     ec["two_week"]["acct"]["dll"] = min(E["dll"], soft)
     ec["_dll"] = min(E["dll"], soft)
@@ -196,7 +196,8 @@ def main(argv=None):
     ap.add_argument("--n", type=int, default=1000)
     a = ap.parse_args(argv)
     t0 = time.time()
-    AR.rapid_patch(AR.T_at(10))                    # ATLAS at its measured real fills (10 ticks a side), no BLITZ
+    A4.apply_costs()                               # LIT's trades at engine/costs.py exit costs (2-tick stops)
+    AR.rapid_patch(AR.T_costs())                   # ATLAS at engine/costs.py (12 ticks entry, 10 on stop / market exits), no BLITZ
     S = SOA.data()["S"]
     PF = {sp: U.mc_paths(S, sp, a.n, length=LEN, seed=23) for sp in SPANS}
     PE = {sp: U.mc_paths(S, sp, a.n, length=H_EVAL, seed=7) for sp in SPANS}

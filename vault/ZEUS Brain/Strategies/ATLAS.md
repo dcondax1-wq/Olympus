@@ -63,6 +63,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 ## Tested and rejected
 
+> [!failure]- Exit realism / touch-not-fill
+> of 298 stored target exits (LIT 75, ATLAS 223) **0 were touch-only** (all but 6 traded 3+ ticks through), so a "1 tick through" target rule changes $0; stop gaps: LIT 1, ATLAS 0. The only cost that moves money is +1 tick on stop / market exits (2026 -0.6..-0.7%; 2021-25 LIT +$861 -> -$12, ATLAS -17.6%). Adopted as costs in `engine/costs.py` (research / money only; COMM_RT 1.90, stop / market exits LIT 2 / ATLAS 10 ticks (ATLAS pessimistic until measured), ENTRY_SLIP_TICKS LIT 1 / ATLAS 12, TARGET_THR_TICKS 1): LIT live config H1 PF 4.84 +$33,494, Jul-Oct 2.85, **2021-25 PF 0.98 = break-even**. Don't re-test touch-not-fill without tick data.
+> Write-ups: [[exitreal-2026-11-26|Exit + backtest realism]]
+
 > [!failure]- Personal futures account vs MFFU
 > LIT + ATLAS, fixed-fractional, $1.24 RT, whole micros. $25k at 0.5%: +$49 / +$103 / +$3,001 / +$1,078 a month (2021-25 / 2025 / Jan-Jun / Jul-Oct), DD -24%; at 1%: +$243 / +$357 / +$10,922 / +$3,652, DD -50% (-$24k, 40 months); 2% = -83%. MFFU 50K slot: -$98 / -$78 / +$1,202 / +$1,228. LIT needs ~$14.4k (1% risk) for 90% of its 1-micro stops. Research only, owner's call.
 > Write-ups: [[ownacct-2026-11-24|A personal futures account vs the MFFU prop path]]
@@ -180,6 +184,7 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 |---|---|---|
 | 2026-11-26 | [[execpol-2026-11-26\|Entry execution policy for LIT and ATLAS]] | research |
 | 2026-11-26 | [[batch5-2026-11-26\|Batch 5]] | research |
+| 2026-11-26 | [[atlasfill-2026-11-26\|ATLAS fill forensics + the cheapest entry]] | research |
 | 2026-11-26 | [[atlas2-2026-11-26\|ATLAS v2]] | research |
 | 2026-11-25 | [[more-trades-2026-11-25\|More trades]] | research |
 | 2026-11-24 | [[atlas-funded-150-2026-11-24\|ATLAS funded 25K at ~$150 a trade, on the LIVE sizing code]] | research |
@@ -217,9 +222,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-11-13 | [[es-and-sessions-2026-11-13\|Same edge, more markets]] | rejected |
 | 2026-11-04 | [[2026-11-04_second_strategies_night\|Second strategies night]] | research |
 | 2026-11-04 | [[2026-11-04_lit_ideas_night\|LIT ideas night]] | rejected |
-| 2026-11-04 | [[2026-11-04_atlas_round3\|ATLAS round 3]] | research |
 
-... and 31 older (see the families).
+... and 32 older (see the families).
 
 ## Links
 

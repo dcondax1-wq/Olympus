@@ -1,0 +1,64 @@
+{
+ "days": "2026-11-17",
+ "polls": 768,
+ "errors": 0,
+ "atlas_trades": 2,
+ "note": "ms since poll start on THIS machine (the PC is slower: LIT's path measured 0.57 s there); 5m-close polls only; first call per poll (_save_state runs more than once)",
+ "lanes": {
+  "LIT (50K + extra accounts' LIT lanes)": {
+   "n_polls": 264,
+   "median_ms": 252.2,
+   "p90_ms": 304.8
+  },
+  "state save": {
+   "n_polls": 264,
+   "median_ms": 252.9,
+   "p90_ms": 305.9
+  },
+  "BLITZ account C": {
+   "n_polls": 264,
+   "median_ms": 254.0,
+   "p90_ms": 307.1
+  },
+  "BLITZ on the Rapid": {
+   "n_polls": 264,
+   "median_ms": 254.0,
+   "p90_ms": 307.1
+  },
+  "ES learning refresh": {
+   "n_polls": 264,
+   "median_ms": 131.4,
+   "p90_ms": 162.3
+  },
+  "Bot Brain": {
+   "n_polls": 264,
+   "median_ms": 254.0,
+   "p90_ms": 307.1
+  },
+  "second route (LIT account)": {
+   "n_polls": 264,
+   "median_ms": 257.05,
+   "p90_ms": 310.7
+  },
+  "ATLAS account B + Rapid ATLAS + combo lanes": {
+   "n_polls": 264,
+   "median_ms": 257.25,
+   "p90_ms": 310.9
+  },
+  "fleet": {
+   "n_polls": 264,
+   "median_ms": 516.85,
+   "p90_ms": 634.2
+  },
+  "keep-alive": {
+   "n_polls": 264,
+   "median_ms": 0.0,
+   "p90_ms": 0.0
+  },
+  "second strategies (paper)": {
+   "n_polls": 264,
+   "median_ms": 517.1,
+   "p90_ms": 634.4
+  }
+ }
+}

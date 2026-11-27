@@ -1,0 +1,74 @@
+{
+ "mffu_builder_50k|H1": {
+  "pass": 83.8,
+  "fail": 16.2,
+  "med": 7.0,
+  "net6": 7253,
+  "pays": 4.66,
+  "first": 33.0
+ },
+ "mffu_builder_50k|H2": {
+  "pass": 84.6,
+  "fail": 14.6,
+  "med": 7.0,
+  "net6": 7371,
+  "pays": 4.73,
+  "first": 33.0
+ },
+ "mffu_builder_50k|REF": {
+  "pass": 19.4,
+  "fail": 80.6,
+  "med": 5.0,
+  "net6": -574,
+  "pays": 0.12,
+  "first": 68.0
+ },
+ "mffu_builder_25k|H1": {
+  "pass": 87.7,
+  "fail": 6.6,
+  "med": 7.0,
+  "net6": 3288,
+  "pays": 4.26,
+  "first": 36.0
+ },
+ "mffu_builder_25k|H2": {
+  "pass": 83.2,
+  "fail": 9.7,
+  "med": 8.0,
+  "net6": 2904,
+  "pays": 3.78,
+  "first": 37.0
+ },
+ "mffu_builder_25k|REF": {
+  "pass": 19.5,
+  "fail": 80.0,
+  "med": 5.0,
+  "net6": -324,
+  "pays": 0.08,
+  "first": 72.0
+ },
+ "mffu_rapid_eod_25k|H1": {
+  "pass": 79.3,
+  "fail": 0.3,
+  "med": 33.0,
+  "net6": 11301,
+  "pays": 10.54,
+  "first": 53.0
+ },
+ "mffu_rapid_eod_25k|H2": {
+  "pass": 85.5,
+  "fail": 2.4,
+  "med": 26.0,
+  "net6": 4801,
+  "pays": 6.88,
+  "first": 56.0
+ },
+ "mffu_rapid_eod_25k|REF": {
+  "pass": 7.0,
+  "fail": 76.8,
+  "med": 31.0,
+  "net6": -300,
+  "pays": 0.07,
+  "first": 67.0
+ }
+}

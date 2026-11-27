@@ -326,6 +326,8 @@ def test_writers_sandbox():
 # Module-level paths in engine/ + server.py that name a TRACKED file: each is READ on the PC; the writer (if any) is a cloud /
 # manual build named here. A new path constant to a tracked file fails c1 until it is a generated file or listed with its reason.
 READ_ONLY = {
+    "research/planner/lit_r_seed.json": "LIT R seed for the buy gate (research/planner, cloud; engine/buy_gate reads it)",
+    "research/setupscore/pool.json": "similar-setup pool (big-setupscore build, cloud; engine/setup_score reads it)",
     "research/scalp/na_best_trades.json": "account C scores (cloud research)",
     "research/lit/mffu_rules.json": "MFFU rules (tools/mffu_rules build, cloud)",
     "research/payout/results.json": "12-month payout policy study (tools/money/payout_year.py, cloud)",

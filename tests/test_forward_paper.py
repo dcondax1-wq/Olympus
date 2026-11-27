@@ -5,6 +5,7 @@
      (keeps its old numbers) while the others still score; bands reused unless the rule changed or --bands
   c. the journal: one line per rule per ISO week; a second run the same week replaces, never duplicates
   d. never a live file: live_model*.json hashes equal before / after; dry run writes nothing
+  f. the S1 forward hold-out (s1_forward): rows, calibrated R, the re-judge date + checks, the journal line
   e. the seed rules: the 7 DESIGN.md ids are registered with kind / bot / source; the idea mill adapter reads paper-gate ideas
     python -X utf8 -m tests.test_forward_paper
 """
@@ -81,15 +82,54 @@ def main():
     mt = os.path.getmtime(FP.STATE)
     FP.run(rules=rules, today=days, say=lambda *_: None, dry=True)
     check("d. dry run writes nothing", os.path.getmtime(FP.STATE) == mt)
-    ids = {"ict_ote_dol", "ict_mmbm_week", "atlas_skip_news", "atlas_half_off_sb", "blitz_v1_noise", "lit_second_after_stop", "lit_x15_extreme"}
-    check("e. the 7 seed rules of DESIGN.md are registered", ids == set(FP.RULES) and all(
+    ids = {"ict_ote_dol", "ict_mmbm_week", "atlas_skip_news", "atlas_half_off_sb", "blitz_v1_noise", "lit_second_after_stop", "lit_x15_extreme",
+           "atlas_s1_gate"}     # + big-regime2026 2026-11-26: the S1 forward hold-out (research/regime2026/DESIGN_forward.md)
+    check("e. the 7 seed rules of DESIGN.md + atlas_s1_gate are registered", ids == set(FP.RULES) and all(
         {"kind", "bot", "fn", "source", "desc", "code"} <= set(r) for r in FP.RULES.values()), set(FP.RULES))
     check("e. promote / demote bars = DESIGN.md", (FP.PROMOTE_N, FP.PROMOTE_Z, FP.DEMOTE_N, FP.DEMOTE_Z, FP.DEMOTE_SUM) == (20, -1.0, 10, -2.0, -8.0)
           and FP.FWD_FROM == "2026-11-23")
     im = FP.ideamill_rules()
     check("e. idea mill adapter: only paper-gate ideas become rules (ids prefixed ideamill:)", all(k.startswith("ideamill:") for k in im), list(im)[:3])
+    part_f()
     print(f"\n{'ALL PASS' if not FAILS else str(len(FAILS)) + ' FAIL'}")
     return 1 if FAILS else 0
+
+
+def part_f():
+    """f. the S1 forward hold-out (research/regime2026/DESIGN_forward.md): rows per session, calibrated R judged, re-judge only
+    at >= 60 sessions AND on / after 2027-02-26, the four checks, the Brain journal entry (temp files, fake sources)."""
+    from tools import livegap as G
+    from engine import market_learn as ML
+    old = (FP.s1_series, FP.asia_paper, FP.pc_atlas_real, G.atlas_twin, ML.JOURNAL, FP._C.copy())
+    with tempfile.TemporaryDirectory() as td:
+        try:
+            import datetime as _dt
+            days = [(_dt.date(2026, 11, 23) + _dt.timedelta(days=i)).isoformat() for i in range(0, 140)]
+            days = [d for d in days if _dt.date.fromisoformat(d).weekday() < 5][:70]
+            FP.s1_series = lambda: {d: (i % 2 == 0) for i, d in enumerate(days)}
+            FP.asia_paper = lambda since: []
+            FP.pc_atlas_real = lambda: {days[0]: -50.0}
+            tw = [{"day": d, "entry_t": 1 + i, "exit_t": 2 + i, "dir": 1, "exit": "TARGET" if i % 2 == 0 else "STOP",
+                   "r": 2.0 if i % 2 == 0 else -1.0, "risk": 40.0, "one_position_skip": False} for i, d in enumerate(days)]
+            G.atlas_twin = lambda since="": tw
+            ML.JOURNAL = os.path.join(td, "journal.json")
+            out = os.path.join(td, "s1.json")
+            d1 = FP.s1_forward(days[:30], path=out, say=lambda *_: None)
+            check("f. 30 sessions: watching, progress n / 60, one row a day", d1["verdict"] == "watching" and d1["progress"] == "30 / 60 sessions"
+                  and len(d1["rows"]) == 30 and d1["rows"][0]["atlas_real_usd"] == -50.0, d1["progress"])
+            r = d1["rows"][1]["atlas_twin_r"][0]
+            check("f. judged R = calibrated fills (12 in, 2 out on a stop, $1.90)", abs(r - (-1.0 - (3.0 + 0.5 + 0.95) / 40.0)) < 1e-4, r)
+            d2 = FP.s1_forward(days, path=out, say=lambda *_: None)
+            due = days[-1] >= FP.S1_REJUDGE
+            check("f. 70 sessions: due only on / after 2027-02-26, then the 4 checks decide",
+                  d2["due"] == due and (d2["verdict"] == ("ADOPT-CANDIDATE (owner card)" if all(d2["checks"].values()) else "REJECTED") if due
+                                        else d2["verdict"] == "watching"), (d2["due"], d2["verdict"], d2["checks"]))
+            check("f. OFF days hold the losers here -> every check passes", all(d2["checks"].values()), d2["checks"])
+            J = json.load(open(ML.JOURNAL, encoding="utf-8"))
+            check("f. the Brain journal has the trial line", any(e.get("key") == "regime2026|s1_forward" for e in J), len(J))
+        finally:
+            FP.s1_series, FP.asia_paper, FP.pc_atlas_real, G.atlas_twin, ML.JOURNAL = old[:5]
+            FP._C.clear(); FP._C.update(old[5])
 
 
 if __name__ == "__main__":

@@ -134,8 +134,16 @@ def main() -> int:
         check("c. -$500 today: $100 of the $600 soft day left -> 4 micros", s3["qty"] == 4, s3)
         q = L.qty_for({**pos_at(T0), "tgt_pts": 200.0}, T0 + 300)
         ref = AB.funded_qty(AB.normalize(FUNDED_B), {"risk_pts": 30.0, "tgt_pts": 200.0}, A._state_raw(T0))
-        check("c. LIT's lane = the 25K funded preset (60% room, <= $750): same micros as account B's funded rule",
+        check("c. LIT's lane = the 25K funded rule at ATLAS's room share: same micros as account B's funded rule",
               q == ref["qty"] and 1 <= q <= 20, (q, ref, L.last_size))
+        # day-alloc 2026-11-26 (lead): the lane follows the owner's 40% FUNDED_ON room, not the preset's 60%. A case where the
+        # $1,000 winner cap does not bind: 30-pt stop, 30-pt target, room $1,000 -> 40% = $400 x 20/30 (ref stop) = $267 / $60 = 4
+        # micros (the preset's 60% would be $600 x 20/30 = $400 / $60 = 6)
+        q40 = L.qty_for({**pos_at(T0), "tgt_pts": 30.0}, T0 + 300)
+        ref40 = AB.funded_qty(AB.normalize(FUNDED_B), {"risk_pts": 30.0, "tgt_pts": 30.0}, A._state_raw(T0))
+        check("c. the lane sizes at ATLAS's 40% funded room (4 micros at $1,000 room / 30-pt stop, 60% would be 6), = account B",
+              q40 == ref40["qty"] == 4 and (L.spec.get("lit_sizing") or {}).get("funded", {}).get("pct") == 0.4,
+              (q40, ref40, L.spec.get("lit_sizing"), L.last_size))
 
         # ---- d. never two positions on the account
         b.state = {"model": "lit", "position": None, "lit": {}}

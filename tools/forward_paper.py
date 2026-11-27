@@ -234,7 +234,121 @@ def r_lit_x15_extreme(a, z):
             for g in structure_tags(rows) if g["pos"] < 0.2]
 
 
+# ---------------------------------------------------------------------------------------------- S1 forward hold-out
+# research/regime2026/DESIGN_forward.md: "ATLAS only when S1 (realized range above its 1-year median) is ON", judged on
+# sessions from FWD_FROM only, re-judge 2027-02-26 / >= 60 sessions.
+S1_FILE = os.path.join(ROOT, "research", "regime2026", "s1_forward.json")
+S1_REJUDGE, S1_NEED = "2027-02-26", 60
+ASIA_KZ = [[1080, 1440, {"max_rr": 3.0}], [0, 120, {"max_rr": 3.0}]]
+
+
+def s1_series():
+    if "s1" not in _C:
+        sys.path.insert(0, os.path.join(ROOT, "research", "regime2026"))
+        import regime as RG
+        s = RG.rules(RG.daily(), 1)["S1_RV"]
+        _C["s1"] = {str(k): bool(v) for k, v in s.items()}
+    return _C["s1"]
+
+
+def r_atlas_s1_gate(a, z):
+    """Band / forward events at the harness's 1-tick ATLAS cost (comparable to the other ATLAS rules). NOTE: at 1 tick the
+    S1-OFF trades were slightly positive (band mu < 0); S1 helped only at the calibrated 12-tick fills, which
+    s1_forward() judges (DESIGN_forward.md)."""
+    S = s1_series()
+    return [ev(t["day"], t["entry_t"], -t["r"], s1=False) for t in _atlas(a, z) if not S.get(t["day"], False)]
+
+
+def asia_paper(since):
+    """The litasia Asia-slot variant's Asia trades (18:00-02:00 ET entries) through the twin LIT engine; r and r at +2 ticks."""
+    from tools import lit_more_entries as LM
+    P = LM.P_of("full", 2, None, 1.0, {"per_session": [[[1080, 120], [120, 1080]], 1], "second": {}, "kz": ASIA_KZ})
+    out = []
+    for t in lit_run(P, since):
+        h = dt.datetime.fromtimestamp(int(t["entry_t"]), NY)
+        m = h.hour * 60 + h.minute
+        if m >= 1080 or m < 120:
+            out.append(t)
+    return out
+
+
+def pc_atlas_real():
+    """day -> ATLAS's real live $ (PC day folders: exit rows of bot atlas, mode live)."""
+    import glob
+    out = {}
+    for p in sorted(glob.glob(os.path.join(ROOT, "data", "pc_days", "*", "trades.jsonl.gz"))):
+        for r in (json.loads(x) for x in gzip.open(p, "rt")):
+            if r.get("bot") == "atlas" and r.get("side") == "exit" and r.get("mode") == "live" and r.get("pnl") is not None:
+                d = os.path.basename(os.path.dirname(p))
+                out[d] = round(out.get(d, 0.0) + float(r["pnl"]), 2)
+    return out
+
+
+def s1_forward(days, path=None, say=print):
+    """research/regime2026/s1_forward.json: one row per forward session + the re-judge state (DESIGN_forward.md)."""
+    S = s1_series()
+    tw, tw1 = {}, {}
+    from tools import livegap as G
+    for t in G.atlas_twin(FWD_FROM):
+        if t.get("one_position_skip"):
+            continue
+        risk = max(1e-9, float(t["risk"]))
+        tgt = str(t.get("exit", "")).upper() == "TARGET"
+        r12 = float(t["r"]) - (12 * 0.25 + (0 if tgt else 2 * 0.25) + 1.90 / 2.0) / risk   # atlas2's calibrated fills (judged)
+        tw.setdefault(t["day"], []).append(round(r12, 4))
+        tw1.setdefault(t["day"], []).append(round(float(t["r"]) - ATLAS_COST_PTS / risk, 4))
+    try:
+        A = {}
+        for t in asia_paper(FWD_FROM):
+            A.setdefault(t["day"], []).append(t)
+    except Exception as e:  # noqa: BLE001
+        A, say_err = {}, f"{e.__class__.__name__}: {e}"
+        say(f"s1_forward: Asia paper skipped ({say_err})")
+    real = pc_atlas_real()
+    rows = []
+    for d in days:
+        if d < FWD_FROM:
+            continue
+        ar = [round(float(t["r"]), 4) for t in A.get(d, [])]
+        rows.append({"day": d, "s1": S.get(d), "atlas_real_usd": real.get(d), "atlas_twin_r": tw.get(d, []),
+                     "atlas_twin_r_1tick": tw1.get(d, []), "asia_paper_r": ar})
+    on = [r for x in rows if x["s1"] for r in x["atlas_twin_r"]]
+    off = [r for x in rows if x["s1"] is False for r in x["atlas_twin_r"]]
+    n = len(rows)
+    mean = lambda v: round(sum(v) / len(v), 4) if v else None  # noqa: E731
+    tot, kept = round(sum(on) + sum(off), 3), round(sum(on), 3)
+    due = n >= S1_NEED and (days[-1] if days else "") >= S1_REJUDGE
+    checks = {"off_trades_ge_10": len(off) >= 10, "off_sum_lt_0": sum(off) < 0,
+              "on_mean_gt_off_mean": (mean(on) or -9) > (mean(off) if off else 9),
+              "keeps_80pct": (kept >= 0.8 * tot) if tot > 0 else (kept >= tot)}
+    doc = {"design": "research/regime2026/DESIGN_forward.md", "fwd_from": FWD_FROM,
+           "costs": "atlas_twin_r = calibrated fills (entry 12 ticks, stop / market exit 2, target 0, $1.90), JUDGED; atlas_twin_r_1tick = recorded only", "rejudge": S1_REJUDGE, "need_sessions": S1_NEED,
+           "sessions": n, "progress": f"{n} / {S1_NEED} sessions", "due": due,
+           "atlas_twin": {"on_n": len(on), "on_sum_r": round(sum(on), 3), "on_mean_r": mean(on), "off_n": len(off),
+                          "off_sum_r": round(sum(off), 3), "off_mean_r": mean(off), "ungated_sum_r": tot},
+           "checks": checks, "verdict": (("ADOPT-CANDIDATE (owner card)" if all(checks.values()) else "REJECTED") if due else "watching"),
+           "rows": rows}
+    _write(path or S1_FILE, doc)
+    try:
+        from engine import market_learn as ML
+        obs = [{"key": "regime2026|s1_forward", "pillar": "atlas", "lens": "forward hold-out",
+                "noticed": (f"S1 forward test (ATLAS only when the 20-day range is above its 1-year median): {n}/{S1_NEED} sessions, "
+                            f"re-judge {S1_REJUDGE}; twin ATLAS on S1-ON days {len(on)} trades {round(sum(on), 2)}R, on S1-OFF days "
+                            f"{len(off)} trades {round(sum(off), 2)}R"),
+                "evidence": {"n": n, "on_n": len(on), "off_n": len(off)},
+                "status": "watching" if not due else ("adopted-needs-owner-yes" if all(checks.values()) else "rejected")}]
+        J, _ = ML.update_journal(ML.journal_doc(ML.JOURNAL), obs)
+        ML._write_json(ML.JOURNAL, J)
+    except Exception as e:  # noqa: BLE001
+        say(f"s1_forward: journal not updated ({e.__class__.__name__})")
+    say(f"s1_forward: {doc['progress']}, ON {len(on)} trades {round(sum(on), 2)}R / OFF {len(off)} trades {round(sum(off), 2)}R -> {doc['verdict']}")
+    return doc
+
+
 RULES = {
+    "atlas_s1_gate": {"kind": "skip", "bot": "ATLAS", "fn": r_atlas_s1_gate, "source": "research/regime2026/DESIGN_forward.md",
+                      "desc": "ATLAS only when S1 (20-day NQ range above its 1-year median) is ON: skip the S1-OFF trades",
+                      "code": ["research/regime2026/regime.py"]},
     "ict_ote_dol": {"kind": "standalone", "bot": "-", "fn": r_ict_ote_dol, "source": "research/writeups/ict-lab-2026-11-25.md",
                     "desc": "ICT OTE 70.5% of the 09:30-10:00 leg, only when the PDH/PDL draw agrees (ICT lab G3)",
                     "code": ["research/ictlab/ict_lab.py", "tools/popular_ict.py"]},
@@ -387,7 +501,17 @@ def run(only=None, bands=False, dry=False, say=print, rules=None, today=None):
         _write(BANDS, B)
         _write(STATE, doc)
         journal(doc)
+        if rules is None and (not only or "atlas_s1_gate" in only):
+            try:
+                doc["s1_forward"] = {k: v for k, v in s1_forward(fwd_days, say=say).items() if k != "rows"}
+            except Exception as e:  # noqa: BLE001
+                say(f"s1_forward failed: {e.__class__.__name__}: {e}")
         if rules is None:                  # the Brain's "What the bots learned" page reads it (big-learnview): rebuild, soft
+            try:                           # big-setupscore: the LIT setup score's pool + holdout verdict first (soft, ~5 s)
+                import setupscore_build
+                setupscore_build.main([])
+            except Exception as e:  # noqa: BLE001
+                say(f"setup score pool not rebuilt: {e.__class__.__name__}: {e}")
             try:
                 import build_brain_learn
                 build_brain_learn.main([])

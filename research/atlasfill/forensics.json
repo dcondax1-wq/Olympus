@@ -1,0 +1,175 @@
+{
+ "made": "2026-11-26",
+ "design": "research/atlasfill/DESIGN.md",
+ "fills": [
+  {
+   "day": "2026-11-06",
+   "bot": "ATLAS",
+   "member": "EMA",
+   "side": "sell",
+   "qty": 2,
+   "intended": 27037.75,
+   "filled": 27035.5,
+   "ticks_vs_model": 9.0,
+   "latency_s": 5,
+   "risk_pts": 41.0,
+   "mnq_open": 27038.0,
+   "ticks_vs_open": 10.0,
+   "fav1_pts": 8.5,
+   "share_of_fav1": 0.294,
+   "first_min_close_vs_open_pts": -12.0,
+   "first_min_vol": 2598.0,
+   "prev_close_vs_open_ticks": 1.0,
+   "exit": {
+    "reason": "STOP",
+    "pnl": -168.81
+   },
+   "usd_lost_to_slip": 9.0
+  },
+  {
+   "day": "2026-11-16",
+   "bot": "LIT",
+   "member": "",
+   "side": "buy",
+   "qty": 1,
+   "intended": 27798.75,
+   "filled": 27799.5,
+   "ticks_vs_model": 3.0,
+   "latency_s": 4,
+   "risk_pts": 63.5,
+   "mnq_open": 27798.5,
+   "ticks_vs_open": 4.0,
+   "fav1_pts": 12.0,
+   "share_of_fav1": 0.083,
+   "first_min_close_vs_open_pts": 5.0,
+   "first_min_vol": 848.0,
+   "prev_close_vs_open_ticks": -3.0,
+   "exit": {
+    "reason": "STOP",
+    "pnl": -129.4
+   },
+   "usd_lost_to_slip": 1.5
+  },
+  {
+   "day": "2026-11-17",
+   "bot": "ATLAS",
+   "member": "EMA",
+   "side": "sell",
+   "qty": 2,
+   "intended": 27367.5,
+   "filled": 27364.75,
+   "ticks_vs_model": 11.0,
+   "latency_s": 4,
+   "risk_pts": 65.25,
+   "mnq_open": 27367.75,
+   "ticks_vs_open": 12.0,
+   "fav1_pts": 6.0,
+   "share_of_fav1": 0.5,
+   "first_min_close_vs_open_pts": -13.75,
+   "first_min_vol": 2033.0,
+   "prev_close_vs_open_ticks": 2.0,
+   "exit": {
+    "reason": "TARGET",
+    "pnl": 1791.89
+   },
+   "usd_lost_to_slip": 11.0
+  },
+  {
+   "day": "2026-11-18",
+   "bot": "ATLAS",
+   "member": "MACD",
+   "side": "sell",
+   "qty": 2,
+   "intended": 27395.5,
+   "filled": 27391.75,
+   "ticks_vs_model": 15.0,
+   "latency_s": 3,
+   "risk_pts": 27.0,
+   "mnq_open": 27395.75,
+   "ticks_vs_open": 16.0,
+   "fav1_pts": 10.5,
+   "share_of_fav1": 0.381,
+   "first_min_close_vs_open_pts": 2.5,
+   "first_min_vol": 755.0,
+   "prev_close_vs_open_ticks": -0.0,
+   "exit": {
+    "reason": "STOP",
+    "pnl": -112.8
+   },
+   "usd_lost_to_slip": 15.0
+  },
+  {
+   "day": "2026-11-20",
+   "bot": "ATLAS",
+   "member": "EMA",
+   "side": "sell",
+   "qty": 1,
+   "intended": 26380.75,
+   "filled": 26375.5,
+   "ticks_vs_model": 21.0,
+   "latency_s": 3,
+   "risk_pts": 38.75,
+   "mnq_open": 26381.0,
+   "ticks_vs_open": 22.0,
+   "fav1_pts": 20.0,
+   "share_of_fav1": 0.275,
+   "first_min_close_vs_open_pts": 9.75,
+   "first_min_vol": 1487.0,
+   "prev_close_vs_open_ticks": -0.0,
+   "exit": {
+    "reason": "TARGET",
+    "pnl": 514.18
+   },
+   "usd_lost_to_slip": 10.5
+  }
+ ],
+ "atlas": {
+  "n": 4,
+  "ticks_vs_model": [
+   9.0,
+   11.0,
+   15.0,
+   21.0
+  ],
+  "mean_ticks": 14.0,
+  "median_ticks": 13.0,
+  "latency_s": [
+   5,
+   4,
+   3,
+   3
+  ],
+  "share_of_fav1_mean": 0.363,
+  "share_of_fav1": [
+   0.294,
+   0.5,
+   0.381,
+   0.275
+  ],
+  "all_worse_in_trade_direction": true
+ },
+ "lit": {
+  "n": 1,
+  "ticks_vs_model": [
+   3.0
+  ],
+  "mean_ticks": 3.0,
+  "median_ticks": 3.0,
+  "latency_s": [
+   4
+  ],
+  "share_of_fav1_mean": 0.083,
+  "share_of_fav1": [
+   0.083
+  ],
+  "all_worse_in_trade_direction": true
+ },
+ "split_atlas_mean_ticks": {
+  "model_tick_already_in_backtest": 1.0,
+  "spread_half_crossed": "inside the model's 1 tick (MNQ trades 1 tick wide)",
+  "size_impact": "~0 (1-2 micros against NQ's book; the fills sit inside the first minute's range)",
+  "move_during_latency": 14.0
+ },
+ "rests_on": "4 real ATLAS fills + 1 LIT fill(s); no tick data in the cloud (LE_TickRec not pulled), no exit fills recorded (the ledger books exits at the model's prices)",
+ "reading": "every ATLAS fill was worse in the trade's own direction (sells filled lower); the give-away is ~a third of the first minute's run, and bigger on faster minutes (Nov 20: 20-pt minute, 21 ticks). That is the price running away in the 3-5 s between the 5m close and the fill (other bar-close traders + our poll at +2 s + compute), not the order's size. LIT, entering on a 1m open after its own pattern, gave away 3 ticks (8% of its minute)."
+}

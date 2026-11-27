@@ -87,6 +87,8 @@ GUARD_DEFAULTS = {
     "atlas_min_room": 200.0,              # this build: ATLAS's own eval stop line (engine/account_b zombie-eval rule) ...
     "atlas_min_room_funded": 100.0,       # ... and funded (the study's min_room lines)
     "atlas_max_risk_usd": None,           # this build: ATLAS's worst-case $ a trade (stop + 2 ticks + $1.90; null = off)
+    "atlas_from_et": None,                # day-alloc 2026-11-26 (alloc card 3, book B05): "09:30" = no ATLAS entry before that ET
+                                          # clock time on the combo lanes (eval and funded); null / absent = off = today
 }
 DEFAULTS = {"conflict": "first_in", "atlas_size_factor": {"eval": 1.0, "funded": 1.0}, "guards": {}}
 ALIASES = {"first": "first_in", "first_in": "first_in", "zprio": "close_on_opposite", "close_on_opposite": "close_on_opposite",
@@ -125,6 +127,37 @@ def factor_of(rules: dict, stage: str) -> float:
     return float(f if f is not None else 1.0)
 
 
+def _hhmm(v):
+    """'09:30' / '9:30 ET' -> '09:30' (00:00-15:50 ET), else None."""
+    if v is None:
+        return None
+    import re
+    m = re.match(r"^\s*(\d{1,2}):(\d{2})(\s*ET)?\s*$", str(v))
+    if not m:
+        return None
+    h, mi = int(m.group(1)), int(m.group(2))
+    if not (0 <= h < 24 and 0 <= mi < 60) or h * 60 + mi > 15 * 60 + 50:
+        return None
+    return f"{h:02d}:{mi:02d}"
+
+
+def from_et_block(g: dict, entry_t) -> str | None:
+    """guards.atlas_from_et: why ATLAS may not enter at entry_t (ET clock before the time, or the time unknown), else None.
+    Entries from the guard time until 18:00 ET pass (ATLAS's members trade 02:00-16:00; the evening has none)."""
+    f = (g or {}).get("atlas_from_et")
+    if not f:
+        return None
+    if entry_t is None:
+        return f"guard atlas_from_et {f}: entry time unknown, not traded (fails closed)"
+    import datetime as _d
+    from zoneinfo import ZoneInfo
+    e = _d.datetime.fromtimestamp(int(entry_t), ZoneInfo("America/New_York"))
+    m, lim = e.hour * 60 + e.minute, int(f[:2]) * 60 + int(f[3:])
+    if lim <= m < 18 * 60:
+        return None
+    return f"guard atlas_from_et {f}: ATLAS entry at {e:%H:%M} ET is before {f} ET, not traded on this account"
+
+
 def normalize(raw, plan: str = PLAN) -> dict:
     """The rule values (research/lab/combo_50k.json, or a harness dict) -> {"conflict", "atlas_size_factor": {"eval",
     "funded"}, "guards", "problem": why it cannot run or None, "unknown": [keys ignored]}. A "rules" sub-dict is read too.
@@ -158,6 +191,12 @@ def normalize(raw, plan: str = PLAN) -> dict:
     for k, v in g.items():
         if k not in GUARD_DEFAULTS:
             out["unknown"].append(str(k))
+            continue
+        if k == "atlas_from_et":
+            hm_ = _hhmm(v)
+            if v is not None and hm_ is None:
+                out["problem"] = out["problem"] or f"guards.atlas_from_et {v!r} must look like 09:30 (ET, 00:00-15:50) or null"
+            out["guards"][k] = hm_
             continue
         if k in ("atlas_lit_armed_block", "atlas_in_eval", "one_position"):
             out["guards"][k] = GUARD_DEFAULTS[k] if v is None else bool(v)
@@ -307,6 +346,9 @@ def atlas_qty(combo: dict, trade: dict, state: dict | None, eval_start: str | No
     from . import sizing as SZ
     if state is None:
         return {"qty": 0, "reasons": ["the 50K's eval state is unknown (eval_start missing?): not traded"]}
+    fb = from_et_block(combo.get("guards") or {}, trade.get("entry_t"))
+    if fb:
+        return {"qty": 0, "reasons": [fb]}
     spec = ab_spec(combo, eval_start, stage, funded)
     r = AB.qty(spec, trade, dict(state), base=base, key=key) if stage != "funded" else AB.funded_qty(spec, trade, dict(state), base=base, key=key)
     q0 = int(r.get("qty") or 0)

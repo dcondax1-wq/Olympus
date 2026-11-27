@@ -6,7 +6,7 @@ type: "decisions"
 
 # ZEUS Decisions
 
-> [!question] 5 open
+> [!question] 7 open
 > Answer on the Decide card (Business app). A yes means Claude tests it; nothing live changes without proof.
 
 ## Open
@@ -40,6 +40,18 @@ type: "decisions"
 > **Impact:** 12 months (fresh paths): 2026-like $37,598 -> $58,813; market turns bad after 3 months $6,514 -> $9,394; 2021-25-like -$705 -> -$279; 25% mix $2,425 -> $2,480. Keep ~$1,300 cash for fees (p90).
 > Added 2026-11-26 · write-up [[business-planner-2026-11-26|Business planner]] · id `rapid25-second-with-stop`
 > Card: [[Decide rapid25-second-with-stop|open the card note]]
+
+> [!question] Card 2: LIT also trades your funded ATLAS 25K (same 40% risk, never 2 positions at once) - your phrase needed
+> **Why:** ATLAS's funded 25K only trades ATLAS today. Adding LIT fills the days ATLAS has no setup, so payouts come more often.
+> **Impact:** 6 months, all 4 accounts on the same market paths: +$1,099 (Jan-Jun 2026-like) / +$2,097 (Jul-Oct-like) / -$36 (2021-25-like). Chance of no payout in 6 months 8.2% -> 0.6%.
+> Added 2026-11-26 · id `alloc-lit-funded25`
+> Card: [[Decide alloc-lit-funded25|open the card note]]
+
+> [!question] Card 3: ATLAS on the 50K + 25K #2 only from 9:30 AM ET
+> **Why:** Instead of half-size ATLAS on the Zlarior evals: full size, but no ATLAS entry before the 9:30 AM ET open.
+> **Impact:** Zlarior 50K, 6 months vs the half-size combo you already said yes to: Jan-Jun-like +$3,032 vs +$3,118; Jul-Oct-like +$1,274 vs +$2,612; 2021-25-like -$67 vs -$185. Eval lost at least once 19% -> 3.4% (Jan-Jun-like), same ~15% (Jul-Oct-like).
+> Added 2026-11-26 · id `alloc-atlas-from-930`
+> Card: [[Decide alloc-atlas-from-930|open the card note]]
 
 ## Yes
 

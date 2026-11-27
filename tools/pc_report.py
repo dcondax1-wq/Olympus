@@ -70,7 +70,7 @@ EXT_KIND = "le-live-ext"
 EXT_PARTS = 2                    # at most 2 ext posts a run (ntfy.sh free: a few hundred messages a day per IP)
 EXT_EVERY_S = 2640               # the ext goes every 3rd 15-minute run (44 min), or at once when its news changed (ext_hash). Was every 2nd (29 min) until
                                  # 2026-11-20: 96 core + 96 ext + 24 chart posts a day left no room under ntfy's 250 for the other programs and the alerts
-EXT_ORDER = ("rc", "ck", "rd", "fl", "brd", "life", "mf", "k7", "board_trades", "at", "fq", "zl", "learn", "lab", "glance", "kalshi_rewards", "kalshi_k1", "kalshi_live", "ap")   # "at": engine/feed_trades
+EXT_ORDER = ("rc", "ck", "rd", "fl", "brd", "life", "mf", "k7", "board_trades", "at", "fq", "zl", "learn", "lab", "glance", "kalshi_rewards", "kalshi_k1", "kalshi_live", "ap", "bg", "ofp")   # "at": engine/feed_trades; "ofp": the OF pillar's PAPER bot (engine/oflive.paper_tiny, <= 300 B)
 EXT_LAST = ("bf", "glog")   # bf: the Brain app feed (engine/brain_feed, day-brain-feed 2026-11-24; <= 2 KB, cut 1400/900, then out)     # red-team 2026-11-21: the Brain's long thought stream takes only the room every other block left (cut 5/3, then out)
 # "zl": ZEUS learned, the nightly line (engine/zeus_learn.read_tiny, <= 220 bytes) -> the ZEUS page's "ZEUS learned" card
 CORE_KEYS = ("eh", "v", "kind", "lite", "src", "t", "every_s", "host", "model_state", "price", "day_pnl", "pc_verdict", "pc", "reporter",
@@ -582,6 +582,11 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
         snap["eh"] = _ep.read_tiny(os.path.join(root, "data", "edge", "tiny.json"), now=now)
     except Exception:
         snap["eh"] = None
+    try:                                    # big-ofpipe: the Order Flow pillar's PAPER bot today (engine/oflive.paper_tiny, <= 300 bytes)
+        from engine import oflive as _ofl
+        snap["ofp"] = _ofl.paper_tiny(root, now=now)
+    except Exception:
+        snap["ofp"] = None
     try:                                    # ZEUS learned (engine/zeus_learn.py: the nightly line, <= 220 bytes, the ZEUS page card)
         from engine import zeus_learn as _zl
         snap["zl"] = _zl.read_tiny(os.path.join(root, "logs", "learn", "tiny.json"), now=now)
@@ -602,6 +607,14 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
         snap["fl"] = _fm.read_tiny()
     except Exception:
         snap["fl"] = None
+    snap["bg"] = None                       # big-shadow: the buy gate + shadow eval (engine/buy_gate, display only; OFF unless
+    if os.path.normcase(os.path.realpath(root)) == os.path.normcase(os.path.realpath(ROOT)):   # data/buy_gate.json shows it)
+        try:
+            from engine import buy_gate as _bg
+            if _bg.SE.shown():
+                snap["bg"] = _bg.tiny(_bg.refresh(now=now))
+        except Exception:  # noqa: BLE001
+            snap["bg"] = None
     snap["ck_local"] = None                 # day-zerotouch2: the phone's PC checklist, this PC's own part (engine/pc_checklist.local)
     if os.path.normcase(os.path.realpath(root)) == os.path.normcase(os.path.realpath(ROOT)):   # a test's fake root never reads the real PC
         try:
@@ -808,10 +821,14 @@ def full(snap: dict) -> dict:
         out["eh"] = snap["eh"]
     if isinstance(snap.get("zl"), dict):     # ZEUS learned (engine/zeus_learn.read_tiny, <= 220 bytes): rides an ext post (EXT_ORDER)
         out["zl"] = snap["zl"]
+    if isinstance(snap.get("ofp"), dict):    # big-ofpipe: the OF pillar's PAPER bot (paper only, never a real trade): rides an ext post
+        out["ofp"] = snap["ofp"]
     if isinstance(snap.get("rd"), dict):     # READY / NOT READY verdict (engine/readiness.rd, <= 200 bytes; no time inside: the ext hash stays still)
         out["rd"] = snap["rd"]
     if isinstance(snap.get("fl"), dict):     # the Fleet line (engine/fleet_mgr.tiny): rides an ext post (EXT_ORDER)
         out["fl"] = {k: snap["fl"].get(k) for k in ("s", "n", "sl")}
+    if isinstance(snap.get("bg"), dict):     # big-shadow: the buy gate line (engine/buy_gate.tiny, < 400 bytes): rides an ext post
+        out["bg"] = snap["bg"]
     if isinstance(snap.get("ap"), dict):     # the Money pipeline card (agency/pipeline.read_card): rides an ext post (EXT_ORDER)
         out["ap"] = snap["ap"]
     try:                                     # Olympus phone notifications (2026-11-19): the PC's PUBLIC push key + box key + its phones'
@@ -1032,6 +1049,8 @@ def _news_of(k, v):
     if k == "board_trades" and isinstance(v, list):
         return [({x: y for x, y in t.items() if x not in LIVE_KEYS} if isinstance(t, dict) and (t.get("open") is True or str(t.get("exit") or "").upper() == "OPEN") else t)
                 for t in v]
+    if k == "ofp" and isinstance(v, dict):                    # big-ofpipe: only a new / closed PAPER trade (or a new day) is news,
+        return {x: v.get(x) for x in ("d", "n", "o")}            # never its R, line, level reads or run time (ntfy's day quota)
     if k == "ck" and isinstance(v, dict) and isinstance(v.get("clk"), list):
         v = {**v, "clk": v["clk"][:1]}                       # the clock's drift moves every run: only ok / not ok is news
     if isinstance(v, dict):

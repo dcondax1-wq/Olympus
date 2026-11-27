@@ -11,6 +11,8 @@ Telegram reply to the owner's message.
   /today             where are we: every account's $ / today / to pass / $ left before the floor or daily limit, the funded
                      payout state, the open trade, the LIT setup, today's + tomorrow's big news (engine/today_brief; read-only,
                      answered here, never through the control path)
+                       + the payouts (engine/payout_engine, READ-ONLY): per funded account "request today" or the next one's $ and
+                     date, the buffer to keep and what blocks it (big-payout 2026-11-26; it never requests a payout)
   /update            the auto-update now (parks a blocking hand edit with git stash; strategy / account files are not parked)
   /update force      the same, and ALSO parks the strategy / account / rule files that block it (git stash: nothing is lost,
                      'git stash list' / 'git stash pop' bring it back). Only ever sent by the owner after a "Bot update stuck" push.
@@ -43,7 +45,7 @@ ALLOW = ("status", "today", "update", "restart", "pause", "resume", "help")
 TO_CMD = {"status": "status", "update": "update", "restart": "restart", "pause": "pause", "resume": "resume_entries"}
 REFUSED_WORDS = ("kill", "stop", "flatten", "start", "arm", "add_account", "switch", "present", "buy", "sell", "long", "short")
 PAUSE_ARG = re.compile(r"^(tomorrow|\d{1,2}:\d{2}|\d{4}-\d{2}-\d{2})$")
-HELP = ("PC commands (reply here):\n/status - how the bot is doing\n/today - where are we: accounts, $ today, $ left, open trade, "
+HELP = ("PC commands (reply here):\n/status - how the bot is doing\n/today - where are we: accounts, $ today, $ left, payouts, open trade, "
         "setup, news\n/update - install the newest code now (outside 01:50-16:00 ET, "
         "flat)\n/restart - restart the PC server (your eval comes back armed by itself)\n/pause [HH:MM|tomorrow] - no new entries "
         "until then\n/resume - lift the pause\nTrading, arming, stop and flatten are never done from Telegram.")
@@ -111,6 +113,15 @@ def parse_text(text: str) -> tuple:
     return c, None
 
 
+def today_text() -> str:
+    """/today: the payout plan in plain words (engine/payout_engine.today_line). Never raises."""
+    try:
+        from . import payout_engine
+        return payout_engine.today_line()[:3500]
+    except Exception as e:  # noqa: BLE001
+        return f"Payouts: could not read the accounts ({e.__class__.__name__})."
+
+
 def today_reply(now, live_fn=None) -> str:
     """/today's text (engine/today_brief) from the server's own live view (live_fn() for tests). Never raises."""
     try:
@@ -120,7 +131,11 @@ def today_reply(now, live_fn=None) -> str:
         else:
             from .live_site import _live
             live = _live()
-        return today_brief.text(live, now)
+        txt = today_brief.text(live, now)
+        pay = today_text()                               # red team 2026-11-26: big-payout's plan joins guard2's /today
+        lines = txt.split("\n")
+        key = lines.pop() if lines and lines[-1].startswith("PC signing key:") else None   # the key line stays LAST
+        return "\n".join(lines + ([pay] if pay else []) + ([key] if key else []))[:3500]
     except Exception as e:  # noqa: BLE001
         return f"/today failed ({e.__class__.__name__}); /status still works."
 

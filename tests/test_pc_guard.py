@@ -276,8 +276,8 @@ def reporter():
               any(t.startswith("BLITZ 25K: 50% of the room used") for t in titles) and any(t.startswith("BLITZ 25K: daily loss limit near") for t in titles)
               and any(t.startswith("Day Mon Nov 16:") for t in titles), titles)
         day = next(v for k, v in bodies.items() if k.startswith("Day "))
-        check("day summary names Zlarior and BLITZ with $ today and the room left", "Zlarior 50K:" in day and "BLITZ 25K: -$430 today" in day
-              and "room $420 of $1,000" in day, day)
+        check("day summary names Zlarior with $ today and the room left; BLITZ (hidden from the owner, lead 2026-11-26) is not in it",
+              "Zlarior 50K:" in day and "room $2,000 of $2,000" in day and "BLITZ" not in day, day)
         check("every push title is ASCII (HTTP header)", all(all(ord(ch) < 128 for ch in t) for t in titles), titles)
         h = FakeHTTP()
         b.run(h, now + 5700)

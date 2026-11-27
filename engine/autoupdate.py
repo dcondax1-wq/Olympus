@@ -330,7 +330,39 @@ def files_flat_reason(root: str = ROOT, now=None) -> str | None:
     except Exception:
         return "data/ninjatrader_state.json unreadable"
     recent = now - float(ls.get("saved_at") or 0) < 24 * 3600        # an older file is a past day: the bot was flat at 15:55
-    return flat_reason({}, ls.get("open_routed") if recent else None, nt.get("legs") if isinstance(nt, dict) else None)
+    why = flat_reason({}, ls.get("open_routed") if recent else None, nt.get("legs") if isinstance(nt, dict) else None)
+    return why or accounts_flat_reason(root)
+
+
+SKIP_STATE = ("ninjatrader_state_simcheck.json", "_nt_probe_state.json")   # self-test / probe files, never a real account
+
+
+def accounts_flat_reason(root: str = ROOT) -> str | None:
+    """red team #22 (big-zeroerr2, 2026-11-26): every OTHER account's NinjaTrader legs too. LIT's adapter keeps
+    data/ninjatrader_state.json; ATLAS (acctb), account C, the combo / fleet / extra accounts and the Rapid lanes each keep their
+    own data/ninjatrader_state_<x>.json. Any open leg there, or a file that cannot be read, = NOT flat (fails closed). Shared by
+    files_flat_reason (the update, the remote restart, auto-park) and engine/hang_guard (a kill only when every account is flat)."""
+    import glob
+    for p in sorted(glob.glob(os.path.join(root, "data", "ninjatrader_state_*.json"))):
+        name = os.path.basename(p)
+        if name in SKIP_STATE:
+            continue
+        try:                                # red team #23: untouched for 24 h = a leftover of an account the bot no longer runs
+            if time.time() - os.path.getmtime(p) > 24 * 3600:     # (a live adapter rewrites its state file every poll)
+                continue
+        except OSError:
+            continue                        # gone between the glob and here
+        try:
+            with open(p, encoding="utf-8") as fh:
+                d = json.load(fh)
+        except FileNotFoundError:
+            continue
+        except Exception:
+            return f"data/{name} unreadable: a trade may be open"
+        for lg in (d.get("legs") if isinstance(d, dict) else None) or []:
+            if isinstance(lg, dict) and lg.get("status") in OPEN_LEG:
+                return f"an open {lg.get('instrument') or 'MNQ'} leg in data/{name} ({lg.get('status')})"
+    return None
 
 
 # ---------------------------------------------------------------------- git / subprocess layer (swappable in tests)

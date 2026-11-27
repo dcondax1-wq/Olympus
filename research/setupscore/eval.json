@@ -1,0 +1,77 @@
+{
+ "verdict": "info only",
+ "holdouts": {
+  "A Jul-Oct 2026 (pool to 2026-06-30)": {
+   "all with an outcome": {
+    "n": 191,
+    "spearman": -0.085,
+    "p": 0.8835,
+    "auc": 0.535,
+    "top_third_r": -0.122,
+    "bottom_third_r": 0.124,
+    "top_third_win": 0.381,
+    "bottom_third_win": 0.349,
+    "mean_r": 0.042
+   },
+   "taken only": {
+    "n": 43,
+    "spearman": 0.1,
+    "p": 0.245,
+    "auc": 0.569,
+    "top_third_r": 0.805,
+    "bottom_third_r": 0.499,
+    "top_third_win": 0.571,
+    "bottom_third_win": 0.429,
+    "mean_r": 0.645
+   },
+   "baseline: bucket lookup, all": {
+    "n": 191,
+    "spearman": 0.065,
+    "p": 0.1855,
+    "auc": 0.542,
+    "top_third_r": 0.079,
+    "bottom_third_r": -0.024,
+    "top_third_win": 0.397,
+    "bottom_third_win": 0.333,
+    "mean_r": 0.042
+   }
+  },
+  "B Jan-Jun 2026 (pool to 2025-12-31)": {
+   "all with an outcome": {
+    "n": 305,
+    "spearman": -0.026,
+    "p": 0.6625,
+    "auc": 0.504,
+    "top_third_r": 0.065,
+    "bottom_third_r": 0.305,
+    "top_third_win": 0.495,
+    "bottom_third_win": 0.535,
+    "mean_r": 0.238
+   },
+   "taken only": {
+    "n": 80,
+    "spearman": -0.103,
+    "p": 0.8225,
+    "auc": 0.437,
+    "top_third_r": 0.518,
+    "bottom_third_r": 0.497,
+    "top_third_win": 0.538,
+    "bottom_third_win": 0.615,
+    "mean_r": 0.846
+   },
+   "baseline: bucket lookup, all": {
+    "n": 305,
+    "spearman": 0.02,
+    "p": 0.36,
+    "auc": 0.53,
+    "top_third_r": 0.421,
+    "bottom_third_r": 0.047,
+    "top_third_win": 0.525,
+    "bottom_third_win": 0.446,
+    "mean_r": 0.238
+   }
+  }
+ },
+ "pool_rows": 2297,
+ "data_end": "2026-11-20"
+}

@@ -173,7 +173,10 @@ class Ev(SOA.Ev):
             return "fail", round(cum, 2)
         self.peak = max(self.peak, self.bal)
         self.floor = min(max(self.floor, self.peak - E["mll"]), E["lock"])
-        if self.bal >= E["tgt"] and self.dtr >= E.get("min_days", 1) and self.best <= E["cons"] * self.bal + 1e-9:
+        # big-consfix 2026-11-26: cons >= 1 = NO best-day rule (rank.spec fills a Builder's missing rule with 1.0). Before, a
+        # pass whose best day was bigger than the total (a winner out of a hole) never counted and the eval sat at its target.
+        cons_ok = E.get("cons") is None or E["cons"] >= 1.0 or self.best <= E["cons"] * self.bal + 1e-9
+        if self.bal >= E["tgt"] and self.dtr >= E.get("min_days", 1) and cons_ok:
             return "pass", round(cum, 2)
         if self.bal - self.floor < c["_stuck"]:
             return "stuck", round(cum, 2)
@@ -181,7 +184,10 @@ class Ev(SOA.Ev):
 
     def need(self):
         """$ still needed: the target, or more when the best day needs a bigger total (best <= 30% of the profit)."""
-        return max(self.E["tgt"], self.best / self.E["cons"]) - self.bal
+        c = self.E.get("cons")
+        if c is None or c >= 1.0:
+            return self.E["tgt"] - self.bal
+        return max(self.E["tgt"], self.best / c) - self.bal
 
     def give_up(self, g):
         if not g:

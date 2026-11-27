@@ -2,7 +2,8 @@
     python -X utf8 -m tests.test_datapipe_fills
 a. from a synthetic OIF audit log + archived order states + fill-audit legs: one row per MARKET entry order of the day, every
    account (Zlarior main, ATLAS acctb_), send time from the OIF file name (ms), NinjaTrader's fill time + price, seconds split
-b. bracket orders (STOPMARKET / LIMIT), CLOSEPOSITION and another day's entry are left out; account names cut to the last 4
+b. (day-zeroerr 2026-11-26: every fill, entry AND exit) bracket orders (STOPMARKET / LIMIT) and CLOSEPOSITION are rows of their own
+   (leg stop / target / close), another day's entry is left out; account names cut to the last 4
 c. a FILLED state wins over a later WORKING line for the same order; a leg's own sent_at is kept as leg_sent_t
 d. datapipe.pack_day and datafeed.pack_day both carry fills.jsonl.gz; load_day reads it back; the manifest counts it
 e. tools/fill_speed.py: ticks past the fill bar's open, $ past the backtest's 1 tick, seconds, per account; old days without
@@ -62,21 +63,28 @@ def main():
             fh.write(json.dumps({"id": ida, "state": "FILLED", "filled": 1, "avg": 26375.5, "mtime": ET_ + 2.731, "seen": ET_ + 60}) + "\n")
             fh.write(json.dumps({"id": ida, "state": "WORKING", "filled": 0, "avg": None, "mtime": ET_ + 2.5, "seen": ET_ + 61}) + "\n")
             fh.write(json.dumps({"id": idz, "state": "FILLED", "filled": 3, "avg": 27001.25, "mtime": EZ + 2.6, "seen": EZ + 60}) + "\n")
+            fh.write(json.dumps({"id": idz[:-1] + "S", "state": "FILLED", "filled": 3, "avg": 26989.5, "mtime": EZ + 900, "seen": EZ + 960}) + "\n")
+            fh.write(json.dumps({"id": idz[:-1] + "T", "state": "CANCELLED", "filled": 0, "avg": None, "mtime": EZ + 900, "seen": EZ + 960}) + "\n")
         with open(os.path.join(tmp, "logs", "exec_audit", "legs.json"), "w", encoding="utf-8") as fh:
             json.dump({idz: {"entry_id": idz, "entry_t": EZ, "sent_at": EZ + 2.249, "fill_mtime": EZ + 2.6, "fill_px": 27001.25, "filled": 3,
-                             "send_at": EZ + 2.25, "ack_at": EZ + 2.31, "fill_seen_at": EZ + 2.7, "ref": 27000.5}}, fh)
+                             "send_at": EZ + 2.25, "ack_at": EZ + 2.31, "fill_seen_at": EZ + 2.7, "ref": 27000.5,
+                             "dir": 1, "stop": 26990.0, "target": 27050.0}}, fh)
         names = {"MFFUFUND25K6017", "MFFUEVAL50K1234"}
         rows = DP.day_fills("2026-11-20", root=tmp, names=names)
         by = {r["order_id"]: r for r in rows}
         a, z = by.get(ida), by.get(idz)
-        check("a. 2 MARKET entries of the day, both accounts", len(rows) == 2 and a is not None and z is not None, str(rows))
+        ents = [r for r in rows if r.get("leg") == "entry"]
+        check("a. 2 MARKET entries of the day, both accounts", len(ents) == 2 and a is not None and z is not None, str(rows))
         check("a. ATLAS: book atlas, sent 2.412 s after the open, filled 0.319 s later at 26,375.50",
               a and a["book"] == "atlas" and a["sent_s_after_open"] == 2.412 and a["fill_s_after_sent"] == 0.319
               and a["fill_px"] == 26375.5 and a["filled"] == 1 and a["action"] == "SELL", str(a))
         check("a. Zlarior: book zlarior, 3 filled, sent 2.25 s, filled 0.35 s later", z and z["book"] == "zlarior"
               and z["filled"] == 3 and z["sent_s_after_open"] == 2.25 and z["fill_s_after_sent"] == 0.35, str(z))
         txt = json.dumps(rows)
-        check("b. brackets, CLOSEPOSITION and the Nov 18 entry left out", ido not in by and "STOPMARKET" not in txt and "CLOSEPOSITION" not in txt)
+        check("b. brackets and CLOSEPOSITION are exit rows now (day-zeroerr), the Nov 18 entry left out",
+              ido not in by and all(r.get("leg") in ("entry", "stop", "target", "close") for r in rows)
+              and ("STOPMARKET" not in txt or any(r.get("leg") == "stop" for r in rows))
+              and ("CLOSEPOSITION" not in txt or any(r.get("leg") == "close" for r in rows)), txt[:400])
         check("b. account names only as their last 4", "MFFUFUND25K6017" not in txt and "MFFUEVAL50K1234" not in txt
               and a["account"] == "...6017" and z["account"] == "...1234", txt[:200])
         check("c. FILLED wins over a later WORKING line", a["state"] == "FILLED")
@@ -84,16 +92,20 @@ def main():
         check("c2. big-execution latency chain: signal_t / send_t / ack_t / fill_seen_t / model_px + ack_s_after_send",
               z.get("signal_t") == EZ and z.get("send_t") == EZ + 2.25 and z.get("ack_t") == EZ + 2.31 and z.get("fill_seen_t") == EZ + 2.7
               and z.get("model_px") == 27000.5 and z.get("ack_s_after_send") == 0.06 and a.get("signal_t") == a.get("entry_t")
-              and "send_t" not in a, str(z))
+              and a.get("send_t") == a.get("sent_t"), str(z))   # day-zeroerr merge: no leg send_at = the OIF file stamp (fallback)
+        check("c3. big-exitreal: the real exit (stop filled 2 ticks below its 26,990 level) next to the levels; none for ATLAS",
+              z.get("exit_order") == "stop" and z.get("exit_fill_px") == 26989.5 and z.get("exit_slip_ticks") == 2.0
+              and z.get("stop_px") == 26990.0 and z.get("target_px") == 27050.0 and z.get("exit_fill_t") == EZ + 900
+              and "exit_fill_px" not in a, str(z))
         files = DP.pack_day("2026-11-20", {}, [], names, root=tmp, exec_store=os.path.join(tmp, "logs", "exec_audit"),
                             build_twin=False, now=ET_ + 86400)
         back = [json.loads(x) for x in gzip.decompress(files["fills.jsonl.gz"]).decode().splitlines() if x]
         man = json.loads(files["manifest.json"])
-        check("d. datapipe.pack_day carries fills.jsonl.gz (2 rows) + the manifest counts it",
-              len(back) == 2 and man["counts"].get("fills") == 2 and "fills.jsonl.gz" in man["files"], str(man.get("counts")))
+        check("d. datapipe.pack_day carries fills.jsonl.gz (every row) + the manifest counts it",
+              len(back) == len(rows) and man["counts"].get("fills") == len(rows) and "fills.jsonl.gz" in man["files"], str(man.get("counts")))
         dd = os.path.join(tmp, "days")
         DP.write_local("2026-11-20", files, days_dir=dd)
-        check("d. load_day reads fills back", len(DP.load_day(os.path.join(dd, "2026-11-20"))["fills"]) == 2)
+        check("d. load_day reads fills back", len(DP.load_day(os.path.join(dd, "2026-11-20"))["fills"]) == len(rows))
         from engine import datafeed as DF
         old_root, DP.ROOT = DP.ROOT, tmp
         try:

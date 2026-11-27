@@ -59,7 +59,8 @@ def run(n=1000, offline=False, say=print):
     import rank as R
     U, RL, AR, SOA = R.U, R.RL, R.AR, R.SOA
     U.SPAN["Y26"] = ("2026-01-01", "2026-10-16")
-    AR.rapid_patch(AR.T_at(10))                      # ATLAS at its measured real fills (10 ticks a side), as rank.py
+    R.A4.apply_costs()                               # LIT's trades at engine/costs.py exit costs, as rank.py
+    AR.rapid_patch(AR.T_costs())                     # ATLAS at engine/costs.py (12 entry / 10 exit ticks), as rank.py
     S = SOA.data()["S"]
     state, src = board_state(offline)
     out = {"made": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC"), "data_to": str(S[-1]), "n_paths": n,
