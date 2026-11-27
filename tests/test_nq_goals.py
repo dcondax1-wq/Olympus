@@ -3,7 +3,7 @@ tools/web_public/nq/nqgoals.js (+ nqgoals.css, nqland.js the 3D price landscape)
 (tests/fixtures/truth/pc_post.json: ATLAS funded $25,401.38, Zlarior 50K $49,192.78, 25K #2 $25,000).
   a. node    the goals: ATLAS first in MFFU's own terms (a sim-funded account starts at $0: "$401"; the GOAL = ask $1,000 at $2,100: $1,698.62
              left, 19%, $800 to you; earliest = the $250 minimum at $1,350 = the payout coach's $948.62; floor -$1,000 EOD trailing, stops at +$100;
-             2 traded days + best day <= 50%; the cost study's date 'about Dec 18-31 (estimate, 2026-like market)', never a few days' pace), Zlarior 50K +$3,807 to pass, 25K #2 +$1,500, the Rapid
+             2 traded days + best day <= 50%; the cost study's date 'about Dec 18-31 (estimate, 2026-like market)' on the goal card; the vault note = goals_model.js goal().line (no date: QA #4), never a few days' pace), Zlarior 50K +$3,807 to pass, 25K #2 +$1,500, the Rapid
              planned (4+ days, best day <= 30% = $450), the fleet (1 of 5 funded slots, goals.json's $5,200 a month); never "to payout $X" but the coach's
   b. node    the numbers: today's / this week's P&L per account (the PC's today + the week's earlier real fills), win rate + PF over real fills only,
              the last 10; the session clock (London / New York windows, the next one, weekends); the VIX band and the LIT target size
@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import re
 import os
 import shutil
 import subprocess
@@ -90,9 +91,10 @@ def test_node():
           "Earliest: the minimum $250 ask at $1,350: $949 more." in a["lines"][2], a.get("lines"))
     check("a. ... the rules as chips: traded days (the PC's tracker) and the best day <= 50%",
           len(a.get("chips", [])) == 2 and a["chips"][0]["label"].startswith("Traded days") and "Best day <= 50%" in a["chips"][1]["label"], a.get("chips"))
+    # the plan's dates move with business/goals.json and the brief is rebuilt daily: these checks hold the rule, not one day's numbers
     check("a. ... the date: the ATLAS cost study's simulated 'about Dec 18-31 (estimate, 2026-like market)' (a 3-day pace over-promised); evals: the plan's dates",
-          a.get("when") == "about Dec 18-31 (estimate, 2026-like market)" and G["zlarior"]["when"] == "plan: about Dec 24 (estimate)"
-          and G["fresh25"]["when"] == "plan: about Dec 9 (estimate)", (a.get("when"), G["zlarior"].get("when"), G["fresh25"].get("when")))
+          a.get("when") == "about Dec 18-31 (estimate, 2026-like market)" and re.fullmatch(r"plan: about (Nov|Dec|Jan) \d{1,2} \(estimate\)", G["zlarior"].get("when", ""))
+          and re.fullmatch(r"plan: about (Nov|Dec|Jan) \d{1,2} \(estimate\)", G["fresh25"].get("when", "")), (a.get("when"), G["zlarior"].get("when"), G["fresh25"].get("when")))
     z, f, rp, fl = G.get("zlarior", {}), G.get("fresh25", {}), G.get("rapid1", {}), G.get("fleet", {})
     check("a. Zlarior 50K: +$3,807 to pass at $53,000, 0% (the balance is under the $50,000 start), drawdown left $1,025 in its line",
           z.get("big") == "+$3,807" and z.get("goal") == "Pass at $53,000" and z.get("frac") == 0 and "Drawdown left $1,025" in z["lines"][0], z)
@@ -101,7 +103,6 @@ def test_node():
           rp.get("kind") == "plan" and not rp.get("has") and "+$1,500 in 4+ days, no day over 30% ($450)" in rp["lines"][0] and rp.get("when", "").startswith("plan: about"), rp)
     check("a. the fleet: 1 of 5 funded slots, goals.json's 'about $5,200 a month' by Mar 1 (an estimate), no payout yet",
           fl.get("big") == "1 of 5" and fl.get("goal") == "$5,200 a month" and "$5,200 a month to you by Mar 1" in fl["lines"][0] and "No payout taken yet" in fl["lines"][1], fl)
-    import re
     from tools import truth_check as TC
     txt = " ".join(" ".join([g["goal"], g["big"], g["unit"], *g["lines"], g["when"], *[c["label"] for c in g["chips"]]]) for g in o["goals"])
     pays = [m.group(1) for m in TC.PAYOUT_RX.finditer(txt)]
@@ -142,8 +143,9 @@ def test_node():
           len(op) == 2 and op[0]["r"] == 1.42 and op[0]["text"] == "SHORT 6 @ 21,555.50" and op[0]["sub"] == "target +$735" and op[1]["r"] is None
           and op[1]["sub"] == "stop moved: +$4 locked in", op)
     v = o["vix"]
-    check("b. VIX 28.4 (elevated) of 2026-11-19 and the LIT target size: the 18:00 open +/- 475 pts; no brief = no line",
-          v["text"] == "VIX 28.4 (elevated)" and "+/- 475 pts" in v["target"] and "banked at 8R" in v["target"] and v["date"] == "2026-11-19" and o["none"] is None, v)
+    check("b. the brief's VIX (its value, band, date) and the LIT target size = one VIX day move (+/- that many pts, banked at 8R); no brief = no line",
+          v["text"] == f"VIX {v['value']:.1f} ({v['band']})" and f"+/- {round(v['move'])} pts" in v["target"] and "banked at 8R" in v["target"]
+          and re.fullmatch(r"\d{4}-\d\d-\d\d", str(v["date"])) and o["none"] is None, v)
 
 
 def test_static():
@@ -221,13 +223,13 @@ def test_page():
             p.wait_for_function("window.OLYMPUS_NQFX && document.querySelector('#vault').getAttribute('aria-label')", timeout=30000)
             v = p.evaluate("() => ({ hidden: document.querySelector('#vaultCard').hidden, pill: document.querySelector('#vaultPill').textContent, note: document.querySelector('#vaultNote').textContent, aria: document.querySelector('#vault').getAttribute('aria-label') || '', h: document.querySelector('#vault').getBoundingClientRect().height, kids: document.querySelector('#vault').children.length })")
             check("c. the ATLAS payout vault (DESIGN's NQFX.vault): 19%, MFFU's $401 of $2,100, $800 to you, the study's date; a fixed 4:3 box drawn at once",
-                  not v["hidden"] and v["pill"] == "19%" and "MFFU shows $401 of profit" in v["note"] and "$1,699 to go" in v["note"] and "Dec 18-31" in v["note"]
+                  not v["hidden"] and v["pill"] == "19%" and "MFFU shows $401 of profit" in v["note"] and "$1,699 to go" in v["note"] and "Earliest MFFU allows: $250 at $1,350" in v["note"]
                   and "$401 of $2,100" in v["aria"] and 200 <= v["h"] <= 341 and v["kids"] >= 1, v)
             p.evaluate("document.querySelector('#numCard').scrollIntoView()")
             p.wait_for_timeout(1500)
             n = p.evaluate(SNAP)
             check("c. the numbers card: the open trade with its live $ and R, today / this week per account, win rate + PF + real fills + net, the session clock, the VIX band",
-                  n["nums"] >= 3 and len(n["stats"]) == 4 and any("Zlarior 50K: SHORT 6" in x and "R live" in x for x in n["open"]) and n["stats"][0].endswith("%") and "window" in n["clock"] and n["vix"].startswith("VIX 28.4 (elevated)"), n)
+                  n["nums"] >= 3 and len(n["stats"]) == 4 and any("Zlarior 50K: SHORT 6" in x and "R live" in x for x in n["open"]) and n["stats"][0].endswith("%") and "window" in n["clock"] and re.match(r"VIX \d+\.\d \(", n["vix"]), n)
             p.evaluate("document.querySelector('#landCard').scrollIntoView()")
             p.wait_for_function("window.NQLAND || document.querySelectorAll('#landFb path').length > 0", timeout=30000)
             p.wait_for_timeout(2500)
