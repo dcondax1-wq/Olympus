@@ -16,6 +16,7 @@ import argparse
 import datetime as dt
 import json
 import os
+import re
 import sys
 from zoneinfo import ZoneInfo
 
@@ -100,7 +101,7 @@ def build(root: str = ROOT, now: float | None = None, state: dict | None = None)
            "what": "Order Flow pillar (paper): level sweeps read for absorption; Zlarior's entries read the same way. Nothing here trades."}
     if S:
         from engine import of_paper as P
-        out["line"] = S.get("line") or P.line(S)
+        out["line"] = re.sub(r"(Zlarior[^;]*?\b(?:won|lost))\s*-?\$[\d,.]+", r"\1", S.get("line") or P.line(S) or "")   # no $ of a real trade (public)
         rows = [r for r in S.get("rows") or [] if r.get("lane") == "A" and r.get("day") == S.get("day")]
         lv = []
         for L in S.get("levels") or []:
