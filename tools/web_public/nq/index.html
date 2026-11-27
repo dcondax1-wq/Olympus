@@ -43,6 +43,7 @@
 <link rel="stylesheet" href="plan.css?v=4" media="print" onload="this.media='all'"><link rel="stylesheet" href="december.css?v=1" media="print" onload="this.media='all'"><link rel="stylesheet" href="ports.css?v=1" media="print" onload="this.media='all'"><link rel="stylesheet" href="story.css?v=2" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="nqgoals.css?v=12" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="nqtheme.css?v=11">
+<link rel="stylesheet" href="stratnav.css?v=1">
 <link rel="stylesheet" href="sun.css?v=2" id="sunCss" media="(prefers-contrast: more)"><!-- SUNLIGHT MODE: off = not render-blocking; on (saved, or prefers-contrast: more) = applied before the first paint -->
 <script>(function () { var d = document.documentElement, v = null; try { v = localStorage.getItem('nq.sun'); } catch (e) { /* private mode */ }
   var on = v === '1' || (v !== '0' && !!(window.matchMedia && matchMedia('(prefers-contrast: more)').matches)); if (on) { d.classList.add('sun'); document.getElementById('sunCss').media = 'all'; } })();</script>
@@ -99,6 +100,13 @@
     <div class="gl-detail" id="goalDetail" aria-live="polite" hidden></div>
   </section>
 
+  <!-- day-strats 2026-11-27 (owner: "complete charts of each strategy"): the 4 STRATEGY ROOMS (strat.html?s=...), plain links (no script) -->
+  <nav class="snav" id="stratNav" aria-label="Strategy rooms">
+    <a href="strat.html?s=lit" style="--c:#f1c14b"><b>Zlarior</b><small>LIT · live</small></a>
+    <a href="strat.html?s=atlas" style="--c:#b48cf2"><b>ATLAS</b><small>live</small></a>
+    <a href="strat.html?s=blitz" style="--c:#f472b6"><b>BLITZ</b><small>paper</small></a>
+    <a href="strat.html?s=poseidon" style="--c:#77db89"><b>POSEIDON</b><small>order flow · paper</small></a>
+  </nav>
   <!-- the live chart (owner 2026-11-18, nqchart.js + nqbars.js): the PC's NinjaTrader 5-minute bars w ... -->
   <section class="ag-card card" id="chartCard" aria-labelledby="chartH">
     <div class="row"><h2 id="chartH">Live chart</h2><span class="ctools"><button type="button" class="btn ctog" id="chart3dBtn" aria-pressed="false" hidden>3D</button><span class="pill" id="chartPill">Loading</span></span></div>
