@@ -43,3 +43,22 @@ nqland.js, the NEW nq/nqhero.css, and tests/test_nq_desk.py (hero checks). Web o
 12. **Folds (QA #5):** the Accounts grid + 7-day clock + numbers + GO / WAIT, the per-bot cards, and the checks / replay / backtest are in `<details>` (closed). All ids are kept and the jump bar opens a fold.
     - The phone page is 11,820 -> 8,149 px.
     - The Python-Playwright browser suite (test_nq_page part c) could not run here: please run it on landing.
+
+## Battle plan + alert history (2026-11-27 ~01:30 ET)
+13. **New files.**
+    - nq/plancore.js (pure models), nq/plan.js (its own deferred module), nq/plan.css (non-blocking).
+    - Test: tests/test_nq_plan.py, in the nq area; its fixture is tests/fixtures/brief/nq_brief_2026-11-26.json.
+    - sw.js: precache plancore.js, plan.js, plan.css.
+14. **nqfeed.js (night-nq-speed):** tagged `<script defer src="nqfeed.js?v=1">` right after pc_feed.js, NOT the blocking tag the spec asks for.
+    - A blocking 15 KB script puts nq/ over the 310 KB perf budget.
+    - `defer` still runs before nq.js (document order: deferred classic scripts before later modules), so its fetchLatest wrap is in place before nq.js asks.
+    - The head start is lost; the NQ_EARLY prefetch in the head still starts status_feed.json at once.
+    - nq.js re-draws on the `nq-feed` event.
+    - On this branch alone the tag 404s until night-nq-speed is merged.
+15. **Alert history sources.**
+    - The PC post's `brd.ev` (up to ~6 newest), the published ../board/board.json events, and the board trades (entries / exits).
+    - It shows what the PC LOGGED, not the push messages: there is no copy of the actual Telegram / ntfy texts on the site.
+    - If you want those, the PC would need to post a small "sent alerts" list (e.g. in the brd block).
+16. **The battle plan uses nq/brief.json** (tools/premarket_brief.py).
+    - Tonight's brief is Thu's, so the card says "Plan from Thu, Nov 26 - today's (Fri, Nov 27) is not built yet".
+    - When the PC glance has live levels, the ladder uses them and the market read is labelled "From the brief of ..." so two prices never pose as one.
