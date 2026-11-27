@@ -97,6 +97,16 @@ class NTStub:
             return {"side": self.pos, "qty": 1}
         return {"side": "FLAT", "qty": 0}
 
+    old_contract = None                 # red team #46: a position still held in last quarter's contract ("LONG")
+
+    def positions(self):
+        if not self.files:
+            return {"ok": True, "positions": []}
+        out = [{"instrument": i, **self.position_for(i)} for i in ("MNQ 12-26", "NQ 12-26")]
+        if self.old_contract:
+            out.append({"instrument": "MNQ 09-26", "side": self.old_contract, "qty": 1})
+        return {"ok": True, "positions": out}
+
 
 class Paper:
     name = "paper"
@@ -229,6 +239,9 @@ def part3(tmp):
         never("NinjaTrader shows a LONG on MNQ", NTStub(pos="LONG"))
         never("a leg of the account is working", NTStub(legs=[{"instrument": "MNQ 12-26", "entry_t": OLD, "status": "protected"}]))
         never("no position file (a NinjaTrader restart proves nothing)", NTStub(files=False))
+        rolled = NTStub()
+        rolled.old_contract = "LONG"
+        never("rt: today's contracts FLAT but last quarter's MNQ still LONG (a record from before the roll)", rolled)
         never("the paper adapter (it keeps its own book)", Paper())
         never("an entry under 30 min old", NTStub(), now0=TB + 60, setup=lambda Bx: (setattr(Bx, "open_t", TB),
               Bx.prov.__setitem__(TB, {"key": KEY, "short": "S/R", "qty": 1, "dir": 1, "day": "2026-11-27"})))

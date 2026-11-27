@@ -1954,6 +1954,13 @@ class AccountB:
                 p = self.adapter.position_for(inst)
                 if not p or p.get("side") != "FLAT" or int(p.get("qty") or 0) != 0:
                     return None                       # no file never proves flat (NinjaTrader wipes outgoing\ on a restart)
+            # red team #46: EVERY position file of this account must say FLAT too, so a record from before a contract roll (its
+            # position in last quarter's MNQ, not today's front month) is never cleared while that old contract is still held
+            allp = (self.adapter.positions() or {}).get("positions") if callable(getattr(self.adapter, "positions", None)) else None
+            if not isinstance(allp, list):
+                return None
+            if any(p.get("side") != "FLAT" or int(p.get("qty") or 0) != 0 for p in allp if isinstance(p, dict)):
+                return None
         except Exception:
             return None
         return f"NinjaTrader shows {', '.join(insts)} FLAT on this account and no order working"
