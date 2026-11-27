@@ -1,0 +1,23 @@
+diff --git a/server.py b/server.py
+index 2a1f7583..2bfff5e6 100644
+--- a/server.py
++++ b/server.py
+@@ -437,6 +437,18 @@ def live_state():
+     return J(BOT.snapshot())
+ 
+ 
++@app.get("/api/live/footprint")
++def live_footprint(request: Request):
++    """TODAY's NQ footprint per 5m bar for the live chart's heat strip (engine/livefp: market data only; the PC itself or the
++    owner's Tailscale link only; reads one small file, a BELOW_NORMAL child builds it from the tick recorder's file)."""
++    try:
++        from engine import livefp as _fp
++        st, body = _fp.serve(request.client.host if request.client else "", request.headers)
++        return J(body, st)
++    except Exception as e:                                   # never 500 the chart over its strip
++        return J({"bars": [], "error": f"{e.__class__.__name__}"}, 200)
++
++
+ @app.get("/api/next/blitz")
+ def blitz_view():
+     """BLITZ, the scalper (read-only; the PC dashboard's BLITZ page, web_next/js/next/blitz.js): engine/blitz.card of the
