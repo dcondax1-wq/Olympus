@@ -131,7 +131,60 @@
    },
    "walk_forward": "-",
    "p_raw": null,
-   "p_2125": null
+   "p_2125": null,
+   "evals_at_400": {
+    "2026 H1": {
+     "Builder 25K": {
+      "pass": 57.4,
+      "fail": 42.6,
+      "med": 12.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 20.0,
+      "fail": 54.4,
+      "med": 16.0
+     },
+     "Builder 50K": {
+      "pass": 55.0,
+      "fail": 24.3,
+      "med": 21.0
+     }
+    },
+    "2026 Jul-Nov20": {
+     "Builder 25K": {
+      "pass": 39.6,
+      "fail": 60.4,
+      "med": 5.5
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 85.4,
+      "med": null
+     },
+     "Builder 50K": {
+      "pass": 50.0,
+      "fail": 15.9,
+      "med": 22.5
+     }
+    },
+    "2021-25": {
+     "Builder 25K": {
+      "pass": 23.5,
+      "fail": 76.4,
+      "med": 10.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 2.5,
+      "fail": 83.9,
+      "med": 25.5
+     },
+     "Builder 50K": {
+      "pass": 14.7,
+      "fail": 54.4,
+      "med": 27.0
+     }
+    }
+   }
   },
   "M1 max 3 a day": {
    "cfg": {
@@ -253,7 +306,60 @@
    "check": false,
    "p_holm": 1.0,
    "holds_up": false,
-   "tradeoff": false
+   "tradeoff": false,
+   "evals_at_400": {
+    "2026 H1": {
+     "Builder 25K": {
+      "pass": 42.6,
+      "fail": 57.4,
+      "med": 9.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 6.0,
+      "fail": 67.0,
+      "med": 25.5
+     },
+     "Builder 50K": {
+      "pass": 32.7,
+      "fail": 45.8,
+      "med": 18.0
+     }
+    },
+    "2026 Jul-Nov20": {
+     "Builder 25K": {
+      "pass": 29.8,
+      "fail": 70.2,
+      "med": 14.5
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 87.2,
+      "med": null
+     },
+     "Builder 50K": {
+      "pass": 0.0,
+      "fail": 17.6,
+      "med": null
+     }
+    },
+    "2021-25": {
+     "Builder 25K": {
+      "pass": 24.6,
+      "fail": 73.3,
+      "med": 13.5
+     },
+     "Rapid EOD 25K": {
+      "pass": 9.9,
+      "fail": 73.6,
+      "med": 29.0
+     },
+     "Builder 50K": {
+      "pass": 13.2,
+      "fail": 41.6,
+      "med": 26.0
+     }
+    }
+   }
   },
   "M2 pause after 2 losses in a row": {
    "cfg": {
@@ -375,7 +481,60 @@
    "check": false,
    "p_holm": 1.0,
    "holds_up": false,
-   "tradeoff": false
+   "tradeoff": false,
+   "evals_at_400": {
+    "2026 H1": {
+     "Builder 25K": {
+      "pass": 54.8,
+      "fail": 45.2,
+      "med": 13.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 2.1,
+      "fail": 60.4,
+      "med": 16.5
+     },
+     "Builder 50K": {
+      "pass": 45.9,
+      "fail": 27.9,
+      "med": 24.0
+     }
+    },
+    "2026 Jul-Nov20": {
+     "Builder 25K": {
+      "pass": 50.5,
+      "fail": 49.5,
+      "med": 9.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 80.9,
+      "med": null
+     },
+     "Builder 50K": {
+      "pass": 39.3,
+      "fail": 24.7,
+      "med": 27.0
+     }
+    },
+    "2021-25": {
+     "Builder 25K": {
+      "pass": 24.9,
+      "fail": 74.6,
+      "med": 11.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 2.5,
+      "fail": 79.4,
+      "med": 25.5
+     },
+     "Builder 50K": {
+      "pass": 14.3,
+      "fail": 46.9,
+      "med": 28.0
+     }
+    }
+   }
   },
   "M3 no entry after 14:30": {
    "cfg": {
@@ -497,7 +656,60 @@
    "check": false,
    "p_holm": 1.0,
    "holds_up": false,
-   "tradeoff": false
+   "tradeoff": false,
+   "evals_at_400": {
+    "2026 H1": {
+     "Builder 25K": {
+      "pass": 43.4,
+      "fail": 56.6,
+      "med": 14.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 71.9,
+      "med": null
+     },
+     "Builder 50K": {
+      "pass": 33.3,
+      "fail": 0.0,
+      "med": 22.0
+     }
+    },
+    "2026 Jul-Nov20": {
+     "Builder 25K": {
+      "pass": 25.5,
+      "fail": 74.5,
+      "med": 5.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 89.8,
+      "med": null
+     },
+     "Builder 50K": {
+      "pass": 19.1,
+      "fail": 22.1,
+      "med": 26.0
+     }
+    },
+    "2021-25": {
+     "Builder 25K": {
+      "pass": 21.8,
+      "fail": 78.0,
+      "med": 10.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 2.9,
+      "fail": 82.1,
+      "med": 23.5
+     },
+     "Builder 50K": {
+      "pass": 13.8,
+      "fail": 52.4,
+      "med": 24.0
+     }
+    }
+   }
   },
   "M4 morning only (to 12:30)": {
    "cfg": {
@@ -619,7 +831,60 @@
    "check": false,
    "p_holm": 1.0,
    "holds_up": false,
-   "tradeoff": false
+   "tradeoff": false,
+   "evals_at_400": {
+    "2026 H1": {
+     "Builder 25K": {
+      "pass": 58.0,
+      "fail": 40.2,
+      "med": 16.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 24.7,
+      "fail": 50.6,
+      "med": 23.5
+     },
+     "Builder 50K": {
+      "pass": 46.4,
+      "fail": 0.0,
+      "med": 26.0
+     }
+    },
+    "2026 Jul-Nov20": {
+     "Builder 25K": {
+      "pass": 0.0,
+      "fail": 96.4,
+      "med": null
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 96.8,
+      "med": null
+     },
+     "Builder 50K": {
+      "pass": 0.0,
+      "fail": 35.3,
+      "med": null
+     }
+    },
+    "2021-25": {
+     "Builder 25K": {
+      "pass": 15.2,
+      "fail": 74.3,
+      "med": 21.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 6.6,
+      "fail": 71.7,
+      "med": 27.0
+     },
+     "Builder 50K": {
+      "pass": 6.2,
+      "fail": 33.4,
+      "med": 29.5
+     }
+    }
+   }
   },
   "M5 afternoon only (from 13:00)": {
    "cfg": {
@@ -741,7 +1006,60 @@
    "check": true,
    "p_holm": 1.0,
    "holds_up": false,
-   "tradeoff": true
+   "tradeoff": true,
+   "evals_at_400": {
+    "2026 H1": {
+     "Builder 25K": {
+      "pass": 39.6,
+      "fail": 60.4,
+      "med": 8.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 54.8,
+      "med": null
+     },
+     "Builder 50K": {
+      "pass": 36.2,
+      "fail": 39.4,
+      "med": 34.0
+     }
+    },
+    "2026 Jul-Nov20": {
+     "Builder 25K": {
+      "pass": 89.6,
+      "fail": 10.4,
+      "med": 14.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 47.8,
+      "fail": 4.3,
+      "med": 30.0
+     },
+     "Builder 50K": {
+      "pass": 63.9,
+      "fail": 0.0,
+      "med": 30.0
+     }
+    },
+    "2021-25": {
+     "Builder 25K": {
+      "pass": 35.6,
+      "fail": 64.0,
+      "med": 13.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 2.4,
+      "fail": 76.2,
+      "med": 25.0
+     },
+     "Builder 50K": {
+      "pass": 18.8,
+      "fail": 41.3,
+      "med": 26.0
+     }
+    }
+   }
   },
   "M6 daily-trend aligned": {
    "cfg": {
@@ -863,7 +1181,60 @@
    "check": false,
    "p_holm": 1.0,
    "holds_up": false,
-   "tradeoff": false
+   "tradeoff": false,
+   "evals_at_400": {
+    "2026 H1": {
+     "Builder 25K": {
+      "pass": 64.8,
+      "fail": 35.2,
+      "med": 15.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 57.3,
+      "med": null
+     },
+     "Builder 50K": {
+      "pass": 23.6,
+      "fail": 0.0,
+      "med": 30.0
+     }
+    },
+    "2026 Jul-Nov20": {
+     "Builder 25K": {
+      "pass": 43.6,
+      "fail": 56.4,
+      "med": 10.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 1.5,
+      "fail": 76.5,
+      "med": 37.0
+     },
+     "Builder 50K": {
+      "pass": 62.8,
+      "fail": 15.4,
+      "med": 27.0
+     }
+    },
+    "2021-25": {
+     "Builder 25K": {
+      "pass": 26.3,
+      "fail": 55.0,
+      "med": 20.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 56.9,
+      "med": null
+     },
+     "Builder 50K": {
+      "pass": 8.8,
+      "fail": 25.0,
+      "med": 26.0
+     }
+    }
+   }
   },
   "M7 prior VIX >= 18": {
    "cfg": {
@@ -985,7 +1356,60 @@
    "check": false,
    "p_holm": 1.0,
    "holds_up": false,
-   "tradeoff": true
+   "tradeoff": true,
+   "evals_at_400": {
+    "2026 H1": {
+     "Builder 25K": {
+      "pass": 30.0,
+      "fail": 57.0,
+      "med": 21.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 58.4,
+      "med": null
+     },
+     "Builder 50K": {
+      "pass": 6.7,
+      "fail": 31.5,
+      "med": 4.5
+     }
+    },
+    "2026 Jul-Nov20": {
+     "Builder 25K": {
+      "pass": 15.8,
+      "fail": 60.4,
+      "med": 10.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 74.5,
+      "med": null
+     },
+     "Builder 50K": {
+      "pass": 0.0,
+      "fail": 0.0,
+      "med": null
+     }
+    },
+    "2021-25": {
+     "Builder 25K": {
+      "pass": 15.4,
+      "fail": 44.8,
+      "med": 12.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.8,
+      "fail": 47.2,
+      "med": 24.5
+     },
+     "Builder 50K": {
+      "pass": 4.9,
+      "fail": 25.1,
+      "med": 31.0
+     }
+    }
+   }
   },
   "M8 skip stop > 0.40% of price": {
    "cfg": {
@@ -1107,7 +1531,60 @@
    "check": false,
    "p_holm": 1.0,
    "holds_up": false,
-   "tradeoff": false
+   "tradeoff": false,
+   "evals_at_400": {
+    "2026 H1": {
+     "Builder 25K": {
+      "pass": 55.9,
+      "fail": 44.1,
+      "med": 12.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 15.2,
+      "fail": 57.6,
+      "med": 19.5
+     },
+     "Builder 50K": {
+      "pass": 52.3,
+      "fail": 24.3,
+      "med": 21.5
+     }
+    },
+    "2026 Jul-Nov20": {
+     "Builder 25K": {
+      "pass": 41.9,
+      "fail": 58.1,
+      "med": 7.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 77.9,
+      "med": null
+     },
+     "Builder 50K": {
+      "pass": 47.8,
+      "fail": 11.6,
+      "med": 23.0
+     }
+    },
+    "2021-25": {
+     "Builder 25K": {
+      "pass": 25.0,
+      "fail": 74.4,
+      "med": 11.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 1.7,
+      "fail": 80.9,
+      "med": 26.5
+     },
+     "Builder 50K": {
+      "pass": 13.6,
+      "fail": 48.4,
+      "med": 26.0
+     }
+    }
+   }
   },
   "M9 tighter stop 1.0 ATR": {
    "cfg": {
@@ -1229,7 +1706,60 @@
    "check": false,
    "p_holm": 1.0,
    "holds_up": false,
-   "tradeoff": false
+   "tradeoff": false,
+   "evals_at_400": {
+    "2026 H1": {
+     "Builder 25K": {
+      "pass": 44.8,
+      "fail": 55.2,
+      "med": 9.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 92.2,
+      "med": null
+     },
+     "Builder 50K": {
+      "pass": 27.0,
+      "fail": 70.3,
+      "med": 10.5
+     }
+    },
+    "2026 Jul-Nov20": {
+     "Builder 25K": {
+      "pass": 30.4,
+      "fail": 69.6,
+      "med": 3.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 97.6,
+      "med": null
+     },
+     "Builder 50K": {
+      "pass": 29.8,
+      "fail": 70.2,
+      "med": 5.0
+     }
+    },
+    "2021-25": {
+     "Builder 25K": {
+      "pass": 20.2,
+      "fail": 79.8,
+      "med": 5.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.5,
+      "fail": 87.7,
+      "med": 38.0
+     },
+     "Builder 50K": {
+      "pass": 23.5,
+      "fail": 75.5,
+      "med": 14.0
+     }
+    }
+   }
   },
   "M10 wider stop 2.0 ATR": {
    "cfg": {
@@ -1351,7 +1881,60 @@
    "check": false,
    "p_holm": 1.0,
    "holds_up": false,
-   "tradeoff": false
+   "tradeoff": false,
+   "evals_at_400": {
+    "2026 H1": {
+     "Builder 25K": {
+      "pass": 73.9,
+      "fail": 21.7,
+      "med": 17.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 15.7,
+      "fail": 32.6,
+      "med": 19.5
+     },
+     "Builder 50K": {
+      "pass": 14.4,
+      "fail": 23.3,
+      "med": 28.0
+     }
+    },
+    "2026 Jul-Nov20": {
+     "Builder 25K": {
+      "pass": 33.0,
+      "fail": 67.0,
+      "med": 10.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 77.1,
+      "med": null
+     },
+     "Builder 50K": {
+      "pass": 23.2,
+      "fail": 0.0,
+      "med": 35.5
+     }
+    },
+    "2021-25": {
+     "Builder 25K": {
+      "pass": 24.2,
+      "fail": 71.4,
+      "med": 14.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.2,
+      "fail": 78.9,
+      "med": 38.5
+     },
+     "Builder 50K": {
+      "pass": 4.2,
+      "fail": 24.5,
+      "med": 30.0
+     }
+    }
+   }
   },
   "M11 fixed target 2R": {
    "cfg": {
@@ -1473,7 +2056,60 @@
    "check": false,
    "p_holm": 1.0,
    "holds_up": false,
-   "tradeoff": false
+   "tradeoff": false,
+   "evals_at_400": {
+    "2026 H1": {
+     "Builder 25K": {
+      "pass": 56.5,
+      "fail": 43.5,
+      "med": 13.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 56.2,
+      "med": null
+     },
+     "Builder 50K": {
+      "pass": 41.4,
+      "fail": 25.2,
+      "med": 21.5
+     }
+    },
+    "2026 Jul-Nov20": {
+     "Builder 25K": {
+      "pass": 31.6,
+      "fail": 68.4,
+      "med": 5.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 85.3,
+      "med": null
+     },
+     "Builder 50K": {
+      "pass": 85.9,
+      "fail": 13.0,
+      "med": 19.0
+     }
+    },
+    "2021-25": {
+     "Builder 25K": {
+      "pass": 28.4,
+      "fail": 71.1,
+      "med": 9.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 1.0,
+      "fail": 82.8,
+      "med": 25.5
+     },
+     "Builder 50K": {
+      "pass": 19.0,
+      "fail": 54.2,
+      "med": 25.5
+     }
+    }
+   }
   },
   "M12 time exit 60 min": {
    "cfg": {
@@ -1595,7 +2231,60 @@
    "check": true,
    "p_holm": 1.0,
    "holds_up": false,
-   "tradeoff": false
+   "tradeoff": false,
+   "evals_at_400": {
+    "2026 H1": {
+     "Builder 25K": {
+      "pass": 27.4,
+      "fail": 69.0,
+      "med": 8.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 73.0,
+      "med": null
+     },
+     "Builder 50K": {
+      "pass": 50.0,
+      "fail": 0.0,
+      "med": 24.0
+     }
+    },
+    "2026 Jul-Nov20": {
+     "Builder 25K": {
+      "pass": 60.6,
+      "fail": 39.4,
+      "med": 8.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 90.8,
+      "med": null
+     },
+     "Builder 50K": {
+      "pass": 69.6,
+      "fail": 30.4,
+      "med": 19.0
+     }
+    },
+    "2021-25": {
+     "Builder 25K": {
+      "pass": 21.6,
+      "fail": 77.9,
+      "med": 8.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 2.4,
+      "fail": 84.7,
+      "med": 22.0
+     },
+     "Builder 50K": {
+      "pass": 22.7,
+      "fail": 45.0,
+      "med": 24.0
+     }
+    }
+   }
   },
   "M13 combination of the survivors (none survived: = today)": {
    "cfg": {},
@@ -1715,7 +2404,60 @@
    "check": false,
    "p_holm": 1.0,
    "holds_up": false,
-   "tradeoff": false
+   "tradeoff": false,
+   "evals_at_400": {
+    "2026 H1": {
+     "Builder 25K": {
+      "pass": 57.4,
+      "fail": 42.6,
+      "med": 12.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 20.0,
+      "fail": 54.4,
+      "med": 16.0
+     },
+     "Builder 50K": {
+      "pass": 55.0,
+      "fail": 24.3,
+      "med": 21.0
+     }
+    },
+    "2026 Jul-Nov20": {
+     "Builder 25K": {
+      "pass": 39.6,
+      "fail": 60.4,
+      "med": 5.5
+     },
+     "Rapid EOD 25K": {
+      "pass": 0.0,
+      "fail": 85.4,
+      "med": null
+     },
+     "Builder 50K": {
+      "pass": 50.0,
+      "fail": 15.9,
+      "med": 22.5
+     }
+    },
+    "2021-25": {
+     "Builder 25K": {
+      "pass": 23.5,
+      "fail": 76.4,
+      "med": 10.0
+     },
+     "Rapid EOD 25K": {
+      "pass": 2.5,
+      "fail": 83.9,
+      "med": 25.5
+     },
+     "Builder 50K": {
+      "pass": 14.7,
+      "fail": 54.4,
+      "med": 27.0
+     }
+    }
+   }
   }
  },
  "holm_tests": 13
