@@ -557,3 +557,4 @@ AREAS["nq"].append("fill_log"); AREAS["pc"].append("fill_log")   # day-zeroerr 2
 if __name__ == "__main__":
     sys.exit(main())
 AREAS["nq"].append("nq_accounts_night")   # night-nq-accounts 2026-11-27: premium account cards + business view (web only)
+AREAS["nq"].append("vault_never_blank"); AREAS["olympus"].append("vault_never_blank")   # QA #3 night-nq-accounts: the payout vault is never a blank box
