@@ -1,8 +1,8 @@
 # night-nq-nav: lead wires (2026-11-27)
 
 The NQ pages as ONE app: bottom dock (Home, Live, Chart, Accounts, Flow, Brain, PC), the live PC pill ("PC 4m · 2 armed",
-BLITZ never counted), pull-to-refresh, page transitions (View Transitions; fade fallback), haptic taps, install chip, offline chip +
-an NQ-only offline worker. Files (all new, owned by nav): `tools/web_public/nq/nqnav.js`, `nqnav.css`, `nqsw.js`; changed:
+BLITZ never counted), pull-to-refresh, page transitions (View Transitions; fade fallback), haptic taps, install chip, offline chip.
+. Files (all new, owned by nav): `tools/web_public/nq/nqnav.js`, `nqnav.css`; changed:
 `nq/manifest.webmanifest` (description, shortcuts Live / Accounts / Brain, launch_handler; start_url / scope unchanged `./`).
 Test: `python -X utf8 -m tests.test_nq_nav` (add `"nq_nav"` to `AREAS["nq"]` in tests/run_area.py: helpers do not own it).
 
@@ -38,10 +38,8 @@ A page that is not named in the list can say its tab: `<script src="nqnav.js?v=1
 
 ## 3. Things for the lead to know
 
-- `nqsw.js` is a NEW worker with scope `nq/` only (the site `sw.js` lists `nq/` in OTHER_APPS = never handled, so no clash;
-  sw.js NOT edited). Network first for pages / json, exact saved copy for `?v=` files, the PC feed (ntfy.sh) never touched.
-  Registered by nqnav.js 3 s after load (add `?nosw` to a URL to skip). Should make perf_sweep's `offline` go green for `nq`.
+- No service worker of its own (lead 05:28: one cache = ../sw.js; the lead adds NQ precache there). The offline chip uses navigator.onLine.
 - The kit's floating buttons (`.oly-home`, `.oly-ask-btn`) are lifted above the dock by nqnav.css; body gets bottom padding.
 - Inside Jarvis / a hub (`html.framed`) nothing is drawn (only `[data-nq-pc-pill]` slots).
-- Bump `?v=1` on nqnav.js + the CSS link inside it (`nqnav.css?v=1`) + `SHELL` / `CACHE` in nqsw.js together on a change.
+- Bump `?v=1` on nqnav.js + the CSS link inside it (`nqnav.css?v=1`) together on a change.
 - QA note seen while testing: live.html shows `MFFUEVBLDR...6016` (last 4 only = masked per PRIVACY rules, so OK).

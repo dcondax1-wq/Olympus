@@ -10,6 +10,7 @@
  * - Pull down at the top = refresh: the page gets a cancelable 'nq:refresh' event (detail.done(): call it when your data is back);
  *   nobody claims it = the page reloads. The pill refetches too.
  * - Haptics: navigator.vibrate where there is one, the iOS 18 switch tick elsewhere; a ripple + press on every tab.
+ * - No service worker here (the lead wires NQ precache in ../sw.js: one cache on the origin).
  * - Install: Chrome's install prompt as a chip (once per 14 days, 'nqnav.inst.v1'); iPhone Safari: the Share > Add to Home Screen line in the
  *   sheet. Offline: a chip "Offline: the numbers are from your last visit" until the network is back (then a refresh).
  * Classic script, no markup from data (textContent), same-origin + the public status feed only, no keys, no ids. window.NQNAV for pages/tests. */
@@ -324,13 +325,6 @@
     if (w.navigator.onLine === false) offlineChip(true);
     maybeInstallChip();
     if (!framed) (w.requestIdleCallback || function (f) { setTimeout(f, 1500); })(probe);
-    w.addEventListener('load', function () { setTimeout(worker, 3000); });
-    if (d.readyState === 'complete') setTimeout(worker, 3000);
-  }
-  function worker() {   // nqsw.js: the NQ pages open offline after one visit (../sw.js leaves nq/ alone)
-    if (S.sw || !('serviceWorker' in w.navigator) || !/^https:|^http:\/\/(localhost|127\.0\.0\.1)/.test(w.location.href) || /[?&]nosw\b/.test(w.location.search)) return;
-    S.sw = 1;
-    try { w.navigator.serviceWorker.register(base + 'nqsw.js', { scope: base }).catch(function () { /* blocked: the pages still work */ }); } catch (e) { /* no */ }
   }
   w.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); S.installEvt = e; if (d.body) maybeInstallChip(); });
   w.addEventListener('appinstalled', function () { S.installEvt = null; ls(LS_INST, Date.now()); });

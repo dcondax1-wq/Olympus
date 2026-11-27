@@ -1,13 +1,12 @@
 """NQ nav (night-nq-nav 2026-11-27; owner: "make everything better, 3D, higher quality, effects, features"): the NQ pages as ONE app.
-tools/web_public/nq/nqnav.js + nqnav.css (the dock, the PC pill, pull-to-refresh, transitions, install / offline chips) + nqsw.js (NQ-only
-offline worker) + nq/manifest.webmanifest. Lead wires: research/handoff/2026-11-27/nav/LEAD_WIRES.md.
+tools/web_public/nq/nqnav.js + nqnav.css (the dock, the PC pill, pull-to-refresh, transitions, install / offline chips) + nq/manifest.webmanifest. Lead wires: research/handoff/2026-11-27/nav/LEAD_WIRES.md.
 
-  a. static: the files, no markup from data, no outside URL, OLYMPUS NIGHT colours (no cyan / brown), reduced motion, the worker touches
-     only its own caches and same-origin GETs, the manifest opens into NQ and its shortcuts point at real pages, the lead's lines exist
+  a. static: the files, no markup from data, no outside URL, OLYMPUS NIGHT colours (no cyan / brown), reduced motion,
+     the manifest opens into NQ and its shortcuts point at real pages, the lead's lines exist
   b. browser 390x844 (pages served with the one script line added, ntfy mocked with a PC post 4 min old: LIT + ATLAS + BLITZ armed):
      the dock on Home / Live / Accounts / Brain with the right tab lit, taps >= 44, no sideways scroll; the pill "PC 4m · 2 armed" (BLITZ never
      counted or named); the sheet; a tab tap navigates; pull-to-refresh hands 'nq:refresh' to the page; a 3 h old post = red; framed = no dock;
-     reduced motion = no pulse; offline chip; the worker opens Live offline after one visit; 1440 floats the dock
+     reduced motion = no pulse; offline chip; 1440 floats the dock
 Run: python -X utf8 -m tests.test_nq_nav [--shots]
 """
 from __future__ import annotations
@@ -29,8 +28,9 @@ check = AK.check
 
 
 def part_a():
-    js, css, sw = (AK.read(os.path.join(NQ, f)) for f in ("nqnav.js", "nqnav.css", "nqsw.js"))
-    check("a. nqnav.js / nqnav.css / nqsw.js are there", bool(js and css and sw))
+    js, css = (AK.read(os.path.join(NQ, f)) for f in ("nqnav.js", "nqnav.css"))
+    check("a. nqnav.js / nqnav.css are there; no second service worker (the lead's ../sw.js is the one cache)",
+          bool(js and css) and not os.path.exists(os.path.join(NQ, "nqsw.js")) and "serviceWorker" not in js)
     check("a. no markup from data (no innerHTML / outerHTML / insertAdjacentHTML / document.write / eval)",
           not re.search(r"innerHTML|outerHTML|insertAdjacentHTML|document\.write|\beval\(|new Function", js))
     check("a. no outside address in nqnav.js (the PC feed only through ../pc_feed.js + ../status_feed.json)", not re.search(r"https?://(?!www\.w3\.org/2000/svg)", js))
@@ -40,8 +40,6 @@ def part_a():
           and not re.search(r"cyan|#0ff\b|#00ffff|#22d3ee|#06b6d4|#67e8f9|brown|olive|#8b4513|#a0522d", low))
     check("a. motion only under prefers-reduced-motion: no-preference (transitions, pulse, sheet, chips, spinner)",
           low.count("prefers-reduced-motion: no-preference") >= 4 and "@view-transition" in low and "view-transition-name: nqnav-ink" in low)
-    check("a. the worker: only 'nqnav-' caches deleted, same-origin GETs only, a 404 stays a 404, an offline page with Retry",
-          "k.startsWith('nqnav-')" in sw and "u.origin !== self.location.origin" in sw and "req.method !== 'GET'" in sw and "if (r) return r;" in sw and "Retry" in sw)
     m = json.loads(AK.read(os.path.join(NQ, "manifest.webmanifest")))
     shortcuts = [s["url"] for s in m.get("shortcuts") or []]
     check("a. the manifest opens straight into NQ (start_url ./, scope ./, standalone, black) with real icons + shortcuts",
@@ -209,24 +207,6 @@ def part_b():
             ctx.unroute_all(behavior="ignoreErrors")
             ctx.close()
 
-            # the worker: Live opens offline after one visit
-            ctx = br.new_context(viewport={"width": 390, "height": 844})
-            ctx.route(re.compile(r"^https?://(?!127\.0\.0\.1)"), lambda r: r.abort())
-            p = ctx.new_page()
-            p.goto(f"{origin}/nq/live.html")
-            p.evaluate("navigator.serviceWorker.register('nqsw.js', { scope: './' }).then(() => navigator.serviceWorker.ready)")
-            p.wait_for_function("navigator.serviceWorker.controller || (location.reload(), false)", timeout=30000, polling=1500)
-            p.wait_for_load_state("load")
-            p.wait_for_timeout(1500)
-            ctx.set_offline(True)
-            p.reload()
-            ok = p.evaluate("!!document.querySelector('script[src^=\"live.js\"]') && document.title.length > 0")
-            p.goto(f"{origin}/nq/never_saved_page.html")
-            msg = p.evaluate("document.body.textContent")
-            check("b. the worker: Live opens offline after one visit; a never-saved page = the 'Offline · Retry' card, not a browser error",
-                  ok and "Offline" in msg and "Retry" in msg, (ok, msg[:120]))
-            ctx.unroute_all(behavior="ignoreErrors")
-            ctx.close()
     finally:
         srv.shutdown()
 
