@@ -42,3 +42,15 @@ stop > $200 on 1 micro, those averaged +0.50R too), +$2,513, 3.5 trades/week, ma
 -$1,362. Owner picks the $ risk; Sim money either way.
 
 Tests: `python tests/run_area.py pc` (suite `of_lane`, ~6 min, fake NinjaTrader, synthetic tick days).
+
+## Ready to switch on from the phone (night-of-lane-ready 2026-11-27)
+- **Telegram** (the owner's private chat only, never the control path): `/oflane on` = the switch ON for the Sim account +
+  today's paper line + the ladder step; `/oflane off`; `/oflane status` = account, today's lane trades, the ladder step.
+  It takes no account name; a real / MFFU account is always refused.
+- **Account** (auto): Sim102 when NinjaTrader lists it; when the fresh account list has no Sim102 AND nothing else uses Sim101
+  (ATLAS's Sim101 week off, no ATLAS / Rapid / combo lane on Sim101, nobody holds the Sim101 lock) -> Sim101, and the reply
+  says so. Unknown list -> Sim102 + "could not check". Re-picked each morning while flat. `--sim on --account SimNNN` pins one.
+- **Runner**: `engine/ops_checks.of_lane_kick` (the 5-min ops task) starts `-m engine.of_lane loop` detached at BELOW_NORMAL
+  on weekdays 09:20-16:15 ET only when on + a Sim account + no kill; never twice (heartbeat `data/of_lane_run.json` < 2 min,
+  or a start < 3 min ago). 16:15 -> stop flag `data/of_lane_stop`; the loop exits only while flat (16:10 / flag / OFF / kill).
+- Card draft: `research/handoff/2026-11-27/oflane/card.json` (the lead wires it into decisions.json).

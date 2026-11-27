@@ -224,7 +224,7 @@ def main():
         open(acc, "w").write(f"name,t,cash\nSim101,{int(_t.time())},100000\n")
         txt_missing = L.status_text(td)
         seen_missing = L.account_seen("Sim102", nd)
-        ok_on, msg_on = L.set_switch(True, root=td)
+        ok_on, msg_on = L.set_switch(True, "Sim102", root=td)
 
         class _A:
             folder = nd
