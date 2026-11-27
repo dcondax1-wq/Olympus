@@ -91,7 +91,7 @@ def test_static():
     check("a. the card sits after the banner and before the columns, with its chips, chart box, as-of line, trades list and the attribution link (TradingView + tradingview.com)",
           html.index('id="banner"') < html.index('id="chartCard"') < html.index('id="sceneCard"') and all(f'id="{i}"' in html for i in ("chartChips", "chartBox", "chartAsOf", "chartTrades", "chartPill", "chartWhole"))
           and re.search(r'<a class="attrib"[^>]+href="https://www\.tradingview\.com/"[^>]*>Chart: TradingView Lightweight Charts', html))
-    check("a. its own module after nq.js (a chart failure never touches the rest of the page), the stylesheet bumped", html.index('src="nq.js') < html.index('src="nqchart.js?v=') and "nq.css?v=a11" in html   # night-nq-main 2026-11-27 bumped a9 -> a11 (the wide desk + hero)
+    check("a. its own module after nq.js (a chart failure never touches the rest of the page), the stylesheet bumped", html.index('src="nq.js') < html.index('src="nqchart.js?v=') and "nq.css?v=a12" in html   # night-nq-main 2026-11-27 bumped a9 -> a11 (the wide desk + hero); day-nqports a12 (#ports full width)
           and "nqchart" not in AK.read(os.path.join(D, "nq.js")))
     bad = [p for p in (r"\.innerHTML", r"outerHTML", r"insertAdjacentHTML", r"document\.write", r"\beval\s*\(", r"new Function", r"\bimport\s*\(") if re.search(p, js) or re.search(p, core)]
     check("a. text only through textContent (no innerHTML / eval / dynamic import), no storage but the one 2D / 3D choice (nq.chart.view), sends nothing (GET only, no POST / beacon / socket)",
