@@ -213,9 +213,9 @@ def test_page(shots=False):
                     shot(p, "livechart_1440", shots)
                 if w == 390:
                     p.wait_for_function("window.__ofs", timeout=15000)
-                    leg = p.evaluate("() => { window.__ofs.o.onSelect({ t: '12:30' }, 0); return [window.__ofs.n, document.getElementById('lcStrip').textContent, document.getElementById('chartLeg').textContent]; }")
+                    leg = p.evaluate("() => { window.__ofs.o.onSelect({ t: '12:30' }, 0); return [window.__ofs.n, document.getElementById('lcStrip').textContent, document.getElementById('chartLeg').textContent, document.getElementById('lcStripH').textContent]; }")
                     check("c. 390px: today's of_strip.json loads the footprint strip (lazily) under the ticker; a tap on its 12:30 bar moves the chart's readout to 12:30",
-                          leg[0] == 1 and leg[1] == "footprint" and leg[2].startswith("12:30"), leg)
+                          leg[0] == 1 and leg[1] == "footprint" and leg[2].startswith("12:30") and leg[3] == "Footprint · today", leg)
                     sel = p.evaluate("""() => { window.__ofsSel = null; const S = window.NQCHART.S, r = document.getElementById('lcScrub');
                       const i = S.model.candles.findIndex((c) => new Date(c.time * 1000).toISOString().slice(11, 16) === '12:30'); r.value = String(i); r.dispatchEvent(new Event('input'));
                       const out = window.__ofsSel; document.getElementById('lcLive').click(); return out; }""")
@@ -235,17 +235,25 @@ def test_page(shots=False):
             lite_old, _ = glance(oinfo, NOW - 3 * 3600)
             ctx, p, errs, seen, off = AK.page(br, origin, mock={bars_url: T.ndjson(old), core_url: core_body(lite_old, NOW - 3 * 3600)})
             fixed(p)
+            p.route("**/nq/ofstrip.js*", lambda r: r.fulfill(status=200, content_type="text/javascript", body=stub))
+            p.route("**/nq/of_strip.json*", lambda r: r.fulfill(status=200, content_type="application/json", body=strip.replace("2026-11-27", "2026-11-26")))
             T.open_chart(p, origin)
             p.wait_for_function("document.getElementById('lcStamp')", timeout=20000)
             s = p.evaluate(SNAP)
             check("c. stale feed: 'As of 09:39 ET (3 hours ago) · the public feed' in rose, never LIVE", re.match(r"As of 09:(39|40) ET \(3 hours ago\)", s["stamp"]) and "old" in s["stampCls"] and "LIVE" not in s["stamp"], s["stamp"])
+            p.wait_for_function("window.__ofs && document.getElementById('lcStripH')", timeout=15000)
+            hd = p.evaluate("() => { const S = window.NQCHART.S; S.legBefore = document.getElementById('chartLeg').textContent; window.__ofs.o.onSelect({ t: '12:30' }, 0); return [document.getElementById('lcStripH').textContent, document.getElementById('chartLeg').textContent === S.legBefore]; }")
+            check("c. a footprint from an older day (the PC sends it nightly) shows labelled 'Footprint · Nov 26 (last recorded day ...)', and a tap on it never moves today's chart",
+                  hd[0].startswith("Footprint · Nov 26 (last recorded day") and hd[1], hd)
             check("c. ... no sideways scroll, no console error", AK.no_sideways(p) and not errs, errs[:3])
             ctx.close()
             # the private link: the PC's own snapshot (GET /api/live/state) every 3 s -> LIVE from your PC + the forming bar; a new price glides in
             pb = [{"time": b[0], "open": b[1], "high": b[2], "low": b[3], "close": b[4], "volume": 10} for b in info["bars"][:-1]]
             snap = json.dumps({"running": True, "state": {"price": pb[-1]["close"] + 4.25}, "last_poll": NOW - 2, "bars": pb})
-            ctx, p, errs, seen, off = AK.page(br, origin, mock={bars_url: T.ndjson(post), core_url: core_body(lite, NOW - 30), "/api/live/state": snap})
+            ctx, p, errs, seen, off = AK.page(br, origin, mock={bars_url: T.ndjson(post), core_url: core_body(lite, NOW - 30), "/api/live/state": snap,
+                                                             "/api/live/footprint": strip.replace('"12:30"', '"12:35"')})
             fixed(p)
+            p.route("**/nq/ofstrip.js*", lambda r: r.fulfill(status=200, content_type="text/javascript", body=stub))
             T.open_chart(p, origin, "?priv=1")
             p.wait_for_function("window.NQCHART.S.privOn && document.getElementById('lcStamp') && /LIVE from your PC/.test(document.getElementById('lcStamp').textContent)", timeout=20000)
             p.evaluate("document.getElementById('chartCard').scrollIntoView({block:'start'})")
@@ -259,6 +267,9 @@ def test_page(shots=False):
             s2 = p.evaluate(SNAP)
             check("c. private link: a new price glides the forming bar's close to it (same bar count, the chart's last bar updated)",
                   s2["n"] == 180 and abs(s2["last"]["close"] - (pb[-1]["close"] + 9.5)) < 1e-6 and s2["drawn"] == 180, (s2["n"], s2["last"]))
+            p.wait_for_function("document.getElementById('lcStripH') && /live from your PC/.test(document.getElementById('lcStripH').textContent)", timeout=15000)
+            check("c. private link: today's footprint from the PC itself (GET /api/live/footprint) -> 'Footprint · today (live from your PC)'",
+                  p.evaluate("() => window.NQCHART.S.stripData.live && window.NQCHART.S.stripData.bars[0].t") == "12:35")
             check("c. private link: the reads are GET /api/live/state (mocked here), no console error", any("/api/live/state" in u for u in p.mocked) and not errs, errs[:3])
             shot(p, "livechart_private_390", shots)
             ctx.close()

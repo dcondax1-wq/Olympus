@@ -397,7 +397,7 @@ function focusTrade(r) {
   try { $('chartBox').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) { /* old browser */ }
 }
 
-const PRIV_URL = '/api/live/state', PRIV_MS = 3000, LITE_MS = 30000, AUX_MS = 300000;
+const FP_URL = '/api/live/footprint', PRIV_URL = '/api/live/state', PRIV_MS = 3000, LITE_MS = 30000, AUX_MS = 300000;
 const reduced = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
 const isPriv = () => /^\/site\//.test(location.pathname) || /[?&]priv=1\b/.test(location.search);
 function dollars(l) {
@@ -567,11 +567,12 @@ async function aux() {
   const get = async (f) => { const t = await getText(new URL('./' + f, import.meta.url).href + '?t=' + Math.floor(Date.now() / 60000), 6000, 'no-cache'); try { return t ? JSON.parse(t) : null; } catch (e) { return null; } };
   const [b, o, f] = await Promise.all([get('brief.json'), get('of_room.json'), get('of_strip.json')]);
   if (b) S.brief = b; if (o) S.ofroom = o;
-  if (f && Array.isArray(f.bars) && f.bars.length && f.day === (B.et(Date.now() / 1000) || {}).day) ofStrip(f);
+  if (f && Array.isArray(f.bars) && f.bars.length && !(S.stripData && S.stripData.live)) ofStrip(f);     // the PC sends it nightly: the last recorded day, labelled
 }
 /** the footprint bar at a chart time (wall-time candle) -> selected in the strip (a tap on a candle, the replay scrubber) */
+const stripToday = (f) => !!f && f.day === (B.et(Date.now() / 1000) || {}).day;
 function stripSync(t) {
-  const f = S.stripData; if (!S.strip || !f) return;
+  const f = S.stripData; if (!S.strip || !f || !stripToday(f)) return;
   const hm = new Date(t * 1000).toISOString().slice(11, 16), i = f.bars.findIndex((b) => b.t === hm);
   if (i >= 0) { try { S.strip.select(i); } catch (e) { /* the strip stays */ } }
 }
@@ -579,14 +580,24 @@ function ofStrip(f) {
   let box = $('lcStrip');
   if (!box) { box = h('div', 'lcstrip'); box.id = 'lcStrip'; const b = $('lcBelow') || $('chartBox'); if (!b) return; b.parentNode.insertBefore(box, b.nextSibling); }
   S.stripData = f;
+  let hd = $('lcStripH');
+  if (!hd) { hd = h('p', 'lcsh'); hd.id = 'lcStripH'; box.parentNode.insertBefore(hd, box); }
+  const dw = (() => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(f.day || '')); return m ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }) : '?'; })();
+  hd.textContent = stripToday(f) ? `Footprint · today${f.live ? ' (live from your PC)' : ''}` : `Footprint · ${dw} (last recorded day; today's comes after the close)`;
   const go = () => { const O = window.OFSTRIP; if (!O) return; if (S.strip) { S.strip.update(f); return; }
-    S.strip = O.mount(box, f, { height: 230, onSelect: (bar) => { const m = S.model; if (!m || !S.chart) return;
+    S.strip = O.mount(box, f, { height: 230, onSelect: (bar) => { const m = S.model; if (!m || !S.chart || !stripToday(S.stripData)) return;
       const c = m.candles.filter((x) => new Date(x.time * 1000).toISOString().slice(11, 16) === bar.t).pop(); if (!c) return;
       try { S.chart.setCrosshairPosition(c.close, c.time, S.series); legend(c); } catch (e) { /* the strip says it */ } } }); };
   if (window.OFSTRIP) return go();
   if (S.stripLoad) return; S.stripLoad = true;
   const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('./ofstrip.css?v=1', import.meta.url).href; document.head.appendChild(l);
-  const t = document.createElement('script'); t.type = 'module'; t.src = new URL('./ofstrip.js?v=1', import.meta.url).href; t.onload = go; t.onerror = () => { box.remove(); }; document.head.appendChild(t);
+  const t = document.createElement('script'); t.type = 'module'; t.src = new URL('./ofstrip.js?v=1', import.meta.url).href; t.onload = go; t.onerror = () => { box.remove(); hd.remove(); }; document.head.appendChild(t);
+}
+async function fpPoll() {
+  if (document.hidden) return;
+  const t = await getText(FP_URL, 4000, 'no-store'); let j = null;
+  try { j = t ? JSON.parse(t) : null; } catch (e) { j = null; }
+  if (j && Array.isArray(j.bars) && j.bars.length && stripToday(j)) ofStrip({ ...j, live: true });
 }
 async function liteTick() { if (document.hidden) return; await pcPrice(); if (S.model) { liveLayer(S.model); age(); fx(); } }
 
@@ -646,7 +657,7 @@ async function boot() {
   setInterval(() => { if (!document.hidden) age(); }, 30000);
   setInterval(liteTick, LITE_MS);                            // day-livechart: the bots' glance / thoughts + the PC price every 30 s
   setInterval(aux, AUX_MS);
-  if (isPriv()) { privPoll(); setInterval(privPoll, PRIV_MS); }   // the private link: the bot itself every 3 s
+  if (isPriv()) { privPoll(); setInterval(privPoll, PRIV_MS); fpPoll(); setInterval(fpPoll, 60000); }   // the private link: the bot itself every 3 s
   setInterval(() => { if (!document.hidden && S.model) { const e = $('lcStamp'), st = stampNow(); if (e) { e.textContent = st.text; e.className = 'lcstamp ' + st.cls; } } }, 5000);
   setInterval(() => { if (!document.hidden && S.model && S.model.state !== 'none') say(B.model(S.post, S.acct, Date.now() / 1000)); }, 60000);   // the age keeps counting
 }

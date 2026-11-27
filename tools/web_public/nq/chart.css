@@ -111,3 +111,4 @@
   #chartCard .lcstamp.live::before, #chartCard .lcsteps i.now, #chartCard .lcrow.first, #chartCard .cpulse.tick { animation: none; }
   #chartCard .lcflash { display: none; }
 }
+#chartCard .lcsh { margin: 10px 0 4px; font: 700 12px/1.3 var(--ag-sans, system-ui, sans-serif); color: #f1c14b; letter-spacing: 0.02em; }

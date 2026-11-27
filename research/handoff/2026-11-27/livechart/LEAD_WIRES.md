@@ -20,7 +20,7 @@ The helper changed only its own chart files:
 2. **Precache the new files.** In `sw.js`, add `nq/nqchartfeed.js` and `nq/lcmodel.js` to the precache list next to `nq/nqbars.js` and `nq/nqchart.js`, and bump the cache name.
 3. **Run the new suite.** In `tests/run_area.py`, add `tests.test_livechart` to the NQ / chart area next to `test_nq_chart_pro`. It runs in about 2 minutes and needs the browser.
 4. **Perf budget.** The NQ page's eager JS is now **582 KB**, down from 637 KB, against the 640 KB budget, with no budget change. The 50 KB view (`nqchart.js`) and the 10 KB `lcmodel.js` load lazily. `nq.js`'s desk cards still get `window.NQCHART.S.post` / `S.model` and the `nq-bars` event straight away from the feed.
-5. **Footprint strip (from day-ofroom2 @ b229a648).** `nqchart.js` loads the strip lazily: `ofstrip.js?v=1` and `ofstrip.css?v=1` are fetched only when today's `nq/of_strip.json` has bars, and the strip mounts under the ticker. Tapping a bar on the strip moves the chart's crosshair and readout to that bar. Tapping a candle, or moving the replay scrubber, selects the footprint bar at the same time (matched by ET time). This needs the day-ofroom2 files landed first (`ofstrip.js`, `ofstrip.css`, `build_of_room.py` writing `of_strip.json`). Before they land, the fetch gets a 404 and nothing is drawn. Precache `ofstrip.js` and `ofstrip.css` in `sw.js` if you want the strip offline.
+5. **Footprint strip (from day-ofroom2 @ b229a648).** `nqchart.js` loads the strip lazily: `ofstrip.js?v=1` and `ofstrip.css?v=1` are fetched only when today's `nq/of_strip.json` has bars, and the strip mounts under the ticker. Tapping a bar on the strip moves the chart's crosshair and readout to that bar. Tapping a candle, or moving the replay scrubber, selects the footprint bar at the same time (matched by ET time). This needs the day-ofroom2 files landed first (`ofstrip.js`, `ofstrip.css`, `build_of_room.py` writing `of_strip.json`). Before they land, the fetch gets a 404 and nothing is drawn. The PC sends `of_strip.json` nightly, so during the session it is the last recorded day: the strip shows it labelled "Footprint · Nov 26 (last recorded day; …)", and a tap on it selects within the strip only (it never moves today's chart). On the private link the view also polls `GET /api/live/footprint` every 60 s (branch `day-livefp`, the PC side). When that returns today's bars, the strip becomes "Footprint · today (live from your PC)" and is synced to today's candles. Before that endpoint exists, the poll gets a 404 and nothing changes. Precache `ofstrip.js` and `ofstrip.css` in `sw.js` if you want the strip offline.
 
 ## What it does
 
@@ -51,7 +51,7 @@ The helper changed only its own chart files:
 
 ## Tests
 
-- `python -X utf8 -m tests.test_livechart`: **46/46** (including the strip hook and its time sync, tested with a stub module, and the lazy-load split) (static + node + Chromium 390/1440, stale feed, private link).
+- `python -X utf8 -m tests.test_livechart`: **48/48** (including the strip hook and its time sync, an older day's label, the live footprint on the private link, and the lazy-load split; the strip is tested with a stub module) (static + node + Chromium 390/1440, stale feed, private link).
 - `tests.test_nq_chart_pro`: **28/28**.
 - `tests.test_nq_chart`: **47/48**. The one failure, "wholly on the first screen", is the same as on `pc` before this change.
 - smoke: **11/11** green.
