@@ -115,7 +115,7 @@ def test_core():
           c["verdict"] == "Not yet" and cc["cons"]["ok"] is False and "60.9%" in cc["cons"]["text"] and "$500 more on other days" in cc["cons"]["text"]
           and c["need"]["usd"] == 500, (c["verdict"], cc["cons"], c["need"]))
     check("b. no tracker block from the PC: 'Waiting for the PC', names what is missing, no numbers made up",
-          o["wait"]["verdict"] == "Waiting for the PC" and "funded tracker (mf.f)" in o["wait"]["reason"] and o["wait"]["has"] is False, o["wait"])
+          o["wait"]["verdict"] == "Waiting for the PC" and "its payout tracker" in o["wait"]["reason"] and "mf.f" not in o["wait"]["reason"] and o["wait"]["has"] is False, o["wait"])
     t = o["today"]
     check("b. TODAY's ATLAS (+$514 -> $25,401.38): 'Not yet', '$949 more until MFFU allows a payout' (balance $26,350 = the same 'To payout $949' the "
           "accounts strip and the ZEUS card show), the 50% rule red (best day $514 > half of the cycle's $401), the plan's $1,000 ask at $27,100 ($1,699 more)",

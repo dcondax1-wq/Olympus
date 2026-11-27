@@ -99,6 +99,7 @@ def ndjson(core, exts) -> str:
 # ------------------------------------------------------------------------------------------------ a. static
 def part_a():
     h, js, cj, css = (AK.read(os.path.join(NQ, f)) for f in ("accounts.html", "accounts.js", "acctcore.js", "accounts.css"))
+    js = js.replace("'http://www.w3.org/2000/svg'", "'SVG_NS'", 1)   # night-nq-accounts: the SVG namespace is a name, not an address (only that exact string)
     bad = r"\.innerHTML|outerHTML|insertAdjacentHTML|document\.write|\beval\s*\(|new Function|https?://|method:|XMLHttpRequest|WebSocket|sendBeacon|document\.cookie|localStorage|sessionStorage"
     check("a. accounts.js / acctcore.js: textContent only, no outside address, GET only, no storage; the core has no fetch and no DOM",
           not re.search(bad, js + cj) and "textContent" in js and "fetch(" not in cj and "document." not in cj, re.findall(bad, js + cj)[:4])
@@ -148,6 +149,8 @@ def node_run(scen, days, acts):
         for f in ("nqdesk.mjs",):
             fp = os.path.join(tmp, f); src = open(fp, encoding="utf-8").read()
             open(fp, "w", encoding="utf-8").write(re.sub(r"from '\./goals_model\.js(\?v=[\w.]+)?'", "from './goals_model.mjs'", src))
+        shutil.copy(os.path.join(NQ, "goals_model.js"), os.path.join(tmp, "goals_model.js"))   # acctcore imports the ONE goals model (QA #4)
+        open(os.path.join(tmp, "package.json"), "w").write('{"type": "module"}')               # ... a .js ES module next to the .mjs copies
         hp = os.path.join(tmp, "harness.cjs")
         open(hp, "w", encoding="utf-8").write(HARNESS)
         biz = json.load(open(os.path.join(WEB, "business", "accounts.json"), encoding="utf-8"))
