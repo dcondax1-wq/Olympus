@@ -125,6 +125,24 @@ html.nqnav-on body { --nqnav-pill-room: 18px; }
   .nqn-dock .nqn-tab { font-size: 11.5px; }
   .nqn-float { bottom: 66px; }
 }
+/* QA second sweep N2 / N3 / #9 (night-nq-main 2026-11-27): ONE row for the floaters, never a stack, never mid-screen.
+ * Phone + tablet: the PC pill, the kit's Ask ring and the Olympus Home seat share one row just above the dock (off the tabs).
+ * Wide (>= 760): the dock is a full-width bar flush with the bottom edge (no floating capsule over the cards);
+ * >= 1100: the pill, the Ask ring and Home ride inside that bar, beside the tabs. */
+html.nqnav-on .oly-home, html.nqnav-on .oly-ask-btn { bottom: calc(var(--nqnav-h) + 8px) !important; }
+.nqn-float { bottom: calc(var(--nqnav-h) + 8px); }
+html.nqnav-on body { padding-bottom: calc(var(--nqnav-h) + 64px) !important; }
+@media (min-width: 760px) {
+  html.nqnav-on { --nqnav-h: calc(56px + env(safe-area-inset-bottom, 0px)); }
+  .nqn-dock { left: 0; right: 0; width: auto; margin-left: 0; bottom: 0; height: var(--nqnav-h); padding: 4px 8px env(safe-area-inset-bottom, 0px);
+    border: 0; border-top: 1px solid var(--nqn-line2); border-radius: 0; justify-content: center; }
+  .nqn-float { bottom: calc(var(--nqnav-h) + 8px); }
+}
+@media (min-width: 1100px) {
+  html.nqnav-on .oly-home, html.nqnav-on .oly-ask-btn { bottom: calc(6px + env(safe-area-inset-bottom, 0px)) !important; }
+  .nqn-float { bottom: calc(6px + env(safe-area-inset-bottom, 0px)); left: calc(50% + 340px); transform: none; }
+  html.nqnav-on body { padding-bottom: calc(var(--nqnav-h) + 24px) !important; }
+}
 /* inside a frame (Jarvis, a hub) the host already has its own navigation */
 html.framed .nqn-dock, html.framed .nqn-float { display: none !important; }
 @media print { .nqn-dock, .nqn-float, .nqn-chip, .nqn-ptr { display: none !important; } }

@@ -48,6 +48,9 @@ import(process.argv[1]).then((P) => {
   const fri = Date.parse('2026-11-27T05:30:00Z') / 1000, thu = Date.parse('2026-11-26T15:00:00Z') / 1000;   // Fri 00:30 ET / Thu 10:00 ET
   const s = P.plan(B, null, {}, fri);
   o.stale = [s.stale, s.staleText, s.early, s.map.halt && s.map.halt.at, s.map.now, s.map.wins.length, s.levels.rows.map((r) => [r.name, Math.round(r.dist)]), s.levels.price, s.read.vix, s.bots.map((b) => [b.name, b.state])];
+  o.stale2 = [s.levels.priceTag, s.levels.priceSrc, s.levels.far.map((f) => [f.name, f.away]), s.read.from];
+  const lb = P.plan(B, null, {}, fri, { px: 25700, t: fri - 600 }); o.livebar = [lb.levels.price, lb.levels.priceTag, lb.levels.priceSrc.slice(0, 40), lb.levels.rows.map((r) => [r.name, Math.round(r.dist)])];
+  const old = P.plan(B, null, {}, fri, { px: 25700, t: fri - 7200 }); o.oldbar = [old.levels.price, old.levels.priceTag.slice(0, 11)];
   const l = P.plan(B, null, {}, thu);
   o.live = [l.stale, l.map.now !== null, l.bots.map((b) => b.state)];
   const B2 = JSON.parse(JSON.stringify(B)); B2.news.today = [{ time: '08:30', event: 'CPI', tier: 1 }, { time: '10:00', event: 'Low', tier: 2 }];
@@ -83,8 +86,14 @@ def core():
     st = o["stale"]
     check("b. Thu's brief read on Fri: stale, 'Plan from Thu, Nov 26 - today's (Fri, Nov 27) is not built yet', the 13:00 halt, no now marker, 6 bot windows",
           st[0] is True and st[1].startswith("Plan from Thu, Nov 26 - today's (Fri, Nov 27) is not built yet") and st[2] == "13:00" and st[3] == "13:00" and st[4] is None and st[5] == 6, st[:6])
-    check("b. ... the 5 levels nearest the brief's price (PDC -127.5 pts, PDL -312 ...), the VIX read, and no stale 'window open' on a bot",
-          st[6][0] == ["PWH", 2991] and ["PDC", -127] in st[6] and st[7] == 25288.25 and st[8].startswith("VIX 28.3 (elevated)") and all(b[1] == "" for b in st[9]), st[6:])
+    check("b. ... the levels nearest the brief's price (PDC -127 pts, PDL -312 ...), the VIX read, and no stale 'window open' on a bot",
+          ["PDC", -127] in st[6] and st[7] == 25288.25 and st[8].startswith("VIX 28.3 (elevated)") and all(b[1] == "" for b in st[9]), st[6:])
+    s2 = o["stale2"]
+    check("b. QA N1: no fresh PC bar -> the price is tagged 'brief close · <bars_to>' (never 'now'); a level > 1,000 pts away (PWH 2,991) is hidden and named; the read says whose and when",
+          s2[0].startswith("brief close") and "not now" in s2[1] and ["PWH", 2991] in s2[2] and s2[3].startswith("the brief of "), s2)
+    check("b. QA N1: a PC chart bar <= 30 min old is 'now' (distances from it, the brief's date named); a 2-hour-old bar is not used",
+          o["livebar"][0] == 25700 and o["livebar"][1].startswith("now · ") and o["livebar"][2].startswith("the PC's chart (last bar")
+          and o["oldbar"] == [25288.25, "brief close"], (o["livebar"], o["oldbar"]))
     check("b. on its own day (Thu 10:00 ET): live, the now marker, the bots' states (window open / window over)",
           o["live"][0] is False and o["live"][1] is True and "window open" in o["live"][2] and "window over" in o["live"][2], o["live"])
     check("b. a Tier-1 release at 08:30 -> 'Rapid lanes flat 08:27 to 08:32:30 ET', marked past at 10:00; a Tier-2 one has no pause",

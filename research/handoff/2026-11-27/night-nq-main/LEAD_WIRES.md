@@ -94,3 +94,11 @@ nqland.js, the NEW nq/nqhero.css, and tests/test_nq_desk.py (hero checks). Web o
 - 5 stops: today's $, the account rings, the bot words, the battle plan, the PC freshness dot ("updated N min ago" in the hero: the page
   has no separate "PC pill", so this is the stop). A stop whose card is missing is left out.
 - Automated browsers (navigator.webdriver) never get it without ?tour=1, so no existing browser suite is blocked by the overlay.
+
+## 22. QA second sweep fixes (2026-11-27 ~07:00 ET, on pc 27e55f77)
+- nqnav.css edited (lead OK'd): the dock is a full-width bar flush with the bottom at >= 760 px. PC pill + Ask ring + Olympus Home share one row:
+  above the dock on phone/tablet, inside the bar at >= 1100 px. nqnav.js now asks for nqnav.css?v=3, and index.html loads nqnav.js?v=3.
+  **Bump nqnav.js?v=2 -> 3 on the other NQ pages** (replay.html, orderflow.html, accounts, live, trading_home ...: not my files).
+- pillars/pillarscore.js (#11, one line): the ORDER FLOW chip says "Ready" when tick days >= need. **Bump pillarscore.js?v=p4 -> p5** in
+  pillars/hero.js, strip.js, pillarsfeed.js, pillars.js (and cities/mind/mind.js p3) so the cache lets it through.
+- sw.js: plancore.js?v=4 / plan.js?v=4 / nqdesk.js?v=15 / nq.js?v=r44 / tour.js?v=2 versions changed.

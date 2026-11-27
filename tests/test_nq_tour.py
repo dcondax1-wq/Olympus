@@ -68,7 +68,7 @@ const T = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', 
         focus: document.activeElement && document.activeElement.textContent, sw: document.documentElement.scrollWidth - innerWidth }; });
     if (!s) break; o.stops.push(s);
     if (SHOTS && (i === 0 || i === 3)) await p.screenshot({ path: path.join(SHOTS, `tour_stop${i + 1}_phone.png`) });
-    await p.click('#nqTour .tr-go'); await p.waitForTimeout(600);
+    await p.click('#nqTour .tr-go'); await p.waitForTimeout(1300);
   }
   o.done = await p.evaluate(() => [!!document.getElementById('nqTour'), localStorage.getItem('nq.tour')]); o.errs = p.errs;
   await p.reload({ waitUntil: 'load' }); await p.waitForTimeout(800);
