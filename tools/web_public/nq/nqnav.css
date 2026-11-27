@@ -21,10 +21,7 @@
 
 html.nqnav-on body { padding-bottom: calc(var(--nqnav-h) + 34px) !important; }
 html.nqnav-on { overscroll-behavior-y: contain; overflow-x: hidden; }   /* a page's stray wide chip never zooms the phone out (the dock would sit below the screen) */
-/* the kit's floating buttons step up above the dock */
-/* (QA N3: they sat on the dock's edge next to the pill: now a clear 40 px above the dock, over the pill line) */
-html.nqnav-on .oly-home { bottom: calc(var(--nqnav-h) + 40px) !important; }
-html.nqnav-on .oly-ask-btn { bottom: calc(var(--nqnav-h) + 40px) !important; }
+/* the kit floating buttons: placed by the one-row rule at the end of this file (QA N2/N3) */
 
 /* the dock */
 .nqn-dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; height: var(--nqnav-h); box-sizing: border-box;
@@ -124,9 +121,6 @@ html.nqnav-on body { --nqnav-pill-room: 18px; }
   html.nqnav-on { --nqnav-h: calc(64px + env(safe-area-inset-bottom, 0px)); }
   .nqn-dock { padding: 6px max(16px, calc(50% - 360px)) env(safe-area-inset-bottom, 0px); justify-content: center; gap: 6px; }
   .nqn-dock .nqn-tab { font-size: 13px; max-width: 100px; }
-}
-@media (min-width: 1100px) {   /* room on the right of the tabs: the pill sits inside the bar */
-  .nqn-float { left: auto; right: 24px; transform: none; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
 }
 /* QA second sweep N2 / N3 / #9 (night-nq-main 2026-11-27): ONE row for the floaters, never a stack, never mid-screen.
  * Phone + tablet: the PC pill, the kit's Ask ring and the Olympus Home seat share one row just above the dock (off the tabs).
