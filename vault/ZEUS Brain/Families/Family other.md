@@ -7,15 +7,17 @@ type: "family"
 
 # Research family: other
 
-> [!abstract] 146 write-ups
-> adopt-candidate 16, finding 14, info 17, promising 14, rejected 37, research 48
+> [!abstract] 148 write-ups
+> adopt-candidate 16, finding 14, info 17, promising 14, rejected 39, research 48
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-28 | [[setup-grades-2026-11-28\|Setup grades A+/A/B/C + conviction sizing for LIT, ATLAS, BLITZ]] | rejected |
 | 2026-11-27 | [[ofexec-2026-11-27\|Lane A]] | research |
 | 2026-11-27 | [[missed-trades-2026-11-27\|Every live-vs-twin gap, Oct 23]] | research |
 | 2026-11-27 | [[lit-drought-2026-11-27\|LIT drought Oct 15]] | rejected |
 | 2026-11-27 | [[lanea-proof-2026-11-27\|Lane A]] | research |
+| 2026-11-27 | [[blitz-more-2026-11-27\|BLITZ more tests]] | rejected |
 | 2026-11-26 | [[regime2026-2026-11-26\|Is there a trustworthy "market is 2026-like" switch?]] | research |
 | 2026-11-26 | [[news-playbook-2026-11-26\|News-day playbook]] | research |
 | 2026-11-26 | [[litasia-2026-11-26\|LIT's Asia slot at real Asia costs]] | research |

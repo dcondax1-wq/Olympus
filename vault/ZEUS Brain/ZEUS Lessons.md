@@ -71,12 +71,14 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-92 entries from docs/TESTED_AND_REJECTED.md, newest first.
+96 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
 - **Exit realism / touch-not-fill** · [[Zlarior (LIT)]], [[ATLAS]] · [[exitreal-2026-11-26|Exit + backtest realism]]
 - **LIT fragility audit** · [[Zlarior (LIT)]] · [[lit-fragility-2026-11-26|How fragile is LIT]]
 - **News-day playbook** · [[news-playbook-2026-11-26|News-day playbook]]
 - **LIT gate tweaks via the setup-learning loop** · [[Zlarior (LIT)]] · [[lit-learns-live-2026-11-26|LIT learns from live]]
+- **BLITZ more tests** · [[BLITZ (paper)]] · [[blitz-more-2026-11-27|BLITZ more tests]]
+- **LIT wide-stop setups on MES** · [[Zlarior (LIT)]] · [[lit-mes-2026-11-27|LIT wide-stop setups on MES]]
 - **BLITZ v2 rebuild** · [[BLITZ (paper)]], [[50K combo]] · [[blitz-v2-2026-11-26|BLITZ v2]]
 - **Day-type classifier + playbook routing** · [[BLITZ (paper)]] · [[day-type-2026-11-26|Day-type classifier + playbook routing]]
 - **LIT entry refinement on 1m** · [[Zlarior (LIT)]] · [[entry-fine-2026-11-26|LIT entry refinement on 1m bars]]
@@ -165,10 +167,15 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 - **2026-11-26 Eval sizing POLICY** · [[Zlarior (LIT)]], [[Rapid lanes]] · [[evalsizer-2026-11-26|Optimal eval sizing policy]]
 - **2026-11-27 LIT wider stop cap for high-ATR weeks** · [[Zlarior (LIT)]]
 - **2026-11-27 Builder 50K LIT room_f 0.5 / 0.6 / 0.7** · [[Zlarior (LIT)]], [[50K combo]]
+- **2026-11-28 Setup GRADES A+/A/B/C + conviction sizing, every bot** · [[Zlarior (LIT)]]
+- **2026-11-27 All strategies per account, fastest FIRST payout from today's ...**
 
 ## Rejected in the write-ups
 
+- 2026-11-28 [[setup-grades-2026-11-28|Setup grades A+/A/B/C + conviction sizing for LIT, ATLAS, BLITZ]] ([[Family other|other]])
+- 2026-11-27 [[lit-mes-2026-11-27|LIT wide-stop setups on MES]] ([[Family lit|lit]])
 - 2026-11-27 [[lit-drought-2026-11-27|LIT drought Oct 15]] ([[Family other|other]])
+- 2026-11-27 [[blitz-more-2026-11-27|BLITZ more tests]] ([[Family other|other]])
 - 2026-11-24 [[stops-targets-time-2026-11-24|"Stops x targets x TIME]] ([[Family stops|stops]])
 - 2026-11-24 [[proedge-2026-11-24|Pro / institutional edges]] ([[Family edge-hunt|edge-hunt]])
 - 2026-11-23 [[popular-ict-2026-11-23|Popular ICT / SMC strategies on CME NQ, run exactly as taught]] ([[Family other|other]])

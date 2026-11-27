@@ -93,6 +93,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 > 13 versions vs live through the automatic bar (beat live on Jan-Jun AND Jul-Nov 20 net + PF, 2021-25 net not worse, walk-forward >= 5/7 blocks, 2-4 trades/wk): 0 pass. New ones: sweep >= 0.75 ATR +$1,029 / -$4 / -$3,662 (walk 4/7); 2 inducements -$19,514 / -$4,880 / -$2,105; limit 12 bars -$4 / -$444 / -$8,787; 1m CISD within 15 bars -$10,565 / -$1,504 / -$2,815 (Jan-Jun / Jul-Nov 20 / 2021-25 vs live). The other 9 repeat earlier rejections (disp 0.6 / 1.0, depth 0.3, no inducement, 2nd trade, no Monday rule, Silver Bullet only, TDO side only, skip VIX 25+): still fail. The loop re-tests them every night and only raises an owner card on a full pass.
 > Write-ups: [[lit-learns-live-2026-11-26|LIT learns from live]]
 
+> [!failure]- LIT wide-stop setups on MES
+> NQ setups with a stop of 80-150 pts (0 MNQ) taken on MES at the same $ risk: V1 no floor, V2 1-MES floor, V3 LIT detection on ES bars. Jan-Jun / Jul-Nov / 2021-25 net vs live $34,261 / $9,060 / $5,180: V1 $30,042 / $8,583 / $5,786, V2 $28,887 / $7,731 / $6,888, V3 $33,646 / $9,162 / (ES only from 2025-04). 50K pass 83.5 -> 59.8 / 56.9 / 83.5. The wide trades net -$447 / -$810 and displace later tighter setups; Holm 1.0. Rejected.
+> Write-ups: [[lit-mes-2026-11-27|LIT wide-stop setups on MES]]
+
 > [!failure]- LIT entry refinement on 1m
 > 5 versions vs today (limit at the 5m CISD level, then the 1m CISD; H1 / H2 / 2021-25 $5,562 / $2,670 / $25 a month, 2-week 44.5 / 39.1). Tap 1 tick through $5,280 / $2,227 / -$171; tap at 50% of the zone 1.2 trades/wk, 2-week 37.8 / 29.0; expiry 20 min $5,266 / $2,506 / -$37; plain limit at 50% no 1m CISD $402 / $4,714 / $1,397, 2-week 16.8 / 29.0; plain limit filled only 1 tick through (touch = no fill) $3,036 / $2,087 / -$305. 0 pass: the 1m CISD confirmation carries the edge.
 > Write-ups: [[entry-fine-2026-11-26|LIT entry refinement on 1m bars]]
@@ -249,11 +253,16 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 > [!failure]- 2026-11-27 Builder 50K LIT room_f 0.5 / 0.6 / 0.7
 > 2026-11-27 Builder 50K LIT room_f 0.5 / 0.6 / 0.7 (owner "upsize the 50Ks", day-50ksize, combo_account engine, 12 cells pre-registered): +$37..+$63/mo H1, +$41..+$99 Jul-Oct for fresh fails 3 -> 4-8% / 9 -> 15-22%; same answer as evalsizer. room_f stays 0.4. ATLAS eval share x1.0 (room 0.4) = +$183 / +$111 / +$44 a month (H1 / Jul-Oct / 2021-25) for fails 3 -> 9% / 9 -> 13%: owner 2026-11-27: "Wait until more room" = later, revisit when the 50K room > $2,000. research/lit/size50k-2026-11-27/RESULT.md
 
+> [!failure]- 2026-11-28 Setup GRADES A+/A/B/C + conviction sizing, every bot
+> 2026-11-28 Setup GRADES A+/A/B/C + conviction sizing, every bot (day-grades, pre-registered, research/grades-2026-11-28/): 16 entry facts (stop pts/ATR, RR, ATR regime, VIX, daily + 1h trend, range/ADR, news, session, weekday; LIT depth / displacement / inducements; ATLAS member), fitted grader on 2026 H1 + an unfitted trader's prior, maps 1.5/1.25/1/0.5, C skip, 2/1.5/1/0.5 vs an equal-risk flat control; LIT, ATLAS, BLITZ. 0 of 18 pass (Holm 1.0): LIT grade flips in Jul-Oct (A+ -0.73R, C +1.30R), ATLAS ranks weakly every period but 2021-25 A+ loses, BLITZ = leverage. Builder 50K combo: every map -$141..-$1,057/mo in Jul-Oct, more fails. POSEIDON not gradable (no H1 ticks). ...
+
 
 ## Write-ups
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-28 | [[setup-grades-2026-11-28\|Setup grades A+/A/B/C + conviction sizing for LIT, ATLAS, BLITZ]] | rejected |
+| 2026-11-27 | [[lit-mes-2026-11-27\|LIT wide-stop setups on MES]] | rejected |
 | 2026-11-27 | [[lit-drought-2026-11-27\|LIT drought Oct 15]] | rejected |
 | 2026-11-26 | [[litasia-2026-11-26\|LIT's Asia slot at real Asia costs]] | research |
 | 2026-11-26 | [[lit-learns-live-2026-11-26\|LIT learns from live]] | research |
@@ -292,10 +301,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-11-17 | [[lit-smart-entries-2026-11-17\|LIT smart entries]] | rejected |
 | 2026-11-17 | [[lit-regime-sizing-2026-11-17\|LIT regime sizing]] | rejected |
 | 2026-11-17 | [[funded25-lit-atlas-2026-11-17\|ATLAS's funded Builder 25K]] | research |
-| 2026-11-17 | [[drift-switch-2026-11-17\|"Edge stopped working" switch]] | rejected |
-| 2026-11-16 | [[stack-one-account-2026-11-16\|More strategies on ONE MFFU account]] | promising |
 
-... and 84 older (see the families).
+... and 86 older (see the families).
 
 ## Links
 

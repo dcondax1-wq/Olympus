@@ -61,6 +61,10 @@ _No trades in the published trade list._
 
 ## Tested and rejected
 
+> [!failure]- BLITZ more tests
+> 12 single changes (max 3 a day, 2-loss pause, no entry after 14:30, morning only, afternoon only, daily-trend aligned, prior VIX >= 18, stop > 0.40% skipped, stop 1.0 / 2.0 ATR, 2R target, 60-minute hold) + a combination; pick Jan-Jun 2026, check Jul-Nov + 2021-25, costs in, Holm over 13. 0 of 12 beat today on Jan-Jun ($912 / month); best 2021-25 = 60-minute hold PF 1.10 $160 and afternoon only PF 1.16 $150 (today $89) but both give up Jan-Jun; all Holm p = 1.0; reverse pick on 2021-24 (hold 60 + wider stop) also fails 2025 / Jan-Jun. Verdict: nothing makes 2021-25 hold up; BLITZ stays paper.
+> Write-ups: [[blitz-more-2026-11-27|BLITZ more tests]]
+
 > [!failure]- BLITZ v2 rebuild
 > 8 structural versions (noise-area band/VWAP exit, no time exit, cost gate stop >= 0.25% of price, opening-drive checks, limit at the band, first break only, 2 combos) vs today $912 / $688 / $89 a month (H1 / Jul-Nov / 2021-25). Best = V1 noise-area exit: 2021-25 PF 1.34, $352/mo, every year +, walk-forward 14/19, but 2026 $671 / $231 and on the shared 50K with LIT + ATLAS the 2026 pass falls 95 -> 87 / 88 -> 82. BLITZ today on the shared 50K: Jul-Nov pass 88.2 -> 82.5. Correlation ~0 does not help. 25K at $400: fail 43-76%; Rapid pass 0-28%. Verdict: retire BLITZ as a pillar; V1 is the only base worth reviving.
 > Write-ups: [[blitz-v2-2026-11-26|BLITZ v2]]
@@ -101,6 +105,8 @@ _No trades in the published trade list._
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-28 | [[setup-grades-2026-11-28\|Setup grades A+/A/B/C + conviction sizing for LIT, ATLAS, BLITZ]] | rejected |
+| 2026-11-27 | [[blitz-more-2026-11-27\|BLITZ more tests]] | rejected |
 | 2026-11-26 | [[blitz-v2-2026-11-26\|BLITZ v2]] | research |
 | 2026-11-26 | [[batch5-2026-11-26\|Batch 5]] | research |
 | 2026-11-23 (night, run 2026-11-24 early ET) | [[four-pillars-2026-11-23\|The four pillars]] | research |

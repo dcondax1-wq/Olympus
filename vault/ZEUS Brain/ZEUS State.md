@@ -63,6 +63,19 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
 
 - 2026-11-27 (night-of-daycap-rt 9760830a, red team #37 1 FIX applied): **OF practice lane capped at 1 trade a day** (engine/of_lane max_per_day, default 1) = the tested first-of-day book; a refused or E5-cancelled first signal still uses the day (signal_rank), exits/kill never blocked; of_ladder step-1 hold lifts at cap 1. tests.test_of_daycap 28/28.
 
+## 2026-11-27 evening landing (~17:00 ET, owner: "complete charts of each strategy ... see each brain ... order flow on there")
+- Order flow is named **POSEIDON** in the NQ app (files/ids unchanged; rename outside nq/ + Telegram /oflane text still to do).
+- WEB live: nq/strat.html?s=lit|atlas|blitz|poseidon (strategy rooms: live chart filtered, today's signals incl. skipped, every trade, equity, stats) +
+  #stratNav on the NQ home; nq/brains.html + brainview in each room (gate-by-gate pipeline, next trade size, skipped + why); dock Brain tab -> brains.html;
+  live chart right under the hero + "Live chart" jump; nqdesk/nqbars/livecore/braincore load once (LCP 3.9 -> 3.2 s throttled).
+- Backtests current to Nov 26: tools/refresh_backtests.py (parity LIT 631/631, ATLAS overlap, BLITZ 2,164/2,164; never rewrites stored research) +
+  tools/build_strats.py, both nightly in learn_night nqsite. Since mid-Oct: LIT 7 trades -$858, ATLAS 20 +$2,682 ($250/trade), BLITZ 67 +$1,381.
+- BOT (red team CLEAR): day-brains-feed ext "bx" (brain x-ray, ids masked, no extra ntfy post; split() over-3,800 B fix).
+- RESEARCH (all NO, nothing live): setup grades A+/B/C + conviction sizing (0/18, flips out of sample), BLITZ 12 variants (2021-25 never holds),
+  LIT on MES for too-wide setups (wide setups lose), every strategy on every account (only +BLITZ lanes beat the bar; BLITZ stays paper until its
+  40-trade gate; ATLAS funded + BLITZ150 is the first card then).
+- Not landed: day-moneyaudit-bot (no red-team verdict yet).
+
 ## 2026-11-27 afternoon landing (~14:20 ET, owner: "huge team ... live chart ... order flow + BLITZ ready ... Telegram simplified")
 - TODAY +$608: ATLAS S/R LONG (combo on Zlarior 50K +$304.10, Rapid EOD 25K +$304), target. ATLAS funded ...6018 silently skipped the
   same signal (-$304 missed): day-atlasmiss-bot-rt (held reasons on every silent skip, status key "ab", trade_watch push, a

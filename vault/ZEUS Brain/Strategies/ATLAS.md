@@ -182,6 +182,7 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-28 | [[setup-grades-2026-11-28\|Setup grades A+/A/B/C + conviction sizing for LIT, ATLAS, BLITZ]] | rejected |
 | 2026-11-26 | [[execpol-2026-11-26\|Entry execution policy for LIT and ATLAS]] | research |
 | 2026-11-26 | [[batch5-2026-11-26\|Batch 5]] | research |
 | 2026-11-26 | [[atlasfill-2026-11-26\|ATLAS fill forensics + the cheapest entry]] | research |
@@ -221,9 +222,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-11-15 | [[2026-11-15-atlas-deep\|ATLAS deep edge]] | adopt-candidate |
 | 2026-11-13 | [[es-and-sessions-2026-11-13\|Same edge, more markets]] | rejected |
 | 2026-11-04 | [[2026-11-04_second_strategies_night\|Second strategies night]] | research |
-| 2026-11-04 | [[2026-11-04_lit_ideas_night\|LIT ideas night]] | rejected |
 
-... and 32 older (see the families).
+... and 33 older (see the families).
 
 ## Links
 
