@@ -69,7 +69,7 @@
       const p = !usedEarly.has(u) && early[u];
       if (!p) return net(u, o);
       usedEarly.add(u);
-      return Promise.resolve(p).then((t) => (typeof t === 'string' && t ? { ok: true, status: 200, text: async () => t, json: async () => JSON.parse(t) } : net(u, o)));
+      return Promise.resolve(p).then((t) => (typeof t === 'string' && t ? { ok: true, status: 200, text: async () => t }   /* raw text: pc_feed parses + checks the signature */ : net(u, o)));
     };
     const feedUrl = E.feedUrl || 'status_feed.json';
     const subs = new Set();

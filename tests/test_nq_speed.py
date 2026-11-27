@@ -106,7 +106,7 @@ def main() -> int:
     check("a4 every storage access wrapped (getItem / setItem only inside makeStore's try)",
           src.count("getItem(") == 1 and src.count("setItem(") == 1 and "try { const s = ls && ls.getItem" in src)
     check("a5 posts come only from PC_FEED.fetchLatest (signature-checked) or a peer's copy of one",
-          "orig.call(F, { feed, fetch: E.fetch })" in src and "parseLatest" not in src and "JSON.parse(t" not in src)
+          "orig.call(F, { feed, fetch: pollFetch })" in src and "const pollFetch = (E.fetch || !early) ? E.fetch" in src and "parseLatest" not in src and "JSON.parse(t" not in src)
     check("a6 future-dated post refused (10 min skew, as pc_feed SKEW_S)", "+ 600" in src)
     check("a7 the spec NQCORE_API.md exists", os.path.exists(SPEC))
     # ---------------------------------------------------------------- b. node
