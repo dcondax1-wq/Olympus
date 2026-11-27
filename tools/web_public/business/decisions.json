@@ -871,7 +871,13 @@
    "answered": "2026-11-27",
    "owner_words": "Wait until more room",
    "revisit": "when the Zlarior 50K room is back above $2,000",
-   "source": "research/lit/size50k-2026-11-27/RESULT.md"
+   "source": "research/lit/size50k-2026-11-27/RESULT.md",
+   "usd_month": 150,
+   "added": "2026-11-27",
+   "applies": "Zlarior 50K eval (ATLAS combo lane)",
+   "recommend": "later",
+   "recommend_why": "With $1,313 of room one full-size ATLAS loss (~$700) is half the room; ask again above $2,000.",
+   "risk": "Fails 6 -> 15% (Jan-Jun-like) and 14 -> 20% (Jul-Oct-like) from today's room; each fail $91.80 + ~3 weeks."
   }
  ],
  "triage_note": "2026-11-23 triage (research/handoff/2026-11-23/DECISIONS.md): 2 live decisions; 5 merged / retired (status superseded, superseded_by points to the card or study that replaced them), 3 waiting on an outside answer or an account stage, 2 later. Nothing deleted, nothing live changed."
