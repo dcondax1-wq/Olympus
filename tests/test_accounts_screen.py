@@ -144,6 +144,10 @@ def node_run(scen, days, acts):
         shutil.copy(os.path.join(WEB, "pc_feed.js"), os.path.join(tmp, "pc_feed.cjs"))
         for f in ("nqdesk", "clock7", "acctcore"):
             shutil.copy(os.path.join(NQ, f + ".js"), os.path.join(tmp, f + ".mjs"))
+        shutil.copy(os.path.join(NQ, "goals_model.js"), os.path.join(tmp, "goals_model.mjs"))   # nqdesk imports it (night-nq-main)
+        for f in ("nqdesk.mjs",):
+            fp = os.path.join(tmp, f); src = open(fp, encoding="utf-8").read()
+            open(fp, "w", encoding="utf-8").write(re.sub(r"from '\./goals_model\.js(\?v=[\w.]+)?'", "from './goals_model.mjs'", src))
         hp = os.path.join(tmp, "harness.cjs")
         open(hp, "w", encoding="utf-8").write(HARNESS)
         biz = json.load(open(os.path.join(WEB, "business", "accounts.json"), encoding="utf-8"))

@@ -49,6 +49,14 @@ def test_static():
     cols = re.findall(r"#[0-9a-fA-F]{3,8}\b", re.sub(r"var\(--[a-z0-9-]+,\s*#[0-9a-fA-F]{3,8}\)", "", css))
     check("a. every colour is a token (a hex only as a var() fallback); motion stops under prefers-reduced-motion", not cols and "prefers-reduced-motion: reduce" in css, cols)
     check("a. no BLITZ word on the cards", "BLITZ" not in js.replace("BLITZ never shows", ""))
+    # night-nq-main 2026-11-27: the hero on the NQ page only (its own CSS: Trading's render-blocking size unchanged), the jump bar's anchors exist
+    hero_css = read(os.path.join(WEB, "nq", "nqhero.css"))
+    ids = re.findall(r'<a href="#([A-Za-z0-9]+)">', nq[nq.find('id="jump"'):nq.find("</nav>", nq.find('id="jump"'))])
+    check("a. hero: id=hero with the today / phase / bots / accounts slots + the scene canvas, nqhero.css on nq only, every jump-bar link lands on a card, "
+          "the scene pauses (IntersectionObserver / visibilitychange) and stands still under prefers-reduced-motion",
+          all(f'data-hx="{k}"' in nq for k in ("today", "age", "phase", "next", "bots", "accts", "honest")) and 'id="heroScene"' in nq
+          and "nqhero.css?v=" in nq and "nqhero.css" not in tr and len(ids) >= 6 and all(f'id="{i}"' in nq for i in ids)
+          and "IntersectionObserver" in js and "visibilitychange" in js and "prefers-reduced-motion: reduce" in js and "prefers-reduced-motion" in hero_css, ids)
 
 
 HARNESS = r"""
@@ -141,6 +149,24 @@ import(process.argv[2]).then((D) => {
   const junk = [null, undefined, 7, 'x', [], {}, { board: 5, live: [], accounts: 'no' }, { accounts: [null, 4, { id: 'mffu50k_eval' }], live: { pc: { glance: { bots: [null, { id: 'lit', arm: 'x', lv: [null, [1]] }] } } } }];
   o.junk = junk.map((j) => { try { return [D.accounts(j, j, now, j).length, D.thinking(j, j, j, now, j).length, D.quality(j, j, j, now).rows.length]; } catch (e) { return 'THROW ' + e.message; } });
   o.words = [D.money(-0.2), D.money(1234.5, true), D.rText(0.5), D.rText(-1.03), D.ageText(30), D.ageText(4 * 60), D.ageText(2 * 3600 + 600), D.mins(1500)];
+  // night-nq-main 2026-11-27: the hero (today's $, each account's ring + room, LIT / ATLAS in one word, the phase + next)
+  {
+    const A = D.accounts(home, biz, now, chart), Bh = D.thinking(home, news, file, now, chart);
+    const goalsL = [{ key: 'zlarior', frac: 0.25, big: '$3,807', unit: 'to pass', kind: 'pass', has: true }, { key: 'atlas', frac: 0.4, big: '$1,213', unit: 'to $2,100', kind: 'payout', has: true }];
+    const H = D.hero(A, goalsL, Bh, home, now, false);
+    o.hero = { today: H.today, todayText: H.todayText, tone: H.tone, level: H.level, nAcc: H.nAcc, phase: H.phase.id, next: H.nextText,
+      accts: H.accts.map((a) => [a.key, a.frac, a.goalBig, a.room]), bots: H.bots.map((b) => [b.id, b.word, b.tone]), honest: H.honest, blitz: JSON.stringify(H).includes('BLITZ') };
+    const Hn = D.hero(D.accounts({}, biz, now), [], D.thinking({}, null, null, now), {}, now, false);
+    o.heroNone = { today: Hn.today, level: Hn.level, honest: Hn.honest, bots: Hn.bots.map((b) => b.word) };
+    o.heroDemo = D.hero(A, goalsL, Bh, home, now, true).ageText;
+    o.next = [D.nextUp(Date.parse('2026-11-20T06:30:00Z') / 1000), D.nextUp(Date.parse('2026-11-20T15:30:00Z') / 1000), D.nextUp(Date.parse('2026-11-21T15:00:00Z') / 1000)];
+    o.words5 = [D.botState({ has: true, on: true, phase: 'before', before: { lean: { side: 'LONG', why: 'setup armed: x', trig: 'Enters at 1' }, waiting: '' } }).word,
+      D.botState({ has: true, on: true, phase: 'before', before: { lean: { side: 'SHORT', why: 'setup forming: swept', trig: '' } } }).word,
+      D.botState({ has: true, on: true, phase: 'before', before: { lean: { side: null, why: 'No lean yet' }, waiting: 'w' } }).word,
+      D.botState({ has: true, on: false, phase: 'before', before: {} }).word, D.botState(null).word,
+      D.botState({ has: true, on: true, phase: 'after', after: { usd: -40, exit: 'STOP', at: '9:00 AM ET' }, before: {} }).tone];
+    o.heroJunk = junk.map((j) => { try { D.hero(j, j, j, j, now, false); return 'ok'; } catch (e) { return 'THROW ' + e.message; } });
+  }
   console.log(JSON.stringify(o));
 }).catch((e) => { console.error(e); process.exit(1); });
 """
@@ -155,6 +181,9 @@ def test_core():
     try:
         m = os.path.join(tmp, "nqdesk.mjs")
         shutil.copy(MOD, m)
+        shutil.copy(os.path.join(WEB, "nq", "goals_model.js"), os.path.join(tmp, "goals_model.js"))   # nqdesk imports the ONE goals model
+        with open(os.path.join(tmp, "package.json"), "w", encoding="utf-8") as fh:
+            fh.write('{"type": "module"}')
         h = os.path.join(tmp, "h.cjs")
         with open(h, "w", encoding="utf-8") as fh:
             fh.write(HARNESS)
@@ -239,6 +268,23 @@ def test_core():
     check("c. ... the accounts strip puts it on the ATLAS tile only (BLITZ's chart row never shows)",
           [a for a in o["realAcct"] if a[1]] == [["atlas", ["SHORT", 1, 26380.75, 194, True]]] and o["realLit"] == "after", o["realAcct"])
     check("e. junk input never throws", all(isinstance(j, list) for j in o["junk"]), o["junk"])
+    h = o["hero"]
+    check("hero: today = the sum of the accounts with numbers (-$50 + $0 + $0 + $100 = +$50, the 25K #2 stale one counted), its tone, the worst age wins (the 3-h-old 25K -> red); "
+          "rings + $ to go from the ONE goals model (goals_model.js: Zlarior below its start = 0% / $3,807, ATLAS funded at MFFU -$113 = $2,213 to $2,100, the 50K #3 +$100 = 3%); no BLITZ anywhere",
+          h["today"] == 50 and h["todayText"] == "+$50" and h["tone"] == "up" and h["level"] == "bad" and h["nAcc"] == 4
+          and ["zlarior", 0, "$3,807", 1025] in h["accts"] and ["atlas", 0, "$2,213", 887] in h["accts"] and ["xtra9", 0.033, "$2,900", 2000] in [[a[0], round(a[1], 3) if a[1] is not None else None, a[2], a[3]] for a in h["accts"]]
+          and not h["blitz"] and h["honest"] == "", h)
+    check("hero: LIT / ATLAS in one word: the chart's open ATLAS short = IN TRADE (hot); Zlarior traded today = DONE TODAY; Fri 10:30 ET = NY morning, next = last new entries 15:30 in 5 h",
+          h["bots"] == [["lit", "DONE TODAY", "up"], ["atlas", "IN TRADE", "hot"]] and h["phase"] == "nyam" and h["next"] == "Last new entries 15:30 in 5 h 0 min", h)
+    check("hero: no report = no $, a red age, the honest line, both bots NO REPORT; the DEMO says example numbers",
+          o["heroNone"]["today"] is None and o["heroNone"]["level"] == "bad" and "Nothing here is made up" in o["heroNone"]["honest"]
+          and o["heroNone"]["bots"] == ["NO REPORT", "NO REPORT"] and o["heroDemo"] == "example numbers (DEMO)", (o["heroNone"], o["heroDemo"]))
+    nx = o["next"]
+    check("hero next: 01:30 ET -> London 02:00 in 30 min; 10:30 ET -> 15:30 in 5 h; Saturday -> CME reopens Sunday 18:00",
+          nx[0]["label"].startswith("London") and nx[0]["inS"] == 1800 and nx[1]["inS"] == 5 * 3600 and nx[2]["inS"] is None and "Sunday" in nx[2]["label"], nx)
+    check("hero words: SETUP ARMED / SETUP FORMING / WATCHING / OFF / NO REPORT; a losing closed trade = down",
+          o["words5"] == ["SETUP ARMED", "SETUP FORMING", "WATCHING", "OFF", "NO REPORT", "down"], o["words5"])
+    check("hero: junk input never throws", all(x == "ok" for x in o["heroJunk"]), o["heroJunk"])
     check("words: $ and R and ages", o["words"] == ["$0", "+$1,235", "+0.5R", "-1.0R", "just now", "4 min ago", "2 h 10 min ago", "25 min"], o["words"])
 
 

@@ -147,7 +147,7 @@ console.log(JSON.stringify(out));
 def node_run(runs):
     tmp = tempfile.mkdtemp(prefix="le_nqlive_")
     try:
-        for f in ("nqdesk", "clock7", "acctcore", "livecore", "nqbars"):
+        for f in ("nqdesk", "clock7", "acctcore", "livecore", "nqbars", "goals_model"):   # nqdesk imports goals_model.js (night-nq-main)
             src = open(os.path.join(NQ, f + ".js"), encoding="utf-8").read()
             src = re.sub(r"from '\./(\w+)\.js(\?v=[\w.]+)?'", r"from './\1.mjs'", src)
             open(os.path.join(tmp, f + ".mjs"), "w", encoding="utf-8").write(src)
