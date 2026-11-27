@@ -1,0 +1,431 @@
+{
+ "v": 1,
+ "kind": "le-live",
+ "lite": true,
+ "src": "pc_report",
+ "t": 1795401816,
+ "price": 25665.0,
+ "day_pnl": 0,
+ "pc_verdict": {
+  "code": "TRADING",
+  "label": "TRADING YOUR EVAL",
+  "level": "good",
+  "reason": "routing to MFFUEVBLDR\u20266016 through NinjaTrader",
+  "in_session": false,
+  "hb_age_s": 0,
+  "t": 1795401816
+ },
+ "reporter": {
+  "t": 1795401899,
+  "server": true,
+  "nt": true,
+  "market_open": true,
+  "mode": "LIVE",
+  "hb_src": "pc_hb",
+  "problems": []
+ },
+ "board": {
+  "v": 1,
+  "kind": "le-board",
+  "t": 1795401816,
+  "data_t": 1795401816,
+  "where": "live",
+  "today": "2026-11-23",
+  "running": true,
+  "level": "good",
+  "lit": {
+   "id": "lit",
+   "name": "Zlarior",
+   "plan": "MFFU Builder 50K",
+   "method": "LIT",
+   "badge": "LIVE",
+   "source": "PC bot",
+   "balance": 49213.9,
+   "floor": 48168.2,
+   "room": 1045.7,
+   "mll": 2000.0,
+   "to_target": 3786.1,
+   "target_balance": 53000.0,
+   "profit": -786.1,
+   "today_pnl": 0.0,
+   "week_pnl": 0.0,
+   "status": "open",
+   "session": 26,
+   "sessions": 10,
+   "dll": 1000.0,
+   "dll_used": 0.0,
+   "trades_today": 0,
+   "max_day": 1,
+   "room_frac": 0.5229,
+   "window": {
+    "open": false,
+    "text": "next entry window Mon 02:00-15:30 ET"
+   },
+   "waiting": "Before 02:00 ET (no entries yet): Long setup forming: swept equal lows (2.38 ATR"
+  },
+  "atlas": {
+   "id": "atlas",
+   "name": "ATLAS",
+   "plan": "MFFU Builder 25K funded",
+   "method": "EMA \u00b7 MACD \u00b7 S/R",
+   "badge": "LIVE",
+   "source": "PC bot (account B)",
+   "configured": true,
+   "balance": 25401.38,
+   "floor": 24401.38,
+   "room": 1000.0,
+   "mll": 1000.0,
+   "to_target": 1698.62,
+   "target_balance": 27100.0,
+   "profit": 401.38,
+   "today_pnl": 0.0,
+   "status": "funded",
+   "session": 5,
+   "dll": 600.0,
+   "trades_today": 0,
+   "max_day": 2,
+   "room_frac": 1.0,
+   "window": {
+    "open": false,
+    "text": "next entry window Mon 02:00-05:00 ET"
+   },
+   "waiting": "All 3 members are outside their hours. Next: MACD at Mon 02:00 ET."
+  },
+  "lines": [],
+  "trades": [
+   {
+    "acct": "atlas",
+    "src": "live",
+    "key": "ema_lon_vix",
+    "member": "EMA",
+    "day": "2026-11-20",
+    "entry_t": 1795164300,
+    "exit_t": 1795176603,
+    "side": "SHORT",
+    "qty": 1,
+    "exit": "TARGET",
+    "r": 6.635,
+    "usd": 514.18,
+    "open": false
+   },
+   {
+    "acct": "atlas",
+    "src": "live",
+    "key": "macd_sweep",
+    "member": "MACD",
+    "day": "2026-11-18",
+    "entry_t": 1794995400,
+    "exit_t": 1794996603,
+    "side": "SHORT",
+    "qty": 2,
+    "exit": "STOP",
+    "r": -1.044,
+    "usd": -112.8,
+    "open": false
+   },
+   {
+    "acct": "atlas",
+    "src": "paper",
+    "key": "sr_nyreclaim",
+    "member": "S/R",
+    "day": "2026-11-17",
+    "entry_t": 1794928500,
+    "exit_t": 1794928800,
+    "side": "LONG",
+    "qty": 4,
+    "exit": "STOP",
+    "r": -1.022,
+    "usd": -441.6,
+    "open": false
+   }
+  ]
+ },
+ "accounts": [
+  {
+   "id": "mffu50k_eval",
+   "name": "MFFU 50K Eval",
+   "plan": "Builder 50K",
+   "kind": "eval",
+   "source": "pc",
+   "badge": "LIVE",
+   "conn": {
+    "present": true,
+    "t": 1795401816,
+    "running": true,
+    "connected": true
+   },
+   "eval": {
+    "start_balance": 50000.0,
+    "balance": 49213.9,
+    "profit": -786.1,
+    "to_target": 3786.1,
+    "target_balance": 53000.0,
+    "floor": 48168.2,
+    "room": 1045.7,
+    "mll": 2000.0,
+    "dll": 1000.0,
+    "dll_used": 0.0,
+    "today": 0.0,
+    "session": 26,
+    "status": "open"
+   },
+   "pnl": {
+    "today": 0.0,
+    "week": 0,
+    "since_start": -229.4,
+    "traded": -129.4
+   },
+   "running": true
+  },
+  {
+   "id": "b25k_2",
+   "name": "Zlarior Builder 25K #2",
+   "plan": "Builder 25K",
+   "kind": "eval",
+   "source": "pc",
+   "badge": "LIVE",
+   "conn": {
+    "present": true,
+    "t": 1795401816,
+    "running": true,
+    "connected": true
+   },
+   "eval": {
+    "start_balance": 25000.0,
+    "balance": 25023.62,
+    "profit": 23.62,
+    "to_target": 1476.38,
+    "target_balance": 26500.0,
+    "floor": 24023.62,
+    "room": 1000.0,
+    "mll": 1000.0,
+    "dll": 600.0,
+    "dll_used": 0.0,
+    "today": 0.0,
+    "session": 4,
+    "status": "open"
+   },
+   "pnl": {
+    "today": 0.0,
+    "week": 0,
+    "since_start": 0,
+    "traded": 0
+   },
+   "running": true
+  },
+  {
+   "id": "rapid",
+   "name": "Rapid EOD 25K",
+   "plan": "Rapid EOD 25K",
+   "kind": "eval",
+   "source": "pc",
+   "badge": "LIVE",
+   "conn": {
+    "present": true,
+    "t": 1795401816,
+    "running": true,
+    "connected": true
+   },
+   "eval": {
+    "start_balance": 25000.0,
+    "balance": 25000.0,
+    "profit": 0.0,
+    "to_target": 1500.0,
+    "target_balance": 26500.0,
+    "floor": 24000.0,
+    "room": 1000.0,
+    "mll": 1000.0,
+    "dll": 500.0,
+    "dll_used": 0.0,
+    "today": 0.0,
+    "session": 2,
+    "status": "open"
+   },
+   "pnl": {
+    "today": 0.0,
+    "week": 0,
+    "since_start": 0,
+    "traded": 0
+   },
+   "running": true
+  }
+ ],
+ "k7": {
+  "a": [
+   {
+    "id": "rapid",
+    "nm": "Rapid EOD 25K",
+    "base": "start",
+    "dl": "2026-11-25",
+    "hard": "2026-11-26",
+    "left": 3,
+    "ses": 4,
+    "act": "2026-11-25",
+    "on": false,
+    "lvl": "warn"
+   },
+   {
+    "id": "atlas",
+    "nm": "ATLAS 25K funded",
+    "lf": "2026-11-20",
+    "base": "fill",
+    "dl": "2026-11-26",
+    "hard": "2026-11-27",
+    "left": 4,
+    "ses": 5,
+    "act": "2026-11-25",
+    "on": false,
+    "lvl": "ok"
+   },
+   {
+    "id": "b25k_2",
+    "nm": "Zlarior 25K #2",
+    "lf": "2026-11-20",
+    "base": "fill",
+    "dl": "2026-11-26",
+    "hard": "2026-11-27",
+    "left": 4,
+    "ses": 5,
+    "act": "2026-11-25",
+    "on": false,
+    "lvl": "ok"
+   },
+   {
+    "id": "mffu50k_eval",
+    "nm": "Zlarior 50K",
+    "lf": "2026-11-20",
+    "base": "fill",
+    "dl": "2026-11-26",
+    "hard": "2026-11-27",
+    "left": 4,
+    "ses": 5,
+    "act": "2026-11-25",
+    "on": false,
+    "lvl": "ok"
+   }
+  ]
+ },
+ "pc": {
+  "running": true,
+  "glance": {
+   "v": 2,
+   "t": 1795401516,
+   "bots": [
+    {
+     "id": "lit",
+     "name": "Zlarior",
+     "what": "LIT \u00b7 MFFU Builder 50K",
+     "on": true,
+     "armed": true,
+     "mode": "LIVE",
+     "stage": "Displacement (4/10)",
+     "wait": "Before 02:00 ET (no entries yet): Long setup forming: swept equal lows (1.81 AT\u2026",
+     "why": "No setup yet today. Before 02:00 ET (no entries yet): Long setup forming: swept\u2026",
+     "lv": [],
+     "arm": [
+      {
+       "side": "LONG",
+       "text": "forming",
+       "trig": "Long setup forming: swept equal lows (1.81 ATR, ok), inducement ok. Waiting for a strong 5m candle (body >= 0.8 ATR = 44.2 pts; best so far 0.00 ATR)\u2026"
+      }
+     ],
+     "day": 0,
+     "room": 1046,
+     "mll": 2000,
+     "log": [],
+     "at": "Sun 21:38 ET",
+     "px": 25696.75
+    },
+    {
+     "id": "atlas",
+     "name": "ATLAS",
+     "what": "EMA \u00b7 MACD \u00b7 S/R \u00b7 MFFU Builder 25K funded",
+     "on": true,
+     "armed": false,
+     "mode": "ATLAS MFFUSFBLDR\u20266018",
+     "wait": "All 3 members are outside their hours. Next: MACD at Mon 02:00 ET.",
+     "why": "EMA: No trades on Mondays (rule): back on Tuesday from 03:00 ET (stopped by: wi\u2026",
+     "lv": [],
+     "day": 0,
+     "room": 1000,
+     "mll": 1000,
+     "log": [],
+     "px": 25696.75,
+     "lobes": [
+      {
+       "id": "ema",
+       "st": "off",
+       "text": "No trades on Mondays (rule): back on Tuesday from 03:00 ET"
+      },
+      {
+       "id": "macd",
+       "st": "off",
+       "text": "Outside its hours: entries 02:00-05:00, 09:30-11:00 ET"
+      },
+      {
+       "id": "sr",
+       "st": "off",
+       "text": "Outside its hours: entries 09:30-12:00 ET"
+      }
+     ],
+     "dll": 600,
+     "dll_used": 0
+    },
+    {
+     "id": "rapid",
+     "name": "Rapid EOD",
+     "what": "LIT + ATLAS \u00b7 MFFU Rapid EOD 25K",
+     "on": true,
+     "armed": true,
+     "mode": "LIVE",
+     "wait": "Trades the same LIT setups as Zlarior (and ATLAS's when LIT is flat).",
+     "day": 0,
+     "mll": 1000
+    }
+   ],
+   "trimmed": true
+  }
+ },
+ "glog": {
+  "lit": [
+   [
+    "21:15",
+    "Swept equal lows 25,765.75 (0.22 ATR deep; \u2717 LIT needs 0.5)"
+   ],
+   [
+    "21:05",
+    "Swept equal lows 25,787.25 (0.09 ATR deep; \u2717 LIT needs 0.5)"
+   ],
+   [
+    "20:15",
+    "Swept equal highs 25,898 (0.15 ATR deep; \u2717 LIT needs 0.5)"
+   ],
+   [
+    "19:55",
+    "Swept equal highs 25,890 (0.10 ATR deep; \u2717 LIT needs 0.5)"
+   ],
+   [
+    "19:40",
+    "Now: Sweep - Before 02:00 ET (no entries yet): Waiting for price to sweep a level by >= 0.5 ATR (= 43.3 pts). Nearest:\u2026"
+   ],
+   [
+    "18:25",
+    "Now: Displacement - Before 02:00 ET (no entries yet): Short setup forming: swept equal highs (3.88 ATR, ok), inducement\u2026"
+   ],
+   [
+    "18:10",
+    "Now: 5m CISD - Before 02:00 ET (no entries yet): 5m CISD already closed through 25,292.00: see the setup card. BLOCKED:\u2026"
+   ],
+   [
+    "18:05",
+    "Now: Inducement - Before 02:00 ET (no entries yet): Swept equal highs by 3.40 ATR (ok), but no inducement swing was tak\u2026"
+   ]
+  ],
+  "atlas": [
+   [
+    "20:25",
+    "MACD: 20:25 MACD-div short: no - fill"
+   ]
+  ]
+ }
+}
