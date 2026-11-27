@@ -4,7 +4,7 @@
  *   pages through the View Transitions API; older browsers get a short fade). A page may name its tab: <script ... data-tab="live">.
  *   A tab whose page is not there yet (orderflow.html, pchealth.html, chart.html during the sprint) uses its fallback or hides (HEAD probe,
  *   remembered in localStorage 'nqnav.have.v1').
- * - The PC pill: "PC 4m · 2 armed" (the bot's own heartbeat age from the PC feed, ../pc_feed.js, BLITZ never counted). It rides the dock's
+ * - The PC pill (reads night-nq-speed's window.NQ_FEED when the page has nqfeed.js: one shared read; else ../pc_feed.js): "PC 4m · 2 armed" (the bot's own heartbeat age from the PC feed, ../pc_feed.js, BLITZ never counted). It rides the dock's
  *   top edge; any element with data-nq-pc-pill gets its own copy. Tap = a sheet: heartbeat, PC last looked, server, verdict, armed bots.
  *   The last real read is kept ('nqnav.pc.v1') so the pill has a number at once and offline; marked "saved" until a fresh read.
  * - Pull down at the top = refresh: the page gets a cancelable 'nq:refresh' event (detail.done(): call it when your data is back);
@@ -94,17 +94,23 @@
       d.head.appendChild(s);
     });
   }
-  function refreshPC() {
+  function keep(lite, saved) {   // a real post (its own t) -> the pill's small copy
+    if (!lite || !isFinite(+lite.t)) return;
+    if (S.lite && +lite.t < S.lite.t) return;
+    if (S.lite && +lite.t === S.lite.t && saved) return;
+    S.lite = { t: +lite.t, ar: lite.ar || null, pc_verdict: lite.pc_verdict ? { label: lite.pc_verdict.label } : null,
+      reporter: lite.reporter ? { t: lite.reporter.t, server: lite.reporter.server } : null };
+    S.cached = !!saved; if (!saved) ls(LS_PC, S.lite);
+  }
+  function refreshPC(force) {   // night-nq-speed's window.NQ_FEED (one shared read per phone) when the page has it, else pc_feed itself
     if (S.fetching) return S.fetching;
-    S.fetching = loadFeed().then(function (F) { return F && F.fetchLatest ? F.fetchLatest({ feedUrl: base + '../status_feed.json' }) : null; })
-      .then(function (lite) {
-        if (lite && isFinite(+lite.t)) {
-          S.lite = { t: +lite.t, ar: lite.ar || null, pc_verdict: lite.pc_verdict ? { label: lite.pc_verdict.label } : null,
-            reporter: lite.reporter ? { t: lite.reporter.t, server: lite.reporter.server } : null };
-          S.cached = false; ls(LS_PC, S.lite);
-        }
-        paint(); return S.lite;
-      }, function () { paint(); return null; })
+    var F = w.NQ_FEED;
+    var p = F && F.latest ? Promise.resolve(force && F.refresh ? F.refresh(true) : F.latest()).then(function (x) {
+        var c = F.cached ? F.cached() : x, i = F.info ? F.info() : null;
+        return c && i && i.src === 'cache' ? { saved: c } : c;   // the kept post, no fresh read: shown as "saved"
+      })
+      : loadFeed().then(function (P) { return P && P.fetchLatest ? P.fetchLatest({ feedUrl: base + '../status_feed.json' }) : null; });
+    S.fetching = p.then(function (lite) { if (lite && lite.saved) keep(lite.saved, true); else keep(lite, false); paint(); return S.lite; }, function () { paint(); return null; })
       .then(function (v) { S.fetching = null; return v; });
     return S.fetching;
   }
@@ -141,7 +147,7 @@
     if (S.cached) sh.appendChild(el('p', 'nqn-note', 'Saved from your last visit; a fresh read is on its way.'));
     if (st.lv === 'bad') sh.appendChild(el('p', 'nqn-note', 'Over an hour without a report: the PC or the bot may be off. PC health shows what to do.'));
     var btns = el('div', 'nqn-btns'), rf = el('button', 'nqn-btn gold', 'Refresh now'); rf.type = 'button';
-    rf.addEventListener('click', function () { tick(); close(); doRefresh(); });
+    rf.addEventListener('click', function () { tick(); close(); doRefresh(true); });
     btns.appendChild(rf);
     var pcTab = tabHref('pc'); if (pcTab) { var a = el('a', 'nqn-btn', 'PC health ›'); a.href = pcTab; btns.appendChild(a); }
     if (S.installEvt) { var ib = el('button', 'nqn-btn', 'Install NQ app'); ib.type = 'button'; ib.addEventListener('click', function () { close(); install(); }); btns.appendChild(ib); }
@@ -222,11 +228,11 @@
   }
 
   // ---------- pull to refresh ----------
-  function doRefresh() {
+  function doRefresh(force) {
     var ptr = S.ptr, finished = false;
     function done() { if (finished) return; finished = true; if (ptr) { ptr.classList.remove('is-spin'); ptr.style.transform = 'translateY(-70px)'; ptr.style.opacity = '0'; } }
     var ev; try { ev = new CustomEvent('nq:refresh', { cancelable: true, detail: { done: done } }); } catch (e) { ev = null; }
-    refreshPC();
+    refreshPC(true);
     if (ev && !w.dispatchEvent(ev)) { setTimeout(done, 6000); return; }   // the page took it
     setTimeout(function () { w.location.reload(); }, 220);
   }
@@ -297,6 +303,9 @@
     css();
     try { if (w.sessionStorage.getItem(SS_ENTER)) { w.sessionStorage.removeItem(SS_ENTER); if (!reduce) { html.classList.add('nqnav-enter'); setTimeout(function () { html.classList.remove('nqnav-enter'); }, 400); } } } catch (e) { /* no */ }
     var c = ls(LS_PC); if (c && isFinite(+c.t)) { S.lite = c; S.cached = true; }
+    var F = w.NQ_FEED;
+    if (F && F.cached) { var k = F.cached(); if (k) keep(k, true); }
+    if (F && F.on) F.on(function (lite, meta) { keep(lite, !!(meta && meta.src === 'cache')); paint(); });
     if (html.classList.contains('framed')) framed = true;
     if (!framed) {
       html.classList.add('nqnav-on');

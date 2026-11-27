@@ -25,6 +25,9 @@ Test: `python -X utf8 -m tests.test_nq_nav` (add `"nq_nav"` to `AREAS["nq"]` in 
 
 A page that is not named in the list can say its tab: `<script src="nqnav.js?v=1" data-tab="chart" defer></script>`.
 
+- With night-nq-speed's `nqfeed.js` tag in the head (its NQCORE_API.md), the pill reads `window.NQ_FEED` (cached() first paint, on() updates,
+  refresh(true) on pull / Refresh): no second ntfy read. Without it, the pill falls back to `../pc_feed.js` itself.
+
 ## 2. Optional hooks for page owners
 
 - PC pill inside a page header: `<span data-nq-pc-pill></span>` (gets its own live copy of the pill).

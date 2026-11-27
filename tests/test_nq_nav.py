@@ -183,6 +183,20 @@ def part_b():
             ctx.unroute_all(behavior="ignoreErrors")
             ctx.close()
 
+            # night-nq-speed's shared feed (window.NQ_FEED) wins: the pill never polls ntfy itself
+            ctx, p, errs, seen, off = AK.page(br, origin, w=390, h=844, mock={"json?poll=1": post(4 * 60)})
+            ctx.add_init_script("""(() => { const t = Math.floor(Date.now() / 1000) - 120, post = { t, ar: { lit: [1, 1], blitz: [1, 1], atlas: [1, 0] }, reporter: { t, server: true } };
+              let cbs = []; window.NQ_FEED = { cached: () => JSON.parse(JSON.stringify(post)), on: (cb) => { cbs.push(cb); cb(JSON.parse(JSON.stringify(post)), { src: 'net' }); return () => {}; },
+                latest: () => Promise.resolve(post), refresh: () => Promise.resolve(post), info: () => ({ src: 'net' }) }; })()""")
+            inject(ctx, origin)
+            p.goto(f"{origin}/nq/accounts.html")
+            p.wait_for_function("document.querySelector('.nqn-float') && /PC \\d/.test(document.querySelector('.nqn-float').textContent)", timeout=60000)
+            pill = p.evaluate("document.querySelector('.nqn-float').textContent")
+            nav_polls = [u for u in p.mocked]
+            check("b. with nqfeed.js (window.NQ_FEED) the pill reads it: 'PC 2m · 1 armed' (BLITZ out)", pill == "PC 2m · 1 armed", (pill, len(nav_polls)))
+            ctx.unroute_all(behavior="ignoreErrors")
+            ctx.close()
+
             # 1440: the dock floats, centered
             ctx, p, errs, seen, off = AK.page(br, origin, w=1440, h=900, mock={"json?poll=1": post(4 * 60)})
             inject(ctx, origin)
