@@ -599,39 +599,42 @@ def latest_of(a, sleep=None) -> int:
         last = json.load(open(mark, encoding="utf-8"))
     except Exception:
         last = {}
-    night = _et_str(time.time())[:10]
+    night = _et_str(_clock())[:10]
     pushed = pull_pushed(a, last)                               # day-ofmax: pages the PC pushed (tools/of_send_now.py)
     if pushed:
-        last.update(night=night, rid=last.get("rid") if last.get("night") == night else "pushed", t=int(time.time()))
+        last.update(night=night, rid=last.get("rid") if last.get("night") == night else "pushed", t=int(_clock()))
         try:
             json.dump(last, open(mark, "w", encoding="utf-8"))
         except OSError:
             pass
         print(f"order-flow days here now: {len(of_days(a.out))}")
         return 0
-    rid = last.get("rid") if last.get("night") == night else None
-    t0 = int(last.get("t") or time.time())
-    if rid is None:
+    base, topic = DF.feed_cfg()
+    ok_s, rid, t0, answered = shared_of_ask(base, topic, int(_clock()))   # night-of-asks: the topic is the shared record
+    if not ok_s:
+        print("Could not read the ntfy topic, so no ask was sent (it could double another session's ask); run this again later.")
+        return 2
+    if rid:
+        print(f"Order-flow ask {rid} is already {'answered' if answered else 'out'} (posted {_ago(t0)} ago by a cloud session): "
+              "collecting its pages, no new ask.")
+    else:
         rid = secrets.token_hex(5)
-        okp, why = DF.post_request(rid, since, int(time.time()), what="of", until=until)
+        okp, why = DF.post_request(rid, since, int(_clock()), what="of", until=until)
         if not okp:
             print(f"could not ask the PC: {why}")
             return 1
-        t0 = int(time.time())
+        t0 = int(_clock())
         try:
             os.makedirs(a.out, exist_ok=True)
             json.dump({"rid": rid, "night": night, "t": t0, "since": since, "until": until}, open(mark, "w", encoding="utf-8"))
         except OSError:
             pass
         print(f"Asked the PC for its order-flow summaries {since} .. {until or 'now'} (request {rid}; one ask a night).")
-    else:
-        print(f"Tonight's order-flow ask {rid} is already out: collecting its pages.")
     wait_s = 60.0 * (a.wait if a.wait is not None else 9)
-    base, topic = DF.feed_cfg()
     got, pages, end, nxt = [], {}, time.time() + wait_s, 1
     while True:
         ok, msgs = DF.poll(base, topic, int(t0 - 60))
-        now = int(time.time())
+        now = int(_clock())
         for m in msgs if ok else []:
             x = DF.parse_answer(m, now, base)
             if x and x.get("what") == "of" and (x.get("req") == rid or rid in (x.get("also") or [])):
@@ -664,6 +667,71 @@ def latest_of(a, sleep=None) -> int:
         sleep(15)
 
 
+def _clock() -> float:
+    return time.time()
+
+
+def _ago(t) -> str:
+    m = max(0, int((_clock() - int(t or 0)) // 60))
+    return f"{m // 60} h {m % 60} min" if m >= 60 else f"{m} min"
+
+
+def shared_of_ask(base, topic, now, window=None) -> tuple:
+    """night-of-asks: (topic read ok, rid, t, answered) of the "of" ask to reuse instead of posting a new one: the newest
+    one the PC ANSWERED within DF.OF_DEDUP_S (any cloud session's), else the newest one still OPEN (younger than
+    DF.REQ_MAX_AGE_S - 10 min, so the PC can still take it); (True, None, None, False) = none, ask. The ntfy topic is the
+    record every session shares (a per-container file let 6 helpers post 6 asks on 2026-11-27). Never raises."""
+    from engine import datafeed as DF
+    try:
+        ok, msgs = DF.poll(base, topic, int(now - (window or DF.OF_DEDUP_S)))
+    except Exception:  # noqa: BLE001
+        return False, None, None, False
+    if not ok:
+        return False, None, None, False
+    asks, done = [], set()
+    for m in msgs:
+        j = DF.body_of(m)
+        if j.get("kind") == DF.REQ_KIND and j.get("what") == "of" and DF._ID.match(str(j.get("id") or "")):
+            asks.append((int(DF._num(m.get("time")) or DF._num(j.get("t"))), str(j["id"])))
+            continue
+        try:
+            x = DF.parse_answer(m, now, base)
+        except Exception:  # noqa: BLE001
+            x = None
+        if x and x.get("what") == "of" and not str(x.get("req") or "").startswith("push"):
+            # red team #29: reuse only an answer of THIS answering night (DF.of_night of the answer's own time): yesterday's
+            # answer holds yesterday's days; reusing it would leave the new day out
+            at = int(DF._num(m.get("time")) or DF._num(x.get("made_t")) or 0)
+            if at and DF.of_night(at) != DF.of_night(now):
+                continue
+            done.add(str(x.get("req")))
+            done.update(str(r) for r in (x.get("also") or []) if isinstance(x.get("also"), list))
+    ans = [k for k in asks if k[1] in done]
+    if ans:
+        t, rid = max(ans)
+        return True, rid, t, True
+    live = [k for k in asks if k[0] >= now - DF.REQ_MAX_AGE_S + 600]
+    if live:
+        t, rid = max(live)
+        return True, rid, t, False
+    return True, None, None, False
+
+
+def run_v4(out_dir: str = OUT) -> None:
+    """night-of-asks (LEAD_WIRES_v4 #1): the order-flow v4 features (research/orderflow/of_v4.py, DESIGN_v4.md) on the pulled
+    days, after the battery: its forward watch list W1-W4 scores days from 2026-11-27. Never fails the pull."""
+    try:
+        r = subprocess.run([sys.executable, "-X", "utf8", os.path.join(ROOT, "research", "orderflow", "of_v4.py"), "--src", out_dir],
+                           cwd=ROOT, capture_output=True, text=True, timeout=1800)
+        for ln in (r.stdout or "").strip().splitlines()[-3:]:
+            print("  order flow v4: " + ln)
+        if r.returncode:
+            err = (r.stderr or "").strip().splitlines()
+            print("  order flow v4: failed" + (": " + err[-1][:160] if err else ""))
+    except Exception as e:  # noqa: BLE001
+        print(f"  order flow v4: not run ({e.__class__.__name__})")
+
+
 def pull_pushed(a, mark: dict) -> int:
     """day-ofmax: the order-flow pages the PC PUSHED (tools/of_send_now.py: signed "of" answers with a "push..." id) still on
     the topic (ntfy keeps an attachment 3 h). Each page once (mark["seen"]: message ids). Returns the days written."""
@@ -673,7 +741,7 @@ def pull_pushed(a, mark: dict) -> int:
     if not ok:
         return 0
     seen = set(mark.get("seen") or [])
-    now, n = int(time.time()), 0
+    now, n = int(_clock()), 0
     for m in msgs:
         x = DF.parse_answer(m, now, base)
         if not x or x.get("what") != "of" or not str(x.get("req") or "").startswith("push") or x.get("mid") in seen:
@@ -754,6 +822,7 @@ def main(argv=None) -> int:
         rc = latest_of(a)
         if not a.no_battery and not a.dry_run:
             run_battery(a.out)
+            run_v4(a.out)
         return 0 if rc in (0, 3) else rc
     if a.latest:
         rc = latest(a)
@@ -810,6 +879,7 @@ def main(argv=None) -> int:
         subprocess.run([sys.executable, os.path.join(ROOT, "tools", "edge_health.py")], cwd=ROOT)
     if a.latest and not a.no_battery and not a.dry_run:
         run_battery(a.out)
+        run_v4(a.out)
     return 0
 
 

@@ -414,6 +414,8 @@ AREAS["pc"].append("tickrec_tiny")        # day-pillars 2026-11-24: engine.tickr
 AREAS["pc"].append("ofready")             # day-ofready 2026-11-24: engine/ofsum.py day summaries + research/orderflow/of_battery.py (synthetic only)
 AREAS["pc"].append("oflearn")             # day-oflearn 2026-11-26: DESIGN3 v3 features + nightly learner, proven on of_sim planted ticks (synthetic only, ~5 min)
 AREAS["pc"].append("of_send")             # day-ofmax 2026-11-26: the owner's one order-flow line, rehearsed end to end (fake ntfy)
+AREAS["pc"].append("of_asks")             # night-of-asks 2026-11-27: one order-flow ask a night across cloud sessions; the PC skips duplicates
+AREAS["pc"].append("of_backfill")         # night-of-backfill 2026-11-27: the order-flow year by ntfy's own count (fake ntfy + fake git)
 AREAS["pc"].append("of_paper")            # day-oflearn 2026-11-26: the Order Flow pillar PAPER bot (engine/of_paper.py; synthetic live CSVs, ~4 min)
 AREAS["pc"].append("of_paper_rt")   # red team 2026-11-26: the paper child BELOW_NORMAL
 AREAS["pc"].append("payout_engine")       # big-payout 2026-11-26: read-only payout planner, /today, the Money tile
@@ -564,6 +566,7 @@ AREAS["pc"].append("buy_gate"); AREAS["money"].append("buy_gate")   # big-shadow
 AREAS["pc"].append("buy_gate_rt")   # red team 2026-11-26: bg < 400 B, a damaged verdict shows nothing
 
 AREAS["nq"].append("fill_log"); AREAS["pc"].append("fill_log")   # day-zeroerr 2026-11-26: every real fill (entry + exit, every lane) in fills.jsonl.gz, BLITZ paper rows, extra accounts in the day summary
+AREAS["pc"].append("of_asks_rt")   # red team #29: one 'of' answer per answering night, bf never swallowed
 
 if __name__ == "__main__":
     sys.exit(main())
