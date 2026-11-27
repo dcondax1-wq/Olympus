@@ -159,7 +159,8 @@
    "three": true
   },
   "nq": {
-   "block_kb": 310
+   "block_kb": 310,
+   "eager_js_kb": 640
   },
   "business": {
    "block_kb": 310

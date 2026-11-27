@@ -83,7 +83,7 @@ def static():
           ".pl-tablet{margin:0;padding:18px 18px 14px;border-radius:12px;color:#dacbf0;" in pl and "#efe9de" not in pl and "polis-life.js?v=pl5" in rd("journal", "index.html"))
     ask = rd("jarvis", "ask.js")
     check("a. the Ask Jarvis button steps out of the way while a finger scrolls (it sat over the cards' left edge), back 0.9 s later",
-          "oly-ask-away" in ask and "addEventListener('scroll'" in ask and "jarvis/ask.js?v=8" in rd("olympus", "olympus.js"))
+          "oly-ask-away" in ask and "addEventListener('scroll'" in ask and "jarvis/ask.js?v=9" in rd("olympus", "olympus.js"))
     mf = rd("olympus", "moneyfx.js")
     check("a. the payout card never stays on 'Loading the funded account...' (no copy / an error says so)",
           "if (!home) { if (note) note.textContent = 'No account numbers yet" in mf and "/^Loading/.test(n.textContent)" in mf)
