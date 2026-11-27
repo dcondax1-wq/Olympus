@@ -1,0 +1,21 @@
+{
+ "day": "2026-10-19",
+ "files": {
+  "of/NQ_bars5m.csv.gz": {
+   "bytes": 8884,
+   "sha256": "d198d273dc696d7bc10a842777097df2aec140f16968471992653d51a557d54d"
+  },
+  "of/NQ_fp5m.csv.gz": {
+   "bytes": 115112,
+   "sha256": "3bd0241db8a5324e5e8f84c4cf0ffb3f52b8d99d2d23e4183ed78a480c64735a"
+  },
+  "of/NQ_meta.json": {
+   "bytes": 813,
+   "sha256": "60c876f434c959ed2962a5a4504097bbee2159e4cae3e0361a6cc921c1c10408"
+  }
+ },
+ "kind": "of",
+ "made_t": 1795755979,
+ "partial": false,
+ "v": 1
+}
