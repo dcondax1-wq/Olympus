@@ -16,6 +16,7 @@ import argparse
 import datetime as dt
 import json
 import os
+import re
 import sys
 from zoneinfo import ZoneInfo
 
@@ -100,7 +101,7 @@ def build(root: str = ROOT, now: float | None = None, state: dict | None = None)
            "what": "Order Flow pillar (paper): level sweeps read for absorption; Zlarior's entries read the same way. Nothing here trades."}
     if S:
         from engine import of_paper as P
-        out["line"] = S.get("line") or P.line(S)
+        out["line"] = re.sub(r"(Zlarior[^;]*?\b(?:won|lost))\s*-?\$[\d,.]+", r"\1", S.get("line") or P.line(S) or "")   # no $ of a real trade (public)
         rows = [r for r in S.get("rows") or [] if r.get("lane") == "A" and r.get("day") == S.get("day")]
         lv = []
         for L in S.get("levels") or []:
@@ -124,7 +125,15 @@ def build(root: str = ROOT, now: float | None = None, state: dict | None = None)
         out["forward"] = {"n": fw.get("taken_resolved", 0), "need": fw.get("need", 20), "sum_R": fw.get("sum_R"),
                           "line": f"forward score {fw.get('taken_resolved', 0)} of {fw.get('need', 20)} paper trades"}
         out["verdict"] = {"made": V.get("made"), "days": V.get("tick_days"), "label": V.get("label"), "line": V.get("verdict_line"),
-                          "absorption": (V.get("laneA") or {}).get("verdict"), "of1_lit": V.get("of1_decider")}
+                          "absorption": (V.get("laneA") or {}).get("verdict"), "of1_lit": V.get("of1_decider"),
+                          "first": V.get("first"), "last": V.get("last"), "forward_days": V.get("forward_days"), "sides": V.get("side_note")}
+        A = V.get("laneA") or {}
+        if A.get("taken") and A.get("skipped"):              # the numbers behind lane A (paper; R and $ at 1 micro, costs in)
+            pick = lambda x: {k: x.get(k) for k in ("n", "mean_R", "win%", "usd_1")}
+            out["verdict"]["a"] = {"taken": pick(A["taken"]), "skipped": pick(A["skipped"]), "p": A.get("p"), "halves": A.get("halves_diff_R"),
+                                   "resolved": A.get("resolved"), "need": A.get("need")}
+        B = V.get("laneB_replay") or {}
+        out["verdict"]["b"] = {"trades": B.get("trades"), "need": B.get("need"), "verdict": B.get("verdict")}
     else:
         out["forward"] = {"n": 0, "need": 20, "line": "forward score 0 of 20 paper trades (no real day scored yet)"}
     return out
