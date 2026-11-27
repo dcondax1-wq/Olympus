@@ -68,7 +68,7 @@ def part_a():
           "prefers-reduced-motion: reduce" in f["live.css"] and "animation: none !important" in f["live.css"])
     check("a. still read only: no innerHTML / storage / POST; versions bumped (live.js / live.css / livecore v2)",
           not re.search(r"innerHTML|insertAdjacentHTML|localStorage|sessionStorage|method:\s*['\"]POST|sendBeacon", f["live.js"] + f["livecore.js"])
-          and "live.js?v=4" in f["live.html"] and "nqfeed.js?v=1" in f["live.html"] and "live.css?v=3" in f["live.html"] and "livecore.js?v=2" in f["live.js"])
+          and "live.js?v=5" in f["live.html"] and "nqfeed.js?v=1" in f["live.html"] and "live.css?v=4" in f["live.html"] and "livecore.js?v=2" in f["live.js"])
 
 
 # ------------------------------------------------------------------------------------------------ b. node
@@ -151,6 +151,10 @@ const TAPS = `(${C.taps})()`, SIDE = `(${C.side})()`;
       jr: [...document.querySelectorAll('#jr li')].map((e) => e.textContent), streak: [...document.querySelectorAll('.lv-sk b')].map((e) => e.textContent),
       pins: document.querySelectorAll('#tl circle').length, tlText: [...document.querySelectorAll('#tl text')].map((e) => e.textContent),
       wide: [...document.querySelectorAll('#app *')].filter((e) => e.offsetParent && e.getBoundingClientRect().right > innerWidth + 0.5).map((e) => e.className + ':' + Math.round(e.getBoundingClientRect().right)),
+      tiny: [...document.querySelectorAll('body *')].filter((e) => !e.closest('.nqn-dock') && (e.offsetParent !== null || e instanceof SVGElement)).filter((e) => [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()))
+        .map((e) => { let px = parseFloat(getComputedStyle(e).fontSize); const svg = e instanceof SVGElement && e.ownerSVGElement;
+          if (svg) { const vb = svg.viewBox && svg.viewBox.baseVal, r = svg.getBoundingClientRect(); if (vb && vb.height && r.height) px *= r.height / vb.height; if (!r.height) return null; }
+          return px < 11.95 ? (e.className && e.className.baseVal !== undefined ? e.className.baseVal : e.className || e.tagName) + ' ' + px.toFixed(1) + 'px "' + e.textContent.trim().slice(0, 20) + '"' : null; }).filter(Boolean),
       fresh: document.querySelectorAll('.lv-new').length, flat: !document.getElementById('flat').hidden,
       anim: document.querySelector('.lv-prog .now') ? getComputedStyle(document.querySelector('.lv-prog .now')).animationName : null,
       txt: document.getElementById('app').textContent }));
@@ -266,6 +270,7 @@ def part_c():
     check("c. first paint: nothing pulses; the next poll brings a closed trade -> its journal row pulses once (.lv-new), the cards are gone",
           P["fresh"] == 0 and P["after"]["fresh"] >= 1 and "+$654" in P["after"]["jr"][0] and P["after"]["opensHidden"] is True, (P["fresh"], P["after"]["fresh"], P["after"]["jr"][:1]))
     for name, o in out.items():
+        check(f"c. {name}: every label >= 12 px on screen (chips, ages, journal meta, chart + timeline text)", not o["tiny"], o["tiny"][:6])
         check(f"c. {name}: every chip / card inside the screen (no zoom-out on a phone)", not o["wide"], o["wide"][:5])
         check(f"c. {name}: taps >= 44 px, no sideways scroll, nothing off the site, no console error",
               not o["taps"] and o["side"] and not o["off"] and not o["errs"], (o["taps"][:4], o["off"][:3], o["errs"][:3]))
