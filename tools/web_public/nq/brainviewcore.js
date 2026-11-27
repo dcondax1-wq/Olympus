@@ -55,7 +55,7 @@ function healthOf(lite, nowS, botId, extra) {
   return h;
 }
 const SKIP_WHY = { depth: 'the sweep was too shallow', disp: 'the move back was too weak', idm: 'no inducement (no trap move first)', window: 'outside its entry hours',
-  stop: 'the stop would be outside 8-80 pts', target: 'not enough room to the target', day: 'a trade already filled today', monday: "Monday's side rule", cisd: 'no 5-minute change of state' };
+  stop: 'the stop size was outside its range', target: 'not enough room to the target', day: 'a trade already filled today', monday: "Monday's side rule", cisd: 'no 5-minute change of state' };
 
 // ------------------------------------------------------------------------------------------------ LIT
 function litBrain(src, nowS) {
@@ -109,7 +109,7 @@ function litBrain(src, nowS) {
   if (!levels.length) notes.push('No levels in the PC\'s glance this post.');
   const skipped = S.filter((s) => s[2] !== 'filled' && s[2] !== 'armed' && s[2] !== 'tapped' && s[2] !== 'entering').map((s) => {
     const c = arr(s[4]).find((x) => Array.isArray(x) && x[0] === s[3]);
-    return { hm: s[0], side: s[1] === 'L' ? 'LONG' : 'SHORT', status: s[2], why: `${SKIP_WHY[s[3]] || s[3] || s[2]}${c && c[2] ? ` (${c[2]})` : ''}` };
+    return { hm: s[0], side: s[1] === 'L' ? 'LONG' : 'SHORT', status: s[2], why: `${SKIP_WHY[s[3]] || s[3] || s[2]}${c && c[2] ? `: ${c[2]}` : ''}` };
   });
   const sz = X && Array.isArray(X.sz) ? X.sz : null, risk = [];
   if (sz) {

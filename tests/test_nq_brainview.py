@@ -88,8 +88,10 @@ def core():
           fl["sweep"][2] == "4.66 ATR" and fl["sweep"][3] == "depth >= 0.5 ATR (56.9 pts)" and fl["sweep"][4] == "forming long", fl["sweep"])
     check("b. the hours-old 15:50 rejected setup is not painted; a note points to Skipped today",
           not any(f[1] == "fail" for f in L["flow"]) and any("15:50 long" in n and "Skipped today" in n for n in L["notes"]), (L["flow"], L["notes"]))
-    check("b. Skipped today: 13:20 LONG 'the sweep was too shallow (0.39 / 0.5 ATR)', 15:50 outside its hours; '9 setups today, 0 blocked'",
-          L["skipped"][0]["hm"] == "13:20" and L["skipped"][0]["why"].startswith("the sweep was too shallow (0.39 / 0.5 ATR)") and "outside its entry hours" in L["skipped"][1]["why"]
+    check("b. Skipped today: 13:20 LONG 'the sweep was too shallow: 0.39 / 0.5 ATR', 15:50 outside its hours, 10:20 the stop 330.2 pts (8-80); '9 setups today, 0 blocked'",
+          any(x["hm"] == "13:20" and x["side"] == "LONG" and x["why"] == "the sweep was too shallow: 0.39 / 0.5 ATR" for x in L["skipped"])
+          and any(x["hm"] == "15:50" and x["why"].startswith("outside its entry hours: 15:50 in 02:00-15:30") for x in L["skipped"])
+          and any(x["why"] == "the stop size was outside its range: 330.2 pts (8-80)" for x in L["skipped"])
           and L["skippedN"] == "9 setups today, 0 blocked", L["skipped"])
     rk = {r["k"]: r["v"] for r in L["risk"]}
     check("b. risk: next trade 4 micros, $376 at risk, $3,805 at target, room $1,009", rk.get("Next trade") == "4 micros" and rk.get("$ at risk") == "$376"
