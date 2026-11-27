@@ -216,11 +216,37 @@ function render() {
   if (M.banner) { bn.hidden = false; bn.dataset.level = M.banner.level; $('bannerTitle').textContent = M.banner.title; $('bannerText').textContent = M.banner.text; } else bn.hidden = true;
   const c = M.counts;
   $('sum').textContent = `${c.all} account${c.all === 1 ? '' : 's'} · ${c.live} live from the PC` + (c.risk ? ` · ${c.risk} at risk (7-day)` : c.warn ? ` · ${c.warn} getting close (7-day)` : ' · every 7-day clock OK');
+  const T = A.totals(M.cards), tt = $('tot');
+  if (tt) {
+    tt.textContent = '';
+    const cell = (lab, val, cls) => { const d = el('div', 'tt-cell'); d.append(el('span', null, lab), el('b', cls || null, val)); return d; };
+    tt.append(cell('Today, all accounts', T.todayText, T.todayLvl), cell('Room left, all', T.roomText), cell('Live from the PC', `${T.n} of ${M.cards.length}`));
+    tt.hidden = !T.n;
+  }
   const box = $('cards'); box.textContent = '';
   for (const card of M.cards) box.appendChild(drawCard(card));
+  if (!S.counted && T.n) { S.counted = true; countUp(box); }
   drawBiz(M.biz);
   if (!S.ready) tiltOn();
   S.ready = true;
+}
+
+// the big balances count up once on the first paint with PC numbers (0.9 s, ease-out); the final text is exact; off under reduced motion
+function countUp(box) {
+  if (REDUCED || typeof requestAnimationFrame !== 'function') return;
+  for (const b of box.querySelectorAll('.ac-num.big b.cnt')) {
+    const final = b.textContent, m = /^([+-]?)\$([\d,]+)$/.exec(final);
+    if (!m) continue;
+    const v = Number(m[2].split(',').join(''));
+    if (!(v > 0)) continue;
+    const t0 = performance.now(), sign = m[1];
+    const step = (t) => {
+      const k = Math.min(1, (t - t0) / 900), e = 1 - Math.pow(1 - k, 3);
+      b.textContent = k >= 1 ? final : `${sign}$${Math.round(v * e).toLocaleString('en-US')}`;
+      if (k < 1 && b.isConnected) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
 }
 
 // a gentle 3D tilt that follows the finger / pointer (off under reduced motion; transform only, no layout)

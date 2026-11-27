@@ -93,7 +93,8 @@ const ca = A.card({ key: 'atlas', name: 'ATLAS 25K', plan: 'MFFU Builder 25K (fu
 const cr = A.card({ key: 'rapid1', name: 'Rapid EOD 25K', plan: 'MFFU Rapid EOD 25K', stage: 'Eval', has: true, balance: 24995, goal: 1505, dot: 'live', mll: 1000, roomFrac: 1 },
   { lite: null, biz: bz, payday: pd, k7: [], today: '2026-11-23', minuteET: 600, etDate: '2026-11-23', pcAge: 60 });
 const g = GM.goal({ key: 'atlas', name: 'ATLAS 25K', stage: 'Funded', balance: 401 });
-console.log(JSON.stringify({ at, none: A.payoutEta('nope', { name: 'X', plan: '' }, bz, null), ca: { goal: ca.goal, eta: ca.eta }, cr: cr.goal, g }));
+const tot = A.totals([ca, cr, { has: false, todayN: 999, roomN: 999 }]), tot0 = A.totals([]);
+console.log(JSON.stringify({ at, none: A.payoutEta('nope', { name: 'X', plan: '' }, bz, null), ca: { goal: ca.goal, eta: ca.eta }, cr: cr.goal, g, tot, tot0 }));
 """)
     a = o["at"]
     check("a2. QA #4: payoutEta = ONE forecast object (date + funded date + like) both pages can import; no payday file = null",
@@ -102,6 +103,8 @@ console.log(JSON.stringify({ at, none: A.payoutEta('nope', { name: 'X', plan: ''
     check("a2. QA #4: the card's to-payout = the ONE goals model (+$1,699 to $2,100, ask $1,000) and the eta's $ = the model's $800, not a 2nd number",
           ca["goal"]["text"] == "+$1,699" and g["left"] == 1699 and "$1,000 at $2,100" in ca["goal"]["sub"] and "($800 to you)" in ca["eta"]
           and "MFFU allows the first $250 ask at $1,350" in ca["goal"]["note"], ca)
+    check("a2. the totals strip: only accounts the PC reported count (an account without PC numbers adds nothing); none = '-'",
+          o["tot"]["n"] == 2 and o["tot0"]["n"] == 0 and o["tot0"]["todayText"] == "-", (o["tot"], o["tot0"]))
     cr = o["cr"]
     check("a2. the Rapid below its start says so plainly ($5 below the start: $1,505 to make back and reach +$1,500)",
           cr["text"] == "$1,505" and cr["note"] == "$5 below the start: $1,505 to make back and reach +$1,500", cr)
@@ -170,9 +173,13 @@ def part_d():
                 fc: [...document.querySelectorAll('#acct-zlarior .fc-big b')].map((e) => e.textContent),
                 dll: (document.querySelector('#acct-zlarior .ac-bar.dll .lab b') || {}).textContent,
                 light: !!document.getElementById('buyLight'), lightTxt: (document.getElementById('buyLight') || {}).textContent || '',
-                biz: document.querySelectorAll('#biz .bz-row').length, k7segs: document.querySelectorAll('#acct-zlarior .k7-seg').length })""")
+                biz: document.querySelectorAll('#biz .bz-row').length, k7segs: document.querySelectorAll('#acct-zlarior .k7-seg').length,
+                tot: document.getElementById('tot').hidden ? null : [...document.querySelectorAll('#tot .tt-cell b')].map((e) => e.textContent),
+                bal: document.querySelector('#acct-zlarior .ac-num.big b').textContent })""")
             check("d. 390: a room ring on every card, Zlarior's pass forecast 61% and its daily loss $180 of $1,000, the 7-segment dial",
                   o["rings"] == o["cards"] == 5 and o["fc"] == ["61%"] and o["dll"] == "$180 of $1,000" and o["k7segs"] == 7, o)
+            check("d. the totals strip: today over all accounts (+$22 - $35 = -$13), the room in all, 5 of 5 live; the balance counted up to the exact $49,214",
+                  o["tot"] and o["tot"][0] == "-$13" and o["tot"][2] == "5 of 5" and o["bal"] == "$49,214", (o["tot"], o["bal"]))
             check("d. the buy light shows with the PC's 'bg' (OK, green), the 4 twelve-month rows under it",
                   o["light"] and "OK to buy new evals" in o["lightTxt"] and o["biz"] == 4, o)
             wide = p.evaluate("() => [document.documentElement.scrollWidth, document.documentElement.clientWidth]")

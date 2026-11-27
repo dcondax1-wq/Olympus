@@ -174,6 +174,7 @@ export function card(a, ctx) {
     key: String(a.key), name: safeName(PLAN_IDS[a.key] || !mf || !mf.nm ? a.name : mf.nm), plan: a.plan || '', stage: funded ? 'Funded' : 'Eval', l4, has: !!a.has, dot: a.dot, ageS,
     planned: a.dot === 'plan', fresh: a.dot === 'live',
     balance: a.has ? (funded ? `${money(a.balance, true)}` : money(a.balance)) : '-', balanceNote: funded && a.has ? 'MFFU shows funded as profit from $0' : '',
+    todayN: a.has ? num(a.today) : null, balanceN: a.has ? num(a.balance) : null, roomN: a.has ? num(a.room) : null,
     today: a.has ? money(a.today, true) : '-', todayLvl: num(a.today) === null ? 'none' : a.today > 0 ? 'ok' : a.today < 0 ? 'bad' : 'none',
     room: a.has ? money(a.room) : '-', roomOf: a.mll ? money(a.mll) : '', roomFrac: a.roomFrac, roomLvl,
     goal, eta, etaNote: P ? 'estimate from 1,000 replays, not a promise' : '',
@@ -308,4 +309,13 @@ export function payoutEta(key, acct, biz, payday) {
   if (!P) return null;
   return { firstPay: day(P.first_pay_med), firstPayText: monDay(P.first_pay_med), toYou: num(P.first_pay_usd), funded: day(P.funded_med), fundedText: monDay(P.funded_med),
     like: P.like || '', note: 'estimate from 1,000 replays, not a promise' };
+}
+
+/** the strip on top: today's $ over every account the PC reported, the room left in all, how many accounts are live */
+export function totals(cards) {
+  const live = arr(cards).filter((c) => isObj(c) && c.has);
+  const t = live.map((c) => c.todayN).filter((v) => v !== null), r = live.map((c) => c.roomN).filter((v) => v !== null);
+  const today = t.length ? t.reduce((a, b) => a + b, 0) : null, room = r.length ? r.reduce((a, b) => a + b, 0) : null;
+  return { n: live.length, today, todayText: today === null ? '-' : money(today, true), todayLvl: today === null ? 'none' : today > 0 ? 'ok' : today < 0 ? 'bad' : 'none',
+    room, roomText: room === null ? '-' : money(room), funded: live.filter((c) => c.stage === 'Funded').length };
 }
