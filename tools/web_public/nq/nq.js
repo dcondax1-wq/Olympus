@@ -313,6 +313,10 @@ function render() {
   say(`${v.headline}${v.tight ? ` ${v.tight.name}: ${v.tight.ddLine}.` : ''}${S.demo ? ' Example numbers.' : ''}`);
   { const el = $('src'); if (el) el.textContent = srcLine(); }   // (the hero shows today's $: v.todayLine stays in the model for Jarvis / tests)
   S.ready = true;
+  try {                                  // night-nq-main: the battle plan + alert history (plan.js) read the SAME merged PC state, never a 2nd feed read
+    window.NQ_HOME = { home: deskHome(), lite: S.lite || null, demo: S.demo };
+    dispatchEvent(new CustomEvent('nq-home', { detail: window.NQ_HOME }));
+  } catch (_) { /* the plan keeps its last draw */ }
   try { if (O && O.ready) O.ready(); } catch (_) { /* the veil lifts by itself */ }
   tryScene(); tryLand();
 }
@@ -462,6 +466,8 @@ window.addEventListener('nq3d', tryScene);
 window.addEventListener('nq-bars', () => { if (S.ready) renderDesk(); });
 window.addEventListener('nq-bars', () => { if (S.ready) try { tryLand(); } catch (_) { /* nothing */ } });   // a new chart post (the live chart module): the open trade's stop and $ now
 
+// night-nq-speed's shared feed (nqfeed.js, when the page has it): every newer post re-draws at once (its fetchLatest wrap answers from the kept post)
+window.addEventListener('nq-feed', () => { if (S.ready) refresh(); });
 async function refresh() {
   if (S.forced || document.hidden) return;
   const home = await withPost(await getJSON('../home.json'));
