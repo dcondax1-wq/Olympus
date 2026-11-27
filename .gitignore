@@ -351,6 +351,8 @@ data/depth/
 data/depth_ingested.json
 data/orderflow_battery_note.json
 data/orderflow_journal.jsonl
+data/of_confluence_log.jsonl
+data/of_confluence_log.jsonl.tmp
 data/tickrec_tiny.json
 data/tickrec_ingested.json
 data/payout_tile.json

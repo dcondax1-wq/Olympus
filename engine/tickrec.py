@@ -623,6 +623,11 @@ def autopilot(now: dt.datetime | None = None, study=None, nd: str | None = None)
             of_jr = oflive.journal_kick(_base(), journal=os.path.join(_base(), "data", "orderflow_journal.jsonl"))
         except Exception as e:  # noqa: BLE001
             of_jr = {"error": e.__class__.__name__}
+        try:                                           # night-of-conflog: the order-flow confluence forward log (paper research)
+            from . import of_conflog
+            of_cl = of_conflog.kick(_base(), log=os.path.join(_base(), "data", "of_confluence_log.jsonl"))
+        except Exception as e:  # noqa: BLE001
+            of_cl = {"error": e.__class__.__name__}
         of_ln = oflearn_kick(et)                        # day-oflearn: the nightly order-flow learner (DESIGN3, paper, once a day)
         want = None
         if len(days) >= STUDY_DAYS and not runs:
@@ -630,7 +635,7 @@ def autopilot(now: dt.datetime | None = None, study=None, nd: str | None = None)
         elif runs and len(runs) < 2 and st.get("backfill") == "done" and len(days) >= runs[-1]["days"] + 20:
             want = "final look (backfill done)"
         out = {"ran": False, "ingest": {k: ing.get(k) for k in ("ok", "files", "rows")}, "nq_days": len(days),
-               "backfill": st.get("backfill"), "oldest": st.get("oldest"), "of_summaries": of_sum, "of_battery": of_bat, "of_journal": of_jr, "of_learn": of_ln}
+               "backfill": st.get("backfill"), "oldest": st.get("oldest"), "of_summaries": of_sum, "of_battery": of_bat, "of_journal": of_jr, "of_conflog": of_cl, "of_learn": of_ln}
         if not want:
             out["why"] = "waiting: %d of %d NQ tick days" % (len(days), STUDY_DAYS) if len(days) < STUDY_DAYS else "already ran"
             return out
