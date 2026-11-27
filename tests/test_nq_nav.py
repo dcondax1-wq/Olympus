@@ -6,7 +6,7 @@ tools/web_public/nq/nqnav.js + nqnav.css (the dock, the PC pill, pull-to-refresh
   b. browser 390x844 (pages served with the one script line added, ntfy mocked with a PC post 4 min old: LIT + ATLAS + BLITZ armed):
      the dock on Home / Live / Accounts / Brain with the right tab lit, taps >= 44, no sideways scroll; the pill "PC 4m · 2 armed" (BLITZ never
      counted or named); the sheet; a tab tap navigates; pull-to-refresh hands 'nq:refresh' to the page; a 3 h old post = red; framed = no dock;
-     reduced motion = no pulse; offline chip; 1440 floats the dock
+     reduced motion = no pulse; offline chip; 1440 pins a full-width bar (pill inside it); tab labels >= 12 px; the kit's Home / Ask buttons clear of the dock
 Run: python -X utf8 -m tests.test_nq_nav [--shots]
 """
 from __future__ import annotations
@@ -113,6 +113,10 @@ def part_b():
                 check(f"b. {f}: 7 tabs, '{tab}' lit (aria-current), every tab >= 44 px, dock at the bottom, no sideways scroll",
                       o["tabs"] == ["home", "live", "chart", "accounts", "flow", "brain", "pc"] and o["on"] == [tab] and o["cur"] == tab
                       and o["small"] == 0 and o["dockB"] == 0 and AK.no_sideways(p) and o["on2"], o)
+                fx = p.evaluate("""() => { const fs = [...document.querySelectorAll('.nqn-tab span')].map((s) => parseFloat(getComputedStyle(s).fontSize));
+                  const dock = document.querySelector('.nqn-dock').getBoundingClientRect().top, kit = [...document.querySelectorAll('.oly-home, .oly-ask-btn')].map((e) => e.getBoundingClientRect()).filter((b) => b.width);
+                  return { min: Math.min(...fs), clear: kit.every((b) => b.bottom <= dock - 20), fit: [...document.querySelectorAll('.nqn-tab span')].every((s) => s.scrollWidth <= s.parentElement.clientWidth + 0.5) }; }""")
+                check(f"b. {f}: tab labels >= 12 px and fit their tab; the kit's Home / Ask buttons sit >= 20 px clear above the dock (QA N3)", fx["min"] >= 12 and fx["clear"] and fx["fit"], fx)
                 check(f"b. {f}: the pill 'PC 4m · 2 armed' green (BLITZ armed on the PC but never counted)", o["pill"] == "PC 4m · 2 armed" and o["lv"] == "ok" and o["pillH"] >= 30, o)
                 if shots:
                     os.makedirs(SHOTS, exist_ok=True)
@@ -196,13 +200,15 @@ def part_b():
             ctx.unroute_all(behavior="ignoreErrors")
             ctx.close()
 
-            # 1440: the dock floats, centered
+            # 1440 (QA N2): a full-width bar pinned to the window bottom, the pill inside it on the right
             ctx, p, errs, seen, off = AK.page(br, origin, w=1440, h=900, mock={"json?poll=1": post(4 * 60)})
             inject(ctx, origin)
             p.goto(f"{origin}/nq/live.html")
             p.wait_for_function("document.querySelector('.nqn-float') && /PC \\d/.test(document.querySelector('.nqn-float').textContent)", timeout=60000)
             r = p.evaluate("(() => { const b = document.querySelector('.nqn-dock').getBoundingClientRect(); return [Math.round(b.left), Math.round(b.width), Math.round(b.bottom)]; })()")
-            check("b. 1440: the dock floats centered (600 px, 16 px above the bottom), no sideways scroll", r == [420, 600, 884] and AK.no_sideways(p), r)
+            pl = p.evaluate("(() => { const b = document.querySelector('.nqn-float').getBoundingClientRect(); return [Math.round(b.right), Math.round(b.bottom)]; })()")
+            check("b. 1440: the bar is full width at the window bottom, the pill inside it on the right, no sideways scroll",
+                  r == [0, 1440, 900] and pl[0] >= 1400 and pl[1] <= 900 and AK.no_sideways(p), (r, pl))
             if shots:
                 p.screenshot(path=os.path.join(SHOTS, "nav-1440-live.png"))
             ctx.unroute_all(behavior="ignoreErrors")

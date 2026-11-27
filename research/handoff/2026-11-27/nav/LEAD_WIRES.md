@@ -41,5 +41,5 @@ A page that is not named in the list can say its tab: `<script src="nqnav.js?v=1
 - No service worker of its own (lead 05:28: one cache = ../sw.js; the lead adds NQ precache there). The offline chip uses navigator.onLine.
 - The kit's floating buttons (`.oly-home`, `.oly-ask-btn`) are lifted above the dock by nqnav.css; body gets bottom padding.
 - Inside Jarvis / a hub (`html.framed`) nothing is drawn (only `[data-nq-pc-pill]` slots).
-- Bump `?v=1` on nqnav.js + the CSS link inside it (`nqnav.css?v=1`) together on a change.
+- Bump on a change: pages carry `nqnav.js?v=N`; nqnav.js loads `nqnav.css?v=N` (now 3 after QA N2/N3: pages should go to `nqnav.js?v=3`, and the sw.js precache entry too).
 - QA note seen while testing: live.html shows `MFFUEVBLDR...6016` (last 4 only = masked per PRIVACY rules, so OK).
