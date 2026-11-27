@@ -554,10 +554,10 @@ export function hero(accts, goalList, bots, home, nowS, demo) {
   });
   return {
     today, todayText: today === null ? '-' : money(today, true), tone: today === null ? 'none' : today > 0.5 ? 'up' : today < -0.5 ? 'down' : 'flat',
-    ageText: demo ? 'example numbers (DEMO)' : age === null ? 'no PC report on this page yet' : updated(age), level,
+    ageText: demo ? 'example numbers (DEMO)' : age === null ? 'no PC report on this page yet' : updated(age), level, ageS: age === null ? null : num(age), nowS: num(nowS), demo: !!demo,
     nAcc: withNum.length, phase: { id: ph.id, label: ph.label, who: ph.who }, next: nx, nextText: nx.label ? (nx.inS !== null ? `${nx.label} in ${mins(nx.inS)}` : nx.label) : '',
     accts: acc, bots: arr(bots).filter((b) => isObj(b)).map((b) => ({ id: b.id, name: b.name, what: b.what, ...botState(b),
-      ageText: demo ? 'DEMO' : num(b.age) === null ? 'no report' : updated(b.age) })),
+      ageText: demo ? 'DEMO' : num(b.age) === null ? 'no report' : updated(b.age), ageS: num(b.age) })),
     honest: !acc.some((a) => a.has) ? (demo ? '' : "Waiting for your PC's report: no account numbers yet. Nothing here is made up.") : '',
   };
 }

@@ -126,6 +126,7 @@ AREAS["nq"].append("batch5")             # day-batch5 2026-11-26: health bands +
 AREAS["nq"].append("ideamill")            # day-ideamill 2026-11-25: the idea mill (tools/ideamill.py, research/ideamill/grammar.py)
 AREAS["nq"].append("goals_model"); AREAS["trading"].append("goals_model")   # night-nq-main 2026-11-27: ONE goals model (nq/goals_model.js)
 AREAS["nq"].append("nq_plan")   # night-nq-main 2026-11-27: the battle plan + alert history (nq/plancore.js, plan.js)
+AREAS["nq"].append("nq_brief")   # night-nq-main 2026-11-27: BRIEF ME (nq/briefcore.js, briefme.js) + SUNLIGHT MODE (nq/sun.css)
 AREAS["nq"].append("atlas2")              # day-atlas2 2026-11-26: ATLAS v2 at real fills (research/atlas2/atlas2.py: switch, fixed scoring, gate)
 AREAS["nq"].append("atlas_exec"); AREAS["pc"].append("atlas_exec")   # big-atlasfill 2026-11-26: ATLAS fast lane (engine/atlas_exec.py, OFF, Sim only)
 # night-webpush 2026-11-19: Olympus phone notifications from the PC (engine/push.py: own key, relay intake, phone first / ntfy backup;

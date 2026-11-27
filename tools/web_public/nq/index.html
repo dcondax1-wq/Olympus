@@ -39,10 +39,13 @@
 <link rel="stylesheet" href="nq.css?v=a11">
 <link rel="stylesheet" href="../nqdeep.css?v=2" media="print" onload="this.media='all'"><!-- perf: the deep views (.nqd-*) are far below the first screen: not render-blocking -->
 <link rel="stylesheet" href="nqdesk.css?v=13">
-<link rel="stylesheet" href="nqhero.css?v=9">
+<link rel="stylesheet" href="nqhero.css?v=10">
 <link rel="stylesheet" href="plan.css?v=4" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="nqgoals.css?v=9" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="nqtheme.css?v=11">
+<link rel="stylesheet" href="sun.css?v=2" id="sunCss" media="(prefers-contrast: more)"><!-- SUNLIGHT MODE: off = not render-blocking; on (saved, or prefers-contrast: more) = applied before the first paint -->
+<script>(function () { var d = document.documentElement, v = null; try { v = localStorage.getItem('nq.sun'); } catch (e) { /* private mode */ }
+  var on = v === '1' || (v !== '0' && !!(window.matchMedia && matchMedia('(prefers-contrast: more)').matches)); if (on) { d.classList.add('sun'); document.getElementById('sunCss').media = 'all'; } })();</script>
 <style>/* the status lines above the chart fill in a moment after the page shows (3 + 2 lines on a phone): held from the start so the chart card never jumps (phone QA 2026-11-19) */
 @media (max-width: 520px) { #status { min-height: 3lh; } #src:empty { min-height: 2lh; } }</style>
 </head>
@@ -61,6 +64,8 @@
         <div class="hx-money"><span class="hx-k" id="hxTitle" data-hx="todayK">TODAY</span><b class="hx-big ag-num" data-hx="today">-</b><span class="hx-age" data-hx="age">Loading the PC's report...</span></div>
         <div class="hx-clock"><b data-hx="phase"></b><span class="hx-who" data-hx="who"></span><span class="hx-next" data-hx="next"></span></div>
       </div>
+      <div class="hx-tools" role="group" aria-label="Hear the brief, or switch to the high-contrast outdoor look"><button type="button" class="btn hx-tool" id="hxBrief" aria-pressed="false" aria-controls="hxBriefText"><i class="hx-ti" aria-hidden="true"></i><span class="hx-tl">Brief me</span></button><button type="button" class="btn hx-tool" id="hxSun" aria-pressed="false"><i class="hx-ti sun" aria-hidden="true"></i><span class="hx-tl">Sunlight</span></button></div>
+      <p class="hx-brief" id="hxBriefText" hidden></p>
       <div class="hx-honestw" data-hx="honestw" hidden><p class="hx-honest" data-hx="honest"></p><button type="button" class="btn hx-how" data-howto aria-haspopup="dialog" aria-expanded="false">How to get the PC reporting again</button></div>
       <div class="hx-bots" data-hx="bots" role="group" aria-label="What LIT and ATLAS are doing now"></div>
       <div class="hx-accts" data-hx="accts" role="group" aria-label="Each account: the way to pass or to payout, and the room left"></div>
@@ -242,7 +247,7 @@
   <div class="sheetbody" id="sheetBody"></div>
 </section>
 <script src="../nqdeep.js?v=1" defer></script>
-<script type="module" src="nq.js?v=r40"></script>
+<script type="module" src="nq.js?v=r41"></script>
 <script type="module" src="nqchart.js?v=c9"></script>
 <!-- QA round 6: the 3D loads after the first paint, and not at all on LITE (olympus/lazy3d.js) -->
 <script src="../olympus/lazy3d.js?v=l2" data-src="nqscene.js?v=q7" data-near="#sceneCard" data-skip="lite" data-event="nq3d" defer></script>

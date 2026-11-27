@@ -5,7 +5,7 @@
 // ?demo=1 the example; ?demo=1&silent=4d (or 90m, 5h) the example with a silent PC; ?flat=1 the 2D columns; ?howto=1 opens the sheet.
 import * as C from './nqcore.js?v=d6';   // d6 (night-seedata): today's $ in the first line; d1 (polish2 2026-11-19): the CME trading day
 import * as T from '../olympus/truth.js';
-import * as D from './nqdesk.js?v=13';
+import * as D from './nqdesk.js?v=14';
 import * as GM from './goals_model.js?v=1';             // night-nq-main: ONE goals model (QA #4)
 import { unpack as unpackBars } from './nqbars.js?v=b1';     // nqdash3: the accounts strip, the bots' thinking, the quality checks
 import * as G from './nqgoals.js?v=10';
@@ -167,6 +167,33 @@ function loadPlan() {
   if (card && 'IntersectionObserver' in window) { const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); go(); } }, { rootMargin: '600px 0px' }); io.observe(card); }
   (window.requestIdleCallback || ((f) => setTimeout(f, 1500)))(go, { timeout: 4000 });
 }
+// BRIEF ME (briefme.js + briefcore.js, lazy: idle or the first tap) and SUNLIGHT MODE (sun.css, html.sun; the head script applies it before paint)
+function loadBrief() {
+  if (S.briefIn) return; S.briefIn = true;
+  const t = document.createElement('script'); t.type = 'module'; t.src = new URL('./briefme.js?v=1', import.meta.url).href; document.head.appendChild(t);
+}
+function briefTap() {
+  if (window.NQ_BRIEF) { window.NQ_BRIEF.toggle(); return; }
+  try { if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance('')); } catch (_) { /* iOS: unlock speech inside the tap */ }
+  window.NQ_BRIEF_ASK = true; loadBrief();
+}
+function sunSet(onOff, store) {
+  const d = document.documentElement, l = document.getElementById('sunCss');
+  d.classList.toggle('sun', !!onOff);
+  if (l && onOff) l.media = 'all';
+  if (store) { try { localStorage.setItem('nq.sun', onOff ? '1' : '0'); } catch (_) { /* private mode: this visit only */ } }
+  const b = $('hxSun'); if (b) { b.setAttribute('aria-pressed', onOff ? 'true' : 'false'); const t = b.querySelector('.hx-tl'); if (t) t.textContent = onOff ? 'Sunlight on' : 'Sunlight'; }
+}
+function toolsInit() {
+  const b = $('hxBrief'), s = $('hxSun');
+  if (b) {
+    b.addEventListener('click', briefTap);
+    if (!('speechSynthesis' in window)) { const t = b.querySelector('.hx-tl'); if (t) t.textContent = 'Show brief'; b.title = 'This browser has no voice: the brief shows as text'; }
+    (window.requestIdleCallback || ((f) => setTimeout(f, 2500)))(loadBrief, { timeout: 6000 });
+  }
+  if (s) { sunSet(document.documentElement.classList.contains('sun'), false); s.addEventListener('click', () => sunSet(!document.documentElement.classList.contains('sun'), true)); }
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', toolsInit); else toolsInit();
 // QA #5: a jump-bar link (or any #hash) into a folded section opens the fold first
 function openFoldFor(hash) {
   try { const t = hash && document.getElementById(hash.slice(1)); const f = t && (t.matches('details') ? t : t.closest('details')); if (f && !f.open) f.open = true; } catch (_) { /* nothing */ }
@@ -357,7 +384,8 @@ function renderV4(home, file, nowS) {
   if (age) { age.textContent = S.demo ? 'DEMO' : fa.fromPc ? D.updated(fa.report) : 'plan + cloud copy'; age.className = 'pill ' + (S.demo ? 'warn' : fa.fromPc ? D.ageLevel(fa.report, 'pc') : 'warn'); }
   try {                                   // night-nq-main: the hero (today's $, every account's way to pass + room, LIT / ATLAS in one word)
     const B = D.thinking(home, S.news, file, nowS, chart, S.brief);
-    D.draw.hero($('hero'), D.hero(A, list, B, home, nowS, S.demo));
+    const H = D.hero(A, list, B, home, nowS, S.demo); window.NQ_HERO = H;   // BRIEF ME reads the hero's own model
+    D.draw.hero($('hero'), H);
     if (!S.scene3 && $('heroScene')) S.scene3 = D.heroScene($('heroScene'), heroBars) || true;
     else if (S.scene3 && S.scene3.redraw) S.scene3.redraw();
   } catch (_) { /* the rest of the page still draws */ }

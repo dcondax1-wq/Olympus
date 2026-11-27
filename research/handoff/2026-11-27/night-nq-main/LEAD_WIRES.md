@@ -73,3 +73,11 @@ nqland.js, the NEW nq/nqhero.css, and tests/test_nq_desk.py (hero checks). Web o
     - Timings (Chromium, CPU x4, 4G-like 150 ms + 500 KB/s per file, served from disk, DEMO, median of 5): first $ on screen 2,049 -> 1,995 ms, first paint 1,032 -> 1,008 ms.
     - The wall-clock gain is small because the blocking files load in parallel and the kit dominates. The byte budget headroom is the real win: 48 KB.
 18. **Tablet / landscape.** 768x1024: an odd last account tile spans the row. 900-1099 px: page 960 px wide, the accounts 3 across. No sideways scroll at 768 / 1024.
+
+## 19. BRIEF ME + SUNLIGHT MODE (2026-11-27, after the weight pass)
+- sw.js precache (lead only): add `nq/briefcore.js`, `nq/briefme.js`, `nq/sun.css` (all three are lazy: briefme at idle / first tap, sun.css only
+  when on or prefers-contrast: more). Without them, an offline phone just loses the voice / sunlight; nothing breaks.
+- The hero model now carries `ageS`, `nowS`, `demo` and each bot's `ageS` (numbers behind the existing words). Jarvis could read
+  `window.NQ_BRIEF.text()` for the same spoken summary.
+- Also fixed: tests/test_nq_live.py + tests/test_accounts_screen.py harnesses copy goals_model.js (nqdesk.js imports it since 39a3f555's parent;
+  both were red on HEAD).
