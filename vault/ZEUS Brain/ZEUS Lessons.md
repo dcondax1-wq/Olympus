@@ -71,7 +71,7 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-90 entries from docs/TESTED_AND_REJECTED.md, newest first.
+92 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
 - **Exit realism / touch-not-fill** · [[Zlarior (LIT)]], [[ATLAS]] · [[exitreal-2026-11-26|Exit + backtest realism]]
 - **LIT fragility audit** · [[Zlarior (LIT)]] · [[lit-fragility-2026-11-26|How fragile is LIT]]
@@ -163,9 +163,12 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 - **ICT lab, every popular ICT / time-price concept tested the other ways** · [[ict-lab-2026-11-25|ICT lab 2026-11-25]], [[ict-lab-proof-2026-11-25|ICT lab proof 2026-11-25]]
 - **ICT lab round 2** · [[ict-lab2-2026-11-25|ICT lab round 2]]
 - **2026-11-26 Eval sizing POLICY** · [[Zlarior (LIT)]], [[Rapid lanes]] · [[evalsizer-2026-11-26|Optimal eval sizing policy]]
+- **2026-11-27 LIT wider stop cap for high-ATR weeks** · [[Zlarior (LIT)]]
+- **2026-11-27 Builder 50K LIT room_f 0.5 / 0.6 / 0.7** · [[Zlarior (LIT)]], [[50K combo]]
 
 ## Rejected in the write-ups
 
+- 2026-11-27 [[lit-drought-2026-11-27|LIT drought Oct 15]] ([[Family other|other]])
 - 2026-11-24 [[stops-targets-time-2026-11-24|"Stops x targets x TIME]] ([[Family stops|stops]])
 - 2026-11-24 [[proedge-2026-11-24|Pro / institutional edges]] ([[Family edge-hunt|edge-hunt]])
 - 2026-11-23 [[popular-ict-2026-11-23|Popular ICT / SMC strategies on CME NQ, run exactly as taught]] ([[Family other|other]])

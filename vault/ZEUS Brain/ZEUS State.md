@@ -45,6 +45,7 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
 
 ## Owner decisions 2026-11-24 ~13:00 ET (chat)
 - "It can be paper till we study more": BLITZ stays PAPER (do not prompt the --blitz on switch).
+  - day-blitzready 2026-11-27 (branch day-blitzready): BLITZ now has its OWN PAPER lane, `engine/blitz_paper.py` (started by ops_checks.blitz_paper_kick, 09:25-16:05 ET, BELOW_NORMAL, never twice, kill/off respected, no order path; log data/blitz_paper/trades.jsonl, report data/blitz_paper.json, p4 BLITZ = "paper"). Card + forward gate (40 trades, PF>=1.30, shelve rules): research/handoff/2026-11-27/blitz/ (tools/blitz_ladder.py). Backtest with costs: 2026 H1 PF 1.63 / +$934 a month, Jul-Nov PF 1.41 / +$689, 2021-25 PF 1.05 / +$73. Paper = backtest 102/102 trades over 25 sessions. tests.test_blitz_paper 28/28 (pc area).
 - "I'll hold the 4 accounts we have currently": Rapid EOD 25K, ATLAS Builder 25K funded, Zlarior 50K, Zlarior 25K #2 (ATLAS combo). No new evals bought (badcase: 2025-like markets make every eval -EV).
 
 ## PC update BLOCKED (2026-11-24, root cause found)
@@ -61,6 +62,21 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
 - OPTIONAL owner step for the C# part: NinjaTrader > New > NinjaScript Editor > F5 (once). With it: first real OF result ~Nov 26-27; without: ~Dec 18, no depth. data/depth parquet ~3 GB/yr: add a disk_clean cap later.
 
 - 2026-11-27 (night-of-daycap-rt 9760830a, red team #37 1 FIX applied): **OF practice lane capped at 1 trade a day** (engine/of_lane max_per_day, default 1) = the tested first-of-day book; a refused or E5-cancelled first signal still uses the day (signal_rank), exits/kill never blocked; of_ladder step-1 hold lifts at cap 1. tests.test_of_daycap 28/28.
+
+## 2026-11-27 afternoon landing (~14:20 ET, owner: "huge team ... live chart ... order flow + BLITZ ready ... Telegram simplified")
+- TODAY +$608: ATLAS S/R LONG (combo on Zlarior 50K +$304.10, Rapid EOD 25K +$304), target. ATLAS funded ...6018 silently skipped the
+  same signal (-$304 missed): day-atlasmiss-bot-rt (held reasons on every silent skip, status key "ab", trade_watch push, a
+  confirmed-flat-only heal of a stale open_t, every contract month FLAT). Look for Board "ATLAS funded: cleared a stuck position record".
+- WEB: live chart (overlays, ticker, replay, private-link 3 s poll, footprint strip lane) + Market ports (vol weather, sweep odds,
+  COT, coming up) + Today's Story (+ PC thought log) + OF control room + footprint strip + accounts live box / hands-steps chip /
+  7-day clocks count keep-alive fills (MFFU last day Wed Dec 2) + eval economics roi.html (best next: Rapid EOD 50K $165) + week.html
+  + share.html Insta card + NQ NOW widget + Siri. Data builders run nightly in tools/learn_night.py step "nqsite".
+- BOT: Telegram pretty (<= 3 lines, emoji, chart after text, /preview) + Insta card on green days (/insta), OF practice lane ready
+  (1 a day, dry run 30/30, "ofl" status block), BLITZ paper lane (engine/blitz_paper.py, 40-trade gate), PC thought log,
+  /api/live/footprint (private link), checklist names Connect on startup. All red team CLEAR / -rt fixes taken.
+- RESEARCH: LIT drought = stop-size rule in a 2x ATR regime (4 caps rejected); 50K sizing (LIT upsizing rejected).
+- Owner decision 2026-11-27: "Wait until more room" = ATLAS full size on the 50K is LATER, revisit when the 50K room > $2,000
+  (Decide card atlas-full-50k, status later). room_f 0.4 stays.
 
 ## 2026-11-27 night sprint landing #2 (~06:30 ET, QA second sweep)
 - Landed: night-nq-main 685117ba (battle plan "now" price only from the PC chart bar <= 30 min old, else "brief close" labelled; levels > 1,000 pts hidden + named; "London open now / New York pre-open"; one half-day sentence (halt 13:15); Replay loads on open; ORDER FLOW chip Ready; tour scroll; test_nq_goals follows goals_model), night-nq-nav f161babe (dock labels 12/13 px), night-nq-chart 33655c18 + night-nq-of be187df4 + day-zeroerr b78a0372 (no text < 12 px), night-nq-accounts 4681ed02e (CSS-drawn vault at once: never an empty black box; no text < 12 px), night-nq-qa b5909552 (report only; its shots2/ jpgs kept off pc: .gitignore research/handoff/**/shots*/).
@@ -220,6 +236,7 @@ Rules: MFFU ONLY ("We stick with MFFU"). Limits: max 5 sim-funded, Builder 1x50K
 - World-to-world jump (night-warp 2026-11-19, owner: "crazy effects world to world"): tapping into another app now launches a hyperspace jump (olympus/warp.js, canvas 2D at <= 2x: shockwave from the tap, light streaks with motion-blur trails in the destination world's colours, the world's flourish: ZEUS lightning / Money coins / Kalshi hex rings / city towers / Lab sonar / HOME streaks falling inward into a gold orb, then a flash), the page opens at 250 ms behind it and arrives through a cross-document View Transition with its world's signature (olympus/warp.css: zeus jolt + bolt, money coin turn + diamond, kalshi wheel, city rises + skyline, lab scan line, home settles + gold ring); effect 720 ms + load; tap = go now; reduced motion / 3D Off = 150 ms fade + 200 ms fade; 'oly.warp' = off|fade. Hooked through themes.js (loads warp.js, reads the arrival hand-off in <head>), agora.css @import, inline opt-in on Jarvis / Zenith / Kalshi, a tag on Doors / ZEUS hub / Help / Atlas. tests.test_warp 32/32 (olympus area); shots + 6 s film research/handoff/2026-11-19/warp/. Lead: precache olympus/warp.js + warp.css and bump the Jarvis / Kalshi / root worker caches.
 
 ## Waiting on the owner (newest first)
+- 2026-11-27 14:20 ET: (1) NinjaTrader > Connections > Configure > MFFU connection > tick Connect on startup. (2) NinjaScript Editor > F5 once (loads the new tick recorder; when flat). (3) Text /oflane on in Telegram (practice, no money; runs Monday). (4) Optional: after 18:00 text /insta 2026-11-27 for today's +$608 card. MFFU last day Wed Dec 2 (keep-alive filled Nov 25).
 - 2026-11-27 07:30 ET: Optional: text /oflane on in Telegram (practice account, no money). Decide card oflane-sim. It starts Monday 09:20 ET (the PC updates after 16:00 today).
 - 2026-11-27: (1) NinjaTrader Control Center > Connections > Configure > the MFFU connection > tick 'Connect on startup' (else a restart = no trading until login). (2) MFFU 7-day rule: all 4 accounts need a fill by Tue 12-01 (bots likely trade first; keep-alive is the net, OFF). (3) Optional, only if he turns the OF lane on: NinjaTrader Accounts > Add Sim account 'Sim102'.
 - 2026-11-26 20:06 ET: PC SILENT since 14:15 ET (not the ntfy cap: still silent after the 19:00 ET reset). Owner to restart the PC, then EITHER the one-time unblock line OR (preferred, owner asked 'do it on your own') set up Remote Control in the Claude desktop app (Settings > Claude Code > Remote Control, share the bot folder) so Claude can run the update / restart itself via request_computer_folder.

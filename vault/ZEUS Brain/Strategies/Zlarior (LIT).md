@@ -243,11 +243,18 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 > 2026-11-26 Eval sizing POLICY (big-evalsizer, research/evalsizer/, design pre-registered first): 18 state-dependent LIT eval sizers x Builder 50K / 25K / Rapid EOD 25K (room cap 25-60%, fixed 10-30% of room, quarter / half Kelly, bold near the target, protect near the floor, bold+protect, two DP-optimal policies on the 2026 H1 and the all-history LIT R pools), real engine, every MFFU rule, 1,000 paths, 4 markets. Pick on H1 = today (two_week room_f 0.4) on both Builders; Rapid pick R60 fails 2021-25. NO variant beats today in all 4 markets on any plan. One trade-off line: a bigger room cap = more $ in 2026 markets (R50 50K +$116/+$199, 25K +$130/+$180 a slot / 6 mo, fails +3-7 pts), less ...
 > Write-ups: [[evalsizer-2026-11-26|Optimal eval sizing policy]]
 
+> [!failure]- 2026-11-27 LIT wider stop cap for high-ATR weeks
+> 2026-11-27 LIT wider stop cap for high-ATR weeks (drought Oct 15-Nov 26: 7 trades; choke = 80-pt max stop + 0 micros above ~89 pts, ATR ~2x). 4 pre-registered caps with a 1-micro floor (120 pts, max(80, 3 ATR), VIX >= 22 -> 120, 3.2 ATR in [40,150]): none better in H1 and Jul-Oct (best V3: H1 +$191 but PF 5.20 -> 4.99, Jul-Oct +$1), Holm p 1.0, all lose more in the drought (-$916..-$1,938 vs -$858). Live stays. research/lit/drought-2026-11-27/RESULT.md
+
+> [!failure]- 2026-11-27 Builder 50K LIT room_f 0.5 / 0.6 / 0.7
+> 2026-11-27 Builder 50K LIT room_f 0.5 / 0.6 / 0.7 (owner "upsize the 50Ks", day-50ksize, combo_account engine, 12 cells pre-registered): +$37..+$63/mo H1, +$41..+$99 Jul-Oct for fresh fails 3 -> 4-8% / 9 -> 15-22%; same answer as evalsizer. room_f stays 0.4. ATLAS eval share x1.0 (room 0.4) = +$183 / +$111 / +$44 a month (H1 / Jul-Oct / 2021-25) for fails 3 -> 9% / 9 -> 13%: owner 2026-11-27: "Wait until more room" = later, revisit when the 50K room > $2,000. research/lit/size50k-2026-11-27/RESULT.md
+
 
 ## Write-ups
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-27 | [[lit-drought-2026-11-27\|LIT drought Oct 15]] | rejected |
 | 2026-11-26 | [[litasia-2026-11-26\|LIT's Asia slot at real Asia costs]] | research |
 | 2026-11-26 | [[lit-learns-live-2026-11-26\|LIT learns from live]] | research |
 | 2026-11-26 | [[lit-fragility-2026-11-26\|How fragile is LIT]] | research |
@@ -287,9 +294,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-11-17 | [[funded25-lit-atlas-2026-11-17\|ATLAS's funded Builder 25K]] | research |
 | 2026-11-17 | [[drift-switch-2026-11-17\|"Edge stopped working" switch]] | rejected |
 | 2026-11-16 | [[stack-one-account-2026-11-16\|More strategies on ONE MFFU account]] | promising |
-| 2026-11-15 | [[2026-11-15-s2-edge\|S2 edge]] | promising |
 
-... and 83 older (see the families).
+... and 84 older (see the families).
 
 ## Links
 
