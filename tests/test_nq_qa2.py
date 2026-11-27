@@ -36,8 +36,8 @@ def static():
     nav, nqjs, desk, html = (read(os.path.join(NQ, n)) for n in ("nqnav.css", "nq.js", "nqdesk.js", "index.html"))
     pc = read(os.path.join(WEB, "pillars", "pillarscore.js"))
     check("N2/N3: nqnav.css puts Home / Ask / the pill on one row above the dock, the wide dock flush at the bottom, in-bar at >= 1100",
-          "html.nqnav-on .oly-home, html.nqnav-on .oly-ask-btn { bottom: calc(var(--nqnav-h) + 8px) !important; }" in nav
-          and re.search(r"@media \(min-width: 760px\) \{\s*html\.nqnav-on \{ --nqnav-h: calc\(56px", nav) and "@media (min-width: 1100px)" in nav)
+          "html.nqnav-on .oly-home, html.nqnav-on .oly-ask-btn { bottom: calc(var(--nqnav-h) + 20px) !important; }" in nav
+          and re.search(r"@media \(min-width: 760px\) \{\s*html\.nqnav-on \{ --nqnav-h: calc\(56px", nav) and "@media (min-width: 1240px)" in nav)
     check("N4: hero 'London open now'; next = 'New York opens 09:30' (570)", "'London open now'" in desk and "{ at: 570, label: 'New York opens 09:30' }" in desk
           and "New York morning 08:00" not in desk)
     check("#8: one sentence from the brief's early_close (entries -15, flat -5); no 'Other days ... 15:55' tail",

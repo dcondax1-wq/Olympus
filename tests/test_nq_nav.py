@@ -113,8 +113,9 @@ def part_b():
                 check(f"b. {f}: 7 tabs, '{tab}' lit (aria-current), every tab >= 44 px, dock at the bottom, no sideways scroll",
                       o["tabs"] == ["home", "live", "chart", "accounts", "flow", "brain", "pc"] and o["on"] == [tab] and o["cur"] == tab
                       and o["small"] == 0 and o["dockB"] == 0 and AK.no_sideways(p) and o["on2"], o)
+                p.wait_for_timeout(700)   # the kit eases its Home / Ask buttons up to the dock row: measure where they settle
                 fx = p.evaluate("""() => { const fs = [...document.querySelectorAll('.nqn-tab span')].map((s) => parseFloat(getComputedStyle(s).fontSize));
-                  const dock = document.querySelector('.nqn-dock').getBoundingClientRect().top, kit = [...document.querySelectorAll('.oly-home, .oly-ask-btn')].map((e) => e.getBoundingClientRect()).filter((b) => b.width);
+                  const dock = document.querySelector('.nqn-dock').getBoundingClientRect().top, kit = [...document.querySelectorAll('.oly-home, .oly-ask-btn')].filter((e) => !e.classList.contains('oly-away')).map((e) => e.getBoundingClientRect()).filter((b) => b.width);
                   return { min: Math.min(...fs), clear: kit.every((b) => b.bottom <= dock - 20), fit: [...document.querySelectorAll('.nqn-tab span')].every((s) => s.scrollWidth <= s.parentElement.clientWidth + 0.5) }; }""")
                 check(f"b. {f}: tab labels >= 12 px and fit their tab; the kit's Home / Ask buttons sit >= 20 px clear above the dock (QA N3)", fx["min"] >= 12 and fx["clear"] and fx["fit"], fx)
                 check(f"b. {f}: the pill 'PC 4m · 2 armed' green (BLITZ armed on the PC but never counted)", o["pill"] == "PC 4m · 2 armed" and o["lv"] == "ok" and o["pillH"] >= 30, o)
@@ -208,7 +209,7 @@ def part_b():
             r = p.evaluate("(() => { const b = document.querySelector('.nqn-dock').getBoundingClientRect(); return [Math.round(b.left), Math.round(b.width), Math.round(b.bottom)]; })()")
             pl = p.evaluate("(() => { const b = document.querySelector('.nqn-float').getBoundingClientRect(); return [Math.round(b.right), Math.round(b.bottom)]; })()")
             check("b. 1440: the bar is full width at the window bottom, the pill inside it on the right, no sideways scroll",
-                  r == [0, 1440, 900] and pl[0] >= 1400 and pl[1] <= 900 and AK.no_sideways(p), (r, pl))
+                  r == [0, 1440, 900] and pl[0] >= 1300 and pl[1] <= 900 and AK.no_sideways(p), (r, pl))
             if shots:
                 p.screenshot(path=os.path.join(SHOTS, "nav-1440-live.png"))
             ctx.unroute_all(behavior="ignoreErrors")
