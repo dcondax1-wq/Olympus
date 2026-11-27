@@ -528,10 +528,12 @@ export function botState(b) {
     const t = b.inTrade, now = num(t.now);
     return { word: 'IN TRADE', tone: 'hot', side: t.side || '', line: `${t.side || ''} ${t.qty ? t.qty + ' MNQ' : ''}${now !== null ? ' · ' + money(now, true) + ' now' : ''}${t.stopMoved ? ' · stop at break-even or better' : ''}`.trim() };
   }
+  const done = b.phase === 'after' && b.after ? { word: 'DONE TODAY', tone: (num(b.after.usd) || 0) >= 0 ? 'up' : 'down', line: `${money(b.after.usd, true)}${b.after.exit ? ' · ' + b.after.exit : ''}${b.after.at ? ' at ' + b.after.at : ''}` } : null;
+  if (done && b.id === 'lit') return done;                  // LIT takes one trade a day: after it, an armed setup cannot trade (ATLAS: up to 2)
   const L = b.before && b.before.lean;
   if (L && L.side && /armed/.test(L.why || '')) return { word: 'SETUP ARMED', tone: 'warm', side: L.side, line: L.trig || L.why };
   if (L && L.side && /forming/.test(L.why || '')) return { word: 'SETUP FORMING', tone: 'warm', side: L.side, line: (L.why || '').replace(/^setup forming:\s*/, '') };
-  if (b.phase === 'after' && b.after) return { word: 'DONE TODAY', tone: (num(b.after.usd) || 0) >= 0 ? 'up' : 'down', line: `${money(b.after.usd, true)}${b.after.exit ? ' · ' + b.after.exit : ''}${b.after.at ? ' at ' + b.after.at : ''}` };
+  if (done) return done;
   return { word: 'WATCHING', tone: 'calm', line: (b.before && b.before.waiting) || 'Waiting for its setup.' };
 }
 export function hero(accts, goalList, bots, home, nowS, demo) {
