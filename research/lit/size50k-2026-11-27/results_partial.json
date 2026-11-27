@@ -1,0 +1,323 @@
+{
+ "design": "DESIGN.md",
+ "n": 100,
+ "today": {
+  "bal": -518.0,
+  "floor": -1831.0,
+  "peak": 169.0,
+  "s": 25,
+  "dtr": 5,
+  "best": 300.0
+ },
+ "cells": {
+  "0.4/0.5": {
+   "H2": {
+    "eval_fresh": {
+     "pass": 85.0,
+     "fail": 11.0,
+     "med_pass": 11.0,
+     "med_fail": 15.0,
+     "max_risk_med": 660,
+     "max_risk_p90": 753
+    },
+    "eval_today": {
+     "pass": 77.0,
+     "fail": 19.0,
+     "med_pass": 15.0,
+     "med_fail": 16.0,
+     "max_risk_med": 570,
+     "max_risk_p90": 704
+    },
+    "slot_fresh": {
+     "net_6m": 8901,
+     "per_month": 1484,
+     "net_p10": 3108,
+     "owner_6m": 9013,
+     "evals": 1.22,
+     "first_pay_med": 38.0,
+     "no_pay": 3.0
+    },
+    "slot_today": {
+     "net_6m": 8560,
+     "per_month": 1427,
+     "net_p10": 4557,
+     "owner_6m": 8585,
+     "evals": 1.27,
+     "first_pay_med": 42.0,
+     "no_pay": 4.0
+    }
+   },
+   "H1": {
+    "eval_fresh": {
+     "pass": 99.0,
+     "fail": 1.0,
+     "med_pass": 11.0,
+     "med_fail": 18.0,
+     "max_risk_med": 593,
+     "max_risk_p90": 706
+    },
+    "eval_today": {
+     "pass": 97.0,
+     "fail": 3.0,
+     "med_pass": 13.0,
+     "med_fail": 6.0,
+     "max_risk_med": 499,
+     "max_risk_p90": 626
+    },
+    "slot_fresh": {
+     "net_6m": 15644,
+     "per_month": 2607,
+     "net_p10": 7908,
+     "owner_6m": 15750,
+     "evals": 1.16,
+     "first_pay_med": 27.0,
+     "no_pay": 0.0
+    },
+    "slot_today": {
+     "net_6m": 15184,
+     "per_month": 2531,
+     "net_p10": 8000,
+     "owner_6m": 15195,
+     "evals": 1.12,
+     "first_pay_med": 29.0,
+     "no_pay": 0.0
+    }
+   },
+   "Y2025": {
+    "eval_fresh": {
+     "pass": 41.0,
+     "fail": 56.0,
+     "med_pass": 16.0,
+     "med_fail": 26.0,
+     "max_risk_med": 647,
+     "max_risk_p90": 769
+    },
+    "eval_today": {
+     "pass": 32.0,
+     "fail": 66.0,
+     "med_pass": 24.0,
+     "med_fail": 19.5,
+     "max_risk_med": 517,
+     "max_risk_p90": 644
+    },
+    "slot_fresh": {
+     "net_6m": 219,
+     "per_month": 37,
+     "net_p10": -459,
+     "owner_6m": 560,
+     "evals": 3.71,
+     "first_pay_med": 76.5,
+     "no_pay": 78.0
+    },
+    "slot_today": {
+     "net_6m": 394,
+     "per_month": 66,
+     "net_p10": -459,
+     "owner_6m": 656,
+     "evals": 3.85,
+     "first_pay_med": 87.0,
+     "no_pay": 73.0
+    }
+   },
+   "REF": {
+    "eval_fresh": {
+     "pass": 31.0,
+     "fail": 63.0,
+     "med_pass": 14.0,
+     "med_fail": 20.0,
+     "max_risk_med": 674,
+     "max_risk_p90": 776
+    },
+    "eval_today": {
+     "pass": 20.0,
+     "fail": 79.0,
+     "med_pass": 19.0,
+     "med_fail": 18.0,
+     "max_risk_med": 516,
+     "max_risk_p90": 688
+    },
+    "slot_fresh": {
+     "net_6m": -2,
+     "per_month": 0,
+     "net_p10": -551,
+     "owner_6m": 416,
+     "evals": 4.55,
+     "first_pay_med": 69.0,
+     "no_pay": 77.0
+    },
+    "slot_today": {
+     "net_6m": 77,
+     "per_month": 13,
+     "net_p10": -468,
+     "owner_6m": 416,
+     "evals": 4.69,
+     "first_pay_med": 77.0,
+     "no_pay": 79.0
+    }
+   }
+  },
+  "0.7/1.0": {
+   "H1": {
+    "eval_fresh": {
+     "pass": 88.0,
+     "fail": 12.0,
+     "med_pass": 6.0,
+     "med_fail": 7.5,
+     "max_risk_med": 704,
+     "max_risk_p90": 810
+    },
+    "eval_today": {
+     "pass": 73.0,
+     "fail": 27.0,
+     "med_pass": 6.0,
+     "med_fail": 7.0,
+     "max_risk_med": 671,
+     "max_risk_p90": 854
+    },
+    "slot_fresh": {
+     "net_6m": 17226,
+     "per_month": 2871,
+     "net_p10": 8535,
+     "owner_6m": 17342,
+     "evals": 1.27,
+     "first_pay_med": 20.0,
+     "no_pay": 0.0
+    },
+    "slot_today": {
+     "net_6m": 17165,
+     "per_month": 2861,
+     "net_p10": 8000,
+     "owner_6m": 17201,
+     "evals": 1.39,
+     "first_pay_med": 21.0,
+     "no_pay": 0.0
+    }
+   },
+   "H2": {
+    "eval_fresh": {
+     "pass": 76.0,
+     "fail": 24.0,
+     "med_pass": 6.0,
+     "med_fail": 8.5,
+     "max_risk_med": 780,
+     "max_risk_p90": 989
+    },
+    "eval_today": {
+     "pass": 60.0,
+     "fail": 40.0,
+     "med_pass": 6.5,
+     "med_fail": 6.0,
+     "max_risk_med": 774,
+     "max_risk_p90": 906
+    },
+    "slot_fresh": {
+     "net_6m": 9905,
+     "per_month": 1651,
+     "net_p10": 6216,
+     "owner_6m": 10038,
+     "evals": 1.45,
+     "first_pay_med": 31.0,
+     "no_pay": 1.0
+    },
+    "slot_today": {
+     "net_6m": 9695,
+     "per_month": 1616,
+     "net_p10": 4791,
+     "owner_6m": 9749,
+     "evals": 1.59,
+     "first_pay_med": 32.0,
+     "no_pay": 2.0
+    }
+   },
+   "REF": {
+    "eval_fresh": {
+     "pass": 34.0,
+     "fail": 66.0,
+     "med_pass": 3.0,
+     "med_fail": 8.0,
+     "max_risk_med": 735,
+     "max_risk_p90": 942
+    },
+    "eval_today": {
+     "pass": 27.0,
+     "fail": 73.0,
+     "med_pass": 4.0,
+     "med_fail": 6.0,
+     "max_risk_med": 691,
+     "max_risk_p90": 881
+    },
+    "slot_fresh": {
+     "net_6m": 208,
+     "per_month": 35,
+     "net_p10": -1010,
+     "owner_6m": 928,
+     "evals": 7.84,
+     "first_pay_med": 69.0,
+     "no_pay": 57.0
+    },
+    "slot_today": {
+     "net_6m": 236,
+     "per_month": 39,
+     "net_p10": -918,
+     "owner_6m": 880,
+     "evals": 8.01,
+     "first_pay_med": 68.5,
+     "no_pay": 60.0
+    }
+   },
+   "Y2025": {
+    "eval_fresh": {
+     "pass": 42.0,
+     "fail": 58.0,
+     "med_pass": 5.5,
+     "med_fail": 9.0,
+     "max_risk_med": 746,
+     "max_risk_p90": 932
+    },
+    "eval_today": {
+     "pass": 28.0,
+     "fail": 72.0,
+     "med_pass": 5.5,
+     "med_fail": 7.0,
+     "max_risk_med": 630,
+     "max_risk_p90": 893
+    },
+    "slot_fresh": {
+     "net_6m": 582,
+     "per_month": 97,
+     "net_p10": -918,
+     "owner_6m": 1152,
+     "evals": 6.21,
+     "first_pay_med": 70.0,
+     "no_pay": 55.0
+    },
+    "slot_today": {
+     "net_6m": 625,
+     "per_month": 104,
+     "net_p10": -826,
+     "owner_6m": 1136,
+     "evals": 6.57,
+     "first_pay_med": 70.0,
+     "no_pay": 53.0
+    }
+   },
+   "judge": {
+    "d_net": {
+     "H1": 1582,
+     "H2": 1004,
+     "REF": 210,
+     "Y2025": 363
+    },
+    "paired_se": {
+     "H1": 238,
+     "H2": 168,
+     "REF": 110,
+     "Y2025": 115
+    },
+    "qualifies": false
+   }
+  }
+ },
+ "qualifying": [],
+ "pick": "0.4/0.5"
+}

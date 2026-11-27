@@ -481,3 +481,7 @@
   +$130/+$180 a slot / 6 mo, fails +3-7 pts), less in bad ones (-$32/-$35); a smaller cap / protect / DP = fewer fails (50K PR1 fail
   16.2 -> 10.5%) but slower passes, -$106..-$1,470 in 2026 markets for +$30..+$98 in bad ones (still negative). Bold play near the
   target = today exactly (the one-winner need cap already binds). Today stays. research/writeups/evalsizer-2026-11-26.md
+- 2026-11-27 Builder 50K LIT room_f 0.5 / 0.6 / 0.7 (owner "upsize the 50Ks", day-50ksize, combo_account engine, 12 cells pre-registered):
+  +$37..+$63/mo H1, +$41..+$99 Jul-Oct for fresh fails 3 -> 4-8% / 9 -> 15-22%; same answer as evalsizer. room_f stays 0.4.
+  ATLAS eval share x1.0 (room 0.4) = +$183 / +$111 / +$44 a month (H1 / Jul-Oct / 2021-25) for fails 3 -> 9% / 9 -> 13%:
+  owner's call (card), not rejected. research/lit/size50k-2026-11-27/RESULT.md
