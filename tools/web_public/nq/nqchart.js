@@ -131,6 +131,7 @@ function makeChart(LC, T) {
     crosshair: { mode: LC.CrosshairMode.Normal, vertLine: { color: 'rgba(218,203,240,0.45)', width: 1, style: 3, labelBackgroundColor: '#2a1846' }, horzLine: { color: 'rgba(218,203,240,0.45)', width: 1, style: 3, labelBackgroundColor: '#2a1846' } },
     handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false },
     handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true },
+    kineticScroll: { touch: true, mouse: false },      // night-nq-chart: a flick keeps gliding on a phone (momentum), like a native chart
     localization: { locale: 'en-US', priceFormatter: (p) => { const r = Math.round(p * 100) / 100; return Number.isInteger(r) ? r.toLocaleString('en-US') : B.px(r); } },
   });
   // v5 (owner 2026-11-20 15:50 ET: "The chart looks terrible. It needs some 3D, it needs some effects"): under the candles, the day's closes as a
