@@ -386,3 +386,7 @@ data/of_paper_off
 data/buy_gate.json
 data/shadow_eval.json
 data/eval_buys.json
+# night-of-lane 2026-11-27: the order-flow lane (engine/of_lane.py): its switch, book, adapter state (local to the PC)
+data/of_lane.json
+data/of_lane_state.json
+data/of_lane_kill
