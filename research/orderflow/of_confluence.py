@@ -316,20 +316,24 @@ def score(rows, key, rng):
     half = allD[(len(allD) + 1) // 2] if allD else "9999"
     h1 = float(sum(by[d] for d in days if d < half)); h2 = float(sum(by[d] for d in days if d >= half))
     changed = int((np.abs(gain) > 0.005).sum())
+    top = int(np.argmax(gain)) if len(gain) else 0
+    loo = float(gain.sum() - gain[top]) if len(gain) else 0.0
     verdict = ("TOO FEW" if changed < 10 else "CANDIDATE" if (h1 > 0 and h2 > 0) else
                "WORSE" if (h1 <= 0 and h2 <= 0) else "MIXED")
     return {"n": len(rows), "changed": changed, "base_usd": round(float(base.sum())), "var_usd": round(float(var.sum())),
             "gain_usd": round(float(gain.sum())), "pf_base": pf(base), "pf_var": pf(var),
             "win_base": round(100 * float((base > 0).mean()), 1), "win_var": round(100 * float((var > 0).mean()), 1),
             "ci95": [round(float(np.percentile(boot, 2.5))), round(float(np.percentile(boot, 97.5)))],
-            "p_gain_le0": round(float((boot <= 0).mean()), 3), "half_old": round(h1), "half_new": round(h2), "verdict": verdict}
+            "p_gain_le0": round(float((boot <= 0).mean()), 3), "half_old": round(h1), "half_new": round(h2), "verdict": verdict,
+            "gain_wo_best": round(loo), "best_trade": [rows[top]["day"], round(float(gain[top]))] if len(gain) else None}
 
 
 OB_DAYS = []
 
 
 def run():
-    D = OB.find_days()
+    R = OB.find_days()
+    D = {d: OB.Day(d, R[d]) for d in sorted(R) if int(R[d]["meta"].get("rows", 0)) >= OB.MIN_ROWS}   # battery's thin-day rule
     if not D:
         print("0 OF days: run python -X utf8 tools/data_pull.py --of --no-battery first"); return None
     OB_DAYS[:] = sorted(D)
@@ -374,11 +378,12 @@ def write_md(o):
 
     def line(nm, s):
         if not s.get("n"):
-            return f"| {nm} | 0 | | | | | | |"
+            return f"| {nm} | 0 | | | | | | | |"
         return (f"| {nm} | {s['n']} ({s['changed']} changed) | ${s['base_usd']:+,} -> ${s['var_usd']:+,} | **${s['gain_usd']:+,}** "
                 f"| {s['pf_base']} -> {s['pf_var']} | ${s['ci95'][0]:+,} .. ${s['ci95'][1]:+,} | ${s['half_old']:+,} / ${s['half_new']:+,} "
-                f"| {s['verdict']} |")
-    hdr = "| idea | trades | $ base -> idea | gain | PF | 95% CI of gain (day bootstrap) | old / new half | verdict |\n|---|---|---|---|---|---|---|---|"
+                f"| ${s['gain_wo_best']:+,} | {s['verdict']} |")
+    hdr = ("| idea | trades | $ base -> idea | gain | PF | 95% CI of gain (day bootstrap) | old / new half | gain without its best trade "
+           "| verdict |\n|---|---|---|---|---|---|---|---|---|")
     s = [f"# Order flow as confluence: results ({o['built']})", "",
          f"Pre-registered: `DESIGN_confluence.md`. OF days: {o['of_days'][2]} ({o['of_days'][0]} .. {o['of_days'][1]}). "
          "Costs in. Research only - nothing here changes a bot.", "",
@@ -390,6 +395,8 @@ def write_md(o):
          hdr, line("C-b2 1.5x size when absorbed", A["C-b2 size"]), line("C-c2 exit on hard flip (before 1R)", A["C-c2 flip exit"]),
          line("C-d delay to first non-adverse delta bar", A["C-d delayed entry"]), "",
          f"C-d outcomes: {A['d_notes']}; mean entry change on delayed trades {A['d_ticks_mean']} ticks (+ = better).", ""]
+    s += [open(os.path.join(HERE, "confluence_notes.md"), encoding="utf-8").read()] if os.path.exists(
+        os.path.join(HERE, "confluence_notes.md")) else []
     open(OUT_M, "w", encoding="utf-8").write("\n".join(s) + "\n")
 
 
