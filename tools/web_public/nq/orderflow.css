@@ -153,6 +153,7 @@ main[data-state="live"] .of-orb { animation: orb 2.4s ease-in-out infinite; }
 .of-oos-big { margin: 6px 0 2px; font-size: 26px; font-weight: 800; color: var(--gold); text-shadow: 0 0 18px rgba(241, 193, 75, .35); }
 .of-oos[data-pending="1"] .of-oos-big::before { content: ""; display: inline-block; width: 12px; height: 12px; margin-right: 10px; border-radius: 50%;
   background: var(--gold); box-shadow: 0 0 12px var(--gold); vertical-align: 3px; animation: orb 1.8s ease-in-out infinite; }
+.of-books { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 4px; font-size: 13px; color: var(--dim); }
 .of-v5 { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 8px; }
 .of-v5 li { padding: 10px 12px; border-radius: 14px; border: 1px solid var(--line); background: rgba(0, 0, 0, .35); }
 .of-v5 li[data-watch="1"] { border-color: rgba(241, 193, 75, .45); }

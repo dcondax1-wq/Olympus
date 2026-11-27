@@ -31,7 +31,8 @@ export function verdictKind(txt) {
   if (!t) return 'none';
   if (t.startsWith('YES') || t.startsWith('PASS')) return 'yes';
   if (t.startsWith('TOO FEW') || t.startsWith('WAITING') || t.startsWith('NOT RUN')) return 'few';
-  if (t.startsWith('NO') || t.startsWith('REJECTED')) return 'no';
+  if (t.startsWith('NO') || t.startsWith('REJECTED') || t.startsWith('FAIL')) return 'no';
+  if (t.startsWith('WEAK')) return 'few';
   return 'few';
 }
 function shortVerdict(txt) {
@@ -380,16 +381,33 @@ function drawOos(M) {
     document.getElementById('oosNote').textContent = 'Lane A on a full year of NQ ticks, rules frozen. The result shows here when the run finishes.';
     return;
   }
-  const k = verdictKind(O.verdict);
+  const k = verdictKind(O.verdict), v = String(O.verdict || '').toLowerCase();
   chip.textContent = O.days ? `${O.days} days` : 'done'; chip.dataset.level = k === 'yes' ? 'ok' : k === 'no' ? 'bad' : 'warn';
   const A = O.laneA || {};
-  document.getElementById('oosBig').textContent = O.verdict ? shortVerdict(O.verdict) : (num(A.mean_R) !== null ? `${fmtR(A.mean_R)} avg` : 'Done');
-  const bits = [];
-  if (num(A.n) !== null) bits.push(`${A.n} trades`);
-  if (num(A.win_pct) !== null) bits.push(`${Math.round(A.win_pct)}% won`);
-  if (num(A.pf) !== null) bits.push(`PF ${A.pf.toFixed(2)}`);
-  if (num(A.usd_1) !== null) bits.push(`${fmtUsd(A.usd_1)} at 1 MNQ`);
-  document.getElementById('oosNote').textContent = [bits.join(' · '), O.first ? `${O.first} to ${O.last}` : '', O.line || ''].filter(Boolean).join('. ');
+  document.getElementById('oosBig').textContent = v === 'pass' ? 'PASS: the ladder still decides' : v === 'fail' ? 'FAIL: no edge on the full year'
+    : v === 'weak' ? 'WEAK: not enough to act on' : O.verdict ? shortVerdict(O.verdict) : (num(A.mean_R) !== null ? `${fmtR(A.mean_R)} avg` : 'Done');
+  document.getElementById('oosNote').textContent = [O.line || '', O.first ? `${O.first} to ${O.last}${O.days ? `, ${O.days} days` : ''}.` : ''].filter(Boolean).join(' ');
+  const tiles = document.getElementById('oosTiles'); tiles.replaceChildren();
+  const add = (val, key, cls) => { if (val !== null && val !== undefined && val !== '-') tiles.append(tile(val, key, cls)); };
+  const H = A.halves || {};
+  if (num(A.n) !== null) {
+    add(num(A.tpw) !== null ? `${A.tpw.toFixed(1)}/wk` : String(A.n), num(A.tpw) !== null ? `${A.n} trades` : 'trades');
+    add(num(A.win_pct) !== null ? `${Math.round(A.win_pct)}%` : null, 'won', 'up');
+    add(fmtR(A.mean_R), 'avg a trade', A.mean_R > 0 ? 'up' : 'dn');
+    add(num(A.pf) !== null ? A.pf.toFixed(2) : null, 'profit factor', 'gold');
+    add(num(A.usd_1) !== null ? fmtUsd(A.usd_1) : null, 'at 1 MNQ', A.usd_1 > 0 ? 'up' : 'dn');
+    add(num(A.max_dd) !== null ? `$${Math.round(Math.abs(A.max_dd)).toLocaleString('en-US')}` : null, 'max drawdown');
+    const hs = [['h1_2026', '2026 H1'], ['h2_2026', '2026 H2'], ['dec_2025', 'Dec 2025']].filter((h) => num(H[h[0]]) !== null);
+    if (hs.length) add(hs.map((h) => fmtR(H[h[0]])).join(' / '), hs.map((h) => h[1]).join(' / '), 'wide');
+  }
+  const bk = document.getElementById('oosBooks'); bk.replaceChildren();
+  for (const [key, lab] of [['first', 'First trade of the day'], ['one_at_a_time', 'Every signal, one at a time']]) {
+    const b = (O.books || {})[key];
+    if (!b || num(b.n) === null) continue;
+    const parts = [`${lab}: ${b.n} trades${num(b.tpw) !== null ? ` (${b.tpw.toFixed(1)}/wk)` : ''}`, `${fmtR(b.mean_R)} avg`,
+      num(b.win_pct) !== null ? `${Math.round(b.win_pct)}% won` : null, num(b.pf) !== null ? `PF ${b.pf.toFixed(2)}` : null, num(b.usd_1) !== null ? fmtUsd(b.usd_1) : null];
+    bk.append(el('li', '', parts.filter(Boolean).join(' · ')));
+  }
 }
 
 function drawV5(M) {
@@ -406,7 +424,11 @@ function drawV5(M) {
     const nums = el('div', 'of-v5-nums');
     for (const t of [num(r.per_week) !== null ? `${r.per_week}/wk` : null, num(r.win_pct) !== null ? `${Math.round(r.win_pct)}% won` : null, fmtR(r.mean_R), num(r.pf) !== null ? `PF ${r.pf.toFixed(2)}` : null, num(r.usd_1) !== null ? fmtUsd(r.usd_1) : null].filter(Boolean)) nums.append(el('span', 'nw', t));
     li.append(top, el('p', 'of-v5-what', r.what), nums);
-    if (r.oos) li.append(el('p', 'of-v5-oos', `Out of sample: ${r.oos.line || r.oos.verdict || 'scored'}`));
+    if (r.oos) {
+      const o = r.oos, bits = [o.verdict ? String(o.verdict).toUpperCase() : null, num(o.n) !== null ? `${o.n} trades` : null,
+        num(o.mean_R) !== null ? fmtR(o.mean_R) : null, num(o.usd_1) !== null ? fmtUsd(o.usd_1) : null, o.line || null].filter(Boolean);
+      li.append(el('p', 'of-v5-oos', `Full year: ${bits.join(' · ') || 'scored'}`));
+    }
     ol.append(li);
   }
 }

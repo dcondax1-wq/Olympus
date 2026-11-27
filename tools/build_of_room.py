@@ -153,10 +153,19 @@ def control(root: str = ROOT) -> dict:
         oos = _rj(os.path.join(root, *parts))
         if isinstance(oos, dict):
             break
+    # the contract (lead 2026-11-27): made, days, first, last, verdict pass|fail|weak, line, laneA {n, tpw, mean_R, pf, win_pct, usd_1,
+    # max_dd, halves {h1_2026, h2_2026, dec_2025}}, books {first, one_at_a_time} (same keys), v5 [{family, verdict, n, mean_R, usd_1}]
     out["oos"] = ({"pending": False, **{k: oos.get(k) for k in ("made", "days", "first", "last", "verdict", "line") if oos.get(k) is not None},
-                   "laneA": oos.get("laneA") if isinstance(oos.get("laneA"), dict) else None}
+                   "laneA": oos.get("laneA") if isinstance(oos.get("laneA"), dict) else None,
+                   "books": oos.get("books") if isinstance(oos.get("books"), dict) else None}
                   if isinstance(oos, dict) else {"pending": True, "when": OOS_WHEN})
     out["v5"] = v5_table(root)
+    if isinstance(oos, dict) and isinstance(oos.get("v5"), list):      # the full-year v5 results ride each family's row
+        by = {str(x.get("family")): x for x in oos["v5"] if isinstance(x, dict)}
+        for r in out["v5"]:
+            x = by.get(r["family"])
+            if x:
+                r["oos"] = {k: x.get(k) for k in ("verdict", "n", "mean_R", "usd_1") if x.get(k) is not None}
     out["v5_line"] = "No new order-flow edge: 8 families, none a YES-candidate. Lane A's absorbed level fade is still the only one that works."
     cfg, lst = _rj(os.path.join(root, "data", "of_lane.json")), _rj(os.path.join(root, "data", "of_lane_state.json"))
     if isinstance(cfg, dict) or isinstance(lst, dict):        # only where the lane lives (the PC); the phone reads the live post

@@ -122,6 +122,7 @@ const lane = { on: true, account: 'Sim102', cap: 1, used: 1, day: today, trades:
   { t: '11:40', dir: 'short', status: 'refused', why: 'day cap: 1 entry a day already used' }] };
 out.lane = O.model({ room: { ...room, control: ctl }, lite: { t: now - 60, ofl: lane }, nowS: now });
 out.laneStale = O.model({ room: { ...room, control: { ...ctl, lane: { ...lane, on: false } } }, lite: { t: now - 6 * 3600, ofl: lane }, nowS: now });
+out.kinds2 = ['pass', 'fail', 'weak'].map(O.verdictKind);
 out.why = O.whyWords({ status: 'refused', why: 'day cap: 1 entry a day already used' });
 out.realroom = %(realroom)s ? O.model({ room: %(realroom)s, lite: null, nowS: now }) : null;
 out.fmt = [O.fmtR(1.25), O.fmtR(-0.5), O.fmtUsd(-48.3), O.fmtPx(25665)];
@@ -170,6 +171,7 @@ def part_b(room, now):
     check("b. practice lane from the live post 'ofl': ON Sim102, day cap 1 of 1, today's trade + the refused one", ln["src"] == "live" and ln["on"]
           and ln["account"] == "Sim102" and ln["used"] == 1 and ln["cap"] == 1 and ln["today"] and len(ln["trades"]) == 2, ln)
     check("b. a stale live lane (6 h) falls back to the room's copy", o["laneStale"]["lane"]["src"] == "room" and not o["laneStale"]["lane"]["on"], o["laneStale"]["lane"])
+    check("b. full-year verdict words: pass -> yes, fail -> no, weak -> few", o["kinds2"] == ["yes", "no", "few"], o["kinds2"])
     check("b. refused for the day cap reads 'skipped: day cap (1 a day)'", o["why"] == "skipped: day cap (1 a day)", o["why"])
     check("b. formats: +1.3R / −0.5R / −$48 / 25,665.00", o["fmt"] == ["+1.3R", "−0.5R", "−$48", "25,665.00"], o["fmt"])
 
@@ -204,6 +206,17 @@ def part_c(room, now):
     runs = [("live-390", 390, 844, live_room, lite)]
     if rr:
         runs += [("real-390", 390, 844, rr, None), ("real-1440", 1440, 900, rr, None)]
+        done = json.loads(json.dumps(rr))
+        done.setdefault("control", {})["oos"] = {"pending": False, "made": "2026-11-28T03:40:00Z", "days": 250, "first": "2025-11-28", "last": "2026-11-26",
+            "verdict": "weak", "line": "Lane A held up on the full year but the newer half is flat.",
+            "laneA": {"n": 190, "tpw": 3.8, "mean_R": 0.21, "pf": 1.34, "win_pct": 44.2, "usd_1": 4120.0, "max_dd": 1310.0,
+                      "halves": {"h1_2026": 0.33, "h2_2026": 0.04, "dec_2025": 0.29}},
+            "books": {"first": {"n": 190, "tpw": 3.8, "mean_R": 0.21, "pf": 1.34, "win_pct": 44.2, "usd_1": 4120.0},
+                      "one_at_a_time": {"n": 330, "tpw": 6.6, "mean_R": 0.08, "pf": 1.08, "win_pct": 40.0, "usd_1": 1650.0}}}
+        for r in done["control"].get("v5") or []:
+            if r["family"] == "targets":
+                r["oos"] = {"verdict": "fail", "n": 180, "mean_R": 0.12, "usd_1": 900.0}
+        runs += [("oos-390", 390, 844, done, None)]
     for name, w, h, rm, post in tuple(runs) + (( "recorded-390", 390, 844, room, None), ("empty-390", 390, 844, None, None),
                                  ("live-1440", 1440, 900, live_room, lite), ("recorded-1440", 1440, 900, room, None)):
         srv, origin = AK.serve({"/nq/of_room.json": json.dumps(rm) if rm is not None else None, "/home.json": None})
@@ -222,6 +235,13 @@ def part_c(room, now):
                     check(f"c. {name}: LIVE chip, ladder rungs with reads + the gold NOW line, tape dots, lane B rows, verdict (sim = test)",
                           o["state"] == "live" and o["chip"].startswith("LIVE") and o["rungs"] == len(lv) and o["now"] and o["tape"] == len(room["rows"])
                           and o["lit"] == len(room["lit"]) and "test" in o["verChip"] and o["lanes"] == len(lv), o)
+                elif name.startswith("oos"):
+                    oo = p.evaluate("""() => ({ big: document.getElementById('oosBig').textContent, chip: document.getElementById('oosChip').textContent,
+                        tiles: [...document.querySelectorAll('#oosTiles .of-tile b')].map((e) => e.textContent), books: document.querySelectorAll('#oosBooks li').length,
+                        v5oos: [...document.querySelectorAll('.of-v5-oos')].map((e) => e.textContent), pending: document.getElementById('oos').dataset.pending })""")
+                    check(f"c. {name}: the full-year card from the contract: WEAK, 250 days, tiles (3.8/wk, 44%, +0.2R, 1.34, +$4,120, $1,310, 3 halves), 2 books, v5 'Full year: FAIL'",
+                          oo["pending"] == "0" and oo["big"].startswith("WEAK") and oo["chip"] == "250 days" and oo["tiles"][:6] == ["3.8/wk", "44%", "+0.2R", "1.34", "+$4,120", "$1,310"]
+                          and len(oo["tiles"]) == 7 and oo["books"] == 2 and any(x.startswith("Full year: FAIL") for x in oo["v5oos"]), oo)
                 elif name.startswith("real"):
                     ctl = p.evaluate("""() => ({ gate: document.getElementById('gateTxt').textContent, checks: document.querySelectorAll('#gateChecks li').length,
                         tiles: [...document.querySelectorAll('#btTiles .of-tile b')].map((e) => e.textContent), later: document.getElementById('btLater').textContent,
