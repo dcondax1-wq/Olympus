@@ -24,3 +24,22 @@ nqland.js, the NEW nq/nqhero.css, and tests/test_nq_desk.py (hero checks). Web o
    - Suggest the Accounts card reads the same goals model (nqgoals.goals) so one number shows. I left that card's logic alone.
 6. **New: a sticky "jump to" bar under the hero** (Chart / Goals / Accounts / Bots / Trades / News / Checks), 44 px taps, below the kit's compact bar.
 7. **Light scheme:** styled (tokens flip) but not screenshot-checked tonight: my forced-attribute script failed. The page is dark-first.
+
+## QA pass (2026-11-27 ~03:00 ET)
+8. **ONE goals model:** `nq/goals_model.js` (+ tests/test_goals_model.py, in the nq + trading areas).
+   - The hero and the vault read it. The accounts helper has the API, to switch acctcore.
+   - sw.js: precache nq/goals_model.js too.
+9. **hub/learned.json** is written by learn_night but never published: a 404 on every nq/ load.
+   - I dropped the fetch, and test_nq_page's reads list follows.
+   - Publish the file (and restore one getJSON line) if you want the per-bot slippage line back.
+10. **perf_sweep nq block is AT the 310 KB budget** (309.x).
+    - I trimmed comments from nqtheme.css / nqhero.css / index.html to fit.
+    - The next CSS added to nq/ needs a budget bump or a non-blocking load.
+11. **Not mine, still open from QA:**
+    - #11 the pillars chip "312/60 tick d..." (pillars/hero.js);
+    - #6 the stale cloud data (bars / trades to Nov 20);
+    - #1 trading_home readiness; #2 chart vs brain price; #3 the blank vault (accounts); #12 accounts 411 px.
+    - #10: the nav is now one rail (checked at 390 px).
+12. **Folds (QA #5):** the Accounts grid + 7-day clock + numbers + GO / WAIT, the per-bot cards, and the checks / replay / backtest are in `<details>` (closed). All ids are kept and the jump bar opens a fold.
+    - The phone page is 11,820 -> 8,149 px.
+    - The Python-Playwright browser suite (test_nq_page part c) could not run here: please run it on landing.
