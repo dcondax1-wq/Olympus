@@ -357,7 +357,7 @@ function drawThinking(box, bots, opts) {
       const ul = el('ul', 'dk-levels'); ul.setAttribute('aria-label', 'Key levels it watches');
       for (const l of b.before.levels) { const li = el('li'); li.appendChild(el('span', '', l.label)); li.appendChild(el('b', 'ag-num', px(l.px))); if (l.dist !== null) li.appendChild(el('small', 'ag-num', `${l.dist > 0 ? '+' : ''}${l.dist} pt`)); ul.appendChild(li); }
       bf.appendChild(ul);
-    } else bf.appendChild(el('p', 'dk-note', 'Key levels: not in this report (the PC sends them with its brain glance).'));
+    }   // QA (lower): no levels in the report = no line (it read like an unfinished page)
     if (b.before.why) bf.appendChild(el('p', 'dk-note', 'Last decision: ' + b.before.why));
     c.appendChild(bf);
     if (b.inTrade) {
@@ -437,6 +437,7 @@ export function dayLine(home, nowS) {
 
 /** Ares's verdict for the BOTS, per account: HALT (market shut, floor reached, daily loss limit hit, eval target reached), WAIT (outside the entry
  * window, high-impact news within 30 minutes, data stale), GO (in its window with room). Only the posted numbers; the manual calculator stays in ../ares/. */
+const BOT_OF = { zlarior: 'LIT', fresh25: 'LIT', atlas: 'ATLAS', rapid1: 'LIT (and ATLAS)', rapid: 'LIT (and ATLAS)' };
 const DLL = { 'MFFU Builder 50K': 1000, 'MFFU Builder 25K': 600, 'MFFU Builder 25K (funded)': 600, 'MFFU Rapid EOD 25K': 500 };
 export function gate(accts, home, news, nowS) {
   const ph = phase(nowS), hm = etParts(nowS).hm, soon = todayNews(news, nowS).find((n) => n.time && !n.past && minsBetween(hm, n.time) <= 30);
@@ -450,7 +451,7 @@ export function gate(accts, home, news, nowS) {
     if (!a.has) wait('No numbers from the PC for this account yet.');
     else if (a.dot === 'stale' || a.dot === 'old') wait(`The PC last reported ${ageText(a.ageS)} (it reports every 15 min): check the PC before trusting GO.`);
     if (['winddown', 'flat', 'idle'].includes(ph.id)) wait(`${ph.label} (${ph.who}).`);
-    else if (ph.id === 'asia') wait('Before 02:00 ET: LIT takes no real entry yet.');
+    else if (ph.id === 'asia') wait(`Before 02:00 ET: ${BOT_OF[a.key] || 'the bot'} takes no real entry yet.`);   // QA #7: each account's own bot
     if (soon) wait(`${soon.title} at ${soon.time} ET (within 30 min): spreads jump, stops slip.`);
     const level = why.some((x) => x.level === 'halt') ? 'halt' : why.length ? 'wait' : 'go';
     return { key: a.key, name: a.name, level, why: why.length ? why : [{ level: 'go', t: `${ph.label}: in its window, ${money(a.room)} of room left.` }] };

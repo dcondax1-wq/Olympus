@@ -35,7 +35,7 @@ box-shadow:0 14px 30px rgba(0,0,0,.55),0 0 0 1px rgba(157,89,238,.08) inset,0 0 
 .hx-acc-top{display:flex;align-items:center;gap:6px;min-width:0;}
 .hx-acc-nm{font-size:13.5px;color:var(--ag-text);line-height:1.2;min-width:0;overflow-wrap:anywhere;}
 .hx-acc-top{align-items:flex-start;} .hx-acc-top .dk-dot{margin-top:3px;flex:none;}
-.hx-acc-st{margin-left:auto;flex:none;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ag-gold);border:1px solid rgba(241,193,75,.35);padding:1px 6px;border-radius:99px;}
+.hx-acc-st{margin-left:auto;flex:none;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ag-gold);border:1px solid rgba(241,193,75,.35);padding:1px 6px;border-radius:99px;}
 .hx-acc-mid{display:flex;align-items:center;gap:10px;}
 .hx-ringw{position:relative;width:50px;height:50px;flex:none;}
 .hx-ring{width:50px;height:50px;filter:drop-shadow(0 0 6px rgba(157,89,238,.55));}
@@ -55,12 +55,12 @@ box-shadow:0 14px 30px rgba(0,0,0,.55),0 0 0 1px rgba(157,89,238,.08) inset,0 0 
 .hx-acc-ft{display:flex;flex-wrap:wrap;gap:4px 8px;font-size:12px;color:var(--ag-muted);align-items:baseline;}
 .hx-acc-ft .pos{color:var(--ag-good);} .hx-acc-ft .neg{color:var(--ag-bad);}
 .hx-open{color:var(--ag-gold);font-weight:700;}
-.hx-acc-age{flex-basis:100%;font-size:11px;color:var(--hx-faint);}
+.hx-acc-age{flex-basis:100%;font-size:12px;color:var(--hx-faint);}
 .hx-bots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
 .hx-bot{padding:10px 12px;border-radius:16px;border:1px solid var(--ag-line);background:rgba(12,10,18,.78);min-width:0;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);}
 .hx-bot-h{display:flex;align-items:baseline;justify-content:space-between;gap:6px;flex-wrap:wrap;}
 .hx-bot-h b{font-size:14px;color:var(--ag-text);}
-.hx-bot-w{font-size:11px;font-weight:900;letter-spacing:.1em;color:var(--nq-cyan-hi);}
+.hx-bot-w{font-size:12px;font-weight:900;letter-spacing:.1em;color:var(--nq-cyan-hi);}
 .hx-bot-l{margin:4px 0 0;font-size:12.5px;color:var(--ag-soft);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .hx-bot.tone-hot{border-color:rgba(241,193,75,.6);box-shadow:0 0 22px rgba(241,193,75,.22);} .hx-bot.tone-hot .hx-bot-w{color:var(--ag-gold);}
 .hx-bot.tone-warm{border-color:var(--hx-line2);box-shadow:0 0 22px rgba(157,89,238,.25);} .hx-bot.tone-warm .hx-bot-w{color:var(--hx-lav);}
@@ -98,7 +98,7 @@ main#app > .gn-facts .gn-fchip{min-height:44px;display:inline-flex;align-items:c
 .hx-honestw .hx-honest{padding:0;border:0;background:none;}
 .hx-how{min-height:44px;justify-self:start;}
 .hx-acc.none{gap:4px;animation:none;}
-.hx-bot-age{display:block;margin-top:4px;font-size:11px;color:var(--hx-faint)}
+.hx-bot-age{display:block;margin-top:4px;font-size:12px;color:var(--hx-faint)}
 .hx-jump{position:sticky;top:calc(env(safe-area-inset-top,0px) + 54px);z-index:20;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:6px;margin:0 -4px;border-radius:16px;border:1px solid var(--ag-line);background:rgba(6,4,11,.78);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 8px 24px rgba(0,0,0,.5)}
 .hx-jump::-webkit-scrollbar{display:none}
 .hx-jump a{flex:none;min-height:44px;display:inline-flex;align-items:center;padding:0 14px;border-radius:12px;font-size:14px;font-weight:700;color:var(--nq-cyan-hi);text-decoration:none;border:1px solid transparent}
@@ -108,3 +108,18 @@ html{scroll-padding-top:124px}
 html[data-oly-scheme="light"] .hx-jump{background:rgba(255,255,255,.9)}
 @media (min-width:1100px){#app>.hx-jump{grid-column:1/-1}}
 @media (max-width:759px){.hx-acc:last-child:nth-child(odd){grid-column:1/-1}}
+/* QA #9: the kit's round floating controls (Ask Jarvis, Home) docked as glass chips on this page: they read as controls, never as part of a 3D scene */
+body .oly-ask-btn,body .oly-home{background:rgba(6,4,11,.82)!important;border:1px solid var(--hx-line2)!important;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 6px 18px rgba(0,0,0,.6),0 0 12px rgba(157,89,238,.25)!important}
+/* QA #5: folds (the same accounts the hero shows, one tap away) */
+.nq-fold{border:1px solid var(--ag-line);border-radius:18px;background:linear-gradient(180deg,rgba(22,19,30,.9),rgba(2,2,4,.9));overflow:hidden}
+.nq-fold>summary{list-style:none;cursor:pointer;min-height:56px;display:grid;align-content:center;gap:2px;padding:10px 44px 10px 16px;position:relative}
+.nq-fold>summary::-webkit-details-marker{display:none}
+.nq-fold>summary b{font-size:16px;color:var(--ag-text)}
+.nq-fold>summary span{font-size:12.5px;color:var(--ag-muted)}
+.nq-fold>summary::after{content:'';position:absolute;right:18px;top:50%;width:10px;height:10px;border-right:2px solid var(--ag-gold);border-bottom:2px solid var(--ag-gold);transform:translateY(-70%) rotate(45deg);transition:transform .25s}
+.nq-fold[open]>summary::after{transform:translateY(-30%) rotate(225deg)}
+.nq-fold>summary:focus-visible{outline:2px solid var(--nq-cyan-hi);outline-offset:-2px}
+.nq-fold[open]{padding-bottom:12px}
+.nq-fold>:not(summary){margin:0 12px 12px}
+@media (min-width:1100px){#app>.nq-fold{grid-column:1/-1}#app>.nq-fold[open]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}#app>.nq-fold>summary{grid-column:1/-1}#app>.nq-fold>#acctCard{grid-column:1/-1}}
+main#app{--ag-fs-cap:12px}

@@ -5,7 +5,7 @@
 // ?demo=1 the example; ?demo=1&silent=4d (or 90m, 5h) the example with a silent PC; ?flat=1 the 2D columns; ?howto=1 opens the sheet.
 import * as C from './nqcore.js?v=d6';   // d6 (night-seedata): today's $ in the first line; d1 (polish2 2026-11-19): the CME trading day
 import * as T from '../olympus/truth.js';
-import * as D from './nqdesk.js?v=11';
+import * as D from './nqdesk.js?v=12';
 import * as GM from './goals_model.js?v=1';             // night-nq-main: ONE goals model (QA #4)
 import { unpack as unpackBars } from './nqbars.js?v=b1';     // nqdash3: the accounts strip, the bots' thinking, the quality checks
 import * as G from './nqgoals.js?v=10';
@@ -150,8 +150,24 @@ function renderNews() {
 }
 
 // ------------------------------------------------------------------------------------------------ plan, trades, facts
+// QA #8: the PC's own entry window (board.lit.window.text, e.g. "next entry window Fri 02:00-13:00 ET") on a short CME day: the window ends
+// before 15:30, so "flat by 15:55" would be wrong that day (engine/cme_calendar: entries stop 15 min and the bot is flat 5 min before a halt)
+export function shortDay(text) {
+  const m = /(?:\b(Mon|Tue|Wed|Thu|Fri|Sun|Sat)\w*\s+)?(\d\d):(\d\d)\s*[-\u2013]\s*(\d\d):(\d\d)/.exec(String(text || ''));
+  if (!m) return null;
+  const end = +m[4] * 60 + +m[5];
+  return end < 930 ? { day: m[1] || '', end: `${m[4]}:${m[5]}` } : null;
+}
+// QA #5: a jump-bar link (or any #hash) into a folded section opens the fold first
+function openFoldFor(hash) {
+  try { const t = hash && document.getElementById(hash.slice(1)); const f = t && (t.matches('details') ? t : t.closest('details')); if (f && !f.open) f.open = true; } catch (_) { /* nothing */ }
+}
+addEventListener('click', (e) => { const a = e.target && e.target.closest && e.target.closest('a[href^="#"]'); if (a) openFoldFor(a.getAttribute('href')); });
+addEventListener('hashchange', () => openFoldFor(location.hash));
 function renderPlan() {
-  const p = S.view.plan; $('planRule').textContent = p.rule; $('planNow').textContent = p.now; $('planNow').hidden = !p.now; $('planNote').textContent = p.note; $('planNote').hidden = !p.note;
+  const p = S.view.plan, w = (() => { try { const h0 = deskHome(); return h0 && h0.board && h0.board.lit && h0.board.lit.window ? h0.board.lit.window.text : ''; } catch (_) { return ''; } })();
+  const sd = shortDay(w);
+  $('planRule').textContent = sd ? `${sd.day ? sd.day + ' is' : 'Today is'} a short CME day: LIT's window ends at ${sd.end} ET and it is flat before the early halt (5 minutes before it). Other days: one trade between 02:00 and 15:30 ET, flat by 15:55 ET.` : p.rule; $('planNow').textContent = p.now; $('planNow').hidden = !p.now; $('planNote').textContent = p.note; $('planNote').hidden = !p.note;
 }
 function renderTrades() {
   const ol = $('trades'); clear(ol); const rows = S.view.trades;
@@ -458,7 +474,7 @@ async function boot() {
   for (const b of document.querySelectorAll('[data-howto]')) b.addEventListener('click', () => openSheet(b));
   $('sheetClose').addEventListener('click', closeSheet); $('veil').addEventListener('click', closeSheet);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); else if (e.key === 'Tab' && S.sheet) { e.preventDefault(); try { $('sheetClose').focus(); } catch (_) { /* nothing */ } } });   // the sheet has one control: focus stays on it
-  const [fx, home, howto, news, learned, biz, tfile, edge, brief, goals] = await Promise.all([getJSON('./fixture.json'), S.forced ? null : getJSON('../home.json'), getJSON('./howto.json'), getJSON('./news_week.json'), S.forced ? null : getJSON('../hub/learned.json'),
+  const [fx, home, howto, news, learned, biz, tfile, edge, brief, goals] = await Promise.all([getJSON('./fixture.json'), S.forced ? null : getJSON('../home.json'), getJSON('./howto.json'), getJSON('./news_week.json'), null /* QA #14: ../hub/learned.json is never published (a 404 on every load): off until the lead publishes it (LEAD_WIRES) */,
     getJSON('../business/accounts.json'), getJSON('../trading/trades.json'), getJSON('../edge.json'), getJSON('./brief.json'), getJSON('../business/goals.json')]);
   S.fixture = fx; S.howto = howto; S.news = news; S.learned = learned; S.biz = biz; S.tfile = tfile; S.edge = edge; S.brief = brief; S.goals = goals;   // brief.json: the day-brief helper's pre-market brief (optional)
   // the PC's 15-minute status (no GitHub) first, up to 3.5 s, so the first numbers on screen are the real ones; when it is later than

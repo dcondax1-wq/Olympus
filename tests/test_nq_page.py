@@ -25,7 +25,7 @@ SILENT = "The bots may still be trading; this page just is not hearing from them
 
 
 def test_static():
-    AK.static_kit(APP, NAME, reads=("../home.json", "./howto.json", "./news_week.json", "../hub/learned.json", "../business/accounts.json", "../trading/trades.json", "../edge.json", "./brief.json", "../odeon/trades.json", "../business/goals.json"))   # + the news week and real fills (night-nqdash2); the account list + twins (nqdash3); the money goals ladder (v4)
+    AK.static_kit(APP, NAME, reads=("../home.json", "./howto.json", "./news_week.json", "../business/accounts.json", "../trading/trades.json", "../edge.json", "./brief.json", "../odeon/trades.json", "../business/goals.json"))   # + the news week (night-nqdash2; ../hub/learned.json dropped 2026-11-27 night-nq-main: never published = a 404 each load, QA #14); the account list + twins (nqdash3); the money goals ladder (v4)
     d = os.path.join(AK.WEB, APP)
     js, core, scene, html, css = (AK.read(os.path.join(d, n)) for n in ("nq.js", "nqcore.js", "nqscene.js", "index.html", "nq.css"))
     check("a. it never reads the 8 MB data.json: only home.json, its howto.json and its fixture", "data.json" not in re.sub(r"//[^\n]*", "", js + core) and "../home.json" in js)
