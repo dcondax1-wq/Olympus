@@ -67,6 +67,20 @@ def fixture_room() -> dict:
     return room
 
 
+def real_room():
+    """The REAL room: the committed nq/of_room.json (the last real tick day) + the verdict block this checkout's
+    build_of_room makes from research/orderflow/real_verdict.json (51 real days, 2026-11-27). None when they are missing."""
+    try:
+        room = json.load(open(os.path.join(NQ, "of_room.json"), encoding="utf-8"))
+        RB = load("tools/build_of_room.py", "nqof_rb_real")
+        v = RB.build(ROOT).get("verdict")
+        if v and v.get("label") == "real":
+            room["verdict"] = v
+        return room
+    except (OSError, ValueError):
+        return None
+
+
 def part_a():
     html = AK.read(os.path.join(NQ, "orderflow.html")); js = AK.read(os.path.join(NQ, "orderflow.js")); css = AK.read(os.path.join(NQ, "orderflow.css"))
     allf = html + js + css
@@ -98,6 +112,7 @@ out.kinds = ['YES: x', 'NO: y', 'TOO FEW: 3 of 40 resolved', 'REJECTED', 'PASS (
 const real = { ...room, verdict: { ...room.verdict, label: 'real', days: 3, absorption: 'TOO FEW: 12 of 40 resolved level signals', of1_lit: 'TOO FEW' } };
 out.real = O.model({ room: real, lite: null, nowS: now });
 out.scrub = O.model({ room: { ...room, line: 'OF paper: 1 trade, +2.0R (1 micro +$96); Zlarior: flow says SKIP -> won $934' }, lite: null, nowS: now }).line;
+out.realroom = %(realroom)s ? O.model({ room: %(realroom)s, lite: null, nowS: now }) : null;
 out.fmt = [O.fmtR(1.25), O.fmtR(-0.5), O.fmtUsd(-48.3), O.fmtPx(25665)];
 console.log(JSON.stringify(out));
 """
@@ -106,7 +121,7 @@ console.log(JSON.stringify(out));
 def part_b(room, now):
     with tempfile.TemporaryDirectory() as td:
         drv = os.path.join(td, "drv.mjs")
-        open(drv, "w").write(NODE % {"js": "file://" + os.path.join(NQ, "orderflow.js"), "now": now, "room": json.dumps(room)})
+        open(drv, "w").write(NODE % {"js": "file://" + os.path.join(NQ, "orderflow.js"), "now": now, "room": json.dumps(room), "realroom": json.dumps(real_room())})
         r = subprocess.run(["node", drv], capture_output=True, text=True, timeout=60)
     try:
         o = json.loads(r.stdout.strip().splitlines()[-1])
@@ -129,6 +144,14 @@ def part_b(room, now):
     check("b. a real TOO FEW verdict stays honest (gold, '12 of 40')", rv["level"] == "warn" and rv["rows"][0]["cls"] == "few" and "12 of 40" in rv["rows"][0]["v"], rv)
     check("b. no $ of a real Zlarior trade in the line (public page): won $934 -> won", "$934" not in o["scrub"] and "+$96" in o["scrub"] and "won" in o["scrub"], o["scrub"])
     check("b. forward ring n / 20 from the room", rec["ring"]["need"] == 20 and rec["ring"]["n"] == room["forward"]["n"])
+    rr = o.get("realroom")
+    if rr and (rr["verdict"] or {}).get("a"):
+        v = rr["verdict"]
+        check("b. REAL verdict (51 days): absorption = CANDIDATE (gold, never green), chip 'N real days · candidate', OF1 on Zlarior TOO FEW with its count",
+              v["rows"][0]["v"].startswith("CANDIDATE") and v["level"] == "warn" and "real days · candidate" in v["chip"]
+              and v["rows"][1]["cls"] == "few" and "of 20 trades" in v["rows"][1]["v"] and v["a"]["taken"]["n"] > 0, v)
+    else:
+        check("b. (no real verdict in this checkout: skipped)", True)
     check("b. formats: +1.3R / −0.5R / −$48 / 25,665.00", o["fmt"] == ["+1.3R", "−0.5R", "−$48", "25,665.00"], o["fmt"])
 
 
@@ -155,7 +178,11 @@ def part_c(room, now):
         trades: document.querySelectorAll('.of-trade').length, paper: [...document.querySelectorAll('.of-tag.p')].length, lit: document.querySelectorAll('#lit li').length,
         ring: document.getElementById('ringN').textContent, verdict: document.getElementById('vgrid').textContent, verChip: document.getElementById('verChip').textContent,
         txt: document.getElementById('app').textContent })"""
-    for name, w, h, rm, post in (("live-390", 390, 844, live_room, lite), ("recorded-390", 390, 844, room, None), ("empty-390", 390, 844, None, None),
+    rr = real_room()
+    runs = [("live-390", 390, 844, live_room, lite)]
+    if rr:
+        runs += [("real-390", 390, 844, rr, None), ("real-1440", 1440, 900, rr, None)]
+    for name, w, h, rm, post in tuple(runs) + (( "recorded-390", 390, 844, room, None), ("empty-390", 390, 844, None, None),
                                  ("live-1440", 1440, 900, live_room, lite), ("recorded-1440", 1440, 900, room, None)):
         srv, origin = AK.serve({"/nq/of_room.json": json.dumps(rm) if rm is not None else None, "/home.json": None})
         try:
@@ -170,6 +197,10 @@ def part_c(room, now):
                     check(f"c. {name}: LIVE chip, ladder rungs with reads + the gold NOW line, tape dots, lane B rows, verdict (sim = test)",
                           o["state"] == "live" and o["chip"].startswith("LIVE") and o["rungs"] == len(lv) and o["now"] and o["tape"] == len(room["rows"])
                           and o["lit"] == len(room["lit"]) and "test" in o["verChip"] and o["lanes"] == len(lv), o)
+                elif name.startswith("real"):
+                    cmp = p.evaluate("() => [...document.querySelectorAll('.of-cmp-num')].map((e) => e.textContent)")
+                    check(f"c. {name}: the REAL verdict card: CANDIDATE + taken vs skipped bars with R, win % and $ at 1 MNQ",
+                          "CANDIDATE" in o["verdict"] and len(cmp) == 2 and "won" in cmp[0] and "1 MNQ" in cmp[0] and "real days" in o["verChip"], (o["verdict"], cmp))
                 elif name.startswith("recorded"):
                     check(f"c. {name}: the last recorded day, its paper rows tagged PAPER, no NOW line (no live price)",
                           o["state"] == "recorded" and room["day"] in o["chip"] and o["trades"] == len(room["rows"]) and o["paper"] == sum(1 for r in room["rows"] if r["taken"])

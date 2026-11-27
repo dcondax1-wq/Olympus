@@ -37,6 +37,7 @@ export function verdictKind(txt) {
 function shortVerdict(txt) {
   const k = verdictKind(txt), s = String(txt || '');
   if (k === 'none') return 'Not scored yet';
+  if (k === 'yes') return 'CANDIDATE: forward days decide';
   return s.split(/[:(]/)[0].trim() + (k === 'few' && /\d+ of \d+/.test(s) ? ` (${s.match(/\d+ of \d+/)[0]})` : '');
 }
 
@@ -92,10 +93,12 @@ export function model({ room, lite, nowS }) {
   const V = R && R.verdict;
   if (V && (V.absorption || V.of1_lit || V.line)) {
     const ka = verdictKind(V.absorption), kb = verdictKind(V.of1_lit);
-    M.verdict = { days: V.days ?? null, label: V.label || 'real', made: V.made || null,
-      rows: [{ k: 'Does absorption pick winners?', v: shortVerdict(V.absorption), cls: ka }, { k: 'Does it improve Zlarior? (pre-registered OF1)', v: shortVerdict(V.of1_lit), cls: kb }],
-      level: ka === 'yes' || kb === 'yes' ? 'ok' : ka === 'no' && kb === 'no' ? 'bad' : 'warn',
-      chip: V.label && V.label !== 'real' ? `${V.label} (test)` : `${V.days ?? 0} real days`,
+    M.verdict = { days: V.days ?? null, label: V.label || 'real', made: V.made || null, a: V.a || null, first: V.first || null, last: V.last || null,
+      sides: V.sides || null, b: V.b || null,
+      rows: [{ k: 'Does absorption pick winners?', v: shortVerdict(V.absorption), cls: ka },
+        { k: 'Does it improve Zlarior? (pre-registered OF1)', v: shortVerdict(V.of1_lit) + (V.b && V.b.trades != null && kb === 'few' ? ` · ${V.b.trades} of ${V.b.need || 20} trades` : ''), cls: kb }],
+      level: ka === 'no' && kb === 'no' ? 'bad' : 'warn',                // a candidate is not proven: gold, never green
+      chip: V.label && V.label !== 'real' ? `${V.label} (test)` : `${V.days ?? 0} real days${ka === 'yes' || kb === 'yes' ? ' · candidate' : ''}`,
       note: V.label && V.label !== 'real' ? 'This verdict came from SIMULATED days (a pipeline test), not the market.' : 'A YES only starts the forward test on new days; nothing changes on a bot without the owner.' };
   } else {
     M.verdict = { rows: [{ k: 'Does absorption pick winners?', v: 'Not scored yet', cls: 'none' }, { k: 'Does it improve Zlarior?', v: 'Not scored yet', cls: 'none' }],
@@ -227,12 +230,41 @@ function drawLit(M) {
   document.getElementById('litChip').textContent = M.lit.length ? `${M.lit.length} today` : 'lane B';
 }
 
+function drawCompare(A) {
+  // taken vs skipped: diverging bars around 0R, the numbers in words beside them
+  const wrap = el('div', 'of-cmp'), mx = Math.max(0.5, Math.abs(A.taken.mean_R || 0), Math.abs(A.skipped.mean_R || 0));
+  for (const [lab, x, cls] of [['Taken (absorbed)', A.taken, 'tk'], ['Skipped (flow said no)', A.skipped, 'sk']]) {
+    const row = el('div', `of-cmp-row ${cls}`);
+    const bar = el('div', 'of-cmp-bar'), fill = el('span', (x.mean_R || 0) >= 0 ? 'pos' : 'neg');
+    fill.style.width = `${Math.round(50 * Math.abs(x.mean_R || 0) / mx)}%`;
+    bar.append(el('i', 'zero'), fill);
+    const nums = el('span', 'of-cmp-num');
+    [`${x.n} trades`, `${fmtR(x.mean_R)} avg`, `${Math.round(x['win%'])}% won`, `${fmtUsd(x.usd_1)} at 1 MNQ`].forEach((t, i) => {
+      if (i) nums.append(document.createTextNode(' · '));
+      nums.append(el('span', 'nw', t));
+    });
+    row.append(el('span', 'of-cmp-lab', lab), bar, nums);
+    wrap.append(row);
+  }
+  return wrap;
+}
+
 function drawVerdict(M) {
   const V = M.verdict, box = document.getElementById('verdict'), dl = document.getElementById('vgrid');
   box.dataset.level = V.level;
   const chip = document.getElementById('verChip'); chip.textContent = V.chip; chip.dataset.level = V.level;
   dl.replaceChildren();
   for (const r of V.rows) { const d = el('div'); d.append(el('dt', '', r.k), el('dd', r.cls, r.v)); dl.append(d); }
+  const A = V.a;
+  if (A && A.taken && A.skipped && num(A.taken.mean_R) !== null) {
+    const d = el('div', 'of-vwide'); d.append(el('dt', '', `The evidence: ${A.resolved ?? A.taken.n + A.skipped.n} level sweeps${V.first ? `, ${V.first} to ${V.last}` : ''}`), drawCompare(A));
+    const facts = [];
+    if (num(A.p) !== null) facts.push(`chance check p = ${A.p} (about 1 in ${Math.max(1, Math.round(1 / Math.max(A.p, 1e-4)))} by luck)`);
+    if (Array.isArray(A.halves) && A.halves.length === 2) facts.push(`older half ${fmtR(A.halves[0])}, newer half ${fmtR(A.halves[1])} better`);
+    if (V.sides) facts.push(V.sides);
+    d.append(el('dd', 'of-facts', facts.join(' · ')));
+    dl.append(d);
+  }
   document.getElementById('verNote').textContent = V.note;
 }
 

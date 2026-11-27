@@ -104,6 +104,19 @@ main[data-state="live"] .of-orb { animation: orb 2.4s ease-in-out infinite; }
 .of-vgrid div { padding: 9px 11px; border-radius: 12px; background: rgba(0, 0, 0, .35); border: 1px solid var(--line); }
 .of-vgrid dt { font-size: 11px; color: var(--faint); text-transform: uppercase; letter-spacing: .5px; } .of-vgrid dd { margin: 2px 0 0; font-weight: 650; }
 .of-vgrid dd.yes { color: var(--mint); } .of-vgrid dd.no { color: var(--red); } .of-vgrid dd.few { color: var(--gold); }
+.of-vwide dd.of-facts { font-weight: 500; font-size: 12.5px; color: var(--dim); margin-top: 8px; }
+.of-cmp { display: grid; gap: 10px; margin-top: 8px; }
+.of-cmp-row { display: grid; grid-template-columns: 1fr; gap: 4px; }
+.of-cmp-lab { font-size: 12.5px; font-weight: 700; } .tk .of-cmp-lab { color: var(--mint); } .sk .of-cmp-lab { color: var(--red); }
+.of-cmp-bar { position: relative; height: 12px; border-radius: 6px; background: rgba(157, 89, 238, .12); overflow: hidden; }
+.of-cmp-bar .zero { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 2px; background: var(--line2); }
+.of-cmp-bar span { position: absolute; top: 2px; bottom: 2px; border-radius: 4px; animation: grow 1s cubic-bezier(.2, .8, .2, 1) both; }
+.of-cmp-bar .pos { left: 50%; background: linear-gradient(90deg, rgba(119, 219, 137, .5), var(--mint)); box-shadow: 0 0 10px rgba(119, 219, 137, .6); transform-origin: left; }
+.of-cmp-bar .neg { right: 50%; background: linear-gradient(270deg, rgba(255, 93, 108, .5), var(--red)); transform-origin: right; }
+.of-cmp-num .nw { white-space: nowrap; }
+.of-ladder svg { overflow: hidden; }
+.of-cmp-num { font-size: 12.5px; color: var(--ink); font-variant-numeric: tabular-nums; }
+@keyframes grow { from { transform: scaleX(0); } }
 .of-foot { font-size: 12px; color: var(--faint); margin: 16px 4px 0; }
 
 @media (min-width: 900px) {
