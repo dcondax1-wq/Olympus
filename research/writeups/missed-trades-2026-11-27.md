@@ -59,18 +59,28 @@ block, sizing 0.
 2. **The PC bot was off for 6 days (Nov 9-15) and nobody knew:** the report task was not installed, so no alarm. Fixed since:
    the 15-minute report, the hands-free landing (Telegram /status, reboot recovery) and the board's "PC last reported". Here it
    dodged losers (+$1,095), but the next silent week could cost a winner. No action beyond keeping those alarms on.
-3. **A disarmed account silently misses signals (Rapid EOD 25K):** not a code bug (the owner's arm step is pending), but the bot
-   knows it happened and says nothing. **Proposed fix (bot side, for the red team, NOT landed):** in `engine/setup_progress`
-   (watchdog, off the order thread, read-only), when a strategy's signal routes to the accounts and one of its follower accounts is
-   on the broker but NOT armed, send ONE line per account per day: "Rapid EOD 25K is not armed: it missed ATLAS EMA short at
-   03:45 (the twin's +6.6R). Arm it at the PC: START_BOT + I ACCEPT LIVE RISK." The data is already there (`followers()` builds
-   "Not on: Rapid EOD 25K - not armed" for the setup lines). Tests: a disarmed follower -> one line, an armed one -> none, the cap /
-   quiet hours as today. I can build it on a branch for your red team on request.
+3. **A disarmed account silently misses signals (Rapid EOD 25K): the alarm ALREADY EXISTS, the PC just never got it.**
+   `engine/live_guard.py` (day-zeroerr, landed on pc 2026-11-24 17:01 UTC, red-teamed: `tests/test_chaos_live` 40/40, check h
+   "account not armed / not in bot -> MISSED TRADE with the reason within 2 min") pushes "MISSED TRADE · ATLAS 03:45 ET on Rapid EOD
+   25K: ... not armed" for exactly this case, plus a 01:55 / 09:00 ET "NOT ARMED" line per account and a "Bot update stuck" alarm.
+   But the PC's auto-update has been held back since **Nov 24 00:45 ET (05:45 UTC), 11 hours BEFORE live_guard landed**, so the PC
+   has never run it: that is why the Nov 20 miss and every day since stayed silent. **The fix is the owner's update unblock line
+   (below), not new code.** Small gaps vs the ideal (not built: would duplicate live_guard; for the red team if wanted): it pushes once
+   per missed signal (an unarmed account on a busy day = several lines, not one a day) and carries no "$ at its size" estimate.
 4. **Auto-update held back since Nov 24 00:45 ET** (board self_heal: "held back by a local change it may not touch"; still on
    Nov 26 23:30): no trade differed yet (no twin trade Nov 21-26), but the PC runs pre-Nov-24 code. The owner's one line from
    PLAN_SUNDAY (`git stash push -m "owner park" -- research/orderflow/results.json && UPDATE.bat`) clears it.
 
+## Open question: the unexplained balance moves
+| Account | Unexplained | What we see | What would settle it |
+|---|---|---|---|
+| Zlarior 50K | **-$219.60** | balance moves with no trade row in the cloud: Oct 19-23 (before the day folders) and after Nov 20; MFFU fees / commissions are not itemised anywhere we have | the PC's day folders for Oct 19-23 and Nov 19-26 (`python tools/data_pull.py --latest` pulls `data/pc_days/<day>/trades.json`); MFFU's account statement / trade history CSV (fills, commissions, fees per day) for Oct 19 - Nov 26; NinjaTrader > Account Performance > Executions export for the account |
+| ATLAS 25K | **+$324.51** | the balance (+$2,347 at the last audit) is MORE than the seen trades (+$1,510): live rows missing for the silent Nov 7-17 and Nov 19-24; no twin trade explains a winner | the same day folders for Nov 7-24 (the bot was OFF Nov 9-15, so any fill then is a manual / platform trade: the executions export shows it); MFFU's statement around the Nov 17 eval pass -> Nov 18 funded reset (a reset or credit would explain it) |
+| Zlarior 25K #2 | +$24 | no twin trade since the Nov 18 start (board $25,019) | the same exports; likely fees / a rounding of the start balance |
+Until one of those is read, these stay "unexplained", not "bot error": nothing in the bot's own logs we have points to a wrong trade.
+
 ## What the owner does (hands only)
 1. At the PC: STOP BOT, START_BOT.bat, type I ACCEPT LIVE RISK, and check that "Rapid EOD 25K ... armed" shows. That alone would
    have banked the Nov 20 +$1,659 on the Rapid.
-2. The update unblock line above (the bot is on Nov 24 code).
+2. The update unblock line above (the bot is on Nov 24 code). This ALSO switches on the missed-trade / not-armed alarms that already
+   exist (engine/live_guard) but have never run on the PC.
