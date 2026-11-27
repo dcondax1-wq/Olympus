@@ -406,6 +406,8 @@ AREAS["cities"].append("pillars")         # day-pillars 2026-11-24: the FOUR PIL
 AREAS["nq"].append("pillars")             # day-pillars 2026-11-24: the NQ page strip + header link
 AREAS["nq"].append("brain_app")           # day-brain-app 2026-11-24: THE BRAIN (brain/: 6 regions, next trade, 3D chart, thinking, learning, today $)
 AREAS["nq"].append("brain_learned")       # big-learnview 2026-11-26: brain/learned.html (What the bots learned: lessons, tests next, ideas on trial)
+AREAS["nq"].append("nq_brain_mind")       # night-nq-brain 2026-11-27: the NQ Brain mind layer (nq/brainmind.js: thinking now, setup pipeline, ideas on trial, ...)
+AREAS["nq"].append("replay")                # night 2026-11-27: the NQ Replay Theater (nq/replay.html + tools/build_replay.py)
 AREAS["nq"].append("setup_score")         # big-setupscore 2026-11-26: engine/setup_score.py (LIT "similar setups" line, display only)
 AREAS["pc"].append("tickrec_tiny")        # day-pillars 2026-11-24: engine.tickrec.tiny / write_tiny (the order-flow pillar line)
 AREAS["pc"].append("ofready")             # day-ofready 2026-11-24: engine/ofsum.py day summaries + research/orderflow/of_battery.py (synthetic only)

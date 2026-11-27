@@ -226,7 +226,7 @@ def part_f(tmp):
     P = LN.plan(argparse.Namespace(no_pull=True, wait=None, skip="", full=False, fetch=False, dry_run=False))
     step = dict(P).get("blitz")
     check("f. tools/learn_night.py runs 'research/blitz/learn.py night' (its own step, after hub)",
-          step == [["research/blitz/learn.py", "night"]] and [s for s, _ in P][-1] == "blitz", P)
+          step == [["research/blitz/learn.py", "night"]] and [s for s, _ in P].index("blitz") > [s for s, _ in P].index("hub"), P)   # after hub (the forward step may follow)
     src = open(os.path.join(ROOT, "research", "blitz", "learn.py"), encoding="utf-8").read()
     check("f. research only: learn.py never imports the live bot or writes a live model",
           "engine.live" not in src and "import live" not in src and "live_model" not in src.replace('"live_model.json", "live_model_lit.json", '

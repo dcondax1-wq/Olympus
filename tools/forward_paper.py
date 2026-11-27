@@ -521,6 +521,11 @@ def run(only=None, bands=False, dry=False, say=print, rules=None, today=None):
                 setupscore_build.main([])
             except Exception as e:  # noqa: BLE001
                 say(f"setup score pool not rebuilt: {e.__class__.__name__}: {e}")
+            try:                           # the NQ Replay Theater's day files (tools/build_replay.py, ~6 s, the last 35 days)
+                import build_replay
+                build_replay.main([])
+            except Exception as e:  # noqa: BLE001
+                say(f"replay days not rebuilt: {e.__class__.__name__}: {e}")
             try:
                 import build_brain_learn
                 build_brain_learn.main([])

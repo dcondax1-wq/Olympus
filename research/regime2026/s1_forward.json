@@ -4,8 +4,8 @@
  "costs": "atlas_twin_r = calibrated fills (entry 12 ticks, stop / market exit 2, target 0, $1.90), JUDGED; atlas_twin_r_1tick = recorded only",
  "rejudge": "2027-02-26",
  "need_sessions": 60,
- "sessions": 0,
- "progress": "0 / 60 sessions",
+ "sessions": 4,
+ "progress": "4 / 60 sessions",
  "due": false,
  "atlas_twin": {
   "on_n": 0,
@@ -23,5 +23,40 @@
   "keeps_80pct": true
  },
  "verdict": "watching",
- "rows": []
+ "rows": [
+  {
+   "day": "2026-11-23",
+   "s1": true,
+   "atlas_real_usd": null,
+   "atlas_twin_r": [],
+   "atlas_twin_r_1tick": [],
+   "asia_paper_r": []
+  },
+  {
+   "day": "2026-11-24",
+   "s1": true,
+   "atlas_real_usd": null,
+   "atlas_twin_r": [],
+   "atlas_twin_r_1tick": [],
+   "asia_paper_r": []
+  },
+  {
+   "day": "2026-11-25",
+   "s1": true,
+   "atlas_real_usd": null,
+   "atlas_twin_r": [],
+   "atlas_twin_r_1tick": [],
+   "asia_paper_r": [
+    -1.025
+   ]
+  },
+  {
+   "day": "2026-11-26",
+   "s1": null,
+   "atlas_real_usd": null,
+   "atlas_twin_r": [],
+   "atlas_twin_r_1tick": [],
+   "asia_paper_r": []
+  }
+ ]
 }
