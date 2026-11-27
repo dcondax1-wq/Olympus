@@ -15,10 +15,10 @@ export const VIEW_BARS = 78;             // the first view: the last 6.5 hours (
 export const ACCTS = [                   // the owner's filter (2026-11-18): All / Zlarior 50K / Zlarior 25K #2 / ATLAS funded
   { k: 'all', name: 'All' },
   { k: 'z50k', name: 'Zlarior 50K', tag: 'Z50', color: 'gold' },
-  { k: 'z25k2', name: 'Zlarior 25K #2', tag: 'Z25 #2', color: 'aegean' },
+  { k: 'z25k2', name: 'Zlarior 25K #2', tag: 'Z25 #2', color: 'lav' },
   { k: 'atlas25f', name: 'ATLAS funded', tag: 'ATLAS', color: 'mauve' },
 ];
-const OTHER_COLORS = ['sand', 'olive', 'rose'];
+const OTHER_COLORS = ['rose', 'amber', 'sky'];   // night-nq-chart 2026-11-27: OLYMPUS NIGHT (no olive / brown)
 // the PC's pace (tools/pc_report.py, at most 24 posts a day: ntfy's free cap): candles about hourly while the bots trade, the trades at once
 export const EVERY = 'New bars come from its NinjaTrader about every hour while the bots trade (01:50-16:10 ET) and right after each entry or exit';
 const WHY = { TARGET: 'Target hit', STOP: 'Stop hit', BE: 'Break-even stop', TIME: 'Time exit', EOD: 'Flat by the close', FLAT: 'Flat by the close',
@@ -196,6 +196,64 @@ function cleanTrade(r, open) {
 }
 export function whyText(w) { const k = String(w || '').toUpperCase(); return WHY[k] || (k ? `Closed (${k.toLowerCase()})` : 'Closed'); }
 
+// ------------------------------------------------------------------------------------------------ sessions, levels, sweeps (night-nq-chart 2026-11-27)
+// Only what the PC's bars hold: each bar's ET session (Asia 18:00-02:00, London 02:00-08:00, New York 08:00-17:00), the highs / lows of
+// the sessions in the feed ("(part)" when the feed starts after the session began), and a SWEEP = a later bar that trades past a level
+// and closes back inside it (LIT's liquidity grab). Levels the bars cannot show (prior day, the whole Globex night) come only from the
+// PC itself (post.lv = {pdh, pdl, onh, onl}, optional): never guessed.
+export const SESS = [{ k: 'asia', name: 'Asia', from: 18 * 60, to: 2 * 60 }, { k: 'london', name: 'London', from: 2 * 60, to: 8 * 60 }, { k: 'ny', name: 'New York', from: 8 * 60, to: 17 * 60 }];
+const minOf = (hmText) => { const [a, b] = String(hmText || '0:0').split(':'); return +a * 60 + +b; };
+export function sessionOf(t) {
+  const p = et(t); if (!p) return null;
+  const m = minOf(p.hm);
+  if (m >= 18 * 60 || m < 2 * 60) return 'asia';
+  if (m < 8 * 60) return 'london';
+  if (m < 17 * 60) return 'ny';
+  return null;                                           // 17:00-18:00: CME closed
+}
+/** [{k, name, i0, i1}] the runs of bars per session, oldest first (i = index in bars) */
+export function sessions(bars) {
+  const out = [];
+  for (let i = 0; i < bars.length; i += 1) {
+    const k = sessionOf(bars[i][0]), last = out[out.length - 1];
+    if (!k) continue;
+    if (last && last.k === k && i - last.i1 <= 2 && bars[i][0] - bars[last.i1][0] <= 3 * 3600) last.i1 = i;
+    else out.push({ k, name: (SESS.find((x) => x.k === k) || {}).name || k, i0: i, i1: i });
+  }
+  return out;
+}
+const LV = { pdh: ['PD high', 1], pdl: ['PD low', -1], onh: ['Globex high', 1], onl: ['Globex low', -1] };
+/** {levels: [{k, label, price, side (1 high / -1 low), i0 (first bar it applies from), part, src}], sweeps: [{i, price, side, label}]} */
+export function levels(bars, post, tick) {
+  const tk = num(tick) || 0.25, out = [], sw = [];
+  if (bars.length < 2) return { levels: out, sweeps: sw };
+  const lo = Math.min(...bars.map((b) => b[3])), hi = Math.max(...bars.map((b) => b[2])), span = Math.max(hi - lo, 1);
+  const lv = obj(post && post.lv);
+  for (const [k, [label, side]] of Object.entries(LV)) {
+    const p = num(lv[k]);
+    if (p != null && p > lo - 3 * span && p < hi + 3 * span) out.push({ k, label, price: p, side, i0: 0, part: false, src: 'pc' });
+  }
+  const ss = sessions(bars);
+  ss.forEach((s, j) => {
+    if (j === ss.length - 1 && s.i1 === bars.length - 1) return;              // the session still running: no level yet
+    if (s.i1 - s.i0 < 3) return;
+    const seg = bars.slice(s.i0, s.i1 + 1), first = minOf((et(bars[s.i0][0]) || {}).hm), want = (SESS.find((x) => x.k === s.k) || {}).from;
+    const part = s.i0 === 0 && first !== want;
+    const H = Math.max(...seg.map((b) => b[2])), L = Math.min(...seg.map((b) => b[3]));
+    out.push({ k: s.k + 'H', label: `${s.name} high${part ? ' (part)' : ''}`, price: H, side: 1, i0: s.i1 + 1, part, src: 'bars' });
+    out.push({ k: s.k + 'L', label: `${s.name} low${part ? ' (part)' : ''}`, price: L, side: -1, i0: s.i1 + 1, part, src: 'bars' });
+  });
+  for (const L of out) {                                 // the first sweep of each level after it formed
+    for (let i = Math.max(1, L.i0); i < bars.length; i += 1) {
+      const b = bars[i];
+      if (L.side > 0 && b[2] >= L.price + tk && b[4] < L.price) { sw.push({ i, price: b[2], side: 1, label: L.label.replace(' (part)', ''), k: L.k }); break; }
+      if (L.side < 0 && b[3] <= L.price - tk && b[4] > L.price) { sw.push({ i, price: b[3], side: -1, label: L.label.replace(' (part)', ''), k: L.k }); break; }
+      if ((L.side > 0 && b[4] > L.price) || (L.side < 0 && b[4] < L.price)) break;   // closed through: taken, not swept
+    }
+  }
+  return { levels: out.slice(0, 8), sweeps: sw };
+}
+
 /** what the card shows for one account filter ('all' or a key) at nowS (seconds) */
 export function model(post, acct, nowS) {
   const now = num(nowS) != null ? num(nowS) : Date.now() / 1000;
@@ -203,16 +261,16 @@ export function model(post, acct, nowS) {
   const A = accounts(post), bars = unpack(post);
   const chips = [{ k: 'all', name: 'All', n: 0, color: null }, ...Object.values(A).filter((a) => ACCTS.some((x) => x.k === a.k) || a.inFeed).map((a) => ({ k: a.k, name: a.name, n: 0, color: a.color }))];
   if (!bars.length) {
-    return { state: 'none', acct: want, chips, candles: [], markers: [], lines: [], list: [], asOf: '', age: null, view: null, last: null,
+    return { state: 'none', acct: want, chips, candles: [], markers: [], lines: [], list: [], asOf: '', age: null, view: null, last: null, sessions: [], levels: [], sweeps: [], zones: [],
       message: `The PC has not sent chart bars yet (it needs the new update first). ${EVERY}.` };
   }
   const opens = arr(post.open).map((r) => cleanTrade(r, true)).filter(Boolean), closed = arr(post.closed).map((r) => cleanTrade(r, false)).filter(Boolean);
-  for (const r of [...opens, ...closed]) { if (!A[r.k]) A[r.k] = { k: r.k, name: `Account ${r.k}`, tag: r.k.slice(0, 8), color: 'sand', inFeed: true }; }
+  for (const r of [...opens, ...closed]) { if (!A[r.k]) A[r.k] = { k: r.k, name: `Account ${r.k}`, tag: r.k.slice(0, 8), color: 'rose', inFeed: true }; }
   for (const c of chips) c.n = c.k === 'all' ? opens.length + closed.length : opens.filter((r) => r.k === c.k).length + closed.filter((r) => r.k === c.k).length;
   for (const k of Object.keys(A)) if (!chips.some((c) => c.k === k)) chips.push({ k, name: A[k].name, color: A[k].color, n: opens.filter((r) => r.k === k).length + closed.filter((r) => r.k === k).length });
   const pick = (r) => want === 'all' || r.k === want;
   const op = opens.filter(pick), cl = closed.filter(pick);
-  const tag = (k) => (A[k] ? A[k].tag : k), color = (k) => (A[k] ? A[k].color : 'sand');
+  const tag = (k) => (A[k] ? A[k].tag : k), color = (k) => (A[k] ? A[k].color : 'rose');
   const off = (t) => { const p = et(t); return p ? p.off : 0; };
   const candles = bars.map(([t, o, h, l, c]) => ({ time: t + off(t), open: o, high: h, low: l, close: c }));
   const markers = [];
@@ -265,10 +323,15 @@ export function model(post, acct, nowS) {
   let asOf = `As of ${hm(dataT, now)}, from the PC (${age < 90 ? 'just now' : ageWords(age) + ' ago'})${sym ? ` · ${sym}` : ''}.`;
   if (lagged) asOf += ` Trades as of ${hm(tt, now)} (the bot's last report).`;
   const lastC = bars[n - 1][4];
+  const LS = levels(bars, post, num(post.tick) || 0.25);
+  const sess = sessions(bars).map((x) => ({ k: x.k, name: x.name, from: candles[x.i0].time, to: candles[x.i1].time }));
+  const lvls = LS.levels.map((x) => ({ ...x, from: candles[Math.min(x.i0, n - 1)].time }));
+  const sweeps = LS.sweeps.map((x) => ({ ...x, time: candles[x.i].time }));
   const message = state === 'ok' ? '' : `These are the PC's last bars (${hm(dataT, now)}, ${ageWords(age)} ago). ${EVERY}.`;
   const none = !op.length && !cl.length ? (want === 'all' ? 'No trade today yet. Quiet days are normal: the plan is 2 to 4 trades a week.'
     : `No trade on ${A[want] ? A[want].name : 'this account'} today.`) : '';
   return { state, acct: want, chips, candles, markers, lines, extent, list, asOf, age, dataT, message, none, last: lastC, forming: num(post.f) === 1,
-    view: { from, to: n - 1 }, n, first: bars[0][0], open: op.length, closed: cl.length,
+    view: { from, to: n - 1 }, n, first: bars[0][0], open: op.length, closed: cl.length, sessions: sess, levels: lvls, sweeps,
+    zones: op.filter((r) => r.sl != null || r.tp != null).map((r) => ({ k: r.k, s: r.s, e: r.e, sl: r.sl, tp: r.tp, from: barIndex(bars, r.t) >= 0 ? candles[barIndex(bars, r.t)].time : candles[0].time })),
     label: `NQ 5-minute chart, ${n} bars from ${hm(bars[0][0], now)} to ${hm(bars[n - 1][0] + TF, now)}, last price ${px(lastC)}. ${plural(op.length, 'open trade')}, ${plural(cl.length, 'closed trade')}${want === 'all' ? '' : ' on ' + (A[want] ? A[want].name : want)}.` };
 }

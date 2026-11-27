@@ -167,7 +167,7 @@ def test_node():
     cl = {r["k"]: r for r in info["closed"]}
     check("b. an arrow per entry (long = up under the price, short = down over it) in the account's colour (its chip shows the colour; no text on a phone)",
           sorted(tuple(x[1:]) for x in mk if x[0] == "entry") == sorted([("z50k", "arrowUp", "atPriceTop", "gold", ""), ("z50k", "arrowDown", "atPriceBottom", "gold", ""),
-                                                                         ("z25k2", "arrowUp", "atPriceTop", "aegean", ""), ("z25k2", "arrowDown", "atPriceBottom", "aegean", ""),
+                                                                         ("z25k2", "arrowUp", "atPriceTop", "lav", ""), ("z25k2", "arrowDown", "atPriceBottom", "lav", ""),
                                                                          ("atlas25f", "arrowDown", "atPriceBottom", "mauve", "")]), mk)
     check("b. an exit dot on each closed trade's exit bar with its $ (green win / red loss; over the bar for a long, under it for a short, clear of the candles)",
           sorted((x[1], x[2], x[4], x[5]) for x in mk if x[0] == "exit") == sorted([("z50k", "circle", "good", money_s(cl["z50k"]["usd"])), ("z25k2", "circle", "good", money_s(cl["z25k2"]["usd"])),
@@ -186,7 +186,7 @@ def test_node():
           and a["list"][0][4].startswith("Stop ") and a["list"][4][4] == "Stop hit" and a["list"][2][4] == "Target hit", a.get("list"))
     check("b. the chips: All 5, Zlarior 50K 2, Zlarior 25K #2 2, ATLAS funded 1 (the owner's four, in his words), each account with its colour",
           a.get("chips") == [["all", "All", 5], ["z50k", "Zlarior 50K", 2], ["z25k2", "Zlarior 25K #2", 2], ["atlas25f", "ATLAS funded", 1]]
-          and a.get("colors") == [None, "gold", "aegean", "mauve"], (a.get("chips"), a.get("colors")))
+          and a.get("colors") == [None, "gold", "lav", "mauve"], (a.get("chips"), a.get("colors")))
     check("b. 'As of HH:MM ET, from the PC (just now) · MNQ 12-26.'; the first view = the last 78 bars (6.5 h) reaching back to the open trade",
           re.fullmatch(r"As of \d\d:\d\d ET, from the PC \(just now\) · MNQ 12-26\.", a.get("asOf") or "") and a.get("view") == {"from": 102, "to": 179}
           and a.get("open") == 2 and a.get("closed") == 3 and "180 bars" in (a.get("label") or ""), (a.get("asOf"), a.get("view")))
