@@ -130,6 +130,9 @@ def browser():
     check("c. trading home: PC health tile first when red", f["tiles"][0][0] == "health" and f["tiles"][0][1].startswith("red"), f["tiles"][0])
     g = o["fresh_pchealth"]
     check("c. pchealth: red hero + the ready check first", g["hero"] == "red" and g["cards"][0][0] == "ready" and "ready check" in g["say"], (g["hero"], g["cards"][:2]))
+    clip = g.get("clip") or ""
+    check("c. pchealth 'Copy for Claude' copies every check in plain text", clip.startswith("PC Health: 4 things need you") and clip.count("\n- [") == len(g["cards"])
+          and "[red] Ready check" in clip and not re.search(r"MFFU[A-Z]{2,}\d{4,}", clip), clip[:200])
     check("c. pchealth old: report red", dict(o["old_pchealth"]["cards"]).get("report") == "red")
     check("c. pchealth none: 'No report from the PC yet.'", o["none_pchealth"]["say"] == "No report from the PC yet.", o["none_pchealth"]["say"])
     nt = {x[0]: x for x in o["none_trading_home"]["tiles"]}

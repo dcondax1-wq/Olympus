@@ -21,7 +21,7 @@ function shifted(ago) {
   const browser = await chromium.launch();
   for (const [name, lite] of [['fresh', shifted(120)], ['old', shifted(5 * 3600)], ['none', null]]) {
     for (const p of ['trading_home', 'pchealth']) {
-      const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+      const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, permissions: ['clipboard-read', 'clipboard-write'] });
       const pg = await ctx.newPage(), errs = [], sends = [];
       pg.on('pageerror', (e) => errs.push(String(e)));
       pg.on('request', (r) => { if (r.method() !== 'GET') sends.push(r.method() + ' ' + r.url()); else if (!r.url().startsWith(base)) sends.push('outside ' + r.url()); });
@@ -38,6 +38,10 @@ function shifted(ago) {
           hero: (document.getElementById('hero') || {}).dataset ? document.getElementById('hero').dataset.s : null, say: (document.getElementById('say') || {}).textContent || null,
           cards: q('li.ck').map((l) => [l.dataset.id, l.className.replace('ck ', '')]), text: document.body.innerText, small };
       });
+      if (p === 'pchealth' && name === 'fresh') {
+        await pg.click('#copy'); await pg.waitForTimeout(200);
+        out[name + '_' + p].clip = await pg.evaluate(() => navigator.clipboard.readText().catch(() => 'READ FAILED'));
+      }
       out[name + '_' + p].errs = errs; out[name + '_' + p].sends = sends;
       await ctx.close();
     }

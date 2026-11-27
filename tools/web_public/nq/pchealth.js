@@ -3,7 +3,18 @@
   'use strict';
   var ICON = { green: '✓', amber: '!', red: '×', grey: '?' };
   var WORD = { red: 'need you now', amber: 'to watch', green: 'fine', grey: 'not sent' };
-  var lite = null;
+  var lite = null, last = null;
+  function plain(r) {   // the whole page as plain text, to paste into a chat with Claude (ids already masked by the core)
+    var lines = ['PC Health: ' + r.say + (r.age == null ? ' (no PC report)' : ' (PC reported ' + window.PCHEALTH.ageText(r.age) + ' ago)')];
+    r.checks.forEach(function (c) { lines.push('- [' + c.state + '] ' + c.title + ': ' + c.say + (c.fix ? ' Fix: ' + c.fix : '')); });
+    return lines.join('\n');
+  }
+  function copy() {
+    var b = document.getElementById('copy'), t = last ? plain(last) : '';
+    function ok() { b.textContent = 'Copied'; b.classList.add('done'); setTimeout(function () { b.textContent = 'Copy for Claude'; b.classList.remove('done'); }, 2000); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, function () { b.textContent = 'Copy failed'; });
+    else b.textContent = 'Copy not available';
+  }
   function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
   function card(c, i) {
     var li = el('li', 'ck ' + c.state); li.setAttribute('data-id', c.id); li.style.setProperty('--i', i);
@@ -13,7 +24,7 @@
     return li;
   }
   function render() {
-    var H = window.PCHEALTH, r = H.checks(lite);
+    var H = window.PCHEALTH, r = H.checks(lite); last = r;
     var hero = document.getElementById('hero'); hero.setAttribute('data-s', r.overall);
     document.getElementById('orb').textContent = ICON[r.overall] || '?';
     document.getElementById('say').textContent = lite ? r.say : 'No report from the PC yet.';
@@ -32,5 +43,6 @@
     window.PC_FEED.fetchLatest({ feedUrl: new URL('../status_feed.json', location.href).href })
       .then(function (j) { lite = j || null; render(); }, function () { render(); });
   }
+  document.getElementById('copy').addEventListener('click', copy);
   render(); load(); setInterval(load, 60000);
 })();
