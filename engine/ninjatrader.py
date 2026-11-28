@@ -2680,6 +2680,14 @@ class NinjaTraderAdapter:
                 self._send_lines([close_line(self.account, inst + self.close_suffix)], "CLOSE (flat time)")
 
     # ------------------------------------------------------------------ persistence / status
+    # day-moneyaudit / red team #47 (2026-11-27): ATLAS funded's and the 25K #2 combo lane's state files were BOTH unreadable at
+    # the Thu Nov 26 22:01:57 ET restart (JSONDecodeError) -> STARTUP DISARMED all of Nov 27. The save wrote .tmp and replaced it
+    # but never flushed / fsynced: after an unclean shutdown (power cut / forced reboot) NTFS can keep the rename and lose the
+    # data (an empty / NUL-filled file). Now: flush + fsync before the replace whenever what a restart needs changed (CRIT),
+    # a last-good copy <state>.bak written the same safe way, _restore falls back to it, and a save whose content (minus
+    # saved_at) did not change is skipped (cheaper than before).
+    CRIT = ("legs", "withdrawn", "watch", "killed", "state_problem", "nt_reset", "entries_day", "day", "account")
+
     def _save(self):
         if self.readonly:
             return
@@ -2688,12 +2696,16 @@ class NinjaTraderAdapter:
                 "seen_pos": self.seen_pos, "nt_reset": self.nt_reset, "state_problem": self.state_problem,
                 "entries_day": self.entries_day}
         try:
+            key = json.dumps({k: v for k, v in blob.items() if k != "saved_at"}, sort_keys=True, default=str)
+            if key == getattr(self, "_saved_key", None) and os.path.exists(self.state_path):
+                return                                   # nothing but the clock changed: the file on disk already says this
+            crit = json.dumps({k: blob[k] for k in self.CRIT}, sort_keys=True, default=str)
+            durable = crit != getattr(self, "_saved_crit", None)
             os.makedirs(os.path.dirname(self.state_path), exist_ok=True)
-            tmp = self.state_path + ".tmp"
-            with open(tmp, "w", encoding="utf-8") as fh:
-                json.dump(blob, fh, indent=1, default=str)
-            from .fsutil import replace as _replace
-            _replace(tmp, self.state_path)            # retried: Windows refuses a replace while a reader has it open
+            write_json_atomic(self.state_path, blob, fsync=durable)
+            if durable:                                  # the last good copy a torn main file falls back to
+                write_json_atomic(self.state_path + ".bak", {**blob, "saved_wall": time.time()}, fsync=True)
+            self._saved_key, self._saved_crit = key, crit
         except Exception as e:
             # night-faults 2026-11-23: a failed save (disk full, a lock) was only last_error: silent. The write-ahead record is
             # what a restart restores the open bracket from, so the owner hears it (one alert per 30 min; logged every time)
@@ -2706,6 +2718,34 @@ class NinjaTraderAdapter:
                 self.last_error = msg
                 self._log("error", "NinjaTrader " + msg)
 
+    def _bak_usable(self):
+        """The last-good copy (<state>.bak) when the main file is torn: a state object of this account, and NO order of this
+        account was PLACEd after it was written (the OIF audit log's stamps vs its saved_wall: an entry sent after the .bak
+        would be a bracket it does not know). Its open legs restore as OPEN (never flat). None = not usable."""
+        try:
+            with open(self.state_path + ".bak", encoding="utf-8") as fh:
+                b = json.load(fh)
+            if not isinstance(b, dict) or not isinstance(b.get("legs", []), list) or b.get("account") != self.account:
+                return None
+            wall = float(b.get("saved_wall") or 0)
+            if not wall:
+                return None
+            cut = _et(wall).strftime("%Y-%m-%d %H:%M:%S")
+            try:
+                with open(self.audit_path, encoding="utf-8", errors="replace") as fh:
+                    rows = fh.read().splitlines()[-3000:]
+            except FileNotFoundError:
+                rows = []                                # no audit log yet = this adapter never placed an order
+            for row in rows:
+                parts = row.split("  ")
+                if len(parts) < 4 or parts[1].strip() != self.account:
+                    continue
+                if parts[-1].startswith("PLACE") and parts[0].replace(" ET", "").strip() >= cut:
+                    return None                          # an order went out at / after the .bak: it may not know that bracket
+            return b
+        except Exception:
+            return None
+
     def _restore(self):
         try:
             with open(self.state_path, encoding="utf-8") as fh:
@@ -2715,6 +2755,20 @@ class NinjaTraderAdapter:
         except FileNotFoundError:
             return
         except Exception as e:
+            b = self._bak_usable()
+            if b is not None:
+                bad = f"{self.state_path}.corrupt-{int(time.time())}"
+                try:
+                    os.replace(self.state_path, bad)
+                except OSError:
+                    pass
+                self._log("system", f"NinjaTrader: the state file was unreadable ({e.__class__.__name__}): restored from its last good "
+                                    f"copy (saved {_et(float(b['saved_wall'])):%a %H:%M:%S} ET, no order placed since; "
+                                    f"{sum(1 for lg in b.get('legs') or [] if isinstance(lg, dict) and lg.get('status') in OPEN_STATUSES)} "
+                                    f"open bracket(s) kept open); the torn file kept as {os.path.basename(bad)}")
+                s = b
+                self._apply_state(s)
+                return
             # a torn / corrupted file: the open bracket it held is unknown. Never read that as flat: kept aside for a look,
             # new entries blocked until NinjaTrader shows this account flat (position files) or the owner confirms
             mine = not self.readonly and not getattr(self, "lock_problem", None)
@@ -2735,6 +2789,9 @@ class NinjaTraderAdapter:
                            "or you check NinjaTrader and run python -m engine.ninjatrader --confirm-reset. An open trade's stop "
                            "and target stay at the broker; check NinjaTrader Orders + Positions now.")
             return
+        self._apply_state(s)
+
+    def _apply_state(self, s):
         if s.get("account") != self.account or s.get("day") != _trading_day(self.clock()):
             return
         self.legs = [lg for lg in (s.get("legs") or []) if isinstance(lg, dict) and lg.get("status") in OPEN_STATUSES]
@@ -3003,6 +3060,19 @@ def _http(port, path, body=None, timeout=20):
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))      # the local server: never through a proxy
     with opener.open(req, timeout=timeout) as r:
         return json.loads(r.read().decode() or "{}")
+
+
+def write_json_atomic(path: str, obj, fsync: bool = True, indent=1):
+    """obj -> path via <path>.tmp: write, flush, fsync (when asked: what a restart needs), then the Windows-safe replace
+    (engine/fsutil.replace). A crash before the replace leaves the old file; after it, the new one, never a torn file."""
+    from .fsutil import replace as _replace
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
+        json.dump(obj, fh, indent=indent, default=str)
+        fh.flush()
+        if fsync:
+            os.fsync(fh.fileno())
+    _replace(tmp, path)                                  # retried: Windows refuses a replace while a reader has it open
 
 
 def _last_price(folder):
