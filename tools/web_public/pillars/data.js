@@ -13,7 +13,7 @@ const AT = (() => { const v = q.get('at'); const t = v ? Date.parse(v) : NaN; re
 const T0 = Date.now() / 1000;
 const nowS = () => (AT ? AT + (Date.now() / 1000 - T0) : Date.now() / 1000);
 const S = { site: {}, lite: null, id: 'lit', model: null };
-const NAMES = { lit: 'LIT', atlas: 'ATLAS', blitz: 'BLITZ', of: 'ORDER FLOW' };
+const NAMES = { lit: 'LIT', atlas: 'ATLAS', blitz: 'BLITZ', of: 'POSEIDON' };
 
 function el(tag, attrs, ...kids) {
   const e = document.createElement(tag);

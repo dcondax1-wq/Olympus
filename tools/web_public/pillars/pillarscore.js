@@ -138,7 +138,7 @@ export const PILLAR_BASE = [
   { id: 'lit', name: 'LIT', alias: 'Zlarior', color: '#f1c14b', bot: 'lit', state: 'live', status: 'On the PC bot' },
   { id: 'atlas', name: 'ATLAS', alias: 'EMA · MACD · S/R', color: '#77db89', bot: 'atlas', state: 'live', status: 'On the PC bot' },
   { id: 'blitz', name: 'BLITZ', alias: 'the scalper', color: '#9d59ee', bot: 'blitz', state: 'off', status: 'Paper, hidden; built and OFF' },
-  { id: 'of', name: 'ORDER FLOW', alias: 'ticks', color: '#c9a7ff', bot: null, state: 'notready', status: 'Not ready', study_days: 60 },
+  { id: 'of', name: 'POSEIDON', alias: 'ticks', color: '#c9a7ff', bot: null, state: 'notready', status: 'Not ready', study_days: 60 },
 ];
 /** the four pillars in the owner's order: LIT, ATLAS, BLITZ, ORDER FLOW */
 export function build(data, ctx) {
