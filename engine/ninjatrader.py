@@ -2341,9 +2341,13 @@ class NinjaTraderAdapter:
     # contract, and NinjaTrader writes none for a flat account after its own restart (a missing file never proves flat). Second
     # proof, same never-guess rule: the account's own fresh row in le_feed\accounts.csv (LE_BarFeed, once a minute) says
     # unrealized P&L exactly $0.00 on FLAT_PNL_READS reads spanning >= FLAT_PNL_SPAN_S while the chart moved >= FLAT_PNL_MOVE pts
+    # over >= FLAT_PNL_CLOSES distinct 1m closes
     # (one micro held through that move would show >= $2), no position file says otherwise, no leg of the bot is open. The
     # orphan-order check below still runs after it.
-    FLAT_PNL_READS, FLAT_PNL_SPAN_S, FLAT_PNL_MOVE = 3, 300, 1.0
+    # red team #47 hardening: the row's time is LE_BarFeed's write time (every account, every minute) and "0.00" is also what
+    # NinjaTrader writes before it computed anything, so a micro sitting at its entry on a few writes must not pass: 5 reads,
+    # >= 2 pts of chart move and >= 3 distinct 1m closes across them
+    FLAT_PNL_READS, FLAT_PNL_SPAN_S, FLAT_PNL_MOVE, FLAT_PNL_CLOSES = 5, 300, 2.0, 3
 
     def _feed_px(self):
         """(bar time, close) of the newest le_feed 1m bar if it closed within the last 3 minutes, else None."""
@@ -2383,7 +2387,8 @@ class NinjaTraderAdapter:
             sp["pnl_reads"] = reads[-20:]
             span = reads[-1][0] - reads[0][0]
             moved = max(r[1] for r in reads) - min(r[1] for r in reads)
-            if len(reads) >= self.FLAT_PNL_READS and span >= self.FLAT_PNL_SPAN_S and moved >= self.FLAT_PNL_MOVE:
+            if len(reads) >= self.FLAT_PNL_READS and span >= self.FLAT_PNL_SPAN_S and moved >= self.FLAT_PNL_MOVE \
+                    and len({round(r[1], 2) for r in reads}) >= self.FLAT_PNL_CLOSES:
                 self._log("system", f"NinjaTrader: {self.account} reads FLAT from its own account row (unrealized $0.00 on "
                                     f"{len(reads)} reads over {span // 60} min while the chart moved {moved:.2f} pts; no position "
                                     "file since NinjaTrader's restart)")

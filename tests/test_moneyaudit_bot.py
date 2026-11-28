@@ -14,8 +14,8 @@ folders said whether the 25K #2's ATLAS lane was even on, or why any non-B lane 
   6. feed_trades ("at", the Trading page + Week in Review): the Rapid's ATLAS lane trades (its own state file) reach the Rapid's row
      (today's S/R +$304 was missing: "1 live trade +$304" for a +$608 day); a combo lane's open trade; refused entries never
   7. NinjaTrader's torn-state hold clears itself on a FLAT account with no position file (the real Nov 27 cause: both lanes
-     "STARTUP DISARMED" all day): the account's own accounts.csv row at unrealized $0.00 on 3 reads over >= 5 min while the chart
-     moved; NEVER on a non-zero / stale row, a position file not FLAT, an open leg, a still chart, or under 5 min; live_guard
+     "STARTUP DISARMED" all day): the account's own accounts.csv row at unrealized $0.00 on 5 reads over >= 5 min while the chart
+     moved >= 2 pts over >= 3 distinct closes; NEVER on a non-zero / stale row, a position file not FLAT, an open leg, a still chart, or under 5 min; live_guard
      pushes a STARTUP DISARMED skip as a miss
   4. trade_watch: a twin entry the Rapid's lane checked with no reason -> "ATLAS on the Rapid EOD vs backtest: missed", its own key;
      the combo lane's stuck record -> missed; account B's keys and texts unchanged
@@ -211,31 +211,34 @@ def part7(root):
             feed(fold, now[0] - 30, px, un)
             res.append(ad._state_problem_resolved())
         return ok0, res, ad
-    ok0, res, ad = run("a", [(0, 26280.0, 0.0), (180, 26282.0, 0.0), (360, 26285.0, 0.0)])
+    G5 = [(0, 26280.0, 0.0), (90, 26282.0, 0.0), (180, 26281.0, 0.0), (270, 26284.0, 0.0), (360, 26285.0, 0.0)]
+    ok0, res, ad = run("a", G5)
     check("7. a torn state file, no position file: blocked at first (as before)", ok0)
-    check("7. ... cleared on the 3rd $0.00 account read, 6 min, the chart moved 5 pts; entries allowed again",
-          res == [False, False, True] and ad.state_problem is None, res)
-    _, res, _ = run("b", [(0, 26280.0, 0.0), (180, 26282.0, -6.5), (360, 26285.0, 0.0), (420, 26286.0, 0.0)])
-    check("7. never: a non-zero unrealized read starts the count over (a position is open)", res == [False, False, False, False], res)
-    _, res, _ = run("c", [(0, 26280.0, 0.0), (180, 26280.0, 0.0), (360, 26280.0, 0.0)])
-    check("7. never: a still chart (a break-even position would read $0 too)", res == [False, False, False], res)
-    _, res, _ = run("d", [(0, 26280.0, 0.0), (120, 26282.0, 0.0), (240, 26285.0, 0.0)])
-    check("7. never: under 5 minutes of reads", res == [False, False, False], res)
+    check("7. ... cleared on the 5th $0.00 account read, 6 min, the chart moved 5 pts over 5 closes; entries allowed again",
+          res == [False] * 4 + [True] and ad.state_problem is None, res)
+    _, res, _ = run("b", G5[:2] + [(180, 26281.0, -6.5)] + G5[3:] + [(450, 26286.0, 0.0)])
+    check("7. never: a non-zero unrealized read starts the count over (a position is open)", not any(res), res)
+    _, res, _ = run("c", [(t, 26280.0, 0.0) for t in (0, 90, 180, 270, 360, 450)])
+    check("7. never: a still chart (a break-even position would read $0 too)", not any(res), res)
+    _, res, _ = run("c2", [(0, 26280.0, 0.0), (90, 26281.5, 0.0), (180, 26280.0, 0.0), (270, 26281.5, 0.0), (360, 26280.0, 0.0)])
+    check("7. never: only 2 distinct closes and 1.5 pts of move (red team #47 hardening)", not any(res), res)
+    _, res, _ = run("d", [(0, 26280.0, 0.0), (60, 26282.0, 0.0), (120, 26281.0, 0.0), (180, 26284.0, 0.0), (240, 26285.0, 0.0)])
+    check("7. never: under 5 minutes of reads", not any(res), res)
     ad, fold, now = adapter("e")
     open(os.path.join(fold, "outgoing", "MNQ 12-26 Globex_Sim102_Position.txt"), "w").write("LONG;1;26280")
     r = []
-    for dt_, px in ((0, 26280.0), (180, 26282.0), (360, 26285.0)):
+    for dt_, px, _u in G5:
         now[0] = float(TB - 1200 + dt_)
         feed(fold, now[0] - 30, px, 0.0)
         r.append(ad._state_problem_resolved())
-    check("7. never: a position file that says LONG", r == [False, False, False] and ad.state_problem is not None, r)
+    check("7. never: a position file that says LONG", not any(r) and ad.state_problem is not None, r)
     ad, fold, now = adapter("f")
     r = []
-    for dt_, px in ((0, 26280.0), (180, 26282.0), (360, 26285.0)):
+    for dt_, px, _u in G5:
         now[0] = float(TB - 1200 + dt_)
         feed(fold, now[0] - 400, px, 0.0)                                     # the account row is 6+ minutes old
         r.append(ad._state_problem_resolved())
-    check("7. never: a stale account row", r == [False, False, False], r)
+    check("7. never: a stale account row", not any(r), r)
     dis = Lane("ATLAS funded", held={str(TB): {"key": "sr_nyreclaim", "why": "STARTUP DISARMED until reconciled: the bot's NinjaTrader state file was unreadable"}}, probed=[TB])
     m = LG.missed(Bot(b=dis), TB + 300)
     check("7. live_guard: a STARTUP DISARMED skip is a MISSED push (with that reason)", len(m) == 1 and m[0]["why"].startswith("STARTUP DISARMED"), m)
