@@ -63,6 +63,13 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
 
 - 2026-11-27 (night-of-daycap-rt 9760830a, red team #37 1 FIX applied): **OF practice lane capped at 1 trade a day** (engine/of_lane max_per_day, default 1) = the tested first-of-day book; a refused or E5-cancelled first signal still uses the day (signal_rank), exits/kill never blocked; of_ladder step-1 hold lifts at cap 1. tests.test_of_daycap 28/28.
 
+## 2026-11-27 night: missed-money fix landed (~20:30 ET)
+- REAL MONEY: ATLAS funded 25K (...6018) and the ATLAS combo on Zlarior 25K #2 were STARTUP DISARMED from Thu Nov 26 22:01 ET (an unclean PC stop tore both NinjaTrader state files: JSONDecodeError, kept as *.corrupt-[number]) and stayed disarmed all Fri: NinjaTrader writes no FLAT position file for a flat account, so the hold never cleared. Missed Fri 10:10 S/R LONG: -$302 x 2.
+- FIXED (day-moneyaudit-bot 5f6194bff, red team #47 CLEAR): 2nd flat proof = the account's own le_feed row reads unrealized $0.00 on 5 reads over >= 5 min, >= 2 pts move, >= 3 distinct closes, no non-FLAT file, no open leg; NT state save = flush+fsync, last-good .bak (restore falls back; a .bak with open legs stays OPEN), unchanged state rewritten every 600 s; live_guard pushes STARTUP DISARMED / stale / late / stuck-record skips as MISSED; feed ab/abl + combo lanes in trade_watch + feed_trades.
+- Money audit Oct 19 - Nov 27 (research/moneyaudit/AUDIT.json, writeups/money-audit-2026-11-27.md): left on the table -$2,316, losers dodged +$1,997. CORRECTION: Rapid Nov 20 "-$1,659 not armed" was WRONG: size 0 by design (30% best-day rule).
+- Also landed: day-sharefix e7a27a56 (Insta card = New York day; POSEIDON rename outside nq/). Cache le-public-v232.
+- Owner check Monday: ATLAS funded's first trade / a "reads FLAT from its own account row" log line; any MISSED push now names its hold.
+
 ## 2026-11-27 evening landing (~17:00 ET, owner: "complete charts of each strategy ... see each brain ... order flow on there")
 - Order flow is named **POSEIDON** in the NQ app (files/ids unchanged; rename outside nq/ + Telegram /oflane text still to do).
 - WEB live: nq/strat.html?s=lit|atlas|blitz|poseidon (strategy rooms: live chart filtered, today's signals incl. skipped, every trade, equity, stats) +
