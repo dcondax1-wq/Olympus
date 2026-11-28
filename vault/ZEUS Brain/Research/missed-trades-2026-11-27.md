@@ -25,5 +25,6 @@ aliases:
 
 - Family: [[Family other]]
 - Day: [[Day 2026-11-27]]
+- Refers to: [[money-audit-2026-11-27|Missed-money audit]]
 - Source: `research/writeups/missed-trades-2026-11-27.md`
 - Back to [[ZEUS Home]]

@@ -133,7 +133,8 @@ def live_rows(feed=None):
                 "z25k2" if "b25k" in str(src) or "x:" in str(acct) else "z50k"
             out.append({"acct": a, "bot": str(r.get("bot") or "").upper() or "LIT", "member": r.get("strategy"), "entry_t": et_,
                         "dir": 1 if str(r.get("side")).lower() in ("buy", "long") else -1, "q": r.get("qty"), "usd": ex.get("pnl"),
-                        "src": f"pc_days {os.path.basename(d)} ({src})"})
+                        "e": r.get("entry"), "src": f"pc_days {os.path.basename(d)} ({src})",
+                        **({"combo": True} if "ATLAS on" in str(r.get("strategy") or "") else {})})
     if feed:
         AF = {"mffu50k_eval": "z50k", "atlas": "atlas25", "rapid": "rapid25k", "b25k_2": "z25k2"}
         for a in ((feed.get("at") or {}).get("a") or []):
@@ -155,6 +156,37 @@ def live_rows(feed=None):
             seen.add(k)
             uniq.append(r)
     return uniq
+
+
+def not_routed():
+    """{day: [(t, text)]} from the PC's day folders (gaps.json: the bot's own record of why an entry did not reach an account)."""
+    out = {}
+    for d in sorted(glob.glob(os.path.join(ROOT, "data", "pc_days", "????-??-??"))):
+        try:
+            g = json.load(open(os.path.join(d, "gaps.json"), encoding="utf-8"))
+        except Exception:
+            continue
+        out[os.path.basename(d)] = [(int(x.get("t") or 0), str(x.get("text") or "")) for x in g.get("not_routed") or [] if isinstance(x, dict)]
+    return out
+
+
+NR = None
+NR_USED = set()
+LANE_TAG = {("ATLAS", "atlas25"): "[ATLAS ...", ("ATLAS combo", "z25k2"): "25K #2", ("ATLAS", "rapid25k"): "Rapid", ("LIT", "z50k"): "Exit",
+            ("ATLAS combo", "z50k"): "Zlarior 50K"}
+
+
+def pc_reason(ln, t):
+    """The PC's own not-routed line for this lane at this open (within 2 min), else None."""
+    global NR
+    if NR is None:
+        NR = not_routed()
+    tag = LANE_TAG.get((ln["lane"], ln["acct"]))
+    for tt, txt in NR.get(t["day"], []):
+        if tag and tag in txt and abs(tt - int(t["entry_t"])) <= 120:
+            NR_USED.add((t["day"], tt))
+            return txt
+    return None
 
 
 def find(rows, acct, t, window=600):
@@ -268,6 +300,15 @@ def audit(feed=None, twins=None):
                 continue
             q, why = size_atlas(ln["lane"], ln["acct"], t, CTX.get(t["day"], {}))
             out.append(judge(ln, t, q, why, rows, gaps))
+    global NR
+    if NR is None:
+        NR = not_routed()
+    for day, xs in sorted(NR.items()):                             # the PC's own "not routed" lines no cloud twin trade explains
+        for tt, txt in xs:
+            if (day, tt) not in NR_USED and day >= SINCE:
+                out.append({"lane": "PC log", "acct": "?", "account": "(the PC's own record)", "day": day, "when": _hm(tt), "entry_t": tt,
+                            "member": "-", "side": "-", "twin_exit": "-", "twin_r": 0.0, "kind": "PC ONLY", "gap_usd": 0.0,
+                            "cause": "the PC's model entered where the cloud twin did not (different bars at that minute)", "evidence": txt[:300]})
     return {"made": dt.datetime.now().strftime("%Y-%m-%d %H:%M"), "since": SINCE, "bars_to": sess[-1],
             "pc_days": sorted(os.path.basename(d) for d in glob.glob(os.path.join(ROOT, "data", "pc_days", "????-??-??"))),
             "lanes": LANES, "rows": out, "sum": summary(out)}
@@ -325,20 +366,25 @@ def judge(ln, t, q, why, rows, gaps):
                  else "not armed (re-set up by hand)" if "re-armed" in g["what"] else "bot / feed gap")
         return {**row, "kind": "MISSED", "cause": cause, "evidence": g["what"], "live_usd": 0.0, "gap_usd": round(-tw, 2)}
     cause, ev = MISS_CAUSE.get((ln["acct"], ln["lane"], t["day"]), ("no live row (cause not in the data we have)", ""))
+    pr = pc_reason(ln, t)
+    if pr:
+        ev = "the PC's day folder (gaps.json not_routed): " + pr[:300] + ((" | " + ev) if ev else "")
+        if cause.startswith("no live row"):
+            cause = "not routed: " + pr.split(": ", 1)[-1][:120]
     return {**row, "kind": "MISSED", "cause": cause, "evidence": ev, "live_usd": 0.0, "gap_usd": round(-tw, 2)}
 
 
 MISS_CAUSE = {
     ("atlas25", "ATLAS", "2026-11-27"): (
-        "BUG: account B skipped it silently (most likely a stuck position record of its Nov 20 trade)",
-        "same signal routed on Zlarior 50K (combo) + Rapid EOD 25K; ATLAS funded: no row, no reason (held{} not in the feed), its last trade "
-        "Nov 20, card trades_today 0, room $1,000, window open. Fix landed: day-atlasmiss-bot (dc363471f): every skip now has a reason + the "
-        "stuck-record self-heal (17:02 ET update)"),
+        "BUG: STARTUP DISARMED all day: a torn NinjaTrader state file (Nov 26 22:01 ET restart) and a hold that only a FLAT "
+        "position file could clear",
+        "data/pc_days/2026-11-27/gaps.json not_routed 10:10: '[ATLAS ...6018] S/R LONG ... NOT routed on account B: STARTUP DISARMED "
+        "until reconciled: the bot's NinjaTrader state file was unreadable (JSONDecodeError; kept as ninjatrader_state_acctb.json."
+        "corrupt-1795748517)'. Fix: day-moneyaudit-bot ninjatrader._flat_by_account_row + live_guard pushes it"),
     ("z25k2", "ATLAS combo", "2026-11-27"): (
-        "not switched on (most likely): the combo's ATLAS lane on the 25K #2 never traded",
-        "owner yes 2026-11-23 for both Zlarior accounts; the switch is data/combo_50k.json 'accounts' on the PC (engine.combo50k --on "
-        "--account <25K #2 Name>, the live phrase): the 50K is in it (traded today), the 25K #2 shows no ATLAS trade and no combo state "
-        "in the feed. Proof on the PC: data/combo_50k.json; the feed now says it (day-moneyaudit-bot 'lanes')"),
+        "BUG: STARTUP DISARMED all day (the same torn-state hold as ATLAS funded)",
+        "data/pc_days/2026-11-27/gaps.json not_routed 10:10: '[ATLAS on Zlarior Builder 25K #2] S/R LONG ... NOT routed ... STARTUP "
+        "DISARMED ... ninjatrader_state_b25k_2x.json.corrupt-1795748517'. The combo WAS on for the 25K #2. Same fix"),
 }
 
 
@@ -367,6 +413,9 @@ def main():
         json.dump(R, fh, indent=1, default=str)
     for r in R["rows"]:
         if r["kind"] == "NOT LIVE":
+            continue
+        if r["kind"] == "PC ONLY":
+            print(f"{r['when']} PC ONLY: {r['evidence'][:160]}")
             continue
         print(f"{r['when']} {r['lane']:11s} {r['account'][:28]:28s} {r['member']:4s} {r['side']:5s} {r['twin_exit']:7s} {r['twin_r']:+.2f}R "
               f"q{r.get('lane_qty')} ${r.get('twin_usd')} | live q{r.get('live_qty')} ${r.get('live_usd')} | {r['kind']} {r.get('gap_usd'):+.2f} {r['cause']}")

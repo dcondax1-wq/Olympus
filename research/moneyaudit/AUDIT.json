@@ -1,7 +1,7 @@
 {
- "made": "2026-11-27 21:10",
+ "made": "2026-11-28 00:20",
  "since": "2026-10-19",
- "bars_to": "2026-11-26",
+ "bars_to": "2026-11-27",
  "pc_days": [
   "2026-10-14",
   "2026-10-15",
@@ -22,7 +22,20 @@
   "2026-11-05",
   "2026-11-06",
   "2026-11-09",
-  "2026-11-10"
+  "2026-11-10",
+  "2026-11-11",
+  "2026-11-12",
+  "2026-11-13",
+  "2026-11-16",
+  "2026-11-17",
+  "2026-11-18",
+  "2026-11-19",
+  "2026-11-20",
+  "2026-11-23",
+  "2026-11-24",
+  "2026-11-25",
+  "2026-11-26",
+  "2026-11-27"
  ],
  "lanes": [
   {
@@ -615,7 +628,7 @@
    "twin_usd": 512.31,
    "live_qty": 1,
    "live_usd": 514.18,
-   "live_src": "PC post 'at'",
+   "live_src": "pc_days 2026-11-20 (acctb)",
    "kind": "IDENTICAL",
    "cause": "live = the lane's twin",
    "gap_usd": 1.87
@@ -627,20 +640,20 @@
    "day": "2026-11-27",
    "when": "Fri Nov 27 10:10",
    "entry_t": 1795792200,
-   "member": "S/R",
+   "member": "SR",
    "side": "LONG",
    "twin_exit": "TARGET",
-   "twin_r": 1.914,
+   "twin_r": 1.988,
    "lane_qty": 1,
    "lane_size_why": [
     "funded: 40% of $1,000 room -> $400"
    ],
-   "twin_usd": 299.56,
+   "twin_usd": 302.26,
    "kind": "MISSED",
-   "cause": "BUG: account B skipped it silently (most likely a stuck position record of its Nov 20 trade)",
-   "evidence": "same signal routed on Zlarior 50K (combo) + Rapid EOD 25K; ATLAS funded: no row, no reason (held{} not in the feed), its last trade Nov 20, card trades_today 0, room $1,000, window open. Fix landed: day-atlasmiss-bot (dc363471f): every skip now has a reason + the stuck-record self-heal (17:02 ET update)",
+   "cause": "BUG: STARTUP DISARMED all day: a torn NinjaTrader state file (Nov 26 22:01 ET restart) and a hold that only a FLAT position file could clear",
+   "evidence": "the PC's day folder (gaps.json not_routed): [ATLAS ...6018] S/R LONG at the 10:10 ET open NOT routed on account B: STARTUP DISARMED until reconciled: the bot's NinjaTrader state file was unreadable (JSONDecodeError; kept as ninjatrader_state_acctb.json.corrupt-1795748517): the open bracket it held is unknown | data/pc_days/2026-11-27/gaps.json not_routed 10:10: '[ATLAS ...6018] S/R LONG ... NOT routed on account B: STARTUP DISARMED until reconciled: the bot's NinjaTrader state file was unreadable (JSONDecodeError; kept as ninjatrader_state_acctb.json.corrupt-1795748517)'. Fix: day-moneyaudit-bot ninjatrader._flat_by_account_row + live_guard pushes it",
    "live_usd": 0.0,
-   "gap_usd": -299.56
+   "gap_usd": -302.26
   },
   {
    "lane": "ATLAS",
@@ -671,21 +684,21 @@
    "day": "2026-11-27",
    "when": "Fri Nov 27 10:10",
    "entry_t": 1795792200,
-   "member": "S/R",
+   "member": "SR",
    "side": "LONG",
    "twin_exit": "TARGET",
-   "twin_r": 1.914,
+   "twin_r": 1.988,
    "lane_qty": 1,
    "lane_size_why": [
-    "$250 risk / $164 a micro -> 1"
+    "$250 risk / $160 a micro -> 1"
    ],
-   "twin_usd": 299.56,
-   "live_qty": null,
-   "live_usd": 304,
-   "live_src": "PC post 'mf' (best day = its only trade day)",
+   "twin_usd": 302.26,
+   "live_qty": 1,
+   "live_usd": 304.1,
+   "live_src": "pc_days 2026-11-27 (acctr)",
    "kind": "IDENTICAL",
    "cause": "live = the lane's twin",
-   "gap_usd": 4.44
+   "gap_usd": 1.84
   },
   {
    "lane": "ATLAS combo",
@@ -694,22 +707,22 @@
    "day": "2026-11-27",
    "when": "Fri Nov 27 10:10",
    "entry_t": 1795792200,
-   "member": "S/R",
+   "member": "SR",
    "side": "LONG",
    "twin_exit": "TARGET",
-   "twin_r": 1.914,
+   "twin_r": 1.988,
    "lane_qty": 1,
    "lane_size_why": [
     "two week: 40% of $1,009 room -> 2",
     "atlas_size_factor eval 0.5: 2 -> 1"
    ],
-   "twin_usd": 299.56,
+   "twin_usd": 302.26,
    "live_qty": 1,
    "live_usd": 304.1,
-   "live_src": "PC post 'at'",
+   "live_src": "pc_days 2026-11-27 (main)",
    "kind": "IDENTICAL",
    "cause": "live = the lane's twin",
-   "gap_usd": 4.54
+   "gap_usd": 1.84
   },
   {
    "lane": "ATLAS combo",
@@ -718,21 +731,37 @@
    "day": "2026-11-27",
    "when": "Fri Nov 27 10:10",
    "entry_t": 1795792200,
-   "member": "S/R",
+   "member": "SR",
    "side": "LONG",
    "twin_exit": "TARGET",
-   "twin_r": 1.914,
+   "twin_r": 1.988,
    "lane_qty": 1,
    "lane_size_why": [
     "two week: 40% of $1,019 room -> 2",
     "atlas_size_factor eval 0.5: 2 -> 1"
    ],
-   "twin_usd": 299.56,
+   "twin_usd": 302.26,
    "kind": "MISSED",
-   "cause": "not switched on (most likely): the combo's ATLAS lane on the 25K #2 never traded",
-   "evidence": "owner yes 2026-11-23 for both Zlarior accounts; the switch is data/combo_50k.json 'accounts' on the PC (engine.combo50k --on --account <25K #2 Name>, the live phrase): the 50K is in it (traded today), the 25K #2 shows no ATLAS trade and no combo state in the feed. Proof on the PC: data/combo_50k.json; the feed now says it (day-moneyaudit-bot 'lanes')",
+   "cause": "BUG: STARTUP DISARMED all day (the same torn-state hold as ATLAS funded)",
+   "evidence": "the PC's day folder (gaps.json not_routed): [ATLAS on Zlarior Builder 25K #2] S/R LONG at the 10:10 ET open NOT routed on Zlarior Builder 25K #2: STARTUP DISARMED until reconciled: the bot's NinjaTrader state file was unreadable (JSONDecodeError; kept as ninjatrader_state_b25k_2x.json.corrupt-1795748517): the open bracket it held is unknown | data/pc_days/2026-11-27/gaps.json not_routed 10:10: '[ATLAS on Zlarior Builder 25K #2] S/R LONG ... NOT routed ... STARTUP DISARMED ... ninjatrader_state_b25k_2x.json.corrupt-1795748517'. The combo WAS on for the 25K #2. Same fix",
    "live_usd": 0.0,
-   "gap_usd": -299.56
+   "gap_usd": -302.26
+  },
+  {
+   "lane": "PC log",
+   "acct": "?",
+   "account": "(the PC's own record)",
+   "day": "2026-11-20",
+   "when": "Fri Nov 20 10:44",
+   "entry_t": 1795189442,
+   "member": "-",
+   "side": "-",
+   "twin_exit": "-",
+   "twin_r": 0.0,
+   "kind": "PC ONLY",
+   "gap_usd": 0.0,
+   "cause": "the PC's model entered where the cloud twin did not (different bars at that minute)",
+   "evidence": "Exit STOP for an entry this process never routed (model entered 06:20 ET during a gap): flatten sent in case a broker position exists - verify by hand"
   }
  ],
  "sum": [
@@ -740,20 +769,20 @@
    "lane": "ATLAS",
    "account": "ATLAS 25K (eval Nov 6-17, funded from Nov 18)",
    "misses": 7,
-   "usd": -1039.23,
+   "usd": -1041.93,
    "causes": {
     "order refused (account Name bug, fixed Oct 27)": 1,
     "PC bot off": 5,
-    "BUG: account B skipped it silently (most likely a stuck position record of its Nov 20 trade)": 1
+    "BUG: STARTUP DISARMED all day: a torn NinjaTrader state file (Nov 26 22:01 ET restart) and a hold that only a FLAT position file could clear": 1
    }
   },
   {
    "lane": "ATLAS combo",
    "account": "Zlarior 25K #2 (ATLAS combo)",
    "misses": 1,
-   "usd": -299.56,
+   "usd": -302.26,
    "causes": {
-    "not switched on (most likely): the combo's ATLAS lane on the 25K #2 never traded": 1
+    "BUG: STARTUP DISARMED all day (the same torn-state hold as ATLAS funded)": 1
    }
   },
   {
