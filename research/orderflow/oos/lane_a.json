@@ -1,0 +1,253 @@
+{
+ "made": "2026-11-28T03:42:54Z",
+ "files": 53,
+ "trading_days": 43,
+ "first": "2026-09-28",
+ "last": "2026-11-25",
+ "in_sample_days": 43,
+ "new_days": 0,
+ "books": {
+  "first": {
+   "in_sample": {
+    "n": 39,
+    "tpw": 4.53,
+    "win_pct": 51.3,
+    "mean_R": 0.51,
+    "pf": 2.4,
+    "usd_1": 2931.0,
+    "max_dd": 542.0,
+    "usd_month": 1431.0,
+    "days": 43,
+    "halves": {
+     "older": {
+      "n": 20,
+      "mean_R": 0.905,
+      "usd": 1629.0
+     },
+     "newer": {
+      "n": 19,
+      "mean_R": 0.095,
+      "usd": 1302.0
+     }
+    }
+   },
+   "new": {
+    "n": 0,
+    "tpw": null,
+    "days": 0
+   },
+   "all": {
+    "n": 39,
+    "tpw": 4.53,
+    "win_pct": 51.3,
+    "mean_R": 0.51,
+    "pf": 2.4,
+    "usd_1": 2931.0,
+    "max_dd": 542.0,
+    "usd_month": 1431.0,
+    "days": 43,
+    "halves": {
+     "older": {
+      "n": 20,
+      "mean_R": 0.905,
+      "usd": 1629.0
+     },
+     "newer": {
+      "n": 19,
+      "mean_R": 0.095,
+      "usd": 1302.0
+     }
+    }
+   },
+   "nov_2025": {
+    "n": 0,
+    "tpw": null,
+    "days": 0
+   },
+   "dec_2025": {
+    "n": 0,
+    "tpw": null,
+    "days": 0
+   },
+   "h1_2026": {
+    "n": 0,
+    "tpw": null,
+    "days": 0
+   },
+   "h2_2026": {
+    "n": 39,
+    "tpw": 4.53,
+    "win_pct": 51.3,
+    "mean_R": 0.51,
+    "pf": 2.4,
+    "usd_1": 2931.0,
+    "max_dd": 542.0,
+    "usd_month": 1431.0,
+    "days": 43,
+    "halves": {
+     "older": {
+      "n": 20,
+      "mean_R": 0.905,
+      "usd": 1629.0
+     },
+     "newer": {
+      "n": 19,
+      "mean_R": 0.095,
+      "usd": 1302.0
+     }
+    }
+   },
+   "eval": {
+    "b25k_1mnq": {
+     "starts": 43,
+     "pass_pct": 0.0,
+     "blow_pct": 0.0,
+     "open_pct": 100.0,
+     "median_days_to_pass": null
+    },
+    "b25k_2mnq": {
+     "starts": 43,
+     "pass_pct": 0.0,
+     "blow_pct": 0.0,
+     "open_pct": 100.0,
+     "median_days_to_pass": null
+    },
+    "b50k_1mnq": {
+     "starts": 43,
+     "pass_pct": 0.0,
+     "blow_pct": 0.0,
+     "open_pct": 100.0,
+     "median_days_to_pass": null
+    },
+    "b50k_2mnq": {
+     "starts": 43,
+     "pass_pct": 0.0,
+     "blow_pct": 0.0,
+     "open_pct": 100.0,
+     "median_days_to_pass": null
+    }
+   }
+  },
+  "onepos": {
+   "in_sample": {
+    "n": 65,
+    "tpw": 7.56,
+    "win_pct": 47.7,
+    "mean_R": 0.4,
+    "pf": 1.53,
+    "usd_1": 2370.0,
+    "max_dd": 1163.0,
+    "usd_month": 1157.0,
+    "days": 43,
+    "halves": {
+     "older": {
+      "n": 34,
+      "mean_R": 0.535,
+      "usd": 1395.0
+     },
+     "newer": {
+      "n": 31,
+      "mean_R": 0.25,
+      "usd": 974.0
+     }
+    }
+   },
+   "new": {
+    "n": 0,
+    "tpw": null,
+    "days": 0
+   },
+   "all": {
+    "n": 65,
+    "tpw": 7.56,
+    "win_pct": 47.7,
+    "mean_R": 0.4,
+    "pf": 1.53,
+    "usd_1": 2370.0,
+    "max_dd": 1163.0,
+    "usd_month": 1157.0,
+    "days": 43,
+    "halves": {
+     "older": {
+      "n": 34,
+      "mean_R": 0.535,
+      "usd": 1395.0
+     },
+     "newer": {
+      "n": 31,
+      "mean_R": 0.25,
+      "usd": 974.0
+     }
+    }
+   },
+   "nov_2025": {
+    "n": 0,
+    "tpw": null,
+    "days": 0
+   },
+   "dec_2025": {
+    "n": 0,
+    "tpw": null,
+    "days": 0
+   },
+   "h1_2026": {
+    "n": 0,
+    "tpw": null,
+    "days": 0
+   },
+   "h2_2026": {
+    "n": 65,
+    "tpw": 7.56,
+    "win_pct": 47.7,
+    "mean_R": 0.4,
+    "pf": 1.53,
+    "usd_1": 2370.0,
+    "max_dd": 1163.0,
+    "usd_month": 1157.0,
+    "days": 43,
+    "halves": {
+     "older": {
+      "n": 34,
+      "mean_R": 0.535,
+      "usd": 1395.0
+     },
+     "newer": {
+      "n": 31,
+      "mean_R": 0.25,
+      "usd": 974.0
+     }
+    }
+   },
+   "eval": {
+    "b25k_1mnq": {
+     "starts": 43,
+     "pass_pct": 0.0,
+     "blow_pct": 0.0,
+     "open_pct": 100.0,
+     "median_days_to_pass": null
+    },
+    "b25k_2mnq": {
+     "starts": 43,
+     "pass_pct": 0.0,
+     "blow_pct": 0.0,
+     "open_pct": 100.0,
+     "median_days_to_pass": null
+    },
+    "b50k_1mnq": {
+     "starts": 43,
+     "pass_pct": 0.0,
+     "blow_pct": 0.0,
+     "open_pct": 100.0,
+     "median_days_to_pass": null
+    },
+    "b50k_2mnq": {
+     "starts": 43,
+     "pass_pct": 0.0,
+     "blow_pct": 0.0,
+     "open_pct": 100.0,
+     "median_days_to_pass": null
+    }
+   }
+  }
+ }
+}
