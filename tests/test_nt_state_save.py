@@ -188,6 +188,12 @@ def part8(root):
         ad._save()
     dt_ = time.perf_counter() - t
     check(f"8. 2,000 clock-only saves: {dt_:.2f} s, the file written once", dt_ < 0.5 and os.stat(cfg["nt_state_path"]).st_mtime_ns == m0, dt_)
+    # red team #47: an unchanged state is still rewritten every SAVE_EVERY_S (autoupdate ignores a state file untouched 24 h)
+    ad._saved_wall_t = time.time() - ad.SAVE_EVERY_S - 1
+    time.sleep(0.02)
+    ad._save()
+    check("8. rt: unchanged but older than SAVE_EVERY_S: rewritten (mtime fresh for the update's flat check)",
+          os.stat(cfg["nt_state_path"]).st_mtime_ns != m0)
 
 
 def main():
