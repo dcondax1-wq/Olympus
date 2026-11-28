@@ -2691,6 +2691,10 @@ class NinjaTraderAdapter:
     # data (an empty / NUL-filled file). Now: flush + fsync before the replace whenever what a restart needs changed (CRIT),
     # a last-good copy <state>.bak written the same safe way, _restore falls back to it, and a save whose content (minus
     # saved_at) did not change is skipped (cheaper than before).
+    # red team #47: an unchanged state is still rewritten every SAVE_EVERY_S. engine/autoupdate.accounts_flat_reason (the update,
+    # the remote restart, hang_guard's kill) IGNORES a ninjatrader_state_*.json untouched for 24 h as "a leftover": with no rewrite,
+    # an open leg kept over a weekend (day only changes Fri 18:00 -> Mon 18:00) would have read as flat
+    SAVE_EVERY_S = 600
     CRIT = ("legs", "withdrawn", "watch", "killed", "state_problem", "nt_reset", "entries_day", "day", "account")
 
     def _save(self):
@@ -2702,7 +2706,8 @@ class NinjaTraderAdapter:
                 "entries_day": self.entries_day}
         try:
             key = json.dumps({k: v for k, v in blob.items() if k != "saved_at"}, sort_keys=True, default=str)
-            if key == getattr(self, "_saved_key", None) and os.path.exists(self.state_path):
+            if key == getattr(self, "_saved_key", None) and os.path.exists(self.state_path) \
+                    and time.time() - float(getattr(self, "_saved_wall_t", 0) or 0) < self.SAVE_EVERY_S:
                 return                                   # nothing but the clock changed: the file on disk already says this
             crit = json.dumps({k: blob[k] for k in self.CRIT}, sort_keys=True, default=str)
             durable = crit != getattr(self, "_saved_crit", None)
@@ -2710,7 +2715,7 @@ class NinjaTraderAdapter:
             write_json_atomic(self.state_path, blob, fsync=durable)
             if durable:                                  # the last good copy a torn main file falls back to
                 write_json_atomic(self.state_path + ".bak", {**blob, "saved_wall": time.time()}, fsync=True)
-            self._saved_key, self._saved_crit = key, crit
+            self._saved_key, self._saved_crit, self._saved_wall_t = key, crit, time.time()
         except Exception as e:
             # night-faults 2026-11-23: a failed save (disk full, a lock) was only last_error: silent. The write-ahead record is
             # what a restart restores the open bracket from, so the owner hears it (one alert per 30 min; logged every time)
