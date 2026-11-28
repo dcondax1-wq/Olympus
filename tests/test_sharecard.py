@@ -37,6 +37,9 @@ def green_post(t, today_usd=660.0):
     """the real 2026-11-22 post moved to t, with a closed +$660 LIT long on the 50K today"""
     p = NQL.retime(NQL.real(), t)
     e = t - 5400
+    et = dt.datetime.fromtimestamp(t, ZoneInfo("America/New_York"))
+    if et.hour >= 18:                     # day-sharefix: an evening clock -> the trade sits in that ET day's session (15:00 ET)
+        e = int(et.replace(hour=15, minute=0, second=0, microsecond=0).timestamp())
     p["at"]["a"] += [{"id": "mffu50k_eval", "l4": "6016", "tr": [[e, e + 1800, 1, 3, 25650.0, 25630.0, 25760.0, "TARGET", today_usd, 3.3]]}]
     p["accounts"][0]["pnl"]["today"] = today_usd
     p["accounts"][0]["pnl"]["week"] = today_usd + 300
@@ -145,6 +148,12 @@ console.log(JSON.stringify(out));
                 p.select_option("#day", "2026-11-20")
                 p.wait_for_function("document.getElementById('sum').textContent.startsWith('Backtest')", timeout=20000)
                 o5 = p.evaluate(read)
+                if w == 390:
+                    ny = ZoneInfo("America/New_York")
+                    ev, noon = (int(dt.datetime(2026, 11, 27, h, m, tzinfo=ny).timestamp()) for h, m in ((19, 30), (12, 0)))
+                    cn = p.evaluate(f"[window.NQ_SHARE.cardNow({ev}), window.NQ_SHARE.cardNow({noon})]")
+                    check("c. the card's day is the New York day: 19:30 ET reads the day as of 17:59 ET (the CME day has rolled), 12:00 ET reads now",
+                          cn == [int(dt.datetime(2026, 11, 27, 17, 59, tzinfo=ny).timestamp()), noon], cn)
                 if shots and w == 390:
                     import base64
                     b64 = p.evaluate("() => document.getElementById('card').toDataURL('image/png').split(',')[1]")

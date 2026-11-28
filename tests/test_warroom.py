@@ -325,7 +325,7 @@ def test_page(shots=None):
     check("c. no page error; nothing off the site but the (mocked) PC status topic and its chart twin", all(not out[k]["errs"] and not out[k]["off"] for k in ("idle", "forming", "trade", "stale")),
           [(k, out[k]["errs"][:2], out[k]["off"][:2]) for k in ("idle", "forming", "trade", "stale")])
     check("c. all bots side by side: the overview (LIT, ATLAS, BLITZ, ORDER FLOW: a ring with %, the word) and a ladder each",
-          [o[0] for o in F["over"]] == ["LIT", "ATLAS", "BLITZ", "ORDER FLOW"] and F["ladders"] == ["lad-lit", "lad-atlas", "lad-blitz", "lad-of"] and F["over"][0][1:] == ["64%", "Close"], F["over"])
+          [o[0] for o in F["over"]] == ["LIT", "ATLAS", "BLITZ", "POSEIDON"] and F["ladders"] == ["lad-lit", "lad-atlas", "lad-blitz", "lad-of"] and F["over"][0][1:] == ["64%", "Close"], F["over"])
     check("c. the ladders: LIT 10 (4 passed, now, next), ATLAS 3 lobes x 5 steps, BLITZ 6 off, ORDER FLOW 5; the current step shows the PC's words, the next what it waits for",
           F["litSteps"] == ["done"] * 4 + ["now", "next"] + ["wait"] * 4 and F["lobes"] == 3 and F["lobeSteps"] == 15 and F["blitz"] == ["off"] * 6 and F["ofSteps"] == 5
           and F["nowTx"].startswith("5m CISD closed through 26,232.50") and F["nextTx"].startswith("Needs its checks to pass"), (F["litSteps"], F["nowTx"], F["nextTx"]))

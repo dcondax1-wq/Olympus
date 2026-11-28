@@ -244,7 +244,7 @@ def browser(post, now):
     BR = o.get("brain") or {}
     check("b. Strategy Brain: the 4 pillars are the first lobes, a Pillars link, research neurons orbit them",
           BR.get("chips") == ["lit", "atlas", "blitz", "of"] and BR.get("link") and (BR.get("stats") or {}).get("neurons", 0) > 150, BR)
-    check("b. Strategy Brain: ORDER FLOW sheet with the tick count + its 5 steps", (o.get("brainOf") or {}).get("h") == "ORDER FLOW" and "23 of 60" in (o.get("brainOf") or {}).get("ticks", "")
+    check("b. Strategy Brain: ORDER FLOW sheet with the tick count + its 5 steps", (o.get("brainOf") or {}).get("h") == "POSEIDON" and "23 of 60" in (o.get("brainOf") or {}).get("ticks", "")
           and (o.get("brainOf") or {}).get("steps") == 5, o.get("brainOf"))
     check("b. Strategy Brain: ATLAS sheet opens its 3 lobes", (o.get("brainAtlas") or {}).get("members") == ["ATLAS EMA ›", "ATLAS MACD ›", "ATLAS S/R ›"], o.get("brainAtlas"))
     H = o.get("hub") or {}
