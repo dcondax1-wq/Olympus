@@ -8,7 +8,7 @@
 //   - research lobes = cities/brain-data.json (the Research Brain's findings per family; BLITZ is hidden, as everywhere).
 // Read only: nothing here arms, starts, stops or orders anything.
 import { LIT_STAGES, stageN, lobeState } from '../../nq/braincore.js?v=7';
-import { pillarOf } from '../../pillars/pillarof.js?v=p1';
+import { pillarOf } from '../../pillars/pillarof.js?v=p2';
 export { pillarOf };
 
 export const FRESH_S = 20 * 60;           // the PC posts every 15 minutes (pc_feed.js FRESH_S)

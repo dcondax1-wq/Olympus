@@ -9,9 +9,9 @@
 //   dist_pts, window, limit, stop, target}, .levels [{k, p, p2?, label?}] (also accepted at lite.brain[id]). Absent = derived or "not sent".
 // Nothing made up: a number no source has is null and drawn as "-" / "not sent"; the bundled fixture is always labelled SAMPLE.
 //   build(src, nowS) -> { mode, pc, price, headline, sample, regions[], pulse }
-import * as W from '../warroom/warcore.js?v=w3';
+import * as W from '../warroom/warcore.js?v=w4';
 import * as NB from '../nq/nqbars.js?v=b2';
-import * as PF from '../pillars/pillarsfeed.js?v=p8';
+import * as PF from '../pillars/pillarsfeed.js?v=p9';
 
 const isObj = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
 const arr = (x) => (Array.isArray(x) ? x : []);
