@@ -770,6 +770,18 @@ def day_decisions(day: str, root: str = ROOT, exec_store: str | None = None, nam
     out = []
     for r in _jl_read(os.path.join(root, "data", "brain", f"{day}.jsonl")):
         out.append({"src": "brain", **r})
+    try:                                   # day-moneyaudit: every ATLAS lane's "why not routed" (account_b held{}: B, Rapid, combo)
+        from . import account_b as _ab
+        for lane, p in _ab.lane_files(os.path.join(root, "data")):
+            H = (_read_json(p, {}) or {}).get("held") or {}
+            for k, v in sorted(H.items()):
+                try:
+                    if isinstance(v, dict) and trading_day(int(k)) == day:
+                        out.append({"src": "held_atlas", "lane": lane, "entry_t": int(k), **v})
+                except (TypeError, ValueError):
+                    continue
+    except Exception:
+        pass
     N = _read_json(os.path.join(exec_store or os.path.join(root, "logs", "exec_audit"), "notes.json"), {}) or {}
     for k, v in sorted((N.get("blocked") or {}).items()):
         try:

@@ -2314,6 +2314,55 @@ def status_tiny(path: str | None = None, now=None) -> dict | None:
         return None
 
 
+# day-moneyaudit (2026-11-27): every ATLAS lane keeps the same AccountB state (open_t / prov / held): account B itself, the Rapid
+# EOD's lane(s) (engine/rapid: _acctr / _acctr2) and the combo lane on an extra Builder (engine/combo25: _acct<id>x). The 25K #2's
+# combo never traded today and nothing in the feed said whether it was even on: lanes_tiny names every lane that exists + the
+# combo switch's accounts (last 4 only).
+LANE_FILES = (("r", "live_state_acctr.json"), ("r2", "live_state_acctr2.json"))
+
+
+def lane_files(data_dir: str | None = None) -> list:
+    """[(lane id, path)] of every ATLAS lane state file next to account B's (B itself = "b"; combo25 lanes = "x:<id>")."""
+    import glob as _g
+    d = data_dir or os.path.join(ROOT, "data")
+    out = [("b", os.path.join(d, "live_state_acctb.json"))] + [(k, os.path.join(d, f)) for k, f in LANE_FILES]
+    for p in sorted(_g.glob(os.path.join(d, "live_state_acct*x.json"))):
+        stem = os.path.basename(p)[len("live_state_acct"):-len("x.json")]
+        if stem:
+            out.append((f"x:{stem}", p))
+    return [(k, p) for k, p in out if os.path.exists(p)]
+
+
+def lanes_tiny(data_dir: str | None = None, now=None, root: str | None = None) -> dict | None:
+    """{"ln": [[lane, open entry_t or 0, today's skip count, today's last skip why (60)], ...] every ATLAS lane but B (B = "ab"),
+    "cb": [last 4 of every account the combo switch is on for]} for the status post; None = nothing to say. Never raises."""
+    try:
+        day = trading_day(int(now or _time.time()))
+        ln = []
+        for k, p in lane_files(data_dir):
+            if k == "b":
+                continue
+            try:
+                b = json.load(open(p, encoding="utf-8"))
+            except Exception:
+                ln.append([k, None, None, "state file unreadable"])
+                continue
+            H = b.get("held") if isinstance(b.get("held"), dict) else {}
+            rows = sorted((int(t), v) for t, v in H.items() if str(t).isdigit() and isinstance(v, dict) and trading_day(int(t)) == day)
+            ln.append([k, int(b["open_t"]) if b.get("open_t") is not None else 0, len(rows),
+                       str(rows[-1][1].get("why") or "")[:60] if rows else ""])
+        out = {"ln": ln} if ln else {}
+        try:
+            from . import combo50k as CB
+            sw = CB.read_switch(root)
+            out["cb"] = [str(n)[-4:] for n in sw.get("accounts") or []]
+        except Exception:
+            pass
+        return out or None
+    except Exception:
+        return None
+
+
 def _state_path_for(bot_state_path: str | None) -> str:
     p = bot_state_path or os.path.join(ROOT, "data", "live_state.json")
     base, ext = os.path.splitext(p)

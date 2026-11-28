@@ -1,5 +1,7 @@
 # Every live-vs-twin gap, Oct 23 - Nov 26 2026: what live missed, why, and what it cost
 
+> **CORRECTION (day-moneyaudit, 2026-11-27 evening; full audit: research/writeups/money-audit-2026-11-27.md).** The Rapid EOD 25K row below (-$1,658.75, "not armed") is **$0**: even armed, the Rapid's ATLAS lane sizes that trade at 0 micros. Its 30% best-day rule (engine/rapid.best_day_cap) caps a winner at $427.50 and one micro of that +6.6R target pays $512.30, so the lane skips it by design. The R x $250 estimate ignored the lane's own rules. Also missing here: ATLAS's Oct 27 03:30 MACD LONG 3 (+7.97R) was refused by the same account Name bug as LIT that day = -$1,656.67.
+
 The owner's question behind it: the Replay Theater's day notes show "Live Zlarior 50K: 0 trades vs the twin's 1; gap MISSED". So:
 every place in the last 35 days where a live account did not do what its backtest twin did, the root cause from the evidence,
 and the dollars per cause. READ ONLY research: nothing live changed. Data: `research/livegap/missed_2026-11-27.json` (every row
