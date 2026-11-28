@@ -2320,7 +2320,8 @@ class NinjaTraderAdapter:
             self._log("system", "NinjaTrader: the owner confirmed the account after the unreadable state file: entries allowed")
             return True
         if not all((lambda p: bool(p and p["side"] == "FLAT"))(self.position_for(i)) for i in self._our_instruments()):
-            return False
+            if not self._flat_by_account_row(sp):
+                return False
         orphans = [oid for oid in self._audit_ids()
                    if (lambda st: bool(st and st["state"] in LIVE_STATES | {PARTFILLED}))(self.read_order(oid))]
         if orphans:
@@ -2334,6 +2335,62 @@ class NinjaTraderAdapter:
         self._log("system", "NinjaTrader: the account is FLAT and no order of the bot is working: entries allowed again "
                             "(the state file had been unreadable)")
         return True
+
+    # day-moneyaudit (2026-11-27): ATLAS funded's and the 25K #2 combo lane's state files were torn at the Nov 26 22:01 ET restart;
+    # both stayed "STARTUP DISARMED" ALL DAY (S/R +$304 x 2 missed): the proof of flat above needs a FLAT position file of every
+    # contract, and NinjaTrader writes none for a flat account after its own restart (a missing file never proves flat). Second
+    # proof, same never-guess rule: the account's own fresh row in le_feed\accounts.csv (LE_BarFeed, once a minute) says
+    # unrealized P&L exactly $0.00 on FLAT_PNL_READS reads spanning >= FLAT_PNL_SPAN_S while the chart moved >= FLAT_PNL_MOVE pts
+    # (one micro held through that move would show >= $2), no position file says otherwise, no leg of the bot is open. The
+    # orphan-order check below still runs after it.
+    FLAT_PNL_READS, FLAT_PNL_SPAN_S, FLAT_PNL_MOVE = 3, 300, 1.0
+
+    def _feed_px(self):
+        """(bar time, close) of the newest le_feed 1m bar if it closed within the last 3 minutes, else None."""
+        try:
+            feed = NinjaTraderBars(self.folder)
+            f = feed.file_for(self.sym, 1)
+            df = feed.load(f) if f else None
+            if df is None or not len(df):
+                return None
+            t = int(df["time"].iloc[-1])
+            return (t, float(df["close"].iloc[-1])) if 0 <= float(self.clock()) - (t + 60) <= 180 else None
+        except Exception:
+            return None
+
+    def _flat_by_account_row(self, sp) -> bool:
+        """The account is provably flat from NinjaTrader's own account row (see above). Records its reads in sp["pnl_reads"]
+        (they survive in the state file); any non-zero / stale / missing read starts over. Never raises; unclear = False."""
+        try:
+            for i in self._our_instruments():
+                p = self.position_for(i)
+                if p and (p.get("side") != "FLAT" or int(p.get("qty") or 0) != 0):
+                    sp.pop("pnl_reads", None)
+                    return False
+            if any(lg.get("status") in OPEN_STATUSES for lg in self.legs):
+                return False
+            from .broker_balance import read as _bb_read
+            row = ((_bb_read(self.folder, now=self.clock()) or {}).get("rows") or {}).get(self.account)
+            if not row or not row.get("fresh") or row.get("unrealized") is None or abs(float(row["unrealized"])) > 1e-9:
+                sp.pop("pnl_reads", None)
+                return False
+            px = self._feed_px()
+            if px is None:
+                return False
+            reads = [r for r in sp.get("pnl_reads") or [] if isinstance(r, list) and len(r) == 2]
+            if not reads or int(row["t"]) > int(reads[-1][0]):
+                reads.append([int(row["t"]), float(px[1])])
+            sp["pnl_reads"] = reads[-20:]
+            span = reads[-1][0] - reads[0][0]
+            moved = max(r[1] for r in reads) - min(r[1] for r in reads)
+            if len(reads) >= self.FLAT_PNL_READS and span >= self.FLAT_PNL_SPAN_S and moved >= self.FLAT_PNL_MOVE:
+                self._log("system", f"NinjaTrader: {self.account} reads FLAT from its own account row (unrealized $0.00 on "
+                                    f"{len(reads)} reads over {span // 60} min while the chart moved {moved:.2f} pts; no position "
+                                    "file since NinjaTrader's restart)")
+                return True
+            return False
+        except Exception:
+            return False
 
     # ------------------------------------------------------------------ NinjaTrader restart / disconnect while the bot runs
     def _reset_text(self) -> str:

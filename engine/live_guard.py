@@ -289,7 +289,10 @@ def missed(bot, now) -> list:
             h = (getattr(a, "held", None) or {}).get(str(t))
             stuck = _stuck_since(a, t)
             late = isinstance(h, dict) and h.get("code") == "late"
-            if h is not None and not late and not stuck:
+            # day-moneyaudit: a STARTUP DISARMED hold is a fault (a torn NinjaTrader state file kept ATLAS funded and the 25K #2's
+            # combo lane out ALL DAY on Nov 27, no alarm), never the account's own rule
+            fault = isinstance(h, dict) and str(h.get("why") or "").startswith(("STARTUP DISARMED", "feed stale", "guards failed"))
+            if h is not None and not late and not stuck and not fault:
                 continue                                   # its own rule held it (account B "held": room, size 0, news, one position)
             if _in_trade_at(a, t):
                 continue
@@ -300,7 +303,7 @@ def missed(bot, now) -> list:
             elif stuck:
                 why = (f"the account still marks its {_et(stuck):%a %m-%d %H:%M} ET entry open (a stuck position record): every new entry "
                        "is skipped until it clears (the bot clears it itself once NinjaTrader shows the account flat)")
-            elif late:
+            elif late or fault:
                 why = str(h.get("why") or "the 5-minute open was checked too late")[:160]
             else:
                 why = _why_off(a)
